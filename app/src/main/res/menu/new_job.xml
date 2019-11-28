@@ -1,0 +1,22 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="za.co.xisystems.itismaintenance.old_app.activities.ViewJobEstimatesActivity">
+
+    <item
+        android:id="@+id/mi_reset"
+        android:orderInCategory="100"
+        android:title="@string/reset"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/mi_delete"
+        android:orderInCategory="200"
+        android:title="@string/delete"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/mi_save"
+        android:orderInCategory="300"
+        android:title="@string/save"
+        app:showAsAction="always" />
+</menu>

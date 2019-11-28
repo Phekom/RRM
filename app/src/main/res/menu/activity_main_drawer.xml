@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_home"
+            android:icon="@drawable/ic_home"
+            android:title="@string/menu_home" />
+        <item
+            android:id="@+id/nav_create"
+            android:icon="@drawable/ic_create"
+            android:title="@string/menu_create" />
+        <item
+            android:id="@+id/nav_unSubmitted"
+            android:icon="@drawable/ic_unsubmitted"
+            android:title="@string/menu_unSubmitted" />
+        <item
+            android:id="@+id/nav_correction"
+            android:icon="@drawable/ic_correct"
+            android:title="@string/menu_estCorrection" />
+        <item
+            android:id="@+id/nav_work"
+            android:icon="@drawable/ic_menu_manage"
+            android:title="@string/menu_work" />
+
+    </group>
+
+    <item android:title="Engineering Section">
+        <menu>
+            <group android:checkableBehavior="single">
+                <item
+                    android:id="@+id/nav_approveJbs"
+                    android:icon="@drawable/ic_approve"
+                    android:title="@string/menu_approveJbs" />
+
+                <item
+                    android:id="@+id/nav_estMeasure"
+                    android:icon="@drawable/ic_measure"
+                    android:title="@string/menu_estMeasure" />
+
+                <item
+                    android:id="@+id/nav_approvMeasure"
+                    android:icon="@drawable/ic_approve_measure"
+                    android:title="@string/menu_approvMeasure" />
+            </group>
+        </menu>
+
+
+    </item>
+
+</menu>
+

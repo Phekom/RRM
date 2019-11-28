@@ -1,0 +1,214 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:tag="fragment_Pin"
+    tools:context="za.co.xisystems.itismaintenance.old_app.fragments.PinFragment">
+
+    <LinearLayout
+        android:id="@+id/no1"
+        android:layout_width="fill_parent"
+        android:layout_height="44dp"
+        android:layout_marginBottom="5dp"
+        android:layout_marginLeft="37dp"
+        android:layout_marginRight="37dp"
+        android:background="@drawable/orange_round_corner"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:visibility="gone">
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/pinWrapper"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <EditText
+                android:id="@+id/pin_editText"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:background="@null"
+                android:clickable="false"
+                android:ems="10"
+                android:focusable="false"
+                android:focusableInTouchMode="false"
+                android:gravity="center"
+                android:hint="@string/pin"
+                android:imeOptions="actionNext"
+                android:inputType="numberPassword"
+                android:paddingBottom="8dp"
+                android:singleLine="true"
+                android:textColor="@android:color/white"
+                android:textColorHint="@android:color/white" />
+        </com.google.android.material.textfield.TextInputLayout>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/pinTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/itis_red"
+        android:layout_marginBottom="4dp"
+        android:textSize="20sp"
+        android:gravity="center" />
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_marginLeft="35dp"
+        android:layout_marginRight="35dp"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/pin_one_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="2dp"
+            android:layout_weight="1"
+            android:background="@drawable/gray_round_corner"
+            android:text="@string/no_1"
+            android:textColor="@android:color/white" />
+
+        <Button
+            android:id="@+id/pin_two_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="2dp"
+            android:layout_weight="1"
+            android:background="@drawable/gray_round_corner"
+            android:text="@string/no_2"
+            android:textColor="@android:color/white" />
+
+        <Button
+            android:id="@+id/pin_three_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="2dp"
+            android:layout_weight="1"
+            android:background="@drawable/gray_round_corner"
+            android:text="@string/no_3"
+            android:textColor="@android:color/white" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_marginLeft="35dp"
+        android:layout_marginRight="35dp"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/pin_four_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="2dp"
+            android:layout_weight="1"
+            android:background="@drawable/gray_round_corner"
+            android:text="@string/no_4"
+            android:textColor="@android:color/white" />
+
+        <Button
+            android:id="@+id/pin_five_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="2dp"
+            android:layout_weight="1"
+            android:background="@drawable/gray_round_corner"
+            android:text="@string/no_5"
+            android:textColor="@android:color/white" />
+
+        <Button
+            android:id="@+id/pin_six_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="2dp"
+            android:layout_weight="1"
+            android:background="@drawable/gray_round_corner"
+            android:text="@string/no_6"
+            android:textColor="@android:color/white" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_marginLeft="35dp"
+        android:layout_marginRight="35dp"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/pin_seven_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="2dp"
+            android:layout_weight="1"
+            android:background="@drawable/gray_round_corner"
+            android:text="@string/no_7"
+            android:textColor="@android:color/white" />
+
+        <Button
+            android:id="@+id/pin_eight_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="2dp"
+            android:layout_weight="1"
+            android:background="@drawable/gray_round_corner"
+            android:text="@string/no_8"
+            android:textColor="@android:color/white" />
+
+        <Button
+            android:id="@+id/pin_nine_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="2dp"
+            android:layout_weight="1"
+            android:background="@drawable/gray_round_corner"
+            android:text="@string/no_9"
+            android:textColor="@android:color/white" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_marginLeft="35dp"
+        android:layout_marginRight="35dp"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:src="@drawable/ic_round_arrow_back_white_24px"
+            android:id="@+id/pin_remove_button"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_margin="2dp"
+            android:layout_weight="1"
+            android:background="@drawable/gray_round_corner"
+            android:text="@string/b_uppercase"
+            android:textColor="@android:color/white" />
+
+        <Button
+            android:id="@+id/pin_zero_button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="2dp"
+            android:layout_weight="1"
+            android:background="@drawable/gray_round_corner"
+            android:text="@string/no_0"
+            android:textColor="@android:color/white" />
+
+        <Button
+            android:id="@+id/pin_clear_button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="2dp"
+            android:layout_weight="1"
+            android:background="@drawable/gray_round_corner"
+            android:text="@string/c_uppercase"
+            android:textColor="@android:color/white" />
+
+    </LinearLayout>
+</LinearLayout>

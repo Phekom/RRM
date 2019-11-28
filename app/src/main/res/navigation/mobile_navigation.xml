@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mobile_navigation"
+    app:startDestination="@+id/nav_home">
+
+    <fragment
+        android:id="@+id/nav_home"
+        android:name="za.co.xisystems.itis_rrm.ui.mainview.home.HomeFragment"
+        android:label="@string/menu_home"
+        tools:layout="@layout/fragment_home" />
+
+    <fragment
+        android:id="@+id/nav_create"
+        android:name="za.co.xisystems.itis_rrm.ui.mainview.create.CreateFragment"
+        android:label="@string/menu_create"
+        tools:layout="@layout/fragment_createjob" />
+
+    <fragment
+        android:id="@+id/nav_unSubmitted"
+        android:name="za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedFragment"
+        android:label="@string/menu_unSubmitted"
+        tools:layout="@layout/fragment_unsubmittedjobs" />
+
+    <fragment
+        android:id="@+id/nav_correction"
+        android:name="za.co.xisystems.itis_rrm.ui.mainview.corrections.CorrectionsFragment"
+        android:label="@string/menu_estCorrection"
+        tools:layout="@layout/fragment_correction" />
+
+    <fragment
+        android:id="@+id/nav_work"
+        android:name="za.co.xisystems.itis_rrm.ui.mainview.work.WorkFragment"
+        android:label="@string/menu_work"
+        tools:layout="@layout/fragment_work" />
+
+    <fragment
+        android:id="@+id/nav_estMeasure"
+        android:name="za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureFragment"
+        android:label="@string/menu_estMeasure"
+        tools:layout="@layout/fragment_estmeasure" />
+
+    <fragment
+        android:id="@+id/nav_approveJbs"
+        android:name="za.co.xisystems.itis_rrm.ui.mainview.approvejobs.ApproveJobsFragment"
+        android:label="@string/menu_approveJbs"
+        tools:layout="@layout/fragment_approvejob" />
+
+    <fragment
+        android:id="@+id/nav_approvMeasure"
+        android:name="za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureFragment"
+        android:label="@string/menu_approvMeasure"
+        tools:layout="@layout/fragment_approvemeasure" />
+</navigation>

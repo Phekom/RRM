@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/coordinator"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/bg_rrm_gray"
+        android:orientation="vertical"
+        android:paddingLeft="@dimen/medium"
+        android:paddingRight="@dimen/medium">
+
+        <!--<TextView-->
+            <!--android:id="@+id/project_item_step2_textView"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_gravity="left"-->
+            <!--android:layout_marginTop="@dimen/margin"-->
+            <!--android:layout_marginRight="@dimen/margin"-->
+            <!--android:layout_marginBottom="@dimen/margin"-->
+            <!--android:text="Work"-->
+            <!--android:textColor="@color/sanral_burnt_orange"-->
+            <!--android:textSize="25dp"-->
+            <!--android:textStyle="bold" />-->
+
+        <ExpandableListView
+            android:id="@+id/expandableListView"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:animateLayoutChanges="true"
+            tools:visibility="gone" />
+
+        <ImageView
+            android:id="@+id/noData"
+            android:layout_width="@dimen/image_size"
+            android:layout_height="@dimen/image_size"
+            android:layout_gravity="center"
+            android:layout_marginTop="@dimen/xxlarge"
+            android:src="@drawable/no_data"
+            android:visibility="gone"
+            tools:visibility="visible" />
+    </LinearLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

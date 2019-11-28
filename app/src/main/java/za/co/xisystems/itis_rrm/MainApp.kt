@@ -1,0 +1,50 @@
+package za.co.xisystems.itis_rrm
+
+import android.app.Application
+import org.kodein.di.Kodein
+import org.kodein.di.KodeinAware
+import org.kodein.di.android.x.androidXModule
+import org.kodein.di.generic.bind
+import org.kodein.di.generic.instance
+import org.kodein.di.generic.provider
+import org.kodein.di.generic.singleton
+import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
+import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
+import za.co.xisystems.itis_rrm.data.network.NetworkConnectionInterceptor
+import za.co.xisystems.itis_rrm.data.preferences.PreferenceProvider
+import za.co.xisystems.itis_rrm.data.repositories.*
+import za.co.xisystems.itis_rrm.ui.auth.AuthViewModelFactory
+import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModelFactory
+import za.co.xisystems.itis_rrm.ui.mainview.home.HomeViewModelFactory
+
+/**
+ * Created by Francis Mahlava on 2019/10/23.
+ */
+class MainApp : Application(), KodeinAware {
+
+    override val kodein = Kodein.lazy {
+
+        import(androidXModule(this@MainApp))
+
+        bind() from singleton { NetworkConnectionInterceptor(instance()) }
+        bind() from singleton { BaseConnectionApi(instance()) }
+
+        bind() from singleton { AppDatabase(instance()) }
+        bind() from singleton { PreferenceProvider(instance()) }
+
+        bind() from singleton { UserRepository(instance(), instance()) }
+        bind() from singleton { ContractsRepository() }
+        bind() from singleton { VoItemsRepository(instance(), instance(), instance()) }
+        bind() from singleton { HomeRepository(instance(), instance()) }
+        bind() from singleton { OfflineDataRepository(instance(), instance(), instance()) }
+
+        bind() from provider { AuthViewModelFactory(instance()) }
+        bind() from provider { HomeViewModelFactory(instance(),instance(),instance(),instance()) }
+        bind() from provider { CreateViewModelFactory(instance() ) }
+//        bind() from provider{ QuotesViewModelFactory(instance()) }
+
+
+
+    }
+
+}
