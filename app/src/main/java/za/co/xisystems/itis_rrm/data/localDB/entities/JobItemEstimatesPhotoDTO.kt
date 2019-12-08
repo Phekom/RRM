@@ -26,9 +26,17 @@ data class JobItemEstimatesPhotoDTO(
     @SerializedName("PhotoPath")
     val photoPath: String,
     @SerializedName("PrjJobItemEstimateDto")
-    val jobItemEstimate: List<JobItemEstimateDTO>,
+    val jobItemEstimate: ArrayList<JobItemEstimateDTO>,
     @SerializedName("RecordSynchStateId")
     val recordSynchStateId: Int,
     @SerializedName("RecordVersion")
     val recordVersion: Int
-)
+
+
+){
+
+    fun isPhotoStart(): Boolean {
+        return isPhotoStart()
+    }
+
+}

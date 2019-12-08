@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ItemSectionDTO
 
 /**
  * Created by Francis Mahlava on 2019/11/21.
@@ -16,10 +17,21 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTO
 interface ItemDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertEntities( intities : List<ItemDTO> )
+    suspend fun insertItems( item : ItemDTO)
 
     @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE itemId = :itemId")
     fun checkItemExistsItemId(itemId: String): LiveData<List<ItemDTO>>
+
+//    @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE itemId = :itemId")
+//    fun getItemForItemId(itemId: String): LiveData<ItemDTO>
+
+    @Query("SELECT sectionItemId FROM PROJECT_ITEM_TABLE WHERE itemId = :itemId")
+    fun getSectionItemId(itemId: String): String
+
+    @Query("INSERT INTO PROJECT_ITEM_TABLE (itemId ,itemCode,descr, itemSections, tenderRate, uom, workflowId,sectionItemId, quantity, estimateId, projectId) VALUES (:itemId, :itemCode,:descr, :itemSections, :tenderRate, :uom, :workflowId, :sectionItemId, :quantity, :estimateId, :projectId)")
+    fun insertItem(itemId :String, itemCode :String?, descr :String?, itemSections : ArrayList<ItemSectionDTO>, tenderRate :Double, uom :String?, workflowId :Int?, sectionItemId :String?, quantity :Double, estimateId :String?, projectId :String)
+
+
 
     @Query("SELECT * FROM PROJECT_ITEM_TABLE ")
     fun getAllItemsForAllProjects() : LiveData<List<ItemDTO>>

@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import za.co.xisystems.itis_rrm.data.localDB.entities.EntitiesDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ToDoListEntityDTO
 
 /**
  * Created by Francis Mahlava on 2019/11/21.
@@ -15,28 +16,28 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.EntitiesDTO
 interface EntitiesDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertEntities( intities : List<EntitiesDTO> )
+    suspend fun insertEntities( intities : ToDoListEntityDTO )
 
-    @Query("SELECT * FROM TABLE_ENTITY WHERE trackRouteId = :trackRouteId")
+    @Query("SELECT * FROM ToDo_ENTITY_TABLE WHERE trackRouteId = :trackRouteId")
     fun checkIfEntitiesExist(trackRouteId: String): LiveData<List<EntitiesDTO>>
 
-    @Query("SELECT * FROM TABLE_ENTITY ")
+    @Query("SELECT * FROM ToDo_ENTITY_TABLE ")
     fun getAllEntities() : LiveData<List<EntitiesDTO>>
 
 
-    @Query("SELECT * FROM TABLE_ENTITY WHERE trackRouteId = :trackRouteId")
+    @Query("SELECT * FROM ToDo_ENTITY_TABLE WHERE trackRouteId = :trackRouteId")
     fun getEntitiesForTrackRouteId(trackRouteId: String): LiveData<EntitiesDTO>
 
 
-    @Query("SELECT * FROM TABLE_ENTITY WHERE activityId = :actId")
+    @Query("SELECT * FROM ToDo_ENTITY_TABLE WHERE activityId = :actId")
     fun getEntitiesListForActivityId(actId: String): LiveData<List<EntitiesDTO>>
 
 
-    @Query("SELECT * FROM TABLE_ENTITY WHERE activityId = :actId AND jobId = :jobId")
+    @Query("SELECT * FROM ToDo_ENTITY_TABLE WHERE activityId = :actId AND jobId = :jobId")
     fun getEntitiesForJobId(jobId : String, actId : Int ): LiveData<List<EntitiesDTO>>
 
 
-    @Query("DELETE FROM TABLE_ENTITY")
+    @Query("DELETE FROM ToDo_ENTITY_TABLE")
     fun deleteAllEntities()
 
 }

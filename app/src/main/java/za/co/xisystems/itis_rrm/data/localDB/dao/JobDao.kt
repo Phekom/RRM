@@ -56,7 +56,7 @@ interface JobDao {
 
 
 //    @Query("SELECT * FROM JOB_TABLE WHERE sectionItemId = :sectionItem AND projectId = :projectId")
-//    fun getAllItemsForSectionItem(sectionItem : String, projectId : String ): LiveData<ArrayList<JobDTO>>
+//    fun getAllItemsForSectionItem(sectionItem : String, projectId : String ): LiveData<List<JobDTO>>
 
 
     @Query("DELETE FROM JOB_TABLE")

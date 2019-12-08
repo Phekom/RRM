@@ -8,5 +8,5 @@ data class VoItemsResponse(
     @SerializedName("ErrorMessage")
     val errorMessage: String,
     @SerializedName("VoItems")
-    val voItems: List<VoItemDTO>
+    val voItems: ArrayList<VoItemDTO>
 )

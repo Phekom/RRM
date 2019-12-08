@@ -15,7 +15,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.PrimaryKeyValueDTO
 interface PrimaryKeyValueDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertPrimaryKeyValue( primaryKeyValue : List<PrimaryKeyValueDTO> )
+    suspend fun insertPrimaryKeyValue( primaryKeyValue : PrimaryKeyValueDTO )
 
     @Query("SELECT * FROM PRIMARY_KEY_VALUE_TABLE ")
     fun getAllPrimaryKeyValue() : LiveData<List<PrimaryKeyValueDTO>>

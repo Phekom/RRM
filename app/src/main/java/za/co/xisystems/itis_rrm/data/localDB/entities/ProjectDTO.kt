@@ -1,6 +1,8 @@
 package za.co.xisystems.itis_rrm.data.localDB.entities
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 
@@ -10,7 +12,18 @@ import com.google.gson.annotations.SerializedName
 
 const val PROJECT_TABLE = "PROJECT_TABLE"
 
-@Entity(tableName = PROJECT_TABLE)
+@Entity(
+    tableName = PROJECT_TABLE
+    , foreignKeys = arrayOf(
+        ForeignKey(
+            entity = ContractDTO::class,
+            parentColumns = arrayOf("contractId"),
+            childColumns = arrayOf("contractId"),
+            onDelete = ForeignKey.NO_ACTION
+        )
+    )
+//    ,indices = arrayOf(Index(value = ["projectId"],unique = true))
+)
 data class ProjectDTO(
 
     @SerializedName("ProjectId")
@@ -24,7 +37,7 @@ data class ProjectDTO(
     val endDate: String?,
 
     @SerializedName("Items")
-    val items: List<ItemDTO>?,
+    val items: ArrayList<ItemDTO>?,
 
     @SerializedName("ProjectCode")
     val projectCode: String?,
@@ -36,12 +49,15 @@ data class ProjectDTO(
     val projectPlus: String?,
 
     @SerializedName("Sections")
-    val sections: List<SectionDTO>?,
+    val projectSections: ArrayList<ProjectSectionDTO>?,
 
     @SerializedName("VoItems")
-    val voItems: List<VoItemDTO>?,
+    val voItems: ArrayList<VoItemDTO>?,
 
-    var contractId: String?
+    @SerializedName("ContractId")
+    @ColumnInfo(name = "contractId", index = true)
+    val contractId: String?
+
 
 )
 

@@ -25,7 +25,7 @@ data class JobItemMeasurePhotoDTO(
     @SerializedName("PhotoPath")
     val photoPath: String,
     @SerializedName("PrjJobItemMeasureDto")
-    val jobItemMeasureDto: List<JobItemMeasureDTO>,
+    val jobItemMeasureDto: ArrayList<JobItemMeasureDTO>,
     @SerializedName("RecordSynchStateId")
     val recordSynchStateId: Int,
     @SerializedName("RecordVersion")

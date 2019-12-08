@@ -11,16 +11,20 @@ import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.RoleResponseListener
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
 import za.co.xisystems.itis_rrm.data.network.responses.AuthResponse
+import za.co.xisystems.itis_rrm.data.preferences.PreferenceProvider
 import za.co.xisystems.itis_rrm.utils.ApiException
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.NoInternetException
+import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
 
 /**
  * Created by Francis Mahlava on 2019/10/23.
  */
 class UserRepository(
     private val api : BaseConnectionApi,
-    private val Db : AppDatabase
+    private val Db : AppDatabase,
+    private val prefs: PreferenceProvider
 ) : SafeApiRequest(){
 
     private val userRoles = MutableLiveData<List<UserRoleDTO>>()
@@ -29,21 +33,15 @@ class UserRepository(
         userRoles.observeForever {
             roleResponseListener?.onRoleSuccess(it)
             saveRoles(it)
-//            saveCont(it)
-
         }
     }
 
     private fun saveRoles(userRoles: List<UserRoleDTO>) {
         Coroutines.io {
-//            if (userRoles != null) {
-//                for (role in userRoles) {
-//
-//                    Db.getUserRoleDao().saveRole(role)
-//                }
-//            }
-            Db.getUserRoleDao().saveAllRoles(userRoles)
-
+                for (role in userRoles) {
+                    Db.getUserRoleDao().saveRole(role)
+                }
+//            Db.getUserRoleDao().saveAllRoles(userRoles)
         }
     }
 
@@ -66,28 +64,45 @@ class UserRepository(
     }
 
     private suspend fun fetchUserRoles(userId : String){
-//            val myResponse = apiRequest { api.userRoles(userId) }
-//        userRoles.postValue(myResponse.userRoles)
-
-
-        try {
-            val userRoleResponse = apiRequest { api.userRoles(userId) }
-           userRoleResponse.userRoles.let {
-                roleResponseListener?.onRoleSuccess(it)
-                saveRoles(it)
+        val lastSavedAt = prefs.getLastSavedAt()
+        if (lastSavedAt == null || isFetchNeeded(LocalDateTime.parse(lastSavedAt))) {
+            try {
+                val userRoleResponse = apiRequest { api.userRoles(userId) }
+                userRoleResponse.userRoles.let {
+                    roleResponseListener?.onRoleSuccess(it)
+                    saveRoles(it)
+                }
+                roleResponseListener?.onFailure(userRoleResponse.errorMessage)
+            } catch (e: ApiException) {
+                roleResponseListener?.onFailure(e.message!!)
+            } catch (e: NoInternetException) {
+                roleResponseListener?.onFailure(e.message!!)
             }
-
-
-           roleResponseListener?.onFailure(userRoleResponse.errorMessage)
-        }catch(e: ApiException){
-            roleResponseListener?.onFailure(e.message!!)
-        }catch (e: NoInternetException){
-            roleResponseListener?.onFailure(e.message!!)
         }
-
-
     }
 
+//    fun updateRegistrationInfo(
+//        webServiceUri: String?,
+//        userId: String?,
+//        registrationId: String?,
+//        pin: String?
+//    ) {
+//        if (webServiceUri != null)
+//            registrationInfoDataSource.updateWebServiceUri(webServiceUri)
+//
+//        if (registrationId != null)
+//            registrationInfoDataSource.updateRegistrationId(registrationId)
+//
+//        if (userId != null)
+//            registrationInfoDataSource.updateUserId(userId)
+//
+//        if (pin != null)
+//            registrationInfoDataSource.updatePin(pin)
+//    }
+
+    private fun isFetchNeeded(savedAt: LocalDateTime): Boolean {
+        return ChronoUnit.MINUTES.between(savedAt, LocalDateTime.now()) > MINIMUM_INTERVAL
+    }
 
 
 

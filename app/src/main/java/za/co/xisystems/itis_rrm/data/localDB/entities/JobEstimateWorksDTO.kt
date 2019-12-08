@@ -3,6 +3,7 @@ package za.co.xisystems.itis_rrm.data.localDB.entities
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
+import java.util.*
 
 /**
  * Created by Francis Mahlava on 2019/11/26.
@@ -16,9 +17,9 @@ class JobEstimateWorksDTO(
     @SerializedName("EstimateId")
     val estimateId: String,
     @SerializedName("PrjEstWorksPhotoDtos")
-    val estWorksPhotos: List<JobEstimateWorksPhotoDTO>?,
+    val estWorksPhotos: ArrayList<JobEstimateWorksPhotoDTO>?,
     @SerializedName("PrjJobItemEstimateDto")
-    val jobItemEstimate: List<JobEstimateWorksDTO>,
+    val jobItemEstimate: ArrayList<JobEstimateWorksDTO>,
     @SerializedName("RecordSynchStateId")
     val recordSynchStateId: Int,
     @SerializedName("RecordVersion")

@@ -23,7 +23,7 @@ data class JobEstimateWorksPhotoDTO(
     @SerializedName("PhotoPath")
     val photoPath: String,
     @SerializedName("PrjEstimateWorksDto")
-    val estimateWorks: List<JobEstimateWorksDTO>,
+    val estimateWorks: ArrayList<JobEstimateWorksDTO>,
     @SerializedName("RecordSynchStateId")
     val recordSynchStateId: Int,
     @SerializedName("RecordVersion")

@@ -15,6 +15,7 @@ data class SectionItemDTO (
 //    @SerializedName("SectionId")
 //    @PrimaryKey
 //    val sectionId: String,
+//    @ColumnInfo(name = "workflowId", index = true)
     @PrimaryKey
     var sectionItemId: String,
     var itemCode: String?,

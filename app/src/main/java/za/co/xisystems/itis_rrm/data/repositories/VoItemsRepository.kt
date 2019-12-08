@@ -9,7 +9,6 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.VoItemDTO
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
 import za.co.xisystems.itis_rrm.data.preferences.PreferenceProvider
-import za.co.xisystems.itis_rrm.utils.Coroutines
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 
@@ -30,15 +29,15 @@ class VoItemsRepository(
 
     init {
         voItems.observeForever {
-            saveVoItems(it)
+//            saveVoItems(it)
         }
     }
 
     private fun saveVoItems(voItems: List<VoItemDTO>) {
-         Coroutines.io {
-             prefs.savelastSavedAt(LocalDateTime.now().toString())
-             Db.getVoItemDao().insertVoItem(voItems)
-         }
+//         Coroutines.io {
+//             prefs.savelastSavedAt(LocalDateTime.now().toString())
+//             Db.getVoItemDao().insertVoItems(voItems)
+//         }
     }
 
     suspend fun getVoItems() : LiveData<List<VoItemDTO>>{

@@ -14,45 +14,56 @@ import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.network.responses.HealthCheckResponse
+import za.co.xisystems.itis_rrm.ui.auth.AuthViewModel
+import za.co.xisystems.itis_rrm.ui.auth.AuthViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
 import za.co.xisystems.itis_rrm.utils.Coroutines
 
 class HomeFragment : BaseFragment(), KodeinAware {
     override val kodein by kodein()
     private lateinit var homeViewModel: HomeViewModel
+    private lateinit var authViewModel: AuthViewModel
     private val factory: HomeViewModelFactory by instance()
+    private val factoryAuth: AuthViewModelFactory by instance()
+
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
-        homeViewModel = ViewModelProviders.of(this, factory).get(HomeViewModel::class.java)
         return inflater.inflate(R.layout.fragment_home, container, false)
-
-
-
-
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-
+        homeViewModel = ViewModelProviders.of(this, factory).get(HomeViewModel::class.java)
+        authViewModel = ViewModelProviders.of(this, factoryAuth).get(AuthViewModel::class.java)
 //        homeViewModel.rListener
         Coroutines.main {
-            val user = homeViewModel.user.await()
+            val user = authViewModel.user.await()
             user.observe(viewLifecycleOwner, Observer {
                 username?.setText(it.userName)
-//                ping()
             })
+
+            val contracts = authViewModel.offlinedata.await()
+            contracts.observe(viewLifecycleOwner, Observer {
+                val contract = arrayOfNulls<String>(it.size)
+                for (i in 0 until it.size) {
+                    contract[i] = it.get(i).contractNo
+
+                }
+            })
+
             val user_roles = homeViewModel.user_roles.await()
             user_roles.observe(viewLifecycleOwner, Observer {
 //                username?.setText(it.userName)
 //                ping()
             })
-            val offlineData = homeViewModel.offlinedata.await()
-            offlineData.observe(viewLifecycleOwner, Observer {
-                //                context?.toast(it.size.toString())
-            })
+//            val offlineData = homeViewModel.offlinedata.await()
+//            offlineData.observe(viewLifecycleOwner, Observer {
+//                //                context?.toast(it.size.toString())
+//            })
 
         }
 

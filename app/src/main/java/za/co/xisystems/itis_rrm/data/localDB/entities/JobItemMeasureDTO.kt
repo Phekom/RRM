@@ -36,11 +36,11 @@ data class JobItemMeasureDTO(
     @SerializedName("MeasureGroupId")
     val measureGroupId: String,
     @SerializedName("PrjItemMeasurePhotoDtos")
-    val prjItemMeasurePhotoDtos: List<JobItemMeasurePhotoDTO>,
+    val prjItemMeasurePhotoDtos: ArrayList<JobItemMeasurePhotoDTO>,
     @SerializedName("PrjJobDto")
-    val prjJobDto: List<JobDTO>,
+    val prjJobDto: ArrayList<JobDTO>,
     @SerializedName("PrjJobItemEstimateDto")
-    val prjJobItemEstimateDto: List<JobItemEstimateDTO>,
+    val prjJobItemEstimateDto: ArrayList<JobItemEstimateDTO>,
     @SerializedName("ProjectItemId")
     val projectItemId: String,
     @SerializedName("ProjectVoId")

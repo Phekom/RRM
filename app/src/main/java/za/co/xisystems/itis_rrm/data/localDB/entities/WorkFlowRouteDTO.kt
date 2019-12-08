@@ -1,6 +1,8 @@
 package za.co.xisystems.itis_rrm.data.localDB.entities
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 
@@ -9,22 +11,40 @@ import com.google.gson.annotations.SerializedName
  */
 
 const val WORKFLOW_ROUTE_TABLE = "WORKFLOW_ROUTE_TABLE"
-
-@Entity(tableName = WORKFLOW_ROUTE_TABLE)
+@Entity(
+    tableName = WORKFLOW_ROUTE_TABLE
+    , foreignKeys = arrayOf(
+        ForeignKey(
+            entity = WorkFlowDTO::class,
+            parentColumns = arrayOf("workflowId"),
+            childColumns = arrayOf("workflowId"),
+            onDelete = ForeignKey.NO_ACTION
+        )
+    )
+)
 data class WorkFlowRouteDTO(
-    @SerializedName("ActId")
+
+    @SerializedName("RouteId")
     @PrimaryKey
+    val routeId: Long,
+
+    @SerializedName("ActId")
     val actId: Long,
-    @SerializedName("CanStart")
-    val canStart: Long,
-    @SerializedName("ErrorRouteId")
-    val errorRouteId: Long,
-    @SerializedName("FailRouteId")
-    val failRouteId: Long,
+
     @SerializedName("NextRouteId")
     val nextRouteId: Long,
-    @SerializedName("RouteId")
-    val routeId: Long,
+
+    @SerializedName("FailRouteId")
+    val failRouteId: Long,
+
+    @SerializedName("ErrorRouteId")
+    val errorRouteId: Long,
+
+    @SerializedName("CanStart")
+    val canStart: Long,
+
+    @SerializedName("WorkflowId")
+    @ColumnInfo(name = "workflowId", index = true)
     var workflowId: Long
 )
 

@@ -17,23 +17,12 @@ class HomeViewModel(
 
     var rListener: ResponseListener? = null
 
-    val user by lazyDeferred {
-        repository.getUser()
-
-    }
-
-    val offlinedata by lazyDeferred {
-
-        offlineDataRepository.getSectionItems()
-        offlineDataRepository.getContracts()
-    }
-
-
     val user_roles by lazyDeferred {
         repository.getUserRoles()
     }
-    val user_n by lazyDeferred {
-//        homeRepository.getHealth()
+    val projectsItems by lazyDeferred {
+//        offlineDataRepository.getProjects()
+        offlineDataRepository.getProjectItems()
     }
 
 //    var mText : MutableLiveData<String>

@@ -257,8 +257,8 @@ public class SettingsActivity extends AppCompatActivity {
 //        workflowsRefreshViewModel.refreshWorkflows(id, new BaseCallBackView<WorkflowsRefreshResponse>(this, messages) {
 //            @Override
 //            public void processData(WorkflowsRefreshResponse response) {
-//                MobileWorkFlows workflows = response.getWorkflows();
-//                registerDataController.insertWorkFlows(workflows);
+//                MobileWorkFlows workFlows = response.getWorkFlows();
+//                registerDataController.insertWorkFlows(workFlows);
 //                // refresh all the lookups
 //                refreshLookups();
 //            }
@@ -477,8 +477,8 @@ public class SettingsActivity extends AppCompatActivity {
 //    }
 //
 //    @Override
-//    public void onInsertWorkFlows(MobileWorkFlows workflows) {
-//        registerDataController.insertWorkFlows(workflows);
+//    public void onInsertWorkFlows(MobileWorkFlows workFlows) {
+//        registerDataController.insertWorkFlows(workFlows);
 //    }
 //
 //    @Override
@@ -492,8 +492,8 @@ public class SettingsActivity extends AppCompatActivity {
 //    }
 //
 //    @Override
-//    public void onInsertProjectSections(ArrayList<Section> sections) {
-//        registerDataController.insertProjectSections(sections);
+//    public void onInsertProjectSections(ArrayList<Section> projectSections) {
+//        registerDataController.insertProjectSections(projectSections);
 //    }
 //
 //    @Override

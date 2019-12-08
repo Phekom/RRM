@@ -1,6 +1,8 @@
 package za.co.xisystems.itis_rrm.data.localDB.entities
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 
@@ -10,19 +12,32 @@ import com.google.gson.annotations.SerializedName
 
 
 const val LOOKUP_OPTION_TABLE = "LOOKUP_OPTION_TABLE"
+@Entity(
+    tableName = LOOKUP_OPTION_TABLE, foreignKeys = arrayOf(
+        ForeignKey(
+            entity = LookupDTO::class,
+            parentColumns = arrayOf("lookupName"),
+            childColumns = arrayOf("lookupName"),
+            onDelete = ForeignKey.NO_ACTION
+        )
+    )
+)
+class LookupOptionDTO(
 
-@Entity(tableName = LOOKUP_OPTION_TABLE)
-class LookupOptionDTO (
     @PrimaryKey
-    val id : Int,
+    val id: Int = 0,
+
+    @SerializedName("ValueMember")
+    val valueMember: String?, // 3920
+
+    @SerializedName("DisplayMember")
+    val displayMember: String?, // Kallie Niebuhr
+
     @SerializedName("ContextMember")
     val contextMember: String?,
-    @SerializedName("DisplayMember")
-    val displayMember: String?,
-    @SerializedName("ValueMember")
-    val valueMember: String?,
-//    val lookupOptions: List<LookupOptionDTO>,
-//    @Ignore
-    var LookupName: String?
+
+    @SerializedName("LookupName")
+    @ColumnInfo(name = "lookupName", index = true)
+    var lookupName: String
 
 )

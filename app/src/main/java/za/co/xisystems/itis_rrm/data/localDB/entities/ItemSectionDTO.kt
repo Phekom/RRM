@@ -10,8 +10,9 @@ import com.google.gson.annotations.SerializedName
 
 @Entity
 data class ItemSectionDTO(
-    @PrimaryKey
+
     @SerializedName("SectionId")
+    @PrimaryKey
     val sectionId: String,
     @SerializedName("Direction")
     val direction: String,

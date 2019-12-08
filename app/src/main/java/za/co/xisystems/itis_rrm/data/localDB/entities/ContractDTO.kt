@@ -8,7 +8,7 @@ import com.google.gson.annotations.SerializedName
  * Created by Francis Mahlava on 2019/11/19.
  */
 
-const val CONTRACT_ID = 0
+
 const val CONTRACTS_TABLE = "CONTRACTS_TABLE"
 @Entity(tableName = CONTRACTS_TABLE)
 
@@ -17,17 +17,17 @@ data class ContractDTO(
     @PrimaryKey
     val contractId: String,
 
-    @SerializedName("ContractNo")
-    val contractNo: String,
-
     @SerializedName("Descr")
-    val descr: String,
-
-    @SerializedName("Projects")
-    val projects: List<ProjectDTO>,
+    val descr: String?,
 
     @SerializedName("ShortDescr")
-    val shortDescr: String
+    val shortDescr: String?,
+
+    @SerializedName("ContractNo")
+    val contractNo: String?,
+
+    @SerializedName("Projects")
+    val projects: ArrayList<ProjectDTO>?
 
 
 )

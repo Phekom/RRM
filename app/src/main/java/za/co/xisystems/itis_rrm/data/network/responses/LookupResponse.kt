@@ -8,5 +8,5 @@ data class LookupResponse(
     @SerializedName("ErrorMessage")
     val errorMessage: String,
     @SerializedName("MobileLookups")
-    val mobileLookups: List<LookupDTO>
+    val mobileLookups: ArrayList<LookupDTO>
 )

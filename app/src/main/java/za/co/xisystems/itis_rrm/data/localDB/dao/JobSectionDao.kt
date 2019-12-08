@@ -32,7 +32,7 @@ interface JobSectionDao {
 //
 //
 //    @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE sectionItemId = :sectionItem AND projectId = :projectId")
-//    fun getAllItemsForSectionItem(sectionItem : String, projectId : String ): LiveData<ArrayList<ItemDTO>>
+//    fun getAllItemsForSectionItem(sectionItem : String, projectId : String ): LiveData<List<ItemDTO>>
 //
 //
 //    @Query("DELETE FROM PROJECT_ITEM_TABLE")

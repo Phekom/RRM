@@ -9,6 +9,7 @@ import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.POST
 import za.co.xisystems.itis_rrm.data.network.responses.*
+import java.util.concurrent.TimeUnit
 
 /**
  * Created by Francis Mahlava on 2019/10/23.
@@ -48,6 +49,39 @@ interface BaseConnectionApi {
 
 
     @FormUrlEncoded
+    @POST("WorkflowsRefresh")
+    suspend fun workflowsRefresh(
+        @Field("UserId") UserId : String
+    ) : Response<WorkflowResponse>
+
+
+    @FormUrlEncoded
+    @POST("MobileLookupsRefresh")
+    suspend fun lookupsRefresh(
+        @Field("UserId") UserId : String
+    ) : Response<LookupResponse>
+
+    @FormUrlEncoded
+    @POST("GetUserTaskList")
+    suspend fun getUserTaskList(
+        @Field("UserId") UserId : String
+    ) : Response<ToDoListGroupsResponse>
+
+
+    @FormUrlEncoded
+    @POST("GetProjectItems")
+    suspend fun getProjectItems(
+        @Field("ProjectId") ProjectId : String
+    ) : Response<ItemsResponse>
+
+
+    @FormUrlEncoded
+    @POST("ProjectItemsRefresh")
+    suspend fun projectItemsRefresh(
+        @Field("ProjectId") ProjectId : String
+    ) : Response<ItemsResponse>
+
+    @FormUrlEncoded
     @POST("ProjectVosRefresh")
     suspend fun projectVosRefresh(
         @Field("ProjectId") ProjectId : String
@@ -77,6 +111,9 @@ interface BaseConnectionApi {
         ) : BaseConnectionApi{
 
             val okkHttpclient = OkHttpClient.Builder()
+                .connectTimeout(2, TimeUnit.MINUTES)
+                .writeTimeout(2, TimeUnit.MINUTES) // write timeout
+                .readTimeout(2, TimeUnit.MINUTES) // read timeout
                 .addInterceptor(networkConnectionInterceptor)
                 .build()
 

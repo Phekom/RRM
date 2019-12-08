@@ -18,32 +18,32 @@ import java.util.*
 class Converters {
 
     @TypeConverter
-    fun restoreList(listOfString: String): List<String> {
-        return Gson().fromJson(listOfString, object : TypeToken<List<String>>() {
+    fun restoreList(listOfString: String):ArrayList<String> {
+        return Gson().fromJson(listOfString, object : TypeToken<ArrayList<String>>() {
 
         }.type)
     }
 
     @TypeConverter
-    fun saveList(listOfString: List<String>): String {
+    fun saveList(listOfString :  ArrayList<String>): String {
         return Gson().toJson(listOfString)
     }
 
 
     @TypeConverter
-    fun storedStringToUserRoleDTO(data: String?): List<UserRoleDTO> {
+    fun storedStringToUserRoleDTO(data: String?) : ArrayList<UserRoleDTO> {
         val gson = Gson()
         if (data == null) {
-            return Collections.emptyList()
+            return Collections.EMPTY_LIST as ArrayList<UserRoleDTO>
         }
-        val listType = object : TypeToken<List<UserRoleDTO>>() {
+        val listType = object :TypeToken<ArrayList<UserRoleDTO>>() {
 
         }.getType()
-        return gson.fromJson<List<UserRoleDTO>>(data, listType)
+        return gson.fromJson<ArrayList<UserRoleDTO>>(data, listType)
     }
 
     @TypeConverter
-    fun UserRoleDTOToStoredString(myObjects: List<UserRoleDTO>): String {
+    fun UserRoleDTOToStoredString(myObjects: ArrayList<UserRoleDTO>): String {
         val gson = Gson()
         return gson.toJson(myObjects)
     }
@@ -52,19 +52,19 @@ class Converters {
 
 
     @TypeConverter
-    fun storedStringToProjectDTO(data: String?): List<ProjectDTO> {
+    fun storedStringToProjectDTO(data: String?): ArrayList<ProjectDTO> {
         val gson = Gson()
         if (data == null) {
-            return Collections.emptyList()
+            return Collections.EMPTY_LIST as ArrayList<ProjectDTO>
         }
-        val listType = object : TypeToken<List<ProjectDTO>>() {
+        val listType = object : TypeToken<ArrayList<ProjectDTO>>() {
 
         }.getType()
-        return gson.fromJson<List<ProjectDTO>>(data, listType)
+        return gson.fromJson<ArrayList<ProjectDTO>>(data, listType)
     }
 
     @TypeConverter
-    fun ProjectDTOToStoredString(myObjects: List<ProjectDTO>): String {
+    fun ProjectDTOToStoredString(myObjects: ArrayList<ProjectDTO>): String {
         val gson = Gson()
         return gson.toJson(myObjects)
     }
@@ -72,60 +72,19 @@ class Converters {
 
     //======================================================================================
     @TypeConverter
-    fun storedStringToWorkFlowRouteDTO(data: String?): List<WorkFlowRouteDTO> {
+    fun storedStringToWorkFlowRouteDTO(data: String?): ArrayList<WorkFlowRouteDTO> {
         val gson = Gson()
         if (data == null) {
-            return Collections.emptyList()
+            return Collections.EMPTY_LIST as ArrayList<WorkFlowRouteDTO>
         }
-        val listType = object : TypeToken<List<WorkFlowRouteDTO>>() {
+        val listType = object :TypeToken<ArrayList<WorkFlowRouteDTO>>() {
 
         }.getType()
-        return gson.fromJson<List<WorkFlowRouteDTO>>(data, listType)
+        return gson.fromJson<ArrayList<WorkFlowRouteDTO>>(data, listType)
     }
 
     @TypeConverter
-    fun WorkFlowRouteDTOToStoredString(myObjects: List<WorkFlowRouteDTO>): String {
-        val gson = Gson()
-        return gson.toJson(myObjects)
-    }
-
-
-
-    //======================================================================================
-    @TypeConverter
-    fun storedStringToJobSectionDTO(data: String?): List<JobSectionDTO> {
-        val gson = Gson()
-        if (data == null) {
-            return Collections.emptyList()
-        }
-        val listType = object : TypeToken<List<JobSectionDTO>>() {
-
-        }.getType()
-        return gson.fromJson<List<JobSectionDTO>>(data, listType)
-    }
-
-    @TypeConverter
-    fun JobSectionDTOToStoredString(myObjects: List<JobSectionDTO>): String {
-        val gson = Gson()
-        return gson.toJson(myObjects)
-    }
-
-
-    //======================================================================================
-    @TypeConverter
-    fun storedStringToEntityDTO(data: String?): List<EntitiesDTO> {
-        val gson = Gson()
-        if (data == null) {
-            return Collections.emptyList()
-        }
-        val listType = object : TypeToken<List<EntitiesDTO>>() {
-
-        }.getType()
-        return gson.fromJson<List<EntitiesDTO>>(data, listType)
-    }
-
-    @TypeConverter
-    fun EntityDTOToStoredString(myObjects: List<EntitiesDTO>): String {
+    fun WorkFlowRouteDTOToStoredString(myObjects: ArrayList<WorkFlowRouteDTO>): String {
         val gson = Gson()
         return gson.toJson(myObjects)
     }
@@ -134,19 +93,19 @@ class Converters {
 
     //======================================================================================
     @TypeConverter
-    fun storedStringToItemSectionDTO(data: String?): List<ItemSectionDTO> {
+    fun storedStringToJobSectionDTO(data: String?):ArrayList<JobSectionDTO> {
         val gson = Gson()
         if (data == null) {
-            return Collections.emptyList()
+            return Collections.EMPTY_LIST as ArrayList<JobSectionDTO>
         }
-        val listType = object : TypeToken<List<ItemSectionDTO>>() {
+        val listType = object :TypeToken<ArrayList<JobSectionDTO>>() {
 
         }.getType()
-        return gson.fromJson<List<ItemSectionDTO>>(data, listType)
+        return gson.fromJson<ArrayList<JobSectionDTO>>(data, listType)
     }
 
     @TypeConverter
-    fun ItemSectionDTOToStoredString(myObjects: List<ItemSectionDTO>): String {
+    fun JobSectionDTOToStoredString(myObjects:ArrayList<JobSectionDTO>): String {
         val gson = Gson()
         return gson.toJson(myObjects)
     }
@@ -154,19 +113,19 @@ class Converters {
 
     //======================================================================================
     @TypeConverter
-    fun storedStringToJobItemEstimateDTO(data: String?): List<JobItemEstimateDTO> {
+    fun storedStringToEntityDTO(data: String?):ArrayList<EntitiesDTO> {
         val gson = Gson()
         if (data == null) {
-            return Collections.emptyList()
+            return Collections.EMPTY_LIST as ArrayList<EntitiesDTO>
         }
-        val listType = object : TypeToken<List<JobItemEstimateDTO>>() {
+        val listType = object :TypeToken<ArrayList<EntitiesDTO>>() {
 
         }.getType()
-        return gson.fromJson<List<JobItemEstimateDTO>>(data, listType)
+        return gson.fromJson<ArrayList<EntitiesDTO>>(data, listType)
     }
 
     @TypeConverter
-    fun JobItemEstimateDTOToStoredString(myObjects: List<JobItemEstimateDTO>): String {
+    fun EntityDTOToStoredString(myObjects:ArrayList<EntitiesDTO>): String {
         val gson = Gson()
         return gson.toJson(myObjects)
     }
@@ -175,19 +134,60 @@ class Converters {
 
     //======================================================================================
     @TypeConverter
-    fun storedStringToJobItemMeasureDTO(data: String?): List<JobItemMeasureDTO> {
+    fun storedStringToItemSectionDTO(data: String?):ArrayList<ItemSectionDTO> {
         val gson = Gson()
         if (data == null) {
-            return Collections.emptyList()
+            return Collections.EMPTY_LIST as ArrayList<ItemSectionDTO>
         }
-        val listType = object : TypeToken<List<JobItemMeasureDTO>>() {
+        val listType = object :TypeToken<ArrayList<ItemSectionDTO>>() {
 
         }.getType()
-        return gson.fromJson<List<JobItemMeasureDTO>>(data, listType)
+        return gson.fromJson<ArrayList<ItemSectionDTO>>(data, listType)
     }
 
     @TypeConverter
-    fun JobItemMeasureDTOToStoredString(myObjects: List<JobItemMeasureDTO>): String {
+    fun ItemSectionDTOToStoredString(myObjects:ArrayList<ItemSectionDTO>): String {
+        val gson = Gson()
+        return gson.toJson(myObjects)
+    }
+
+
+    //======================================================================================
+    @TypeConverter
+    fun storedStringToJobItemEstimateDTO(data: String?):ArrayList<JobItemEstimateDTO> {
+        val gson = Gson()
+        if (data == null) {
+            return Collections.EMPTY_LIST as ArrayList<JobItemEstimateDTO>
+        }
+        val listType = object :TypeToken<ArrayList<JobItemEstimateDTO>>() {
+
+        }.getType()
+        return gson.fromJson<ArrayList<JobItemEstimateDTO>>(data, listType)
+    }
+
+    @TypeConverter
+    fun JobItemEstimateDTOToStoredString(myObjects:ArrayList<JobItemEstimateDTO>): String {
+        val gson = Gson()
+        return gson.toJson(myObjects)
+    }
+
+
+
+    //======================================================================================
+    @TypeConverter
+    fun storedStringToJobItemMeasureDTO(data: String?):ArrayList<JobItemMeasureDTO> {
+        val gson = Gson()
+        if (data == null) {
+            return Collections.EMPTY_LIST as ArrayList<JobItemMeasureDTO>
+        }
+        val listType = object :TypeToken<ArrayList<JobItemMeasureDTO>>() {
+
+        }.getType()
+        return gson.fromJson<ArrayList<JobItemMeasureDTO>>(data, listType)
+    }
+
+    @TypeConverter
+    fun JobItemMeasureDTOToStoredString(myObjects:ArrayList<JobItemMeasureDTO>): String {
         val gson = Gson()
         return gson.toJson(myObjects)
     }
@@ -198,19 +198,19 @@ class Converters {
 
 
     @TypeConverter
-    fun storedStringToToDoListEntityDTO(data: String?): List<ToDoListEntityDTO> {
+    fun storedStringToToDoListEntityDTO(data: String?):ArrayList<ToDoListEntityDTO> {
         val gson = Gson()
         if (data == null) {
-            return Collections.emptyList()
+            return Collections.EMPTY_LIST as ArrayList<ToDoListEntityDTO>
         }
-        val listType = object : TypeToken<List<ToDoListEntityDTO>>() {
+        val listType = object :TypeToken<ArrayList<ToDoListEntityDTO>>() {
 
         }.getType()
-        return gson.fromJson<List<ToDoListEntityDTO>>(data, listType)
+        return gson.fromJson<ArrayList<ToDoListEntityDTO>>(data, listType)
     }
 
     @TypeConverter
-    fun ToDoListEntityDTOToStoredString(myObjects: List<ToDoListEntityDTO>): String {
+    fun ToDoListEntityDTOToStoredString(myObjects:ArrayList<ToDoListEntityDTO>): String {
         val gson = Gson()
         return gson.toJson(myObjects)
     }
@@ -222,19 +222,19 @@ class Converters {
 
 
     @TypeConverter
-    fun storedStringToItemDTO(data: String?): List<ItemDTO> {
+    fun storedStringToItemDTO(data: String?):ArrayList<ItemDTO> {
         val gson = Gson()
         if (data == null) {
-            return Collections.emptyList()
+            return Collections.EMPTY_LIST as ArrayList<ItemDTO>
         }
-        val listType = object : TypeToken<List<ItemDTO>>() {
+        val listType = object :TypeToken<ArrayList<ItemDTO>>() {
 
         }.getType()
-        return gson.fromJson<List<ItemDTO>>(data, listType)
+        return gson.fromJson<ArrayList<ItemDTO>>(data, listType)
     }
 
     @TypeConverter
-    fun ItemDTOToStoredString(myObjects: List<ItemDTO>): String {
+    fun ItemDTOToStoredString(myObjects:ArrayList<ItemDTO>): String {
         val gson = Gson()
         return gson.toJson(myObjects)
     }
@@ -246,19 +246,19 @@ class Converters {
 
 
     @TypeConverter
-    fun storedStringToSectionDTO(data: String?): List<SectionDTO> {
+    fun storedStringToSectionDTO(data: String?):ArrayList<ProjectSectionDTO> {
         val gson = Gson()
         if (data == null) {
-            return Collections.emptyList()
+            return Collections.EMPTY_LIST as ArrayList<ProjectSectionDTO>
         }
-        val listType = object : TypeToken<List<SectionDTO>>() {
+        val listType = object :TypeToken<ArrayList<ProjectSectionDTO>>() {
 
         }.getType()
-        return gson.fromJson<List<SectionDTO>>(data, listType)
+        return gson.fromJson<ArrayList<ProjectSectionDTO>>(data, listType)
     }
 
     @TypeConverter
-    fun SectionDTOToStoredString(myObjects: List<SectionDTO>): String {
+    fun SectionDTOToStoredString(myObjects:ArrayList<ProjectSectionDTO>): String {
         val gson = Gson()
         return gson.toJson(myObjects)
     }
@@ -267,19 +267,19 @@ class Converters {
 
 
     @TypeConverter
-    fun storedStringToVoItemDTO(data: String?): List<VoItemDTO> {
+    fun storedStringToVoItemDTO(data: String?):ArrayList<VoItemDTO> {
         val gson = Gson()
         if (data == null) {
-            return Collections.emptyList()
+            return Collections.EMPTY_LIST as ArrayList<VoItemDTO>
         }
-        val listType = object : TypeToken<List<VoItemDTO>>() {
+        val listType = object :TypeToken<ArrayList<VoItemDTO>>() {
 
         }.getType()
-        return gson.fromJson<List<VoItemDTO>>(data, listType)
+        return gson.fromJson<ArrayList<VoItemDTO>>(data, listType)
     }
 
     @TypeConverter
-    fun VoItemDTOToStoredString(myObjects: List<VoItemDTO>): String {
+    fun VoItemDTOToStoredString(myObjects:ArrayList<VoItemDTO>): String {
         val gson = Gson()
         return gson.toJson(myObjects)
     }
@@ -290,41 +290,19 @@ class Converters {
 
 
     @TypeConverter
-    fun storedStringToChildLookupDTO(data: String?): List<ChildLookupDTO> {
+    fun storedStringToChildLookupDTO(data: String?):ArrayList<ChildLookupDTO> {
         val gson = Gson()
         if (data == null) {
-            return Collections.emptyList()
+            return Collections.EMPTY_LIST as ArrayList<ChildLookupDTO>
         }
-        val listType = object : TypeToken<List<ChildLookupDTO>>() {
+        val listType = object :TypeToken<ArrayList<ChildLookupDTO>>() {
 
         }.getType()
-        return gson.fromJson<List<ChildLookupDTO>>(data, listType)
+        return gson.fromJson<ArrayList<ChildLookupDTO>>(data, listType)
     }
 
     @TypeConverter
-    fun ChildLookupDTOToStoredString(myObjects: List<ChildLookupDTO>): String {
-        val gson = Gson()
-        return gson.toJson(myObjects)
-    }
-
-
-    //===========================================================================
-
-
-    @TypeConverter
-    fun storedStringToLookupOptionDTO(data: String?): List<LookupOptionDTO> {
-        val gson = Gson()
-        if (data == null) {
-            return Collections.emptyList()
-        }
-        val listType = object : TypeToken<List<LookupOptionDTO>>() {
-
-        }.getType()
-        return gson.fromJson<List<LookupOptionDTO>>(data, listType)
-    }
-
-    @TypeConverter
-    fun LookupOptionDTOToStoredString(myObjects: List<LookupOptionDTO>): String {
+    fun ChildLookupDTOToStoredString(myObjects:ArrayList<ChildLookupDTO>): String {
         val gson = Gson()
         return gson.toJson(myObjects)
     }
@@ -334,19 +312,19 @@ class Converters {
 
 
     @TypeConverter
-    fun storedStringToPrimaryKeyValueDTO(data: String?): List<PrimaryKeyValueDTO> {
+    fun storedStringToLookupOptionDTO(data: String?):ArrayList<LookupOptionDTO> {
         val gson = Gson()
         if (data == null) {
-            return Collections.emptyList()
+            return Collections.EMPTY_LIST as ArrayList<LookupOptionDTO>
         }
-        val listType = object : TypeToken<List<PrimaryKeyValueDTO>>() {
+        val listType = object :TypeToken<ArrayList<LookupOptionDTO>>() {
 
         }.getType()
-        return gson.fromJson<List<PrimaryKeyValueDTO>>(data, listType)
+        return gson.fromJson<ArrayList<LookupOptionDTO>>(data, listType)
     }
 
     @TypeConverter
-    fun PrimaryKeyValueDTOToStoredString(myObjects: List<PrimaryKeyValueDTO>): String {
+    fun LookupOptionDTOToStoredString(myObjects:ArrayList<LookupOptionDTO>): String {
         val gson = Gson()
         return gson.toJson(myObjects)
     }
@@ -356,19 +334,19 @@ class Converters {
 
 
     @TypeConverter
-    fun storedStringToJobItemEstimatesPhotoDTO(data: String?): List<JobItemEstimatesPhotoDTO> {
+    fun storedStringToPrimaryKeyValueDTO(data: String?):ArrayList<PrimaryKeyValueDTO> {
         val gson = Gson()
         if (data == null) {
-            return Collections.emptyList()
+            return Collections.EMPTY_LIST as ArrayList<PrimaryKeyValueDTO>
         }
-        val listType = object : TypeToken<List<JobItemEstimatesPhotoDTO>>() {
+        val listType = object :TypeToken<ArrayList<PrimaryKeyValueDTO>>() {
 
         }.getType()
-        return gson.fromJson<List<JobItemEstimatesPhotoDTO>>(data, listType)
+        return gson.fromJson<ArrayList<PrimaryKeyValueDTO>>(data, listType)
     }
 
     @TypeConverter
-    fun JobItemEstimatesPhotoDTOToStoredString(myObjects: List<JobItemEstimatesPhotoDTO>): String {
+    fun PrimaryKeyValueDTOToStoredString(myObjects:ArrayList<PrimaryKeyValueDTO>): String {
         val gson = Gson()
         return gson.toJson(myObjects)
     }
@@ -378,19 +356,19 @@ class Converters {
 
 
     @TypeConverter
-    fun storedStringToJobEstimateWorksDTO(data: String?): List<JobEstimateWorksDTO> {
+    fun storedStringToJobItemEstimatesPhotoDTO(data: String?):ArrayList<JobItemEstimatesPhotoDTO> {
         val gson = Gson()
         if (data == null) {
-            return Collections.emptyList()
+            return Collections.EMPTY_LIST as ArrayList<JobItemEstimatesPhotoDTO>
         }
-        val listType = object : TypeToken<List<JobEstimateWorksDTO>>() {
+        val listType = object :TypeToken<ArrayList<JobItemEstimatesPhotoDTO>>() {
 
         }.getType()
-        return gson.fromJson<List<JobEstimateWorksDTO>>(data, listType)
+        return gson.fromJson<ArrayList<JobItemEstimatesPhotoDTO>>(data, listType)
     }
 
     @TypeConverter
-    fun JobEstimateWorksDTOToStoredString(myObjects: List<JobEstimateWorksDTO>): String {
+    fun JobItemEstimatesPhotoDTOToStoredString(myObjects:ArrayList<JobItemEstimatesPhotoDTO>): String {
         val gson = Gson()
         return gson.toJson(myObjects)
     }
@@ -400,19 +378,19 @@ class Converters {
 
 
     @TypeConverter
-    fun storedStringToJobEstimateWorksPhotoDTO(data: String?): List<JobEstimateWorksPhotoDTO> {
+    fun storedStringToJobEstimateWorksDTO(data: String?):ArrayList<JobEstimateWorksDTO> {
         val gson = Gson()
         if (data == null) {
-            return Collections.emptyList()
+            return Collections.EMPTY_LIST as ArrayList<JobEstimateWorksDTO>
         }
-        val listType = object : TypeToken<List<JobEstimateWorksPhotoDTO>>() {
+        val listType = object :TypeToken<ArrayList<JobEstimateWorksDTO>>() {
 
         }.getType()
-        return gson.fromJson<List<JobEstimateWorksPhotoDTO>>(data, listType)
+        return gson.fromJson<ArrayList<JobEstimateWorksDTO>>(data, listType)
     }
 
     @TypeConverter
-    fun JobEstimateWorksPhotoDTOToStoredString(myObjects: List<JobEstimateWorksPhotoDTO>): String {
+    fun JobEstimateWorksDTOToStoredString(myObjects:ArrayList<JobEstimateWorksDTO>): String {
         val gson = Gson()
         return gson.toJson(myObjects)
     }
@@ -422,19 +400,19 @@ class Converters {
 
 
     @TypeConverter
-    fun storedStringToJobDTO(data: String?): List<JobDTO> {
+    fun storedStringToJobEstimateWorksPhotoDTO(data: String?):ArrayList<JobEstimateWorksPhotoDTO> {
         val gson = Gson()
         if (data == null) {
-            return Collections.emptyList()
+            return Collections.EMPTY_LIST as ArrayList<JobEstimateWorksPhotoDTO>
         }
-        val listType = object : TypeToken<List<JobDTO>>() {
+        val listType = object :TypeToken<ArrayList<JobEstimateWorksPhotoDTO>>() {
 
         }.getType()
-        return gson.fromJson<List<JobDTO>>(data, listType)
+        return gson.fromJson<ArrayList<JobEstimateWorksPhotoDTO>>(data, listType)
     }
 
     @TypeConverter
-    fun JobDTOToStoredString(myObjects: List<JobDTO>): String {
+    fun JobEstimateWorksPhotoDTOToStoredString(myObjects:ArrayList<JobEstimateWorksPhotoDTO>): String {
         val gson = Gson()
         return gson.toJson(myObjects)
     }
@@ -444,19 +422,129 @@ class Converters {
 
 
     @TypeConverter
-    fun storedStringToJobItemMeasurePhotoDTO(data: String?): List<JobItemMeasurePhotoDTO> {
+    fun storedStringToJobDTO(data: String?): ArrayList<JobDTO> {
         val gson = Gson()
         if (data == null) {
-            return Collections.emptyList()
+            return Collections.EMPTY_LIST as ArrayList<JobDTO>
         }
-        val listType = object : TypeToken<List<JobItemMeasurePhotoDTO>>() {
+        val listType = object :TypeToken<ArrayList<JobDTO>>() {
 
         }.getType()
-        return gson.fromJson<List<JobItemMeasurePhotoDTO>>(data, listType)
+        return gson.fromJson<ArrayList<JobDTO>>(data, listType)
     }
 
     @TypeConverter
-    fun JobItemMeasurePhotoDTOToStoredString(myObjects: List<JobItemMeasurePhotoDTO>): String {
+    fun JobDTOToStoredString(myObjects:ArrayList<JobDTO>): String {
+        val gson = Gson()
+        return gson.toJson(myObjects)
+    }
+
+
+    //===========================================================================
+
+
+    @TypeConverter
+    fun storedStringToJobItemMeasurePhotoDTO(data: String?):ArrayList<JobItemMeasurePhotoDTO> {
+        val gson = Gson()
+        if (data == null) {
+            return Collections.EMPTY_LIST as ArrayList<JobItemMeasurePhotoDTO>
+        }
+        val listType = object :TypeToken<ArrayList<JobItemMeasurePhotoDTO>>() {
+
+        }.getType()
+        return gson.fromJson<ArrayList<JobItemMeasurePhotoDTO>>(data, listType)
+    }
+
+    @TypeConverter
+    fun JobItemMeasurePhotoDTOToStoredString(myObjects:ArrayList<JobItemMeasurePhotoDTO>): String {
+        val gson = Gson()
+        return gson.toJson(myObjects)
+    }
+
+
+    //===========================================================================
+
+
+    @TypeConverter
+    fun storedStringToActivityDTO(data: String?):ArrayList<ActivityDTO> {
+        val gson = Gson()
+        if (data == null) {
+            return Collections.EMPTY_LIST as ArrayList<ActivityDTO>
+        }
+        val listType = object :TypeToken<ArrayList<ActivityDTO>>() {
+
+        }.getType()
+        return gson.fromJson<ArrayList<ActivityDTO>>(data, listType)
+    }
+
+    @TypeConverter
+    fun ActivityDTOToStoredString(myObjects:ArrayList<ActivityDTO>): String {
+        val gson = Gson()
+        return gson.toJson(myObjects)
+    }
+
+
+    //===========================================================================
+
+
+    @TypeConverter
+    fun storedStringToInfoClassDTO(data: String?):ArrayList<InfoClassDTO> {
+        val gson = Gson()
+        if (data == null) {
+            return Collections.EMPTY_LIST as ArrayList<InfoClassDTO>
+        }
+        val listType = object :TypeToken<ArrayList<InfoClassDTO>>() {
+
+        }.getType()
+        return gson.fromJson<ArrayList<InfoClassDTO>>(data, listType)
+    }
+
+    @TypeConverter
+    fun InfoClassDTOToStoredString(myObjects:ArrayList<InfoClassDTO>): String {
+        val gson = Gson()
+        return gson.toJson(myObjects)
+    }
+
+
+    //===========================================================================
+
+
+    @TypeConverter
+    fun storedStringToWorkFlowDTO(data: String?):ArrayList<WorkFlowDTO> {
+        val gson = Gson()
+        if (data == null) {
+            return Collections.EMPTY_LIST as ArrayList<WorkFlowDTO>
+        }
+        val listType = object :TypeToken<ArrayList<WorkFlowDTO>>() {
+
+        }.getType()
+        return gson.fromJson<ArrayList<WorkFlowDTO>>(data, listType)
+    }
+
+    @TypeConverter
+    fun WorkFlowDTOToStoredString(myObjects:ArrayList<WorkFlowDTO>): String {
+        val gson = Gson()
+        return gson.toJson(myObjects)
+    }
+
+
+    //===========================================================================
+
+
+    @TypeConverter
+    fun storedStringToToDoGroupsDTO(data: String?):ArrayList<ToDoGroupsDTO> {
+        val gson = Gson()
+        if (data == null) {
+            return Collections.EMPTY_LIST as ArrayList<ToDoGroupsDTO>
+        }
+        val listType = object :TypeToken<ArrayList<ToDoGroupsDTO>>() {
+
+        }.getType()
+        return gson.fromJson<ArrayList<ToDoGroupsDTO>>(data, listType)
+    }
+
+    @TypeConverter
+    fun ToDoGroupsDTOToStoredString(myObjects:ArrayList<ToDoGroupsDTO>): String {
         val gson = Gson()
         return gson.toJson(myObjects)
     }
@@ -466,19 +554,19 @@ class Converters {
 
 
 //    @TypeConverter
-//    fun storedStringToSectionDTO(data: String?): List<SectionDTO> {
+//    fun storedStringToSectionDTO(data: String?):ArrayList<ProjectSectionDTO> {
 //        val gson = Gson()
 //        if (data == null) {
-//            return Collections.emptyList()
+//            return Collections.EMPTY_LIST
 //        }
-//        val listType = object : TypeToken<List<SectionDTO>>() {
+//        val listType = object :TypeToken<ArrayList<ProjectSectionDTO>>() {
 //
 //        }.getType()
-//        return gson.fromJson<List<SectionDTO>>(data, listType)
+//        return gson.fromJson<ArrayList<ProjectSectionDTO>>(data, listType)
 //    }
 //
 //    @TypeConverter
-//    fun SectionDTOToStoredString(myObjects: List<SectionDTO>): String {
+//    fun SectionDTOToStoredString(myObjects:ArrayList<ProjectSectionDTO>): String {
 //        val gson = Gson()
 //        return gson.toJson(myObjects)
 //    }
@@ -488,19 +576,19 @@ class Converters {
 
 
 //    @TypeConverter
-//    fun storedStringToSectionDTO(data: String?): List<SectionDTO> {
+//    fun storedStringToSectionDTO(data: String?):ArrayList<ProjectSectionDTO> {
 //        val gson = Gson()
 //        if (data == null) {
-//            return Collections.emptyList()
+//            return Collections.EMPTY_LIST
 //        }
-//        val listType = object : TypeToken<List<SectionDTO>>() {
+//        val listType = object :TypeToken<ArrayList<ProjectSectionDTO>>() {
 //
 //        }.getType()
-//        return gson.fromJson<List<SectionDTO>>(data, listType)
+//        return gson.fromJson<ArrayList<ProjectSectionDTO>>(data, listType)
 //    }
 //
 //    @TypeConverter
-//    fun SectionDTOToStoredString(myObjects: List<SectionDTO>): String {
+//    fun SectionDTOToStoredString(myObjects:ArrayList<ProjectSectionDTO>): String {
 //        val gson = Gson()
 //        return gson.toJson(myObjects)
 //    }
@@ -510,19 +598,19 @@ class Converters {
 
 
 //    @TypeConverter
-//    fun storedStringToSectionDTO(data: String?): List<SectionDTO> {
+//    fun storedStringToSectionDTO(data: String?):ArrayList<ProjectSectionDTO> {
 //        val gson = Gson()
 //        if (data == null) {
-//            return Collections.emptyList()
+//            return Collections.EMPTY_LIST
 //        }
-//        val listType = object : TypeToken<List<SectionDTO>>() {
+//        val listType = object :TypeToken<ArrayList<ProjectSectionDTO>>() {
 //
 //        }.getType()
-//        return gson.fromJson<List<SectionDTO>>(data, listType)
+//        return gson.fromJson<ArrayList<ProjectSectionDTO>>(data, listType)
 //    }
 //
 //    @TypeConverter
-//    fun SectionDTOToStoredString(myObjects: List<SectionDTO>): String {
+//    fun SectionDTOToStoredString(myObjects:ArrayList<ProjectSectionDTO>): String {
 //        val gson = Gson()
 //        return gson.toJson(myObjects)
 //    }
@@ -532,19 +620,19 @@ class Converters {
 
 
 //    @TypeConverter
-//    fun storedStringToSectionDTO(data: String?): List<SectionDTO> {
+//    fun storedStringToSectionDTO(data: String?):ArrayList<ProjectSectionDTO> {
 //        val gson = Gson()
 //        if (data == null) {
-//            return Collections.emptyList()
+//            return Collections.EMPTY_LIST
 //        }
-//        val listType = object : TypeToken<List<SectionDTO>>() {
+//        val listType = object :TypeToken<ArrayList<ProjectSectionDTO>>() {
 //
 //        }.getType()
-//        return gson.fromJson<List<SectionDTO>>(data, listType)
+//        return gson.fromJson<ArrayList<ProjectSectionDTO>>(data, listType)
 //    }
 //
 //    @TypeConverter
-//    fun SectionDTOToStoredString(myObjects: List<SectionDTO>): String {
+//    fun SectionDTOToStoredString(myObjects:ArrayList<ProjectSectionDTO>): String {
 //        val gson = Gson()
 //        return gson.toJson(myObjects)
 //    }
@@ -554,19 +642,19 @@ class Converters {
 
 
 //    @TypeConverter
-//    fun storedStringToSectionDTO(data: String?): List<SectionDTO> {
+//    fun storedStringToSectionDTO(data: String?):ArrayList<ProjectSectionDTO> {
 //        val gson = Gson()
 //        if (data == null) {
-//            return Collections.emptyList()
+//            return Collections.EMPTY_LIST
 //        }
-//        val listType = object : TypeToken<List<SectionDTO>>() {
+//        val listType = object :TypeToken<ArrayList<ProjectSectionDTO>>() {
 //
 //        }.getType()
-//        return gson.fromJson<List<SectionDTO>>(data, listType)
+//        return gson.fromJson<ArrayList<ProjectSectionDTO>>(data, listType)
 //    }
 //
 //    @TypeConverter
-//    fun SectionDTOToStoredString(myObjects: List<SectionDTO>): String {
+//    fun SectionDTOToStoredString(myObjects:ArrayList<ProjectSectionDTO>): String {
 //        val gson = Gson()
 //        return gson.toJson(myObjects)
 //    }
@@ -576,19 +664,19 @@ class Converters {
 
 
 //    @TypeConverter
-//    fun storedStringToSectionDTO(data: String?): List<SectionDTO> {
+//    fun storedStringToSectionDTO(data: String?):ArrayList<ProjectSectionDTO> {
 //        val gson = Gson()
 //        if (data == null) {
-//            return Collections.emptyList()
+//            return Collections.EMPTY_LIST
 //        }
-//        val listType = object : TypeToken<List<SectionDTO>>() {
+//        val listType = object :TypeToken<ArrayList<ProjectSectionDTO>>() {
 //
 //        }.getType()
-//        return gson.fromJson<List<SectionDTO>>(data, listType)
+//        return gson.fromJson<ArrayList<ProjectSectionDTO>>(data, listType)
 //    }
 //
 //    @TypeConverter
-//    fun SectionDTOToStoredString(myObjects: List<SectionDTO>): String {
+//    fun SectionDTOToStoredString(myObjects:ArrayList<ProjectSectionDTO>): String {
 //        val gson = Gson()
 //        return gson.toJson(myObjects)
 //    }
@@ -598,19 +686,19 @@ class Converters {
 
 
 //    @TypeConverter
-//    fun storedStringToSectionDTO(data: String?): List<SectionDTO> {
+//    fun storedStringToSectionDTO(data: String?):ArrayList<ProjectSectionDTO> {
 //        val gson = Gson()
 //        if (data == null) {
-//            return Collections.emptyList()
+//            return Collections.EMPTY_LIST
 //        }
-//        val listType = object : TypeToken<List<SectionDTO>>() {
+//        val listType = object :TypeToken<ArrayList<ProjectSectionDTO>>() {
 //
 //        }.getType()
-//        return gson.fromJson<List<SectionDTO>>(data, listType)
+//        return gson.fromJson<ArrayList<ProjectSectionDTO>>(data, listType)
 //    }
 //
 //    @TypeConverter
-//    fun SectionDTOToStoredString(myObjects: List<SectionDTO>): String {
+//    fun SectionDTOToStoredString(myObjects:ArrayList<ProjectSectionDTO>): String {
 //        val gson = Gson()
 //        return gson.toJson(myObjects)
 //    }
@@ -620,19 +708,19 @@ class Converters {
 
 
 //    @TypeConverter
-//    fun storedStringToSectionDTO(data: String?): List<SectionDTO> {
+//    fun storedStringToSectionDTO(data: String?):ArrayList<ProjectSectionDTO> {
 //        val gson = Gson()
 //        if (data == null) {
-//            return Collections.emptyList()
+//            return Collections.EMPTY_LIST
 //        }
-//        val listType = object : TypeToken<List<SectionDTO>>() {
+//        val listType = object :TypeToken<ArrayList<ProjectSectionDTO>>() {
 //
 //        }.getType()
-//        return gson.fromJson<List<SectionDTO>>(data, listType)
+//        return gson.fromJson<ArrayList<ProjectSectionDTO>>(data, listType)
 //    }
 //
 //    @TypeConverter
-//    fun SectionDTOToStoredString(myObjects: List<SectionDTO>): String {
+//    fun SectionDTOToStoredString(myObjects:ArrayList<ProjectSectionDTO>): String {
 //        val gson = Gson()
 //        return gson.toJson(myObjects)
 //    }
@@ -642,19 +730,19 @@ class Converters {
 
 
 //    @TypeConverter
-//    fun storedStringToSectionDTO(data: String?): List<SectionDTO> {
+//    fun storedStringToSectionDTO(data: String?):ArrayList<ProjectSectionDTO> {
 //        val gson = Gson()
 //        if (data == null) {
-//            return Collections.emptyList()
+//            return Collections.EMPTY_LIST
 //        }
-//        val listType = object : TypeToken<List<SectionDTO>>() {
+//        val listType = object :TypeToken<ArrayList<ProjectSectionDTO>>() {
 //
 //        }.getType()
-//        return gson.fromJson<List<SectionDTO>>(data, listType)
+//        return gson.fromJson<ArrayList<ProjectSectionDTO>>(data, listType)
 //    }
 //
 //    @TypeConverter
-//    fun SectionDTOToStoredString(myObjects: List<SectionDTO>): String {
+//    fun SectionDTOToStoredString(myObjects:ArrayList<ProjectSectionDTO>): String {
 //        val gson = Gson()
 //        return gson.toJson(myObjects)
 //    }
@@ -664,19 +752,19 @@ class Converters {
 
 
 //    @TypeConverter
-//    fun storedStringToSectionDTO(data: String?): List<SectionDTO> {
+//    fun storedStringToSectionDTO(data: String?):ArrayList<ProjectSectionDTO> {
 //        val gson = Gson()
 //        if (data == null) {
-//            return Collections.emptyList()
+//            return Collections.EMPTY_LIST
 //        }
-//        val listType = object : TypeToken<List<SectionDTO>>() {
+//        val listType = object :TypeToken<ArrayList<ProjectSectionDTO>>() {
 //
 //        }.getType()
-//        return gson.fromJson<List<SectionDTO>>(data, listType)
+//        return gson.fromJson<ArrayList<ProjectSectionDTO>>(data, listType)
 //    }
 //
 //    @TypeConverter
-//    fun SectionDTOToStoredString(myObjects: List<SectionDTO>): String {
+//    fun SectionDTOToStoredString(myObjects:ArrayList<ProjectSectionDTO>): String {
 //        val gson = Gson()
 //        return gson.toJson(myObjects)
 //    }
@@ -686,19 +774,19 @@ class Converters {
 
 
 //    @TypeConverter
-//    fun storedStringToSectionDTO(data: String?): List<SectionDTO> {
+//    fun storedStringToSectionDTO(data: String?):ArrayList<ProjectSectionDTO> {
 //        val gson = Gson()
 //        if (data == null) {
-//            return Collections.emptyList()
+//            return Collections.EMPTY_LIST
 //        }
-//        val listType = object : TypeToken<List<SectionDTO>>() {
+//        val listType = object :TypeToken<ArrayList<ProjectSectionDTO>>() {
 //
 //        }.getType()
-//        return gson.fromJson<List<SectionDTO>>(data, listType)
+//        return gson.fromJson<ArrayList<ProjectSectionDTO>>(data, listType)
 //    }
 //
 //    @TypeConverter
-//    fun SectionDTOToStoredString(myObjects: List<SectionDTO>): String {
+//    fun SectionDTOToStoredString(myObjects:ArrayList<ProjectSectionDTO>): String {
 //        val gson = Gson()
 //        return gson.toJson(myObjects)
 //    }
@@ -708,19 +796,19 @@ class Converters {
 
 
 //    @TypeConverter
-//    fun storedStringToSectionDTO(data: String?): List<SectionDTO> {
+//    fun storedStringToSectionDTO(data: String?):ArrayList<ProjectSectionDTO> {
 //        val gson = Gson()
 //        if (data == null) {
-//            return Collections.emptyList()
+//            return Collections.EMPTY_LIST
 //        }
-//        val listType = object : TypeToken<List<SectionDTO>>() {
+//        val listType = object :TypeToken<ArrayList<ProjectSectionDTO>>() {
 //
 //        }.getType()
-//        return gson.fromJson<List<SectionDTO>>(data, listType)
+//        return gson.fromJson<ArrayList<ProjectSectionDTO>>(data, listType)
 //    }
 //
 //    @TypeConverter
-//    fun SectionDTOToStoredString(myObjects: List<SectionDTO>): String {
+//    fun SectionDTOToStoredString(myObjects:ArrayList<ProjectSectionDTO>): String {
 //        val gson = Gson()
 //        return gson.toJson(myObjects)
 //    }
@@ -730,19 +818,19 @@ class Converters {
 
 
 //    @TypeConverter
-//    fun storedStringToSectionDTO(data: String?): List<SectionDTO> {
+//    fun storedStringToSectionDTO(data: String?):ArrayList<ProjectSectionDTO> {
 //        val gson = Gson()
 //        if (data == null) {
-//            return Collections.emptyList()
+//            return Collections.EMPTY_LIST
 //        }
-//        val listType = object : TypeToken<List<SectionDTO>>() {
+//        val listType = object :TypeToken<ArrayList<ProjectSectionDTO>>() {
 //
 //        }.getType()
-//        return gson.fromJson<List<SectionDTO>>(data, listType)
+//        return gson.fromJson<ArrayList<ProjectSectionDTO>>(data, listType)
 //    }
 //
 //    @TypeConverter
-//    fun SectionDTOToStoredString(myObjects: List<SectionDTO>): String {
+//    fun SectionDTOToStoredString(myObjects:ArrayList<ProjectSectionDTO>): String {
 //        val gson = Gson()
 //        return gson.toJson(myObjects)
 //    }
@@ -752,19 +840,19 @@ class Converters {
 
 
 //    @TypeConverter
-//    fun storedStringToSectionDTO(data: String?): List<SectionDTO> {
+//    fun storedStringToSectionDTO(data: String?):ArrayList<ProjectSectionDTO> {
 //        val gson = Gson()
 //        if (data == null) {
-//            return Collections.emptyList()
+//            return Collections.EMPTY_LIST
 //        }
-//        val listType = object : TypeToken<List<SectionDTO>>() {
+//        val listType = object :TypeToken<ArrayList<ProjectSectionDTO>>() {
 //
 //        }.getType()
-//        return gson.fromJson<List<SectionDTO>>(data, listType)
+//        return gson.fromJson<ArrayList<ProjectSectionDTO>>(data, listType)
 //    }
 //
 //    @TypeConverter
-//    fun SectionDTOToStoredString(myObjects: List<SectionDTO>): String {
+//    fun SectionDTOToStoredString(myObjects:ArrayList<ProjectSectionDTO>): String {
 //        val gson = Gson()
 //        return gson.toJson(myObjects)
 //    }
@@ -774,19 +862,19 @@ class Converters {
 
 
 //    @TypeConverter
-//    fun storedStringToSectionDTO(data: String?): List<SectionDTO> {
+//    fun storedStringToSectionDTO(data: String?):ArrayList<ProjectSectionDTO> {
 //        val gson = Gson()
 //        if (data == null) {
-//            return Collections.emptyList()
+//            return Collections.EMPTY_LIST
 //        }
-//        val listType = object : TypeToken<List<SectionDTO>>() {
+//        val listType = object :TypeToken<ArrayList<ProjectSectionDTO>>() {
 //
 //        }.getType()
-//        return gson.fromJson<List<SectionDTO>>(data, listType)
+//        return gson.fromJson<ArrayList<ProjectSectionDTO>>(data, listType)
 //    }
 //
 //    @TypeConverter
-//    fun SectionDTOToStoredString(myObjects: List<SectionDTO>): String {
+//    fun SectionDTOToStoredString(myObjects:ArrayList<ProjectSectionDTO>): String {
 //        val gson = Gson()
 //        return gson.toJson(myObjects)
 //    }
@@ -796,19 +884,19 @@ class Converters {
 
 
 //    @TypeConverter
-//    fun storedStringToSectionDTO(data: String?): List<SectionDTO> {
+//    fun storedStringToSectionDTO(data: String?):ArrayList<ProjectSectionDTO> {
 //        val gson = Gson()
 //        if (data == null) {
-//            return Collections.emptyList()
+//            return Collections.EMPTY_LIST
 //        }
-//        val listType = object : TypeToken<List<SectionDTO>>() {
+//        val listType = object :TypeToken<ArrayList<ProjectSectionDTO>>() {
 //
 //        }.getType()
-//        return gson.fromJson<List<SectionDTO>>(data, listType)
+//        return gson.fromJson<ArrayList<ProjectSectionDTO>>(data, listType)
 //    }
 //
 //    @TypeConverter
-//    fun SectionDTOToStoredString(myObjects: List<SectionDTO>): String {
+//    fun SectionDTOToStoredString(myObjects:ArrayList<ProjectSectionDTO>): String {
 //        val gson = Gson()
 //        return gson.toJson(myObjects)
 //    }
@@ -818,19 +906,19 @@ class Converters {
 
 
 //    @TypeConverter
-//    fun storedStringToSectionDTO(data: String?): List<SectionDTO> {
+//    fun storedStringToSectionDTO(data: String?):ArrayList<ProjectSectionDTO> {
 //        val gson = Gson()
 //        if (data == null) {
-//            return Collections.emptyList()
+//            return Collections.EMPTY_LIST
 //        }
-//        val listType = object : TypeToken<List<SectionDTO>>() {
+//        val listType = object :TypeToken<ArrayList<ProjectSectionDTO>>() {
 //
 //        }.getType()
-//        return gson.fromJson<List<SectionDTO>>(data, listType)
+//        return gson.fromJson<ArrayList<ProjectSectionDTO>>(data, listType)
 //    }
 //
 //    @TypeConverter
-//    fun SectionDTOToStoredString(myObjects: List<SectionDTO>): String {
+//    fun SectionDTOToStoredString(myObjects:ArrayList<ProjectSectionDTO>): String {
 //        val gson = Gson()
 //        return gson.toJson(myObjects)
 //    }
@@ -840,19 +928,19 @@ class Converters {
 
 
 //    @TypeConverter
-//    fun storedStringToSectionDTO(data: String?): List<SectionDTO> {
+//    fun storedStringToSectionDTO(data: String?):ArrayList<ProjectSectionDTO> {
 //        val gson = Gson()
 //        if (data == null) {
-//            return Collections.emptyList()
+//            return Collections.EMPTY_LIST
 //        }
-//        val listType = object : TypeToken<List<SectionDTO>>() {
+//        val listType = object :TypeToken<ArrayList<ProjectSectionDTO>>() {
 //
 //        }.getType()
-//        return gson.fromJson<List<SectionDTO>>(data, listType)
+//        return gson.fromJson<ArrayList<ProjectSectionDTO>>(data, listType)
 //    }
 //
 //    @TypeConverter
-//    fun SectionDTOToStoredString(myObjects: List<SectionDTO>): String {
+//    fun SectionDTOToStoredString(myObjects:ArrayList<ProjectSectionDTO>): String {
 //        val gson = Gson()
 //        return gson.toJson(myObjects)
 //    }
@@ -862,19 +950,19 @@ class Converters {
 
 
 //    @TypeConverter
-//    fun storedStringToSectionDTO(data: String?): List<SectionDTO> {
+//    fun storedStringToSectionDTO(data: String?):ArrayList<ProjectSectionDTO> {
 //        val gson = Gson()
 //        if (data == null) {
-//            return Collections.emptyList()
+//            return Collections.EMPTY_LIST
 //        }
-//        val listType = object : TypeToken<List<SectionDTO>>() {
+//        val listType = object :TypeToken<ArrayList<ProjectSectionDTO>>() {
 //
 //        }.getType()
-//        return gson.fromJson<List<SectionDTO>>(data, listType)
+//        return gson.fromJson<ArrayList<ProjectSectionDTO>>(data, listType)
 //    }
 //
 //    @TypeConverter
-//    fun SectionDTOToStoredString(myObjects: List<SectionDTO>): String {
+//    fun SectionDTOToStoredString(myObjects:ArrayList<ProjectSectionDTO>): String {
 //        val gson = Gson()
 //        return gson.toJson(myObjects)
 //    }
@@ -884,19 +972,19 @@ class Converters {
 
 
 //    @TypeConverter
-//    fun storedStringToSectionDTO(data: String?): List<SectionDTO> {
+//    fun storedStringToSectionDTO(data: String?):ArrayList<ProjectSectionDTO> {
 //        val gson = Gson()
 //        if (data == null) {
-//            return Collections.emptyList()
+//            return Collections.EMPTY_LIST
 //        }
-//        val listType = object : TypeToken<List<SectionDTO>>() {
+//        val listType = object :TypeToken<ArrayList<ProjectSectionDTO>>() {
 //
 //        }.getType()
-//        return gson.fromJson<List<SectionDTO>>(data, listType)
+//        return gson.fromJson<ArrayList<ProjectSectionDTO>>(data, listType)
 //    }
 //
 //    @TypeConverter
-//    fun SectionDTOToStoredString(myObjects: List<SectionDTO>): String {
+//    fun SectionDTOToStoredString(myObjects:ArrayList<ProjectSectionDTO>): String {
 //        val gson = Gson()
 //        return gson.toJson(myObjects)
 //    }
@@ -906,19 +994,19 @@ class Converters {
 
 
 //    @TypeConverter
-//    fun storedStringToSectionDTO(data: String?): List<SectionDTO> {
+//    fun storedStringToSectionDTO(data: String?):ArrayList<ProjectSectionDTO> {
 //        val gson = Gson()
 //        if (data == null) {
-//            return Collections.emptyList()
+//            return Collections.EMPTY_LIST
 //        }
-//        val listType = object : TypeToken<List<SectionDTO>>() {
+//        val listType = object :TypeToken<ArrayList<ProjectSectionDTO>>() {
 //
 //        }.getType()
-//        return gson.fromJson<List<SectionDTO>>(data, listType)
+//        return gson.fromJson<ArrayList<ProjectSectionDTO>>(data, listType)
 //    }
 //
 //    @TypeConverter
-//    fun SectionDTOToStoredString(myObjects: List<SectionDTO>): String {
+//    fun SectionDTOToStoredString(myObjects:ArrayList<ProjectSectionDTO>): String {
 //        val gson = Gson()
 //        return gson.toJson(myObjects)
 //    }
@@ -928,19 +1016,19 @@ class Converters {
 
 
 //    @TypeConverter
-//    fun storedStringToSectionDTO(data: String?): List<SectionDTO> {
+//    fun storedStringToSectionDTO(data: String?):ArrayList<ProjectSectionDTO> {
 //        val gson = Gson()
 //        if (data == null) {
-//            return Collections.emptyList()
+//            return Collections.EMPTY_LIST
 //        }
-//        val listType = object : TypeToken<List<SectionDTO>>() {
+//        val listType = object :TypeToken<ArrayList<ProjectSectionDTO>>() {
 //
 //        }.getType()
-//        return gson.fromJson<List<SectionDTO>>(data, listType)
+//        return gson.fromJson<ArrayList<ProjectSectionDTO>>(data, listType)
 //    }
 //
 //    @TypeConverter
-//    fun SectionDTOToStoredString(myObjects: List<SectionDTO>): String {
+//    fun SectionDTOToStoredString(myObjects:ArrayList<ProjectSectionDTO>): String {
 //        val gson = Gson()
 //        return gson.toJson(myObjects)
 //    }
@@ -950,19 +1038,19 @@ class Converters {
 
 
 //    @TypeConverter
-//    fun storedStringToSectionDTO(data: String?): List<SectionDTO> {
+//    fun storedStringToSectionDTO(data: String?):ArrayList<ProjectSectionDTO> {
 //        val gson = Gson()
 //        if (data == null) {
-//            return Collections.emptyList()
+//            return Collections.EMPTY_LIST
 //        }
-//        val listType = object : TypeToken<List<SectionDTO>>() {
+//        val listType = object :TypeToken<ArrayList<ProjectSectionDTO>>() {
 //
 //        }.getType()
-//        return gson.fromJson<List<SectionDTO>>(data, listType)
+//        return gson.fromJson<ArrayList<ProjectSectionDTO>>(data, listType)
 //    }
 //
 //    @TypeConverter
-//    fun SectionDTOToStoredString(myObjects: List<SectionDTO>): String {
+//    fun SectionDTOToStoredString(myObjects:ArrayList<ProjectSectionDTO>): String {
 //        val gson = Gson()
 //        return gson.toJson(myObjects)
 //    }
@@ -972,19 +1060,19 @@ class Converters {
 
 
 //    @TypeConverter
-//    fun storedStringToSectionDTO(data: String?): List<SectionDTO> {
+//    fun storedStringToSectionDTO(data: String?):ArrayList<ProjectSectionDTO> {
 //        val gson = Gson()
 //        if (data == null) {
-//            return Collections.emptyList()
+//            return Collections.EMPTY_LIST
 //        }
-//        val listType = object : TypeToken<List<SectionDTO>>() {
+//        val listType = object :TypeToken<ArrayList<ProjectSectionDTO>>() {
 //
 //        }.getType()
-//        return gson.fromJson<List<SectionDTO>>(data, listType)
+//        return gson.fromJson<ArrayList<ProjectSectionDTO>>(data, listType)
 //    }
 //
 //    @TypeConverter
-//    fun SectionDTOToStoredString(myObjects: List<SectionDTO>): String {
+//    fun SectionDTOToStoredString(myObjects:ArrayList<ProjectSectionDTO>): String {
 //        val gson = Gson()
 //        return gson.toJson(myObjects)
 //    }
@@ -994,19 +1082,19 @@ class Converters {
 
 
 //    @TypeConverter
-//    fun storedStringToSectionDTO(data: String?): List<SectionDTO> {
+//    fun storedStringToSectionDTO(data: String?):ArrayList<ProjectSectionDTO> {
 //        val gson = Gson()
 //        if (data == null) {
-//            return Collections.emptyList()
+//            return Collections.EMPTY_LIST
 //        }
-//        val listType = object : TypeToken<List<SectionDTO>>() {
+//        val listType = object :TypeToken<ArrayList<ProjectSectionDTO>>() {
 //
 //        }.getType()
-//        return gson.fromJson<List<SectionDTO>>(data, listType)
+//        return gson.fromJson<ArrayList<ProjectSectionDTO>>(data, listType)
 //    }
 //
 //    @TypeConverter
-//    fun SectionDTOToStoredString(myObjects: List<SectionDTO>): String {
+//    fun SectionDTOToStoredString(myObjects:ArrayList<ProjectSectionDTO>): String {
 //        val gson = Gson()
 //        return gson.toJson(myObjects)
 //    }
@@ -1016,19 +1104,19 @@ class Converters {
 
 
 //    @TypeConverter
-//    fun storedStringToSectionDTO(data: String?): List<SectionDTO> {
+//    fun storedStringToSectionDTO(data: String?):ArrayList<ProjectSectionDTO> {
 //        val gson = Gson()
 //        if (data == null) {
-//            return Collections.emptyList()
+//            return Collections.EMPTY_LIST
 //        }
-//        val listType = object : TypeToken<List<SectionDTO>>() {
+//        val listType = object :TypeToken<ArrayList<ProjectSectionDTO>>() {
 //
 //        }.getType()
-//        return gson.fromJson<List<SectionDTO>>(data, listType)
+//        return gson.fromJson<ArrayList<ProjectSectionDTO>>(data, listType)
 //    }
 //
 //    @TypeConverter
-//    fun SectionDTOToStoredString(myObjects: List<SectionDTO>): String {
+//    fun SectionDTOToStoredString(myObjects:ArrayList<ProjectSectionDTO>): String {
 //        val gson = Gson()
 //        return gson.toJson(myObjects)
 //    }
@@ -1038,19 +1126,19 @@ class Converters {
 
 
 //    @TypeConverter
-//    fun storedStringToSectionDTO(data: String?): List<SectionDTO> {
+//    fun storedStringToSectionDTO(data: String?):ArrayList<ProjectSectionDTO> {
 //        val gson = Gson()
 //        if (data == null) {
-//            return Collections.emptyList()
+//            return Collections.EMPTY_LIST
 //        }
-//        val listType = object : TypeToken<List<SectionDTO>>() {
+//        val listType = object :TypeToken<ArrayList<ProjectSectionDTO>>() {
 //
 //        }.getType()
-//        return gson.fromJson<List<SectionDTO>>(data, listType)
+//        return gson.fromJson<ArrayList<ProjectSectionDTO>>(data, listType)
 //    }
 //
 //    @TypeConverter
-//    fun SectionDTOToStoredString(myObjects: List<SectionDTO>): String {
+//    fun SectionDTOToStoredString(myObjects:ArrayList<ProjectSectionDTO>): String {
 //        val gson = Gson()
 //        return gson.toJson(myObjects)
 //    }
@@ -1060,19 +1148,19 @@ class Converters {
 
 
 //    @TypeConverter
-//    fun storedStringToSectionDTO(data: String?): List<SectionDTO> {
+//    fun storedStringToSectionDTO(data: String?):ArrayList<ProjectSectionDTO> {
 //        val gson = Gson()
 //        if (data == null) {
-//            return Collections.emptyList()
+//            return Collections.EMPTY_LIST
 //        }
-//        val listType = object : TypeToken<List<SectionDTO>>() {
+//        val listType = object :TypeToken<ArrayList<ProjectSectionDTO>>() {
 //
 //        }.getType()
-//        return gson.fromJson<List<SectionDTO>>(data, listType)
+//        return gson.fromJson<ArrayList<ProjectSectionDTO>>(data, listType)
 //    }
 //
 //    @TypeConverter
-//    fun SectionDTOToStoredString(myObjects: List<SectionDTO>): String {
+//    fun SectionDTOToStoredString(myObjects:ArrayList<ProjectSectionDTO>): String {
 //        val gson = Gson()
 //        return gson.toJson(myObjects)
 //    }
@@ -1082,107 +1170,19 @@ class Converters {
 
 
 //    @TypeConverter
-//    fun storedStringToSectionDTO(data: String?): List<SectionDTO> {
+//    fun storedStringToSectionDTO(data: String?):ArrayList<ProjectSectionDTO> {
 //        val gson = Gson()
 //        if (data == null) {
-//            return Collections.emptyList()
+//            return Collections.EMPTY_LIST
 //        }
-//        val listType = object : TypeToken<List<SectionDTO>>() {
+//        val listType = object : TypeToken<ArrayList<ProjectSectionDTO>>() {
 //
 //        }.getType()
-//        return gson.fromJson<List<SectionDTO>>(data, listType)
+//        return gson.fromJson<ArrayList<ProjectSectionDTO>>(data, listType)
 //    }
 //
 //    @TypeConverter
-//    fun SectionDTOToStoredString(myObjects: List<SectionDTO>): String {
-//        val gson = Gson()
-//        return gson.toJson(myObjects)
-//    }
-
-
-    //===========================================================================
-
-
-//    @TypeConverter
-//    fun storedStringToSectionDTO(data: String?): List<SectionDTO> {
-//        val gson = Gson()
-//        if (data == null) {
-//            return Collections.emptyList()
-//        }
-//        val listType = object : TypeToken<List<SectionDTO>>() {
-//
-//        }.getType()
-//        return gson.fromJson<List<SectionDTO>>(data, listType)
-//    }
-//
-//    @TypeConverter
-//    fun SectionDTOToStoredString(myObjects: List<SectionDTO>): String {
-//        val gson = Gson()
-//        return gson.toJson(myObjects)
-//    }
-
-
-    //===========================================================================
-
-
-//    @TypeConverter
-//    fun storedStringToSectionDTO(data: String?): List<SectionDTO> {
-//        val gson = Gson()
-//        if (data == null) {
-//            return Collections.emptyList()
-//        }
-//        val listType = object : TypeToken<List<SectionDTO>>() {
-//
-//        }.getType()
-//        return gson.fromJson<List<SectionDTO>>(data, listType)
-//    }
-//
-//    @TypeConverter
-//    fun SectionDTOToStoredString(myObjects: List<SectionDTO>): String {
-//        val gson = Gson()
-//        return gson.toJson(myObjects)
-//    }
-
-
-    //===========================================================================
-
-
-//    @TypeConverter
-//    fun storedStringToSectionDTO(data: String?): List<SectionDTO> {
-//        val gson = Gson()
-//        if (data == null) {
-//            return Collections.emptyList()
-//        }
-//        val listType = object : TypeToken<List<SectionDTO>>() {
-//
-//        }.getType()
-//        return gson.fromJson<List<SectionDTO>>(data, listType)
-//    }
-//
-//    @TypeConverter
-//    fun SectionDTOToStoredString(myObjects: List<SectionDTO>): String {
-//        val gson = Gson()
-//        return gson.toJson(myObjects)
-//    }
-
-
-    //===========================================================================
-
-
-//    @TypeConverter
-//    fun storedStringToSectionDTO(data: String?): List<SectionDTO> {
-//        val gson = Gson()
-//        if (data == null) {
-//            return Collections.emptyList()
-//        }
-//        val listType = object : TypeToken<List<SectionDTO>>() {
-//
-//        }.getType()
-//        return gson.fromJson<List<SectionDTO>>(data, listType)
-//    }
-//
-//    @TypeConverter
-//    fun SectionDTOToStoredString(myObjects: List<SectionDTO>): String {
+//    fun SectionDTOToStoredString(myObjects: ArrayList<ProjectSectionDTO>): String {
 //        val gson = Gson()
 //        return gson.toJson(myObjects)
 //    }

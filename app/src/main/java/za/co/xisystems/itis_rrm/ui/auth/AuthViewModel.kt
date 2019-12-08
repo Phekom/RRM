@@ -2,10 +2,12 @@ package za.co.xisystems.itis_rrm.ui.auth
 
 import android.view.View
 import androidx.lifecycle.ViewModel
+import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
 import za.co.xisystems.itis_rrm.utils.ApiException
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.NoInternetException
+import za.co.xisystems.itis_rrm.utils.lazyDeferred
 
 /**
  * Created by Francis Mahlava on 2019/10/23.
@@ -13,8 +15,9 @@ import za.co.xisystems.itis_rrm.utils.NoInternetException
 
 
 class AuthViewModel(
-    private val repository: UserRepository
-) : ViewModel() {
+    private val repository: UserRepository,
+    offlineDataRepository: OfflineDataRepository
+    ) : ViewModel() {
 
     var username: String? = null
     var password: String? = null
@@ -73,5 +76,19 @@ class AuthViewModel(
         }
 
     }
+
+    val user by lazyDeferred {
+        repository.getUser()
+    }
+
+    val offlinedata by lazyDeferred {
+        offlineDataRepository.getSectionItems()
+//        offlineDataRepository.getVoItems()
+//        offlineDataRepository.getProjects()
+//        offlineDataRepository.getWorkFlows()=
+        offlineDataRepository.getContracts()
+
+    }
+
 
 }

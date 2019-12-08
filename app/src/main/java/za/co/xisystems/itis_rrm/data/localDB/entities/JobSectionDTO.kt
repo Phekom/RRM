@@ -20,7 +20,7 @@ class JobSectionDTO(
     @PrimaryKey
     val jobSectionId: String,
     @SerializedName("PrjJobDto")
-    val prjJobDto: List<JobDTO>?,
+    val prjJobDto: ArrayList<JobDTO>?,
     @SerializedName("ProjectSectionId")
     val projectSectionId: String,
     @SerializedName("RecordSynchStateId")

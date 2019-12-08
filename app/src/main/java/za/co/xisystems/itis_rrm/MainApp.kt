@@ -32,13 +32,13 @@ class MainApp : Application(), KodeinAware {
         bind() from singleton { AppDatabase(instance()) }
         bind() from singleton { PreferenceProvider(instance()) }
 
-        bind() from singleton { UserRepository(instance(), instance()) }
+        bind() from singleton { UserRepository(instance(), instance(),instance()) }
         bind() from singleton { ContractsRepository() }
         bind() from singleton { VoItemsRepository(instance(), instance(), instance()) }
         bind() from singleton { HomeRepository(instance(), instance()) }
         bind() from singleton { OfflineDataRepository(instance(), instance(), instance()) }
 
-        bind() from provider { AuthViewModelFactory(instance()) }
+        bind() from provider { AuthViewModelFactory(instance(),instance()) }
         bind() from provider { HomeViewModelFactory(instance(),instance(),instance(),instance()) }
         bind() from provider { CreateViewModelFactory(instance() ) }
 //        bind() from provider{ QuotesViewModelFactory(instance()) }

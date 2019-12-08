@@ -6,11 +6,15 @@ import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 
 
-@Entity
+const val INFO_CLASS_TABLE = "INFO_CLASS_TABLE"
+@Entity(tableName = INFO_CLASS_TABLE)
 data class InfoClassDTO(
+
     @PrimaryKey
-    val sInfoClassId: String,
     val sLinkId: String,
+
+    val sInfoClassId: String?,
+
     @SerializedName("WfId")
-    val wfId: Int
+    val wfId: Int?
 )

@@ -2,8 +2,6 @@ package za.co.xisystems.itis_rrm.data.localDB.dao
 
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import za.co.xisystems.itis_rrm.data.localDB.entities.WorkFlowRouteDTO
 
@@ -14,11 +12,37 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.WorkFlowRouteDTO
 @Dao
 interface WorkFlowRouteDao {
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertWorkFlows( workFlowRoute : List<WorkFlowRouteDTO>)
+//    @Insert(onConflict = OnConflictStrategy.REPLACE)
+//    suspend fun insertWorkFlowRoutes( workFlowRoute : WorkFlowRouteDTO)
+
+//    @Query("INSERT INTO WORKFLOW_ROUTE_TABLE ( workFlowRoute.ict, workflowId ) VALUES (:workFlowRoute, :workflowId)")
+//    fun insertWorkFlowRoute( workFlowRoute : WorkFlowRouteDTO , workflowId: Long?) : Long
+
+
+
+    @Query("INSERT INTO WORKFLOW_ROUTE_TABLE ( routeId, actId, nextRouteId, failRouteId, errorRouteId, canStart, workflowId ) VALUES (:routeId, :actId, :nextRouteId, :failRouteId, :errorRouteId, :canStart, :workflowId)")
+    fun insertWorkFlowRoute( routeId: Long, actId: Long, nextRouteId: Long, failRouteId: Long, errorRouteId: Long, canStart: Long, workflowId: Long?) : Long
 
     @Query("SELECT * FROM WORKFLOW_ROUTE_TABLE WHERE routeId = :routeId")
-    fun checkWorkFlowExistsWorkflowID(routeId: Long): Boolean
+    fun checkWorkFlowRouteExists(routeId: Long): Boolean
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     @Query("SELECT * FROM WORKFLOW_ROUTE_TABLE ")
     fun getWorkflow() : LiveData<List<WorkFlowRouteDTO>>

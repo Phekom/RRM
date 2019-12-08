@@ -55,7 +55,7 @@ android {
         targetSdkVersion 28
         versionCode 1
         // versionName "1.0 #" + versionBuild + " " + versionBuildDate
-        versionName "1.5.41"
+        versionName "1.0.0.1"
         vectorDrawables.useSupportLibrary = true
         multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"

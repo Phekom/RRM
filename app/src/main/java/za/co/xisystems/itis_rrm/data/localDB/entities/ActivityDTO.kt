@@ -13,15 +13,17 @@ const val ACTIVITY_TABLE = "ACTIVITY_TABLE"
 data class ActivityDTO(
     @SerializedName("ActId")
     @PrimaryKey
-    val ACT_ID: Long,
-    @SerializedName("ActName")
-    val ACT_NAME: String,
+    val actId: Long,
     @SerializedName("ActTypeId")
-    val ACT_TYPE_ID: Long,
+    val actTypeId: Long?,
     @SerializedName("ApprovalId")
-    val APPROVAL_ID: Long,
+    val approvalId: Long = 0,
+    @SerializedName("sContentId")
+    val sContentId: Long = 0,
+    @SerializedName("ActName")
+    val actName: String?,
     @SerializedName("Descr")
-    val DESCRIPTION: String,
+    val descr: String?
 
-    val CONTENT_ID: Long
 )
+

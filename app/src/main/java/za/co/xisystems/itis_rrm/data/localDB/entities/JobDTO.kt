@@ -58,11 +58,11 @@ class JobDTO(
     @SerializedName("M9100")
     val m9100: Int,
     @SerializedName("MobileJobItemEstimates")
-    val jobItemEstimates: List<JobItemEstimateDTO>,
+    val jobItemEstimates: ArrayList<JobItemEstimateDTO>,
     @SerializedName("MobileJobItemMeasures")
-    val jobItemMeasures: List<JobItemMeasureDTO>,
+    val jobItemMeasures: ArrayList<JobItemMeasureDTO>,
     @SerializedName("MobileJobSections")
-    val jobSections: List<JobSectionDTO>,
+    val jobSections: ArrayList<JobSectionDTO>,
     @SerializedName("PerfitemGroupId")
     val perfitemGroupId: String,
     @SerializedName("ProjectId")

@@ -7,7 +7,7 @@ import com.google.gson.annotations.SerializedName
 
 @Entity
 data class HealthDTO(
-    @PrimaryKey
     @SerializedName("IsAlive")
+    @PrimaryKey
     val isAlive: Int
 )

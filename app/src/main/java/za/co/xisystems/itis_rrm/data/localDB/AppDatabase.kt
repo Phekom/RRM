@@ -15,18 +15,12 @@ import za.co.xisystems.itis_rrm.utils.Converters
 
 @Database(
     entities = [JobDTO::class, UserDTO::class , UserRoleDTO::class, ItemDTO::class,
-        ContractDTO::class, VoItemDTO::class, ProjectDTO::class , SectionDTO::class ,PrimaryKeyValueDTO::class
+        ContractDTO::class, VoItemDTO::class, ProjectDTO::class , ProjectSectionDTO::class ,PrimaryKeyValueDTO::class
         , LookupOptionDTO::class ,LookupDTO::class ,EntitiesDTO::class ,ItemSectionDTO::class ,WorkFlowDTO::class
         , WorkFlowRouteDTO::class ,JobSectionDTO::class ,InfoClassDTO::class ,ActivityDTO::class , ToDoGroupsDTO::class
         , JobItemEstimatesPhotoDTO::class ,JobItemMeasurePhotoDTO::class ,JobItemEstimateDTO::class ,JobItemMeasureDTO::class
         , ToDoListEntityDTO::class , ChildLookupDTO::class,JobEstimateWorksDTO::class , JobEstimateWorksPhotoDTO::class
-        ,SectionItemDTO::class
-
-
-// ,SectionItem::class
-
-
-
+        ,SectionItemDTO::class,WorkFlowsDTO::class
 
 
     ],
@@ -47,7 +41,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun getEntitiesDao(): EntitiesDao
     abstract fun getItemDao(): ItemDao
     abstract fun getItemSectionDao(): ItemSectionDao
-    abstract fun getSectionDao(): SectionDao
+    abstract fun getProjectSectionDao(): ProjectSectionDao
     abstract fun getWorkFlowDao(): WorkFlowDao
     abstract fun getWorkFlowRouteDao(): WorkFlowRouteDao
     abstract fun getJobSectionDao(): JobSectionDao
@@ -56,15 +50,15 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun getToDoGroupsDao(): ToDoGroupsDao
     abstract fun getEstimateWorkDao(): EstimateWorkDao
     abstract fun getSectionItemDao(): SectionItemDao
+    abstract fun getWorkflowsDao(): WorkflowsDao
 
 
 
 
 
-
-//    abstract fun getItemSectionDao(): ItemSectionDao
-//    abstract fun getSectionDao(): SectionDao
-//    abstract fun getWorkFlowDao(): WorkFlowDao
+//    abstract fun getItemSectionDao(): WorkflowsDao
+//    abstract fun getProjectSectionDao(): ProjectSectionDao
+//
 //    abstract fun getWorkFlowRouteDao(): WorkFlowRouteDao
 
 

@@ -8,7 +8,7 @@ import com.google.gson.annotations.SerializedName
  * Created by Francis Mahlava on 2019/10/23.
  */
 
-const val CURRENT_LOGGEDIN_USER = 0
+//const val CURRENT_LOGGEDIN_USER = 0
 const val USER_TABLE = "USER_TABLE"
 
 @Entity(tableName = USER_TABLE)
@@ -17,11 +17,12 @@ data class UserDTO(
     @SerializedName("RegistrationId")
     val registrationId: String, // E1676AD5BDEB6C4E8520F48160E01EAC
     @SerializedName("UserId")
+    @PrimaryKey
     val userId: String, // 3920
     @SerializedName("UserName")
     val userName: String, // niebuhrk
     @SerializedName("UserRoles")
-    val userRoles: List<UserRoleDTO>,
+    val userRoles: ArrayList<UserRoleDTO>,
     @SerializedName("UserStatus")
     val userStatus: String, // Y
     var PIN: String?,
@@ -31,6 +32,6 @@ data class UserDTO(
     var WEB_SERVICE_URI: String?
 
 ) {
-    @PrimaryKey(autoGenerate = false)
-    var uid: Int = CURRENT_LOGGEDIN_USER
+//    @PrimaryKey(autoGenerate = false)
+//    var uid: Int = CURRENT_LOGGEDIN_USER
 }
