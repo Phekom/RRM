@@ -18,45 +18,28 @@ data class PrimaryKeyValueDTO(
     @SerializedName("Key")
     val primary_key: String?,
     @SerializedName("Value")
-    val value: String? ,
+    var valueString: String?,
 
-
-    @SerializedName("ValueType")
-    val valueType: String?,
-//    @Ignore
     var trackRouteId: String?,
 
     @SerializedName("ActivityId")
     val activityId: Int, // 3
 
-    var valueBytes: ByteArray? = Base64Utils.decode(value)
+//    var valueBytes: ByteArray? = Base64Utils.decode(value)
+    var valueBytes: ByteArray?,
 
 
-
+    @SerializedName("ValueType")
+    val valueType: String?
+//    @Ignore
 //    @SerializedName("PrimaryKeyValues")
 //    val primaryKeyValues: ArrayList<PrimaryKeyValueDTO>
 ) {
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as PrimaryKeyValueDTO
-
-        if (value != other.value) return false
-        if (trackRouteId != other.trackRouteId) return false
-        if (valueBytes != null) {
-            if (other.valueBytes == null) return false
-            if (!valueBytes!!.contentEquals(other.valueBytes!!)) return false
-        } else if (other.valueBytes != null) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = value?.hashCode() ?: 0
-        result = 31 * result + (trackRouteId?.hashCode() ?: 0)
-        result = 31 * result + (valueBytes?.contentHashCode() ?: 0)
-        return result
-    }
-
+    var value: ByteArray?
+        get() = if (valueString == null) valueBytes else Base64Utils.decode(valueString)
+        set(value) {
+            this.valueBytes = value
+            this.valueString = Base64Utils.encode(value)
+        }
 }
+

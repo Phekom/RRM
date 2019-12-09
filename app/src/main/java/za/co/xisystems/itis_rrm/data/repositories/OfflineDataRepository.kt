@@ -75,19 +75,6 @@ class OfflineDataRepository(
     }
 
 
-//    suspend fun getVoItems(): LiveData<List<VoItemDTO>> {
-//        return withContext(Dispatchers.IO) {
-//            val projectId = Db.getProjectDao().getProjectId()
-////            val projectId = "3a9ddf6c-eb4f-421a-947b-de486ac55875"
-//            fetchVoItems(projectId)
-//            Db.getVoItemDao().getAllVoltem()
-//        }
-////         Coroutines.io {
-////             prefs.savelastSavedAt(LocalDateTime.now().toString())
-////             Db.getVoItemDao().insertVoItems(voItems)
-////         }
-//    }
-
     suspend fun getContracts(): LiveData<List<ContractDTO>> {
         return withContext(Dispatchers.IO) {
             val userId = Db.getUserDao().getuserID()
@@ -349,32 +336,10 @@ class OfflineDataRepository(
 
     private fun insertEntity(entity: ToDoListEntityDTO, jobId: String) {
         Coroutines.io {
-
-            if (!Db.getEntitiesDao().checkIfEntitiesExist(entity.trackRouteId)) {
-//                Db.getEntitiesDao().insertEntitie(
-//                    DataConversion.bigEndianToString(entity.trackRouteIdBytes), if (entity.actionable) 1 else 0,
-//                    entity.activityId, entity.currentRouteId, entity.data, entity.description, entity.entities,
-//                    entity.entityName, entity.location,entity.primaryKeyValues, entity.recordVersion!!, jobId
-//                )
-//
-//                for (primaryKeyValue in entity.primaryKeyValues) {
-//                    Db.getPrimaryKeyValueDao().insertPrimaryKeyValue(
-//                        primaryKeyValue.primary_key,
-//                        DataConversion.bigEndianToString(primaryKeyValue.valueBytes),
-//                        DataConversion.bigEndianToString(entity.trackRouteIdBytes),
-//                        entity.activityId.toString()
-//                    )
-//                }
-//            }
-
-
-
-
-
-
-//            if (!Db.getEntitiesDao().checkIfEntitiesExist(DataConversion.bigEndianToString(entity.trackRouteIdBytes))) {
+            if (!Db.getEntitiesDao().checkIfEntitiesExist(DataConversion.bigEndianToString(entity.trackRouteId))) {
                 Db.getEntitiesDao().insertEntitie(
-                    entity.trackRouteId, if (entity.actionable) 1 else 0,
+                    DataConversion.bigEndianToString(entity.trackRouteId)
+                    ,if (entity.actionable) 1 else 0,
                     entity.activityId, entity.currentRouteId, entity.data, entity.description, entity.entities,
                     entity.entityName, entity.location,entity.primaryKeyValues, entity.recordVersion!!, jobId
                 )
@@ -382,8 +347,8 @@ class OfflineDataRepository(
                 for (primaryKeyValue in entity.primaryKeyValues) {
                     Db.getPrimaryKeyValueDao().insertPrimaryKeyValue(
                         primaryKeyValue.primary_key,
-                        primaryKeyValue.value,
-                        entity.trackRouteId,
+                        DataConversion.bigEndianToString(primaryKeyValue.value),
+                        DataConversion.bigEndianToString(entity.trackRouteId),
                         entity.activityId
                     )
                 }
@@ -393,10 +358,8 @@ class OfflineDataRepository(
 
     private fun getJobIdFromPrimaryKeyValues(primaryKeyValues: ArrayList<PrimaryKeyValueDTO>): String? {
         for (primaryKeyValue in primaryKeyValues) {
-            if (primaryKeyValue.primary_key.equals("JobId")) {
-//                return DataConversion.bigEndianToString(primaryKeyValue.valueBytes)
-                DataConversion.bigEndianToString(primaryKeyValue.valueBytes)
-                return primaryKeyValue.valueBytes.toString()
+            if (primaryKeyValue.primary_key!!.contains("JobId")) {
+                return DataConversion.bigEndianToString(primaryKeyValue.value)
             }
         }
         return null
@@ -476,80 +439,6 @@ class OfflineDataRepository(
             }
         }
     }
-
-
-//    private fun insertprojectItems(items: List<ItemDTO>) {
-//        Coroutines.io {
-//            prefs.savelastSavedAt(LocalDateTime.now().toString())
-//            for (item in items) {
-//                if (!Db.getItemDao().checkItemExistsItemId(item.itemId)) {
-//                    //  Lets get the ID from Sections Items
-//                    val pattern = Pattern.compile("(.*?)\\.")
-//                    val matcher = pattern.matcher(item.itemCode)
-//                    if (matcher.find()) {
-//                        val itemCode = matcher.group(1) + "0"
-//                        //  Lets Get the ID Back on Match
-//                        item.sectionItemId.(
-//                            Db.getSectionItemDao().getSectionItemId(
-//                                itemCode.replace(
-//                                    "\\s+".toRegex(), ""
-//                                )
-//                            )
-//                        )
-//                    }
-//                    val l = Db.getItemDao().insertItem(item)
-//                }
-//            }
-//        }
-//    }
-//
-//    fun insertProjectItems(items: ArrayList<ItemDTO>?) {
-//        if (items != null) {
-//            for (item in items) {
-//                if (!Db.getItemDao().checkItemExistsItemId(item.itemId)) {
-//                    //  Lets get the ID from Sections Items
-//                    val pattern = Pattern.compile("(.*?)\\.")
-//                    val matcher = pattern.matcher(item.itemCode)
-//                    if (matcher.find()) {
-//                        val itemCode = matcher.group(1) + "0"
-//                        //  Lets Get the ID Back on Match
-//                        item.sectionItemId
-//                        Db.getSectionItemDao().getSectionItemId(
-//                                itemCode.replace(
-//                                    "\\s+".toRegex(), ""
-//
-//                            )
-//                        )
-//                    }
-//                    val l = Db.getItemDao().insertItem(null, null)
-//                }
-//            }
-//        }
-//    }
-
-
-//    private fun saveSectionItems(sectionItems: SectionItemDTO) {
-//        Coroutines.io {
-//            //            Db.getSectionItemDao().insertEntities(sectionItems)
-//        }
-//    }
-
-
-//    val CREATOR: Parcelable.Creator<Recipe> = object : Parcelable.Creator<Recipe> {
-//        override fun createFromParcel(`in`: Parcel): Recipe {
-//            return Recipe(`in`)
-//        }
-//
-//        override fun newArray(size: Int): Array<Recipe> {
-//            return arrayOfNulls<Recipe>(size)
-//        }
-//    }
-
-
-//    for (i in 0 until contrct.size) {
-//        item[i] = it.get(i).descr
-//    }
-
 
 }
 

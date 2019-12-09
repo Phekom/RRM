@@ -14,8 +14,8 @@ data class ToDoListEntityDTO(
     @PrimaryKey
     val id :Int,
     @SerializedName("TrackRouteId")
-    val trackRouteId: String?,
-    var trackRouteIdBytes: ByteArray? = Base64Utils.decode(trackRouteId!!),
+    var trackRouteIdString: String?,
+    var trackRouteIdBytes: ByteArray?,
 
     @SerializedName("Actionable")
     val actionable: Boolean, // false
@@ -38,12 +38,14 @@ data class ToDoListEntityDTO(
     @SerializedName("RecordVersion")
     val recordVersion: Int?, // 0
 
-
-
-
     var jobId: String?
 
 
-
-
-)
+){
+    var trackRouteId: ByteArray?
+        get() = if (trackRouteIdString == null) trackRouteIdBytes else Base64Utils.decode(trackRouteIdString)
+        set(trackRouteId) {
+            this.trackRouteIdBytes = trackRouteId
+            this.trackRouteIdString = Base64Utils.encode(trackRouteId)
+        }
+}

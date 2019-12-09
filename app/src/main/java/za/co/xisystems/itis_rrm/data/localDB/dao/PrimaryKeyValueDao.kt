@@ -17,13 +17,8 @@ interface PrimaryKeyValueDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertPrimaryKeyValues( primaryKeyValue : PrimaryKeyValueDTO )
 
-    @Query("INSERT INTO PRIMARY_KEY_VALUE_TABLE (primary_key, value, trackRouteId, activityId) VALUES (:primary_key, :value, :trackRouteId, :activityId)")
+    @Query("INSERT INTO PRIMARY_KEY_VALUE_TABLE (primary_key, valueString, trackRouteId, activityId) VALUES (:primary_key, :value, :trackRouteId, :activityId)")
     fun insertPrimaryKeyValue(primary_key: String?, value: String?, trackRouteId: String?,activityId: Int)
-
-
-
-
-
 
     @Query("SELECT * FROM PRIMARY_KEY_VALUE_TABLE ")
     fun getAllPrimaryKeyValue() : LiveData<List<PrimaryKeyValueDTO>>
@@ -34,7 +29,7 @@ interface PrimaryKeyValueDao {
     @Query("SELECT * FROM PRIMARY_KEY_VALUE_TABLE WHERE trackRouteId = :trackRouteId")
     fun getPrimaryKeyValuesFromTrackRouteId(trackRouteId: String): LiveData<PrimaryKeyValueDTO>
 
-    @Query("SELECT * FROM PRIMARY_KEY_VALUE_TABLE WHERE value = :jobId")
+    @Query("SELECT * FROM PRIMARY_KEY_VALUE_TABLE WHERE valueString = :jobId")
     fun getPrimaryKeyValueForJobId(jobId: String): LiveData<PrimaryKeyValueDTO>
 
 

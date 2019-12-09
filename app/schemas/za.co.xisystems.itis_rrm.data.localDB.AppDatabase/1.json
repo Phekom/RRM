@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "841518f14d6af4dac679e1691b530f14",
+    "identityHash": "0e9ad94761742b2360d554247bd0ae31",
     "entities": [
       {
         "tableName": "JOB_TABLE",
@@ -822,7 +822,7 @@
       },
       {
         "tableName": "PRIMARY_KEY_VALUE_TABLE",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `primary_key` TEXT, `value` TEXT, `valueType` TEXT, `trackRouteId` TEXT, `activityId` INTEGER NOT NULL, `valueBytes` BLOB, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `primary_key` TEXT, `valueString` TEXT, `valueType` TEXT, `trackRouteId` TEXT, `activityId` INTEGER NOT NULL, `valueBytes` BLOB, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -837,8 +837,8 @@
             "notNull": false
           },
           {
-            "fieldPath": "value",
-            "columnName": "value",
+            "fieldPath": "valueString",
+            "columnName": "valueString",
             "affinity": "TEXT",
             "notNull": false
           },
@@ -1774,7 +1774,7 @@
       },
       {
         "tableName": "ToDo_ENTITY_TABLE",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `trackRouteId` TEXT, `trackRouteIdBytes` BLOB, `actionable` INTEGER NOT NULL, `activityId` INTEGER NOT NULL, `currentRouteId` INTEGER NOT NULL, `data` TEXT, `description` TEXT, `entities` TEXT NOT NULL, `entityName` TEXT, `location` TEXT, `primaryKeyValues` TEXT NOT NULL, `recordVersion` INTEGER, `jobId` TEXT, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `trackRouteIdString` TEXT, `trackRouteIdBytes` BLOB, `actionable` INTEGER NOT NULL, `activityId` INTEGER NOT NULL, `currentRouteId` INTEGER NOT NULL, `data` TEXT, `description` TEXT, `entities` TEXT NOT NULL, `entityName` TEXT, `location` TEXT, `primaryKeyValues` TEXT NOT NULL, `recordVersion` INTEGER, `jobId` TEXT, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -1783,8 +1783,8 @@
             "notNull": true
           },
           {
-            "fieldPath": "trackRouteId",
-            "columnName": "trackRouteId",
+            "fieldPath": "trackRouteIdString",
+            "columnName": "trackRouteIdString",
             "affinity": "TEXT",
             "notNull": false
           },
@@ -2106,7 +2106,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '841518f14d6af4dac679e1691b530f14')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '0e9ad94761742b2360d554247bd0ae31')"
     ]
   }
 }

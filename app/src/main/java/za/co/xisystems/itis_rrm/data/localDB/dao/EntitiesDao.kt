@@ -19,38 +19,19 @@ interface EntitiesDao {
     suspend fun insertEntities( intities : ToDoListEntityDTO )
 
 
-    @Query("INSERT INTO ToDo_ENTITY_TABLE (trackRouteId, actionable, activityId, currentRouteId, data, description, entities, entityName, location, primaryKeyValues, recordVersion, jobId) VALUES (:trackRouteId, :actionable, :activityId, :currentRouteId, :data , :description, :entities, :entityName, :location, :primaryKeyValues, :recordVersion, :jobId)")
+    @Query("INSERT INTO ToDo_ENTITY_TABLE (trackRouteIdString, actionable, activityId, currentRouteId, data, description, entities, entityName, location, primaryKeyValues, recordVersion, jobId) VALUES (:trackRouteId, :actionable, :activityId, :currentRouteId, :data , :description, :entities, :entityName, :location, :primaryKeyValues, :recordVersion, :jobId)")
     fun insertEntitie( trackRouteId: String?, actionable: Int, activityId: Int, currentRouteId: Int, data: String?, description: String?, entities: ArrayList<ToDoListEntityDTO>,
         entityName: String?, location: String?, primaryKeyValues: ArrayList<PrimaryKeyValueDTO>, recordVersion: Int, jobId: String?)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    @Query("SELECT * FROM ToDo_ENTITY_TABLE WHERE trackRouteId = :trackRouteId")
+    @Query("SELECT * FROM ToDo_ENTITY_TABLE WHERE trackRouteIdString = :trackRouteId")
     fun checkIfEntitiesExist(trackRouteId: String?): Boolean
 
     @Query("SELECT * FROM ToDo_ENTITY_TABLE ")
     fun getAllEntities() : LiveData<List<ToDoListEntityDTO>>
 
 
-    @Query("SELECT * FROM ToDo_ENTITY_TABLE WHERE trackRouteId = :trackRouteId")
+    @Query("SELECT * FROM ToDo_ENTITY_TABLE WHERE trackRouteIdString = :trackRouteId")
     fun getEntitiesForTrackRouteId(trackRouteId: String): LiveData<ToDoListEntityDTO>
 
 
