@@ -446,7 +446,6 @@ private operator fun <T> LiveData<T>.not(): Boolean {
     return true
 }
 
-
 //    fun saveProjectSections(sections: ArrayList<ProjectSectionDTO>?) {
 //        Coroutines.io {
 //            if (sections != null) {
