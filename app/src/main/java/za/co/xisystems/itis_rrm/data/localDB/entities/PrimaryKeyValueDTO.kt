@@ -27,7 +27,6 @@ data class PrimaryKeyValueDTO(
 
     var valueBytes: ByteArray?,
 
-
     @SerializedName("ValueType")
     val valueType: String?
 
