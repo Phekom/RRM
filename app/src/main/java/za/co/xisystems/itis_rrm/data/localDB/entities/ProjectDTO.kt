@@ -1,9 +1,6 @@
 package za.co.xisystems.itis_rrm.data.localDB.entities
 
-import androidx.room.ColumnInfo
-import androidx.room.Entity
-import androidx.room.ForeignKey
-import androidx.room.PrimaryKey
+import androidx.room.*
 import com.google.gson.annotations.SerializedName
 
 /**
@@ -22,12 +19,13 @@ const val PROJECT_TABLE = "PROJECT_TABLE"
             onDelete = ForeignKey.NO_ACTION
         )
     )
-//    ,indices = arrayOf(Index(value = ["projectId"],unique = true))
+    ,indices = arrayOf(Index(value = ["projectId"],unique = true))
 )
 data class ProjectDTO(
+    @PrimaryKey
+    val id: Int,
 
     @SerializedName("ProjectId")
-    @PrimaryKey
     val projectId: String,
 
     @SerializedName("Descr")

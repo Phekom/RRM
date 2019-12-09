@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -13,6 +14,8 @@ import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.ui.auth.AuthViewModel
+import za.co.xisystems.itis_rrm.ui.auth.AuthViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.home.HomeViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.home.HomeViewModelFactory
 import za.co.xisystems.itis_rrm.utils.Coroutines
@@ -22,9 +25,9 @@ class CreateFragment : Fragment(), KodeinAware {
     override val kodein by kodein()
     private lateinit var createViewModel: CreateViewModel
     private lateinit var homeViewModel: HomeViewModel
-
+    private lateinit var authViewModel: AuthViewModel
     private val factory: CreateViewModelFactory by instance()
-    //    var toggle: ActionBarDrawerToggle? = null
+    private val factoryAuth: AuthViewModelFactory by instance()
     private val factoryhome: HomeViewModelFactory by instance()
 
     override fun onCreateView(
@@ -42,7 +45,7 @@ class CreateFragment : Fragment(), KodeinAware {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         createViewModel = ViewModelProviders.of(this, factory).get(CreateViewModel::class.java)
-        homeViewModel = ViewModelProviders.of(this, factoryhome).get(HomeViewModel::class.java)
+        authViewModel = ViewModelProviders.of(this, factoryAuth).get(AuthViewModel::class.java)
 
         mid_lin.visibility = View.GONE
         last_lin.visibility = View.GONE
@@ -51,47 +54,44 @@ class CreateFragment : Fragment(), KodeinAware {
 
         Coroutines.main {
 
-//            val contracts = homeViewModel.offlinedata.await()
-//            contracts.observe(viewLifecycleOwner, Observer {
-//                val contract = arrayOfNulls<String>(it.size)
+            val contracts = authViewModel.offlinedata.await()
+            contracts.observe(viewLifecycleOwner, Observer {
+                val contract = arrayOfNulls<String>(it.size)
+                for (i in 0 until it.size) {
+                    contract[i] = it.get(i).contractNo
+
+                }
+                val arrayadapter = ArrayAdapter(
+                    context!!.applicationContext,
+                    android.R.layout.simple_spinner_dropdown_item,
+                    contract
+                )
+                contractSpinner.adapter = arrayadapter
+
+                val projects = arrayOfNulls<String>(it.size)
+                for (i in 0 until it.size) {
+                    projects[i] = it.get(i).shortDescr
+                }
+
+//                val sub_divisions = arrayOfNulls<String>(it.size)
 //                for (i in 0 until it.size) {
-//                    contract[i] = it.get(i).contractNo
-//
+//                    sub_divisions[i] = it.get(i).projectCode
 //                }
-//                val arrayadapter = ArrayAdapter(
-//                    context!!.applicationContext,
-//                    android.R.layout.simple_spinner_dropdown_item,
-//                    contract
-//                )
-//                contractSpinner.adapter = arrayadapter
+//                Toast.makeText(context?.applicationContext,it.size.toString(),Toast.LENGTH_SHORT).show()
+
+            })
 
 
 
-
-//                val projects = arrayOfNulls<String>(it.size)
-//                for (i in 0 until it.size) {
-//                    projects[i] = it.get(i).shortDescr
-//                }
-
-//                fun newArray(size: Int): Array<contrct> {
-//                    return arrayOfNulls<contrct>(size)
-//                }
-
-
-
-//            })
-
-
-
-            val projects = homeViewModel.projectsItems.await()
-            projects.observe(viewLifecycleOwner,Observer {
+//            val projects = homeViewModel.projectsItems.await()
+//            projects.observe(viewLifecycleOwner,Observer {
 //                val sub_divisions = arrayOfNulls<String>(it.size)
 //                for (i in 0 until it.size) {
 ////                    sub_divisions[i] = it.get(i).projectCode
 //                }
 
-                Toast.makeText(context?.applicationContext,it.size.toString(),Toast.LENGTH_SHORT).show()
-            })
+
+//            })
 
 
 

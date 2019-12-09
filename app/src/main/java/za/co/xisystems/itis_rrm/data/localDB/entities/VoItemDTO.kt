@@ -22,9 +22,9 @@ const val PROJECT_VO_ID = 0
      )
 )
 data class VoItemDTO(
-
-    @SerializedName("ProjectVoId")
     @PrimaryKey
+    val id :Int,
+    @SerializedName("ProjectVoId")
     val projectVoId: String,
     @SerializedName("ItemCode")
     val itemCode: String?,

@@ -136,12 +136,9 @@ class OfflineDataRepository(
                         activitySection,
                         matcher.group(1).replace("\\s+".toRegex(), ""), sectionItemId
                     )
-
                 }
-
             }
         }
-
     }
 
     private fun saveContracts(contracts: List<ContractDTO>) {
@@ -259,7 +256,6 @@ class OfflineDataRepository(
                                 projectId
                             )
                         }
-                        Db.getItemDao().insertItems(item)
                     }
 
                 }
@@ -314,6 +310,13 @@ class OfflineDataRepository(
         }
     }
 
+    private suspend fun fetchProjectItems(projectId: String) {
+//        val lastSavedAt = prefs.getLastSavedAt()
+//        if (lastSavedAt == null || isFetchNeeded(LocalDateTime.parse(lastSavedAt))) {
+        val itemsResponse = apiRequest { api.getProjectItems(projectId) }
+        projectItems.postValue(itemsResponse.items)
+//        }
+    }
 
     private fun saveUserTaskList(toDoListGroups: ArrayList<ToDoGroupsDTO>?) {
         Coroutines.io {
@@ -333,10 +336,10 @@ class OfflineDataRepository(
                     for (toDoListEntity in entitiesArrayList) {
                         val jobId = getJobIdFromPrimaryKeyValues(toDoListEntity.primaryKeyValues)
 
-//                        insertEntity(toDoListEntity, jobId!!)
+                        insertEntity(toDoListEntity, jobId!!)
 
                         for (subEntity in toDoListEntity.entities) {
-//                            insertEntity(subEntity, jobId)
+                            insertEntity(subEntity, jobId)
                         }
                     }
                 }
@@ -346,28 +349,42 @@ class OfflineDataRepository(
 
     private fun insertEntity(entity: ToDoListEntityDTO, jobId: String) {
         Coroutines.io {
-            if (!Db.getEntitiesDao().checkIfEntitiesExist(DataConversion.bigEndianToString(entity.trackRouteIdBytes))) {
-                Db.getEntitiesDao().insertEntities(
-                    entity
-//                DataConversion.bigEndianToString(entity.getTrackRouteId()),
-//                if (entity.isActionable()) 1 else 0,
-//                entity.getActivityId(),
-//                entity.getCurrentRouteId(),
-//                entity.getData(),
-//                entity.getDescription(),
-//                entity.getEntityName(),
-//                entity.getLocation(),
-//                entity.getEntityName(),
-//                jobId
+
+            if (!Db.getEntitiesDao().checkIfEntitiesExist(entity.trackRouteId)) {
+//                Db.getEntitiesDao().insertEntitie(
+//                    DataConversion.bigEndianToString(entity.trackRouteIdBytes), if (entity.actionable) 1 else 0,
+//                    entity.activityId, entity.currentRouteId, entity.data, entity.description, entity.entities,
+//                    entity.entityName, entity.location,entity.primaryKeyValues, entity.recordVersion!!, jobId
+//                )
+//
+//                for (primaryKeyValue in entity.primaryKeyValues) {
+//                    Db.getPrimaryKeyValueDao().insertPrimaryKeyValue(
+//                        primaryKeyValue.primary_key,
+//                        DataConversion.bigEndianToString(primaryKeyValue.valueBytes),
+//                        DataConversion.bigEndianToString(entity.trackRouteIdBytes),
+//                        entity.activityId.toString()
+//                    )
+//                }
+//            }
+
+
+
+
+
+
+//            if (!Db.getEntitiesDao().checkIfEntitiesExist(DataConversion.bigEndianToString(entity.trackRouteIdBytes))) {
+                Db.getEntitiesDao().insertEntitie(
+                    entity.trackRouteId, if (entity.actionable) 1 else 0,
+                    entity.activityId, entity.currentRouteId, entity.data, entity.description, entity.entities,
+                    entity.entityName, entity.location,entity.primaryKeyValues, entity.recordVersion!!, jobId
                 )
 
                 for (primaryKeyValue in entity.primaryKeyValues) {
                     Db.getPrimaryKeyValueDao().insertPrimaryKeyValue(
-                        primaryKeyValue
-//                        primaryKeyValue.key,
-//                        DataConversion.bigEndianToString(primaryKeyValue.valueBytes),
-//                        DataConversion.bigEndianToString(entity.trackRouteIdBytes),
-//                        entity.activityId
+                        primaryKeyValue.primary_key,
+                        primaryKeyValue.value,
+                        entity.trackRouteId,
+                        entity.activityId
                     )
                 }
             }
@@ -376,21 +393,17 @@ class OfflineDataRepository(
 
     private fun getJobIdFromPrimaryKeyValues(primaryKeyValues: ArrayList<PrimaryKeyValueDTO>): String? {
         for (primaryKeyValue in primaryKeyValues) {
-            if (primaryKeyValue.key.equals("JobId")) {
-                return DataConversion.bigEndianToString(primaryKeyValue.valueBytes)
+            if (primaryKeyValue.primary_key.equals("JobId")) {
+//                return DataConversion.bigEndianToString(primaryKeyValue.valueBytes)
+                DataConversion.bigEndianToString(primaryKeyValue.valueBytes)
+                return primaryKeyValue.valueBytes.toString()
             }
         }
         return null
     }
 
 
-    private suspend fun fetchProjectItems(projectId: String) {
-//        val lastSavedAt = prefs.getLastSavedAt()
-//        if (lastSavedAt == null || isFetchNeeded(LocalDateTime.parse(lastSavedAt))) {
-        val itemsResponse = apiRequest { api.getProjectItems(projectId) }
-        projectItems.postValue(itemsResponse.items)
-//        }
-    }
+
 
     private suspend fun fetchVoItems(ProjectId: String) {
         val lastSavedAt = prefs.getLastSavedAt()

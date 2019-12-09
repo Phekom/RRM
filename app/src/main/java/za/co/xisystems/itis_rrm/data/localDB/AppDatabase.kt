@@ -16,7 +16,7 @@ import za.co.xisystems.itis_rrm.utils.Converters
 @Database(
     entities = [JobDTO::class, UserDTO::class , UserRoleDTO::class, ItemDTO::class,
         ContractDTO::class, VoItemDTO::class, ProjectDTO::class , ProjectSectionDTO::class ,PrimaryKeyValueDTO::class
-        , LookupOptionDTO::class ,LookupDTO::class ,EntitiesDTO::class ,ItemSectionDTO::class ,WorkFlowDTO::class
+        , LookupOptionDTO::class ,LookupDTO::class ,ItemSectionDTO::class ,WorkFlowDTO::class
         , WorkFlowRouteDTO::class ,JobSectionDTO::class ,InfoClassDTO::class ,ActivityDTO::class , ToDoGroupsDTO::class
         , JobItemEstimatesPhotoDTO::class ,JobItemMeasurePhotoDTO::class ,JobItemEstimateDTO::class ,JobItemMeasureDTO::class
         , ToDoListEntityDTO::class , ChildLookupDTO::class,JobEstimateWorksDTO::class , JobEstimateWorksPhotoDTO::class
@@ -82,7 +82,6 @@ abstract class AppDatabase : RoomDatabase() {
                 context.applicationContext,
                 AppDatabase::class.java,
                 "myRRM_Database.db"
-
             ).build()
 
 

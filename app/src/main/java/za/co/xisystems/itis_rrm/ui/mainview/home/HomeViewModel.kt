@@ -3,7 +3,7 @@ package za.co.xisystems.itis_rrm.ui.mainview.home
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
-import za.co.xisystems.itis_rrm.data.network.ResponseListener
+import za.co.xisystems.itis_rrm.data.network.OfflineListener
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
@@ -15,14 +15,16 @@ class HomeViewModel(
     val context: Context
 ) : ViewModel() {
 
-    var rListener: ResponseListener? = null
+    var rListener: OfflineListener? = null
 
     val user_roles by lazyDeferred {
         repository.getUserRoles()
     }
     val projectsItems by lazyDeferred {
 //        offlineDataRepository.getProjects()
+        rListener?.onStarted()
         offlineDataRepository.getProjectItems()
+
     }
 
 //    var mText : MutableLiveData<String>

@@ -16,15 +16,22 @@ data class PrimaryKeyValueDTO(
     @PrimaryKey
     val id: Int,
     @SerializedName("Key")
-    val key: String?,
+    val primary_key: String?,
     @SerializedName("Value")
-    val value: String?,
+    val value: String? ,
+
+
     @SerializedName("ValueType")
     val valueType: String?,
 //    @Ignore
     var trackRouteId: String?,
 
+    @SerializedName("ActivityId")
+    val activityId: Int, // 3
+
     var valueBytes: ByteArray? = Base64Utils.decode(value)
+
+
 
 //    @SerializedName("PrimaryKeyValues")
 //    val primaryKeyValues: ArrayList<PrimaryKeyValueDTO>
@@ -35,10 +42,7 @@ data class PrimaryKeyValueDTO(
 
         other as PrimaryKeyValueDTO
 
-        if (id != other.id) return false
-        if (key != other.key) return false
         if (value != other.value) return false
-        if (valueType != other.valueType) return false
         if (trackRouteId != other.trackRouteId) return false
         if (valueBytes != null) {
             if (other.valueBytes == null) return false
@@ -49,12 +53,10 @@ data class PrimaryKeyValueDTO(
     }
 
     override fun hashCode(): Int {
-        var result = id
-        result = 31 * result + (key?.hashCode() ?: 0)
-        result = 31 * result + (value?.hashCode() ?: 0)
-        result = 31 * result + (valueType?.hashCode() ?: 0)
+        var result = value?.hashCode() ?: 0
         result = 31 * result + (trackRouteId?.hashCode() ?: 0)
         result = 31 * result + (valueBytes?.contentHashCode() ?: 0)
         return result
     }
+
 }

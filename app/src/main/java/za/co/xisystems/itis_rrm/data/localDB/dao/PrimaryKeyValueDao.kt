@@ -15,7 +15,15 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.PrimaryKeyValueDTO
 interface PrimaryKeyValueDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertPrimaryKeyValue( primaryKeyValue : PrimaryKeyValueDTO )
+    suspend fun insertPrimaryKeyValues( primaryKeyValue : PrimaryKeyValueDTO )
+
+    @Query("INSERT INTO PRIMARY_KEY_VALUE_TABLE (primary_key, value, trackRouteId, activityId) VALUES (:primary_key, :value, :trackRouteId, :activityId)")
+    fun insertPrimaryKeyValue(primary_key: String?, value: String?, trackRouteId: String?,activityId: Int)
+
+
+
+
+
 
     @Query("SELECT * FROM PRIMARY_KEY_VALUE_TABLE ")
     fun getAllPrimaryKeyValue() : LiveData<List<PrimaryKeyValueDTO>>

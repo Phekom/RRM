@@ -46,20 +46,41 @@ class HomeFragment : BaseFragment(), KodeinAware {
                 username?.setText(it.userName)
             })
 
-            val contracts = authViewModel.offlinedata.await()
-            contracts.observe(viewLifecycleOwner, Observer {
-                val contract = arrayOfNulls<String>(it.size)
-                for (i in 0 until it.size) {
-                    contract[i] = it.get(i).contractNo
+//
+//                val contracts = authViewModel.offlinedata.await()
+//                contracts.observe(viewLifecycleOwner, Observer {contracts ->
+//
+//                    val contract = arrayOfNulls<String>(contracts.size)
+//                    for (i in 0 until contracts.size) {
+//                        contract[i] = contracts.get(i).contractNo
+//                    }
+//                    val arrayadapter = ArrayAdapter(
+//                    context!!.applicationContext,
+//                        android.R.layout.simple_spinner_dropdown_item,
+//                        contract
+//                    )
+//                contractSpinner.adapter = arrayadapter
+//                })
 
-                }
-            })
 
-            val user_roles = homeViewModel.user_roles.await()
-            user_roles.observe(viewLifecycleOwner, Observer {
-//                username?.setText(it.userName)
-//                ping()
-            })
+
+
+
+
+
+
+
+
+
+//            val contracts = authViewModel.offlinedata.await()
+//            contracts.observe(viewLifecycleOwner, Observer {
+//                val contract = arrayOfNulls<String>(it.size)
+//                for (i in 0 until it.size) {
+//                    contract[i] = it.get(i).contractNo
+//                }
+//            })
+
+
 //            val offlineData = homeViewModel.offlinedata.await()
 //            offlineData.observe(viewLifecycleOwner, Observer {
 //                //                context?.toast(it.size.toString())
@@ -68,9 +89,7 @@ class HomeFragment : BaseFragment(), KodeinAware {
         }
 
 
-
-
-//        if (context?.applicationContext != null) {
+     //        if (context?.applicationContext != null) {
 //            //  Check every 2 secs if Mobile data or Location is off/on
 //            val t = object : CountDownTimer(java.lang.Long.MAX_VALUE, 2000) {
 //
@@ -139,7 +158,7 @@ class HomeFragment : BaseFragment(), KodeinAware {
             //            val user_nm = homeViewModel.user_n.await()
 //            user_nm.observe(viewLifecycleOwner, Observer {
 //
-//                var responseListener: ResponseListener? = null
+//                var responseListener: OfflineListener? = null
 //                try {
 //                    responseListener?.onSuccess(health!!.isAlive)
 //                    connectedTo.setTextColor(colorConnected)

@@ -13,7 +13,26 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 interface UserDao{
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(userDTO: UserDTO) : Long
+    suspend fun insert(user: UserDTO) : Long
+
+    @Query("SELECT * FROM USER_TABLE WHERE userId = :userId")
+    fun checkUserExists(userId: String): Boolean
+
+    @Query("INSERT INTO USER_TABLE (PIN, PHONE_NUMBER, IMEI, DEVICE, WEB_SERVICE_URI) VALUES (:PIN, :PHONE_NUMBER, :IMEI, :DEVICE, :WEB_SERVICE_URI)")
+    fun updateUser( PIN: String?,  PHONE_NUMBER: String?, IMEI: String?, DEVICE: String?, WEB_SERVICE_URI: String?) : Long
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     @Query("SELECT * FROM USER_TABLE WHERE userId = userId")
     fun getuser() : LiveData<UserDTO>

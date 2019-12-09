@@ -112,23 +112,23 @@ class Converters {
 
 
     //======================================================================================
-    @TypeConverter
-    fun storedStringToEntityDTO(data: String?):ArrayList<EntitiesDTO> {
-        val gson = Gson()
-        if (data == null) {
-            return Collections.EMPTY_LIST as ArrayList<EntitiesDTO>
-        }
-        val listType = object :TypeToken<ArrayList<EntitiesDTO>>() {
-
-        }.getType()
-        return gson.fromJson<ArrayList<EntitiesDTO>>(data, listType)
-    }
-
-    @TypeConverter
-    fun EntityDTOToStoredString(myObjects:ArrayList<EntitiesDTO>): String {
-        val gson = Gson()
-        return gson.toJson(myObjects)
-    }
+//    @TypeConverter
+//    fun storedStringToEntityDTO(data: String?):ArrayList<EntitiesDTO> {
+//        val gson = Gson()
+//        if (data == null) {
+//            return Collections.EMPTY_LIST as ArrayList<EntitiesDTO>
+//        }
+//        val listType = object :TypeToken<ArrayList<EntitiesDTO>>() {
+//
+//        }.getType()
+//        return gson.fromJson<ArrayList<EntitiesDTO>>(data, listType)
+//    }
+//
+//    @TypeConverter
+//    fun EntityDTOToStoredString(myObjects:ArrayList<EntitiesDTO>): String {
+//        val gson = Gson()
+//        return gson.toJson(myObjects)
+//    }
 
 
 

@@ -17,19 +17,20 @@ const val PROJECT_ITEM_TABLE = "PROJECT_ITEM_TABLE"
 
 @Entity(
     tableName = PROJECT_ITEM_TABLE
-    , foreignKeys = arrayOf(
+    , foreignKeys = [
         ForeignKey(
             entity = ProjectDTO::class,
             parentColumns = arrayOf("projectId"),
             childColumns = arrayOf("projectId"),
             onDelete = ForeignKey.NO_ACTION
         )
-    )
+    ]
 )
 data class ItemDTO(
-
-    @SerializedName("ItemId")
     @PrimaryKey
+    val id: Int,
+    @SerializedName("ItemId")
+//    @ColumnInfo(name = "itemId", index = true)
     val itemId: String,
     @SerializedName("Descr")
     val descr: String?,

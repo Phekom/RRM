@@ -20,44 +20,30 @@ class RegisterActivity : AppCompatActivity(), AuthListener  , KodeinAware {
 
     override val kodein by kodein()
     private val factory : AuthViewModelFactory by instance()
+    lateinit var viewModel : AuthViewModel
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         val binding :ActivityRegisterBinding = DataBindingUtil.setContentView(this,R.layout.activity_register)
-        val viewModel = ViewModelProviders.of(this, factory).get(AuthViewModel::class.java)
+        viewModel = ViewModelProviders.of(this, factory).get(AuthViewModel::class.java)
         binding.viewmodel = viewModel
         viewModel.authListener = this
 
-         viewModel.getLoggedInUser().observe(this, Observer {user ->
-             if (user != null){
-                  Intent(this, MainActivity::class.java).also {
-                      it.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-                      startActivity(it)
-                  }
-             }
-//             else {
-//                 Intent(this, RegisterActivity::class.java).also {
-//                     startActivity(it)
-//
-//                 }
-//             }
-         })
+        Coroutines.main {
+            val loggedInUser = viewModel.user.await()
+            loggedInUser.observe(this, Observer {user ->
+                if (user != null) {
+                    Intent(this, MainActivity::class.java).also {home ->
+                        home.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                        loadData()
+                        startActivity(home)
+                    }
+                }
+            })
 
-//        viewModel.getUserRole().observe(this, Observer {user ->
-//            if (user != null){
-//                Intent(this, MainActivity::class.java).also {
-//                    it.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-//                    startActivity(it)
-//                }
-//            }
-////             else {
-////                 Intent(this, RegisterActivity::class.java).also {
-////                     startActivity(it)
-////
-////                 }
-////             }
-//        })
+        }
 
     }
 
@@ -66,17 +52,26 @@ class RegisterActivity : AppCompatActivity(), AuthListener  , KodeinAware {
         hideKeyboard()
     }
 
-    override fun onSuccess(userDTO:UserDTO) {
+    override fun onSuccess(user:UserDTO) {
             loading.hide()
-        toast("You are Loggedin as ${userDTO.userName}")
+        toast("You are Loggedin as ${user.userName}")
     }
+
+    private fun loadData() {
+        Coroutines.main {
+
+        val contracts = viewModel.offlinedata.await()
+        contracts.observe(this, Observer {contracts ->
+//            data_loading.show()
+        })
+    }}
 
     override fun onFailure(message: String) {
         loading.hide()
         reg_container.snackbar(message)
     }
 
-    override fun onSignOut(userDTO: UserDTO) {
+    override fun onSignOut(user: UserDTO) {
 
     }
 
