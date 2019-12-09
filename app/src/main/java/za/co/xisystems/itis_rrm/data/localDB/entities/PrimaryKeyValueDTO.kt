@@ -31,9 +31,7 @@ data class PrimaryKeyValueDTO(
 
     @SerializedName("ValueType")
     val valueType: String?
-//    @Ignore
-//    @SerializedName("PrimaryKeyValues")
-//    val primaryKeyValues: ArrayList<PrimaryKeyValueDTO>
+
 ) {
     var value: ByteArray?
         get() = if (valueString == null) valueBytes else Base64Utils.decode(valueString)
