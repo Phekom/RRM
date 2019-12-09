@@ -25,7 +25,6 @@ data class PrimaryKeyValueDTO(
     @SerializedName("ActivityId")
     val activityId: Int, // 3
 
-//    var valueBytes: ByteArray? = Base64Utils.decode(value)
     var valueBytes: ByteArray?,
 
 
