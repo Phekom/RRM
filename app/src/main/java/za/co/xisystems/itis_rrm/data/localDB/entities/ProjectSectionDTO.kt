@@ -5,6 +5,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
+import java.io.Serializable
 
 /**
  * Created by Francis Mahlava on 2019/11/22.
@@ -45,4 +46,4 @@ data class ProjectSectionDTO (
     @SerializedName("ProjectId")
     @ColumnInfo(name = "projectId", index = true)
     val projectId: String?
-)
+) : Serializable

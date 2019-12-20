@@ -42,9 +42,9 @@ interface ProjectDao {
     @Query("SELECT * FROM PROJECT_TABLE WHERE projectId = :projectId")
     fun checkProjectExists(projectId: String): Boolean
 
-//    @Query("SELECT * FROM PROJECT_TABLE WHERE contractId = :contractId")
-//    fun getAllProjectsByContract(contractId: String): LiveData<List<ProjectDTO>>
-//
+    @Query("SELECT * FROM PROJECT_TABLE WHERE contractId = :contractId")
+    fun getAllProjectsByContract(contractId: String): LiveData<List<ProjectDTO>>
+
 //    @Query("SELECT * FROM PROJECT_TABLE WHERE projectId = :projectId")
 //    fun getProjectDescription(projectId: String): String
 //
@@ -58,6 +58,9 @@ interface ProjectDao {
 //
 //    @Query("DELETE FROM PROJECT_TABLE")
 //    fun deleteAll()
+
+
+
 
 
 }

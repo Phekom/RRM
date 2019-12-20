@@ -20,7 +20,8 @@ import za.co.xisystems.itis_rrm.ui.mainview.home.HomeViewModelFactory
 /**
  * Created by Francis Mahlava on 2019/10/23.
  */
-class MainApp : Application(), KodeinAware {
+open class MainApp : Application(), KodeinAware {
+
 
     override val kodein = Kodein.lazy {
 
@@ -38,6 +39,8 @@ class MainApp : Application(), KodeinAware {
         bind() from singleton { HomeRepository(instance(), instance()) }
         bind() from singleton { OfflineDataRepository(instance(), instance(), instance()) }
 
+//        bind<ID_Provider>() with singleton { IdProviderImpl(instance()) }
+
         bind() from provider { AuthViewModelFactory(instance(),instance()) }
         bind() from provider { HomeViewModelFactory(instance(),instance(),instance(),instance()) }
         bind() from provider { CreateViewModelFactory(instance() ) }
@@ -46,5 +49,11 @@ class MainApp : Application(), KodeinAware {
 
 
     }
+
+    override fun onCreate() {
+        super.onCreate()
+
+    }
+
 
 }

@@ -486,5 +486,6 @@
     <!-- Messages Preferences -->
     <string name="signature_title">Your signature</string>
     <string name="reply_title">Default reply action</string>
+    <string name="select_item_title">Select Item</string>
 
 </resources>

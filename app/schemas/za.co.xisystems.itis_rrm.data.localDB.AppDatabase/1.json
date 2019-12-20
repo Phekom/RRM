@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "0e9ad94761742b2360d554247bd0ae31",
+    "identityHash": "124787f7fa4f90c4e39349f29e38d234",
     "entities": [
       {
         "tableName": "JOB_TABLE",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`jobId` TEXT NOT NULL, `actId` INTEGER NOT NULL, `approvalDate` TEXT NOT NULL, `contractVoId` TEXT NOT NULL, `contractorId` INTEGER NOT NULL, `cpa` INTEGER NOT NULL, `dayWork` INTEGER NOT NULL, `descr` TEXT NOT NULL, `dueDate` TEXT NOT NULL, `endKm` REAL NOT NULL, `engineerId` INTEGER NOT NULL, `entireRoute` INTEGER NOT NULL, `isExtraWork` INTEGER NOT NULL, `issueDate` TEXT NOT NULL, `jiNo` TEXT NOT NULL, `jobCategoryId` INTEGER NOT NULL, `jobDirectionId` INTEGER NOT NULL, `jobPositionId` INTEGER NOT NULL, `jobStatusId` INTEGER NOT NULL, `m9100` INTEGER NOT NULL, `jobItemEstimates` TEXT NOT NULL, `jobItemMeasures` TEXT NOT NULL, `jobSections` TEXT NOT NULL, `perfitemGroupId` TEXT NOT NULL, `projectId` TEXT NOT NULL, `projectVoId` TEXT NOT NULL, `qtyUpdateAllowed` INTEGER NOT NULL, `recordSynchStateId` INTEGER NOT NULL, `recordVersion` INTEGER NOT NULL, `remarks` TEXT NOT NULL, `route` TEXT NOT NULL, `rrmJiNo` TEXT NOT NULL, `section` TEXT NOT NULL, `startDate` TEXT NOT NULL, `startKm` REAL NOT NULL, `trackRouteId` TEXT NOT NULL, `userId` INTEGER NOT NULL, `voId` TEXT NOT NULL, `workCompleteDate` TEXT NOT NULL, `workStartDate` TEXT NOT NULL, `activityId` INTEGER NOT NULL, `is_synced` TEXT, `ROWID` TEXT, PRIMARY KEY(`jobId`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`jobId` TEXT NOT NULL, `actId` INTEGER NOT NULL, `approvalDate` TEXT NOT NULL, `contractVoId` TEXT NOT NULL, `contractorId` INTEGER NOT NULL, `cpa` INTEGER NOT NULL, `dayWork` INTEGER NOT NULL, `descr` TEXT NOT NULL, `dueDate` TEXT NOT NULL, `endKm` REAL NOT NULL, `engineerId` INTEGER NOT NULL, `entireRoute` INTEGER NOT NULL, `isExtraWork` INTEGER NOT NULL, `issueDate` TEXT NOT NULL, `jiNo` TEXT NOT NULL, `jobCategoryId` INTEGER NOT NULL, `jobDirectionId` INTEGER NOT NULL, `jobPositionId` INTEGER NOT NULL, `jobStatusId` INTEGER NOT NULL, `m9100` INTEGER NOT NULL, `jobItemEstimates` TEXT, `jobItemMeasures` TEXT, `jobSections` TEXT NOT NULL, `perfitemGroupId` TEXT NOT NULL, `projectId` TEXT NOT NULL, `projectVoId` TEXT NOT NULL, `qtyUpdateAllowed` INTEGER NOT NULL, `recordSynchStateId` INTEGER NOT NULL, `recordVersion` INTEGER NOT NULL, `remarks` TEXT NOT NULL, `route` TEXT NOT NULL, `rrmJiNo` TEXT NOT NULL, `section` TEXT NOT NULL, `startDate` TEXT NOT NULL, `startKm` REAL NOT NULL, `trackRouteId` TEXT NOT NULL, `userId` INTEGER NOT NULL, `voId` TEXT NOT NULL, `workCompleteDate` TEXT NOT NULL, `workStartDate` TEXT NOT NULL, `sortString` TEXT, `activityId` INTEGER NOT NULL, `is_synced` TEXT, `ROWID` TEXT, PRIMARY KEY(`jobId`))",
         "fields": [
           {
             "fieldPath": "jobId",
@@ -132,13 +132,13 @@
             "fieldPath": "jobItemEstimates",
             "columnName": "jobItemEstimates",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "jobItemMeasures",
             "columnName": "jobItemMeasures",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "jobSections",
@@ -247,6 +247,12 @@
             "columnName": "workStartDate",
             "affinity": "TEXT",
             "notNull": true
+          },
+          {
+            "fieldPath": "sortString",
+            "columnName": "sortString",
+            "affinity": "TEXT",
+            "notNull": false
           },
           {
             "fieldPath": "activityId",
@@ -822,7 +828,7 @@
       },
       {
         "tableName": "PRIMARY_KEY_VALUE_TABLE",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `primary_key` TEXT, `valueString` TEXT, `valueType` TEXT, `trackRouteId` TEXT, `activityId` INTEGER NOT NULL, `valueBytes` BLOB, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `primary_key` TEXT, `valueString` TEXT, `trackRouteId` TEXT, `activityId` INTEGER NOT NULL, `valueBytes` BLOB, `valueType` TEXT, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -843,12 +849,6 @@
             "notNull": false
           },
           {
-            "fieldPath": "valueType",
-            "columnName": "valueType",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
             "fieldPath": "trackRouteId",
             "columnName": "trackRouteId",
             "affinity": "TEXT",
@@ -864,6 +864,12 @@
             "fieldPath": "valueBytes",
             "columnName": "valueBytes",
             "affinity": "BLOB",
+            "notNull": false
+          },
+          {
+            "fieldPath": "valueType",
+            "columnName": "valueType",
+            "affinity": "TEXT",
             "notNull": false
           }
         ],
@@ -2106,7 +2112,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '0e9ad94761742b2360d554247bd0ae31')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '124787f7fa4f90c4e39349f29e38d234')"
     ]
   }
 }

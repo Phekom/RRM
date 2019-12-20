@@ -59,10 +59,9 @@ class RegisterActivity : AppCompatActivity(), AuthListener  , KodeinAware {
 
     private fun loadData() {
         Coroutines.main {
-
         val contracts = viewModel.offlinedata.await()
         contracts.observe(this, Observer {contracts ->
-//            data_loading.show()
+//            data_loading.hide()
         })
     }}
 

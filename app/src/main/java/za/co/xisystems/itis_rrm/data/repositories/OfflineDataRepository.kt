@@ -27,7 +27,9 @@ class OfflineDataRepository(
     private val Db: AppDatabase,
     private val prefs: PreferenceProvider
 ) : SafeApiRequest() {
-
+    companion object {
+        val TAG: String = OfflineDataRepository::class.java.simpleName
+    }
     private val conTracts = MutableLiveData<List<ContractDTO>>()
     private val sectionItems = MutableLiveData<ArrayList<String>>()
     private val projects = MutableLiveData<ArrayList<ProjectDTO>>()
@@ -55,7 +57,7 @@ class OfflineDataRepository(
             saveLookups(it)
         }
         projectItems.observeForever {
-            saveProjectItems(it)
+//            saveProjectItems(it)
         }
 
         toDoListGroups.observeForever {
@@ -82,15 +84,30 @@ class OfflineDataRepository(
             Db.getContractDao().getAllContracts()
         }
     }
-
+    suspend fun getContractProjects(contractId : String): LiveData<List<ProjectDTO>> {
+        return withContext(Dispatchers.IO) {
+            Db.getProjectDao().getAllProjectsByContract(contractId)
+        }
+    }
+    suspend fun getProjects(): LiveData<List<ProjectDTO>> {
+        return withContext(Dispatchers.IO) {
+            Db.getProjectDao().getAllProjects()
+        }
+    }
     suspend fun getProjectItems(): LiveData<List<ItemDTO>> {
         return withContext(Dispatchers.IO) {
             //            val projectId = DataConversion.toLittleEndian( Db.getProjectDao().getProjectId())
-//            fetchProjectItems(projectId)
-//            Db.getItemDao().getAllItemsForProjectId(projectId)
             Db.getItemDao().getAllItemsForAllProjects()
         }
     }
+    suspend fun getAllItemsForProjectId(projectId : String): LiveData<List<ItemDTO>> {
+        return withContext(Dispatchers.IO) {
+            //            val projectId = DataConversion.toLittleEndian( Db.getProjectDao().getProjectId())
+            Db.getItemDao().getAllItemsForProjectId(projectId)
+        }
+    }
+
+
 
     suspend fun getWorkFlows(): LiveData<List<WorkFlowDTO>> {
         return withContext(Dispatchers.IO) {
@@ -153,6 +170,41 @@ class OfflineDataRepository(
                                     contract.contractId
                                 )
                             }
+                            if (project.items != null) {
+//                                val projectId = DataConversion.toLittleEndian(project.projectId)
+                                for (item in project.items) {
+                                    if (!Db.getItemDao().checkItemExistsItemId(item.itemId)) {
+//                                        Db.getItemDao().insertItem(item)
+                                        //  Lets get the ID from Sections Items
+                                        val pattern = Pattern.compile("(.*?)\\.")
+                                        val matcher = pattern.matcher(item.itemCode)
+                                        if (matcher.find()) {
+                                            val itemCode = matcher.group(1) + "0"
+                                            //  Lets Get the ID Back on Match
+                                            val sectionItemId =
+                                                Db.getSectionItemDao().getSectionItemId(
+                                                    itemCode.replace(
+                                                        "\\s+".toRegex(), ""
+                                                    )
+                                                )
+                                            Db.getItemDao().insertItem(
+                                                item.itemId,
+                                                item.itemCode,
+                                                item.descr,
+                                                item.itemSections,
+                                                item.tenderRate,
+                                                item.uom,
+                                                item.workflowId,
+                                                sectionItemId,
+                                                item.quantity,
+                                                item.estimateId,
+                                                project.projectId
+                                            )
+                                        }
+                                    }
+
+                                }
+                            }
 
                             if (project.projectSections != null) {
                                 prefs.savelastSavedAt(LocalDateTime.now().toString())
@@ -190,63 +242,12 @@ class OfflineDataRepository(
                                 }
                             }
 
-                            if (project.items != null) {
-                                val projectId = DataConversion.toLittleEndian(project.projectId)
-                                fetchProjectItems(projectId)
-//                                for (item in project.items) {   //project.items
-//                                    if (!Db.getItemDao().checkItemExistsItemId(item.itemId)) {
 
-//                                        Db.getItemDao().insertItems(item)
-//                                    }
-//                                }
-                            } else {
-
-
-                            }
                         }
                     }
                 }
             }
 
-        }
-    }
-
-    private fun saveProjectItems(projectItems: ArrayList<ItemDTO>?) {
-        Coroutines.io {
-            if (projectItems != null) {
-                for (item in projectItems) {
-                    if (!Db.getItemDao().checkItemExistsItemId(item.itemId)) {
-//                                        Db.getItemDao().insertItem(item)
-                        //  Lets get the ID from Sections Items
-                        val pattern = Pattern.compile("(.*?)\\.")
-                        val matcher = pattern.matcher(item.itemCode)
-                        if (matcher.find()) {
-                            val itemCode = matcher.group(1) + "0"
-                            //  Lets Get the ID Back on Match
-                            val sectionItemId = Db.getSectionItemDao().getSectionItemId(
-                                itemCode.replace(
-                                    "\\s+".toRegex(), ""
-                                )
-                            )
-                            val projectId = Db.getProjectDao().getProjectId()
-                            Db.getItemDao().insertItem(
-                                item.itemId,
-                                item.itemCode,
-                                item.descr,
-                                item.itemSections,
-                                item.tenderRate,
-                                item.uom,
-                                item.workflowId,
-                                sectionItemId,
-                                item.quantity,
-                                item.estimateId,
-                                projectId
-                            )
-                        }
-                    }
-
-                }
-            }
         }
     }
 
@@ -300,8 +301,8 @@ class OfflineDataRepository(
     private suspend fun fetchProjectItems(projectId: String) {
 //        val lastSavedAt = prefs.getLastSavedAt()
 //        if (lastSavedAt == null || isFetchNeeded(LocalDateTime.parse(lastSavedAt))) {
-        val itemsResponse = apiRequest { api.getProjectItems(projectId) }
-        projectItems.postValue(itemsResponse.items)
+//        val itemsResponse = apiRequest { api.getProjectItems(projectId) }
+//        projectItems.postValue(itemsResponse.items)
 //        }
     }
 
@@ -366,16 +367,6 @@ class OfflineDataRepository(
     }
 
 
-
-
-    private suspend fun fetchVoItems(ProjectId: String) {
-        val lastSavedAt = prefs.getLastSavedAt()
-        if (lastSavedAt == null || isFetchNeeded(LocalDateTime.parse(lastSavedAt))) {
-//            val voItemsResponse = apiRequest { api.projectVosRefresh(ProjectId) }
-//            voItems.postValue(voItemsResponse.voItems)
-        }
-    }
-
     private suspend fun fetchUserTaskList(userId: String) {
         val lastSavedAt = prefs.getLastSavedAt()
         if (lastSavedAt == null || isFetchNeeded(LocalDateTime.parse(lastSavedAt))) {
@@ -417,10 +408,6 @@ class OfflineDataRepository(
                 for (lookup in lookups) {
                     if (!Db.getLookupDao().checkIfLookupExist(lookup.lookupName))
                         Db.getLookupDao().insertLookup(lookup)
-//                    Db.getLookupDao().insertLookup(
-//                        lookup.lookupName,
-//                        lookup.lookupOptions
-//                    )
 
                     if (lookup.lookupOptions != null) {
                         for (lookupOption in lookup.lookupOptions) {
@@ -445,42 +432,6 @@ class OfflineDataRepository(
 private operator fun <T> LiveData<T>.not(): Boolean {
     return true
 }
-
-//    fun saveProjectSections(sections: ArrayList<ProjectSectionDTO>?) {
-//        Coroutines.io {
-//            if (sections != null) {
-//                for (section in sections) {
-//                    if (!Db.getProjectSectionDao().checkSectionExists(section.sectionId))
-//                        Db.getProjectSectionDao().insertSection(section)
-//                }
-//            }
-//        }
-//    }
-
-
-//    private fun saveVoItems(voItems: ArrayList<VoItemDTO>?) {
-//         Coroutines.io {
-//             prefs.savelastSavedAt(LocalDateTime.now().toString())
-//             if (voItems != null) {
-//                 for (voItem in voItems) {
-//                     if (!Db.getVoItemDao().checkIfVoItemExist(voItem.projectVoId))
-//                         Db.getVoItemDao().insertVoItems(voItem)
-//                 }
-//             }
-//
-//         }
-//    }
-
-
-
-
-
-
-
-
-
-
-
 
 
 

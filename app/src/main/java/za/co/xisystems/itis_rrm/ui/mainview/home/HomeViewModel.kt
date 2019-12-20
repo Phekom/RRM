@@ -22,8 +22,8 @@ class HomeViewModel(
     }
     val projectsItems by lazyDeferred {
 //        offlineDataRepository.getProjects()
-        rListener?.onStarted()
-        offlineDataRepository.getProjectItems()
+
+//        offlineDataRepository.getProjectItems()
 
     }
 

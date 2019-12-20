@@ -15,7 +15,16 @@
         android:id="@+id/nav_create"
         android:name="za.co.xisystems.itis_rrm.ui.mainview.create.CreateFragment"
         android:label="@string/menu_create"
-        tools:layout="@layout/fragment_createjob" />
+        tools:layout="@layout/fragment_createjob" >
+        <action
+                android:id="@+id/action_nav_create_to_addProjectFragment"
+                app:destination="@+id/addProjectFragment"
+                app:enterAnim="@anim/bounce_250"
+                app:launchSingleTop="false"
+                app:popEnterAnim="@anim/bounce_500"
+                app:popUpTo="@+id/nav_create"
+                app:popUpToInclusive="true" />
+    </fragment>
 
     <fragment
         android:id="@+id/nav_unSubmitted"
@@ -52,4 +61,24 @@
         android:name="za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureFragment"
         android:label="@string/menu_approvMeasure"
         tools:layout="@layout/fragment_approvemeasure" />
+    <fragment
+            android:id="@+id/selectItemFragment"
+            android:name="za.co.xisystems.itis_rrm.ui.mainview.create.SelectItemFragment"
+            android:label="SelectItemFragment" >
+    </fragment>
+    <fragment
+            android:id="@+id/estimatePhotoFragment"
+            android:name="za.co.xisystems.itis_rrm.ui.mainview.create.EstimatePhotoFragment"
+            android:label="EstimatePhotoFragment" />
+    <fragment
+            android:id="@+id/addProjectFragment"
+            android:name="za.co.xisystems.itis_rrm.ui.mainview.create.AddProjectFragment"
+            android:label="AddProjectFragment" >
+        <action
+                android:id="@+id/action_addProjectFragment_to_selectItemFragment"
+                app:destination="@id/selectItemFragment" />
+        <action
+                android:id="@+id/action_addProjectFragment_to_nav_create"
+                app:destination="@id/nav_create" />
+    </fragment>
 </navigation>

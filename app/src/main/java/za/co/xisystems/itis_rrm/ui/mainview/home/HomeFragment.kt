@@ -20,6 +20,8 @@ import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
 import za.co.xisystems.itis_rrm.utils.Coroutines
 
 class HomeFragment : BaseFragment(), KodeinAware {
+
+
     override val kodein by kodein()
     private lateinit var homeViewModel: HomeViewModel
     private lateinit var authViewModel: AuthViewModel
@@ -148,8 +150,9 @@ class HomeFragment : BaseFragment(), KodeinAware {
 //        }
 
 
-    }
 
+
+    }
 
     private val health: HealthCheckResponse? = null
     private fun ping() {
