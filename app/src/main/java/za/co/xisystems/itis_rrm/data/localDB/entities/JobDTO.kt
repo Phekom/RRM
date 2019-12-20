@@ -3,6 +3,7 @@ package za.co.xisystems.itis_rrm.data.localDB.entities
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
+import java.io.Serializable
 import java.util.*
 
 /**
@@ -23,7 +24,7 @@ class JobDTO(
     @SerializedName("ApprovalDate")
     val approvalDate:String = Date().toString(),
     @SerializedName("ContractVoId")
-    val contractVoId: String,
+    var contractVoId: String,
     @SerializedName("ContractorId")
     val contractorId: Int,
     @SerializedName("Cpa")
@@ -31,9 +32,9 @@ class JobDTO(
     @SerializedName("DayWork")
     val dayWork: Int,
     @SerializedName("Descr")
-    val descr: String,
+    var descr: String,
     @SerializedName("DueDate")
-    val dueDate:  String = Date().toString(),
+    var dueDate:  String = Date().toString(),
     @SerializedName("EndKm")
     val endKm: Double,
     @SerializedName("EngineerId")
@@ -43,7 +44,7 @@ class JobDTO(
     @SerializedName("IsExtraWork")
     val isExtraWork: Int,
     @SerializedName("IssueDate")
-    val issueDate: String = Date().toString(),
+    var issueDate: String = Date().toString(),
     @SerializedName("JiNo")
     val jiNo: String,
     @SerializedName("JobCategoryId")
@@ -58,15 +59,15 @@ class JobDTO(
     @SerializedName("M9100")
     val m9100: Int,
     @SerializedName("MobileJobItemEstimates")
-    val jobItemEstimates: ArrayList<JobItemEstimateDTO>,
+    var jobItemEstimates: ArrayList<JobItemEstimateDTO>?,
     @SerializedName("MobileJobItemMeasures")
-    val jobItemMeasures: ArrayList<JobItemMeasureDTO>,
+    var jobItemMeasures: ArrayList<JobItemMeasureDTO>?,
     @SerializedName("MobileJobSections")
     val jobSections: ArrayList<JobSectionDTO>,
     @SerializedName("PerfitemGroupId")
     val perfitemGroupId: String,
     @SerializedName("ProjectId")
-    val projectId: String,
+    var projectId: String,
     @SerializedName("ProjectVoId")
     val projectVoId: String,
     @SerializedName("QtyUpdateAllowed")
@@ -84,7 +85,7 @@ class JobDTO(
     @SerializedName("Section")
     val section: String,
     @SerializedName("StartDate")
-    val startDate: String = Date().toString(),
+    var startDate: String = Date().toString(),
     @SerializedName("StartKm")
     val startKm: Double,
     @SerializedName("TrackRouteId")
@@ -98,6 +99,7 @@ class JobDTO(
     @SerializedName("WorkStartDate")
     val workStartDate: String,
 
+    private var sortString: String? = null,
 
     val activityId: Int,
 
@@ -106,12 +108,66 @@ class JobDTO(
     var ROWID: String?
 
 
-) {
-//    constructor(
-//        StartDate = Date()
-//                IssueDate = Date ())
+) : Serializable {
+
+    fun addOrUpdateJobItemEstimate(newEstimate: JobItemEstimateDTO) {
+        val x = getJobEstimateIndexByItemId(newEstimate.projectItemId)
+        if (x < 0) Companion.getJobItemEstimates(this)!!.add(newEstimate) else Companion.getJobItemEstimates(
+            this)!!.set(
+            x,
+            newEstimate
+        )
+    }
 
 
-//    val jobId : String? =
+    fun jobEstimateExist(itemId: String?): Boolean {
+        return getJobEstimateIndexByItemId(itemId) > -1
+    }
+
+    fun getJobEstimateIndexByItemId(itemId: String?): Int {
+        if (itemId != null) for (i in Companion.getJobItemEstimates(this)!!.indices) {
+            val currEstimate: JobItemEstimateDTO = Companion.getJobItemEstimates(this)!![i]
+            if (currEstimate != null && currEstimate.projectItemId != null) if (currEstimate.projectItemId == itemId
+            ) {
+                return i
+            }
+        }
+        return -1
+    }
+
+    fun removeJobEstimateByItemId(itemId: String?): JobItemEstimateDTO? {
+        val x = getJobEstimateIndexByItemId(itemId)
+        return if (x > -1) {
+            Companion.getJobItemEstimates(this)!!.removeAt(x)
+        } else null
+    }
+
+    fun getJobEstimateByItemId(itemId: String?): JobItemEstimateDTO? {
+        val x = getJobEstimateIndexByItemId(itemId)
+        return if (x < 0) null else Companion.getJobItemEstimates(this)!!.get(x)
+    }
+
+
+    fun getSortString(): String? {
+        return sortString
+    }
+
+    fun setSortString(sortString: String) {
+        this.sortString = sortString
+    }
+
+
+    fun clearJobItemEstimates() {
+        Companion.getJobItemEstimates(this)!!.clear()
+    }
+
+    companion object {
+        private fun getJobItemEstimates(jobDTO: JobDTO): ArrayList<JobItemEstimateDTO>? {
+            return jobDTO.jobItemEstimates
+                ?: ArrayList<JobItemEstimateDTO>().also {
+                    jobDTO.jobItemEstimates = it
+                }
+        }
+    }
 
 }

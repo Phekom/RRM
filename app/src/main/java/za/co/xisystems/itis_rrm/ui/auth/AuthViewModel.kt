@@ -5,7 +5,6 @@ import android.os.Build
 import android.view.View
 import androidx.lifecycle.ViewModel
 import za.co.xisystems.itis_rrm.R
-import za.co.xisystems.itis_rrm.data.network.responses.AuthResponse
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
 import za.co.xisystems.itis_rrm.utils.ApiException
@@ -17,12 +16,12 @@ import za.co.xisystems.itis_rrm.utils.lazyDeferred
  * Created by Francis Mahlava on 2019/10/23.
  */
 
-
+//const val ACTIVITY_TABLE = "ACTIVITY_TABLE"
 class AuthViewModel(
     private val repository: UserRepository,
-    offlineDataRepository: OfflineDataRepository
-    ) : ViewModel() {
-    private val context : Context? = null
+    private val offlineDataRepository: OfflineDataRepository
+) : ViewModel() {
+    private val context: Context? = null
 
     var username: String? = null
     var password: String? = null
@@ -30,7 +29,7 @@ class AuthViewModel(
     var confirmPin: String? = null
 
     var authListener: AuthListener? = null
-    var authResponse : AuthResponse? = null
+
 //    fun getLoggedInUser() = repository.getUser()
 //    fun getUserRole() = repository.getUser()
 
@@ -67,7 +66,6 @@ class AuthViewModel(
 //    }
 
 
-
     fun onRegButtonClick(view: View) {
         authListener?.onStarted()
 
@@ -97,54 +95,39 @@ class AuthViewModel(
 //        }
 
 
+        Coroutines.main {
+            try {
 
+                val phoneNumber = "12345457"//telephonyManager?.line1Number
+                val IMEI = "45678"//telephonyManager?.imei
+                val androidDevice =
+                    " " + R.string.android_sdk + Build.VERSION.SDK_INT + R.string.space + Build.BRAND + R.string.space + Build.MODEL + R.string.space + Build.DEVICE + ""
 
-
-            Coroutines.main {
-                try {
-//                    val telephonyManager = context?.applicationContext?.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager?
-//                    if (ActivityCompat.checkSelfPermission(
-//                            this.context!!,
-//                            Manifest.permission.READ_SMS
-//                        ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-//                            this.context!!,
-//                            Manifest.permission.READ_PHONE_NUMBERS
-//                        ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-//                            this.context!!,
-//                            Manifest.permission.READ_PHONE_STATE
-//                        ) != PackageManager.PERMISSION_GRANTED
-//                    ) {
-//
-//                    }
-                    val phoneNumber ="12345457"//telephonyManager?.line1Number
-                    val IMEI = "45678"//telephonyManager?.imei
-                    val androidDevice = " "+ R.string.android_sdk + Build.VERSION.SDK_INT + R.string.space + Build.BRAND + R.string.space + Build.MODEL + R.string.space + Build.DEVICE+""
-
-                    repository.userRegister(username!!, password!!,phoneNumber!!,IMEI!!,androidDevice)
-                    authListener?.onFailure("User Details are wrong please Try again")
-                }catch(e: ApiException){
-                    authListener?.onFailure(e.message!!)
-                }catch (e: NoInternetException){
-                    authListener?.onFailure(e.message!!)
-                }
+                repository.userRegister(
+                    username!!,
+                    password!!,
+                    phoneNumber!!,
+                    IMEI!!,
+                    androidDevice
+                )
+                authListener?.onFailure("User Details are wrong please Try again")
+            } catch (e: ApiException) {
+                authListener?.onFailure(e.message!!)
+            } catch (e: NoInternetException) {
+                authListener?.onFailure(e.message!!)
             }
-
+        }
 
 
     }
+
 
     val user by lazyDeferred {
         repository.getUser()
     }
-
     val offlinedata by lazyDeferred {
         offlineDataRepository.getSectionItems()
-//        offlineDataRepository.getVoItems()
-//        offlineDataRepository.getProjects()
-//        offlineDataRepository.getWorkFlows()=
         offlineDataRepository.getContracts()
-
     }
-
 
 }

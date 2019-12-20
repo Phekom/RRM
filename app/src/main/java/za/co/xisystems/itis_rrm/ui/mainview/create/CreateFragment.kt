@@ -2,321 +2,309 @@ package za.co.xisystems.itis_rrm.ui.mainview.create
 
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
 import android.widget.Toast
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.navigation.NavController
+import androidx.navigation.Navigation
+import com.google.android.gms.common.api.GoogleApiClient
 import kotlinx.android.synthetic.main.fragment_createjob.*
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
 import za.co.xisystems.itis_rrm.R
-import za.co.xisystems.itis_rrm.ui.auth.AuthViewModel
-import za.co.xisystems.itis_rrm.ui.auth.AuthViewModelFactory
-import za.co.xisystems.itis_rrm.ui.mainview.home.HomeViewModel
-import za.co.xisystems.itis_rrm.ui.mainview.home.HomeViewModelFactory
-import za.co.xisystems.itis_rrm.utils.Coroutines
-//simple_spinner_item
+import za.co.xisystems.itis_rrm.data.localDB.entities.*
+import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
+import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.IJobSubmit
+import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.MyState
+import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper
+import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper.setSpinner
+import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.contracts.IEstimatesAdapter
+import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.intents.NewJobSelectItemIntentFrag
+import za.co.xisystems.itis_rrm.utils.*
+import java.util.*
 
-class CreateFragment : Fragment(), KodeinAware {
+
+class CreateFragment : BaseFragment(), KodeinAware, IJobSubmit {
+    companion object {
+        val TAG: String = CreateFragment::class.java.simpleName
+        val PROJECT_ID1 : String  = "PROJECT_ID1"
+    }
+
+
     override val kodein by kodein()
     private lateinit var createViewModel: CreateViewModel
-    private lateinit var homeViewModel: HomeViewModel
-    private lateinit var authViewModel: AuthViewModel
     private val factory: CreateViewModelFactory by instance()
-    private val factoryAuth: AuthViewModelFactory by instance()
-    private val factoryhome: HomeViewModelFactory by instance()
+    private var navController: NavController? = null
+
+    var newJobSelectItemIntent: NewJobSelectItemIntentFrag? = null
+    private var adapter: IEstimatesAdapter<ItemDTO>? = null
+    private val saveMenuItem: MenuItem? = null
+    private var deleteMenuItem: MenuItem? = null
+    private var resetMenuItem: MenuItem? = null
+    private val estimatesToRemoveFromDb: ArrayList<JobItemEstimateDTO> =
+        ArrayList<JobItemEstimateDTO>()
+    @MyState
+    var items: ArrayList<ItemDTO> = ArrayList<ItemDTO>()
+    @MyState
+    internal var selectedContract: ContractDTO? = null
+    //        internal var selectedContract: String? = null
+    @MyState
+    internal var selectedProject: ProjectDTO? = null
+    //        internal var selectedProject: String? = null
+    @MyState
+    internal var selectedProjectitem: ItemDTO? = null
+//    internal var selectedProjectitem: String? = null
+
+    @MyState
+    internal var job: JobDTO? = null
+    @MyState
+    var isJobSaved = false
+    private val client: GoogleApiClient? = null
+
+
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
+        setContract()
+        navController = this.activity?.let { Navigation.findNavController(it, R.id.nav_host_fragment) }
         return inflater.inflate(R.layout.fragment_createjob, container, false)
-    }
-
-    override fun onDestroyView() {
-
-        super.onDestroyView()
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        createViewModel = ViewModelProviders.of(this, factory).get(CreateViewModel::class.java)
-        authViewModel = ViewModelProviders.of(this, factoryAuth).get(AuthViewModel::class.java)
+//        createViewModel = ViewModelProviders.of(this, factory).get(CreateViewModel::class.java)
+        createViewModel = activity?.run {
+            ViewModelProviders.of(this, factory).get(CreateViewModel::class.java)
+        } ?: throw Exception("Invalid Activity")
 
-        mid_lin.visibility = View.GONE
-        last_lin.visibility = View.GONE
-        selectProjectdrop.visibility = View.GONE
-        photoLin.visibility = View.GONE
-
-        Coroutines.main {
-
-            val contracts = authViewModel.offlinedata.await()
-            contracts.observe(viewLifecycleOwner, Observer {
-                val contract = arrayOfNulls<String>(it.size)
-                for (i in 0 until it.size) {
-                    contract[i] = it.get(i).contractNo
-
-                }
-                val arrayadapter = ArrayAdapter(
-                    context!!.applicationContext,
-                    android.R.layout.simple_spinner_dropdown_item,
-                    contract
-                )
-                contractSpinner.adapter = arrayadapter
-
-                val projects = arrayOfNulls<String>(it.size)
-                for (i in 0 until it.size) {
-                    projects[i] = it.get(i).shortDescr
-                }
-
-//                val sub_divisions = arrayOfNulls<String>(it.size)
-//                for (i in 0 until it.size) {
-//                    sub_divisions[i] = it.get(i).projectCode
-//                }
-//                Toast.makeText(context?.applicationContext,it.size.toString(),Toast.LENGTH_SHORT).show()
-
-            })
-
-
-
-//            val projects = homeViewModel.projectsItems.await()
-//            projects.observe(viewLifecycleOwner,Observer {
-//                val sub_divisions = arrayOfNulls<String>(it.size)
-//                for (i in 0 until it.size) {
-////                    sub_divisions[i] = it.get(i).projectCode
-//                }
-
-
-//            })
-
-
-
-//
-//            contractSpinner.setOnItemSelectedListener(object :
-//                AdapterView.OnItemSelectedListener {
-//                override fun onItemSelected(
-//                    adapterView: AdapterView<*>,
-//                    view: View,
-//                    i: Int,
-//                    l: Long
-//                ) {
-////                        val selectedDivision = it[i]
-//                    if (i == 0) {
-//                        val arrayadapter = ArrayAdapter(
-//                            context!!.applicationContext,
-//                            android.R.layout.simple_spinner_dropdown_item,
-//                            sub_divisions
-//                        )
-//                        selectedContractTextView.text = (item[i].toString())
-//                        selectedProjectTextView.text = (item[i].toString())
-//                        projectSpinner.setAdapter(arrayadapter)
-//                    }
-//
-//                    if (i == 1) {
-//                        val arrayadapter = ArrayAdapter(
-//                            context!!.applicationContext,
-//                            android.R.layout.simple_spinner_dropdown_item,
-//                            projects
-//                        )
-//                        projectSpinner.setAdapter(arrayadapter)
-//
-//                    }
-//
-////                        if (i == 2) {
-////                            val adapter5: ArrayAdapter<String>
-////                            adapter5 = ArrayAdapter<String>(
-////                                context?.applicationContext,
-////                                android.R.layout.simple_spinner_dropdown_item,
-////                                select
-////                            )
-////                            projectSpinner.setAdapter(adapter5)
-////                            projectSpinner.setOnItemSelectedListener(object :
-////                                AdapterView.OnItemSelectedListener {
-////                                override fun onItemSelected(
-////                                    adapterView: AdapterView<*>,
-////                                    view: View,
-////                                    i: Int,
-////                                    l: Long
-////                                ) {
-////                                    val projects = Projects[i]
-////                                    if (i == 0) {
-////
-////                                    }
-////                                    if (i == 1) {
-////                                        Toast.makeText(context, "" + projects, Toast.LENGTH_SHORT)
-////                                            .show()
-////
-////                                    }
-////                                }
-////
-////                                override fun onNothingSelected(adapterView: AdapterView<*>) {
-////
-////                                }
-////                            })
-////                        }
-////
-////                        if (i == 3) {
-////                            val adapter4: ArrayAdapter<String>
-////                            adapter4 = ArrayAdapter<String>(
-////                                context,
-////                                android.R.layout.simple_spinner_dropdown_item,
-////                                Projects1
-////                            )
-////                            projectSpinner.setAdapter(adapter4)
-////
-////                        }
-////
-////                        if (i == 4) {
-////                            val adapter4: ArrayAdapter<String>
-////                            adapter4 = ArrayAdapter<String>(
-////                                context,
-////                                android.R.layout.simple_spinner_dropdown_item,
-////                                services
-////                            )
-////                            projectSpinner.setAdapter(adapter4)
-////
-////                        }
-//
-////                        Toast.makeText(context, "" + selectedDivision, Toast.LENGTH_SHORT).show()
-//
-//                }
-//
-//                override fun onNothingSelected(adapterView: AdapterView<*>) {
-//
-//                }
-//            })
-
-            val myClickListener = object : View.OnClickListener {
-                override fun onClick(view: View?) {
-                    when (view?.id) {
-                        R.id.selectContractProjectContinueButton -> {
-                            if (descriptionEditText.text!!.isEmpty()) {
-                                Toast.makeText(context, "Please Enter Description", Toast.LENGTH_SHORT)
-                                    .show()
-                                return
-                            }
-                            selectProjectLayout.visibility = View.GONE
-                            mid_lin.visibility = View.VISIBLE
-                            infoTextView.visibility = View.GONE
-
-
-
-                        }
-
-                        R.id.infoTextView -> {
-                            selectProjectLayout.visibility = View.GONE
-                            mid_lin.visibility = View.GONE
-                            selectProjectdrop.visibility = View.GONE
-                            photoLin.visibility = View.VISIBLE
-                            last_lin.visibility = View.GONE
-                        }
-
-                        R.id.addItemButton -> {
-                            selectProjectLayout.visibility = View.GONE
-                            mid_lin.visibility = View.GONE
-                            photoLin.visibility = View.GONE
-                            selectProjectdrop.visibility = View.VISIBLE
-                            last_lin.visibility = View.GONE
-                        }
-
-                        R.id.updateButton -> {
-                            infoTextView.visibility = View.VISIBLE
-                            selectProjectdrop.visibility = View.GONE
-                            photoLin.visibility = View.GONE
-                            mid_lin.visibility = View.VISIBLE
-                            last_lin.visibility = View.VISIBLE
-                        }
+        val myClickListener = View.OnClickListener { view ->
+            when (view?.id) {
+                R.id.selectContractProjectContinueButton -> {
+                    val description = descriptionEditText.text!!.toString().trim { it <= ' ' }
+                    if (description.isEmpty()) {
+                        toast("Please Enter Description")
+                        descriptionEditText.startAnimation(shake)
+                        //                            return
+                    } else {
+                        activity?.hideKeyboard()
+                        val job = job
+                        job?.issueDate = (Calendar.getInstance().time).toString()
+                        job?.descr = description
+//                        setJob(job!!)
+                        setContractAndProjectSelection(true)
 
                     }
+
                 }
 
             }
-
-
-            selectContractProjectContinueButton.setOnClickListener(myClickListener)
-//        selectContractProjectContinueButton.setOnClickListener(myClickListener)
-            infoTextView.setOnClickListener(myClickListener)
-            addItemButton.setOnClickListener(myClickListener)
-            updateButton.setOnClickListener(myClickListener)
-
-
-
-            sectionItemSpinner.setOnTouchListener { view, motionEvent ->
-                infoTextView.visibility = View.VISIBLE
-                selectProjectdrop.visibility = View.GONE
-                mid_lin.visibility = View.VISIBLE
-                last_lin.visibility = View.VISIBLE
-                false
-            }
-
-
-
-
-
-//            val Projects1 = arrayOf("Stara", "Kenani", "Ultra", "Rweba")
-//
-//            val Projects = arrayOf(
-//                "N.001-005-2012/2 DEMO",
-//                "S-PROJ 51 - VIBRANT CONST",
-//                "S-PROJ34-ALSU",
-//                "S-PROJ 32 - ATH",
-//                "S-PROJ 33- EGON CIVILS",
-//                "S-PROJ 41 - SIMANDIE"
-//            )
-//
-//            val sub_divisions = arrayOf(
-//                "N.001-035-2012/1 DEMO",
-//                "S-PROJ 41 - SIMANDIE",
-//                "S-PROJ 33- EGON CIVILS",
-//                "S-PROJ 51 - VIBRANT CONST",
-//                "Yes"
-//            )
-//
-//            val select = arrayOf("---select project --")
-//            val select1 = arrayOf("---select service --")
-//
-//            val Projects2 = arrayOf(
-//                "--Select Upozella--",
-//                "Lalbag",
-//                "Islambag",
-//                "Chawkbazar",
-//                "Shahbag",
-//                "New Market"
-//            )
-
-//            val services = arrayOf(
-//                "--Select Service--",
-//                "service1",
-//                "service2",
-//                "service3",
-//                "service4",
-//                "service5",
-//                "service6"
-//            )
-
-
         }
 
+        selectContractProjectContinueButton.setOnClickListener(myClickListener)
 
 
 
 
+//        item_recyclerView.layoutManager = LinearLayoutManager(context?.applicationContext)
+//        adapter = EstimatesAdapter(context!!.applicationContext, items, AbstractAdapter.OnItemClickListener<ItemDTO?> {
+//           fun onItemClick(item: ItemDTO?) {
+////                            newJobEditEstimateIntent.startActivityForResult(this, job, item)
+//                        }
+//        }
+//
+//        )
+//        item_recyclerView.adapter = adapter!!.adapter
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    private fun setJob(job: JobDTO) {
+        this.job = job
+    }
+
+    private fun setContractAndProjectSelection(animate: Boolean) {
+
+        navController?.navigate(R.id.action_nav_create_to_addProjectFragment)
+
+//        if (selectedContract != null && selectedProject != null && job != null) {
+//        if (selectedContract != null && selectedProject != null) {
+//            selectProjectLayout.visibility = View.GONE
+//            mid_lin.visibility = View.VISIBLE
+//            if (animate) {
+//                addItemLayout.startAnimation(bounce_750)
+//                itemsCardView.startAnimation(bounce_500)
+//            }
+//
+        Coroutines.main {
+            createViewModel.contract_No.value = selectedContract?.contractNo.toString()
+            createViewModel.project_Code.value = selectedProject?.projectCode.toString()
+
+        }
+//            selectedContractTextView.text = selectedContract?.contractNo.toString()
+//            selectedProjectTextView.text = selectedProject?.projectCode.toString()
+//            job?.contractVoId = selectedContract!!.contractId
+//            job?.projectId = selectedProject!!.projectId
+//            setMenuItems()
+//        }
+    }
+
+    fun setMenuItems() {
+        if (saveMenuItem != null) {
+            saveMenuItem.setVisible(job != null && items != null && !items.isEmpty())
+        }
+        setResetButton()
+    }
+
+    private fun setResetButton() {
+//        if (isJobSaved) resetButton.visibility = View.GONE else resetButton.visibility =
+//            View.VISIBLE
+    }
+
+    private fun setLayoutsVisibility() {
+        val hasItems = adapter != null && adapter!!.itemCount > 0
+//        infoTextView.visibility = if (hasItems) View.GONE else View.VISIBLE
+//        submitButton.visibility = if (hasItems) View.VISIBLE else View.GONE
+//        dueDateCardView.visibility = if (hasItems) View.VISIBLE else View.GONE
+//        startDateCardView.visibility = if (hasItems) View.VISIBLE else View.GONE
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putSerializable("selectedContract", selectedContract)
+        outState.putSerializable("selectedProject", selectedProject)
+        outState.putSerializable("job", job)
+        outState.putSerializable("items", selectedProjectitem)
+        outState.putBoolean("isJobSaved", isJobSaved)
+        outState.putSerializable("estimatesToRemoveFromDb", estimatesToRemoveFromDb)
+        super.onSaveInstanceState(outState)
+    }
+
+    private fun setContract() {
+        Coroutines.main {
+            data_loading.show()
+            try {
+                val contracts = createViewModel.getContracts()
+//                val contracts = authViewModel.offlinedata.await()
+                contracts.observe(viewLifecycleOwner, Observer { contrac_t ->
+                    val contractId = contrac_t
+                    val contractNmbr = arrayOfNulls<String>(contrac_t.size)
+                    for (contract in contrac_t.indices) {
+                        contractNmbr[contract] = contrac_t[contract].contractNo
+                    }
+                    setSpinner(context!!.applicationContext,
+                        contractSpinner,
+                        contractId,
+                        contractNmbr, //null)
+                        object : SpinnerHelper.SelectionListener<ContractDTO> {
+                            override fun onItemSelected(position: Int, item: ContractDTO) {
+                                if (item == null)
+                                    Toast.makeText(
+                                        context!!.applicationContext,
+                                        "Error: Contract is NULL",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                else {
+                                    selectedContract = item
+                                    setProjects(item.contractId)
+                                }
+                            }
+
+                        })
+                })
+
+            } catch (e: ApiException) {
+                Toast.makeText(context?.applicationContext, e.message!!, Toast.LENGTH_SHORT).show()
+            } catch (e: NoInternetException) {
+                Toast.makeText(context?.applicationContext, e.message!!, Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun setProjects(contractId: String?) {
+        Coroutines.main {
+            try {
+                val projects = createViewModel.getSomeProjects(contractId!!)
+//                val projects = authViewModel.projects.await()
+                projects.observe(viewLifecycleOwner, Observer { projec_t ->
+                    data_loading.hide()
+                    val projects = projec_t
+                    val projectNmbr = arrayOfNulls<String>(projec_t.size)
+                    for (project in projec_t.indices) {
+                        projectNmbr[project] = projec_t[project].projectCode
+                    }
+                    setSpinner(context!!.applicationContext,
+                        projectSpinner,
+                        projects,
+                        projectNmbr, //null)
+                        object : SpinnerHelper.SelectionListener<ProjectDTO> {
+                            override fun onItemSelected(position: Int, item: ProjectDTO) {
+
+                                if (item == null)
+                                    Toast.makeText(
+                                        context!!.applicationContext,
+                                        "Error: Project is NULL",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                else {
+                                    selectedProject = item
+                                    Coroutines.main {
+                                        createViewModel.proId.value = item.projectId
+                                    }
+//                                    selectedProjectTextView.setText(selectedProject?.projectCode)
+                                }
+                            }
+                        })
+
+                })
+
+
+            } catch (e: ApiException) {
+                Toast.makeText(context?.applicationContext, e.message!!, Toast.LENGTH_SHORT).show()
+            } catch (e: NoInternetException) {
+                Toast.makeText(context?.applicationContext, e.message!!, Toast.LENGTH_SHORT).show()
+            }
+        }
+
+    }
+
+
+    override fun onJobSubmitted() {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun onInvalidJob() {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
 
 }
 
-//            val contracts =
-//                arrayOf(
-////                "---Select Contracts---",
-//                    "N.001-035-2012/1 DEMO",
-//                    "N.001-005-2012/2 DEMO",
-//                    "R.061-058-2013/1 DEMO",
-//                    "N.001-035-2012/1 ",
-//                    "N.001-005-2012/2 ",
-//                    "R.061-058-2013/1 "
-//                )
+
+
+
+
+
+
+
+
+
+

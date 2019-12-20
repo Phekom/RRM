@@ -21,7 +21,7 @@ object JobUtils {
         var quantity = 0.0
         var cost = 0.0
         if (job != null && job!!.jobItemEstimates != null)
-            for (estimate in job!!.jobItemEstimates) {
+            for (estimate in job!!.jobItemEstimates!!) {
                 quantity += estimate.qty
                 cost += estimate.lineRate
             }
@@ -29,10 +29,10 @@ object JobUtils {
     }
 
     fun areQuantitiesValid(job: JobDTO?): Boolean {
-        if (job == null || job!!.jobItemEstimates == null || job!!.jobItemEstimates.isEmpty())
+        if (job == null || job!!.jobItemEstimates == null || job!!.jobItemEstimates!!.isEmpty())
             return false
         else {
-            for (estimate in job!!.jobItemEstimates) {
+            for (estimate in job!!.jobItemEstimates!!) {
                 // TODO clean precision if needed
                 if (estimate.qty < 0.01) return false
             }
@@ -43,7 +43,7 @@ object JobUtils {
     // TODO this will not be needed
     fun compressJobEstimates(job: JobDTO?) {
         if (job != null && job!!.jobItemEstimates != null)
-            for (jobItemEstimate in job!!.jobItemEstimates) {
+            for (jobItemEstimate in job!!.jobItemEstimates!!) {
                 JobUtils.compressJobEstimates(jobItemEstimate)
             }
     }

@@ -9,7 +9,6 @@ import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.POST
 import za.co.xisystems.itis_rrm.data.network.responses.*
-import java.util.concurrent.TimeUnit
 
 /**
  * Created by Francis Mahlava on 2019/10/23.
@@ -27,18 +26,16 @@ interface BaseConnectionApi {
     ) : Response<AuthResponse>
 
     @FormUrlEncoded
+    @POST("HealthCheck")
+    suspend fun HealthCheck(
+        @Field("UserLogon") UserLogon : String
+    ) : Response<HealthCheckResponse>
+
+    @FormUrlEncoded
     @POST("RrmActivitySectionsRefresh")
     suspend fun ActivitySectionsRefresh(
         @Field("UserId") UserId : String
     ) : Response<ActivitySectionsResponse>
-
-
-
-    @FormUrlEncoded
-    @POST("UserRolesRefresh")
-    suspend fun userRoles(
-        @Field("UserId") UserId : String
-    ) : Response<UserRoleResponse>
 
 
     @FormUrlEncoded
@@ -68,33 +65,31 @@ interface BaseConnectionApi {
     ) : Response<ToDoListGroupsResponse>
 
 
-    @FormUrlEncoded
-    @POST("GetProjectItems")
-    suspend fun getProjectItems(
-        @Field("ProjectId") ProjectId : String
-    ) : Response<ItemsResponse>
+//    @FormUrlEncoded
+//    @POST("GetProjectItems")
+//    suspend fun getProjectItems(
+//        @Field("ProjectId") ProjectId : String
+//    ) : Response<ItemsResponse>
+//
+//
+//    @FormUrlEncoded
+//    @POST("ProjectItemsRefresh")
+//    suspend fun projectItemsRefresh(
+//        @Field("ProjectId") ProjectId : String
+//    ) : Response<ItemsResponse>
+//
+//    @FormUrlEncoded
+//    @POST("ProjectVosRefresh")
+//    suspend fun projectVosRefresh(
+//        @Field("ProjectId") ProjectId : String
+//    ) : Response<VoItemsResponse>
 
 
-    @FormUrlEncoded
-    @POST("ProjectItemsRefresh")
-    suspend fun projectItemsRefresh(
-        @Field("ProjectId") ProjectId : String
-    ) : Response<ItemsResponse>
-
-    @FormUrlEncoded
-    @POST("ProjectVosRefresh")
-    suspend fun projectVosRefresh(
-        @Field("ProjectId") ProjectId : String
-    ) : Response<VoItemsResponse>
-
-
-    @FormUrlEncoded
-    @POST("HealthCheck")
-    suspend fun HealthCheck(
-        @Field("UserLogon") UserLogon : String
-    ) : Response<HealthCheckResponse>
-
-
+//    @FormUrlEncoded
+//    @POST("UserRolesRefresh")
+//    suspend fun userRoles(
+//        @Field("UserId") UserId : String
+//    ) : Response<UserRoleResponse>
 
 
 
@@ -111,9 +106,9 @@ interface BaseConnectionApi {
         ) : BaseConnectionApi{
 
             val okkHttpclient = OkHttpClient.Builder()
-                .connectTimeout(2, TimeUnit.MINUTES)
-                .writeTimeout(2, TimeUnit.MINUTES) // write timeout
-                .readTimeout(2, TimeUnit.MINUTES) // read timeout
+//                .connectTimeout(2, TimeUnit.MINUTES)
+//                .writeTimeout(2, TimeUnit.MINUTES) // write timeout
+//                .readTimeout(2, TimeUnit.MINUTES) // read timeout
                 .addInterceptor(networkConnectionInterceptor)
                 .build()
 

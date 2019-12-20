@@ -2,7 +2,7 @@ package za.co.xisystems.itis_rrm.ui.mainview.create
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import za.co.xisystems.itis_rrm.data.repositories.ContractsRepository
+import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 
 /**
  * Created by Francis Mahlava on 2019/10/18.
@@ -10,10 +10,9 @@ import za.co.xisystems.itis_rrm.data.repositories.ContractsRepository
 
 @Suppress("UNCHECKED_CAST")
 class CreateViewModelFactory(
-    private val contractsRepository: ContractsRepository
-
+    private val offlineDataRepository: OfflineDataRepository
 ): ViewModelProvider.NewInstanceFactory() {
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-        return CreateViewModel(contractsRepository) as T
+        return CreateViewModel(offlineDataRepository) as T
     }
 }

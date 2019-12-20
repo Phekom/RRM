@@ -20,7 +20,7 @@ interface ItemDao {
     suspend fun insertItems( item : ItemDTO)
 
     @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE itemId = :itemId")
-    fun checkItemExistsItemId(itemId: String): LiveData<List<ItemDTO>>
+    fun checkItemExistsItemId(itemId: String): Boolean
 
 //    @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE itemId = :itemId")
 //    fun getItemForItemId(itemId: String): LiveData<ItemDTO>
