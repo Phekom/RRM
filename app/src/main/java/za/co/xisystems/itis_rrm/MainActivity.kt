@@ -35,7 +35,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     val PROJECT_SUB_CONTRACTOR_ROLE_IDENTIFIER = "E398A3EF1C18431DBAEE4A4AC5D6F07D"
     val PROJECT_CONTRACTOR_ROLE_IDENTIFIER = "E398A3EF1C18431DBAEE4A4AC5D6F07D"
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
