@@ -63,8 +63,13 @@
         tools:layout="@layout/fragment_approvemeasure" />
     <fragment
             android:id="@+id/selectItemFragment"
-            android:name="za.co.xisystems.itis_rrm.ui.mainview.create.SelectItemFragment"
-            android:label="SelectItemFragment" >
+            android:name="za.co.xisystems.itis_rrm.ui.mainview.create.select_item.SelectItemFragment"
+            android:label="SelectItemFragment">
+        <action
+                android:id="@+id/action_selectItemFragment_to_addProjectFragment"
+                app:destination="@id/addProjectFragment"
+                app:enterAnim="@anim/bounce_250"
+                app:popEnterAnim="@anim/bounce" />
     </fragment>
     <fragment
             android:id="@+id/estimatePhotoFragment"
@@ -72,13 +77,17 @@
             android:label="EstimatePhotoFragment" />
     <fragment
             android:id="@+id/addProjectFragment"
-            android:name="za.co.xisystems.itis_rrm.ui.mainview.create.AddProjectFragment"
+            android:name="za.co.xisystems.itis_rrm.ui.mainview.create.add_project_item.AddProjectFragment"
             android:label="AddProjectFragment" >
         <action
                 android:id="@+id/action_addProjectFragment_to_selectItemFragment"
-                app:destination="@id/selectItemFragment" />
+                app:destination="@id/selectItemFragment"
+                app:popUpTo="@+id/addProjectFragment" />
         <action
                 android:id="@+id/action_addProjectFragment_to_nav_create"
                 app:destination="@id/nav_create" />
+        <argument
+                android:name="selecteD"
+                app:argType="string" />
     </fragment>
 </navigation>

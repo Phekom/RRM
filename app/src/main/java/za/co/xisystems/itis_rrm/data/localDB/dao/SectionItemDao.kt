@@ -13,23 +13,26 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.SectionItemDTO
 @Dao
 interface SectionItemDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertEntities(intities : SectionItemDTO )
+    suspend fun insertSectionitems(vararg intities : SectionItemDTO)
+
 
     @Query("INSERT INTO SECTION_ITEM_TABLE (sectionItemId, itemCode, description)VALUES(:sectionItemId, :itemCode,:description)")
     fun insertSectionitem(description : String  ,itemCode: String, sectionItemId: String)
 
 //    @Query("SELECT sectionItemId FROM SECTION_ITEM_TABLE WHERE itemCode + :itemId ")
 
-    @Query("SELECT sectionItemId FROM SECTION_ITEM_TABLE WHERE itemCode = :itemCode")
+    @Query("SELECT sectionItemId FROM SECTION_ITEM_TABLE WHERE itemCode LIKE :itemCode")
     fun getSectionItemId(itemCode: String): String
 
 
-    @Query("SELECT * FROM SECTION_ITEM_TABLE WHERE sectionItemId = :sectionItemId")
-    fun getDescriptionFromSectionItemId(sectionItemId: String) : LiveData<SectionItemDTO>
+    @Query("SELECT * FROM SECTION_ITEM_TABLE WHERE sectionItemId LIKE :sectionItemId")
+    fun getDescriptionFromSectionItemId(sectionItemId: String) : List<SectionItemDTO>
 
     @Query("SELECT * FROM SECTION_ITEM_TABLE")
-    fun getAllSectionItems() : LiveData<SectionItemDTO>
+    fun getSectionItems() : LiveData<SectionItemDTO>
 
+    @Query("SELECT * FROM SECTION_ITEM_TABLE ORDER BY  itemCode  ASC")
+    fun getAllSectionItems() : LiveData<List<SectionItemDTO>>
 
 
 //    sectionItemId

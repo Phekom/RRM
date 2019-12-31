@@ -1,6 +1,7 @@
 package za.co.xisystems.itis_rrm.ui.mainview.create
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
@@ -8,7 +9,6 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import com.google.android.gms.common.api.GoogleApiClient
 import kotlinx.android.synthetic.main.fragment_createjob.*
@@ -17,6 +17,7 @@ import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
+import za.co.xisystems.itis_rrm.data.network.OfflineListener
 import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.IJobSubmit
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.MyState
@@ -28,7 +29,7 @@ import za.co.xisystems.itis_rrm.utils.*
 import java.util.*
 
 
-class CreateFragment : BaseFragment(), KodeinAware, IJobSubmit {
+class CreateFragment : BaseFragment(), OfflineListener , KodeinAware, IJobSubmit {
     companion object {
         val TAG: String = CreateFragment::class.java.simpleName
         val PROJECT_ID1 : String  = "PROJECT_ID1"
@@ -38,7 +39,7 @@ class CreateFragment : BaseFragment(), KodeinAware, IJobSubmit {
     override val kodein by kodein()
     private lateinit var createViewModel: CreateViewModel
     private val factory: CreateViewModelFactory by instance()
-    private var navController: NavController? = null
+
 
     var newJobSelectItemIntent: NewJobSelectItemIntentFrag? = null
     private var adapter: IEstimatesAdapter<ItemDTO>? = null
@@ -73,7 +74,7 @@ class CreateFragment : BaseFragment(), KodeinAware, IJobSubmit {
         container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
         setContract()
-        navController = this.activity?.let { Navigation.findNavController(it, R.id.nav_host_fragment) }
+//        navController = this.activity?.let { Navigation.findNavController(it, R.id.nav_host_fragment) }
         return inflater.inflate(R.layout.fragment_createjob, container, false)
     }
 
@@ -82,7 +83,7 @@ class CreateFragment : BaseFragment(), KodeinAware, IJobSubmit {
 //        createViewModel = ViewModelProviders.of(this, factory).get(CreateViewModel::class.java)
         createViewModel = activity?.run {
             ViewModelProviders.of(this, factory).get(CreateViewModel::class.java)
-        } ?: throw Exception("Invalid Activity")
+        } ?: throw Exception("Invalid Activity") as Throwable
 
         val myClickListener = View.OnClickListener { view ->
             when (view?.id) {
@@ -98,7 +99,7 @@ class CreateFragment : BaseFragment(), KodeinAware, IJobSubmit {
                         job?.issueDate = (Calendar.getInstance().time).toString()
                         job?.descr = description
 //                        setJob(job!!)
-                        setContractAndProjectSelection(true)
+                        setContractAndProjectSelection(true, view)
 
                     }
 
@@ -142,9 +143,8 @@ class CreateFragment : BaseFragment(), KodeinAware, IJobSubmit {
         this.job = job
     }
 
-    private fun setContractAndProjectSelection(animate: Boolean) {
-
-        navController?.navigate(R.id.action_nav_create_to_addProjectFragment)
+    private fun setContractAndProjectSelection(animate: Boolean, view: View) {
+        Navigation.findNavController(view).navigate(R.id.action_nav_create_to_addProjectFragment)
 
 //        if (selectedContract != null && selectedProject != null && job != null) {
 //        if (selectedContract != null && selectedProject != null) {
@@ -199,9 +199,10 @@ class CreateFragment : BaseFragment(), KodeinAware, IJobSubmit {
     }
 
     private fun setContract() {
-        Coroutines.main {
-            data_loading.show()
-            try {
+        try {
+            Coroutines.main {
+                data_loading.show()
+
                 val contracts = createViewModel.getContracts()
 //                val contracts = authViewModel.offlinedata.await()
                 contracts.observe(viewLifecycleOwner, Observer { contrac_t ->
@@ -210,6 +211,7 @@ class CreateFragment : BaseFragment(), KodeinAware, IJobSubmit {
                     for (contract in contrac_t.indices) {
                         contractNmbr[contract] = contrac_t[contract].contractNo
                     }
+                    Log.d(TAG, "Thread is Finished ")
                     setSpinner(context!!.applicationContext,
                         contractSpinner,
                         contractId,
@@ -230,18 +232,20 @@ class CreateFragment : BaseFragment(), KodeinAware, IJobSubmit {
 
                         })
                 })
-
-            } catch (e: ApiException) {
-                Toast.makeText(context?.applicationContext, e.message!!, Toast.LENGTH_SHORT).show()
-            } catch (e: NoInternetException) {
-                Toast.makeText(context?.applicationContext, e.message!!, Toast.LENGTH_SHORT).show()
             }
+        } catch (e: ApiException) {
+            toast(e.message)
+        } catch (e: NoInternetException) {
+            toast(e.message)
+            Log.e("NetworkConnection", "No Internet Connection", e)
+
         }
+
     }
 
     private fun setProjects(contractId: String?) {
         Coroutines.main {
-            try {
+//            try {
                 val projects = createViewModel.getSomeProjects(contractId!!)
 //                val projects = authViewModel.projects.await()
                 projects.observe(viewLifecycleOwner, Observer { projec_t ->
@@ -277,11 +281,11 @@ class CreateFragment : BaseFragment(), KodeinAware, IJobSubmit {
                 })
 
 
-            } catch (e: ApiException) {
-                Toast.makeText(context?.applicationContext, e.message!!, Toast.LENGTH_SHORT).show()
-            } catch (e: NoInternetException) {
-                Toast.makeText(context?.applicationContext, e.message!!, Toast.LENGTH_SHORT).show()
-            }
+//            } catch (e: ApiException) {
+//                Toast.makeText(context?.applicationContext, e.message!!, Toast.LENGTH_SHORT).show()
+//            } catch (e: NoInternetException) {
+//                Toast.makeText(context?.applicationContext, e.message!!, Toast.LENGTH_SHORT).show()
+//            }
         }
 
     }
@@ -295,6 +299,18 @@ class CreateFragment : BaseFragment(), KodeinAware, IJobSubmit {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
+    override fun onStarted() {
+        data_loading.show()
+//        setContract()
+    }
+
+    override fun onSuccess() {
+        data_loading.hide()
+    }
+
+    override fun onFailure(message: String) {
+        data_loading.hide()
+    }
 
 }
 

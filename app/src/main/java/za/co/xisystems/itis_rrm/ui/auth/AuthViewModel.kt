@@ -102,7 +102,6 @@ class AuthViewModel(
                 val IMEI = "45678"//telephonyManager?.imei
                 val androidDevice =
                     " " + R.string.android_sdk + Build.VERSION.SDK_INT + R.string.space + Build.BRAND + R.string.space + Build.MODEL + R.string.space + Build.DEVICE + ""
-
                 repository.userRegister(
                     username!!,
                     password!!,

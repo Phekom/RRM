@@ -64,7 +64,8 @@
 
                 <Button
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        style="@style/_button"
+                        android:layout_height="@dimen/button_size"
                     android:id="@+id/selectContractProjectContinueButton"
                     android:layout_margin="@dimen/small"
                     android:text="Confirm Project Selection" />
@@ -118,17 +119,18 @@
         </LinearLayout>
 
     </androidx.core.widget.NestedScrollView>
+
     <ProgressBar
             android:id="@+id/data_loading"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginTop="50dp"
-            android:layout_marginBottom="64dp"
-            android:visibility="gone"
+            android:layout_width="46dp"
+            android:layout_height="51dp"
+            android:layout_marginTop="150dp"
+            android:layout_marginBottom="100dp"
+            android:visibility="visible"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_bias="0.3" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

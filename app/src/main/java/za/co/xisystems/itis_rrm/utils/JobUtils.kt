@@ -14,7 +14,7 @@ object JobUtils {
     }
 
     fun formatTotalCost(totalCost: Double): String {
-        return String.format(Locale.US, "Total Cost: %s", JobUtils.formatCost(totalCost))
+        return String.format(Locale.US, "Total Cost: %s", formatCost(totalCost))
     }
 
     fun formatTotalCost(job: JobDTO?): String {

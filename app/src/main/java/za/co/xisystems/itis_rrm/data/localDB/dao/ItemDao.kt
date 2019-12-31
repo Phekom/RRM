@@ -37,15 +37,17 @@ interface ItemDao {
     fun getAllItemsForAllProjects() : LiveData<List<ItemDTO>>
 
 
-    @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE itemId = :itemId")
+    @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE itemId LIKE :itemId")
     fun getItemForItemId(itemId: String): LiveData<ItemDTO>
 
+    @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE sectionItemId LIKE :sectionItemId")
+    fun getItemForItemCode(sectionItemId: String): LiveData<List<ItemDTO>>
 
-    @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE projectId = :projectId")
+    @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE projectId LIKE :projectId ORDER BY itemCode ASC "  )
     fun getAllItemsForProjectId(projectId: String): LiveData<List<ItemDTO>>
 
 
-    @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE sectionItemId = :sectionItem AND projectId = :projectId")
+    @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE sectionItemId LIKE :sectionItem AND projectId LIKE :projectId")
     fun getAllItemsForSectionItem(sectionItem : String, projectId : String ): LiveData<List<ItemDTO>>
 
 

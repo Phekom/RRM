@@ -1,17 +1,19 @@
 package za.co.xisystems.itis_rrm.data.repositories
 
+import android.content.Context
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
+import za.co.xisystems.itis_rrm.data.network.OfflineListener
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
 import za.co.xisystems.itis_rrm.data.preferences.PreferenceProvider
-import za.co.xisystems.itis_rrm.utils.Coroutines
-import za.co.xisystems.itis_rrm.utils.DataConversion
-import za.co.xisystems.itis_rrm.utils.SqlLitUtils
+import za.co.xisystems.itis_rrm.utils.*
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import java.util.regex.Pattern
@@ -30,6 +32,9 @@ class OfflineDataRepository(
     companion object {
         val TAG: String = OfflineDataRepository::class.java.simpleName
     }
+
+    private val appContext: Context? = null
+    private var rListener: OfflineListener? = null
     private val conTracts = MutableLiveData<List<ContractDTO>>()
     private val sectionItems = MutableLiveData<ArrayList<String>>()
     private val projects = MutableLiveData<ArrayList<ProjectDTO>>()
@@ -57,7 +62,7 @@ class OfflineDataRepository(
             saveLookups(it)
         }
         projectItems.observeForever {
-//            saveProjectItems(it)
+            //            saveProjectItems(it)
         }
 
         toDoListGroups.observeForever {
@@ -84,29 +89,45 @@ class OfflineDataRepository(
             Db.getContractDao().getAllContracts()
         }
     }
-    suspend fun getContractProjects(contractId : String): LiveData<List<ProjectDTO>> {
+
+    suspend fun getContractProjects(contractId: String): LiveData<List<ProjectDTO>> {
         return withContext(Dispatchers.IO) {
             Db.getProjectDao().getAllProjectsByContract(contractId)
         }
     }
+
     suspend fun getProjects(): LiveData<List<ProjectDTO>> {
         return withContext(Dispatchers.IO) {
             Db.getProjectDao().getAllProjects()
         }
     }
+
     suspend fun getProjectItems(): LiveData<List<ItemDTO>> {
         return withContext(Dispatchers.IO) {
             //            val projectId = DataConversion.toLittleEndian( Db.getProjectDao().getProjectId())
             Db.getItemDao().getAllItemsForAllProjects()
         }
     }
-    suspend fun getAllItemsForProjectId(projectId : String): LiveData<List<ItemDTO>> {
+
+    suspend fun getItemForItemCode(sectionItemId: String): LiveData<List<ItemDTO>> {
+        return withContext(Dispatchers.IO) {
+            //            val projectId = DataConversion.toLittleEndian( Db.getProjectDao().getProjectId())
+            Db.getItemDao().getItemForItemCode(sectionItemId)
+        }
+    }
+
+    suspend fun getAllItemsForProjectId(projectId: String): LiveData<List<ItemDTO>> {
         return withContext(Dispatchers.IO) {
             //            val projectId = DataConversion.toLittleEndian( Db.getProjectDao().getProjectId())
             Db.getItemDao().getAllItemsForProjectId(projectId)
         }
     }
-
+    suspend fun getAllItemsForSectionItem(sectionItemId: String,projectId: String): LiveData<List<ItemDTO>> {
+        return withContext(Dispatchers.IO) {
+            //            val projectId = DataConversion.toLittleEndian( Db.getProjectDao().getProjectId())
+            Db.getItemDao().getAllItemsForSectionItem(sectionItemId,projectId)
+        }
+    }
 
 
     suspend fun getWorkFlows(): LiveData<List<WorkFlowDTO>> {
@@ -121,6 +142,12 @@ class OfflineDataRepository(
         return withContext(Dispatchers.IO) {
             val userId = Db.getUserDao().getuserID()
             fetchContracts(userId)
+            Db.getSectionItemDao().getSectionItems()
+        }
+    }
+
+    suspend fun getAllSectionItem(): LiveData<List<SectionItemDTO>> {
+        return withContext(Dispatchers.IO) {
             Db.getSectionItemDao().getAllSectionItems()
         }
     }
@@ -136,6 +163,7 @@ class OfflineDataRepository(
                 val sectionItemId = SqlLitUtils.generateUuid()
 
                 if (matcher.find()) {
+//                    Db.getSectionItemDao().insertSectionitems
                     Db.getSectionItemDao().insertSectionitem(
                         activitySection,
                         matcher.group(1).replace("\\s+".toRegex(), ""), sectionItemId
@@ -340,9 +368,18 @@ class OfflineDataRepository(
             if (!Db.getEntitiesDao().checkIfEntitiesExist(DataConversion.bigEndianToString(entity.trackRouteId))) {
                 Db.getEntitiesDao().insertEntitie(
                     DataConversion.bigEndianToString(entity.trackRouteId)
-                    ,if (entity.actionable) 1 else 0,
-                    entity.activityId, entity.currentRouteId, entity.data, entity.description, entity.entities,
-                    entity.entityName, entity.location,entity.primaryKeyValues, entity.recordVersion!!, jobId
+                    ,
+                    if (entity.actionable) 1 else 0,
+                    entity.activityId,
+                    entity.currentRouteId,
+                    entity.data,
+                    entity.description,
+                    entity.entities,
+                    entity.entityName,
+                    entity.location,
+                    entity.primaryKeyValues,
+                    entity.recordVersion!!,
+                    jobId
                 )
 
                 for (primaryKeyValue in entity.primaryKeyValues) {
@@ -368,33 +405,49 @@ class OfflineDataRepository(
 
 
     private suspend fun fetchUserTaskList(userId: String) {
+
         val lastSavedAt = prefs.getLastSavedAt()
         if (lastSavedAt == null || isFetchNeeded(LocalDateTime.parse(lastSavedAt))) {
-            val workFlowResponse = apiRequest { api.workflowsRefresh(userId) }
-            workFlow.postValue(workFlowResponse.workFlows)
+            try {
+                val workFlowResponse = apiRequest { api.workflowsRefresh(userId) }
+                workFlow.postValue(workFlowResponse.workFlows)
+
+            } catch (e: NoInternetException) {
+                ToastUtils().toastLong(appContext,e.message)
+            }
         }
     }
 
 
     private suspend fun fetchContracts(userId: String) {
         val lastSavedAt = prefs.getLastSavedAt()
+        try {
         if (lastSavedAt == null || isFetchNeeded(LocalDateTime.parse(lastSavedAt))) {
-            val activitySectionsResponse = apiRequest { api.ActivitySectionsRefresh(userId) }
-            sectionItems.postValue(activitySectionsResponse.activitySections)
 
-            val workFlowResponse = apiRequest { api.workflowsRefresh(userId) }
-            workFlow.postValue(workFlowResponse.workFlows)
+                val activitySectionsResponse = apiRequest { api.activitySectionsRefresh(userId) }
+                sectionItems.postValue(activitySectionsResponse.activitySections)
 
-            val lookupResponse = apiRequest { api.lookupsRefresh(userId) }
-            lookups.postValue(lookupResponse.mobileLookups)
+                val workFlowResponse = apiRequest { api.workflowsRefresh(userId) }
+                workFlow.postValue(workFlowResponse.workFlows)
 
-            val contractsResponse = apiRequest { api.refreshContractInfo(userId) }
-            conTracts.postValue(contractsResponse.contracts)
+                val lookupResponse = apiRequest { api.lookupsRefresh(userId) }
+                lookups.postValue(lookupResponse.mobileLookups)
 
-            val toDoListGroupsResponse = apiRequest { api.getUserTaskList(userId) }
-            toDoListGroups.postValue(toDoListGroupsResponse.toDoListGroups)
+                val contractsResponse = apiRequest { api.refreshContractInfo(userId) }
+                conTracts.postValue(contractsResponse.contracts)
 
-        }
+                val toDoListGroupsResponse = apiRequest { api.getUserTaskList(userId) }
+                toDoListGroups.postValue(toDoListGroupsResponse.toDoListGroups)
+
+            }
+            ToastUtils().toastLong(appContext,"You do not have an active data connection ")
+            } catch (e: ApiException) {
+            ToastUtils().toastLong(appContext,e.message)
+            } catch (e: NoInternetException) {
+            ToastUtils().toastLong(appContext,e.message)
+                Log.e("NetworkConnection", "No Internet Connection", e)
+            }
+
     }
 
     private fun isFetchNeeded(savedAt: LocalDateTime): Boolean {
