@@ -3,46 +3,24 @@ package za.co.xisystems.itis_rrm.ui.mainview.home
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
-import za.co.xisystems.itis_rrm.data.network.OfflineListener
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
 
 class HomeViewModel(
-    repository: UserRepository,
-    offlineDataRepository: OfflineDataRepository,
-    Db: AppDatabase,
+    private val repository: UserRepository,
+    private val offlineDataRepository: OfflineDataRepository,
+    private val Db: AppDatabase,
     val context: Context
 ) : ViewModel() {
 
-    var rListener: OfflineListener? = null
-
-    val user_roles by lazyDeferred {
-        repository.getUserRoles()
+    val offlinedata by lazyDeferred {
+        offlineDataRepository.getSectionItems()
+        offlineDataRepository.getContracts()
     }
-    val projectsItems by lazyDeferred {
-//        offlineDataRepository.getProjects()
-
-//        offlineDataRepository.getProjectItems()
-
+    val user by lazyDeferred {
+        repository.getUser()
     }
-
-//    var mText : MutableLiveData<String>
-//
-//    val text: LiveData<String>
-//        get() = mText
-//
-//    init {
-//        mText = MutableLiveData()
-//
-//    }
-
-
-
-
-
-
-
 
 ////    if (context?.applicationContext != null) {
 //        //  Check every 2 secs if Mobile data or Location is off/on

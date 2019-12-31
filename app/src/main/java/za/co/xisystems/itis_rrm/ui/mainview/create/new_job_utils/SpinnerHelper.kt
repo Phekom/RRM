@@ -12,13 +12,13 @@ object SpinnerHelper {
     fun <T> setSpinner(
         context: Context,
         spinner: Spinner,
-        data: List<T>,
-        datas : Array<String?>,
+        data: List<T>?,
+        datas : Array<String?>?,
         listener: SelectionListener<T>?
     ) {
         if (data != null) {
 
-            val adapter = ArrayAdapter(context, android.R.layout.simple_spinner_item, datas)
+            val adapter = ArrayAdapter(context, android.R.layout.simple_spinner_item, datas!!)
 
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_item)
             spinner.adapter = adapter
@@ -26,7 +26,7 @@ object SpinnerHelper {
             spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
                 override fun onItemSelected(
                     parent: AdapterView<*>,
-                    view: View,
+                    view: View?,
                     position: Int,
                     id: Long
                 ) {
@@ -42,4 +42,6 @@ object SpinnerHelper {
     interface SelectionListener<T> {
         fun onItemSelected(position: Int, item: T)
     }
+
+
 }

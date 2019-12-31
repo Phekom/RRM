@@ -1,6 +1,5 @@
 package za.co.xisystems.itis_rrm.data.network
 
-import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
 import okhttp3.OkHttpClient
 import retrofit2.Response
 import retrofit2.Retrofit
@@ -9,6 +8,7 @@ import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.POST
 import za.co.xisystems.itis_rrm.data.network.responses.*
+import java.util.concurrent.TimeUnit
 
 /**
  * Created by Francis Mahlava on 2019/10/23.
@@ -27,13 +27,13 @@ interface BaseConnectionApi {
 
     @FormUrlEncoded
     @POST("HealthCheck")
-    suspend fun HealthCheck(
+    suspend fun healthCheck(
         @Field("UserLogon") UserLogon : String
     ) : Response<HealthCheckResponse>
 
     @FormUrlEncoded
     @POST("RrmActivitySectionsRefresh")
-    suspend fun ActivitySectionsRefresh(
+    suspend fun activitySectionsRefresh(
         @Field("UserId") UserId : String
     ) : Response<ActivitySectionsResponse>
 
@@ -105,18 +105,18 @@ interface BaseConnectionApi {
             networkConnectionInterceptor: NetworkConnectionInterceptor
         ) : BaseConnectionApi{
 
-            val okkHttpclient = OkHttpClient.Builder()
-//                .connectTimeout(2, TimeUnit.MINUTES)
-//                .writeTimeout(2, TimeUnit.MINUTES) // write timeout
-//                .readTimeout(2, TimeUnit.MINUTES) // read timeout
+            val  okkHttpclient = OkHttpClient.Builder()
+                .connectTimeout(2, TimeUnit.MINUTES)
+                .writeTimeout(2, TimeUnit.MINUTES) // write timeout
+                .readTimeout(2, TimeUnit.MINUTES) // read timeout
                 .addInterceptor(networkConnectionInterceptor)
                 .build()
 
             return Retrofit.Builder()
                 .client(okkHttpclient)
                 .baseUrl("https://itisqa.nra.co.za/ITISServicesMobile/api/RRM/")
-                .addCallAdapterFactory(CoroutineCallAdapterFactory())
                 .addConverterFactory(GsonConverterFactory.create())
+//                .addCallAdapterFactory(CoroutineCallAdapterFactory())
                 .build()
                 .create(BaseConnectionApi::class.java)
         }

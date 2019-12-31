@@ -42,7 +42,7 @@ class HomeRepository (
     suspend fun fetchHealthCheck(userId : String){
         if (isFetchNeeded()){
 
-            val myResponse = apiRequest { api.HealthCheck(userId) }
+            val myResponse = apiRequest { api.healthCheck(userId) }
             health.postValue(myResponse.isAlive)
         }
 

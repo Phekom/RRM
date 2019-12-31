@@ -207,6 +207,11 @@ android {
     }
 }
 
+
+androidExtensions{
+    experimental = true
+}
+
 dependencies {
 
     implementation fileTree(dir: 'libs', include: ['*.jar'])
@@ -286,7 +291,7 @@ dependencies {
     implementation "org.kodein.di:kodein-di-framework-android-x:6.2.1"
 
     //Android  Room
-    def room_version = "2.2.2" // alpha06 has bugs
+    def room_version = "2.2.3" // alpha06 has bugs
     implementation "androidx.room:room-runtime:$room_version"
     implementation "androidx.room:room-ktx:$room_version"
     implementation "androidx.room:room-rxjava2:$room_version"

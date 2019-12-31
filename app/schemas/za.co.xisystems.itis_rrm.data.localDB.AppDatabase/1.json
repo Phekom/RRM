@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "124787f7fa4f90c4e39349f29e38d234",
+    "identityHash": "1d6331882b0c7f6d2c7883c0a5011ce1",
     "entities": [
       {
         "tableName": "JOB_TABLE",
@@ -2073,7 +2073,16 @@
           ],
           "autoGenerate": false
         },
-        "indices": [],
+        "indices": [
+          {
+            "name": "index_SECTION_ITEM_TABLE_itemCode",
+            "unique": true,
+            "columnNames": [
+              "itemCode"
+            ],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_SECTION_ITEM_TABLE_itemCode` ON `${TABLE_NAME}` (`itemCode`)"
+          }
+        ],
         "foreignKeys": []
       },
       {
@@ -2112,7 +2121,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '124787f7fa4f90c4e39349f29e38d234')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '1d6331882b0c7f6d2c7883c0a5011ce1')"
     ]
   }
 }

@@ -7,7 +7,7 @@ import com.google.android.gms.common.util.Base64Utils
 import com.google.gson.annotations.SerializedName
 
 const val ToDo_ENTITY_TABLE = "ToDo_ENTITY_TABLE"
-//const val TRACK_ROUTE_ID = "TRACK_ROUTE_ID"
+//const val TRACK_ROUTE_ID = "TRACK_ROUTE_ID"indices = [Index(value = ["itemCode"], unique = true)]
 
 @Entity(tableName = ToDo_ENTITY_TABLE)
 data class ToDoListEntityDTO(

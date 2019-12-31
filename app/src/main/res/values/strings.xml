@@ -487,5 +487,6 @@
     <string name="signature_title">Your signature</string>
     <string name="reply_title">Default reply action</string>
     <string name="select_item_title">Select Item</string>
+    <string name="data_loading_please_wait">Please wait!!     Data Loading.... </string>
 
 </resources>
