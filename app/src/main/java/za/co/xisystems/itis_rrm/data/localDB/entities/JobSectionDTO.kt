@@ -12,21 +12,22 @@ const val JOB_SECTION_TABLE = "JOB_SECTION_TABLE"
 
 @Entity(tableName = JOB_SECTION_TABLE)
 class JobSectionDTO(
-    @SerializedName("EndKm")
-    val endKm: Double,
-    @SerializedName("JobId")
-    val jobId: String,
     @SerializedName("JobSectionId")
     @PrimaryKey
-    val jobSectionId: String,
-    @SerializedName("PrjJobDto")
-    val prjJobDto: ArrayList<JobDTO>?,
+    var jobSectionId: String,
     @SerializedName("ProjectSectionId")
-    val projectSectionId: String,
+    var projectSectionId: String?,
+    @SerializedName("JobId")
+    var jobId: String?,
+    @SerializedName("StartKm")
+    val startKm: Double,
+    @SerializedName("EndKm")
+    val endKm: Double,
+    @SerializedName("PrjJobDto")
+    val job: JobDTO?,
     @SerializedName("RecordSynchStateId")
     val recordSynchStateId: Int,
     @SerializedName("RecordVersion")
-    val recordVersion: Int,
-    @SerializedName("StartKm")
-    val startKm: Double
+    val recordVersion: Int
+
 )

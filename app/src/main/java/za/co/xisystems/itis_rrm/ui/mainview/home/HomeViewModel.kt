@@ -17,6 +17,7 @@ class HomeViewModel(
     val offlinedata by lazyDeferred {
         offlineDataRepository.getSectionItems()
         offlineDataRepository.getContracts()
+        offlineDataRepository.getJobs()
     }
     val user by lazyDeferred {
         repository.getUser()

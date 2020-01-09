@@ -12,4 +12,5 @@ interface AuthListener {
     fun onSignOut(userDTO: UserDTO)
 
     fun onFailure(message: String)
+
 }

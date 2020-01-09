@@ -14,8 +14,14 @@ import za.co.xisystems.itis_rrm.data.network.NetworkConnectionInterceptor
 import za.co.xisystems.itis_rrm.data.preferences.PreferenceProvider
 import za.co.xisystems.itis_rrm.data.repositories.*
 import za.co.xisystems.itis_rrm.ui.auth.AuthViewModelFactory
+import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.ApproveJobsViewModelFactory
+import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureViewModelFactory
+import za.co.xisystems.itis_rrm.ui.mainview.corrections.CorrectionsViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModelFactory
+import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.home.HomeViewModelFactory
+import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedViewModelFactory
+import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModelFactory
 
 /**
  * Created by Francis Mahlava on 2019/10/23.
@@ -44,9 +50,13 @@ open class MainApp : Application(), KodeinAware {
         bind() from provider { AuthViewModelFactory(instance(),instance()) }
         bind() from provider { HomeViewModelFactory(instance(),instance(),instance(),instance()) }
         bind() from provider { CreateViewModelFactory(instance() ) }
-//        bind() from provider{ QuotesViewModelFactory(instance()) }
-
-
+        bind() from provider { ApproveMeasureViewModelFactory(instance() ) }
+        bind() from provider { ApproveJobsViewModelFactory(instance() ) }
+        bind() from provider { MeasureViewModelFactory(instance() ) }
+        bind() from provider { UnSubmittedViewModelFactory(instance() ) }
+        bind() from provider{ WorkViewModelFactory(instance()) }
+        bind() from provider{ CorrectionsViewModelFactory(instance()) }
+//        bind() from provider{ WorkViewModelFactory(instance()) }
 
     }
 

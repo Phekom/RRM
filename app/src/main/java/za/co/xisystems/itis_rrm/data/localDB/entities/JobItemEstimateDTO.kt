@@ -13,34 +13,32 @@ import java.util.*
  * Created by Francis Mahlava on 2019/11/21.
  */
 
-//const val PROJECT_ITEM_TABLE = "PROJECT_ITEM_TABLE"
-//
-//
-//@ToDoListEntityDTO(tableName = PROJECT_ITEM_TABLE)
-@Entity
+const val JOB_ITEM_ESTIMATE = "JOB_ITEM_ESTIMATE"
+
+@Entity(tableName = JOB_ITEM_ESTIMATE)
 data class JobItemEstimateDTO(
 
     @SerializedName("ActId")
     val actId: Int,
     @SerializedName("EstimateId")
     @PrimaryKey
-    val estimateId: String,
+    var estimateId: String,
     @SerializedName("JobId")
-    val jobId: String,
+    var jobId: String?,
     @SerializedName("LineRate")
     val lineRate: Double,
     @SerializedName("MobileEstimateWorks")
-    val mobileEstimateWorks: ArrayList<JobEstimateWorksDTO>,
+    val jobEstimateWorks: ArrayList<JobEstimateWorksDTO>,
     @SerializedName("MobileJobItemEstimatesPhotos")
-    val jobItemEstimatesPhotos: ArrayList<JobItemEstimatesPhotoDTO>,
+    val jobItemEstimatePhotos: ArrayList<JobItemEstimatesPhotoDTO>,
     @SerializedName("MobileJobItemMeasures")
-    val mobileJobItemMeasures: ArrayList<JobItemMeasureDTO>,
+    val jobItemMeasure: ArrayList<JobItemMeasureDTO>,
     @SerializedName("PrjJobDto")
-    val prjJobDto: ArrayList<JobDTO>,
+    val job: JobDTO,
     @SerializedName("ProjectItemId")
-    val projectItemId: String,
+    var projectItemId: String?,
     @SerializedName("ProjectVoId")
-    val projectVoId: String,
+    var projectVoId: String?,
     @SerializedName("Qty")
     val qty: Double,
     @SerializedName("RecordSynchStateId")
@@ -48,11 +46,11 @@ data class JobItemEstimateDTO(
     @SerializedName("RecordVersion")
     val recordVersion: Int,
     @SerializedName("TrackRouteId")
-    val trackRouteId: String
+    var trackRouteId: String?
 
 ){
     fun getJobItemEstimatePhoto(lookForStartPhoto: Boolean): Pair<Int, JobItemEstimatesPhotoDTO> {
-        val photos = jobItemEstimatesPhotos
+        val photos = jobItemEstimatePhotos
         var i = 0
         while (photos != null && i < photos!!.size) {
             val isPhotoStart = photos!!.get(i).isPhotoStart()
@@ -79,8 +77,8 @@ data class JobItemEstimateDTO(
     }
 
     fun getPhoto(x: Int): JobItemEstimatesPhotoDTO? {
-        return if ( jobItemEstimatesPhotos != null && -1 < x && x < size()) {
-            jobItemEstimatesPhotos.get(x)
+        return if ( jobItemEstimatePhotos != null && -1 < x && x < size()) {
+            jobItemEstimatePhotos.get(x)
         } else null
     }
 
@@ -99,26 +97,26 @@ data class JobItemEstimateDTO(
     }
 
     private fun setJobItemEstimatePhoto(photo: JobItemEstimatesPhotoDTO) {
-        if (jobItemEstimatesPhotos == null) {
+        if (jobItemEstimatePhotos == null) {
             ArrayList<JobItemEstimatesPhotoDTO>()
-            jobItemEstimatesPhotos.add(photo)
+            jobItemEstimatePhotos.add(photo)
         } else {
             val photoToChange = getJobItemEstimatePhoto(photo.isPhotoStart())
             val index = photoToChange.first!!
             if (index == -1)
-                jobItemEstimatesPhotos.add(photo)
+                jobItemEstimatePhotos.add(photo)
             else
-                jobItemEstimatesPhotos.set(index, photo)
+                jobItemEstimatePhotos.set(index, photo)
         }
-        JobUtils.sort(jobItemEstimatesPhotos)
+        JobUtils.sort(jobItemEstimatePhotos)
     }
 
     fun isEstimateComplete(): Boolean {
         if (size() < 2)
             return false
         else {
-            val photoStart = jobItemEstimatesPhotos.get(0)
-            val photoEnd = jobItemEstimatesPhotos.get(1)
+            val photoStart = jobItemEstimatePhotos.get(0)
+            val photoEnd = jobItemEstimatePhotos.get(1)
             return if (photoStart == null || photoStart!!.filename == null
                 || photoEnd == null || photoEnd!!.filename == null
             )
@@ -129,6 +127,6 @@ data class JobItemEstimateDTO(
     }
 
     fun size(): Int {
-        return if (jobItemEstimatesPhotos == null) 0 else jobItemEstimatesPhotos.size
+        return if (jobItemEstimatePhotos == null) 0 else jobItemEstimatePhotos.size
     }
 }

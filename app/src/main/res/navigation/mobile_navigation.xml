@@ -42,25 +42,45 @@
         android:id="@+id/nav_work"
         android:name="za.co.xisystems.itis_rrm.ui.mainview.work.WorkFragment"
         android:label="@string/menu_work"
-        tools:layout="@layout/fragment_work" />
+        tools:layout="@layout/fragment_work" >
+        <action
+                android:id="@+id/action_nav_work_to_captureWorkFragment"
+                app:destination="@id/captureWorkFragment"
+                app:popUpTo="@+id/nav_work" />
+    </fragment>
 
     <fragment
         android:id="@+id/nav_estMeasure"
         android:name="za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureFragment"
         android:label="@string/menu_estMeasure"
-        tools:layout="@layout/fragment_estmeasure" />
+        tools:layout="@layout/fragment_estmeasure" >
+        <action
+                android:id="@+id/action_nav_estMeasure_to_submitMeasureFragment"
+                app:destination="@id/submitMeasureFragment"
+                app:popUpTo="@+id/nav_estMeasure" />
+    </fragment>
 
     <fragment
         android:id="@+id/nav_approveJbs"
         android:name="za.co.xisystems.itis_rrm.ui.mainview.approvejobs.ApproveJobsFragment"
         android:label="@string/menu_approveJbs"
-        tools:layout="@layout/fragment_approvejob" />
+        tools:layout="@layout/fragment_approvejob" >
+        <action
+                android:id="@+id/action_nav_approveJbs_to_jobInfoFragment"
+                app:destination="@id/jobInfoFragment"
+                app:popUpTo="@+id/nav_approveJbs" />
+    </fragment>
 
     <fragment
         android:id="@+id/nav_approvMeasure"
         android:name="za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureFragment"
         android:label="@string/menu_approvMeasure"
-        tools:layout="@layout/fragment_approvemeasure" />
+        tools:layout="@layout/fragment_approvemeasure" >
+        <action
+                android:id="@+id/action_nav_approvMeasure_to_measureApprovalFragment"
+                app:destination="@id/measureApprovalFragment"
+                app:popUpTo="@+id/nav_approvMeasure" />
+    </fragment>
     <fragment
             android:id="@+id/selectItemFragment"
             android:name="za.co.xisystems.itis_rrm.ui.mainview.create.select_item.SelectItemFragment"
@@ -90,4 +110,23 @@
                 android:name="selecteD"
                 app:argType="string" />
     </fragment>
+    <fragment
+            android:id="@+id/jobInfoFragment"
+            android:name="za.co.xisystems.itis_rrm.ui.mainview.approvejobs.view_job_info.JobInfoFragment"
+            android:label="fragment_job_info" />
+    <fragment
+            android:id="@+id/measureApprovalFragment"
+            android:name="za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.measure_approval.MeasureApprovalFragment"
+            android:label="fragment_measure_approval"
+            tools:layout="@layout/fragment_measure_approval" />
+    <fragment
+            android:id="@+id/submitMeasureFragment"
+            android:name="za.co.xisystems.itis_rrm.ui.mainview.estmeasure.submit_measure.SubmitMeasureFragment"
+            android:label="fragment_submit_measure"
+            tools:layout="@layout/fragment_submit_measure" />
+    <fragment
+            android:id="@+id/captureWorkFragment"
+            android:name="za.co.xisystems.itis_rrm.ui.mainview.work.capture_work.CaptureWorkFragment"
+            android:label="fragment_capture_work"
+            tools:layout="@layout/fragment_capture_work" />
 </navigation>
