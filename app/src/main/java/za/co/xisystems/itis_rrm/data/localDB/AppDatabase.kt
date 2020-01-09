@@ -30,6 +30,13 @@ import za.co.xisystems.itis_rrm.utils.Converters
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun getJobDao(): JobDao
+    abstract fun getJobSectionDao(): JobSectionDao
+    abstract fun getJobItemEstimateDao(): JobItemEstimateDao
+    abstract fun getJobItemMeasureDao(): JobItemMeasureDao
+    abstract fun getJobItemEstimatePhotoDao(): JobItemEstimatePhotoDao
+    abstract fun getJobItemMeasurePhotoDao(): JobItemMeasurePhotoDao
+
+
     abstract fun getUserDao(): UserDao
     abstract fun getUserRoleDao(): UserRoleDao
     abstract fun getContractDao(): ContractDao
@@ -39,18 +46,21 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun getLookupOptionDao(): LookupOptionDao
     abstract fun getLookupDao(): LookupDao
     abstract fun getEntitiesDao(): EntitiesDao
-    abstract fun getItemDao(): ItemDao
+    abstract fun getItemDao(): ProjectItemDao
     abstract fun getItemSectionDao(): ItemSectionDao
     abstract fun getProjectSectionDao(): ProjectSectionDao
     abstract fun getWorkFlowDao(): WorkFlowDao
     abstract fun getWorkFlowRouteDao(): WorkFlowRouteDao
-    abstract fun getJobSectionDao(): JobSectionDao
+    abstract fun getWorkflowsDao(): WorkflowsDao
     abstract fun getInfoClassDao(): InfoClassDao
     abstract fun getActivityDao(): ActivityDao
     abstract fun getToDoGroupsDao(): ToDoGroupsDao
     abstract fun getEstimateWorkDao(): EstimateWorkDao
+    abstract fun getEstimateWorkPhotoDao(): EstimateWorkPhotoDao
+
+
     abstract fun getSectionItemDao(): SectionItemDao
-    abstract fun getWorkflowsDao(): WorkflowsDao
+
 
 
 

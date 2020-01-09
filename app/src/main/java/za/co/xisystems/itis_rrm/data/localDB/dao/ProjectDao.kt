@@ -45,10 +45,10 @@ interface ProjectDao {
     @Query("SELECT * FROM PROJECT_TABLE WHERE contractId = :contractId")
     fun getAllProjectsByContract(contractId: String): LiveData<List<ProjectDTO>>
 
-//    @Query("SELECT * FROM PROJECT_TABLE WHERE projectId = :projectId")
-//    fun getProjectDescription(projectId: String): String
-//
-//
+    @Query("SELECT descr FROM PROJECT_TABLE WHERE projectId = :projectId")
+    fun getProjectDescription(projectId: String): String
+
+
 //    @Query("SELECT * FROM PROJECT_TABLE WHERE projectId = :projectId")
 //    fun getProjectById(projectId: String): LiveData<ProjectDTO>
 //

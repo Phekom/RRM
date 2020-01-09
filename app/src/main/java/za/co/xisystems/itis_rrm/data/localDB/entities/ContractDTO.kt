@@ -39,8 +39,7 @@ data class ContractDTO(
         parcel.readString(),
         parcel.readString(),
         TODO("projects")
-    ) {
-    }
+    )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeString(contractId)

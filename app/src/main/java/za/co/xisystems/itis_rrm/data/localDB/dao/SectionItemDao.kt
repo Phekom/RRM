@@ -13,8 +13,10 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.SectionItemDTO
 @Dao
 interface SectionItemDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertSectionitems(vararg intities : SectionItemDTO)
+    suspend fun insertSectionitem(activitySections : SectionItemDTO )
 
+    @Query("SELECT * FROM SECTION_ITEM_TABLE WHERE itemCode = :itemCode")
+    fun checkIfSectionitemsExist(itemCode: String?): Boolean
 
     @Query("INSERT INTO SECTION_ITEM_TABLE (sectionItemId, itemCode, description)VALUES(:sectionItemId, :itemCode,:description)")
     fun insertSectionitem(description : String  ,itemCode: String, sectionItemId: String)

@@ -8,20 +8,20 @@ import java.util.*
 
 
 object JobUtils {
-    fun formatCost(value: Double): String {
+    private fun formatCost(value: Double): String {
         val out = "R " + DecimalFormat("###,##0.00").format(value)
         return out.replace(",", " ")
     }
 
-    fun formatTotalCost(totalCost: Double): String {
+    private fun formatTotalCost(totalCost: Double): String {
         return String.format(Locale.US, "Total Cost: %s", formatCost(totalCost))
     }
 
     fun formatTotalCost(job: JobDTO?): String {
         var quantity = 0.0
         var cost = 0.0
-        if (job != null && job!!.jobItemEstimates != null)
-            for (estimate in job!!.jobItemEstimates!!) {
+        if (job != null && job!!.JobItemEstimates != null)
+            for (estimate in job!!.JobItemEstimates!!) {
                 quantity += estimate.qty
                 cost += estimate.lineRate
             }
@@ -29,11 +29,11 @@ object JobUtils {
     }
 
     fun areQuantitiesValid(job: JobDTO?): Boolean {
-        if (job == null || job!!.jobItemEstimates == null || job!!.jobItemEstimates!!.isEmpty())
+        if (job == null || job!!.JobItemEstimates == null || job!!.JobItemEstimates!!.isEmpty())
             return false
         else {
-            for (estimate in job!!.jobItemEstimates!!) {
-                // TODO clean precision if needed
+            for (estimate in job!!.JobItemEstimates!!) {
+//                 TODO clean precision if needed
                 if (estimate.qty < 0.01) return false
             }
             return true
@@ -42,9 +42,9 @@ object JobUtils {
 
     // TODO this will not be needed
     fun compressJobEstimates(job: JobDTO?) {
-        if (job != null && job!!.jobItemEstimates != null)
-            for (jobItemEstimate in job!!.jobItemEstimates!!) {
-                JobUtils.compressJobEstimates(jobItemEstimate)
+        if (job != null && job!!.JobItemEstimates != null)
+            for (jobItemEstimate in job!!.JobItemEstimates!!) {
+                compressJobEstimates(jobItemEstimate)
             }
     }
 
@@ -55,7 +55,7 @@ object JobUtils {
         var endPhoto = jobItemEstimate!!.getJobItemEstimatePhotoEnd()
 
         if (startPhoto == null || endPhoto == null) {
-            val photos = jobItemEstimate!!.jobItemEstimatesPhotos
+            val photos = jobItemEstimate!!.jobItemEstimatePhotos
             if (photos != null && photos!!.size >= 2) {
                 startPhoto = photos!!.get(0)
                 endPhoto = photos!!.get(1)
@@ -70,9 +70,9 @@ object JobUtils {
         endPhoto: JobItemEstimatesPhotoDTO?
     ) {
         if (startPhoto == null || endPhoto == null) return
-        jobItemEstimate.jobItemEstimatesPhotos.clear()
-        jobItemEstimate.jobItemEstimatesPhotos.add(startPhoto)
-        jobItemEstimate.jobItemEstimatesPhotos.add(endPhoto)
+        jobItemEstimate.jobItemEstimatePhotos.clear()
+        jobItemEstimate.jobItemEstimatePhotos.add(startPhoto)
+        jobItemEstimate.jobItemEstimatePhotos.add(endPhoto)
     }
 
     fun sort(photos: ArrayList<JobItemEstimatesPhotoDTO>?): ArrayList<JobItemEstimatesPhotoDTO>? {

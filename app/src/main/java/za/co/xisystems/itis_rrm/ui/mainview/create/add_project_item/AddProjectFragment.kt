@@ -12,7 +12,7 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
-import com.xwray.groupie.kotlinandroidextensions.ViewHolder
+import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import kotlinx.android.synthetic.main.fragment_add_project_items.*
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
@@ -52,7 +52,7 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
         super.onResume()
         (activity as MainActivity).supportActionBar?.title = getString(R.string.new_job)
         (activity as MainActivity).supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        calculateTotalCost()
+//        calculateTotalCost()
     }
 
     override fun onCreateView(
@@ -154,32 +154,32 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
                     val yesterday = cal.time
 
                     if (getJob() != null) {
-                        if (getJob()?.startDate == null) {
+                        if (getJob()?.StartDate == null) {
                             toast("Please select Start Date")
                             startDateCardView.startAnimation(shake_long)
                         }
-                        if (getJob()?.dueDate == null) {
+                        if (getJob()?.DueDate == null) {
                             toast("Please select Due Date")
                             dueDateCardView.startAnimation(shake_long)
                         }
-                        if (getJob()?.dueDate != null) {
-                            if (getJob()?.dueDate!! < getJob()!!.startDate || getJob()!!.dueDate < yesterday.toString() || getJob()?.dueDate!!.equals(yesterday)
+                        if (getJob()?.DueDate != null) {
+                            if (getJob()?.DueDate!! < getJob()!!.StartDate!! || getJob()!!.DueDate!! < yesterday.toString() || getJob()?.DueDate!!.equals(yesterday)
                             ) {
                                 toast(R.string.end_date_error)
                             } else {
-                                getJob()?.dueDate
+                                getJob()?.DueDate
                             }
                         } else {
                             toast("Please select Due Date")
                             dueDateCardView.startAnimation(shake_long)
                         }
-                        if (getJob()!!.startDate != null) {
-                            if (getJob()!!.startDate < yesterday.toString() || getJob()!!.dueDate.equals(yesterday)
+                        if (getJob()!!.StartDate != null) {
+                            if (getJob()!!.StartDate!! < yesterday.toString() || getJob()!!.DueDate!!.equals(yesterday)
                             ) {
                                 toast(R.string.start_date_error)
 
                             } else {
-                                 getJob()!!.startDate
+                                 getJob()!!.StartDate
                             }
                         } else {
                             toast("Please select Start Date")
@@ -197,10 +197,10 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
 //                        )
 //                    )
                         {
-                        if (getJob()!!.dueDate == null) {
+                        if (getJob()!!.DueDate == null) {
                             toast("Select a due Date")
                             dueDateCardView.startAnimation(shake_long)
-                            if (getJob()!!.startDate == null) {
+                            if (getJob()!!.StartDate == null) {
                                 toast("Select a Start Date")
                                 startDateCardView.startAnimation(shake_long)
                             }
@@ -251,7 +251,7 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
 //        initRecyclerView(i_tems.toProjectItems())
     }
     private fun initRecyclerView(item: Project_Item) {
-        val groupAdapter = GroupAdapter<ViewHolder>().apply {
+        val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
             add(item)
         }
         project_recyclerView.apply {
@@ -305,7 +305,7 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
         dueDateCardView.startAnimation(bounce_500)
         val calendar = Calendar.getInstance()
         calendar[year, month] = dayOfMonth
-        getJob()?.dueDate = calendar.time.toString()
+        getJob()?.DueDate = calendar.time.toString()
     }
 
     private fun setStartDateTextView(year: Int, month: Int, dayOfMonth: Int) {
@@ -313,7 +313,7 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
         startDateCardView.startAnimation(bounce_500)
         val calendar = Calendar.getInstance()
         calendar[year, month] = dayOfMonth
-        getJob()?.startDate = calendar.time.toString()
+        getJob()?.StartDate = calendar.time.toString()
     }
 
     private fun onResetClicked(view :View) {
@@ -321,7 +321,7 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
         resetContractAndProjectSelection(view)
     }
     private fun calculateTotalCost() {
-        totalCostTextView.setText(JobUtils.formatTotalCost(getJob()))
+        totalCostTextView.setText(JobUtils.formatTotalCost(getJob()!!))
     }
     fun getJob(): JobDTO? {
         return job

@@ -65,24 +65,24 @@ interface BaseConnectionApi {
     ) : Response<ToDoListGroupsResponse>
 
 
-//    @FormUrlEncoded
-//    @POST("GetProjectItems")
-//    suspend fun getProjectItems(
-//        @Field("ProjectId") ProjectId : String
-//    ) : Response<ItemsResponse>
-//
-//
-//    @FormUrlEncoded
-//    @POST("ProjectItemsRefresh")
-//    suspend fun projectItemsRefresh(
-//        @Field("ProjectId") ProjectId : String
-//    ) : Response<ItemsResponse>
-//
-//    @FormUrlEncoded
-//    @POST("ProjectVosRefresh")
-//    suspend fun projectVosRefresh(
-//        @Field("ProjectId") ProjectId : String
-//    ) : Response<VoItemsResponse>
+    @FormUrlEncoded
+    @POST("GetRRMJob")
+    suspend fun getJobsForApproval(
+        @Field("JobId") JobId : String
+    ) : Response<JobResponse>
+
+
+    @FormUrlEncoded
+    @POST("GetRrmJobPhotoEstimate")
+    suspend fun getPhotoEstimate(
+        @Field("FileName") FileName : String
+    ) : Response<PhotoEstimateResponse>
+
+    @FormUrlEncoded
+    @POST("GetRrmJobPhoto")
+    suspend fun getPhotoMeasure(
+        @Field("FileName") FileName : String
+    ) : Response<PhotoMeasureResponse>
 
 
 //    @FormUrlEncoded
@@ -106,9 +106,9 @@ interface BaseConnectionApi {
         ) : BaseConnectionApi{
 
             val  okkHttpclient = OkHttpClient.Builder()
-                .connectTimeout(2, TimeUnit.MINUTES)
-                .writeTimeout(2, TimeUnit.MINUTES) // write timeout
-                .readTimeout(2, TimeUnit.MINUTES) // read timeout
+                .connectTimeout(5, TimeUnit.MINUTES)
+                .writeTimeout(5, TimeUnit.MINUTES) // write timeout
+                .readTimeout(5, TimeUnit.MINUTES) // read timeout
                 .addInterceptor(networkConnectionInterceptor)
                 .build()
 

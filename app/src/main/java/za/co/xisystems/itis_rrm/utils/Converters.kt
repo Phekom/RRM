@@ -4,11 +4,9 @@ package za.co.xisystems.itis_rrm.utils
 import androidx.room.TypeConverter
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+//import jdk.nashorn.internal.objects.NativeDate.getTime
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import java.util.*
-
-
-
 
 
 /**
@@ -553,67 +551,69 @@ class Converters {
     //===========================================================================
 
 
-//    @TypeConverter
-//    fun storedStringToSectionDTO(data: String?):ArrayList<ProjectSectionDTO> {
-//        val gson = Gson()
-//        if (data == null) {
-//            return Collections.EMPTY_LIST
-//        }
-//        val listType = object :TypeToken<ArrayList<ProjectSectionDTO>>() {
-//
-//        }.getType()
-//        return gson.fromJson<ArrayList<ProjectSectionDTO>>(data, listType)
-//    }
-//
-//    @TypeConverter
-//    fun SectionDTOToStoredString(myObjects:ArrayList<ProjectSectionDTO>): String {
-//        val gson = Gson()
-//        return gson.toJson(myObjects)
-//    }
+    @TypeConverter
+    fun storedStringToJob(data: String?): JobDTO {
+        val gson = Gson()
+        if (data == null) {
+            return Collections.EMPTY_LIST as JobDTO
+        }
+        val listType = object :TypeToken<JobDTO>() {
+
+        }.getType()
+        return gson.fromJson<JobDTO>(data, listType)
+    }
+
+    @TypeConverter
+    fun JobToStoredString(myObjects: JobDTO): String {
+        val gson = Gson()
+        return gson.toJson(myObjects)
+    }
 
 
     //===========================================================================
 
 
-//    @TypeConverter
-//    fun storedStringToSectionDTO(data: String?):ArrayList<ProjectSectionDTO> {
-//        val gson = Gson()
-//        if (data == null) {
-//            return Collections.EMPTY_LIST
-//        }
-//        val listType = object :TypeToken<ArrayList<ProjectSectionDTO>>() {
-//
-//        }.getType()
-//        return gson.fromJson<ArrayList<ProjectSectionDTO>>(data, listType)
-//    }
-//
-//    @TypeConverter
-//    fun SectionDTOToStoredString(myObjects:ArrayList<ProjectSectionDTO>): String {
-//        val gson = Gson()
-//        return gson.toJson(myObjects)
-//    }
+    @TypeConverter
+    fun storedStringToJobItemEstimate(data: String?): JobItemEstimateDTO {
+        val gson = Gson()
+        if (data == null) {
+            return Collections.EMPTY_LIST as JobItemEstimateDTO
+        }
+        val listType = object :TypeToken< JobItemEstimateDTO>() {
+
+        }.getType()
+        return gson.fromJson< JobItemEstimateDTO >(data, listType)
+    }
+
+    @TypeConverter
+    fun JobItemEstimateToStoredString(myObjects: JobItemEstimateDTO ): String {
+        val gson = Gson()
+        return gson.toJson(myObjects)
+    }
+
+
 
 
     //===========================================================================
 
 
-//    @TypeConverter
-//    fun storedStringToSectionDTO(data: String?):ArrayList<ProjectSectionDTO> {
-//        val gson = Gson()
-//        if (data == null) {
-//            return Collections.EMPTY_LIST
-//        }
-//        val listType = object :TypeToken<ArrayList<ProjectSectionDTO>>() {
-//
-//        }.getType()
-//        return gson.fromJson<ArrayList<ProjectSectionDTO>>(data, listType)
-//    }
-//
-//    @TypeConverter
-//    fun SectionDTOToStoredString(myObjects:ArrayList<ProjectSectionDTO>): String {
-//        val gson = Gson()
-//        return gson.toJson(myObjects)
-//    }
+    @TypeConverter
+    fun storedStringToJobItemMeasure(data: String?): JobItemMeasureDTO {
+        val gson = Gson()
+        if (data == null) {
+            return Collections.EMPTY_LIST as JobItemMeasureDTO
+        }
+        val listType = object :TypeToken<JobItemMeasureDTO>() {
+
+        }.getType()
+        return gson.fromJson<JobItemMeasureDTO>(data, listType)
+    }
+
+    @TypeConverter
+    fun JobItemMeasureToStoredString(myObjects:JobItemMeasureDTO): String {
+        val gson = Gson()
+        return gson.toJson(myObjects)
+    }
 
 
     //===========================================================================
@@ -1188,11 +1188,15 @@ class Converters {
 //    }
 
 
-
-
-
-
-
+//    @TypeConverter
+//    fun fromTimestamp(value: Long?): Date? {
+//        return value?.let { Date(it) }
+//    }
+//
+//    @TypeConverter
+//    fun dateToTimestamp(date: Date?): Long? {
+//        return date?.time
+//    }
 
 
 

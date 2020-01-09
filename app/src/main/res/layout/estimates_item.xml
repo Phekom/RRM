@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:orientation="horizontal">
+
+<!--    <TextView-->
+<!--            android:id="@+id/appListID1"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_marginStart="2dp"-->
+<!--            android:hint="ID :"-->
+<!--            android:textAppearance="?android:attr/textAppearanceSmall"-->
+<!--            android:textColor="@android:color/black"-->
+<!--            android:textSize="17sp" />-->
+
+    <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="@dimen/small">
+
+        <TextView
+                android:id="@+id/measure_item_description_textView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentTop="true"
+                android:maxWidth="160dp"
+                android:layout_marginStart="10dp"
+                android:text="@string/some_super_long_item_name_in_case_it_gets_cut_off"
+                android:textColor="@color/sanral_burnt_orange"
+                android:textSize="17dp" />
+
+        <TextView
+                android:id="@+id/estimation_item_quantity_textView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/measure_item_description_textView"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentLeft="true"
+                android:maxWidth="160dp"
+                android:layout_marginStart="10dp"
+                android:text="@string/qty_123"
+                android:textColor="@android:color/black"
+                android:textSize="14dp" />
+
+        <TextView
+                android:id="@+id/estimation_item_uom_textView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/estimation_item_quantity_textView"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentLeft="true"
+                android:maxWidth="160dp"
+                android:layout_marginStart="10dp"
+                android:hint="UOM"
+                android:textColor="@android:color/black"
+                android:textSize="14dp" />
+
+        <TextView
+                android:id="@+id/estimation_item_price_textView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/estimation_item_uom_textView"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentLeft="true"
+                android:hint="R 0.00"
+                android:layout_marginStart="10dp"
+                android:textColor="@android:color/black"
+                android:textSize="14dp" />
+
+
+        <LinearLayout
+                android:layout_width="184dp"
+                android:layout_height="95dp"
+                android:layout_alignParentRight="true"
+                android:layout_marginRight="2dp"
+                android:orientation="horizontal"
+                android:padding="@dimen/small">
+
+            <ImageView
+                    android:id="@+id/photoPreviewStart"
+                    android:layout_width="@dimen/image_xmedium"
+                    android:layout_height="@dimen/image_xmedium"
+                    android:layout_marginRight="@dimen/xsmall"
+                    tools:src="@drawable/logo_new_medium" />
+
+            <ImageView
+                    android:id="@+id/photoPreviewEnd"
+                    android:layout_width="@dimen/image_xmedium"
+                    android:layout_height="@dimen/image_xmedium"
+                    android:layout_marginLeft="@dimen/xsmall"
+                    tools:src="@drawable/logo_new_medium" />
+        </LinearLayout>
+
+    </RelativeLayout>
+
+
+
+
+</LinearLayout>

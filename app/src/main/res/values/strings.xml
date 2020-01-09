@@ -32,7 +32,8 @@
 
     <!-- end points -->
     <string name="fixed_coordinates">true</string>
-
+    <string name="expanding_group">Expanding group</string>
+    <string name="expanding_group_subtitle">Tap on the header to expand or contract the group.</string>
     <string name="error_getting_image">There was an Error writing your image to your phone</string>
     <string name="place_quantity">Please place a Quantity</string>
     <string name="contract_info_refresh_end_point">ContractInfoRefresh</string>
@@ -78,8 +79,7 @@
     <string name="android_sdk">Android SDK:</string>
     <string name="app_name">RRM2-QA</string>
     <string name="app_label">Maintenance</string>
-    <string name="approve_job">Approve Job</string>
-    <string name="correct_job">Correct Job</string>
+
     <string name="approve_measurement_item">Approve Measurement Item</string>
     <string name="approve_submitted_measurement">"Approve Submitted Measurement "</string>
     <string name="approving_measurements">Approving measurements</string>
@@ -124,6 +124,11 @@
     <string name="dash">-</string>
     <string name="dayworks_section_m9100">Dayworks/Section M9100?</string>
     <string name="decline_job">Decline Job</string>
+    <string name="approve_job">Approve Job</string>
+    <string name="correct_job">Correct Job</string>
+    <string name="decline">Decline</string>
+    <string name="approve">Approve</string>
+    <string name="correct">Correct</string>
     <string name="decline_measurement_item">Decline Measure Item</string>
     <string name="declining_measurements">Declining measurements</string>
     <string name="delete">Delete</string>
@@ -487,6 +492,10 @@
     <string name="signature_title">Your signature</string>
     <string name="reply_title">Default reply action</string>
     <string name="select_item_title">Select Item</string>
-    <string name="data_loading_please_wait">Please wait!!     Data Loading.... </string>
+    <string name="jobinfo_item_title">Job Info and Estimates</string>
+    <string name="submit_measure_title">Submit Measurements</string>
+    <string name="measure_approval_title">Measurements Approval</string>
+    <string name="capture_work_title">Capture Work</string>
+    <string name="data_loading_please_wait">Data Loading.... </string>
 
 </resources>

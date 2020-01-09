@@ -10,7 +10,7 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
-import com.xwray.groupie.ViewHolder
+import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import kotlinx.android.synthetic.main.fragment_select_item.*
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
@@ -99,7 +99,7 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
                             override fun onItemSelected(position: Int, item: SectionItemDTO) {
                                 if (animate) {
                                     sectionItemSpinner.startAnimation(bounce_750)
-                                    itemsDropCardView.startAnimation(bounce_1000)
+                                    item_recyclerView.startAnimation(bounce_1000)
                                 }
                                 selectedSectionitem = item
                                 setRecyclerItems(projectId, item.sectionItemId!!)
@@ -120,6 +120,81 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
 //            bindUI()
         }
     }
+
+
+    //    private fun setRecyclerItems(sectionItemId: String) {
+    private fun setRecyclerItems(projectId: String, sectionItemId: String) {
+        Coroutines.main {
+            //            val projectsItems = createViewModel.getItemForItemCode(sectionItemId!!)
+            val projectsItems = createViewModel.getAllItemsForSectionItem(sectionItemId, projectId)
+            projectsItems?.observe(viewLifecycleOwner, Observer { i_tems ->
+                group_loading.visibility = View.GONE
+                initRecyclerView(i_tems.toProjectItems())
+//                data_loading2.hide()
+//                group_loading.visibility = View.GONE
+            })
+
+        }
+
+    }
+
+    private fun List<ItemDTO>.toProjectItems(): List<SectionProj_Item> {
+        return this.map { proj_items ->
+            SectionProj_Item(proj_items)
+        }
+    }
+
+    private fun initRecyclerView(items: List<SectionProj_Item>) {
+        val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
+            addAll(items)
+        }
+        item_recyclerView.apply {
+            layoutManager = LinearLayoutManager(this.context)
+            adapter = groupAdapter
+        }
+
+        groupAdapter.setOnItemClickListener { item, view ->
+
+            (item as? SectionProj_Item)?.let {
+                sendSelectedItem((it.itemDTO.itemCode +"  "+ it.itemDTO.descr), view)
+            }
+
+
+        }
+
+
+    }
+
+
+    private fun sendSelectedItem(item: String?, view: View) {
+        val selecteD = item.toString()
+//        val actionAddProject =  SelectItemFragmentDirection.actionAddProject(selecteD)
+//        navController?.navigate(R.id.action_selectItemFragment_to_addProjectFragment)
+
+
+        Coroutines.main {
+            createViewModel.project_Item.value = selecteD
+        }
+
+        Navigation.findNavController(view)
+            .navigate(R.id.action_selectItemFragment_to_addProjectFragment)
+    }
+
+}
+
+
+//            navController?.navigate(R.id.action_selectItemFragment_to_addProjectFragment)
+//            Coroutines.main {
+//               createViewModel.project_Item.value = selectedSectionitem?.itemCode.toString() + selectedSectionitem?.description.toString()
+//
+//            }
+
+//            val intent = Intent()
+//            intent.putExtra("item", item)
+//            setResult(RESULT_OK, intent)
+//            finish()
+
+
 //    private fun setItems(sectionItemId: String,projectId: String) {
 //        Coroutines.main {
 ////            data_loading2.show()
@@ -178,76 +253,3 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
 ////            }
 //        }
 //    }
-
-
-    //    private fun setRecyclerItems(sectionItemId: String) {
-    private fun setRecyclerItems(projectId: String, sectionItemId: String) {
-        Coroutines.main {
-            //            val projectsItems = createViewModel.getItemForItemCode(sectionItemId!!)
-            val projectsItems = createViewModel.getAllItemsForSectionItem(sectionItemId, projectId)
-            projectsItems?.observe(viewLifecycleOwner, Observer { i_tems ->
-                group_loading.visibility = View.GONE
-                initRecyclerView(i_tems.toProjectItems())
-//                data_loading2.hide()
-//                group_loading.visibility = View.GONE
-            })
-
-        }
-
-    }
-
-    private fun List<ItemDTO>.toProjectItems(): List<SectionProj_Item> {
-        return this.map { proj_items ->
-            SectionProj_Item(proj_items)
-        }
-    }
-
-    private fun initRecyclerView(items: List<SectionProj_Item>) {
-        val groupAdapter = GroupAdapter<ViewHolder>().apply {
-            addAll(items)
-        }
-        item_recyclerView.apply {
-            layoutManager = LinearLayoutManager(this.context)
-            adapter = groupAdapter
-        }
-
-        groupAdapter.setOnItemClickListener { item, view ->
-
-            (item as? SectionProj_Item)?.let {
-                sendSelectedItem((it.itemDTO.itemCode +"  "+ it.itemDTO.descr), view)
-            }
-
-
-//            navController?.navigate(R.id.action_selectItemFragment_to_addProjectFragment)
-//            Coroutines.main {
-//               createViewModel.project_Item.value = selectedSectionitem?.itemCode.toString() + selectedSectionitem?.description.toString()
-//
-//            }
-
-//            val intent = Intent()
-//            intent.putExtra("item", item)
-//            setResult(RESULT_OK, intent)
-//            finish()
-
-        }
-
-
-    }
-
-
-    private fun sendSelectedItem(item: String?, view: View) {
-        val selecteD = item.toString()
-//        val actionAddProject =  SelectItemFragmentDirection.actionAddProject(selecteD)
-//        navController?.navigate(R.id.action_selectItemFragment_to_addProjectFragment)
-
-
-        Coroutines.main {
-            createViewModel.project_Item.value = selecteD
-        }
-
-        Navigation.findNavController(view)
-            .navigate(R.id.action_selectItemFragment_to_addProjectFragment)
-    }
-
-}
-

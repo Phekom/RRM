@@ -40,7 +40,13 @@ interface EntitiesDao {
 
 
     @Query("SELECT * FROM ToDo_ENTITY_TABLE WHERE activityId = :actId AND jobId = :jobId")
-    fun getEntitiesForJobId(jobId : String, actId : Int ): LiveData<List<ToDoListEntityDTO>>
+    fun getEntitiesForJobIdAndActId(jobId : String, actId : Int ): LiveData<List<ToDoListEntityDTO>>
+
+//    @Query("SELECT * FROM ToDo_ENTITY_TABLE WHERE jobId = :jobId")
+//    fun getEntitiesForJobId(jobId : String): LiveData<List<ToDoListEntityDTO>>
+
+    @Query("SELECT jobId FROM ToDo_ENTITY_TABLE WHERE jobId = jobId")
+    fun getJobIdForEntities(): String?
 
 
     @Query("DELETE FROM ToDo_ENTITY_TABLE")
