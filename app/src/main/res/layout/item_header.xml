@@ -23,6 +23,7 @@
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:gravity="bottom"
+            android:id="@+id/headerLin"
         android:orientation="vertical"
         android:paddingBottom="@dimen/padding_small"
         android:paddingTop="@dimen/padding_small">

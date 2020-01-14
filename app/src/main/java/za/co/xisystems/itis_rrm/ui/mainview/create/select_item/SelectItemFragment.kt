@@ -29,6 +29,10 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
 import java.util.*
 
 
+/**
+ * Created by Francis Mahlava on 2019/12/29.
+ */
+
 class SelectItemFragment : BaseFragment(), KodeinAware {
     override val kodein by kodein()
     private lateinit var createViewModel: CreateViewModel
@@ -156,7 +160,8 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
         groupAdapter.setOnItemClickListener { item, view ->
 
             (item as? SectionProj_Item)?.let {
-                sendSelectedItem((it.itemDTO.itemCode +"  "+ it.itemDTO.descr), view)
+//                sendSelectedItem((it.itemDTO.itemCode +"  "+ it.itemDTO.descr),(it.itemDTO.tenderRate) , view)
+                sendSelectedItem((it) , view)
             }
 
 
@@ -166,14 +171,19 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
     }
 
 
-    private fun sendSelectedItem(item: String?, view: View) {
-        val selecteD = item.toString()
+    private fun sendSelectedItem(
+        item: SectionProj_Item,
+//        rate: Double?,
+        view: View) {
+        val selecteD = item
+//        val selectRte = rate
 //        val actionAddProject =  SelectItemFragmentDirection.actionAddProject(selecteD)
 //        navController?.navigate(R.id.action_selectItemFragment_to_addProjectFragment)
 
 
         Coroutines.main {
-            createViewModel.project_Item.value = selecteD
+            createViewModel.Sec_Item.value = selecteD
+//            createViewModel.project_Rate.value = selectRte
         }
 
         Navigation.findNavController(view)

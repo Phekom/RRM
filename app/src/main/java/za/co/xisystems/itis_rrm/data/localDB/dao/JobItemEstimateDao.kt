@@ -25,18 +25,16 @@ interface JobItemEstimateDao {
     fun getJobEstimationItemsForJobId(jobId: String) : LiveData<List<JobItemEstimateDTO>>
 
 
-    @Query("SELECT * FROM JOB_ITEM_ESTIMATE WHERE actId = :actId")
-    fun getJobMeasureForActivityId(actId: Int): LiveData<List<JobItemEstimateDTO>>
+    @Query("SELECT * FROM JOB_ITEM_ESTIMATE WHERE actId = :actId  ORDER BY jobId ASC " )
+    fun getJobsForActivityId(actId: Int): LiveData<List<JobItemEstimateDTO>>
 
+    @Query("SELECT estimateId FROM JOB_ITEM_ESTIMATE WHERE jobId = :jobId")
+    fun getJobEstimateIdForJobId(jobId: String) : String
 
-//    @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE projectId = :projectId")
-//    fun getAllItemsForProjectId(projectId: String): LiveData<List<ItemDTO>>
-//
-//
 //    @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE sectionItemId = :sectionItem AND projectId = :projectId")
 //    fun getAllItemsForSectionItem(sectionItem : String, projectId : String ): LiveData<List<ItemDTO>>
-//
-//
+
+
 //    @Query("DELETE FROM PROJECT_ITEM_TABLE")
 //    fun deleteAll()
 }

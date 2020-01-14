@@ -28,6 +28,10 @@ import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.intents.NewJobS
 import za.co.xisystems.itis_rrm.utils.*
 import java.util.*
 
+/**
+ * Created by Francis Mahlava on 2019/10/18.
+ */
+
 
 class CreateFragment : BaseFragment(), OfflineListener , KodeinAware, IJobSubmit {
     companion object {
@@ -130,19 +134,6 @@ class CreateFragment : BaseFragment(), OfflineListener , KodeinAware, IJobSubmit
 //        item_recyclerView.adapter = adapter!!.adapter
 
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     private fun setJob(job: JobDTO) {

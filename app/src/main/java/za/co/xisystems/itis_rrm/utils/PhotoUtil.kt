@@ -9,6 +9,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.util.Log
+import androidx.core.content.FileProvider
 import org.apache.sanselan.ImageReadException
 import org.apache.sanselan.ImageWriteException
 import org.apache.sanselan.Sanselan
@@ -16,6 +17,8 @@ import org.apache.sanselan.common.IImageMetadata
 import org.apache.sanselan.formats.jpeg.JpegImageMetadata
 import org.apache.sanselan.formats.jpeg.exifRewrite.ExifRewriter
 import org.apache.sanselan.formats.tiff.write.TiffOutputSet
+import za.co.xisystems.itis_rrm.BuildConfig
+import za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates.EstimatePhotoFragment
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import java.io.*
 import java.text.DateFormat
@@ -416,17 +419,20 @@ object PhotoUtil {
         return inSampleSize
     }
 
-    //    public static Uri getUri(NewJobEditEstimateActivity newJobEditEstimateActivity) {
-//
-//        try {
-//            return FileProvider.getUriForFile(newJobEditEstimateActivity,
-//                    BuildConfig.APPLICATION_ID + ".provider",
-//                    createImageFile());
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//        return null;
-//    }
+    fun getUri(estimatePhotoFragment: EstimatePhotoFragment?): Uri? {
+        try {
+            return FileProvider.getUriForFile(
+                estimatePhotoFragment?.context!!.applicationContext, BuildConfig.APPLICATION_ID + ".provider",
+                createImageFile()
+            )
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+        return null
+    }
+
+
+
     @Throws(IOException::class)
     private fun createImageFile(): File {
         val uuid = UUID.randomUUID()
@@ -451,7 +457,11 @@ object PhotoUtil {
             storageDir.mkdirs()
         }
 
-        val imageByteArray = Base64.getDecoder().decode(photo)
+        val imageByteArray = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Base64.getDecoder().decode(photo)
+        } else {
+            Base64.getDecoder().decode(photo)
+        }
         File(storageDir.path + "/" + fileName).writeBytes(imageByteArray)
 
 

@@ -93,7 +93,7 @@
     </fragment>
     <fragment
             android:id="@+id/estimatePhotoFragment"
-            android:name="za.co.xisystems.itis_rrm.ui.mainview.create.EstimatePhotoFragment"
+            android:name="za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates.EstimatePhotoFragment"
             android:label="EstimatePhotoFragment" />
     <fragment
             android:id="@+id/addProjectFragment"
@@ -109,6 +109,12 @@
         <argument
                 android:name="selecteD"
                 app:argType="string" />
+        <action
+                android:id="@+id/action_addProjectFragment_to_estimatePhotoFragment"
+                app:destination="@id/estimatePhotoFragment"
+                app:enterAnim="@anim/bounce_short"
+                app:launchSingleTop="false"
+                app:popUpTo="@+id/addProjectFragment" />
     </fragment>
     <fragment
             android:id="@+id/jobInfoFragment"

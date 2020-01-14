@@ -6,34 +6,32 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
+import org.kodein.di.KodeinAware
+import org.kodein.di.android.x.kodein
+import org.kodein.di.generic.instance
+import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
+import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModel
+import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModelFactory
+import za.co.xisystems.itis_rrm.utils.Coroutines
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
 
-/**
- * A simple [Fragment] subclass.
- * Activities that contain this fragment must implement the
- * [CaptureWorkFragment.OnFragmentInteractionListener] interface
- * to handle interaction events.
- * Use the [CaptureWorkFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
-class CaptureWorkFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
-    private var listener: OnFragmentInteractionListener? = null
+class CaptureWorkFragment : BaseFragment(), KodeinAware {
+
+    override val kodein by kodein()
+    private lateinit var workViewModel: WorkViewModel
+    private val factory: WorkViewModelFactory by instance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
+        (activity as MainActivity).supportActionBar?.title = getString(R.string.capture_work_title)
+
+
+
+
     }
 
     override fun onCreateView(
@@ -44,58 +42,105 @@ class CaptureWorkFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_capture_work, container, false)
     }
 
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
+        workViewModel = activity?.run {
+            ViewModelProviders.of(this, factory).get(WorkViewModel::class.java)
+        } ?: throw Exception("Invalid Activity") as Throwable
+
+        Coroutines.main {
+
+            workViewModel.work_Item.observe(viewLifecycleOwner, Observer { estimateId ->
+                getWorkItems(estimateId)
+            })
+
+        }
+
+
+    }
+
+    private fun getWorkItems(estimateId: String?) {
+        Coroutines.main {
+            val estimate = workViewModel.getJobEstiItemForEstimateId(estimateId)
+            estimate.observe(viewLifecycleOwner, Observer { work_s ->
+                toast(work_s.size.toString())
+
+        })
+
+        }
+//            val works = workViewModel.getJobsForActivityId(
+//                ActivityIdConstants.JOB_APPROVED
+//                , ActivityIdConstants.ESTIMATE_INCOMPLETE
+//            )
+//
+////            val jobs = approveViewModel.offlinedata.await()
+//            works.observe(viewLifecycleOwner, Observer { work_s ->
+//                noData.visibility = View.GONE
+//                toast(work_s.size.toString())
+//                initRecyclerView(work_s.toWorkListItems())
+//                group7_loading.visibility = View.GONE
+//
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     // TODO: Rename method, update argument and hook method into UI event
     fun onButtonPressed(uri: Uri) {
-        listener?.onFragmentInteraction(uri)
+
     }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        if (context is OnFragmentInteractionListener) {
-            listener = context
-        } else {
-            throw RuntimeException(context.toString() + " must implement OnFragmentInteractionListener")
-        }
-    }
+        (activity as MainActivity).supportActionBar?.title = getString(R.string.capture_work_title)
+            }
 
     override fun onDetach() {
         super.onDetach()
-        listener = null
+
     }
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     *
-     *
-     * See the Android Training lesson [Communicating with Other Fragments]
-     * (http://developer.android.com/training/basics/fragments/communicating.html)
-     * for more information.
-     */
-    interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
-        fun onFragmentInteraction(uri: Uri)
-    }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment CaptureWorkFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            CaptureWorkFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
-            }
-    }
+
+
 }

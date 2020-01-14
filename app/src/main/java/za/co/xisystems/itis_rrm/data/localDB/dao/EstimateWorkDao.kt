@@ -1,5 +1,6 @@
 package za.co.xisystems.itis_rrm.data.localDB.dao
 
+import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
@@ -17,6 +18,11 @@ interface EstimateWorkDao {
 
     @Query("SELECT * FROM JOB_ESTIMATE_WORKS WHERE worksId = :worksId")
     fun checkIfJobEstimateWorksExist(worksId: String): Boolean
+
+    @Query("SELECT * FROM JOB_ESTIMATE_WORKS WHERE estimateId = :estimateId")
+    fun getJobMeasureItemsForJobId(estimateId: String?): LiveData<List<JobEstimateWorksDTO>>
+
+
 
 
 }

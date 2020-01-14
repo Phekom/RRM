@@ -110,7 +110,7 @@ class JobDTO(
     @SerializedName("WorkStartDate")
     val WorkStartDate: String?,
 
-    val sortString: String?,
+    val sortString: String? ,
 
     val ActivityId: Int,
 
@@ -122,6 +122,63 @@ class JobDTO(
 
 ) : Serializable{
 
+    fun addOrUpdateJobItemEstimate(newEstimate: JobItemEstimateDTO) {
+        val x = getJobEstimateIndexByItemId(newEstimate.projectItemId)
+        if (x < 0) JobItemEstimates?.add(newEstimate) else JobItemEstimates?.set(
+            x,
+            newEstimate
+        )
+    }
+
+    fun jobEstimateExist(itemId: String?): Boolean {
+        return getJobEstimateIndexByItemId(itemId) > -1
+    }
+
+    fun getJobEstimateIndexByItemId(itemId: String?): Int {
+        if (itemId != null) for (i in JobItemEstimates!!.indices) {
+            val currEstimate: JobItemEstimateDTO = JobItemEstimates?.get(i)!!
+            if (currEstimate != null && currEstimate.projectItemId != null) if (currEstimate.projectItemId.equals(
+                    itemId
+                )
+            ) {
+                return i
+            }
+        }
+        return -1
+    }
+
+    fun removeJobEstimateByItemId(itemId: String?): JobItemEstimateDTO? {
+        val x = getJobEstimateIndexByItemId(itemId)
+        return if (x > -1) {
+            JobItemEstimates?.removeAt(x)
+        } else null
+    }
+
+    fun getJobEstimateByItemId(itemId: String?): JobItemEstimateDTO? {
+        val x = getJobEstimateIndexByItemId(itemId)
+        return if (x < 0) null else JobItemEstimates?.get(x)
+    }
+
+//    fun getJobItemMeasures(): ArrayList<JobItemMeasureDTO?>? {
+//        return jobItemMeasures
+//    }
+
+//    fun setJobItemMeasures(jobItemMeasures: ArrayList<JobItemMeasureDTO?>) {
+//        jobItemMeasures = jobItemMeasures
+//    }
+
+//    fun getSortString(): String? {
+//        return sortString
+//    }
+//
+//    fun setSortString(sortString: String?) {
+//        this.sortString = sortString
+//    }
+
+
+    fun clearJobItemEstimates() {
+        JobItemEstimates?.clear()
+    }
 
 
 

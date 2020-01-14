@@ -34,7 +34,10 @@ class JobInfoFragment : BaseFragment(), KodeinAware {
         super.onAttach(context)
         (activity as MainActivity).supportActionBar?.title = getString(R.string.jobinfo_item_title)
     }
-
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        (activity as MainActivity).supportActionBar?.title = getString(R.string.jobinfo_item_title)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,

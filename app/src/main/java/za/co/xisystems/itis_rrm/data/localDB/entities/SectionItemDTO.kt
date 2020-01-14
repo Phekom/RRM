@@ -12,15 +12,16 @@ import com.google.gson.annotations.SerializedName
 const val SECTION_ITEM_TABLE = "SECTION_ITEM_TABLE"
 
 @Entity(tableName = SECTION_ITEM_TABLE
-    ,indices = arrayOf(Index(value = ["description"],unique = true))
+    ,indices = [Index(value = ["itemCode"] ,unique = true)]
 )
 
 data class SectionItemDTO (
+    @PrimaryKey
+    val id: Int,
 
     var sectionItemId: String?,
 
     @SerializedName("itemCode")
-    @PrimaryKey
     var itemCode: String,
 
     @SerializedName("ActivitySections")

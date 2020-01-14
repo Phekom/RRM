@@ -10,6 +10,12 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.SectionItemDTO
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
+import za.co.xisystems.itis_rrm.ui.mainview.create.add_project_item.Project_Item
+import za.co.xisystems.itis_rrm.ui.mainview.create.select_item.SectionProj_Item
+
+/**
+ * Created by Francis Mahlava on 2019/10/18.
+ */
 
 class CreateViewModel(
     private val offlineDataRepository: OfflineDataRepository
@@ -78,9 +84,24 @@ class CreateViewModel(
     fun projecCode(projec_Code: String) {
         project_Code.value = projec_Code
     }
-    val project_Item = MutableLiveData<String>()
-    fun projecItem(projec_Item: String) {
+//    val project_Item = MutableLiveData<String>()
+//    fun projecItem(projec_Item: String) {
+//        project_Item.value = projec_Item
+//    }
+
+    val Sec_Item = MutableLiveData<SectionProj_Item>()
+    fun projecItem(projec_Item: SectionProj_Item) {
+        Sec_Item.value = projec_Item
+    }
+
+    val project_Item = MutableLiveData<Project_Item>()
+    fun projecItem(projec_Item: Project_Item) {
         project_Item.value = projec_Item
+    }
+
+    val project_Rate = MutableLiveData<Double>()
+    fun projecRate(projec_Rate: Double) {
+        project_Rate.value = projec_Rate
     }
 
     val proId = MutableLiveData<String>()

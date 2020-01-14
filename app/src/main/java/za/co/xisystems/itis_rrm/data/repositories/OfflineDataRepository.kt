@@ -25,7 +25,7 @@ import java.util.regex.Pattern
  * Created by Francis Mahlava on 2019/11/28.
  */
 
-const val MINIMUM_INTERVAL = 1
+const val MINIMUM_INTERVAL = 3
 
 class OfflineDataRepository(
     private val api: BaseConnectionApi,
@@ -182,13 +182,17 @@ class OfflineDataRepository(
             Db.getJobDao().getJobsForActivityIds1(activityId1, activityId2)
         }
     }
-
+    suspend fun getJobsForActivityIds(activityId1: Int): LiveData<List<JobItemEstimateDTO>> {
+        return withContext(Dispatchers.IO) {
+            Db.getJobItemEstimateDao().getJobsForActivityId(activityId1)
+        }
+    }
 
 
 
     suspend fun getJobMeasureForActivityId(activityId: Int): LiveData<List<JobItemEstimateDTO>> {
         return withContext(Dispatchers.IO) {
-            Db.getJobItemEstimateDao().getJobMeasureForActivityId(activityId!!)
+            Db.getJobItemEstimateDao().getJobsForActivityId(activityId!!)
         }
     }
 
@@ -232,6 +236,12 @@ class OfflineDataRepository(
     suspend fun getJobMeasureItemsForJobId(jobID: String?, actId: Int): LiveData<List<JobItemMeasureDTO>> {
         return withContext(Dispatchers.IO) {
             Db.getJobItemMeasureDao().getJobMeasureItemsForJobId(jobID!!, actId)
+        }
+    }
+
+    suspend fun getJobEstiItemForEstimateId(estimateId: String?): LiveData<List<JobEstimateWorksDTO>> {
+        return withContext(Dispatchers.IO) {
+            Db.getEstimateWorkDao().getJobMeasureItemsForJobId(estimateId)
         }
     }
 
@@ -282,6 +292,31 @@ class OfflineDataRepository(
             Db.getJobDao().getItemJobNo(jobId)
         }
     }
+
+    suspend fun getItemStartKm(jobId: String): Double {
+        return withContext(Dispatchers.IO) {
+            Db.getJobDao().getItemStartKm(jobId)
+        }
+    }
+    suspend fun getItemEndKm(jobId: String): Double {
+        return withContext(Dispatchers.IO) {
+            Db.getJobDao().getItemEndKm(jobId)
+        }
+    }
+
+    suspend fun getItemTrackRouteId(jobId: String): String {
+        return withContext(Dispatchers.IO) {
+            Db.getJobDao().getItemTrackRouteId(jobId)
+        }
+    }
+
+
+
+
+
+
+
+
 
     suspend fun getUOMForProjectItemId(projectItemId: String): String {
         return withContext(Dispatchers.IO) {
@@ -855,7 +890,7 @@ class OfflineDataRepository(
     }
 
     private fun isFetchNeeded(savedAt: LocalDateTime): Boolean {
-        return ChronoUnit.MINUTES.between(savedAt, LocalDateTime.now()) > MINIMUM_INTERVAL
+        return ChronoUnit.HOURS.between(savedAt, LocalDateTime.now()) > MINIMUM_INTERVAL
     }
 
 
@@ -883,7 +918,6 @@ class OfflineDataRepository(
             }
         }
     }
-
 
 
 

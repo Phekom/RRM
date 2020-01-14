@@ -30,7 +30,7 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        (activity as MainActivity).supportActionBar?.title = getString(R.string.submit_measure_title)
     }
 
     override fun onCreateView(

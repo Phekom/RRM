@@ -8,7 +8,7 @@ import java.util.*
 
 
 object JobUtils {
-    private fun formatCost(value: Double): String {
+    fun formatCost(value: Double): String {
         val out = "R " + DecimalFormat("###,##0.00").format(value)
         return out.replace(",", " ")
     }

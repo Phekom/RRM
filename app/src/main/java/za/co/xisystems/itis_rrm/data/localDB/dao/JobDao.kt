@@ -43,20 +43,20 @@ interface JobDao {
     @Query("SELECT jiNo FROM JOB_TABLE WHERE jobId = :jobId")
     fun getItemJobNo(jobId: String): String
 
-//    updateJob(Job existingJob)
-//    INSERT INTO Customers (CustomerName, City, Country)
-//    SELECT SupplierName, City, Country FROM Suppliers
-//    WHERE Country='Germany';
-//    setJobToSynced(Job job)
+    @Query("SELECT StartKm FROM JOB_TABLE WHERE jobId = :jobId")
+    fun getItemStartKm(jobId: String): Double
+
+    @Query("SELECT EndKm FROM JOB_TABLE WHERE jobId = :jobId")
+    fun getItemEndKm(jobId: String): Double
+
+    @Query("SELECT TrackRouteId FROM JOB_TABLE WHERE jobId = :jobId")
+    fun getItemTrackRouteId(jobId: String): String
 
     @Query("SELECT * FROM JOB_TABLE ")
     fun getAllJobsForAllProjects(): LiveData<List<JobDTO>>
 
     @Query("SELECT * FROM JOB_TABLE WHERE is_synced = 0 ")
     fun getUnSyncedJobs(): LiveData<List<JobDTO>>
-
-//    @Update
-//    fun update(noteDTO: NoteDTO)
 
     @Query("SELECT * FROM JOB_TABLE WHERE actId = :actId ORDER BY jiNo ASC")
     fun getJobsForActivityId(actId: Int): LiveData<List<JobDTO>>
@@ -84,3 +84,12 @@ interface JobDao {
 
 
 }
+
+
+
+
+//    updateJob(Job existingJob)
+//    INSERT INTO Customers (CustomerName, City, Country)
+//    SELECT SupplierName, City, Country FROM Suppliers
+//    WHERE Country='Germany';
+//    setJobToSynced(Job job)
