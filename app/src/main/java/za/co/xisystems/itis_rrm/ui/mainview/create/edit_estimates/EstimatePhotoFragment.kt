@@ -233,10 +233,10 @@ class EstimatePhotoFragment : BaseFragment(), KodeinAware {
     private fun processAndSetImage() {
 
                     when (photoType) {
-                        PhotoType.start -> updatePhotoUI(
-                            startImageView!!, imageUri.also { startimageUri = it },
-                            true
-                        )
+//                        PhotoType.start -> updatePhotoUI(
+//                            startImageView!!, imageUri.also { startimageUri = it },
+//                            true
+//                        )
 //                        PhotoType.end -> updatePhotoUI(
 //                            endImageView!!,
 //                            imageUri.also { endimageUri = it },
@@ -273,16 +273,16 @@ class EstimatePhotoFragment : BaseFragment(), KodeinAware {
 //        updatePhotoUI(endImageView!!, endimageUri, animate)
 //    }
 
-    private fun updatePhotoUI(
-        imageView: ImageView,
-        imageUri: Uri?,
-        animate: Boolean
-    ) {
-//        if (imageUri != null) {
-//            imageView.setImageURI(imageUri)
-////            if (animate) imageView.startAnimation(abounce_1000)
-//        }
-    }
+//    private fun updatePhotoUI(
+////        imageView: ImageView,
+////        imageUri: Uri?,
+////        animate: Boolean
+//    ) {
+////        if (imageUri != null) {
+////            imageView.setImageURI(imageUri)
+//////            if (animate) imageView.startAnimation(abounce_1000)
+////        }
+//    }
 
 
 
