@@ -10,6 +10,8 @@ import com.google.gson.annotations.SerializedName
 data class ActivitySectionsResponse(
     @SerializedName("ActivitySections")
     val activitySections: ArrayList<String>,
+//    @SerializedName("ActivitySections")
+//    val activitySections: ArrayList<SectionItemDTO>,
     @SerializedName("ErrorMessage")
     val errorMessage: String // null
 )

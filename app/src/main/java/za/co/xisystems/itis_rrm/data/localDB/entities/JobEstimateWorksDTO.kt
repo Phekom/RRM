@@ -10,23 +10,25 @@ import java.util.*
  */
 
 
-@Entity
+const val JOB_ESTIMATE_WORKS = "JOB_ESTIMATE_WORKS"
+
+@Entity(tableName = JOB_ESTIMATE_WORKS)
 class JobEstimateWorksDTO(
     @SerializedName("ActId")
     val actId: Int,
     @SerializedName("EstimateId")
-    val estimateId: String,
+    var estimateId: String,
     @SerializedName("PrjEstWorksPhotoDtos")
-    val estWorksPhotos: ArrayList<JobEstimateWorksPhotoDTO>?,
+    val jobEstimateWorksPhotos: ArrayList<JobEstimateWorksPhotoDTO>?,
     @SerializedName("PrjJobItemEstimateDto")
-    val jobItemEstimate: ArrayList<JobEstimateWorksDTO>,
+    val jobItemEstimate: JobItemEstimateDTO,
     @SerializedName("RecordSynchStateId")
     val recordSynchStateId: Int,
     @SerializedName("RecordVersion")
     val recordVersion: Int,
     @SerializedName("TrackRouteId")
-    val trackRouteId: String,
+    var trackRouteId: String,
     @SerializedName("WorksId")
     @PrimaryKey
-    val worksId: String
+    var worksId: String
 )

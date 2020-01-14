@@ -1,6 +1,5 @@
 package za.co.xisystems.itis_rrm.data.localDB.entities
 
-import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
@@ -13,22 +12,20 @@ import com.google.gson.annotations.SerializedName
 const val SECTION_ITEM_TABLE = "SECTION_ITEM_TABLE"
 
 @Entity(tableName = SECTION_ITEM_TABLE
-    , indices = [Index(value = ["itemCode"], unique = true)]
+    ,indices = [Index(value = ["itemCode"] ,unique = true)]
 )
 
-
 data class SectionItemDTO (
-//    @SerializedName("SectionId")
-//    @@PrimaryKey(autoGenerate = true)
-//    val sectionId: String,
-//    @ColumnInfo(name = "workflowId", index = true)
     @PrimaryKey
-    var sectionItemId: String,
+    val id: Int,
 
-    @ColumnInfo(name = "itemCode")
-    var itemCode: String?,
+    var sectionItemId: String?,
+
+    @SerializedName("itemCode")
+    var itemCode: String,
+
     @SerializedName("ActivitySections")
-    var description: String
+    var description: String?
 ){
 //     fun compareTo(other: SectionItemDTO): Int {
 //        return (description ?: "").compareTo(other.description ?: "")

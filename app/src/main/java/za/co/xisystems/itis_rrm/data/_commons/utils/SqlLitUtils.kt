@@ -5,6 +5,6 @@ import java.util.*
 
 object SqlLitUtils {
     fun generateUuid(): String {
-        return DataConversion.removeDashesAndUppercaseString(UUID.randomUUID().toString())
+        return DataConversion.removeDashesAndUppercaseString(UUID.randomUUID().toString())!!
     }
 }

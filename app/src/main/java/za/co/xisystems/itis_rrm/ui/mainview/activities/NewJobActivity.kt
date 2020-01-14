@@ -144,8 +144,8 @@ class NewJobActivity : NewJobBase(),
                         //                            return
                     }else{
                         hideKeyboard()
-                        job?.issueDate   = (Calendar.getInstance().time).toString()
-                        job?.descr = description
+                        job?.IssueDate   = (Calendar.getInstance().time).toString()
+                        job?.Descr = description
                         //                        val job = JobDTO
                         setContractAndProjectSelection(true)
                     }
@@ -220,8 +220,8 @@ class NewJobActivity : NewJobBase(),
 
             selectedContractTextView.text = selectedContract?.contractNo.toString()
             selectedProjectTextView.text = selectedProject?.projectCode.toString()
-            job?.contractVoId = selectedContract!!.contractId
-            job?.projectId = selectedProject!!.projectId
+            job?.ContractVoId = selectedContract!!.contractId
+            job?.ProjectId = selectedProject!!.projectId
             setMenuItems()
         }
     }
@@ -414,19 +414,19 @@ class NewJobActivity : NewJobBase(),
         startDateCardView.startAnimation(bounce_500)
         val calendar = Calendar.getInstance()
         calendar[year, month] = dayOfMonth
-        job?.startDate = (calendar.time.toString())
+        job?.StartDate = (calendar.time.toString())
     }
 
     fun setStartDateTextView() {
         if (job != null) {
-            val dateString: String = job!!.startDate
+            val dateString: String = job!!.StartDate!!
             if (dateString != null) startDateTextView.text = dateString
         }
     }
 
     fun setDueDateTextView() {
         if (job != null) {
-            val dateString: String = job!!.dueDate
+            val dateString: String = job!!.DueDate!!
             if (dateString != null) dueDateTextView.text = dateString
         }
     }
@@ -436,7 +436,7 @@ class NewJobActivity : NewJobBase(),
         dueDateCardView.startAnimation(bounce_500)
         val calendar = Calendar.getInstance()
         calendar[year, month] = dayOfMonth
-        job?.dueDate = (calendar.time.toString())
+        job?.DueDate = (calendar.time.toString())
     }
 
     fun updateTitle() {

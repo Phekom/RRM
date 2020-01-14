@@ -51,8 +51,8 @@ android {
 
     defaultConfig {
         applicationId appId
-        minSdkVersion 26
-        targetSdkVersion 28
+        minSdkVersion 21
+        targetSdkVersion 29
         versionCode 1
         // versionName "1.0 #" + versionBuild + " " + versionBuildDate
         versionName "1.0.0.1"
@@ -208,7 +208,7 @@ android {
 }
 
 
-androidExtensions{
+androidExtensions {
     experimental = true
 }
 
@@ -233,6 +233,7 @@ dependencies {
     implementation 'org.greenrobot:eventbus:3.1.1'
     implementation 'com.squareup.picasso:picasso:2.71828'
     implementation 'com.github.takusemba:cropme:1.0.6'
+    implementation 'org.apache.sanselan:sanselan:0.97-incubator'
 
     //viewModel and LiveData
 // Reactive Streams (convert Observable to LiveData)
@@ -297,11 +298,21 @@ dependencies {
     implementation "androidx.room:room-rxjava2:$room_version"
     kapt "androidx.room:room-compiler:$room_version"
 
-    implementation 'com.xwray:groupie:2.3.0'
-    implementation 'com.xwray:groupie-kotlin-android-extensions:2.3.0'
-    implementation 'com.xwray:groupie-databinding:2.3.0'
+    implementation 'com.xwray:groupie:2.7.0'
+    implementation 'com.xwray:groupie-kotlin-android-extensions:2.7.0'
+    implementation 'com.xwray:groupie-databinding:2.7.0'
 //preference
     implementation "androidx.preference:preference-ktx:1.1.0"
+
+    implementation 'com.amitshekhar.android:android-networking:1.0.2'
+    implementation 'com.amitshekhar.android:jackson-android-networking:1.0.2'
+
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.9.8'
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.9.8'
+    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.9.2'
+
+//    implementation "com.jakewharton:butterknife:8.8.1"
+//    kapt "com.jakewharton:butterknife-compiler:8.8.1"
 
 
 }

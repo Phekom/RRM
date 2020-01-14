@@ -28,6 +28,10 @@ import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.intents.NewJobS
 import za.co.xisystems.itis_rrm.utils.*
 import java.util.*
 
+/**
+ * Created by Francis Mahlava on 2019/10/18.
+ */
+
 
 class CreateFragment : BaseFragment(), OfflineListener , KodeinAware, IJobSubmit {
     companion object {
@@ -73,7 +77,13 @@ class CreateFragment : BaseFragment(), OfflineListener , KodeinAware, IJobSubmit
         inflater: LayoutInflater,
         container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
+
+    try {
         setContract()
+    } catch (e: NoInternetException) {
+        snackError(e.message)
+        Log.e("Networ yonnection", "No Internet Connection", e)
+    }
 //        navController = this.activity?.let { Navigation.findNavController(it, R.id.nav_host_fragment) }
         return inflater.inflate(R.layout.fragment_createjob, container, false)
     }
@@ -96,8 +106,8 @@ class CreateFragment : BaseFragment(), OfflineListener , KodeinAware, IJobSubmit
                     } else {
                         activity?.hideKeyboard()
                         val job = job
-                        job?.issueDate = (Calendar.getInstance().time).toString()
-                        job?.descr = description
+                        job?.IssueDate = (Calendar.getInstance().time).toString()
+                        job?.Descr = description
 //                        setJob(job!!)
                         setContractAndProjectSelection(true, view)
 
@@ -124,19 +134,6 @@ class CreateFragment : BaseFragment(), OfflineListener , KodeinAware, IJobSubmit
 //        item_recyclerView.adapter = adapter!!.adapter
 
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     private fun setJob(job: JobDTO) {
@@ -233,10 +230,8 @@ class CreateFragment : BaseFragment(), OfflineListener , KodeinAware, IJobSubmit
                         })
                 })
             }
-        } catch (e: ApiException) {
-            toast(e.message)
         } catch (e: NoInternetException) {
-            toast(e.message)
+           Toast.makeText(context, e.message,Toast.LENGTH_SHORT).show()
             Log.e("NetworkConnection", "No Internet Connection", e)
 
         }

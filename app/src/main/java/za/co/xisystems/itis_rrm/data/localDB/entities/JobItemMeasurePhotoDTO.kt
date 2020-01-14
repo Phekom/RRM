@@ -5,27 +5,29 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 
-@Entity
+const val JOB_ITEM_MEASURE_PHOTO = "JOB_ITEM_MEASURE_PHOTO"
+
+@Entity(tableName = JOB_ITEM_MEASURE_PHOTO)
 data class JobItemMeasurePhotoDTO(
     @SerializedName("Descr")
-    val descr: String,
+    val descr: String?,
     @SerializedName("Filename")
-    val filename: String,
+    val filename: String?,
     @SerializedName("ItemMeasureId")
-    val itemMeasureId: String,
+    var itemMeasureId: String?,
     @SerializedName("PhotoDate")
-    val photoDate: String,
+    val photoDate: String?,
     @SerializedName("PhotoId")
     @PrimaryKey
-    val photoId: String,
+    var photoId: String,
     @SerializedName("PhotoLatitude")
     val photoLatitude: Double,
     @SerializedName("PhotoLongitude")
     val photoLongitude: Double,
     @SerializedName("PhotoPath")
-    val photoPath: String,
+    var photoPath: String?,
     @SerializedName("PrjJobItemMeasureDto")
-    val jobItemMeasureDto: ArrayList<JobItemMeasureDTO>,
+    val jobItemMeasure: JobItemMeasureDTO,
     @SerializedName("RecordSynchStateId")
     val recordSynchStateId: Int,
     @SerializedName("RecordVersion")

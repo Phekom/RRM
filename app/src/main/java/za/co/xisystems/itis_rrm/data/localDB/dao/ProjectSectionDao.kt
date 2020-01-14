@@ -28,9 +28,13 @@ interface ProjectSectionDao {
     @Query("SELECT * FROM PROJECT_SECTION_TABLE ")
     fun getAllItemsForAllProjects() : LiveData<List<ProjectSectionDTO>>
 
-//
-//    @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE itemId = :itemId")
-//    fun getItemForItemId(itemId: String): LiveData<ItemDTO>
+
+    @Query("SELECT route FROM PROJECT_SECTION_TABLE WHERE sectionId = :sectionId")
+    fun getRouteForProjectSectionId(sectionId: String): String
+
+    @Query("SELECT section FROM PROJECT_SECTION_TABLE WHERE sectionId = :sectionId")
+    fun getSectionForProjectSectionId(sectionId: String): String
+
 
 
 //    @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE projectId = :projectId")
