@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import kotlinx.android.synthetic.main.fragment_home.*
@@ -32,6 +33,7 @@ class HomeFragment : BaseFragment(), KodeinAware {
         inflater: LayoutInflater,
         container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
+        activity?.hideKeyboard()
         return inflater.inflate(R.layout.fragment_home, container, false)
     }
 
@@ -47,7 +49,23 @@ class HomeFragment : BaseFragment(), KodeinAware {
             user.observe(viewLifecycleOwner, Observer { user_ ->
                 username?.setText(user_.userName)
             })
+            items_swipe_to_refresh.setProgressBackgroundColorSchemeColor(
+                ContextCompat.getColor(
+                    context!!.applicationContext,
+                    R.color.colorPrimary
+                )
+            )
+            items_swipe_to_refresh.setColorSchemeColors(Color.WHITE)
 
+            items_swipe_to_refresh.setOnRefreshListener {
+                Coroutines.main {
+                    val contracts = homeViewModel.offlinedatas.await()
+                    contracts.observe(viewLifecycleOwner, Observer { contrcts ->
+                        items_swipe_to_refresh.isRefreshing = false
+                    })
+
+                }
+            }
             val contracts = homeViewModel.offlinedata.await()
             contracts.observe(viewLifecycleOwner, Observer { contrcts ->
                 group2_loading.visibility = View.GONE

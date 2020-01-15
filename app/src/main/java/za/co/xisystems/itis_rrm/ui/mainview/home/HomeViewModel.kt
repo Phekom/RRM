@@ -23,6 +23,10 @@ class HomeViewModel(
         repository.getUser()
     }
 
+    val offlinedatas by lazyDeferred {
+        offlineDataRepository.getWorkFlows()
+    }
+
 ////    if (context?.applicationContext != null) {
 //        //  Check every 2 secs if Mobile data or Location is off/on
 //        val t = object : CountDownTimer(java.lang.Long.MAX_VALUE, 2000) {

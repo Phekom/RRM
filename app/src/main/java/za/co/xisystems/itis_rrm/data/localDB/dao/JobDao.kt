@@ -26,6 +26,9 @@ interface JobDao {
     @Query("UPDATE JOB_TABLE SET route =:route, section =:section WHERE jobId = :jobId")
     fun updateAllJobs(route: String?, section: String?, jobId: String?)
 
+    @Query("UPDATE JOB_TABLE SET TrackRouteId =:trackRouteId, ActId =:actId, JiNo =:jiNo WHERE jobId = :jobId")
+    fun updateJob(jobId: String?, actId: Int, trackRouteId: String?, jiNo: String?)
+
     @Query("UPDATE JOB_TABLE SET ESTIMATES_ACT_ID =:actId WHERE jobId = :jobId")
     fun setEstimateActId(actId: Int?, jobId: String?)
 
@@ -81,6 +84,8 @@ interface JobDao {
 
     @Query("DELETE FROM JOB_TABLE")
     fun deleteAll()
+
+
 
 
 }

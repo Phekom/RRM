@@ -1,9 +1,6 @@
 package za.co.xisystems.itis_rrm.data.localDB.dao
 
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Query
+import androidx.room.*
 import za.co.xisystems.itis_rrm.data.localDB.entities.ToDoGroupsDTO
 
 /**
@@ -13,12 +10,11 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.ToDoGroupsDTO
 @Dao
 interface ToDoGroupsDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertToDoGroups(toDoGroup : ToDoGroupsDTO)
+    fun insertToDoGroups(toDoGroup: ToDoGroupsDTO)
 
 
     @Query("SELECT * FROM TODO_GROUPS_TABLE WHERE groupId = :groupId")
     fun checkIfGroupCollectionExist(groupId: String): Boolean
-
 
 
 //    @Query("SELECT * FROM USER_TABLE WHERE uid = $CURRENT_LOGGEDIN_USER")
@@ -33,12 +29,12 @@ interface ToDoGroupsDao {
 //    @Query("SELECT userRoles FROM USER_TABLE WHERE uid = $CURRENT_LOGGEDIN_USER")
 //    fun getUserRole() : LiveData<List<UserDTO>>
 
-//    @Delete
+    //    @Delete
 //    suspend fun removeUser(userDTO: UserDTO)
 //
 //    @Query("DELETE FROM USER_TABLE WHERE uid = $CURRENT_LOGGEDIN_USER")
 //    fun deleteUser()
 //
-//    @Query("SELECT * FROM USER_TABLE WHERE uid = $CURRENT_LOGGEDIN_USER LIMIT 1" )
-//    fun getPin() : LiveData<UserDTO>
+    @Query("DELETE FROM TODO_GROUPS_TABLE")
+    fun deleteAllGroups()
 }

@@ -1,5 +1,6 @@
 package za.co.xisystems.itis_rrm.ui.mainview._fragments
 
+import android.app.Activity
 import android.app.ProgressDialog
 import android.content.Context
 import android.graphics.Color
@@ -8,6 +9,7 @@ import android.util.Log
 import android.view.View
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
+import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.google.android.material.snackbar.Snackbar
@@ -101,6 +103,17 @@ abstract class BaseFragment : Fragment(), IProgressView, HorizontalProgressBar {
 //    fun toast(string: Int) {
 //        if (activity != null) Toast.makeText(activity, string, Toast.LENGTH_LONG).show()
 //    }
+
+    /**
+     * Hide keyboard.
+     */
+    fun Activity.hideKeyboard() {
+        val view = this.getCurrentFocus()
+        if (view != null) {
+            val imm = this.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.hideSoftInputFromWindow(view!!.getWindowToken(), 0)
+        }
+    }
 
 
     override fun toast(resid: Int) {

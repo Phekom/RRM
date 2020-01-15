@@ -48,6 +48,7 @@
                     android:orientation="vertical">
 
                     <TextView
+
                         android:id="@+id/usernameTextView"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -57,7 +58,8 @@
                         android:drawableTint="@color/sanral_burnt_orange"
                         android:gravity="center"
                         android:padding="10dp"
-                        android:text="USER NAME"
+                        android:hint="USER NAME"
+
                         android:textColor="@color/itis_gray"
                         android:textStyle="bold" />
 
@@ -66,7 +68,7 @@
                         android:layout_height="1dp"
                         android:background="@color/sanral_burnt_orange" />
                 </LinearLayout>
-                <!--                android:text="@{viewmodel.RRMuser}"-->
+<!--                android:text="@{viewmodel.RRMuser}"-->
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"

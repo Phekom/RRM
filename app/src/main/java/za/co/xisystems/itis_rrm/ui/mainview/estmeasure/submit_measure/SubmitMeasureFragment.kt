@@ -61,10 +61,10 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
         Coroutines.main {
 //            val measurements = measureViewModel.getJobEstimatesItemsForJobId(jobID, ActivityIdConstants.MEASURE_COMPLETE)
 //            measurements.observe(viewLifecycleOwner, Observer { job_s ->
-                //                mydata_loading.hide()
+//                mydata_loading.hide()
 //                toast(job_s.size.toString())
 //                initRecyclerView(job_s.toMeasure_Item())
-
+//
 //            })
 
         }

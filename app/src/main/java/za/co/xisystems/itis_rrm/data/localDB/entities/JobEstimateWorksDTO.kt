@@ -17,7 +17,7 @@ class JobEstimateWorksDTO(
     @SerializedName("ActId")
     val actId: Int,
     @SerializedName("EstimateId")
-    var estimateId: String,
+    var estimateId: String?,
     @SerializedName("PrjEstWorksPhotoDtos")
     val jobEstimateWorksPhotos: ArrayList<JobEstimateWorksPhotoDTO>?,
     @SerializedName("PrjJobItemEstimateDto")

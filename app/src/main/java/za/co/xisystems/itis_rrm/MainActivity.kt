@@ -1,5 +1,6 @@
 package za.co.xisystems.itis_rrm
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -14,6 +15,9 @@ import com.google.android.material.navigation.NavigationView
 import kotlinx.android.synthetic.main.activity_main.*
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserRoleDTO
+import za.co.xisystems.itis_rrm.ui.auth.LoginActivity
+import za.co.xisystems.itis_rrm.ui.mainview.activities.SettingsActivity
+import za.co.xisystems.itis_rrm.utils.hideKeyboard
 
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
@@ -48,6 +52,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 this, drawer_layout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close)
         drawer_layout.addDrawerListener(toggle!!)
         toggle!!.syncState()
+        this.hideKeyboard()
         navigationView  = findViewById(R.id.nav_view)
         navController = Navigation.findNavController(this, R.id.nav_host_fragment)
         NavigationUI.setupActionBarWithNavController(this, navController!!)
@@ -80,7 +85,16 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         when (item.itemId) {
-            R.id.action_settings -> return true
+            R.id.action_settings ->{
+                startActivity(Intent(this, SettingsActivity::class.java))
+                return true
+            }
+            R.id.logout ->{
+                startActivity(Intent(this, LoginActivity::class.java))
+                return true
+            }
+
+
             else -> return super.onOptionsItemSelected(item)
         }
     }
