@@ -89,6 +89,23 @@ interface BaseConnectionApi {
         @Field("FileName") FileName : String
     ) : Response<PhotoMeasureResponse>
 
+    @FormUrlEncoded
+    @POST("WorkflowMoveV2")
+    suspend fun getWorkflowMove(
+        @Field("UserId") userId : String,
+        @Field("TrackRouteId")  trackRounteId: String,
+        @Field("Description")   description: String?,
+        @Field("Direction")     direction: Int
+    ) : Response<WorkflowMoveResponse>
+
+
+    //    @FormUrlEncoded
+//    @Headers("Content-Type : application/json")
+//    @POST("UserRolesRefresh")
+//    suspend fun userRoles(
+//        @Field("UserId") UserId : String
+//    ) : Response<UserRoleResponse>
+
 //    @FormUrlEncoded
 //    @Headers("Content-Type : application/json")
 //    @POST("UserRolesRefresh")
@@ -97,10 +114,12 @@ interface BaseConnectionApi {
 //    ) : Response<UserRoleResponse>
 
 
-
-
-
-
+//    @FormUrlEncoded
+//    @Headers("Content-Type : application/json")
+//    @POST("UserRolesRefresh")
+//    suspend fun userRoles(
+//        @Field("UserId") UserId : String
+//    ) : Response<UserRoleResponse>
 
 
 

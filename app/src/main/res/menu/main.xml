@@ -2,14 +2,16 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
+        android:icon="@drawable/ic_settings_black"
         android:id="@+id/action_settings"
         android:orderInCategory="200"
         android:title="@string/action_settings"
-        app:showAsAction="collapseActionView" />
+        app:showAsAction="ifRoom" />
 
     <item
+        android:icon="@drawable/ic_exit_to_app_black"
         android:id="@+id/logout"
         android:orderInCategory="300"
         android:title="@string/logout"
-        app:showAsAction="collapseActionView" />
+        app:showAsAction="ifRoom" />
 </menu>

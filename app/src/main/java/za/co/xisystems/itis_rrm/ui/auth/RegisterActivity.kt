@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
@@ -41,7 +42,9 @@ class RegisterActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runna
         if ( startPermissionRequest(appContext.applicationContext, permissions)){
             toast("Permissions Are already provided ")
         }else{
-           requestPermissions(permissions, PERMISSION_REQUEST)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                requestPermissions(permissions, PERMISSION_REQUEST)
+            }
         }
 
         val binding :ActivityRegisterBinding = DataBindingUtil.setContentView(this, R.layout.activity_register)
@@ -54,11 +57,11 @@ class RegisterActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runna
             loggedInUser.observe(this, Observer {user ->
                 // Register the user
                 if (user != null) {
-                    Intent(this, MainActivity::class.java).also {home ->
+                        Intent(this, MainActivity::class.java).also {home ->
+                            home.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                            startActivity(home)
+                        }
 
-                        home.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-                        startActivity(home)
-                    }
                 }
             })
 
@@ -77,7 +80,11 @@ class RegisterActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runna
             for (i in permissions.indices){
                if (grantResults[i] == PackageManager.PERMISSION_DENIED){
                    allAllowed = false
-                   var requestAgain = shouldShowRequestPermissionRationale(permissions[i])
+                   var requestAgain = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                       shouldShowRequestPermissionRationale(permissions[i])
+                   } else {
+                       TODO("VERSION.SDK_INT < M")
+                   }
                    if (requestAgain){
                        toast("Permission Denied")
                    }else{

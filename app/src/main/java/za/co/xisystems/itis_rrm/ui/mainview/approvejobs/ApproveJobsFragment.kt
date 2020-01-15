@@ -1,10 +1,12 @@
 package za.co.xisystems.itis_rrm.ui.mainview.approvejobs
 
+import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.Navigation
@@ -45,7 +47,7 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
             ViewModelProviders.of(this, factory).get(ApproveJobsViewModel::class.java)
         } ?: throw Exception("Invalid Activity") as Throwable
         Coroutines.main {
-//            mydata_loading.show()
+            //            mydata_loading.show()
             val jobs = approveViewModel.getJobsForActivityId(ActivityIdConstants.JOB_APPROVE)
 //            val jobs = approveViewModel.offlinedata.await()
             jobs.observe(viewLifecycleOwner, Observer { job_s ->
@@ -67,37 +69,41 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
         }
 
         groupAdapter.setOnItemClickListener { item, view ->
-          Coroutines.main {
-            (item as? ApproveJob_Item)?.let {
-                val descri = approveViewModel.getDescForProjectId(it.jobDTO.ProjectId!!)
-                val sectionId  =  approveViewModel.getProjectSectionIdForJobId(it.jobDTO.JobId)
-                val route  =  approveViewModel.getRouteForProjectSectionId(sectionId)
-                val section  =  approveViewModel.getSectionForProjectSectionId(sectionId)
-                sendJobtoAprove((it.jobDTO.JobId),(descri), ("$route/ $section"),(it.jobDTO.StartKm),(it.jobDTO.EndKm ), view)
+            Coroutines.main {
+                (item as? ApproveJob_Item)?.let {
+                    val descri = approveViewModel.getDescForProjectId(it.jobDTO.ProjectId!!)
+                    val sectionId = approveViewModel.getProjectSectionIdForJobId(it.jobDTO.JobId)
+                    val route = approveViewModel.getRouteForProjectSectionId(sectionId)
+                    val section = approveViewModel.getSectionForProjectSectionId(sectionId)
+//                sendJobtoAprove((it.jobDTO.JobId),(descri), ("$route/ $section"),(it.jobDTO.StartKm),(it.jobDTO.EndKm ), view
+                    sendJobtoAprove((it), view)
+                }
             }
         }
     }
-    }
 
     private fun sendJobtoAprove(
-        jobId: String?,
-        descr: String?,
-        section: String?,
-        startKm: Double,
-        endKm: Double,
+        job: ApproveJob_Item?,
+//        jobId: String?,
+//        descr: String?,
+//        section: String?,
+//        startKm: Double,
+//        endKm: Double,
         view: View
     ) {
-        val jobId = jobId.toString()
-        val descr = descr.toString()
-        val section = section.toString()
-        val startKm = startKm.toString()
-        val endKm = endKm.toString()
+        val job = job
+//        val jobId = jobId.toString()
+//        val descr = descr.toString()
+//        val section = section.toString()
+//        val startKm = startKm.toString()
+//        val endKm = endKm.toString()
         Coroutines.main {
-            approveViewModel.jobapproval_Item1.value = descr
-            approveViewModel.jobapproval_Item2.value = section
-            approveViewModel.jobapproval_Item3.value = startKm
-            approveViewModel.jobapproval_Item4.value = endKm
-            approveViewModel.jobapproval_Item5.value = jobId
+            //            approveViewModel.jobapproval_Item1.value = descr
+//            approveViewModel.jobapproval_Item2.value = section
+//            approveViewModel.jobapproval_Item3.value = startKm
+//            approveViewModel.jobapproval_Item4.value = endKm
+//            approveViewModel.jobapproval_Item5.value = jobId
+            approveViewModel.jobapproval_Item6.value = job
         }
 
         Navigation.findNavController(view)
@@ -106,7 +112,7 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
 
     private fun List<JobDTO>.toApproveListItems(): List<ApproveJob_Item> {
         return this.map { approvej_items ->
-            ApproveJob_Item(approvej_items,approveViewModel)
+            ApproveJob_Item(approvej_items, approveViewModel)
         }
     }
 

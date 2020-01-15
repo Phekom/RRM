@@ -1,4 +1,4 @@
-package za.co.xisystems.itis_rrm.ui.auth;
+package za.co.xisystems.itis_rrm.ui.auth.model;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -14,9 +14,9 @@ import za.co.xisystems.itis_rrm.R;
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase;
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository;
 import za.co.xisystems.itis_rrm.databinding.ActivityLoginBinding;
-import za.co.xisystems.itis_rrm.ui.auth.model.PinLock;
+import za.co.xisystems.itis_rrm.ui.auth.AuthViewModel;
 
-public class LoginActivity extends AppCompatActivity implements View.OnClickListener{
+public class LoginActivityDu extends AppCompatActivity implements View.OnClickListener{
 
     private ActivityLoginBinding activityPinLockBinding;
     private PinLock pin = new PinLock();

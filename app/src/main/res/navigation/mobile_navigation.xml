@@ -119,7 +119,12 @@
     <fragment
             android:id="@+id/jobInfoFragment"
             android:name="za.co.xisystems.itis_rrm.ui.mainview.approvejobs.view_job_info.JobInfoFragment"
-            android:label="fragment_job_info" />
+            android:label="fragment_job_info" >
+        <action
+                android:id="@+id/action_jobInfoFragment_to_nav_home"
+                app:destination="@id/nav_home"
+                app:popEnterAnim="@animator/opacity_pulse" />
+    </fragment>
     <fragment
             android:id="@+id/measureApprovalFragment"
             android:name="za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.measure_approval.MeasureApprovalFragment"

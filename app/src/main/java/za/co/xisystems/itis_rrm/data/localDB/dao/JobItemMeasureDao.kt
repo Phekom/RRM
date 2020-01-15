@@ -27,6 +27,9 @@ interface JobItemMeasureDao {
     @Query("SELECT * FROM JOB_ITEM_MEASURE WHERE jobId = :jobId AND actId = :actId ORDER BY jimNo ASC")
     fun getJobMeasureItemsForJobId(jobId: String?,actId: Int): LiveData<List<JobItemMeasureDTO>>
 
+    @Query("UPDATE JOB_ITEM_MEASURE SET trackRouteId =:trackRouteId, ActId =:actId , measureGroupId =:measureGroupId  WHERE itemMeasureId = :itemMeasureId")
+    fun updateWorkflowJobItemMeasure(itemMeasureId: String?, trackRouteId: String?, actId: Int, measureGroupId: String?)
+
 
 //    @Query("SELECT * FROM JOB_ITEM_MEASURE WHERE jobId = :jobId ORDER BY jimNo ASC")
 //    fun getJobItemMeasureForJobId(jobId: String): LiveData<List<JobItemMeasureDTO>>

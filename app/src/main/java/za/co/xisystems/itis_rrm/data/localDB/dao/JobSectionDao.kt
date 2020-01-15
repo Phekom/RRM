@@ -29,6 +29,9 @@ interface JobSectionDao {
     @Query("SELECT projectSectionId FROM JOB_SECTION_TABLE WHERE jobId = :jobId")
     fun getProjectSectionId(jobId: String): String
 
+    @Query("UPDATE JOB_SECTION_TABLE SET jobSectionId =:jobSectionId,projectSectionId =:projectSectionId,jobId =:jobId,startKm =:startKm,endKm =:endKm, recordVersion =:recordVersion , recordSynchStateId =:recordSynchStateId  WHERE jobSectionId = :jobSectionId")
+    fun updateExistingJobSectionWorkflow( jobSectionId: String?, projectSectionId: String?, jobId: String?, startKm: Double, endKm: Double, recordVersion: Int,  recordSynchStateId: Int)
+
 
 //    @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE projectId = :projectId")
 //    fun getAllItemsForProjectId(projectId: String): LiveData<List<ItemDTO>>

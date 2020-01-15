@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "bcbea7fad6697542ae537c6faf7bad77",
+    "identityHash": "5567b91539b5131a363a5ccf9b04b422",
     "entities": [
       {
         "tableName": "JOB_TABLE",
@@ -1922,7 +1922,7 @@
       },
       {
         "tableName": "JOB_ESTIMATE_WORKS",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`actId` INTEGER NOT NULL, `estimateId` TEXT NOT NULL, `jobEstimateWorksPhotos` TEXT, `jobItemEstimate` TEXT NOT NULL, `recordSynchStateId` INTEGER NOT NULL, `recordVersion` INTEGER NOT NULL, `trackRouteId` TEXT NOT NULL, `worksId` TEXT NOT NULL, PRIMARY KEY(`worksId`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`actId` INTEGER NOT NULL, `estimateId` TEXT, `jobEstimateWorksPhotos` TEXT, `jobItemEstimate` TEXT NOT NULL, `recordSynchStateId` INTEGER NOT NULL, `recordVersion` INTEGER NOT NULL, `trackRouteId` TEXT NOT NULL, `worksId` TEXT NOT NULL, PRIMARY KEY(`worksId`))",
         "fields": [
           {
             "fieldPath": "actId",
@@ -1934,7 +1934,7 @@
             "fieldPath": "estimateId",
             "columnName": "estimateId",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "jobEstimateWorksPhotos",
@@ -2151,7 +2151,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'bcbea7fad6697542ae537c6faf7bad77')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '5567b91539b5131a363a5ccf9b04b422')"
     ]
   }
 }
