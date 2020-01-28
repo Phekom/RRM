@@ -42,6 +42,8 @@
                         android:orientation="vertical">
 
                     <Button
+                            android:layout_width="match_parent"
+                            android:layout_height="@dimen/button_size"
                             android:id="@+id/startPhotoButton"
                             style="@style/_button"
                             android:drawableLeft="@drawable/ic_baseline_photo_camera_24px"
@@ -54,7 +56,7 @@
                             android:hint="Click for Start Photo" />
 
                     <ImageView
-                            android:id="@+id/startImageVIiew"
+                            android:id="@+id/startImageView"
                             android:layout_width="match_parent"
                             android:layout_height="@dimen/image_xlarge"
                             android:layout_marginTop="@dimen/small"
@@ -72,7 +74,7 @@
                             android:id="@+id/endPhotoButton"
                             style="@style/_button"
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
+                            android:layout_height="@dimen/button_size"
                             android:drawableLeft="@drawable/ic_baseline_photo_camera_24px"
                             android:text="@string/end" />
 
@@ -154,8 +156,8 @@
             <Button
                     android:id="@+id/cancelButton"
                     style="@style/_button"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/button_size"
                     android:layout_margin="@dimen/small"
                     android:layout_weight="1"
                     android:text="CANCEL" />
@@ -163,8 +165,8 @@
             <Button
                     android:id="@+id/updateButton"
                     style="@style/_button"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/button_size"
                     android:layout_margin="@dimen/small"
                     android:layout_weight="1"
                     android:text="UPDATE" />

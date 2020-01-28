@@ -85,7 +85,9 @@
     <string name="approving_measurements">Approving measurements</string>
     <string name="are_you_sure_you_want_to_request_correction">Are you sure you want to Request Correction for this Job?</string>
     <string name="are_you_sure_you_want_to_decline">Are you sure you want to Decline This Job?</string>
+    <string name="are_you_sure_you_want_to_decline2">Are you sure you want to Decline These Measurements?</string>
     <string name="are_you_sure_you_want_to_approve">Are you sure you want to Approve This Job?</string>
+    <string name="are_you_sure_you_want_to_approve2">Are you sure you want to Approve These Measurements?</string>
     <string name="are_you_sure_you_want_to_exit">Are you sure you want to exit?</string>
     <string name="are_you_sure_you_want_to_save">Are you sure you want to save this Job?</string>
     <string name="are_you_sure_you_want_to_logout">Are you sure you want to logout?</string>
@@ -497,5 +499,12 @@
     <string name="measure_approval_title">Measurements Approval</string>
     <string name="capture_work_title">Capture Work</string>
     <string name="data_loading_please_wait">Data Loading.... </string>
+    <string name="enter_comment">Please Enter Your Comment First</string>
+    <string name="set_pin">Please Set your App Pin</string>
+    <string name="set_pin_msg">Enter a Unique Pin That you will Use to unlock RRM</string>
+    <string name="please_enter_user_info">Please Enter your User Information that you received with your Registration on ITIS</string>
+    <string name="start_taking_photo">Start Capturing Measurents Photos</string>
+    <string name="capture_measure_photo">Capture Measurements</string>
+    <string name="are_you_sure_you_want_to_submit_measurements">Are you Sure you want to submit Measurements</string>
 
 </resources>

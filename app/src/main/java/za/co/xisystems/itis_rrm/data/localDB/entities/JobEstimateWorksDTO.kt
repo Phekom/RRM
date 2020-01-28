@@ -3,6 +3,7 @@ package za.co.xisystems.itis_rrm.data.localDB.entities
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
+import java.io.Serializable
 import java.util.*
 
 /**
@@ -19,7 +20,7 @@ class JobEstimateWorksDTO(
     @SerializedName("EstimateId")
     var estimateId: String?,
     @SerializedName("PrjEstWorksPhotoDtos")
-    val jobEstimateWorksPhotos: ArrayList<JobEstimateWorksPhotoDTO>?,
+    var jobEstimateWorksPhotos: ArrayList<JobEstimateWorksPhotoDTO>?,
     @SerializedName("PrjJobItemEstimateDto")
     val jobItemEstimate: JobItemEstimateDTO,
     @SerializedName("RecordSynchStateId")
@@ -31,4 +32,4 @@ class JobEstimateWorksDTO(
     @SerializedName("WorksId")
     @PrimaryKey
     var worksId: String
-)
+): Serializable

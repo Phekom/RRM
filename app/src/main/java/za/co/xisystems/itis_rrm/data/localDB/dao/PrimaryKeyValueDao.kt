@@ -34,6 +34,6 @@ interface PrimaryKeyValueDao {
 
 
     @Query("DELETE FROM PRIMARY_KEY_VALUE_TABLE")
-    fun deleteAllPrimaryKeyValues()
+    fun deleteAll()
 
 }

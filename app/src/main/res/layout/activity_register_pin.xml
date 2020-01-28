@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <variable
+            name="viewmodel"
+            type="za.co.xisystems.itis_rrm.ui.auth.AuthViewModel" />
+
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+
+        <androidx.coordinatorlayout.widget.CoordinatorLayout
+            android:background="@drawable/login_reg_background"
+            android:scaleType="fitCenter"
+            tools:context=".new_app.ui.auth.RegisterPinActivity"
+            android:id="@+id/reg_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <RelativeLayout
+                android:id="@+id/reg_Things"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="top"
+                android:visibility="visible">
+
+                <LinearLayout
+                        android:id="@+id/layout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="150dp"
+                        android:orientation="vertical">
+
+
+                    <com.google.android.material.textfield.TextInputLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="52dp"
+                            android:layout_marginTop="4dp"
+                            android:layout_marginRight="52dp"
+                            android:background="@drawable/orange_round_corner"
+                            android:hint="Create Pin Code"
+                            app:hintTextAppearance="@style/TextAppearance.AppCompat">
+
+                        <EditText
+                                android:id="@+id/enterPinEditText"
+                                android:layout_width="fill_parent"
+                                android:layout_height="wrap_content"
+                                android:background="@null"
+                                android:digits="0123456789"
+                                android:drawableLeft="@android:drawable/ic_lock_idle_lock"
+                                android:imeOptions="actionNext"
+                                android:inputType="numberPassword"
+                                android:padding="4dp"
+                                android:singleLine="true"
+                                android:text="@={viewmodel.enterPin}"
+                                android:textColor="@android:color/white"
+                                android:textColorHint="@android:color/white" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="52dp"
+                            android:layout_marginTop="4dp"
+                            android:layout_marginRight="52dp"
+                            android:background="@drawable/orange_round_corner"
+                            android:hint="Confirm Pin Code"
+                            android:imeOptions="actionDone"
+                            app:hintTextAppearance="@style/TextAppearance.AppCompat">
+
+                        <EditText
+                                android:id="@+id/confirmPinEditText"
+                                android:layout_width="fill_parent"
+                                android:layout_height="wrap_content"
+                                android:background="@null"
+                                android:digits="0123456789"
+                                android:drawableLeft="@android:drawable/ic_lock_idle_lock"
+                                android:imeOptions="actionDone"
+                                android:inputType="numberPassword"
+                                android:padding="4dp"
+                                android:singleLine="true"
+                                android:text="@={viewmodel.confirmPin}"
+                                android:textColor="@android:color/white"
+                                android:textColorHint="@android:color/white" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <TextView
+                            android:id="@+id/textV"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:layout_marginLeft="10dp"
+                            android:layout_marginTop="4dp"
+                            android:layout_marginRight="10dp"
+                            android:gravity="center"
+                            android:text="@string/please_enter_a_unique_pin"
+                            android:textColor="@color/itis_gray"
+                            android:textSize="12sp" />
+
+                    <Button
+                            android:id="@+id/register_Pin_button"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_horizontal"
+                            android:layout_marginLeft="52dp"
+                            android:layout_marginTop="4dp"
+                            android:layout_marginRight="52dp"
+                            android:background="@drawable/orange_round_corner"
+                            android:onClick="@{viewmodel::onRegPinButtonClick}"
+                            android:text="@string/register"
+                            android:textColor="@android:color/white" />
+                </LinearLayout>
+
+
+            </RelativeLayout>
+
+
+        </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+        <ProgressBar
+            android:id="@+id/loading"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="50dp"
+            android:layout_marginBottom="64dp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.3" />
+
+        <RelativeLayout
+            android:id="@+id/server_version_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="bottom|center"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/loading"
+            app:layout_constraintVertical_bias="0.935">
+
+            <TextView
+                android:id="@+id/serverTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_marginStart="30dp"
+                android:alpha="0.5"
+                android:text="Server"
+                android:textColor="@color/black" />
+
+            <TextView
+                android:id="@+id/buildFlavorTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_marginEnd="30dp"
+
+                android:alpha="0.5"
+                android:text="Demo"
+                android:textColor="@color/black" />
+
+
+        </RelativeLayout>
+
+        <ImageView
+            android:id="@+id/logo"
+            android:layout_width="393dp"
+            android:layout_height="302dp"
+            android:alpha="0.1"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:srcCompat="@drawable/logo_new_large" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</layout>
+
+

@@ -25,4 +25,18 @@ interface EstimateWorkDao {
     @Query("UPDATE JOB_ESTIMATE_WORKS SET estimateId =:estimateId, recordVersion=:recordVersion,recordSynchStateId =:recordSynchStateId, trackRouteId =:trackRouteId, ActId =:actId WHERE worksId = :worksId")
     fun updateJobEstimateWorksWorkflow( worksId: String?, estimateId: String?, recordVersion: Int, recordSynchStateId: Int,  actId: Int, trackRouteId: String? )
 
+    @Query("SELECT * FROM JOB_ESTIMATE_WORKS WHERE estimateId = :estimateId")
+    fun checkIfJobEstimateWorksExistForEstimateId(estimateId: String): Boolean
+
+    @Query("SELECT * FROM JOB_ESTIMATE_WORKS WHERE estimateId = :estimateId")
+    fun getJobEstimateWorksForEstimateId(estimateId: String?): JobEstimateWorksDTO
+
+    @Query("DELETE FROM JOB_ESTIMATE_WORKS")
+    fun deleteAll()
+
+
+
+
+
+
 }

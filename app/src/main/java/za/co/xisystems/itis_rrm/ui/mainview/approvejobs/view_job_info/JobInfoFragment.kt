@@ -75,8 +75,7 @@ class JobInfoFragment : BaseFragment(), KodeinAware {
 
         approve_job_button.setOnClickListener {
             val logoutBuilder = AlertDialog.Builder(
-                activity,
-                android.R.style.Theme_DeviceDefault_Dialog
+                activity //,android.R.style.Theme_DeviceDefault_Dialog
             )
             logoutBuilder.setTitle(R.string.confirm)
             logoutBuilder.setIcon(R.drawable.ic_approve)
@@ -107,8 +106,7 @@ class JobInfoFragment : BaseFragment(), KodeinAware {
         decline_job_button.setOnClickListener {
             val logoutBuilder =
                 AlertDialog.Builder(
-                    activity,
-                    android.R.style.Theme_DeviceDefault_Dialog
+                    activity //, android.R.style.Theme_DeviceDefault_Dialog
                 )
             logoutBuilder.setTitle(R.string.confirm)
             logoutBuilder.setIcon(R.drawable.ic_warning)

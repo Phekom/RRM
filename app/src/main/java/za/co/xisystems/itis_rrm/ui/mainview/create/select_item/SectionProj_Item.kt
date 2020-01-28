@@ -4,7 +4,7 @@ import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import com.xwray.groupie.kotlinandroidextensions.Item
 import kotlinx.android.synthetic.main.project_item.*
 import za.co.xisystems.itis_rrm.R
-import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
 
 /**
  * Created by Francis Mahlava on 2019/12/22.
@@ -12,7 +12,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTO
 
 
 class SectionProj_Item(
-    val itemDTO: ItemDTO
+    val itemDTO: ProjectItemDTO
 ) : Item(){
     override fun bind(viewHolder: GroupieViewHolder, position: Int) {
        viewHolder.apply {

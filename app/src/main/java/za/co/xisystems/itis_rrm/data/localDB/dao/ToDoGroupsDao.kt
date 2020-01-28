@@ -36,5 +36,5 @@ interface ToDoGroupsDao {
 //    fun deleteUser()
 //
     @Query("DELETE FROM TODO_GROUPS_TABLE")
-    fun deleteAllGroups()
+    fun deleteAll()
 }

@@ -1,5 +1,6 @@
 package za.co.xisystems.itis_rrm.data.repositories
 
+import android.os.Build
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import kotlinx.coroutines.Dispatchers
@@ -53,9 +54,19 @@ class UserRepository(
 
     }
 
+    suspend fun getPin(): String {
+        return withContext(Dispatchers.IO) {
+            Db.getUserDao().getPin()
+        }
+    }
     suspend fun getUserRoles(): LiveData<List<UserRoleDTO>> {
         return withContext(Dispatchers.IO) {
             Db.getUserRoleDao().getRoles()
+        }
+    }
+    suspend fun getPin2(confirmPin: String?): String {
+        return withContext(Dispatchers.IO) {
+         confirmPin.toString()
         }
     }
 
@@ -65,7 +76,13 @@ class UserRepository(
         }
     }
 
-    suspend fun userRegister(username: String, password: String, phoneNumber:String, IMEI:String,androidDevice:String) {
+    suspend fun userRegister(
+        username: String,
+        password: String,
+        phoneNumber: String,
+        IMEI: String,
+        androidDevice: String
+    ) {
 
 //        val IMEI = "7436738"
 //        val phoneNumber = ""
@@ -78,6 +95,7 @@ class UserRepository(
                 user_error.postValue(authResponse.errorMessage)
             } else {
                 users.postValue(authResponse.user)
+
             }
 
 
@@ -88,12 +106,29 @@ class UserRepository(
         }
 
     }
+    suspend fun upDateUser(     //userId: String,
+                                 phoneNumber: String,
+                                 IMEI: String,
+                                 androidDevice: String,
+                                 confirmPin: String) {
+        Coroutines.io {
+                Db.getUserDao().updateUser( confirmPin, phoneNumber, IMEI, androidDevice)//userId,
+        }
+    }
+
+    fun upDateUserPin(confirmNewPin: String, enterOldPin: String) {
+        Coroutines.io {
+            Db.getUserDao().upDateUserPin( confirmNewPin, enterOldPin)//userId,
+        }
+    }
 
     suspend fun saveUser(user: UserDTO) {
         Coroutines.io {
 
             if (!Db.getUserDao().checkUserExists(user.userId)) {
                 Db.getUserDao().insert(user)
+
+            }else{
 //                Db.getUserDao().updateUser( PIN, phoneNumber, IMEI, androidDevice,user.WEB_SERVICE_URI)
             }
 
@@ -127,7 +162,11 @@ class UserRepository(
 //    }
 
     private fun isFetchNeeded(savedAt: LocalDateTime): Boolean {
-        return ChronoUnit.MINUTES.between(savedAt, LocalDateTime.now()) > MINIMUM_INTERVAL
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            ChronoUnit.MINUTES.between(savedAt, LocalDateTime.now()) > MINIMUM_INTERVAL
+        } else {
+            TODO("VERSION.SDK_INT < O")
+        }
     }
 
 
@@ -137,5 +176,7 @@ class UserRepository(
 
     suspend fun removeUser(userDTO: UserDTO) = Db.getUserDao().removeUser(userDTO)
     fun clearUser() = Db.getUserDao().deleteUser()
+
+
 
 }

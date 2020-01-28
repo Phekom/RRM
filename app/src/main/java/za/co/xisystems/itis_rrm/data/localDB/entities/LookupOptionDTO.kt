@@ -18,7 +18,7 @@ const val LOOKUP_OPTION_TABLE = "LOOKUP_OPTION_TABLE"
             entity = LookupDTO::class,
             parentColumns = arrayOf("lookupName"),
             childColumns = arrayOf("lookupName"),
-            onDelete = ForeignKey.NO_ACTION
+            onDelete = ForeignKey.CASCADE
         )
     )
 )

@@ -33,7 +33,9 @@ class ApproveMeasureFragment : BaseFragment(), KodeinAware {
     private lateinit var approveViewModel: ApproveMeasureViewModel
     private val factory: ApproveMeasureViewModelFactory by instance()
 
-
+companion object{
+    const val JOB_ID_FOR_MEASUREMENT_APPROVAL = "JOB_ID_FOR_MEASUREMENT_APPROVAL"
+}
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?, savedInstanceState: Bundle?
@@ -76,7 +78,8 @@ class ApproveMeasureFragment : BaseFragment(), KodeinAware {
 //                    val sectionId  =  approveViewModel.getProjectSectionIdForJobId(it.jobDTO.jobId)
 //                    val route  =  approveViewModel.getRouteForProjectSectionId(sectionId)
 //                    val section  =  approveViewModel.getSectionForProjectSectionId(sectionId)
-                    sendJobtoAprove((it.jobItemMeasureDTO.jobId), view)
+//                    sendJobtoAprove((it.jobItemMeasureDTO.jobId), view)
+                    sendJobtoAprove((it), view)
                 }
 
             }
@@ -84,12 +87,12 @@ class ApproveMeasureFragment : BaseFragment(), KodeinAware {
     }
 
     private fun sendJobtoAprove(
-        jobId: String?,
+        job: ApproveMeasure_Item?,
         view: View
     ) {
-        val jobId = jobId.toString()
+        val jobId = job
         Coroutines.main {
-            approveViewModel.measureapproval_Item.value = jobId
+            approveViewModel.measureapproval_Item.value = job
         }
 
         Navigation.findNavController(view)

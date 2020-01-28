@@ -15,7 +15,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.Section
-import com.xwray.groupie.groupiex.plusAssign
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import kotlinx.android.synthetic.main.fragment_add_project_items.*
 import org.kodein.di.KodeinAware
@@ -23,14 +22,14 @@ import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
-import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
 import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.MyState
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SwipeTouchCallback
-import za.co.xisystems.itis_rrm.ui.mainview.create.select_item.SectionProj_Item
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DateUtil
 import za.co.xisystems.itis_rrm.utils.JobUtils
@@ -48,25 +47,30 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
     private var dueDateDialog: DatePickerDialog? = null
     private var startDateDialog: DatePickerDialog? = null
 
-    //    private val rainbow200: IntArray by lazy { resources.getIntArray(R.array.rainbow_200) }
+    private val rainbow200: IntArray by lazy { resources.getIntArray(R.array.rainbow_200) }
     private val swipeSection = Section()
+    internal var useR: Int? = null
+    var contractID : String? = null
+
 
 
     @MyState
     private var job: JobDTO? = null
     @MyState
-    var items: ArrayList<ItemDTO> = ArrayList<ItemDTO>()
+//    private lateinit var items: MutableList<ItemDTO>
+    private var items: MutableList<ItemDTOTemp> = ArrayList<ItemDTOTemp>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         (activity as MainActivity).supportActionBar?.title = getString(R.string.new_job)
+
     }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
         (activity as MainActivity).supportActionBar?.title = getString(R.string.new_job)
         (activity as MainActivity).supportActionBar?.setDisplayHomeAsUpEnabled(true)
-    }
+    }//                        createViewModel.delete(item)
 
     override fun onResume() {
         super.onResume()
@@ -74,6 +78,7 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
         (activity as MainActivity).supportActionBar?.setDisplayHomeAsUpEnabled(true)
         calculateTotalCost()
     }
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -88,109 +93,93 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
             ViewModelProviders.of(this, factory).get(CreateViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
         last_lin.visibility = View.GONE
+        dueDateTextView.text = DateUtil.toStringReadable(DateUtil.currentDateTime)
+        startDateTextView.text = DateUtil.toStringReadable(DateUtil.currentDateTime)
+//        items = getSerializable("items") as ArrayList<ItemDTO>
 
+
+        createViewModel.loggedUser.observe(viewLifecycleOwner, Observer { user ->
+            useR = user
+//            selectedContractTextView.text = user
+        })
         createViewModel.contract_No.observe(viewLifecycleOwner, Observer { contrct ->
             selectedContractTextView.text = contrct
         })
+        createViewModel.contract_ID.observe(viewLifecycleOwner, Observer { contrct_id ->
+//            toast(contrct_id)
+            contractID = contrct_id
+        })
+
         createViewModel.project_Code.observe(viewLifecycleOwner, Observer { pro_code ->
             selectedProjectTextView.text = pro_code
         })
 
         setmyClickListener()
 
-        //        mid_lin.visibility = View.GONE
-        //        selectProjectItemdrop.visibility = View.GONE
-         //        photoLin.visibility = View.GONE
 
-
-        ItemTouchHelper(touchCallback).attachToRecyclerView(project_recyclerView)
-        createViewModel.Sec_Item.observe(viewLifecycleOwner, Observer { pro_Item ->
-            //            toast(pro_Item)
+        createViewModel.Sec_Item.observe(viewLifecycleOwner, Observer { p_Item ->
             infoTextView.visibility = View.GONE
             last_lin.visibility = View.VISIBLE
-            val item: ItemDTO? = null
-            initRecyclerView(pro_Item, item)
-
-
-        })
-
-
-    }
-
-
-    private fun initRecyclerView(proItem: SectionProj_Item, itemDTO: ItemDTO?) {
-        val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
-            toast(proItem.itemDTO.itemId)
-            swipeSection += SwipeToDeleteItem(proItem)
-            add(swipeSection)
-
-
-            //               if (proItem.itemDTO.itemId != null && proItem.itemDTO.itemId.equals(proItem.itemDTO.itemId)){
-//                    toast("Item already added!")
-//                }else {
-//                    swipeSection += SwipeToDeleteItem(proItem)
-//                    add(swipeSection)
-//                }
-
-
-//            if (this.hasItem(itemDTO)){
+//            if (pro_Item.itemDTO.itemId != null)
+//            if (pro_Item.itemDTO.itemId == items.get(0).itemId ){
 //                toast("Item already added!")
-//                itemsCardView.startAnimation(shake)
 //            }else{
-//                items.add(proItem)
-//                itemsCardView.startAnimation(bounce_soft)
-////                this.setData(items)
-//                swipeSection += SwipeToDeleteItem(proItem)
-//                add(swipeSection)
+
 //            }
-//            for (i in 0..7) {
-//                swipeSection += SwipeToDeleteItem((proItem.itemDTO.itemCode +"  "+ proItem.itemDTO.descr))
-//            }
+//            assert(items.contains(pro_Item.itemDTO))
+
+            Coroutines.main {
+                val projecItems = createViewModel.getAllProjecItems(p_Item.itemDTO.projectId)
+                projecItems.observe(viewLifecycleOwner, Observer { pro_Items ->
+                    for (item in pro_Items.listIterator()) {
+//                        items.add(item)
+//                        initRecyclerView(item, items)
+                        initRecyclerView(pro_Items.toProjecListItems())
+                    }
+//                    initRecyclerView(pro_Items)
+
+                })
 
 
-        }
-//        if (groupAdapter.getGroup(proItem.getItem(0)) != null) {
-//            toast("Item already added!")
-//            itemsCardView.startAnimation(shake)
-//        }else{
-//
-//           groupAdapter.add(swipeSection)
-//        }
-
-
-        project_recyclerView.apply {
-            layoutManager = LinearLayoutManager(this.context)
-            adapter = groupAdapter
-        }
-        groupAdapter.setOnItemClickListener { item, view ->
-
-            (item as? Project_Item)?.let {
-                //                sendSelectedItem((it.itemDTO.itemCode +"  "+ it.itemDTO.descr),(it.itemDTO.tenderRate) , view)
-                sendSelectedItem((it), view)
             }
 
 
+        })
+        ItemTouchHelper(touchCallback).attachToRecyclerView(project_recyclerView)
+
+    }
+
+    private fun initRecyclerView(projecListItems: List<Project_Item>) {
+        val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
+            addAll(projecListItems)
+//            for(item in projecListItems)
+//            swipeSection += SwipeToDeleteItem(item, activity)
+
+        }
+                project_recyclerView.apply {
+            layoutManager = LinearLayoutManager(this.context)
+            adapter = groupAdapter
+        }
+
+
+    }
+
+    private fun List<ItemDTOTemp>.toProjecListItems(): List<Project_Item> {
+        return this.map { approvej_items ->
+
+            Project_Item(approvej_items, activity,createViewModel,contractID)
+
         }
     }
 
-    private fun sendSelectedItem(item: Project_Item, view: View) {
 
-        val selecteD = item
-        Coroutines.main {
-            createViewModel.project_Item.value = selecteD
-//            createViewModel.project_Rate.value = selectRte
-        }
 
-        Navigation.findNavController(view)
-            .navigate(R.id.action_addProjectFragment_to_estimatePhotoFragment)
-    }
+
 
     private val touchCallback: SwipeTouchCallback by lazy {
         object : SwipeTouchCallback() {
-            override fun onMove(
-                recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder,
-                target: RecyclerView.ViewHolder
-            ): Boolean {
+            override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder,
+                                target: RecyclerView.ViewHolder ): Boolean {
                 return false
             }
 
@@ -198,6 +187,7 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
                 val item = GroupAdapter<GroupieViewHolder>().getItem(viewHolder.adapterPosition)
                 // Change notification to the adapter happens automatically when the section is
                 // changed.
+
                 swipeSection.remove(item)
             }
         }
@@ -210,26 +200,29 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
 //                    if (selectedProject == null) {
 //                        toast("Error: selectedProject is null!")
 //                    } else {
+
                     Navigation.findNavController(view)
                         .navigate(R.id.action_addProjectFragment_to_selectItemFragment)
 
 //                        last_lin.visibility = View.GONE
 //                        mid_lin.visibility = View.GONE
 //                        selectProjectItemdrop.visibility = View.VISIBLE
-//                    }
+                }
 //                    last_lin.visibility = View.GONE
 //                    mid_lin.visibility = View.GONE
 //
 //                    photoLin.visibility = View.GONE
 //                    selectProjectItemdrop.visibility = View.VISIBLE
 
-                }
+//                }
 
                 R.id.resetButton -> {
                     onResetClicked(view)
                 }
 
                 R.id.infoTextView -> {
+                    if (view.visibility == View.VISIBLE)
+                        Navigation.findNavController(view).navigate(R.id.action_addProjectFragment_to_selectItemFragment)
 //                    infoTextView.startAnimation(click)
                 }
 
@@ -354,6 +347,7 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
         infoTextView.setOnClickListener(myClickListener)
     }
 
+
 //    fun hasItem(item: ItemDTO?): Boolean {
 //        if (item != null) for (t in getData()) {
 //            if (t.getItemId() != null && t.getItemId().equals(item.itemId)) return true
@@ -450,6 +444,22 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
 //        return job
 //    }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+//        outState.putSerializable("selectedContract", selectedContract)
+//        outState.putSerializable("selectedProject", selectedProject)
+//        outState.putSerializable("job", job)
+        outState.putSerializable("items", items as ArrayList<ProjectItemDTO>)
+//        outState.putBoolean("isJobSaved", isJobSaved)
+//        outState.putSerializable("estimatesToRemoveFromDb", estimatesToRemoveFromDb)
+        super.onSaveInstanceState(outState)
+    }
+
+
+//     fun onRestoreInstanceState(inState: Bundle) {
+//        items = inState.getSerializable("items") as ArrayList<ProjectItemDTO>
+//
+//    }
+
     private fun resetContractAndProjectSelection(view: View) {
         Navigation.findNavController(view).navigate(R.id.action_addProjectFragment_to_nav_create)
         infoTextView.text = null
@@ -465,11 +475,40 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
     }
 
 
-//    fun <VH : com.xwray.groupie.GroupieViewHolder?> GroupAdapter<VH>.hasItem(itemDTO: ItemDTO?): Boolean {
-//        if (itemDTO != null) for (t in items) {
-//            if (t.itemId != null && t.itemId.equals(itemDTO.itemId)) return true
+//    private fun initRecyclerView(
+//        item: ItemDTOTemp,
+//        items: MutableList<ItemDTOTemp>
+//    ) {
+//        val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
+//            //            toast(itemList.size.toString())
+//
+////            for (item in itemList.listIterator()) {
+////                items.add(item)
+////                swipeSection += SwipeToDeleteItem(item, activity)
+//            swipeSection += SwipeToDeleteItem(item, activity)
+//                add(swipeSection)
+//
+////            }
+//
 //        }
-//        return false
+//
+//
+//        project_recyclerView.apply {
+//            layoutManager = LinearLayoutManager(this.context)
+//            adapter = groupAdapter
+//        }
+//        groupAdapter.setOnItemClickListener { item, view ->
+//
+//            (item as? Project_Item)?.let {
+//
+////                toast(it.getPosition(it).toString())
+//                //                sendSelectedItem((it.itemDTO.itemCode +"  "+ it.itemDTO.descr),(it.itemDTO.tenderRate) , view)
+////                sendSelectedItem((it),proItem,job,useR, view)
+////                sendSelectedItem((it), view)
+//            }
+//
+//
+//        }
 //    }
 
 

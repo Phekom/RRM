@@ -46,22 +46,24 @@ class CreateFragment : BaseFragment(), OfflineListener , KodeinAware, IJobSubmit
 
 
     var newJobSelectItemIntent: NewJobSelectItemIntentFrag? = null
-    private var adapter: IEstimatesAdapter<ItemDTO>? = null
+    private var adapter: IEstimatesAdapter<ProjectItemDTO>? = null
     private val saveMenuItem: MenuItem? = null
     private var deleteMenuItem: MenuItem? = null
     private var resetMenuItem: MenuItem? = null
     private val estimatesToRemoveFromDb: ArrayList<JobItemEstimateDTO> =
         ArrayList<JobItemEstimateDTO>()
     @MyState
-    var items: ArrayList<ItemDTO> = ArrayList<ItemDTO>()
+    var items: ArrayList<ProjectItemDTO> = ArrayList<ProjectItemDTO>()
     @MyState
     internal var selectedContract: ContractDTO? = null
-    //        internal var selectedContract: String? = null
+
+    internal var useR: UserDTO? = null
+
     @MyState
     internal var selectedProject: ProjectDTO? = null
     //        internal var selectedProject: String? = null
     @MyState
-    internal var selectedProjectitem: ItemDTO? = null
+    internal var selectedProjectitem: ProjectItemDTO? = null
 //    internal var selectedProjectitem: String? = null
 
     @MyState
@@ -95,6 +97,13 @@ class CreateFragment : BaseFragment(), OfflineListener , KodeinAware, IJobSubmit
             ViewModelProviders.of(this, factory).get(CreateViewModel::class.java)
         } ?: throw Exception("Invalid Activity") as Throwable
 
+        Coroutines.main {
+            var user = createViewModel.user.await()
+            user.observe(viewLifecycleOwner, Observer { user_ ->
+                useR = user_
+                 }
+            )}
+
         val myClickListener = View.OnClickListener { view ->
             when (view?.id) {
                 R.id.selectContractProjectContinueButton -> {
@@ -120,49 +129,17 @@ class CreateFragment : BaseFragment(), OfflineListener , KodeinAware, IJobSubmit
 
         selectContractProjectContinueButton.setOnClickListener(myClickListener)
 
-
-
-
-//        item_recyclerView.layoutManager = LinearLayoutManager(context?.applicationContext)
-//        adapter = EstimatesAdapter(context!!.applicationContext, items, AbstractAdapter.OnItemClickListener<ItemDTO?> {
-//           fun onItemClick(item: ItemDTO?) {
-////                            newJobEditEstimateIntent.startActivityForResult(this, job, item)
-//                        }
-//        }
-//
-//        )
-//        item_recyclerView.adapter = adapter!!.adapter
-
-    }
-
-
-    private fun setJob(job: JobDTO) {
-        this.job = job
-    }
+   }
 
     private fun setContractAndProjectSelection(animate: Boolean, view: View) {
         Navigation.findNavController(view).navigate(R.id.action_nav_create_to_addProjectFragment)
-
-//        if (selectedContract != null && selectedProject != null && job != null) {
-//        if (selectedContract != null && selectedProject != null) {
-//            selectProjectLayout.visibility = View.GONE
-//            mid_lin.visibility = View.VISIBLE
-//            if (animate) {
-//                addItemLayout.startAnimation(bounce_750)
-//                itemsCardView.startAnimation(bounce_500)
-//            }
-//
         Coroutines.main {
+            createViewModel.loggedUser.value = useR?.userId!!.toInt()
             createViewModel.contract_No.value = selectedContract?.contractNo.toString()
+            createViewModel.contract_ID.value = selectedContract?.contractId
             createViewModel.project_Code.value = selectedProject?.projectCode.toString()
-
+            createViewModel.project_ID.value = selectedProject?.projectId
         }
-//            selectedContractTextView.text = selectedContract?.contractNo.toString()
-//            selectedProjectTextView.text = selectedProject?.projectCode.toString()
-//            job?.contractVoId = selectedContract!!.contractId
-//            job?.projectId = selectedProject!!.projectId
-//            setMenuItems()
-//        }
     }
 
     fun setMenuItems() {
@@ -224,6 +201,9 @@ class CreateFragment : BaseFragment(), OfflineListener , KodeinAware, IJobSubmit
                                 else {
                                     selectedContract = item
                                     setProjects(item.contractId)
+                                    Coroutines.main {
+                                        createViewModel.proId.value = item.contractId
+                                    }
                                 }
                             }
 

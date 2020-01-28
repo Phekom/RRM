@@ -29,7 +29,7 @@ public class PinLock extends BaseObservable {
 
     public PinLock setValid(Boolean valid) {
         isValid = valid;
-        notifyPropertyChanged(BR.valid);
+//        notifyPropertyChanged(BR.valid);
         return this;
     }
 
@@ -40,7 +40,7 @@ public class PinLock extends BaseObservable {
 
     public PinLock setRegistered(Boolean registered) {
         isRegistered = registered;
-        notifyPropertyChanged(BR.registered);
+//        notifyPropertyChanged(BR.registered);
         return this;
     }
 }

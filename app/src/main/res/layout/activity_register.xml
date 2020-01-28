@@ -36,148 +36,145 @@
                 android:visibility="visible">
 
                 <LinearLayout
-                    android:id="@+id/layout"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="100dp"
-                    android:orientation="vertical">
-
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/usernameWrapper"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginLeft="52dp"
-                        android:layout_marginTop="4dp"
-                        android:layout_marginRight="52dp"
-                        android:background="@drawable/orange_round_corner"
-                        android:hint="@string/enter_username"
-                        app:hintTextAppearance="@style/TextAppearance.AppCompat">
-
-                        <EditText
-                            android:id="@+id/register_username_editText"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center"
-                            android:background="@null"
-                            android:drawableLeft="@drawable/ic_baseline_person_white_24px"
-                            android:gravity="start"
-                            android:imeOptions="actionNext"
-                            android:inputType="text"
-                            android:padding="4dp"
-                            android:singleLine="true"
-                            android:text="@={viewmodel.username}"
-                            android:textColor="@android:color/white"
-                            android:textColorHint="@android:color/white" />
-
-
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/passwordWrapper"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginLeft="52dp"
-                        android:layout_marginTop="4dp"
-                        android:layout_marginRight="52dp"
-                        android:background="@drawable/orange_round_corner"
-                        android:hint="@string/enter_password"
-                        app:hintTextAppearance="@style/TextAppearance.AppCompat">
-
-                        <EditText
-                            android:id="@+id/register_password_editText"
-                            android:layout_width="fill_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center"
-                            android:background="@null"
-                            android:drawableLeft="@drawable/ic_baseline_lock_white_24px"
-                            android:ems="10"
-                            android:gravity="start"
-                            android:inputType="textPassword"
-                            android:padding="4dp"
-                            android:singleLine="true"
-                            android:text="@={viewmodel.password}"
-                            android:textColor="@android:color/white"
-                            android:textColorHint="@android:color/white" />
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginLeft="52dp"
-                        android:layout_marginTop="4dp"
-                        android:layout_marginRight="52dp"
-                        android:background="@drawable/orange_round_corner"
-                        android:hint="Create Pin Code"
-                        app:hintTextAppearance="@style/TextAppearance.AppCompat">
-
-                        <EditText
-                            android:id="@+id/enterPinEditText"
-                            android:layout_width="fill_parent"
-                            android:layout_height="wrap_content"
-                            android:background="@null"
-                            android:digits="0123456789"
-                            android:drawableLeft="@android:drawable/ic_lock_idle_lock"
-                            android:imeOptions="actionNext"
-                            android:inputType="numberPassword"
-                            android:padding="4dp"
-                            android:singleLine="true"
-                            android:text="@={viewmodel.enterPin}"
-                            android:textColor="@android:color/white"
-                            android:textColorHint="@android:color/white" />
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginLeft="52dp"
-                        android:layout_marginTop="4dp"
-                        android:layout_marginRight="52dp"
-                        android:background="@drawable/orange_round_corner"
-                        android:hint="Confirm Pin Code"
-                        android:imeOptions="actionDone"
-                        app:hintTextAppearance="@style/TextAppearance.AppCompat">
-
-                        <EditText
-                            android:id="@+id/confirmPinEditText"
-                            android:layout_width="fill_parent"
-                            android:layout_height="wrap_content"
-                            android:background="@null"
-                            android:digits="0123456789"
-                            android:drawableLeft="@android:drawable/ic_lock_idle_lock"
-                            android:imeOptions="actionDone"
-                            android:inputType="numberPassword"
-                            android:padding="4dp"
-                            android:singleLine="true"
-                            android:text="@={viewmodel.confirmPin}"
-                            android:textColor="@android:color/white"
-                            android:textColorHint="@android:color/white" />
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                    <TextView
-                        android:id="@+id/textV"
+                        android:id="@+id/layout"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:layout_marginLeft="10dp"
-                        android:layout_marginTop="4dp"
-                        android:layout_marginRight="10dp"
-                        android:gravity="center"
-                        android:text="@string/please_enter_a_unique_pin"
-                        android:textColor="@color/itis_gray"
-                        android:textSize="12sp" />
+                        android:layout_marginStart="50dp"
+                        android:layout_marginEnd="50dp"
+                        android:layout_marginTop="120dp"
+                        android:orientation="vertical">
+                    <TextView
+                            android:id="@+id/textV"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:layout_marginLeft="10dp"
+                            android:layout_marginTop="4dp"
+                            android:layout_marginBottom="20dp"
+                            android:layout_marginRight="10dp"
+                            android:gravity="center"
+                            android:text="@string/please_enter_user_info"
+                            android:textColor="@color/itis_gray"
+                            android:textSize="12sp" />
+
+                    <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/usernameWrapper"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:background="@drawable/orange_round_corner"
+                            android:hint="@string/enter_username"
+                            app:hintTextAppearance="@style/TextAppearance.AppCompat">
+
+                        <EditText
+                                android:id="@+id/register_username_editText"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:background="@null"
+                                android:drawableLeft="@drawable/ic_baseline_person_white_24px"
+                                android:gravity="start"
+                                android:imeOptions="actionNext"
+                                android:inputType="text"
+                                android:padding="4dp"
+                                android:singleLine="true"
+                                android:text="@={viewmodel.username}"
+                                android:textColor="@android:color/white"
+                                android:textColorHint="@android:color/white" />
+
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/passwordWrapper"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:background="@drawable/orange_round_corner"
+                            android:hint="@string/enter_password"
+                            app:hintTextAppearance="@style/TextAppearance.AppCompat">
+
+                        <EditText
+                                android:id="@+id/register_password_editText"
+                                android:layout_width="fill_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:background="@null"
+                                android:drawableLeft="@drawable/ic_baseline_lock_white_24px"
+                                android:ems="10"
+                                android:gravity="start"
+                                android:inputType="textPassword"
+                                android:padding="4dp"
+                                android:singleLine="true"
+                                android:text="@={viewmodel.password}"
+                                android:textColor="@android:color/white"
+                                android:textColorHint="@android:color/white" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <!--                    <com.google.android.material.textfield.TextInputLayout-->
+                    <!--                        android:layout_width="match_parent"-->
+                    <!--                        android:layout_height="wrap_content"-->
+                    <!--                        android:layout_marginLeft="52dp"-->
+                    <!--                        android:layout_marginTop="4dp"-->
+                    <!--                        android:layout_marginRight="52dp"-->
+                    <!--                        android:background="@drawable/orange_round_corner"-->
+                    <!--                        android:hint="Create Pin Code"-->
+                    <!--                        app:hintTextAppearance="@style/TextAppearance.AppCompat">-->
+
+                    <!--                        <EditText-->
+                    <!--                            android:id="@+id/enterPinEditText"-->
+                    <!--                            android:layout_width="fill_parent"-->
+                    <!--                            android:layout_height="wrap_content"-->
+                    <!--                            android:background="@null"-->
+                    <!--                            android:digits="0123456789"-->
+                    <!--                            android:drawableLeft="@android:drawable/ic_lock_idle_lock"-->
+                    <!--                            android:imeOptions="actionNext"-->
+                    <!--                            android:inputType="numberPassword"-->
+                    <!--                            android:padding="4dp"-->
+                    <!--                            android:singleLine="true"-->
+                    <!--                            android:text="@={viewmodel.enterPin}"-->
+                    <!--                            android:textColor="@android:color/white"-->
+                    <!--                            android:textColorHint="@android:color/white" />-->
+                    <!--                    </com.google.android.material.textfield.TextInputLayout>-->
+
+                    <!--                    <com.google.android.material.textfield.TextInputLayout-->
+                    <!--                        android:layout_width="match_parent"-->
+                    <!--                        android:layout_height="wrap_content"-->
+                    <!--                        android:layout_marginLeft="52dp"-->
+                    <!--                        android:layout_marginTop="4dp"-->
+                    <!--                        android:layout_marginRight="52dp"-->
+                    <!--                        android:background="@drawable/orange_round_corner"-->
+                    <!--                        android:hint="Confirm Pin Code"-->
+                    <!--                        android:imeOptions="actionDone"-->
+                    <!--                        app:hintTextAppearance="@style/TextAppearance.AppCompat">-->
+
+                    <!--                        <EditText-->
+                    <!--                            android:id="@+id/confirmPinEditText"-->
+                    <!--                            android:layout_width="fill_parent"-->
+                    <!--                            android:layout_height="wrap_content"-->
+                    <!--                            android:background="@null"-->
+                    <!--                            android:digits="0123456789"-->
+                    <!--                            android:drawableLeft="@android:drawable/ic_lock_idle_lock"-->
+                    <!--                            android:imeOptions="actionDone"-->
+                    <!--                            android:inputType="numberPassword"-->
+                    <!--                            android:padding="4dp"-->
+                    <!--                            android:singleLine="true"-->
+                    <!--                            android:text="@={viewmodel.confirmPin}"-->
+                    <!--                            android:textColor="@android:color/white"-->
+                    <!--                            android:textColorHint="@android:color/white" />-->
+                    <!--                    </com.google.android.material.textfield.TextInputLayout>-->
+
 
                     <Button
-                        android:id="@+id/register_button"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_horizontal"
-                        android:layout_marginLeft="52dp"
-                        android:layout_marginTop="4dp"
-                        android:layout_marginRight="52dp"
-                        android:background="@drawable/orange_round_corner"
-                        android:onClick="@{viewmodel::onRegButtonClick}"
-                        android:text="@string/register"
-                        android:textColor="@android:color/white" />
+                            android:id="@+id/register_button"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_horizontal"
+                            android:layout_marginTop="4dp"
+                            android:background="@drawable/orange_round_corner"
+                            android:onClick="@{viewmodel::onRegButtonClick}"
+                            android:text="@string/login"
+                            android:textColor="@android:color/white" />
                 </LinearLayout>
 
                 <ImageButton

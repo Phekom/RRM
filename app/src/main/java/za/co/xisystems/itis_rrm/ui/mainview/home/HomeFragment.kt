@@ -49,6 +49,12 @@ class HomeFragment : BaseFragment(), KodeinAware {
             user.observe(viewLifecycleOwner, Observer { user_ ->
                 username?.setText(user_.userName)
             })
+
+            val contracts = homeViewModel.offlinedata.await()
+            contracts.observe(viewLifecycleOwner, Observer { contrcts ->
+                group2_loading.visibility = View.GONE
+            })
+
             items_swipe_to_refresh.setProgressBackgroundColorSchemeColor(
                 ContextCompat.getColor(
                     context!!.applicationContext,
@@ -59,17 +65,14 @@ class HomeFragment : BaseFragment(), KodeinAware {
 
             items_swipe_to_refresh.setOnRefreshListener {
                 Coroutines.main {
-                    val contracts = homeViewModel.offlinedatas.await()
-                    contracts.observe(viewLifecycleOwner, Observer { contrcts ->
+                    val works = homeViewModel.offlinedatas.await()
+                    works.observe(viewLifecycleOwner, Observer { works ->
                         items_swipe_to_refresh.isRefreshing = false
                     })
 
                 }
             }
-            val contracts = homeViewModel.offlinedata.await()
-            contracts.observe(viewLifecycleOwner, Observer { contrcts ->
-                group2_loading.visibility = View.GONE
-            })
+
         }
 
 //        activity!!.runOnUiThread {
@@ -181,7 +184,13 @@ class HomeFragment : BaseFragment(), KodeinAware {
         super.onDetach()
         ping()
     }
-
+//    override fun onDestroyView() {
+//        super.onDestroyView()
+//        if (view != null) {
+//            val parent = view!!.parent as ViewGroup
+//            parent?.removeAllViews()
+//        }
+//    }
 
 }
 

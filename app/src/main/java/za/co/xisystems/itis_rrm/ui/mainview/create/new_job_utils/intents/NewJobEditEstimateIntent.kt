@@ -3,7 +3,7 @@ package za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.intents
 import android.app.Activity
 import android.content.Intent
 import io.reactivex.annotations.NonNull
-import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 
 class NewJobEditEstimateIntent() : AbstractIntent(), INewJobEditEstimateIntent {
@@ -11,14 +11,14 @@ class NewJobEditEstimateIntent() : AbstractIntent(), INewJobEditEstimateIntent {
         return intent?.extras?.getSerializable(JOB) as JobDTO?
     }
 
-    override fun getItem(@NonNull intent: Intent?): ItemDTO? {
-        return intent?.extras?.getSerializable(ITEM) as ItemDTO?
+    override fun getItem(@NonNull intent: Intent?): ProjectItemDTO? {
+        return intent?.extras?.getSerializable(ITEM) as ProjectItemDTO?
     }
 
-    override fun startActivityForResult(@NonNull activity: Activity?, job: JobDTO?, item: ItemDTO?) {
-//        val intent = flags(Intent(activity, null)
-//                .putExtra(JOB, job)
-//                .putExtra(ITEM, item))
-//        activity?.startActivityForResult(intent, REQUEST_CODE_EDIT_ESTIMATE)
+    override fun startActivityForResult(@NonNull activity: Activity?, job: JobDTO?, item: ProjectItemDTO?) {
+        val intent = flags(Intent(activity, null)
+                .putExtra(JOB, job)
+                .putExtra(ITEM, item))
+        activity?.startActivityForResult(intent, REQUEST_CODE_EDIT_ESTIMATE)
     }
 }

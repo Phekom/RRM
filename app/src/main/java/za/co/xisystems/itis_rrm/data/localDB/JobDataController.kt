@@ -51,8 +51,10 @@ object JobDataController{
         }
         return job
     }
-
-
+    fun setMsg( uplodmsg : String?): String? {
+      var uplodmsg = uplodmsg
+        return uplodmsg
+    }
     private val offlineDataRepository: OfflineDataRepository? = null
 
 //    suspend fun getRoute(jobId: String?) : String?{

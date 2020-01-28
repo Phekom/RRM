@@ -5,7 +5,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.ItemSectionDTO
 
 /**
@@ -17,7 +17,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.ItemSectionDTO
 interface ProjectItemDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertItems( item : ItemDTO)
+    suspend fun insertItems( item : ProjectItemDTO)
 
     @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE itemId = :itemId")
     fun checkItemExistsItemId(itemId: String): Boolean
@@ -38,21 +38,21 @@ interface ProjectItemDao {
     fun getUOMForProjectItemId(itemId: String): String
 
     @Query("SELECT * FROM PROJECT_ITEM_TABLE ")
-    fun getAllItemsForAllProjects() : LiveData<List<ItemDTO>>
+    fun getAllItemsForAllProjects() : LiveData<List<ProjectItemDTO>>
 
 
     @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE itemId LIKE :itemId")
-    fun getItemForItemId(itemId: String): LiveData<ItemDTO>
+    fun getItemForItemId(itemId: String): LiveData<ProjectItemDTO>
 
     @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE sectionItemId LIKE :sectionItemId")
-    fun getItemForItemCode(sectionItemId: String): LiveData<List<ItemDTO>>
+    fun getItemForItemCode(sectionItemId: String): LiveData<List<ProjectItemDTO>>
 
     @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE projectId LIKE :projectId ORDER BY itemCode ASC "  )
-    fun getAllItemsForProjectId(projectId: String): LiveData<List<ItemDTO>>
+    fun getAllItemsForProjectId(projectId: String): LiveData<List<ProjectItemDTO>>
 
 
     @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE sectionItemId LIKE :sectionItem AND projectId LIKE :projectId")
-    fun getAllItemsForSectionItem(sectionItem : String, projectId : String ): LiveData<List<ItemDTO>>
+    fun getAllItemsForSectionItem(sectionItem : String, projectId : String ): LiveData<List<ProjectItemDTO>>
 
 
     @Query("DELETE FROM PROJECT_ITEM_TABLE")

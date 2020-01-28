@@ -18,13 +18,11 @@ interface UserDao{
     @Query("SELECT * FROM USER_TABLE WHERE userId = :userId")
     fun checkUserExists(userId: String): Boolean
 
-    @Query("INSERT INTO USER_TABLE (PIN, PHONE_NUMBER, IMEI, DEVICE, WEB_SERVICE_URI) VALUES (:PIN, :PHONE_NUMBER, :IMEI, :DEVICE, :WEB_SERVICE_URI)")
-    fun updateUser( PIN: String?,  PHONE_NUMBER: String?, IMEI: String?, DEVICE: String?, WEB_SERVICE_URI: String?) : Long
+    @Query("UPDATE USER_TABLE SET PIN =:PIN,  PHONE_NUMBER = :PHONE_NUMBER, IMEI=:IMEI, DEVICE=:DEVICE ")
+    fun updateUser(  PIN: String?,  PHONE_NUMBER: String?,  IMEI: String?,   DEVICE: String?)
 
-
-
-
-
+    @Query("UPDATE USER_TABLE SET PIN =:confirmNewPin WHERE PIN = :enterOldPin")
+    fun upDateUserPin(confirmNewPin: String, enterOldPin: String)
 
 
 
@@ -52,7 +50,11 @@ interface UserDao{
     @Query("DELETE FROM USER_TABLE WHERE userId = userId")
     fun deleteUser()
 
-    @Query("SELECT * FROM USER_TABLE WHERE userId = userId LIMIT 1" )
-    fun getPin() : LiveData<UserDTO>
+    @Query("SELECT PIN FROM USER_TABLE WHERE userId = userId LIMIT 1" )
+    fun getPin() : String
+
+
+    @Query("DELETE FROM USER_TABLE")
+    fun deleteAll()
 
 }

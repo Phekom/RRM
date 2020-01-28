@@ -134,10 +134,20 @@
             android:id="@+id/submitMeasureFragment"
             android:name="za.co.xisystems.itis_rrm.ui.mainview.estmeasure.submit_measure.SubmitMeasureFragment"
             android:label="fragment_submit_measure"
-            tools:layout="@layout/fragment_submit_measure" />
+            tools:layout="@layout/fragment_submit_measure" >
+<!--        <action-->
+<!--                android:id="@+id/action_submitMeasureFragment_to_captureItemMeasurePhotoFragment"-->
+<!--                app:destination="@id/captureItemMeasurePhotoFragment"-->
+<!--                app:popUpTo="@+id/submitMeasureFragment" />-->
+    </fragment>
     <fragment
             android:id="@+id/captureWorkFragment"
             android:name="za.co.xisystems.itis_rrm.ui.mainview.work.capture_work.CaptureWorkFragment"
             android:label="fragment_capture_work"
             tools:layout="@layout/fragment_capture_work" />
+<!--    <fragment-->
+<!--            android:id="@+id/captureItemMeasurePhotoFragment"-->
+<!--            android:name="za.co.xisystems.itis_rrm.ui.mainview.estmeasure.submit_measure.CaptureItemMeasurePhotoFragment"-->
+<!--            android:label="fragment_capture_item_measure_photo"-->
+<!--            tools:layout="@layout/fragment_capture_item_measure_photo" />-->
 </navigation>

@@ -3,8 +3,9 @@ package za.co.xisystems.itis_rrm.data.localDB.entities
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.google.android.gms.common.util.Base64Utils
+//import com.google.android.gms.common.util.Base64Utils
 import com.google.gson.annotations.SerializedName
+import org.springframework.util.Base64Utils
 
 const val ToDo_ENTITY_TABLE = "ToDo_ENTITY_TABLE"
 //const val TRACK_ROUTE_ID = "TRACK_ROUTE_ID"indices = [Index(value = ["itemCode"], unique = true)]
@@ -46,6 +47,6 @@ data class ToDoListEntityDTO(
         get() = if (trackRouteIdString == null) trackRouteIdBytes else Base64Utils.decode(trackRouteIdString)
         set(trackRouteId) {
             this.trackRouteIdBytes = trackRouteId
-            this.trackRouteIdString = Base64Utils.encode(trackRouteId)
+            this.trackRouteIdString = Base64Utils.encode(trackRouteId).toString()
         }
 }

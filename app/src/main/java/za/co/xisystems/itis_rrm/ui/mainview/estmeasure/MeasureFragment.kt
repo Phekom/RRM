@@ -28,6 +28,9 @@ class MeasureFragment : BaseFragment(), KodeinAware {
     private lateinit var measureViewModel: MeasureViewModel
     private val factory: MeasureViewModelFactory by instance()
 
+companion object{
+    const val JOB_MEASURE_EST_JOB_ID = "JOB_MEASURE_EST_JOB_ID"
+}
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -72,7 +75,8 @@ class MeasureFragment : BaseFragment(), KodeinAware {
 //                    val sectionId  =  approveViewModel.getProjectSectionIdForJobId(it.jobDTO.jobId)
 //                    val route  =  approveViewModel.getRouteForProjectSectionId(sectionId)
 //                    val section  =  approveViewModel.getSectionForProjectSectionId(sectionId)
-                    sendJobtoAprove((it.jobItemEstimateDTO.jobId), view)
+//                    sendJobtoAprove((it.jobItemEstimateDTO.jobId), view)
+                    sendJobtoAprove((it), view)
                 }
 
             }
@@ -80,10 +84,10 @@ class MeasureFragment : BaseFragment(), KodeinAware {
     }
 
     private fun sendJobtoAprove(
-        jobId: String?,
+        job: EstimateMeasure_Item?,
         view: View
     ) {
-        val jobId = jobId.toString()
+        val jobId = job
 
         Coroutines.main {
             measureViewModel.measure_Item.value = jobId

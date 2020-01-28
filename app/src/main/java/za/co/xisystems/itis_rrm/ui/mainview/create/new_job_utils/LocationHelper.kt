@@ -1,7 +1,7 @@
 package za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils
 
 import android.Manifest
-import android.app.Activity
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Location
@@ -14,16 +14,20 @@ import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListe
 import com.google.android.gms.location.LocationListener
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
-import za.co.xisystems.itis_rrm.data.network.PermissionController.checkPermissionsEnabled
-import za.co.xisystems.itis_rrm.data.network.PermissionController.startPermissionRequests
+import za.co.xisystems.itis_rrm.data.network.PermissionController
+import za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates.EstimatePhotoFragment
+import za.co.xisystems.itis_rrm.utils.toast
 
-class LocationHelper(private val activity: Activity) : ConnectionCallbacks,
+class LocationHelper(private val estimatePhotoFragment: EstimatePhotoFragment) : ConnectionCallbacks,
     OnConnectionFailedListener, LocationListener {
     private var googleApiClient: GoogleApiClient? = null
     private var locationRequest: LocationRequest? = null
+
+
     // TODO fix ported legacy code
+    @SuppressLint("RestrictedApi")
     fun onCreate() {
-        googleApiClient = GoogleApiClient.Builder(activity)
+        googleApiClient = GoogleApiClient.Builder(estimatePhotoFragment.activity!!)
             .addConnectionCallbacks(this)
             .addOnConnectionFailedListener(this)
             .addApi(LocationServices.API)
@@ -41,10 +45,10 @@ class LocationHelper(private val activity: Activity) : ConnectionCallbacks,
 
     // TODO fix ported legacy code
     fun onStart() {
-        if (checkPermissionsEnabled(applicationContext)) {
+        if (PermissionController.checkPermissionsEnabled(getApplicationContext())) {
             googleApiClient!!.connect()
         } else {
-            startPermissionRequests(activity, applicationContext)
+            PermissionController.startPermissionRequests(estimatePhotoFragment.activity, getApplicationContext())
         }
     }
 
@@ -67,16 +71,17 @@ class LocationHelper(private val activity: Activity) : ConnectionCallbacks,
         googleApiClient!!.disconnect()
     }
 
+
     // TODO fix ported legacy code
     private fun startLocationUpdates() {
-        if (checkPermissionsEnabled(applicationContext)) {
+        if (PermissionController.checkPermissionsEnabled(getApplicationContext())) {
             if (LocationServices.FusedLocationApi != null) {
                 if (ActivityCompat.checkSelfPermission(
-                        activity,
+                        estimatePhotoFragment.activity!!,
                         Manifest.permission.ACCESS_FINE_LOCATION
                     ) != PackageManager.PERMISSION_GRANTED
                     && ActivityCompat.checkSelfPermission(
-                        activity,
+                        estimatePhotoFragment.activity!!,
                         Manifest.permission.ACCESS_COARSE_LOCATION
                     ) != PackageManager.PERMISSION_GRANTED
                 ) { // TODO: Consider calling
@@ -96,33 +101,34 @@ class LocationHelper(private val activity: Activity) : ConnectionCallbacks,
                 )
             }
         } else {
-            startPermissionRequests(activity)
+            PermissionController.startPermissionRequests(estimatePhotoFragment.activity)
         }
     }
 
     // TODO fix ported legacy code
     private fun stopLocationUpdates() {
-        if (checkPermissionsEnabled(applicationContext)) {
+        if (PermissionController.checkPermissionsEnabled(getApplicationContext())) {
             if (LocationServices.FusedLocationApi != null) {
                 LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this)
             }
         } else {
-            startPermissionRequests(activity, applicationContext)
+            PermissionController.startPermissionRequests(estimatePhotoFragment.activity, getApplicationContext())
         }
     }
 
     // TODO fix ported legacy code
-    private val applicationContext: Context
-        private get() = activity.applicationContext
+    private fun getApplicationContext(): Context? {
+        return estimatePhotoFragment.activity!!.applicationContext
+    }
 
     // TODO fix ported legacy code
     override fun onConnected(connectionHint: Bundle?) {
-        if (null == currentLocation) if (ActivityCompat.checkSelfPermission(
-                activity,
+        if (null == getCurrentLocation()) if (ActivityCompat.checkSelfPermission(
+                estimatePhotoFragment.activity!!,
                 Manifest.permission.ACCESS_FINE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
             && ActivityCompat.checkSelfPermission(
-                activity,
+                estimatePhotoFragment.activity!!,
                 Manifest.permission.ACCESS_COARSE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) { // TODO: Consider calling
@@ -135,7 +141,7 @@ class LocationHelper(private val activity: Activity) : ConnectionCallbacks,
             toast("Error: You need Location permissions!")
             return
         }
-        currentLocation = LocationServices.FusedLocationApi.getLastLocation(googleApiClient)
+        setCurrentLocation(LocationServices.FusedLocationApi.getLastLocation(googleApiClient))
         startLocationUpdates()
     }
 
@@ -151,20 +157,20 @@ class LocationHelper(private val activity: Activity) : ConnectionCallbacks,
 
     // TODO fix ported legacy code
     private fun toast(s: String) {
-        toast(s)
+        estimatePhotoFragment.activity!!.toast(s)
     }
 
     // TODO fix ported legacy code
-    override fun onLocationChanged(location: Location) {
-        currentLocation = location
+    override fun onLocationChanged(location: Location?) {
+        setCurrentLocation(location)
     }
 
-    var currentLocation: Location?
+    fun getCurrentLocation(): Location? {
+        return estimatePhotoFragment.getCurrentLocation()
+    }
 
-
-        get() = currentLocation
-        set(location) {
-//            activity.setCurrentLocation(location)
-        }
+    fun setCurrentLocation(location: Location?) {
+        estimatePhotoFragment.setCurrentLocation(location)
+    }
 
 }

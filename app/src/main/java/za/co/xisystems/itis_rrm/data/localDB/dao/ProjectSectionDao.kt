@@ -45,6 +45,6 @@ interface ProjectSectionDao {
 //    fun getAllItemsForSectionItem(sectionItem : String, projectId : String ): LiveData<List<ItemDTO>>
 //
 //
-//    @Query("DELETE FROM PROJECT_ITEM_TABLE")
-//    fun deleteAll()
+    @Query("DELETE FROM PROJECT_SECTION_TABLE")
+    fun deleteAll()
 }

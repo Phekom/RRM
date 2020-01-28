@@ -50,6 +50,6 @@ interface EntitiesDao {
 
 
     @Query("DELETE FROM ToDo_ENTITY_TABLE")
-    fun deleteAllEntities()
+    fun deleteAll()
 
 }

@@ -21,7 +21,7 @@ object DateUtil {
     // endregion (Private Static Final Fields)
 // region (Private Static Fields)
     private val iso8601Format: DateFormat =
-        SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+        SimpleDateFormat("yyyy-MM-dd HH:mm:ss") as DateFormat
     private val readableDateForm: DateFormat = SimpleDateFormat("dd MMMM yyyy")
     // endregion (Private Static Fields)
 // region (Public Static Methods)
@@ -42,6 +42,12 @@ object DateUtil {
         get() {
             val date = Date()
             return StringToDate(iso8601Format.format(date))
+        }
+
+    val currentDate: Date?
+        get() {
+            val date = Date()
+            return StringToDate(readableDateForm.format(date))
         }
 
     fun toStringReadable(date: Date?): String? {

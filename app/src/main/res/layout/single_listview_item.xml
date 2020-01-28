@@ -8,7 +8,7 @@ android:descendantFocusability="blocksDescendants"
 android:layout_height="wrap_content">
     <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="50dp"
             android:layout_margin="2dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -17,9 +17,10 @@ android:layout_height="wrap_content">
 
         <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:orientation="horizontal"
                 android:padding="@dimen/xsmall"
+                android:gravity="center"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent">
@@ -29,10 +30,10 @@ android:layout_height="wrap_content">
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:hint="ID :"
-                    android:textSize="17sp"
                     android:paddingLeft="5dp"
                     android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:textColor="@android:color/black" />
+                    android:textColor="@android:color/black"
+                    android:textSize="17sp" />
 
             <LinearLayout
                     android:layout_width="match_parent"
@@ -43,32 +44,32 @@ android:layout_height="wrap_content">
                         android:id="@+id/listview_item_textView"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/project"
                         android:layout_marginEnd="10dp"
-                        android:textSize="17sp"
-                        tools:text="@string/description"
+                        android:text="@string/project"
                         android:textAppearance="?android:attr/textAppearanceSmall"
-                        android:textColor="@android:color/black" />
+                        android:textColor="@android:color/black"
+                        android:textSize="17sp"
+                        tools:text="@string/description" />
 
                 <TextView
                         android:id="@+id/apv_section"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:hint="@string/section"
                         android:layout_marginEnd="10dp"
-                        android:textSize="17sp"
-                        tools:text="@string/description"
+                        android:hint="@string/section"
                         android:textAppearance="?android:attr/textAppearanceSmall"
-                        android:textColor="@android:color/black" />
+                        android:textColor="@android:color/black"
+                        android:textSize="17sp"
+                        tools:text="@string/description" />
 
                 <TextView
                         android:id="@+id/apv_description"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textSize="17sp"
                         android:singleLine="true"
                         android:textAppearance="?android:attr/textAppearanceSmall"
                         android:textColor="@color/black"
+                        android:textSize="17sp"
                         tools:text="@string/description" />
 
             </LinearLayout>

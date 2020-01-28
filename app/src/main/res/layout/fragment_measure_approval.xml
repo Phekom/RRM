@@ -22,7 +22,22 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 tools:listitem="@layout/measurements_item" />
+<!--        <TextView-->
+<!--                android:id="@+id/workflow_comment_header_description_textView"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:paddingLeft="10dp"-->
+<!--                android:text="@string/workflow_comment"-->
+<!--                android:textStyle="bold" />-->
 
+<!--        <EditText-->
+<!--                android:id="@+id/workflow_comments_editText"-->
+<!--                android:layout_width="fill_parent"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:backgroundTint="@color/itis_burnt_orange"-->
+<!--                android:maxLength="50"-->
+<!--                android:singleLine="true"-->
+<!--                android:textColor="@color/itis_gray" />-->
         <LinearLayout
                 android:id="@+id/linearLayout4"
                 android:layout_width="match_parent"
@@ -45,7 +60,7 @@
 
 
             <Button
-                    android:id="@+id/decline_job_button"
+                    android:id="@+id/decline_measure_button"
                     style="@style/_button"
                     android:layout_width="wrap_content"
                     android:layout_height="@dimen/button_size"
@@ -54,7 +69,7 @@
                     android:text="@string/decline" />
 
             <Button
-                    android:id="@+id/approve_job_button"
+                    android:id="@+id/approve_measure_button"
                     style="@style/_button"
                     android:layout_width="wrap_content"
                     android:layout_height="@dimen/button_size"
