@@ -4,6 +4,8 @@ import android.content.Context
 import android.os.Build
 import android.view.View
 import androidx.lifecycle.ViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
@@ -27,6 +29,13 @@ class AuthViewModel(
     var password: String? = null
     var enterPin: String? = null
     var confirmPin: String? = null
+
+    var enterOldPin: String? = null
+    var enterNewPin: String? = null
+    var confirmNewPin: String? = null
+
+
+
 
     var authListener: AuthListener? = null
 
@@ -65,6 +74,99 @@ class AuthViewModel(
 //
 //    }
 
+    suspend  fun getPin(): String {
+        return withContext(Dispatchers.IO) {
+            repository.getPin()
+        }
+    }
+//    suspend fun getPin2(): String? {
+//        return withContext(Dispatchers.IO) {
+//            repository.getPin2()
+//        }
+//    }
+
+
+
+    fun onResetPinButtonClick(view: View) {
+
+    if (enterOldPin.isNullOrEmpty()) {
+        authListener?.onFailure("Please  Enter Old pin")
+        return
+    }
+
+    if (enterNewPin.isNullOrEmpty()) {
+        authListener?.onFailure("Please Enter New pin")
+        return
+    }
+
+    if (confirmNewPin.isNullOrEmpty()) {
+        authListener?.onFailure("Please Confirm New pin")
+        return
+    }
+
+    if (enterNewPin != confirmNewPin) {
+        authListener?.onFailure("Pin did not match")
+        return
+    }
+    Coroutines.main {
+        try {
+             if (enterOldPin  ==  repository.getPin()){
+                 repository.upDateUserPin( confirmNewPin!!,enterOldPin!!)
+             }else{
+                 authListener?.onFailure("Old Pin Is Wrong PLease eneter a correct Pin")
+             }
+
+//                authListener?.onFailure("User Details are wrong please Try again")
+        } catch (e: ApiException) {
+            authListener?.onFailure(e.message!!)
+        } catch (e: NoInternetException) {
+            authListener?.onFailure(e.message!!)
+        }
+    }
+
+}
+
+    fun onRegPinButtonClick(view: View) {
+
+        if (enterPin.isNullOrEmpty()) {
+            authListener?.onFailure("Please Enter pin")
+            return
+        }
+
+        if (confirmPin.isNullOrEmpty()) {
+            authListener?.onFailure("Please Confirm pin")
+            return
+        }
+
+        if (enterPin != confirmPin) {
+            authListener?.onFailure("Pin did not match")
+            return
+        }
+        Coroutines.main {
+            try {
+
+                val phoneNumber = "12345457"//telephonyManager?.line1Number
+                val IMEI = "45678"//telephonyManager?.imei
+                val androidDevice =
+                    " " + R.string.android_sdk + Build.VERSION.SDK_INT + R.string.space + Build.BRAND + R.string.space + Build.MODEL + R.string.space + Build.DEVICE + ""
+                repository.upDateUser(
+//                    userId ,
+                    phoneNumber!!,
+                    IMEI!!,
+                    androidDevice,
+                    confirmPin!!
+                )
+//                authListener?.onFailure("User Details are wrong please Try again")
+            } catch (e: ApiException) {
+                authListener?.onFailure(e.message!!)
+            } catch (e: NoInternetException) {
+                authListener?.onFailure(e.message!!)
+            }
+        }
+
+    }
+
+
 
     fun onRegButtonClick(view: View) {
         authListener?.onStarted()
@@ -79,20 +181,6 @@ class AuthViewModel(
             return
         }
 
-//        if (enterPin.isNullOrEmpty()) {
-//            authListener?.onFailure("Please Enter pin")
-//            return
-//        }
-//
-//        if (confirmPin.isNullOrEmpty()) {
-//            authListener?.onFailure("Please Confirm pin")
-//            return
-//        }
-//
-//        if (enterPin != confirmPin) {
-//            authListener?.onFailure("Pin did not match")
-//            return
-//        }
 
 
         Coroutines.main {
@@ -109,7 +197,7 @@ class AuthViewModel(
                     IMEI!!,
                     androidDevice
                 )
-                authListener?.onFailure("User Details are wrong please Try again")
+                authListener?.onFailure("User authentication failed. Please enter a valid User Id and Password.")
             } catch (e: ApiException) {
                 authListener?.onFailure(e.message!!)
             } catch (e: NoInternetException) {
@@ -119,6 +207,8 @@ class AuthViewModel(
 
 
     }
+
+
 
 
     val user by lazyDeferred {

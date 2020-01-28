@@ -4,6 +4,7 @@ package za.co.xisystems.itis_rrm.data.localDB.entities
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
+import java.io.Serializable
 import java.util.*
 
 const val JOB_ITEM_MEASURE = "JOB_ITEM_MEASURE"
@@ -12,13 +13,13 @@ const val JOB_ITEM_MEASURE = "JOB_ITEM_MEASURE"
 data class JobItemMeasureDTO(
     @SerializedName("ActId")
     @PrimaryKey
-    val actId: Int,
+    var actId: Int,
     @SerializedName("ApprovalDate")
-    val approvalDate: String? = Date().toString(),
+    var approvalDate: String? = Date().toString(),
     @SerializedName("Cpa")
-    val cpa: Int = 0,
+    var cpa: Int = 0,
     @SerializedName("EndKm")
-    val endKm: Double,
+    var endKm: Double,
     @SerializedName("EstimateId")
     var estimateId: String?,
     @SerializedName("ItemMeasureId")
@@ -26,36 +27,36 @@ data class JobItemMeasureDTO(
     @SerializedName("JimNo")
     var jimNo: String?,
     @SerializedName("JobDirectionId")
-    val jobDirectionId: Int,
+    var jobDirectionId: Int,
     @SerializedName("JobId")
     var jobId: String?,
     @SerializedName("LineAmount")
-    val lineAmount: Double,
+    var lineAmount: Double,
     @SerializedName("LineRate")
-    val lineRate: Double,
+    var lineRate: Double,
     @SerializedName("MeasureDate")
-    val measureDate: String? = Date().toString(),
+    var measureDate: String? = Date().toString(),
     @SerializedName("MeasureGroupId")
     var measureGroupId: String?,
     @SerializedName("PrjItemMeasurePhotoDtos")
-    val jobItemMeasurePhotos: ArrayList<JobItemMeasurePhotoDTO>,
+    var jobItemMeasurePhotos: ArrayList<JobItemMeasurePhotoDTO>,
     @SerializedName("PrjJobDto")
-    val job: JobDTO,
+    var job: JobDTO,
     @SerializedName("PrjJobItemEstimateDto")
 //    val prjJobItemEstimateDto: ArrayList<JobItemEstimateDTO>,
-    val jobItemEstimate: JobItemEstimateDTO,
+    var jobItemEstimate: JobItemEstimateDTO,
     @SerializedName("ProjectItemId")
     var projectItemId: String?,
     @SerializedName("ProjectVoId")
     var projectVoId: String?,
     @SerializedName("Qty")
-    val qty: Double,
+    var qty: Double,
     @SerializedName("RecordSynchStateId")
-    val recordSynchStateId: Int,
+    var recordSynchStateId: Int,
     @SerializedName("RecordVersion")
-    val recordVersion: Int,
+    var recordVersion: Int,
     @SerializedName("StartKm")
-    val startKm: Double,
+    var startKm: Double,
     @SerializedName("TrackRouteId")
     var trackRouteId: String?,
 
@@ -63,4 +64,4 @@ data class JobItemMeasureDTO(
     var entityDescription: String?,
 
     var selectedItemUom: String?
-)
+): Serializable

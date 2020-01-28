@@ -19,7 +19,7 @@ const val PROJECT_TABLE = "PROJECT_TABLE"
             entity = ContractDTO::class,
             parentColumns = arrayOf("contractId"),
             childColumns = arrayOf("contractId"),
-            onDelete = ForeignKey.NO_ACTION
+            onDelete = ForeignKey.CASCADE
         )
     )
     ,indices = arrayOf(Index(value = ["projectId"],unique = true))
@@ -38,7 +38,7 @@ data class ProjectDTO(
     val endDate: String?,
 
     @SerializedName("Items")
-    val items: ArrayList<ItemDTO>?,
+    val items: ArrayList<ProjectItemDTO>?,
 
     @SerializedName("ProjectCode")
     val projectCode: String?,

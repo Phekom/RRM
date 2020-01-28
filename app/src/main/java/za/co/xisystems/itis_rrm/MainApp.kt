@@ -1,3 +1,7 @@
+
+/**
+ * Created by Francis Mahlava on 2019/10/23.
+ */
 package za.co.xisystems.itis_rrm
 
 import android.app.Application
@@ -14,6 +18,7 @@ import za.co.xisystems.itis_rrm.data.network.NetworkConnectionInterceptor
 import za.co.xisystems.itis_rrm.data.preferences.PreferenceProvider
 import za.co.xisystems.itis_rrm.data.repositories.*
 import za.co.xisystems.itis_rrm.ui.auth.AuthViewModelFactory
+import za.co.xisystems.itis_rrm.ui.mainview.activities.SettingsViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.ApproveJobsViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.corrections.CorrectionsViewModelFactory
@@ -56,14 +61,44 @@ open class MainApp : Application(), KodeinAware {
         bind() from provider { UnSubmittedViewModelFactory(instance() ) }
         bind() from provider{ WorkViewModelFactory(instance()) }
         bind() from provider{ CorrectionsViewModelFactory(instance()) }
-//        bind() from provider{ WorkViewModelFactory(instance()) }
+        bind() from provider{ SettingsViewModelFactory(instance()) }
 
     }
 
     override fun onCreate() {
         super.onCreate()
-
-    }
+         }
 
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//class MainApp : Application() {
+//
+//    override fun onCreate() {
+//        super.onCreate()
+//        startKoin{
+//            androidLogger()
+//            androidContext(this@MainApp)
+//            modules(appModule)
+//            modules( viewmodelModule)
+//        }
+//
+//    }
+//
+//
+//}

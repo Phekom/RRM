@@ -19,7 +19,7 @@ import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
 import za.co.xisystems.itis_rrm.ui.mainview.work.estimate_work_item.CardItem
-import za.co.xisystems.itis_rrm.ui.mainview.work.estimate_work_item.ExpandableHeaderItem
+import za.co.xisystems.itis_rrm.ui.mainview.work.estimate_work_item.ExpandableHeaderWorkItem
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
 
@@ -50,9 +50,8 @@ class WorkFragment : BaseFragment(), KodeinAware {
 //            val works = workViewModel.getJobsForActivityId(
 //                ActivityIdConstants.JOB_APPROVED
 //                , ActivityIdConstants.ESTIMATE_INCOMPLETE
-//            )
-            val works = workViewModel.getJobsForActivityIds( ActivityIdConstants.ESTIMATE_INCOMPLETE
-            )
+//            )val works = workViewModel.getJobsForActivityIds(ActivityIdConstants.JOB_APPROVED, ActivityIdConstants.ESTIMATE_INCOMPLETE)
+            val works = workViewModel.getJobsForActivityIds(ActivityIdConstants.JOB_APPROVED)
 //            val jobs = approveViewModel.offlinedata.await()
             works.observe(viewLifecycleOwner, Observer { work_s ->
                 noData.visibility = View.GONE
@@ -126,7 +125,7 @@ class WorkFragment : BaseFragment(), KodeinAware {
 //                                    }
 
             val expandableHeaderItem =
-            ExpandableHeaderItem( activity, work_items, workViewModel, work_items.jobId)
+            ExpandableHeaderWorkItem( activity, work_items, workViewModel, work_items.jobId)
 //            ExpandableHeaderItem("JI:${work_items.JiNo} ", work_items.Descr!! , activity, work_items, workViewModel)
             ExpandableGroup(expandableHeaderItem, false).apply {
                 Coroutines.main {

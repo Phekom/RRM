@@ -18,7 +18,7 @@ const val PROJECT_SECTION_TABLE = "PROJECT_SECTION_TABLE"
         entity = ProjectDTO::class,
         parentColumns = arrayOf("projectId"),
         childColumns = arrayOf("projectId"),
-        onDelete = ForeignKey.NO_ACTION
+        onDelete = ForeignKey.CASCADE
     )]
 )
 data class ProjectSectionDTO (

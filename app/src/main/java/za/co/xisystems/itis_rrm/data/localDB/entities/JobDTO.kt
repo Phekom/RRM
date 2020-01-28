@@ -16,8 +16,8 @@ const val JOB_TABLE = "JOB_TABLE"
 @Entity(tableName = JOB_TABLE)
 class JobDTO(
     @SerializedName("JobId")
-    @PrimaryKey(autoGenerate = false)
-    var JobId: String = UUID.randomUUID().toString(),
+    @PrimaryKey
+    var JobId: String,
     @SerializedName("ProjectId")
     var ProjectId: String?,
     @SerializedName("JiNo")
@@ -55,11 +55,11 @@ class JobDTO(
 
     var WORKS_ACT_ID: Int?,
     @SerializedName("MobileJobItemEstimates")
-    var JobItemEstimates: ArrayList<JobItemEstimateDTO>?,
+    var JobItemEstimates: ArrayList<JobItemEstimateDTO>,
     @SerializedName("MobileJobItemMeasures")
-    var JobItemMeasures: ArrayList<JobItemMeasureDTO>?,
+    var JobItemMeasures: ArrayList<JobItemMeasureDTO>,
     @SerializedName("MobileJobSections")
-    val JobSections: ArrayList<JobSectionDTO>?,
+    var JobSections: ArrayList<JobSectionDTO>,
     @SerializedName("PerfitemGroupId")
     val PerfitemGroupId: String?,
     @SerializedName("RecordVersion")
@@ -76,7 +76,7 @@ class JobDTO(
     @SerializedName("Cpa")
     val Cpa: Int,
     @SerializedName("DayWork")
-    val DayWork: Int,
+    val DayWork: Int?,
 
     @SerializedName("EngineerId")
     val EngineerId: Int,
@@ -133,6 +133,8 @@ class JobDTO(
     fun jobEstimateExist(itemId: String?): Boolean {
         return getJobEstimateIndexByItemId(itemId) > -1
     }
+
+
 
     fun getJobEstimateIndexByItemId(itemId: String?): Int {
         if (itemId != null) for (i in JobItemEstimates!!.indices) {

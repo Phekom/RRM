@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
@@ -57,6 +58,32 @@ class RegisterActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runna
             loggedInUser.observe(this, Observer {user ->
                 // Register the user
                 if (user != null) {
+
+                    if (user.PIN.isNullOrEmpty()){
+
+                        val logoutBuilder = AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog)
+                        logoutBuilder.setTitle(R.string.set_pin)
+                        logoutBuilder.setIcon(R.drawable.ic_baseline_lock_24px)
+                        logoutBuilder.setMessage(R.string.set_pin_msg)
+                        logoutBuilder.setCancelable(false)
+                        // Yes button
+                        logoutBuilder.setPositiveButton(R.string.ok) { dialog, which ->
+                            if (ServiceUtil.isNetworkConnected(this.applicationContext)) {
+                                Intent(this, RegisterPinActivity::class.java).also {pin ->
+                                    pin.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                                    startActivity(pin)
+                                }
+                            } else {
+                                toast(R.string.no_connection_detected.toString())
+                            }
+                        }
+                        val declineAlert = logoutBuilder.create()
+                        declineAlert.show()
+
+                    }
+
+
+                    else
                         Intent(this, MainActivity::class.java).also {home ->
                             home.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
                             startActivity(home)
@@ -127,12 +154,12 @@ class RegisterActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runna
 
     override fun onSuccess(user:UserDTO) {
             loading.hide()
-
         toast("You are Loggedin as ${user.userName}")
     }
 
     override fun onFailure(message: String) {
         loading.hide()
+        hideKeyboard()
         reg_container.snackbar(message)
     }
 

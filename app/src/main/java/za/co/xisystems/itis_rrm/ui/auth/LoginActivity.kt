@@ -6,35 +6,38 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import kotlinx.android.synthetic.main.activity_login.*
 import org.kodein.di.KodeinAware
+import org.kodein.di.android.kodein
+import org.kodein.di.generic.instance
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
-import za.co.xisystems.itis_rrm.data.repositories.UserRepository
+import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.databinding.ActivityLoginBinding
 import za.co.xisystems.itis_rrm.ui.auth.model.PinLock
 import za.co.xisystems.itis_rrm.utils.Coroutines
-import org.kodein.di.android.kodein
-import org.kodein.di.generic.instance
-import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
+import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.toast
 
-class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener  , KodeinAware {
+
+class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, KodeinAware {
     private var activityPinLockBinding: ActivityLoginBinding? = null
-    private val pin = PinLock()
+    //    private var pin = PinLock()
+    private var pin = String()
     private var pinInput = ""
     private var index = 0
     private val Db: AppDatabase? = null
-    private val loginViewModel: AuthViewModel? = null
-    private val repository: UserRepository? = null
+    //    private val loginViewModel: AuthViewModel? = null
+//    private val repository: UserRepository? = null
     override val kodein by kodein()
-    private val factory : AuthViewModelFactory by instance()
-    lateinit var viewModel : AuthViewModel
+    private val factory: AuthViewModelFactory by instance()
+    lateinit var viewModel: AuthViewModel
     private lateinit var appContext: Context
 
 
@@ -46,19 +49,22 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener  ,
 
         Coroutines.main {
             val loggedInUser = viewModel.user.await()
-            loggedInUser.observe(this, Observer {user ->
+            loggedInUser.observe(this, Observer { user ->
                 // Register the user
                 if (user != null) {
                     usernameTextView.text = user.userName
                     initPin()
                     initListener()
-                }else{
+                } else {
 //                    val intent = Intent(this, RegisterActivity::class.java)
 //                    startActivity(intent)
 //                    finish()
-//
-                    Intent(this, RegisterActivity::class.java).also {home ->
-                        home.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+
+
+
+                    Intent(this, RegisterActivity::class.java).also { home ->
+                        home.flags =
+                            Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
                         startActivity(home)
                     }
                 }
@@ -69,12 +75,21 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener  ,
     }
 
 
+    private fun initPin() {
+        Coroutines.main {
+            val loggedInUser = viewModel.user.await()
+            loggedInUser.observe(this, Observer { user ->
+                if (user.PIN != null) {
+                    Coroutines.main {
+                        pin = viewModel.getPin()
+                    }
 
-    private fun initPin() { //        String newpin =  loginViewModel.getPin();
-//        if(loginViewModel.getPin() != null) {
-////            pin = usr.getPin();
-//            Toast.makeText(this, newpin, Toast.LENGTH_SHORT).show();
-//        }
+
+                }
+
+            })
+        }
+
     }
 
     private fun checkPinColor() {
@@ -159,14 +174,48 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener  ,
     }
 
     private fun checkPin() {
-        if (index == 4) {
-            if (!pin.registered) { //                db.insertPin(pinInput);
-                Toast.makeText(this, "Pin Successfully registered", Toast.LENGTH_SHORT).show()
-                gotoMainActivity()
-            } else {
-                validatePin()
-            }
+        Coroutines.main {
+            val loggedInUser = viewModel.user.await()
+            loggedInUser.observe(this, Observer { user ->
+                if (user.PIN.isNullOrEmpty()){
+
+                    val logoutBuilder = AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog)
+                    logoutBuilder.setTitle(R.string.set_pin)
+                    logoutBuilder.setIcon(R.drawable.ic_baseline_lock_24px)
+                    logoutBuilder.setMessage(R.string.set_pin_msg)
+                    logoutBuilder.setCancelable(false)
+                    // Yes button
+                    logoutBuilder.setPositiveButton(R.string.ok) { dialog, which ->
+                        if (ServiceUtil.isNetworkConnected(this.applicationContext)) {
+                            Intent(this, RegisterPinActivity::class.java).also {pin ->
+                                pin.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                                startActivity(pin)
+                            }
+                        } else {
+                            toast(R.string.no_connection_detected.toString())
+                        }
+                    }
+                    val declineAlert = logoutBuilder.create()
+                    declineAlert.show()
+
+                }
+
+                else {
+
+                    if (index == 4) {
+//                    if (user.PIN!!.isNotEmpty()) {
+////                        Toast.makeText(this, "Pin Successfully registered", Toast.LENGTH_SHORT).show()
+//                        gotoMainActivity()
+//                    } else {
+                        validatePin()
+//                    }
+                    }
+                }
+
+
+            })
         }
+
     }
 
     override fun onResume() {
@@ -182,13 +231,15 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener  ,
     }
 
     private fun validatePin() {
-        if (pin.lockNumber == pinInput) {
-            pin.valid = true
+        if (pin.equals(pinInput)) {
+
+            gotoMainActivity()
         } else {
-            pin.valid = false
+            reset()
+            showMessage()
         }
-        reset()
-        showMessage(pin.valid)
+
+
     }
 
     private fun reset() {
@@ -204,14 +255,14 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener  ,
         activityPinLockBinding!!.pin4.setImageResource(R.drawable.oval_pin_grey)
     }
 
-    private fun showMessage(valid: Boolean) {
-        if (valid) {
-            gotoMainActivity()
-        } else {
+    private fun showMessage() {
+//        if (valid) {
+//            gotoMainActivity()
+//        } else { // toast("Pin Invalid Try Again !!")
             Toast.makeText(this, "Pin is incorrect", Toast.LENGTH_SHORT).show()
             resetAllPinColor()
             pinInput = ""
-        }
+//        }
     }
 
     override fun onStarted() {

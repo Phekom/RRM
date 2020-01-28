@@ -23,4 +23,8 @@ interface WorkflowsDao {
 
     @Query("SELECT * FROM WORKFLOWs_TABLE ")
     fun getWorkflows() : LiveData<List<WorkFlowsDTO>>
+
+    @Query("DELETE FROM WORKFLOWs_TABLE")
+    fun deleteAll()
+
 }

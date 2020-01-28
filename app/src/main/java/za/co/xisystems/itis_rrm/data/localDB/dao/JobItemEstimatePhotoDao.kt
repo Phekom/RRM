@@ -30,6 +30,10 @@ interface JobItemEstimatePhotoDao {
     @Query("SELECT photoPath FROM JOB_ITEM_ESTIMATE_PHOTO WHERE estimateId = :estimateId AND is_PhotoStart LIKE 1 ")
     fun getJobEstimationItemsPhotoStartPath(estimateId: String) :  String
 
+    @Query("SELECT * FROM JOB_ITEM_ESTIMATE_PHOTO WHERE estimateId = :estimateId")
+    fun getJobItemEstimatePhotoForEstimateId(estimateId: String) : LiveData<List<JobItemEstimatesPhotoDTO>>
+
+
 //    @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE itemId = :itemId")
 //    fun getItemForItemId(itemId: String): LiveData<ItemDTO>
 //
@@ -42,6 +46,8 @@ interface JobItemEstimatePhotoDao {
 //    fun getAllItemsForSectionItem(sectionItem : String, projectId : String ): LiveData<List<ItemDTO>>
 //
 //
-//    @Query("DELETE FROM PROJECT_ITEM_TABLE")
-//    fun deleteAll()
+    @Query("DELETE FROM JOB_ITEM_ESTIMATE_PHOTO")
+    fun deleteAll()
+
+
 }

@@ -3,6 +3,8 @@ package za.co.xisystems.itis_rrm.data.network
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.os.Build
+import androidx.annotation.RequiresApi
 import okhttp3.Interceptor
 import okhttp3.Response
 import za.co.xisystems.itis_rrm.utils.NoInternetException
@@ -15,12 +17,14 @@ class NetworkConnectionInterceptor(
 
     private val applicationContext = context.applicationContext
 
+    @RequiresApi(Build.VERSION_CODES.M)
     override fun intercept(chain: Interceptor.Chain): Response {
         if (!isInternetAvailable())
             throw NoInternetException("Make sure you have an active data connection")
         return chain.proceed(chain.request())
     }
 
+    @RequiresApi(Build.VERSION_CODES.M)
     private fun isInternetAvailable(): Boolean {
         var result = false
         val connectivityManager =

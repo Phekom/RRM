@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import za.co.xisystems.itis_rrm.R;
-import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTO;
+import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO;
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.contracts.IAdapter;
 
 
@@ -120,7 +120,7 @@ public abstract class AbstractAdapter<T> extends RecyclerView.Adapter<AbstractAd
         }
     }
 
-    public void deleteItem(ItemDTO item) {
+    public void deleteItem(ProjectItemDTO item) {
         data.remove(item);
         setOriginalData();
         notifyDataSetChanged();

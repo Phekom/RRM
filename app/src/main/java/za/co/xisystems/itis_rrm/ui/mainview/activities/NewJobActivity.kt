@@ -39,7 +39,7 @@ class NewJobActivity : NewJobBase(),
     private val appContext : Context? = null
     var newJobSelectItemIntent: INewJobSelectItemIntent? = null
 
-    private val adapter: IEstimatesAdapter<ItemDTO>? = null
+    private val adapter: IEstimatesAdapter<ProjectItemDTO>? = null
     private var saveMenuItem: MenuItem? = null
     private  var deleteMenuItem: MenuItem? = null
     private  var resetMenuItem: MenuItem? = null
@@ -51,7 +51,7 @@ class NewJobActivity : NewJobBase(),
 
 
     @MyState
-    var items: ArrayList<ItemDTO> = ArrayList<ItemDTO>()
+    var items: ArrayList<ProjectItemDTO> = ArrayList<ProjectItemDTO>()
     @MyState
     internal var selectedContract: ContractDTO? = null
     //        internal var selectedContract: String? = null
@@ -59,7 +59,7 @@ class NewJobActivity : NewJobBase(),
     internal var selectedProject: ProjectDTO? = null
     //        internal var selectedProject: String? = null
     @MyState
-    internal var selectedProjectitem: ItemDTO? = null
+    internal var selectedProjectitem: ProjectItemDTO? = null
 //    internal var selectedProjectitem: String? = null
 
     @MyState
@@ -355,8 +355,8 @@ class NewJobActivity : NewJobBase(),
                         sectionItemSpinner,
                         items,
                         itemNmbr,
-                        object : SpinnerHelper.SelectionListener<ItemDTO> {
-                            override fun onItemSelected(position: Int, item: ItemDTO) {
+                        object : SpinnerHelper.SelectionListener<ProjectItemDTO> {
+                            override fun onItemSelected(position: Int, item: ProjectItemDTO) {
                                 if (item == null)
                                     toast("Error: Project Items is NULL")
                                 else {

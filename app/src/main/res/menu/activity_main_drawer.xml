@@ -16,10 +16,10 @@
             android:id="@+id/nav_unSubmitted"
             android:icon="@drawable/ic_unsubmitted"
             android:title="@string/menu_unSubmitted" />
-        <item
-            android:id="@+id/nav_correction"
-            android:icon="@drawable/ic_correct"
-            android:title="@string/menu_estCorrection" />
+<!--        <item-->
+<!--            android:id="@+id/nav_correction"-->
+<!--            android:icon="@drawable/ic_correct"-->
+<!--            android:title="@string/menu_estCorrection" />-->
         <item
             android:id="@+id/nav_work"
             android:icon="@drawable/ic_menu_manage"

@@ -13,6 +13,7 @@ import java.util.*
  * Created by Francis Mahlava on 2019/11/22.
  */
 
+@Suppress("UNCHECKED_CAST")
 class Converters {
 
     @TypeConverter
@@ -164,7 +165,7 @@ class Converters {
     }
 
     @TypeConverter
-    fun JobItemEstimateDTOToStoredString(myObjects:ArrayList<JobItemEstimateDTO>): String {
+    fun JobItemEstimateDTOToStoredString(myObjects: ArrayList<JobItemEstimateDTO>): String {
         val gson = Gson()
         return gson.toJson(myObjects)
     }
@@ -220,19 +221,19 @@ class Converters {
 
 
     @TypeConverter
-    fun storedStringToItemDTO(data: String?):ArrayList<ItemDTO> {
+    fun storedStringToItemDTO(data: String?):ArrayList<ProjectItemDTO> {
         val gson = Gson()
         if (data == null) {
-            return Collections.EMPTY_LIST as ArrayList<ItemDTO>
+            return Collections.EMPTY_LIST as ArrayList<ProjectItemDTO>
         }
-        val listType = object :TypeToken<ArrayList<ItemDTO>>() {
+        val listType = object :TypeToken<ArrayList<ProjectItemDTO>>() {
 
         }.getType()
-        return gson.fromJson<ArrayList<ItemDTO>>(data, listType)
+        return gson.fromJson<ArrayList<ProjectItemDTO>>(data, listType)
     }
 
     @TypeConverter
-    fun ItemDTOToStoredString(myObjects:ArrayList<ItemDTO>): String {
+    fun ItemDTOToStoredString(myObjects:ArrayList<ProjectItemDTO>): String {
         val gson = Gson()
         return gson.toJson(myObjects)
     }
@@ -374,7 +375,26 @@ class Converters {
 
     //===========================================================================
 
+    @TypeConverter
+    fun storedStringToJobItemEstimatesPhotoDO(data: String?): JobItemEstimatesPhotoDTO {
+        val gson = Gson()
+        if (data == null) {
+            return Collections.EMPTY_LIST as JobItemEstimatesPhotoDTO
+        }
+        val listType = object :TypeToken<JobItemEstimatesPhotoDTO>() {
 
+        }.getType()
+        return gson.fromJson< JobItemEstimatesPhotoDTO >(data, listType)
+    }
+
+    @TypeConverter
+    fun JobItemEstimatesPhotoDOToStoredString(myObjects: JobItemEstimatesPhotoDTO): String {
+        val gson = Gson()
+        return gson.toJson(myObjects)
+    }
+
+
+    //===========================================================================
     @TypeConverter
     fun storedStringToJobEstimateWorksDTO(data: String?):ArrayList<JobEstimateWorksDTO> {
         val gson = Gson()
@@ -619,45 +639,64 @@ class Converters {
     //===========================================================================
 
 
-//    @TypeConverter
-//    fun storedStringToSectionDTO(data: String?):ArrayList<ProjectSectionDTO> {
-//        val gson = Gson()
-//        if (data == null) {
-//            return Collections.EMPTY_LIST
-//        }
-//        val listType = object :TypeToken<ArrayList<ProjectSectionDTO>>() {
-//
-//        }.getType()
-//        return gson.fromJson<ArrayList<ProjectSectionDTO>>(data, listType)
-//    }
-//
-//    @TypeConverter
-//    fun SectionDTOToStoredString(myObjects:ArrayList<ProjectSectionDTO>): String {
-//        val gson = Gson()
-//        return gson.toJson(myObjects)
-//    }
+    @TypeConverter
+    fun storedStringToJobItemMeasureDTOTemp(data: String?): JobItemMeasureDTOTemp {
+        val gson = Gson()
+        if (data == null) {
+            return Collections.EMPTY_LIST as JobItemMeasureDTOTemp
+        }
+        val listType = object :TypeToken<JobItemMeasureDTOTemp>() {
+
+        }.getType()
+        return gson.fromJson<JobItemMeasureDTOTemp>(data, listType)
+    }
+
+    @TypeConverter
+    fun JobItemMeasureDTOTempToStoredString(myObjects:JobItemMeasureDTOTemp): String {
+        val gson = Gson()
+        return gson.toJson(myObjects)
+    }
+
+
+    @TypeConverter
+    fun storedStringToJobItemMeasureDTO_Temp(data: String?):ArrayList<JobItemMeasureDTOTemp> {
+        val gson = Gson()
+        if (data == null) {
+            return Collections.EMPTY_LIST as ArrayList<JobItemMeasureDTOTemp>
+        }
+        val listType = object :TypeToken<ArrayList<JobItemMeasureDTOTemp>>() {
+
+        }.getType()
+        return gson.fromJson<ArrayList<JobItemMeasureDTOTemp>>(data, listType)
+    }
+
+    @TypeConverter
+    fun JobItemMeasureDTO_TempToStoredString(myObjects:ArrayList<JobItemMeasureDTOTemp>): String {
+        val gson = Gson()
+        return gson.toJson(myObjects)
+    }
+
 
 
     //===========================================================================
 
+    @TypeConverter
+    fun storedStringToJobItemMeasurePhotoDTOTemp(data: String?):ArrayList<JobItemMeasurePhotoDTOTemp> {
+        val gson = Gson()
+        if (data == null) {
+            return Collections.EMPTY_LIST as ArrayList<JobItemMeasurePhotoDTOTemp>
+        }
+        val listType = object :TypeToken<ArrayList<JobItemMeasurePhotoDTOTemp>>() {
 
-//    @TypeConverter
-//    fun storedStringToSectionDTO(data: String?):ArrayList<ProjectSectionDTO> {
-//        val gson = Gson()
-//        if (data == null) {
-//            return Collections.EMPTY_LIST
-//        }
-//        val listType = object :TypeToken<ArrayList<ProjectSectionDTO>>() {
-//
-//        }.getType()
-//        return gson.fromJson<ArrayList<ProjectSectionDTO>>(data, listType)
-//    }
-//
-//    @TypeConverter
-//    fun SectionDTOToStoredString(myObjects:ArrayList<ProjectSectionDTO>): String {
-//        val gson = Gson()
-//        return gson.toJson(myObjects)
-//    }
+        }.getType()
+        return gson.fromJson<ArrayList<JobItemMeasurePhotoDTOTemp>>(data, listType)
+    }
+
+    @TypeConverter
+    fun JobItemMeasurePhotoDTOTempToStoredString(myObjects:ArrayList<JobItemMeasurePhotoDTOTemp>): String {
+        val gson = Gson()
+        return gson.toJson(myObjects)
+    }
 
 
     //===========================================================================

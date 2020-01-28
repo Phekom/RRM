@@ -4,6 +4,7 @@ package za.co.xisystems.itis_rrm.data.localDB.entities
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
+import java.io.Serializable
 
 const val JOB_ITEM_ESTIMATE_PHOTO = "JOB_ITEM_ESTIMATE_PHOTO"
 
@@ -14,21 +15,34 @@ data class JobItemEstimatesPhotoDTO(
     @SerializedName("EstimateId")
     var estimateId: String,
     @SerializedName("Filename")
-    val filename: String,
+    var filename: String,
     @SerializedName("PhotoDate")
-    val photoDate: String,
+    var photoDate: String,
     @SerializedName("PhotoId")
     @PrimaryKey
     var photoId: String,
-
+    @SerializedName("PhotoStart")
+    val photoStart: String?,
+    @SerializedName("PhotoEnd")
+    val photoEnd: String?,
+    @SerializedName("Startkm")
+    val startKm : Double = 0.0,
+    @SerializedName("Endkm")
+    val endKm : Double = 0.0,
     @SerializedName("PhotoLatitude")
-    val photoLatitude: Double,
+    var photoLatitude : Double? = 0.0,
     @SerializedName("PhotoLongitude")
-    val photoLongitude: Double,
+    var photoLongitude:  Double? = 0.0,
+
+    @SerializedName("PhotoLatitudeEnd")
+    var photoLatitudeEnd: Double = 0.0,
+    @SerializedName("PhotoLongitudeEnd")
+    var photoLongitudeEnd: Double = 0.0,
+
     @SerializedName("PhotoPath")
     var photoPath: String,
     @SerializedName("PrjJobItemEstimateDto")
-    val jobItemEstimate: JobItemEstimateDTO,
+    var jobItemEstimate: JobItemEstimateDTO,
     @SerializedName("RecordSynchStateId")
     val recordSynchStateId: Int,
     @SerializedName("RecordVersion")
@@ -39,7 +53,7 @@ data class JobItemEstimatesPhotoDTO(
     val image: ByteArray?
 
 //    val jobItemEstimate: ArrayList<JobItemEstimateDTO>,
-) {
+) : Serializable {
     //    @SerializedName("IsPhotoStart")
     val is_photoStart: Boolean
         get() = is_PhotoStart == isPhotoStart()
@@ -47,5 +61,18 @@ data class JobItemEstimatesPhotoDTO(
     fun isPhotoStart(): Boolean {
         return isPhotoStart()
     }
+
+
+    fun setPhotoLatitude(photoLatitude: Double) {
+        this.photoLatitude = photoLatitude
+    }
+
+    fun setPhotoLongitude(photoLongitude: Double) {
+        this.photoLongitude = photoLongitude
+    }
+
+
+
+
 
 }

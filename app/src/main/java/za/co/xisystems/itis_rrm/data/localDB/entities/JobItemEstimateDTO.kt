@@ -6,6 +6,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import za.co.xisystems.itis_rrm.utils.JobUtils
+import java.io.Serializable
 import java.util.*
 
 
@@ -28,13 +29,13 @@ data class JobItemEstimateDTO(
     @SerializedName("LineRate")
     val lineRate: Double,
     @SerializedName("MobileEstimateWorks")
-    val jobEstimateWorks: ArrayList<JobEstimateWorksDTO>,
+    var jobEstimateWorks: ArrayList<JobEstimateWorksDTO>,
     @SerializedName("MobileJobItemEstimatesPhotos")
-    val jobItemEstimatePhotos: ArrayList<JobItemEstimatesPhotoDTO>,
+    var jobItemEstimatePhotos: ArrayList<JobItemEstimatesPhotoDTO>,
     @SerializedName("MobileJobItemMeasures")
     val jobItemMeasure: ArrayList<JobItemMeasureDTO>,
     @SerializedName("PrjJobDto")
-    val job: JobDTO,
+    val job: JobDTO?,
     @SerializedName("ProjectItemId")
     var projectItemId: String?,
     @SerializedName("ProjectVoId")
@@ -46,9 +47,17 @@ data class JobItemEstimateDTO(
     @SerializedName("RecordVersion")
     val recordVersion: Int,
     @SerializedName("TrackRouteId")
-    var trackRouteId: String?
+    var trackRouteId: String,
 
-){
+//   val jobItemEstimatePhotoStart : JobItemEstimatesPhotoDTO? = null,
+//   val jobItemEstimatePhotoEnd : JobItemEstimatesPhotoDTO? = null
+
+    val  estimateComplete : Int = 0,
+//    var entityDescription: String?,
+    val SelectedItemUOM: String?
+
+): Serializable {
+
     fun getJobItemEstimatePhoto(lookForStartPhoto: Boolean): Pair<Int, JobItemEstimatesPhotoDTO> {
         val photos = jobItemEstimatePhotos
         var i = 0
@@ -75,6 +84,9 @@ data class JobItemEstimateDTO(
     fun getJobItemEstimatePhotoStart(): JobItemEstimatesPhotoDTO? {
         return getJobItemEstimatePhoto(true).second
     }
+    fun getJobItemEstimatePhotoEnd(): JobItemEstimatesPhotoDTO? {
+        return getJobItemEstimatePhoto(false).second
+    }
 
     fun getPhoto(x: Int): JobItemEstimatesPhotoDTO? {
         return if ( jobItemEstimatePhotos != null && -1 < x && x < size()) {
@@ -87,9 +99,6 @@ data class JobItemEstimateDTO(
         setJobItemEstimatePhoto(photoStart)
     }
 
-    fun getJobItemEstimatePhotoEnd(): JobItemEstimatesPhotoDTO? {
-        return getJobItemEstimatePhoto(false).second
-    }
 
     fun setJobItemEstimatePhotoEnd(photoEnd: JobItemEstimatesPhotoDTO) {
         photoEnd.estimateId
@@ -117,12 +126,7 @@ data class JobItemEstimateDTO(
         else {
             val photoStart = jobItemEstimatePhotos.get(0)
             val photoEnd = jobItemEstimatePhotos.get(1)
-            return if (photoStart == null || photoStart!!.filename == null
-                || photoEnd == null || photoEnd!!.filename == null
-            )
-                false
-            else
-                true
+            return !(photoStart!!.filename == null || photoEnd == null || photoEnd!!.filename == null)
         }
     }
 

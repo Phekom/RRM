@@ -18,7 +18,9 @@ import org.apache.sanselan.formats.jpeg.JpegImageMetadata
 import org.apache.sanselan.formats.jpeg.exifRewrite.ExifRewriter
 import org.apache.sanselan.formats.tiff.write.TiffOutputSet
 import za.co.xisystems.itis_rrm.BuildConfig
+import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates.EstimatePhotoFragment
+import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.submit_measure.CaptureItemMeasurePhotoActivity
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import java.io.*
 import java.text.DateFormat
@@ -431,7 +433,19 @@ object PhotoUtil {
         return null
     }
 
-
+    fun deleteImageFile(
+        context: Context,
+        imagePath: String?
+    ): Boolean { // Get the file
+        val imageFile = File(imagePath)
+        // Delete the image
+        val deleted = imageFile.delete()
+        // If there is an error deleting the file, show a Toast
+        if (!deleted) {
+            val errorMessage = context.getString(R.string.error)
+        }
+        return deleted
+    }
 
     @Throws(IOException::class)
     private fun createImageFile(): File {
@@ -460,7 +474,11 @@ object PhotoUtil {
         val imageByteArray = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             Base64.getDecoder().decode(photo)
         } else {
-            Base64.getDecoder().decode(photo)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                Base64.getDecoder().decode(photo)
+            } else {
+                android.util.Base64.decode(photo, android.util.Base64.DEFAULT)
+            }
         }
         File(storageDir.path + "/" + fileName).writeBytes(imageByteArray)
 
@@ -469,9 +487,39 @@ object PhotoUtil {
 
     }
 
+    fun getUri2(captureItemMeasurePhotoActivity: CaptureItemMeasurePhotoActivity): Uri? {
+        try {
+            return FileProvider.getUriForFile(
+                captureItemMeasurePhotoActivity, BuildConfig.APPLICATION_ID + ".provider",
+                createImageFile()
+            )
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+        return null
+    }
 
 
+    fun getUri3(context : Context): Uri? {
+        try {
+            return FileProvider.getUriForFile(
+                context, BuildConfig.APPLICATION_ID + ".provider",
+                createImageFile()
+            )
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+        return null
+    }
 
+    fun setRouteSecPoint(direction: String, linearId: String, pointLocation: Double, sectionId: Int, projectId: String?){
+          val direction = direction
+          val linearId =  linearId
+          val pointLocation =  pointLocation
+        val  sectionId =  sectionId
+        val  projectId = projectId
+
+    }
 
 
 //    fun <ByteArray1> createPhoto(fileName: String, photoByteArray: ByteArray1) {

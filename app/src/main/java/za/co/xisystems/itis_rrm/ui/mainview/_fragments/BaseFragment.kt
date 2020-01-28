@@ -24,7 +24,7 @@ import za.co.xisystems.itis_rrm.utils.ViewLogger
  */
 
 
-abstract class BaseFragment : Fragment(), IProgressView, HorizontalProgressBar {
+abstract class BaseFragment : Fragment(), IProgressView, HorizontalProgressBar{
     protected var progressView: IProgressView? = null
     @JvmField var bounce: Animation? = null
     @JvmField var bounce_short: Animation? = null
@@ -44,6 +44,8 @@ abstract class BaseFragment : Fragment(), IProgressView, HorizontalProgressBar {
     protected var coordinator: View? = null
 
     var anims: Animations? = null
+
+
 
     override fun onResume() {
         super.onResume()
@@ -87,7 +89,13 @@ abstract class BaseFragment : Fragment(), IProgressView, HorizontalProgressBar {
             progressView = context
         }
     }
-
+//    override fun onDestroyView() {
+//        super.onDestroyView()
+//        if (view != null) {
+//            val parent = view!!.parent as ViewGroup
+//            parent?.removeAllViews()
+//        }
+//    }
     override fun onViewCreated(
         view: View,
         savedInstanceState: Bundle?
@@ -190,30 +198,9 @@ abstract class BaseFragment : Fragment(), IProgressView, HorizontalProgressBar {
         }
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+//
+//    abstract fun onCreate()
+//    abstract override fun onDestroy()
 
 
 }

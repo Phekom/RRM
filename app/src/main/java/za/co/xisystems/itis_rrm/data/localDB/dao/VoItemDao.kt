@@ -37,7 +37,7 @@ interface VoItemDao {
     fun getVoItemForProjectItemId(projectItemId: String): LiveData<VoItemDTO>
 
     @Query("DELETE FROM TABLE_JOB_VO_ITEM")
-    fun deleteAllVoItem()
+    fun deleteAll()
 
 
 }

@@ -1,16 +1,19 @@
 package za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.measure_approval
 
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
+import kotlinx.android.synthetic.main.fragment_job_info.*
 import kotlinx.android.synthetic.main.fragment_measure_approval.*
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
@@ -21,8 +24,12 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureViewModelFactory
+import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.approveMeasure_Item.ApproveMeasure_Item
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
+import za.co.xisystems.itis_rrm.utils.DataConversion
+import za.co.xisystems.itis_rrm.utils.ServiceUtil
+import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 
 
 class MeasureApprovalFragment : BaseFragment(), KodeinAware {
@@ -61,12 +68,140 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
             approveViewModel.measureapproval_Item.observe(viewLifecycleOwner, Observer { jobID ->
                 getMeasureItems(jobID)
             })
+
+           approve_measure_button.setOnClickListener {
+                val logoutBuilder = AlertDialog.Builder(
+                    activity!! //, android.R.style.Theme_DeviceDefault_Dialog
+                )
+                logoutBuilder.setTitle(R.string.confirm)
+                logoutBuilder.setIcon(R.drawable.ic_approve)
+                logoutBuilder.setMessage(R.string.are_you_sure_you_want_to_approve2)
+
+                // Yes button
+                logoutBuilder.setPositiveButton(
+                    R.string.yes
+                ) { dialog, which ->
+                    if (ServiceUtil.isNetworkConnected(context?.applicationContext)) {
+                        moveJobToNextWorkflow(WorkflowDirection.NEXT)
+                    } else {
+                        toast( R.string.no_connection_detected)
+                    }
+                }
+                // No button
+                // No button
+                logoutBuilder.setNegativeButton(
+                    R.string.no
+                ) { dialog, which ->
+                    // Do nothing but close dialog
+                    dialog.dismiss()
+                }
+                val declineAlert = logoutBuilder.create()
+                declineAlert.show()
+            }
+
+            decline_measure_button.setOnClickListener {
+                val logoutBuilder =
+                    AlertDialog.Builder(
+                        activity!! //, android.R.style.Theme_DeviceDefault_Dialog
+                    )
+                logoutBuilder.setTitle(R.string.confirm)
+                logoutBuilder.setIcon(R.drawable.ic_warning)
+                logoutBuilder.setMessage(R.string.are_you_sure_you_want_to_decline2)
+                // Yes button
+                logoutBuilder.setPositiveButton(
+                    R.string.yes
+                ) { dialog, which ->
+                    if (ServiceUtil.isNetworkConnected(context?.applicationContext)) {
+//                        moveJobToNextWorkflow(WorkflowDirection.FAIL)
+                    } else {
+                        toast( R.string.no_connection_detected)
+                    }
+                }
+                // No button
+                logoutBuilder.setNegativeButton(
+                    R.string.no
+                ) { dialog, which ->
+                    // Do nothing but close dialog
+                    dialog.dismiss()
+                }
+                val declineAlert = logoutBuilder.create()
+                declineAlert.show()
+            }
+
         }
     }
 
-    private fun getMeasureItems(jobID: String?) {
+//    private fun moveJobToNextWorkflow(workflowDirection: WorkflowDirection) {
+//        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+//    }
+
+    private fun moveJobToNextWorkflow(workflowDirection : WorkflowDirection) {
         Coroutines.main {
-            val measurements = approveViewModel.getJobMeasureItemsForJobId(jobID, ActivityIdConstants.MEASURE_COMPLETE)
+            val messages = arrayOf(
+                getString(R.string.moving_to_next_step_in_workflow),
+                getString(R.string.please_wait)
+            )
+
+            val user = approveViewModel.user.await()
+            user.observe(viewLifecycleOwner, Observer { user_ ->
+                approveViewModel.measureapproval_Item.observe(viewLifecycleOwner, Observer { job ->
+
+                    if (user_.userId == null) {
+                        toast("Error: userId is null")
+                        // } else if ( getEstimateItems(job.jobItemMeasureDTO.jobId) == null) {
+                       // toast("Error: selectedJob is null")
+                    } else {
+                        // TODO beware littlEndian conversion
+                        val trackRounteId: String = DataConversion.toLittleEndian(job.jobItemMeasureDTO.trackRouteId)!!
+                        val direction: Int = workflowDirection.getValue()
+
+                        var description : String = ""
+//                        val messages = messages
+//                        if (workflow_comments_editText.text != null){
+//                            description = workflow_comments_editText.text.toString()
+//                        }else{
+//                            toast(context?.applicationContext!!.getString(R.string.enter_comment))
+//                            return@Observer
+//                        }
+
+
+                        processWorkFlow(user_.userId, trackRounteId, direction, description)
+                    }
+
+                })
+            })
+        }
+
+    }
+
+    private fun processWorkFlow( userId: String,   trackRounteId: String,    direction: Int,    description: String?
+    ) {
+        Coroutines.main {
+            approveViewModel.processWorkflowMove(userId, trackRounteId,description,direction)
+            activity?.hideKeyboard()
+            popViewOnJobSubmit(direction)
+        }
+    }
+
+    private fun popViewOnJobSubmit(direction: Int) {
+        if (direction.equals(WorkflowDirection.NEXT)) {
+            toast(R.string.job_approved)
+        } else if (direction.equals(WorkflowDirection.FAIL)) {
+            toast(R.string.job_declined)
+        }
+
+        Intent(context, MainActivity::class.java).also { home ->
+            home.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+            startActivity(home)
+        }
+        // Navigation.findNavController(view!!)
+//                .navigate(R.id.action_jobInfoFragment_to_nav_home)
+    }
+
+
+    private fun getMeasureItems(jobID: ApproveMeasure_Item) {
+        Coroutines.main {
+            val measurements = approveViewModel.getJobMeasureItemsForJobId(jobID.jobItemMeasureDTO.jobId, ActivityIdConstants.MEASURE_COMPLETE)
             measurements.observe(viewLifecycleOwner, Observer { job_s ->
 //                mydata_loading.hide()
                 toast(job_s.size.toString())

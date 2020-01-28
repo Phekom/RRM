@@ -6,6 +6,7 @@ package za.co.xisystems.itis_rrm.utils
 
 object ActivityIdConstants {
     // region (Public Static Final Fields)
+    const val JOB_ESTIMATE = 0
     const val JOB_APPROVE = 2
     const val JOB_APPROVED = 3
     const val JOB_COMPLETED = 4

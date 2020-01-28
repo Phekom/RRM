@@ -22,8 +22,10 @@ interface JobItemEstimateDao {
     fun checkIfJobItemEstimateExist(estimateId: String): Boolean
 
     @Query("SELECT * FROM JOB_ITEM_ESTIMATE WHERE jobId = :jobId")
-    fun getJobEstimationItemsForJobId(jobId: String) : LiveData<List<JobItemEstimateDTO>>
+    fun getJobEstimationItemsForJobId(jobId: String) :  LiveData<List<JobItemEstimateDTO>>
 
+    @Query("SELECT * FROM JOB_ITEM_ESTIMATE WHERE jobId = :jobId")
+    fun getJobEstimationItemsForJobId2(jobId: String) :  JobItemEstimateDTO
 
     @Query("SELECT * FROM JOB_ITEM_ESTIMATE WHERE actId = :actId  ORDER BY jobId ASC " )
     fun getJobsForActivityId(actId: Int): LiveData<List<JobItemEstimateDTO>>
@@ -34,10 +36,13 @@ interface JobItemEstimateDao {
     @Query("UPDATE JOB_ITEM_ESTIMATE SET TrackRouteId =:trackRouteId, ActId =:actId WHERE estimateId = :estimateId")
     fun updateExistingJobItemEstimateWorkflow(trackRouteId: String?, actId: Int, estimateId: String?)
 
+    @Query("SELECT * FROM JOB_ITEM_ESTIMATE WHERE jobId = :jobID")
+    fun getJobItemsToMeasureForJobId(jobID: String): LiveData<List<JobItemEstimateDTO>>
+
 //    @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE sectionItemId = :sectionItem AND projectId = :projectId")
 //    fun getAllItemsForSectionItem(sectionItem : String, projectId : String ): LiveData<List<ItemDTO>>
 
 
-//    @Query("DELETE FROM PROJECT_ITEM_TABLE")
-//    fun deleteAll()
+    @Query("DELETE FROM JOB_ITEM_ESTIMATE")
+    fun deleteAll()
 }

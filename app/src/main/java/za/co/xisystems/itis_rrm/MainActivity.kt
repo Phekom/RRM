@@ -11,6 +11,8 @@ import androidx.lifecycle.LiveData
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import androidx.navigation.ui.NavigationUI
+//import com.google.android.gms.appindexing.AppIndex
+import com.google.android.gms.common.api.GoogleApiClient
 import com.google.android.material.navigation.NavigationView
 import kotlinx.android.synthetic.main.activity_main.*
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
@@ -33,10 +35,21 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     val PROJECT_SUB_CONTRACTOR_ROLE_IDENTIFIER = "E398A3EF1C18431DBAEE4A4AC5D6F07D"
     val PROJECT_CONTRACTOR_ROLE_IDENTIFIER = "E398A3EF1C18431DBAEE4A4AC5D6F07D"
 
+    //=====================
+    private var client: GoogleApiClient? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
+
+
+
+//        client = GoogleApiClient.Builder(this).addApi(AppIndex.API)
+
+//            .build()
+
+
 //        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 //            val intent = Intent()
 //            val packageName = packageName
@@ -90,7 +103,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 return true
             }
             R.id.logout ->{
-                startActivity(Intent(this, LoginActivity::class.java))
+                Intent(this, LoginActivity::class.java).also { home ->
+                    home.flags =
+                        Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                    startActivity(home)
+                }
                 return true
             }
 

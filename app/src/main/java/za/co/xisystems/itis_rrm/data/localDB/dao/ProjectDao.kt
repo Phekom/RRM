@@ -5,7 +5,7 @@ import androidx.room.Dao
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectSectionDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.VoItemDTO
@@ -26,7 +26,7 @@ interface ProjectDao {
 
     @Query("INSERT INTO PROJECT_TABLE (projectId,descr, endDate, items, projectCode, projectMinus, projectPlus,projectSections, voItems, contractId) VALUES (:projectId,:descr, :endDate, :items, :projectCode, :projectMinus, :projectPlus, :projectSections, :voItems, :contractId)")
     fun insertProject(projectId: String, descr: String?, endDate: String?,
-                      items: ArrayList<ItemDTO>?, projectCode: String?, projectMinus: String?, projectPlus: String?,
+                      items: ArrayList<ProjectItemDTO>?, projectCode: String?, projectMinus: String?, projectPlus: String?,
                       projectSections: ArrayList<ProjectSectionDTO>?, voItems: ArrayList<VoItemDTO>?, contractId : String?) : Long
 
     @Update(onConflict = OnConflictStrategy.REPLACE)
@@ -56,8 +56,8 @@ interface ProjectDao {
 //    fun getContractId(projectId: String): String
 //
 //
-//    @Query("DELETE FROM PROJECT_TABLE")
-//    fun deleteAll()
+    @Query("DELETE FROM PROJECT_TABLE")
+    fun deleteAll()
 
 
 

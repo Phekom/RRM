@@ -74,19 +74,25 @@ class Measurements_Item(
         Coroutines.main {
             val measurePhoto =
                 approveViewModel?.getJobMeasureItemsPhotoPath(jobItemMeasureDTO.itemMeasureId!!)
-            ToastUtils().toastLong(activity,measurePhoto)
+//            ToastUtils().toastLong(activity,measurePhoto)
+
+            if (measurePhoto != null){
             GlideApp.with(this.containerView)
                 .load(Uri.fromFile(File(measurePhoto)))
                 .placeholder(R.drawable.logo_new_medium)
                 .into(view_captured_item_photo)
+        }else{
+                GlideApp.with(this.containerView)
+                    .load(R.drawable.no_image)
+                    .placeholder(R.drawable.logo_new_medium)
+                    .into(view_captured_item_photo)
+            }
+
         }
     }
 
 
-//        Glide.with(this)
-//            .load(Uri.fromFile(File(imageStoragePath)))
-//            .apply(RequestOptions().override(100, 100))
-//            .into(imageView)
+
 
 }
 

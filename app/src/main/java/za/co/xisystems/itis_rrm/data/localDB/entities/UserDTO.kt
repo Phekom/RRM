@@ -29,7 +29,9 @@ data class UserDTO(
     var PHONE_NUMBER: String?,
     var IMEI: String?,
     var DEVICE: String?,
+    var Password: String?,
     var WEB_SERVICE_URI: String?
+
 
 ) {
 //    @PrimaryKey(autoGenerate = false)

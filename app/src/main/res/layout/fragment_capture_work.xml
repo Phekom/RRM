@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        xmlns:tools="http://schemas.android.com/tools">
 
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-            xmlns:app="http://schemas.android.com/apk/res-auto"
+    <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="horizontal">
@@ -14,14 +15,19 @@
                 android:layout_height="match_parent"
                 android:background="@color/transparent"
                 android:visibility="gone" />
-
-        <ListView
+        <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/work_actions_listView"
-                android:layout_width="120dp"
-                android:layout_height="match_parent"
-                android:layout_gravity="center_horizontal"
-                android:choiceMode="singleChoice"
-                android:listSelector="@drawable/list_selector" />
+                        android:layout_width="120dp"
+                android:clipChildren="false"
+                        android:layout_height="match_parent"
+                tools:listitem="@layout/list_selector" />
+<!--        <ListView-->
+<!--                android:id="@+id/work_actions_listView"-->
+<!--                android:layout_width="120dp"-->
+<!--                android:layout_height="match_parent"-->
+<!--                android:layout_gravity="center_horizontal"-->
+<!--                android:choiceMode="singleChoice"-->
+<!--                android:listSelector="@drawable/list_selector" />-->
 
         <View style="@style/_vline" />
 
@@ -52,16 +58,25 @@
                             android:id="@+id/thumb_photo_place_holder_frameLayout"
                             android:layout_width="match_parent"
                             android:layout_height="400dp"
-
+                            android:src="@drawable/logo_new_large"
                             app:layout_constraintBottom_toBottomOf="parent"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toTopOf="parent" />
+                            app:layout_constraintTop_toTopOf="parent" >
+
+                        <ImageView
+                                android:id="@+id/work_imageView"
+                                android:visibility="gone"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:padding="@dimen/small" />
+
+                    </FrameLayout>
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
 
                 <TextView
-                        android:id="@+id/textView7"
+                        android:id="@+id/headimg"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="18dp"

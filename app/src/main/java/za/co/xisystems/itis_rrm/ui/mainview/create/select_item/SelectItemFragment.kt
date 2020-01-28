@@ -17,8 +17,7 @@ import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
-import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.SectionItemDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModelFactory
@@ -26,6 +25,7 @@ import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.MyState
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper.setSpinner
 import za.co.xisystems.itis_rrm.utils.Coroutines
+import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import java.util.*
 
 
@@ -37,15 +37,24 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
     override val kodein by kodein()
     private lateinit var createViewModel: CreateViewModel
     private val factory: CreateViewModelFactory by instance()
-    private val items: MutableList<ItemDTO> = ArrayList<ItemDTO>()
+    private lateinit var jobArrayList: ArrayList<JobDTO>
+    private var items: MutableList<ItemDTOTemp> = ArrayList<ItemDTOTemp>()
     private var animate = false
-    private val itemsMap: MutableMap<String, MutableList<ItemDTO>?> =
-        LinkedHashMap<String, MutableList<ItemDTO>?>()
+    private val itemsMap: MutableMap<String, MutableList<ProjectItemDTO>?> =
+        LinkedHashMap<String, MutableList<ProjectItemDTO>?>()
 
+    private lateinit var newJobItemEstimatesList: ArrayList<JobItemEstimateDTO>
+    private lateinit var jobItemMeasureArrayList: ArrayList<JobItemMeasureDTO>
+    private lateinit var jobItemSectionArrayList: ArrayList<JobSectionDTO>
+    private lateinit var  itemSections : ArrayList<ItemSectionDTO>
     @MyState
     internal var selectedSectionitem: SectionItemDTO? = null
     @MyState
-    internal var selectedProjectitem: ItemDTO? = null
+    internal var selectedProjectitem: ProjectItemDTO? = null
+    internal var useR: Int? = null
+
+//    @MyState
+//    lateinit var job: JobDTO
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -69,12 +78,22 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
             ViewModelProviders.of(this, factory).get(CreateViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
         Coroutines.main {
+            itemSections = ArrayList<ItemSectionDTO>()
+            jobArrayList = ArrayList<JobDTO>()
+            jobItemSectionArrayList = ArrayList<JobSectionDTO>()
+            jobItemMeasureArrayList = ArrayList<JobItemMeasureDTO>()
+            newJobItemEstimatesList = ArrayList<JobItemEstimateDTO>()
             bindUI()
         }
 
     }
 
     private fun bindUI() {
+
+        createViewModel.loggedUser.observe(viewLifecycleOwner, Observer { user ->
+            useR = user
+//            selectedContractTextView.text = user
+        })
         createViewModel.proId.observe(viewLifecycleOwner, Observer { pro_Id ->
             setItemsBySections(pro_Id)
 //            setItems(pro_Id)
@@ -142,7 +161,7 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
 
     }
 
-    private fun List<ItemDTO>.toProjectItems(): List<SectionProj_Item> {
+    private fun List<ProjectItemDTO>.toProjectItems(): List<SectionProj_Item> {
         return this.map { proj_items ->
             SectionProj_Item(proj_items)
         }
@@ -150,6 +169,7 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
 
     private fun initRecyclerView(items: List<SectionProj_Item>) {
         val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
+
             addAll(items)
         }
         item_recyclerView.apply {
@@ -161,7 +181,14 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
 
             (item as? SectionProj_Item)?.let {
 //                sendSelectedItem((it.itemDTO.itemCode +"  "+ it.itemDTO.descr),(it.itemDTO.tenderRate) , view)
-                sendSelectedItem((it) , view)
+
+
+                val newjItem = createItemList(it.itemDTO, itemSections)
+                saveNewItem(newjItem)
+                sendSelectedItem((it) , view,jobArrayList )
+//                if (job.JobId == null) { // New Job
+
+//                }
             }
 
 
@@ -170,13 +197,35 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
 
     }
 
+    private fun saveNewItem(newjItem: ItemDTOTemp) {
+        Coroutines.main {
+            createViewModel.saveNewItem(newjItem)
+        }
+    }
+
+    private fun createItemList(
+        itemDTO: ProjectItemDTO,
+        itemSections: ArrayList<ItemSectionDTO>
+    ): ItemDTOTemp {
+        val newItem = ItemDTOTemp(
+            0,itemDTO.itemId,itemDTO.descr,itemDTO.itemCode,itemSections,itemDTO.tenderRate,itemDTO.uom,itemDTO.workflowId,
+            itemDTO.sectionItemId,itemDTO.quantity,itemDTO.estimateId, itemDTO.projectId
+        )
+        items.add(newItem)
+        return newItem!!
+    }
+
+
+
+
 
     private fun sendSelectedItem(
         item: SectionProj_Item,
-//        rate: Double?,
-        view: View) {
+        view: View,
+        jobArrayList: ArrayList<JobDTO>
+    ) {
         val selecteD = item
-//        val selectRte = rate
+        val myList = jobArrayList
 //        val actionAddProject =  SelectItemFragmentDirection.actionAddProject(selecteD)
 //        navController?.navigate(R.id.action_selectItemFragment_to_addProjectFragment)
 

@@ -3,6 +3,7 @@ package za.co.xisystems.itis_rrm.data.localDB.dao
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
+import androidx.room.Query
 import za.co.xisystems.itis_rrm.data.localDB.entities.ItemSectionDTO
 
 /**
@@ -35,6 +36,6 @@ interface ItemSectionDao {
 //    fun getAllItemsForSectionItem(sectionItem : String, projectId : String ): LiveData<List<ItemDTO>>
 //
 //
-//    @Query("DELETE FROM PROJECT_ITEM_TABLE")
-//    fun deleteAll()
+    @Query("DELETE FROM ITEM_SECTION_TABLE")
+    fun deleteAll()
 }

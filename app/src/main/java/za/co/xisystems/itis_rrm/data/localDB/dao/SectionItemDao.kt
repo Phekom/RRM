@@ -36,6 +36,6 @@ interface SectionItemDao {
     @Query("SELECT * FROM SECTION_ITEM_TABLE ORDER BY  itemCode  ASC")
     fun getAllSectionItems() : LiveData<List<SectionItemDTO>>
 
-
-//    sectionItemId
+    @Query("DELETE FROM SECTION_ITEM_TABLE")
+    fun deleteAll()
 }

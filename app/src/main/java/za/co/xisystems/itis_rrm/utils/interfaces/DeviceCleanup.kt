@@ -1,6 +1,6 @@
 package za.co.xisystems.itis_rrm.utils.interfaces
 
-import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import java.util.*
 
@@ -10,7 +10,7 @@ import java.util.*
 interface DeviceCleanup {
     fun fullDeleteJob()
 
-    fun cleanupWithJob(selectedItem: ItemDTO, jobItemEstimateSelect: JobItemEstimateDTO)
+    fun cleanupWithJob(selectedItem: ProjectItemDTO, jobItemEstimateSelect: JobItemEstimateDTO)
 
-    fun cleanupWithNoJob(selectedItem: ItemDTO, jobItemsEstimate: ArrayList<JobItemEstimateDTO>)
+    fun cleanupWithNoJob(selectedItem: ProjectItemDTO, jobItemsEstimate: ArrayList<JobItemEstimateDTO>)
 }

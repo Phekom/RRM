@@ -7,15 +7,15 @@ import android.widget.Filter
 import android.widget.Filterable
 import android.widget.TextView
 import za.co.xisystems.itis_rrm.data._commons.AbstractAdapter
-import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.contracts.IItemsAdapter
 import java.util.*
 
 internal class ItemsAdapter(
-    data: List<ItemDTO?>?,
-    listener: OnItemClickListener<ItemDTO?>?
-) : AbstractAdapter<ItemDTO?>(data, R.layout.simple_list_item_1, listener),
-    Filterable, IItemsAdapter<ItemDTO?> {
+    data: List<ProjectItemDTO?>?,
+    listener: OnItemClickListener<ProjectItemDTO?>?
+) : AbstractAdapter<ProjectItemDTO?>(data, R.layout.simple_list_item_1, listener),
+    Filterable, IItemsAdapter<ProjectItemDTO?> {
 
     override fun createViewHolder(view: View?): AbstractViewHolder {
         return object : AbstractViewHolder(view) {
@@ -25,7 +25,7 @@ internal class ItemsAdapter(
                 textView = v as TextView?
             }
 
-            fun setData(position: Int, item: ItemDTO) {
+            fun setData(position: Int, item: ProjectItemDTO) {
                 super.setData(position, item)
                 val text: String = item.itemCode.toString() + " " + item.descr
                 Log.d("x-i", item.projectId)
@@ -37,8 +37,8 @@ internal class ItemsAdapter(
     override fun getFilter(): Filter {
         return object : Filter() {
             override fun performFiltering(constraint: CharSequence): FilterResults {
-                val filteredData: MutableList<ItemDTO> = ArrayList<ItemDTO>()
-                val originalData: MutableList<ItemDTO?> = getOriginalData()
+                val filteredData: MutableList<ProjectItemDTO> = ArrayList<ProjectItemDTO>()
+                val originalData: MutableList<ProjectItemDTO?> = getOriginalData()
                 if (originalData != null) for (item in originalData) {
                     val itemCode: String = item?.itemCode!!
                     val descr: String = item.descr!!
@@ -59,8 +59,8 @@ internal class ItemsAdapter(
                 constraint: CharSequence,
                 results: FilterResults
             ) {
-                val filteredData: List<ItemDTO> =
-                    results.values as ArrayList<ItemDTO>
+                val filteredData: List<ProjectItemDTO> =
+                    results.values as ArrayList<ProjectItemDTO>
                 updateData(filteredData)
                 notifyDataSetChanged()
             }

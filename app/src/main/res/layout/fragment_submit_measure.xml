@@ -5,17 +5,31 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-    <ExpandableListView
-            android:id="@+id/estimates_to_be_approved_listView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            android:id="@+id/items_swipe_to_refresh"
+            android:layout_width="wrap_content"
+            android:layout_height="0px"
+            android:layout_weight="1"
             app:layout_constraintBottom_toTopOf="@+id/linearLayout2"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.0"
-            tools:listitem="@layout/single_listview_item" />
+            app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/estimates_to_be_approved_listView"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                app:layout_constraintBottom_toTopOf="@+id/linearLayout2"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.0"
+                android:layout_marginBottom="@dimen/small"
+                tools:listitem="@layout/item_expandable_header" />
+
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
 
     <LinearLayout
             android:id="@+id/linearLayout2"

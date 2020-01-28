@@ -4,6 +4,7 @@ package za.co.xisystems.itis_rrm.data.localDB.entities
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.ForeignKey.CASCADE
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import java.io.Serializable
@@ -23,11 +24,11 @@ const val PROJECT_ITEM_TABLE = "PROJECT_ITEM_TABLE"
             entity = ProjectDTO::class,
             parentColumns = arrayOf("projectId"),
             childColumns = arrayOf("projectId"),
-            onDelete = ForeignKey.NO_ACTION
+            onDelete = ForeignKey.CASCADE
         )
     ]
 )
-data class ItemDTO(
+data class ProjectItemDTO(
     @PrimaryKey
     val id: Int,
     @SerializedName("ItemId")

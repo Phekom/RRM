@@ -19,7 +19,7 @@ const val PROJECT_VO_ID = 0
         entity = ProjectDTO::class,
         parentColumns = arrayOf("projectId"),
         childColumns = arrayOf("projectId"),
-        onDelete = ForeignKey.NO_ACTION)
+        onDelete = ForeignKey.CASCADE)
      )
 )
 data class VoItemDTO(

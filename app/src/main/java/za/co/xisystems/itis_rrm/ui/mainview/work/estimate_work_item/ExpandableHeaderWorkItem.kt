@@ -13,15 +13,16 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.ui.mainview._fragments.HeaderItem
 import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModel
 import za.co.xisystems.itis_rrm.utils.Coroutines
+import za.co.xisystems.itis_rrm.utils.toast
 
-class ExpandableHeaderItem(
+class ExpandableHeaderWorkItem(
     activity: FragmentActivity?,
     workItems: JobItemEstimateDTO,
     workViewModel: WorkViewModel,
     jobId: String?
 ) : HeaderItem(null, workItems ,workViewModel ), ExpandableItem {
 
-    var clickListener: ((ExpandableHeaderItem) -> Unit)? = null
+    var clickListener: ((ExpandableHeaderWorkItem) -> Unit)? = null
 
     private lateinit var expandableGroup: ExpandableGroup
     private var activity  = activity
@@ -54,7 +55,7 @@ class ExpandableHeaderItem(
             val endKm =  workViewModel?.getItemEndKm(jobId!!)
             val trackRouteId = workViewModel?.getItemTrackRouteId(jobId!!)
 
-        viewHolder.headerLin.setOnClickListener {
+        viewHolder.headerLin2.setOnClickListener {
             if (startKm <= endKm) {
                 ToastUtils().toastShort(activity,
                     "Job Info: Start Km: $startKm - End Km: $endKm"

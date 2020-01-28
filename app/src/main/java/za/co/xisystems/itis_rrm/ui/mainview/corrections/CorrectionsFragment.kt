@@ -24,7 +24,13 @@ class CorrectionsFragment : BaseFragment(), KodeinAware {
     private lateinit var correctionsViewModel: CorrectionsViewModel
     private val factory: CorrectionsViewModelFactory by instance()
 
-
+    override fun onDestroyView() {
+        super.onDestroyView()
+        if (view != null) {
+            val parent = view!!.parent as ViewGroup
+            parent?.removeAllViews()
+        }
+    }
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?, savedInstanceState: Bundle?

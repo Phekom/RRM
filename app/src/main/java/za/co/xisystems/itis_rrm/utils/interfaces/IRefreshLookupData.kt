@@ -19,7 +19,7 @@ interface IRefreshLookupData {
 
     fun onInsertMobileLookups2(mobileLookups: ArrayList<LookupDTO>)
 
-    fun onInsertProjectItems(items: ArrayList<ItemDTO>)
+    fun onInsertProjectItems(items: ArrayList<ProjectItemDTO>)
 
     fun onInsertProjectSections(projectSections: ArrayList<ProjectSectionDTO>)
 
