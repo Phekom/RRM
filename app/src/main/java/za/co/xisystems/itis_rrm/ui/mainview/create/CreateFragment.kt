@@ -28,6 +28,7 @@ import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.intents.NewJobS
 import za.co.xisystems.itis_rrm.utils.*
 import java.util.*
 
+
 /**
  * Created by Francis Mahlava on 2019/10/18.
  */
@@ -57,7 +58,8 @@ class CreateFragment : BaseFragment(), OfflineListener , KodeinAware, IJobSubmit
     @MyState
     internal var selectedContract: ContractDTO? = null
 
-    internal var useR: UserDTO? = null
+    lateinit var useR: UserDTO
+    var descri : String? = null
 
     @MyState
     internal var selectedProject: ProjectDTO? = null
@@ -67,13 +69,39 @@ class CreateFragment : BaseFragment(), OfflineListener , KodeinAware, IJobSubmit
 //    internal var selectedProjectitem: String? = null
 
     @MyState
-    internal var job: JobDTO? = null
+    var the_job : JobDTOTemp? = null
+
+    private lateinit var newJobItemEstimatesPhotosList: ArrayList<JobItemEstimatesPhotoDTO>
+    private lateinit var newJobItemEstimatesWorksList: ArrayList<JobEstimateWorksDTO>
+    private lateinit var newJobItemEstimatesList: ArrayList<JobItemEstimateDTO>
+    private lateinit var jobItemMeasureArrayList: ArrayList<JobItemMeasureDTO>
+    private lateinit var jobItemSectionArrayList: ArrayList<JobSectionDTO>
+    private lateinit var itemSections: ArrayList<ItemSectionDTO>
+
     @MyState
     var isJobSaved = false
     private val client: GoogleApiClient? = null
 
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        itemSections = ArrayList<ItemSectionDTO>()
+//        the_job = JobDTO()
+//        jobItemPhoto = JobItemEstimatesPhotoDTO
+        jobItemSectionArrayList = ArrayList<JobSectionDTO>()
+        jobItemMeasureArrayList = ArrayList<JobItemMeasureDTO>()
+        newJobItemEstimatesList = ArrayList<JobItemEstimateDTO>()
+        newJobItemEstimatesPhotosList = ArrayList<JobItemEstimatesPhotoDTO>()
+        newJobItemEstimatesWorksList = ArrayList<JobEstimateWorksDTO>()
+//        newJobItemEstimatesList2 = ArrayList<JobItemEstimateDTO>()
 
+
+//        jobItemSectionArrayList2 = ArrayList<JobSectionDTO>()
+//        jobItemMeasureArrayList2 = ArrayList<JobItemMeasureDTO>()
+//        newJobItemEstimatesList2 = ArrayList<JobItemEstimateDTO>()
+//        newJobItemEstimatesPhotosList2 = ArrayList<JobItemEstimatesPhotoDTO>()
+//        newJobItemEstimatesWorksList2 = ArrayList<JobEstimateWorksDTO>()
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -114,10 +142,8 @@ class CreateFragment : BaseFragment(), OfflineListener , KodeinAware, IJobSubmit
                         //                            return
                     } else {
                         activity?.hideKeyboard()
-                        val job = job
-                        job?.IssueDate = (Calendar.getInstance().time).toString()
-                        job?.Descr = description
-//                        setJob(job!!)
+                        createNew_Job()
+                        descri = description
                         setContractAndProjectSelection(true, view)
 
                     }
@@ -131,28 +157,72 @@ class CreateFragment : BaseFragment(), OfflineListener , KodeinAware, IJobSubmit
 
    }
 
-    private fun setContractAndProjectSelection(animate: Boolean, view: View) {
+    private fun createNew_Job() {
+        Coroutines.main {
+            val newjob = createNewJob(selectedContract?.contractId, selectedProject?.projectId,useR?.userId?.toInt(), newJobItemEstimatesList, jobItemMeasureArrayList, jobItemSectionArrayList,descri)
+            createViewModel.saveNewJob(newjob)
+        }
+
+    }
+
+    private fun createNewJob(
+        contractID: String?,
+        projectID: String?,
+        useR: Int?,
+        newJobItemEstimatesList: ArrayList<JobItemEstimateDTO>,
+        jobItemMeasureArrayList: ArrayList<JobItemMeasureDTO>,
+        jobItemSectionArrayList: ArrayList<JobSectionDTO>,
+        description: String?
+    ): JobDTOTemp {
+        val newJobId: String = SqlLitUtils.generateUuid()
+        val today = (java.util.Calendar.getInstance().time)
+
+        val newjob = JobDTOTemp(
+            0, newJobId, contractID, projectID, null,
+            0.0, 0.0, description, null, useR!!, null, null,
+            0, 0, 0, 0, today, today, today, null,
+            newJobItemEstimatesList, jobItemMeasureArrayList,jobItemSectionArrayList, null, 0, null, null,
+            null, 0, 0, 0, 0, 0, 0, 0, null,
+            0, 0, null, null, null
+
+        )
+
+//        val IssueDate = DateUtil.toStringReadable(Calendar.getInstance().time)
+        the_job = newjob
+
+        toast(newjob.JobId)
+        return newjob
+    }
+
+    private fun setContractAndProjectSelection(
+        animate: Boolean,
+        view: View
+
+    ) {
         Navigation.findNavController(view).navigate(R.id.action_nav_create_to_addProjectFragment)
         Coroutines.main {
+
             createViewModel.loggedUser.value = useR?.userId!!.toInt()
             createViewModel.contract_No.value = selectedContract?.contractNo.toString()
-            createViewModel.contract_ID.value = selectedContract?.contractId
+//            createViewModel.contract_ID.value = selectedContract?.contractId
             createViewModel.project_Code.value = selectedProject?.projectCode.toString()
-            createViewModel.project_ID.value = selectedProject?.projectId
+//            createViewModel.project_ID.value = selectedProject?.projectId
+//            createViewModel.descriptioN.value = description
+            createViewModel.newjob.value = the_job
         }
     }
 
-    fun setMenuItems() {
-        if (saveMenuItem != null) {
-            saveMenuItem.setVisible(job != null && items != null && !items.isEmpty())
-        }
-        setResetButton()
-    }
-
-    private fun setResetButton() {
-//        if (isJobSaved) resetButton.visibility = View.GONE else resetButton.visibility =
-//            View.VISIBLE
-    }
+//    fun setMenuItems() {
+//        if (saveMenuItem != null) {
+//            saveMenuItem.setVisible(job != null && items != null && !items.isEmpty())
+//        }
+//        setResetButton()
+//    }
+//
+//    private fun setResetButton() {
+////        if (isJobSaved) resetButton.visibility = View.GONE else resetButton.visibility =
+////            View.VISIBLE
+//    }
 
     private fun setLayoutsVisibility() {
         val hasItems = adapter != null && adapter!!.itemCount > 0
@@ -165,7 +235,7 @@ class CreateFragment : BaseFragment(), OfflineListener , KodeinAware, IJobSubmit
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putSerializable("selectedContract", selectedContract)
         outState.putSerializable("selectedProject", selectedProject)
-        outState.putSerializable("job", job)
+        outState.putSerializable("job", the_job)
         outState.putSerializable("items", selectedProjectitem)
         outState.putBoolean("isJobSaved", isJobSaved)
         outState.putSerializable("estimatesToRemoveFromDb", estimatesToRemoveFromDb)

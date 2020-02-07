@@ -2,6 +2,7 @@ package za.co.xisystems.itis_rrm.data.localDB.entities
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.gson.annotations.SerializedName
 import java.io.Serializable
 import java.util.*
@@ -41,10 +42,10 @@ data class JobItemMeasureDTOTemp(
     @SerializedName("PrjItemMeasurePhotoDtos")
     var jobItemMeasurePhotos: ArrayList<JobItemMeasurePhotoDTOTemp>,
     @SerializedName("PrjJobDto")
-    var job: JobDTO?,
+    val job: JobDTO? = null,
     @SerializedName("PrjJobItemEstimateDto")
 //    val prjJobItemEstimateDto: ArrayList<JobItemEstimateDTO>,
-    var jobItemEstimate: JobItemEstimateDTO,
+    var jobItemEstimate: JobItemEstimateDTO? = null,
     @SerializedName("ProjectItemId")
     var projectItemId: String?,
     @SerializedName("ProjectVoId")

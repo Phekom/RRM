@@ -3,14 +3,15 @@ package za.co.xisystems.itis_rrm.data.localDB.entities
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.fasterxml.jackson.annotation.JsonProperty
 //import com.google.android.gms.common.util.Base64Utils
 import com.google.gson.annotations.SerializedName
 import org.springframework.util.Base64Utils
 
-const val ToDo_ENTITY_TABLE = "ToDo_ENTITY_TABLE"
+const val TODO_ENTITY_TABLE = "TODO_ENTITY_TABLE"
 //const val TRACK_ROUTE_ID = "TRACK_ROUTE_ID"indices = [Index(value = ["itemCode"], unique = true)]
 
-@Entity(tableName = ToDo_ENTITY_TABLE)
+@Entity(tableName = TODO_ENTITY_TABLE)
 data class ToDoListEntityDTO(
     @PrimaryKey
     val id :Int,

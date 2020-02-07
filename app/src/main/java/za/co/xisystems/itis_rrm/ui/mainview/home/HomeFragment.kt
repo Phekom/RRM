@@ -3,7 +3,10 @@ package za.co.xisystems.itis_rrm.ui.mainview.home
 
 import android.content.Context
 import android.graphics.Color
+import android.location.LocationManager
+import android.net.ConnectivityManager
 import android.os.Bundle
+import android.os.CountDownTimer
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -26,8 +29,9 @@ class HomeFragment : BaseFragment(), KodeinAware {
     override val kodein by kodein()
     private lateinit var homeViewModel: HomeViewModel
     private val factory: HomeViewModelFactory by instance()
-//    private val factoryAuth: AuthViewModelFactory by instance()
-    private lateinit var appContext: Context
+
+    var gps_enabled : Boolean =  false
+    var network_enabled :  Boolean = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -39,7 +43,7 @@ class HomeFragment : BaseFragment(), KodeinAware {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        appContext = this.context!!
+
         homeViewModel = activity?.run {
             ViewModelProviders.of(this, factory).get(HomeViewModel::class.java)
         } ?: throw Exception("Invalid Activity") as Throwable
@@ -75,67 +79,33 @@ class HomeFragment : BaseFragment(), KodeinAware {
 
         }
 
-//        activity!!.runOnUiThread {
-//            //No.1
-//            if (appContext?.applicationContext != null) {
-//                //  Check every 2 secs if Mobile data or Location is off/on
-//                val t = object : CountDownTimer(java.lang.Long.MAX_VALUE, 2000) {
-//
-//                    // This is called every interval. (Every 2 seconds)
-//                    override fun onTick(millisUntilFinished: Long) {
-//
-//                        val lm  = appContext?.applicationContext!!.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-//                        val cm =appContext?.applicationContext!!.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-//
-//                        var gps_enabled = false
-//                        var network_enabled = false
-//
-//
-//                        val gps  = locationEnabled
-//                        val data = dataEnabled
-//
-//                        try {
-//                            gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
-//                        } catch (ex: Exception) {
-//                        }
-//
-//                        try {
-//                            val cmClass = Class.forName(cm.javaClass.name)
-//                            val method = cmClass.getDeclaredMethod("getMobileDataEnabled")
-//                            // Make the method callable =====
-//                            method.isAccessible = true
-//                            // get the setting for "mobile data"=========
-//                            network_enabled = method.invoke(cm) as Boolean
-//
-//                        } catch (ex: Exception) {
-//                        }
-//
-////                      Check if GPS connected
-//                        if (!gps_enabled) {
-//                            gps.setText(R.string.gps_not_connected)
-//                            gps.setTextColor(colorNotConnected)
-//                        } else {
-//                            gps.setText(R.string.gps_connected)
-//                            gps.setTextColor(colorConnected)
-//                        }
-//
-//                        //  Check if Network Enabled
-//                        if (!network_enabled) {
-//                            data.setText(R.string.mobile_data_not_connected)
-//                            data.setTextColor(colorNotConnected)
-//                        } else {
-//                            data.setText(R.string.mobile_data_connected)
-//                            data.setTextColor(colorConnected)
-//                        }
-//                    }
-//
-//                    override fun onFinish() {
-//                        start()
-//                    }
-//                }.start()
-//            }
-//        } // end of No.1 UI new thread
-//
+        val lm = activity!!.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        val cm = activity!!.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
+        network_enabled = cm.isDefaultNetworkActive
+        //  Check if Network Enabled
+        if (!network_enabled) {
+            dataEnabled.setText(R.string.mobile_data_not_connected)
+            dataEnabled.setTextColor(colorNotConnected)
+        } else {
+            dataEnabled.setText(R.string.mobile_data_connected)
+            dataEnabled.setTextColor(colorConnected)
+        }
+
+        //                      Check if GPS connected
+               if (!gps_enabled) {
+            //            locationEnabled.text = "GPS NOT CONNECTED"
+            locationEnabled.text = activity!!.getString(R.string.gps_not_connected)
+            locationEnabled.setTextColor(colorNotConnected)
+        } else {
+            locationEnabled.text = activity!!.getString(R.string.gps_connected)
+            locationEnabled.setTextColor(colorConnected)
+        }
+
+
+
+
+
 
 
     }
@@ -194,4 +164,16 @@ class HomeFragment : BaseFragment(), KodeinAware {
 
 }
 
-
+//  Check every 2 secs if Mobile data or Location is off/on
+//        val t = object : CountDownTimer(java.lang.Long.MAX_VALUE, 2000) {
+//            override fun onFinish() {
+//                start()
+//            }
+//
+//            override fun onTick(millisUntilFinished: Long) {
+//
+//
+//
+//            }
+//
+//        }.start()

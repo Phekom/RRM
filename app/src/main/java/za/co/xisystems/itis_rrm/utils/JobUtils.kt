@@ -1,6 +1,7 @@
 package za.co.xisystems.itis_rrm.utils
 
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTOTemp
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimatesPhotoDTO
 import java.text.DecimalFormat
@@ -17,7 +18,7 @@ object JobUtils {
         return String.format(Locale.US, "Total Cost: %s", formatCost(totalCost))
     }
 
-    fun formatTotalCost(job: JobDTO?): String {
+    fun formatTotalCost(job: JobDTOTemp?): String {
         var quantity = 0.0
         var cost = 0.0
         if (job != null && job!!.JobItemEstimates != null)
@@ -28,7 +29,7 @@ object JobUtils {
         return formatTotalCost(cost)
     }
 
-    fun areQuantitiesValid(job: JobDTO?): Boolean {
+    fun areQuantitiesValid(job: JobDTOTemp?): Boolean {
         if (job == null || job!!.JobItemEstimates == null || job!!.JobItemEstimates!!.isEmpty())
             return false
         else {
@@ -41,7 +42,7 @@ object JobUtils {
     }
 
     // TODO this will not be needed
-    fun compressJobEstimates(job: JobDTO?) {
+    fun compressJobEstimates(job: JobDTOTemp?) {
         if (job != null && job!!.JobItemEstimates != null)
             for (jobItemEstimate in job!!.JobItemEstimates!!) {
                 compressJobEstimates(jobItemEstimate)
@@ -51,8 +52,8 @@ object JobUtils {
     private fun compressJobEstimates(jobItemEstimate: JobItemEstimateDTO?) {
         if (jobItemEstimate == null) return
 
-        var startPhoto = jobItemEstimate!!.getJobItemEstimatePhotoStart()
-        var endPhoto = jobItemEstimate!!.getJobItemEstimatePhotoEnd()
+        var startPhoto = jobItemEstimate!!.jobItemEstimatePhotos?.get(0)
+        var endPhoto = jobItemEstimate!!.jobItemEstimatePhotos?.get(1)
 
         if (startPhoto == null || endPhoto == null) {
             val photos = jobItemEstimate!!.jobItemEstimatePhotos
@@ -70,9 +71,9 @@ object JobUtils {
         endPhoto: JobItemEstimatesPhotoDTO?
     ) {
         if (startPhoto == null || endPhoto == null) return
-        jobItemEstimate.jobItemEstimatePhotos.clear()
-        jobItemEstimate.jobItemEstimatePhotos.add(startPhoto)
-        jobItemEstimate.jobItemEstimatePhotos.add(endPhoto)
+        jobItemEstimate.jobItemEstimatePhotos?.clear()
+        jobItemEstimate.jobItemEstimatePhotos?.add(startPhoto)
+        jobItemEstimate.jobItemEstimatePhotos?.add(endPhoto)
     }
 
     fun sort(photos: ArrayList<JobItemEstimatesPhotoDTO>?): ArrayList<JobItemEstimatesPhotoDTO>? {

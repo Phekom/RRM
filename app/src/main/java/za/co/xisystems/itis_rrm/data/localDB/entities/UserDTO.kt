@@ -2,7 +2,11 @@ package za.co.xisystems.itis_rrm.data.localDB.entities
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.google.gson.annotations.SerializedName
+import java.io.Serializable
 
 /**
  * Created by Francis Mahlava on 2019/10/23.
@@ -33,7 +37,8 @@ data class UserDTO(
     var WEB_SERVICE_URI: String?
 
 
-) {
+) : Serializable {
+
 //    @PrimaryKey(autoGenerate = false)
 //    var uid: Int = CURRENT_LOGGEDIN_USER
 }

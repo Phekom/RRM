@@ -56,7 +56,7 @@ class UnSubmittedFragment : BaseFragment(), KodeinAware {
 
     private fun List<JobDTOTemp>.toApproveListItems(): List<UnSubmitedJob_Item> {
         return this.map { approvej_items ->
-            UnSubmitedJob_Item(approvej_items, unsubmittedViewModel)
+            UnSubmitedJob_Item(approvej_items, unsubmittedViewModel, activity)
         }
     }
 

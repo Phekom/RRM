@@ -16,7 +16,7 @@ import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
 import za.co.xisystems.itis_rrm.R
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
 import za.co.xisystems.itis_rrm.ui.mainview.work.estimate_work_item.CardItem
 import za.co.xisystems.itis_rrm.ui.mainview.work.estimate_work_item.ExpandableHeaderWorkItem
@@ -47,11 +47,9 @@ class WorkFragment : BaseFragment(), KodeinAware {
         } ?: throw Exception("Invalid Activity") as Throwable
         Coroutines.main {
             //            mydata_loading.show()
-//            val works = workViewModel.getJobsForActivityId(
-//                ActivityIdConstants.JOB_APPROVED
-//                , ActivityIdConstants.ESTIMATE_INCOMPLETE
-//            )val works = workViewModel.getJobsForActivityIds(ActivityIdConstants.JOB_APPROVED, ActivityIdConstants.ESTIMATE_INCOMPLETE)
-            val works = workViewModel.getJobsForActivityIds(ActivityIdConstants.JOB_APPROVED)
+            val works = workViewModel.getJobsForActivityId(ActivityIdConstants.JOB_APPROVED, ActivityIdConstants.ESTIMATE_INCOMPLETE)
+//            val works = workViewModel.getJobsForActivityIds(ActivityIdConstants.JOB_APPROVED, ActivityIdConstants.ESTIMATE_INCOMPLETE)
+//            val works = workViewModel.getJobsForActivityIds(ActivityIdConstants.ESTIMATE_INCOMPLETE)
 //            val jobs = approveViewModel.offlinedata.await()
             works.observe(viewLifecycleOwner, Observer { work_s ->
                 noData.visibility = View.GONE
@@ -112,8 +110,8 @@ class WorkFragment : BaseFragment(), KodeinAware {
 //            .navigate(R.id.action_nav_approvMeasure_to_measureApprovalFragment)
 //    }
 
-
-    private fun List<JobItemEstimateDTO>.toWorkListItems(): List<ExpandableGroup> {
+//    private fun List<JobItemEstimateDTO>.toWorkListItems(): List<ExpandableGroup> {
+    private fun List<JobDTO>.toWorkListItems(): List<ExpandableGroup> {
         //Initialize Expandable group with expandable item and specify whether it should be expanded by default or not
 
         return this.map { work_items ->
@@ -125,11 +123,11 @@ class WorkFragment : BaseFragment(), KodeinAware {
 //                                    }
 
             val expandableHeaderItem =
-            ExpandableHeaderWorkItem( activity, work_items, workViewModel, work_items.jobId)
+            ExpandableHeaderWorkItem( activity, work_items, workViewModel, work_items.JobId)
 //            ExpandableHeaderItem("JI:${work_items.JiNo} ", work_items.Descr!! , activity, work_items, workViewModel)
             ExpandableGroup(expandableHeaderItem, false).apply {
                 Coroutines.main {
-                    val estimates = workViewModel.getJobEstimationItemsForJobId(work_items.jobId)
+                    val estimates = workViewModel.getJobEstimationItemsForJobId(work_items.JobId)
                     estimates.observe(viewLifecycleOwner, Observer { i_tems ->
                      val estimateId = arrayOfNulls<String>(i_tems.size)
                      val Desc = arrayOfNulls<String>(i_tems.size)

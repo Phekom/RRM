@@ -9,15 +9,15 @@ import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import kotlinx.android.synthetic.main.item_header.*
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.ui.mainview._fragments.HeaderItem
 import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModel
 import za.co.xisystems.itis_rrm.utils.Coroutines
-import za.co.xisystems.itis_rrm.utils.toast
 
 class ExpandableHeaderWorkItem(
     activity: FragmentActivity?,
-    workItems: JobItemEstimateDTO,
+    workItems: JobDTO,
+//    workItems: JobItemEstimateDTO,
     workViewModel: WorkViewModel,
     jobId: String?
 ) : HeaderItem(null, workItems ,workViewModel ), ExpandableItem {

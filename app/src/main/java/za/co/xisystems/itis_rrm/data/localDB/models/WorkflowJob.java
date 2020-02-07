@@ -1,6 +1,7 @@
 package za.co.xisystems.itis_rrm.data.localDB.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.gson.annotations.SerializedName;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -11,25 +12,25 @@ import java.util.ArrayList;
 
 public class WorkflowJob implements Serializable {
 
-    @JsonProperty("JobId")
+    @SerializedName("JobId")
     private String jobId;
 
-    @JsonProperty("ActId")
+    @SerializedName("ActId")
     private int actId;
 
-    @JsonProperty("TrackRouteId")
+    @SerializedName("TrackRouteId")
     private String trackRouteId;
 
-    @JsonProperty("JiNo")
+    @SerializedName("JiNo")
     private String jiNo;
 
-    @JsonProperty("WorkflowItemEstimates")
+    @SerializedName("WorkflowItemEstimates")
     private ArrayList<WorkflowItemEstimate> workflowItemEstimates;
 
-    @JsonProperty("WorkflowItemMeasures")
+    @SerializedName("WorkflowItemMeasures")
     private ArrayList<WorkflowItemMeasure> workflowItemMeasures;
 
-    @JsonProperty("WorkflowJobSections")
+    @SerializedName("WorkflowJobSections")
     private ArrayList<WorkflowJobSection> workflowJobSections;
 
     public String getJobId() {

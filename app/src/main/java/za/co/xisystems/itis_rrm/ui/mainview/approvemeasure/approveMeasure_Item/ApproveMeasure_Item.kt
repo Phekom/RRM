@@ -4,6 +4,7 @@ import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import com.xwray.groupie.kotlinandroidextensions.Item
 import kotlinx.android.synthetic.main.single_listview_item.*
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureViewModel
 import za.co.xisystems.itis_rrm.utils.Coroutines
@@ -15,6 +16,7 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
 
 class ApproveMeasure_Item(
     val jobItemMeasureDTO: JobItemMeasureDTO,
+//    val jobDTO: JobDTO,
     private val approveViewModel: ApproveMeasureViewModel
 ) : Item(){
 

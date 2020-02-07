@@ -30,7 +30,12 @@
         android:id="@+id/nav_unSubmitted"
         android:name="za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedFragment"
         android:label="@string/menu_unSubmitted"
-        tools:layout="@layout/fragment_unsubmittedjobs" />
+        tools:layout="@layout/fragment_unsubmittedjobs" >
+        <action
+                android:id="@+id/action_nav_unSubmitted_to_addProjectFragment"
+                app:destination="@id/addProjectFragment"
+                app:enterAnim="@anim/click" />
+    </fragment>
 
     <fragment
         android:id="@+id/nav_correction"
@@ -94,7 +99,17 @@
     <fragment
             android:id="@+id/estimatePhotoFragment"
             android:name="za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates.EstimatePhotoFragment"
-            android:label="EstimatePhotoFragment" />
+            android:label="EstimatePhotoFragment" >
+        <action
+                android:id="@+id/action_estimatePhotoFragment_to_addProjectFragment"
+                app:destination="@id/addProjectFragment"
+                app:enterAnim="@anim/bounce" />
+        <action
+                android:id="@+id/action_estimatePhotoFragment_to_nav_create"
+                app:destination="@id/nav_create"
+                app:enterAnim="@animator/rotation_collapse_to_expand"
+                app:popUpTo="@+id/nav_create" />
+    </fragment>
     <fragment
             android:id="@+id/addProjectFragment"
             android:name="za.co.xisystems.itis_rrm.ui.mainview.create.add_project_item.AddProjectFragment"

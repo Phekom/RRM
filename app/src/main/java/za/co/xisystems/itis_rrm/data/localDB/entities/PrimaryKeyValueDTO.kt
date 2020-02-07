@@ -2,6 +2,7 @@ package za.co.xisystems.itis_rrm.data.localDB.entities
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.fasterxml.jackson.annotation.JsonProperty
 //import com.google.android.gms.common.util.Base64Utils
 import com.google.gson.annotations.SerializedName
 import org.springframework.util.Base64Utils
@@ -32,7 +33,7 @@ data class PrimaryKeyValueDTO(
     val valueType: String?
 
 ) {
-    var value: ByteArray?
+    var p_value: ByteArray?
         get() = if (valueString == null) valueBytes else Base64Utils.decode(valueString)
         set(value) {
             this.valueBytes = value

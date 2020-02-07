@@ -22,9 +22,9 @@ object SpinnerHelper {
     ) {
         if (data != null) {
 
-            val adapter = ArrayAdapter(context, android.R.layout.simple_spinner_item, datas!!)
+            val adapter = ArrayAdapter(context, android.R.layout.simple_spinner_dropdown_item, datas!!)
 
-            adapter.setDropDownViewResource(android.R.layout.simple_spinner_item)
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             spinner.adapter = adapter
 
             spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {

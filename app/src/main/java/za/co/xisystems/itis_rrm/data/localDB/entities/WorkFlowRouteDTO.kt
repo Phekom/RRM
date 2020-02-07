@@ -4,6 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.gson.annotations.SerializedName
 
 /**
@@ -24,8 +25,10 @@ const val WORKFLOW_ROUTE_TABLE = "WORKFLOW_ROUTE_TABLE"
 )
 data class WorkFlowRouteDTO(
 
-    @SerializedName("RouteId")
     @PrimaryKey
+    var id: Int,
+
+    @SerializedName("RouteId")
     val routeId: Long,
 
     @SerializedName("ActId")
@@ -45,6 +48,6 @@ data class WorkFlowRouteDTO(
 
     @SerializedName("WorkflowId")
     @ColumnInfo(name = "workflowId", index = true)
-    var workflowId: Long
+    var workflowId: Long?
 )
 

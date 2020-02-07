@@ -61,11 +61,17 @@ interface JobDao {
     @Query("SELECT * FROM JOB_TABLE WHERE is_synced = 0 ")
     fun getUnSyncedJobs(): LiveData<List<JobDTO>>
 
+    @Query("SELECT * FROM JOB_TABLE WHERE actId = :jobApproved  AND ESTIMATES_ACT_ID LIKE :estimateComplete AND  WORKS_ACT_ID LIKE :estWorksComplete AND MEASURE_ACT_ID LIKE :measureComplete ORDER BY jiNo ASC")
+    fun getJobsMeasureForActivityIds(estimateComplete: Int, measureComplete: Int, estWorksComplete: Int, jobApproved: Int): LiveData<List<JobDTO>>
+
     @Query("SELECT * FROM JOB_TABLE WHERE actId = :actId ORDER BY jiNo ASC")
     fun getJobsForActivityId(actId: Int): LiveData<List<JobDTO>>
 
-    @Query("SELECT * FROM JOB_TABLE WHERE actId = :actId AND ESTIMATES_ACT_ID = :actId2 ORDER BY jiNo ASC")
+//    @Query("SELECT * FROM JOB_TABLE WHERE actId = :actId  AND SELECT * FROM JOB_ITEM_ESTIMATE WHERE actId = :actId2 ORDER BY jiNo ASC")
+    @Query( " SELECT j.*, e.* FROM JOB_TABLE AS j JOIN JOB_ITEM_ESTIMATE AS e ON e.JobId = j.JobId WHERE j.ActId Like :actId and e.ActId Like :actId2 ")
     fun getJobsForActivityIds1(actId: Int, actId2: Int): LiveData<List<JobDTO>>
+
+
 
     @Query("SELECT jobId FROM JOB_TABLE WHERE activityId = :actId")
     fun getJobIds(actId: Int): LiveData<List<String>>
@@ -79,6 +85,9 @@ interface JobDao {
 
 
 //    @Query("SELECT * FROM JOB_TABLE WHERE sectionItemId = :sectionItem AND projectId = :projectId")
+//    "SELECT COUNT(A." + ESTIMATE_ID + ") AS 'WorkDone' FROM " + TABLE_JOB_ITEM_ESTIMATE + " A "
+//                    + "JOIN " + TABLE_JOB_ESTIMATE_WORKS + " B ON B." + ESTIMATE_ID + " = A." + ESTIMATE_ID + " AND B."
+//                    + ACT_ID + " = " + workActId + " WHERE A." + JOB_ID + " = '" + jobId + "' AND A." + ACT_ID + " = " + estimateActId
 //    fun getAllItemsForSectionItem(sectionItem : String, projectId : String ): LiveData<List<JobDTO>>
 
 

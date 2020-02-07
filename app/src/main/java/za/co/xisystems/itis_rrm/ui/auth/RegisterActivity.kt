@@ -20,6 +20,7 @@ import org.kodein.di.generic.instance
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
+import za.co.xisystems.itis_rrm.data.network.PermissionController
 import za.co.xisystems.itis_rrm.databinding.ActivityRegisterBinding
 import za.co.xisystems.itis_rrm.utils.*
 
@@ -34,7 +35,15 @@ class RegisterActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runna
     private val factory : AuthViewModelFactory by instance()
     lateinit var viewModel : AuthViewModel
     private lateinit var appContext: Context
-    private var permissions = arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE ,Manifest.permission.ACCESS_FINE_LOCATION )
+    private var permissions = arrayOf(
+        Manifest.permission.WRITE_EXTERNAL_STORAGE,
+        Manifest.permission.CAMERA,
+        Manifest.permission.READ_EXTERNAL_STORAGE ,
+        Manifest.permission.ACCESS_FINE_LOCATION,
+       Manifest.permission.READ_PHONE_STATE ,
+        Manifest.permission.READ_SMS
+
+    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -145,6 +154,12 @@ class RegisterActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runna
                 GooglePlayServicesUtil.getErrorDialog(resultCode, this, 0)
             dialog?.show()
         }
+        if (PermissionController.checkPermissionsEnabled(applicationContext)) {
+//            googleApiClient!!.connect()
+        } else {
+            PermissionController.startPermissionRequests(this, applicationContext)
+        }
+
     }
 
     override fun onStarted() {

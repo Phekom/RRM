@@ -499,6 +499,7 @@
     <string name="measure_approval_title">Measurements Approval</string>
     <string name="capture_work_title">Capture Work</string>
     <string name="data_loading_please_wait">Data Loading.... </string>
+    <string name="loading_please_wait">Loading.... Please Wait !!</string>
     <string name="enter_comment">Please Enter Your Comment First</string>
     <string name="set_pin">Please Set your App Pin</string>
     <string name="set_pin_msg">Enter a Unique Pin That you will Use to unlock RRM</string>

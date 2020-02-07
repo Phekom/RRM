@@ -46,6 +46,9 @@ class ExpandableHeaderMeasureItem(
     val measureItem = measureItem
     var projIDz = measureItem.projectItemId
 
+    private var jobItemEst: JobDTO? =  null
+    private var itemEs : JobItemEstimateDTO? = null
+
         companion object {
         const val JOB_IMEASURE = "JobItemMeasure"
         const val PHOTO_RESULT = 9000
@@ -214,8 +217,8 @@ class ExpandableHeaderMeasureItem(
             (Date()).toString(),
             null,
             jobItemMeasurePhotoDTO,
-            jobForJobItemEstimate,
-            selectedJobItemEstimate,
+            jobItemEst,
+            itemEs!!,
             (selectedJobItemEstimate.projectItemId).toString(),
             jobForJobItemEstimate.VoId.toString(),
             (quantity).toString().toDouble(),

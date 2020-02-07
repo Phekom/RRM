@@ -2,6 +2,8 @@ package za.co.xisystems.itis_rrm.data.localDB.entities
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.fasterxml.jackson.annotation.JsonProperty
+import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
 import java.io.Serializable
 import java.util.*
@@ -122,13 +124,13 @@ class JobDTO(
 
 ) : Serializable{
 
-    fun addOrUpdateJobItemEstimate(newEstimate: JobItemEstimateDTO) {
-        val x = getJobEstimateIndexByItemId(newEstimate.projectItemId)
-        if (x < 0) JobItemEstimates?.add(newEstimate) else JobItemEstimates?.set(
-            x,
-            newEstimate
-        )
-    }
+//    fun addOrUpdateJobItemEstimate(newEstimate: JobItemEstimateDTO) {
+//        val x = getJobEstimateIndexByItemId(newEstimate.projectItemId)
+//        if (x < 0) JobItemEstimates?.add(newEstimate) else JobItemEstimates?.set(
+//            x,
+//            newEstimate
+//        )
+//    }
 
     fun jobEstimateExist(itemId: String?): Boolean {
         return getJobEstimateIndexByItemId(itemId) > -1
@@ -149,12 +151,12 @@ class JobDTO(
         return -1
     }
 
-    fun removeJobEstimateByItemId(itemId: String?): JobItemEstimateDTO? {
-        val x = getJobEstimateIndexByItemId(itemId)
-        return if (x > -1) {
-            JobItemEstimates?.removeAt(x)
-        } else null
-    }
+//    fun removeJobEstimateByItemId(itemId: String?): JobItemEstimateDTO? {
+//        val x = getJobEstimateIndexByItemId(itemId)
+//        return if (x > -1) {
+//            JobItemEstimates?.removeAt(x)
+//        } else null
+//    }
 
     fun getJobEstimateByItemId(itemId: String?): JobItemEstimateDTO? {
         val x = getJobEstimateIndexByItemId(itemId)
@@ -178,9 +180,9 @@ class JobDTO(
 //    }
 
 
-    fun clearJobItemEstimates() {
-        JobItemEstimates?.clear()
-    }
+//    fun clearJobItemEstimates() {
+//        JobItemEstimates?.clear()
+//    }
 
 
 

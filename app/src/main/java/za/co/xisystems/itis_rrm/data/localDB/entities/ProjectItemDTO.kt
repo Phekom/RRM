@@ -6,6 +6,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.ForeignKey.CASCADE
 import androidx.room.PrimaryKey
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.gson.annotations.SerializedName
 import java.io.Serializable
 
@@ -58,7 +59,7 @@ data class ProjectItemDTO(
 
     @SerializedName("ProjectId")
     @ColumnInfo(name = "projectId", index = true)
-    val projectId: String
+    val projectId: String?
 
 
 ): Serializable

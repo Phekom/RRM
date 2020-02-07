@@ -1,6 +1,7 @@
 package za.co.xisystems.itis_rrm.data.localDB.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.gson.annotations.SerializedName;
 
 import java.io.Serializable;
 
@@ -10,16 +11,16 @@ import java.io.Serializable;
 
 public class WorkflowItemMeasure implements Serializable {
 
-    @JsonProperty("ItemMeasureId")
+    @SerializedName("ItemMeasureId")
     private String itemMeasureId;
 
-    @JsonProperty("ActId")
+    @SerializedName("ActId")
     private int actId;
 
-    @JsonProperty("TrackRouteId")
+    @SerializedName("TrackRouteId")
     private String trackRouteId;
 
-    @JsonProperty("MeasureGroupId")
+    @SerializedName("MeasureGroupId")
     private String measureGroupId;
 
     public String getItemMeasureId() {

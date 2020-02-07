@@ -1,5 +1,6 @@
 package za.co.xisystems.itis_rrm.ui.mainview.create
 
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -9,6 +10,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.ui.mainview.create.select_item.SectionProj_Item
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
+import java.util.ArrayList
 
 /**
  * Created by Francis Mahlava on 2019/10/18.
@@ -28,7 +30,30 @@ class CreateViewModel(
 //        offlineDataRepository.getContracts()
 
 //    }
-val user by lazyDeferred {
+
+
+
+    val EstimateQty = MutableLiveData<Int>()
+    fun Estimate(Qty: Int) {
+        EstimateQty.value = Qty
+    }
+
+    val costLineRate = MutableLiveData<String>()
+    fun lineRate(rate: String) {
+        costLineRate.value = rate
+    }
+
+    val offlinedata by lazyDeferred {
+        offlineDataRepository.getSectionItems()
+    }
+
+
+    val sectionId = MutableLiveData<String>()
+    fun sectionId(section_Id: String) {
+        sectionId.value = section_Id
+    }
+
+    val user by lazyDeferred {
     offlineDataRepository.getUser()
 }
 //        try {
@@ -102,6 +127,17 @@ val user by lazyDeferred {
         loggedUser.value = user_n
     }
 
+    val descriptioN = MutableLiveData<String>()
+    fun userN(desc: String) {
+        descriptioN.value = desc
+    }
+
+    val newjob = MutableLiveData<JobDTOTemp>()
+    fun userN(job : JobDTOTemp) {
+        newjob.value = job
+    }
+
+
     val contract_No = MutableLiveData<String>()
     fun contractNmbr(contract_Nmbr: String) {
         contract_No.value = contract_Nmbr
@@ -132,8 +168,8 @@ val user by lazyDeferred {
         Sec_Item.value = projec_Item
     }
 
-    val job_Item = MutableLiveData<JobDTO>()
-    fun projecIte(job_Ite: JobDTO) {
+    val job_Item = MutableLiveData<JobDTOTemp>()
+    fun projecIte(job_Ite: JobDTOTemp) {
         job_Item.value = job_Ite
     }
 
@@ -162,6 +198,22 @@ val user by lazyDeferred {
     suspend fun saveNewJob(newjob: JobDTOTemp) {
         offlineDataRepository.saveNewJob(newjob)
     }
+
+    suspend fun deleJobfromList(jobId: String) {
+        offlineDataRepository.deleJobfromList(jobId)
+    }
+
+
+    suspend fun updateNewJob(
+        newjobId: String,
+        startKM: Double,
+        endKM: Double,
+        sectionId: String,
+        newJobItemEstimatesList: ArrayList<JobItemEstimateDTO>,
+        jobItemSectionArrayList: ArrayList<JobSectionDTO>
+    ) {
+        offlineDataRepository.updateNewJob(newjobId,startKM,endKM,sectionId,newJobItemEstimatesList,jobItemSectionArrayList)
+    }
     suspend fun saveNewItem(newjItem: ItemDTOTemp) {
         offlineDataRepository.saveNewItem(newjItem)
     }
@@ -174,26 +226,58 @@ val user by lazyDeferred {
         latitude: Double,
         longitude: Double,
         useR: String,
-        projectId: String?
+        projectId: String?,
+        jobId: String,
+        itemCode: ItemDTOTemp?
     ) {
         return withContext(Dispatchers.IO) {
-            offlineDataRepository.getRouteSectionPoint( latitude,longitude,useR, projectId)
+            offlineDataRepository.getRouteSectionPoint( latitude,longitude,useR, projectId, jobId, itemCode)
         }
 
     }
 
+    suspend fun getJobforEstinmate(jobId: String): LiveData<JobDTOTemp> {
+        return withContext(Dispatchers.IO) {
+            offlineDataRepository.getJobforEstinmate(jobId)
+        }
+    }
 
+   suspend fun getPointSectionData( projectId: String?): LiveData<SectionPointDTO> {//jobId: String,jobId,
+        return withContext(Dispatchers.IO) {
+            offlineDataRepository.getPointSectionData( projectId)
+        }
+    }
 
+    suspend fun getSectionByRouteSectionProject(
+        sectionId: Int,
+        linearId: String?,
+        projectId: String?
+    ): LiveData<String> {
+        return withContext(Dispatchers.IO) {
+            offlineDataRepository.getSectionByRouteSectionProject(sectionId,linearId,projectId)
+        }
+    }
 
+    suspend fun getSection(sectionId: String): LiveData<ProjectSectionDTO> {
+        return withContext(Dispatchers.IO) {
+            offlineDataRepository.getSection(sectionId)
+        }
+    }
 
+    suspend fun submitJob(
+        userId: Int,
+        job: JobDTOTemp,
+        activity: FragmentActivity
+    ): String {
+        return withContext(Dispatchers.IO) {
+            offlineDataRepository.submitJob( userId, job, activity)
+        }
 
+    }
 
-
-
-
-
-
-
+    suspend fun deleteItemfromList(itemId: String) {
+        offlineDataRepository.deleteItemfromList(itemId)
+    }
 
 //        } catch (e: ApiException) {
 //            authListener?.onFailure(e.message!!)

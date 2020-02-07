@@ -14,7 +14,7 @@ import com.google.android.material.snackbar.Snackbar
  */
 
 fun Context.toast(message: String){
-    Toast.makeText(this, message, Toast.LENGTH_LONG ).show()
+    Toast.makeText(this, message, Toast.LENGTH_SHORT ).show()
 }
 
 fun ProgressBar.show(){
@@ -27,7 +27,7 @@ fun ProgressBar.hide(){
 }
 
 fun View.snackbar(message: String){
-    Snackbar.make(this, message, Snackbar.LENGTH_LONG).also { snackbar ->
+    Snackbar.make(this, message, Snackbar.LENGTH_SHORT).also { snackbar ->
 
         snackbar.setAction("Ok") {
             val snackbarView = snackbar.view

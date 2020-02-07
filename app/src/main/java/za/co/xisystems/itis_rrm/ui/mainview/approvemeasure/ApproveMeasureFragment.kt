@@ -16,6 +16,7 @@ import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.approveMeasure_Item.ApproveMeasure_Item
@@ -49,8 +50,9 @@ companion object{
             ViewModelProviders.of(this, factory).get(ApproveMeasureViewModel::class.java)
         } ?: throw Exception("Invalid Activity") as Throwable
         Coroutines.main {
-//            mydata_loading.show()
             val measurements = approveViewModel.getJobApproveMeasureForActivityId(ActivityIdConstants.MEASURE_COMPLETE)
+//            val measurements  = approveViewModel.getJobsMeasureForActivityId(ActivityIdConstants.ESTIMATE_MEASURE,ActivityIdConstants.MEASURE_COMPLETE,ActivityIdConstants.EST_WORKS_COMPLETE,ActivityIdConstants.JOB_APPROVED)
+//            val measurements = approveViewModel.getEntitiesListForActivityId(ActivityIdConstants.MEASURE_COMPLETE)
 //            val measurements = approveViewModel.offlinedata.await()
             measurements.observe(viewLifecycleOwner, Observer { job_s ->
                 noData.visibility = GONE
@@ -64,6 +66,7 @@ companion object{
     private fun initRecyclerView(approveMeasureListItems: List<ApproveMeasure_Item>) {
         val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
             addAll(approveMeasureListItems)
+
         }
         approve_measurements_list.apply {
             layoutManager = LinearLayoutManager(this.context)
@@ -74,11 +77,6 @@ companion object{
         groupAdapter.setOnItemClickListener { item, view ->
             Coroutines.main {
                 (item as? ApproveMeasure_Item)?.let {
-//                    val descri = approveViewModel.getDescForProjectId(it.jobItemMeasureDTO.projectItemId!!)
-//                    val sectionId  =  approveViewModel.getProjectSectionIdForJobId(it.jobDTO.jobId)
-//                    val route  =  approveViewModel.getRouteForProjectSectionId(sectionId)
-//                    val section  =  approveViewModel.getSectionForProjectSectionId(sectionId)
-//                    sendJobtoAprove((it.jobItemMeasureDTO.jobId), view)
                     sendJobtoAprove((it), view)
                 }
 
@@ -98,8 +96,8 @@ companion object{
         Navigation.findNavController(view)
             .navigate(R.id.action_nav_approvMeasure_to_measureApprovalFragment)
     }
-
     private fun List<JobItemMeasureDTO>.toApproveListItems(): List<ApproveMeasure_Item> {
+//    private fun List<JobDTO>.toApproveListItems(): List<ApproveMeasure_Item> {
         return this.map { approvej_items ->
             ApproveMeasure_Item(approvej_items,approveViewModel)
         }
@@ -108,6 +106,13 @@ companion object{
 
 }
 
-
+//(item as? ApproveMeasure_Item)?.let {
+////                    val descri = approveViewModel.getDescForProjectId(it.jobItemMeasureDTO.projectItemId!!)
+////                    val sectionId  =  approveViewModel.getProjectSectionIdForJobId(it.jobDTO.jobId)
+////                    val route  =  approveViewModel.getRouteForProjectSectionId(sectionId)
+////                    val section  =  approveViewModel.getSectionForProjectSectionId(sectionId)
+////                    sendJobtoAprove((it.jobItemMeasureDTO.jobId), view)
+//    sendJobtoAprove((it), view)
+//}
 
 

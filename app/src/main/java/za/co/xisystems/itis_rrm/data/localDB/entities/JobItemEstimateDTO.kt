@@ -4,6 +4,7 @@ package za.co.xisystems.itis_rrm.data.localDB.entities
 import androidx.core.util.Pair
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.gson.annotations.SerializedName
 import za.co.xisystems.itis_rrm.utils.JobUtils
 import java.io.Serializable
@@ -27,32 +28,32 @@ data class JobItemEstimateDTO(
     @SerializedName("JobId")
     var jobId: String?,
     @SerializedName("LineRate")
-    val lineRate: Double,
+    var lineRate: Double,
     @SerializedName("MobileEstimateWorks")
-    var jobEstimateWorks: ArrayList<JobEstimateWorksDTO>,
+    var jobEstimateWorks: ArrayList<JobEstimateWorksDTO>?,
     @SerializedName("MobileJobItemEstimatesPhotos")
-    var jobItemEstimatePhotos: ArrayList<JobItemEstimatesPhotoDTO>,
+    var jobItemEstimatePhotos: ArrayList<JobItemEstimatesPhotoDTO>?,
     @SerializedName("MobileJobItemMeasures")
-    val jobItemMeasure: ArrayList<JobItemMeasureDTO>,
+    val jobItemMeasure: ArrayList<JobItemMeasureDTO>?,
     @SerializedName("PrjJobDto")
-    val job: JobDTO?,
+    val job: JobDTO? = null,
     @SerializedName("ProjectItemId")
     var projectItemId: String?,
     @SerializedName("ProjectVoId")
     var projectVoId: String?,
     @SerializedName("Qty")
-    val qty: Double,
+    var qty: Double,
     @SerializedName("RecordSynchStateId")
     val recordSynchStateId: Int,
     @SerializedName("RecordVersion")
     val recordVersion: Int,
     @SerializedName("TrackRouteId")
-    var trackRouteId: String,
+    var trackRouteId: String? = null,
 
-//   val jobItemEstimatePhotoStart : JobItemEstimatesPhotoDTO? = null,
-//   val jobItemEstimatePhotoEnd : JobItemEstimatesPhotoDTO? = null
+   val jobItemEstimatePhotoStart : JobItemEstimatesPhotoDTO?,
+   val jobItemEstimatePhotoEnd : JobItemEstimatesPhotoDTO?,
 
-    val  estimateComplete : Int = 0,
+    var estimateComplete : Int = 0,
 //    var entityDescription: String?,
     val SelectedItemUOM: String?
 
@@ -81,16 +82,16 @@ data class JobItemEstimateDTO(
         return Pair<Int, JobItemEstimatesPhotoDTO>(-1, null)
     }
 
-    fun getJobItemEstimatePhotoStart(): JobItemEstimatesPhotoDTO? {
-        return getJobItemEstimatePhoto(true).second
-    }
-    fun getJobItemEstimatePhotoEnd(): JobItemEstimatesPhotoDTO? {
-        return getJobItemEstimatePhoto(false).second
-    }
+//    fun getJobItemEstimatePhotoStart(): JobItemEstimatesPhotoDTO {
+//        return getJobItemEstimatePhoto(true).second!!
+//    }
+//    fun getJobItemEstimatePhotoEnd(): JobItemEstimatesPhotoDTO {
+//        return getJobItemEstimatePhoto(false).second!!
+//    }
 
     fun getPhoto(x: Int): JobItemEstimatesPhotoDTO? {
         return if ( jobItemEstimatePhotos != null && -1 < x && x < size()) {
-            jobItemEstimatePhotos.get(x)
+            jobItemEstimatePhotos!!.get(x)
         } else null
     }
 
@@ -108,14 +109,14 @@ data class JobItemEstimateDTO(
     private fun setJobItemEstimatePhoto(photo: JobItemEstimatesPhotoDTO) {
         if (jobItemEstimatePhotos == null) {
             ArrayList<JobItemEstimatesPhotoDTO>()
-            jobItemEstimatePhotos.add(photo)
+            jobItemEstimatePhotos?.add(photo)
         } else {
             val photoToChange = getJobItemEstimatePhoto(photo.isPhotoStart())
             val index = photoToChange.first!!
             if (index == -1)
-                jobItemEstimatePhotos.add(photo)
+                jobItemEstimatePhotos!!.add(photo)
             else
-                jobItemEstimatePhotos.set(index, photo)
+                jobItemEstimatePhotos!!.set(index, photo)
         }
         JobUtils.sort(jobItemEstimatePhotos)
     }
@@ -124,13 +125,13 @@ data class JobItemEstimateDTO(
         if (size() < 2)
             return false
         else {
-            val photoStart = jobItemEstimatePhotos.get(0)
-            val photoEnd = jobItemEstimatePhotos.get(1)
+            val photoStart = jobItemEstimatePhotos?.get(0)
+            val photoEnd = jobItemEstimatePhotos?.get(1)
             return !(photoStart!!.filename == null || photoEnd == null || photoEnd!!.filename == null)
         }
     }
 
     fun size(): Int {
-        return if (jobItemEstimatePhotos == null) 0 else jobItemEstimatePhotos.size
+        return if (jobItemEstimatePhotos == null) 0 else jobItemEstimatePhotos!!.size
     }
 }

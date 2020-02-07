@@ -27,7 +27,7 @@ interface PrimaryKeyValueDao {
     fun checkPrimaryKeyValuesExistTrackRouteId(trackRouteId: String): Boolean
 
     @Query("SELECT * FROM PRIMARY_KEY_VALUE_TABLE WHERE trackRouteId = :trackRouteId")
-    fun getPrimaryKeyValuesFromTrackRouteId(trackRouteId: String): LiveData<PrimaryKeyValueDTO>
+    fun getPrimaryKeyValuesFromTrackRouteId(trackRouteId: String): PrimaryKeyValueDTO
 
     @Query("SELECT * FROM PRIMARY_KEY_VALUE_TABLE WHERE valueString = :jobId")
     fun getPrimaryKeyValueForJobId(jobId: String): LiveData<PrimaryKeyValueDTO>

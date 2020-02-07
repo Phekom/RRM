@@ -1,16 +1,16 @@
 package za.co.xisystems.itis_rrm.data.network
 
+import com.google.gson.JsonObject
 import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.http.Field
-import retrofit2.http.FormUrlEncoded
-import retrofit2.http.Headers
-import retrofit2.http.POST
+import retrofit2.http.*
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTOTemp
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTOTemp
 import za.co.xisystems.itis_rrm.data.network.responses.*
-import java.util.ArrayList
+import java.util.*
 import java.util.concurrent.TimeUnit
 
 /**
@@ -96,41 +96,20 @@ interface BaseConnectionApi {
     @POST("WorkflowMoveV2")
     suspend fun getWorkflowMove(
         @Field("UserId") userId: String,
-        @Field("TrackRouteId") trackRounteId: String,
+        @Field("TrackRouteId") trackRouteId: String,
         @Field("Description") description: String?,
         @Field("Direction") direction: Int
     ): Response<WorkflowMoveResponse>
 
-
-//    @Headers("Content-Type: application/json")
-//    @FormUrlEncoded
-//    @POST("SaveMeasurementItems")
-//    suspend fun saveMeasurementItems(
-//        @Field("UserId") userId: String,
-//        @Field("JobId") jobId: String,
-//        @Field("JiNo") jimNo: String?,
-//        @Field("ContractId") contractVoId: String?,
-//        @Field("MeasurementItems") measurementItems: ArrayList<JobItemMeasureDTOTemp>
-//    ):  Response<SaveMeasurementResponse>
-
-    @FormUrlEncoded
     @POST("SaveMeasurementItems")
     suspend fun saveMeasurementItems(
-        @Field("UserId") userId: String,
-        @Field("JobId") jobId: String,
-        @Field("JiNo") jimNo: String?,
-        @Field("ContractId") contractVoId: String?,
-        @Field("MeasurementItems[]") measurementItems: ArrayList<JobItemMeasureDTOTemp>?
+        @Body measurementItems: JsonObject
     ): Response<SaveMeasurementResponse>
 
-    @FormUrlEncoded
     @POST("UploadRrmImage")
     suspend fun uploadRrmImage(
-        @Field("Filename") Filename: String,
-        @Field("ImageFileExtension") ext: String,
-        @Field("ImageByteArray") photo: ByteArray
+        @Body rrmImage: JsonObject
     ): Response<UploadImageResponse>
-
 
     @FormUrlEncoded
 //    @Headers("Content-Type : application/json")
@@ -142,6 +121,55 @@ interface BaseConnectionApi {
     ): Response<RouteSectionPointResponse>
 
 
+    @POST("SaveRrmJob")
+    suspend fun sendJobsForApproval(
+        @Body job: JsonObject
+    ): Response<JobResponse>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//        @Field("UserId") userId: String,
+//        @Field("JobId") jobId: String,
+//        @Field("JiNo") jimNo: String?,
+//        @Field("ContractId") contractVoId: String?,
+//        @Field("MeasurementItems[]") measurementItems: ArrayList<JobItemMeasureDTOTemp>?
+//    @Headers("Content-Type: application/json")
+//    @FormUrlEncoded
+//    @POST("SaveMeasurementItems")
+//    suspend fun saveMeasurementItems(
+//        @Field("UserId") userId: String,
+//        @Field("JobId") jobId: String,
+//        @Field("JiNo") jimNo: String?,
+//        @Field("ContractId") contractVoId: String?,
+//        @Field("MeasurementItems") measurementItems: ArrayList<JobItemMeasureDTOTemp>
+//    ):  Response<SaveMeasurementResponse>
+//    @FormUrlEncoded
+    //    @FormUrlEncoded
+//    @POST("UploadRrmImage")
+//    suspend fun uploadRrmImage(
+//        @Field("Filename") Filename: String,
+//        @Field("ImageFileExtension") ext: String,
+//        @Field("ImageByteArray") photo: ByteArray
+//    ): Response<UploadImageResponse>
+
+//    @POST("UploadRrmImage")
+//    suspend fun sendJobsForApproval(
+//
+//    ): Response<JobResponse>
+
 //    @FormUrlEncoded
 //    @Headers("Content-Type : application/json")
 //    @POST("UserRolesRefresh")
@@ -150,26 +178,66 @@ interface BaseConnectionApi {
 //    ) : Response<UserRoleResponse>
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     companion object {
         operator fun invoke(
             networkConnectionInterceptor: NetworkConnectionInterceptor
         ): BaseConnectionApi {
+            val interceptor = HttpLoggingInterceptor()
+            interceptor.level = HttpLoggingInterceptor.Level.BODY
+            val okkHttpclient = OkHttpClient.Builder().apply {
+                readTimeout(2, TimeUnit.MINUTES)
+                writeTimeout(2, TimeUnit.MINUTES)
+                connectTimeout(2, TimeUnit.MINUTES)
+                addInterceptor(interceptor)
+                addInterceptor(networkConnectionInterceptor)
+                addInterceptor { chain ->
+                    var request = chain.request()
+                    request = request.newBuilder().build()
+                    val response = chain.proceed(request)
+                    response
+                }
 
-            val okkHttpclient = OkHttpClient.Builder()
-                .addInterceptor(networkConnectionInterceptor)
-                .connectTimeout(5, TimeUnit.MINUTES)
-                .writeTimeout(5, TimeUnit.MINUTES) // write timeout
-                .readTimeout(5, TimeUnit.MINUTES) // read timeout
-                .build()
+            }
+//                .addInterceptor(networkConnectionInterceptor)
+//                .connectTimeout(5, TimeUnit.MINUTES)
+//                .writeTimeout(5, TimeUnit.MINUTES) // write timeout
+//                .readTimeout(5, TimeUnit.MINUTES) // read timeout
+//                .build()
+
 
             return Retrofit.Builder()
-                .client(okkHttpclient)
-
+                .client(okkHttpclient.build())
                 .baseUrl("https://itisqa.nra.co.za/ITISServicesMobile/api/RRM/")
                 .addConverterFactory(GsonConverterFactory.create())
-//                .addCallAdapterFactory(CoroutineCallAdapterFactory())
                 .build()
                 .create(BaseConnectionApi::class.java)
+
+//            return Retrofit.Builder()
+//                .client(okkHttpclient)
+//
+//                .baseUrl("https://itisqa.nra.co.za/ITISServicesMobile/api/RRM/")
+//                .addConverterFactory(JacksonConverterFactory.create())
+////                .addConverterFactory(GsonConverterFactory.create())
+////                .addCallAdapterFactory(CoroutineCallAdapterFactory())
+//                .build()
+//                .create(BaseConnectionApi::class.java)
         }
     }
 
