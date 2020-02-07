@@ -1,11 +1,11 @@
 package za.co.xisystems.itis_rrm.data.localDB.dao
 
 import androidx.lifecycle.LiveData
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Query
+import androidx.room.*
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTOTemp
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobSectionDTO
+import java.util.*
 
 /**
  * Created by Francis Mahlava on 2019/11/21.
@@ -29,11 +29,24 @@ interface JobDaoTemp {
     @Query("UPDATE JOB_TABLE_TEMP SET TrackRouteId =:trackRouteId, ActId =:actId, JiNo =:jiNo WHERE jobId = :jobId")
     fun updateJob(jobId: String?, actId: Int, trackRouteId: String?, jiNo: String?)
 
+    @Query("UPDATE JOB_TABLE_TEMP SET SectionId =:sectionId ,StartKm =:startKM , EndKm =:endKM ,JobItemEstimates =:newJobItemEstimatesList, JobSections =:jobItemSectionArrayList  WHERE jobId = :newjobId ")
+    fun updateJoSecId(
+        newjobId: String,
+        startKM: Double,
+        endKM: Double,
+        sectionId: String,
+        newJobItemEstimatesList: ArrayList<JobItemEstimateDTO>,
+        jobItemSectionArrayList: ArrayList<JobSectionDTO>
+    )
+
+//    @Update
+//    fun update(noteDTO: NoteDTO?)
+
 //    @Query("UPDATE JOB_TABLE_TEMP SET ESTIMATES_ACT_ID =:actId WHERE jobId = :jobId")
 //    fun setEstimateActId(actId: Int?, jobId: String?)
-//
-//
-//    @Query("UPDATE JOB_TABLE_TEMP SET WORKS_ACT_ID =:actId WHERE jobId = :jobId")
+
+
+//    @Query("UPDATE JOB_TABLE_TEMP SET WORKS_ACT_ID =:actId WHERE jobId = :jobId")AND ProjectId =:projectId
 //    fun setEstimateWorksActId(actId: Int, jobId: String)
 //
 //    @Query("UPDATE JOB_TABLE_TEMP SET MEASURE_ACT_ID =:actId WHERE jobId = :jobId")
@@ -69,6 +82,9 @@ interface JobDaoTemp {
 //
 //    @Query("SELECT jobId FROM JOB_TABLE_TEMP WHERE activityId = :actId")
 //    fun getJobIds(actId: Int): LiveData<List<String>>
+
+    @Query("SELECT * FROM JOB_TABLE_TEMP WHERE jobId = :jobId")
+    fun getJobForJobId(jobId: String): JobDTOTemp
 
     @Query("SELECT * FROM JOB_TABLE_TEMP WHERE jobId = :jobId")
     fun getJobFromJobId(jobId: String): LiveData<JobDTOTemp>

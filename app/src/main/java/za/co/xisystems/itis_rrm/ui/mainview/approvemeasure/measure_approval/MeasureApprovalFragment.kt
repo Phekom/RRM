@@ -65,8 +65,8 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
         Coroutines.main {
 //            mydata_loading.show()
 
-            approveViewModel.measureapproval_Item.observe(viewLifecycleOwner, Observer { jobID ->
-                getMeasureItems(jobID)
+            approveViewModel.measureapproval_Item.observe(viewLifecycleOwner, Observer { job ->
+                getMeasureItems(job)
             })
 
            approve_measure_button.setOnClickListener {
@@ -199,9 +199,9 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
     }
 
 
-    private fun getMeasureItems(jobID: ApproveMeasure_Item) {
+    private fun getMeasureItems(job : ApproveMeasure_Item) {
         Coroutines.main {
-            val measurements = approveViewModel.getJobMeasureItemsForJobId(jobID.jobItemMeasureDTO.jobId, ActivityIdConstants.MEASURE_COMPLETE)
+            val measurements = approveViewModel.getJobMeasureItemsForJobId(job.jobItemMeasureDTO.jobId, ActivityIdConstants.MEASURE_COMPLETE)
             measurements.observe(viewLifecycleOwner, Observer { job_s ->
 //                mydata_loading.hide()
                 toast(job_s.size.toString())

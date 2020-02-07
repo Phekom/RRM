@@ -18,6 +18,7 @@ import za.co.xisystems.itis_rrm.data.network.NetworkConnectionInterceptor
 import za.co.xisystems.itis_rrm.data.preferences.PreferenceProvider
 import za.co.xisystems.itis_rrm.data.repositories.*
 import za.co.xisystems.itis_rrm.ui.auth.AuthViewModelFactory
+import za.co.xisystems.itis_rrm.ui.mainview.activities.MainActivityViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SettingsViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.ApproveJobsViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureViewModelFactory
@@ -62,6 +63,7 @@ open class MainApp : Application(), KodeinAware {
         bind() from provider{ WorkViewModelFactory(instance()) }
         bind() from provider{ CorrectionsViewModelFactory(instance()) }
         bind() from provider{ SettingsViewModelFactory(instance()) }
+        bind() from provider{ MainActivityViewModelFactory(instance()) }
 
     }
 

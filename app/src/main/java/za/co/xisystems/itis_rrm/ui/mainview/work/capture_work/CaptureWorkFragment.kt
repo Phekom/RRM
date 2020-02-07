@@ -24,7 +24,6 @@ import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksDTO
 import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
-import za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates.BitmapUtils
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.intents.AbstractIntent
 import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModelFactory
@@ -32,7 +31,9 @@ import za.co.xisystems.itis_rrm.ui.mainview.work.workstate_item.WorkState_Item
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.GlideApp
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
+import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
+import java.util.*
 
 
 class CaptureWorkFragment : BaseFragment(), KodeinAware {
@@ -49,9 +50,9 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
     private var mTempPhotoPath: String? = null
 
 
-
-
-
+    private lateinit var workFlowRoute: ArrayList<Long>
+    private lateinit var workFlowMenuTitles: ArrayList<String>
+    private lateinit var groupAdapter : GroupAdapter<GroupieViewHolder>
 
 
 
@@ -62,8 +63,9 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         (activity as MainActivity).supportActionBar?.title = getString(R.string.capture_work_title)
-
-
+//        estimateWorksPhotoArrayList = ArrayList<EstimateWorksPhoto>()
+        workFlowMenuTitles = ArrayList()
+        groupAdapter = GroupAdapter<GroupieViewHolder>()
     }
 
 
@@ -95,11 +97,26 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
         }
         move_workflow_button.setOnClickListener {
             toast("Ready to Submit the Images")
+            createUpdateDatabase()
+            if (ServiceUtil.isNetworkConnected(activity!!.applicationContext)) { //  Lets Send to Service
+//  sendJobToService(fetchLatestJobInfoFromSQLite());
+                sendJobToService()
+            } else {
+
+            }
         }
 
         work_imageView.setOnClickListener {
             showZoomedImage(imageUri)
         }
+    }
+
+    private fun createUpdateDatabase() {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    private fun sendJobToService() {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     private fun launchCamera() {
@@ -125,7 +142,7 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
             processAndSetImage()
             work_imageView.visibility = View.VISIBLE
         } else { // Otherwise, delete the temporary image file
-            BitmapUtils.deleteImageFile(activity!!.applicationContext, mTempPhotoPath)
+//            BitmapUtils.deleteImageFile(activity!!.applicationContext, mTempPhotoPath)
         }
     }
 
@@ -171,27 +188,20 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
     }
 
     private fun initRecyclerView(stateItems : List<WorkState_Item>) {
-        val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
+        groupAdapter.apply {
             for (i in 0..4) {//stateItems.indices
                 add(stateItems[0])
             }
-            
-//            addAll(approveMeasureListItems)
         }
-
-
         work_actions_listView.apply {
             layoutManager = LinearLayoutManager(this.context)
             adapter = groupAdapter
 
         }
 
-        groupAdapter.setOnItemClickListener { item, view ->
-            toast(item.getPosition(item).toString())
-        }
-
-
-
+//        groupAdapter.setOnItemClickListener { item, view ->
+//
+//        }
 
     }
 
@@ -225,7 +235,7 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
 
     private fun List<JobEstimateWorksDTO>.toWorkStateItems(): List<WorkState_Item> {
         return this.map { approvej_items ->
-            WorkState_Item(approvej_items, workViewModel)
+            WorkState_Item(approvej_items, workViewModel, activity, groupAdapter)
         }
     }
 

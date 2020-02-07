@@ -1,32 +1,58 @@
 package za.co.xisystems.itis_rrm
 
+//import com.google.android.gms.appindexing.AppIndex
 import android.content.Intent
+import android.graphics.Typeface
 import android.os.Bundle
+import android.view.Gravity
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.TextView
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
+import androidx.core.view.MenuItemCompat
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import androidx.navigation.ui.NavigationUI
-//import com.google.android.gms.appindexing.AppIndex
 import com.google.android.gms.common.api.GoogleApiClient
 import com.google.android.material.navigation.NavigationView
 import kotlinx.android.synthetic.main.activity_main.*
+import org.kodein.di.KodeinAware
+import org.kodein.di.android.kodein
+import org.kodein.di.generic.instance
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserRoleDTO
+import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.ui.auth.LoginActivity
-import za.co.xisystems.itis_rrm.ui.mainview.activities.SettingsActivity
+import za.co.xisystems.itis_rrm.ui.mainview.activities.*
+import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedViewModel
+import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
+import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.hideKeyboard
 
 
-class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
+class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener , KodeinAware {
+
+    override val kodein by kodein()
+    private lateinit var mainActivityViewModel: MainActivityViewModel
+    private val factory: MainActivityViewModelFactory by instance()
+
     private var navController: NavController? = null
     var toggle : ActionBarDrawerToggle? = null
     private lateinit var navigationView: NavigationView
     private val Db: AppDatabase? = null
+    var qty = 0
+    var nav_unSubmitted: TextView? = null
+    var nav_correction:TextView? = null
+    var nav_work:TextView? = null
+    var nav_approveJbs:TextView? = null
+    var nav_estMeasure:TextView? = null
+    var nav_approvMeasure:TextView? = null
+
 
     val PROJECT_USER_ROLE_IDENTIFIER = "29DB5C213D034EDB88DEC54109EE1711"
     val PROJECT_TESTER_ROLE_IDENTIFIER = "CEE622559D0640BFAE98E39BA4917AF3"
@@ -42,8 +68,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
-
-
+        mainActivityViewModel = this?.run {
+            ViewModelProviders.of(this, factory).get(MainActivityViewModel::class.java)}
 
 //        client = GoogleApiClient.Builder(this).addApi(AppIndex.API)
 
@@ -72,8 +98,18 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         NavigationUI.setupWithNavController(navigationView, navController!!)
 
         nav_view.setNavigationItemSelectedListener(this)
-
-
+        nav_unSubmitted =
+            MenuItemCompat.getActionView(navigationView.menu.findItem(R.id.nav_unSubmitted)) as TextView
+//        nav_correction =
+//            MenuItemCompat.getActionView(navigationView.menu.findItem(R.id.nav_correction)) as TextView
+        nav_work =
+            MenuItemCompat.getActionView(navigationView.menu.findItem(R.id.nav_work)) as TextView
+        nav_approveJbs =
+            MenuItemCompat.getActionView(navigationView.menu.findItem(R.id.nav_approveJbs)) as TextView
+        nav_approvMeasure =
+            MenuItemCompat.getActionView(navigationView.menu.findItem(R.id.nav_approvMeasure)) as TextView
+        nav_estMeasure =
+            MenuItemCompat.getActionView(navigationView.menu.findItem(R.id.nav_estMeasure)) as TextView
     }
 
     override fun onBackPressed() {
@@ -125,6 +161,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             R.id.nav_home -> {
                 navController?.navigate(R.id.nav_home)
                 toggle?.syncState()
+                initializeCountDrawer()
             }
             R.id.nav_create -> {
                 navController?.navigate(R.id.nav_create)
@@ -136,6 +173,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             R.id.nav_unSubmitted -> {
                 navController?.navigate(R.id.nav_unSubmitted)
                 toggle?.syncState()
+
             }
             R.id.nav_correction -> {
                 navController?.navigate(R.id.nav_correction)
@@ -334,40 +372,123 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 //    }
 
 
+    fun initializeCountDrawer() { // Estimates are completed needs to be submitted currently saved in the local DB
+//        val offlineDataRepository: OfflineDataRepository? = null
+//        val unsubmittedViewModel = UnSubmittedViewModel(offlineDataRepository!!)
+        Coroutines.main {
+            //            mydata_loading.show()
+            val new_job = mainActivityViewModel.getJobsForActivityId(
+                ActivityIdConstants.JOB_ESTIMATE)
+            new_job.observe(this, androidx.lifecycle.Observer { job_s ->
+                qty = job_s.size
+//            qty = 50
+                if (qty == 0) {
+                    nav_unSubmitted?.setText("")
+                } else {
+                    nav_unSubmitted?.setGravity(Gravity.CENTER_VERTICAL)
+                    nav_unSubmitted?.setTypeface(null, Typeface.BOLD)
+                    nav_unSubmitted?.setTextColor(resources.getColor(R.color.red))
+                    nav_unSubmitted?.setText("( $qty )")
+                }
+            })
 
+//        //====================================================================================================================================================
+// Estimates are completed needs Correction for approval
+        //        CorrectionsFragment.addEntitiesToJobArrayList(
+//                jobDataController,
+//                toDoListDataController.getEntitiesForActivityId(ActivityIdConstants.JOB_APPROVE),
+//                jobArrayList1);
+//        qty = jobDataController.getJobsForActivityId(ActivityIdConstants.JOB_FAILED).size
+//        if (qty == 0) {
+//        } else {
+//            nav_correction?.setGravity(Gravity.CENTER_VERTICAL)
+//            nav_correction?.setTypeface(null, Typeface.BOLD)
+//            nav_correction?.setTextColor(resources.getColor(R.color.red))
+//            nav_correction?.setText("( $qty )")
+//        }
+//        //====================================================================================================================================================
+//// Estimates are approved and work can start
+            val work = mainActivityViewModel.getJobsForActivityId(
+                ActivityIdConstants.JOB_ESTIMATE)
+            work.observe(this, androidx.lifecycle.Observer { job_s ->
+                qty = job_s.size
+                if (qty == 0) {
+                    nav_work?.setText("")
+        } else {
+            nav_work?.setGravity(Gravity.CENTER_VERTICAL)
+            nav_work?.setTypeface(null, Typeface.BOLD)
+            nav_work?.setTextColor(resources.getColor(R.color.red))
+            nav_work?.setText("( $qty )")
+        } })
+//        //====================================================================================================================================================
+//        val jobArrayList3: ArrayList<Job> =
+//            jobDataController.getJobsForActivityId(ActivityIdConstants.ESTIMATE_MEASURE)
+            val measurements = mainActivityViewModel.getJobsForActivityId(
+                ActivityIdConstants.JOB_ESTIMATE)
+            measurements.observe(this, androidx.lifecycle.Observer { job_s ->
+                qty = job_s.size
+                if (qty == 0) {
+                    nav_estMeasure?.setText("")
+                } else {
+                    nav_estMeasure?.setGravity(Gravity.CENTER_VERTICAL)
+                    nav_estMeasure?.setTypeface(null, Typeface.BOLD)
+                    nav_estMeasure?.setTextColor(resources.getColor(R.color.red))
+                    nav_estMeasure?.setText("( $qty )")
+                }
+            })
+//            nav_estMeasure.setText("( $qty )")
+//        }
+//        //===================================================================================================================================================\
+//// Estimates are completed needs approval for work to start
+//        val jobArrayList2: ArrayList<Job> =
+//            jobDataController.getJobsForActivityId(ActivityIdConstants.JOB_APPROVE)
 
+            val j_approval = mainActivityViewModel.getJobsForActivityId(
+                ActivityIdConstants.JOB_ESTIMATE)
+            j_approval.observe(this, androidx.lifecycle.Observer { job_s ->
+                qty = job_s.size
+                if (qty == 0) {
+                    nav_approveJbs?.setText("")
+                } else {
+                    nav_approveJbs?.setGravity(Gravity.CENTER_VERTICAL)
+                    nav_approveJbs?.setTypeface(null, Typeface.BOLD)
+                    nav_approveJbs?.setTextColor(resources.getColor(R.color.red))
+                    nav_approveJbs?.setText("( $qty )")
+                }
+            })
+//        //=====================================================================================================================================================
+            // Measurements are completed needs approval for payment
+            val m_approval = mainActivityViewModel.getJobsForActivityId(
+                ActivityIdConstants.JOB_ESTIMATE)
+            m_approval.observe(this, androidx.lifecycle.Observer { job_s ->
+                qty = job_s.size
+                if (qty == 0) {
+                    nav_approvMeasure?.setText("")
+                } else {
+                    nav_approvMeasure?.setGravity(Gravity.CENTER_VERTICAL)
+                    nav_approvMeasure?.setTypeface(null, Typeface.BOLD)
+                    nav_approvMeasure?.setTextColor(resources.getColor(R.color.red))
+                    nav_approvMeasure?.setText("( $qty )")
+                }
+            })
 
+       }
+    }
 
+    override fun onResume() {
+        super.onResume()
+        initializeCountDrawer()
+//        refreshData()
+    }
 
+    private fun refreshData() {
+        Coroutines.main {
+            val contracts = mainActivityViewModel.offlinedata.await()
+            contracts.observe(this, Observer { contrcts ->
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            })
+        }
+    }
 
 
 }

@@ -6,17 +6,19 @@ import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import com.xwray.groupie.kotlinandroidextensions.Item
 import kotlinx.android.synthetic.main.item_header.*
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModel
 import za.co.xisystems.itis_rrm.utils.Coroutines
 
 open class HeaderItem(
     @DrawableRes private val iconResId: Int? = null,
-    workItems: JobItemEstimateDTO,
+//    workItems: JobItemEstimateDTO,
+    workItems: JobDTO,
     workViewModel: WorkViewModel,
     private val onIconClickListener: View.OnClickListener? = null) : Item() {
 
-    var jobId = workItems.jobId
+    var jobId = workItems.JobId
     var workViewModel = workViewModel
 
     override fun getLayout(): Int {

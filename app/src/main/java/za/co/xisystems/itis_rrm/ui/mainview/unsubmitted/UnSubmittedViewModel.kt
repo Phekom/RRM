@@ -7,6 +7,7 @@ import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTOTemp
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectSectionDTO
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
 
@@ -23,6 +24,12 @@ class UnSubmittedViewModel(
     suspend fun getJobsForActivityId(activityId: Int): LiveData<List<JobDTOTemp>> {
         return withContext(Dispatchers.IO) {
             offlineDataRepository.getJobsForActId(activityId)
+        }
+    }
+
+    suspend fun getDescForProjectId(projectId: String): String {
+        return withContext(Dispatchers.IO) {
+            offlineDataRepository.getProjectDescription(projectId)
         }
     }
 
@@ -46,8 +53,11 @@ class UnSubmittedViewModel(
         offlineDataRepository.deleJobfromList(jobId)
     }
 
-
-
+   suspend fun getProjectSection(sectionId: String?): LiveData<ProjectSectionDTO> {
+        return withContext(Dispatchers.IO) {
+            offlineDataRepository.getProjectSection(sectionId)
+        }
+    }
 
 
 }

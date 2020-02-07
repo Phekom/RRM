@@ -1,6 +1,7 @@
 package za.co.xisystems.itis_rrm.data.network.responses
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.google.gson.annotations.SerializedName
 import java.io.Serializable
 
 /**
@@ -8,7 +9,7 @@ import java.io.Serializable
  * Updated by Pieter Jacobs during 2016/05, 2016/07.
  */
 class UploadImageResponse : Serializable {
-    @JsonProperty("ErrorMessage")
+    @SerializedName("ErrorMessage")
     var errorMessage: String? = null
 
     val isSuccess: Boolean

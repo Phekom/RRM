@@ -192,10 +192,10 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
     private fun uploadRrmImage(filename: String, jobItemMeasures: JobItemMeasureDTOTemp) {
 //        val messages = arrayOf(getString(R.string.uploading_photo) + imageCounter + getString(R.string.new_line) + getString(R.string.please_wait))
         val bitmap = PhotoUtil.getPhotoBitmapFromFile(activity!!.applicationContext,
-            PhotoUtil.getPhotoPathFromExternalDirectory(activity!!.applicationContext, filename),
+            PhotoUtil.getPhotoPathFromExternalDirectory( activity!!.applicationContext,filename),
             PhotoQuality.HIGH
         )
-        val photo = PhotoUtil.getCompressedPhotoWithExifInfo(activity!!.applicationContext, bitmap!!, filename)
+        val photo = PhotoUtil.getCompressedPhotoWithExifInfo(activity!!.applicationContext,bitmap!!, filename) //
         processImageUpload(filename, activity!!.getString(R.string.jpg),photo)
 
     }
@@ -264,6 +264,8 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
 //                    // TODO beware littlEndian conversion
                     val ContractVoId: String =
                         DataConversion.toLittleEndian(itemMeasureJob.ContractVoId)!!
+                    val JobId: String =
+                        DataConversion.toLittleEndian(itemMeasureJob.JobId!!)!!
 //                    processWorkFlow(
 //                        user_.userId,
 //                        itemMeasureJob.JobId!!, itemMeasureJob.JiNo, ContractVoId, mSures
@@ -271,7 +273,7 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
 
 
                     Coroutines.main {
-                        measureViewModel.processWorkflowMove( user_.userId, itemMeasureJob.JobId!!, itemMeasureJob.JiNo, ContractVoId, mSures)
+                        measureViewModel.processWorkflowMove( user_.userId, JobId, itemMeasureJob.JiNo, ContractVoId, mSures)
 //            activity?.hideKeyboard()
 //            popViewOnJobSubmit()
                     }
@@ -284,7 +286,7 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
 
 
     private fun popViewOnJobSubmit() {
-        // TODO("delete datat from database after sucess upload")
+        // TODO("delete data from database after success upload")
         Intent(context, MainActivity::class.java).also { home ->
             home.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
             startActivity(home)

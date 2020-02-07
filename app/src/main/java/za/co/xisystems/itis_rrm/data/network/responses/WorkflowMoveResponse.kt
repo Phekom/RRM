@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.gson.annotations.SerializedName
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.ToDoGroupsDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.WorkflowJobDTO
 import za.co.xisystems.itis_rrm.data.localDB.models.WorkflowJob
 
 
@@ -15,16 +16,16 @@ data class WorkflowMoveResponse(
     val toDoListGroups: ArrayList<ToDoGroupsDTO>,
     @SerializedName("JobDTO")
     val job: JobDTO,
-    @JsonProperty("WorkflowJob")
-    private var workflowJob: WorkflowJob?
+    @SerializedName("WorkflowJob")
+    private var workflowJob: WorkflowJobDTO?
 
 
 
 ){
-    fun getWorkflowJob(): WorkflowJob? {
+    fun getWorkflowJob(): WorkflowJobDTO? {
         return workflowJob
     }
-    fun setWorkflowJob(workflowJob: WorkflowJob?) {
+    fun setWorkflowJob(workflowJob: WorkflowJobDTO?) {
         this.workflowJob = workflowJob
     }
 }

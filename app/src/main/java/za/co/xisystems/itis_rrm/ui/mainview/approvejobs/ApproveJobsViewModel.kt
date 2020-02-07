@@ -8,6 +8,7 @@ import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimatesPhotoDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ToDoListEntityDTO
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.approve_job_item.ApproveJob_Item
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
@@ -25,11 +26,20 @@ class ApproveJobsViewModel (
 
 
 
-
+    suspend fun getEntitiesListForActivityId(activityId: Int): LiveData<List<ToDoListEntityDTO>> {
+        return withContext(Dispatchers.IO) {
+            offlineDataRepository.getEntitiesListForActivityId(activityId)
+        }
+    }
 
     suspend fun getJobsForActivityId(activityId: Int): LiveData<List<JobDTO>> {
         return withContext(Dispatchers.IO) {
-            offlineDataRepository.getJobsForActivityId(activityId)
+            offlineDataRepository.getJobsForActivityId(
+                activityId
+//                , measureComplete,
+//                estWorksComplete,
+//                jobApproved
+            )
         }
     }
     suspend fun getDescForProjectId(projectId: String): String {

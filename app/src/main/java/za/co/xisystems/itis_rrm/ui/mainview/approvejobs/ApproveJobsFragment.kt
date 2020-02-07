@@ -49,9 +49,11 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
         Coroutines.main {
             //            mydata_loading.show()
             val jobs = approveViewModel.getJobsForActivityId(ActivityIdConstants.JOB_APPROVE)
+//            val jobs = approveViewModel.getEntitiesListForActivityId(ActivityIdConstants.JOB_APPROVE)
 //            val jobs = approveViewModel.offlinedata.await()
             jobs.observe(viewLifecycleOwner, Observer { job_s ->
                 noData.visibility = GONE
+                toast(job_s.size.toString())
                 initRecyclerView(job_s.toApproveListItems())
                 group3_loading.visibility = View.GONE
             })

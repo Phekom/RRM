@@ -16,7 +16,7 @@ import za.co.xisystems.itis_rrm.utils.Converters
 @Database(
     entities = [JobDTO::class, UserDTO::class , UserRoleDTO::class, ProjectItemDTO::class, ItemDTOTemp::class, JobDTOTemp::class,
         ContractDTO::class, VoItemDTO::class, ProjectDTO::class , ProjectSectionDTO::class ,PrimaryKeyValueDTO::class
-        , LookupOptionDTO::class ,LookupDTO::class ,ItemSectionDTO::class ,WorkFlowDTO::class
+        , LookupOptionDTO::class ,LookupDTO::class ,ItemSectionDTO::class ,WorkFlowDTO::class, SectionPointDTO::class
         , WorkFlowRouteDTO::class ,JobSectionDTO::class ,InfoClassDTO::class ,ActivityDTO::class , ToDoGroupsDTO::class
         , JobItemEstimatesPhotoDTO::class ,JobItemMeasurePhotoDTO::class ,JobItemEstimateDTO::class ,JobItemMeasureDTO::class
         , ToDoListEntityDTO::class , ChildLookupDTO::class,JobEstimateWorksDTO::class , JobEstimateWorksPhotoDTO::class
@@ -64,9 +64,9 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun getJobItemMeasurePhotoDao_Temp(): JobItemMeasurePhotoDao_Temp
     abstract fun getJobDaoTemp(): JobDaoTemp
     abstract fun getItemDao_Temp() : ItemDao_Temp
+    abstract fun getSectionPointDao(): SectionPointDao
 
 
-//    abstract fun getItemSectionDao(): WorkflowsDao
 //    abstract fun getProjectSectionDao(): ProjectSectionDao
 //
 //    abstract fun getWorkFlowRouteDao(): WorkFlowRouteDao

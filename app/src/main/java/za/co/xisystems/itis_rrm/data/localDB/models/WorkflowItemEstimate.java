@@ -1,6 +1,7 @@
 package za.co.xisystems.itis_rrm.data.localDB.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.gson.annotations.SerializedName;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -11,16 +12,16 @@ import java.util.ArrayList;
 
 public class WorkflowItemEstimate implements Serializable {
 
-    @JsonProperty("EstimateId")
+    @SerializedName("EstimateId")
     private String estimateId;
 
-    @JsonProperty("ActId")
+    @SerializedName("ActId")
     private int actId;
 
-    @JsonProperty("TrackRouteId")
+    @SerializedName("TrackRouteId")
     private String trackRouteId;
 
-    @JsonProperty("WorkflowEstimateWorks")
+    @SerializedName("WorkflowEstimateWorks")
     private ArrayList<WorkflowEstimateWork> workflowEstimateWorks;
 
     public String getEstimateId() {

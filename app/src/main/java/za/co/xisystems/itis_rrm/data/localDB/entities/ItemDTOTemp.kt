@@ -4,7 +4,6 @@ package za.co.xisystems.itis_rrm.data.localDB.entities
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
-import androidx.room.ForeignKey.CASCADE
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import java.io.Serializable
@@ -58,7 +57,9 @@ data class ItemDTOTemp(
 
     @SerializedName("ProjectId")
     @ColumnInfo(name = "projectId", index = true)
-    val projectId: String
+    val projectId: String,
+
+     val jobId: String
 
 
 ): Serializable

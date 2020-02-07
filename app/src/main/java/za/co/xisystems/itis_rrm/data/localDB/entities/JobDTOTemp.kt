@@ -2,6 +2,8 @@ package za.co.xisystems.itis_rrm.data.localDB.entities
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.fasterxml.jackson.annotation.JsonProperty
+import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
 import java.io.Serializable
 import java.util.*
@@ -25,11 +27,11 @@ class JobDTOTemp(
     @SerializedName("ProjectId")
     var ProjectId: String?,
 
-    val SectionId : String?,
+    var SectionId : String?,
     @SerializedName("StartKm")
-    val StartKm: Double,
+    var StartKm: Double,
     @SerializedName("EndKm")
-    val EndKm: Double,
+    var EndKm: Double,
     @SerializedName("Descr")
     var Descr: String?,
     @SerializedName("JiNo")
@@ -52,13 +54,13 @@ class JobDTOTemp(
     val M9100: Int,
 
     @SerializedName("IssueDate")
-    var IssueDate: String? = Date().toString(),
+    var IssueDate: Date? = Date(),
     @SerializedName("StartDate")
-    var StartDate: String? = Date().toString(),
+    var StartDate: Date? = Date(),
     @SerializedName("DueDate")
-    var DueDate:  String? = Date().toString(),
+    var DueDate:  Date? = Date(),
     @SerializedName("ApprovalDate")
-    val ApprovalDate:String? = Date().toString(),
+    val ApprovalDate:Date? = Date(),
 
     @SerializedName("MobileJobItemEstimates")
     var JobItemEstimates: ArrayList<JobItemEstimateDTO>?,
@@ -67,7 +69,7 @@ class JobDTOTemp(
     @SerializedName("MobileJobSections")
     var JobSections: ArrayList<JobSectionDTO>?,
     @SerializedName("PerfitemGroupId")
-    val PerfitemGroupId: String?,
+    var PerfitemGroupId: String?,
     @SerializedName("RecordVersion")
     val RecordVersion: Int,
     @SerializedName("Remarks")
@@ -96,14 +98,14 @@ class JobDTOTemp(
 
 
     @SerializedName("ProjectVoId")
-    val ProjectVoId: String?,
+    var ProjectVoId: String?,
     @SerializedName("QtyUpdateAllowed")
     val QtyUpdateAllowed: Int,
     @SerializedName("RecordSynchStateId")
     val RecordSynchStateId: Int,
 
     @SerializedName("VoId")
-    val VoId: String?,
+    var VoId: String?,
     @SerializedName("WorkCompleteDate")
     val WorkCompleteDate: String?,
     @SerializedName("WorkStartDate")
@@ -140,12 +142,12 @@ class JobDTOTemp(
         return -1
     }
 
-    fun removeJobEstimateByItemId(itemId: String?): JobItemEstimateDTO? {
-        val x = getJobEstimateIndexByItemId(itemId)
-        return if (x > -1) {
-            JobItemEstimates?.removeAt(x)
-        } else null
-    }
+//    fun removeJobEstimateByItemId(itemId: String?): JobItemEstimateDTO? {
+//        val x = getJobEstimateIndexByItemId(itemId)
+//        return if (x > -1) {
+//            JobItemEstimates?.removeAt(x)
+//        } else null
+//    }
 
     fun getJobEstimateByItemId(itemId: String?): JobItemEstimateDTO? {
         val x = getJobEstimateIndexByItemId(itemId)
@@ -169,9 +171,9 @@ class JobDTOTemp(
 //    }
 
 
-    fun clearJobItemEstimates() {
-        JobItemEstimates?.clear()
-    }
+//    fun clearJobItemEstimates() {
+//        JobItemEstimates?.clear()
+//    }
 
 
 

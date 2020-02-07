@@ -3,6 +3,7 @@ package za.co.xisystems.itis_rrm.data.localDB.entities
 import android.os.Parcel
 import android.os.Parcelable
 import androidx.room.*
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.gson.annotations.SerializedName
 import java.io.Serializable
 

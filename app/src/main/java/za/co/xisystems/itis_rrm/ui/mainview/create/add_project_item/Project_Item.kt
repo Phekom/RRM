@@ -8,13 +8,14 @@ import com.xwray.groupie.kotlinandroidextensions.Item
 import kotlinx.android.synthetic.main.new_job_item.*
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTOTemp
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.work.INSET
 import za.co.xisystems.itis_rrm.ui.mainview.work.INSET_TYPE_KEY
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.JobUtils
+import za.co.xisystems.itis_rrm.utils.toast
 
 /**
  * Created by Francis Mahlava on 2019/12/29.
@@ -25,9 +26,10 @@ open class Project_Item(
     private val itemDesc: ItemDTOTemp,
     private val activity: FragmentActivity?,
     private val createViewModel: CreateViewModel,
-   private val contractID: String?
+    private val contractID: String?,
+    private var job: JobDTOTemp?
 ) : Item() {
-    private var job: JobDTO? = null
+
 //    private var activity  = activity
     init {
         extras[INSET_TYPE_KEY] = INSET
@@ -55,26 +57,33 @@ open class Project_Item(
                     bindItem(viewHolder)
         }
         viewHolder.itemView.setOnClickListener {
-            sendSelectedItem(itemDesc,it,contractID)
+            sendSelectedItem(itemDesc,it,contractID, job)
             clickListener?.invoke(this)
+        }
+
+        viewHolder.itemView.setOnLongClickListener {
+            Coroutines.main {
+                createViewModel.deleteItemfromList(itemDesc.itemId)
+            }
+           it.isLongClickable
+
+
         }
     }
 
     private fun sendSelectedItem(
         item: ItemDTOTemp,
-
-//        job: JobDTO?,
-//        userId: Int?,
         view: View,
-        contractID: String?
+        contractID: String?,
+        job: JobDTOTemp?
     ) {
         val contractId = contractID
-//        val newJob = job
+        val newJob = job
         val selecteDitem = item
 ////        val selectProitem = proItem
         Coroutines.main {
 //            //            createViewModel.loggedUser.value = userId
-////            createViewModel.job_Item.value = newJob
+            createViewModel.job_Item.value = newJob
             createViewModel.contract_ID.value = contractId
             createViewModel.project_Item.value = selecteDitem
 ////            createViewModel.projectSec_Item.value = selectProitem
@@ -87,16 +96,12 @@ open class Project_Item(
 
     private fun bindItem(viewHolder: GroupieViewHolder) {
        viewHolder.textViewItem.setOnClickListener {
-           sendSelectedItem(itemDesc, it, contractID)
+           sendSelectedItem(itemDesc, it, contractID, job)
        }
     }
 
     private fun getJobItemEstimate(itemId: String): JobItemEstimateDTO? {
-        return getJob()?.getJobEstimateByItemId(itemId)
-    }
-
-    private fun getJob(): JobDTO? {
-        return this.job
+        return job?.getJobEstimateByItemId(itemId)
     }
 
 

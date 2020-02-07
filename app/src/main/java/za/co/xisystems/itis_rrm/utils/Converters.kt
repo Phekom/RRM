@@ -1,17 +1,21 @@
 package za.co.xisystems.itis_rrm.utils
 
 //import sun.plugin2.util.PojoUtil.toJson
+//import jdk.nashorn.internal.objects.NativeDate.getTime
 import androidx.room.TypeConverter
+import com.fasterxml.jackson.module.kotlin.*
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-//import jdk.nashorn.internal.objects.NativeDate.getTime
+//import sun.plugin2.util.PojoUtil.toJson
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
+import java.lang.reflect.Type
 import java.util.*
 
 
 /**
  * Created by Francis Mahlava on 2019/11/22.
  */
+val mapper = jacksonObjectMapper()
 
 @Suppress("UNCHECKED_CAST")
 class Converters {
@@ -145,7 +149,7 @@ class Converters {
     }
 
     @TypeConverter
-    fun ItemSectionDTOToStoredString(myObjects:ArrayList<ItemSectionDTO>): String {
+    fun itemSectionDTOToStoredString(myObjects:ArrayList<ItemSectionDTO>): String {
         val gson = Gson()
         return gson.toJson(myObjects)
     }
@@ -165,9 +169,10 @@ class Converters {
     }
 
     @TypeConverter
-    fun JobItemEstimateDTOToStoredString(myObjects: ArrayList<JobItemEstimateDTO>): String {
+    fun jobItemEstimateDTOToStoredString(myObjects: ArrayList<JobItemEstimateDTO>?): String {
         val gson = Gson()
-        return gson.toJson(myObjects)
+       return gson.toJson(myObjects)
+
     }
 
 
@@ -238,7 +243,17 @@ class Converters {
         return gson.toJson(myObjects)
     }
 
+    //===========================================================================
 
+    @TypeConverter
+    fun fromTimestamp(value: Long?): Date? {
+        return value?.let { Date(it) }
+    }
+
+    @TypeConverter
+    fun dateToTimestamp(date: Date?): Long? {
+        return date?.time
+    }
 
 
     //===========================================================================
@@ -376,19 +391,19 @@ class Converters {
     //===========================================================================
 
     @TypeConverter
-    fun storedStringToJobItemEstimatesPhotoDO(data: String?): JobItemEstimatesPhotoDTO {
+    fun storedStringToJobItemEstimatesPhotoDO(data: String?): JobItemEstimatesPhotoDTO? {
         val gson = Gson()
         if (data == null) {
             return Collections.EMPTY_LIST as JobItemEstimatesPhotoDTO
         }
-        val listType = object :TypeToken<JobItemEstimatesPhotoDTO>() {
+        val listType = object :TypeToken<JobItemEstimatesPhotoDTO?>() {
 
         }.getType()
-        return gson.fromJson< JobItemEstimatesPhotoDTO >(data, listType)
+        return gson.fromJson< JobItemEstimatesPhotoDTO? >(data, listType)
     }
 
     @TypeConverter
-    fun JobItemEstimatesPhotoDOToStoredString(myObjects: JobItemEstimatesPhotoDTO): String {
+    fun JobItemEstimatesPhotoDOToStoredString(myObjects: JobItemEstimatesPhotoDTO?): String {
         val gson = Gson()
         return gson.toJson(myObjects)
     }
@@ -572,19 +587,19 @@ class Converters {
 
 
     @TypeConverter
-    fun storedStringToJob(data: String?): JobDTO {
+    fun storedStringToJob(data: String?): JobDTO? {
         val gson = Gson()
         if (data == null) {
-            return Collections.EMPTY_LIST as JobDTO
+            return Collections.EMPTY_LIST as JobDTO?
         }
-        val listType = object :TypeToken<JobDTO>() {
+        val listType = object :TypeToken<JobDTO?>() {
 
         }.getType()
         return gson.fromJson<JobDTO>(data, listType)
     }
 
     @TypeConverter
-    fun JobToStoredString(myObjects: JobDTO): String {
+    fun JobToStoredString(myObjects: JobDTO?): String {
         val gson = Gson()
         return gson.toJson(myObjects)
     }
@@ -1227,15 +1242,6 @@ class Converters {
 //    }
 
 
-//    @TypeConverter
-//    fun fromTimestamp(value: Long?): Date? {
-//        return value?.let { Date(it) }
-//    }
-//
-//    @TypeConverter
-//    fun dateToTimestamp(date: Date?): Long? {
-//        return date?.time
-//    }
 
 
 

@@ -1,8 +1,10 @@
 package za.co.xisystems.itis_rrm.data.localDB.entities
 
 
+import androidx.core.util.Pair
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.gson.annotations.SerializedName
 import java.io.Serializable
 
@@ -42,7 +44,7 @@ data class JobItemEstimatesPhotoDTO(
     @SerializedName("PhotoPath")
     var photoPath: String,
     @SerializedName("PrjJobItemEstimateDto")
-    var jobItemEstimate: JobItemEstimateDTO,
+    var jobItemEstimate: JobItemEstimateDTO?,
     @SerializedName("RecordSynchStateId")
     val recordSynchStateId: Int,
     @SerializedName("RecordVersion")
@@ -71,6 +73,13 @@ data class JobItemEstimatesPhotoDTO(
         this.photoLongitude = photoLongitude
     }
 
+
+//    fun getJobItemEstimatePhotoStart(): JobItemEstimatesPhotoDTO {
+//        return getJobItemEstimatePhoto(true).second!!
+//    }
+//    fun getJobItemEstimatePhotoEnd(): JobItemEstimatesPhotoDTO {
+//        return getJobItemEstimatePhoto(false).second!!
+//    }
 
 
 

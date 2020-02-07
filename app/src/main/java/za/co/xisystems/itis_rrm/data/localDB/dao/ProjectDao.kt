@@ -49,9 +49,9 @@ interface ProjectDao {
     fun getProjectDescription(projectId: String): String
 
 
-//    @Query("SELECT * FROM PROJECT_TABLE WHERE projectId = :projectId")
-//    fun getProjectById(projectId: String): LiveData<ProjectDTO>
-//
+    @Query("SELECT * FROM PROJECT_TABLE WHERE projectId = :projectId")
+    fun getProjectById(projectId: String): ProjectDTO
+
 //    @Query("SELECT * FROM PROJECT_TABLE WHERE projectId = :projectId")
 //    fun getContractId(projectId: String): String
 //

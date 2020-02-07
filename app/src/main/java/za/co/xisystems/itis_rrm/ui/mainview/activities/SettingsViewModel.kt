@@ -33,11 +33,11 @@ class SettingsViewModel (
     }
 
 
-    suspend fun getJobApproveMeasureForActivityId(activityId: Int): LiveData<List<JobItemMeasureDTO>> {
-        return withContext(Dispatchers.IO) {
-            offlineDataRepository.getJobApproveMeasureForActivityId(activityId)
-        }
-    }
+//    suspend fun getJobApproveMeasureForActivityId(activityId: Int): LiveData<List<JobItemMeasureDTO>> {
+//        return withContext(Dispatchers.IO) {
+//            offlineDataRepository.getJobApproveMeasureForActivityId(activityId)
+//        }
+//    }
     suspend fun getProjectSectionIdForJobId(jobId: String): String {
         return withContext(Dispatchers.IO) {
             offlineDataRepository.getProjectSectionIdForJobId(jobId)
