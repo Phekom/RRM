@@ -2,6 +2,7 @@ package za.co.xisystems.itis_rrm.ui.mainview.approvemeasure
 
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.Menu
 import android.view.View
 import android.view.View.GONE
 import android.view.ViewGroup
@@ -16,7 +17,6 @@ import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
 import za.co.xisystems.itis_rrm.R
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.approveMeasure_Item.ApproveMeasure_Item
@@ -42,6 +42,10 @@ companion object{
         container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
         return inflater.inflate(R.layout.fragment_approvemeasure, container, false)
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -90,7 +94,7 @@ companion object{
     ) {
         val jobId = job
         Coroutines.main {
-            approveViewModel.measureapproval_Item.value = job
+            approveViewModel.measureapproval_Item.value = jobId
         }
 
         Navigation.findNavController(view)

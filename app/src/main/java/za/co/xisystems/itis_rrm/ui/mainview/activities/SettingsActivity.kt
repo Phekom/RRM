@@ -3,8 +3,6 @@ package za.co.xisystems.itis_rrm.ui.mainview.activities
 import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
-import android.view.View
-import android.widget.Button
 import android.widget.Switch
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -18,11 +16,10 @@ import kotlinx.android.synthetic.main.settings_activity.*
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.kodein
 import org.kodein.di.generic.instance
+import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
-import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.ui.auth.RegisterActivity
 import za.co.xisystems.itis_rrm.ui.auth.ResetPinActivity
-import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureViewModel
 import za.co.xisystems.itis_rrm.utils.Coroutines
 
 class SettingsActivity : AppCompatActivity()  , KodeinAware {
@@ -124,9 +121,14 @@ class SettingsActivity : AppCompatActivity()  , KodeinAware {
     var isChecked = false
 
     class SettingsFragment : PreferenceFragmentCompat() {
-        override fun onResume() { //            if (){
-//            }
+
+        override fun onResume() {
             super.onResume()
+//            if ((activity as MainActivity).getDelegate().getLocalNightMode() === AppCompatDelegate.MODE_NIGHT_YES)
+//                SettingsFragment.HOME.setChecked(
+//                true
+//            )
+
         }
 
         override fun onCreatePreferences(
@@ -140,9 +142,11 @@ class SettingsActivity : AppCompatActivity()  , KodeinAware {
             mytheme!!.onPreferenceChangeListener =
                 Preference.OnPreferenceChangeListener { preference, newValue ->
                     if (newValue == !isChecked) {
-                        (activity as SettingsActivity?)!!.delegate.localNightMode =
+
+                        (activity as SettingsActivity?)?.delegate?.localNightMode =
                             AppCompatDelegate.MODE_NIGHT_YES
                     } else {
+//
                         (activity as SettingsActivity?)!!.delegate.localNightMode =
                             AppCompatDelegate.MODE_NIGHT_NO
                     }

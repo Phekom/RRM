@@ -1,7 +1,6 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 
-
 apply plugin: 'kotlin-kapt'
 apply plugin: "androidx.navigation.safeargs"
 apply plugin: 'deploygate'
@@ -328,7 +327,7 @@ dependencies {
 //    implementation "com.jakewharton:butterknife:8.8.1"
 //    kapt "com.jakewharton:butterknife-compiler:8.8.1"
 
-
+    implementation 'com.raygun:raygun4android:4.0.0'
     implementation 'org.springframework.android:spring-android-rest-template:2.0.0.M1'
 
 //    implementation "com.google.dagger:dagger:$daggerVersion"

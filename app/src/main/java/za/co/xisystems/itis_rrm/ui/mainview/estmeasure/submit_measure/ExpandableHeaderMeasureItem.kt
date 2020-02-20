@@ -33,8 +33,8 @@ class ExpandableHeaderMeasureItem(
     activity: FragmentActivity?,
     measureItem: JobItemEstimateDTO,
     measureViewModel: MeasureViewModel,
-    private val jobItemMeasurePhotoDTOArrayList: ArrayList<JobItemMeasurePhotoDTOTemp>,
-    private val jobItemMeasureArrayList: ArrayList<JobItemMeasureDTOTemp>,
+    private val jobItemMeasurePhotoDTOArrayList: ArrayList<JobItemMeasurePhotoDTO>,
+    private val jobItemMeasureArrayList: ArrayList<JobItemMeasureDTO>,
     private var jobItemEstimatesForJob: ArrayList<JobItemEstimateDTO>,
     private var listDataChild: HashMap<JobItemEstimateDTO, List<JobItemMeasureDTO>>
 
@@ -114,8 +114,8 @@ class ExpandableHeaderMeasureItem(
     private fun showAddMeasurementQuantityDialog(
         measureItem: JobItemEstimateDTO,
         jobForJobItemEstimate: JobDTO,
-        jobItemMeasurePhotoDTO: ArrayList<JobItemMeasurePhotoDTOTemp>,
-        jobItemMeasureArrayList: ArrayList<JobItemMeasureDTOTemp>,
+        jobItemMeasurePhotoDTO: ArrayList<JobItemMeasurePhotoDTO>,
+        jobItemMeasureArrayList: ArrayList<JobItemMeasureDTO>,
         view: View
     ) {
 
@@ -197,16 +197,16 @@ class ExpandableHeaderMeasureItem(
         quantity: Double,
         jobForJobItemEstimate: JobDTO,
         selectedJobItemEstimate: JobItemEstimateDTO,
-        jobItemMeasurePhotoDTO: ArrayList<JobItemMeasurePhotoDTOTemp>,
-        jobItemMeasureDTO: ArrayList<JobItemMeasureDTOTemp>
-    ): JobItemMeasureDTOTemp {
+        jobItemMeasurePhotoDTO: ArrayList<JobItemMeasurePhotoDTO>,
+        jobItemMeasureDTO: ArrayList<JobItemMeasureDTO>
+    ): JobItemMeasureDTO {
         val newItemMeasureId: String = SqlLitUtils.generateUuid()
-        val itemMeasure = JobItemMeasureDTOTemp(
+        val itemMeasure = JobItemMeasureDTO(
              0,
             0,
             null,
             (jobForJobItemEstimate.Cpa).toString().toInt(),
-            (jobForJobItemEstimate?.EndKm!!).toString().toDouble(),
+            (jobForJobItemEstimate.EndKm).toString().toDouble(),
             (selectedJobItemEstimate.estimateId),
             (DataConversion.toBigEndian(newItemMeasureId)).toString(),
             jobForJobItemEstimate.JiNo,
@@ -218,9 +218,9 @@ class ExpandableHeaderMeasureItem(
             null,
             jobItemMeasurePhotoDTO,
             jobItemEst,
-            itemEs!!,
+            itemEs,
             (selectedJobItemEstimate.projectItemId).toString(),
-            jobForJobItemEstimate.VoId.toString(),
+            jobForJobItemEstimate.VoId,
             (quantity).toString().toDouble(),
             0,
             0,
@@ -229,13 +229,13 @@ class ExpandableHeaderMeasureItem(
             null,
             (selectedItemToMeasure?.uom).toString() )
 
-        this.jobItemMeasureArrayList.add(itemMeasure)
+        jobItemMeasureArrayList.add(itemMeasure)
 //        setJobItemMeasures( jobItemMeasureArrayList,measureViewModel )
 
         return itemMeasure!!
     }
 
-    private fun captureItemMeasureImages(jobItemMeasu: JobItemMeasureDTOTemp) {
+    private fun captureItemMeasureImages(jobItemMeasu: JobItemMeasureDTO) {
         Coroutines.main {
 //            val jobItemMeasure = measureViewModel.getJobItemMeasureForJobId(measureItem.jobId)
 //            jobItemMeasure.observe(activity!!, androidx.lifecycle.Observer { jItemMeasure ->
@@ -249,7 +249,7 @@ class ExpandableHeaderMeasureItem(
     }
 
     private fun captureItemMeasurePhoto(
-        jobItemMeasure: JobItemMeasureDTOTemp?
+        jobItemMeasure: JobItemMeasureDTO?
     ) {
         val jobItemMeasure = jobItemMeasure
         measureViewModel.measurea1_Item1.value = jobItemMeasure
@@ -290,7 +290,7 @@ class ExpandableHeaderMeasureItem(
 
 
 private fun setJobItemMeasures(
-    jobItemMeasures: ArrayList<JobItemMeasureDTOTemp>,
+    jobItemMeasures: ArrayList<JobItemMeasureDTO>,
     measureViewModel: MeasureViewModel
 ) {
     Coroutines.main {

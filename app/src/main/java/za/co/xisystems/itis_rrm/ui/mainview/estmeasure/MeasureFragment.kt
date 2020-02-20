@@ -2,6 +2,7 @@ package za.co.xisystems.itis_rrm.ui.mainview.estmeasure
 
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.Observer
@@ -31,12 +32,27 @@ class MeasureFragment : BaseFragment(), KodeinAware {
 companion object{
     const val JOB_MEASURE_EST_JOB_ID = "JOB_MEASURE_EST_JOB_ID"
 }
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setHasOptionsMenu(true)
+    }
+
+    override fun onPrepareOptionsMenu(menu: Menu) {
+        val item = menu.findItem(R.id.action_settings)
+        val item1 = menu.findItem(R.id.action_logout)
+        if (item != null) item.isVisible = false
+        if (item1 != null) item1.isVisible = false
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
         return inflater.inflate(R.layout.fragment_estmeasure, container, false)
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -46,7 +62,8 @@ companion object{
         } ?: throw Exception("Invalid Activity") as Throwable
         Coroutines.main {
             //            mydata_loading.show()
-            val measurements = measureViewModel.getJobMeasureForActivityId(ActivityIdConstants.ESTIMATE_MEASURE)
+//            val measurements = measureViewModel.getJobMeasureForActivityId(ActivityIdConstants.ESTIMATE_MEASURE)
+            val measurements = measureViewModel.getJobMeasureForActivityId(ActivityIdConstants.ESTIMATE_MEASURE, ActivityIdConstants.JOB_ESTIMATE,ActivityIdConstants.MEASURE_PART_COMPLETE)
 //            val measurements = approveViewModel.offlinedata.await()
             measurements.observe(viewLifecycleOwner, Observer { job_s ->
                 noData.visibility = View.GONE

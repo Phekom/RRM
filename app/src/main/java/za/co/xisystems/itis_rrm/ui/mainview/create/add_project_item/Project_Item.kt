@@ -8,6 +8,7 @@ import com.xwray.groupie.kotlinandroidextensions.Item
 import kotlinx.android.synthetic.main.new_job_item.*
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTOTemp
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModel
@@ -27,7 +28,7 @@ open class Project_Item(
     private val activity: FragmentActivity?,
     private val createViewModel: CreateViewModel,
     private val contractID: String?,
-    private var job: JobDTOTemp?
+    private var job: JobDTO?
 ) : Item() {
 
 //    private var activity  = activity
@@ -75,7 +76,7 @@ open class Project_Item(
         item: ItemDTOTemp,
         view: View,
         contractID: String?,
-        job: JobDTOTemp?
+        job: JobDTO?
     ) {
         val contractId = contractID
         val newJob = job
@@ -86,7 +87,7 @@ open class Project_Item(
             createViewModel.job_Item.value = newJob
             createViewModel.contract_ID.value = contractId
             createViewModel.project_Item.value = selecteDitem
-////            createViewModel.projectSec_Item.value = selectProitem
+////        createViewModel.projectSec_Item.value = selectProitem
         }
 
         Navigation.findNavController(view)

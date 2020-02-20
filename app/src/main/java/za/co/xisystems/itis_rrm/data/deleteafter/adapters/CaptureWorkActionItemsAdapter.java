@@ -1,4 +1,4 @@
-package za.co.xisystems.itis_rrm.ui.mainview.work.adapters;
+package za.co.xisystems.itis_rrm.data.deleteafter.adapters;
 
 import android.content.Context;
 import android.graphics.Color;

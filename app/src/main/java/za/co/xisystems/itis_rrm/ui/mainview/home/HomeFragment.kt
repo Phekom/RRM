@@ -6,8 +6,8 @@ import android.graphics.Color
 import android.location.LocationManager
 import android.net.ConnectivityManager
 import android.os.Bundle
-import android.os.CountDownTimer
 import android.view.LayoutInflater
+import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
@@ -33,6 +33,21 @@ class HomeFragment : BaseFragment(), KodeinAware {
     var gps_enabled : Boolean =  false
     var network_enabled :  Boolean = false
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setHasOptionsMenu(true)
+    }
+    override fun onPrepareOptionsMenu(menu: Menu) {
+        val item = menu.findItem(R.id.action_search)
+        if (item != null) item.isVisible = false
+    }
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        activity?.menuInflater?.inflate(R.menu.search, menu)
+        return true
+    }
+
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?, savedInstanceState: Bundle?
@@ -43,6 +58,8 @@ class HomeFragment : BaseFragment(), KodeinAware {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+
+        
 
         homeViewModel = activity?.run {
             ViewModelProviders.of(this, factory).get(HomeViewModel::class.java)
@@ -69,6 +86,9 @@ class HomeFragment : BaseFragment(), KodeinAware {
 
             items_swipe_to_refresh.setOnRefreshListener {
                 Coroutines.main {
+
+
+
                     val works = homeViewModel.offlinedatas.await()
                     works.observe(viewLifecycleOwner, Observer { works ->
                         items_swipe_to_refresh.isRefreshing = false
@@ -109,6 +129,8 @@ class HomeFragment : BaseFragment(), KodeinAware {
 
 
     }
+
+
 
     private val health: HealthCheckResponse? = null
     private fun ping() {

@@ -2,6 +2,7 @@ package za.co.xisystems.itis_rrm.ui.mainview.unsubmitted
 
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.Observer
@@ -15,6 +16,7 @@ import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTOTemp
 import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
 import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.unsubmited_item.UnSubmitedJob_Item
@@ -35,6 +37,10 @@ class UnSubmittedFragment : BaseFragment(), KodeinAware {
         return inflater.inflate(R.layout.fragment_unsubmittedjobs, container, false)
     }
 
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         unsubmittedViewModel = activity?.run {
@@ -45,16 +51,22 @@ class UnSubmittedFragment : BaseFragment(), KodeinAware {
             val measurements = unsubmittedViewModel.getJobsForActivityId(ActivityIdConstants.JOB_ESTIMATE)
 //            val measurements = approveViewModel.offlinedata.await()
             measurements.observe(viewLifecycleOwner, Observer { job_s ->
-                noData.visibility = View.GONE
-                initRecyclerView(job_s.toApproveListItems())
-                toast(job_s.size.toString())
-                group12_loading.visibility = View.GONE
+              if (job_s.isEmpty()){
+                  noData.visibility = View.VISIBLE
+                  group12_loading.visibility = View.GONE
+              }else{
+                  noData.visibility = View.GONE
+                  initRecyclerView(job_s.toApproveListItems())
+                  toast(job_s.size.toString())
+                  group12_loading.visibility = View.GONE
+              }
+
             })
         }
     }
 
 
-    private fun List<JobDTOTemp>.toApproveListItems(): List<UnSubmitedJob_Item> {
+    private fun List<JobDTO>.toApproveListItems(): List<UnSubmitedJob_Item> {
         return this.map { approvej_items ->
             UnSubmitedJob_Item(approvej_items, unsubmittedViewModel, activity)
         }

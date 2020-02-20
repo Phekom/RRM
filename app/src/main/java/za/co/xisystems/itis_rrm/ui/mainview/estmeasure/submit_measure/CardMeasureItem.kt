@@ -4,16 +4,14 @@ import android.app.Dialog
 import android.net.Uri
 import android.view.View
 import androidx.fragment.app.FragmentActivity
-import androidx.navigation.Navigation
+import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import com.xwray.groupie.kotlinandroidextensions.Item
 import kotlinx.android.synthetic.main.measure_estimate_list_item.*
-import kotlinx.android.synthetic.main.work_list_item.*
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.work.INSET
 import za.co.xisystems.itis_rrm.ui.mainview.work.INSET_TYPE_KEY
-import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModel
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.GlideApp
 import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
@@ -32,6 +30,7 @@ open class CardMeasureItem(
     init {
         extras[INSET_TYPE_KEY] = INSET
     }
+    var clickListener: ((CardMeasureItem) -> Unit)? = null
 
     override fun getLayout() = R.layout.measure_estimate_list_item
 
@@ -53,19 +52,21 @@ open class CardMeasureItem(
             updateMeasureImage()
         }
 
-    }
-//    private fun sendJobtoWork(
-//        workViewModel: WorkViewModel,
-//        estimateId: String?,
-//        view: View?
-//    ) {
-//        val estimateId = estimateId
-//        Coroutines.main {
-//            workViewModel.work_Item.value = estimateId
+        viewHolder.itemView.setOnLongClickListener {
+            Coroutines.main {
+                measureViewModel.deleteItemMeasurefromList(photo)
+                measureViewModel.deleteItemMeasurephotofromList(photo)
+            }
+            it.isLongClickable
+        }
+
+
+//        viewHolder.itemView.setOnClickListener {
+//            activity?.toast("I was clkied " + position)
+//            clickListener?.invoke(this)
 //        }
-//        Navigation.findNavController(view!!)
-//            .navigate(R.id.action_nav_work_to_captureWorkFragment)
-//    }
+    }
+
 
 
     private fun GroupieViewHolder.updateMeasureImage() {

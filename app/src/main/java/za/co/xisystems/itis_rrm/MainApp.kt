@@ -47,9 +47,17 @@ open class MainApp : Application(), KodeinAware {
 
         bind() from singleton { UserRepository(instance(), instance(),instance()) }
         bind() from singleton { ContractsRepository() }
-        bind() from singleton { VoItemsRepository(instance(), instance(), instance()) }
+
         bind() from singleton { HomeRepository(instance(), instance()) }
         bind() from singleton { OfflineDataRepository(instance(), instance(), instance()) }
+
+
+
+        bind() from singleton { JobCreationDataRepository(instance(), instance(), instance()) }
+        bind() from singleton { JobApprovalDataRepository(instance(), instance(), instance()) }
+        bind() from singleton { WorkDataRepository(instance(), instance(), instance()) }
+        bind() from singleton { MeasureDataRepository(instance(), instance(), instance()) }
+//        bind() from singleton { WorkDataRepository(instance(), instance(), instance()) }
 
 //        bind<ID_Provider>() with singleton { IdProviderImpl(instance()) }
 

@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasurePhotoDTO
 import java.util.ArrayList
 
 /**
@@ -23,6 +24,9 @@ interface JobItemMeasureDao {
     fun insertJobItemMeasure2(itemMeasureId: String, jobId: String, projectItemId: String, qty: Double, lineRate: Double, startKm: Double, endKm: Double, jobDirectionId: Int,
          recordVersion: Int, recordSynchStateId: Int, estimateId: String, projectVoId: String, cpa: Int, lineAmount: Double, measureDate: String, selectedItemUom: String): Long
 
+
+    @Query("UPDATE JOB_ITEM_MEASURE SET jobItemMeasurePhotos =:jobItemMeasurePhotoList WHERE itemMeasureId = :itemMeasureId")
+    fun upDatePhotList(jobItemMeasurePhotoList: ArrayList<JobItemMeasurePhotoDTO>, itemMeasureId: String)
 
 //    fun insertJobItemMeasure2(projectId: String, descr: String?, endDate: String?,
 //                      items: ArrayList<ItemDTO>?, projectCode: String?, projectMinus: String?, projectPlus: String?,
@@ -44,15 +48,17 @@ interface JobItemMeasureDao {
     fun checkIfJobItemMeasureExistsForJobIdAndEstimateId(jobId: String?, estimateId: String): Boolean
 
     @Query("SELECT * FROM JOB_ITEM_MEASURE WHERE estimateId = :estimateId AND jobId LIKE :jobId")
-    fun getJobItemMeasuresForJobIdAndEstimateId( jobId: String?, estimateId: String ): List<JobItemMeasureDTO>
+    fun getJobItemMeasuresForJobIdAndEstimateId( jobId: String?, estimateId: String ): LiveData<List<JobItemMeasureDTO>>
 
 
     @Query("SELECT * FROM JOB_ITEM_MEASURE WHERE jobId = :jobId ORDER BY jimNo ASC")
     fun getJobItemMeasureForJobId(jobId: String): LiveData<JobItemMeasureDTO>
 
+    @Query("DELETE FROM JOB_ITEM_MEASURE WHERE ItemMeasureId = :ItemMeasureId")
+    fun deleteItemMeasurefromList(ItemMeasureId: String)
 
-
-//    LiveData<List<JobItemMeasurePhotoDTO>>
+//    @Query("SELECT * FROM JOB_ITEM_MEASURE WHERE  jobId LIKE :jobId")
+//    fun getJobItemMeasuresForJobIdAndEstimateId( jobId: String?): LiveData<List<JobItemMeasureDTOTemp>>
 
 
 //    @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE itemId = :itemId")

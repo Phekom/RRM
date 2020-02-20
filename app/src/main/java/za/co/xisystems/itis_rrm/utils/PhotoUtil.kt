@@ -487,6 +487,29 @@ object PhotoUtil {
 
     }
 
+
+    fun createPhotofolder() {
+//    fun createPhotofolder( fileName: String) {
+
+        val storageDir =
+            File(Environment.getExternalStorageDirectory().toString() + File.separator + FOLDER)
+        if (!storageDir.exists()) {
+            storageDir.mkdirs()
+        }
+
+//        val imageByteArray = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//            Base64.getDecoder().decode(photo)
+//        } else {
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//                Base64.getDecoder().decode(photo)
+//            } else {
+//                android.util.Base64.decode(photo, android.util.Base64.DEFAULT)
+//            }
+//        }
+//        File(storageDir.path + "/" ).writeBytes()
+
+    }
+
     fun getUri2(captureItemMeasurePhotoActivity: CaptureItemMeasurePhotoActivity): Uri? {
         try {
             return FileProvider.getUriForFile(
@@ -531,4 +554,7 @@ object PhotoUtil {
 //        fo.write(bytes);
 //        fo.close();
 //    }
+
+
+
 }

@@ -59,8 +59,8 @@ interface ProjectDao {
     @Query("DELETE FROM PROJECT_TABLE")
     fun deleteAll()
 
-
-
+    @Query("SELECT projectCode FROM PROJECT_TABLE WHERE projectId LIKE :projectId")
+    fun getProjectCodeForId(projectId: String?): String
 
 
 }

@@ -1,9 +1,9 @@
 package za.co.xisystems.itis_rrm.utils
 
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTOTemp
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimatesPhotoDTO
+import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.IJobSubmit
 import java.text.DecimalFormat
 import java.util.*
 
@@ -18,7 +18,7 @@ object JobUtils {
         return String.format(Locale.US, "Total Cost: %s", formatCost(totalCost))
     }
 
-    fun formatTotalCost(job: JobDTOTemp?): String {
+    fun formatTotalCost(job: JobDTO?): String {
         var quantity = 0.0
         var cost = 0.0
         if (job != null && job!!.JobItemEstimates != null)
@@ -29,7 +29,7 @@ object JobUtils {
         return formatTotalCost(cost)
     }
 
-    fun areQuantitiesValid(job: JobDTOTemp?): Boolean {
+    fun areQuantitiesValid(job: JobDTO?): Boolean {
         if (job == null || job!!.JobItemEstimates == null || job!!.JobItemEstimates!!.isEmpty())
             return false
         else {
@@ -42,12 +42,14 @@ object JobUtils {
     }
 
     // TODO this will not be needed
-    fun compressJobEstimates(job: JobDTOTemp?) {
+    fun compressJobEstimates(job: JobDTO?) {
         if (job != null && job!!.JobItemEstimates != null)
             for (jobItemEstimate in job!!.JobItemEstimates!!) {
                 compressJobEstimates(jobItemEstimate)
             }
     }
+
+
 
     private fun compressJobEstimates(jobItemEstimate: JobItemEstimateDTO?) {
         if (jobItemEstimate == null) return

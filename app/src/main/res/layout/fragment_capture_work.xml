@@ -42,38 +42,98 @@
 
                     android:orientation="vertical">
 
-<!--                <za.co.xisystems.itismaintenance.newCode.custom.controls.ItisFieldHeadingRegular-->
-<!--                        android:id="@+id/action_selected_textView"-->
-<!--                        android:layout_width="18dp"-->
-<!--                        android:layout_height="0dp"-->
-<!--                        android:layout_gravity="center_horizontal"-->
-<!--                        android:textAppearance="?android:attr/textAppearanceMedium"-->
-<!--                        android:textColor="@color/itis_gray" />-->
+
+
+<!--                <androidx.constraintlayout.widget.ConstraintLayout-->
+<!--                        android:layout_width="match_parent"-->
+<!--                        android:layout_height="wrap_content">-->
+
+<!--                    <FrameLayout-->
+<!--                            android:id="@+id/thumb_photo_place_holder_frameLayout"-->
+<!--                            android:layout_width="match_parent"-->
+<!--                            android:layout_height="400dp"-->
+<!--                            android:src="@drawable/logo_new_large"-->
+<!--                            app:layout_constraintBottom_toBottomOf="parent"-->
+<!--                            app:layout_constraintEnd_toEndOf="parent"-->
+<!--                            app:layout_constraintStart_toStartOf="parent"-->
+<!--                            app:layout_constraintTop_toTopOf="parent" >-->
+
+<!--                        <ImageView-->
+<!--                                android:id="@+id/work_imageView"-->
+<!--                                android:visibility="gone"-->
+<!--                                android:layout_width="match_parent"-->
+<!--                                android:layout_height="match_parent"-->
+<!--                                android:padding="@dimen/small" />-->
+
+<!--                    </FrameLayout>-->
+<!--                </androidx.constraintlayout.widget.ConstraintLayout>-->
 
                 <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/thumb_photo_place_holder_frameLayout"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
+                        android:layout_height="400dp">
 
-                    <FrameLayout
-                            android:id="@+id/thumb_photo_place_holder_frameLayout"
-                            android:layout_width="match_parent"
-                            android:layout_height="400dp"
-                            android:src="@drawable/logo_new_large"
+
+                    <!--                    <FrameLayout-->
+                    <!--                            android:id="@+id/thumb_photo_place_holder_frameLayout"-->
+                    <!--                            android:layout_width="match_parent"-->
+                    <!--                            android:layout_height="400dp"-->
+                    <!--                            android:src="@drawable/logo_new_large"-->
+                    <!--                            app:layout_constraintBottom_toBottomOf="parent"-->
+                    <!--                            app:layout_constraintEnd_toEndOf="parent"-->
+                    <!--                            app:layout_constraintStart_toStartOf="parent"-->
+                    <!--                            app:layout_constraintTop_toTopOf="parent" >-->
+
+                    <ImageView
+                            android:id="@+id/work_imageView"
+                            android:layout_width="291dp"
+                            android:layout_height="369dp"
+                            android:layout_marginTop="8dp"
+                            android:padding="@dimen/small"
+                            android:visibility="visible"
                             app:layout_constraintBottom_toBottomOf="parent"
                             app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintHorizontal_bias="0.49"
                             app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toTopOf="parent" >
+                            app:layout_constraintTop_toTopOf="parent" />
 
-                        <ImageView
-                                android:id="@+id/work_imageView"
-                                android:visibility="gone"
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:padding="@dimen/small" />
+<!--                    <ImageSwitcher-->
+<!--                            android:id="@+id/work_imageView"-->
+<!--                            android:layout_width="293dp"-->
+<!--                            android:layout_height="348dp"-->
+<!--                            android:layout_marginStart="8dp"-->
+<!--                            android:layout_marginTop="1dp"-->
+<!--                            android:layout_marginEnd="8dp"-->
+<!--                            android:layout_marginBottom="36dp"-->
+<!--                            app:layout_constraintBottom_toTopOf="@+id/prev"-->
+<!--                            app:layout_constraintEnd_toEndOf="parent"-->
+<!--                            app:layout_constraintStart_toStartOf="parent"-->
+<!--                            app:layout_constraintTop_toTopOf="parent"-->
+<!--                            app:layout_constraintVertical_bias="0.0" />-->
 
-                    </FrameLayout>
+<!--                    <Button-->
+<!--                            android:id="@+id/prev"-->
+<!--                            android:layout_width="wrap_content"-->
+<!--                            android:layout_height="wrap_content"-->
+<!--                            android:layout_gravity="bottom"-->
+<!--                            android:text="@string/prev"-->
+<!--                            app:layout_constraintBottom_toBottomOf="parent"-->
+<!--                            app:layout_constraintEnd_toStartOf="@+id/next"-->
+<!--                            app:layout_constraintHorizontal_bias="0.119"-->
+<!--                            app:layout_constraintStart_toStartOf="parent" />-->
+
+<!--                    <Button-->
+<!--                            android:id="@+id/next"-->
+<!--                            android:layout_width="wrap_content"-->
+<!--                            android:layout_height="wrap_content"-->
+<!--                            android:layout_gravity="bottom|right"-->
+<!--                            android:layout_marginEnd="16dp"-->
+<!--                            android:text="@string/next"-->
+<!--                            app:layout_constraintBottom_toBottomOf="parent"-->
+<!--                            app:layout_constraintEnd_toEndOf="parent" />-->
+
+                    <!--                    </FrameLayout>-->
                 </androidx.constraintlayout.widget.ConstraintLayout>
-
 
                 <TextView
                         android:id="@+id/headimg"
@@ -126,6 +186,27 @@
                  </LinearLayout>
             </LinearLayout>
         </ScrollView>
-    </LinearLayout>
 
+
+
+    </LinearLayout>
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            android:id="@+id/items_swipe_to_refresh"
+            android:layout_width="wrap_content"
+            android:layout_height="0px"
+            android:layout_weight="1"
+            app:layout_constraintBottom_toTopOf="@+id/linearLayout2"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/estimates_to_be_approved_listView"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                />
+
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 </FrameLayout>
+
+

@@ -9,6 +9,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimatesPhotoDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.ToDoListEntityDTO
+import za.co.xisystems.itis_rrm.data.repositories.JobApprovalDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.approve_job_item.ApproveJob_Item
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
@@ -17,24 +18,49 @@ import za.co.xisystems.itis_rrm.utils.lazyDeferred
  * Created by Francis Mahlava on 03,October,2019
  */
 class ApproveJobsViewModel (
-    private val offlineDataRepository: OfflineDataRepository
+    private val jobApprovalDataRepository: JobApprovalDataRepository
 ) : ViewModel() {
 
     val user by lazyDeferred {
-        offlineDataRepository.getUser()
+        jobApprovalDataRepository.getUser()
     }
 
-
-
-    suspend fun getEntitiesListForActivityId(activityId: Int): LiveData<List<ToDoListEntityDTO>> {
+    suspend fun getUOMForProjectItemId(projectItemId: String): String {
         return withContext(Dispatchers.IO) {
-            offlineDataRepository.getEntitiesListForActivityId(activityId)
+            jobApprovalDataRepository.getUOMForProjectItemId(projectItemId)
+        }
+    }
+
+    suspend fun getProjectSectionIdForJobId(jobId: String): String {
+        return withContext(Dispatchers.IO) {
+            jobApprovalDataRepository.getProjectSectionIdForJobId(jobId)
+        }
+    }
+    suspend fun getRouteForProjectSectionId(sectionId: String): String {
+        return withContext(Dispatchers.IO) {
+            jobApprovalDataRepository.getRouteForProjectSectionId(sectionId)
+        }
+    }
+    suspend fun getSectionForProjectSectionId(sectionId: String): String {
+        return withContext(Dispatchers.IO) {
+            jobApprovalDataRepository.getSectionForProjectSectionId(sectionId)
+        }
+    }
+
+    val jobapproval_Item6 = MutableLiveData<ApproveJob_Item>()
+    fun Itemss(jobapproval6: ApproveJob_Item) {
+        jobapproval_Item6.value = jobapproval6
+    }
+
+    suspend fun processWorkflowMove( userId: String, trackRounteId: String, description: String?, direction: Int ) {
+        return withContext(Dispatchers.IO) {
+            jobApprovalDataRepository.processWorkflowMove( userId ,trackRounteId, description, direction)
         }
     }
 
     suspend fun getJobsForActivityId(activityId: Int): LiveData<List<JobDTO>> {
         return withContext(Dispatchers.IO) {
-            offlineDataRepository.getJobsForActivityId(
+            jobApprovalDataRepository.getJobsForActivityId(
                 activityId
 //                , measureComplete,
 //                estWorksComplete,
@@ -42,65 +68,68 @@ class ApproveJobsViewModel (
             )
         }
     }
+
     suspend fun getDescForProjectId(projectId: String): String {
         return withContext(Dispatchers.IO) {
-            offlineDataRepository.getProjectDescription(projectId)
-        }
-    }
-    suspend fun getDescForProjectItemId(projectItemId: String): String {
-        return withContext(Dispatchers.IO) {
-            offlineDataRepository.getProjectItemDescription(projectItemId)
-        }
-    }
-    suspend fun getUOMForProjectItemId(projectItemId: String): String {
-        return withContext(Dispatchers.IO) {
-            offlineDataRepository.getUOMForProjectItemId(projectItemId)
-        }
-    }
-
-    suspend fun getProjectSectionIdForJobId(jobId: String): String {
-        return withContext(Dispatchers.IO) {
-            offlineDataRepository.getProjectSectionIdForJobId(jobId)
-        }
-    }
-    suspend fun getRouteForProjectSectionId(sectionId: String): String {
-        return withContext(Dispatchers.IO) {
-            offlineDataRepository.getRouteForProjectSectionId(sectionId)
-        }
-    }
-    suspend fun getSectionForProjectSectionId(sectionId: String): String {
-        return withContext(Dispatchers.IO) {
-            offlineDataRepository.getSectionForProjectSectionId(sectionId)
+            jobApprovalDataRepository.getProjectDescription(projectId)
         }
     }
 
     suspend fun getJobEstimationItemsForJobId(jobID: String?): LiveData<List<JobItemEstimateDTO>> {
         return withContext(Dispatchers.IO) {
-            offlineDataRepository.getJobEstimationItemsForJobId(jobID)
+            jobApprovalDataRepository.getJobEstimationItemsForJobId(jobID)
         }
     }
 
-    suspend fun getJobEstimationItemsPhoto(estimateId: String):  LiveData<List<JobItemEstimatesPhotoDTO>> {
-        return withContext(Dispatchers.IO) {
-            offlineDataRepository.getJobEstimationItemsPhoto(estimateId)
-        }
-    }
+
     suspend fun getJobEstimationItemsPhotoStartPath(estimateId: String): String {
         return withContext(Dispatchers.IO) {
-            offlineDataRepository.getJobEstimationItemsPhotoStartPath(estimateId)
+            jobApprovalDataRepository.getJobEstimationItemsPhotoStartPath(estimateId)
         }
     }
     suspend fun getJobEstimationItemsPhotoEndPath(estimateId: String): String {
         return withContext(Dispatchers.IO) {
-            offlineDataRepository.getJobEstimationItemsPhotoEndPath(estimateId)
+            jobApprovalDataRepository.getJobEstimationItemsPhotoEndPath(estimateId)
         }
     }
 
-    suspend fun processWorkflowMove( userId: String, trackRounteId: String, description: String?, direction: Int ) {
+    suspend fun getDescForProjectItemId(projectItemId: String): String {
         return withContext(Dispatchers.IO) {
-            offlineDataRepository.processWorkflowMove( userId ,trackRounteId, description, direction)
+            jobApprovalDataRepository.getProjectItemDescription(projectItemId)
         }
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//
+//    suspend fun getEntitiesListForActivityId(activityId: Int): LiveData<List<ToDoListEntityDTO>> {
+//        return withContext(Dispatchers.IO) {
+//            jobApprovalDataRepository.getEntitiesListForActivityId(activityId)
+//        }
+//    }
+//
+//
+//
+//    suspend fun getJobEstimationItemsPhoto(estimateId: String):  LiveData<List<JobItemEstimatesPhotoDTO>> {
+//        return withContext(Dispatchers.IO) {
+//            jobApprovalDataRepository.getJobEstimationItemsPhoto(estimateId)
+//        }
+//    }
+//
 
 //    suspend fun getMessages() : String {
 //        return withContext(Dispatchers.IO) {
@@ -128,10 +157,6 @@ class ApproveJobsViewModel (
 //    fun Item5(jobapproval5: String) {
 //        jobapproval_Item5.value = jobapproval5
 //    }
-    val jobapproval_Item6 = MutableLiveData<ApproveJob_Item>()
-    fun Itemss(jobapproval6: ApproveJob_Item) {
-        jobapproval_Item6.value = jobapproval6
-    }
 
 
 }

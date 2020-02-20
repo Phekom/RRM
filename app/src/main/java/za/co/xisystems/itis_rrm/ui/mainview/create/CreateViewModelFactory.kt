@@ -2,6 +2,7 @@ package za.co.xisystems.itis_rrm.ui.mainview.create
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import za.co.xisystems.itis_rrm.data.repositories.JobCreationDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 
 /**
@@ -10,9 +11,9 @@ import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 
 @Suppress("UNCHECKED_CAST")
 class CreateViewModelFactory(
-    private val offlineDataRepository: OfflineDataRepository
+    private val jobCreationDataRepository: JobCreationDataRepository
 ): ViewModelProvider.NewInstanceFactory() {
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-        return CreateViewModel(offlineDataRepository) as T
+        return CreateViewModel(jobCreationDataRepository) as T
     }
 }

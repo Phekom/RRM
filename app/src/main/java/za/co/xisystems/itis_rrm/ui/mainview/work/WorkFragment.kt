@@ -2,8 +2,10 @@ package za.co.xisystems.itis_rrm.ui.mainview.work
 
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -45,21 +47,26 @@ class WorkFragment : BaseFragment(), KodeinAware {
         workViewModel = activity?.run {
             ViewModelProviders.of(this, factory).get(WorkViewModel::class.java)
         } ?: throw Exception("Invalid Activity") as Throwable
+        getWorkData()
+
+
+    }
+
+    private fun getWorkData() {
         Coroutines.main {
-            //            mydata_loading.show()
-            val works = workViewModel.getJobsForActivityId(ActivityIdConstants.JOB_APPROVED, ActivityIdConstants.ESTIMATE_INCOMPLETE)
-//            val works = workViewModel.getJobsForActivityIds(ActivityIdConstants.JOB_APPROVED, ActivityIdConstants.ESTIMATE_INCOMPLETE)
-//            val works = workViewModel.getJobsForActivityIds(ActivityIdConstants.ESTIMATE_INCOMPLETE)
-//            val jobs = approveViewModel.offlinedata.await()
+            val works = workViewModel.getJobsForActivityId(
+                ActivityIdConstants.JOB_APPROVED,
+                ActivityIdConstants.ESTIMATE_INCOMPLETE
+            )
+//            val works = workViewModel.getJobsForActivityId(ActivityIdConstants.JOB_APPROVED..ActivityIdConstants.ESTIMATE_INCOMPLETE)
             works.observe(viewLifecycleOwner, Observer { work_s ->
                 noData.visibility = View.GONE
                 toast(work_s.size.toString())
                 initRecyclerView(work_s.toWorkListItems())
                 group7_loading.visibility = View.GONE
             })
+
         }
-
-
     }
 
 
@@ -77,7 +84,7 @@ class WorkFragment : BaseFragment(), KodeinAware {
 
         groupAdapter.setOnItemClickListener { item, view ->
 
-//            ToastUtils().toastShort(activity,
+            //            ToastUtils().toastShort(activity,
 //                "Job Info: Start Km: ")
 
 //            Coroutines.main {
@@ -96,6 +103,29 @@ class WorkFragment : BaseFragment(), KodeinAware {
 
     }
 
+    override fun onResume() {
+        super.onResume()
+        getWorkData()
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setHasOptionsMenu(true)
+    }
+
+    override fun onPrepareOptionsMenu(menu: Menu) {
+        val item = menu.findItem(R.id.action_settings)
+        val item1 = menu.findItem(R.id.action_logout)
+        val item2 = menu.findItem(R.id.action_search)
+        if (item != null) item.isVisible = false
+        if (item1 != null) item1.isVisible = false
+//        if (item2 != null) item2.isVisible = false
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
 
 //    private fun sendJobtoAprove(
 //        jobId: String?,
@@ -110,39 +140,48 @@ class WorkFragment : BaseFragment(), KodeinAware {
 //            .navigate(R.id.action_nav_approvMeasure_to_measureApprovalFragment)
 //    }
 
-//    private fun List<JobItemEstimateDTO>.toWorkListItems(): List<ExpandableGroup> {
+    //    private fun List<JobItemEstimateDTO>.toWorkListItems(): List<ExpandableGroup> {
     private fun List<JobDTO>.toWorkListItems(): List<ExpandableGroup> {
         //Initialize Expandable group with expandable item and specify whether it should be expanded by default or not
 
         return this.map { work_items ->
 
-//                                    if (work_items.StartKm <= work_items.EndKm) {
+            //                                    if (work_items.StartKm <= work_items.EndKm) {
 //                                        toast("Job Info: Start Km: " + work_items.StartKm.toString() + " - End Km: " + work_items.EndKm)
 //                                    } else if (null == work_items.TrackRouteId) {
 //                                       toast("Job not found please click on item to download job.")
 //                                    }
 
             val expandableHeaderItem =
-            ExpandableHeaderWorkItem( activity, work_items, workViewModel, work_items.JobId)
+                ExpandableHeaderWorkItem(activity, work_items, workViewModel, work_items.JobId)
 //            ExpandableHeaderItem("JI:${work_items.JiNo} ", work_items.Descr!! , activity, work_items, workViewModel)
             ExpandableGroup(expandableHeaderItem, false).apply {
                 Coroutines.main {
-                    val estimates = workViewModel.getJobEstimationItemsForJobId(work_items.JobId)
+
+                    val estimates = workViewModel.getJobEstimationItemsForJobId(work_items.JobId,ActivityIdConstants.ESTIMATE_INCOMPLETE)
                     estimates.observe(viewLifecycleOwner, Observer { i_tems ->
-                     val estimateId = arrayOfNulls<String>(i_tems.size)
-                     val Desc = arrayOfNulls<String>(i_tems.size)
-                     val qty = arrayOfNulls<String>(i_tems.size)
-                     val rate = arrayOfNulls<String>(i_tems.size)
-                        for (i in i_tems.indices) {
-                            Coroutines.main {
-                                Desc[i] =
-                                    workViewModel?.getDescForProjectItemId(i_tems[i].projectItemId!!)
-                                qty[i] = i_tems[i].qty.toString()
-                                rate[i] = i_tems[i].lineRate.toString()
-                                estimateId[i] = i_tems[i].estimateId
-                                add(CardItem( activity,Desc[i]!!, qty[i]!!, rate[i]!!,estimateId[i]!!, workViewModel))
+                        Coroutines.main {
+                                for (item in i_tems) {
+
+                                    val estimateId = arrayOfNulls<String>(i_tems.size)
+                                    val Desc = arrayOfNulls<String>(i_tems.size)
+                                    val qty = arrayOfNulls<String>(i_tems.size)
+                                    val rate = arrayOfNulls<String>(i_tems.size)
+                                    for (i in i_tems.indices) {
+                                        Coroutines.main {
+                                            Desc[i] =
+                                                workViewModel?.getDescForProjectItemId(i_tems[i].projectItemId!!)
+                                            qty[i] = i_tems[i].qty.toString()
+                                            rate[i] = i_tems[i].lineRate.toString()
+                                            estimateId[i] = i_tems[i].estimateId
+                                            add(CardItem(  activity, Desc[i].toString(),   qty[i]!!,
+                                                rate[i]!!,   estimateId[i]!!,  workViewModel, item  , work_items                                    )
+                                            )
+//                                add(CardItem( activity, Desc[i].toString(),  workViewModel)).toString()
+                                        }
+                                    }
+                                }
                             }
-                        }
 
                     })
 
@@ -153,4 +192,6 @@ class WorkFragment : BaseFragment(), KodeinAware {
     }
 
 
-}
+    }
+
+

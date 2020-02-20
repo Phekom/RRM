@@ -6,7 +6,6 @@ import com.google.gson.annotations.SerializedName
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.ToDoGroupsDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.WorkflowJobDTO
-import za.co.xisystems.itis_rrm.data.localDB.models.WorkflowJob
 
 
 data class WorkflowMoveResponse(
@@ -17,15 +16,13 @@ data class WorkflowMoveResponse(
     @SerializedName("JobDTO")
     val job: JobDTO,
     @SerializedName("WorkflowJob")
-    private var workflowJob: WorkflowJobDTO?
-
-
+    var workflowJob: WorkflowJobDTO?
 
 ){
-    fun getWorkflowJob(): WorkflowJobDTO? {
-        return workflowJob
-    }
-    fun setWorkflowJob(workflowJob: WorkflowJobDTO?) {
-        this.workflowJob = workflowJob
-    }
+//    fun getWorkflowJob(): WorkflowJobDTO? {
+//        return workflowJob
+//    }
+//    fun setWorkflowJob(workflowJob: WorkflowJobDTO?) {
+//        this.workflowJob = workflowJob
+//    }
 }

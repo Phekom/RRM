@@ -51,7 +51,7 @@ data class ItemDTOTemp(
 
     val sectionItemId: String?,
 
-    val quantity: Double = 0.toDouble(),
+    var quantity: Double = 0.toDouble(),
 
     val estimateId: String?,
 
@@ -59,7 +59,7 @@ data class ItemDTOTemp(
     @ColumnInfo(name = "projectId", index = true)
     val projectId: String,
 
-     val jobId: String
+    val jobId: String
 
 
 ): Serializable

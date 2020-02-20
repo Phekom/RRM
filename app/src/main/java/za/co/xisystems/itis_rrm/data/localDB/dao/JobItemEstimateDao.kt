@@ -27,7 +27,13 @@ interface JobItemEstimateDao {
     @Query("SELECT * FROM JOB_ITEM_ESTIMATE WHERE jobId = :jobId")
     fun getJobEstimationItemsForJobId2(jobId: String) :  JobItemEstimateDTO
 
-    @Query("SELECT * FROM JOB_ITEM_ESTIMATE WHERE actId = :actId  ORDER BY jobId ASC " )
+    @Query("SELECT * FROM JOB_ITEM_ESTIMATE WHERE actId = :actId AND MEASURE_ACT_ID LIKE :activityId2 OR MEASURE_ACT_ID LIKE :activityId3 ORDER BY actId ASC " )
+    fun getJobMeasureForActivityId(actId: Int, activityId2: Int, activityId3: Int): LiveData<List<JobItemEstimateDTO>>
+
+//    @Query("SELECT * FROM JOB_ITEM_ESTIMATE WHERE actId = :actId  ORDER BY actId ASC " )
+//    fun getJobsEstimateForActivityId(actId: Int): LiveData<List<JobItemEstimateDTO>>
+
+    @Query("SELECT * FROM JOB_ITEM_ESTIMATE WHERE actId < :actId  ORDER BY jobId ASC " )
     fun getJobsForActivityId(actId: Int): LiveData<List<JobItemEstimateDTO>>
 
     @Query("SELECT estimateId FROM JOB_ITEM_ESTIMATE WHERE jobId = :jobId")
@@ -39,10 +45,24 @@ interface JobItemEstimateDao {
     @Query("SELECT * FROM JOB_ITEM_ESTIMATE WHERE jobId = :jobID")
     fun getJobItemsToMeasureForJobId(jobID: String): LiveData<List<JobItemEstimateDTO>>
 
-//    @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE sectionItemId = :sectionItem AND projectId = :projectId")
-//    fun getAllItemsForSectionItem(sectionItem : String, projectId : String ): LiveData<List<ItemDTO>>
+//    @Query("SELECT * FROM JOB_ITEM_ESTIMATE WHERE  actId = :estWorksComplete  AND jobId = :jobId ")
+//    fun getJobItemsEstimatesDoneForJobId(jobId: String?,estWorksComplete : Int  ):  LiveData<List<JobItemEstimateDTO>>
 
 
     @Query("DELETE FROM JOB_ITEM_ESTIMATE")
     fun deleteAll()
+
+    @Query("SELECT * FROM JOB_ITEM_ESTIMATE WHERE estimateId = :estimateId" )
+    fun getJobItemEstimateForEstimateId(estimateId: String): LiveData<JobItemEstimateDTO>
+
+
+    @Query("UPDATE JOB_ITEM_ESTIMATE SET MEASURE_ACT_ID =:actId WHERE estimateId = :estimateId")
+    fun setMeasureActId(actId: Int, estimateId: String)
+
+
+    @Query("SELECT COUNT(A.estimateId ) AS 'workDone' FROM JOB_ITEM_ESTIMATE AS A JOIN JOB_ESTIMATE_WORKS  AS B ON B.estimateId = A.estimateId AND B.actId = :estWorksComplete WHERE A.jobId LIKE :jobId AND A.actId = :estimateWorkPartComplete ")
+    fun getJobItemsEstimatesDoneForJobId(jobId: String?, estimateWorkPartComplete: Int, estWorksComplete: Int): Int
+
+
+
 }

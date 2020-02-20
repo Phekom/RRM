@@ -34,12 +34,16 @@ class ApproveMeasureViewModel (
         measureapproval_Item.value = measureapproval
     }
 
-
     suspend fun getJobApproveMeasureForActivityId(activityId: Int): LiveData<List<JobItemMeasureDTO>> {
         return withContext(Dispatchers.IO) {
             offlineDataRepository.getJobApproveMeasureForActivityId(activityId)
         }
     }
+//    suspend fun getJobApproveMeasureForActivityId(activityId: Int): LiveData<List<JobItemMeasureDTO>> {
+//        return withContext(Dispatchers.IO) {
+//            offlineDataRepository.getJobApproveMeasureForActivityId(activityId)
+//        }
+//    }
 
     suspend fun getJobsMeasureForActivityId(
         estimateComplete: Int,

@@ -1,14 +1,14 @@
 package za.co.xisystems.itis_rrm.data.network
 
+import com.google.android.gms.nearby.messages.Distance
 import com.google.gson.JsonObject
 import okhttp3.OkHttpClient
+import okhttp3.Protocol
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.*
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTOTemp
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTOTemp
 import za.co.xisystems.itis_rrm.data.network.responses.*
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -115,10 +115,14 @@ interface BaseConnectionApi {
 //    @Headers("Content-Type : application/json")
     @POST("GetRouteSectionPoint")
     suspend fun getRouteSectionPoint(
+
+        @Field("Distance") distance : Double,
+        @Field("MustBeInBuffer") buffer: Int,
         @Field("Latitude") latitude: Double,
         @Field("Longitude") longitude: Double,
         @Field("UserId") UserId: String
     ): Response<RouteSectionPointResponse>
+
 
 
     @POST("SaveRrmJob")
@@ -127,7 +131,10 @@ interface BaseConnectionApi {
     ): Response<JobResponse>
 
 
-
+    @POST("UploadWorksItem")
+    suspend fun uploadWorksItem(
+        @Body job: JsonObject
+    ): Response<UploadWorksItemResponse>
 
 
 
@@ -201,10 +208,13 @@ interface BaseConnectionApi {
         ): BaseConnectionApi {
             val interceptor = HttpLoggingInterceptor()
             interceptor.level = HttpLoggingInterceptor.Level.BODY
-            val okkHttpclient = OkHttpClient.Builder().apply {
-                readTimeout(2, TimeUnit.MINUTES)
-                writeTimeout(2, TimeUnit.MINUTES)
-                connectTimeout(2, TimeUnit.MINUTES)
+            val okkHttpclient = OkHttpClient
+                .Builder().apply {
+                readTimeout(5, TimeUnit.MINUTES)
+                writeTimeout(5, TimeUnit.MINUTES)
+                connectTimeout(5, TimeUnit.MINUTES)
+                protocols(Arrays.asList(Protocol.HTTP_1_1))
+//                .pingInterval(100, TimeUnit.MILLISECONDS)
                 addInterceptor(interceptor)
                 addInterceptor(networkConnectionInterceptor)
                 addInterceptor { chain ->
