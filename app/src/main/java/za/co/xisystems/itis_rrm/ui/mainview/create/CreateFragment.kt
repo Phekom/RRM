@@ -1,11 +1,9 @@
 package za.co.xisystems.itis_rrm.ui.mainview.create
 
+import android.app.ProgressDialog
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.MenuItem
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.Toast
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -34,7 +32,7 @@ import java.util.*
  */
 
 
-class CreateFragment : BaseFragment(), OfflineListener , KodeinAware, IJobSubmit {
+class CreateFragment : BaseFragment(), OfflineListener , KodeinAware {
     companion object {
         val TAG: String = CreateFragment::class.java.simpleName
         val PROJECT_ID1 : String  = "PROJECT_ID1"
@@ -69,7 +67,7 @@ class CreateFragment : BaseFragment(), OfflineListener , KodeinAware, IJobSubmit
 //    internal var selectedProjectitem: String? = null
 
     @MyState
-    var the_job : JobDTOTemp? = null
+    var the_job : JobDTO? = null
 
     private lateinit var newJobItemEstimatesPhotosList: ArrayList<JobItemEstimatesPhotoDTO>
     private lateinit var newJobItemEstimatesWorksList: ArrayList<JobEstimateWorksDTO>
@@ -95,6 +93,7 @@ class CreateFragment : BaseFragment(), OfflineListener , KodeinAware, IJobSubmit
         newJobItemEstimatesWorksList = ArrayList<JobEstimateWorksDTO>()
 //        newJobItemEstimatesList2 = ArrayList<JobItemEstimateDTO>()
 
+        setHasOptionsMenu(true)
 
 //        jobItemSectionArrayList2 = ArrayList<JobSectionDTO>()
 //        jobItemMeasureArrayList2 = ArrayList<JobItemMeasureDTO>()
@@ -103,6 +102,18 @@ class CreateFragment : BaseFragment(), OfflineListener , KodeinAware, IJobSubmit
 //        newJobItemEstimatesWorksList2 = ArrayList<JobEstimateWorksDTO>()
     }
 
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun onPrepareOptionsMenu(menu: Menu) {
+        val item = menu.findItem(R.id.action_settings)
+        val item1 = menu.findItem(R.id.action_logout)
+        val item2 = menu.findItem(R.id.action_search)
+        if (item != null) item.isVisible = false
+        if (item1 != null) item1.isVisible = false
+        if (item2 != null) item2.isVisible = false
+    }
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?, savedInstanceState: Bundle?
@@ -129,7 +140,7 @@ class CreateFragment : BaseFragment(), OfflineListener , KodeinAware, IJobSubmit
             var user = createViewModel.user.await()
             user.observe(viewLifecycleOwner, Observer { user_ ->
                 useR = user_
-                 }
+                  }
             )}
 
         val myClickListener = View.OnClickListener { view ->
@@ -173,17 +184,17 @@ class CreateFragment : BaseFragment(), OfflineListener , KodeinAware, IJobSubmit
         jobItemMeasureArrayList: ArrayList<JobItemMeasureDTO>,
         jobItemSectionArrayList: ArrayList<JobSectionDTO>,
         description: String?
-    ): JobDTOTemp {
+    ): JobDTO {
         val newJobId: String = SqlLitUtils.generateUuid()
         val today = (java.util.Calendar.getInstance().time)
 
-        val newjob = JobDTOTemp(
+        val newjob = JobDTO(
             0, newJobId, contractID, projectID, null,
             0.0, 0.0, description, null, useR!!, null, null,
-            0, 0, 0, 0, today, today, today, null,
+            0, 0, 0, 0, today.toString(), today.toString(), today.toString(), null,//null,null,null,null,
             newJobItemEstimatesList, jobItemMeasureArrayList,jobItemSectionArrayList, null, 0, null, null,
             null, 0, 0, 0, 0, 0, 0, 0, null,
-            0, 0, null, null, null
+            0, 0, null, null, null,null, null,0,null,0, null
 
         )
 
@@ -212,17 +223,6 @@ class CreateFragment : BaseFragment(), OfflineListener , KodeinAware, IJobSubmit
         }
     }
 
-//    fun setMenuItems() {
-//        if (saveMenuItem != null) {
-//            saveMenuItem.setVisible(job != null && items != null && !items.isEmpty())
-//        }
-//        setResetButton()
-//    }
-//
-//    private fun setResetButton() {
-////        if (isJobSaved) resetButton.visibility = View.GONE else resetButton.visibility =
-////            View.VISIBLE
-//    }
 
     private fun setLayoutsVisibility() {
         val hasItems = adapter != null && adapter!!.itemCount > 0
@@ -333,15 +333,6 @@ class CreateFragment : BaseFragment(), OfflineListener , KodeinAware, IJobSubmit
 //            }
         }
 
-    }
-
-
-    override fun onJobSubmitted() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun onInvalidJob() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     override fun onStarted() {

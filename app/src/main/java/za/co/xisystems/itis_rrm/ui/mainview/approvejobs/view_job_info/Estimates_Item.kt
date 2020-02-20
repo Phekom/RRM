@@ -36,7 +36,7 @@ class Estimates_Item(
                     approveViewModel?.getUOMForProjectItemId(jobItemEstimateDTO.projectItemId!!)
                 measure_item_description_textView.text = descr
                 estimation_item_uom_textView.text = "Unit of Measure: $uom"
-                if (uom.equals("NONE")) {
+                if (uom == "NONE" || uom == "") {
                     estimation_item_uom_textView.text = ""
                 } else {
                     estimation_item_uom_textView.text = "Unit of Measure: $uom"
@@ -59,9 +59,6 @@ class Estimates_Item(
             }
             updateStartImage()
             updateEndImage()
-
-
-
 
         }
 

@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.ConnectivityManager
 import android.os.Build
 import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
@@ -23,6 +24,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.data.network.PermissionController
 import za.co.xisystems.itis_rrm.databinding.ActivityRegisterBinding
 import za.co.xisystems.itis_rrm.utils.*
+
 
 private const val PERMISSION_REQUEST = 10
 
@@ -48,7 +50,6 @@ class RegisterActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runna
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         appContext = this
-
         if ( startPermissionRequest(appContext.applicationContext, permissions)){
             toast("Permissions Are already provided ")
         }else{
@@ -56,6 +57,7 @@ class RegisterActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runna
                 requestPermissions(permissions, PERMISSION_REQUEST)
             }
         }
+
 
         val binding :ActivityRegisterBinding = DataBindingUtil.setContentView(this, R.layout.activity_register)
         viewModel = ViewModelProviders.of(this, factory).get(AuthViewModel::class.java)
@@ -102,6 +104,7 @@ class RegisterActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runna
             })
 
         }
+        isOnline()
 
     }
 
@@ -178,7 +181,16 @@ class RegisterActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runna
         reg_container.snackbar(message)
     }
 
-
+    fun isOnline(): Boolean {
+        val cm =
+            getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val netInfo = cm.activeNetworkInfo
+        return if (netInfo != null && netInfo.isConnectedOrConnecting) {
+            true
+        } else {
+            false
+        }
+    }
 
 
     override fun onSignOut(user: UserDTO) {

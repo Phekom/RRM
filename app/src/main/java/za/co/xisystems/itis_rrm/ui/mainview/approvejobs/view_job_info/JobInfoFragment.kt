@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.Observer
@@ -36,6 +37,11 @@ class JobInfoFragment : BaseFragment(), KodeinAware {
         super.onAttach(context)
         (activity as MainActivity).supportActionBar?.title = getString(R.string.jobinfo_item_title)
     }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         (activity as MainActivity).supportActionBar?.title = getString(R.string.jobinfo_item_title)
@@ -173,9 +179,9 @@ class JobInfoFragment : BaseFragment(), KodeinAware {
         direction: Int,
         description: String?
     ) {
-        Coroutines.main {
+        Coroutines.main {       //  activity?.hideKeyboard()
         approveViewModel.processWorkflowMove(userId, trackRounteId,description,direction)
-            activity?.hideKeyboard()
+
             popViewOnJobSubmit(direction)
     }
 
@@ -189,7 +195,7 @@ class JobInfoFragment : BaseFragment(), KodeinAware {
         }
 
 
-        Intent(context, MainActivity::class.java).also { home ->
+        Intent(context?.applicationContext  , MainActivity::class.java).also { home ->
             home.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
             startActivity(home)
         }

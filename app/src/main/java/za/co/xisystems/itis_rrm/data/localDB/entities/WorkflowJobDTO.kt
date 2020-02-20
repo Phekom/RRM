@@ -1,15 +1,15 @@
 package za.co.xisystems.itis_rrm.data.localDB.entities
 
+import androidx.room.Entity
 import com.google.gson.annotations.SerializedName
-import za.co.xisystems.itis_rrm.data.localDB.models.WorkflowItemEstimate
-import za.co.xisystems.itis_rrm.data.localDB.models.WorkflowItemMeasure
-import za.co.xisystems.itis_rrm.data.localDB.models.WorkflowJobSection
 import java.io.Serializable
 import java.util.*
 
 /**
  * Created by Francis Mahlava on 2020/02/04.
  */
+
+@Entity
 class WorkflowJobDTO (
 
     @SerializedName("JobId")
@@ -25,12 +25,12 @@ class WorkflowJobDTO (
     var jiNo: String? = null,
 
     @SerializedName("WorkflowItemEstimates")
-     val workflowItemEstimates: ArrayList<WorkflowItemEstimate>? = null,
+     val workflowItemEstimates: ArrayList<WorkflowItemEstimateDTO>? = null,
 
     @SerializedName("WorkflowItemMeasures")
-     val workflowItemMeasures: ArrayList<WorkflowItemMeasure>? = null,
+     val workflowItemMeasures: ArrayList<WorkflowItemMeasureDTO>? = null,
 
     @SerializedName("WorkflowJobSections")
      val workflowJobSections: ArrayList<JobSectionDTO>? = null
 
-): Serializable {}
+): Serializable

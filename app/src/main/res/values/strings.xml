@@ -5,7 +5,8 @@
     <string name="nav_header_subtitle">android.studio@android.com</string>
     <string name="nav_header_desc">Navigation header</string>
     <string name="action_settings">Settings</string>
-
+<!--    <string name="next">Next</string>-->
+    <string name="prev">Prev</string>
 
     <!-- Note that the DATABASE_NAME and DATABASE_VERSION have been set within:
                xisystemsms.itismaintenance.communication.database.MySQLiteHelper.java -->
@@ -276,7 +277,7 @@
     <string name="please_select_category">Please select Category</string>
     <string name="please_select_direction">Please select Direction</string>
     <string name="please_select_position">Please select Position</string>
-    <string name="please_enter_a_unique_pin">Please enter a unique pin code and keep it in a safe place. You will use this pin to login in the future.</string>
+    <string name="please_enter_a_unique_pin">Please enter a Four Digit unique pin code and keep it in a safe place. You will use this pin to login in the future.</string>
     <string name="please_enter_your_unique_code">Please enter your unique pin code.</string>
     <string name="please_wait">Please wait…</string>
     <string name="please_wait_coordinates">Please wait while we get your co-ordinates.</string>
@@ -498,6 +499,7 @@
     <string name="submit_measure_title">Submit Measurements</string>
     <string name="measure_approval_title">Measurements Approval</string>
     <string name="capture_work_title">Capture Work</string>
+    <string name="loading_job_wait">Submitting Data.... </string>
     <string name="data_loading_please_wait">Data Loading.... </string>
     <string name="loading_please_wait">Loading.... Please Wait !!</string>
     <string name="enter_comment">Please Enter Your Comment First</string>

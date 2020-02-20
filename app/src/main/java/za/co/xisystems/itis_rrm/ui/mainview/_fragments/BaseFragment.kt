@@ -6,6 +6,7 @@ import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
+import android.view.Menu
 import android.view.View
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
@@ -112,6 +113,22 @@ abstract class BaseFragment : Fragment(), IProgressView, HorizontalProgressBar{
 //        if (activity != null) Toast.makeText(activity, string, Toast.LENGTH_LONG).show()
 //    }
 
+    fun myProgressDialog(prog : ProgressDialog){
+        //Assuming that you are using fragments.
+        prog.setTitle(getString(R.string.please_wait))
+        prog.setMessage(getString(R.string.data_loading_please_wait))
+        prog.setCancelable(false)
+        prog.setIndeterminate(true)
+        prog.setProgressStyle(ProgressDialog.STYLE_SPINNER)
+        prog.show()
+    }
+
+    fun disMissProgressDialog(prog : ProgressDialog){
+        if(prog != null){
+            prog.dismiss()
+        }
+    }
+
     /**
      * Hide keyboard.
      */
@@ -203,4 +220,5 @@ abstract class BaseFragment : Fragment(), IProgressView, HorizontalProgressBar{
 //    abstract override fun onDestroy()
 
 
+    abstract fun onCreateOptionsMenu(menu: Menu): Boolean
 }

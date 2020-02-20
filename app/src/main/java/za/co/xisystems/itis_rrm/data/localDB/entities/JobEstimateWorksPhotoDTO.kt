@@ -16,6 +16,8 @@ const val JOB_ESTIMATE_WORKS_PHOTO = "JOB_ESTIMATE_WORKS_PHOTO"
 
 @Entity(tableName = JOB_ESTIMATE_WORKS_PHOTO)
 data class JobEstimateWorksPhotoDTO(
+    @PrimaryKey(autoGenerate = true)
+    var Id : Int,
     @SerializedName("Descr")
     val descr: String,
     @SerializedName("Filename")
@@ -39,6 +41,5 @@ data class JobEstimateWorksPhotoDTO(
     @SerializedName("RecordVersion")
     val recordVersion: Int,
     @SerializedName("WorksId")
-    @PrimaryKey
     var worksId: String
 ): Serializable

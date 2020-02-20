@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
@@ -41,6 +42,10 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
         super.onAttach(context)
         (activity as MainActivity).supportActionBar?.title = getString(R.string.measure_approval_title)
 
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -190,7 +195,7 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
             toast(R.string.job_declined)
         }
 
-        Intent(context, MainActivity::class.java).also { home ->
+        Intent(context?.applicationContext , MainActivity::class.java).also { home ->
             home.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
             startActivity(home)
         }

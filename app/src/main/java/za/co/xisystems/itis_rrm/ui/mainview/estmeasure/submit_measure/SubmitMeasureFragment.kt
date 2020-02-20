@@ -1,11 +1,13 @@
 package za.co.xisystems.itis_rrm.ui.mainview.estmeasure.submit_measure
 
 import android.app.AlertDialog
+import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
@@ -15,14 +17,14 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.xwray.groupie.ExpandableGroup
 import com.xwray.groupie.GroupAdapter
-import com.xwray.groupie.GroupieViewHolder
+import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import kotlinx.android.synthetic.main.fragment_submit_measure.*
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
-import za.co.xisystems.itis_rrm.data.localDB.JobDataController
+import za.co.xisystems.itis_rrm.data.localDB.*
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModel
@@ -31,7 +33,6 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
-import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import java.util.*
 
 
@@ -41,12 +42,12 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
     private val factory: MeasureViewModelFactory by instance()
     private val jobItemMeasure: JobItemMeasureDTO? = null
     private val jobDataController: JobDataController? = null
-    private lateinit var jobItemMeasurePhotoDTO: ArrayList<JobItemMeasurePhotoDTOTemp>
-    private lateinit var jobItemMeasureArrayList: ArrayList<JobItemMeasureDTOTemp>
+    private lateinit var jobItemMeasurePhotoDTO: ArrayList<JobItemMeasurePhotoDTO>
+    private lateinit var jobItemMeasureArrayList: ArrayList<JobItemMeasureDTO>
     private lateinit var jobItemEstimatesForJob: ArrayList<JobItemEstimateDTO>
     private lateinit var jobItemMeasuresForJobItemEstimates: HashMap<JobItemEstimateDTO, List<JobItemMeasureDTO>>
-    private lateinit var jobForJobItemEstimate: JobDTO
-
+    private lateinit var jobForItemEstimate: JobDTO
+    private lateinit var jobItemMeasureList: ArrayList<JobItemMeasureDTO>
 
     override fun onResume() {
         super.onResume()
@@ -65,10 +66,21 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setHasOptionsMenu(true)
         (activity as MainActivity).supportActionBar?.title =
             getString(R.string.submit_measure_title)
+
     }
 
+
+    override fun onPrepareOptionsMenu(menu: Menu) {
+        val item = menu.findItem(R.id.action_settings)
+        val item1 = menu.findItem(R.id.action_logout)
+        val item2 = menu.findItem(R.id.action_search)
+        if (item != null) item.isVisible = false
+        if (item1 != null) item1.isVisible = false
+        if (item2 != null) item2.isVisible = false
+    }
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -95,9 +107,10 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
         } ?: throw Exception("Invalid Activity") as Throwable
 
         Coroutines.main {
-            jobItemMeasurePhotoDTO = ArrayList<JobItemMeasurePhotoDTOTemp>()
-            jobItemMeasureArrayList = ArrayList<JobItemMeasureDTOTemp>()
+            jobItemMeasurePhotoDTO = ArrayList<JobItemMeasurePhotoDTO>()
+            jobItemMeasureArrayList = ArrayList<JobItemMeasureDTO>()
             jobItemEstimatesForJob = ArrayList<JobItemEstimateDTO>()
+            jobItemMeasureList = ArrayList<JobItemMeasureDTO>()
 
             jobItemMeasuresForJobItemEstimates =
                 HashMap<JobItemEstimateDTO, List<JobItemMeasureDTO>>()
@@ -110,7 +123,6 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
                         jobID.jobItemEstimateDTO.jobId,
                         jobID.jobItemEstimateDTO.estimateId
                     )
-
 
                 }
             })
@@ -129,7 +141,6 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
                     measureViewModel.measure_Item.observe(viewLifecycleOwner, Observer { jobID ->
                         getWorkItems(jobID.jobItemEstimateDTO.jobId)
                         items_swipe_to_refresh.isRefreshing = false
-
 
                     })
 //                    val jobItemMeasure = measureViewModel.getJobItemMeasuresForJobIdAndEstimateId2(it.JobId, measure_item.estimateId,jobItemMeasureArrayList)
@@ -166,57 +177,29 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
                                 if (PhotoUtil.photoExist(jobItemMeasurePhoto.filename!!))
 
                                 //  Add to Counter Specific Photo
-                                submitJobToMeasurements(jobItemMeasures.job!!, itemMeasures,jobItemMeasurePhoto.filename,jobItemMeasures)
+                                submitJobToMeasurements(jobForItemEstimate, itemMeasures,jobItemMeasurePhoto.filename,jobItemMeasures)
 //                                imageCounter++
-
                             }
                             toast("And " + photos.size.toString() + "  Images")
-
 
                         })
                     }
                 }
 
-
                 }
 
 //                                if (itemMeasure.job != null && itemMeasure.jobItemMeasurePhotos.isNullOrEmpty()) {
-
 //                                }
-
 
             })
         }
     }
 
-    private fun uploadRrmImage(filename: String, jobItemMeasures: JobItemMeasureDTOTemp) {
-//        val messages = arrayOf(getString(R.string.uploading_photo) + imageCounter + getString(R.string.new_line) + getString(R.string.please_wait))
-        val bitmap = PhotoUtil.getPhotoBitmapFromFile(activity!!.applicationContext,
-            PhotoUtil.getPhotoPathFromExternalDirectory( activity!!.applicationContext,filename),
-            PhotoQuality.HIGH
-        )
-        val photo = PhotoUtil.getCompressedPhotoWithExifInfo(activity!!.applicationContext,bitmap!!, filename) //
-        processImageUpload(filename, activity!!.getString(R.string.jpg),photo)
-
-    }
-
-    private fun processImageUpload(
-        filename: String,
-        extension: String,
-        photo: ByteArray
-    ) {
-        Coroutines.main {
-            measureViewModel.processImageUpload(filename,extension ,photo)
-            activity?.hideKeyboard()
-            popViewOnJobSubmit()
-        }
-    }
-
     private fun submitJobToMeasurements(
         itemMeasureJob: JobDTO,
-        mSures: ArrayList<JobItemMeasureDTOTemp>,
+        mSures: ArrayList<JobItemMeasureDTO>,
         filename: String,
-        jobItemMeasures: JobItemMeasureDTOTemp
+        jobItemMeasures: JobItemMeasureDTO
     ) {
         val logoutBuilder = AlertDialog.Builder(
             activity //,android.R.style.Theme_DeviceDefault_Dialog
@@ -231,7 +214,7 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
         ) { dialog, which ->
             if (ServiceUtil.isNetworkConnected(context?.applicationContext)) {
                 submiteMeasures(itemMeasureJob,mSures)
-                uploadRrmImage(filename,jobItemMeasures)
+//                uploadRrmImage(filename,jobItemMeasures)
             } else {
                 toast(R.string.no_connection_detected)
             }
@@ -249,7 +232,7 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
 
     private fun submiteMeasures(
         itemMeasureJob: JobDTO,
-        mSures: ArrayList<JobItemMeasureDTOTemp>
+        mSures: ArrayList<JobItemMeasureDTO>
     ) {
         Coroutines.main {
             val user = measureViewModel.user.await()
@@ -262,10 +245,16 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
                     toast("Error: selectedJob is null")
                 } else {
 //                    // TODO beware littlEndian conversion
-                    val ContractVoId: String =
-                        DataConversion.toLittleEndian(itemMeasureJob.ContractVoId)!!
-                    val JobId: String =
-                        DataConversion.toLittleEndian(itemMeasureJob.JobId!!)!!
+                    if (mSures != null) {
+                        for (jim in mSures) {
+                            val newMsures = setJobMeasureLittleEndianGuids(jim)
+                            jobItemMeasureList.add(newMsures)
+                        }
+                    }
+                    val ContractVoId: String = DataConversion.toLittleEndian(itemMeasureJob.ContractVoId)!!
+                    val JobId: String = DataConversion.toLittleEndian(itemMeasureJob.JobId)!!
+
+
 //                    processWorkFlow(
 //                        user_.userId,
 //                        itemMeasureJob.JobId!!, itemMeasureJob.JiNo, ContractVoId, mSures
@@ -273,7 +262,21 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
 
 
                     Coroutines.main {
-                        measureViewModel.processWorkflowMove( user_.userId, JobId, itemMeasureJob.JiNo, ContractVoId, mSures)
+                        val prog = ProgressDialog(activity)
+                        prog.setTitle(getString(R.string.please_wait))
+                        prog.setMessage(getString(R.string.loading_job_wait))
+                        prog.setCancelable(false)
+                        prog.setIndeterminate(true)
+                        prog.setProgressStyle(ProgressDialog.STYLE_SPINNER)
+                        prog.show()
+                        val submit=   measureViewModel.processWorkflowMove( user_.userId, JobId, itemMeasureJob.JiNo, ContractVoId, jobItemMeasureList, activity, itemMeasureJob)
+                        if (submit != null){
+                            prog.show()
+                            toast(submit)}else{
+                            prog.show()
+                            popViewOnJobSubmit()}
+
+
 //            activity?.hideKeyboard()
 //            popViewOnJobSubmit()
                     }
@@ -284,10 +287,43 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
         }
     }
 
+    fun setJobMeasureLittleEndianGuids(jim: JobItemMeasureDTO): JobItemMeasureDTO {
+        if (jim != null) {
+//            for (jim in jobItemMeasure) {
+            jim.setEstimateId(DataConversion.toLittleEndian(jim.estimateId))
+            jim.setJobId(DataConversion.toLittleEndian(jim.jobId))
+            jim.setProjectItemId(DataConversion.toLittleEndian(jim.projectItemId))
+            jim.setItemMeasureId(DataConversion.toLittleEndian(jim.itemMeasureId))
+
+                if (jim.trackRouteId != null)
+                    jim.setTrackRouteId(DataConversion.toLittleEndian(jim.trackRouteId))
+                else jim.trackRouteId = null
+
+            if (jim.measureGroupId != null)
+            jim.setMeasureGroupId(DataConversion.toLittleEndian(jim.measureGroupId))
+
+//                jim.setProjectVoId(DataConversion.toLittleEndian(jim.projectVoId))
+            if (jim.jobItemMeasurePhotos != null) {
+                for (jmep in jim.jobItemMeasurePhotos) {
+                    jmep.setPhotoId(DataConversion.toLittleEndian(jmep.photoId))
+                    jmep.setEstimateId(DataConversion.toLittleEndian(jmep.estimateId))
+                    jmep.setItemMeasureId(DataConversion.toLittleEndian(jmep.itemMeasureId))
+                }
+            }
+
+
+
+//            }
+        }
+
+        return jim
+    }
+
+
 
     private fun popViewOnJobSubmit() {
         // TODO("delete data from database after success upload")
-        Intent(context, MainActivity::class.java).also { home ->
+        Intent(context?.applicationContext  , MainActivity::class.java).also { home ->
             home.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
             startActivity(home)
         }
@@ -298,6 +334,10 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
         (activity as MainActivity).supportActionBar?.title =
             getString(R.string.submit_measure_title)
 
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
 //    private fun populateHashMap(jobItemEstimatesForJob: List<JobItemEstimateDTO>) {
@@ -334,8 +374,6 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
                 initRecyclerView(job_s.toMeasure_Item())
 //
             })
-
-
         }
     }
 
@@ -343,7 +381,7 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
         val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
             addAll(tomeasureItem)
         }
-        estimates_to_be_approved_listView.apply {
+        measure_listView.apply {
             layoutManager = LinearLayoutManager(this.context) as RecyclerView.LayoutManager?
             adapter = groupAdapter
 
@@ -373,15 +411,12 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
 
                 Coroutines.main {
                     val jobForJobItemEstimate = measureViewModel.getJobFromJobId(measure_item.jobId)
-                    jobForJobItemEstimate.observe(activity!!, androidx.lifecycle.Observer {
+                    jobForJobItemEstimate.observe(activity!!, androidx.lifecycle.Observer {job->
                         //                        for (measure_i in jobItemMeasureArrayList) {
+                        jobForItemEstimate = job
                         Coroutines.main {
                             val jobItemMeasure =
-                                measureViewModel.getJobItemMeasuresForJobIdAndEstimateId2(
-                                    it.JobId,
-                                    measure_item.estimateId,
-                                    jobItemMeasureArrayList
-                                )
+                                measureViewModel.getJobItemMeasuresForJobIdAndEstimateId2(job.JobId, measure_item.estimateId)//, jobItemMeasureArrayList
                             jobItemMeasure.observe(activity!!, Observer { m_sures ->
                                 //                                    for (i in m_sures.indices) {
 //                                        toast(m_sures.size.toString())
@@ -396,7 +431,7 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
                                         photo[i] = m_sures[i].itemMeasureId!!
                                         qty[i] = m_sures[i].qty.toString()
                                         rate[i] = m_sures[i].lineRate.toString()
-                                        jNo[i] = m_sures[i].jimNo
+                                        jNo[i] = m_sures[i].jimNo.toString()
                                         add(
                                             CardMeasureItem(
                                                 activity,
@@ -427,6 +462,69 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
 
 
     }
+
+
+    private fun JobItemMeasureDTO.setProjectItemId(toLittleEndian: String?) {
+        this.projectItemId = toLittleEndian
+    }
+
+    private fun JobItemMeasureDTO.setMeasureGroupId(toLittleEndian: String?) {
+        this.measureGroupId = toLittleEndian
+    }
+
+    private fun JobItemMeasureDTO.setEstimateId(toLittleEndian: String?) {
+        this.estimateId = toLittleEndian
+    }
+
+    private fun JobItemMeasureDTO.setProjectVoId(toLittleEndian: String?) {
+        this.projectVoId = toLittleEndian
+    }
+
+    private fun JobItemMeasureDTO.setTrackRouteId(toLittleEndian: String?) {
+        this.trackRouteId = toLittleEndian
+    }
+
+    private fun JobItemMeasurePhotoDTO.setItemMeasureId(toLittleEndian: String?) {
+        this.itemMeasureId =  toLittleEndian
+    }
+
+    private fun JobItemMeasureDTO.setJobId(toLittleEndian: String?) {
+        this.jobId = toLittleEndian
+    }
+    private fun JobItemMeasurePhotoDTO.setPhotoId(toLittleEndian: String?) {
+        this.photoId = toLittleEndian!!
+    }
+
+    private fun JobItemEstimatesPhotoDTO.setPhotoId(toLittleEndian: String?) {
+        this.photoId = toLittleEndian!!
+    }
+
+    private fun JobEstimateWorksPhotoDTO.setWorksId(toLittleEndian: String?) {
+        this.worksId = toLittleEndian!!
+    }
+
+    private fun JobItemMeasurePhotoDTO.setEstimateId(toLittleEndian: String?) {
+        this.estimateId = toLittleEndian
+    }
+    private fun JobItemMeasureDTO.setItemMeasureId(toLittleEndian: String?) {
+        this.itemMeasureId = toLittleEndian
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 }
@@ -492,7 +590,7 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
 //                        val jobItemMeasurePhotos = measureViewModel.getJobItemMeasurePhotosForItemMeasureID(jobItemMeasurePhoto.itemMeasureId!!)
 //                        jobItemMeasurePhotos.observe(activity!!, Observer { m_photos ->  })
 //                            if (m_photos != null) { toast(m_photos.size.toString())
-////                                    if (m_photos.size > 0) jobItemMeasurePhotoArrayList = m_photos as ArrayList<JobItemMeasurePhotoDTOTemp> } else {
+////                                    if (m_photos.size > 0) jobItemMeasurePhotoArrayList = m_photos as ArrayList<JobItemMeasurePhotoDTO> } else {
 ////                                sendImagestoHeader(selectedJobItemMeasure,m_photos, view!!)
 //
 //                            }

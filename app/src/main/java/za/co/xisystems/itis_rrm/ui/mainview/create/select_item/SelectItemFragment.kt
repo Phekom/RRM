@@ -3,6 +3,7 @@ package za.co.xisystems.itis_rrm.ui.mainview.create.select_item
 import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.Observer
@@ -51,11 +52,15 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
     internal var useR: Int? = null
 
     @MyState
-    lateinit var job: JobDTOTemp
+    lateinit var job: JobDTO
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
         (activity as MainActivity).supportActionBar?.title = getString(R.string.select_item_title)
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     override fun onCreateView(
@@ -96,6 +101,13 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
         createViewModel.newjob.observe(viewLifecycleOwner, Observer { newJ ->
                      job = newJ
         })
+
+
+        createViewModel.jobtoEdit_Item.observe(viewLifecycleOwner, Observer { newJ_Edit ->
+            setItemsBySections(newJ_Edit.ProjectId!!)
+            job = newJ_Edit
+        })
+
 
     }
 
@@ -145,7 +157,7 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
 
     //    private fun setRecyclerItems(sectionItemId: String) {
     private fun setRecyclerItems(projectId: String, sectionItemId: String) {
-        Coroutines.main {
+        Coroutines.main {  //data_loading2.show()
             //            val projectsItems = createViewModel.getItemForItemCode(sectionItemId!!)
             val projectsItems = createViewModel.getAllItemsForSectionItem(sectionItemId, projectId)
             projectsItems?.observe(viewLifecycleOwner, Observer { i_tems ->
@@ -179,11 +191,9 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
 
             (item as? SectionProj_Item)?.let {
 //                sendSelectedItem((it.itemDTO.itemCode +"  "+ it.itemDTO.descr),(it.itemDTO.tenderRate) , view)
-
-
                 val newjItem = createItemList(it.itemDTO, itemSections)
                 saveNewItem(newjItem)
-                sendSelectedItem((it) , view,itemSections )
+                sendSelectedItem((it) , view,items )
 //                if (job.JobId == null) { // New Job
 //                }
             }
@@ -219,7 +229,7 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
     private fun sendSelectedItem(
         item: SectionProj_Item,
         view: View,
-        jobArrayList: ArrayList<ItemSectionDTO>
+        jobArrayList: List<SectionProj_Item>
     ) {
         val selecteD = item
         val myList = jobArrayList

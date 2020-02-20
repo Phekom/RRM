@@ -1,6 +1,7 @@
 package za.co.xisystems.itis_rrm.ui.mainview.unsubmitted
 
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -21,7 +22,13 @@ class UnSubmittedViewModel(
 //        offlineDataRepository.getContracts()
 //    }
 
-    suspend fun getJobsForActivityId(activityId: Int): LiveData<List<JobDTOTemp>> {
+    val jobtoEdit_Item = MutableLiveData<JobDTO>()
+    fun Item5(jobEdit_Item: JobDTO) {
+        jobtoEdit_Item.value = jobEdit_Item
+    }
+
+
+    suspend fun getJobsForActivityId(activityId: Int): LiveData<List<JobDTO>> {
         return withContext(Dispatchers.IO) {
             offlineDataRepository.getJobsForActId(activityId)
         }
@@ -51,6 +58,10 @@ class UnSubmittedViewModel(
 
     suspend fun deleJobfromList(jobId: String) {
         offlineDataRepository.deleJobfromList(jobId)
+    }
+
+    suspend fun deleteItemList(jobId: String) {
+        offlineDataRepository.deleteItemList(jobId)
     }
 
    suspend fun getProjectSection(sectionId: String?): LiveData<ProjectSectionDTO> {

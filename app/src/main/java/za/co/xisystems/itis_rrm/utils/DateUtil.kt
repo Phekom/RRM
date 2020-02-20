@@ -18,10 +18,13 @@ object DateUtil {
     private const val emptyString = ""
     private const val dash = "-"
     private const val zero = "0"
-    // endregion (Private Static Final Fields)
-// region (Private Static Fields)
+    // endregion (Private Static Final Fields)"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+// region (Private Static Fields)SimpleDateFormat("yyyy-MM-dd HH:mm:ss") as DateFormat
     private val iso8601Format: DateFormat =
-        SimpleDateFormat("yyyy-MM-dd HH:mm:ss") as DateFormat
+        SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ") as DateFormat
+
+//    private const val DATE_FORMAT_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+
     private val readableDateForm: DateFormat = SimpleDateFormat("dd MMMM yyyy")
     // endregion (Private Static Fields)
 // region (Public Static Methods)
@@ -73,5 +76,24 @@ object DateUtil {
         val cal = Calendar.getInstance()
         cal.time = date
         return cal
-    } // endregion (Public Static Methods)
+    } // endregion
+
+//    var inputFormatter: DateTimeFormatter =
+//        DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.ENGLISH)
+//    var outputFormatter: DateTimeFormatter =
+//        DateTimeFormatter.ofPattern("dd-MM-yyy", Locale.ENGLISH)
+//    var date: LocalDate = LocalDate.parse("2018-04-10T04:00:00.000Z", inputFormatter)
+//    var formattedDate: String = outputFormatter.format(date)
+
+
 }
+
+//class DateTypeAdapter : JsonDeserializer<Date> {
+//    override fun deserialize(json: JsonElement, typeOfT: Type, context: JsonDeserializationContext): Date {
+//        try {
+//            return DateTime(json.asString).toDate()
+//        } catch (e: Exception) {
+//            throw JsonParseException("'$json' is not a valid Date")
+//        }
+//    }
+//}

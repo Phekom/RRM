@@ -159,7 +159,11 @@
             android:id="@+id/captureWorkFragment"
             android:name="za.co.xisystems.itis_rrm.ui.mainview.work.capture_work.CaptureWorkFragment"
             android:label="fragment_capture_work"
-            tools:layout="@layout/fragment_capture_work" />
+            tools:layout="@layout/fragment_capture_work" >
+        <action
+                android:id="@+id/action_captureWorkFragment_to_nav_work"
+                app:destination="@id/nav_work" />
+    </fragment>
 <!--    <fragment-->
 <!--            android:id="@+id/captureItemMeasurePhotoFragment"-->
 <!--            android:name="za.co.xisystems.itis_rrm.ui.mainview.estmeasure.submit_measure.CaptureItemMeasurePhotoFragment"-->

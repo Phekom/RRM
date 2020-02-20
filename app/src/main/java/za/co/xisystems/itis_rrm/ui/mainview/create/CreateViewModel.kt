@@ -7,31 +7,26 @@ import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
-import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
+import za.co.xisystems.itis_rrm.data.repositories.JobCreationDataRepository
+import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.IJobSubmit
 import za.co.xisystems.itis_rrm.ui.mainview.create.select_item.SectionProj_Item
+import za.co.xisystems.itis_rrm.utils.JobUtils
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
-import java.util.ArrayList
+import java.util.*
 
 /**
  * Created by Francis Mahlava on 2019/10/18.
  */
 
 class CreateViewModel(
-    private val offlineDataRepository: OfflineDataRepository
+    private val jobCreationDataRepository: JobCreationDataRepository
 ) : ViewModel() {
 
 
-//    val offlinedata by lazyDeferred {
-
-//        offlineDataRepository.getAllSectionItem()
-//        offlineDataRepository.getVoItems()
-//        offlineDataRepository.getProjects()
-//        offlineDataRepository.getWorkFlows()=
-//        offlineDataRepository.getContracts()
-
-//    }
-
-
+    val jobtoEdit_Item = MutableLiveData<JobDTO>()
+    fun Item5(jobEdit_Item: JobDTO) {
+        jobtoEdit_Item.value = jobEdit_Item
+    }
 
     val EstimateQty = MutableLiveData<Int>()
     fun Estimate(Qty: Int) {
@@ -44,7 +39,7 @@ class CreateViewModel(
     }
 
     val offlinedata by lazyDeferred {
-        offlineDataRepository.getSectionItems()
+        jobCreationDataRepository.getSectionItems()
     }
 
 
@@ -53,73 +48,9 @@ class CreateViewModel(
         sectionId.value = section_Id
     }
 
+
     val user by lazyDeferred {
-    offlineDataRepository.getUser()
-}
-//        try {
-
-    suspend fun getContracts(): LiveData<List<ContractDTO>> {
-            return withContext(Dispatchers.IO) {
-                offlineDataRepository.getSectionItems()
-                offlineDataRepository.getContracts()
-            }
-    }
-
-
-    suspend fun getItemForItemId(projectItemId: String?): LiveData<ProjectItemDTO>{
-        return withContext(Dispatchers.IO) {
-            offlineDataRepository.getItemForItemId(projectItemId)
-        }
-    }
-
-    suspend fun getSomeProjects(contractId: String): LiveData<List<ProjectDTO>> {
-        val contrId = contractId
-        return withContext(Dispatchers.IO) {
-            offlineDataRepository.getContractProjects(contrId)
-        }
-    }
-
-    suspend fun getJobItemEstimatePhotoForEstimateId(estimateId: String): LiveData<List<JobItemEstimatesPhotoDTO>> {
-        return withContext(Dispatchers.IO) {
-            offlineDataRepository.getJobItemEstimatePhotoForEstimateId(estimateId)
-        }
-    }
-
-//    suspend fun getSomeProjects(contractId: String): LiveData<List<ProjectDTO>> {
-//        val contrId = contractId
-//        return withContext(Dispatchers.IO) {
-//            offlineDataRepository.getContractProjects(contrId)
-//        }
-//    }
-
-    suspend fun getAllItemsForProjectId(projectId: String): LiveData<List<ProjectItemDTO>> {
-        return withContext(Dispatchers.IO) {
-            offlineDataRepository.getAllItemsForProjectId(projectId)
-        }
-    }
-    suspend fun getAllItemsForSectionItem(sectionItemId: String,projectId: String): LiveData<List<ProjectItemDTO>> {
-        return withContext(Dispatchers.IO) {
-            offlineDataRepository.getAllItemsForSectionItem(sectionItemId,projectId)
-        }
-    }
-
-    suspend fun getItemForItemCode(itemCode: String): LiveData<List<ProjectItemDTO>> {
-        return withContext(Dispatchers.IO) {
-            offlineDataRepository.getItemForItemCode(itemCode)
-        }
-    }
-
-
-    suspend  fun getAllProjecItems(projectId: String): LiveData<List<ItemDTOTemp>> {
-        return withContext(Dispatchers.IO) {
-            offlineDataRepository.getAllProjecItems(projectId)
-        }
-    }
-
-    suspend fun getAllSectionItem(): LiveData<List<SectionItemDTO>> {
-        return withContext(Dispatchers.IO) {
-            offlineDataRepository.getAllSectionItem()
-        }
+        jobCreationDataRepository.getUser()
     }
 
     val loggedUser = MutableLiveData<Int>()
@@ -132,8 +63,8 @@ class CreateViewModel(
         descriptioN.value = desc
     }
 
-    val newjob = MutableLiveData<JobDTOTemp>()
-    fun userN(job : JobDTOTemp) {
+    val newjob = MutableLiveData<JobDTO>()
+    fun userN(job: JobDTO) {
         newjob.value = job
     }
 
@@ -168,8 +99,8 @@ class CreateViewModel(
         Sec_Item.value = projec_Item
     }
 
-    val job_Item = MutableLiveData<JobDTOTemp>()
-    fun projecIte(job_Ite: JobDTOTemp) {
+    val job_Item = MutableLiveData<JobDTO>()
+    fun projecIte(job_Ite: JobDTO) {
         job_Item.value = job_Ite
     }
 
@@ -195,14 +126,54 @@ class CreateViewModel(
             proId.value = projectId
         }
     }
-    suspend fun saveNewJob(newjob: JobDTOTemp) {
-        offlineDataRepository.saveNewJob(newjob)
+
+    suspend fun saveNewJob(newjob: JobDTO) {
+        jobCreationDataRepository.saveNewJob(newjob)
     }
+
+    suspend fun getContracts(): LiveData<List<ContractDTO>> {
+        return withContext(Dispatchers.IO) {
+            jobCreationDataRepository.getSectionItems()
+            jobCreationDataRepository.getContracts()
+        }
+    }
+
+
+    suspend fun getSomeProjects(contractId: String): LiveData<List<ProjectDTO>> {
+        val contrId = contractId
+        return withContext(Dispatchers.IO) {
+            jobCreationDataRepository.getContractProjects(contrId)
+        }
+    }
+
+    suspend fun getAllSectionItem(): LiveData<List<SectionItemDTO>> {
+        return withContext(Dispatchers.IO) {
+            jobCreationDataRepository.getAllSectionItem()
+        }
+    }
+
+    suspend fun getAllItemsForSectionItem(
+        sectionItemId: String,
+        projectId: String
+    ): LiveData<List<ProjectItemDTO>> {
+        return withContext(Dispatchers.IO) {
+            jobCreationDataRepository.getAllItemsForSectionItem(sectionItemId, projectId)
+        }
+    }
+
+
+    suspend fun saveNewItem(newjItem: ItemDTOTemp) {
+        jobCreationDataRepository.saveNewItem(newjItem)
+    }
+
+    suspend fun delete(item: ItemDTOTemp) {
+        jobCreationDataRepository.delete(item)
+    }
+
 
     suspend fun deleJobfromList(jobId: String) {
-        offlineDataRepository.deleJobfromList(jobId)
+        jobCreationDataRepository.deleJobfromList(jobId)
     }
-
 
     suspend fun updateNewJob(
         newjobId: String,
@@ -212,15 +183,43 @@ class CreateViewModel(
         newJobItemEstimatesList: ArrayList<JobItemEstimateDTO>,
         jobItemSectionArrayList: ArrayList<JobSectionDTO>
     ) {
-        offlineDataRepository.updateNewJob(newjobId,startKM,endKM,sectionId,newJobItemEstimatesList,jobItemSectionArrayList)
-    }
-    suspend fun saveNewItem(newjItem: ItemDTOTemp) {
-        offlineDataRepository.saveNewItem(newjItem)
+
+        jobCreationDataRepository.updateNewJob(
+            newjobId,
+            startKM,
+            endKM,
+            sectionId,
+            newJobItemEstimatesList,
+            jobItemSectionArrayList
+        )
     }
 
-    suspend fun delete(item: ItemDTOTemp) {
-        offlineDataRepository.delete(item)
+    suspend fun getPointSectionData(projectId: String?): LiveData<SectionPointDTO> {//jobId: String,jobId,
+        return withContext(Dispatchers.IO) {
+            jobCreationDataRepository.getPointSectionData(projectId)
+        }
     }
+
+    suspend fun getSectionByRouteSectionProject(
+        sectionId: Int,
+        linearId: String?,
+        projectId: String?
+    ): LiveData<String> {
+        return withContext(Dispatchers.IO) {
+            jobCreationDataRepository.getSectionByRouteSectionProject(
+                sectionId,
+                linearId,
+                projectId
+            )
+        }
+    }
+
+    suspend fun getSection(sectionId: String): LiveData<ProjectSectionDTO> {
+        return withContext(Dispatchers.IO) {
+            jobCreationDataRepository.getSection(sectionId)
+        }
+    }
+
 
     suspend fun getRouteSectionPoint(
         latitude: Double,
@@ -231,76 +230,84 @@ class CreateViewModel(
         itemCode: ItemDTOTemp?
     ) {
         return withContext(Dispatchers.IO) {
-            offlineDataRepository.getRouteSectionPoint( latitude,longitude,useR, projectId, jobId, itemCode)
+            jobCreationDataRepository.getRouteSectionPoint(
+                latitude,
+                longitude,
+                useR,
+                projectId,
+                jobId,
+                itemCode
+            )
         }
 
     }
 
-    suspend fun getJobforEstinmate(jobId: String): LiveData<JobDTOTemp> {
+    suspend fun getAllProjecItems(projectId: String): LiveData<List<ItemDTOTemp>> {
         return withContext(Dispatchers.IO) {
-            offlineDataRepository.getJobforEstinmate(jobId)
+            jobCreationDataRepository.getAllProjecItems(projectId)
         }
     }
 
-   suspend fun getPointSectionData( projectId: String?): LiveData<SectionPointDTO> {//jobId: String,jobId,
-        return withContext(Dispatchers.IO) {
-            offlineDataRepository.getPointSectionData( projectId)
+   suspend fun areEstimatesValid(job: JobDTO?, items: ArrayList<Any?>?): Boolean {
+        var isValid = true
+        if (!JobUtils.areQuantitiesValid(job)) {
+            isValid = false
+        } else if (job == null || items == null || job.JobItemEstimates == null || items.size != job.JobItemEstimates!!.size) {
+            isValid = false
+        } else {
+            for (estimate in job.JobItemEstimates!!) {
+                if (!estimate.isEstimateComplete()) {
+                    isValid = false
+                    break
+                }
+            }
         }
+        if (!isValid) {
+            return withContext(Dispatchers.IO) {
+//                !isValid
+                false
+
+            }
+        }
+       return withContext(Dispatchers.IO) {
+           isValid
+           true
+       }
+
     }
 
-    suspend fun getSectionByRouteSectionProject(
-        sectionId: Int,
-        linearId: String?,
-        projectId: String?
-    ): LiveData<String> {
-        return withContext(Dispatchers.IO) {
-            offlineDataRepository.getSectionByRouteSectionProject(sectionId,linearId,projectId)
-        }
-    }
-
-    suspend fun getSection(sectionId: String): LiveData<ProjectSectionDTO> {
-        return withContext(Dispatchers.IO) {
-            offlineDataRepository.getSection(sectionId)
-        }
-    }
 
     suspend fun submitJob(
         userId: Int,
-        job: JobDTOTemp,
+        job: JobDTO,
         activity: FragmentActivity
-    ): String {
+    ): String {//
         return withContext(Dispatchers.IO) {
-            offlineDataRepository.submitJob( userId, job, activity)
+            jobCreationDataRepository.submitJob(userId, job, activity)
         }
 
     }
 
-    suspend fun deleteItemfromList(itemId: String) {
-        offlineDataRepository.deleteItemfromList(itemId)
+    suspend fun deleteItemList(jobId: String) {
+        jobCreationDataRepository.deleteItemList(jobId)
     }
 
-//        } catch (e: ApiException) {
-//            authListener?.onFailure(e.message!!)
-//        } catch (e: NoInternetException) {
-//            authListener?.onFailure(e.message!!)
-//        }
-//
-//    }
+    suspend fun deleteItemfromList(itemId: String) {
+        jobCreationDataRepository.deleteItemfromList(itemId)
+    }
 
+    suspend fun getContractNoForId(contractVoId: String?): String {
+        return withContext(Dispatchers.IO) {
+            jobCreationDataRepository.getContractNoForId(contractVoId)
+        }
+    }
 
-//    val projects by lazyDeferred {
-////        offlineDataRepository.getVoItems()
-////        offlineDataRepository.getProjects()
-//        rListener?.onStarted()
-//        offlineDataRepository.getContractProjects("F777EF7070884494A1EB6CFA51B60AA6")
-//    }
-//    val projectsItems by lazyDeferred {
-//        //        offlineDataRepository.getProjects()
-////        offlineDataRepository.getProjectItems()
-//        rListener?.onStarted()
-//        offlineDataRepository.getAllItemsForProjectId("ACBE1CDE0FEA482D9E15767A208E0320")
-//
-//    }
-
+    suspend fun getProjectCodeForId(projectId: String?): String {
+        return withContext(Dispatchers.IO) {
+            jobCreationDataRepository.getProjectCodeForId(projectId)
+        }
+    }
 
 }
+
+

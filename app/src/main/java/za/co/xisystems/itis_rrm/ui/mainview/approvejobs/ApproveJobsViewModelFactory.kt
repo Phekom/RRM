@@ -2,6 +2,7 @@ package za.co.xisystems.itis_rrm.ui.mainview.approvejobs
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import za.co.xisystems.itis_rrm.data.repositories.JobApprovalDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 
 /**
@@ -11,12 +12,10 @@ import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 @Suppress("UNCHECKED_CAST")
 class ApproveJobsViewModelFactory(
 //    private val repository: UserRepository,
-    private val offlineDataRepository: OfflineDataRepository
-//    private val Db : AppDatabase,
-//    val context: Context
+    private val jobApprovalDataRepository: JobApprovalDataRepository
 ): ViewModelProvider.NewInstanceFactory() {
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-        return ApproveJobsViewModel(offlineDataRepository) as T
+        return ApproveJobsViewModel(jobApprovalDataRepository) as T
 //        return MeasureViewModel(repository,,Db ,context) as T
     }
 }

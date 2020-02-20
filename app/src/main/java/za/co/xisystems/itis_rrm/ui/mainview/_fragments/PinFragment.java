@@ -3,11 +3,15 @@ package za.co.xisystems.itis_rrm.ui.mainview._fragments;
 import android.app.Activity;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+
+import org.jetbrains.annotations.NotNull;
+
 import za.co.xisystems.itis_rrm.R;
 
 /**
@@ -175,6 +179,11 @@ public class PinFragment extends BaseFragment {
     public void onDetach() {
         super.onDetach();
         mListener = null;
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(@NotNull Menu menu) {
+        return false;
     }
 
     public interface OnPinFragmentInteractionListener {

@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+            android:icon="@drawable/places_ic_search"
+            android:id="@+id/action_search"
+            android:title="Search"
+            app:showAsAction="always"
+            app:actionViewClass="androidx.appcompat.widget.SearchView"/>
+
     <item
         android:icon="@drawable/ic_settings_black"
         android:id="@+id/action_settings"
@@ -10,7 +18,7 @@
 
     <item
         android:icon="@drawable/ic_exit_to_app_black"
-        android:id="@+id/logout"
+        android:id="@+id/action_logout"
         android:orderInCategory="300"
         android:title="@string/logout"
         app:showAsAction="ifRoom" />

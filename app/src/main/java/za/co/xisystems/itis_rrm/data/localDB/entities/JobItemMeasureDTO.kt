@@ -12,8 +12,10 @@ const val JOB_ITEM_MEASURE = "JOB_ITEM_MEASURE"
 
 @Entity(tableName = JOB_ITEM_MEASURE)
 data class JobItemMeasureDTO(
+
+    @PrimaryKey(autoGenerate = true)
+    val ID: Int,
     @SerializedName("ActId")
-    @PrimaryKey
     var actId: Int,
     @SerializedName("ApprovalDate")
     var approvalDate: String? = Date().toString(),
@@ -42,10 +44,10 @@ data class JobItemMeasureDTO(
     @SerializedName("PrjItemMeasurePhotoDtos")
     var jobItemMeasurePhotos: ArrayList<JobItemMeasurePhotoDTO>,
     @SerializedName("PrjJobDto")
-    var job: JobDTO,
+    var job: JobDTO? = null,
     @SerializedName("PrjJobItemEstimateDto")
 //    val prjJobItemEstimateDto: ArrayList<JobItemEstimateDTO>,
-    var jobItemEstimate: JobItemEstimateDTO,
+    var jobItemEstimate: JobItemEstimateDTO? = null,
     @SerializedName("ProjectItemId")
     var projectItemId: String?,
     @SerializedName("ProjectVoId")
@@ -65,4 +67,6 @@ data class JobItemMeasureDTO(
     var entityDescription: String?,
 
     var selectedItemUom: String?
+
+
 ): Serializable

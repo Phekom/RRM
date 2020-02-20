@@ -4,7 +4,6 @@ package za.co.xisystems.itis_rrm.data.localDB.entities
 import androidx.core.util.Pair
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.gson.annotations.SerializedName
 import za.co.xisystems.itis_rrm.utils.JobUtils
 import java.io.Serializable
@@ -50,12 +49,17 @@ data class JobItemEstimateDTO(
     @SerializedName("TrackRouteId")
     var trackRouteId: String? = null,
 
-   val jobItemEstimatePhotoStart : JobItemEstimatesPhotoDTO?,
-   val jobItemEstimatePhotoEnd : JobItemEstimatesPhotoDTO?,
+    val jobItemEstimatePhotoStart: JobItemEstimatesPhotoDTO?,
+    val jobItemEstimatePhotoEnd: JobItemEstimatesPhotoDTO?,
 
-    var estimateComplete : Int = 0,
+    var estimateComplete: String?,
 //    var entityDescription: String?,
+
+    var MEASURE_ACT_ID: Int = 0,
+
     val SelectedItemUOM: String?
+
+
 
 ): Serializable {
 
@@ -127,7 +131,7 @@ data class JobItemEstimateDTO(
         else {
             val photoStart = jobItemEstimatePhotos?.get(0)
             val photoEnd = jobItemEstimatePhotos?.get(1)
-            return !(photoStart!!.filename == null || photoEnd == null || photoEnd!!.filename == null)
+            return !(photoStart?.filename == null || photoEnd == null || photoEnd?.filename == null)
         }
     }
 

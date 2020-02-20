@@ -1,10 +1,9 @@
 package za.co.xisystems.itis_rrm.data.localDB
 
-import org.apache.commons.lang3.SerializationUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
-import za.co.xisystems.itis_rrm.data.localDB.models.WorkflowJob
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.utils.DataConversion
+import java.util.ArrayList
 
 /**
  * Created by Francis Mahlava on 2020/01/02.
@@ -23,14 +22,14 @@ object JobDataController{
         if (job.workflowItemEstimates != null) {
             for (jie in job.workflowItemEstimates) {
                 jie.actId = jie.actId
-                jie.estimateId = DataConversion.toBigEndian(jie.estimateId)
-                jie.trackRouteId = DataConversion.toBigEndian(jie.trackRouteId)
+                jie.estimateId = DataConversion.toBigEndian(jie.estimateId)!!
+                jie.trackRouteId = DataConversion.toBigEndian(jie.trackRouteId)!!
                 //  Lets go through the WorkFlowEstimateWorks
                 for (wfe in jie.workflowEstimateWorks) {
-                    wfe.trackRouteId = DataConversion.toBigEndian(wfe.trackRouteId)
-                    wfe.worksId = DataConversion.toBigEndian(wfe.worksId)
+                    wfe.trackRouteId = DataConversion.toBigEndian(wfe.trackRouteId)!!
+                    wfe.worksId = DataConversion.toBigEndian(wfe.worksId)!!
                     wfe.actId = wfe.actId
-                    wfe.estimateId = DataConversion.toBigEndian(wfe.estimateId)
+                    wfe.estimateId = DataConversion.toBigEndian(wfe.estimateId)!!
                     wfe.recordVersion = wfe.recordVersion
                     wfe.recordSynchStateId = wfe.recordSynchStateId
                 }
@@ -39,9 +38,9 @@ object JobDataController{
         if (job.workflowItemMeasures != null) {
             for (jim in job.workflowItemMeasures) {
                 jim.actId = jim.actId
-                jim.itemMeasureId = DataConversion.toBigEndian(jim.itemMeasureId)
-                jim.measureGroupId = DataConversion.toBigEndian(jim.measureGroupId)
-                jim.trackRouteId = DataConversion.toBigEndian(jim.trackRouteId)
+                jim.itemMeasureId = DataConversion.toBigEndian(jim.itemMeasureId)!!
+                jim.measureGroupId = DataConversion.toBigEndian(jim.measureGroupId)!!
+                jim.trackRouteId = DataConversion.toBigEndian(jim.trackRouteId)!!
             }
         }
         if (job.workflowJobSections != null) {
@@ -55,13 +54,16 @@ object JobDataController{
     }
 
 
-    fun setJobLittleEndianGuids(_job: JobDTOTemp?): JobDTOTemp? {
-        val job: JobDTOTemp = SerializationUtils.clone(_job)!!
+    fun setJobLittleEndianGuids(job: JobDTO): JobDTO? {
+//        val job: JobDTO = SerializationUtils.clone(_job)!!
         job.setJobId(DataConversion.toLittleEndian(job.JobId))
         job.setProjectId(DataConversion.toLittleEndian(job.ProjectId))
         job.setPerfitemGroupId(DataConversion.toLittleEndian(job.PerfitemGroupId))
         job.setProjectVoId(DataConversion.toLittleEndian(job.ProjectVoId))
-        job.setTrackRouteId(DataConversion.toLittleEndian(job.TrackRouteId))
+//        job.setTrackRouteId(DataConversion.toLittleEndian(job.TrackRouteId))
+        if (job.TrackRouteId != null)
+            job.setTrackRouteId(DataConversion.toLittleEndian(job.TrackRouteId))
+        else job.TrackRouteId = null
         job.setContractVoId(DataConversion.toLittleEndian(job.ContractVoId))
         job.setVoId(DataConversion.toLittleEndian(job.VoId))
         if (job.JobSections != null) {
@@ -78,7 +80,10 @@ object JobDataController{
                 jie.setEstimateId(DataConversion.toLittleEndian(jie.estimateId))
                 jie.setJobId(DataConversion.toLittleEndian(jie.jobId))
                 jie.setProjectItemId(DataConversion.toLittleEndian(jie.projectItemId))
-                jie.setTrackRouteId(DataConversion.toLittleEndian(jie.trackRouteId))
+                if (jie.trackRouteId != null)
+                    jie.setTrackRouteId(DataConversion.toLittleEndian(jie.trackRouteId))
+                else jie.trackRouteId = null
+
                 jie.setProjectVoId(DataConversion.toLittleEndian(jie.projectVoId))
                 if (jie.jobItemEstimatePhotos != null) {
                     for (jiep in jie.jobItemEstimatePhotos!!) {
@@ -122,6 +127,36 @@ object JobDataController{
     }
 
 
+    fun setJobMeasureLittleEndianGuids(jim: JobItemMeasureDTO): JobItemMeasureDTO {
+        if (jim != null) {
+//            for (jim in jobItemMeasure) {
+                jim.setEstimateId(DataConversion.toLittleEndian(jim.estimateId))
+                jim.setJobId(DataConversion.toLittleEndian(jim.jobId))
+                jim.setProjectItemId(DataConversion.toLittleEndian(jim.projectItemId))
+                jim.setItemMeasureId(DataConversion.toLittleEndian(jim.itemMeasureId))
+
+//                if (jim.trackRouteId != null)
+//                    jim.setTrackRouteId(DataConversion.toLittleEndian(jim.trackRouteId))
+//                else jim.trackRouteId = null
+
+//                jim.setProjectVoId(DataConversion.toLittleEndian(jim.projectVoId))
+                if (jim.jobItemMeasurePhotos != null) {
+                    for (jmep in jim.jobItemMeasurePhotos) {
+                        jmep.setPhotoId(DataConversion.toLittleEndian(jmep.photoId))
+                        jmep.setEstimateId(DataConversion.toLittleEndian(jmep.estimateId))
+                        jmep.setItemMeasureId(DataConversion.toLittleEndian(jmep.itemMeasureId))
+                    }
+                }
+
+
+//            }
+        }
+
+        return jim
+    }
+
+
+
     fun setMsg( uplodmsg : String?): String? {
       var uplodmsg = uplodmsg
         return uplodmsg
@@ -142,6 +177,10 @@ object JobDataController{
 //        return toLittleEndian(b)
 //    }
 
+}
+
+private fun JobItemMeasurePhotoDTO.setEstimateId(toLittleEndian: String?) {
+    this.estimateId = toLittleEndian
 }
 
 private fun JobItemEstimateDTO.setProjectVoId(toLittleEndian: String?) {
@@ -240,30 +279,30 @@ private fun JobSectionDTO.setJobSectionId(toLittleEndian: String?) {
     this.jobSectionId = toLittleEndian!!
 }
 
-private fun JobDTOTemp.setVoId(toLittleEndian: String?) {
+private fun JobDTO.setVoId(toLittleEndian: String?) {
     this.VoId = toLittleEndian
 }
 
-private fun JobDTOTemp.setContractVoId(toLittleEndian: String?) {
+private fun JobDTO.setContractVoId(toLittleEndian: String?) {
     this.ContractVoId = toLittleEndian
 }
 
-private fun JobDTOTemp.setTrackRouteId(toLittleEndian: String?) {
+private fun JobDTO.setTrackRouteId(toLittleEndian: String?) {
     this.TrackRouteId =  toLittleEndian
 }
 
-private fun JobDTOTemp.setProjectVoId(toLittleEndian: String?) {
+private fun JobDTO.setProjectVoId(toLittleEndian: String?) {
     this.ProjectVoId = toLittleEndian
 }
 
-private fun JobDTOTemp.setPerfitemGroupId(toLittleEndian: String?) {
+private fun JobDTO.setPerfitemGroupId(toLittleEndian: String?) {
     this.PerfitemGroupId = toLittleEndian
 }
 
-private fun JobDTOTemp.setProjectId(toLittleEndian: String?) {
+private fun JobDTO.setProjectId(toLittleEndian: String?) {
     this.ProjectId = toLittleEndian
 }
 
-private fun JobDTOTemp.setJobId(toLittleEndian: String?) {
+private fun JobDTO.setJobId(toLittleEndian: String?) {
     this.JobId = toLittleEndian!!
 }

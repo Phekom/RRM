@@ -11,16 +11,19 @@ const val JOB_ITEM_MEASURE_PHOTO = "JOB_ITEM_MEASURE_PHOTO"
 
 @Entity(tableName = JOB_ITEM_MEASURE_PHOTO)
 data class JobItemMeasurePhotoDTO(
+    @PrimaryKey(autoGenerate = true)
+    val ID: Int,
     @SerializedName("Descr")
     val descr: String?,
     @SerializedName("Filename")
     val filename: String?,
+    @SerializedName("EstimateId")
+    var estimateId: String?,
     @SerializedName("ItemMeasureId")
     var itemMeasureId: String?,
     @SerializedName("PhotoDate")
     val photoDate: String?,
     @SerializedName("PhotoId")
-    @PrimaryKey
     var photoId: String,
     @SerializedName("PhotoLatitude")
     val photoLatitude: Double,
@@ -29,9 +32,11 @@ data class JobItemMeasurePhotoDTO(
     @SerializedName("PhotoPath")
     var photoPath: String?,
     @SerializedName("PrjJobItemMeasureDto")
-    val jobItemMeasure: JobItemMeasureDTO,
+    val jobItemMeasure: JobItemMeasureDTO? = null,
     @SerializedName("RecordSynchStateId")
     val recordSynchStateId: Int,
     @SerializedName("RecordVersion")
     val recordVersion: Int
+
+
 ): Serializable

@@ -33,9 +33,8 @@ interface ContractDao {
     @Query("DELETE FROM CONTRACTS_TABLE")
     fun deleteAll()
 
-
-
-
+    @Query("SELECT contractNo FROM CONTRACTS_TABLE WHERE contractId LIKE :contractVoId")
+    fun getContractNoForId(contractVoId: String?): String
 
 //    //  Get All Contracts for Versio
 //    @Query("SELECT * FROM CONTRACTS_TABLE ")
