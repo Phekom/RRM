@@ -68,11 +68,13 @@ class HomeFragment : BaseFragment(), KodeinAware {
             data2_loading.show()
             val user = homeViewModel.user.await()
             user.observe(viewLifecycleOwner, Observer { user_ ->
+
                 username?.setText(user_.userName)
             })
 
             val contracts = homeViewModel.offlinedata.await()
             contracts.observe(viewLifecycleOwner, Observer { contrcts ->
+
                 group2_loading.visibility = View.GONE
             })
 
@@ -112,7 +114,7 @@ class HomeFragment : BaseFragment(), KodeinAware {
             dataEnabled.setTextColor(colorConnected)
         }
 
-        //                      Check if GPS connected
+        // Check if GPS connected
                if (!gps_enabled) {
             //            locationEnabled.text = "GPS NOT CONNECTED"
             locationEnabled.text = activity!!.getString(R.string.gps_not_connected)

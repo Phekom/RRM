@@ -523,8 +523,8 @@ class JobCreationDataRepository(private val api: BaseConnectionApi, private val 
         itemCode: ItemDTOTemp?
     ) {
         try {
-            val distance = 2.5
-            val buffer = 1
+            val distance = 0.50
+            val buffer = 0
             val routeSectionPointResponse =
                 apiRequest { api.getRouteSectionPoint(distance,buffer,latitude, longitude, useR) }
             routeSectionPoint.postValue(

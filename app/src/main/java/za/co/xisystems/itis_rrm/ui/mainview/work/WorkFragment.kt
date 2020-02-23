@@ -61,9 +61,10 @@ class WorkFragment : BaseFragment(), KodeinAware {
 //            val works = workViewModel.getJobsForActivityId(ActivityIdConstants.JOB_APPROVED..ActivityIdConstants.ESTIMATE_INCOMPLETE)
             works.observe(viewLifecycleOwner, Observer { work_s ->
                 noData.visibility = View.GONE
-                toast(work_s.size.toString())
-                initRecyclerView(work_s.toWorkListItems())
                 group7_loading.visibility = View.GONE
+                 initRecyclerView(work_s.toWorkListItems())
+
+
             })
 
         }
@@ -84,21 +85,6 @@ class WorkFragment : BaseFragment(), KodeinAware {
 
         groupAdapter.setOnItemClickListener { item, view ->
 
-            //            ToastUtils().toastShort(activity,
-//                "Job Info: Start Km: ")
-
-//            Coroutines.main {
-//                                (item as? ExpandableHeaderItem)?.let {
-//                //                    val descri = approveViewModel.getDescForProjectId(it.jobItemMeasureDTO.projectItemId!!)
-////                    val sectionId  =  approveViewModel.getProjectSectionIdForJobId(it.jobDTO.jobId)
-////                    val route  =  approveViewModel.getRouteForProjectSectionId(sectionId)
-////                    val section  =  approveViewModel.getSectionForProjectSectionId(sectionId)
-////                    sendJobtoAprove((it.jobItemMeasureDTO.jobId), view)
-//
-//
-//                }
-//
-//            }
         }
 
     }
@@ -145,13 +131,6 @@ class WorkFragment : BaseFragment(), KodeinAware {
         //Initialize Expandable group with expandable item and specify whether it should be expanded by default or not
 
         return this.map { work_items ->
-
-            //                                    if (work_items.StartKm <= work_items.EndKm) {
-//                                        toast("Job Info: Start Km: " + work_items.StartKm.toString() + " - End Km: " + work_items.EndKm)
-//                                    } else if (null == work_items.TrackRouteId) {
-//                                       toast("Job not found please click on item to download job.")
-//                                    }
-
             val expandableHeaderItem =
                 ExpandableHeaderWorkItem(activity, work_items, workViewModel, work_items.JobId)
 //            ExpandableHeaderItem("JI:${work_items.JiNo} ", work_items.Descr!! , activity, work_items, workViewModel)
@@ -162,24 +141,18 @@ class WorkFragment : BaseFragment(), KodeinAware {
                     estimates.observe(viewLifecycleOwner, Observer { i_tems ->
                         Coroutines.main {
                                 for (item in i_tems) {
-
-                                    val estimateId = arrayOfNulls<String>(i_tems.size)
-                                    val Desc = arrayOfNulls<String>(i_tems.size)
-                                    val qty = arrayOfNulls<String>(i_tems.size)
-                                    val rate = arrayOfNulls<String>(i_tems.size)
-                                    for (i in i_tems.indices) {
                                         Coroutines.main {
-                                            Desc[i] =
-                                                workViewModel?.getDescForProjectItemId(i_tems[i].projectItemId!!)
-                                            qty[i] = i_tems[i].qty.toString()
-                                            rate[i] = i_tems[i].lineRate.toString()
-                                            estimateId[i] = i_tems[i].estimateId
-                                            add(CardItem(  activity, Desc[i].toString(),   qty[i]!!,
-                                                rate[i]!!,   estimateId[i]!!,  workViewModel, item  , work_items                                    )
+                                            val   Desc =
+                                                workViewModel?.getDescForProjectItemId(item.projectItemId!!)
+                                            val  qty = item.qty.toString()
+                                            val  rate = item.lineRate.toString()
+                                            val  estimateId = item.estimateId
+                                            add(CardItem(  activity, Desc,   qty!!,
+                                                rate!!,   estimateId!!,  workViewModel, item  , work_items                                    )
                                             )
 //                                add(CardItem( activity, Desc[i].toString(),  workViewModel)).toString()
                                         }
-                                    }
+
                                 }
                             }
 

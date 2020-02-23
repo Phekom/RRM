@@ -36,13 +36,21 @@ val user by lazyDeferred {
 
     suspend fun getJobsForActivityId(activityId1: Int, activityId2: Int): LiveData<List<JobDTO>> {
         return withContext(Dispatchers.IO) {
-            workDataRepository.getJobsForActivityIds1(activityId1,activityId2)
+            workDataRepository.getJobsForActivityIds(activityId1,activityId2)
         }
     }
 
-    suspend fun getJobEstimationItemsForJobId(jobID: String?, estimateIncomplete: Int): LiveData<List<JobItemEstimateDTO>> {
+
+    suspend fun getJobsForActivityId1(activityId1: Int): LiveData<List<JobItemEstimateDTO>> {
         return withContext(Dispatchers.IO) {
-            workDataRepository.getJobEstimationItemsForJobId(jobID)
+            workDataRepository.getJobsForActivityId(activityId1)
+        }
+    }
+
+
+    suspend fun getJobEstimationItemsForJobId(jobID: String?, actID: Int): LiveData<List<JobItemEstimateDTO>> {
+        return withContext(Dispatchers.IO) {
+            workDataRepository.getJobEstimationItemsForJobId(jobID, actID)
         }
     }
 

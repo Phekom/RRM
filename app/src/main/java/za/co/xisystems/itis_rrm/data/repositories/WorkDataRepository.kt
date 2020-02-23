@@ -57,9 +57,15 @@ class WorkDataRepository(private val api: BaseConnectionApi, private val Db: App
         }
     }
 
-    suspend fun getJobsForActivityIds1(activityId1: Int, activityId2: Int): LiveData<List<JobDTO>> {
+    suspend fun getJobsForActivityIds(activityId1: Int, activityId2: Int): LiveData<List<JobDTO>> {
         return withContext(Dispatchers.IO) {
             Db.getJobDao().getJobsForActivityIds1(activityId1, activityId2)
+        }
+    }
+
+    suspend fun getJobsForActivityId(activityId1: Int): LiveData<List<JobItemEstimateDTO>> {
+        return withContext(Dispatchers.IO) {
+            Db.getJobItemEstimateDao().getJobsForActivityId(activityId1)
         }
     }
 
@@ -483,9 +489,9 @@ class WorkDataRepository(private val api: BaseConnectionApi, private val Db: App
     }
 
 
-    suspend fun getJobEstimationItemsForJobId(jobID: String?): LiveData<List<JobItemEstimateDTO>> {
+    suspend fun getJobEstimationItemsForJobId(jobID: String?, actID: Int): LiveData<List<JobItemEstimateDTO>> {
         return withContext(Dispatchers.IO) {
-            Db.getJobItemEstimateDao().getJobEstimationItemsForJobId(jobID!!)
+            Db.getJobItemEstimateDao().getJobEstimationItemsForJobId(jobID!!,actID)
         }
     }
 

@@ -240,6 +240,7 @@ class OfflineDataRepository(
     }
 
     suspend fun getWorkFlows(): LiveData<List<WorkFlowDTO>> {
+
         return withContext(Dispatchers.IO) {
             val userId = Db.getUserDao().getuserID()
             fetchAllData(userId)
@@ -393,11 +394,11 @@ class OfflineDataRepository(
 //        }
 //    }
 
-    suspend fun getJobEstimationItemsForJobId(jobID: String?): LiveData<List<JobItemEstimateDTO>> {
-        return withContext(Dispatchers.IO) {
-            Db.getJobItemEstimateDao().getJobEstimationItemsForJobId(jobID!!)
-        }
-    }
+//    suspend fun getJobEstimationItemsForJobId(jobID: String?): LiveData<List<JobItemEstimateDTO>> {
+//        return withContext(Dispatchers.IO) {
+//            Db.getJobItemEstimateDao().getJobEstimationItemsForJobId(jobID!!, actID)
+//        }
+//    }
 
     suspend fun getJobMeasureItemsForJobId(
         jobID: String?,
@@ -1927,7 +1928,7 @@ class OfflineDataRepository(
 
     }
 
-    private suspend fun fetchAllData(userId: String) {
+    private suspend fun fetchAllData(userId: String){
         val lastSavedAt = prefs.getLastSavedAt()
         try {
             val activitySectionsResponse = apiRequest { api.activitySectionsRefresh(userId) }
@@ -1945,7 +1946,11 @@ class OfflineDataRepository(
             val contractsResponse = apiRequest { api.refreshContractInfo(userId) }
             conTracts.postValue(contractsResponse.contracts)
 
-
+//            val message = activitySectionsResponse.errorMessage
+//            val message1 = workFlowResponse.errorMessage
+//            val message2 = lookupResponse.errorMessage
+//            val message3 = toDoListGroupsResponse.errorMessage
+//            val message4 = contractsResponse.errorMessage
 
         } catch (e: ApiException) {
             ToastUtils().toastLong(activity, e.message)

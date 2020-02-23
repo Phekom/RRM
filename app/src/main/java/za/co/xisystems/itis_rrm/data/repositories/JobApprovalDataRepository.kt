@@ -2,43 +2,17 @@ package za.co.xisystems.itis_rrm.data.repositories
 
 //import sun.security.krb5.Confounder.bytes
 
-import android.app.Activity
-import android.os.Build
-import android.os.Environment
-import android.os.Looper
 import android.util.Log
-import android.widget.Toast
-import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.google.gson.JsonArray
-import com.google.gson.JsonObject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import za.co.xisystems.itis_rrm.R
-import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
-import za.co.xisystems.itis_rrm.data.localDB.JobDataController
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
-import za.co.xisystems.itis_rrm.data.network.OfflineListener
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
-import za.co.xisystems.itis_rrm.data.network.request.RrmJobRequest
-import za.co.xisystems.itis_rrm.data.network.responses.JobResponse
-import za.co.xisystems.itis_rrm.data.network.responses.SaveMeasurementResponse
-import za.co.xisystems.itis_rrm.data.network.responses.UploadImageResponse
-import za.co.xisystems.itis_rrm.data.network.responses.WorkflowMoveResponse
 import za.co.xisystems.itis_rrm.data.preferences.PreferenceProvider
 import za.co.xisystems.itis_rrm.utils.*
-import za.co.xisystems.itis_rrm.utils.PhotoUtil.getPhotoPathFromExternalDirectory
-import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
-import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
-import java.io.File
-import java.time.LocalDateTime
-import java.time.temporal.ChronoUnit
-import java.util.*
-import java.util.regex.Pattern
-import kotlin.collections.ArrayList
 
 
 /**
@@ -126,7 +100,7 @@ class JobApprovalDataRepository(private val api: BaseConnectionApi, private val 
 
     suspend fun getJobEstimationItemsForJobId(jobID: String?): LiveData<List<JobItemEstimateDTO>> {
         return withContext(Dispatchers.IO) {
-            Db.getJobItemEstimateDao().getJobEstimationItemsForJobId(jobID!!)
+            Db.getJobItemEstimateDao().getJobEstimationItemsForJobId2(jobID!!)
         }
     }
 

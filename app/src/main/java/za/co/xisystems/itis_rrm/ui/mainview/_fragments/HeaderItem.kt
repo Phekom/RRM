@@ -34,7 +34,7 @@ open class HeaderItem(
                     val route  =  workViewModel?.getRouteForProjectSectionId(sectionId!!)
                     val section  =  workViewModel?.getSectionForProjectSectionId(sectionId!!)
                     val subtitleResId = workViewModel?.getItemDescription(jobId!!)
-                    val sectionRoute  =  " ( ${route} ${"/0$section"} )"
+                    val sectionRoute  =  " ( $route ${"/0$section"} )"
                     visibility = View.GONE
                     subtitleResId?.let {
                         visibility = View.VISIBLE
