@@ -14,5 +14,8 @@ data class RouteSectionPointResponse(
     @SerializedName("PointLocation")
     val pointLocation: Double,
     @SerializedName("SectionId")
-    val sectionId: Int
+    val sectionId: Int,
+    @SerializedName("BufferLocation")
+    val bufferLocation: String
+
 )

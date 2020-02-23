@@ -56,7 +56,7 @@ open class MainApp : Application(), KodeinAware {
         bind() from singleton { JobCreationDataRepository(instance(), instance(), instance()) }
         bind() from singleton { JobApprovalDataRepository(instance(), instance(), instance()) }
         bind() from singleton { WorkDataRepository(instance(), instance(), instance()) }
-        bind() from singleton { MeasureDataRepository(instance(), instance(), instance()) }
+        bind() from singleton { MeasureCreationDataRepository(instance(), instance(), instance()) }
 //        bind() from singleton { WorkDataRepository(instance(), instance(), instance()) }
 
 //        bind<ID_Provider>() with singleton { IdProviderImpl(instance()) }

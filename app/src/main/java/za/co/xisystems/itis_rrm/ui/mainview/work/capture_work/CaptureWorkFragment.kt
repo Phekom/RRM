@@ -704,10 +704,10 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
                             prog.show()
                             val submit=    workViewModel.processWorkflowMove(user_.userId, trackRounteId, null, direction)
                             if (submit != null){
-                                prog.show()
+                                prog.dismiss()
                                 toast(submit)
                                 popViewOnJobSubmit(direction)}else{
-                                prog.show()
+                                prog.dismiss()
                                 popViewOnJobSubmit(direction)}
 
                         }

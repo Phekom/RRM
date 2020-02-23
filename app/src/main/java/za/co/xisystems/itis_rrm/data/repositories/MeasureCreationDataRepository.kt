@@ -28,9 +28,9 @@ import kotlin.collections.ArrayList
  * Created by Francis Mahlava on 2019/11/28.
  */
 
-class MeasureDataRepository(private val api: BaseConnectionApi, private val Db: AppDatabase, private val prefs: PreferenceProvider) : SafeApiRequest() {
+class MeasureCreationDataRepository(private val api: BaseConnectionApi, private val Db: AppDatabase, private val prefs: PreferenceProvider) : SafeApiRequest() {
     companion object {
-        val TAG: String = MeasureDataRepository::class.java.simpleName
+        val TAG: String = MeasureCreationDataRepository::class.java.simpleName
     }
 
 

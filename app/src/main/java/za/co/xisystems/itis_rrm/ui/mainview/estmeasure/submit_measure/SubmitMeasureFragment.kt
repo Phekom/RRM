@@ -271,9 +271,9 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
                         prog.show()
                         val submit=   measureViewModel.processWorkflowMove( user_.userId, JobId, itemMeasureJob.JiNo, ContractVoId, jobItemMeasureList, activity, itemMeasureJob)
                         if (submit != null){
-                            prog.show()
+                            prog.dismiss()
                             toast(submit)}else{
-                            prog.show()
+                            prog.dismiss()
                             popViewOnJobSubmit()}
 
 

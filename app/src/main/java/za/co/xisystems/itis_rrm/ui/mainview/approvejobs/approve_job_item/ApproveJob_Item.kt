@@ -17,15 +17,23 @@ class ApproveJob_Item(
     val jobDTO: JobDTO,
     private val approveViewModel: ApproveJobsViewModel
 ) : Item(){
-
+    var route : String? = null
+    var section : String? = null
+    var sectionId : String? = null
     override fun bind(viewHolder: GroupieViewHolder, position: Int) {
        viewHolder.apply {
            appListID.text = getItemId(position + 1).toString()
            listview_item_textView.text = "JI:${jobDTO.JiNo} - "
            Coroutines.main {
-               val sectionId  =  approveViewModel?.getProjectSectionIdForJobId(jobDTO.JobId)
-               val route  =  approveViewModel?.getRouteForProjectSectionId(sectionId!!)
-               val section  =  approveViewModel?.getSectionForProjectSectionId(sectionId!!)
+
+                sectionId  =  approveViewModel?.getProjectSectionIdForJobId(jobDTO.JobId)
+               if (sectionId.isNullOrEmpty()) sectionId = ""
+                  route  = approveViewModel?.getRouteForProjectSectionId(sectionId!!)
+               if (route.isNullOrEmpty()) route = ""
+                   section  =  approveViewModel.getSectionForProjectSectionId(sectionId!!)
+               if (section.isNullOrEmpty()) section = ""
+
+
                apv_section.text =  "( ${route} ${"/0$section"} )"
            }
            apv_description.text = jobDTO.Descr

@@ -631,7 +631,6 @@ class EstimatePhotoFragment : BaseFragment(), KodeinAware {
 //                                       }
                                                 createRouteSection( sec_id, this.newjob!!.JobId, startKM!!,endKM!!)
 
-
                                             }
                                         })
 

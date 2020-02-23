@@ -7,12 +7,12 @@ import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
-import za.co.xisystems.itis_rrm.data.repositories.MeasureDataRepository
+import za.co.xisystems.itis_rrm.data.repositories.MeasureCreationDataRepository
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.estimate_measure_item.EstimateMeasure_Item
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
 
 class MeasureViewModel (
-    private val measureDataRepository: MeasureDataRepository
+    private val measureCreationDataRepository: MeasureCreationDataRepository
 ) : ViewModel() {
 
 //    val offlinedata by lazyDeferred {
@@ -26,7 +26,7 @@ class MeasureViewModel (
 //    }
 
     val user by lazyDeferred {
-        measureDataRepository.getUser()
+        measureCreationDataRepository.getUser()
     }
 
 
@@ -59,7 +59,7 @@ class MeasureViewModel (
         activityId3: Int
     ): LiveData<List<JobItemEstimateDTO>> {
         return withContext(Dispatchers.IO) {
-            measureDataRepository.getJobMeasureForActivityId(activityId, activityId2,activityId3)
+            measureCreationDataRepository.getJobMeasureForActivityId(activityId, activityId2,activityId3)
         }
     }
 
@@ -73,48 +73,48 @@ class MeasureViewModel (
 
     suspend fun getProjectSectionIdForJobId(jobId: String): String {
         return withContext(Dispatchers.IO) {
-            measureDataRepository.getProjectSectionIdForJobId(jobId)
+            measureCreationDataRepository.getProjectSectionIdForJobId(jobId)
         }
     }
 
     suspend fun getRouteForProjectSectionId(sectionId: String): String {
         return withContext(Dispatchers.IO) {
-            measureDataRepository.getRouteForProjectSectionId(sectionId)
+            measureCreationDataRepository.getRouteForProjectSectionId(sectionId)
         }
     }
     suspend fun getSectionForProjectSectionId(sectionId: String): String {
         return withContext(Dispatchers.IO) {
-            measureDataRepository.getSectionForProjectSectionId(sectionId)
+            measureCreationDataRepository.getSectionForProjectSectionId(sectionId)
         }
     }
     suspend fun getItemDescription(jobId: String): String {
         return withContext(Dispatchers.IO) {
-            measureDataRepository.getItemDescription(jobId)
+            measureCreationDataRepository.getItemDescription(jobId)
         }
     }
     suspend fun getDescForProjectItemId(projectItemId: String): String {
         return withContext(Dispatchers.IO) {
-            measureDataRepository.getProjectItemDescription(projectItemId)
+            measureCreationDataRepository.getProjectItemDescription(projectItemId)
         }
     }
     suspend fun getItemJobNo(jobId: String): String {
         return withContext(Dispatchers.IO) {
-            measureDataRepository.getItemJobNo(jobId)
+            measureCreationDataRepository.getItemJobNo(jobId)
         }
     }
 
 
     suspend fun getJobMeasureItemsPhotoPath(itemMeasureId: String): String {
         return withContext(Dispatchers.IO) {
-            measureDataRepository.getJobMeasureItemsPhotoPath(itemMeasureId)
+            measureCreationDataRepository.getJobMeasureItemsPhotoPath(itemMeasureId)
         }
     }
 
     suspend fun deleteItemMeasurefromList(itemMeasureId: String) {
-        measureDataRepository.deleteItemMeasurefromList(itemMeasureId)
+        measureCreationDataRepository.deleteItemMeasurefromList(itemMeasureId)
     }
     suspend fun deleteItemMeasurephotofromList(itemMeasureId: String) {
-        measureDataRepository.deleteItemMeasurephotofromList(itemMeasureId)
+        measureCreationDataRepository.deleteItemMeasurephotofromList(itemMeasureId)
     }
     suspend fun processWorkflowMove(
         userId: String,
@@ -126,7 +126,7 @@ class MeasureViewModel (
         itemMeasureJob: JobDTO
     ) : String {
         return withContext(Dispatchers.IO) {
-            measureDataRepository.saveMeasurementItems( userId, jobId,jimNo,contractVoId,mSures, activity, itemMeasureJob)
+            measureCreationDataRepository.saveMeasurementItems( userId, jobId,jimNo,contractVoId,mSures, activity, itemMeasureJob)
         }
 
     }
@@ -136,7 +136,7 @@ class MeasureViewModel (
         estimateId: String
     ): LiveData<List<JobItemMeasureDTO>> {
         return withContext(Dispatchers.IO) {
-            measureDataRepository.getJobItemMeasuresForJobIdAndEstimateId(jobId,estimateId)
+            measureCreationDataRepository.getJobItemMeasuresForJobIdAndEstimateId(jobId,estimateId)
         }
     }
 
@@ -146,24 +146,24 @@ class MeasureViewModel (
      //   ,jobItemMeasureArrayList: ArrayList<JobItemMeasureDTO>
     ): LiveData<List<JobItemMeasureDTO>> {
         return withContext(Dispatchers.IO) {
-            measureDataRepository.getJobItemMeasuresForJobIdAndEstimateId2(jobId, estimateId)//,jobItemMeasureArrayList
+            measureCreationDataRepository.getJobItemMeasuresForJobIdAndEstimateId2(jobId, estimateId)//,jobItemMeasureArrayList
         }
     }
 
     suspend fun getJobItemsToMeasureForJobId(jobID: String?): LiveData<List<JobItemEstimateDTO>>  {
         return withContext(Dispatchers.IO) {
-            measureDataRepository.getJobItemsToMeasureForJobId(jobID)
+            measureCreationDataRepository.getJobItemsToMeasureForJobId(jobID)
         }
     }
 
     suspend fun getItemForItemId(projectItemId: String?): LiveData<ProjectItemDTO> {
         return withContext(Dispatchers.IO) {
-            measureDataRepository.getItemForItemId(projectItemId)
+            measureCreationDataRepository.getItemForItemId(projectItemId)
         }
     }
     suspend fun getJobFromJobId(jobId: String?):LiveData<JobDTO> {
         return withContext(Dispatchers.IO) {
-            measureDataRepository.getSingleJobFromJobId(jobId)
+            measureCreationDataRepository.getSingleJobFromJobId(jobId)
         }
     }
 
@@ -172,16 +172,16 @@ class MeasureViewModel (
         estimateId: String?,
         selectedJobItemMeasure: JobItemMeasureDTO
     ) {
-        measureDataRepository.setJobItemMeasureImages(jobItemMeasurePhotoList,estimateId, selectedJobItemMeasure)
+        measureCreationDataRepository.setJobItemMeasureImages(jobItemMeasurePhotoList,estimateId, selectedJobItemMeasure)
     }
 
     suspend fun saveJobItemMeasureItems(jobItemMeasureDTO: ArrayList<JobItemMeasureDTO>) {
-        measureDataRepository.saveJobItemMeasureItems(jobItemMeasureDTO)
+        measureCreationDataRepository.saveJobItemMeasureItems(jobItemMeasureDTO)
     }
 
     suspend fun getJobItemMeasurePhotosForItemEstimateID(estimateId: String): LiveData<List<JobItemMeasurePhotoDTO>> {
         return withContext(Dispatchers.IO) {
-            measureDataRepository.getJobItemMeasurePhotosForItemEstimateID(estimateId)
+            measureCreationDataRepository.getJobItemMeasurePhotosForItemEstimateID(estimateId)
         }
     }
 
