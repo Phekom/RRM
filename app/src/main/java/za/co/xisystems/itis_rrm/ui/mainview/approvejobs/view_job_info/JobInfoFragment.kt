@@ -1,6 +1,7 @@
 package za.co.xisystems.itis_rrm.ui.mainview.approvejobs.view_job_info
 
 import android.app.AlertDialog
+import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -180,9 +181,22 @@ class JobInfoFragment : BaseFragment(), KodeinAware {
         description: String?
     ) {
         Coroutines.main {       //  activity?.hideKeyboard()
-        approveViewModel.processWorkflowMove(userId, trackRounteId,description,direction)
+            val prog = ProgressDialog(activity)
+            prog.setTitle(getString(R.string.please_wait))
+            prog.setMessage(getString(R.string.loading_job_wait))
+            prog.setCancelable(false)
+            prog.setIndeterminate(true)
+            prog.setProgressStyle(ProgressDialog.STYLE_SPINNER)
+            prog.show()
 
-            popViewOnJobSubmit(direction)
+        val submit = approveViewModel.processWorkflowMove(userId, trackRounteId,description,direction)
+            if (submit != null){
+                prog.dismiss()
+                toast(submit) }else {
+                prog.dismiss()
+                toast(R.string.job_submitted)
+                popViewOnJobSubmit(direction)}
+
     }
 
     }

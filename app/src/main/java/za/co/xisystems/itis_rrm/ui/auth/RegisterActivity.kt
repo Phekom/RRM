@@ -14,12 +14,18 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GooglePlayServicesUtil
+import kotlinx.android.synthetic.main.activity_login.*
 import kotlinx.android.synthetic.main.activity_register.*
+import kotlinx.android.synthetic.main.activity_register.buildFlavorTextView
+import kotlinx.android.synthetic.main.activity_register.loading
+import kotlinx.android.synthetic.main.activity_register.reg_container
+import kotlinx.android.synthetic.main.activity_register.serverTextView
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.kodein
 import org.kodein.di.generic.instance
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.data.network.PermissionController
 import za.co.xisystems.itis_rrm.databinding.ActivityRegisterBinding
@@ -102,7 +108,15 @@ class RegisterActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runna
 
                 }
             })
+            serverTextView.setOnClickListener {
+                ToastUtils().toastServerAddress(appContext)
+            }
 
+
+
+            buildFlavorTextView.setOnClickListener {
+                ToastUtils().toastVersion(appContext)
+            }
         }
         isOnline()
 

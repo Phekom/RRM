@@ -43,11 +43,7 @@ class MainActivityViewModel (
             offlineDataRepository.getJobsForActId(activityId)
         }
     }
-//    suspend fun getJobMeasureForActivityId(activityId: Int): LiveData<List<JobItemEstimateDTO>> {
-//        return withContext(Dispatchers.IO) {
-//            offlineDataRepository.getJobMeasureForActivityId(activityId)getJobMeasureForActivityId
-//        }
-//    }
+
 
 
     suspend fun getJobMeasureForActivityId(
@@ -59,6 +55,11 @@ class MainActivityViewModel (
             offlineDataRepository.getJobMeasureForActivityId(activityId, activityId2,activityId3)
         }
     }
+    suspend fun getRoles(): LiveData<List<UserRoleDTO>> {
+        return withContext(Dispatchers.IO) {
+            offlineDataRepository.getRoles()
+        }
+    }
 
 
     suspend fun getJobApproveMeasureForActivityId(activityId: Int): LiveData<List<JobItemMeasureDTO>> {
@@ -66,51 +67,8 @@ class MainActivityViewModel (
             offlineDataRepository.getJobApproveMeasureForActivityId(activityId)
         }
     }
-    suspend fun getProjectSectionIdForJobId(jobId: String): String {
-        return withContext(Dispatchers.IO) {
-            offlineDataRepository.getProjectSectionIdForJobId(jobId)
-        }
-    }
 
-    suspend fun getRouteForProjectSectionId(sectionId: String): String {
-        return withContext(Dispatchers.IO) {
-            offlineDataRepository.getRouteForProjectSectionId(sectionId)
-        }
-    }
-    suspend fun getSectionForProjectSectionId(sectionId: String): String {
-        return withContext(Dispatchers.IO) {
-            offlineDataRepository.getSectionForProjectSectionId(sectionId)
-        }
-    }
 
-    suspend fun getItemDesc(jobId: String): String {
-        return withContext(Dispatchers.IO) {
-            offlineDataRepository.getItemDescription(jobId)
-        }
-    }
-    suspend fun getDescForProjectId(projectItemId: String): String {
-        return withContext(Dispatchers.IO) {
-            offlineDataRepository.getProjectItemDescription(projectItemId)
-        }
-    }
-
-    suspend fun getJobMeasureItemsForJobId(jobID: String?,actId: Int): LiveData<List<JobItemMeasureDTO>> {
-        return withContext(Dispatchers.IO) {
-            offlineDataRepository.getJobMeasureItemsForJobId(jobID, actId)
-        }
-    }
-
-    suspend fun getUOMForProjectItemId(projectItemId: String): String {
-        return withContext(Dispatchers.IO) {
-            offlineDataRepository.getUOMForProjectItemId(projectItemId)
-        }
-    }
-
-    suspend fun getJobMeasureItemsPhotoPath(itemMeasureId: String): String {
-        return withContext(Dispatchers.IO) {
-            offlineDataRepository.getJobMeasureItemsPhotoPath(itemMeasureId)
-        }
-    }
 
     suspend fun deleteAllData() : Void?{
         return withContext(Dispatchers.IO) {
@@ -118,11 +76,6 @@ class MainActivityViewModel (
         }
     }
 
-    suspend fun getRoles(): LiveData<List<UserRoleDTO>> {
-        return withContext(Dispatchers.IO) {
-            offlineDataRepository.getRoles()
-        }
-    }
 
 
 }

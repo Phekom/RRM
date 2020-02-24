@@ -2,6 +2,7 @@ package za.co.xisystems.itis_rrm
 
 //import com.google.android.gms.appindexing.AppIndex
 
+import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.content.DialogInterface
@@ -89,7 +90,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 //        this.delegate.localNightMode.equals( AppCompatDelegate.MODE_NIGHT_YES)
 //        (this@MainActivity as MainActivity?)?.delegate?.localNightMode = AppCompatDelegate.MODE_NIGHT_YES
         getUseRoles()
-        checkGPSEnabled()
+        displayPromptForEnablingGPS(this)
         this.toggle = ActionBarDrawerToggle(
                 this, drawer_layout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close)
         drawer_layout.addDrawerListener(toggle!!)
@@ -115,7 +116,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             MenuItemCompat.getActionView(navigationView.menu.findItem(R.id.nav_estMeasure)) as TextView
     }
 
-    private fun checkGPSEnabled() {
+
+    fun displayPromptForEnablingGPS(
+        activity: Activity
+    ) {
         try {
             gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
         } catch (e: Exception) {
@@ -129,19 +133,18 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
 
         if (!gps_enabled && !network_enabled) { // notify user
-            AlertDialog.Builder(this)
-                .setMessage("Please turn on Location to continue")
-                .setCancelable(false)
-                .setPositiveButton(
-                    "Open Location Settings",
-                    DialogInterface.OnClickListener { paramDialogInterface, paramInt ->
-                        startActivity(
-                            Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
-                        )
-                    })
-                .setNegativeButton("Cancel", null)
-                .show()
-        }
+
+        val builder: AlertDialog.Builder = AlertDialog.Builder(activity)
+        val action = Settings.ACTION_LOCATION_SOURCE_SETTINGS
+        val message = ("Your GPS seems to be disabled, Please enable it to continue")
+        builder.setMessage(message)
+            .setPositiveButton("OK",
+                DialogInterface.OnClickListener { d, id ->
+                    activity.startActivity(Intent(action))
+                    d.dismiss()
+                })
+        builder.create().show()
+        }else{}
     }
 
     override fun onBackPressed() {

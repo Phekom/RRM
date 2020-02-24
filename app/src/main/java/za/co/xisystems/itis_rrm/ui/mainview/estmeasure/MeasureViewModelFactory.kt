@@ -3,6 +3,7 @@ package za.co.xisystems.itis_rrm.ui.mainview.estmeasure
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import za.co.xisystems.itis_rrm.data.repositories.MeasureCreationDataRepository
+import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 
 /**
  * Created by Francis Mahlava on 2019/10/18.
@@ -11,10 +12,11 @@ import za.co.xisystems.itis_rrm.data.repositories.MeasureCreationDataRepository
 @Suppress("UNCHECKED_CAST")
 class MeasureViewModelFactory(
 //    private val repository: UserRepository,
-    private val measureCreationDataRepository: MeasureCreationDataRepository
+    private val measureCreationDataRepository: MeasureCreationDataRepository,
+    private val offlineDataRepository: OfflineDataRepository
 ): ViewModelProvider.NewInstanceFactory() {
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-        return MeasureViewModel(measureCreationDataRepository) as T
+        return MeasureViewModel(measureCreationDataRepository,offlineDataRepository) as T
 //        return MeasureViewModel(repository,,Db ,context) as T
     }
 }

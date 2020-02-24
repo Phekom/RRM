@@ -12,10 +12,11 @@ import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 @Suppress("UNCHECKED_CAST")
 class ApproveJobsViewModelFactory(
 //    private val repository: UserRepository,
-    private val jobApprovalDataRepository: JobApprovalDataRepository
+    private val jobApprovalDataRepository: JobApprovalDataRepository,
+    private val offlineDataRepository: OfflineDataRepository
 ): ViewModelProvider.NewInstanceFactory() {
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-        return ApproveJobsViewModel(jobApprovalDataRepository) as T
+        return ApproveJobsViewModel(jobApprovalDataRepository,offlineDataRepository) as T
 //        return MeasureViewModel(repository,,Db ,context) as T
     }
 }

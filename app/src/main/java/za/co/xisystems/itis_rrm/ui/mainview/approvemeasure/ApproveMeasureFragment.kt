@@ -1,11 +1,13 @@
 package za.co.xisystems.itis_rrm.ui.mainview.approvemeasure
 
+import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
 import android.view.View.GONE
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.Navigation
@@ -13,6 +15,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import kotlinx.android.synthetic.main.fragment_approvemeasure.*
+import kotlinx.android.synthetic.main.fragment_approvemeasure.noData
+import kotlinx.android.synthetic.main.fragment_work.*
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
@@ -64,6 +68,23 @@ companion object{
                 toast(job_s.size.toString())
                 group4_loading.visibility = GONE
             })
+            approvem_swipe_to_refresh.setProgressBackgroundColorSchemeColor(
+                ContextCompat.getColor(
+                    context!!.applicationContext,
+                    R.color.colorPrimary
+                )
+            )
+            approvem_swipe_to_refresh.setColorSchemeColors(Color.WHITE)
+
+            approvem_swipe_to_refresh.setOnRefreshListener {
+                Coroutines.main {
+                    val jobs = approveViewModel.offlinedatas.await()
+                    jobs.observe(viewLifecycleOwner, Observer { works ->
+                        approvem_swipe_to_refresh.isRefreshing = false
+                    })
+
+                }
+            }
         }
     }
 

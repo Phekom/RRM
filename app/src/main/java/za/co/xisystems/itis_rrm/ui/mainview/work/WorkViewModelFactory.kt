@@ -11,11 +11,12 @@ import za.co.xisystems.itis_rrm.data.repositories.WorkDataRepository
 
 @Suppress("UNCHECKED_CAST")
 class WorkViewModelFactory(
-//    private val repository: UserRepository,
-    private val workDataRepository: WorkDataRepository
+
+    private val workDataRepository: WorkDataRepository,
+    private val offlineDataRepository: OfflineDataRepository
 ): ViewModelProvider.NewInstanceFactory() {
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-        return WorkViewModel(workDataRepository) as T
+        return WorkViewModel(workDataRepository,offlineDataRepository) as T
 //        return MeasureViewModel(repository,offlineDataRepository,Db ,context) as T
     }
 }

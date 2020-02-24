@@ -658,16 +658,12 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
                                     })
 //                                }
 
-
-
                             }
 
                         }
                     }
 
                     dialogBuilder.show()
-
-                } else {
 
                 }
 

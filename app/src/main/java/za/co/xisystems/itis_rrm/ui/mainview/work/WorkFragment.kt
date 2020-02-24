@@ -1,18 +1,22 @@
 package za.co.xisystems.itis_rrm.ui.mainview.work
 
+import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.ExpandableGroup
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.GroupieViewHolder
+import kotlinx.android.synthetic.main.fragment_approvejob.*
 import kotlinx.android.synthetic.main.fragment_approvejob.noData
+import kotlinx.android.synthetic.main.fragment_home.*
 import kotlinx.android.synthetic.main.fragment_work.*
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
@@ -48,7 +52,25 @@ class WorkFragment : BaseFragment(), KodeinAware {
             ViewModelProviders.of(this, factory).get(WorkViewModel::class.java)
         } ?: throw Exception("Invalid Activity") as Throwable
         getWorkData()
+        works_swipe_to_refresh.setProgressBackgroundColorSchemeColor(
+            ContextCompat.getColor(
+                context!!.applicationContext,
+                R.color.colorPrimary
+            )
+        )
+        works_swipe_to_refresh.setColorSchemeColors(Color.WHITE)
 
+        works_swipe_to_refresh.setOnRefreshListener {
+            Coroutines.main {
+
+                val jobs = workViewModel.offlinedatas.await()
+                jobs.observe(viewLifecycleOwner, Observer { works ->
+
+                    works_swipe_to_refresh.isRefreshing = false
+                })
+
+            }
+        }
 
     }
 
