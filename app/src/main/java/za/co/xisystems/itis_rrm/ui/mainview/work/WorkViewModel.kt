@@ -7,11 +7,13 @@ import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
+import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.WorkDataRepository
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
 
 class WorkViewModel(
-private val workDataRepository: WorkDataRepository
+private val workDataRepository: WorkDataRepository,
+private val offlineDataRepository: OfflineDataRepository
 ) : ViewModel() {
 
 
@@ -23,6 +25,9 @@ private val workDataRepository: WorkDataRepository
 val user by lazyDeferred {
     workDataRepository.getUser()
 }
+    val offlinedatas by lazyDeferred {
+        offlineDataRepository.getUserTaskList()
+    }
 
     val work_Item = MutableLiveData<JobItemEstimateDTO>()
     fun Item5(work: JobItemEstimateDTO) {

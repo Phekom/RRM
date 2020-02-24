@@ -8,11 +8,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.data.repositories.MeasureCreationDataRepository
+import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.estimate_measure_item.EstimateMeasure_Item
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
 
 class MeasureViewModel (
-    private val measureCreationDataRepository: MeasureCreationDataRepository
+    private val measureCreationDataRepository: MeasureCreationDataRepository,
+    private val offlineDataRepository: OfflineDataRepository
 ) : ViewModel() {
 
 //    val offlinedata by lazyDeferred {
@@ -122,7 +124,7 @@ class MeasureViewModel (
         jimNo: String?,
         contractVoId: String?,
         mSures: ArrayList<JobItemMeasureDTO>,
-        activity: FragmentActivity?,
+        activity: FragmentActivity,
         itemMeasureJob: JobDTO
     ) : String {
         return withContext(Dispatchers.IO) {

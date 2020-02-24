@@ -1,5 +1,6 @@
 package za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.measure_approval
 
+import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -182,9 +183,22 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
     private fun processWorkFlow( userId: String,   trackRounteId: String,    direction: Int,    description: String?
     ) {
         Coroutines.main {
-            approveViewModel.processWorkflowMove(userId, trackRounteId,description,direction)
-            activity?.hideKeyboard()
-            popViewOnJobSubmit(direction)
+            val prog = ProgressDialog(activity)
+            prog.setTitle(getString(R.string.please_wait))
+            prog.setMessage(getString(R.string.loading_job_wait))
+            prog.setCancelable(false)
+            prog.setIndeterminate(true)
+            prog.setProgressStyle(ProgressDialog.STYLE_SPINNER)
+            prog.show()
+           val submit =  approveViewModel.processWorkflowMove(userId, trackRounteId,description,direction)
+//            activity?.hideKeyboard()
+            if (submit != null){
+                prog.dismiss()
+                toast(submit) }else {
+                prog.dismiss()
+                toast(R.string.job_submitted)
+                popViewOnJobSubmit(direction)}
+//            popViewOnJobSubmit(direction)
         }
     }
 
@@ -222,7 +236,7 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
             addAll(measureListItems)
         }
         view_measured_items.apply {
-            layoutManager = LinearLayoutManager(this.context)
+            layoutManager = LinearLayoutManager(context)
             adapter = groupAdapter
 
         }

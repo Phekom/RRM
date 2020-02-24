@@ -163,7 +163,7 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
             val jobItemMeasure =
                 measureViewModel.getJobItemMeasuresForJobIdAndEstimateId(jobId, estimateId)
             jobItemMeasure.observe(activity!!, Observer { m_sures ->
-                if (m_sures.isNullOrEmpty()) {
+                if (m_sures.isNullOrEmpty() || m_sures.isEmpty() || m_sures.size == 0) {
                     toast(R.string.please_make_sure_you_have_captured_photos)
                 } else {
                     toast("You have Done " + m_sures.size.toString() + " Measurements on this Estimate")
@@ -269,7 +269,10 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
                         prog.setIndeterminate(true)
                         prog.setProgressStyle(ProgressDialog.STYLE_SPINNER)
                         prog.show()
-                        val submit=   measureViewModel.processWorkflowMove( user_.userId, JobId, itemMeasureJob.JiNo, ContractVoId, jobItemMeasureList, activity, itemMeasureJob)
+                        val submit= activity?.let {
+                            measureViewModel.processWorkflowMove( user_.userId, JobId, itemMeasureJob.JiNo, ContractVoId, jobItemMeasureList,
+                                it, itemMeasureJob)
+                        }
                         if (submit != null){
                             prog.dismiss()
                             toast(submit)}else{
@@ -411,39 +414,31 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
 
                 Coroutines.main {
                     val jobForJobItemEstimate = measureViewModel.getJobFromJobId(measure_item.jobId)
-                    jobForJobItemEstimate.observe(activity!!, androidx.lifecycle.Observer {job->
+                    jobForJobItemEstimate.observe(viewLifecycleOwner, androidx.lifecycle.Observer {job->
                         //                        for (measure_i in jobItemMeasureArrayList) {
                         jobForItemEstimate = job
                         Coroutines.main {
                             val jobItemMeasure =
                                 measureViewModel.getJobItemMeasuresForJobIdAndEstimateId2(job.JobId, measure_item.estimateId)//, jobItemMeasureArrayList
                             jobItemMeasure.observe(activity!!, Observer { m_sures ->
-                                //                                    for (i in m_sures.indices) {
-//                                        toast(m_sures.size.toString())
-//                                        add(CardMeasureItem(activity,"","","", "", measureViewModel))
-//                                    }
-                                val jNo = arrayOfNulls<String>(m_sures.size)
-                                val photo = arrayOfNulls<String>(m_sures.size)
-                                val qty = arrayOfNulls<String>(m_sures.size)
-                                val rate = arrayOfNulls<String>(m_sures.size)
-                                for (i in m_sures.indices) {
-                                    Coroutines.main {
-                                        photo[i] = m_sures[i].itemMeasureId!!
-                                        qty[i] = m_sures[i].qty.toString()
-                                        rate[i] = m_sures[i].lineRate.toString()
-                                        jNo[i] = m_sures[i].jimNo.toString()
-                                        add(
-                                            CardMeasureItem(
-                                                activity,
-                                                photo[i]!!,
-                                                qty[i]!!,
-                                                rate[i]!!,
-                                                jNo[i]!!,
-                                                measureViewModel
-                                            )
-                                        )
+                                Coroutines.main {
+                                    for (jobItemM in m_sures) {
+                                            Coroutines.main {
+                                                val photo = jobItemM.itemMeasureId!!
+                                                val qty= jobItemM.qty.toString()
+                                                val rate = jobItemM.lineRate.toString()
+                                                val jNo = jobItemM.jimNo.toString()
+                                                add(
+                                                    CardMeasureItem(
+                                                        activity,
+                                                        photo, qty, rate, jNo, measureViewModel
+                                                    )
+                                                )
+                                            }
+
                                     }
                                 }
+
 
                             })
 

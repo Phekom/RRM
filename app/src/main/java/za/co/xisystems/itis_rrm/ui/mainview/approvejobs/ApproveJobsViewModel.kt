@@ -18,11 +18,16 @@ import za.co.xisystems.itis_rrm.utils.lazyDeferred
  * Created by Francis Mahlava on 03,October,2019
  */
 class ApproveJobsViewModel (
-    private val jobApprovalDataRepository: JobApprovalDataRepository
+    private val jobApprovalDataRepository: JobApprovalDataRepository,
+    private val offlineDataRepository: OfflineDataRepository
 ) : ViewModel() {
 
     val user by lazyDeferred {
         jobApprovalDataRepository.getUser()
+    }
+
+    val offlinedatas by lazyDeferred {
+        offlineDataRepository.getUserTaskList()
     }
 
     suspend fun getUOMForProjectItemId(projectItemId: String): String {
@@ -52,7 +57,7 @@ class ApproveJobsViewModel (
         jobapproval_Item6.value = jobapproval6
     }
 
-    suspend fun processWorkflowMove( userId: String, trackRounteId: String, description: String?, direction: Int ) {
+    suspend fun processWorkflowMove( userId: String, trackRounteId: String, description: String?, direction: Int ) : String {
         return withContext(Dispatchers.IO) {
             jobApprovalDataRepository.processWorkflowMove( userId ,trackRounteId, description, direction)
         }

@@ -9,6 +9,7 @@ import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.*
+import za.co.xisystems.itis_rrm.BuildConfig
 import za.co.xisystems.itis_rrm.data.network.responses.*
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -16,6 +17,8 @@ import java.util.concurrent.TimeUnit
 /**
  * Created by Francis Mahlava on 2019/10/23.
  */
+const val BASE_URL = BuildConfig.API_HOST
+
 interface BaseConnectionApi {
 
     @FormUrlEncoded
@@ -225,19 +228,96 @@ interface BaseConnectionApi {
                 }
 
             }
-//                .addInterceptor(networkConnectionInterceptor)
-//                .connectTimeout(5, TimeUnit.MINUTES)
-//                .writeTimeout(5, TimeUnit.MINUTES) // write timeout
-//                .readTimeout(5, TimeUnit.MINUTES) // read timeout
-//                .build()
-
 
             return Retrofit.Builder()
                 .client(okkHttpclient.build())
-                .baseUrl("https://itisqa.nra.co.za/ITISServicesMobile/api/RRM/")
+                .baseUrl(BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()
                 .create(BaseConnectionApi::class.java)
+
+        }
+    }
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 //            return Retrofit.Builder()
 //                .client(okkHttpclient)
@@ -248,8 +328,3 @@ interface BaseConnectionApi {
 ////                .addCallAdapterFactory(CoroutineCallAdapterFactory())
 //                .build()
 //                .create(BaseConnectionApi::class.java)
-        }
-    }
-
-
-}

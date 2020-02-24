@@ -78,7 +78,7 @@
     <string name="all_data_will_be_deleted_are_you_sure">All data will be deleted!  Are you sure?</string>
     <string name="already_added">already added.</string>
     <string name="android_sdk">Android SDK:</string>
-    <string name="app_name">RRM2-QA</string>
+    <string name="app_name">RRM</string>
     <string name="app_label">Maintenance</string>
 
     <string name="approve_measurement_item">Approve Measurement Item</string>

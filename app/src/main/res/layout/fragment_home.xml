@@ -100,13 +100,13 @@
                     android:background="#fff"
                     android:orientation="vertical">
 
-                    <ImageView
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:layout_margin="10dp"
-                        android:background="#F5F5F5"
-                        android:gravity="left"
-                        android:src="@drawable/database" />
+<!--                    <ImageView-->
+<!--                        android:layout_width="32dp"-->
+<!--                        android:layout_height="32dp"-->
+<!--                        android:layout_margin="10dp"-->
+<!--                        android:background="#F5F5F5"-->
+<!--                        android:gravity="left"-->
+<!--                        android:src="@drawable/database" />-->
 
                     <TextView
                         android:id="@+id/connectedTo"

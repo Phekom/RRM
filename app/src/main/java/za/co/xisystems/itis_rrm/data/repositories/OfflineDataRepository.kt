@@ -136,24 +136,161 @@ class OfflineDataRepository(
 
     }
 
+
+    suspend fun getContracts(): LiveData<List<ContractDTO>> {
+        return withContext(Dispatchers.IO) {
+            Db.getContractDao().getAllContracts()
+        }
+    }
+
+    suspend fun getRoles(): LiveData<List<UserRoleDTO>> {
+        return withContext(Dispatchers.IO) {
+            Db.getUserRoleDao().getRoles()
+        }
+    }
+
+    suspend fun getWorkFlows(): LiveData<List<WorkFlowDTO>> {
+
+        return withContext(Dispatchers.IO) {
+            val userId = Db.getUserDao().getuserID()
+            fetchAllData(userId)
+            Db.getWorkFlowDao().getWorkflows()
+        }
+    }
+
+
+    suspend fun getSectionItems(): LiveData<SectionItemDTO> {
+        return withContext(Dispatchers.IO) {
+            val userId = Db.getUserDao().getuserID()
+            fetchContracts(userId)
+            Db.getSectionItemDao().getSectionItems()
+        }
+    }
+
+    suspend fun getUser(): LiveData<UserDTO> {
+        return withContext(Dispatchers.IO) {
+            Db.getUserDao().getuser()
+        }
+    }
+
+    suspend fun getJobsForActivityId(activityId: Int): LiveData<List<JobDTO>> {
+        return withContext(Dispatchers.IO) {
+            Db.getJobDao().getJobsForActivityId(activityId)
+        }
+    }
+
+    suspend fun getJobsForActId(activityId: Int): LiveData<List<JobDTO>> {
+        return withContext(Dispatchers.IO) {
+            Db.getJobDao().getJobsForActivityId(activityId)
+        }
+    }
+
+    suspend fun getJobsForActivityIds1(activityId1: Int, activityId2: Int): LiveData<List<JobDTO>> {
+        return withContext(Dispatchers.IO) {
+            Db.getJobDao().getJobsForActivityIds1(activityId1, activityId2)
+        }
+    }
+
+    suspend fun getJobMeasureForActivityId(
+        activityId: Int,
+        activityId2: Int,
+        activityId3: Int
+    ): LiveData<List<JobItemEstimateDTO>> {
+        return withContext(Dispatchers.IO) {
+            Db.getJobItemEstimateDao().getJobMeasureForActivityId(activityId,activityId2,activityId3)
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     private fun processRrmJobResponse(jobDTO: JobDTOTemp) {
         val imageCounter = 1
         val totalImages = 0
 
     }
+//    suspend fun getWokrCodes(eId: Int): LiveData<List<WF_WorkStepDTO>> {
+//        return withContext(Dispatchers.IO) {
+//            Db.getWorkStepDao().getWorkflowSteps(eId)
+//        }
+//    }
 
 //    suspend fun getWokrCodes(): LiveData<List<WF_WorkStepDTO>> {
 //        return withContext(Dispatchers.IO) {
 //            Db.getWorkStepDao().getWorkflowSteps()
 //        }
 //    }
-    suspend fun getContracts(): LiveData<List<ContractDTO>> {
-        return withContext(Dispatchers.IO) {
-            //            val userId = Db.getUserDao().getuserID()
-//            fetchContracts(userId)
-            Db.getContractDao().getAllContracts()
-        }
-    }
+
 
     suspend fun getContractProjects(contractId: String): LiveData<List<ProjectDTO>> {
         return withContext(Dispatchers.IO) {
@@ -163,11 +300,7 @@ class OfflineDataRepository(
 
 
 
-    suspend fun getRoles(): LiveData<List<UserRoleDTO>> {
-        return withContext(Dispatchers.IO) {
-            Db.getUserRoleDao().getRoles()
-        }
-    }
+
 
     suspend fun getProjects(): LiveData<List<ProjectDTO>> {
         return withContext(Dispatchers.IO) {
@@ -239,23 +372,7 @@ class OfflineDataRepository(
         }
     }
 
-    suspend fun getWorkFlows(): LiveData<List<WorkFlowDTO>> {
 
-        return withContext(Dispatchers.IO) {
-            val userId = Db.getUserDao().getuserID()
-            fetchAllData(userId)
-            Db.getWorkFlowDao().getWorkflows()
-        }
-    }
-
-
-    suspend fun getSectionItems(): LiveData<SectionItemDTO> {
-        return withContext(Dispatchers.IO) {
-            val userId = Db.getUserDao().getuserID()
-            fetchContracts(userId)
-            Db.getSectionItemDao().getSectionItems()
-        }
-    }
     suspend fun getJobItemEstimatePhotoForEstimateId(estimateId: String): LiveData<List<JobItemEstimatesPhotoDTO>>  {
         return withContext(Dispatchers.IO) {
             Db.getJobItemEstimatePhotoDao().getJobItemEstimatePhotoForEstimateId(estimateId)
@@ -274,40 +391,6 @@ class OfflineDataRepository(
         }
     }
 
-    suspend fun getUser(): LiveData<UserDTO> {
-        return withContext(Dispatchers.IO) {
-            Db.getUserDao().getuser()
-        }
-    }
-
-    suspend fun getJobsMeasureForActivityId(
-        estimateComplete: Int,
-        measureComplete: Int,
-        estWorksComplete: Int,
-        jobApproved: Int
-    ): LiveData<List<JobDTO>> {
-        return withContext(Dispatchers.IO) {
-            Db.getJobDao().getJobsMeasureForActivityIds(estimateComplete,measureComplete,estWorksComplete,jobApproved)
-        }
-    }
-
-    suspend fun getJobsForActivityId(activityId: Int): LiveData<List<JobDTO>> {
-        return withContext(Dispatchers.IO) {
-            Db.getJobDao().getJobsForActivityId(activityId)
-        }
-    }
-
-    suspend fun getJobsForActId(activityId: Int): LiveData<List<JobDTO>> {
-        return withContext(Dispatchers.IO) {
-            Db.getJobDao().getJobsForActivityId(activityId)
-        }
-    }
-
-    suspend fun getJobsForActivityIds1(activityId1: Int, activityId2: Int): LiveData<List<JobDTO>> {
-        return withContext(Dispatchers.IO) {
-            Db.getJobDao().getJobsForActivityIds1(activityId1, activityId2)
-        }
-    }
 
 //    suspend fun getJobsEstimateForActivityId(activityId1: Int): LiveData<List<JobItemEstimateDTO>> {
 //        return withContext(Dispatchers.IO) {
@@ -315,15 +398,6 @@ class OfflineDataRepository(
 //        }
 //    }
 
-    suspend fun getJobMeasureForActivityId(
-        activityId: Int,
-        activityId2: Int,
-        activityId3: Int
-    ): LiveData<List<JobItemEstimateDTO>> {
-        return withContext(Dispatchers.IO) {
-            Db.getJobItemEstimateDao().getJobMeasureForActivityId(activityId,activityId2,activityId3)
-        }
-    }
 
 
     suspend fun getJobItemsToMeasureForJobId(jobID: String?): LiveData<List<JobItemEstimateDTO>> {
@@ -332,23 +406,7 @@ class OfflineDataRepository(
         }
     }
 
-    suspend fun getJobApproveMeasureForActivityId(activityId: Int): LiveData<List<JobItemMeasureDTO>> {
-        return withContext(Dispatchers.IO) {
-            Db.getJobItemMeasureDao().getJobApproveMeasureForActivityId(activityId)
-        }
-    }
 
-//    suspend fun getJobApproveMeasureForActivityId(activityId: Int): LiveData<List<JobItemMeasureDTO>> {
-//        return withContext(Dispatchers.IO) {
-//            Db.getJobItemMeasureDao().getJobApproveMeasureForActivityId(activityId)
-//        }
-//    }
-
-    suspend fun getEntitiesListForActivityId(activityId: Int): LiveData<List<ToDoListEntityDTO>> {
-        return withContext(Dispatchers.IO) {
-            Db.getEntitiesDao().getEntitiesListForActivityId(activityId)
-        }
-    }
 
     suspend fun getJobEstimationItemsPhoto(estimateId: String): LiveData<List<JobItemEstimatesPhotoDTO>> {
         return withContext(Dispatchers.IO) {
@@ -400,14 +458,6 @@ class OfflineDataRepository(
 //        }
 //    }
 
-    suspend fun getJobMeasureItemsForJobId(
-        jobID: String?,
-        actId: Int
-    ): LiveData<List<JobItemMeasureDTO>> {
-        return withContext(Dispatchers.IO) {
-            Db.getJobItemMeasureDao().getJobMeasureItemsForJobId(jobID!!, actId)
-        }
-    }
 
     suspend fun getJobEstiItemForEstimateId(estimateId: String?): LiveData<List<JobEstimateWorksDTO>> {
         return withContext(Dispatchers.IO) {
@@ -591,6 +641,21 @@ class OfflineDataRepository(
         }
     }
 
+    suspend fun getUOMForProjectItemId(projectItemId: String): String {
+        return withContext(Dispatchers.IO) {
+            Db.getProjectItemDao().getUOMForProjectItemId(projectItemId)
+        }
+    }
+    suspend fun getJobMeasureItemsForJobId(
+        jobID: String?,
+        actId: Int
+    ): LiveData<List<JobItemMeasureDTO>> {
+        return withContext(Dispatchers.IO) {
+            Db.getJobItemMeasureDao().getJobMeasureItemsForJobId(jobID!!, actId)
+        }
+    }
+
+
     suspend fun getItemDescription(jobId: String): String {
         return withContext(Dispatchers.IO) {
             Db.getJobDao().getItemDescription(jobId)
@@ -633,11 +698,6 @@ class OfflineDataRepository(
     }
 
 
-    suspend fun getUOMForProjectItemId(projectItemId: String): String {
-        return withContext(Dispatchers.IO) {
-            Db.getProjectItemDao().getUOMForProjectItemId(projectItemId)
-        }
-    }
 
     suspend fun getRouteForProjectSectionId(sectionId: String?): String {
         return withContext(Dispatchers.IO) {
@@ -1387,6 +1447,7 @@ class OfflineDataRepository(
             Log.e("Error:", " WorkFlow Job is null")
     }
 }
+
     private fun saveWorkflowJob2(workflowj: WorkflowJobDTO?) {
         if (workflowj != null) {
             val job = setWorkflowJobBigEndianGuids(workflowj)
@@ -1482,29 +1543,6 @@ class OfflineDataRepository(
                     }
 
                     val entitiesArrayList = toDoListGroup.toDoListEntities
-//                    for (entities in entitiesArrayList) {
-//                        if (!Db.getPrimaryKeyValueDao().checkPrimaryKeyValuesExistTrackRouteId( Util.ByteArrayToStringUUID( entities.trackRouteId )!!)
-//                        ) {
-//                            val primaryKeyValue = Db.getPrimaryKeyValueDao().getPrimaryKeyValuesFromTrackRouteId(Util.ByteArrayToStringUUID(entities.trackRouteId)!!)
-//
-//                               if (primaryKeyValue != null) {
-//                                   var job : JobDTO? = null
-//                                   job?.setJobId(Util.ByteArrayToStringUUID(primaryKeyValue.p_value))
-//                                   job?.setDescr(entities.description)
-////                                   val job_Id = DataConversion.toLittleEndian(jobId!!)
-//                                   fetchJobList(Util.ByteArrayToStringUUID(primaryKeyValue.p_value)!!)
-////                                   if (!ApproveJobsFragment.jobArrayContains(
-////                                           job.getJobId(),
-////                                           jobList
-////                                       )
-////                                   ) jobList.add(job)
-//                               }
-//
-//
-//
-//
-//                        }
-//                    }
 
                     for (toDoListEntity in entitiesArrayList) {
                         val jobId = getJobIdFromPrimaryKeyValues(toDoListEntity.primaryKeyValues)
@@ -1579,316 +1617,7 @@ class OfflineDataRepository(
 //        }
     }
 
-    suspend fun processWorkflowMove(
-        userId: String,
-        trackRouteId: String,
-        description: String?,
-        direction: Int
-    ) {
-        val workflowMoveResponse =
-            apiRequest { api.getWorkflowMove(userId, trackRouteId, description, direction) }
-        workflowJ.postValue(workflowMoveResponse.workflowJob)
-        workflows.postValue(workflowMoveResponse.toDoListGroups)
 
-    }
-
-    suspend fun getRouteSectionPoint(
-        latitude: Double,
-        longitude: Double,
-        useR: String,
-        projectId: String?,
-        jobId: String,
-        itemCode: ItemDTOTemp?
-    ) {
-//        val routeSectionPointResponse = apiRequest { api.getRouteSectionPoint(latitude,longitude,useR) }
-//        routeSectionPoint.postValue(routeSectionPointResponse.direction,routeSectionPointResponse.linearId,routeSectionPointResponse.pointLocation,routeSectionPointResponse.sectionId, projectId, jobId, itemCode)
-    }
-
-    suspend fun submitJob(userId: Int, job: JobDTO, activity: FragmentActivity)  : String{
-
-        val jobhead = JsonObject()
-        val jobdata = JsonObject()
-        val jobestimatedata = JsonObject()
-        val array = JsonArray()
-        array.add(jobestimatedata)
-        val jobestimateimagesdata1 = JsonObject()
-        val jobestimateimagesdata = JsonObject()
-        val array4 = JsonArray()
-        array4.add(jobestimateimagesdata1)
-        array4.add(jobestimateimagesdata)
-//        jobItemEstimatePhotoEnd
-//        jobItemEstimatePhotoStart
-        jobestimatedata.addProperty("selectedItemUOM", job.JobItemEstimates?.get(0)?.SelectedItemUOM )
-        jobestimatedata.addProperty("estimateComplete",job.JobItemEstimates?.get(0)?.estimateComplete )
-        jobestimatedata.addProperty("ActId", job.JobItemEstimates?.get(0)?.actId )
-        jobestimatedata.addProperty("EstimateId",  DataConversion.toLittleEndian( job.JobItemEstimates?.get(0)?.estimateId ))
-        jobestimatedata.addProperty("PrjJobDto", job.JobItemEstimates?.get(0)?.job.toString() )
-        jobestimatedata.addProperty("JobId",  DataConversion.toLittleEndian( job.JobItemEstimates?.get(0)?.jobId ))
-        jobestimatedata.add("MobileJobItemEstimatesPhotos", array4)
-        jobestimatedata.addProperty("LineRate", job.JobItemEstimates?.get(0)?.lineRate )
-        jobestimatedata.addProperty("MobileEstimateWorks",  job.JobItemEstimates?.get(0)?.jobEstimateWorks?.toString() )
-        jobestimatedata.addProperty("MobileJobItemMeasures",  job.JobItemEstimates?.get(0)?.jobItemMeasure.toString() )
-        jobestimatedata.addProperty("ProjectItemId",   DataConversion.toLittleEndian( job.JobItemEstimates?.get(0)?.projectItemId ))
-        jobestimatedata.addProperty("ProjectVoId",  job.JobItemEstimates?.get(0)?.projectVoId )
-        jobestimatedata.addProperty("Qty",  job.JobItemEstimates?.get(0)?.qty )
-        jobestimatedata.addProperty("RecordSynchStateId",  job.JobItemEstimates?.get(0)?.recordSynchStateId )
-        jobestimatedata.addProperty("RecordVersion",  job.JobItemEstimates?.get(0)?.recordVersion )
-        jobestimatedata.addProperty("TrackRouteId",  job.JobItemEstimates?.get(0)?.trackRouteId )
-
-//        for (i in  job.JobItemEstimates?.get(0)?.jobItemEstimatePhotos!!.indices){
-//
-//        }
-        jobestimateimagesdata1.addProperty("Descr", job.JobItemEstimates?.get(0)?.jobItemEstimatePhotos?.get(0)?.descr )
-        jobestimateimagesdata1.addProperty("Endkm",job.JobItemEstimates?.get(0)?.jobItemEstimatePhotos?.get(0)?.endKm )
-        jobestimateimagesdata1.addProperty("EstimateId", DataConversion.toLittleEndian( job.JobItemEstimates?.get(0)?.jobItemEstimatePhotos?.get(0)?.estimateId ))
-        jobestimateimagesdata1.addProperty("Filename", job.JobItemEstimates?.get(0)?.jobItemEstimatePhotos?.get(0)?.filename )
-        jobestimateimagesdata1.addProperty("IsPhotoStart", job.JobItemEstimates?.get(0)?.jobItemEstimatePhotos?.get(0)?.is_PhotoStart )
-        jobestimateimagesdata1.addProperty("PrjJobItemEstimateDto", job.JobItemEstimates?.get(0)?.jobItemEstimatePhotos?.get(0)?.jobItemEstimate.toString() )
-        jobestimateimagesdata1.addProperty("PhotoDate", job.JobItemEstimates?.get(0)?.jobItemEstimatePhotos?.get(0)?.photoDate )
-        jobestimateimagesdata1.addProperty("PhotoEnd",  job.JobItemEstimates?.get(0)?.jobItemEstimatePhotos?.get(0)?.photoEnd )
-        jobestimateimagesdata1.addProperty("PhotoId",  DataConversion.toLittleEndian( job.JobItemEstimates?.get(0)?.jobItemEstimatePhotos?.get(0)?.photoId ))
-        jobestimateimagesdata1.addProperty("PhotoLatitude",  job.JobItemEstimates?.get(0)?.jobItemEstimatePhotos?.get(0)?.photoLatitude )
-        jobestimateimagesdata1.addProperty("PhotoLatitudeEnd",  job.JobItemEstimates?.get(0)?.jobItemEstimatePhotos?.get(0)?.photoLatitudeEnd )
-        jobestimateimagesdata1.addProperty("PhotoLongitude",  job.JobItemEstimates?.get(0)?.jobItemEstimatePhotos?.get(0)?.photoLongitude )
-        jobestimateimagesdata1.addProperty("PhotoLongitudeEnd",  job.JobItemEstimates?.get(0)?.jobItemEstimatePhotos?.get(0)?.photoLongitudeEnd )
-        jobestimateimagesdata1.addProperty("PhotoPath",  job.JobItemEstimates?.get(0)?.jobItemEstimatePhotos?.get(0)?.photoPath )
-        jobestimateimagesdata1.addProperty("PhotoStart",  job.JobItemEstimates?.get(0)?.jobItemEstimatePhotos?.get(0)?.photoStart )
-        jobestimateimagesdata1.addProperty("RecordSynchStateId",  job.JobItemEstimates?.get(0)?.jobItemEstimatePhotos?.get(0)?.recordSynchStateId )
-        jobestimateimagesdata1.addProperty("RecordVersion",  job.JobItemEstimates?.get(0)?.jobItemEstimatePhotos?.get(0)?.recordVersion )
-        jobestimateimagesdata1.addProperty("Startkm",  job.JobItemEstimates?.get(0)?.jobItemEstimatePhotos?.get(0)?.startKm )
-
-        jobestimateimagesdata.addProperty("Descr", job.JobItemEstimates?.get(0)?.jobItemEstimatePhotos?.get(1)?.descr )
-        jobestimateimagesdata.addProperty("Endkm",job.JobItemEstimates?.get(0)?.jobItemEstimatePhotos?.get(1)?.endKm )
-        jobestimateimagesdata.addProperty("EstimateId", DataConversion.toLittleEndian( job.JobItemEstimates?.get(0)?.jobItemEstimatePhotos?.get(1)?.estimateId ))
-        jobestimateimagesdata.addProperty("Filename", job.JobItemEstimates?.get(0)?.jobItemEstimatePhotos?.get(1)?.filename )
-        jobestimateimagesdata.addProperty("IsPhotoStart", job.JobItemEstimates?.get(0)?.jobItemEstimatePhotos?.get(1)?.is_PhotoStart )
-        jobestimateimagesdata.addProperty("PrjJobItemEstimateDto", job.JobItemEstimates?.get(0)?.jobItemEstimatePhotos?.get(1)?.jobItemEstimate.toString() )
-        jobestimateimagesdata.addProperty("PhotoDate", job.JobItemEstimates?.get(0)?.jobItemEstimatePhotos?.get(1)?.photoDate )
-        jobestimateimagesdata.addProperty("PhotoEnd",  job.JobItemEstimates?.get(0)?.jobItemEstimatePhotos?.get(1)?.photoEnd )
-        jobestimateimagesdata.addProperty("PhotoId",  DataConversion.toLittleEndian( job.JobItemEstimates?.get(0)?.jobItemEstimatePhotos?.get(1)?.photoId ))
-        jobestimateimagesdata.addProperty("PhotoLatitude",  job.JobItemEstimates?.get(0)?.jobItemEstimatePhotos?.get(1)?.photoLatitude )
-        jobestimateimagesdata.addProperty("PhotoLatitudeEnd",  job.JobItemEstimates?.get(0)?.jobItemEstimatePhotos?.get(1)?.photoLatitudeEnd )
-        jobestimateimagesdata.addProperty("PhotoLongitude",  job.JobItemEstimates?.get(0)?.jobItemEstimatePhotos?.get(1)?.photoLongitude )
-        jobestimateimagesdata.addProperty("PhotoLongitudeEnd",  job.JobItemEstimates?.get(0)?.jobItemEstimatePhotos?.get(1)?.photoLongitudeEnd )
-        jobestimateimagesdata.addProperty("PhotoPath",  job.JobItemEstimates?.get(0)?.jobItemEstimatePhotos?.get(1)?.photoPath )
-        jobestimateimagesdata.addProperty("PhotoStart",  job.JobItemEstimates?.get(0)?.jobItemEstimatePhotos?.get(1)?.photoStart )
-        jobestimateimagesdata.addProperty("RecordSynchStateId",  job.JobItemEstimates?.get(0)?.jobItemEstimatePhotos?.get(1)?.recordSynchStateId )
-        jobestimateimagesdata.addProperty("RecordVersion",  job.JobItemEstimates?.get(0)?.jobItemEstimatePhotos?.get(1)?.recordVersion )
-        jobestimateimagesdata.addProperty("Startkm",  job.JobItemEstimates?.get(0)?.jobItemEstimatePhotos?.get(1)?.startKm )
-
-
-        val jobmeasuredata = JsonObject()
-        val array1 = JsonArray()
-         //array1.add(jobmeasuredata)//job.JobItemEstimates.toString()
-        val jobesectiondata = JsonObject()
-        val array2 = JsonArray()
-        array2.add(jobesectiondata)
-        jobesectiondata.addProperty("EndKm", job.JobSections?.get(0)?.endKm )
-        jobesectiondata.addProperty("PrjJobDto", job.JobSections?.get(0)?.job.toString() )
-        jobesectiondata.addProperty("JobId", DataConversion.toLittleEndian( job.JobSections?.get(0)?.jobId))
-        jobesectiondata.addProperty("JobSectionId", DataConversion.toLittleEndian( job.JobSections?.get(0)?.jobSectionId ))
-        jobesectiondata.addProperty("ProjectSectionId", DataConversion.toLittleEndian( job.JobSections?.get(0)?.projectSectionId ))
-        jobesectiondata.addProperty("RecordSynchStateId", job.JobSections?.get(0)?.recordSynchStateId )
-        jobesectiondata.addProperty("RecordVersion", job.JobSections?.get(0)?.recordVersion )
-        jobesectiondata.addProperty("StartKm", job.JobSections?.get(0)?.startKm )
-
-//        array.add(job.JobItemEstimates.toString())
-        jobdata.addProperty("ActId", job.ActId )
-        jobdata.addProperty("IssueDate", job.IssueDate.toString() )
-        jobdata.addProperty("DueDate", job.DueDate.toString() )
-        jobdata.addProperty("StartDate", job.StartDate.toString() )
-        jobdata.addProperty("ApprovalDate", job.ApprovalDate.toString() )
-        jobdata.addProperty("ContractVoId", DataConversion.toLittleEndian( job.ContractVoId ))
-        jobdata.addProperty("ContractorId", job.ContractorId )
-        jobdata.addProperty("Cpa", job.Cpa )
-        jobdata.addProperty("DayWork", job.DayWork )
-        jobdata.addProperty("Descr", job.Descr )
-        jobdata.addProperty("EndKm", job.EndKm )
-        jobdata.addProperty("EngineerId", job.EngineerId )
-        jobdata.addProperty("EntireRoute", job.EntireRoute )
-        jobdata.addProperty("IsExtraWork", job.IsExtraWork )
-        jobdata.addProperty("JiNo", job.JiNo )
-        jobdata.addProperty("JobCategoryId", job.JobCategoryId )
-        jobdata.addProperty("JobDirectionId", job.JobDirectionId )
-        jobdata.addProperty("JobId", DataConversion.toLittleEndian( job.JobId  ))
-        jobdata.add("MobileJobItemEstimates", array )
-        jobdata.add("MobileJobItemMeasures", array1 )
-        jobdata.addProperty("JobPositionId", job.JobPositionId )
-        jobdata.add("MobileJobSections", array2 )
-        jobdata.addProperty("JobStatusId", job.JobStatusId )
-        jobdata.addProperty("M9100", job.M9100 )
-        jobdata.addProperty("PerfitemGroupId", job.PerfitemGroupId )
-        jobdata.addProperty("ProjectId", DataConversion.toLittleEndian( job.ProjectId ))
-        jobdata.addProperty("ProjectVoId", job.ProjectVoId )
-        jobdata.addProperty("QtyUpdateAllowed", job.QtyUpdateAllowed )
-        jobdata.addProperty("RecordSynchStateId", job.RecordSynchStateId )
-        jobdata.addProperty("RecordVersion", job.RecordVersion )
-        jobdata.addProperty("Remarks", job.Remarks )
-        jobdata.addProperty("Route", job.Route )
-        jobdata.addProperty("RrmJiNo", job.RrmJiNo )
-        jobdata.addProperty("Section", job.Section)
-        jobdata.addProperty("SectionId", job.SectionId )
-        jobdata.addProperty("StartKm", job.StartKm )
-        jobdata.addProperty("TrackRouteId", job.TrackRouteId )
-        jobdata.addProperty("UserId", job.UserId )
-        jobdata.addProperty("VoId", job.VoId )
-        jobdata.addProperty("WorkCompleteDate", job.WorkCompleteDate )
-        jobdata.addProperty("WorkStartDate", job.WorkStartDate )
-//
-        jobhead.add("Job", jobdata)
-        jobhead.addProperty("UserId", userId)
-//        var jsonk = gson.toJson(json2)
-        Log.e("JsonObject", "Json string $jobhead")
-        val jobResponse = apiRequest { api.sendJobsForApproval(jobhead) }
-        workflowJ2.postValue(jobResponse.workflowJob,job ,activity)
-
-        val messages = jobResponse.errorMessage   //activity.getResources().getString(R.string.please_wait)
-        return withContext(Dispatchers.IO) {
-            messages
-        }
-    }
-
-
-    suspend fun submitWorks(
-        itemEstiWorks: JobEstimateWorksDTO,
-        estimateWorksPhotoArrayList: java.util.ArrayList<JobEstimateWorksPhotoDTO>,
-        activity: FragmentActivity,
-        jobitemEsti: JobItemEstimateDTO?,
-        jobitemEstiWorks: JobEstimateWorksDTO?,
-        useR: UserDTO
-    ) : String
-    {
-        val worksdata = JsonObject()
-        val wrkdata = JsonObject()
-        val jdata = JsonObject()
-        val array = JsonArray()
-        array.add(jdata)
-        wrkdata.addProperty("ActId", itemEstiWorks.actId )
-        wrkdata.addProperty("EstimateId", DataConversion.toLittleEndian( itemEstiWorks.estimateId ))
-        wrkdata.addProperty("PrjJobItemEstimateDto", jobitemEsti.toString())
-        wrkdata.add("MobileJobEstimateWorksPhotos", array)
-        wrkdata.addProperty("RecordSynchStateId", itemEstiWorks.recordSynchStateId )
-        wrkdata.addProperty("RecordVersion", itemEstiWorks.recordVersion )
-        wrkdata.addProperty("TrackRouteId", DataConversion.toLittleEndian( itemEstiWorks.trackRouteId))
-        wrkdata.addProperty("WorksId", DataConversion.toLittleEndian( itemEstiWorks.worksId ))
-
-        jdata.addProperty("Descr", estimateWorksPhotoArrayList.get(0)?.descr )
-        jdata.addProperty("Filename",  estimateWorksPhotoArrayList.get(0)?.filename )
-        jdata.addProperty("PrjEstimateWorksDto", jobitemEstiWorks.toString())
-        jdata.addProperty("PhotoActivityId",  estimateWorksPhotoArrayList.get(0)?.photoActivityId )
-        jdata.addProperty("PhotoDate", estimateWorksPhotoArrayList.get(0)?.photoDate )
-        jdata.addProperty("PhotoId",  DataConversion.toLittleEndian( estimateWorksPhotoArrayList.get(0)?.photoId ))
-        jdata.addProperty("PhotoLatitude",  estimateWorksPhotoArrayList.get(0)?.photoLatitude )
-        jdata.addProperty("PhotoLongitude",   estimateWorksPhotoArrayList.get(0)?.photoLongitude )
-        jdata.addProperty("PhotoPath",  estimateWorksPhotoArrayList.get(0)?.photoPath )
-        jdata.addProperty("RecordSynchStateId",  estimateWorksPhotoArrayList.get(0)?.recordSynchStateId )
-        jdata.addProperty("RecordVersion",  estimateWorksPhotoArrayList.get(0)?.recordVersion )
-        jdata.addProperty("WorksId",  DataConversion.toLittleEndian( estimateWorksPhotoArrayList.get(0)?.worksId ))
-
-        worksdata.add("JobEstimateWorksItem", wrkdata)
-        Log.e("JsonObject", "Json string $worksdata")
-        val uploadWorksItemResponse = apiRequest { api.uploadWorksItem(worksdata) }
-        works.postValue(uploadWorksItemResponse.errorMessage,itemEstiWorks ,activity,useR)
-
-        val messages = activity.getResources().getString(R.string.please_wait) //uploadWorksItemResponse.errorMessage
-        return withContext(Dispatchers.IO) {
-            messages
-        }
-
-//        DataConversion.toLittleEndian()
-    }
-
-   suspend fun saveMeasurementItems(
-       userId: String,
-       jobId: String,
-       jimNo: String?,
-       contractVoId: String?,
-       mSures: ArrayList<JobItemMeasureDTO>,
-       activity: FragmentActivity?,
-       itemMeasureJob: JobDTO
-   ) : String {
-       val measuredata = JsonObject()
-       val jmadata = JsonObject()
-       val jdata = JsonObject()
-       val array = JsonArray()
-       val array1 = JsonArray()
-       val array2 = JsonArray()
-       val array3 = JsonArray()
-       measuredata.addProperty("ContractId", contractVoId)
-       measuredata.addProperty("JiNo", jimNo)
-       measuredata.addProperty("JobId", jobId)
-       measuredata.add("MeasurementItems", array )
-//       array.add(jdata)
-       array.add(jdata)
-       for (i in  mSures.indices){
-           jdata.addProperty("ActId", mSures.get(i).actId )
-           jdata.addProperty("ApprovalDate", mSures.get(i).approvalDate)
-           jdata.addProperty("Cpa", mSures.get(i).cpa)
-           jdata.addProperty("EndKm", mSures.get(i).endKm)
-           jdata.addProperty("EstimateId", DataConversion.toLittleEndian(mSures.get(i).estimateId))
-           jdata.addProperty("ItemMeasureId", DataConversion.toLittleEndian(mSures.get(i).itemMeasureId))
-           jdata.addProperty("JimNo", mSures.get(i).jimNo)
-           jdata.addProperty("PrjJobDto", mSures.get(i).job.toString())
-//       jdata.add("PrjJobDto", array1 )
-//       array1.add(jmadata)
-           jdata.addProperty("JobDirectionId", mSures.get(i).jobDirectionId)
-           jdata.addProperty("JobId", DataConversion.toLittleEndian(mSures.get(i).jobId))
-           jdata.addProperty("PrjJobItemEstimateDto", mSures.get(i).jobItemEstimate.toString())
-//       jdata.add("PrjJobItemEstimateDto", array2 )
-//       array2.add(jmadata)
-           jdata.addProperty("LineAmount", mSures.get(i).lineAmount)
-           jdata.addProperty("LineRate", mSures.get(i).lineRate)
-           jdata.addProperty("MeasureDate", mSures.get(i).measureDate)
-           jdata.addProperty("MeasureGroupId", mSures.get(i).measureGroupId)
-           jdata.add("PrjItemMeasurePhotoDtos", array3)
-           array3.add(jmadata)
-           jmadata.addProperty("Descr",mSures.get(i).jobItemMeasurePhotos.get(i).descr)
-           jmadata.addProperty("Filename",mSures.get(i).jobItemMeasurePhotos.get(i).filename)
-           jmadata.addProperty("ItemMeasureId",DataConversion.toLittleEndian(mSures.get(i).jobItemMeasurePhotos.get(i).itemMeasureId))
-           jmadata.addProperty("PrjJobItemMeasureDto",mSures.get(i).jobItemMeasurePhotos.get(i).jobItemMeasure.toString())
-           jmadata.addProperty("PhotoDate",mSures.get(i).jobItemMeasurePhotos.get(i).photoDate)
-           jmadata.addProperty("PhotoId", DataConversion.toLittleEndian(mSures.get(i).jobItemMeasurePhotos.get(i).photoId))
-           jmadata.addProperty("PhotoLatitude",mSures.get(i).jobItemMeasurePhotos.get(i).photoLatitude)
-           jmadata.addProperty("PhotoLongitude",mSures.get(i).jobItemMeasurePhotos.get(i).photoLongitude)
-           jmadata.addProperty("PhotoPath",mSures.get(i).jobItemMeasurePhotos.get(i).photoPath)
-           jmadata.addProperty("RecordSynchStateId",mSures.get(i).jobItemMeasurePhotos.get(i).recordSynchStateId)
-           jmadata.addProperty("RecordVersion",mSures.get(i).jobItemMeasurePhotos.get(i).recordVersion)
-
-           jdata.addProperty("ProjectItemId", DataConversion.toLittleEndian(mSures.get(i).projectItemId))
-           jdata.addProperty("ProjectVoId", mSures.get(i).projectVoId)
-           jdata.addProperty("Qty", mSures.get(i).qty)
-           jdata.addProperty("RecordSynchStateId", mSures.get(i).recordSynchStateId)
-           jdata.addProperty("RecordVersion", mSures.get(i).recordVersion)
-           jdata.addProperty("StartKm", mSures.get(i).startKm)
-           jdata.addProperty("TrackRouteId", DataConversion.toLittleEndian(mSures.get(i).trackRouteId))
-
-       }
-
-
-       //TODO(finish building the MeasureItems and Location)
-//       measuredata.add("MeasurementItems", mSures)
-       measuredata.addProperty("UserId", userId)
-
-
-       Log.e("JsonObject", "Json string $measuredata")
-       val measurementItemResponse = apiRequest { api.saveMeasurementItems(measuredata) }
-        workflowJ.postValue(measurementItemResponse.workflowJob,mSures, activity, itemMeasureJob)
-
-       val messages = measurementItemResponse.errorMessage //activity?.getResources()?.getString(R.string.please_wait)
-       return withContext(Dispatchers.IO) {
-           messages
-       }
-    }
-
-    suspend fun imageUpload(filename: String, extension: String, photo: ByteArray) {
-        val imagedata = JsonObject()
-        imagedata.addProperty("Filename", filename)
-        imagedata.addProperty("ImageByteArray", Base64.getEncoder().encodeToString(photo))
-        imagedata.addProperty("ImageFileExtension", extension)
-
-        val uploadImageResponse = apiRequest { api.uploadRrmImage(imagedata) }
-        photoupload.postValue(uploadImageResponse.errorMessage)
-    }
 
     private suspend fun fetchContracts(userId: String) {
         val lastSavedAt = prefs.getLastSavedAt()
@@ -1927,6 +1656,26 @@ class OfflineDataRepository(
         }
 
     }
+
+    suspend fun getUserTaskList() : LiveData<List<ToDoListEntityDTO>>{
+        try {
+            Coroutines.io {
+            val userId = Db.getUserDao().getuserID()
+            val toDoListGroupsResponse = apiRequest { api.getUserTaskList(userId) }
+            toDoListGroups.postValue(toDoListGroupsResponse.toDoListGroups)
+        }
+    } catch (e: ApiException) {
+        ToastUtils().toastLong(activity, e.message)
+    } catch (e: NoInternetException) {
+        ToastUtils().toastLong(activity, e.message)
+        Log.e("Network-Connection", "No Internet Connection", e)
+    }
+        return withContext(Dispatchers.IO){
+            Db.getEntitiesDao().getAllEntities()
+        }
+    }
+
+
 
     private suspend fun fetchAllData(userId: String){
         val lastSavedAt = prefs.getLastSavedAt()
@@ -2059,37 +1808,14 @@ class OfflineDataRepository(
         return null
     }
 
-//    suspend fun saveJobItemMeasureItems(jobItemMeasures: ArrayList<JobItemMeasureDTO>) {
-//        Coroutines.io {
-//            for (jobItemMeasure in jobItemMeasures!!.iterator()){
-//                if (!Db.getJobItemMeasureDao().checkIfJobItemMeasureExists(jobItemMeasure.itemMeasureId!!)){
-//                    Db.getJobItemMeasureDao().insertJobItemMeasure(jobItemMeasure!!)
-//                }
-//
-//            }
-//
-//        }
-//    }
 
-//    suspend fun setJobItemMeasureImages(
-//        jobItemMeasurePhotoList: ArrayList<JobItemMeasureDTO>,
-//        estimateId: String?,
-//        selectedJobItemMeasure: JobItemMeasureDTO
-//    ){
-//        Coroutines.io {
-//            for (jobItemMeasurePhoto in jobItemMeasurePhotoList.iterator()){
-//                Db.getJobItemMeasureDao().insertJobItemMeasure(selectedJobItemMeasure)
-//                if (!Db.getJobItemMeasurePhotoDao().checkIfJobItemMeasurePhotoExists(jobItemMeasurePhoto.filename!!)){
-//
-//                    Db.getJobItemMeasurePhotoDao().insertJobItemMeasurePhoto(jobItemMeasurePhoto!!)
-//                    jobItemMeasurePhoto.setEstimateId(estimateId)
-//                    Db.getJobItemMeasureDao().upDatePhotList(jobItemMeasurePhotoList,selectedJobItemMeasure.itemMeasureId!!)
-//                }
-//
-//            }
-//
-//        }
-//    }
+
+
+        suspend fun getJobApproveMeasureForActivityId(activityId: Int): LiveData<List<JobItemMeasureDTO>> {
+        return withContext(Dispatchers.IO) {
+            Db.getJobItemMeasureDao().getJobApproveMeasureForActivityId(activityId)
+        }
+    }
 
 
 
@@ -2756,7 +2482,6 @@ class OfflineDataRepository(
         }
 
     }
-
 
 
 

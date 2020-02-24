@@ -57,18 +57,18 @@ open class MainApp : Application(), KodeinAware {
         bind() from singleton { JobApprovalDataRepository(instance(), instance(), instance()) }
         bind() from singleton { WorkDataRepository(instance(), instance(), instance()) }
         bind() from singleton { MeasureCreationDataRepository(instance(), instance(), instance()) }
-//        bind() from singleton { WorkDataRepository(instance(), instance(), instance()) }
+        bind() from singleton { MeasureApprovalDataRepository(instance(), instance(), instance()) }
 
 //        bind<ID_Provider>() with singleton { IdProviderImpl(instance()) }
 
         bind() from provider { AuthViewModelFactory(instance(),instance()) }
         bind() from provider { HomeViewModelFactory(instance(),instance(),instance(),instance()) }
         bind() from provider { CreateViewModelFactory(instance() ) }
-        bind() from provider { ApproveMeasureViewModelFactory(instance() ) }
-        bind() from provider { ApproveJobsViewModelFactory(instance() ) }
-        bind() from provider { MeasureViewModelFactory(instance() ) }
+        bind() from provider { ApproveMeasureViewModelFactory(instance() ,instance()) }
+        bind() from provider { ApproveJobsViewModelFactory(instance(),instance() ) }
+        bind() from provider { MeasureViewModelFactory(instance(),instance() ) }
         bind() from provider { UnSubmittedViewModelFactory(instance() ) }
-        bind() from provider{ WorkViewModelFactory(instance()) }
+        bind() from provider{ WorkViewModelFactory(instance(),instance()) }
         bind() from provider{ CorrectionsViewModelFactory(instance()) }
         bind() from provider{ SettingsViewModelFactory(instance()) }
         bind() from provider{ MainActivityViewModelFactory(instance()) }

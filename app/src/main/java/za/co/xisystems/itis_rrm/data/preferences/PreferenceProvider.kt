@@ -12,7 +12,7 @@ class PreferenceProvider(
     context: Context
 ) {
 
-    private val appContext = context.applicationContext
+    val appContext = context.applicationContext
 
     protected val preferences : SharedPreferences
         get() = PreferenceManager.getDefaultSharedPreferences(appContext)

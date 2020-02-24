@@ -8,6 +8,7 @@ import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.ToDoListEntityDTO
+import za.co.xisystems.itis_rrm.data.repositories.MeasureApprovalDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.approveMeasure_Item.ApproveMeasure_Item
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
@@ -16,16 +17,16 @@ import za.co.xisystems.itis_rrm.utils.lazyDeferred
  * Created by Francis Mahlava on 03,October,2019
  */
 class ApproveMeasureViewModel (
+    private val measureApprovalDataRepository: MeasureApprovalDataRepository,
     private val offlineDataRepository: OfflineDataRepository
 ) : ViewModel() {
 
-//    val offlinedata by lazyDeferred {
-//        offlineDataRepository.getSectionItems()
-//        offlineDataRepository.getContracts()
-//    }
+    val offlinedatas by lazyDeferred {
+        offlineDataRepository.getUserTaskList()
+    }
 
     val user by lazyDeferred {
-        offlineDataRepository.getUser()
+        measureApprovalDataRepository.getUser()
     }
 
 
@@ -36,7 +37,7 @@ class ApproveMeasureViewModel (
 
     suspend fun getJobApproveMeasureForActivityId(activityId: Int): LiveData<List<JobItemMeasureDTO>> {
         return withContext(Dispatchers.IO) {
-            offlineDataRepository.getJobApproveMeasureForActivityId(activityId)
+            measureApprovalDataRepository.getJobApproveMeasureForActivityId(activityId)
         }
     }
 //    suspend fun getJobApproveMeasureForActivityId(activityId: Int): LiveData<List<JobItemMeasureDTO>> {
@@ -52,65 +53,65 @@ class ApproveMeasureViewModel (
         jobApproved: Int
     ): LiveData<List<JobDTO>> {
         return withContext(Dispatchers.IO) {
-            offlineDataRepository.getJobsMeasureForActivityId(estimateComplete,measureComplete,estWorksComplete,jobApproved)
+            measureApprovalDataRepository.getJobsMeasureForActivityId(estimateComplete,measureComplete,estWorksComplete,jobApproved)
         }
     }
 
     suspend fun getEntitiesListForActivityId(activityId: Int): LiveData<List<ToDoListEntityDTO>> {
         return withContext(Dispatchers.IO) {
-            offlineDataRepository.getEntitiesListForActivityId(activityId)
+            measureApprovalDataRepository.getEntitiesListForActivityId(activityId)
         }
     }
 
     suspend fun getProjectSectionIdForJobId(jobId: String): String {
         return withContext(Dispatchers.IO) {
-            offlineDataRepository.getProjectSectionIdForJobId(jobId)
+            measureApprovalDataRepository.getProjectSectionIdForJobId(jobId)
         }
     }
 
     suspend fun getRouteForProjectSectionId(sectionId: String): String {
         return withContext(Dispatchers.IO) {
-            offlineDataRepository.getRouteForProjectSectionId(sectionId)
+            measureApprovalDataRepository.getRouteForProjectSectionId(sectionId)
         }
     }
     suspend fun getSectionForProjectSectionId(sectionId: String): String {
         return withContext(Dispatchers.IO) {
-            offlineDataRepository.getSectionForProjectSectionId(sectionId)
+            measureApprovalDataRepository.getSectionForProjectSectionId(sectionId)
         }
     }
 
     suspend fun getItemDesc(jobId: String): String {
         return withContext(Dispatchers.IO) {
-            offlineDataRepository.getItemDescription(jobId)
+            measureApprovalDataRepository.getItemDescription(jobId)
         }
     }
     suspend fun getDescForProjectId(projectItemId: String): String {
         return withContext(Dispatchers.IO) {
-            offlineDataRepository.getProjectItemDescription(projectItemId)
+            measureApprovalDataRepository.getProjectItemDescription(projectItemId)
         }
     }
 
     suspend fun getJobMeasureItemsForJobId(jobID: String?,actId: Int): LiveData<List<JobItemMeasureDTO>> {
         return withContext(Dispatchers.IO) {
-            offlineDataRepository.getJobMeasureItemsForJobId(jobID, actId)
+            measureApprovalDataRepository.getJobMeasureItemsForJobId(jobID, actId)
         }
     }
 
     suspend fun getUOMForProjectItemId(projectItemId: String): String {
         return withContext(Dispatchers.IO) {
-            offlineDataRepository.getUOMForProjectItemId(projectItemId)
+            measureApprovalDataRepository.getUOMForProjectItemId(projectItemId)
         }
     }
 
     suspend fun getJobMeasureItemsPhotoPath(itemMeasureId: String): String {
         return withContext(Dispatchers.IO) {
-            offlineDataRepository.getJobMeasureItemsPhotoPath(itemMeasureId)
+            measureApprovalDataRepository.getJobMeasureItemsPhotoPath(itemMeasureId)
         }
     }
 
-    suspend fun processWorkflowMove( userId: String, trackRounteId: String, description: String?, direction: Int ) {
+    suspend fun processWorkflowMove( userId: String, trackRounteId: String, description: String?, direction: Int ) : String {
         return withContext(Dispatchers.IO) {
-            offlineDataRepository.processWorkflowMove( userId ,trackRounteId, description, direction)
+            measureApprovalDataRepository.processWorkflowMove( userId ,trackRounteId, description, direction)
         }
     }
 

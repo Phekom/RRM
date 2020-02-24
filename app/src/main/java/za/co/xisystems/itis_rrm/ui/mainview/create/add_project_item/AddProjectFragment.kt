@@ -168,7 +168,33 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
                 totalCostTextView.visibility = View.VISIBLE
 
                 createViewModel.jobtoEdit_Item.value = jobToEdit
-                calculateTotalCost()
+
+                Coroutines.main {
+                    val projecItems = createViewModel.getAllProjecItems(projectID!!)
+                    projecItems.observe(viewLifecycleOwner, Observer { pro_Items ->
+                        if (pro_Items.isEmpty()) {
+
+                            totalCostTextView.text = ""
+                            last_lin.visibility = View.GONE
+                            totalCostTextView.visibility = View.GONE
+
+
+                        }
+                        items = pro_Items
+                        for (item in pro_Items.listIterator()) {
+                            if (job?.JobId != item.jobId){
+                                groupAdapter.clear()
+                                totalCostTextView.clearComposingText()
+                            }else{
+                                // initRecyclerView(item, items)
+                                initRecyclerView(pro_Items.toProjecListItems())
+                                calculateTotalCost()
+                            }
+
+                        }
+                    })
+                }
+
             }
 
         })

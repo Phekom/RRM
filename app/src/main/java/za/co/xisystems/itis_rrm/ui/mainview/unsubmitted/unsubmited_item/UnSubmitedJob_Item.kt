@@ -3,17 +3,14 @@ package za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.unsubmited_item
 import android.view.View
 import androidx.fragment.app.FragmentActivity
 import androidx.navigation.Navigation
+import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import com.xwray.groupie.kotlinandroidextensions.Item
 import kotlinx.android.synthetic.main.unsubmtd_job_list_item.*
-import kotlinx.coroutines.Job
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTOTemp
-import za.co.xisystems.itis_rrm.data.network.PermissionController
 import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedViewModel
 import za.co.xisystems.itis_rrm.utils.Coroutines
-import za.co.xisystems.itis_rrm.utils.toast
 
 /**
  * Created by Francis Mahlava on 2019/12/22.
@@ -23,7 +20,8 @@ import za.co.xisystems.itis_rrm.utils.toast
 class UnSubmitedJob_Item(
     val jobDTO: JobDTO,
     private val viewModel: UnSubmittedViewModel,
-    private var  activity: FragmentActivity?
+    private var activity: FragmentActivity?,
+    private val groupAdapter: GroupAdapter<GroupieViewHolder>
 ) : Item(){
 
     var clickListener: ((UnSubmitedJob_Item) -> Unit)? = null
@@ -49,6 +47,8 @@ class UnSubmitedJob_Item(
                Coroutines.main {
                    viewModel.deleJobfromList(jobDTO.JobId)
                    viewModel.deleteItemList(jobDTO!!.JobId)
+                   groupAdapter.notifyDataSetChanged()
+                   notifyChanged()
                }
            }
 

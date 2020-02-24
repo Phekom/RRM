@@ -15,11 +15,13 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.GroupieViewHolder
 import kotlinx.android.synthetic.main.fragment_approvejob.*
+import kotlinx.android.synthetic.main.fragment_home.*
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
+import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.approve_job_item.ApproveJob_Item
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
@@ -34,6 +36,9 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
     override val kodein by kodein()
     private lateinit var approveViewModel: ApproveJobsViewModel
     private val factory: ApproveJobsViewModelFactory by instance()
+
+
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -62,6 +67,28 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
                 initRecyclerView(job_s.toApproveListItems())
                 group3_loading.visibility = View.GONE
             })
+
+            jobs_swipe_to_refresh.setProgressBackgroundColorSchemeColor(
+                ContextCompat.getColor(
+                    context!!.applicationContext,
+                    R.color.colorPrimary
+                )
+            )
+            jobs_swipe_to_refresh.setColorSchemeColors(Color.WHITE)
+
+            jobs_swipe_to_refresh.setOnRefreshListener {
+                Coroutines.main {
+                    val jobs = approveViewModel.offlinedatas.await()
+                    jobs.observe(viewLifecycleOwner, Observer { works ->
+                        jobs_swipe_to_refresh.isRefreshing = false
+                    })
+
+                }
+            }
+
+
+
+
         }
     }
 

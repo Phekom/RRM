@@ -4,21 +4,26 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Activity.RESULT_OK
+import android.app.AlertDialog
 import android.app.Dialog
 import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.location.Location
+import android.location.LocationManager
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
+import android.provider.Settings
 import android.view.*
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -63,21 +68,23 @@ class EstimatePhotoFragment : BaseFragment(), KodeinAware {
     private val FILE_PROVIDER_AUTHORITY = BuildConfig.APPLICATION_ID + ".provider"
     private var mAppExcutor: AppExecutor? = null
     lateinit var locationHelper: LocationHelper
-    //    lateinit var newJobEditEstimateHelper: NewJobEditEstimateHelper
+    lateinit var lm : LocationManager
+    var gps_enabled = false
+    var network_enabled = false
 
     var isEstimateDone: Boolean = false
     var contractID: String? = null
     var projectID: String? = null
-    var startKM : Double? = null
-    var endKM : Double? =null
-    var section_id : String? = null
+    var startKM: Double? = null
+    var endKM: Double? = null
+    var section_id: String? = null
 
     @State
     var photoType: PhotoType = PhotoType.start
     @State
     var itemId_photoType = HashMap<String, String>()
 
-//    @State
+    //    @State
 //    var itemId_photoType_tester = HashMap<String, String>()
     internal var job: JobDTO? = null
 
@@ -149,7 +156,6 @@ class EstimatePhotoFragment : BaseFragment(), KodeinAware {
     }
 
 
-
     override fun onPrepareOptionsMenu(menu: Menu) {
         val item = menu.findItem(R.id.action_settings)
         val item1 = menu.findItem(R.id.action_logout)
@@ -158,6 +164,7 @@ class EstimatePhotoFragment : BaseFragment(), KodeinAware {
         if (item1 != null) item1.isVisible = false
         if (item2 != null) item2.isVisible = false
     }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
@@ -237,9 +244,20 @@ class EstimatePhotoFragment : BaseFragment(), KodeinAware {
         loadPhotos()
 //        updatePhotoUI(false)
 //        updateSectionUI(false)
+        try {
+            gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
 
-
-
+        try {
+            network_enabled = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        if (!gps_enabled && !network_enabled) { // notify user
+            displayPromptForEnablingGPS(activity!!)
+        }else{}
 
 
         setValueEditText(getStoredValue())
@@ -264,7 +282,8 @@ class EstimatePhotoFragment : BaseFragment(), KodeinAware {
                 }
 
                 R.id.cancelButton -> {
-                    Navigation.findNavController(view).navigate(R.id.action_estimatePhotoFragment_to_nav_create)
+                    Navigation.findNavController(view)
+                        .navigate(R.id.action_estimatePhotoFragment_to_nav_create)
                     Coroutines.main {
                         createViewModel.deleJobfromList(newjob!!.JobId)
                         createViewModel.deleteItemList(newjob!!.JobId)
@@ -280,10 +299,20 @@ class EstimatePhotoFragment : BaseFragment(), KodeinAware {
                         labelTextView.startAnimation(anims!!.shake_long)
                     } else {
                         Coroutines.main {
-//                            newjob?.JobItemEstimates?.get(0)?.qty
+                            //                            newjob?.JobItemEstimates?.get(0)?.qty
                             item?.quantity = valueEditText.text.toString().toDouble()
-                            newjob?.JobItemEstimates?.get(0)?.lineRate = (valueEditText.text.toString().toDouble() * newjob?.JobItemEstimates?.get(0)?.lineRate!! )
-                            createViewModel.updateNewJob(newjob!!.JobId,startKM!!,endKM!!,section_id!!, newjob?.JobItemEstimates!!, newjob?.JobSections!!)
+                            newjob?.JobItemEstimates?.get(0)?.lineRate =
+                                (valueEditText.text.toString().toDouble() * newjob?.JobItemEstimates?.get(
+                                    0
+                                )?.lineRate!!)
+                            createViewModel.updateNewJob(
+                                newjob!!.JobId,
+                                startKM!!,
+                                endKM!!,
+                                section_id!!,
+                                newjob?.JobItemEstimates!!,
+                                newjob?.JobSections!!
+                            )
                             updateData(view)
                         }
                     }
@@ -334,25 +363,29 @@ class EstimatePhotoFragment : BaseFragment(), KodeinAware {
 //        createViewModel.costLineRate.value = cost
 //        createViewModel.EstimateQty.value = qty
 
-       Navigation.findNavController(view).navigate(R.id.action_estimatePhotoFragment_to_addProjectFragment)
+        Navigation.findNavController(view)
+            .navigate(R.id.action_estimatePhotoFragment_to_addProjectFragment)
     }
 
     private fun takePhotoStart() {
+
         photoType = PhotoType.start
         if (ContextCompat.checkSelfPermission(
                 activity!!.applicationContext,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE
-            )
-            !== PackageManager.PERMISSION_GRANTED
+            ) !== PackageManager.PERMISSION_GRANTED
         ) {
             ActivityCompat.requestPermissions(
-                Activity(), arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                Activity(),
+                arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
                 REQUEST_STORAGE_PERMISSION
             )
+
         } else {
             launchCamera()
         }
     }
+
 
     private fun takePhotoEnd() {
         photoType = PhotoType.end
@@ -373,7 +406,26 @@ class EstimatePhotoFragment : BaseFragment(), KodeinAware {
 
     }
 
+    fun displayPromptForEnablingGPS(
+        activity: Activity
+    ) {
+
+        val builder: AlertDialog.Builder = AlertDialog.Builder(activity)
+        val action = Settings.ACTION_LOCATION_SOURCE_SETTINGS
+        val message = ("Your GPS seems to be disabled, Please enable it to continue")
+        builder.setMessage(message)
+            .setPositiveButton("OK",
+                DialogInterface.OnClickListener { d, id ->
+                    activity.startActivity(Intent(action))
+                    d.dismiss()
+                })
+        builder.create().show()
+
+}
+
+
     private fun launchCamera() {
+
         // type is "start" or "end"
         if (item != null) {
             itemId_photoType["itemId"] = item!!.itemId

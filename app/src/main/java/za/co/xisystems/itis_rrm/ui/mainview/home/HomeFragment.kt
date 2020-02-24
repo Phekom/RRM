@@ -1,11 +1,15 @@
 package za.co.xisystems.itis_rrm.ui.mainview.home
 
 
+import android.app.Activity
 import android.content.Context
+import android.content.DialogInterface
+import android.content.Intent
 import android.graphics.Color
 import android.location.LocationManager
 import android.net.ConnectivityManager
 import android.os.Bundle
+import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
@@ -17,7 +21,9 @@ import kotlinx.android.synthetic.main.fragment_home.*
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
+import za.co.xisystems.itis_rrm.BuildConfig
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.network.responses.HealthCheckResponse
 import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
 import za.co.xisystems.itis_rrm.utils.Coroutines
@@ -36,6 +42,9 @@ class HomeFragment : BaseFragment(), KodeinAware {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
+
+
+
     }
     override fun onPrepareOptionsMenu(menu: Menu) {
         val item = menu.findItem(R.id.action_search)
@@ -88,9 +97,6 @@ class HomeFragment : BaseFragment(), KodeinAware {
 
             items_swipe_to_refresh.setOnRefreshListener {
                 Coroutines.main {
-
-
-
                     val works = homeViewModel.offlinedatas.await()
                     works.observe(viewLifecycleOwner, Observer { works ->
                         items_swipe_to_refresh.isRefreshing = false
@@ -123,11 +129,20 @@ class HomeFragment : BaseFragment(), KodeinAware {
             locationEnabled.text = activity!!.getString(R.string.gps_connected)
             locationEnabled.setTextColor(colorConnected)
         }
+        connectedTo.text = "Version " + BuildConfig.VERSION_NAME
+
+
+
+        serverTextView.setOnClickListener {
+            ToastUtils().toastServerAddress(context)
+        }
 
 
 
 
-
+        imageView7.setOnClickListener {
+            ToastUtils().toastVersion(context)
+        }
 
 
     }

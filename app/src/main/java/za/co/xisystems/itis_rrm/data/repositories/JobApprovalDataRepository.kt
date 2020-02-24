@@ -89,12 +89,16 @@ class JobApprovalDataRepository(private val api: BaseConnectionApi, private val 
         trackRouteId: String,
         description: String?,
         direction: Int
-    ) {
+    ) : String {
         val workflowMoveResponse =
             apiRequest { api.getWorkflowMove(userId, trackRouteId, description, direction) }
         workflowJ.postValue(workflowMoveResponse.workflowJob)
 //        workflows.postValue(workflowMoveResponse.toDoListGroups)
-
+        val messages = workflowMoveResponse.errorMessage
+//          activity.getResources().getString(R.string.please_wait)
+        return withContext(Dispatchers.IO) {
+            messages
+        }
     }
 
 

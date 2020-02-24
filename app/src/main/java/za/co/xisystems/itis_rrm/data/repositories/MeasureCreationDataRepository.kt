@@ -77,7 +77,7 @@ class MeasureCreationDataRepository(private val api: BaseConnectionApi, private 
         jimNo: String?,
         contractVoId: String?,
         mSures: ArrayList<JobItemMeasureDTO>,
-        activity: FragmentActivity?,
+        activity: FragmentActivity,
         itemMeasureJob: JobDTO
     ) : String {
 
@@ -113,17 +113,19 @@ class MeasureCreationDataRepository(private val api: BaseConnectionApi, private 
     }
 
 
-    private fun <T> MutableLiveData<T>.postValue(workflowjb : WorkflowJobDTO, jobItemMeasure : ArrayList<JobItemMeasureDTO>, activity: FragmentActivity?, itemMeasureJob: JobDTO) {
+    private fun <T> MutableLiveData<T>.postValue(workflowjb : WorkflowJobDTO, jobItemMeasure : ArrayList<JobItemMeasureDTO>, activity: FragmentActivity, itemMeasureJob: JobDTO) {
         if (workflowjb != null) {
             Coroutines.io {
                 val job = setWorkflowJobBigEndianGuids(workflowjb)
             insertOrUpdateWorkflowJobInSQLite(job)
-                uploadmeasueImages(jobItemMeasure, activity, itemMeasureJob)
                 val myjob  = getUpdatedJob(itemMeasureJob.JobId)
+                moveJobToNextWorkflow(activity, myjob)
+                uploadmeasueImages(jobItemMeasure, activity, itemMeasureJob)
+
 //                val myjob  = getUpdatedJob(DataConversion.toBigEndian(job.JobId)!!)
 //                for (jobItemMeas in myjob.JobItemMeasures!!.iterator()) {
 //                    moveJobToNextWorkflow(myjob.JobItemMeasures, activity!!, myjob)
-                    moveJobToNextWorkflow(activity!!, myjob)
+
 //                }
 
             }
@@ -571,178 +573,6 @@ class MeasureCreationDataRepository(private val api: BaseConnectionApi, private 
             Db.getProjectItemDao().getProjectItemDescription(projectItemId)
         }
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-//    suspend fun getJobItemMeasurePhotosForItemMeasureID(itemMeasureId: String): LiveData<List<JobItemMeasurePhotoDTO>>  {
-//        return withContext(Dispatchers.IO) {
-//            Db.getJobItemMeasurePhotoDao().getJobItemMeasurePhotosForItemMeasureID(itemMeasureId)
-//        }
-//    }
-//    suspend fun getJobsForActivityIds1(activityId1: Int, activityId2: Int): LiveData<List<JobDTO>> {
-//        return withContext(Dispatchers.IO) {
-//            Db.getJobDao().getJobsForActivityIds1(activityId1, activityId2)
-//        }
-//    }
-//
-//
-//    suspend fun getItemStartKm(jobId: String): Double {
-//        return withContext(Dispatchers.IO) {
-//            Db.getJobDao().getItemStartKm(jobId)
-//        }
-//    }
-//
-//    suspend fun getItemEndKm(jobId: String): Double {
-//        return withContext(Dispatchers.IO) {
-//            Db.getJobDao().getItemEndKm(jobId)
-//        }
-//    }
-//
-//    suspend fun getItemTrackRouteId(jobId: String): String {
-//        return withContext(Dispatchers.IO) {
-//            Db.getJobDao().getItemTrackRouteId(jobId)
-//        }
-//    }
-
-
-
-
-
-
-//
-//    suspend fun getUOMForProjectItemId(projectItemId: String): String {
-//        return withContext(Dispatchers.IO) {
-//            Db.getProjectItemDao().getUOMForProjectItemId(projectItemId)
-//        }
-//    }
-
-
-//    suspend fun getJobEstimationItemsForJobId(jobID: String?): LiveData<List<JobItemEstimateDTO>> {
-//        return withContext(Dispatchers.IO) {
-//            Db.getJobItemEstimateDao().getJobEstimationItemsForJobId(jobID!!)
-//        }
-//    }
-
-
-//    suspend fun processWorkflowMove(
-//        userId: String,
-//        trackRouteId: String,
-//        description: String?,
-//        direction: Int
-//    ) {
-//        val workflowMoveResponse =
-//            apiRequest { api.getWorkflowMove(userId, trackRouteId, description, direction) }
-//        workflowJ.postValue(workflowMoveResponse.workflowJob)
-////        workflows.postValue(workflowMoveResponse.toDoListGroups)
-//
-//    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//    suspend fun getProjectDescription(projectId: String): String {
-//        return withContext(Dispatchers.IO) {
-//            Db.getProjectDao().getProjectDescription(projectId)
-//        }
-//    }
-//
-//    suspend fun getJobsForActivityId(activityId: Int): LiveData<List<JobDTO>> {
-//        return withContext(Dispatchers.IO) {
-//            Db.getJobDao().getJobsForActivityId(activityId)
-//        }
-//    }
-//
-
-//
-//
-//
-//    suspend fun getJobEstimationItemsPhotoStartPath(estimateId: String): String {
-//        return withContext(Dispatchers.IO) {
-//            Db.getJobItemEstimatePhotoDao().getJobEstimationItemsPhotoStartPath(estimateId)
-//        }
-//    }
-//
-//
-//    suspend fun getJobEstimationItemsPhotoEndPath(estimateId: String): String {
-//        return withContext(Dispatchers.IO) {
-//            Db.getJobItemEstimatePhotoDao().getJobEstimationItemsPhotoEndPath(estimateId)
-//        }
-//    }
 
 
 
