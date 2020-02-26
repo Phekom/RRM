@@ -1,6 +1,5 @@
 package za.co.xisystems.itis_rrm.ui.mainview.create
 
-import android.app.ProgressDialog
 import android.os.Bundle
 import android.util.Log
 import android.view.*
@@ -17,7 +16,6 @@ import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.data.network.OfflineListener
 import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
-import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.IJobSubmit
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.MyState
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper.setSpinner
@@ -123,7 +121,10 @@ class CreateFragment : BaseFragment(), OfflineListener , KodeinAware {
         setContract()
     } catch (e: NoInternetException) {
         snackError(e.message)
-        Log.e("Networ yonnection", "No Internet Connection", e)
+        Log.e("Network connection", "No Internet Connection", e)
+    } catch (e: NoConnectivityException) {
+        snackError(e.message)
+        Log.e("Network connection", "Backend Host Unreachable", e)
     }
 //        navController = this.activity?.let { Navigation.findNavController(it, R.id.nav_host_fragment) }
         return inflater.inflate(R.layout.fragment_createjob, container, false)
@@ -134,7 +135,7 @@ class CreateFragment : BaseFragment(), OfflineListener , KodeinAware {
 //        createViewModel = ViewModelProviders.of(this, factory).get(CreateViewModel::class.java)
         createViewModel = activity?.run {
             ViewModelProviders.of(this, factory).get(CreateViewModel::class.java)
-        } ?: throw Exception("Invalid Activity") as Throwable
+        } ?: throw Exception("Invalid Activity")
 
         Coroutines.main {
             var user = createViewModel.user.await()
@@ -170,7 +171,15 @@ class CreateFragment : BaseFragment(), OfflineListener , KodeinAware {
 
     private fun createNew_Job() {
         Coroutines.main {
-            val newjob = createNewJob(selectedContract?.contractId, selectedProject?.projectId,useR?.userId?.toInt(), newJobItemEstimatesList, jobItemMeasureArrayList, jobItemSectionArrayList,descri)
+            val newjob = createNewJob(
+                selectedContract?.contractId,
+                selectedProject?.projectId,
+                useR.userId.toInt(),
+                newJobItemEstimatesList,
+                jobItemMeasureArrayList,
+                jobItemSectionArrayList,
+                descri
+            )
             createViewModel.saveNewJob(newjob)
         }
 
@@ -213,7 +222,7 @@ class CreateFragment : BaseFragment(), OfflineListener , KodeinAware {
         Navigation.findNavController(view).navigate(R.id.action_nav_create_to_addProjectFragment)
         Coroutines.main {
 
-            createViewModel.loggedUser.value = useR?.userId!!.toInt()
+            createViewModel.loggedUser.value = useR.userId.toInt()
             createViewModel.contract_No.value = selectedContract?.contractNo.toString()
 //            createViewModel.contract_ID.value = selectedContract?.contractId
             createViewModel.project_Code.value = selectedProject?.projectCode.toString()
@@ -284,6 +293,9 @@ class CreateFragment : BaseFragment(), OfflineListener , KodeinAware {
            Toast.makeText(context, e.message,Toast.LENGTH_SHORT).show()
             Log.e("NetworkConnection", "No Internet Connection", e)
 
+        } catch (e: NoConnectivityException) {
+            Toast.makeText(context, e.message, Toast.LENGTH_SHORT).show()
+            Log.e("NetworkConnection", "Backend Host Unreachable", e)
         }
 
     }

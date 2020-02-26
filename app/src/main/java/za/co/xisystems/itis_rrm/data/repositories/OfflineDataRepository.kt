@@ -11,7 +11,6 @@ import android.widget.Toast
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -38,7 +37,6 @@ import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
 import java.util.regex.Pattern
-import kotlin.collections.ArrayList
 
 
 /**
@@ -967,9 +965,9 @@ class OfflineDataRepository(
                         val itemCode = matcher.group(1).replace("\\s+".toRegex(), "")
                         if (!Db.getSectionItemDao().checkIfSectionitemsExist(itemCode))
                             Db.getSectionItemDao().insertSectionitem(
-                                activitySection!!,
-                                itemCode!!,
-                                sectionItemId!!
+                                activitySection,
+                                itemCode,
+                                sectionItemId
                             )
 //                            section.setSecctionItemId(sectionItemId)
 //                            section.setItemCode(itemCode)
@@ -1415,6 +1413,9 @@ class OfflineDataRepository(
         } catch (e: NoInternetException) {
             ToastUtils().toastLong(activity, e.message)
             Log.e("NetworkConnection", "No Internet Connection", e)
+        } catch (e: NoConnectivityException) {
+            ToastUtils().toastLong(activity, e.message)
+            Log.e("NetworkConnection", "Backend Host Unreachable", e)
         }
     }
 
@@ -1428,6 +1429,9 @@ class OfflineDataRepository(
         } catch (e: NoInternetException) {
             ToastUtils().toastLong(activity, e.message)
             Log.e("NetworkConnection", "No Internet Connection", e)
+        } catch (e: NoConnectivityException) {
+            ToastUtils().toastLong(activity, e.message)
+            Log.e("NetworkConnection", "Backend Host Unreachable", e)
         }
     }
 
@@ -1653,6 +1657,9 @@ class OfflineDataRepository(
         } catch (e: NoInternetException) {
             ToastUtils().toastLong(activity, e.message)
             Log.e("Network-Connection", "No Internet Connection", e)
+        } catch (e: NoConnectivityException) {
+            ToastUtils().toastLong(activity, e.message)
+            Log.e("NetworkConnection", "Backend Host Unreachable", e)
         }
 
     }
@@ -1669,7 +1676,10 @@ class OfflineDataRepository(
     } catch (e: NoInternetException) {
         ToastUtils().toastLong(activity, e.message)
         Log.e("Network-Connection", "No Internet Connection", e)
-    }
+        } catch (e: NoConnectivityException) {
+            ToastUtils().toastLong(activity, e.message)
+            Log.e("Network-Connection", "Backend Host Unreachable", e)
+        }
         return withContext(Dispatchers.IO){
             Db.getEntitiesDao().getAllEntities()
         }
@@ -1706,7 +1716,11 @@ class OfflineDataRepository(
         } catch (e: NoInternetException) {
             ToastUtils().toastLong(activity, e.message)
             Log.e("Network-Connection", "No Internet Connection", e)
+        } catch (e: NoConnectivityException) {
+            ToastUtils().toastLong(activity, e.message)
+            Log.e("Network-Connection", "Backend Host Unreachable", e)
         }
+
 
     }
 
@@ -1828,7 +1842,7 @@ class OfflineDataRepository(
 
     private fun updateWorkflowJobValuesAndInsertWhenNeeded(job: WorkflowJobDTO) {
         Coroutines.io {
-            Db?.getJobDao().updateJob( job.trackRouteId, job.actId,job.jiNo,job.jobId )
+            Db.getJobDao().updateJob(job.trackRouteId, job.actId, job.jiNo, job.jobId)
 
             if (job.workflowItemEstimates != null && job.workflowItemEstimates.size !== 0) {
                 for (jobItemEstimate in job.workflowItemEstimates) {
@@ -1860,7 +1874,7 @@ class OfflineDataRepository(
 
                 if (job.workflowItemMeasures != null && job.workflowItemMeasures.size !== 0) {
                     for (jobItemMeasure in job.workflowItemMeasures) {
-                        Db?.getJobItemMeasureDao()!!.updateWorkflowJobItemMeasure(
+                        Db.getJobItemMeasureDao().updateWorkflowJobItemMeasure(
                             jobItemMeasure.itemMeasureId,
                             jobItemMeasure.trackRouteId,
                             jobItemMeasure.actId,
@@ -2035,8 +2049,8 @@ class OfflineDataRepository(
                 Toast.makeText(activity, "Error: trackRouteId is null", Toast.LENGTH_LONG).show()
             } else {
               jobEstimateWorks.setTrackRouteId(DataConversion.toLittleEndian(jobEstimateWorks.trackRouteId))
-                val direction: Int = WorkflowDirection.NEXT.getValue()
-                val trackRouteId: String = jobEstimateWorks.trackRouteId!!
+              val direction: Int = WorkflowDirection.NEXT.value
+              val trackRouteId: String = jobEstimateWorks.trackRouteId
                 val description: String = "work step done"
 
                 Coroutines.io {
@@ -2226,9 +2240,9 @@ class OfflineDataRepository(
             Toast.makeText(activity, "Error: trackRouteId is null", Toast.LENGTH_LONG).show()
         } else {
             job.setTrackRouteId(DataConversion.toLittleEndian(job.TrackRouteId))
-            val direction: Int = WorkflowDirection.NEXT.getValue()
+            val direction: Int = WorkflowDirection.NEXT.value
             val trackRouteId: String = job.TrackRouteId!!
-            val description: String = activity.getResources().getString(R.string.submit_for_approval)
+            val description: String = activity.resources.getString(R.string.submit_for_approval)
 
             Coroutines.io {
                 val workflowMoveResponse = apiRequest { api.getWorkflowMove(job.UserId.toString(), trackRouteId, description, direction) }

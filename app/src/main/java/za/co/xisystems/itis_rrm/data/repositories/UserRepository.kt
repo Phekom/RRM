@@ -14,6 +14,7 @@ import za.co.xisystems.itis_rrm.data.preferences.PreferenceProvider
 import za.co.xisystems.itis_rrm.ui.auth.AuthListener
 import za.co.xisystems.itis_rrm.utils.ApiException
 import za.co.xisystems.itis_rrm.utils.Coroutines
+import za.co.xisystems.itis_rrm.utils.NoConnectivityException
 import za.co.xisystems.itis_rrm.utils.NoInternetException
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
@@ -102,6 +103,8 @@ class UserRepository(
         } catch (e: ApiException) {
             authListener?.onFailure(e.message!!)
         } catch (e: NoInternetException) {
+            authListener?.onFailure(e.message!!)
+        } catch (e: NoConnectivityException) {
             authListener?.onFailure(e.message!!)
         }
 

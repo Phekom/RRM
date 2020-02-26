@@ -2,26 +2,25 @@ package za.co.xisystems.itis_rrm.data.repositories
 
 //import sun.security.krb5.Confounder.bytes
 
-import android.app.Activity
 import android.os.Build
-import android.os.Environment
 import android.os.Looper
 import android.util.Log
 import android.widget.Toast
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.google.gson.*
+import com.google.gson.Gson
+import com.google.gson.JsonElement
+import com.google.gson.JsonObject
+import com.google.gson.JsonParser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.json.JSONObject
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.localDB.JobDataController
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
-import za.co.xisystems.itis_rrm.data.network.OfflineListener
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
 import za.co.xisystems.itis_rrm.data.network.responses.UploadImageResponse
 import za.co.xisystems.itis_rrm.data.preferences.PreferenceProvider
@@ -29,11 +28,7 @@ import za.co.xisystems.itis_rrm.utils.*
 import za.co.xisystems.itis_rrm.utils.PhotoUtil.getPhotoPathFromExternalDirectory
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
-import java.io.File
-import java.time.LocalDateTime
-import java.time.temporal.ChronoUnit
 import java.util.*
-import java.util.regex.Pattern
 
 
 /**
@@ -253,6 +248,9 @@ class JobCreationDataRepository(private val api: BaseConnectionApi, private val 
         } catch (e: NoInternetException) {
             ToastUtils().toastLong(prefs.appContext, e.message)
             Log.e("NetworkConnection", "No Internet Connection", e)
+        } catch (e: NoConnectivityException) {
+            ToastUtils().toastLong(prefs.appContext, e.message)
+            Log.e("Network-Connection", "Backend Host Unreachable", e)
         }
 
     }
@@ -396,7 +394,7 @@ class JobCreationDataRepository(private val api: BaseConnectionApi, private val 
 
                 if (job.workflowItemMeasures != null && job.workflowItemMeasures.size !== 0) {
                     for (jobItemMeasure in job.workflowItemMeasures) {
-                        Db?.getJobItemMeasureDao()!!.updateWorkflowJobItemMeasure(
+                        Db.getJobItemMeasureDao().updateWorkflowJobItemMeasure(
                             jobItemMeasure.itemMeasureId,
                             jobItemMeasure.trackRouteId,
                             jobItemMeasure.actId,
@@ -553,10 +551,10 @@ class JobCreationDataRepository(private val api: BaseConnectionApi, private val 
             Toast.makeText(activity, "Error: trackRouteId is null", Toast.LENGTH_LONG).show()
         } else {
             job.TrackRouteId = DataConversion.toLittleEndian(job.TrackRouteId)
-            val direction: Int = WorkflowDirection.NEXT.getValue()
+            val direction: Int = WorkflowDirection.NEXT.value
             val trackRouteId: String = job.TrackRouteId!!
             val description: String =
-                activity.getResources().getString(R.string.submit_for_approval)
+                activity.resources.getString(R.string.submit_for_approval)
 
             Coroutines.io {
                 val workflowMoveResponse = apiRequest {
@@ -587,7 +585,7 @@ class JobCreationDataRepository(private val api: BaseConnectionApi, private val 
         if (linearId != null) {
             //Db.getProjectSectionDao().getSectionByRouteSectionProject(linearId, sectionId, direction, projectId)
 //           activity?.toast(direction + linearId +  "$pointLocation"  + sectionId.toString()+ projectId )
-            if (!Db!!.getSectionPointDao().checkSectionExists(sectionId,projectId,jobId)){
+            if (!Db.getSectionPointDao().checkSectionExists(sectionId, projectId, jobId)) {
                 Db.getSectionPointDao().insertSection(direction,linearId,pointLocation,sectionId,projectId,jobId)
             }
 
