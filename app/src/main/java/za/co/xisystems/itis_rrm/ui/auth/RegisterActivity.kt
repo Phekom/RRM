@@ -14,12 +14,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GooglePlayServicesUtil
-import kotlinx.android.synthetic.main.activity_login.*
 import kotlinx.android.synthetic.main.activity_register.*
-import kotlinx.android.synthetic.main.activity_register.buildFlavorTextView
-import kotlinx.android.synthetic.main.activity_register.loading
-import kotlinx.android.synthetic.main.activity_register.reg_container
-import kotlinx.android.synthetic.main.activity_register.serverTextView
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.kodein
 import org.kodein.di.generic.instance
@@ -199,11 +194,7 @@ class RegisterActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runna
         val cm =
             getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val netInfo = cm.activeNetworkInfo
-        return if (netInfo != null && netInfo.isConnectedOrConnecting) {
-            true
-        } else {
-            false
-        }
+        return netInfo != null && netInfo.isConnectedOrConnecting
     }
 
 

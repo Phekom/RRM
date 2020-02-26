@@ -247,10 +247,10 @@ class JobCreationDataRepository(private val api: BaseConnectionApi, private val 
             ToastUtils().toastLong(prefs.appContext, e.message)
         } catch (e: NoInternetException) {
             ToastUtils().toastLong(prefs.appContext, e.message)
-            Log.e("NetworkConnection", "No Internet Connection", e)
+            Log.e("Network-Connection", "No Internet Connection", e)
         } catch (e: NoConnectivityException) {
             ToastUtils().toastLong(prefs.appContext, e.message)
-            Log.e("Network-Connection", "Backend Host Unreachable", e)
+            Log.e("Network-Failure", "Service Host Unreachable", e)
         }
 
     }

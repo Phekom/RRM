@@ -121,10 +121,10 @@ class CreateFragment : BaseFragment(), OfflineListener , KodeinAware {
         setContract()
     } catch (e: NoInternetException) {
         snackError(e.message)
-        Log.e("Network connection", "No Internet Connection", e)
+        Log.e("Fragment connection", "No Internet Connection", e)
     } catch (e: NoConnectivityException) {
         snackError(e.message)
-        Log.e("Network connection", "Backend Host Unreachable", e)
+        Log.e("Network error", "Backend Host Unreachable", e)
     }
 //        navController = this.activity?.let { Navigation.findNavController(it, R.id.nav_host_fragment) }
         return inflater.inflate(R.layout.fragment_createjob, container, false)
@@ -356,7 +356,7 @@ class CreateFragment : BaseFragment(), OfflineListener , KodeinAware {
         data_loading.hide()
     }
 
-    override fun onFailure(message: String) {
+    override fun onFailure(message: String?) {
         data_loading.hide()
     }
 
