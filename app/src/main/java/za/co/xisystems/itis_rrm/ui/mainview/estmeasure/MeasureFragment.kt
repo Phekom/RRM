@@ -1,10 +1,12 @@
 package za.co.xisystems.itis_rrm.ui.mainview.estmeasure
 
+import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.Navigation
@@ -62,15 +64,46 @@ companion object{
         } ?: throw Exception("Invalid Activity") as Throwable
         Coroutines.main {
             //            mydata_loading.show()
-//            val measurements = measureViewModel.getJobMeasureForActivityId(ActivityIdConstants.ESTIMATE_MEASURE)
-            val measurements = measureViewModel.getJobMeasureForActivityId(ActivityIdConstants.ESTIMATE_MEASURE, ActivityIdConstants.JOB_ESTIMATE,ActivityIdConstants.MEASURE_PART_COMPLETE)
+//            val measurements = measureViewModel.getJobMeasureForActivityId(ActivityIdConstants.ESTIMATE_MEASURE)MEASURE_PART_COMPLETE
+     val measurements = measureViewModel.getJobMeasureForActivityId(ActivityIdConstants.ESTIMATE_MEASURE,ActivityIdConstants.MEASURE_PART_COMPLETE)
 //            val measurements = approveViewModel.offlinedata.await()
             measurements.observe(viewLifecycleOwner, Observer { job_s ->
-                noData.visibility = View.GONE
-                initRecyclerView(job_s.toMeasureListItems())
-                toast(job_s.size.toString())
-                group5_loading.visibility = View.GONE
+                if (job_s.isEmpty()){
+                    Coroutines.main {
+                        val measurements = measureViewModel.getJobMeasureForActivityId(ActivityIdConstants.ESTIMATE_MEASURE,ActivityIdConstants.JOB_ESTIMATE)
+                        measurements.observe(viewLifecycleOwner, Observer { jos ->
+                            noData.visibility = View.GONE
+                            initRecyclerView(jos.toMeasureListItems())
+                            toast(job_s.size.toString())
+                            group5_loading.visibility = View.GONE
+                        })
+                    }
+                }else{
+                    noData.visibility = View.GONE
+                    initRecyclerView(job_s.toMeasureListItems())
+                    toast(job_s.size.toString())
+                    group5_loading.visibility = View.GONE
+                }
+
             })
+
+            estimations_swipe_to_refresh.setProgressBackgroundColorSchemeColor(
+                ContextCompat.getColor(
+                    context!!.applicationContext,
+                    R.color.colorPrimary
+                )
+            )
+            estimations_swipe_to_refresh.setColorSchemeColors(Color.WHITE)
+
+            estimations_swipe_to_refresh.setOnRefreshListener {
+                Coroutines.main {
+                    val jobs = measureViewModel.offlinedatas.await()
+                    jobs.observe(viewLifecycleOwner, Observer { works ->
+                        estimations_swipe_to_refresh.isRefreshing = false
+                    })
+
+                }
+            }
         }
     }
 

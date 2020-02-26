@@ -6,10 +6,10 @@ import android.app.Dialog
 import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
+import android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
+import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
-import android.graphics.drawable.Drawable
 import android.location.Location
 import android.net.Uri
 import android.os.Build
@@ -17,8 +17,6 @@ import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
 import android.view.*
-import android.view.animation.AnimationUtils
-import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
@@ -27,10 +25,6 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.bumptech.glide.load.DataSource
-import com.bumptech.glide.load.engine.GlideException
-import com.bumptech.glide.request.RequestListener
-import com.bumptech.glide.request.target.Target
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import icepick.State
@@ -147,7 +141,7 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
 
             })
             workViewModel.work_Item.observe(viewLifecycleOwner, Observer { estimate ->
-                getWorkItems(estimate.estimateId, estimate,itemEstiJob)
+                getWorkItems(estimate,itemEstiJob)
 //                estimatId = estimate.estimateId
                 itemEsti = estimate
 
@@ -355,11 +349,11 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
 
 //                                initRecyclerView(work_s.toWorkStateItems(),workCodes)
             }
-            val works = workViewModel.getJobsForActivityId(ActivityIdConstants.JOB_APPROVED, ActivityIdConstants.ESTIMATE_INCOMPLETE)
-            works.observe(viewLifecycleOwner, Observer { work_s ->
+//            val works = workViewModel.getJobsForActivityId(ActivityIdConstants.JOB_APPROVED, ActivityIdConstants.ESTIMATE_INCOMPLETE)
+//            works.observe(viewLifecycleOwner, Observer { work_s ->
 
             workViewModel.work_Item.observe(viewLifecycleOwner, Observer { estimate ->
-                getWorkItems(estimate.estimateId, estimate, itemEstiJob)
+//                getWorkItems(estimate, itemEstiJob)
 
                 val id = 3 //TODO("THis part must be Deleted when the Dynamic workflow is Added")
                 Coroutines.main{
@@ -367,7 +361,7 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
                     workcode.observe(viewLifecycleOwner, Observer { workCodes ->
                         prog.dismiss()
                         groupAdapter.notifyItemChanged(2)
-                        getWorkItems(estimate.estimateId, estimate, itemEstiJob)
+//                        getWorkItems(estimate.estimateId, estimate, itemEstiJob)
                             Log.e("IsRefresh", "Yes");
                     })
                 }
@@ -376,7 +370,7 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
 
             })
 
-            })
+//            })
         }
     }
 
@@ -488,19 +482,6 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
 //            })
 //            .submit()
 
-
-
-
-
-
-
-
-
-
-
-
-
-
         groupAdapter.notifyItemChanged(0)
     }
 
@@ -558,39 +539,46 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
 
 
     private fun getWorkItems(
-        estimateId: String?,
+//        estimateId: String?,
         estimate: JobItemEstimateDTO,
         itemEstiJob: JobDTO
     ) {
         Coroutines.main {
-//            submitAllOutStandingEstimates(estimate)/
-//            val workDone: Int = workViewModel.getJobItemsEstimatesDoneForJobId(itemEstiJob.JobId, ActivityIdConstants.ESTIMATE_WORK_PART_COMPLETE, ActivityIdConstants.EST_WORKS_COMPLETE)
-//            if (workDone == itemEstiJob.JobItemEstimates?.size){
-//                val i_tems = itemEstiJob.JobItemEstimates
-////                submitAllOutStandingEstimates(i_tems)
-//            }else{
+            //            submitAllOutStandingEstimates(estimate)/
+            val workDone: Int = workViewModel.getJobItemsEstimatesDoneForJobId(
+                itemEstiJob.JobId,
+                ActivityIdConstants.ESTIMATE_WORK_PART_COMPLETE,
+                ActivityIdConstants.EST_WORKS_COMPLETE
+            )
+            if (workDone == itemEstiJob.JobItemEstimates?.size) {
+                val i_tems = itemEstiJob.JobItemEstimates
+                estimate
+                submitAllOutStandingEstimates(i_tems)
+            } else {
 
-                val estimate_works = workViewModel.getJobEstiItemForEstimateId(estimateId)
+                val estimate_works = workViewModel.getJobEstiItemForEstimateId(estimate.estimateId)
                 estimate_works.observe(viewLifecycleOwner, Observer { work_s ->
-                    setButtonStates(work_s.get(0).actId, work_s)
+                    //                    setButtonStates(work_s.get(0).actId, work_s)
                     for (itemwork in work_s) {
-                        if (itemwork?.actId == 21){Coroutines.main {
-                            val workDone: Int = workViewModel.getJobItemsEstimatesDoneForJobId(
-                                itemEstiJob.JobId,
-                                ActivityIdConstants.ESTIMATE_WORK_PART_COMPLETE,
-                                ActivityIdConstants.EST_WORKS_COMPLETE
-                            )
-                            if (workDone == itemEstiJob.JobItemEstimates?.size) {
-                                val i_tems = itemEstiJob.JobItemEstimates
-                                submitAllOutStandingEstimates(i_tems)
-                            } else {
-                                popViewOnWorkSubmit(view)
+                        if (itemwork?.actId == 21) {
+                            Coroutines.main {
+                                val workDone: Int = workViewModel.getJobItemsEstimatesDoneForJobId(
+                                    itemEstiJob.JobId,
+                                    ActivityIdConstants.ESTIMATE_WORK_PART_COMPLETE,
+                                    ActivityIdConstants.EST_WORKS_COMPLETE
+                                )
+                                if (workDone == itemEstiJob.JobItemEstimates?.size) {
+                                    val i_tems = itemEstiJob.JobItemEstimates
+                                    submitAllOutStandingEstimates(i_tems)
+                                } else {
+                                    popViewOnWorkSubmit(view)
+                                }
                             }
-                        }
-                        }else{
-                            val id = 3 //TODO("THis part must be Deleted when the Dynamic workflow is Added")
-                            Coroutines.main{
-                                val workcode =  workViewModel.getWokrCodes(id)
+                        } else {
+                            val id =
+                                3 //TODO("THis part must be Deleted when the Dynamic workflow is Added")
+                            Coroutines.main {
+                                val workcode = workViewModel.getWokrCodes(id)
                                 workcode.observe(viewLifecycleOwner, Observer { workCodes ->
                                     jobWorkStep = workCodes as ArrayList<WF_WorkStepDTO>
 //                            for (i in workCodes.listIterator()) {
@@ -607,14 +595,8 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
 
                     }
                 })
-//            }
 
-
-
-
-
-
-        }
+            }
 //            val works = workViewModel.getJobsForActivityId(
 //                ActivityIdConstants.JOB_APPROVED
 //                , ActivityIdConstants.ESTIMATE_INCOMPLETE
@@ -627,8 +609,8 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
 //                initRecyclerView(work_s.toWorkListItems())
 //                group7_loading.visibility = View.GONE
 //
+        }
     }
-
     private fun popViewOnWorkSubmit(view: View?) {
         Navigation.findNavController(view!!).navigate(R.id.action_captureWorkFragment_to_nav_work)
     }
@@ -650,13 +632,10 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
                             Coroutines.main {
 //                                if(jobEstimate != null){
                                     val jobItemEstimate = workViewModel.getJobItemEstimateForEstimateId(
-                                        DataConversion.toBigEndian(jobEstimate.estimateId)!!
-                                    )
-
+                                        DataConversion.toBigEndian(jobEstimate.estimateId)!!)
                                     jobItemEstimate.observe(viewLifecycleOwner, Observer {jobItEstmt ->
                                         moveJobItemEstimateToNextWorkflow(WorkflowDirection.NEXT, jobItEstmt)
                                     })
-//                                }
 
                             }
 
@@ -699,12 +678,14 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
                             prog.setProgressStyle(ProgressDialog.STYLE_SPINNER)
                             prog.show()
                             val submit=    workViewModel.processWorkflowMove(user_.userId, trackRounteId, null, direction)
-                            if (submit != null){
-                                prog.dismiss()
-                                toast(submit)
-                                popViewOnJobSubmit(direction)}else{
-                                prog.dismiss()
-                                popViewOnJobSubmit(direction)}
+                            if (submit.isNullOrEmpty()){
+//                                toast(submit)
+//                                 prog.dismiss()
+                                popViewOnJobSubmit(direction, submit)
+                            }else{
+//                                prog.dismiss()
+                                popViewOnJobSubmit(direction, submit)
+                            }
 
                         }
 
@@ -725,14 +706,14 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
 
     }
 
-    private fun popViewOnJobSubmit(direction: Int) {
+    private fun popViewOnJobSubmit(direction: Int, submit: String) {
         if (direction.equals(WorkflowDirection.NEXT)) {
             toast(R.string.job_approved)
         } else if (direction.equals(WorkflowDirection.FAIL)) {
             toast(R.string.job_declined)
         }
-        Intent(context?.applicationContext , MainActivity::class.java).also { home ->
-            home.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+        Intent(activity , MainActivity::class.java).also { home ->
+//            home.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
             startActivity(home)
         }
         // Navigation.findNavController(view!!)
