@@ -471,10 +471,10 @@ object PhotoUtil {
             storageDir.mkdirs()
         }
 
-        val imageByteArray = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        val imageByteArray = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             Base64.getDecoder().decode(photo)
         } else {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 Base64.getDecoder().decode(photo)
             } else {
                 android.util.Base64.decode(photo, android.util.Base64.DEFAULT)
@@ -497,10 +497,10 @@ object PhotoUtil {
             storageDir.mkdirs()
         }
 
-//        val imageByteArray = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//        val imageByteArray = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 //            Base64.getDecoder().decode(photo)
 //        } else {
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 //                Base64.getDecoder().decode(photo)
 //            } else {
 //                android.util.Base64.decode(photo, android.util.Base64.DEFAULT)

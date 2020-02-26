@@ -165,7 +165,7 @@ class UserRepository(
 //    }
 
     private fun isFetchNeeded(savedAt: LocalDateTime): Boolean {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             ChronoUnit.MINUTES.between(savedAt, LocalDateTime.now()) > MINIMUM_INTERVAL
         } else {
             TODO("VERSION.SDK_INT < O")

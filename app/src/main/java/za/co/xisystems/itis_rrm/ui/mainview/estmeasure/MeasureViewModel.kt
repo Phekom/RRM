@@ -17,10 +17,9 @@ class MeasureViewModel (
     private val offlineDataRepository: OfflineDataRepository
 ) : ViewModel() {
 
-//    val offlinedata by lazyDeferred {
-//        measureDataRepository.getSectionItems()
-//        measureDataRepository.getContracts()
-//    }
+    val offlinedatas by lazyDeferred {
+        offlineDataRepository.getUserTaskList()
+    }
 
 //    val measure_Item = MutableLiveData<String>()
 //    fun Item5(measurea: String) {
@@ -57,11 +56,10 @@ class MeasureViewModel (
 
     suspend fun getJobMeasureForActivityId(
         activityId: Int,
-        activityId2: Int,
-        activityId3: Int
+        activityId2: Int
     ): LiveData<List<JobItemEstimateDTO>> {
         return withContext(Dispatchers.IO) {
-            measureCreationDataRepository.getJobMeasureForActivityId(activityId, activityId2,activityId3)
+            measureCreationDataRepository.getJobMeasureForActivityId(activityId, activityId2)
         }
     }
 

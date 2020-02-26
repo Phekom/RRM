@@ -56,13 +56,25 @@ class MeasureCreationDataRepository(private val api: BaseConnectionApi, private 
 
     suspend fun getJobMeasureForActivityId(
         activityId: Int,
+        activityId2: Int
+    ): LiveData<List<JobItemEstimateDTO>> {
+        return withContext(Dispatchers.IO) {
+            Db.getJobItemEstimateDao().getJobMeasureForActivityId(activityId, activityId2)
+        }
+    }
+
+
+
+    suspend fun getJobMeasureForActivityId1(
+        activityId: Int,
         activityId2: Int,
         activityId3: Int
     ): LiveData<List<JobItemEstimateDTO>> {
         return withContext(Dispatchers.IO) {
-            Db.getJobItemEstimateDao().getJobMeasureForActivityId(activityId, activityId2,activityId3)
+            Db.getJobItemEstimateDao().getJobMeasureForActivityId2(activityId,activityId2)
         }
     }
+
 
 //    suspend fun getJobMeasureForActivityId(activityId: Int): LiveData<List<JobItemEstimateDTO>> {
 //        return withContext(Dispatchers.IO) {
@@ -93,7 +105,7 @@ class MeasureCreationDataRepository(private val api: BaseConnectionApi, private 
         Log.e("JsonObject", "Json string $measuredata")
 
    val measurementItemResponse = apiRequest { api.saveMeasurementItems(measuredata) }
-   workflowJ.postValue(measurementItemResponse.workflowJob,mSures, activity, itemMeasureJob)
+   workflowJ.postValue(measurementItemResponse.workflowJob,mSures, activity, itemMeasureJob, userId)
 
 
 //        //TODO(finish building the MeasureItems and Location)
@@ -113,11 +125,11 @@ class MeasureCreationDataRepository(private val api: BaseConnectionApi, private 
     }
 
 
-    private fun <T> MutableLiveData<T>.postValue(workflowjb : WorkflowJobDTO, jobItemMeasure : ArrayList<JobItemMeasureDTO>, activity: FragmentActivity, itemMeasureJob: JobDTO) {
+    private fun <T> MutableLiveData<T>.postValue(workflowjb : WorkflowJobDTO, jobItemMeasure : ArrayList<JobItemMeasureDTO>, activity: FragmentActivity, itemMeasureJob: JobDTO, userId: String) {
         if (workflowjb != null) {
             Coroutines.io {
                 val job = setWorkflowJobBigEndianGuids(workflowjb)
-            insertOrUpdateWorkflowJobInSQLite(job)
+                insertOrUpdateWorkflowJobInSQLite(job)
                 val myjob  = getUpdatedJob(itemMeasureJob.JobId)
                 moveJobToNextWorkflow(activity, myjob)
                 uploadmeasueImages(jobItemMeasure, activity, itemMeasureJob)
@@ -442,12 +454,12 @@ class MeasureCreationDataRepository(private val api: BaseConnectionApi, private 
 
             if (job.workflowItemEstimates != null && job.workflowItemEstimates.size !== 0) {
                 for (jobItemEstimate in job.workflowItemEstimates) {
-                    Db.getJobItemEstimateDao().updateExistingJobItemEstimateWorkflow(
+                    Db.getJobItemEstimateDao().updateExistingJobItemEstimateWorkflow2(
                         jobItemEstimate.trackRouteId,
                         jobItemEstimate.actId,
                         jobItemEstimate.estimateId
-                    )
 
+                    )
                     if (job.workflowItemMeasures != null && job.workflowItemMeasures.size !== 0) {
                         for (jobItemMeasure in job.workflowItemMeasures) {
                             Db?.getJobItemMeasureDao()!!.updateWorkflowJobItemMeasure(

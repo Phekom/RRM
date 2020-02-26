@@ -27,8 +27,13 @@ interface JobItemEstimateDao {
     @Query("SELECT * FROM JOB_ITEM_ESTIMATE WHERE jobId = :jobId")
     fun getJobEstimationItemsForJobId2(jobId: String) : LiveData<List<JobItemEstimateDTO>>
 
-    @Query("SELECT * FROM JOB_ITEM_ESTIMATE WHERE actId = :actId AND MEASURE_ACT_ID LIKE :activityId2 OR MEASURE_ACT_ID LIKE :activityId3 ORDER BY actId ASC " )
-    fun getJobMeasureForActivityId(actId: Int, activityId2: Int, activityId3: Int): LiveData<List<JobItemEstimateDTO>>
+    @Query("SELECT * FROM JOB_ITEM_ESTIMATE WHERE actId = :actId AND MEASURE_ACT_ID =:activityId2 ORDER BY MEASURE_ACT_ID DESC " )
+    fun getJobMeasureForActivityId(actId: Int, activityId2: Int): LiveData<List<JobItemEstimateDTO>>
+
+    @Query("SELECT * FROM JOB_ITEM_ESTIMATE WHERE actId = :actId AND MEASURE_ACT_ID =:activityId ORDER BY MEASURE_ACT_ID ASC " )
+    fun getJobMeasureForActivityId2(actId: Int, activityId: Int): LiveData<List<JobItemEstimateDTO>>
+
+
 
 //    @Query("SELECT * FROM JOB_ITEM_ESTIMATE WHERE actId = :actId  ORDER BY actId ASC " )
 //    fun getJobsEstimateForActivityId(actId: Int): LiveData<List<JobItemEstimateDTO>>
@@ -39,8 +44,11 @@ interface JobItemEstimateDao {
     @Query("SELECT estimateId FROM JOB_ITEM_ESTIMATE WHERE jobId = :jobId")
     fun getJobEstimateIdForJobId(jobId: String) : String
 
-    @Query("UPDATE JOB_ITEM_ESTIMATE SET TrackRouteId =:trackRouteId, ActId =:actId WHERE estimateId = :estimateId")
+    @Query("UPDATE JOB_ITEM_ESTIMATE SET TrackRouteId =:trackRouteId, ActId =:actId  WHERE estimateId = :estimateId")
     fun updateExistingJobItemEstimateWorkflow(trackRouteId: String?, actId: Int, estimateId: String?)
+
+    @Query("UPDATE JOB_ITEM_ESTIMATE SET TrackRouteId =:trackRouteId, ActId =:actId AND MEASURE_ACT_ID =:actId WHERE estimateId = :estimateId")
+    fun updateExistingJobItemEstimateWorkflow2(trackRouteId: String?, actId: Int, estimateId: String?)
 
     @Query("SELECT * FROM JOB_ITEM_ESTIMATE WHERE jobId = :jobID")
     fun getJobItemsToMeasureForJobId(jobID: String): LiveData<List<JobItemEstimateDTO>>

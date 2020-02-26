@@ -51,7 +51,22 @@ class WorkFragment : BaseFragment(), KodeinAware {
         workViewModel = activity?.run {
             ViewModelProviders.of(this, factory).get(WorkViewModel::class.java)
         } ?: throw Exception("Invalid Activity") as Throwable
-        getWorkData()
+//        getWorkData()
+        Coroutines.main {
+            val works = workViewModel.getJobsForActivityId(
+                ActivityIdConstants.JOB_APPROVED,
+                ActivityIdConstants.ESTIMATE_INCOMPLETE
+            )
+//            val works = workViewModel.getJobsForActivityId(ActivityIdConstants.JOB_APPROVED..ActivityIdConstants.ESTIMATE_INCOMPLETE)
+            works.observe(viewLifecycleOwner, Observer { work_s ->
+                noData.visibility = View.GONE
+                group7_loading.visibility = View.GONE
+                initRecyclerView(work_s.toWorkListItems())
+//            initRecyclerView(works.toWorkListItems())
+
+            })
+
+        }
         works_swipe_to_refresh.setProgressBackgroundColorSchemeColor(
             ContextCompat.getColor(
                 context!!.applicationContext,
@@ -82,10 +97,10 @@ class WorkFragment : BaseFragment(), KodeinAware {
             )
 //            val works = workViewModel.getJobsForActivityId(ActivityIdConstants.JOB_APPROVED..ActivityIdConstants.ESTIMATE_INCOMPLETE)
             works.observe(viewLifecycleOwner, Observer { work_s ->
-                noData.visibility = View.GONE
+            noData.visibility = View.GONE
                 group7_loading.visibility = View.GONE
                  initRecyclerView(work_s.toWorkListItems())
-
+//            initRecyclerView(works.toWorkListItems())
 
             })
 
@@ -102,7 +117,7 @@ class WorkFragment : BaseFragment(), KodeinAware {
         work_listView.apply {
             layoutManager = LinearLayoutManager(this.context)
             adapter = groupAdapter
-
+            work_listView.itemAnimator = null
         }
 
         groupAdapter.setOnItemClickListener { item, view ->
@@ -113,7 +128,7 @@ class WorkFragment : BaseFragment(), KodeinAware {
 
     override fun onResume() {
         super.onResume()
-        getWorkData()
+//        getWorkData()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -135,18 +150,7 @@ class WorkFragment : BaseFragment(), KodeinAware {
     }
 
 
-//    private fun sendJobtoAprove(
-//        jobId: String?,
-//        view: View
-//    ) {
-//        val jobId = jobId.toString()
-//        Coroutines.main {
-//            //            workViewModel.measure_Item.value = jobId
-//        }
-//
-//        Navigation.findNavController(view)
-//            .navigate(R.id.action_nav_approvMeasure_to_measureApprovalFragment)
-//    }
+
 
     //    private fun List<JobItemEstimateDTO>.toWorkListItems(): List<ExpandableGroup> {
     private fun List<JobDTO>.toWorkListItems(): List<ExpandableGroup> {
@@ -158,7 +162,7 @@ class WorkFragment : BaseFragment(), KodeinAware {
 //            ExpandableHeaderItem("JI:${work_items.JiNo} ", work_items.Descr!! , activity, work_items, workViewModel)
             ExpandableGroup(expandableHeaderItem, false).apply {
                 Coroutines.main {
-
+                                                                                                               //ESTIMATE_WORK_PART_COMPLETE
                     val estimates = workViewModel.getJobEstimationItemsForJobId(work_items.JobId,ActivityIdConstants.ESTIMATE_INCOMPLETE)
                     estimates.observe(viewLifecycleOwner, Observer { i_tems ->
                         Coroutines.main {

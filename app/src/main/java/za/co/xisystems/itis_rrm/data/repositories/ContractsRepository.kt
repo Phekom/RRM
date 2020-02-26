@@ -161,7 +161,7 @@ private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
 //
 //    private fun saveContracts(contracts: List<ContractDTO>) {
 //        Coroutines.io {
-//            //            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//            //            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 ////                prefs.savelastSavedAt(LocalDateTime.now().toString())
 ////            }
 //            val actId = 3
@@ -183,7 +183,7 @@ private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
 //                    if (!Db.getContractDao().checkIfContractExists(contract.contractId))
 //                        Db.getContractDao().insertContract(contract)
 //                    if (contract.projects != null) {
-////                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+////                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 ////                            prefs.savelastSavedAt(LocalDateTime.now().toString())
 ////                        }
 //                        for (project in contract.projects) {
@@ -223,7 +223,7 @@ private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
 //                            }
 //
 //                            if (project.projectSections != null) {
-//                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 //                                    prefs.savelastSavedAt(LocalDateTime.now().toString())
 //                                }
 //                                for (section in project.projectSections) { //project.projectSections
@@ -1240,7 +1240,7 @@ private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
 //    val userId = Db.getUserDao().getuserID()
 //    private suspend fun fetchContracts(userId: String) {
 //        val lastSavedAt = prefs.getLastSavedAt()
-//        if (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//        if (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 //                lastSavedAt == null || isFetchNeeded(LocalDateTime.parse(lastSavedAt))
 //            } else {
 //                true
@@ -1258,7 +1258,7 @@ private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
 
 
 //    private fun isFetchNeeded(savedAt: LocalDateTime): Boolean {
-//        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 //            ChronoUnit.DAYS.between(savedAt, LocalDateTime.now()) > MINIMUM_INTERVALY
 //        } else {
 //            true
@@ -1322,7 +1322,7 @@ private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
 
 //    private fun saveWorkFlowsInfo(workFlows: WorkFlowsDTO) {
 //        Coroutines.io {
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 //                prefs.savelastSavedAt(LocalDateTime.now().toString())
 //            }
 //            if (workFlows != null)
