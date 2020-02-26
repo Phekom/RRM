@@ -9,10 +9,7 @@ import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
-import za.co.xisystems.itis_rrm.utils.ApiException
-import za.co.xisystems.itis_rrm.utils.Coroutines
-import za.co.xisystems.itis_rrm.utils.NoInternetException
-import za.co.xisystems.itis_rrm.utils.lazyDeferred
+import za.co.xisystems.itis_rrm.utils.*
 
 /**
  * Created by Francis Mahlava on 2019/10/23.
@@ -151,8 +148,8 @@ class AuthViewModel(
                     " " + R.string.android_sdk + Build.VERSION.SDK_INT + R.string.space + Build.BRAND + R.string.space + Build.MODEL + R.string.space + Build.DEVICE + ""
                 repository.upDateUser(
 //                    userId ,
-                    phoneNumber!!,
-                    IMEI!!,
+                    phoneNumber,
+                    IMEI,
                     androidDevice,
                     confirmPin!!
                 )
@@ -160,6 +157,8 @@ class AuthViewModel(
             } catch (e: ApiException) {
                 authListener?.onFailure(e.message!!)
             } catch (e: NoInternetException) {
+                authListener?.onFailure(e.message!!)
+            } catch (e: NoConnectivityException) {
                 authListener?.onFailure(e.message!!)
             }
         }
@@ -193,14 +192,16 @@ class AuthViewModel(
                 repository.userRegister(
                     username!!,
                     password!!,
-                    phoneNumber!!,
-                    IMEI!!,
+                    phoneNumber,
+                    IMEI,
                     androidDevice
                 )
                 authListener?.onFailure("User authentication failed. Please enter a valid User Id and Password.")
             } catch (e: ApiException) {
                 authListener?.onFailure(e.message!!)
             } catch (e: NoInternetException) {
+                authListener?.onFailure(e.message!!)
+            } catch (e: NoConnectivityException) {
                 authListener?.onFailure(e.message!!)
             }
         }
