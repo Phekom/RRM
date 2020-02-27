@@ -61,7 +61,10 @@ class WorkFragment : BaseFragment(), KodeinAware {
             works.observe(viewLifecycleOwner, Observer { work_s ->
                 noData.visibility = View.GONE
                 group7_loading.visibility = View.GONE
-                initRecyclerView(work_s.toWorkListItems())
+                val header_items = work_s.distinctBy{
+                    it.JobId
+                }
+                initRecyclerView(header_items.toWorkListItems())
 //            initRecyclerView(works.toWorkListItems())
 
             })
@@ -111,7 +114,10 @@ class WorkFragment : BaseFragment(), KodeinAware {
     private fun initRecyclerView(
         workListItems: List<ExpandableGroup>
     ) {
+
         val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
+            val header_items = workListItems.distinctBy{
+            }
             addAll(workListItems)
         }
         work_listView.apply {
@@ -157,6 +163,7 @@ class WorkFragment : BaseFragment(), KodeinAware {
         //Initialize Expandable group with expandable item and specify whether it should be expanded by default or not
 
         return this.map { work_items ->
+
             val expandableHeaderItem =
                 ExpandableHeaderWorkItem(activity, work_items, workViewModel, work_items.JobId)
 //            ExpandableHeaderItem("JI:${work_items.JiNo} ", work_items.Descr!! , activity, work_items, workViewModel)

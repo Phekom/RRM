@@ -101,6 +101,7 @@ class HomeFragment : BaseFragment(), KodeinAware {
                     } catch (e: ApiException) {
                         ToastUtils().toastLong(activity, e.message)
                         Log.e("Service-Host", "API Exception", e)
+
                     } catch (e: NoInternetException) {
                         ToastUtils().toastLong(activity, e.message)
                         Log.e("Network-Connection", "No Internet Connection", e)
