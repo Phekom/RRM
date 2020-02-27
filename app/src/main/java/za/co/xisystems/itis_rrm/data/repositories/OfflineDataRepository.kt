@@ -198,7 +198,7 @@ class OfflineDataRepository(
         activityId3: Int
     ): LiveData<List<JobItemEstimateDTO>> {
         return withContext(Dispatchers.IO) {
-            Db.getJobItemEstimateDao().getJobMeasureForActivityId(activityId,activityId2,activityId3)
+            Db.getJobItemEstimateDao().getJobMeasureForActivityId(activityId,activityId2)
         }
     }
 
@@ -321,15 +321,15 @@ class OfflineDataRepository(
             Db.getProjectItemDao().getItemForItemCode(sectionItemId)
         }
     }
-    suspend fun getJobItemsEstimatesDoneForJobId(
-        jobId: String?,
-        estimateWorkPartComplete: Int,
-        estWorksComplete: Int
-    ): Int{
-        return withContext(Dispatchers.IO) {
-            Db.getJobItemEstimateDao().getJobItemsEstimatesDoneForJobId(jobId, estimateWorkPartComplete,estWorksComplete)
-        }
-    }
+//    suspend fun getJobItemsEstimatesDoneForJobId(
+//        jobId: String?,
+//        estimateWorkPartComplete: Int,
+//        estWorksComplete: Int
+//    ): Int{
+//        return withContext(Dispatchers.IO) {
+//            Db.getJobItemEstimateDao().getJobItemsEstimatesDoneForJobId(jobId, estimateWorkPartComplete,estWorksComplete)
+//        }
+//    }
 
 //    suspend fun getJobItemsEstimatesDoneForJobId(jobId: String?, estWorksComplete: Int): LiveData<List<JobItemEstimateDTO>> {
 //        return withContext(Dispatchers.IO) {
@@ -995,7 +995,7 @@ class OfflineDataRepository(
 
     private fun saveContracts(contracts: List<ContractDTO>) {
         Coroutines.io {
-            //            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            //            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 //                prefs.savelastSavedAt(LocalDateTime.now().toString())
 //            }
             val actId = 3
@@ -1017,7 +1017,7 @@ class OfflineDataRepository(
                     if (!Db.getContractDao().checkIfContractExists(contract.contractId))
                         Db.getContractDao().insertContract(contract)
                     if (contract.projects != null) {
-//                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 //                            prefs.savelastSavedAt(LocalDateTime.now().toString())
 //                        }
                         for (project in contract.projects) {
@@ -1333,6 +1333,70 @@ class OfflineDataRepository(
                                 }
                             }
                         }
+                        if (jobItemEstimate.jobItemMeasure != null) {
+                            for (jobItemMeasure in jobItemEstimate.jobItemMeasure) {
+                                if (!Db.getJobItemMeasureDao().checkIfJobItemMeasureExists(jobItemMeasure.itemMeasureId!!)) {
+                                    jobItemMeasure.setItemMeasureId(
+                                        DataConversion.toBigEndian(
+                                            jobItemMeasure.itemMeasureId
+                                        )
+                                    )
+                                    jobItemMeasure.setJobId(DataConversion.toBigEndian(jobItemMeasure.jobId))
+                                    jobItemMeasure.setProjectItemId(
+                                        DataConversion.toBigEndian(
+                                            jobItemMeasure.projectItemId
+                                        )
+                                    )
+                                    jobItemMeasure.setMeasureGroupId(
+                                        DataConversion.toBigEndian(
+                                            jobItemMeasure.measureGroupId
+                                        )
+                                    )
+                                    jobItemMeasure.setEstimateId(DataConversion.toBigEndian(jobItemMeasure.estimateId))
+                                    jobItemMeasure.setProjectVoId(DataConversion.toBigEndian(jobItemMeasure.projectVoId))
+                                    jobItemMeasure.setTrackRouteId(DataConversion.toBigEndian(jobItemMeasure.trackRouteId))
+                                    jobItemMeasure.setJobNo(job.JiNo)
+                                    if (!Db.getJobItemMeasureDao().checkIfJobItemMeasureExists(jobItemMeasure.itemMeasureId!!))
+                                        Db.getJobItemMeasureDao().insertJobItemMeasure(jobItemMeasure)
+                                    Db.getJobDao().setMeasureActId(jobItemMeasure.actId, job.JobId)
+                                    Db.getJobItemEstimateDao().setMeasureActId(jobItemMeasure.actId, jobItemMeasure.estimateId!!)
+//                            job.setMeasureActId(jobItemMeasure.actId)
+                                    if (jobItemMeasure.jobItemMeasurePhotos != null) {
+                                        for (jobItemMeasurePhoto in jobItemMeasure.jobItemMeasurePhotos) {
+                                            if (!Db.getJobItemMeasurePhotoDao().checkIfJobItemMeasurePhotoExists(
+                                                    jobItemMeasurePhoto.filename!!
+                                                )
+                                            ) jobItemMeasurePhoto.setPhotoPath(
+                                                Environment.getExternalStorageDirectory().toString() + File.separator
+                                                        + PhotoUtil.FOLDER + File.separator + jobItemMeasurePhoto.filename
+                                            )
+                                            jobItemMeasurePhoto.setPhotoId(
+                                                DataConversion.toBigEndian(
+                                                    jobItemMeasurePhoto.photoId
+                                                )
+                                            )
+                                            jobItemMeasurePhoto.setItemMeasureId(
+                                                DataConversion.toBigEndian(
+                                                    jobItemMeasurePhoto.itemMeasureId
+                                                )
+                                            )
+                                            Db.getJobItemMeasurePhotoDao().insertJobItemMeasurePhoto(
+                                                jobItemMeasurePhoto
+                                            )
+                                            if (!PhotoUtil.photoExist(jobItemMeasurePhoto.filename))
+                                                getPhotoForJobItemMeasure(jobItemMeasurePhoto.filename)
+//                                    else {
+//                                        populateAppropriateViewForPhotos()
+//                                    }
+//                                    if (!PhotoUtil.photoExist(jobItemEstimatePhoto.filename)) {
+//                                        getPhotoForJobItemEstimate(jobItemEstimatePhoto.filename)
+//                                    }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
                     }
                 }
 
@@ -1614,15 +1678,25 @@ class OfflineDataRepository(
     }
 
     private suspend fun fetchJobList(jobId: String) {
-//        try {
-            val jobResponse = apiRequest { api.getJobsForApproval(jobId) }
-            job.postValue(jobResponse.job)
+        val lastSavedAt = prefs.getLastSavedAt()
+        try {
+//            if (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+//                    lastSavedAt == null || isFetchNeeded(LocalDateTime.parse(lastSavedAt))
+//                } else {
+//                    true
+//                }
+//            ) {
+                val jobResponse = apiRequest { api.getJobsForApproval(jobId) }
+                job.postValue(jobResponse.job)
+//            }
 //            ToastUtils().toastLong(activity, "You do not have an active data connection ")
-//        } catch (e: ApiException) {
-//            ToastUtils().toastLong(activity, e.message)
-//        } catch (e: NoInternetException) {
-//            ToastUtils().toastLong(activity, e.message)
-//        }
+        } catch (e: ApiException) {
+            ToastUtils().toastLong(activity, e.message)
+        } catch (e: NoInternetException) {
+            ToastUtils().toastLong(activity, e.message)
+            Log.e("Network-Connection", "No Internet Connection", e)
+        }
+
     }
 
 
@@ -1687,27 +1761,34 @@ class OfflineDataRepository(
     private suspend fun fetchAllData(userId: String){
         val lastSavedAt = prefs.getLastSavedAt()
         try {
-            val activitySectionsResponse = apiRequest { api.activitySectionsRefresh(userId) }
-            sectionItems.postValue(activitySectionsResponse.activitySections)
+//            if (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+//                    lastSavedAt == null || isFetchNeeded(LocalDateTime.parse(lastSavedAt))
+//                } else {
+//                    true
+//                }
+//            ) {
+                val activitySectionsResponse = apiRequest { api.activitySectionsRefresh(userId) }
+                sectionItems.postValue(activitySectionsResponse.activitySections)
 
-            val workFlowResponse = apiRequest { api.workflowsRefresh(userId) }
-            workFlow.postValue(workFlowResponse.workFlows)
+                val workFlowResponse = apiRequest { api.workflowsRefresh(userId) }
+                workFlow.postValue(workFlowResponse.workFlows)
 
-            val lookupResponse = apiRequest { api.lookupsRefresh(userId) }
-            lookups.postValue(lookupResponse.mobileLookups)
+                val lookupResponse = apiRequest { api.lookupsRefresh(userId) }
+                lookups.postValue(lookupResponse.mobileLookups)
 
-            val toDoListGroupsResponse = apiRequest { api.getUserTaskList(userId) }
-            toDoListGroups.postValue(toDoListGroupsResponse.toDoListGroups)
+                val toDoListGroupsResponse = apiRequest { api.getUserTaskList(userId) }
+                toDoListGroups.postValue(toDoListGroupsResponse.toDoListGroups)
 
-            val contractsResponse = apiRequest { api.refreshContractInfo(userId) }
-            conTracts.postValue(contractsResponse.contracts)
+                val contractsResponse = apiRequest { api.refreshContractInfo(userId) }
+                conTracts.postValue(contractsResponse.contracts)
 
 //            val message = activitySectionsResponse.errorMessage
 //            val message1 = workFlowResponse.errorMessage
 //            val message2 = lookupResponse.errorMessage
 //            val message3 = toDoListGroupsResponse.errorMessage
 //            val message4 = contractsResponse.errorMessage
-
+//            }
+//            ToastUtils().toastLong(activity, "You do not have an active data connection ")
         } catch (e: ApiException) {
             ToastUtils().toastLong(activity, e.message)
             Log.e("Service-Error", "API Exception", e)
@@ -1726,7 +1807,7 @@ class OfflineDataRepository(
 
 
     private fun isFetchNeeded(savedAt: LocalDateTime): Boolean {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             ChronoUnit.DAYS.between(savedAt, LocalDateTime.now()) > MINIMUM_INTERVAL
         } else {
             true
@@ -2519,18 +2600,18 @@ class OfflineDataRepository(
 //    this.StartDate =  startDate
 //}
 
-private fun JobDTOTemp.setTrackRouteId(toLittleEndian: String?) {
-    this.TrackRouteId =  toLittleEndian
-}
+//private fun JobDTOTemp.setTrackRouteId(toLittleEndian: String?) {
+//    this.TrackRouteId =  toLittleEndian
+//}
 
 
-private fun RrmJobRequest.setUserId(userId: Int) {
-    this.userId = userId
-}
+//private fun RrmJobRequest.setUserId(userId: Int) {
+//    this.userId = userId
+//}
 
-private fun RrmJobRequest.setJob(job: JobDTOTemp) {
-    this.job  = job
-}
+//private fun RrmJobRequest.setJob(job: JobDTOTemp) {
+//    this.job  = job
+//}
 
 
 //private fun JobItemMeasureDTO.setEstimateId(estimateId: String?) {

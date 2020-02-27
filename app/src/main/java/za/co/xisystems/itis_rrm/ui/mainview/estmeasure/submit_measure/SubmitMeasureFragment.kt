@@ -48,21 +48,7 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
     private lateinit var jobItemMeasuresForJobItemEstimates: HashMap<JobItemEstimateDTO, List<JobItemMeasureDTO>>
     private lateinit var jobForItemEstimate: JobDTO
     private lateinit var jobItemMeasureList: ArrayList<JobItemMeasureDTO>
-
-    override fun onResume() {
-        super.onResume()
-        (activity as MainActivity).supportActionBar?.title =
-            getString(R.string.submit_measure_title)
-
-    }
-
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        (activity as MainActivity).supportActionBar?.title =
-            getString(R.string.submit_measure_title)
-
-    }
+    private lateinit var jobItemEstimate : JobItemEstimateDTO
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,15 +58,6 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
 
     }
 
-
-    override fun onPrepareOptionsMenu(menu: Menu) {
-        val item = menu.findItem(R.id.action_settings)
-        val item1 = menu.findItem(R.id.action_logout)
-        val item2 = menu.findItem(R.id.action_search)
-        if (item != null) item.isVisible = false
-        if (item1 != null) item1.isVisible = false
-        if (item2 != null) item2.isVisible = false
-    }
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -100,6 +77,13 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
         return inflater.inflate(R.layout.fragment_submit_measure, container, false)
     }
 
+//    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+//        super.onViewCreated(view, savedInstanceState)
+//        (activity as MainActivity).supportActionBar?.title =
+//            getString(R.string.submit_measure_title)
+//
+//    }
+
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         measureViewModel = activity?.run {
@@ -116,17 +100,19 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
                 HashMap<JobItemEstimateDTO, List<JobItemMeasureDTO>>()
 
             measureViewModel.measure_Item.observe(viewLifecycleOwner, Observer { jobID ->
-                getWorkItems(jobID.jobItemEstimateDTO.jobId)
+                jobItemEstimate = jobID.jobItemEstimateDTO
+                getWorkItems(jobItemEstimate.jobId)
 //                populateHashMap(jobItemEstimatesForJob)
-                submit_measurements_button.setOnClickListener {
-                    submitMeasurements(
-                        jobID.jobItemEstimateDTO.jobId,
-                        jobID.jobItemEstimateDTO.estimateId
-                    )
-
-                }
             })
 
+
+            submit_measurements_button.setOnClickListener {
+                submitMeasurements(
+                    jobItemEstimate.jobId,
+                    jobItemEstimate.estimateId
+                )
+
+            }
 
             items_swipe_to_refresh.setProgressBackgroundColorSchemeColor(
                 ContextCompat.getColor(
@@ -138,8 +124,8 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
 
             items_swipe_to_refresh.setOnRefreshListener {
                 Coroutines.main {
-                    measureViewModel.measure_Item.observe(viewLifecycleOwner, Observer { jobID ->
-                        getWorkItems(jobID.jobItemEstimateDTO.jobId)
+                    measureViewModel.measure_Item.observe(viewLifecycleOwner, Observer { measureItem ->
+                        getWorkItems(measureItem.jobItemEstimateDTO.jobId)
                         items_swipe_to_refresh.isRefreshing = false
 
                     })
@@ -158,33 +144,37 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
 
     private fun submitMeasurements(jobId: String?, estimateId: String) {
         Coroutines.main {
-            var imageCounter = 0
-            val totalImages = 0
-            val jobItemMeasure =
-                measureViewModel.getJobItemMeasuresForJobIdAndEstimateId(jobId, estimateId)
+            val jobItemMeasure = measureViewModel.getJobItemMeasuresForJobIdAndEstimateId(jobId, estimateId)
             jobItemMeasure.observe(activity!!, Observer { m_sures ->
                 if (m_sures.isNullOrEmpty() || m_sures.isEmpty() || m_sures.size == 0) {
                     toast(R.string.please_make_sure_you_have_captured_photos)
                 } else {
                     toast("You have Done " + m_sures.size.toString() + " Measurements on this Estimate")
+
+                    var itemMeasures = m_sures as ArrayList
+                    submitJobToMeasurements(jobForItemEstimate, itemMeasures)
+
+//                    toast("And " + photos.size.toString() + "  Images")
+
 //                    val measurePhotos = measureViewModel.getJobItemMeasurePhotosForItemMeasureID(itemMeasure.itemMeasureId!!)
-                    for (jobItemMeasures in m_sures) { Coroutines.main {
-                        val measurePhotos =
-                            measureViewModel.getJobItemMeasurePhotosForItemEstimateID(jobItemMeasures.estimateId!!)
-                        measurePhotos.observe(activity!!, Observer { photos ->
-                            for (jobItemMeasurePhoto in photos) {
-                                var itemMeasures = m_sures as ArrayList
-                                if (PhotoUtil.photoExist(jobItemMeasurePhoto.filename!!))
-
-                                //  Add to Counter Specific Photo
-                                submitJobToMeasurements(jobForItemEstimate, itemMeasures,jobItemMeasurePhoto.filename,jobItemMeasures)
-//                                imageCounter++
-                            }
-                            toast("And " + photos.size.toString() + "  Images")
-
-                        })
-                    }
-                }
+//                    for (jobItemMeasu in m_sures) { Coroutines.main {
+//                        val measurePhotos = measureViewModel.getJobItemMeasurePhotosForItemEstimateID(jobItemMeasu.estimateId!!)
+//                        measurePhotos.observe(activity!!, Observer { photos ->
+//                            jobItemMeasurePhotoDTO = photos as ArrayList<JobItemMeasurePhotoDTO>
+//
+////                            for (jobItemMeasurePhoto in photos) {
+////
+////                                if (PhotoUtil.photoExist(jobItemMeasurePhoto.filename!!))
+//
+//                                //  Add to Counter Specific Photo,jobItemMeasurePhotoDTO,jobItemMeasu
+//
+////                                imageCounter++
+////                            }
+//
+//
+//                        })
+//                    }
+//                }
 
                 }
 
@@ -197,9 +187,9 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
 
     private fun submitJobToMeasurements(
         itemMeasureJob: JobDTO,
-        mSures: ArrayList<JobItemMeasureDTO>,
-        filename: String,
-        jobItemMeasures: JobItemMeasureDTO
+        mSures: ArrayList<JobItemMeasureDTO>
+//        filename: String,
+//        jobItemMeasures: JobItemMeasureDTO
     ) {
         val logoutBuilder = AlertDialog.Builder(
             activity //,android.R.style.Theme_DeviceDefault_Dialog
@@ -248,7 +238,13 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
                     if (mSures != null) {
                         for (jim in mSures) {
                             val newMsures = setJobMeasureLittleEndianGuids(jim)
-                            jobItemMeasureList.add(newMsures)
+                            if (jim.actId == 11) {
+                                toast("Measurement ${jim.itemMeasureId} Already Submitted")
+//                                popViewOnJobSubmit()
+                            }else{
+                                jobItemMeasureList.add(newMsures)
+                            }
+
                         }
                     }
                     val ContractVoId: String = DataConversion.toLittleEndian(itemMeasureJob.ContractVoId)!!
@@ -332,16 +328,37 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
         }
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun onResume() {
+        super.onResume()
         (activity as MainActivity).supportActionBar?.title =
             getString(R.string.submit_measure_title)
 
     }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        (activity as MainActivity).supportActionBar?.title =
+            getString(R.string.submit_measure_title)
+
     }
+
+
+    override fun onPrepareOptionsMenu(menu: Menu) {
+        val item = menu.findItem(R.id.action_settings)
+        val item1 = menu.findItem(R.id.action_logout)
+        val item2 = menu.findItem(R.id.action_search)
+        if (item != null) item.isVisible = false
+        if (item1 != null) item1.isVisible = false
+        if (item2 != null) item2.isVisible = false
+    }
+
+
+
 
 //    private fun populateHashMap(jobItemEstimatesForJob: List<JobItemEstimateDTO>) {
 //        Coroutines.main {

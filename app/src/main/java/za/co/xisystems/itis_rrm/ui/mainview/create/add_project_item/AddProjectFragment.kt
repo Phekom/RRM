@@ -530,7 +530,7 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
     private fun popViewOnJobSubmit() {
         // TODO("delete Items data from database after success upload")
         Intent(context?.applicationContext  , MainActivity::class.java).also { home ->
-            home.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+//            home.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
             startActivity(home)
         }
     }
