@@ -161,7 +161,9 @@ class OfflineDataRepository(
     suspend fun getSectionItems(): LiveData<SectionItemDTO> {
         return withContext(Dispatchers.IO) {
             val userId = Db.getUserDao().getuserID()
-            fetchContracts(userId)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                fetchContracts(userId)
+            }
             Db.getSectionItemDao().getSectionItems()
         }
     }
@@ -581,9 +583,7 @@ class OfflineDataRepository(
         jobItemSectionArrayList: ArrayList<JobSectionDTO>
     ) {
         Coroutines.io {
-        if (!Db.getJobDao().checkIfJobExist(newjobId)) {
-//
-        }else{
+            if (Db.getJobDao().checkIfJobExist(newjobId)) {
             Db.getJobDao().updateJoSecId(
                 newjobId,
                 startKM,
@@ -1475,11 +1475,14 @@ class OfflineDataRepository(
             ToastUtils().toastLong(activity, "You do not have an active data connection ")
         } catch (e: ApiException) {
             ToastUtils().toastLong(activity, e.message)
+            rListener?.onFailure(e.message)
         } catch (e: NoInternetException) {
             ToastUtils().toastLong(activity, e.message)
-            Log.e("NetworkConnection", "No Internet Connection", e)
+            rListener?.onFailure(e.message)
+            Log.e("Offline Connection", "No Internet Connection", e)
         } catch (e: NoConnectivityException) {
             ToastUtils().toastLong(activity, e.message)
+            rListener?.onFailure(e.message)
             Log.e("NetworkConnection", "Backend Host Unreachable", e)
         }
     }
@@ -1697,18 +1700,14 @@ class OfflineDataRepository(
     }
 
 
-
+    @RequiresApi(Build.VERSION_CODES.O)
     private suspend fun fetchContracts(userId: String) {
         val lastSavedAt = prefs.getLastSavedAt()
         try {
-            if (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    lastSavedAt == null || isFetchNeeded(LocalDateTime.parse(lastSavedAt))
-                } else {
-                    true
-                }
-            ) {
+            if (lastSavedAt == null || isFetchNeeded(LocalDateTime.parse(lastSavedAt))) {
 
-                val activitySectionsResponse = apiRequest { api.activitySectionsRefresh(userId) }
+                val activitySectionsResponse =
+                    apiRequest { api.activitySectionsRefresh(userId) }
                 sectionItems.postValue(activitySectionsResponse.activitySections)
 
                 val workFlowResponse = apiRequest { api.workflowsRefresh(userId) }
@@ -1722,19 +1721,16 @@ class OfflineDataRepository(
 
                 val contractsResponse = apiRequest { api.refreshContractInfo(userId) }
                 conTracts.postValue(contractsResponse.contracts)
-
-
-
             }
-            ToastUtils().toastLong(activity, "You do not have an active data connection ")
         } catch (e: ApiException) {
             ToastUtils().toastLong(activity, e.message)
         } catch (e: NoInternetException) {
             ToastUtils().toastLong(activity, e.message)
-            Log.e("Network-Connection", "No Internet Connection", e)
+            rListener?.onFailure(e.message!!)
+            Log.e("Contract-Connection", "No Internet Connection", e)
         } catch (e: NoConnectivityException) {
             ToastUtils().toastLong(activity, e.message)
-            Log.e("NetworkConnection", "Backend Host Unreachable", e)
+            Log.e("Network-Failure", "Service Host Unreachable", e)
         }
 
     }
@@ -1750,10 +1746,10 @@ class OfflineDataRepository(
         ToastUtils().toastLong(activity, e.message)
     } catch (e: NoInternetException) {
         ToastUtils().toastLong(activity, e.message)
-        Log.e("Network-Connection", "No Internet Connection", e)
+            Log.e("UserTask Connection", "No Internet Connection", e)
         } catch (e: NoConnectivityException) {
             ToastUtils().toastLong(activity, e.message)
-            Log.e("Network-Connection", "Backend Host Unreachable", e)
+            Log.e("Network-Error", "Service Host Unreachable", e)
         }
         return withContext(Dispatchers.IO){
             Db.getEntitiesDao().getAllEntities()
@@ -1795,12 +1791,15 @@ class OfflineDataRepository(
 //            ToastUtils().toastLong(activity, "You do not have an active data connection ")
         } catch (e: ApiException) {
             ToastUtils().toastLong(activity, e.message)
+            Log.e("Service-Error", "API Exception", e)
         } catch (e: NoInternetException) {
             ToastUtils().toastLong(activity, e.message)
-            Log.e("Network-Connection", "No Internet Connection", e)
+            Log.e("allData-Connection", "No Internet Connection", e)
+            throw e
         } catch (e: NoConnectivityException) {
             ToastUtils().toastLong(activity, e.message)
-            Log.e("Network-Connection", "Backend Host Unreachable", e)
+            Log.e("Network-Error", "Service Host Unreachable", e)
+            throw e
         }
 
 
@@ -2115,7 +2114,7 @@ class OfflineDataRepository(
         if (response != null) {
 
         }else{
-//            uploadworksImages(jobEstimateWorks, activity)
+//          uploadworksImages(jobEstimateWorks, activity)
 
             moveJobToNextWorkflowStep(jobEstimateWorks, activity, useR)
         }
@@ -2133,7 +2132,7 @@ class OfflineDataRepository(
               jobEstimateWorks.setTrackRouteId(DataConversion.toLittleEndian(jobEstimateWorks.trackRouteId))
               val direction: Int = WorkflowDirection.NEXT.value
               val trackRouteId: String = jobEstimateWorks.trackRouteId
-                val description: String = "work step done"
+              val description = "work step done"
 
                 Coroutines.io {
                     val workflowMoveResponse = apiRequest { api.getWorkflowMove(useR.userId, trackRouteId, description, direction) }
@@ -2297,7 +2296,7 @@ class OfflineDataRepository(
         Coroutines.io {
             val imagedata = JsonObject()
             imagedata.addProperty("Filename", filename)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 imagedata.addProperty("ImageByteArray", Base64.getEncoder().encodeToString(photo))
             }
             imagedata.addProperty("ImageFileExtension", extension)

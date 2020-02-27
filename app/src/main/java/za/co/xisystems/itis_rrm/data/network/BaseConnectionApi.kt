@@ -1,6 +1,5 @@
 package za.co.xisystems.itis_rrm.data.network
 
-import com.google.android.gms.nearby.messages.Distance
 import com.google.gson.JsonObject
 import okhttp3.OkHttpClient
 import okhttp3.Protocol
@@ -8,10 +7,12 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.http.*
+import retrofit2.http.Body
+import retrofit2.http.Field
+import retrofit2.http.FormUrlEncoded
+import retrofit2.http.POST
 import za.co.xisystems.itis_rrm.BuildConfig
 import za.co.xisystems.itis_rrm.data.network.responses.*
-import java.util.*
 import java.util.concurrent.TimeUnit
 
 /**
@@ -216,7 +217,7 @@ interface BaseConnectionApi {
                 readTimeout(5, TimeUnit.MINUTES)
                 writeTimeout(5, TimeUnit.MINUTES)
                 connectTimeout(5, TimeUnit.MINUTES)
-                protocols(Arrays.asList(Protocol.HTTP_1_1))
+                    protocols(listOf(Protocol.HTTP_1_1))
 //                .pingInterval(100, TimeUnit.MILLISECONDS)
                 addInterceptor(interceptor)
                 addInterceptor(networkConnectionInterceptor)

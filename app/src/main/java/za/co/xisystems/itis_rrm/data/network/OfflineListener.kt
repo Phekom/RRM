@@ -5,6 +5,6 @@ interface OfflineListener {
     fun onStarted()
     fun onSuccess()
 //    fun onSuccess(num: Int)
-    fun onFailure(message: String)
+fun onFailure(message: String?)
 //    fun onError(message: String)
 }

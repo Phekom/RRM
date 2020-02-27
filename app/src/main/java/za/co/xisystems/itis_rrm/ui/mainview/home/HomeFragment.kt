@@ -1,15 +1,12 @@
 package za.co.xisystems.itis_rrm.ui.mainview.home
 
 
-import android.app.Activity
 import android.content.Context
-import android.content.DialogInterface
-import android.content.Intent
 import android.graphics.Color
 import android.location.LocationManager
 import android.net.ConnectivityManager
 import android.os.Bundle
-import android.provider.Settings
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
@@ -26,8 +23,7 @@ import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.network.responses.HealthCheckResponse
 import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
-import za.co.xisystems.itis_rrm.utils.Coroutines
-import za.co.xisystems.itis_rrm.utils.show
+import za.co.xisystems.itis_rrm.utils.*
 
 
 class HomeFragment : BaseFragment(), KodeinAware {
@@ -72,13 +68,13 @@ class HomeFragment : BaseFragment(), KodeinAware {
 
         homeViewModel = activity?.run {
             ViewModelProviders.of(this, factory).get(HomeViewModel::class.java)
-        } ?: throw Exception("Invalid Activity") as Throwable
+        } ?: throw Exception("Invalid Activity")
         Coroutines.main {
             data2_loading.show()
             val user = homeViewModel.user.await()
             user.observe(viewLifecycleOwner, Observer { user_ ->
 
-                username?.setText(user_.userName)
+                username?.text = user_.userName
             })
 
             val contracts = homeViewModel.offlinedata.await()
@@ -97,10 +93,23 @@ class HomeFragment : BaseFragment(), KodeinAware {
 
             items_swipe_to_refresh.setOnRefreshListener {
                 Coroutines.main {
-                    val works = homeViewModel.offlinedatas.await()
-                    works.observe(viewLifecycleOwner, Observer { works ->
-                        items_swipe_to_refresh.isRefreshing = false
-                    })
+                    try {
+                        val works = homeViewModel.offlinedatas.await()
+                        works.observe(viewLifecycleOwner, Observer { works ->
+                            items_swipe_to_refresh.isRefreshing = false
+                        })
+                    } catch (e: ApiException) {
+                        ToastUtils().toastLong(activity, e.message)
+                        Log.e("Service-Host", "API Exception", e)
+                    } catch (e: NoInternetException) {
+                        ToastUtils().toastLong(activity, e.message)
+                        Log.e("Network-Connection", "No Internet Connection", e)
+                        data2_loading.hide()
+                    } catch (e: NoConnectivityException) {
+                        ToastUtils().toastLong(activity, e.message)
+                        Log.e("Network-Error", "Service Host Unreachable", e)
+                        data2_loading.hide()
+                    }
 
                 }
             }
@@ -121,7 +130,7 @@ class HomeFragment : BaseFragment(), KodeinAware {
         }
 
         // Check if GPS connected
-               if (!gps_enabled) {
+        if (!gps_enabled) {
             //            locationEnabled.text = "GPS NOT CONNECTED"
             locationEnabled.text = activity!!.getString(R.string.gps_not_connected)
             locationEnabled.setTextColor(colorNotConnected)
