@@ -100,16 +100,17 @@ class HomeFragment : BaseFragment(), KodeinAware {
                         })
                     } catch (e: ApiException) {
                         ToastUtils().toastLong(activity, e.message)
+                        items_swipe_to_refresh.isRefreshing = false
                         Log.e("Service-Host", "API Exception", e)
-
                     } catch (e: NoInternetException) {
                         ToastUtils().toastLong(activity, e.message)
+                        // snackError(this.coordinator, e.message)
+                        items_swipe_to_refresh.isRefreshing = false
                         Log.e("Network-Connection", "No Internet Connection", e)
-                        data2_loading.hide()
                     } catch (e: NoConnectivityException) {
                         ToastUtils().toastLong(activity, e.message)
+                        items_swipe_to_refresh.isRefreshing = false
                         Log.e("Network-Error", "Service Host Unreachable", e)
-                        data2_loading.hide()
                     }
 
                 }
