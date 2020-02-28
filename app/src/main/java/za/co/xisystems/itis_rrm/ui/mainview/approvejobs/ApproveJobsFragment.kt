@@ -16,14 +16,12 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.GroupieViewHolder
 import kotlinx.android.synthetic.main.fragment_approvejob.*
-import kotlinx.android.synthetic.main.fragment_home.*
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
-import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.approve_job_item.ApproveJob_Item
 import za.co.xisystems.itis_rrm.utils.*
@@ -57,19 +55,18 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+        // TODO: fix deprecated ViewModelProviders
         approveViewModel = activity?.run {
             ViewModelProviders.of(this, factory).get(ApproveJobsViewModel::class.java)
-        } ?: throw Exception("Invalid Activity") as Throwable
+        } ?: throw Exception("Invalid Activity")
         Coroutines.main {
-            //            mydata_loading.show()
+
             val jobs = approveViewModel.getJobsForActivityId(ActivityIdConstants.JOB_APPROVE)
-//            val jobs = approveViewModel.getEntitiesListForActivityId(ActivityIdConstants.JOB_APPROVE)
-//            val jobs = approveViewModel.offlinedata.await()
             jobs.observe(viewLifecycleOwner, Observer { job_s ->
                 noData.visibility = GONE
                 toast(job_s.size.toString())
                 initRecyclerView(job_s.toApproveListItems())
-                group3_loading.visibility = View.GONE
+                group3_loading.visibility = GONE
             })
 
             jobs_swipe_to_refresh.setProgressBackgroundColorSchemeColor(
@@ -83,8 +80,8 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
             jobs_swipe_to_refresh.setOnRefreshListener {
                 Coroutines.main {
                     try {
-                        val jobs = approveViewModel.offlinedatas.await()
-                        jobs.observe(viewLifecycleOwner, Observer { works ->
+                        val freshJobs = approveViewModel.offlinedatas.await()
+                        freshJobs.observe(viewLifecycleOwner, Observer {
                             jobs_swipe_to_refresh.isRefreshing = false
                         })
                     } catch (e: ApiException) {
@@ -93,7 +90,6 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
                         Log.e(TAG, "API Exception", e)
                     } catch (e: NoInternetException) {
                         ToastUtils().toastLong(activity, e.message)
-                        // snackError(this.coordinator, e.message)
                         jobs_swipe_to_refresh.isRefreshing  = false
                         Log.e(TAG, "No Internet Connection", e)
                     } catch (e: NoConnectivityException) {
@@ -101,13 +97,8 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
                         jobs_swipe_to_refresh.isRefreshing = false
                         Log.e(TAG, "Service Host Unreachable", e)
                     }
-
                 }
             }
-
-
-
-
         }
     }
 
@@ -124,38 +115,17 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
         groupAdapter.setOnItemClickListener { item, view ->
             Coroutines.main {
                 (item as? ApproveJob_Item)?.let {
-                    val descri = approveViewModel.getDescForProjectId(it.jobDTO.ProjectId!!)
-                    val sectionId = approveViewModel.getProjectSectionIdForJobId(it.jobDTO.JobId)
-                    val route = approveViewModel.getRouteForProjectSectionId(sectionId)
-                    val section = approveViewModel.getSectionForProjectSectionId(sectionId)
-//                sendJobtoAprove((it.jobDTO.JobId),(descri), ("$route/ $section"),(it.jobDTO.StartKm),(it.jobDTO.EndKm ), view
-                    sendJobtoAprove((it), view)
+                    sendJobToApprove((it), view)
                 }
             }
         }
     }
 
-    private fun sendJobtoAprove(
+    private fun sendJobToApprove(
         job: ApproveJob_Item?,
-//        jobId: String?,
-//        descr: String?,
-//        section: String?,
-//        startKm: Double,
-//        endKm: Double,
         view: View
     ) {
-        val job = job
-//        val jobId = jobId.toString()
-//        val descr = descr.toString()
-//        val section = section.toString()
-//        val startKm = startKm.toString()
-//        val endKm = endKm.toString()
         Coroutines.main {
-            //            approveViewModel.jobapproval_Item1.value = descr
-//            approveViewModel.jobapproval_Item2.value = section
-//            approveViewModel.jobapproval_Item3.value = startKm
-//            approveViewModel.jobapproval_Item4.value = endKm
-//            approveViewModel.jobapproval_Item5.value = jobId
             approveViewModel.jobapproval_Item6.value = job
         }
 
@@ -164,8 +134,8 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
     }
 
     private fun List<JobDTO>.toApproveListItems(): List<ApproveJob_Item> {
-        return this.map { approvej_items ->
-            ApproveJob_Item(approvej_items, approveViewModel)
+        return this.map { approveJobItems ->
+            ApproveJob_Item(approveJobItems, approveViewModel)
         }
     }
 

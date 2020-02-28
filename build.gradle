@@ -6,7 +6,7 @@ buildscript {
         google()
         jcenter()
         maven { url 'https://maven.google.com' }
-        maven { url 'http://repo.spring.io/milestone' }
+        maven { url 'https://repo.spring.io/milestone' }
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:3.5.3'
