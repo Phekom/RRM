@@ -2,6 +2,7 @@ package za.co.xisystems.itis_rrm.ui.mainview.approvejobs
 
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
@@ -20,12 +21,12 @@ import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.approve_job_item.ApproveJob_Item
-import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
-import za.co.xisystems.itis_rrm.utils.Coroutines
+import za.co.xisystems.itis_rrm.utils.*
 
 /**
  * Created by Francis Mahlava on 03,October,2019
@@ -38,6 +39,9 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
     private val factory: ApproveJobsViewModelFactory by instance()
 
 
+    companion object {
+        val TAG: String = ApproveJobsFragment::class.java.simpleName
+    }
 
 
     override fun onCreateView(
@@ -78,10 +82,25 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
 
             jobs_swipe_to_refresh.setOnRefreshListener {
                 Coroutines.main {
-                    val jobs = approveViewModel.offlinedatas.await()
-                    jobs.observe(viewLifecycleOwner, Observer { works ->
+                    try {
+                        val jobs = approveViewModel.offlinedatas.await()
+                        jobs.observe(viewLifecycleOwner, Observer { works ->
+                            jobs_swipe_to_refresh.isRefreshing = false
+                        })
+                    } catch (e: ApiException) {
+                        ToastUtils().toastLong(activity, e.message)
+                        jobs_swipe_to_refresh.isRefreshing  = false
+                        Log.e(TAG, "API Exception", e)
+                    } catch (e: NoInternetException) {
+                        ToastUtils().toastLong(activity, e.message)
+                        // snackError(this.coordinator, e.message)
+                        jobs_swipe_to_refresh.isRefreshing  = false
+                        Log.e(TAG, "No Internet Connection", e)
+                    } catch (e: NoConnectivityException) {
+                        ToastUtils().toastLong(activity, e.message)
                         jobs_swipe_to_refresh.isRefreshing = false
-                    })
+                        Log.e(TAG, "Service Host Unreachable", e)
+                    }
 
                 }
             }

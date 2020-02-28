@@ -2,6 +2,7 @@ package za.co.xisystems.itis_rrm.ui.mainview.work
 
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
@@ -14,20 +15,18 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.ExpandableGroup
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.GroupieViewHolder
-import kotlinx.android.synthetic.main.fragment_approvejob.*
 import kotlinx.android.synthetic.main.fragment_approvejob.noData
-import kotlinx.android.synthetic.main.fragment_home.*
 import kotlinx.android.synthetic.main.fragment_work.*
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
 import za.co.xisystems.itis_rrm.ui.mainview.work.estimate_work_item.CardItem
 import za.co.xisystems.itis_rrm.ui.mainview.work.estimate_work_item.ExpandableHeaderWorkItem
-import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
-import za.co.xisystems.itis_rrm.utils.Coroutines
+import za.co.xisystems.itis_rrm.utils.*
 
 
 const val INSET_TYPE_KEY = "inset_type"
@@ -80,12 +79,25 @@ class WorkFragment : BaseFragment(), KodeinAware {
 
         works_swipe_to_refresh.setOnRefreshListener {
             Coroutines.main {
-
-                val jobs = workViewModel.offlinedatas.await()
-                jobs.observe(viewLifecycleOwner, Observer { works ->
-
+                try {
+                    val jobs = workViewModel.offlinedatas.await()
+                    jobs.observe(viewLifecycleOwner, Observer { _ ->
+                        works_swipe_to_refresh.isRefreshing = false
+                    })
+                } catch (e: ApiException) {
+                    ToastUtils().toastLong(activity, e.message)
                     works_swipe_to_refresh.isRefreshing = false
-                })
+                    Log.e("Service-Host", "API Exception", e)
+                } catch (e: NoInternetException) {
+                    ToastUtils().toastLong(activity, e.message)
+                    // snackError(this.coordinator, e.message)
+                    works_swipe_to_refresh.isRefreshing = false
+                    Log.e("Network-Connection", "No Internet Connection", e)
+                } catch (e: NoConnectivityException) {
+                    ToastUtils().toastLong(activity, e.message)
+                    works_swipe_to_refresh.isRefreshing = false
+                    Log.e("Network-Error", "Service Host Unreachable", e)
+                }
 
             }
         }
@@ -100,9 +112,9 @@ class WorkFragment : BaseFragment(), KodeinAware {
             )
 //            val works = workViewModel.getJobsForActivityId(ActivityIdConstants.JOB_APPROVED..ActivityIdConstants.ESTIMATE_INCOMPLETE)
             works.observe(viewLifecycleOwner, Observer { work_s ->
-            noData.visibility = View.GONE
+                noData.visibility = View.GONE
                 group7_loading.visibility = View.GONE
-                 initRecyclerView(work_s.toWorkListItems())
+                initRecyclerView(work_s.toWorkListItems())
 //            initRecyclerView(works.toWorkListItems())
 
             })
