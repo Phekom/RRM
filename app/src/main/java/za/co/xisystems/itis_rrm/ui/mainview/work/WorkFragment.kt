@@ -39,6 +39,10 @@ class WorkFragment : BaseFragment(), KodeinAware {
     private val factory: WorkViewModelFactory by instance()
     private var appContext: Context? = null
 
+    companion object {
+        private val TAG = WorkFragment::class.java.simpleName
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?, savedInstanceState: Bundle?
@@ -94,11 +98,11 @@ class WorkFragment : BaseFragment(), KodeinAware {
                 } catch (e: NoInternetException) {
                     ToastUtils().toastLong(appContext, e.message)
                     works_swipe_to_refresh.isRefreshing = false
-                    Log.e("Network-Connection", "No Internet Connection", e)
+                    Log.e(TAG, "No Internet Connection", e)
                 } catch (e: NoConnectivityException) {
                     ToastUtils().toastLong(appContext, e.message)
                     works_swipe_to_refresh.isRefreshing = false
-                    Log.e("Network-Error", "Service Host Unreachable", e)
+                    Log.e(TAG, "Service Host Unreachable", e)
                 }
 
             }

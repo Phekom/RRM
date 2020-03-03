@@ -34,7 +34,7 @@ class HomeFragment : BaseFragment(), KodeinAware {
 
     var gps_enabled : Boolean =  false
     var network_enabled :  Boolean = false
-    var appContext: Context = null
+    var appContext: Context? = null
 
 
 
@@ -64,7 +64,7 @@ class HomeFragment : BaseFragment(), KodeinAware {
         super.onCreateView(inflater, container, savedInstanceState)
 
         activity?.hideKeyboard()
-        appContext = activity.applicationContext
+        appContext = activity?.applicationContext
         return inflater.inflate(R.layout.fragment_home, container, false)
 
     }
@@ -104,7 +104,7 @@ class HomeFragment : BaseFragment(), KodeinAware {
                 Coroutines.main {
                     try {
                         val works = homeViewModel.offlinedatas.await()
-                        works.observe(viewLifecycleOwner, Observer { works ->
+                        works.observe(viewLifecycleOwner, Observer {
                             items_swipe_to_refresh.isRefreshing = false
                         })
                     } catch (e: ApiException) {

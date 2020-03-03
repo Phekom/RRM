@@ -10,6 +10,12 @@ static def getDate() {
     return new Date().format('yyyy-MM-dd HH-mm-ss')
 }
 
+allprojects {
+    tasks.withType(JavaCompile) {
+        options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+    }
+}
+
 android {
     flavorDimensions "default"
 
@@ -72,6 +78,10 @@ android {
             annotationProcessorOptions {
                 arguments = ["room.schemaLocation": "$projectDir/schemas".toString()]
             }
+        }
+
+        dataBinding {
+            enabled = true
         }
     }
 
@@ -205,6 +215,7 @@ android {
     dataBinding {
         enabled = true
     }
+    buildToolsVersion = build_tools_version
 }
 
 
@@ -273,7 +284,7 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.8.6'
 
     //Glide
-    def glideVersion = "4.11.0"
+    def glideVersion = "4.10.0"
     implementation "com.github.bumptech.glide:glide:$glideVersion"
     kapt "com.github.bumptech.glide:compiler:$glideVersion"
 
@@ -351,7 +362,7 @@ dependencies {
     implementation 'org.apache.sanselan:sanselan:0.97-incubator'
 
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
-    implementation 'commons-io:commons-io:20030203.000550'
+    implementation 'commons-io:commons-io:2.6'
 
     implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
     implementation 'org.greenrobot:eventbus:3.1.1'

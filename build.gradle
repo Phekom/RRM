@@ -13,7 +13,7 @@ buildscript {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
-        classpath "androidx.navigation:navigation-safe-args-gradle-plugin:2.2.0-rc04"
+        classpath "androidx.navigation:navigation-safe-args-gradle-plugin:2.3.0-alpha02"
         classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4'
         classpath 'com.github.dcendents:android-maven-gradle-plugin:2.1'
         classpath "org.jetbrains.dokka:dokka-android-gradle-plugin:0.9.17"
@@ -38,7 +38,8 @@ allprojects {
         android_min_sdk_version = 21
         appcompat_library_version = compile_version + '.0.0'
         support_library_version = '28.0.0'
-        gms_library_version = '9.8.0' //''11.6.2'
+        gms_library_version = '9.8.0'
+        build_tools_version = '28.0.3'//''11.6.2'
     }
 }
 
