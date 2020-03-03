@@ -202,7 +202,7 @@ class EstimatePhotoFragment : BaseFragment(), KodeinAware {
         } ?: throw Exception("Invalid Activity")
         group13_loading.visibility = View.GONE
         mAppExcutor = AppExecutor()
-
+        lm = activity!!.getSystemService(Context.LOCATION_SERVICE) as LocationManager
         createViewModel.loggedUser.observe(viewLifecycleOwner, Observer { user ->
             useR = user
 //            selectedContractTextView.text = user
@@ -245,19 +245,16 @@ class EstimatePhotoFragment : BaseFragment(), KodeinAware {
 //        updatePhotoUI(false)
 //        updateSectionUI(false)
         try {
-            gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-
-        try {
             network_enabled = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+            gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
         } catch (e: Exception) {
             e.printStackTrace()
         }
         if (!gps_enabled && !network_enabled) { // notify user
             displayPromptForEnablingGPS(activity!!)
-        }else{}
+        }else{
+
+        }
 
 
         setValueEditText(getStoredValue())
@@ -413,17 +410,13 @@ class EstimatePhotoFragment : BaseFragment(), KodeinAware {
         val builder: AlertDialog.Builder = AlertDialog.Builder(activity)
         val action = Settings.ACTION_LOCATION_SOURCE_SETTINGS
         val message = ("Your GPS seems to be disabled, Please enable it to continue")
-        builder.setMessage(message)
-            .setPositiveButton("OK",
-                DialogInterface.OnClickListener { d, id ->
+        builder.setMessage(message).setPositiveButton("OK", DialogInterface.OnClickListener { d, id ->
                     activity.startActivity(Intent(action))
                     d.dismiss()
                 })
         builder.create().show()
 
 }
-
-
     private fun launchCamera() {
 
         // type is "start" or "end"
@@ -916,6 +909,9 @@ Coroutines.main {
                 val section = createViewModel.getSection(sectId)
                 section.observe(viewLifecycleOwner, Observer { section ->
                     if (section != null) {
+                        val direction = section.direction
+                        if (direction == null )
+                        {}
                         val sectionText =
                             section.route + " " + section.section + " " + section.direction + " " +
                                     if (isStart) section.startKm else section.endKm
@@ -942,7 +938,6 @@ Coroutines.main {
         }
     }
 
-
     fun setValueEditText(qty: Double) {
         when (item?.uom) {
             "m²", "m³", "m" -> valueEditText!!.setText("" + qty)
@@ -964,6 +959,7 @@ Coroutines.main {
             costTextView!!.visibility = View.GONE
         }
     }
+
 //    fun setQuantity(quantity: Double) {
 //        this.quantity = quantity
 //    }
@@ -977,7 +973,7 @@ Coroutines.main {
         //  Lose focus on fields
         valueEditText.clearFocus()
         var lineRate = 0.0
-        var qty :Double = quantity
+        var qty  = quantity
         try {
             qty = value.toDouble()
         } catch (e: NumberFormatException) {

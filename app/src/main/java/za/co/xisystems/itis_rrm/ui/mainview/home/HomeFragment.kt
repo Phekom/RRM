@@ -64,7 +64,7 @@ class HomeFragment : BaseFragment(), KodeinAware {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
-        
+        val dialog = setDataProgressDialog(activity!!, getString(R.string.data_loading_please_wait))
 
         homeViewModel = activity?.run {
             ViewModelProviders.of(this, factory).get(HomeViewModel::class.java)
@@ -79,7 +79,9 @@ class HomeFragment : BaseFragment(), KodeinAware {
 
             val contracts = homeViewModel.offlinedata.await()
             contracts.observe(viewLifecycleOwner, Observer { contrcts ->
-
+                val alldata =  contrcts.count()
+                if (contrcts.size == alldata)
+                    dialog.dismiss()
                 group2_loading.visibility = View.GONE
             })
 
@@ -92,23 +94,29 @@ class HomeFragment : BaseFragment(), KodeinAware {
             items_swipe_to_refresh.setColorSchemeColors(Color.WHITE)
 
             items_swipe_to_refresh.setOnRefreshListener {
+                dialog.show()
                 Coroutines.main {
                     try {
                         val works = homeViewModel.offlinedatas.await()
-                        works.observe(viewLifecycleOwner, Observer { works ->
+                        works.observe(viewLifecycleOwner, Observer { work ->
+                            val alldata =  work.count()
+                            if (work.size == alldata)
+                                dialog.dismiss()
                             items_swipe_to_refresh.isRefreshing = false
                         })
                     } catch (e: ApiException) {
                         ToastUtils().toastLong(activity, e.message)
                         items_swipe_to_refresh.isRefreshing = false
+                        dialog.dismiss()
                         Log.e("Service-Host", "API Exception", e)
                     } catch (e: NoInternetException) {
                         ToastUtils().toastLong(activity, e.message)
-                        // snackError(this.coordinator, e.message)
+                        dialog.dismiss()
                         items_swipe_to_refresh.isRefreshing = false
                         Log.e("Network-Connection", "No Internet Connection", e)
                     } catch (e: NoConnectivityException) {
                         ToastUtils().toastLong(activity, e.message)
+                        dialog.dismiss()
                         items_swipe_to_refresh.isRefreshing = false
                         Log.e("Network-Error", "Service Host Unreachable", e)
                     }

@@ -28,7 +28,7 @@ class Measurements_Item(
 
     override fun bind(viewHolder: GroupieViewHolder, position: Int) {
         viewHolder.apply {
-            //            appListID1.text = getItemId(position + 1).toString()
+            // appListID1.text = getItemId(position + 1).toString()
             measure_item_quantity_textView.text = "Quantity : " + jobItemMeasureDTO.qty.toString()
             measure_item_price_textView.text = "R " + jobItemMeasureDTO.lineRate.toString()
             Coroutines.main {

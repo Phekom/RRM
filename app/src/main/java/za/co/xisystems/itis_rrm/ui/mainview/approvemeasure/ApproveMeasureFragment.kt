@@ -2,6 +2,7 @@ package za.co.xisystems.itis_rrm.ui.mainview.approvemeasure
 
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
@@ -14,6 +15,7 @@ import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
+import kotlinx.android.synthetic.main.fragment_approvejob.*
 import kotlinx.android.synthetic.main.fragment_approvemeasure.*
 import kotlinx.android.synthetic.main.fragment_approvemeasure.noData
 import kotlinx.android.synthetic.main.fragment_work.*
@@ -21,11 +23,12 @@ import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
+import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.ApproveJobsFragment
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.approveMeasure_Item.ApproveMeasure_Item
-import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
-import za.co.xisystems.itis_rrm.utils.Coroutines
+import za.co.xisystems.itis_rrm.utils.*
 
 /**
  * Created by Francis Mahlava on 03,October,2019
@@ -58,14 +61,19 @@ companion object{
             ViewModelProviders.of(this, factory).get(ApproveMeasureViewModel::class.java)
         } ?: throw Exception("Invalid Activity") as Throwable
         Coroutines.main {
+            val dialog = setDataProgressDialog(activity!!, getString(R.string.data_loading_please_wait))
+
             val measurements = approveViewModel.getJobApproveMeasureForActivityId(ActivityIdConstants.MEASURE_COMPLETE)
 //            val measurements  = approveViewModel.getJobsMeasureForActivityId(ActivityIdConstants.ESTIMATE_MEASURE,ActivityIdConstants.MEASURE_COMPLETE,ActivityIdConstants.EST_WORKS_COMPLETE,ActivityIdConstants.JOB_APPROVED)
 //            val measurements = approveViewModel.getEntitiesListForActivityId(ActivityIdConstants.MEASURE_COMPLETE)
 //            val measurements = approveViewModel.offlinedata.await()
             measurements.observe(viewLifecycleOwner, Observer { job_s ->
                 noData.visibility = GONE
-                initRecyclerView(job_s.toApproveListItems())
-                toast(job_s.size.toString())
+                val measure_items = job_s.distinctBy{
+                    it.jobId
+                }
+                initRecyclerView(measure_items.toApproveListItems())
+                toast(measure_items.size.toString())
                 group4_loading.visibility = GONE
             })
             approvem_swipe_to_refresh.setProgressBackgroundColorSchemeColor(
@@ -77,12 +85,30 @@ companion object{
             approvem_swipe_to_refresh.setColorSchemeColors(Color.WHITE)
 
             approvem_swipe_to_refresh.setOnRefreshListener {
+                dialog.show()
                 Coroutines.main {
-                    val jobs = approveViewModel.offlinedatas.await()
-                    jobs.observe(viewLifecycleOwner, Observer { works ->
+                    try {
+                        val freshJobs = approveViewModel.offlinedatas.await()
+                        freshJobs.observe(viewLifecycleOwner, Observer {
+                            approvem_swipe_to_refresh.isRefreshing = false
+                            dialog.dismiss()
+                        })
+                    } catch (e: ApiException) {
+                        ToastUtils().toastLong(activity, e.message)
+                        approvem_swipe_to_refresh.isRefreshing  = false
+                        dialog.dismiss()
+                        Log.e(ApproveJobsFragment.TAG, "API Exception", e)
+                    } catch (e: NoInternetException) {
+                        ToastUtils().toastLong(activity, e.message)
+                        dialog.dismiss()
+                        approvem_swipe_to_refresh.isRefreshing  = false
+                        Log.e(ApproveJobsFragment.TAG, "No Internet Connection", e)
+                    } catch (e: NoConnectivityException) {
+                        ToastUtils().toastLong(activity, e.message)
+                        dialog.dismiss()
                         approvem_swipe_to_refresh.isRefreshing = false
-                    })
-
+                        Log.e(ApproveJobsFragment.TAG, "Service Host Unreachable", e)
+                    }
                 }
             }
         }

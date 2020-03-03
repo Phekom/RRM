@@ -51,6 +51,7 @@ class WorkFragment : BaseFragment(), KodeinAware {
             ViewModelProviders.of(this, factory).get(WorkViewModel::class.java)
         } ?: throw Exception("Invalid Activity") as Throwable
 //        getWorkData()
+        val dialog = setDataProgressDialog(activity!!, getString(R.string.data_loading_please_wait))
         Coroutines.main {
             val works = workViewModel.getJobsForActivityId(
                 ActivityIdConstants.JOB_APPROVED,
@@ -78,23 +79,28 @@ class WorkFragment : BaseFragment(), KodeinAware {
         works_swipe_to_refresh.setColorSchemeColors(Color.WHITE)
 
         works_swipe_to_refresh.setOnRefreshListener {
+            dialog.show()
             Coroutines.main {
                 try {
                     val jobs = workViewModel.offlinedatas.await()
                     jobs.observe(viewLifecycleOwner, Observer { _ ->
                         works_swipe_to_refresh.isRefreshing = false
+                        dialog.dismiss()
                     })
                 } catch (e: ApiException) {
                     ToastUtils().toastLong(activity, e.message)
                     works_swipe_to_refresh.isRefreshing = false
+                    dialog.dismiss()
                     Log.e("Service-Host", "API Exception", e)
                 } catch (e: NoInternetException) {
                     ToastUtils().toastLong(activity, e.message)
                     // snackError(this.coordinator, e.message)
+                    dialog.dismiss()
                     works_swipe_to_refresh.isRefreshing = false
                     Log.e("Network-Connection", "No Internet Connection", e)
                 } catch (e: NoConnectivityException) {
                     ToastUtils().toastLong(activity, e.message)
+                    dialog.dismiss()
                     works_swipe_to_refresh.isRefreshing = false
                     Log.e("Network-Error", "Service Host Unreachable", e)
                 }
@@ -104,23 +110,23 @@ class WorkFragment : BaseFragment(), KodeinAware {
 
     }
 
-    private fun getWorkData() {
-        Coroutines.main {
-            val works = workViewModel.getJobsForActivityId(
-                ActivityIdConstants.JOB_APPROVED,
-                ActivityIdConstants.ESTIMATE_INCOMPLETE
-            )
-//            val works = workViewModel.getJobsForActivityId(ActivityIdConstants.JOB_APPROVED..ActivityIdConstants.ESTIMATE_INCOMPLETE)
-            works.observe(viewLifecycleOwner, Observer { work_s ->
-                noData.visibility = View.GONE
-                group7_loading.visibility = View.GONE
-                initRecyclerView(work_s.toWorkListItems())
-//            initRecyclerView(works.toWorkListItems())
-
-            })
-
-        }
-    }
+//    private fun getWorkData() {
+//        Coroutines.main {
+//            val works = workViewModel.getJobsForActivityId(
+//                ActivityIdConstants.JOB_APPROVED,
+//                ActivityIdConstants.ESTIMATE_INCOMPLETE
+//            )
+////            val works = workViewModel.getJobsForActivityId(ActivityIdConstants.JOB_APPROVED..ActivityIdConstants.ESTIMATE_INCOMPLETE)
+//            works.observe(viewLifecycleOwner, Observer { work_s ->
+//                noData.visibility = View.GONE
+//                group7_loading.visibility = View.GONE
+//                initRecyclerView(work_s.toWorkListItems())
+////            initRecyclerView(works.toWorkListItems())
+//
+//            })
+//
+//        }
+//    }
 
 
     private fun initRecyclerView(
