@@ -10,9 +10,8 @@ import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import kotlinx.android.synthetic.main.fragment_job_info.*
@@ -59,8 +58,9 @@ class JobInfoFragment : BaseFragment(), KodeinAware {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         approveViewModel = activity?.run {
-            ViewModelProviders.of(this, factory).get(ApproveJobsViewModel::class.java)
-        } ?: throw Exception("Invalid Activity") as Throwable
+            val get = ViewModelProvider(this, factory).get(ApproveJobsViewModel::class.java)
+            get
+        } ?: throw Exception("Invalid Activity")
         Coroutines.main {
             mydata_loading.show()
 
@@ -160,7 +160,7 @@ class JobInfoFragment : BaseFragment(), KodeinAware {
                       toast(job.jobDTO.JobId)
                         // TODO beware littlEndian conversion
                         val trackRounteId: String = DataConversion.toLittleEndian(job.jobDTO.TrackRouteId)!!
-                        val direction: Int = workflowDirection.getValue()
+                        val direction: Int = workflowDirection.value
 
                         var description : String? = ""
                         if (workflow_comments_editText.text != null)
@@ -185,7 +185,7 @@ class JobInfoFragment : BaseFragment(), KodeinAware {
             prog.setTitle(getString(R.string.please_wait))
             prog.setMessage(getString(R.string.loading_job_wait))
             prog.setCancelable(false)
-            prog.setIndeterminate(true)
+            prog.isIndeterminate = true
             prog.setProgressStyle(ProgressDialog.STYLE_SPINNER)
             prog.show()
 
@@ -202,9 +202,9 @@ class JobInfoFragment : BaseFragment(), KodeinAware {
     }
 
     private fun popViewOnJobSubmit(direction: Int) {
-        if (direction.equals(WorkflowDirection.NEXT)) {
+        if (direction == WorkflowDirection.NEXT.value) {
             toast(R.string.job_approved)
-        } else if (direction.equals(WorkflowDirection.FAIL)) {
+        } else if (direction == WorkflowDirection.FAIL.value) {
             toast(R.string.job_declined)
         }
 
@@ -229,22 +229,22 @@ class JobInfoFragment : BaseFragment(), KodeinAware {
         }
     }
 
-    private fun initRecyclerView(estimatesListItems: List<Estimates_Item>) {
+    private fun initRecyclerView(estimatesListItems: List<EstimatesItem>) {
         val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
             addAll(estimatesListItems)
         }
         view_estimation_items_listView.apply {
-            layoutManager = LinearLayoutManager(this.context) as RecyclerView.LayoutManager?
+            layoutManager = LinearLayoutManager(this.context)
             adapter = groupAdapter
 
         }
 
     }
 
-    private fun List<JobItemEstimateDTO>.toEstimates_Item(): List<Estimates_Item> {
+    private fun List<JobItemEstimateDTO>.toEstimates_Item(): List<EstimatesItem> {
         return this.map { approvej_items ->
 //            getEstimateItemsPhoto(approvej_items.estimateId)
-            Estimates_Item(approvej_items,approveViewModel, activity)
+            EstimatesItem(approvej_items, approveViewModel, activity)
         }
     }
 

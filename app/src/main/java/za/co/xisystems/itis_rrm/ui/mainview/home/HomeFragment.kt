@@ -13,7 +13,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import kotlinx.android.synthetic.main.fragment_home.*
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
@@ -34,6 +34,9 @@ class HomeFragment : BaseFragment(), KodeinAware {
 
     var gps_enabled : Boolean =  false
     var network_enabled :  Boolean = false
+    var appContext: Context = null
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,8 +60,13 @@ class HomeFragment : BaseFragment(), KodeinAware {
         inflater: LayoutInflater,
         container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
+
+        super.onCreateView(inflater, container, savedInstanceState)
+
         activity?.hideKeyboard()
+        appContext = activity.applicationContext
         return inflater.inflate(R.layout.fragment_home, container, false)
+
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -67,7 +75,8 @@ class HomeFragment : BaseFragment(), KodeinAware {
         
 
         homeViewModel = activity?.run {
-            ViewModelProviders.of(this, factory).get(HomeViewModel::class.java)
+            val get = ViewModelProvider(this, factory).get(HomeViewModel::class.java)
+            get
         } ?: throw Exception("Invalid Activity")
         Coroutines.main {
             data2_loading.show()
@@ -99,16 +108,16 @@ class HomeFragment : BaseFragment(), KodeinAware {
                             items_swipe_to_refresh.isRefreshing = false
                         })
                     } catch (e: ApiException) {
-                        ToastUtils().toastLong(activity, e.message)
+                        ToastUtils().toastLong(appContext, e.message)
                         items_swipe_to_refresh.isRefreshing = false
                         Log.e("Service-Host", "API Exception", e)
                     } catch (e: NoInternetException) {
-                        ToastUtils().toastLong(activity, e.message)
+                        ToastUtils().toastLong(appContext, e.message)
                         // snackError(this.coordinator, e.message)
                         items_swipe_to_refresh.isRefreshing = false
                         Log.e("Network-Connection", "No Internet Connection", e)
                     } catch (e: NoConnectivityException) {
-                        ToastUtils().toastLong(activity, e.message)
+                        ToastUtils().toastLong(appContext, e.message)
                         items_swipe_to_refresh.isRefreshing = false
                         Log.e("Network-Error", "Service Host Unreachable", e)
                     }

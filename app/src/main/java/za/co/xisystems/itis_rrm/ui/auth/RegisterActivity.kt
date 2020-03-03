@@ -11,7 +11,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GooglePlayServicesUtil
 import kotlinx.android.synthetic.main.activity_register.*
@@ -61,7 +61,7 @@ class RegisterActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runna
 
 
         val binding :ActivityRegisterBinding = DataBindingUtil.setContentView(this, R.layout.activity_register)
-        viewModel = ViewModelProviders.of(this, factory).get(AuthViewModel::class.java)
+        viewModel = ViewModelProvider(this, factory).get(AuthViewModel::class.java)
         binding.viewmodel = viewModel
         viewModel.authListener = this
 

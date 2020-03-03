@@ -7,7 +7,7 @@ import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
@@ -38,10 +38,10 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
     private lateinit var createViewModel: CreateViewModel
     private val factory: CreateViewModelFactory by instance()
     private lateinit var iTemArrayList: ArrayList<JobDTO>
-    private var items: MutableList<ItemDTOTemp> = ArrayList<ItemDTOTemp>()
+    private var items: MutableList<ItemDTOTemp> = ArrayList()
     private var animate = false
     private val itemsMap: MutableMap<String, MutableList<ProjectItemDTO>?> =
-        LinkedHashMap<String, MutableList<ProjectItemDTO>?>()
+        LinkedHashMap()
 
     private lateinit var newJobItemEstimatesList: ArrayList<JobItemEstimateDTO>
     private lateinit var  itemSections : ArrayList<ItemSectionDTO>
@@ -77,11 +77,12 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
 //        createViewModel = ViewModelProviders.of(this, factory).get(CreateViewModel::class.java)
 
         createViewModel = activity?.run {
-            ViewModelProviders.of(this, factory).get(CreateViewModel::class.java)
+            val get = ViewModelProvider(this, factory).get(CreateViewModel::class.java)
+            get
         } ?: throw Exception("Invalid Activity")
         Coroutines.main {
-            itemSections = ArrayList<ItemSectionDTO>()
-            newJobItemEstimatesList = ArrayList<JobItemEstimateDTO>()
+            itemSections = ArrayList()
+            newJobItemEstimatesList = ArrayList()
             bindUI()
         }
 
@@ -115,17 +116,16 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
         Coroutines.main {
             val sectionItems = createViewModel.getAllSectionItem()
 //            val sectionItems = createViewModel.offlinedata.await()
-            sectionItems?.observe(viewLifecycleOwner, Observer { sec_tions ->
-                val sections = sec_tions
-                val sectionNmbr = arrayOfNulls<String?>(sections.size)
+            sectionItems.observe(viewLifecycleOwner, Observer { sec_tions ->
+                val sectionNmbr = arrayOfNulls<String?>(sec_tions.size)
 
-                for (item in sections.indices) {
-                    sectionNmbr[item] = sections[item].description
+                for (item in sec_tions.indices) {
+                    sectionNmbr[item] = sec_tions[item].description
                 }
                 Coroutines.main {
                     setSpinner(context!!.applicationContext,
                         sectionItemSpinner,
-                        sections,
+                        sec_tions,
                         sectionNmbr,
                         object : SpinnerHelper.SelectionListener<SectionItemDTO> {
 
@@ -136,7 +136,7 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
                                 }
                                 selectedSectionitem = item
                                 setRecyclerItems(projectId, item.sectionItemId!!)
-//                                setRecyclerItems(item.sectionItemId)
+                                //                                setRecyclerItems(item.sectionItemId)
                             }
 
                         })
@@ -160,11 +160,11 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
         Coroutines.main {  //data_loading2.show()
             //            val projectsItems = createViewModel.getItemForItemCode(sectionItemId!!)
             val projectsItems = createViewModel.getAllItemsForSectionItem(sectionItemId, projectId)
-            projectsItems?.observe(viewLifecycleOwner, Observer { i_tems ->
+            projectsItems.observe(viewLifecycleOwner, Observer { i_tems ->
                 group_loading.visibility = View.GONE
                 initRecyclerView(i_tems.toProjectItems())
-//                data_loading2.hide()
-//                group_loading.visibility = View.GONE
+                //                data_loading2.hide()
+                //                group_loading.visibility = View.GONE
             })
 
         }
@@ -231,14 +231,13 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
         view: View,
         jobArrayList: List<SectionProj_Item>
     ) {
-        val selecteD = item
         val myList = jobArrayList
 //        val actionAddProject =  SelectItemFragmentDirection.actionAddProject(selecteD)
 //        navController?.navigate(R.id.action_selectItemFragment_to_addProjectFragment)
 
 
         Coroutines.main {
-            createViewModel.Sec_Item.value = selecteD
+            createViewModel.Sec_Item.value = item
 //            createViewModel.project_Rate.value = selectRte
         }
 

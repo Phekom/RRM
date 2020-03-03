@@ -14,7 +14,7 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
  */
 
 
-class EstimateMeasure_Item(
+class EstimateMeasureItem(
     val jobItemEstimateDTO: JobItemEstimateDTO,
     private val measureViewModel: MeasureViewModel
 ) : Item(){

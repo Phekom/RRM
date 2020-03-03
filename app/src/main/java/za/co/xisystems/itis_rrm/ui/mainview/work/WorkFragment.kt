@@ -1,5 +1,6 @@
 package za.co.xisystems.itis_rrm.ui.mainview.work
 
+import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
@@ -7,10 +8,9 @@ import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.ExpandableGroup
 import com.xwray.groupie.GroupAdapter
@@ -37,6 +37,7 @@ class WorkFragment : BaseFragment(), KodeinAware {
     override val kodein by kodein()
     private lateinit var workViewModel: WorkViewModel
     private val factory: WorkViewModelFactory by instance()
+    private var appContext: Context? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -47,28 +48,30 @@ class WorkFragment : BaseFragment(), KodeinAware {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+
+        appContext = activity?.applicationContext
+
         workViewModel = activity?.run {
-            ViewModelProviders.of(this, factory).get(WorkViewModel::class.java)
-        } ?: throw Exception("Invalid Activity") as Throwable
-//        getWorkData()
+            val get = ViewModelProvider(this, factory).get(WorkViewModel::class.java)
+            get
+        } ?: throw Exception("Invalid Activity")
+
         Coroutines.main {
             val works = workViewModel.getJobsForActivityId(
                 ActivityIdConstants.JOB_APPROVED,
                 ActivityIdConstants.ESTIMATE_INCOMPLETE
             )
-//            val works = workViewModel.getJobsForActivityId(ActivityIdConstants.JOB_APPROVED..ActivityIdConstants.ESTIMATE_INCOMPLETE)
+
             works.observe(viewLifecycleOwner, Observer { work_s ->
                 noData.visibility = View.GONE
                 group7_loading.visibility = View.GONE
-                val header_items = work_s.distinctBy{
+                val headerItems = work_s.distinctBy {
                     it.JobId
                 }
-                initRecyclerView(header_items.toWorkListItems())
-//            initRecyclerView(works.toWorkListItems())
-
+                initRecyclerView(headerItems.toWorkListItems())
             })
-
         }
+
         works_swipe_to_refresh.setProgressBackgroundColorSchemeColor(
             ContextCompat.getColor(
                 context!!.applicationContext,
@@ -81,20 +84,19 @@ class WorkFragment : BaseFragment(), KodeinAware {
             Coroutines.main {
                 try {
                     val jobs = workViewModel.offlinedatas.await()
-                    jobs.observe(viewLifecycleOwner, Observer { _ ->
+                    jobs.observe(viewLifecycleOwner, Observer {
                         works_swipe_to_refresh.isRefreshing = false
                     })
                 } catch (e: ApiException) {
-                    ToastUtils().toastLong(activity, e.message)
+                    ToastUtils().toastLong(appContext, e.message)
                     works_swipe_to_refresh.isRefreshing = false
-                    Log.e("Service-Host", "API Exception", e)
+                    Log.e(TAG, "API Exception", e)
                 } catch (e: NoInternetException) {
-                    ToastUtils().toastLong(activity, e.message)
-                    // snackError(this.coordinator, e.message)
+                    ToastUtils().toastLong(appContext, e.message)
                     works_swipe_to_refresh.isRefreshing = false
                     Log.e("Network-Connection", "No Internet Connection", e)
                 } catch (e: NoConnectivityException) {
-                    ToastUtils().toastLong(activity, e.message)
+                    ToastUtils().toastLong(appContext, e.message)
                     works_swipe_to_refresh.isRefreshing = false
                     Log.e("Network-Error", "Service Host Unreachable", e)
                 }
@@ -104,34 +106,31 @@ class WorkFragment : BaseFragment(), KodeinAware {
 
     }
 
+    /*
     private fun getWorkData() {
         Coroutines.main {
             val works = workViewModel.getJobsForActivityId(
                 ActivityIdConstants.JOB_APPROVED,
                 ActivityIdConstants.ESTIMATE_INCOMPLETE
             )
-//            val works = workViewModel.getJobsForActivityId(ActivityIdConstants.JOB_APPROVED..ActivityIdConstants.ESTIMATE_INCOMPLETE)
+
             works.observe(viewLifecycleOwner, Observer { work_s ->
                 noData.visibility = View.GONE
                 group7_loading.visibility = View.GONE
                 initRecyclerView(work_s.toWorkListItems())
-//            initRecyclerView(works.toWorkListItems())
-
             })
-
         }
     }
-
+*/
 
     private fun initRecyclerView(
         workListItems: List<ExpandableGroup>
     ) {
 
         val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
-            val header_items = workListItems.distinctBy{
-            }
             addAll(workListItems)
         }
+
         work_listView.apply {
             layoutManager = LinearLayoutManager(this.context)
             adapter = groupAdapter
@@ -142,11 +141,6 @@ class WorkFragment : BaseFragment(), KodeinAware {
 
         }
 
-    }
-
-    override fun onResume() {
-        super.onResume()
-//        getWorkData()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -178,29 +172,31 @@ class WorkFragment : BaseFragment(), KodeinAware {
 
             val expandableHeaderItem =
                 ExpandableHeaderWorkItem(activity, work_items, workViewModel, work_items.JobId)
-//            ExpandableHeaderItem("JI:${work_items.JiNo} ", work_items.Descr!! , activity, work_items, workViewModel)
+
             ExpandableGroup(expandableHeaderItem, false).apply {
                 Coroutines.main {
-                                                                                                               //ESTIMATE_WORK_PART_COMPLETE
+
                     val estimates = workViewModel.getJobEstimationItemsForJobId(work_items.JobId,ActivityIdConstants.ESTIMATE_INCOMPLETE)
-                    estimates.observe(viewLifecycleOwner, Observer { i_tems ->
+                    estimates.observe(viewLifecycleOwner, Observer { jobEstimates ->
                         Coroutines.main {
-                                for (item in i_tems) {
+                            for (item in jobEstimates) {
                                         Coroutines.main {
-                                            val   Desc =
-                                                workViewModel?.getDescForProjectItemId(item.projectItemId!!)
+                                            val desc =
+                                                workViewModel.getDescForProjectItemId(item.projectItemId!!)
                                             val  qty = item.qty.toString()
                                             val  rate = item.lineRate.toString()
                                             val  estimateId = item.estimateId
-                                            add(CardItem(  activity, Desc,   qty!!,
-                                                rate!!,   estimateId!!,  workViewModel, item  , work_items                                    )
+                                            add(
+                                                CardItem(
+                                                    activity, desc, qty,
+                                                    rate,
+                                                    estimateId, workViewModel, item, work_items
+                                                )
                                             )
-//                                add(CardItem( activity, Desc[i].toString(),  workViewModel)).toString()
+
                                         }
-
                                 }
-                            }
-
+                        }
                     })
 
                 }
@@ -209,7 +205,6 @@ class WorkFragment : BaseFragment(), KodeinAware {
 
     }
 
-
-    }
+}
 
 

@@ -9,7 +9,7 @@ import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.data.repositories.MeasureCreationDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
-import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.estimate_measure_item.EstimateMeasure_Item
+import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.estimate_measure_item.EstimateMeasureItem
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
 
 class MeasureViewModel (
@@ -17,20 +17,13 @@ class MeasureViewModel (
     private val offlineDataRepository: OfflineDataRepository
 ) : ViewModel() {
 
-    val offlinedatas by lazyDeferred {
+    val offlineUserTaskList by lazyDeferred {
         offlineDataRepository.getUserTaskList()
     }
-
-//    val measure_Item = MutableLiveData<String>()
-//    fun Item5(measurea: String) {
-//        measure_Item.value = measurea
-//    }
 
     val user by lazyDeferred {
         measureCreationDataRepository.getUser()
     }
-
-
 
     val measurea1_Item1 = MutableLiveData<JobItemMeasureDTO>()
     fun Item1(measurea1: JobItemMeasureDTO) {
@@ -49,8 +42,8 @@ class MeasureViewModel (
     }
 
 
-    val measure_Item = MutableLiveData<EstimateMeasure_Item>()
-    fun Item5(measurea: EstimateMeasure_Item) {
+    val measure_Item = MutableLiveData<EstimateMeasureItem>()
+    fun Item5(measurea: EstimateMeasureItem) {
         measure_Item.value = measurea
     }
 
@@ -62,14 +55,6 @@ class MeasureViewModel (
             measureCreationDataRepository.getJobMeasureForActivityId(activityId, activityId2)
         }
     }
-
-
-//    suspend fun getJobMeasureForActivityId(activityId: Int): LiveData<List<JobItemEstimateDTO>> {
-//        return withContext(Dispatchers.IO) {
-//            measureDataRepository.getJobMeasureForActivityId(activityId)
-//        }
-//    }
-
 
     suspend fun getProjectSectionIdForJobId(jobId: String): String {
         return withContext(Dispatchers.IO) {
@@ -110,12 +95,14 @@ class MeasureViewModel (
         }
     }
 
-    suspend fun deleteItemMeasurefromList(itemMeasureId: String) {
+    suspend fun deleteItemMeasureFromList(itemMeasureId: String) {
         measureCreationDataRepository.deleteItemMeasurefromList(itemMeasureId)
     }
-    suspend fun deleteItemMeasurephotofromList(itemMeasureId: String) {
+
+    suspend fun deleteItemMeasurePhotoFromList(itemMeasureId: String) {
         measureCreationDataRepository.deleteItemMeasurephotofromList(itemMeasureId)
     }
+
     suspend fun processWorkflowMove(
         userId: String,
         jobId: String,
@@ -178,88 +165,4 @@ class MeasureViewModel (
     suspend fun saveJobItemMeasureItems(jobItemMeasureDTO: ArrayList<JobItemMeasureDTO>) {
         measureCreationDataRepository.saveJobItemMeasureItems(jobItemMeasureDTO)
     }
-
-    suspend fun getJobItemMeasurePhotosForItemEstimateID(estimateId: String): LiveData<List<JobItemMeasurePhotoDTO>> {
-        return withContext(Dispatchers.IO) {
-            measureCreationDataRepository.getJobItemMeasurePhotosForItemEstimateID(estimateId)
-        }
-    }
-
-
-
-
-
-    //   fun getItemJobNo(jobId: String): String {
-//        return withContext(Dispatchers.IO) {
-//            measureDataRepository.getItemJobNo(jobId)
-//        }
-//    }
-
-//    suspend  fun checkIfJobItemMeasureExistsForJobIdAndEstimateId(jobId: String?, estimateId: String): Boolean {
-//        return withContext(Dispatchers.IO) {
-//            measureDataRepository.checkIfJobItemMeasureExistsForJobIdAndEstimateId(jobId, estimateId)
-//        }
-//    }
-
-//    suspend fun getJobItemMeasuresForJobIdAndEstimateId( jobId: String?, estimateId: String ): List<JobItemMeasureDTO> {
-//        return withContext(Dispatchers.IO) {
-//             measureDataRepository.getJobItemMeasuresForJobIdAndEstimateId(jobId, estimateId)
-//        }
-//    }
-
-//    suspend fun getJobItemsToMeasureForJobId(activityId: Int): LiveData<List<JobItemEstimateDTO>> {
-//        return withContext(Dispatchers.IO) {
-//            measureDataRepository.getJobMeasureForActivityId(activityId)
-//        }
-//    }
-//
-
-
-//    suspend fun getJobItemMeasureForJobId(jobId: String?) :LiveData<JobItemMeasureDTO>{
-//        return withContext(Dispatchers.IO) {
-//            measureDataRepository.getJobItemMeasureForJobId(jobId)
-//        }
-//    }
-//
-//    suspend fun getJobItemMeasurePhotosForItemMeasureID(itemMeasureId: String): LiveData<List<JobItemMeasurePhotoDTO>> {
-//        return withContext(Dispatchers.IO) {
-//            measureDataRepository.getJobItemMeasurePhotosForItemMeasureID(itemMeasureId)
-//        }
-//    }
-//
-//    suspend fun getPhotoForJobItemMeasure(filename: String) {
-//        return withContext(Dispatchers.IO) {
-//            measureDataRepository.getPhotoForJobItemMeasure(filename)
-//        }
-//    }
-
-
-//    suspend fun processImageUpload(
-//        filename: String,
-//        extension: String,
-//        photo: ByteArray
-//    ) {
-//        return withContext(Dispatchers.IO) {
-//            measureDataRepository.imageUpload( filename,extension,photo)
-//        }
-//
-//    }
-
-
-
-
-
-//    suspend fun createJobItemMeasureItem(selectedItemMeasure: ItemDTO?, quantity: Double, jobForJobItemEstimate: JobDTO, selectedJobItemEstimate: JobItemEstimateDTO, jobItemMeasurePhotoDTO: ArrayList<JobItemMeasurePhotoDTO>) {
-//        measureDataRepository.createJobItemMeasureItem(selectedItemMeasure!!,quantity,jobForJobItemEstimate,selectedJobItemEstimate,jobItemMeasurePhotoDTO)
-//    }
-
-//    suspend  fun setJobItemMeasure( jobId: String, projectItemId: String?, quantity: Double,  lineRate: Double, startKm: Double,  endKm: Double, jobDirectionId: Int,
-//        recordVersion : Int, recordSynchStateId : Int,  estimateId: String, projectVoId: String,  cpa: Int,   lineAmount: Double,  date: String,  uom: String?
-//    ) : LiveData<JobItemMeasureDTO>{
-//        return withContext(Dispatchers.IO) {
-//            measureDataRepository.setJobItemMeasure(jobId, projectItemId, quantity,  lineRate, startKm,  endKm, jobDirectionId,
-//            recordVersion , recordSynchStateId ,  estimateId, projectVoId,  cpa,   lineAmount,  date,  uom)
-//        }
-//    }
-
 }

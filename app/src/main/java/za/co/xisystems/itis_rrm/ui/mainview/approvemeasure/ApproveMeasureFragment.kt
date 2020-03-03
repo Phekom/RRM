@@ -9,14 +9,12 @@ import android.view.View.GONE
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import kotlinx.android.synthetic.main.fragment_approvemeasure.*
-import kotlinx.android.synthetic.main.fragment_approvemeasure.noData
-import kotlinx.android.synthetic.main.fragment_work.*
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
@@ -55,8 +53,9 @@ companion object{
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         approveViewModel = activity?.run {
-            ViewModelProviders.of(this, factory).get(ApproveMeasureViewModel::class.java)
-        } ?: throw Exception("Invalid Activity") as Throwable
+            val get = ViewModelProvider(this, factory).get(ApproveMeasureViewModel::class.java)
+            get
+        } ?: throw Exception("Invalid Activity")
         Coroutines.main {
             val measurements = approveViewModel.getJobApproveMeasureForActivityId(ActivityIdConstants.MEASURE_COMPLETE)
 //            val measurements  = approveViewModel.getJobsMeasureForActivityId(ActivityIdConstants.ESTIMATE_MEASURE,ActivityIdConstants.MEASURE_COMPLETE,ActivityIdConstants.EST_WORKS_COMPLETE,ActivityIdConstants.JOB_APPROVED)
@@ -113,9 +112,8 @@ companion object{
         job: ApproveMeasure_Item?,
         view: View
     ) {
-        val jobId = job
         Coroutines.main {
-            approveViewModel.measureapproval_Item.value = jobId
+            approveViewModel.measureapproval_Item.value = job
         }
 
         Navigation.findNavController(view)

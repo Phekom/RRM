@@ -41,9 +41,9 @@ fun View.snackbar(message: String){
  * Hide keyboard.
  */
 fun Activity.hideKeyboard() {
-    val view = this.getCurrentFocus()
+    val view = this.currentFocus
     if (view != null) {
         val imm = this.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        imm.hideSoftInputFromWindow(view!!.getWindowToken(), 0)
+        imm.hideSoftInputFromWindow(view.windowToken, 0)
     }
 }

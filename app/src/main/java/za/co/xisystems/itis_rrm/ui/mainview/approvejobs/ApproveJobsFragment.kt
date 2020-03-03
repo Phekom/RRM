@@ -10,7 +10,7 @@ import android.view.View.GONE
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
@@ -57,7 +57,7 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
         super.onActivityCreated(savedInstanceState)
         // TODO: fix deprecated ViewModelProviders
         approveViewModel = activity?.run {
-            ViewModelProviders.of(this, factory).get(ApproveJobsViewModel::class.java)
+            ViewModelProvider(this, factory).get(ApproveJobsViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
         Coroutines.main {
 

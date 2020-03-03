@@ -12,9 +12,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.xwray.groupie.ExpandableGroup
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
@@ -24,14 +23,13 @@ import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
-import za.co.xisystems.itis_rrm.data.localDB.*
+import za.co.xisystems.itis_rrm.data.localDB.JobDataController
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModelFactory
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DataConversion
-import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import java.util.*
 
@@ -66,8 +64,9 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
         (activity as MainActivity).supportActionBar?.title =
             getString(R.string.submit_measure_title)
         measureViewModel = activity?.run {
-            ViewModelProviders.of(this, factory).get(MeasureViewModel::class.java)
-        } ?: throw Exception("Invalid Activity") as Throwable
+            val get = ViewModelProvider(this, factory).get(MeasureViewModel::class.java)
+            get
+        } ?: throw Exception("Invalid Activity")
 
         Coroutines.main {
             measureViewModel.measure_Item.observe(viewLifecycleOwner, Observer { jobID ->
@@ -86,23 +85,23 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+
         measureViewModel = activity?.run {
-            ViewModelProviders.of(this, factory).get(MeasureViewModel::class.java)
-        } ?: throw Exception("Invalid Activity") as Throwable
+            val get = ViewModelProvider(this, factory).get(MeasureViewModel::class.java)
+            get
+        } ?: throw Exception("Invalid Activity")
 
         Coroutines.main {
-            jobItemMeasurePhotoDTO = ArrayList<JobItemMeasurePhotoDTO>()
-            jobItemMeasureArrayList = ArrayList<JobItemMeasureDTO>()
-            jobItemEstimatesForJob = ArrayList<JobItemEstimateDTO>()
-            jobItemMeasureList = ArrayList<JobItemMeasureDTO>()
+            jobItemMeasurePhotoDTO = ArrayList()
+            jobItemMeasureArrayList = ArrayList()
+            jobItemEstimatesForJob = ArrayList()
+            jobItemMeasureList = ArrayList()
 
-            jobItemMeasuresForJobItemEstimates =
-                HashMap<JobItemEstimateDTO, List<JobItemMeasureDTO>>()
+            jobItemMeasuresForJobItemEstimates = HashMap()
 
             measureViewModel.measure_Item.observe(viewLifecycleOwner, Observer { jobID ->
                 jobItemEstimate = jobID.jobItemEstimateDTO
                 getWorkItems(jobItemEstimate.jobId)
-//                populateHashMap(jobItemEstimatesForJob)
             })
 
 
@@ -127,12 +126,8 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
                     measureViewModel.measure_Item.observe(viewLifecycleOwner, Observer { measureItem ->
                         getWorkItems(measureItem.jobItemEstimateDTO.jobId)
                         items_swipe_to_refresh.isRefreshing = false
-
                     })
-//                    val jobItemMeasure = measureViewModel.getJobItemMeasuresForJobIdAndEstimateId2(it.JobId, measure_item.estimateId,jobItemMeasureArrayList)
-//                    jobItemMeasure.observe(activity!!, Observer { m_sures ->
-//
-//                    })
+
                 }
             }
 
@@ -262,7 +257,7 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
                         prog.setTitle(getString(R.string.please_wait))
                         prog.setMessage(getString(R.string.loading_job_wait))
                         prog.setCancelable(false)
-                        prog.setIndeterminate(true)
+                        prog.isIndeterminate = true
                         prog.setProgressStyle(ProgressDialog.STYLE_SPINNER)
                         prog.show()
                         val submit= activity?.let {
@@ -402,7 +397,7 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
             addAll(tomeasureItem)
         }
         measure_listView.apply {
-            layoutManager = LinearLayoutManager(this.context) as RecyclerView.LayoutManager?
+            layoutManager = LinearLayoutManager(this.context)
             adapter = groupAdapter
 
         }
@@ -436,7 +431,10 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
                         jobForItemEstimate = job
                         Coroutines.main {
                             val jobItemMeasure =
-                                measureViewModel.getJobItemMeasuresForJobIdAndEstimateId2(job.JobId, measure_item.estimateId)//, jobItemMeasureArrayList
+                                measureViewModel.getJobItemMeasuresForJobIdAndEstimateId(
+                                    job.JobId,
+                                    measure_item.estimateId
+                                )//, jobItemMeasureArrayList
                             jobItemMeasure.observe(activity!!, Observer { m_sures ->
                                 Coroutines.main {
                                     for (jobItemM in m_sures) {

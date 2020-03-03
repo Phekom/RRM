@@ -11,11 +11,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
-import kotlinx.android.synthetic.main.fragment_job_info.*
 import kotlinx.android.synthetic.main.fragment_measure_approval.*
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
@@ -49,11 +48,6 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -65,8 +59,8 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         approveViewModel = activity?.run {
-            ViewModelProviders.of(this, factory).get(ApproveMeasureViewModel::class.java)
-        } ?: throw Exception("Invalid Activity") as Throwable
+            ViewModelProvider(this, factory).get(ApproveMeasureViewModel::class.java)
+        } ?: throw Exception("Invalid Activity")
 
         Coroutines.main {
 //            mydata_loading.show()
@@ -116,11 +110,9 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
                 // Yes button
                 logoutBuilder.setPositiveButton(
                     R.string.yes
-                ) { dialog, which ->
-                    if (ServiceUtil.isNetworkConnected(context?.applicationContext)) {
-//                        moveJobToNextWorkflow(WorkflowDirection.FAIL)
-                    } else {
-                        toast( R.string.no_connection_detected)
+                ) { _, _ ->
+                    if (!ServiceUtil.isNetworkConnected(context?.applicationContext)) {
+                        toast(R.string.no_connection_detected)
                     }
                 }
                 // No button
@@ -159,9 +151,9 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
                     } else {
                         // TODO beware littlEndian conversion
                         val trackRounteId: String = DataConversion.toLittleEndian(job.jobItemMeasureDTO.trackRouteId)!!
-                        val direction: Int = workflowDirection.getValue()
+                        val direction: Int = workflowDirection.value
 
-                        var description : String = ""
+                        val description: String = ""
 //                        val messages = messages
 //                        if (workflow_comments_editText.text != null){
 //                            description = workflow_comments_editText.text.toString()
@@ -187,7 +179,7 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
             prog.setTitle(getString(R.string.please_wait))
             prog.setMessage(getString(R.string.loading_job_wait))
             prog.setCancelable(false)
-            prog.setIndeterminate(true)
+            prog.isIndeterminate = true
             prog.setProgressStyle(ProgressDialog.STYLE_SPINNER)
             prog.show()
            val submit =  approveViewModel.processWorkflowMove(userId, trackRounteId,description,direction)
@@ -203,9 +195,9 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
     }
 
     private fun popViewOnJobSubmit(direction: Int) {
-        if (direction.equals(WorkflowDirection.NEXT)) {
+        if (direction == WorkflowDirection.NEXT.value) {
             toast(R.string.job_approved)
-        } else if (direction.equals(WorkflowDirection.FAIL)) {
+        } else if (direction == WorkflowDirection.FAIL.value) {
             toast(R.string.job_declined)
         }
 
@@ -231,7 +223,7 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
         }
     }
 
-    private fun initRecyclerView(measureListItems: List<Measurements_Item>) {
+    private fun initRecyclerView(measureListItems: List<MeasurementsItem>) {
         val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
             addAll(measureListItems)
         }
@@ -243,10 +235,10 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
 
     }
 
-    private fun List<JobItemMeasureDTO>.toMeasure_Item(): List<Measurements_Item> {
+    private fun List<JobItemMeasureDTO>.toMeasure_Item(): List<MeasurementsItem> {
         return this.map { approvej_items ->
             //            getEstimateItemsPhoto(approvej_items.estimateId)
-            Measurements_Item(approvej_items,approveViewModel, activity)
+            MeasurementsItem(approvej_items, approveViewModel, activity)
         }
     }
 
@@ -262,19 +254,6 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
     fun onButtonPressed(uri: Uri) {
 //        listener?.onFragmentInteraction(uri)
     }
-
-
-
-    override fun onDetach() {
-        super.onDetach()
-
-    }
-
-
-
-
-
-
 
 
 }

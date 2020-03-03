@@ -1,5 +1,6 @@
 package za.co.xisystems.itis_rrm.utils
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
@@ -17,11 +18,11 @@ import java.util.*
 
 object Util {
     fun toByteArray(stringUUID: String?): ByteArray? {
-        var stringUUID = stringUUID
+        var stringUUID: String? = stringUUID
         return if (stringUUID != null) {
             if (!stringUUID.contains("-")) stringUUID =
                 insertDashUUID(stringUUID)
-            val uuid = UUID.fromString(stringUUID.toLowerCase())
+            val uuid = UUID.fromString(stringUUID.toLowerCase(Locale.ROOT))
             val bb = ByteBuffer.wrap(ByteArray(16))
             bb.putLong(uuid.mostSignificantBits)
             bb.putLong(uuid.leastSignificantBits)
@@ -64,7 +65,7 @@ object Util {
     }
 
     fun removeDashesAndUppercaseString(string: String?): String? {
-        return string?.toUpperCase()?.replace("-", "")
+        return string?.toUpperCase(Locale.ROOT)?.replace("-", "")
     }
 
     fun getUri(context: Context?): Uri? {
@@ -80,6 +81,7 @@ object Util {
         return null
     }
 
+    @SuppressLint("SimpleDateFormat")
     @Throws(IOException::class)
     private fun createImageFile(): File {
         val timeStamp =

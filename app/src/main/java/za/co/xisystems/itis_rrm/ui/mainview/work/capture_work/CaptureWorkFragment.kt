@@ -6,8 +6,6 @@ import android.app.Dialog
 import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
-import android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
-import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.location.Location
@@ -22,9 +20,10 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.bumptech.glide.Glide
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import icepick.State
@@ -58,13 +57,14 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
         private const val REQUEST_IMAGE_CAPTURE = 1
         private const val REQUEST_STORAGE_PERMISSION = 1
     }
+
     private var imageUri: Uri? = null
     private var mTempPhotoPath: String? = null
 
-//    private var estimatId :String? = null
+    //    private var estimatId :String? = null
     private lateinit var workFlowRoute: ArrayList<Long>
     private lateinit var workFlowMenuTitles: ArrayList<String>
-    private lateinit var groupAdapter : GroupAdapter<GroupieViewHolder>
+    private lateinit var groupAdapter: GroupAdapter<GroupieViewHolder>
     private lateinit var estimateWorksPhotoArrayList: ArrayList<JobEstimateWorksPhotoDTO>
     private lateinit var estimateWorksArrayList: ArrayList<JobEstimateWorksDTO>
     private lateinit var estimateWorksList: ArrayList<JobEstimateWorksDTO>
@@ -76,13 +76,13 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
     private lateinit var jobWorkStep: ArrayList<WF_WorkStepDTO>
 
 
-
     @State
     var filename_path = HashMap<String, String>()
     lateinit var locationHelper: LocationHelper
     private var currentLocation: Location? = null
-//    private var index = -1
+    //    private var index = -1
     lateinit var useR: UserDTO
+
     override fun onStart() {
         super.onStart()
         locationHelper.onStart()
@@ -104,20 +104,20 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
         (activity as MainActivity).supportActionBar?.title = getString(R.string.capture_work_title)
 //        estimateWorksPhotoArrayList = ArrayList<EstimateWorksPhoto>()
         workFlowMenuTitles = ArrayList()
-        groupAdapter = GroupAdapter<GroupieViewHolder>()
+        groupAdapter = GroupAdapter()
         locationHelper =
             LocationHelper(
                 this
             )
         locationHelper.onCreate()
-        estimateWorksPhotoArrayList = ArrayList<JobEstimateWorksPhotoDTO>()
-        estimateWorksList = ArrayList<JobEstimateWorksDTO>()
-        estimateWorksArrayList = ArrayList<JobEstimateWorksDTO>()
-        jobWorkStep = ArrayList<WF_WorkStepDTO>()
+        estimateWorksPhotoArrayList = ArrayList()
+        estimateWorksList = ArrayList()
+        estimateWorksArrayList = ArrayList()
+        jobWorkStep = ArrayList()
 
-           }
+    }
 
-      override fun onCreateView(
+    override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
@@ -128,10 +128,10 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         workViewModel = activity?.run {
-            ViewModelProviders.of(this, factory).get(WorkViewModel::class.java)
-        } ?: throw Exception("Invalid Activity") as Throwable
+            ViewModelProvider(this, factory).get(WorkViewModel::class.java)
+        } ?: throw Exception("Invalid Activity")
         Coroutines.main {
-            var user = workViewModel.user.await()
+            val user = workViewModel.user.await()
             user.observe(viewLifecycleOwner, Observer { user_ ->
                 useR = user_
 //                group10_loading.visibility = View.GONE
@@ -141,7 +141,7 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
 
             })
             workViewModel.work_Item.observe(viewLifecycleOwner, Observer { estimate ->
-                getWorkItems(estimate,itemEstiJob)
+                getWorkItems(estimate, itemEstiJob)
 //                estimatId = estimate.estimateId
                 itemEsti = estimate
 
@@ -156,7 +156,7 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
 //            }
 
             // set the method and pass array as a parameter
-            val photo = intArrayOf(estimateWorksPhotoArrayList.size  )
+            val photo = intArrayOf(estimateWorksPhotoArrayList.size)
 
 //            var imageIds = intArrayOf(
 //                R.drawable.image1,
@@ -209,7 +209,6 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
 //            }
 
 
-
 //            items_swipe_to_refresh.setProgressBackgroundColorSchemeColor(
 //                ContextCompat.getColor(
 //                    context!!.applicationContext,
@@ -235,8 +234,16 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
 
         work_imageView.visibility = View.GONE
         take_photo_button.setOnClickListener {
-            if (ContextCompat.checkSelfPermission(activity!!.applicationContext, Manifest.permission.WRITE_EXTERNAL_STORAGE) !== PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(Activity(), arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), REQUEST_STORAGE_PERMISSION)
+            if (ContextCompat.checkSelfPermission(
+                    activity!!.applicationContext,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                ) !== PackageManager.PERMISSION_GRANTED
+            ) {
+                ActivityCompat.requestPermissions(
+                    Activity(),
+                    arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                    REQUEST_STORAGE_PERMISSION
+                )
             } else {
                 launchCamera()
             }
@@ -249,16 +256,16 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
                     prog.setTitle(getString(R.string.please_wait))
                     prog.setMessage(getString(R.string.data_loading_please_wait))
                     prog.setCancelable(false)
-                    prog.setIndeterminate(true)
+                    prog.isIndeterminate = true
                     prog.setProgressStyle(ProgressDialog.STYLE_SPINNER)
                     prog.show()
                     itemEstiWorks.jobEstimateWorksPhotos = estimateWorksPhotoArrayList
                     itemEstiWorks.jobItemEstimate = jobitemEsti
 
-                    sendJobToService(itemEstiWorks,prog )
-                   } else {
+                    sendJobToService(itemEstiWorks, prog)
+                } else {
                     val networkToast = Toast.makeText(
-                        activity?.getApplicationContext(),
+                        activity?.applicationContext,
                         R.string.no_connection_detected,
                         Toast.LENGTH_LONG
                     )
@@ -269,7 +276,7 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
 
             } else {
                 val validation = Toast.makeText(
-                    activity?.getApplicationContext(),
+                    activity?.applicationContext,
                     getString(R.string.please_make_sure_workflow_items_contain_photos),
                     Toast.LENGTH_LONG
                 )
@@ -280,7 +287,6 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
             }
 
 //            refreshView()
-
 
 
 //            toast("Ready to Submit the Images")
@@ -299,20 +305,22 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
     }
 
 
-
     private fun sendJobToService(
         itemEstiWorks: JobEstimateWorksDTO,
 
         prog: ProgressDialog
-    ) { Coroutines.main {
+    ) {
+        Coroutines.main {
 
-      val newitemEstiWorks = setJobWorksLittleEndianGuids(itemEstiWorks)
-      val response  = workViewModel.submitWorks(newitemEstiWorks, activity!!,itemEstiJob)
-            if (response != null){
-                refreshView(prog) } else
-             activity?.toast(response)
+            val newitemEstiWorks = setJobWorksLittleEndianGuids(itemEstiWorks)
+            val response = workViewModel.submitWorks(newitemEstiWorks, activity!!, itemEstiJob)
+            if (response != null) {
+                refreshView(prog)
+            } else
+                activity?.toast(response)
 
-    }}
+        }
+    }
 
     private fun setJobWorksLittleEndianGuids(works: JobEstimateWorksDTO): JobEstimateWorksDTO {
         if (works != null) {
@@ -320,12 +328,12 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
             works.setWorksId(DataConversion.toLittleEndian(works.worksId))
             works.setEstimateId(DataConversion.toLittleEndian(works.estimateId))
             works.setTrackRouteId(DataConversion.toLittleEndian(works.trackRouteId))
-                if (works.jobEstimateWorksPhotos != null) {
-                    for (ewp in works.jobEstimateWorksPhotos!!) {
-                        ewp.setWorksId(DataConversion.toLittleEndian(ewp.worksId))
-                        ewp.setPhotoId(DataConversion.toLittleEndian(ewp.photoId))
-                    }
+            if (works.jobEstimateWorksPhotos != null) {
+                for (ewp in works.jobEstimateWorksPhotos!!) {
+                    ewp.setWorksId(DataConversion.toLittleEndian(ewp.worksId))
+                    ewp.setPhotoId(DataConversion.toLittleEndian(ewp.photoId))
                 }
+            }
 //            }
         }
         return works
@@ -353,19 +361,18 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
 //            works.observe(viewLifecycleOwner, Observer { work_s ->
 
             workViewModel.work_Item.observe(viewLifecycleOwner, Observer { estimate ->
-//                getWorkItems(estimate, itemEstiJob)
+                //                getWorkItems(estimate, itemEstiJob)
 
                 val id = 3 //TODO("THis part must be Deleted when the Dynamic workflow is Added")
-                Coroutines.main{
-                    val workcode =  workViewModel.getWokrCodes(id)
+                Coroutines.main {
+                    val workcode = workViewModel.getWokrCodes(id)
                     workcode.observe(viewLifecycleOwner, Observer { workCodes ->
                         prog.dismiss()
                         groupAdapter.notifyItemChanged(2)
 //                        getWorkItems(estimate.estimateId, estimate, itemEstiJob)
-                            Log.e("IsRefresh", "Yes");
+                        Log.e("IsRefresh", "Yes")
                     })
                 }
-
 
 
             })
@@ -396,18 +403,19 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == Activity.RESULT_OK) { // Process the image and set it to the TextView
             processAndSetImage()
             work_imageView.visibility = View.VISIBLE
-        } else { // Otherwise, delete the temporary image file
-//            BitmapUtils.deleteImageFile(activity!!.applicationContext, mTempPhotoPath)
         }
     }
 
     private fun processAndSetImage() {
         try { //  Location of picture
-            val currentLocation: Location = locationHelper?.getCurrentLocation()!!
+            val currentLocation: Location = locationHelper.getCurrentLocation()!!
             if (currentLocation == null) toast("Error: Current location is null!")
             //  Save Image to Internal Storage
 
-            filename_path = PhotoUtil.saveImageToInternalStorage(activity!!, imageUri!!) as HashMap<String, String>
+            filename_path = PhotoUtil.saveImageToInternalStorage(
+                activity!!,
+                imageUri!!
+            ) as HashMap<String, String>
 
             processPhotoWorks(currentLocation, filename_path, itemEsti)
 
@@ -415,7 +423,7 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
             toast(R.string.error_getting_image)
             e.printStackTrace()
         }
-        GlideApp.with(this)
+        Glide.with(this)
             .asBitmap()
             .load(imageUri)
             .into(work_imageView)
@@ -451,7 +459,6 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
 //            })
 //            .into(work_imageView.nextView as ImageView)
 //
-
 
 
 //        GlideApp.with(this)
@@ -490,45 +497,60 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
         filenamePath: HashMap<String, String>,
         itemEsti: JobItemEstimateDTO
     ) {
-        val photoPath = filenamePath
 
         if (currentLocation == null) {
             activity!!.toast("Please make sure that you have activated the location on your device.")
         } else {
             val photo = createItemWorksPhoto(
                 itemEsti,
-                photoPath,
+                filenamePath,
                 currentLocation,
                 estimateWorksPhotoArrayList
             )
             Coroutines.main {
                 itemEstiWorks.jobEstimateWorksPhotos = estimateWorksPhotoArrayList
-            workViewModel.createSaveWorksPhotos(
-                estimateWorksPhotoArrayList,
-                itemEsti,
-                itemEstiWorks
-            )
+                workViewModel.createSaveWorksPhotos(
+                    estimateWorksPhotoArrayList,
+                    itemEsti,
+                    itemEstiWorks
+                )
+            }
         }
-    }
     }
 
     private fun showZoomedImage(imageUrl: Uri) {
-        val dialog = Dialog(this!!.activity, R.style.dialog_full_screen)
+        val dialog = Dialog(this.activity, R.style.dialog_full_screen)
         dialog.setContentView(R.layout.new_job_photo)
         val zoomageView =
             dialog.findViewById<ZoomageView>(R.id.zoomedImage)
-        GlideApp.with(this.activity!!)
+        Glide.with(this.activity!!)
             .load(imageUrl)
             .into(zoomageView)
         dialog.show()
     }
 
-    private fun createItemWorksPhoto(itemEsti: JobItemEstimateDTO, filenamePath: HashMap<String, String>, currentLocation: Location, estimateWorksPhotoArrayList: ArrayList<JobEstimateWorksPhotoDTO>): JobEstimateWorksPhotoDTO {
+    private fun createItemWorksPhoto(
+        itemEsti: JobItemEstimateDTO,
+        filenamePath: HashMap<String, String>,
+        currentLocation: Location,
+        estimateWorksPhotoArrayList: ArrayList<JobEstimateWorksPhotoDTO>
+    ): JobEstimateWorksPhotoDTO {
         val photoId = SqlLitUtils.generateUuid()
         val jobItemWorksPhoto = JobEstimateWorksPhotoDTO(
-            0, "",filenamePath["filename"]!!,itemEstiWorks.actId,DateUtil.DateToString(Date())!!
-            ,photoId,currentLocation.latitude,currentLocation.longitude,filenamePath["path"]!!,estimateWorksList,
-            0,0,itemEstiWorks.worksId
+            0,
+            "",
+            filenamePath["filename"]!!,
+            itemEstiWorks.actId,
+            DateUtil.DateToString(Date())!!
+            ,
+            photoId,
+            currentLocation.latitude,
+            currentLocation.longitude,
+            filenamePath["path"]!!,
+            estimateWorksList,
+            0,
+            0,
+            itemEstiWorks.worksId
 
         )
         estimateWorksPhotoArrayList.add(jobItemWorksPhoto)
@@ -560,7 +582,7 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
                 estimate_works.observe(viewLifecycleOwner, Observer { work_s ->
                     //                    setButtonStates(work_s.get(0).actId, work_s)
                     for (itemwork in work_s) {
-                        if (itemwork?.actId == 21) {
+                        if (itemwork.actId == 21) {
                             Coroutines.main {
                                 val workDone: Int = workViewModel.getJobItemsEstimatesDoneForJobId(
                                     itemEstiJob.JobId,
@@ -581,9 +603,7 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
                                 val workcode = workViewModel.getWokrCodes(id)
                                 workcode.observe(viewLifecycleOwner, Observer { workCodes ->
                                     jobWorkStep = workCodes as ArrayList<WF_WorkStepDTO>
-//                            for (i in workCodes.listIterator()) {
-//
-//                            }
+
                                     initRecyclerView(work_s.toWorkStateItems(), workCodes)
                                 })
 
@@ -611,88 +631,104 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
 //
         }
     }
+
     private fun popViewOnWorkSubmit(view: View?) {
         Navigation.findNavController(view!!).navigate(R.id.action_captureWorkFragment_to_nav_work)
     }
 
-    private fun submitAllOutStandingEstimates(estimate : ArrayList<JobItemEstimateDTO>?) {
+    private fun submitAllOutStandingEstimates(estimate: ArrayList<JobItemEstimateDTO>?) {
         // get Data from db Search for all estimates 8 and work 21 = result is int > 0  then button yes else fetch
         Coroutines.main {
-                if (estimate?.size != 0) {
-            val dialogBuilder : AlertDialog.Builder  =  AlertDialog.Builder(activity!!)
-                    dialogBuilder.setTitle(R.string.confirm)
-                    dialogBuilder.setIcon(R.drawable.ic_error)
-                    dialogBuilder.setMessage("All work is Done, Submit for Measurements")
-                    dialogBuilder.setCancelable(false)
-                    dialogBuilder.setPositiveButton(
-                        R.string.yes
-                    ) { dialog, which ->
+            if (estimate?.size != 0) {
+                val dialogBuilder: AlertDialog.Builder = AlertDialog.Builder(activity!!)
+                dialogBuilder.setTitle(R.string.confirm)
+                dialogBuilder.setIcon(R.drawable.ic_error)
+                dialogBuilder.setMessage("All work is Done, Submit for Measurements")
+                dialogBuilder.setCancelable(false)
+                dialogBuilder.setPositiveButton(
+                    R.string.yes
+                ) { dialog, which ->
 
-                        for (jobEstimate in estimate!!.iterator()) {
-                            Coroutines.main {
-//                                if(jobEstimate != null){
-                                    val jobItemEstimate = workViewModel.getJobItemEstimateForEstimateId(
-                                        DataConversion.toBigEndian(jobEstimate.estimateId)!!)
-                                    jobItemEstimate.observe(viewLifecycleOwner, Observer {jobItEstmt ->
-                                        moveJobItemEstimateToNextWorkflow(WorkflowDirection.NEXT, jobItEstmt)
-                                    })
-
-                            }
+                    for (jobEstimate in estimate!!.iterator()) {
+                        Coroutines.main {
+                            //                                if(jobEstimate != null){
+                            val jobItemEstimate = workViewModel.getJobItemEstimateForEstimateId(
+                                DataConversion.toBigEndian(jobEstimate.estimateId)!!
+                            )
+                            jobItemEstimate.observe(viewLifecycleOwner, Observer { jobItEstmt ->
+                                moveJobItemEstimateToNextWorkflow(
+                                    WorkflowDirection.NEXT,
+                                    jobItEstmt
+                                )
+                            })
 
                         }
+
                     }
-
-                    dialogBuilder.show()
-
                 }
+
+                dialogBuilder.show()
+
+            }
 
         }
     }
 
     private fun moveJobItemEstimateToNextWorkflow(
-        workflowDirection : WorkflowDirection,
+        workflowDirection: WorkflowDirection,
         jobItEstimate: JobItemEstimateDTO?
     ) {
-            val messages = arrayOf(getString(R.string.moving_to_next_step_in_workflow), getString(R.string.please_wait))
+        val messages = arrayOf(
+            getString(R.string.moving_to_next_step_in_workflow),
+            getString(R.string.please_wait)
+        )
         Coroutines.main {
             val user = workViewModel.user.await()
             user.observe(viewLifecycleOwner, Observer { user_ ->
-//                approveViewModel.jobapproval_Item6.observe(viewLifecycleOwner, Observer { job ->
+                //                approveViewModel.jobapproval_Item6.observe(viewLifecycleOwner, Observer { job ->
                 Coroutines.main {
-                    if (user_.userId == null) {
-                        toast("Error: userId is null")
-                    } else if (jobItEstimate?.jobId == null) {
-                        toast("Error: selectedJob is null")
-                    } else {
-                        toast(jobItEstimate?.jobId)
-                        // TODO beware littlEndian conversion
-                        val trackRounteId: String =
-                            DataConversion.toLittleEndian(jobItEstimate?.trackRouteId)!!
-                        val direction: Int = workflowDirection.getValue()
-                        Coroutines.main {
-                            val prog = ProgressDialog(activity)
-                            prog.setTitle(getString(R.string.please_wait))
-                            prog.setMessage(getString(R.string.loading_job_wait))
-                            prog.setCancelable(false)
-                            prog.setIndeterminate(true)
-                            prog.setProgressStyle(ProgressDialog.STYLE_SPINNER)
-                            prog.show()
-                            val submit=    workViewModel.processWorkflowMove(user_.userId, trackRounteId, null, direction)
-                            if (submit.isNullOrEmpty()){
-//                                toast(submit)
-//                                 prog.dismiss()
-                                popViewOnJobSubmit(direction, submit)
-                            }else{
-//                                prog.dismiss()
-                                popViewOnJobSubmit(direction, submit)
+                    when {
+                        user_.userId == null -> {
+                            toast("Error: userId is null")
+                        }
+                        jobItEstimate?.jobId == null -> {
+                            toast("Error: selectedJob is null")
+                        }
+                        else -> {
+                            toast(jobItEstimate.jobId)
+                            // TODO beware littlEndian conversion
+                            val trackRounteId: String =
+                                DataConversion.toLittleEndian(jobItEstimate.trackRouteId)!!
+                            val direction: Int = workflowDirection.value
+                            Coroutines.main {
+                                val prog = ProgressDialog(activity)
+                                prog.setTitle(getString(R.string.please_wait))
+                                prog.setMessage(getString(R.string.loading_job_wait))
+                                prog.setCancelable(false)
+                                prog.isIndeterminate = true
+                                prog.setProgressStyle(ProgressDialog.STYLE_SPINNER)
+                                prog.show()
+                                val submit = workViewModel.processWorkflowMove(
+                                    user_.userId,
+                                    trackRounteId,
+                                    null,
+                                    direction
+                                )
+                                if (submit.isEmpty()) {
+                                    //                                toast(submit)
+                                    //                                 prog.dismiss()
+                                    popViewOnJobSubmit(direction, submit)
+                                } else {
+                                    //                                prog.dismiss()
+                                    popViewOnJobSubmit(direction, submit)
+                                }
+
                             }
 
+
+                            //                        processWorkFlow(user_.userId, trackRounteId, direction, description)
+                            //                        popViewOnJobSubmit(direction)
                         }
-
-
-
-//                        processWorkFlow(user_.userId, trackRounteId, direction, description)
-//                        popViewOnJobSubmit(direction)
                     }
                 }
 //                })
@@ -701,47 +737,44 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
         }
 
 
-
-
-
     }
 
     private fun popViewOnJobSubmit(direction: Int, submit: String) {
-        if (direction.equals(WorkflowDirection.NEXT)) {
+        if (direction == WorkflowDirection.NEXT.value) {
             toast(R.string.job_approved)
-        } else if (direction.equals(WorkflowDirection.FAIL)) {
+        } else if (direction == WorkflowDirection.FAIL.value) {
             toast(R.string.job_declined)
         }
-        Intent(activity , MainActivity::class.java).also { home ->
-//            home.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+        Intent(activity, MainActivity::class.java).also { home ->
+            //            home.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
             startActivity(home)
         }
         // Navigation.findNavController(view!!)
 //                .navigate(R.id.action_jobInfoFragment_to_nav_home)
     }
 
-    private fun initRecyclerView(stateItems: List<WorkState_Item>, workCodes: List<WF_WorkStepDTO>
+    private fun initRecyclerView(
+        stateItems: List<WorkState_Item>, workCodes: List<WF_WorkStepDTO>
     ) {
         groupAdapter.apply {
-            Coroutines.main{
+            Coroutines.main {
                 groupAdapter.clear()
                 for (i in workCodes.indices) {//stateItems.indices
                     add(stateItems[0])
                     groupAdapter.notifyDataSetChanged()
                 }
 
-//                val workcode =  workViewModel.getWokrCodes.await()
+//                val workcode =  workViewModel.getWorkCodes.await()
 //                workcode.observe(viewLifecycleOwner, Observer { workCodes ->
 //
 ////
 //                })
 
 
-
             }
 
 
-             //val workState = arrayOf("TA", "START", "MIDDLE", "END", "RTA")
+            //val workState = arrayOf("TA", "START", "MIDDLE", "END", "RTA")
         }
         work_actions_listView.apply {
             layoutManager = LinearLayoutManager(this.context)
@@ -761,22 +794,22 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
     ) {
         for (jobEstimateWorks in workS) {
             if (jobEstimateWorks.actId !== actId) {
-                comments_editText.setVisibility(View.GONE)
+                comments_editText.visibility = View.GONE
                 headimg.visibility = View.GONE
-                take_photo_button.setVisibility(View.GONE)
-                move_workflow_button.setVisibility(View.GONE)
-                comments_editText.setEnabled(false)
-                take_photo_button.setEnabled(false)
-                move_workflow_button.setEnabled(false)
+                take_photo_button.visibility = View.GONE
+                move_workflow_button.visibility = View.GONE
+                comments_editText.isEnabled = false
+                take_photo_button.isEnabled = false
+                move_workflow_button.isEnabled = false
                 toast("You Have a Previous Step that Needs to be Done")
             } else {
-                comments_editText.setVisibility(View.VISIBLE)
+                comments_editText.visibility = View.VISIBLE
                 headimg.visibility = View.VISIBLE
-                take_photo_button.setVisibility(View.VISIBLE)
-                move_workflow_button.setVisibility(View.VISIBLE)
-                comments_editText.setEnabled(true)
-                take_photo_button.setEnabled(true)
-                move_workflow_button.setEnabled(true)
+                take_photo_button.visibility = View.VISIBLE
+                move_workflow_button.visibility = View.VISIBLE
+                comments_editText.isEnabled = true
+                take_photo_button.isEnabled = true
+                move_workflow_button.isEnabled = true
             }
         }
 
@@ -785,11 +818,10 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
     private fun List<JobEstimateWorksDTO>.toWorkStateItems(): List<WorkState_Item> {
 //    private fun List<WF_WorkStepDTO>.toWorkStateItems(): List<WorkState_Item> {
 
-        return this.map { approvej_items ->
-            WorkState_Item(approvej_items, workViewModel, activity, groupAdapter,jobWorkStep)
+        return this.map { approveJobItems ->
+            WorkState_Item(approveJobItems, workViewModel, activity, groupAdapter, jobWorkStep)
         }
     }
-
 
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -806,11 +838,6 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun onDetach() {
-        super.onDetach()
-
-    }
-
     fun getCurrentLocation(): Location? {
         return currentLocation
     }
@@ -824,6 +851,7 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
 private fun JobEstimateWorksPhotoDTO.setWorksId(toLittleEndian: String?) {
     this.worksId = toLittleEndian!!
 }
+
 private fun JobEstimateWorksPhotoDTO.setPhotoId(toLittleEndian: String?) {
     this.photoId = toLittleEndian!!
 }

@@ -17,16 +17,16 @@
             app:layout_constraintTop_toTopOf="parent">
 
         <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/measure_listView"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                app:layout_constraintBottom_toTopOf="@+id/linearLayout2"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_bias="0.0"
-                android:layout_marginBottom="@dimen/small"
-                tools:listitem="@layout/item_expandable_header" />
+            android:id="@+id/measure_listView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/small"
+            app:layout_constraintBottom_toTopOf="@+id/linearLayout2"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.0"
+            tools:listitem="@layout/item_expandable_header" />
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
@@ -40,14 +40,15 @@
             android:layout_marginBottom="10dp"
             app:layout_constraintBottom_toBottomOf="parent"
             tools:layout_editor_absoluteX="2dp">
+
         <Button
-                android:id="@+id/submit_measurements_button"
-                style="@style/_button"
-                android:layout_width="wrap_content"
-                android:layout_height="@dimen/button_size"
-                android:layout_margin="@dimen/small"
-                android:layout_weight="1"
-                android:text="@string/submit_measurements_for_approval" />
+            android:id="@+id/submit_measurements_button"
+            style="@style/_button"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/button_size"
+            android:layout_margin="@dimen/small"
+            android:layout_weight="1"
+            android:text="@string/submit_measurements_for_approval" />
 
     </LinearLayout>
 

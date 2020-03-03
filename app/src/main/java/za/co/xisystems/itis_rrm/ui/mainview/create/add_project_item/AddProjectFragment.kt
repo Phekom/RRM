@@ -6,14 +6,13 @@ import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.text.method.TextKeyListener.clear
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -71,14 +70,14 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
     private var job: JobDTO? = null
     @MyState
 //    private lateinit var items: MutableList<ItemDTO>
-    private var items: List<ItemDTOTemp> = ArrayList<ItemDTOTemp>()
+    private var items: List<ItemDTOTemp> = ArrayList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
-        groupAdapter = GroupAdapter<GroupieViewHolder>()
+        groupAdapter = GroupAdapter()
         (activity as MainActivity).supportActionBar?.title = getString(R.string.new_job)
-        newJobItemEstimatesList = ArrayList<JobItemEstimateDTO>()
+        newJobItemEstimatesList = ArrayList()
         jobDataController  =  JobDataController
     }
 
@@ -120,11 +119,13 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
         super.onActivityCreated(savedInstanceState)
 
         createViewModel = activity?.run {
-            ViewModelProviders.of(this, factory).get(CreateViewModel::class.java)
-        } ?: throw Exception("Invalid Activity")as Throwable
+            val get = ViewModelProvider(this, factory).get(CreateViewModel::class.java)
+            get
+        } ?: throw Exception("Invalid Activity")
         unsubmittedViewModel = activity?.run {
-            ViewModelProviders.of(this, myfactory).get(UnSubmittedViewModel::class.java)
-        } ?: throw Exception("Invalid Activity") as Throwable
+            val get = ViewModelProvider(this, myfactory).get(UnSubmittedViewModel::class.java)
+            get
+        } ?: throw Exception("Invalid Activity")
 
         last_lin.visibility = View.GONE
         totalCostTextView.visibility = View.GONE
@@ -423,7 +424,7 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
                         toast("Error: incomplete estimates.\n Quantity can't be zero!")
                         itemsCardView.startAnimation(shake_long)
                     } else  {
-                        var valid  = createViewModel.areEstimatesValid(job, ArrayList<Any?>(items))
+                        var valid = createViewModel.areEstimatesValid(job, ArrayList(items))
                                if (!valid){
                                   onInvalidJob()
                                }
@@ -440,7 +441,7 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
                                    prog.setTitle(getString(R.string.please_wait))
                                    prog.setMessage(getString(R.string.loading_job_wait))
                                    prog.setCancelable(false)
-                                   prog.setIndeterminate(true)
+                                       prog.isIndeterminate = true
                                    prog.setProgressStyle(ProgressDialog.STYLE_SPINNER)
                                    prog.show()
 
@@ -602,17 +603,9 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
         itemsCardView.startAnimation(shake_long)
     }
 
-    override fun onDestroyOptionsMenu() {
-        super.onDestroyOptionsMenu()
-    }
-
-    override fun onDetach() {
-        super.onDetach()
-    }
-
     override fun onStop() {
         super.onStop()
-        Log.d("Tag", "FragmentA.onDestroyView() has been called.");
+        Log.d("Tag", "FragmentA.onDestroyView() has been called.")
     }
 
 

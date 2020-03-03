@@ -5,7 +5,6 @@ package za.co.xisystems.itis_rrm
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
-import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.Typeface
 import android.location.LocationManager
@@ -14,16 +13,16 @@ import android.provider.Settings
 import android.view.Gravity
 import android.view.Menu
 import android.view.MenuItem
-import androidx.appcompat.widget.SearchView
 import android.widget.Switch
 import android.widget.TextView
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.appcompat.widget.SearchView
 import androidx.core.view.GravityCompat
 import androidx.core.view.MenuItemCompat
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import androidx.navigation.ui.NavigationUI
@@ -80,12 +79,17 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 
-        RaygunClient.init(application);
-        RaygunClient.enableCrashReporting();
+        RaygunClient.init(application)
+        RaygunClient.enableCrashReporting()
 
-        mainActivityViewModel = this?.run {
-            ViewModelProviders.of(this, factory).get(MainActivityViewModel::class.java)}
+        this.mainActivityViewModel = this.run {
+            val get =
+                ViewModelProvider(this, factory).get(MainActivityViewModel::class.java)
+            get
+        }
+
         initializeCountDrawer()
+
         lm = getSystemService(Context.LOCATION_SERVICE) as LocationManager
 //        this.delegate.localNightMode.equals( AppCompatDelegate.MODE_NIGHT_YES)
 //        (this@MainActivity as MainActivity?)?.delegate?.localNightMode = AppCompatDelegate.MODE_NIGHT_YES
@@ -138,13 +142,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val action = Settings.ACTION_LOCATION_SOURCE_SETTINGS
         val message = ("Your GPS seems to be disabled, Please enable it to continue")
         builder.setMessage(message)
-            .setPositiveButton("OK",
-                DialogInterface.OnClickListener { d, id ->
-                    activity.startActivity(Intent(action))
-                    d.dismiss()
-                })
-        builder.create().show()
-        }else{}
+            .setPositiveButton(
+                "OK"
+            ) { d, id ->
+                activity.startActivity(Intent(action))
+                d.dismiss()
+            }
+            builder.create().show()
+        }
     }
 
     override fun onBackPressed() {
@@ -266,7 +271,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         Coroutines.main {
            val useroles = mainActivityViewModel.getRoles()
             useroles.observe(this, Observer {roleList ->
-                val menuNav = navigationView.getMenu()
+                val menuNav = navigationView.menu
                 var nav_item: MenuItem
 
                 for (role in roleList) {
@@ -301,25 +306,25 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     if (IDss.equals(PROJECT_SUB_CONTRACTOR_ROLE_IDENTIFIER, ignoreCase = true)) {
 //                initializeCountDrawer()
                         val nav_item1 = menuNav.findItem(R.id.nav_create)
-                        nav_item1.setEnabled(false)
+                        nav_item1.isEnabled = false
 
                         val nav_item2 = menuNav.findItem(R.id.nav_unSubmitted)
-                        nav_item2.setEnabled(false)
+                        nav_item2.isEnabled = false
 
 //                        val nav_item3 = menuNav.findItem(R.id.nav_correction)
 //                        nav_item3.setEnabled(false)
 
                         val nav_item4 = menuNav.findItem(R.id.nav_work)
-                        nav_item4.setEnabled(true)
+                        nav_item4.isEnabled = true
 
                         val nav_item5 = menuNav.findItem(R.id.nav_approveJbs)
-                        nav_item5.setEnabled(false)
+                        nav_item5.isEnabled = false
 
                         val nav_item6 = menuNav.findItem(R.id.nav_estMeasure)
-                        nav_item6.setEnabled(false)
+                        nav_item6.isEnabled = false
 
                         val nav_item7 = menuNav.findItem(R.id.nav_approvMeasure)
-                        nav_item7.setEnabled(false)
+                        nav_item7.isEnabled = false
 
 
                     }
@@ -327,25 +332,25 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     if (IDss.equals(PROJECT_CONTRACTOR_ROLE_IDENTIFIER, ignoreCase = true)) {
 //                initializeCountDrawer()
                         val nav_item1 = menuNav.findItem(R.id.nav_create)
-                        nav_item1.setEnabled(true)
+                        nav_item1.isEnabled = true
 
                         val nav_item2 = menuNav.findItem(R.id.nav_unSubmitted)
-                        nav_item2.setEnabled(true)
+                        nav_item2.isEnabled = true
 
 //                        val nav_item3 = menuNav.findItem(R.id.nav_correction)
 //                        nav_item3.setEnabled(false)
 
                         val nav_item4 = menuNav.findItem(R.id.nav_work)
-                        nav_item4.setEnabled(true)
+                        nav_item4.isEnabled = true
 
                         val nav_item5 = menuNav.findItem(R.id.nav_approveJbs)
-                        nav_item5.setEnabled(false)
+                        nav_item5.isEnabled = false
 
                         val nav_item6 = menuNav.findItem(R.id.nav_estMeasure)
-                        nav_item6.setEnabled(true)
+                        nav_item6.isEnabled = true
 
                         val nav_item7 = menuNav.findItem(R.id.nav_approvMeasure)
-                        nav_item7.setEnabled(false)
+                        nav_item7.isEnabled = false
 
 
                     }
@@ -353,25 +358,25 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     if (IDss.equals(PROJECT_SITE_ENGINEER_ROLE_IDENTIFIER, ignoreCase = true)) {
 //                initializeCountDrawer()
                         val nav_item1 = menuNav.findItem(R.id.nav_create)
-                        nav_item1.setEnabled(true)
+                        nav_item1.isEnabled = true
 
                         val nav_item2 = menuNav.findItem(R.id.nav_unSubmitted)
-                        nav_item2.setEnabled(true)
+                        nav_item2.isEnabled = true
 
 //                        val nav_item3 = menuNav.findItem(R.id.nav_correction)
 //                        nav_item3.setEnabled(false)
 
                         val nav_item4 = menuNav.findItem(R.id.nav_work)
-                        nav_item4.setEnabled(false)
+                        nav_item4.isEnabled = false
 
                         val nav_item5 = menuNav.findItem(R.id.nav_approveJbs)
-                        nav_item5.setEnabled(false)
+                        nav_item5.isEnabled = false
 
                         val nav_item6 = menuNav.findItem(R.id.nav_estMeasure)
-                        nav_item6.setEnabled(true)
+                        nav_item6.isEnabled = true
 
                         val nav_item7 = menuNav.findItem(R.id.nav_approvMeasure)
-                        nav_item7.setEnabled(false)
+                        nav_item7.isEnabled = false
 
 
                     }
@@ -379,25 +384,25 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     if (IDss.equals(PROJECT_ENGINEER_ROLE_IDENTIFIER, ignoreCase = true)) {
 //                initializeCountDrawer()
                         val nav_item1 = menuNav.findItem(R.id.nav_create)
-                        nav_item1.setEnabled(false)
+                        nav_item1.isEnabled = false
 
                         val nav_item2 = menuNav.findItem(R.id.nav_unSubmitted)
-                        nav_item2.setEnabled(false)
+                        nav_item2.isEnabled = false
 
 //                        val nav_item3 = menuNav.findItem(R.id.nav_correction)
 //                        nav_item3.setEnabled(false)
 
                         val nav_item4 = menuNav.findItem(R.id.nav_work)
-                        nav_item4.setEnabled(false)
+                        nav_item4.isEnabled = false
 
                         val nav_item5 = menuNav.findItem(R.id.nav_approveJbs)
-                        nav_item5.setEnabled(true)
+                        nav_item5.isEnabled = true
 
                         val nav_item6 = menuNav.findItem(R.id.nav_estMeasure)
-                        nav_item6.setEnabled(false)
+                        nav_item6.isEnabled = false
 
                         val nav_item7 = menuNav.findItem(R.id.nav_approvMeasure)
-                        nav_item7.setEnabled(true)
+                        nav_item7.isEnabled = true
 
 
                     }
@@ -447,12 +452,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 qty = job_s.size
 //            qty = 50
                 if (qty == 0) {
-                    nav_unSubmitted?.setText("")
+                    nav_unSubmitted?.text = ""
                 } else {
-                    nav_unSubmitted?.setGravity(Gravity.CENTER_VERTICAL)
+                    nav_unSubmitted?.gravity = Gravity.CENTER_VERTICAL
                     nav_unSubmitted?.setTypeface(null, Typeface.BOLD)
                     nav_unSubmitted?.setTextColor(resources.getColor(R.color.red))
-                    nav_unSubmitted?.setText("( $qty )")
+                    nav_unSubmitted?.text = "( $qty )"
                 }
             })
 
@@ -477,12 +482,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             work.observe(this, androidx.lifecycle.Observer { job_s ->
                 qty = job_s.size
                 if (qty == 0) {
-                    nav_work?.setText("")
+                    nav_work?.text = ""
         } else {
-            nav_work?.setGravity(Gravity.CENTER_VERTICAL)
+                    nav_work?.gravity = Gravity.CENTER_VERTICAL
             nav_work?.setTypeface(null, Typeface.BOLD)
             nav_work?.setTextColor(resources.getColor(R.color.red))
-            nav_work?.setText("( $qty )")
+                    nav_work?.text = "( $qty )"
         } })
 //        //====================================================================================================================================================
 //            val measurements = mainActivityViewModel.getJobMeasureForActivityId(ActivityIdConstants.ESTIMATE_MEASURE, ActivityIdConstants.JOB_ESTIMATE)
@@ -491,12 +496,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             measurements.observe(this, androidx.lifecycle.Observer { job_s ->
                 qty = job_s.size
                 if (qty == 0) {
-                    nav_estMeasure?.setText("")
+                    nav_estMeasure?.text = ""
                 } else {
-                    nav_estMeasure?.setGravity(Gravity.CENTER_VERTICAL)
+                    nav_estMeasure?.gravity = Gravity.CENTER_VERTICAL
                     nav_estMeasure?.setTypeface(null, Typeface.BOLD)
                     nav_estMeasure?.setTextColor(resources.getColor(R.color.red))
-                    nav_estMeasure?.setText("( $qty )")
+                    nav_estMeasure?.text = "( $qty )"
                 }
             })
 //            nav_estMeasure.setText("( $qty )")
@@ -508,12 +513,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             j_approval.observe(this, androidx.lifecycle.Observer { job_s ->
                 qty = job_s.size
                 if (qty == 0) {
-                    nav_approveJbs?.setText("")
+                    nav_approveJbs?.text = ""
                 } else {
-                    nav_approveJbs?.setGravity(Gravity.CENTER_VERTICAL)
+                    nav_approveJbs?.gravity = Gravity.CENTER_VERTICAL
                     nav_approveJbs?.setTypeface(null, Typeface.BOLD)
                     nav_approveJbs?.setTextColor(resources.getColor(R.color.red))
-                    nav_approveJbs?.setText("( $qty )")
+                    nav_approveJbs?.text = "( $qty )"
                 }
             })
 //        //=====================================================================================================================================================
@@ -522,12 +527,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             m_approval.observe(this, androidx.lifecycle.Observer { job_s ->
                 qty = job_s.size
                 if (qty == 0) {
-                    nav_approvMeasure?.setText("")
+                    nav_approvMeasure?.text = ""
                 } else {
-                    nav_approvMeasure?.setGravity(Gravity.CENTER_VERTICAL)
+                    nav_approvMeasure?.gravity = Gravity.CENTER_VERTICAL
                     nav_approvMeasure?.setTypeface(null, Typeface.BOLD)
                     nav_approvMeasure?.setTextColor(resources.getColor(R.color.red))
-                    nav_approvMeasure?.setText("( $qty )")
+                    nav_approvMeasure?.text = "( $qty )"
                 }
             })
 
@@ -536,10 +541,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onResume() {
         super.onResume()
-    if( this.delegate.localNightMode.equals( AppCompatDelegate.MODE_NIGHT_YES))
+        if (this.delegate.localNightMode == AppCompatDelegate.MODE_NIGHT_YES)
+        // TODO: What is this function for?
         HOME.equals(true)
         // initializeCountDrawer()
-//        refreshData()
+        // refreshData()
     }
 
     private fun refreshData() {
@@ -555,8 +561,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     companion object {
         private val TAG = MainActivity::class.java.simpleName
         const val HOME2 = "general_switch"
-
-
         var switch: Switch? = null
         const val PREFS_NAME = "DarkeModeSwitch"
     }

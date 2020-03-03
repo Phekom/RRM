@@ -7,7 +7,7 @@ import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
@@ -45,11 +45,12 @@ class UnSubmittedFragment : BaseFragment(), KodeinAware {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         unsubmittedViewModel = activity?.run {
-            ViewModelProviders.of(this, factory).get(UnSubmittedViewModel::class.java)
-        } ?: throw Exception("Invalid Activity") as Throwable
+            val get = ViewModelProvider(this, factory).get(UnSubmittedViewModel::class.java)
+            get
+        } ?: throw Exception("Invalid Activity")
         Coroutines.main {
             try {
-                groupAdapter = GroupAdapter<GroupieViewHolder>()
+                groupAdapter = GroupAdapter()
                 //            mydata_loading.show()
                 val measurements =
                     unsubmittedViewModel.getJobsForActivityId(ActivityIdConstants.JOB_ESTIMATE)
