@@ -222,9 +222,11 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
         Coroutines.main {
             val measurements = approveViewModel.getJobMeasureItemsForJobId(job.jobItemMeasureDTO.jobId, ActivityIdConstants.MEASURE_COMPLETE)
             measurements.observe(viewLifecycleOwner, Observer { job_s ->
-//                mydata_loading.hide()
+                val measure_items = job_s.distinctBy{
+                    it.jobId
+                }
                 toast(job_s.size.toString())
-                initRecyclerView(job_s.toMeasure_Item())
+                initRecyclerView(measure_items.toMeasure_Item())
 
             })
 

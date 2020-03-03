@@ -19,7 +19,7 @@ import java.io.File
 
 open class CardMeasureItem(
     val activity: FragmentActivity?,
-    val photo: String,
+    val itemMeasureId: String,
 
     val qty: String,
     val rate: String,
@@ -43,7 +43,7 @@ open class CardMeasureItem(
             measurements_photo_image.setOnClickListener(View.OnClickListener {
                 Coroutines.main {
                     val measurePhoto =
-                        measureViewModel?.getJobMeasureItemsPhotoPath(photo)
+                        measureViewModel?.getJobMeasureItemsPhotoPath(itemMeasureId)
 //                        approveViewModel?.getJobMeasureItemsPhotoPath(jobItemMeasureDTO.itemMeasureId!!)
                     showZoomedImage(measurePhoto)
                 }
@@ -54,8 +54,8 @@ open class CardMeasureItem(
 
         viewHolder.itemView.setOnLongClickListener {
             Coroutines.main {
-                measureViewModel.deleteItemMeasurefromList(photo)
-                measureViewModel.deleteItemMeasurephotofromList(photo)
+                measureViewModel.deleteItemMeasurefromList(itemMeasureId)
+                measureViewModel.deleteItemMeasurephotofromList(itemMeasureId)
             }
             it.isLongClickable
         }
@@ -73,7 +73,7 @@ open class CardMeasureItem(
         Coroutines.main {
 
             val measurePhoto =
-                measureViewModel?.getJobMeasureItemsPhotoPath(photo)
+                measureViewModel?.getJobMeasureItemsPhotoPath(itemMeasureId)
             if (measurePhoto != null){
                 GlideApp.with(this.containerView)
                     .load(Uri.fromFile(File(measurePhoto)))

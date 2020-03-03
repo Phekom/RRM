@@ -34,6 +34,7 @@ import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.intents.AbstractIntent
@@ -131,6 +132,7 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
             ViewModelProviders.of(this, factory).get(WorkViewModel::class.java)
         } ?: throw Exception("Invalid Activity") as Throwable
         Coroutines.main {
+            val dialog = setDataProgressDialog(activity!!, getString(R.string.data_loading_please_wait))
             var user = workViewModel.user.await()
             user.observe(viewLifecycleOwner, Observer { user_ ->
                 useR = user_
@@ -243,19 +245,14 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
         }
         move_workflow_button.setOnClickListener {
             if (estimateWorksPhotoArrayList.size > 0) {
+                val dialog = setDataProgressDialog(activity!!, getString(R.string.data_loading_please_wait))
 
                 if (ServiceUtil.isNetworkConnected(activity!!.applicationContext)) { //  Lets Send to Service
-                    val prog = ProgressDialog(activity)
-                    prog.setTitle(getString(R.string.please_wait))
-                    prog.setMessage(getString(R.string.data_loading_please_wait))
-                    prog.setCancelable(false)
-                    prog.setIndeterminate(true)
-                    prog.setProgressStyle(ProgressDialog.STYLE_SPINNER)
-                    prog.show()
+                    dialog.show()
                     itemEstiWorks.jobEstimateWorksPhotos = estimateWorksPhotoArrayList
                     itemEstiWorks.jobItemEstimate = jobitemEsti
 
-                    sendJobToService(itemEstiWorks,prog )
+
                    } else {
                     val networkToast = Toast.makeText(
                         activity?.getApplicationContext(),

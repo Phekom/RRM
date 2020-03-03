@@ -29,10 +29,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModelFactory
-import za.co.xisystems.itis_rrm.utils.Coroutines
-import za.co.xisystems.itis_rrm.utils.DataConversion
-import za.co.xisystems.itis_rrm.utils.PhotoUtil
-import za.co.xisystems.itis_rrm.utils.ServiceUtil
+import za.co.xisystems.itis_rrm.utils.*
 import java.util.*
 
 
@@ -199,9 +196,7 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
         logoutBuilder.setMessage(R.string.are_you_sure_you_want_to_submit_measurements)
 
         // Yes button
-        logoutBuilder.setPositiveButton(
-            R.string.yes
-        ) { dialog, which ->
+        logoutBuilder.setPositiveButton( R.string.yes) { dialog, which ->
             if (ServiceUtil.isNetworkConnected(context?.applicationContext)) {
                 submiteMeasures(itemMeasureJob,mSures)
 //                uploadRrmImage(filename,jobItemMeasures)
@@ -238,7 +233,7 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
                     if (mSures != null) {
                         for (jim in mSures) {
                             val newMsures = setJobMeasureLittleEndianGuids(jim)
-                            if (jim.actId == 11) {
+                            if (jim.actId == ActivityIdConstants.MEASURE_COMPLETE) {
                                 toast("Measurement ${jim.itemMeasureId} Already Submitted")
 //                                popViewOnJobSubmit()
                             }else{
@@ -258,12 +253,7 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
 
 
                     Coroutines.main {
-                        val prog = ProgressDialog(activity)
-                        prog.setTitle(getString(R.string.please_wait))
-                        prog.setMessage(getString(R.string.loading_job_wait))
-                        prog.setCancelable(false)
-                        prog.setIndeterminate(true)
-                        prog.setProgressStyle(ProgressDialog.STYLE_SPINNER)
+                        val prog = setDataProgressDialog(activity!!, getString(R.string.loading_job_wait))
                         prog.show()
                         val submit= activity?.let {
                             measureViewModel.processWorkflowMove( user_.userId, JobId, itemMeasureJob.JiNo, ContractVoId, jobItemMeasureList,
@@ -310,8 +300,6 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
                 }
             }
 
-
-
 //            }
         }
 
@@ -323,7 +311,7 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
     private fun popViewOnJobSubmit() {
         // TODO("delete data from database after success upload")
         Intent(context?.applicationContext  , MainActivity::class.java).also { home ->
-            home.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+//            home.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
             startActivity(home)
         }
     }
@@ -389,10 +377,7 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
         Coroutines.main {
             val measurements = measureViewModel.getJobItemsToMeasureForJobId(jobID)
             measurements.observe(viewLifecycleOwner, Observer { job_s ->
-                //                mydata_loading.hide()
-//                toast(job_s.size.toString())
                 initRecyclerView(job_s.toMeasure_Item())
-//
             })
         }
     }
@@ -441,14 +426,14 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
                                 Coroutines.main {
                                     for (jobItemM in m_sures) {
                                             Coroutines.main {
-                                                val photo = jobItemM.itemMeasureId!!
+                                                val itemMeasureId = jobItemM.itemMeasureId!!
                                                 val qty= jobItemM.qty.toString()
                                                 val rate = jobItemM.lineRate.toString()
                                                 val jNo = jobItemM.jimNo.toString()
                                                 add(
                                                     CardMeasureItem(
                                                         activity,
-                                                        photo, qty, rate, jNo, measureViewModel
+                                                        itemMeasureId, qty, rate, jNo, measureViewModel
                                                     )
                                                 )
                                             }

@@ -444,7 +444,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             val new_job = mainActivityViewModel.getJobsForActivityId(
                 ActivityIdConstants.JOB_ESTIMATE)
             new_job.observe(this, androidx.lifecycle.Observer { job_s ->
-                qty = job_s.size
+                val m_items = job_s.distinctBy{
+                    it.JobId
+                }
+                qty = m_items.size
 //            qty = 50
                 if (qty == 0) {
                     nav_unSubmitted?.setText("")
@@ -475,7 +478,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             val work = mainActivityViewModel.getJobsForActivityId2(ActivityIdConstants.JOB_APPROVED,
                 ActivityIdConstants.ESTIMATE_INCOMPLETE)
             work.observe(this, androidx.lifecycle.Observer { job_s ->
-                qty = job_s.size
+                val m_items = job_s.distinctBy{
+                    it.JobId
+                }
+                qty = m_items.size
                 if (qty == 0) {
                     nav_work?.setText("")
         } else {
@@ -489,7 +495,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             val measurements = mainActivityViewModel.getJobMeasureForActivityId(ActivityIdConstants.ESTIMATE_MEASURE, ActivityIdConstants.JOB_ESTIMATE,ActivityIdConstants.MEASURE_PART_COMPLETE)
 //            val measurements = mainActivityViewModel.getJobMeasureForActivityId(ActivityIdConstants.ESTIMATE_MEASURE)
             measurements.observe(this, androidx.lifecycle.Observer { job_s ->
-                qty = job_s.size
+                val m_items = job_s.distinctBy{
+                    it.jobId
+                }
+                qty = m_items.size
                 if (qty == 0) {
                     nav_estMeasure?.setText("")
                 } else {
@@ -506,7 +515,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             val j_approval = mainActivityViewModel.getJobsForActivityId(
                 ActivityIdConstants.JOB_APPROVE)
             j_approval.observe(this, androidx.lifecycle.Observer { job_s ->
-                qty = job_s.size
+                val m_items = job_s.distinctBy{
+                    it.JobId
+                }
+                qty = m_items.size
                 if (qty == 0) {
                     nav_approveJbs?.setText("")
                 } else {
@@ -520,7 +532,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             // Measurements are completed needs approval for payment
             val m_approval = mainActivityViewModel.getJobApproveMeasureForActivityId(ActivityIdConstants.MEASURE_COMPLETE)
             m_approval.observe(this, androidx.lifecycle.Observer { job_s ->
-                qty = job_s.size
+                val measure_items = job_s.distinctBy{
+                    it.jobId
+                }
+                qty = measure_items.size
                 if (qty == 0) {
                     nav_approvMeasure?.setText("")
                 } else {
