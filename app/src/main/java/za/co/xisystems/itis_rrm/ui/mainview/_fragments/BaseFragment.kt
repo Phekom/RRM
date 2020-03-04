@@ -56,7 +56,7 @@ abstract class BaseFragment : Fragment(), IProgressView, HorizontalProgressBar{
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         anims = Animations(context!!.applicationContext)
-        initAnims();
+        initAnims()
     }
 
     fun initAnims() {
@@ -84,8 +84,8 @@ abstract class BaseFragment : Fragment(), IProgressView, HorizontalProgressBar{
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        bounce = AnimationUtils.loadAnimation(context!!.applicationContext, R.anim.bounce)
-        shake = AnimationUtils.loadAnimation(context!!.applicationContext, R.anim.shake)
+        bounce = AnimationUtils.loadAnimation(context.applicationContext, R.anim.bounce)
+        shake = AnimationUtils.loadAnimation(context.applicationContext, R.anim.shake)
         if (context is IProgressView) {
             progressView = context
         }
@@ -118,7 +118,7 @@ abstract class BaseFragment : Fragment(), IProgressView, HorizontalProgressBar{
         prog.setTitle(getString(R.string.please_wait))
         prog.setMessage(getString(R.string.data_loading_please_wait))
         prog.setCancelable(false)
-        prog.setIndeterminate(true)
+        prog.isIndeterminate = true
         prog.setProgressStyle(ProgressDialog.STYLE_SPINNER)
         prog.show()
     }
@@ -133,10 +133,10 @@ abstract class BaseFragment : Fragment(), IProgressView, HorizontalProgressBar{
      * Hide keyboard.
      */
     fun Activity.hideKeyboard() {
-        val view = this.getCurrentFocus()
+        val view = this.currentFocus
         if (view != null) {
             val imm = this.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-            imm.hideSoftInputFromWindow(view!!.getWindowToken(), 0)
+            imm.hideSoftInputFromWindow(view.windowToken, 0)
         }
     }
 
@@ -173,18 +173,18 @@ abstract class BaseFragment : Fragment(), IProgressView, HorizontalProgressBar{
     }
 
     private fun initializeProgressPercentage() {
-        this.progressDialog?.setMax(100)
-        this.progressDialog?.setProgress(0)
+        this.progressDialog?.max = 100
+        this.progressDialog?.progress = 0
     }
 
     override fun showHorizontalProgressDialog(message: CharSequence?) {
         if (null == this.progressDialog) {
             this.progressDialog = ProgressDialog(context?.applicationContext, android.R.style.Theme_DeviceDefault_Dialog)
-            this.progressDialog?.setIndeterminate(true)
+            this.progressDialog?.isIndeterminate = true
             this.progressDialog?.setCancelable(false)
             setProgressStyleHorizontal()
             removeProgressPercentages()
-            if (this.progressDialog?.isIndeterminate() == false) initializeProgressPercentage()
+            if (this.progressDialog?.isIndeterminate == false) initializeProgressPercentage()
         }
         this.progressDialog?.setMessage(message)
         this.progressDialog?.show()
@@ -195,7 +195,7 @@ abstract class BaseFragment : Fragment(), IProgressView, HorizontalProgressBar{
     }
 
     fun stepProgressDialogTo(num: Int) {
-        this.progressDialog?.setProgress(num)
+        this.progressDialog?.progress = num
     }
 
     override fun dismissProgressDialog() {
@@ -205,11 +205,13 @@ abstract class BaseFragment : Fragment(), IProgressView, HorizontalProgressBar{
         }
     }
 
-    override fun showProgressDialog(vararg messageArray: String?) {
-        if (messageArray != null) {
-            var message = messageArray[0]
-            for (i in 1 until messageArray.size) {
-                message += "\n" + messageArray[i]
+    override fun showProgressDialog(vararg messages: String?) {
+        if (null != messages) {
+            var message = messages[0]
+            if (messages.size > 1) {
+                for (i in 1 until messages.size) {
+                    message += "\n" + messages[i]
+                }
             }
             showHorizontalProgressDialog(message)
         }

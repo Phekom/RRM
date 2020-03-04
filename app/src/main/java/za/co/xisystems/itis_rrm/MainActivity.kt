@@ -559,7 +559,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onResume() {
         super.onResume()
         if (this.delegate.localNightMode == AppCompatDelegate.MODE_NIGHT_YES) {
-            // TODO: What is this function for?
+            // TODO: Restore the theme?
             // HOME.equals(true)
             // initializeCountDrawer()
             // refreshData()
