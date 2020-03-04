@@ -11,6 +11,7 @@ import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.ApproveJobsViewModel
 import za.co.xisystems.itis_rrm.utils.Coroutines
+import za.co.xisystems.itis_rrm.utils.GlideApp
 import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
 import java.io.File
 
@@ -69,7 +70,7 @@ class EstimatesItem(
         dialog.setContentView(R.layout.new_job_photo)
         val zoomageView =
             dialog.findViewById<ZoomageView>(R.id.zoomedImage)
-        Glide.with(this.activity!!)
+        GlideApp.with(this.activity!!)
             .load(imageUrl)
             .into(zoomageView)
         dialog.show()
@@ -81,21 +82,25 @@ class EstimatesItem(
         Coroutines.main {
             val startPhoto =
                 approveViewModel.getJobEstimationItemsPhotoStartPath(jobItemEstimateDTO.estimateId)
-            Glide.with(this.containerView)
+            GlideApp.with(this.containerView)
                 .load(Uri.fromFile(File(startPhoto)))
                 .placeholder(R.drawable.logo_new_medium)
                 .into(photoPreviewStart)
         }
     }
-
     private fun GroupieViewHolder.updateEndImage() {
         Coroutines.main {
             val endPhoto =
                 approveViewModel.getJobEstimationItemsPhotoEndPath(jobItemEstimateDTO.estimateId)
-            Glide.with(this.containerView)
+        GlideApp.with(this.containerView)
                 .load(Uri.fromFile(File(endPhoto)))
                 .placeholder(R.drawable.logo_new_medium)
                 .into(photoPreviewEnd)
+
+//        Glide.with(this)
+//            .load(Uri.fromFile(File(imageStoragePath)))
+//            .apply(RequestOptions().override(100, 100))
+//            .into(imageView)
         }
     }
 }

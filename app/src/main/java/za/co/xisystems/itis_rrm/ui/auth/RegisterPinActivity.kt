@@ -99,7 +99,7 @@ class RegisterPinActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Ru
                    if (requestAgain){
                        toast("Permission Denied")
                    }else{
-                       toast("Please Enable Permissions from your Device Settings")
+                       toast("Please Enable Pemmissions from your Device Settings")
                    }
                }
             }

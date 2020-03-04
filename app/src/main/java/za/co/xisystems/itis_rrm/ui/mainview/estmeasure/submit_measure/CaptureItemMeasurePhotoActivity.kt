@@ -18,7 +18,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
-import com.bumptech.glide.Glide
 import icepick.State
 import kotlinx.android.synthetic.main.fragment_capture_item_measure_photo.*
 import org.kodein.di.KodeinAware
@@ -74,7 +73,7 @@ class CaptureItemMeasurePhotoActivity : AppCompatActivity() , KodeinAware {
         const val URI_LIST_DATA = "URI_LIST_DATA"
         const val IMAGE_FULL_SCREEN_CURRENT_POS = "IMAGE_FULL_SCREEN_CURRENT_POS"
 
-        private const val LOCATION_KEY = "location-key"
+        protected const val LOCATION_KEY = "location-key"
         // region (Public Static Final Fields)
         const val UPDATE_INTERVAL_IN_MILLISECONDS: Long = 10000
         const val FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS = UPDATE_INTERVAL_IN_MILLISECONDS / 2
@@ -115,7 +114,7 @@ class CaptureItemMeasurePhotoActivity : AppCompatActivity() , KodeinAware {
             photoButtons.visibility = View.GONE
 //            getIntent().getSerializableExtra(JOB_IMEASURE)
 
-            if (intent.hasExtra(JOB_IMEASURE)) {
+            if (intent.hasExtra(ExpandableHeaderMeasureItem.JOB_IMEASURE)) {
                 selectedJobItemMeasure = intent.extras[JOB_IMEASURE] as JobItemMeasureDTO
                 takeMeasurePhoto()
                 toast(selectedJobItemMeasure.jimNo.toString())
@@ -185,6 +184,7 @@ class CaptureItemMeasurePhotoActivity : AppCompatActivity() , KodeinAware {
     private fun saveImage(): JobItemMeasurePhotoDTO {
         //  Location of picture
         val currentLocation: Location = locationHelper.getCurrentLocation()!!
+        if (currentLocation == null) toast("Error: Current location is null!")
         //  Save Image to Internal Storage
         val photoId = SqlLitUtils.generateUuid()
         filename_path =
@@ -195,12 +195,12 @@ class CaptureItemMeasurePhotoActivity : AppCompatActivity() , KodeinAware {
         val jobItemMeasurePhoto = JobItemMeasurePhotoDTO(
             0,
             null,
-            filename_path["filename"],
+            filename_path.get("filename"),
             selectedJobItemMeasure.estimateId,
             selectedJobItemMeasure.itemMeasureId,
             DateUtil.DateToString(Date()),
             photoId,   currentLocation.latitude,  currentLocation.longitude,
-            filename_path["path"], jobItemMeasure, 0, 0
+            filename_path.get("path"), jobItemMeasure, 0,   0
 
         )
 
@@ -227,7 +227,7 @@ class CaptureItemMeasurePhotoActivity : AppCompatActivity() , KodeinAware {
                 ActivityCompat.requestPermissions(
                     this,
                     arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-                    REQUEST_STORAGE_PERMISSION
+                    CaptureItemMeasurePhotoActivity.REQUEST_STORAGE_PERMISSION
                 )
             } else {
                 launchCamera()
@@ -267,11 +267,26 @@ class CaptureItemMeasurePhotoActivity : AppCompatActivity() , KodeinAware {
     }
 
     private fun processAndSetImage() {
-        Glide.with(this)
+        GlideApp.with(this)
             .load(imageUri)
             .into(m_imageView)
         photoButtons.visibility = View.VISIBLE
     }
+
+    private fun updateValuesFromBundle(savedInstanceState: Bundle?) {
+        Log.i(
+            CaptureItemMeasurePhotoActivity.TAG,
+            getString(R.string.updating_location_values_from_bundle)
+        )
+        if (savedInstanceState != null) {
+//            @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
+//            if (savedInstanceState.keySet().contains(CaptureItemMeasurePhotoActivity.LOCATION_KEY))
+//                currentLocation = savedInstanceState.getParcelable<Location>(
+//                    CaptureItemMeasurePhotoActivity.LOCATION_KEY
+//                )
+        }
+    }
+
 
     fun getCurrentLocation(): Location? {
         return currentLocation

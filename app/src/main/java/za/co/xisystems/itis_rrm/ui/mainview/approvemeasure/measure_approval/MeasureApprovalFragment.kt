@@ -15,6 +15,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
+import kotlinx.android.synthetic.main.fragment_job_info.*
 import kotlinx.android.synthetic.main.fragment_measure_approval.*
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
@@ -110,8 +111,10 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
                 // Yes button
                 logoutBuilder.setPositiveButton(
                     R.string.yes
-                ) { _, _ ->
-                    if (!ServiceUtil.isNetworkConnected(context?.applicationContext)) {
+                ) { dialog, which ->
+                    if (ServiceUtil.isNetworkConnected(context?.applicationContext)) {
+//                        moveJobToNextWorkflow(WorkflowDirection.FAIL)
+                    } else {
                         toast(R.string.no_connection_detected)
                     }
                 }
@@ -153,7 +156,7 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
                         val trackRounteId: String = DataConversion.toLittleEndian(job.jobItemMeasureDTO.trackRouteId)!!
                         val direction: Int = workflowDirection.value
 
-                        val description: String = ""
+                        var description : String = ""
 //                        val messages = messages
 //                        if (workflow_comments_editText.text != null){
 //                            description = workflow_comments_editText.text.toString()
@@ -214,16 +217,18 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
         Coroutines.main {
             val measurements = approveViewModel.getJobMeasureItemsForJobId(job.jobItemMeasureDTO.jobId, ActivityIdConstants.MEASURE_COMPLETE)
             measurements.observe(viewLifecycleOwner, Observer { job_s ->
-//                mydata_loading.hide()
+                val measure_items = job_s.distinctBy{
+                    it.jobId
+                }
                 toast(job_s.size.toString())
-                initRecyclerView(job_s.toMeasure_Item())
+                initRecyclerView(measure_items.toMeasure_Item())
 
             })
 
         }
     }
 
-    private fun initRecyclerView(measureListItems: List<MeasurementsItem>) {
+    private fun initRecyclerView(measureListItems: List<Measurements_Item>) {
         val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
             addAll(measureListItems)
         }
@@ -235,10 +240,10 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
 
     }
 
-    private fun List<JobItemMeasureDTO>.toMeasure_Item(): List<MeasurementsItem> {
+    private fun List<JobItemMeasureDTO>.toMeasure_Item(): List<Measurements_Item> {
         return this.map { approvej_items ->
             //            getEstimateItemsPhoto(approvej_items.estimateId)
-            MeasurementsItem(approvej_items, approveViewModel, activity)
+            Measurements_Item(approvej_items,approveViewModel, activity)
         }
     }
 

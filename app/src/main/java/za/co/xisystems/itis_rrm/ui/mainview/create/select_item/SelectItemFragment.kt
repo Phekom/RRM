@@ -38,10 +38,10 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
     private lateinit var createViewModel: CreateViewModel
     private val factory: CreateViewModelFactory by instance()
     private lateinit var iTemArrayList: ArrayList<JobDTO>
-    private var items: MutableList<ItemDTOTemp> = ArrayList()
+    private var items: MutableList<ItemDTOTemp> = ArrayList<ItemDTOTemp>()
     private var animate = false
     private val itemsMap: MutableMap<String, MutableList<ProjectItemDTO>?> =
-        LinkedHashMap()
+        LinkedHashMap<String, MutableList<ProjectItemDTO>?>()
 
     private lateinit var newJobItemEstimatesList: ArrayList<JobItemEstimateDTO>
     private lateinit var  itemSections : ArrayList<ItemSectionDTO>
@@ -77,8 +77,7 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
 //        createViewModel = ViewModelProviders.of(this, factory).get(CreateViewModel::class.java)
 
         createViewModel = activity?.run {
-            val get = ViewModelProvider(this, factory).get(CreateViewModel::class.java)
-            get
+            ViewModelProvider(this, factory).get(CreateViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
         Coroutines.main {
             itemSections = ArrayList()
@@ -117,15 +116,16 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
             val sectionItems = createViewModel.getAllSectionItem()
 //            val sectionItems = createViewModel.offlinedata.await()
             sectionItems.observe(viewLifecycleOwner, Observer { sec_tions ->
-                val sectionNmbr = arrayOfNulls<String?>(sec_tions.size)
+                val sections = sec_tions
+                val sectionNmbr = arrayOfNulls<String?>(sections.size)
 
-                for (item in sec_tions.indices) {
-                    sectionNmbr[item] = sec_tions[item].description
+                for (item in sections.indices) {
+                    sectionNmbr[item] = sections[item].description
                 }
                 Coroutines.main {
                     setSpinner(context!!.applicationContext,
                         sectionItemSpinner,
-                        sec_tions,
+                        sections,
                         sectionNmbr,
                         object : SpinnerHelper.SelectionListener<SectionItemDTO> {
 
@@ -231,13 +231,14 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
         view: View,
         jobArrayList: List<SectionProj_Item>
     ) {
+        val selecteD = item
         val myList = jobArrayList
 //        val actionAddProject =  SelectItemFragmentDirection.actionAddProject(selecteD)
 //        navController?.navigate(R.id.action_selectItemFragment_to_addProjectFragment)
 
 
         Coroutines.main {
-            createViewModel.Sec_Item.value = item
+            createViewModel.Sec_Item.value = selecteD
 //            createViewModel.project_Rate.value = selectRte
         }
 

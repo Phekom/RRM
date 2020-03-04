@@ -1,7 +1,5 @@
 package za.co.xisystems.itis_rrm
 
-//import com.google.android.gms.appindexing.AppIndex
-
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
@@ -43,8 +41,6 @@ import za.co.xisystems.itis_rrm.utils.hideKeyboard
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener , KodeinAware {
 
-
-
     override val kodein by kodein()
     private lateinit var mainActivityViewModel: MainActivityViewModel
     private val factory: MainActivityViewModelFactory by instance()
@@ -80,9 +76,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         RaygunClient.enableCrashReporting()
 
         this.mainActivityViewModel = this.run {
-            val get =
                 ViewModelProvider(this, factory).get(MainActivityViewModel::class.java)
-            get
         }
 
         initializeCountDrawer()
@@ -90,7 +84,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         lm = getSystemService(Context.LOCATION_SERVICE) as LocationManager
 //        this.delegate.localNightMode.equals( AppCompatDelegate.MODE_NIGHT_YES)
 //        (this@MainActivity as MainActivity?)?.delegate?.localNightMode = AppCompatDelegate.MODE_NIGHT_YES
-        getUseRoles()
+        getUserRoles()
         displayPromptForEnablingGPS(this)
         this.toggle = ActionBarDrawerToggle(
                 this, drawer_layout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close)
@@ -264,55 +258,55 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
 
     // Control Menu drawer View Access Based on who is logged in
-    fun getUseRoles() {
+    fun getUserRoles() {
         Coroutines.main {
-           val useroles = mainActivityViewModel.getRoles()
-            useroles.observe(this, Observer {roleList ->
+           val userRoles = mainActivityViewModel.getRoles()
+            userRoles.observe(this, Observer { roleList ->
                 val menuNav = navigationView.menu
-                var nav_item: MenuItem
+                var navItem: MenuItem
 
                 for (role in roleList) {
-                    val IDss = role.roleIdentifier
+                    val roleID = role.roleIdentifier
 
-                    if (IDss.equals(PROJECT_USER_ROLE_IDENTIFIER, ignoreCase = true)) {
+                    if (roleID.equals(PROJECT_USER_ROLE_IDENTIFIER, ignoreCase = true)) {
 //                initializeCountDrawer()
-                        nav_item = menuNav.findItem(R.id.nav_create)
-                        nav_item.isEnabled = true
+                        navItem = menuNav.findItem(R.id.nav_create)
+                        navItem.isEnabled = true
 
-                        nav_item = menuNav.findItem(R.id.nav_unSubmitted)
-                        nav_item.isEnabled = true
+                        navItem = menuNav.findItem(R.id.nav_unSubmitted)
+                        navItem.isEnabled = true
 
 //                        nav_item = menuNav.findItem(R.id.nav_correction)
 //                        nav_item.isEnabled = false
 
-                        nav_item = menuNav.findItem(R.id.nav_work)
-                        nav_item.isEnabled = false
+                        navItem = menuNav.findItem(R.id.nav_work)
+                        navItem.isEnabled = false
 
-                        nav_item = menuNav.findItem(R.id.nav_approveJbs)
-                        nav_item.isEnabled = false
+                        navItem = menuNav.findItem(R.id.nav_approveJbs)
+                        navItem.isEnabled = false
 
-                        nav_item = menuNav.findItem(R.id.nav_estMeasure)
-                        nav_item.isEnabled = false
+                        navItem = menuNav.findItem(R.id.nav_estMeasure)
+                        navItem.isEnabled = false
 
-                        nav_item = menuNav.findItem(R.id.nav_approvMeasure)
-                        nav_item.isEnabled = false
+                        navItem = menuNav.findItem(R.id.nav_approvMeasure)
+                        navItem.isEnabled = false
 
 
                     }
 
-                    if (IDss.equals(PROJECT_SUB_CONTRACTOR_ROLE_IDENTIFIER, ignoreCase = true)) {
+                    if (roleID.equals(PROJECT_SUB_CONTRACTOR_ROLE_IDENTIFIER, ignoreCase = true)) {
 //                initializeCountDrawer()
-                        val nav_item1 = menuNav.findItem(R.id.nav_create)
-                        nav_item1.isEnabled = false
+                        val navItem1 = menuNav.findItem(R.id.nav_create)
+                        navItem1.isEnabled = false
 
-                        val nav_item2 = menuNav.findItem(R.id.nav_unSubmitted)
-                        nav_item2.isEnabled = false
+                        val navItem2 = menuNav.findItem(R.id.nav_unSubmitted)
+                        navItem2.isEnabled = false
 
 //                        val nav_item3 = menuNav.findItem(R.id.nav_correction)
 //                        nav_item3.setEnabled(false)
 
-                        val nav_item4 = menuNav.findItem(R.id.nav_work)
-                        nav_item4.isEnabled = true
+                        val navItem4 = menuNav.findItem(R.id.nav_work)
+                        navItem4.isEnabled = true
 
                         val nav_item5 = menuNav.findItem(R.id.nav_approveJbs)
                         nav_item5.isEnabled = false
@@ -326,7 +320,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
                     }
 
-                    if (IDss.equals(PROJECT_CONTRACTOR_ROLE_IDENTIFIER, ignoreCase = true)) {
+                    if (roleID.equals(PROJECT_CONTRACTOR_ROLE_IDENTIFIER, ignoreCase = true)) {
 //                initializeCountDrawer()
                         val nav_item1 = menuNav.findItem(R.id.nav_create)
                         nav_item1.isEnabled = true
@@ -352,7 +346,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
                     }
 
-                    if (IDss.equals(PROJECT_SITE_ENGINEER_ROLE_IDENTIFIER, ignoreCase = true)) {
+                    if (roleID.equals(PROJECT_SITE_ENGINEER_ROLE_IDENTIFIER, ignoreCase = true)) {
 //                initializeCountDrawer()
                         val nav_item1 = menuNav.findItem(R.id.nav_create)
                         nav_item1.isEnabled = true
@@ -378,7 +372,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
                     }
 
-                    if (IDss.equals(PROJECT_ENGINEER_ROLE_IDENTIFIER, ignoreCase = true)) {
+                    if (roleID.equals(PROJECT_ENGINEER_ROLE_IDENTIFIER, ignoreCase = true)) {
 //                initializeCountDrawer()
                         val nav_item1 = menuNav.findItem(R.id.nav_create)
                         nav_item1.isEnabled = false
@@ -412,37 +406,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
 
-//    // WebAPI 2.0 Service Call
-//    private fun refreshContractInfo() {
-//        val contractsViewModel = ContractsViewModel()
-//        val messages = arrayOf(
-//            getString(R.string.refreshing_contract_related_info) + getString(R.string.new_line) + getString(
-//                R.string.please_wait
-//            )
-//        )
-//        val id = registrationInfoDataSource.getUserId()
-//        contractsViewModel.refreshContractInfo(
-//            id,
-//            object : BaseCallBackView<ContractRefreshResponse>(this, messages) {
-//                fun processData(response: ContractRefreshResponse) {
-//                    if (response.getOfflinedata() != null) {
-//                        val offlinedata = response.getOfflinedata()
-//                        registerDataController.insertContractRelatedInfo(offlinedata)
-//                        // Get the effective roles
-//                        refreshEffectiveRoles()
-//                    } else {
-//                        toast(R.string.refreshing_contract_info_failed)
-//                    }
-//                }
-//            })
-//    }
 
+    fun initializeCountDrawer() {
+        // Estimates are completed needs to be submitted currently saved in the local DB
 
-    fun initializeCountDrawer() { // Estimates are completed needs to be submitted currently saved in the local DB
-//        val offlineDataRepository: OfflineDataRepository? = null
-//        val unsubmittedViewModel = UnSubmittedViewModel(offlineDataRepository!!)
         Coroutines.main {
-            //            mydata_loading.show()
             val new_job = mainActivityViewModel.getJobsForActivityId(
                 ActivityIdConstants.JOB_ESTIMATE)
             new_job.observe(this, androidx.lifecycle.Observer { job_s ->
@@ -454,10 +422,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     nav_unSubmitted?.gravity = Gravity.CENTER_VERTICAL
                     nav_unSubmitted?.setTypeface(null, Typeface.BOLD)
                     nav_unSubmitted?.setTextColor(
-                        ContextCompat.getColor(
-                            applicationContext,
-                            R.color.red
-                        )
+                        ContextCompat.getColor(applicationContext, R.color.red)
                     )
                     nav_unSubmitted?.text = "( $qty )"
                 }

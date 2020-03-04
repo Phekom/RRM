@@ -46,8 +46,7 @@ class CorrectionsFragment : BaseFragment(), KodeinAware {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         correctionsViewModel = activity?.run {
-            val get = ViewModelProvider(this, factory).get(CorrectionsViewModel::class.java)
-            get
+            ViewModelProvider(this, factory).get(CorrectionsViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
         Coroutines.main {
             //            data2_loading.show()

@@ -6,6 +6,7 @@ import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.text.method.TextKeyListener.clear
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
@@ -70,7 +71,7 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
     private var job: JobDTO? = null
     @MyState
 //    private lateinit var items: MutableList<ItemDTO>
-    private var items: List<ItemDTOTemp> = ArrayList()
+    private var items: List<ItemDTOTemp> = ArrayList<ItemDTOTemp>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -119,12 +120,10 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
         super.onActivityCreated(savedInstanceState)
 
         createViewModel = activity?.run {
-            val get = ViewModelProvider(this, factory).get(CreateViewModel::class.java)
-            get
+            ViewModelProvider(this, factory).get(CreateViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
         unsubmittedViewModel = activity?.run {
-            val get = ViewModelProvider(this, myfactory).get(UnSubmittedViewModel::class.java)
-            get
+            ViewModelProvider(this, myfactory).get(UnSubmittedViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
 
         last_lin.visibility = View.GONE
@@ -424,7 +423,7 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
                         toast("Error: incomplete estimates.\n Quantity can't be zero!")
                         itemsCardView.startAnimation(shake_long)
                     } else  {
-                        var valid = createViewModel.areEstimatesValid(job, ArrayList(items))
+                        var valid  = createViewModel.areEstimatesValid(job, ArrayList<Any?>(items))
                                if (!valid){
                                   onInvalidJob()
                                }

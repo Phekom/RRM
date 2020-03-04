@@ -60,12 +60,15 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
             ViewModelProvider(this, factory).get(ApproveJobsViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
         Coroutines.main {
-
+            val dialog = setDataProgressDialog(activity!!, getString(R.string.data_loading_please_wait))
             val jobs = approveViewModel.getJobsForActivityId(ActivityIdConstants.JOB_APPROVE)
             jobs.observe(viewLifecycleOwner, Observer { job_s ->
+                val j_items = job_s.distinctBy{
+                    it.JobId
+                }
                 noData.visibility = GONE
                 toast(job_s.size.toString())
-                initRecyclerView(job_s.toApproveListItems())
+                initRecyclerView(j_items.toApproveListItems())
                 group3_loading.visibility = GONE
             })
 
@@ -78,22 +81,27 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
             jobs_swipe_to_refresh.setColorSchemeColors(Color.WHITE)
 
             jobs_swipe_to_refresh.setOnRefreshListener {
+                dialog.show()
                 Coroutines.main {
                     try {
                         val freshJobs = approveViewModel.offlinedatas.await()
                         freshJobs.observe(viewLifecycleOwner, Observer {
                             jobs_swipe_to_refresh.isRefreshing = false
+                            dialog.dismiss()
                         })
                     } catch (e: ApiException) {
                         ToastUtils().toastLong(activity, e.message)
+                        dialog.dismiss()
                         jobs_swipe_to_refresh.isRefreshing  = false
                         Log.e(TAG, "API Exception", e)
                     } catch (e: NoInternetException) {
                         ToastUtils().toastLong(activity, e.message)
+                        dialog.dismiss()
                         jobs_swipe_to_refresh.isRefreshing  = false
                         Log.e(TAG, "No Internet Connection", e)
                     } catch (e: NoConnectivityException) {
                         ToastUtils().toastLong(activity, e.message)
+                                dialog.dismiss()
                         jobs_swipe_to_refresh.isRefreshing = false
                         Log.e(TAG, "Service Host Unreachable", e)
                     }

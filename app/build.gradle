@@ -19,7 +19,7 @@ allprojects {
 android {
     flavorDimensions "default"
 
-    compileSdkVersion compile_version
+    compileSdkVersion 28
 
     def versionPropsFile = file('version.properties')
     def localPropsFile = file('../local.properties')
@@ -215,7 +215,7 @@ android {
     dataBinding {
         enabled = true
     }
-    buildToolsVersion = build_tools_version
+    buildToolsVersion = '28.0.3'
 }
 
 

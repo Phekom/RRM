@@ -15,9 +15,9 @@ class SettingsFragment : PreferenceFragmentCompat() {
     ) {
         setPreferencesFromResource(R.xml.root_preferences, rootKey)
         val isChecked = false
-        val mytheme =
+        val myTheme =
             findPreference<SwitchPreferenceCompat>(SettingsActivity.HOME)
-        mytheme!!.onPreferenceChangeListener =
+        myTheme!!.onPreferenceChangeListener =
             Preference.OnPreferenceChangeListener { preference, newValue ->
                 if (newValue == !isChecked) {
 
@@ -31,4 +31,5 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 true
             }
     }
+
 }

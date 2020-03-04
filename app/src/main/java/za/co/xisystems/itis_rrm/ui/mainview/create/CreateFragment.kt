@@ -134,8 +134,7 @@ class CreateFragment : BaseFragment(), OfflineListener , KodeinAware {
         super.onActivityCreated(savedInstanceState)
 //        createViewModel = ViewModelProviders.of(this, factory).get(CreateViewModel::class.java)
         createViewModel = activity?.run {
-            val get = ViewModelProvider(this, factory).get(CreateViewModel::class.java)
-            get
+            ViewModelProvider(this, factory).get(CreateViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
 
         Coroutines.main {
@@ -260,6 +259,7 @@ class CreateFragment : BaseFragment(), OfflineListener , KodeinAware {
                 val contracts = createViewModel.getContracts()
 //                val contracts = authViewModel.offlinedata.await()
                 contracts.observe(viewLifecycleOwner, Observer { contrac_t ->
+                    val contractId = contrac_t
                     val contractNmbr = arrayOfNulls<String>(contrac_t.size)
                     for (contract in contrac_t.indices) {
                         contractNmbr[contract] = contrac_t[contract].contractNo
@@ -267,7 +267,7 @@ class CreateFragment : BaseFragment(), OfflineListener , KodeinAware {
                     Log.d(TAG, "Thread is Finished ")
                     setSpinner(context!!.applicationContext,
                         contractSpinner,
-                        contrac_t,
+                        contractId,
                         contractNmbr, //null)
                         object : SpinnerHelper.SelectionListener<ContractDTO> {
                             override fun onItemSelected(position: Int, item: ContractDTO) {
@@ -307,13 +307,14 @@ class CreateFragment : BaseFragment(), OfflineListener , KodeinAware {
 //                val projects = authViewModel.projects.await()
                 projects.observe(viewLifecycleOwner, Observer { projec_t ->
                     data_loading.hide()
+                    val projects = projec_t
                     val projectNmbr = arrayOfNulls<String>(projec_t.size)
                     for (project in projec_t.indices) {
                         projectNmbr[project] = projec_t[project].projectCode
                     }
                     setSpinner(context!!.applicationContext,
                         projectSpinner,
-                        projec_t,
+                        projects,
                         projectNmbr, //null)
                         object : SpinnerHelper.SelectionListener<ProjectDTO> {
                             override fun onItemSelected(position: Int, item: ProjectDTO) {

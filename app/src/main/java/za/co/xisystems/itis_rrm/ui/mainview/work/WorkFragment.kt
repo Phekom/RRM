@@ -52,14 +52,11 @@ class WorkFragment : BaseFragment(), KodeinAware {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-
-        appContext = activity?.applicationContext
-
         workViewModel = activity?.run {
-            val get = ViewModelProvider(this, factory).get(WorkViewModel::class.java)
-            get
+            ViewModelProvider(this, factory).get(WorkViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
 
+        val dialog = setDataProgressDialog(activity!!, getString(R.string.data_loading_please_wait))
         Coroutines.main {
             val works = workViewModel.getJobsForActivityId(
                 ActivityIdConstants.JOB_APPROVED,
@@ -69,13 +66,15 @@ class WorkFragment : BaseFragment(), KodeinAware {
             works.observe(viewLifecycleOwner, Observer { work_s ->
                 noData.visibility = View.GONE
                 group7_loading.visibility = View.GONE
-                val headerItems = work_s.distinctBy {
+                val header_items = work_s.distinctBy{
                     it.JobId
                 }
-                initRecyclerView(headerItems.toWorkListItems())
-            })
-        }
+                initRecyclerView(header_items.toWorkListItems())
+//            initRecyclerView(works.toWorkListItems())
 
+            })
+
+        }
         works_swipe_to_refresh.setProgressBackgroundColorSchemeColor(
             ContextCompat.getColor(
                 context!!.applicationContext,
@@ -85,24 +84,30 @@ class WorkFragment : BaseFragment(), KodeinAware {
         works_swipe_to_refresh.setColorSchemeColors(Color.WHITE)
 
         works_swipe_to_refresh.setOnRefreshListener {
+            dialog.show()
             Coroutines.main {
                 try {
                     val jobs = workViewModel.offlinedatas.await()
-                    jobs.observe(viewLifecycleOwner, Observer {
+                    jobs.observe(viewLifecycleOwner, Observer { _ ->
                         works_swipe_to_refresh.isRefreshing = false
+                        dialog.dismiss()
                     })
                 } catch (e: ApiException) {
-                    ToastUtils().toastLong(appContext, e.message)
+                    ToastUtils().toastLong(activity, e.message)
                     works_swipe_to_refresh.isRefreshing = false
-                    Log.e(TAG, "API Exception", e)
+                    dialog.dismiss()
+                    Log.e("Service-Host", "API Exception", e)
                 } catch (e: NoInternetException) {
-                    ToastUtils().toastLong(appContext, e.message)
+                    ToastUtils().toastLong(activity, e.message)
+                    // snackError(this.coordinator, e.message)
+                    dialog.dismiss()
                     works_swipe_to_refresh.isRefreshing = false
-                    Log.e(TAG, "No Internet Connection", e)
+                    Log.e("Network-Connection", "No Internet Connection", e)
                 } catch (e: NoConnectivityException) {
-                    ToastUtils().toastLong(appContext, e.message)
+                    ToastUtils().toastLong(activity, e.message)
+                    dialog.dismiss()
                     works_swipe_to_refresh.isRefreshing = false
-                    Log.e(TAG, "Service Host Unreachable", e)
+                    Log.e("Network-Error", "Service Host Unreachable", e)
                 }
 
             }
@@ -110,22 +115,24 @@ class WorkFragment : BaseFragment(), KodeinAware {
 
     }
 
-    /*
-    private fun getWorkData() {
-        Coroutines.main {
-            val works = workViewModel.getJobsForActivityId(
-                ActivityIdConstants.JOB_APPROVED,
-                ActivityIdConstants.ESTIMATE_INCOMPLETE
-            )
+//    private fun getWorkData() {
+//        Coroutines.main {
+//            val works = workViewModel.getJobsForActivityId(
+//                ActivityIdConstants.JOB_APPROVED,
+//                ActivityIdConstants.ESTIMATE_INCOMPLETE
+//            )
+////            val works = workViewModel.getJobsForActivityId(ActivityIdConstants.JOB_APPROVED..ActivityIdConstants.ESTIMATE_INCOMPLETE)
+//            works.observe(viewLifecycleOwner, Observer { work_s ->
+//                noData.visibility = View.GONE
+//                group7_loading.visibility = View.GONE
+//                initRecyclerView(work_s.toWorkListItems())
+////            initRecyclerView(works.toWorkListItems())
+//
+//            })
+//
+//        }
+//    }
 
-            works.observe(viewLifecycleOwner, Observer { work_s ->
-                noData.visibility = View.GONE
-                group7_loading.visibility = View.GONE
-                initRecyclerView(work_s.toWorkListItems())
-            })
-        }
-    }
-*/
 
     private fun initRecyclerView(
         workListItems: List<ExpandableGroup>
@@ -134,7 +141,6 @@ class WorkFragment : BaseFragment(), KodeinAware {
         val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
             addAll(workListItems)
         }
-
         work_listView.apply {
             layoutManager = LinearLayoutManager(this.context)
             adapter = groupAdapter
@@ -176,31 +182,30 @@ class WorkFragment : BaseFragment(), KodeinAware {
 
             val expandableHeaderItem =
                 ExpandableHeaderWorkItem(activity, work_items, workViewModel, work_items.JobId)
-
+//            ExpandableHeaderItem("JI:${work_items.JiNo} ", work_items.Descr!! , activity, work_items, workViewModel)
             ExpandableGroup(expandableHeaderItem, false).apply {
                 Coroutines.main {
-
+                                                                                                               //ESTIMATE_WORK_PART_COMPLETE
                     val estimates = workViewModel.getJobEstimationItemsForJobId(work_items.JobId,ActivityIdConstants.ESTIMATE_INCOMPLETE)
-                    estimates.observe(viewLifecycleOwner, Observer { jobEstimates ->
+                    estimates.observe(viewLifecycleOwner, Observer { i_tems ->
                         Coroutines.main {
-                            for (item in jobEstimates) {
-                                        Coroutines.main {
-                                            val desc =
+                                for (item in i_tems) {
+                                    Coroutines.main {
+                                            val   Desc =
                                                 workViewModel.getDescForProjectItemId(item.projectItemId!!)
-                                            val  qty = item.qty.toString()
-                                            val  rate = item.lineRate.toString()
-                                            val  estimateId = item.estimateId
-                                            add(
-                                                CardItem(
-                                                    activity, desc, qty,
-                                                    rate,
-                                                    estimateId, workViewModel, item, work_items
-                                                )
-                                            )
-
+                                        val qty = item.qty.toString()
+                                        val rate = item.lineRate.toString()
+                                        val estimateId = item.estimateId
+                                            add(CardItem(  activity, Desc, qty,
+                                                rate,
+                                                estimateId,  workViewModel, item  , work_items                                    )
+                                        )
+//                                add(CardItem( activity, Desc[i].toString(),  workViewModel)).toString()
                                         }
+
+                                    }
                                 }
-                        }
+
                     })
 
                 }
@@ -208,6 +213,7 @@ class WorkFragment : BaseFragment(), KodeinAware {
         }
 
     }
+
 
 }
 

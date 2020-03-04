@@ -49,10 +49,8 @@ class SettingsActivity : AppCompatActivity(), KodeinAware {
         val actionBar = supportActionBar
         actionBar?.setDisplayHomeAsUpEnabled(true)
 
-        settingsViewModel = this.run {
-            val get = ViewModelProvider(this, factory).get(SettingsViewModel::class.java)
-            get
-        }
+        settingsViewModel = ViewModelProvider(this, factory).get(SettingsViewModel::class.java)
+
 
 
         Coroutines.main {
@@ -68,13 +66,12 @@ class SettingsActivity : AppCompatActivity(), KodeinAware {
 
 
         button_reset_app.setOnClickListener {
-            val builder = AlertDialog.Builder(
-                this@SettingsActivity, android.R.style.Theme_DeviceDefault_Dialog
+            val builder = AlertDialog.Builder(this@SettingsActivity, android.R.style.Theme_DeviceDefault_Dialog
             )
             builder.setTitle(R.string.confirm)
             builder.setMessage(R.string.all_data_will_be_deleted_are_you_sure)
             // Yes button
-            builder.setPositiveButton(R.string.yes) { _: DialogInterface?, _: Int ->
+            builder.setPositiveButton(R.string.yes) { dialog, which ->
                 // Clear out all the photos on the device
 //                        deletePhotosInDirectory();
                 Coroutines.main {
@@ -104,6 +101,14 @@ class SettingsActivity : AppCompatActivity(), KodeinAware {
             startActivity(resetPinIntent)
             finish()
         }
+
+
+
+
+
+
+
+
 
 
 //        serviceVersionTextView = findViewById(R.id.serviceVersionTextView)

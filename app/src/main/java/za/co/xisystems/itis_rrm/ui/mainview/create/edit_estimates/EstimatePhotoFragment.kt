@@ -1,4 +1,5 @@
 package za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates
+
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -6,6 +7,7 @@ import android.app.Activity.RESULT_OK
 import android.app.AlertDialog
 import android.app.Dialog
 import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
@@ -21,15 +23,17 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.getSystemService
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
-import com.bumptech.glide.Glide
 import icepick.State
 import kotlinx.android.synthetic.main.fragment_photo_estimate.*
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
+import za.co.xisystems.itis_rrm.BuildConfig
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data._commons.AbstractTextWatcher
@@ -61,16 +65,19 @@ class EstimatePhotoFragment : BaseFragment(), KodeinAware {
 
     private val REQUEST_IMAGE_CAPTURE = 1
     private val REQUEST_STORAGE_PERMISSION = 1
+    private val FILE_PROVIDER_AUTHORITY = BuildConfig.APPLICATION_ID + ".provider"
     private var mAppExcutor: AppExecutor? = null
-    private lateinit var locationHelper: LocationHelper
-    private lateinit var lm: LocationManager
-    private var gps_enabled = false
-    private var network_enabled = false
+    lateinit var locationHelper: LocationHelper
+    lateinit var lm : LocationManager
+    var gps_enabled = false
+    var network_enabled = false
 
-    private var isEstimateDone: Boolean = false
-    private var startKM: Double? = null
-    private var endKM: Double? = null
-    private var section_id: String? = null
+    var isEstimateDone: Boolean = false
+    var contractID: String? = null
+    var projectID: String? = null
+    var startKM: Double? = null
+    var endKM: Double? = null
+    var section_id: String? = null
 
     @State
     var photoType: PhotoType = PhotoType.start
@@ -102,12 +109,14 @@ class EstimatePhotoFragment : BaseFragment(), KodeinAware {
     private lateinit var jobItemMeasureArrayList: ArrayList<JobItemMeasureDTO>
     private lateinit var jobItemSectionArrayList: ArrayList<JobSectionDTO>
     private lateinit var itemSections: ArrayList<ItemSectionDTO>
+    private var jobItemPhoto: JobItemEstimatesPhotoDTO? = null
 
     private lateinit var newJobItemEstimatesPhotosList2: ArrayList<JobItemEstimatesPhotoDTO>
     private lateinit var newJobItemEstimatesWorksList2: ArrayList<JobEstimateWorksDTO>
     private lateinit var newJobItemEstimatesList2: ArrayList<JobItemEstimateDTO>
     private lateinit var jobItemMeasureArrayList2: ArrayList<JobItemMeasureDTO>
     private lateinit var jobItemSectionArrayList2: ArrayList<JobSectionDTO>
+    private lateinit var itemSections2: ArrayList<ItemSectionDTO>
 
     internal var description: String? = null
     internal var useR: Int? = null
@@ -236,13 +245,8 @@ class EstimatePhotoFragment : BaseFragment(), KodeinAware {
 //        updatePhotoUI(false)
 //        updateSectionUI(false)
         try {
-            gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-
-        try {
             network_enabled = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+            gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -397,25 +401,20 @@ class EstimatePhotoFragment : BaseFragment(), KodeinAware {
 
     }
 
-    private fun displayPromptForEnablingGPS(
+    fun displayPromptForEnablingGPS(
         activity: Activity
     ) {
 
         val builder: AlertDialog.Builder = AlertDialog.Builder(activity)
         val action = Settings.ACTION_LOCATION_SOURCE_SETTINGS
         val message = ("Your GPS seems to be disabled, Please enable it to continue")
-        builder.setMessage(message)
-            .setPositiveButton(
-                "OK"
-            ) { d, id ->
+        builder.setMessage(message).setPositiveButton("OK", DialogInterface.OnClickListener { d, id ->
                 activity.startActivity(Intent(action))
                 d.dismiss()
-            }
+                })
         builder.create().show()
 
 }
-
-
     private fun launchCamera() {
 
         // type is "start" or "end"
@@ -448,6 +447,29 @@ class EstimatePhotoFragment : BaseFragment(), KodeinAware {
 //        outState.putDouble("quantity", quantity)
 //        outState.putParcelable("currentLocation", currentLocation)
         super.onSaveInstanceState(outState)
+    }
+
+    fun onRestoreInstanceState(inState: Bundle) {
+//        super.onRestoreInstanceState(inState)
+//        itemId_photoType_tester =
+//            inState.getSerializable("itemId_photoType_tester") as java.util.HashMap<String?, String?>
+        filename_path =
+            inState.getSerializable("filename_path") as HashMap<String, String>
+        photoType = inState.getSerializable("photoType") as PhotoType
+//        item = inState.getSerializable("item") as ItemDTO
+//        job = inState.getSerializable("job") as JobDTO
+//        quantity = inState.getDouble("quantity")
+//        currentLocation =
+//            inState.getParcelable<Parcelable>("currentLocation") as Location
+        loadPhotos()
+//        updatePhotoUI(true)
+//        updateSectionUI(true)
+//        if (currentLocation != null) {
+//            Log.d("x-long", "" + currentLocation.getLongitude())
+//            Log.d("x-lat", "" + currentLocation.getLatitude())
+//        } else {
+//            Log.d("x-", "[ currentLocation is null ]")
+//        }
     }
 
     private fun loadPhotos() {
@@ -644,8 +666,7 @@ class EstimatePhotoFragment : BaseFragment(), KodeinAware {
                                         val section = createViewModel.getSection(sec_id)
                                         section.observe(viewLifecycleOwner, Observer { section ->
                                             Coroutines.main {
-                                                val isPhotoStart =
-                                                    itemId_photoType["type"] == "start"
+                                                val isPhotoStart = itemId_photoType.get("type") == "start"
 //                                       if (section != null) {
                                                 startKM = section.startKm
                                                 endKM = section.endKm
@@ -761,13 +782,13 @@ class EstimatePhotoFragment : BaseFragment(), KodeinAware {
 // itemEstimate.setJobItemEstimatePhotoStart(jobItemEstimatePhoto!!)
 
 
-        val isPhotoStart = itemidPhototype["type"] == "start"
+        val isPhotoStart = itemidPhototype.get("type") == "start"
         val photoId: String = SqlLitUtils.generateUuid()
 
         val newEstimatePhoto = JobItemEstimatesPhotoDTO(
             "",
             itemEst.estimateId,
-            filename_path.getOrElse("filename", defaultValue = { "" }),
+            filename_path["filename"]!!,
             DateUtil.DateToString(Date())!!,
             photoId,
             null,
@@ -778,7 +799,7 @@ class EstimatePhotoFragment : BaseFragment(), KodeinAware {
             currentLocation.longitude,
             currentLocation.latitude,
             currentLocation.longitude,
-            filename_path.getOrElse("path", defaultValue = { "" }),
+            filename_path["path"]!!,
             estimate,
             0,
             0,
@@ -855,7 +876,7 @@ class EstimatePhotoFragment : BaseFragment(), KodeinAware {
         dialog.setContentView(R.layout.new_job_photo)
         val zoomageView =
             dialog.findViewById<ZoomageView>(R.id.zoomedImage)
-        Glide.with(this.activity!!)
+        GlideApp.with(this.activity!!)
             .load(imageUrl)
             .into(zoomageView)
         dialog.show()
@@ -886,6 +907,9 @@ Coroutines.main {
                 val section = createViewModel.getSection(sectId)
                 section.observe(viewLifecycleOwner, Observer { section ->
                     if (section != null) {
+                        val direction = section.direction
+                        if (direction == null )
+                        {}
                         val sectionText =
                             section.route + " " + section.section + " " + section.direction + " " +
                                     if (isStart) section.startKm else section.endKm
@@ -899,7 +923,7 @@ Coroutines.main {
             }
 
         })
-        Glide.with(this)
+        GlideApp.with(this)
             .load(imageUri)
             .into(imageView)
         if (animate) imageView.startAnimation(bounce_1000)
@@ -912,8 +936,7 @@ Coroutines.main {
         }
     }
 
-
-    private fun setValueEditText(qty: Double) {
+    fun setValueEditText(qty: Double) {
         when (item?.uom) {
             "m²", "m³", "m" -> valueEditText!!.setText("" + qty)
             else -> valueEditText!!.setText("" + qty.toInt())
@@ -934,6 +957,7 @@ Coroutines.main {
             costTextView!!.visibility = View.GONE
         }
     }
+
 //    fun setQuantity(quantity: Double) {
 //        this.quantity = quantity
 //    }
@@ -947,7 +971,7 @@ Coroutines.main {
         //  Lose focus on fields
         valueEditText.clearFocus()
         var lineRate = 0.0
-        var qty :Double = quantity
+        var qty  = quantity
         try {
             qty = value.toDouble()
         } catch (e: NumberFormatException) {
@@ -1086,17 +1110,21 @@ Coroutines.main {
         return jobItemEstimate?.qty ?: quantity
     }
 
-    private fun getJobItemEstimate(): JobItemEstimateDTO? {
+    fun getJobItemEstimate(): JobItemEstimateDTO? {
         return job?.getJobEstimateByItemId(item!!.itemId)
     }
 
-    private fun getStartKm(): Double {
+    private fun isEstimateComplete(): Boolean {
+         return getJobItemEstimate() != null && getJobItemEstimate()!!.isEstimateComplete()
+    }
+
+    fun getStartKm(): Double {
         val jobItemEstimate: JobItemEstimateDTO? = getJobItemEstimate()
         return if (jobItemEstimate?.jobItemEstimatePhotoStart != null) jobItemEstimate.jobItemEstimatePhotoStart
             .endKm else 0.0
     }
 
-    private fun getEndKm(): Double {
+    fun getEndKm(): Double {
         val jobItemEstimate: JobItemEstimateDTO? = getJobItemEstimate()
         return if (jobItemEstimate?.jobItemEstimatePhotoEnd != null) jobItemEstimate.jobItemEstimatePhotoEnd
             .endKm else 0.0

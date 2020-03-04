@@ -31,7 +31,7 @@ allprojects {
     }
     ext {
         daggerVersion = '2.15'
-        compile_version = 28
+        compile_version = "28"
         // latest stable
 //        koin_version = '2.0.1'
 //         Google Play Services minimum requirements is 14

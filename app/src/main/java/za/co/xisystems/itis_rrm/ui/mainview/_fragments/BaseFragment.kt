@@ -113,14 +113,16 @@ abstract class BaseFragment : Fragment(), IProgressView, HorizontalProgressBar{
 //        if (activity != null) Toast.makeText(activity, string, Toast.LENGTH_LONG).show()
 //    }
 
-    fun myProgressDialog(prog : ProgressDialog){
-        //Assuming that you are using fragments.
+    fun setDataProgressDialog(context: Context, message: String):ProgressDialog{
+        //Assuming that you are using fragments.//
+        val prog = ProgressDialog(context)
         prog.setTitle(getString(R.string.please_wait))
-        prog.setMessage(getString(R.string.data_loading_please_wait))
+        prog.setMessage(message)
         prog.setCancelable(false)
         prog.isIndeterminate = true
         prog.setProgressStyle(ProgressDialog.STYLE_SPINNER)
-        prog.show()
+//        prog.show()
+    return  prog
     }
 
     fun disMissProgressDialog(prog : ProgressDialog){

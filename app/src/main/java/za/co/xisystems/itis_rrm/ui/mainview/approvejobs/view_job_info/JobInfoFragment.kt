@@ -58,8 +58,7 @@ class JobInfoFragment : BaseFragment(), KodeinAware {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         approveViewModel = activity?.run {
-            val get = ViewModelProvider(this, factory).get(ApproveJobsViewModel::class.java)
-            get
+            ViewModelProvider(this, factory).get(ApproveJobsViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
         Coroutines.main {
             mydata_loading.show()
