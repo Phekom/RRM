@@ -19,8 +19,8 @@ import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.SearchView
+import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
-import androidx.core.view.MenuItemCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
@@ -36,7 +36,6 @@ import za.co.xisystems.itis_rrm.ui.auth.LoginActivity
 import za.co.xisystems.itis_rrm.ui.mainview.activities.MainActivityViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.activities.MainActivityViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SettingsActivity
-import za.co.xisystems.itis_rrm.ui.mainview.activities.SettingsActivity.Companion.HOME
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.hideKeyboard
@@ -55,7 +54,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     lateinit var navigationView: NavigationView
     var qty = 0
     var nav_unSubmitted: TextView? = null
-    var nav_correction:TextView? = null
     var nav_work:TextView? = null
     var nav_approveJbs:TextView? = null
     var nav_estMeasure:TextView? = null
@@ -67,7 +65,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
 
     val PROJECT_USER_ROLE_IDENTIFIER = "29DB5C213D034EDB88DEC54109EE1711"
-    val PROJECT_TESTER_ROLE_IDENTIFIER = "CEE622559D0640BFAE98E39BA4917AF3"
     val PROJECT_SITE_ENGINEER_ROLE_IDENTIFIER = "3F9A15DF5D464EC5A5D954134A7F32BE"
     val PROJECT_ENGINEER_ROLE_IDENTIFIER = "D9E16C2A31FA4CC28961E20B652B292C"
     val PROJECT_SUB_CONTRACTOR_ROLE_IDENTIFIER = "E398A3EF1C18431DBAEE4A4AC5D6F07D"
@@ -107,17 +104,17 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         nav_view.setNavigationItemSelectedListener(this)
         nav_unSubmitted =
-            MenuItemCompat.getActionView(navigationView.menu.findItem(R.id.nav_unSubmitted)) as TextView
+            navigationView.menu.findItem(R.id.nav_unSubmitted).actionView as TextView
 //        nav_correction =
 //            MenuItemCompat.getActionView(navigationView.menu.findItem(R.id.nav_correction)) as TextView
         nav_work =
-            MenuItemCompat.getActionView(navigationView.menu.findItem(R.id.nav_work)) as TextView
+            navigationView.menu.findItem(R.id.nav_work).actionView as TextView
         nav_approveJbs =
-            MenuItemCompat.getActionView(navigationView.menu.findItem(R.id.nav_approveJbs)) as TextView
+            navigationView.menu.findItem(R.id.nav_approveJbs).actionView as TextView
         nav_approvMeasure =
-            MenuItemCompat.getActionView(navigationView.menu.findItem(R.id.nav_approvMeasure)) as TextView
+            navigationView.menu.findItem(R.id.nav_approvMeasure).actionView as TextView
         nav_estMeasure =
-            MenuItemCompat.getActionView(navigationView.menu.findItem(R.id.nav_estMeasure)) as TextView
+            navigationView.menu.findItem(R.id.nav_estMeasure).actionView as TextView
     }
 
 
@@ -144,7 +141,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         builder.setMessage(message)
             .setPositiveButton(
                 "OK"
-            ) { d, id ->
+            ) { d, _ ->
                 activity.startActivity(Intent(action))
                 d.dismiss()
             }
@@ -456,7 +453,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 } else {
                     nav_unSubmitted?.gravity = Gravity.CENTER_VERTICAL
                     nav_unSubmitted?.setTypeface(null, Typeface.BOLD)
-                    nav_unSubmitted?.setTextColor(resources.getColor(R.color.red))
+                    nav_unSubmitted?.setTextColor(
+                        ContextCompat.getColor(
+                            applicationContext,
+                            R.color.red
+                        )
+                    )
                     nav_unSubmitted?.text = "( $qty )"
                 }
             })
@@ -486,7 +488,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         } else {
                     nav_work?.gravity = Gravity.CENTER_VERTICAL
             nav_work?.setTypeface(null, Typeface.BOLD)
-            nav_work?.setTextColor(resources.getColor(R.color.red))
+                    nav_work?.setTextColor(ContextCompat.getColor(applicationContext, R.color.red))
                     nav_work?.text = "( $qty )"
         } })
 //        //====================================================================================================================================================
@@ -500,7 +502,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 } else {
                     nav_estMeasure?.gravity = Gravity.CENTER_VERTICAL
                     nav_estMeasure?.setTypeface(null, Typeface.BOLD)
-                    nav_estMeasure?.setTextColor(resources.getColor(R.color.red))
+                    nav_estMeasure?.setTextColor(
+                        ContextCompat.getColor(
+                            applicationContext,
+                            R.color.red
+                        )
+                    )
                     nav_estMeasure?.text = "( $qty )"
                 }
             })
@@ -517,7 +524,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 } else {
                     nav_approveJbs?.gravity = Gravity.CENTER_VERTICAL
                     nav_approveJbs?.setTypeface(null, Typeface.BOLD)
-                    nav_approveJbs?.setTextColor(resources.getColor(R.color.red))
+                    nav_approveJbs?.setTextColor(
+                        ContextCompat.getColor(
+                            applicationContext,
+                            R.color.red
+                        )
+                    )
                     nav_approveJbs?.text = "( $qty )"
                 }
             })
@@ -531,7 +543,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 } else {
                     nav_approvMeasure?.gravity = Gravity.CENTER_VERTICAL
                     nav_approvMeasure?.setTypeface(null, Typeface.BOLD)
-                    nav_approvMeasure?.setTextColor(resources.getColor(R.color.red))
+                    nav_approvMeasure?.setTextColor(
+                        ContextCompat.getColor(
+                            applicationContext,
+                            R.color.red
+                        )
+                    )
                     nav_approvMeasure?.text = "( $qty )"
                 }
             })
@@ -541,28 +558,18 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onResume() {
         super.onResume()
-        if (this.delegate.localNightMode == AppCompatDelegate.MODE_NIGHT_YES)
-        // TODO: What is this function for?
-        HOME.equals(true)
-        // initializeCountDrawer()
-        // refreshData()
-    }
-
-    private fun refreshData() {
-        Coroutines.main {
-            val contracts = mainActivityViewModel.offlinedata.await()
-            contracts.observe(this, Observer { contrcts ->
-
-            })
+        if (this.delegate.localNightMode == AppCompatDelegate.MODE_NIGHT_YES) {
+            // TODO: What is this function for?
+            // HOME.equals(true)
+            // initializeCountDrawer()
+            // refreshData()
         }
     }
 
 
     companion object {
         private val TAG = MainActivity::class.java.simpleName
-        const val HOME2 = "general_switch"
         var switch: Switch? = null
-        const val PREFS_NAME = "DarkeModeSwitch"
     }
 
 

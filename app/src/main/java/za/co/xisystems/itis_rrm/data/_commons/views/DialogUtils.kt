@@ -1,6 +1,6 @@
 package za.co.xisystems.itis_rrm.data._commons.views
 
-import android.R
+import android.R.style
 import android.app.Activity
 import androidx.appcompat.app.AlertDialog
 
@@ -19,7 +19,7 @@ class DialogUtils {
     private fun createBuilder(activity: Activity): AlertDialog.Builder {
         return if (isLightTheme) AlertDialog.Builder(activity) else AlertDialog.Builder(
             activity,
-            R.style.Theme_DeviceDefault_Dialog
+            style.Theme_DeviceDefault_Dialog
         )
     }
 
@@ -32,11 +32,11 @@ class DialogUtils {
     ) {
         createBuilder(activity)
             .setMessage("$message: Are you sure?")
-            .setPositiveButton("Yes") { dialog, which ->
+            .setPositiveButton("Yes") { dialog, _ ->
                 dialog?.dismiss()
                 positiveCallBack?.onPositive()
             }
-            .setNegativeButton("No") { dialog, which ->
+            .setNegativeButton("No") { dialog, _ ->
                 dialog?.dismiss()
                 negativeCallBack?.onNegative()
             }.show()
