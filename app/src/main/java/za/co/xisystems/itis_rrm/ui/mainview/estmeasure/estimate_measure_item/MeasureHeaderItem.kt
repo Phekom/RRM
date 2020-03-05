@@ -10,15 +10,14 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModel
 import za.co.xisystems.itis_rrm.utils.Coroutines
 
-open class Measure_HeaderItem(
+open class MeasureHeaderItem(
     @DrawableRes private val iconResId: Int? = null,
     measures: JobItemEstimateDTO,
-    measureViewModel: MeasureViewModel,
+    var measureViewModel: MeasureViewModel,
     private val onIconClickListener: View.OnClickListener? = null) : Item() {
 
-    var projID = measures.projectItemId
+    private var projID = measures.projectItemId
     var qty = measures.qty
-    var measureViewModel = measureViewModel
 
     override fun getLayout(): Int {
         return R.layout.item_measure_header
@@ -30,13 +29,13 @@ open class Measure_HeaderItem(
             subtitle.apply {
                     val subtitleResId = qty
                     visibility = View.GONE
-                    subtitleResId?.let {
-                        visibility = View.VISIBLE
-                        text = "Quantity : ${it.toString().dropLast(2)}"
-                    }
+                subtitleResId.let {
+                    visibility = View.VISIBLE
+                    text = "Quantity : ${it.toString().dropLast(2)}"
                 }
-                val desc  = measureViewModel?.getDescForProjectItemId(projID!!)
-                title.text = "Estimate - ${desc} "
+                }
+                val desc = measureViewModel.getDescForProjectItemId(projID!!)
+                title.text = "Estimate - $desc "
 
             }
         }

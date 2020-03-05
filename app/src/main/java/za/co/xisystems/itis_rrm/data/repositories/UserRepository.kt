@@ -10,7 +10,6 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserRoleDTO
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
-import za.co.xisystems.itis_rrm.data.preferences.PreferenceProvider
 import za.co.xisystems.itis_rrm.ui.auth.AuthListener
 import za.co.xisystems.itis_rrm.utils.ApiException
 import za.co.xisystems.itis_rrm.utils.Coroutines
@@ -24,14 +23,13 @@ import java.time.temporal.ChronoUnit
  */
 class UserRepository(
     private val api: BaseConnectionApi,
-    private val Db: AppDatabase,
-    private val prefs: PreferenceProvider
+    private val Db: AppDatabase
 ) : SafeApiRequest() {
 
     private val users = MutableLiveData<UserDTO>()
     private val user_error = MutableLiveData<String>()
 
-    var authListener: AuthListener? = null
+    private var authListener: AuthListener? = null
 
     init {
         users.observeForever { user ->
@@ -48,7 +46,7 @@ class UserRepository(
 
     }
 
-    suspend fun sendError(errorMsg: String?) {
+    private suspend fun sendError(errorMsg: String?) {
         return withContext(Dispatchers.IO) {
 //            val failed = errorMsg
         }
@@ -109,7 +107,8 @@ class UserRepository(
         }
 
     }
-    suspend fun upDateUser(     //userId: String,
+
+    fun upDateUser(     //userId: String,
                                  phoneNumber: String,
                                  IMEI: String,
                                  androidDevice: String,
@@ -125,13 +124,14 @@ class UserRepository(
         }
     }
 
-    suspend fun saveUser(user: UserDTO) {
+    private suspend fun saveUser(user: UserDTO) {
         Coroutines.io {
 
             if (!Db.getUserDao().checkUserExists(user.userId)) {
                 Db.getUserDao().insert(user)
 
             }else{
+                // TODO: What are we planning to do here
 //                Db.getUserDao().updateUser( PIN, phoneNumber, IMEI, androidDevice,user.WEB_SERVICE_URI)
             }
 
@@ -165,7 +165,7 @@ class UserRepository(
 //    }
 
     private fun isFetchNeeded(savedAt: LocalDateTime): Boolean {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             ChronoUnit.MINUTES.between(savedAt, LocalDateTime.now()) > MINIMUM_INTERVAL
         } else {
             TODO("VERSION.SDK_INT < O")

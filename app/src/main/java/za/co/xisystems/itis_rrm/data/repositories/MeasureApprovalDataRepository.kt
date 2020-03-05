@@ -10,7 +10,6 @@ import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
-import za.co.xisystems.itis_rrm.data.preferences.PreferenceProvider
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DataConversion
 
@@ -19,7 +18,10 @@ import za.co.xisystems.itis_rrm.utils.DataConversion
  * Created by Francis Mahlava on 2019/11/28.
  */
 
-class MeasureApprovalDataRepository(private val api: BaseConnectionApi, private val Db: AppDatabase, private val prefs: PreferenceProvider) : SafeApiRequest() {
+class MeasureApprovalDataRepository(
+    private val api: BaseConnectionApi,
+    private val Db: AppDatabase
+) : SafeApiRequest() {
     companion object {
         val TAG: String = MeasureApprovalDataRepository::class.java.simpleName
     }
@@ -200,7 +202,7 @@ class MeasureApprovalDataRepository(private val api: BaseConnectionApi, private 
                     }
                     if (job.workflowItemMeasures != null && job.workflowItemMeasures.size !== 0) {
                         for (jobItemMeasure in job.workflowItemMeasures) {
-                            Db?.getJobItemMeasureDao()!!.updateWorkflowJobItemMeasure(
+                            Db.getJobItemMeasureDao().updateWorkflowJobItemMeasure(
                                 jobItemMeasure.itemMeasureId,
                                 jobItemMeasure.trackRouteId,
                                 jobItemMeasure.actId,

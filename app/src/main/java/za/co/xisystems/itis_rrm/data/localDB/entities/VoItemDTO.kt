@@ -4,7 +4,6 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
-import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.gson.annotations.SerializedName
 import java.io.Serializable
 
@@ -13,15 +12,15 @@ import java.io.Serializable
  */
 
 const val TABLE_JOB_VO_ITEM = "TABLE_JOB_VO_ITEM"
-const val PROJECT_VO_ID = 0
+// const val PROJECT_VO_ID = 0
 
-@Entity(tableName = TABLE_JOB_VO_ITEM, foreignKeys = arrayOf(
-    ForeignKey(
+@Entity(
+    tableName = TABLE_JOB_VO_ITEM, foreignKeys = [ForeignKey(
         entity = ProjectDTO::class,
         parentColumns = arrayOf("projectId"),
         childColumns = arrayOf("projectId"),
-        onDelete = ForeignKey.CASCADE)
-     )
+        onDelete = ForeignKey.CASCADE
+    )]
 )
 data class VoItemDTO(
     @PrimaryKey

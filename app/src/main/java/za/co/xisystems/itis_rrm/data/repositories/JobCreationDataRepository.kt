@@ -16,7 +16,6 @@ import com.google.gson.JsonParser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.R
-import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.localDB.JobDataController
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
@@ -35,37 +34,40 @@ import java.util.*
  * Created by Francis Mahlava on 2019/11/28.
  */
 
-const val MINIMUM_INTERVALY = 3
+// const val MINIMUM_INTERVALY = 3
 private val jobDataController : JobDataController? = null
-class JobCreationDataRepository(private val api: BaseConnectionApi, private val Db: AppDatabase, private val prefs: PreferenceProvider) : SafeApiRequest() {
+
+class JobCreationDataRepository(
+    private val api: BaseConnectionApi,
+    private val Db: AppDatabase,
+    private val prefs: PreferenceProvider
+) : SafeApiRequest() {
     companion object {
         val TAG: String = JobCreationDataRepository::class.java.simpleName
     }
 
 
+    private val workflowJobs = MutableLiveData<WorkflowJobDTO>()
 
-
-    private val workflowJ = MutableLiveData<WorkflowJobDTO>()
-    private val workflowJ2 = MutableLiveData<WorkflowJobDTO>()
-    private val photoupload = MutableLiveData<String>()
+    //    private val workflowJ2 = MutableLiveData<WorkflowJobDTO>()
+    private val photoUploads = MutableLiveData<String>()
     private val works = MutableLiveData<String>()
-    private val routeSectionPoint = MutableLiveData<String>()
+//    private val routeSectionPoint = MutableLiveData<String>()
 
 
     init {
 
 
-
-        workflowJ.observeForever {
-            saveWorkflowJob(it)//
+        workflowJobs.observeForever {
+            saveWorkflowJob(it)
 
         }
 //        workflowJ2.observeForever {
 //            saveWorkflowJob2(it)
 //        }
 
-        photoupload.observeForever {
-            sendMSg(it)
+        photoUploads.observeForever {
+            sendMsg(it)
         }
 
 
@@ -79,33 +81,30 @@ class JobCreationDataRepository(private val api: BaseConnectionApi, private val 
     }
 
 
-
-
-
-    private fun sendMSg(uploadResponse : String?) {
+    private fun sendMsg(uploadResponse: String?) {
         val response: UploadImageResponse? = null
         if (uploadResponse.isNullOrEmpty())
             jobDataController?.setMsg(response!!.errorMessage)
     }
 
 
-    private fun saveWorkflowJob(workflowj : WorkflowJobDTO?) {
-        if (workflowj != null) {
-            val job = setWorkflowJobBigEndianGuids(workflowj)
+    private fun saveWorkflowJob(workflowJob: WorkflowJobDTO?) {
+        if (workflowJob != null) {
+            val job = setWorkflowJobBigEndianGuids(workflowJob)
             insertOrUpdateWorkflowJobInSQLite(job)
         }else {
 //            Looper.prepare() // to be able to make toast
 //        Toast.makeText(activity, "Error: WorkFlow Job is null", Toast.LENGTH_LONG).show()
-            Log.e("Error:", " WorkFlow Job is null")
+            Log.e(TAG, " WorkFlow Job is null")
         }
     }
 
 
-    suspend fun saveNewJob(newjob: JobDTO) {
+    suspend fun saveNewJob(newJob: JobDTO) {
         Coroutines.io {
-            if (newjob != null) {
-                if (!Db.getJobDao().checkIfJobExist(newjob.JobId)) {
-                    Db.getJobDao().insertOrUpdateJobs(newjob)
+            if (newJob != null) {
+                if (!Db.getJobDao().checkIfJobExist(newJob.JobId)) {
+                    Db.getJobDao().insertOrUpdateJobs(newJob)
                 }
 
             }
@@ -147,32 +146,32 @@ class JobCreationDataRepository(private val api: BaseConnectionApi, private val 
         }
     }
 
-    suspend fun saveNewItem(newjItem: ItemDTOTemp) {
+    suspend fun saveNewItem(newJobItem: ItemDTOTemp) {
         Coroutines.io {
-            if (newjItem != null) {
-                if (!Db.getItemDao_Temp().checkItemExistsItemId(newjItem.itemId)) {
+            if (newJobItem != null) {
+                if (!Db.getItemDaoTemp().checkItemExistsItemId(newJobItem.itemId)) {
 
-                    Db.getItemDao_Temp().insertItems(newjItem)
+                    Db.getItemDaoTemp().insertItems(newJobItem)
                 }
             }
         }
     }
 
-    suspend fun delete(item: ItemDTOTemp) {
+    fun delete(item: ItemDTOTemp) {
         Coroutines.io {
-            Db.getItemDao_Temp().deleteItem(item)
+            Db.getItemDaoTemp().deleteItem(item)
         }
     }
 
 
-    suspend fun deleJobfromList(jobId: String) {
+    fun deleteJobfromList(jobId: String) {
         Coroutines.io {
             Db.getJobDao().deleteJobForJobId(jobId)
         }
     }
 
-    suspend fun updateNewJob(
-        newjobId: String,
+    fun updateNewJob(
+        newJobId: String,
         startKM: Double,
         endKM: Double,
         sectionId: String,
@@ -180,11 +179,11 @@ class JobCreationDataRepository(private val api: BaseConnectionApi, private val 
         jobItemSectionArrayList: ArrayList<JobSectionDTO>
     ) {
         Coroutines.io {
-            if (!Db.getJobDao().checkIfJobExist(newjobId)) {
+            if (!Db.getJobDao().checkIfJobExist(newJobId)) {
 //
             } else {
                 Db.getJobDao().updateJoSecId(
-                    newjobId,
+                    newJobId,
                     startKM,
                     endKM,
                     sectionId,
@@ -234,7 +233,7 @@ class JobCreationDataRepository(private val api: BaseConnectionApi, private val 
             val buffer = 0
             val routeSectionPointResponse =
                 apiRequest { api.getRouteSectionPoint(distance,buffer,latitude, longitude, useR) }
-            routeSectionPoint.postValue(
+            postValue(
                 routeSectionPointResponse.direction,
                 routeSectionPointResponse.linearId,
                 routeSectionPointResponse.pointLocation,
@@ -244,46 +243,51 @@ class JobCreationDataRepository(private val api: BaseConnectionApi, private val 
                 itemCode
             )
         } catch (e: ApiException) {
-            ToastUtils().toastLong(prefs.appContext, e.message)
+            Log.e(TAG, "API Exception", e)
+            e.printStackTrace()
+            throw e
         } catch (e: NoInternetException) {
-            ToastUtils().toastLong(prefs.appContext, e.message)
-            Log.e("Network-Connection", "No Internet Connection", e)
+            Log.e(TAG, "No Internet Connection", e)
+            e.printStackTrace()
+            throw e
         } catch (e: NoConnectivityException) {
-            ToastUtils().toastLong(prefs.appContext, e.message)
-            Log.e("Network-Failure", "Service Host Unreachable", e)
+            Log.e(TAG, "Service Host Unreachable", e)
+            e.printStackTrace()
+            throw e
         }
 
     }
 
-    suspend fun getAllProjecItems(projectId: String): LiveData<List<ItemDTOTemp>> {
+    suspend fun getAllProjectItems(projectId: String): LiveData<List<ItemDTOTemp>> {
         return withContext(Dispatchers.IO) {
-            Db.getItemDao_Temp().getAllProjecItems(projectId)
-        }
-    }
-    suspend fun deleteItemList(jobId: String) {
-        Coroutines.io {
-            Db.getItemDao_Temp().deleteItemList(jobId)
+            Db.getItemDaoTemp().getAllProjecItems(projectId)
         }
     }
 
-    suspend fun deleteItemfromList(itemId: String) {
+    fun deleteItemList(jobId: String) {
         Coroutines.io {
-            Db.getItemDao_Temp().deleteItemfromList(itemId)
+            Db.getItemDaoTemp().deleteItemList(jobId)
+        }
+    }
+
+    fun deleteItemFromList(itemId: String) {
+        Coroutines.io {
+            Db.getItemDaoTemp().deleteItemfromList(itemId)
         }
     }
 
     suspend fun submitJob(userId: Int, job: JobDTO, activity: FragmentActivity): String {
 
-        val jobhead = JsonObject()
+        val jobHead = JsonObject()
         val gson = Gson()
-        val newjob = gson.toJson(job)
-        val jsonElement: JsonElement = JsonParser().parse(newjob)
-        jobhead.add("Job", jsonElement)
-        jobhead.addProperty("UserId", userId)
-        Log.e("JsonObject", "Json string $jobhead")
+        val newJob = gson.toJson(job)
+        val jsonElement: JsonElement = JsonParser.parseString(newJob)
+        jobHead.add("Job", jsonElement)
+        jobHead.addProperty("UserId", userId)
+        Log.e("JsonObject", "Json string $jobHead")
 
-        val jobResponse = apiRequest { api.sendJobsForApproval(jobhead) }
-        workflowJ2.postValue(jobResponse.workflowJob, job, activity)
+        val jobResponse = apiRequest { api.sendJobsForApproval(jobHead) }
+        postValue(jobResponse.workflowJob, job, activity)
 
         val messages = jobResponse.errorMessage
 //          activity.getResources().getString(R.string.please_wait)
@@ -292,24 +296,25 @@ class JobCreationDataRepository(private val api: BaseConnectionApi, private val 
         }
     }
 
-    private fun <T> MutableLiveData<T>.postValue(
-        workflowj: WorkflowJobDTO,
+    private fun postValue(
+        workflowJob: WorkflowJobDTO,
         job: JobDTO,
         activity: FragmentActivity
     ) {
         Coroutines.io {
-        if (workflowj != null) {
-            val createJob = setWorkflowJobBigEndianGuids(workflowj)
+            if (workflowJob != null) {
+                val createJob = setWorkflowJobBigEndianGuids(workflowJob)
             insertOrUpdateWorkflowJobInSQLite(createJob)
-            uploadcreateJobImages(job, activity)
-            val myjob  = getUpdatedJob(DataConversion.toBigEndian(job.JobId)!!)
-            moveJobToNextWorkflow(myjob, activity)
+                uploadCreateJobImages(job, activity)
+                val myJob =
+                    getUpdatedJob(DataConversion.toBigEndian(job.JobId)!!)
+                moveJobToNextWorkflow(myJob, activity)
             }
         }
     }
 
 
-    suspend fun getUpdatedJob(jobId: String): JobDTO {
+    private suspend fun getUpdatedJob(jobId: String): JobDTO {
         return withContext(Dispatchers.IO) {
             Db.getJobDao().getJobForJobId(jobId)
         }
@@ -365,7 +370,7 @@ class JobCreationDataRepository(private val api: BaseConnectionApi, private val 
         Coroutines.io {
             Db.getJobDao().updateJob(job.trackRouteId, job.actId, job.jiNo, job.jobId)
 
-            if (job.workflowItemEstimates != null && job.workflowItemEstimates.size !== 0) {
+            if (job.workflowItemEstimates != null && job.workflowItemEstimates.size != 0) {
                 for (jobItemEstimate in job.workflowItemEstimates) {
                     Db.getJobItemEstimateDao().updateExistingJobItemEstimateWorkflow(
                         jobItemEstimate.trackRouteId,
@@ -379,6 +384,7 @@ class JobCreationDataRepository(private val api: BaseConnectionApi, private val 
                                     jobEstimateWorks.worksId
                                 )
                             )
+                            // TODO: What were we planning to do here?
 //                                Db.getEstimateWorkDao().insertJobEstimateWorks(jobEstimateWorks as JobEstimateWorksDTO)
                             else Db.getEstimateWorkDao().updateJobEstimateWorksWorkflow(
                                 jobEstimateWorks.worksId,
@@ -425,21 +431,21 @@ class JobCreationDataRepository(private val api: BaseConnectionApi, private val 
     }
 
 
-    private fun uploadcreateJobImages(packagejob: JobDTO, activity: FragmentActivity) {
+    private fun uploadCreateJobImages(packageJob: JobDTO, activity: FragmentActivity) {
         var imageCounter = 1
-        var totalImages = 0
+        val totalImages = 0
 
-        if (packagejob.JobItemEstimates != null) {
-            if (packagejob.JobItemEstimates!!.isEmpty()) {
+        if (packageJob.JobItemEstimates != null) {
+            if (packageJob.JobItemEstimates!!.isEmpty()) {
 //                progressView.toast("(job.getPrjJobItemEstimates() is empty")
 //                progressView.dismissProgressDialog()
             } else {
-                for (jobItemEstimate in packagejob.JobItemEstimates!!) {
+                for (jobItemEstimate in packageJob.JobItemEstimates!!) {
                     if (jobItemEstimate.jobItemEstimatePhotos != null && jobItemEstimate.jobItemEstimatePhotos!!.size > 0) {
                         val photos: Array<JobItemEstimatesPhotoDTO> =
-                            arrayOf<JobItemEstimatesPhotoDTO>(
-                                jobItemEstimate.jobItemEstimatePhotos!!.get(0),
-                                jobItemEstimate.jobItemEstimatePhotos!!.get(1)
+                            arrayOf(
+                                jobItemEstimate.jobItemEstimatePhotos!![0],
+                                jobItemEstimate.jobItemEstimatePhotos!![1]
                             )
                         for (jobItemEstimatePhoto in photos) {
 //                        for (jobItemEstimatePhoto in jobItemEstimate.jobItemEstimatePhotos!!) {
@@ -450,7 +456,7 @@ class JobCreationDataRepository(private val api: BaseConnectionApi, private val 
                                     PhotoQuality.HIGH,
                                     imageCounter,
                                     totalImages,
-                                    packagejob,
+                                    packageJob,
                                     activity
                                 )
                                 imageCounter++
@@ -481,7 +487,7 @@ class JobCreationDataRepository(private val api: BaseConnectionApi, private val 
         photoQuality: PhotoQuality,
         imageCounter: Int,
         totalImages: Int,
-        packagejob: JobDTO,
+        packageJob: JobDTO,
         activity: FragmentActivity
     ) {
 
@@ -492,7 +498,7 @@ class JobCreationDataRepository(private val api: BaseConnectionApi, private val 
             data,
             totalImages,
             imageCounter,
-            packagejob,
+            packageJob,
             activity
         )
     }
@@ -504,12 +510,11 @@ class JobCreationDataRepository(private val api: BaseConnectionApi, private val 
         val uri = getPhotoPathFromExternalDirectory(activity.applicationContext, filename)
         val bitmap =
             PhotoUtil.getPhotoBitmapFromFile(activity.applicationContext, uri, photoQuality)
-        val photo = PhotoUtil.getCompressedPhotoWithExifInfo(
+        return PhotoUtil.getCompressedPhotoWithExifInfo(
             activity.applicationContext,
             bitmap!!,
             filename
         )
-        return photo
     }
 
 
@@ -519,21 +524,23 @@ class JobCreationDataRepository(private val api: BaseConnectionApi, private val 
         photo: ByteArray,
         totalImages: Int,
         imageCounter: Int,
-        packagejob: JobDTO,
+        packageJob: JobDTO,
         activity: FragmentActivity
     ) {
 
         Coroutines.io {
-            val imagedata = JsonObject()
-            imagedata.addProperty("Filename", filename)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                imagedata.addProperty("ImageByteArray", Base64.getEncoder().encodeToString(photo))
+            val imageData = JsonObject()
+            imageData.addProperty("Filename", filename)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                imageData.addProperty("ImageByteArray", Base64.getEncoder().encodeToString(photo))
+            } else {
+                // TODO: use a generic utility to encode base64 string
             }
-            imagedata.addProperty("ImageFileExtension", extension)
-            Log.e("JsonObject", "Json string $imagedata")
+            imageData.addProperty("ImageFileExtension", extension)
+            Log.e("JsonObject", "Json string $imageData")
 
-            val uploadImageResponse = apiRequest { api.uploadRrmImage(imagedata) }
-            photoupload.postValue(uploadImageResponse.errorMessage)
+            val uploadImageResponse = apiRequest { api.uploadRrmImage(imageData) }
+            photoUploads.postValue(uploadImageResponse.errorMessage)
             if (totalImages <= imageCounter){
                 Log.e("Coroutines", "Json string $totalImages")
             }
@@ -565,8 +572,8 @@ class JobCreationDataRepository(private val api: BaseConnectionApi, private val 
                         direction
                     )
                 }
-                workflowJ.postValue(workflowMoveResponse.workflowJob)
-                Db.getItemDao_Temp().deleteItemList(job.JobId)
+                workflowJobs.postValue(workflowMoveResponse.workflowJob)
+                Db.getItemDaoTemp().deleteItemList(job.JobId)
 
 //                toDoListGroups.postValue(workflowMoveResponse.toDoListGroups)
 //                workflows.postValue(workflowMoveResponse.toDoListGroups)
@@ -576,10 +583,25 @@ class JobCreationDataRepository(private val api: BaseConnectionApi, private val 
     }
 
 
-
-    private  fun <T> MutableLiveData<T>.postValue(
-        direction: String, linearId: String, pointLocation: Double, sectionId: Int, projectId: String?, jobId: String?, item: ItemDTOTemp?
-    ) { saveRouteSectionPoint(direction,linearId, pointLocation,sectionId,projectId, jobId,  item) }
+    private fun postValue(
+        direction: String,
+        linearId: String,
+        pointLocation: Double,
+        sectionId: Int,
+        projectId: String?,
+        jobId: String?,
+        item: ItemDTOTemp?
+    ) {
+        saveRouteSectionPoint(
+            direction,
+            linearId,
+            pointLocation,
+            sectionId,
+            projectId,
+            jobId,
+            item
+        )
+    }
 
     private fun saveRouteSectionPoint(direction: String, linearId: String, pointLocation: Double, sectionId: Int, projectId: String?, jobId: String?, item: ItemDTOTemp?) {
         if (linearId != null) {
@@ -595,24 +617,22 @@ class JobCreationDataRepository(private val api: BaseConnectionApi, private val 
     }
 
 
+//    private fun postValue(photo: String?, fileName: String) {
+//        saveEstimatePhoto(photo, fileName)
+//    }
 
-
-    private fun <T> MutableLiveData<T>.postValue(photo: String?, fileName: String) {
-        saveEstimatePhoto(photo, fileName)
-    }
-
-    fun saveEstimatePhoto(estimatePhoto: String?, fileName: String) {
-        Coroutines.io {
-            if (estimatePhoto != null) {
-                PhotoUtil.createPhotofolder(estimatePhoto, fileName)
-//            PhotoUtil.createPhotofolder(fileName)
-            }else{
-                PhotoUtil.createPhotofolder()
-            }
-
-        }
-
-    }
+//    private fun saveEstimatePhoto(estimatePhoto: String?, fileName: String) {
+//        Coroutines.io {
+//            if (estimatePhoto != null) {
+//                PhotoUtil.createPhotofolder(estimatePhoto, fileName)
+////            PhotoUtil.createPhotofolder(fileName)
+//            }else{
+//                PhotoUtil.createPhotofolder()
+//            }
+//
+//        }
+//
+//    }
 
    suspend fun getContractNoForId(contractVoId: String?): String {
         return withContext(Dispatchers.IO) {
@@ -628,197 +648,182 @@ class JobCreationDataRepository(private val api: BaseConnectionApi, private val 
     }
 
 
+//    private fun JobItemMeasureDTO.setSelectedItemUom(selectedItemUom: String?) {
+//        this.selectedItemUom = selectedItemUom
+//    }
 
+//    private fun JobItemMeasureDTO.setMeasureDate(measureDate: Date) {
+//        this.measureDate = measureDate.toString()
+//    }
 
+//    private fun JobItemMeasureDTO.setLineAmount(lineAmount: Double) {
+//        this.lineAmount = lineAmount
+//    }
 
+//    private fun JobItemMeasureDTO.setCpa(cpa: Int) {
+//        this.cpa = cpa
+//    }
+//
+//    private fun JobItemMeasureDTO.setRecordSynchStateId(recordSynchStateId: Int) {
+//        this.recordSynchStateId = recordSynchStateId
+//    }
+//
+//    private fun JobItemMeasureDTO.setRecordVersion(recordVersion: Int) {
+//        this.recordVersion = recordVersion
+//    }
+//
+//    private fun JobItemMeasureDTO.setJobDirectionId(jobDirectionId: Int) {
+//        this.jobDirectionId = jobDirectionId
+//    }
+//
+//    private fun JobItemMeasureDTO.setEndKm(endKm: Double) {
+//        this.endKm = endKm
+//    }
+//
+//    private fun JobItemMeasureDTO.setStartKm(startKm: Double) {
+//        this.startKm = startKm
+//    }
+//
+//    private fun JobItemMeasureDTO.setLineRate(lineRate: Double) {
+//        this.lineRate = lineRate
+//    }
+//
+//    private fun JobItemMeasureDTO.setQty(quantity: Double) {
+//        this.qty = quantity
+//    }
+//
+//    private fun JobItemMeasurePhotoDTO.setPhotoPath(photoPath: String) {
+//        this.photoPath = photoPath
+//    }
+//
+//    private fun JobItemEstimatesPhotoDTO.setIsPhotoStart(photoStart: Boolean) {
+//        this.is_PhotoStart = photoStart
+//    }
+//
+//    private fun JobItemEstimatesPhotoDTO.setPhotoPath(photoPath: String) {
+//        this.photoPath = photoPath
+//    }
+//
+//    private fun JobDTO.setRoute(route: String?) {
+//        this.Route = route!!
+//    }
 
-
-
-
-
-
-
-
-
-
-
-
-    private fun JobItemMeasureDTO.setSelectedItemUom(selectedItemUom: String?) {
-        this.selectedItemUom = selectedItemUom
-    }
-
-    private fun JobItemMeasureDTO.setMeasureDate(measureDate: Date) {
-        this.measureDate = measureDate.toString()
-    }
-
-    private fun JobItemMeasureDTO.setLineAmount(lineAmount: Double) {
-        this.lineAmount = lineAmount
-    }
-
-    private fun JobItemMeasureDTO.setCpa(cpa: Int) {
-        this.cpa = cpa
-    }
-
-    private fun JobItemMeasureDTO.setRecordSynchStateId(recordSynchStateId: Int) {
-        this.recordSynchStateId = recordSynchStateId
-    }
-
-    private fun JobItemMeasureDTO.setRecordVersion(recordVersion: Int) {
-        this.recordVersion = recordVersion
-    }
-
-    private fun JobItemMeasureDTO.setJobDirectionId(jobDirectionId: Int) {
-        this.jobDirectionId = jobDirectionId
-    }
-
-    private fun JobItemMeasureDTO.setEndKm(endKm: Double) {
-        this.endKm = endKm
-    }
-
-    private fun JobItemMeasureDTO.setStartKm(startKm: Double) {
-        this.startKm = startKm
-    }
-
-    private fun JobItemMeasureDTO.setLineRate(lineRate: Double) {
-        this.lineRate = lineRate
-    }
-
-    private fun JobItemMeasureDTO.setQty(quantity: Double) {
-        this.qty = quantity
-    }
-
-    private fun JobItemMeasurePhotoDTO.setPhotoPath(photoPath: String) {
-        this.photoPath = photoPath
-    }
-
-    private fun JobItemEstimatesPhotoDTO.setIsPhotoStart(photoStart: Boolean) {
-        this.is_PhotoStart = photoStart
-    }
-
-    private fun JobItemEstimatesPhotoDTO.setPhotoPath(photoPath: String) {
-        this.photoPath = photoPath
-    }
-
-    private fun JobDTO.setRoute(route: String?) {
-        this.Route = route!!
-    }
-
-    private fun JobDTO.setDescr(descr: String?) {
-        this.Descr = descr
-    }
-
-    private fun JobDTO.setJobId(toBigEndian: String?) {
-        this.JobId = toBigEndian!!
-    }
-
-    private fun JobDTO.setProjectId(toBigEndian: String?) {
-        this.ProjectId = toBigEndian!!
-    }
-
-    private fun JobDTO.setContractVoId(toBigEndian: String?) {
-        this.ContractVoId = toBigEndian!!
-    }
-
-    private fun JobDTO.setTrackRouteId(toBigEndian: String?) {
-        this.TrackRouteId = toBigEndian!!
-    }
-
-    private fun JobSectionDTO.setJobSectionId(toBigEndian: String?) {
-        this.jobSectionId = toBigEndian!!
-    }
-
-    private fun JobSectionDTO.setProjectSectionId(toBigEndian: String?) {
-        this.projectSectionId = toBigEndian!!
-    }
-
-    private fun JobSectionDTO.setJobId(toBigEndian: String?) {
-        this.jobId = toBigEndian!!
-    }
-
-    private fun JobItemMeasurePhotoDTO.setItemMeasureId(toBigEndian: String?) {
-        this.itemMeasureId = toBigEndian
-    }
-
-    private fun JobItemMeasurePhotoDTO.setPhotoId(toBigEndian: String?) {
-        this.photoId = toBigEndian!!
-    }
-
-    private fun JobEstimateWorksPhotoDTO.setPhotoId(toBigEndian: String?) {
-        this.photoId = toBigEndian!!
-    }
-
-    private fun JobEstimateWorksPhotoDTO.setWorksId(toBigEndian: String?) {
-        this.worksId = toBigEndian!!
-    }
-
-    private fun JobItemMeasureDTO.setItemMeasureId(toBigEndian: String?) {
-        this.itemMeasureId = toBigEndian
-    }
-
-    private fun JobItemMeasureDTO.setJobId(toBigEndian: String?) {
-        this.jobId = toBigEndian
-    }
-
-    private fun JobItemMeasureDTO.setProjectItemId(toBigEndian: String?) {
-        this.projectItemId = toBigEndian
-    }
-
-    private fun JobItemMeasureDTO.setMeasureGroupId(toBigEndian: String?) {
-        this.measureGroupId = toBigEndian
-    }
-
-    private fun JobItemMeasureDTO.setEstimateId(toBigEndian: String?) {
-        this.estimateId = toBigEndian
-    }
-
-    private fun JobItemMeasureDTO.setProjectVoId(toBigEndian: String?) {
-        this.projectVoId = toBigEndian
-    }
-
-    private fun JobItemMeasureDTO.setTrackRouteId(toBigEndian: String?) {
-        this.trackRouteId = toBigEndian
-    }
-
-
-    private fun JobEstimateWorksDTO.setTrackRouteId(toBigEndian: String?) {
-        this.trackRouteId = toBigEndian!!
-    }
-
-    private fun JobEstimateWorksDTO.setEstimateId(toBigEndian: String?) {
-        this.estimateId = toBigEndian!!
-    }
-
-    private fun JobEstimateWorksDTO.setWorksId(toBigEndian: String?) {
-        this.worksId = toBigEndian!!
-    }
-
-    private fun JobItemEstimatesPhotoDTO.setEstimateId(toBigEndian: String?) {
-        this.estimateId = toBigEndian!!
-    }
-
-    private fun JobItemEstimatesPhotoDTO.setPhotoId(toBigEndian: String?) {
-        this.photoId = toBigEndian!!
-    }
-
-    private fun JobItemEstimateDTO.setProjectVoId(toBigEndian: String?) {
-        this.projectVoId = toBigEndian
-    }
-
-    private fun JobItemEstimateDTO.setTrackRouteId(toBigEndian: String?) {
-        this.trackRouteId = toBigEndian!!
-    }
-
-    private fun JobItemEstimateDTO.setProjectItemId(toBigEndian: String?) {
-        this.projectItemId = toBigEndian
-    }
-
-    private fun JobItemEstimateDTO.setJobId(toBigEndian: String?) {
-        this.jobId = toBigEndian!!
-    }
-
-    private fun JobItemEstimateDTO.setEstimateId(toBigEndian: String?) {
-        this.estimateId = toBigEndian!!
-    }
+//    private fun JobDTO.setDescr(descr: String?) {
+//        this.Descr = descr
+//    }
+//
+//    private fun JobDTO.setJobId(toBigEndian: String?) {
+//        this.JobId = toBigEndian!!
+//    }
+//
+//    private fun JobDTO.setProjectId(toBigEndian: String?) {
+//        this.ProjectId = toBigEndian!!
+//    }
+//
+//    private fun JobDTO.setContractVoId(toBigEndian: String?) {
+//        this.ContractVoId = toBigEndian!!
+//    }
+//
+//    private fun JobDTO.setTrackRouteId(toBigEndian: String?) {
+//        this.TrackRouteId = toBigEndian!!
+//    }
+//
+//    private fun JobSectionDTO.setJobSectionId(toBigEndian: String?) {
+//        this.jobSectionId = toBigEndian!!
+//    }
+//
+//    private fun JobSectionDTO.setProjectSectionId(toBigEndian: String?) {
+//        this.projectSectionId = toBigEndian!!
+//    }
+//
+//    private fun JobSectionDTO.setJobId(toBigEndian: String?) {
+//        this.jobId = toBigEndian!!
+//    }
+//
+//    private fun JobItemMeasurePhotoDTO.setItemMeasureId(toBigEndian: String?) {
+//        this.itemMeasureId = toBigEndian
+//    }
+//
+//    private fun JobItemMeasurePhotoDTO.setPhotoId(toBigEndian: String?) {
+//        this.photoId = toBigEndian!!
+//    }
+//
+//    private fun JobEstimateWorksPhotoDTO.setPhotoId(toBigEndian: String?) {
+//        this.photoId = toBigEndian!!
+//    }
+//
+//    private fun JobEstimateWorksPhotoDTO.setWorksId(toBigEndian: String?) {
+//        this.worksId = toBigEndian!!
+//    }
+//
+//    private fun JobItemMeasureDTO.setItemMeasureId(toBigEndian: String?) {
+//        this.itemMeasureId = toBigEndian
+//    }
+//
+//    private fun JobItemMeasureDTO.setJobId(toBigEndian: String?) {
+//        this.jobId = toBigEndian
+//    }
+//
+//    private fun JobItemMeasureDTO.setProjectItemId(toBigEndian: String?) {
+//        this.projectItemId = toBigEndian
+//    }
+//
+//    private fun JobItemMeasureDTO.setMeasureGroupId(toBigEndian: String?) {
+//        this.measureGroupId = toBigEndian
+//    }
+//
+//    private fun JobItemMeasureDTO.setEstimateId(toBigEndian: String?) {
+//        this.estimateId = toBigEndian
+//    }
+//
+//    private fun JobItemMeasureDTO.setProjectVoId(toBigEndian: String?) {
+//        this.projectVoId = toBigEndian
+//    }
+//
+//    private fun JobItemMeasureDTO.setTrackRouteId(toBigEndian: String?) {
+//        this.trackRouteId = toBigEndian
+//    }
+//
+//
+//    private fun JobEstimateWorksDTO.setTrackRouteId(toBigEndian: String?) {
+//        this.trackRouteId = toBigEndian!!
+//    }
+//
+//    private fun JobEstimateWorksDTO.setEstimateId(toBigEndian: String?) {
+//        this.estimateId = toBigEndian!!
+//    }
+//
+//    private fun JobEstimateWorksDTO.setWorksId(toBigEndian: String?) {
+//        this.worksId = toBigEndian!!
+//    }
+//
+//    private fun JobItemEstimatesPhotoDTO.setEstimateId(toBigEndian: String?) {
+//        this.estimateId = toBigEndian!!
+//    }
+//
+//    private fun JobItemEstimatesPhotoDTO.setPhotoId(toBigEndian: String?) {
+//        this.photoId = toBigEndian!!
+//    }
+//
+//    private fun JobItemEstimateDTO.setProjectVoId(toBigEndian: String?) {
+//        this.projectVoId = toBigEndian
+//    }
+//
+//    private fun JobItemEstimateDTO.setTrackRouteId(toBigEndian: String?) {
+//        this.trackRouteId = toBigEndian!!
+//    }
+//
+//    private fun JobItemEstimateDTO.setProjectItemId(toBigEndian: String?) {
+//        this.projectItemId = toBigEndian
+//    }
+//
+//    private fun JobItemEstimateDTO.setJobId(toBigEndian: String?) {
+//        this.jobId = toBigEndian!!
+//    }
+//
+//    private fun JobItemEstimateDTO.setEstimateId(toBigEndian: String?) {
+//        this.estimateId = toBigEndian!!
+//    }
 
 
     private operator fun <T> LiveData<T>.not(): Boolean {

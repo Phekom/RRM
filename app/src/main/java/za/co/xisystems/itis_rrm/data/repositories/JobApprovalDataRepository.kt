@@ -11,15 +11,18 @@ import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
-import za.co.xisystems.itis_rrm.data.preferences.PreferenceProvider
-import za.co.xisystems.itis_rrm.utils.*
+import za.co.xisystems.itis_rrm.utils.Coroutines
+import za.co.xisystems.itis_rrm.utils.DataConversion
 
 
 /**
  * Created by Francis Mahlava on 2019/11/28.
  */
 
-class JobApprovalDataRepository(private val api: BaseConnectionApi, private val Db: AppDatabase, private val prefs: PreferenceProvider) : SafeApiRequest() {
+class JobApprovalDataRepository(
+    private val api: BaseConnectionApi,
+    private val Db: AppDatabase
+) : SafeApiRequest() {
     companion object {
         val TAG: String = JobApprovalDataRepository::class.java.simpleName
     }
@@ -150,7 +153,7 @@ class JobApprovalDataRepository(private val api: BaseConnectionApi, private val 
         Coroutines.io {
             Db.getJobDao().updateJob(job.trackRouteId, job.actId, job.jiNo, job.jobId)
 
-            if (job.workflowItemEstimates != null && job.workflowItemEstimates.size !== 0) {
+            if (job.workflowItemEstimates != null && job.workflowItemEstimates.size != 0) {
                 for (jobItemEstimate in job.workflowItemEstimates) {
                     Db.getJobItemEstimateDao().updateExistingJobItemEstimateWorkflow(
                         jobItemEstimate.trackRouteId,
@@ -178,9 +181,9 @@ class JobApprovalDataRepository(private val api: BaseConnectionApi, private val 
                     }
                 }
 
-                if (job.workflowItemMeasures != null && job.workflowItemMeasures.size !== 0) {
+                if (job.workflowItemMeasures != null && job.workflowItemMeasures.size != 0) {
                     for (jobItemMeasure in job.workflowItemMeasures) {
-                        Db?.getJobItemMeasureDao()!!.updateWorkflowJobItemMeasure(
+                        Db.getJobItemMeasureDao().updateWorkflowJobItemMeasure(
                             jobItemMeasure.itemMeasureId,
                             jobItemMeasure.trackRouteId,
                             jobItemMeasure.actId,
@@ -192,7 +195,7 @@ class JobApprovalDataRepository(private val api: BaseConnectionApi, private val 
             }
 
             //  Place the Job Section, UPDATE OR CREATE
-            if (job.workflowJobSections != null && job.workflowJobSections.size !== 0) {
+            if (job.workflowJobSections != null && job.workflowJobSections.size != 0) {
                 for (jobSection in job.workflowJobSections) {
                     if (!Db.getJobSectionDao().checkIfJobSectionExist(jobSection.jobSectionId))
                         Db.getJobSectionDao().insertJobSection(jobSection) else

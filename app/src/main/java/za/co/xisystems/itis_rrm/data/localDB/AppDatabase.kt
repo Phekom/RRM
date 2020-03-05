@@ -64,7 +64,7 @@ abstract class AppDatabase : RoomDatabase() {
 //    abstract fun getJobItemMeasureDao_Temp(): JobItemMeasureDao_Temp
 //    abstract fun getJobItemMeasurePhotoDao_Temp(): JobItemMeasurePhotoDao_Temp
     abstract fun getJobDaoTemp(): JobDaoTemp
-    abstract fun getItemDao_Temp() : ItemDao_Temp
+    abstract fun getItemDaoTemp(): ItemDaoTemp
     abstract fun getSectionPointDao(): SectionPointDao
     abstract fun getWorkStepDao(): WorkStepDao
 

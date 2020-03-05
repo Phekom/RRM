@@ -7,7 +7,7 @@ import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
@@ -20,7 +20,7 @@ import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
-import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.unsubmited_item.UnSubmitedJob_Item
+import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.unsubmited_item.UnSubmittedJobItem
 import za.co.xisystems.itis_rrm.utils.*
 
 class UnSubmittedFragment : BaseFragment(), KodeinAware {
@@ -28,8 +28,11 @@ class UnSubmittedFragment : BaseFragment(), KodeinAware {
     override val kodein by kodein()
     private lateinit var unsubmittedViewModel: UnSubmittedViewModel
     private val factory: UnSubmittedViewModelFactory by instance()
-    private lateinit var groupAdapter : GroupAdapter<GroupieViewHolder>
+    private lateinit var groupAdapter: GroupAdapter<GroupieViewHolder>
 
+    companion object {
+        val TAG: String = UnSubmittedFragment::class.java.simpleName
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -45,15 +48,16 @@ class UnSubmittedFragment : BaseFragment(), KodeinAware {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         unsubmittedViewModel = activity?.run {
-            ViewModelProviders.of(this, factory).get(UnSubmittedViewModel::class.java)
-        } ?: throw Exception("Invalid Activity") as Throwable
+            ViewModelProvider(this, factory).get(UnSubmittedViewModel::class.java)
+        } ?: throw Exception("Invalid Activity")
+
         Coroutines.main {
             try {
-                groupAdapter = GroupAdapter<GroupieViewHolder>()
-                //            mydata_loading.show()
+                groupAdapter = GroupAdapter()
+
                 val measurements =
                     unsubmittedViewModel.getJobsForActivityId(ActivityIdConstants.JOB_ESTIMATE)
-//            val measurements = approveViewModel.offlinedata.await()
+
                 measurements.observe(viewLifecycleOwner, Observer { job_s ->
                     if (job_s.isEmpty()) {
                         noData.visibility = View.VISIBLE
@@ -66,27 +70,27 @@ class UnSubmittedFragment : BaseFragment(), KodeinAware {
                     }
 
                 })
-            }  catch (e: ApiException) {
+            } catch (e: ApiException) {
                 ToastUtils().toastLong(activity, e.message)
-                Log.e("Service-Host", "API Exception", e)
+                Log.e(TAG, "API Exception", e)
             } catch (e: NoInternetException) {
                 ToastUtils().toastLong(activity, e.message)
-                Log.e("Network-Connection", "No Internet Connection", e)
+                Log.e(TAG, "No Internet Connection", e)
             } catch (e: NoConnectivityException) {
                 ToastUtils().toastLong(activity, e.message)
-                Log.e("Network-Error", "Service Host Unreachable", e)
+                Log.e(TAG, "Service Host Unreachable", e)
             }
         }
     }
 
 
-    private fun List<JobDTO>.toApproveListItems(): List<UnSubmitedJob_Item> {
+    private fun List<JobDTO>.toApproveListItems(): List<UnSubmittedJobItem> {
         return this.map { approvej_items ->
-            UnSubmitedJob_Item(approvej_items, unsubmittedViewModel, activity, groupAdapter)
+            UnSubmittedJobItem(approvej_items, unsubmittedViewModel, groupAdapter)
         }
     }
 
-    private fun initRecyclerView(items: List<UnSubmitedJob_Item>) {
+    private fun initRecyclerView(items: List<UnSubmittedJobItem>) {
         groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
             addAll(items)
         }

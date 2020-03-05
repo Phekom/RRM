@@ -1,9 +1,7 @@
 package za.co.xisystems.itis_rrm.data.localDB.entities
 
 
-import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.gson.annotations.SerializedName
-
 
 
 data class WorkflowEstimateWorkDTO(

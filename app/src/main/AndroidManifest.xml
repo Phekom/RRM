@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:tools="http://schemas.android.com/tools"
-        package="za.co.xisystems.itis_rrm"
-        android:installLocation="auto">
+    xmlns:tools="http://schemas.android.com/tools"
+    package="za.co.xisystems.itis_rrm"
+    android:installLocation="auto">
 
     <uses-feature
-            android:name="android.hardware.camera"
-            android:required="true" /> <!-- When adding a permission, also add to  "xisystemsms.itismaintenance.controllers.PermissionController"  if necessary. -->
+        android:name="android.hardware.camera"
+        android:required="true" />
+    <!-- When adding a permission, also add to  "xisystemsms.itismaintenance.controllers.PermissionController"  if necessary. -->
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
@@ -16,45 +17,43 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.READ_SMS" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission
-            android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-            tools:node="replace" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.CAMERA" />
 
     <application
-            android:name=".MainApp"
-            android:allowBackup="true"
-            android:icon="@mipmap/ic_launcher"
-            android:label="@string/app_name"
-            android:roundIcon="@mipmap/ic_launcher_round"
-            android:supportsRtl="true"
-            android:largeHeap="true"
+        android:name=".MainApp"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:largeHeap="true"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
 
-            android:theme="@style/AppTheme"
-            tools:ignore="GoogleAppIndexingWarning">
-<!--        <activity android:name=".ui.mainview.create.edit_estimates.EstimatePhotoActivity"></activity> android:hardwareAccelerated="false"-->
+        android:theme="@style/AppTheme"
+        tools:ignore="GoogleAppIndexingWarning">
+        <!--        <activity android:name=".ui.mainview.create.edit_estimates.EstimatePhotoActivity"></activity> android:hardwareAccelerated="false"-->
         <activity android:name=".ui.mainview.estmeasure.submit_measure.CaptureItemMeasurePhotoActivity" />
 
         <provider
-                android:name="androidx.core.content.FileProvider"
-                android:authorities="${applicationId}.provider"
-                android:exported="false"
-                android:grantUriPermissions="true">
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
             <meta-data
-                    android:name="android.support.FILE_PROVIDER_PATHS"
-                    android:resource="@xml/file_paths" />
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
         </provider>
 
         <activity
-                android:name=".ui.mainview.activities.SettingsActivity"
-                android:theme="@style/AppTheme.NoActionBar">
+            android:name=".ui.mainview.activities.SettingsActivity"
+            android:theme="@style/AppTheme.NoActionBar">
             <meta-data
-                    android:name="android.support.PARENT_ACTIVITY"
-                    android:value="za.co.xisystems.itis_rrm.MainActivity" />
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="za.co.xisystems.itis_rrm.MainActivity" />
         </activity>
         <activity
-                android:name=".ui.auth.LoginActivity"
-                android:theme="@style/Theme.AppCompat.NoActionBar">
+            android:name=".ui.auth.LoginActivity"
+            android:theme="@style/Theme.AppCompat.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -62,11 +61,11 @@
             </intent-filter>
         </activity>
         <activity
-                android:name=".ui.auth.RegisterPinActivity"
-                android:theme="@style/Theme.AppCompat.NoActionBar" />
+            android:name=".ui.auth.RegisterPinActivity"
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
-                android:name=".ui.auth.RegisterActivity"
-                android:theme="@style/Theme.AppCompat.NoActionBar">
+            android:name=".ui.auth.RegisterActivity"
+            android:theme="@style/Theme.AppCompat.NoActionBar">
 
             <!-- <intent-filter> -->
             <!-- <action android:name="android.intent.action.MAIN" /> -->
@@ -74,10 +73,10 @@
             <!-- </intent-filter> -->
         </activity>
         <activity
-                android:name=".MainActivity"
-                android:clearTaskOnLaunch="true"
-                android:label="@string/app_name"
-                android:theme="@style/AppTheme.NoActionBar">
+            android:name=".MainActivity"
+            android:clearTaskOnLaunch="true"
+            android:label="@string/app_name"
+            android:theme="@style/AppTheme.NoActionBar">
 
             <!-- <intent-filter> -->
             <!-- <action android:name="android.intent.action.MAIN" /> -->
@@ -86,9 +85,9 @@
 
         </activity>
         <activity
-                android:name=".ui.auth.ResetPinActivity"
-                android:theme="@style/Theme.AppCompat.NoActionBar" />
-       <!-- <activity -->
+            android:name=".ui.auth.ResetPinActivity"
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
+        <!-- <activity -->
         <!-- android:name=".ToDelete.activities.CaptureItemMeasurePhotoActivity" -->
         <!-- android:label="@string/edit_estimate" -->
         <!-- android:screenOrientation="portrait" -->
@@ -98,21 +97,24 @@
                    App Indexing.  See https://g.co/AppIndexing/AndroidStudio for more information.
         -->
         <meta-data
-                android:name="com.google.android.gms.version"
-                android:value="@integer/google_play_services_version" />
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
 
-        <service android:name="com.raygun.raygun4android.services.CrashReportingPostService"
-                android:exported="false"
-                android:permission="android.permission.BIND_JOB_SERVICE"
-                android:process=":crashreportingpostservice"/>
+        <service
+            android:name="com.raygun.raygun4android.services.CrashReportingPostService"
+            android:exported="false"
+            android:permission="android.permission.BIND_JOB_SERVICE"
+            android:process=":crashreportingpostservice" />
 
-        <service android:name="com.raygun.raygun4android.services.RUMPostService"
-                android:exported="false"
-                android:permission="android.permission.BIND_JOB_SERVICE"
-                android:process=":rumpostservice" />
+        <service
+            android:name="com.raygun.raygun4android.services.RUMPostService"
+            android:exported="false"
+            android:permission="android.permission.BIND_JOB_SERVICE"
+            android:process=":rumpostservice" />
 
-        <meta-data android:name="com.raygun.raygun4android.apikey"
-                android:value="kcgu9Beurf2BQphFwPHUw" />
+        <meta-data
+            android:name="com.raygun.raygun4android.apikey"
+            android:value="kcgu9Beurf2BQphFwPHUw" />
 
     </application>
 

@@ -18,8 +18,7 @@ class AppExecutor private constructor(
         Executors.newSingleThreadExecutor(),
         Executors.newFixedThreadPool(3),
         MainThreadExecutor()
-    ) {
-    }
+    )
 
     fun diskIO(): Executor {
         return diskIO

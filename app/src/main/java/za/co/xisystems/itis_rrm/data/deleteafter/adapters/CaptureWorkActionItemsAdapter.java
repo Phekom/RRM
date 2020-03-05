@@ -1,3 +1,4 @@
+/*
 package za.co.xisystems.itis_rrm.data.deleteafter.adapters;
 
 import android.content.Context;
@@ -14,10 +15,12 @@ import za.co.xisystems.itis_rrm.R;
 import za.co.xisystems.itis_rrm.data._commons.Typefaces;
 
 
+*/
 /**
  * Created by Mauritz Mollentze on 2014/12/04.
  * Updated by Pieter Jacobs during 2016/07.
- */
+ *//*
+
 public class CaptureWorkActionItemsAdapter extends BaseAdapter {
     private Context context;
     private ArrayList<String> data;
@@ -89,3 +92,4 @@ public class CaptureWorkActionItemsAdapter extends BaseAdapter {
     }
 
 }
+*/

@@ -6,6 +6,6 @@ import io.reactivex.schedulers.Schedulers
 
 object RxUtils {
     @JvmStatic fun <T> schedule(o: Observable<T>): Observable<T> {
-        return o.subscribeOn(Schedulers.single()).observeOn(AndroidSchedulers.mainThread());
+        return o.subscribeOn(Schedulers.single()).observeOn(AndroidSchedulers.mainThread())
     }
 }

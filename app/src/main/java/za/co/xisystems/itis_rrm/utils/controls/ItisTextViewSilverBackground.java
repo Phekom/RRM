@@ -3,7 +3,6 @@ package za.co.xisystems.itis_rrm.utils.controls;
 import android.content.Context;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
-import android.widget.EditText;
 
 import za.co.xisystems.itis_rrm.R;
 import za.co.xisystems.itis_rrm.data._commons.Typefaces;
@@ -13,7 +12,7 @@ import za.co.xisystems.itis_rrm.utils.ColorUtil;
  * Created by Pieter Jacobs on 2016/07/18.
  * Updated by Pieter Jacobs during 2016/07.
  */
-public class ItisTextViewSilverBackground extends EditText {
+public class ItisTextViewSilverBackground extends androidx.appcompat.widget.AppCompatEditText {
 
     // region (Private Fields)
 

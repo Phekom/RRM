@@ -9,28 +9,22 @@ import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.data.repositories.MeasureCreationDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
-import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.estimate_measure_item.EstimateMeasure_Item
+import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.estimate_measure_item.EstimateMeasureItem
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
+import za.co.xisystems.itis_rrm.utils.uncaughtExceptionHandler
 
 class MeasureViewModel (
     private val measureCreationDataRepository: MeasureCreationDataRepository,
     private val offlineDataRepository: OfflineDataRepository
 ) : ViewModel() {
 
-    val offlinedatas by lazyDeferred {
+    val offlineUserTaskList by lazyDeferred {
         offlineDataRepository.getUserTaskList()
     }
-
-//    val measure_Item = MutableLiveData<String>()
-//    fun Item5(measurea: String) {
-//        measure_Item.value = measurea
-//    }
 
     val user by lazyDeferred {
         measureCreationDataRepository.getUser()
     }
-
-
 
     val measurea1_Item1 = MutableLiveData<JobItemMeasureDTO>()
     fun Item1(measurea1: JobItemMeasureDTO) {
@@ -49,8 +43,8 @@ class MeasureViewModel (
     }
 
 
-    val measure_Item = MutableLiveData<EstimateMeasure_Item>()
-    fun Item5(measurea: EstimateMeasure_Item) {
+    val measure_Item = MutableLiveData<EstimateMeasureItem>()
+    fun Item5(measurea: EstimateMeasureItem) {
         measure_Item.value = measurea
     }
 
@@ -58,18 +52,10 @@ class MeasureViewModel (
         activityId: Int,
         activityId2: Int
     ): LiveData<List<JobItemEstimateDTO>> {
-        return withContext(Dispatchers.IO) {
+        return withContext(Dispatchers.IO + uncaughtExceptionHandler) {
             measureCreationDataRepository.getJobMeasureForActivityId(activityId, activityId2)
         }
     }
-
-
-//    suspend fun getJobMeasureForActivityId(activityId: Int): LiveData<List<JobItemEstimateDTO>> {
-//        return withContext(Dispatchers.IO) {
-//            measureDataRepository.getJobMeasureForActivityId(activityId)
-//        }
-//    }
-
 
     suspend fun getProjectSectionIdForJobId(jobId: String): String {
         return withContext(Dispatchers.IO) {
@@ -110,10 +96,11 @@ class MeasureViewModel (
         }
     }
 
-    suspend fun deleteItemMeasurefromList(itemMeasureId: String) {
+    fun deleteItemMeasurefromList(itemMeasureId: String) {
         measureCreationDataRepository.deleteItemMeasurefromList(itemMeasureId)
     }
-    suspend fun deleteItemMeasurephotofromList(itemMeasureId: String) {
+
+    fun deleteItemMeasurephotofromList(itemMeasureId: String) {
         measureCreationDataRepository.deleteItemMeasurephotofromList(itemMeasureId)
     }
     suspend fun processWorkflowMove(
@@ -175,7 +162,7 @@ class MeasureViewModel (
         measureCreationDataRepository.setJobItemMeasureImages(jobItemMeasurePhotoList,estimateId, selectedJobItemMeasure)
     }
 
-    suspend fun saveJobItemMeasureItems(jobItemMeasureDTO: ArrayList<JobItemMeasureDTO>) {
+    fun saveJobItemMeasureItems(jobItemMeasureDTO: ArrayList<JobItemMeasureDTO>) {
         measureCreationDataRepository.saveJobItemMeasureItems(jobItemMeasureDTO)
     }
 

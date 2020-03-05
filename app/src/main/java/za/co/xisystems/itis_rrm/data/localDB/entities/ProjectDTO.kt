@@ -3,7 +3,6 @@ package za.co.xisystems.itis_rrm.data.localDB.entities
 import android.os.Parcel
 import android.os.Parcelable
 import androidx.room.*
-import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.gson.annotations.SerializedName
 import java.io.Serializable
 
@@ -15,15 +14,13 @@ const val PROJECT_TABLE = "PROJECT_TABLE"
 
 @Entity(
     tableName = PROJECT_TABLE
-    , foreignKeys = arrayOf(
-        ForeignKey(
-            entity = ContractDTO::class,
-            parentColumns = arrayOf("contractId"),
-            childColumns = arrayOf("contractId"),
-            onDelete = ForeignKey.CASCADE
-        )
-    )
-    ,indices = arrayOf(Index(value = ["projectId"],unique = true))
+    , foreignKeys = [ForeignKey(
+        entity = ContractDTO::class,
+        parentColumns = arrayOf("contractId"),
+        childColumns = arrayOf("contractId"),
+        onDelete = ForeignKey.CASCADE
+    )]
+    , indices = [Index(value = ["projectId"], unique = true)]
 )
 data class ProjectDTO(
     @PrimaryKey
@@ -74,8 +71,7 @@ data class ProjectDTO(
         TODO("projectSections"),
         TODO("voItems"),
         parcel.readString()
-    ) {
-    }
+    )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeInt(id)

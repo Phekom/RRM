@@ -6,23 +6,18 @@ import android.os.Bundle
 import android.widget.Switch
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
-import androidx.preference.Preference
-import androidx.preference.PreferenceFragmentCompat
-import androidx.preference.SwitchPreferenceCompat
+import androidx.lifecycle.ViewModelProvider
 import kotlinx.android.synthetic.main.settings_activity.*
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.kodein
 import org.kodein.di.generic.instance
-import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.ui.auth.RegisterActivity
 import za.co.xisystems.itis_rrm.ui.auth.ResetPinActivity
 import za.co.xisystems.itis_rrm.utils.Coroutines
 
-class SettingsActivity : AppCompatActivity()  , KodeinAware {
+class SettingsActivity : AppCompatActivity(), KodeinAware {
 
     override val kodein by kodein()
     private lateinit var settingsViewModel: SettingsViewModel
@@ -33,6 +28,14 @@ class SettingsActivity : AppCompatActivity()  , KodeinAware {
     private val errorOccurredDuringRegistration = false
 
 
+    companion object {
+        private val TAG = SettingsActivity::class.java.simpleName
+        const val HOME = "general_switch"
+
+
+        var switch: Switch? = null
+        const val PREFS_NAME = "DarkeModeSwitch"
+    }
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,17 +48,16 @@ class SettingsActivity : AppCompatActivity()  , KodeinAware {
         val actionBar = supportActionBar
         actionBar?.setDisplayHomeAsUpEnabled(true)
 
-        settingsViewModel = this?.run {
-            ViewModelProviders.of(this, factory).get(SettingsViewModel::class.java)
-        }
+        settingsViewModel = ViewModelProvider(this, factory).get(SettingsViewModel::class.java)
+
 
 
         Coroutines.main {
             val loggedInUser = settingsViewModel.user.await()
-            loggedInUser.observe(this, Observer {user ->
+            loggedInUser.observe(this, Observer { user ->
                 // Register the user
                 if (user != null) {
-                username1.text = user.userName
+                    username1.text = user.userName
                 }
             })
 
@@ -72,8 +74,8 @@ class SettingsActivity : AppCompatActivity()  , KodeinAware {
                 // Clear out all the photos on the device
 //                        deletePhotosInDirectory();
                 Coroutines.main {
-                settingsViewModel.deleteAllData()
-                // Take user back to the Registration screen
+                    settingsViewModel.deleteAllData()
+                    // Take user back to the Registration screen
                     Intent(this, RegisterActivity::class.java).also { home ->
                         home.flags =
                             Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
@@ -82,7 +84,7 @@ class SettingsActivity : AppCompatActivity()  , KodeinAware {
 //                val registerIntent = Intent(applicationContext, RegisterActivity::class.java)
 //                startActivity(registerIntent)
 //                finish()
-            }
+                }
             }
             // No button
             builder.setNegativeButton(R.string.no) { dialog, which ->
@@ -120,47 +122,5 @@ class SettingsActivity : AppCompatActivity()  , KodeinAware {
 
     var isChecked = false
 
-    class SettingsFragment : PreferenceFragmentCompat() {
 
-        override fun onResume() {
-            super.onResume()
-//            if ((activity as MainActivity).getDelegate().getLocalNightMode() === AppCompatDelegate.MODE_NIGHT_YES)
-//                SettingsFragment.HOME.setChecked(
-//                true
-//            )
-
-        }
-
-        override fun onCreatePreferences(
-            savedInstanceState: Bundle?,
-            rootKey: String?
-        ) {
-            setPreferencesFromResource(R.xml.root_preferences, rootKey)
-            val isChecked = false
-            val mytheme =
-                findPreference<SwitchPreferenceCompat>(HOME)
-            mytheme!!.onPreferenceChangeListener =
-                Preference.OnPreferenceChangeListener { preference, newValue ->
-                    if (newValue == !isChecked) {
-
-                        (activity as SettingsActivity?)?.delegate?.localNightMode =
-                            AppCompatDelegate.MODE_NIGHT_YES
-                    } else {
-//
-                        (activity as SettingsActivity?)!!.delegate.localNightMode =
-                            AppCompatDelegate.MODE_NIGHT_NO
-                    }
-                    true
-                }
-        }
-    }
-
-    companion object {
-        private val TAG = SettingsActivity::class.java.simpleName
-        const val HOME = "general_switch"
-
-
-        var switch: Switch? = null
-        const val PREFS_NAME = "DarkeModeSwitch"
-    }
 }

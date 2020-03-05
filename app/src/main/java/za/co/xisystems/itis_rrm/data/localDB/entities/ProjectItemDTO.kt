@@ -6,7 +6,6 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.ForeignKey.CASCADE
 import androidx.room.PrimaryKey
-import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.gson.annotations.SerializedName
 import java.io.Serializable
 
@@ -25,7 +24,7 @@ const val PROJECT_ITEM_TABLE = "PROJECT_ITEM_TABLE"
             entity = ProjectDTO::class,
             parentColumns = arrayOf("projectId"),
             childColumns = arrayOf("projectId"),
-            onDelete = ForeignKey.CASCADE
+            onDelete = CASCADE
         )
     ]
 )

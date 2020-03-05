@@ -2,9 +2,7 @@ package za.co.xisystems.itis_rrm.ui.mainview.estmeasure.submit_measure
 
 import android.app.Dialog
 import android.net.Uri
-import android.view.View
 import androidx.fragment.app.FragmentActivity
-import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import com.xwray.groupie.kotlinandroidextensions.Item
 import kotlinx.android.synthetic.main.measure_estimate_list_item.*
@@ -29,7 +27,7 @@ open class CardMeasureItem(
 
     init {
         extras[INSET_TYPE_KEY] = INSET
-    }
+        }
     var clickListener: ((CardMeasureItem) -> Unit)? = null
 
     override fun getLayout() = R.layout.measure_estimate_list_item
@@ -40,14 +38,14 @@ open class CardMeasureItem(
             measure_estimation_qty_textView.text = qty
             measure_estimation_line_amount.text = "R  $rate"
 
-            measurements_photo_image.setOnClickListener(View.OnClickListener {
+            measurements_photo_image.setOnClickListener {
                 Coroutines.main {
                     val measurePhoto =
-                        measureViewModel?.getJobMeasureItemsPhotoPath(itemMeasureId)
-//                        approveViewModel?.getJobMeasureItemsPhotoPath(jobItemMeasureDTO.itemMeasureId!!)
+                        measureViewModel.getJobMeasureItemsPhotoPath(itemMeasureId)
+                    //                        approveViewModel?.getJobMeasureItemsPhotoPath(jobItemMeasureDTO.itemMeasureId!!)
                     showZoomedImage(measurePhoto)
                 }
-            })
+            }
 
             updateMeasureImage()
         }
@@ -73,12 +71,12 @@ open class CardMeasureItem(
         Coroutines.main {
 
             val measurePhoto =
-                measureViewModel?.getJobMeasureItemsPhotoPath(itemMeasureId)
+                measureViewModel.getJobMeasureItemsPhotoPath(itemMeasureId)
             if (measurePhoto != null){
                 GlideApp.with(this.containerView)
-                    .load(Uri.fromFile(File(measurePhoto)))
-                    .placeholder(R.drawable.logo_new_medium)
-                    .into(measurements_photo_image)
+                .load(Uri.fromFile(File(measurePhoto)))
+                .placeholder(R.drawable.logo_new_medium)
+                .into(measurements_photo_image)
 
             }else{
                 GlideApp.with(this.containerView)
@@ -91,15 +89,15 @@ open class CardMeasureItem(
     }
 
     private fun showZoomedImage(imageUrl: String?) {
-        val dialog = Dialog(this!!.activity, R.style.dialog_full_screen)
-        dialog.setContentView(R.layout.new_job_photo)
-        val zoomageView =
-            dialog.findViewById<ZoomageView>(R.id.zoomedImage)
+        val dialog = Dialog(this.activity, R.style.dialog_full_screen)
+            dialog.setContentView(R.layout.new_job_photo)
+            val zoomageView =
+                dialog.findViewById<ZoomageView>(R.id.zoomedImage)
         GlideApp.with(this.activity!!)
-            .load(imageUrl)
-            .into(zoomageView)
-        dialog.show()
-    }
+                .load(imageUrl)
+                .into(zoomageView)
+            dialog.show()
+        }
 
 
 

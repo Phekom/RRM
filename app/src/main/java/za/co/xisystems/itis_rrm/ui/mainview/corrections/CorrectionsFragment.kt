@@ -5,7 +5,7 @@ import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
@@ -29,7 +29,7 @@ class CorrectionsFragment : BaseFragment(), KodeinAware {
         super.onDestroyView()
         if (view != null) {
             val parent = view!!.parent as ViewGroup
-            parent?.removeAllViews()
+            parent.removeAllViews()
         }
     }
     override fun onCreateView(
@@ -46,8 +46,8 @@ class CorrectionsFragment : BaseFragment(), KodeinAware {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         correctionsViewModel = activity?.run {
-            ViewModelProviders.of(this, factory).get(CorrectionsViewModel::class.java)
-        } ?: throw Exception("Invalid Activity") as Throwable
+            ViewModelProvider(this, factory).get(CorrectionsViewModel::class.java)
+        } ?: throw Exception("Invalid Activity")
         Coroutines.main {
             //            data2_loading.show()
 //            val user = homeViewModel.user.await()

@@ -31,5 +31,4 @@ class WorkflowJobSectionDTO(
     val endKm: Double = 0.0
 
 
-): Serializable {
-}
+) : Serializable

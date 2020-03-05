@@ -1,21 +1,14 @@
 package za.co.xisystems.itis_rrm.data.repositories
 
-import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
-import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
-import za.co.xisystems.itis_rrm.data.preferences.PreferenceProvider
 
 /**
  * Created by Francis Mahlava on 2019/11/19.
  */
 
-private val MINIMUM_INTERVAL1 = 6
+private const val MINIMUM_INTERVAL1 = 6
 
-class VoItemsRepository(
-    private val api : BaseConnectionApi,
-    private val Db : AppDatabase,
-    private val prefs: PreferenceProvider
-): SafeApiRequest() {
+class VoItemsRepository : SafeApiRequest() {
 
 
 //    private val voItems = MutableLiveData<List<VoItemDTO>>()

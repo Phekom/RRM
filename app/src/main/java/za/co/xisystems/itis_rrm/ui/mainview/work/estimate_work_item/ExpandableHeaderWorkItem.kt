@@ -22,7 +22,7 @@ class ExpandableHeaderWorkItem(
     jobId: String?
 ) : HeaderItem(null, workItems ,workViewModel ), ExpandableItem {
 
-    var clickListener: ((ExpandableHeaderWorkItem) -> Unit)? = null
+    private var clickListener: ((ExpandableHeaderWorkItem) -> Unit)? = null
 
     private lateinit var expandableGroup: ExpandableGroup
     private var activity  = activity
@@ -51,9 +51,9 @@ class ExpandableHeaderWorkItem(
 
     private fun bindItem(viewHolder: GroupieViewHolder) {
         Coroutines.main {
-            var startKm =  workViewModel?.getItemStartKm(jobId!!)
-            val endKm =  workViewModel?.getItemEndKm(jobId!!)
-            val trackRouteId = workViewModel?.getItemTrackRouteId(jobId!!)
+            val startKm = workViewModel.getItemStartKm(jobId)
+            val endKm = workViewModel.getItemEndKm(jobId)
+            val trackRouteId = workViewModel.getItemTrackRouteId(jobId)
 
         viewHolder.headerLin2.setOnClickListener {
             if (startKm <= endKm) {
@@ -69,7 +69,7 @@ class ExpandableHeaderWorkItem(
     private fun bindIcon(viewHolder: GroupieViewHolder) {
         viewHolder.icon.apply {
             visibility = View.VISIBLE
-            setImageResource(if (expandableGroup!!.isExpanded) R.drawable.collapse_animated else R.drawable.expand_animated)
+            setImageResource(if (expandableGroup.isExpanded) R.drawable.collapse_animated else R.drawable.expand_animated)
             (drawable as Animatable).start()
         }
     }
@@ -79,6 +79,6 @@ class ExpandableHeaderWorkItem(
     }
 }
 
-private fun GroupieViewHolder.getItemId(position: Int): Long {
+private fun getItemId(position: Int): Long {
     return position.toLong()
 }

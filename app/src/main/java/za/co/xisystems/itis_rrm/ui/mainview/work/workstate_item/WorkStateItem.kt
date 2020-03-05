@@ -1,8 +1,8 @@
 package za.co.xisystems.itis_rrm.ui.mainview.work.workstate_item
 
 import android.graphics.Color
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
-import androidx.navigation.Navigation
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import com.xwray.groupie.kotlinandroidextensions.Item
@@ -10,7 +10,6 @@ import kotlinx.android.synthetic.main.list_selector.*
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.WF_WorkStepDTO
-import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModel
 import za.co.xisystems.itis_rrm.utils.toast
 
 /**
@@ -18,12 +17,11 @@ import za.co.xisystems.itis_rrm.utils.toast
  */
 
 
-class WorkState_Item(
-    val jobItemWorks: JobEstimateWorksDTO?,
-    private val workViewModel: WorkViewModel,
+class WorkStateItem(
+    private val jobItemWorks: JobEstimateWorksDTO?,
     private var activity: FragmentActivity?,
     private var groupAdapter: GroupAdapter<GroupieViewHolder>,
-    val jobWorkStep: ArrayList<WF_WorkStepDTO>
+    private val jobWorkStep: ArrayList<WF_WorkStepDTO>
 
 ) : Item() {
     private var selection = 0
@@ -32,7 +30,8 @@ class WorkState_Item(
     companion object {
         var selected_position = -1
     }
-    var clickListener: ((WorkState_Item) -> Unit)? = null
+
+    private var clickListener: ((WorkStateItem) -> Unit)? = null
 
     override fun bind(viewHolder: GroupieViewHolder, position: Int) {
 //        Coroutines.main {
@@ -48,7 +47,13 @@ class WorkState_Item(
 //        }
 
       val step =    jobWorkStep
-      val workState = arrayOf<String>(step[0].Step_Code!!,step[1].Step_Code!!,step[2].Step_Code!!,step[3].Step_Code!!,step[4].Step_Code!!)
+        val workState = arrayOf(
+            step[0].Step_Code!!,
+            step[1].Step_Code!!,
+            step[2].Step_Code!!,
+            step[3].Step_Code!!,
+            step[4].Step_Code!!
+        )
 
 
        viewHolder.apply {
@@ -56,7 +61,12 @@ class WorkState_Item(
 //           state.text = jobWorkStep.Step_Code!![position].toString()
            setNewState(position, viewHolder)
            if (selected_position ==  adapterPosition){
-               viewHolder.stateBack.setBackgroundColor(activity!!.resources.getColor(R.color.sanral_burnt_orange))
+               viewHolder.stateBack.setBackgroundColor(
+                   ContextCompat.getColor(
+                       activity!!,
+                       R.color.sanral_burnt_orange
+                   )
+               )
                viewHolder.state.setTextColor(Color.WHITE)
            } else {
                viewHolder.stateBack.setBackgroundColor(Color.TRANSPARENT)
@@ -88,19 +98,30 @@ class WorkState_Item(
         viewHolder: GroupieViewHolder
     ) {
         //TODO(Replace this when Dynamic workflow is Functional)
-        if (jobItemWorks?.actId == 15){
-            selected_position = 0
-        }else if (jobItemWorks?.actId == 16){
-            selected_position = 1
-        }else  if (jobItemWorks?.actId == 17){
-            selected_position = 2
-        }else if (jobItemWorks?.actId == 18){
-            selected_position = 3
-        }else if (jobItemWorks?.actId == 19){
-            selected_position = 4
+        when (jobItemWorks?.actId) {
+            15 -> {
+                selected_position = 0
+            }
+            16 -> {
+                selected_position = 1
+            }
+            17 -> {
+                selected_position = 2
+            }
+            18 -> {
+                selected_position = 3
+            }
+            19 -> {
+                selected_position = 4
+            }
         }
         if (selected_position ==  position){
-            viewHolder.stateBack.setBackgroundColor(activity!!.resources.getColor(R.color.sanral_burnt_orange))
+            viewHolder.stateBack.setBackgroundColor(
+                ContextCompat.getColor(
+                    activity!!,
+                    R.color.sanral_burnt_orange
+                )
+            )
             viewHolder.state.setTextColor(Color.WHITE)
         } else {
             viewHolder.stateBack.setBackgroundColor(Color.TRANSPARENT)
@@ -114,12 +135,11 @@ class WorkState_Item(
 }
 
 
-
-private fun GroupieViewHolder.getCount(position: Int): Long {
+private fun getCount(position: Int): Long {
     return position.toLong()
 }
 
 
-private fun GroupieViewHolder.getItemId(position: Int): Long {
+private fun getItemId(position: Int): Long {
     return position.toLong()
 }

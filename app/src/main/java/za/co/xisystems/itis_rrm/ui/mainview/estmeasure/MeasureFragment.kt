@@ -2,13 +2,14 @@ package za.co.xisystems.itis_rrm.ui.mainview.estmeasure
 
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
@@ -19,11 +20,11 @@ import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
-import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.estimate_measure_item.EstimateMeasure_Item
-import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
-import za.co.xisystems.itis_rrm.utils.Coroutines
+import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.estimate_measure_item.EstimateMeasureItem
+import za.co.xisystems.itis_rrm.utils.*
 
 class MeasureFragment : BaseFragment(), KodeinAware {
 
@@ -31,9 +32,10 @@ class MeasureFragment : BaseFragment(), KodeinAware {
     private lateinit var measureViewModel: MeasureViewModel
     private val factory: MeasureViewModelFactory by instance()
 
-companion object{
-    const val JOB_MEASURE_EST_JOB_ID = "JOB_MEASURE_EST_JOB_ID"
-}
+    companion object {
+        val TAG: String = MeasureFragment::class.java.simpleName
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
@@ -60,25 +62,49 @@ companion object{
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         measureViewModel = activity?.run {
-            ViewModelProviders.of(this, factory).get(MeasureViewModel::class.java)
-        } ?: throw Exception("Invalid Activity") as Throwable
+            ViewModelProvider(this, factory).get(MeasureViewModel::class.java)
+        } ?: throw Exception("Invalid Activity")
+
+        val dialog = setDataProgressDialog(activity!!, getString(R.string.data_loading_please_wait))
+
         Coroutines.main {
-            //            mydata_loading.show()
-//            val measurements = measureViewModel.getJobMeasureForActivityId(ActivityIdConstants.ESTIMATE_MEASURE)MEASURE_PART_COMPLETE
-     val measurements = measureViewModel.getJobMeasureForActivityId(ActivityIdConstants.ESTIMATE_MEASURE,ActivityIdConstants.MEASURE_PART_COMPLETE)
-//            val measurements = approveViewModel.offlinedata.await()
+
+            val measurements = measureViewModel.getJobMeasureForActivityId(
+                ActivityIdConstants.ESTIMATE_MEASURE,
+                ActivityIdConstants.MEASURE_PART_COMPLETE
+            )
+
             measurements.observe(viewLifecycleOwner, Observer { job_s ->
-                if (job_s.isEmpty()){
+                if (job_s.isEmpty()) {
                     Coroutines.main {
-                        val measurements = measureViewModel.getJobMeasureForActivityId(ActivityIdConstants.ESTIMATE_MEASURE,ActivityIdConstants.JOB_ESTIMATE)
-                        measurements.observe(viewLifecycleOwner, Observer { jos ->
-                            noData.visibility = View.GONE
-                            initRecyclerView(jos.toMeasureListItems())
-                            toast(job_s.size.toString())
-                            group5_loading.visibility = View.GONE
-                        })
+                        try {
+                            dialog.show()
+                            val newMeasurements = measureViewModel.getJobMeasureForActivityId(
+                                ActivityIdConstants.ESTIMATE_MEASURE,
+                                ActivityIdConstants.JOB_ESTIMATE
+                            )
+                            newMeasurements.observe(viewLifecycleOwner, Observer { jos ->
+                                noData.visibility = View.GONE
+                                initRecyclerView(jos.toMeasureListItems())
+                                toast(job_s.size.toString())
+                                group5_loading.visibility = View.GONE
+                            })
+                            dialog.dismiss()
+                        } catch (e: ApiException) {
+                            ToastUtils().toastLong(activity, e.message)
+                            dialog.dismiss()
+                            Log.e(TAG, "API Exception", e)
+                        } catch (e: NoInternetException) {
+                            ToastUtils().toastLong(activity, e.message)
+                            dialog.dismiss()
+                            Log.e(TAG, "No Internet Connection", e)
+                        } catch (e: NoConnectivityException) {
+                            ToastUtils().toastLong(activity, e.message)
+                            dialog.dismiss()
+                            Log.e(TAG, "Service Host Unreachable", e)
+                        }
                     }
-                }else{
+                } else {
                     noData.visibility = View.GONE
                     initRecyclerView(job_s.toMeasureListItems())
                     toast(job_s.size.toString())
@@ -97,10 +123,29 @@ companion object{
 
             estimations_swipe_to_refresh.setOnRefreshListener {
                 Coroutines.main {
-                    val jobs = measureViewModel.offlinedatas.await()
-                    jobs.observe(viewLifecycleOwner, Observer { works ->
+                    try {
+                        dialog.show()
+                        val jobs = measureViewModel.offlineUserTaskList.await()
+                        jobs.observe(viewLifecycleOwner, Observer {
+                            estimations_swipe_to_refresh.isRefreshing = false
+                        })
+                        dialog.dismiss()
+                    } catch (e: ApiException) {
+                        ToastUtils().toastLong(activity, e.message)
                         estimations_swipe_to_refresh.isRefreshing = false
-                    })
+                        dialog.dismiss()
+                        Log.e(TAG, "API Exception", e)
+                    } catch (e: NoInternetException) {
+                        ToastUtils().toastLong(activity, e.message)
+                        estimations_swipe_to_refresh.isRefreshing = false
+                        dialog.dismiss()
+                        Log.e(TAG, "No Internet Connection", e)
+                    } catch (e: NoConnectivityException) {
+                        ToastUtils().toastLong(activity, e.message)
+                        dialog.dismiss()
+                        estimations_swipe_to_refresh.isRefreshing = false
+                        Log.e(TAG, "Service Host Unreachable", e)
+                    }
 
                 }
             }
@@ -108,7 +153,7 @@ companion object{
     }
 
 
-    private fun initRecyclerView(measureListItems: List<EstimateMeasure_Item>) {
+    private fun initRecyclerView(measureListItems: List<EstimateMeasureItem>) {
         val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
             addAll(measureListItems)
         }
@@ -120,36 +165,31 @@ companion object{
 
         groupAdapter.setOnItemClickListener { item, view ->
             Coroutines.main {
-                (item as? EstimateMeasure_Item)?.let {
-                    //                    val descri = approveViewModel.getDescForProjectId(it.jobDTO.projectId!!)
-//                    val sectionId  =  approveViewModel.getProjectSectionIdForJobId(it.jobDTO.jobId)
-//                    val route  =  approveViewModel.getRouteForProjectSectionId(sectionId)
-//                    val section  =  approveViewModel.getSectionForProjectSectionId(sectionId)
-//                    sendJobtoAprove((it.jobItemEstimateDTO.jobId), view)
-                    sendJobtoAprove((it), view)
+                (item as? EstimateMeasureItem)?.let {
+                    sendJobForApproval((it), view)
                 }
 
             }
         }
     }
 
-    private fun sendJobtoAprove(
-        job: EstimateMeasure_Item?,
+
+    private fun sendJobForApproval(
+        job: EstimateMeasureItem?,
         view: View
     ) {
-        val jobId = job
 
         Coroutines.main {
-            measureViewModel.measure_Item.value = jobId
+            measureViewModel.measure_Item.value = job
         }
 
         Navigation.findNavController(view)
             .navigate(R.id.action_nav_estMeasure_to_submitMeasureFragment)
     }
 
-    private fun List<JobItemEstimateDTO>.toMeasureListItems(): List<EstimateMeasure_Item> {
+    private fun List<JobItemEstimateDTO>.toMeasureListItems(): List<EstimateMeasureItem> {
         return this.map { measure_items ->
-            EstimateMeasure_Item(measure_items,measureViewModel)
+            EstimateMeasureItem(measure_items, measureViewModel)
         }
     }
 }

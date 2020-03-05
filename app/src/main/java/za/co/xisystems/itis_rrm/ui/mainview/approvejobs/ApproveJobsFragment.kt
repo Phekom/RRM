@@ -10,7 +10,7 @@ import android.view.View.GONE
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
@@ -23,7 +23,7 @@ import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
-import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.approve_job_item.ApproveJob_Item
+import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.approve_job_item.ApproveJobItem
 import za.co.xisystems.itis_rrm.utils.*
 
 /**
@@ -55,20 +55,20 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        // TODO: fix deprecated ViewModelProviders
+
         approveViewModel = activity?.run {
-            ViewModelProviders.of(this, factory).get(ApproveJobsViewModel::class.java)
+            ViewModelProvider(this, factory).get(ApproveJobsViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
         Coroutines.main {
             val dialog = setDataProgressDialog(activity!!, getString(R.string.data_loading_please_wait))
             val jobs = approveViewModel.getJobsForActivityId(ActivityIdConstants.JOB_APPROVE)
             jobs.observe(viewLifecycleOwner, Observer { job_s ->
-                val j_items = job_s.distinctBy{
+                val jItems = job_s.distinctBy {
                     it.JobId
                 }
                 noData.visibility = GONE
                 toast(job_s.size.toString())
-                initRecyclerView(j_items.toApproveListItems())
+                initRecyclerView(jItems.toApproveListItems())
                 group3_loading.visibility = GONE
             })
 
@@ -78,13 +78,14 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
                     R.color.colorPrimary
                 )
             )
+
             jobs_swipe_to_refresh.setColorSchemeColors(Color.WHITE)
 
             jobs_swipe_to_refresh.setOnRefreshListener {
                 dialog.show()
                 Coroutines.main {
                     try {
-                        val freshJobs = approveViewModel.offlinedatas.await()
+                        val freshJobs = approveViewModel.offlineUserTaskList.await()
                         freshJobs.observe(viewLifecycleOwner, Observer {
                             jobs_swipe_to_refresh.isRefreshing = false
                             dialog.dismiss()
@@ -100,8 +101,8 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
                         jobs_swipe_to_refresh.isRefreshing  = false
                         Log.e(TAG, "No Internet Connection", e)
                     } catch (e: NoConnectivityException) {
-                        ToastUtils().toastLong(activity, e.message )
-                                dialog.dismiss()
+                        ToastUtils().toastLong(activity, e.message)
+                        dialog.dismiss()
                         jobs_swipe_to_refresh.isRefreshing = false
                         Log.e(TAG, "Service Host Unreachable", e)
                     }
@@ -110,7 +111,7 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
         }
     }
 
-    private fun initRecyclerView(approveJobListItems: List<ApproveJob_Item>) {
+    private fun initRecyclerView(approveJobListItems: List<ApproveJobItem>) {
         val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
             addAll(approveJobListItems)
         }
@@ -122,7 +123,7 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
 
         groupAdapter.setOnItemClickListener { item, view ->
             Coroutines.main {
-                (item as? ApproveJob_Item)?.let {
+                (item as? ApproveJobItem)?.let {
                     sendJobToApprove((it), view)
                 }
             }
@@ -130,7 +131,7 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
     }
 
     private fun sendJobToApprove(
-        job: ApproveJob_Item?,
+        job: ApproveJobItem?,
         view: View
     ) {
         Coroutines.main {
@@ -141,9 +142,9 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
             .navigate(R.id.action_nav_approveJbs_to_jobInfoFragment)
     }
 
-    private fun List<JobDTO>.toApproveListItems(): List<ApproveJob_Item> {
+    private fun List<JobDTO>.toApproveListItems(): List<ApproveJobItem> {
         return this.map { approveJobItems ->
-            ApproveJob_Item(approveJobItems, approveViewModel)
+            ApproveJobItem(approveJobItems, approveViewModel)
         }
     }
 

@@ -18,7 +18,7 @@ class SectionItem : Comparable<SectionItem> {
     var itemCode: String? = null
     var description: String? = null
 
-    constructor() {}
+    constructor()
 
     constructor(id: String, code: String, desc: String) {
         this.sectionItemId = id
@@ -31,10 +31,10 @@ class SectionItem : Comparable<SectionItem> {
     }
 
     override fun equals(other: Any?): Boolean {
-        if (other is SectionItem) {
-            return other.description.equals(description);
+        return if (other is SectionItem) {
+            other.description.equals(description)
         } else
-            return super.equals(other)
+            super.equals(other)
     }
 
     override fun toString(): String {

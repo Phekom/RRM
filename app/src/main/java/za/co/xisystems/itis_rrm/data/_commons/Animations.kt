@@ -5,8 +5,9 @@ import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import za.co.xisystems.itis_rrm.R
 
-class Animations {
-    @JvmField val bounce: Animation;
+class Animations(context: Context) {
+    @JvmField
+    val bounce: Animation
     @JvmField val bounce_short: Animation
     @JvmField val bounce_long: Animation
     @JvmField val bounce_soft: Animation
@@ -18,7 +19,8 @@ class Animations {
     @JvmField val scale: Animation
     @JvmField val scale_light: Animation
 
-    @JvmField val click: Animation
+    @JvmField
+    val click: Animation = AnimationUtils.loadAnimation(context, R.anim.click)
 
     @JvmField val shake_delay: Animation
     @JvmField val shake: Animation
@@ -27,8 +29,7 @@ class Animations {
 
     @JvmField val shake_longer: Animation
 
-    constructor(context: Context) {
-        click = AnimationUtils.loadAnimation(context, R.anim.click)
+    init {
         bounce = AnimationUtils.loadAnimation(context, R.anim.bounce)
         bounce_short = AnimationUtils.loadAnimation(context, R.anim.bounce_short)
         bounce_long = AnimationUtils.loadAnimation(context, R.anim.bounce_long)
@@ -37,7 +38,6 @@ class Animations {
         bounce_750 = AnimationUtils.loadAnimation(context, R.anim.bounce_750)
         bounce_1000 = AnimationUtils.loadAnimation(context, R.anim.bounce_1000)
         bounce_soft = AnimationUtils.loadAnimation(context, R.anim.bounce_soft)
-
         shake_delay = AnimationUtils.loadAnimation(context, R.anim.shake_long_delay)
         shake = AnimationUtils.loadAnimation(context, R.anim.shake)
         shake_long = AnimationUtils.loadAnimation(context, R.anim.shake_long)

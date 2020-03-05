@@ -17,7 +17,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import icepick.State
 import kotlinx.android.synthetic.main.fragment_capture_item_measure_photo.*
 import org.kodein.di.KodeinAware
@@ -37,13 +37,13 @@ import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.submit_measure.Expandable
 import za.co.xisystems.itis_rrm.utils.*
 import java.util.*
 
-class CaptureItemMeasurePhotoActivity : AppCompatActivity() , KodeinAware {
+open class CaptureItemMeasurePhotoActivity : AppCompatActivity(), KodeinAware {
 
     override val kodein by kodein()
     private lateinit var measureViewModel: MeasureViewModel
     private val factory: MeasureViewModelFactory by instance()
 
-    lateinit var locationHelper: LocationHelper
+    private lateinit var locationHelper: LocationHelper
     private var currentLocation: Location? = null
 
     private lateinit var jobItemMeasurePhotoArrayList: ArrayList<JobItemMeasurePhotoDTO>
@@ -64,18 +64,17 @@ class CaptureItemMeasurePhotoActivity : AppCompatActivity() , KodeinAware {
 
     companion object {
         val TAG: String = CaptureItemMeasurePhotoActivity::class.java.simpleName
-        const val JOB_ITEM_MEASURE_PHOTO_ARRAY_LIST = "JobItemMeasurePhotoArrayList"
         const val PHOTO_RESULT = 9000
         private const val REQUEST_IMAGE_CAPTURE = 1
         private const val REQUEST_STORAGE_PERMISSION = 1
-        private val FILE_PROVIDER_AUTHORITY = BuildConfig.APPLICATION_ID + ".provider"
+        private const val FILE_PROVIDER_AUTHORITY = BuildConfig.APPLICATION_ID + ".provider"
 
         const val URI_LIST_DATA = "URI_LIST_DATA"
         const val IMAGE_FULL_SCREEN_CURRENT_POS = "IMAGE_FULL_SCREEN_CURRENT_POS"
 
         protected const val LOCATION_KEY = "location-key"
         // region (Public Static Final Fields)
-        const val UPDATE_INTERVAL_IN_MILLISECONDS: Long = 10000
+        private const val UPDATE_INTERVAL_IN_MILLISECONDS: Long = 10000
         const val FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS = UPDATE_INTERVAL_IN_MILLISECONDS / 2
 
 
@@ -103,9 +102,9 @@ class CaptureItemMeasurePhotoActivity : AppCompatActivity() , KodeinAware {
         setContentView(R.layout.activity_capture_item_measure_photo)
         (this).supportActionBar?.title = getString(R.string.captured_photos)
 
-        measureViewModel = this?.run {
-            ViewModelProviders.of(this, factory).get(MeasureViewModel::class.java)
-        } ?: throw Exception("Invalid Activity") as Throwable
+        measureViewModel = this.run {
+            ViewModelProvider(this, factory).get(MeasureViewModel::class.java)
+        }
 
         locationHelper = LocationHelper(this)
         locationHelper.onCreate()
@@ -114,7 +113,7 @@ class CaptureItemMeasurePhotoActivity : AppCompatActivity() , KodeinAware {
             photoButtons.visibility = View.GONE
 //            getIntent().getSerializableExtra(JOB_IMEASURE)
 
-            if (intent.hasExtra(ExpandableHeaderMeasureItem.JOB_IMEASURE)) {
+            if (intent.hasExtra(JOB_IMEASURE)) {
                 selectedJobItemMeasure = intent.extras[JOB_IMEASURE] as JobItemMeasureDTO
                 takeMeasurePhoto()
                 toast(selectedJobItemMeasure.jimNo.toString())
@@ -129,7 +128,7 @@ class CaptureItemMeasurePhotoActivity : AppCompatActivity() , KodeinAware {
 //                    //     getPhotosForSelectedJobItemMeasure(selectedJobItemM)
 //
 //                })
-            jobItemMeasurePhotoArrayList = ArrayList<JobItemMeasurePhotoDTO>()
+            jobItemMeasurePhotoArrayList = ArrayList()
 
         }
 
@@ -138,7 +137,7 @@ class CaptureItemMeasurePhotoActivity : AppCompatActivity() , KodeinAware {
         }
 
         done_image_button.setOnClickListener { save ->
-            saveImgae()
+            saveImage()
             setJobItemMeasureImage(
                 jobItemMeasurePhotoArrayList,
                 measureViewModel,
@@ -161,7 +160,7 @@ class CaptureItemMeasurePhotoActivity : AppCompatActivity() , KodeinAware {
 
         Save.visibility = View.GONE
 //        Save.setOnClickListener { save ->
-//            saveImgae()
+//            saveImage()
 ////            updateJobItemMeasures(jobItemMeasureArrayList,measureViewModel)
 //            setJobItemMeasureImage(jobItemMeasurePhotoArrayList, measureViewModel)
 //
@@ -181,9 +180,9 @@ class CaptureItemMeasurePhotoActivity : AppCompatActivity() , KodeinAware {
         }
     }
 
-    private fun saveImgae(): JobItemMeasurePhotoDTO {
+    private fun saveImage(): JobItemMeasurePhotoDTO {
         //  Location of picture
-        val currentLocation: Location = locationHelper?.getCurrentLocation()!!
+        val currentLocation: Location = locationHelper.getCurrentLocation()!!
         if (currentLocation == null) toast("Error: Current location is null!")
         //  Save Image to Internal Storage
         val photoId = SqlLitUtils.generateUuid()
@@ -195,18 +194,18 @@ class CaptureItemMeasurePhotoActivity : AppCompatActivity() , KodeinAware {
         val jobItemMeasurePhoto = JobItemMeasurePhotoDTO(
             0,
             null,
-            filename_path.get("filename"),
+            filename_path["filename"],
             selectedJobItemMeasure.estimateId,
             selectedJobItemMeasure.itemMeasureId,
             DateUtil.DateToString(Date()),
             photoId,   currentLocation.latitude,  currentLocation.longitude,
-            filename_path.get("path"), jobItemMeasure, 0,   0
+            filename_path["path"], jobItemMeasure, 0, 0
 
         )
 
-        jobItemMeasurePhotoArrayList!!.add(jobItemMeasurePhoto)
+        jobItemMeasurePhotoArrayList.add(jobItemMeasurePhoto)
 //        jobForJobItemEstimate.setJobItemMeasures(jobItemMeasurePhotoArrayList)
-        return jobItemMeasurePhoto!!
+        return jobItemMeasurePhoto
     }
 
     private fun takeMeasurePhoto() {
@@ -222,12 +221,12 @@ class CaptureItemMeasurePhotoActivity : AppCompatActivity() , KodeinAware {
             if (ContextCompat.checkSelfPermission(
                     this,
                     Manifest.permission.WRITE_EXTERNAL_STORAGE
-                ) !== PackageManager.PERMISSION_GRANTED
+                ) != PackageManager.PERMISSION_GRANTED
             ) {
                 ActivityCompat.requestPermissions(
-                    this!!,
+                    this,
                     arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-                    CaptureItemMeasurePhotoActivity.REQUEST_STORAGE_PERMISSION
+                    REQUEST_STORAGE_PERMISSION
                 )
             } else {
                 launchCamera()
@@ -244,7 +243,7 @@ class CaptureItemMeasurePhotoActivity : AppCompatActivity() , KodeinAware {
         Coroutines.main {
             imageUri = PhotoUtil.getUri2(this)!!
             val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-            if (takePictureIntent.resolveActivity(this!!.packageManager) != null) {
+            if (takePictureIntent.resolveActivity(this.packageManager) != null) {
                 takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri)
                 takePictureIntent.putExtra(
                     MediaStore.EXTRA_SCREEN_ORIENTATION,
@@ -275,10 +274,11 @@ class CaptureItemMeasurePhotoActivity : AppCompatActivity() , KodeinAware {
 
     private fun updateValuesFromBundle(savedInstanceState: Bundle?) {
         Log.i(
-            CaptureItemMeasurePhotoActivity.TAG,
+            TAG,
             getString(R.string.updating_location_values_from_bundle)
         )
         if (savedInstanceState != null) {
+            // TODO: What are we planning to do here?
 //            @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
 //            if (savedInstanceState.keySet().contains(CaptureItemMeasurePhotoActivity.LOCATION_KEY))
 //                currentLocation = savedInstanceState.getParcelable<Location>(

@@ -15,7 +15,6 @@ import za.co.xisystems.itis_rrm.ui.mainview.work.INSET_TYPE_KEY
 import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModel
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
-import za.co.xisystems.itis_rrm.utils.toast
 
 open class CardItem(
     val activity: FragmentActivity?,
@@ -23,9 +22,9 @@ open class CardItem(
     val qty: String,
     val rate: String,
     val estimateId: String,
-    val workViewModel: WorkViewModel,
-    val itemEsti: JobItemEstimateDTO,
-    val jobworkItems: JobDTO
+    private val workViewModel: WorkViewModel,
+    private val itemEsti: JobItemEstimateDTO,
+    private val jobworkItems: JobDTO
 ) : Item() {
 
     init {
@@ -38,9 +37,9 @@ open class CardItem(
         viewHolder.apply {
             Coroutines.main {
 
-                val workss =  workViewModel.getWorkItemsForActID(ActivityIdConstants.EST_WORKS_COMPLETE)
-                workss.observe(activity!!, Observer {
-//                    activity.toast(workss.size)
+                val works =  workViewModel.getWorkItemsForActID(ActivityIdConstants.EST_WORKS_COMPLETE)
+                works.observe(activity!!, Observer {
+//                  activity.toast(works.size)
                     expandable_child_textView.text = text
                     qty_textView.text = qty
                     line_amount_textView.text = rate
@@ -48,13 +47,13 @@ open class CardItem(
 
             }
 
-            startWork_Btn.setOnClickListener(View.OnClickListener {
-                sendJobtoWork( workViewModel ,itemEsti, it,jobworkItems)
-            })
+            startWork_Btn.setOnClickListener {
+                sendJobToWork( workViewModel ,itemEsti, it,jobworkItems)
+            }
         }
 
     }
-    private fun sendJobtoWork(
+    private fun sendJobToWork(
         workViewModel: WorkViewModel,
         estimate: JobItemEstimateDTO,
         view: View?,

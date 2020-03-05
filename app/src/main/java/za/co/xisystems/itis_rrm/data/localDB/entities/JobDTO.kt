@@ -2,8 +2,6 @@ package za.co.xisystems.itis_rrm.data.localDB.entities
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.fasterxml.jackson.annotation.JsonProperty
-import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
 import java.io.Serializable
 import java.util.*
@@ -251,11 +249,10 @@ class JobDTO(
     }
 
 
-
-    fun getJobEstimateIndexByItemId(itemId: String?): Int {
+    private fun getJobEstimateIndexByItemId(itemId: String?): Int {
         if (itemId != null) for (i in JobItemEstimates!!.indices) {
             val currEstimate: JobItemEstimateDTO = JobItemEstimates?.get(i)!!
-            if (currEstimate?.projectItemId != null) if (currEstimate.projectItemId.equals(
+            if (currEstimate.projectItemId != null) if (currEstimate.projectItemId.equals(
                     itemId
                 )
             ) {

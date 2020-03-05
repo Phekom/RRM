@@ -1,9 +1,8 @@
 package za.co.xisystems.itis_rrm.data.localDB.entities
 
+//import com.google.android.gms.common.util.Base64Utils
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.fasterxml.jackson.annotation.JsonProperty
-//import com.google.android.gms.common.util.Base64Utils
 import com.google.gson.annotations.SerializedName
 import org.springframework.util.Base64Utils
 
@@ -39,5 +38,28 @@ data class PrimaryKeyValueDTO(
             this.valueBytes = value
             this.valueString = Base64Utils.encode(value).toString()
         }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as PrimaryKeyValueDTO
+
+        if (id != other.id) return false
+        if (valueBytes != null) {
+            if (other.valueBytes == null) return false
+            if (!valueBytes!!.contentEquals(other.valueBytes!!)) return false
+        } else if (other.valueBytes != null) return false
+        if (valueType != other.valueType) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = id
+        result = 31 * result + (valueBytes?.contentHashCode() ?: 0)
+        result = 31 * result + (valueType?.hashCode() ?: 0)
+        return result
+    }
 }
 

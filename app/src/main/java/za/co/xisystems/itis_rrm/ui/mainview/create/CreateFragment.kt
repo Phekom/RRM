@@ -5,7 +5,7 @@ import android.util.Log
 import android.view.*
 import android.widget.Toast
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
 import com.google.android.gms.common.api.GoogleApiClient
 import kotlinx.android.synthetic.main.fragment_createjob.*
@@ -33,7 +33,7 @@ import java.util.*
 class CreateFragment : BaseFragment(), OfflineListener , KodeinAware {
     companion object {
         val TAG: String = CreateFragment::class.java.simpleName
-        val PROJECT_ID1 : String  = "PROJECT_ID1"
+        const val PROJECT_ID1: String = "PROJECT_ID1"
     }
 
 
@@ -48,14 +48,14 @@ class CreateFragment : BaseFragment(), OfflineListener , KodeinAware {
     private var deleteMenuItem: MenuItem? = null
     private var resetMenuItem: MenuItem? = null
     private val estimatesToRemoveFromDb: ArrayList<JobItemEstimateDTO> =
-        ArrayList<JobItemEstimateDTO>()
+        ArrayList()
     @MyState
-    var items: ArrayList<ProjectItemDTO> = ArrayList<ProjectItemDTO>()
+    var items: ArrayList<ProjectItemDTO> = ArrayList()
     @MyState
     internal var selectedContract: ContractDTO? = null
 
     lateinit var useR: UserDTO
-    var descri : String? = null
+    private var descri: String? = null
 
     @MyState
     internal var selectedProject: ProjectDTO? = null
@@ -81,14 +81,14 @@ class CreateFragment : BaseFragment(), OfflineListener , KodeinAware {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        itemSections = ArrayList<ItemSectionDTO>()
+        itemSections = ArrayList()
 //        the_job = JobDTO()
 //        jobItemPhoto = JobItemEstimatesPhotoDTO
-        jobItemSectionArrayList = ArrayList<JobSectionDTO>()
-        jobItemMeasureArrayList = ArrayList<JobItemMeasureDTO>()
-        newJobItemEstimatesList = ArrayList<JobItemEstimateDTO>()
-        newJobItemEstimatesPhotosList = ArrayList<JobItemEstimatesPhotoDTO>()
-        newJobItemEstimatesWorksList = ArrayList<JobEstimateWorksDTO>()
+        jobItemSectionArrayList = ArrayList()
+        jobItemMeasureArrayList = ArrayList()
+        newJobItemEstimatesList = ArrayList()
+        newJobItemEstimatesPhotosList = ArrayList()
+        newJobItemEstimatesWorksList = ArrayList()
 //        newJobItemEstimatesList2 = ArrayList<JobItemEstimateDTO>()
 
         setHasOptionsMenu(true)
@@ -134,11 +134,11 @@ class CreateFragment : BaseFragment(), OfflineListener , KodeinAware {
         super.onActivityCreated(savedInstanceState)
 //        createViewModel = ViewModelProviders.of(this, factory).get(CreateViewModel::class.java)
         createViewModel = activity?.run {
-            ViewModelProviders.of(this, factory).get(CreateViewModel::class.java)
+            ViewModelProvider(this, factory).get(CreateViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
 
         Coroutines.main {
-            var user = createViewModel.user.await()
+            val user = createViewModel.user.await()
             user.observe(viewLifecycleOwner, Observer { user_ ->
                 useR = user_
                   }
@@ -154,7 +154,7 @@ class CreateFragment : BaseFragment(), OfflineListener , KodeinAware {
                         //                            return
                     } else {
                         activity?.hideKeyboard()
-                        createNew_Job()
+                        createNewJob()
                         descri = description
                         setContractAndProjectSelection(true, view)
 
@@ -169,7 +169,7 @@ class CreateFragment : BaseFragment(), OfflineListener , KodeinAware {
 
    }
 
-    private fun createNew_Job() {
+    private fun createNewJob() {
         Coroutines.main {
             val newjob = createNewJob(
                 selectedContract?.contractId,
@@ -195,7 +195,7 @@ class CreateFragment : BaseFragment(), OfflineListener , KodeinAware {
         description: String?
     ): JobDTO {
         val newJobId: String = SqlLitUtils.generateUuid()
-        val today = (java.util.Calendar.getInstance().time)
+        val today = (Calendar.getInstance().time)
 
         val newjob = JobDTO(
             0, newJobId, contractID, projectID, null,
@@ -257,9 +257,8 @@ class CreateFragment : BaseFragment(), OfflineListener , KodeinAware {
                 data_loading.show()
 
                 val contracts = createViewModel.getContracts()
-//                val contracts = authViewModel.offlinedata.await()
+
                 contracts.observe(viewLifecycleOwner, Observer { contrac_t ->
-                    val contractId = contrac_t
                     val contractNmbr = arrayOfNulls<String>(contrac_t.size)
                     for (contract in contrac_t.indices) {
                         contractNmbr[contract] = contrac_t[contract].contractNo
@@ -267,7 +266,7 @@ class CreateFragment : BaseFragment(), OfflineListener , KodeinAware {
                     Log.d(TAG, "Thread is Finished ")
                     setSpinner(context!!.applicationContext,
                         contractSpinner,
-                        contractId,
+                        contrac_t,
                         contractNmbr, //null)
                         object : SpinnerHelper.SelectionListener<ContractDTO> {
                             override fun onItemSelected(position: Int, item: ContractDTO) {
@@ -291,11 +290,11 @@ class CreateFragment : BaseFragment(), OfflineListener , KodeinAware {
             }
         } catch (e: NoInternetException) {
            Toast.makeText(context, e.message,Toast.LENGTH_SHORT).show()
-            Log.e("NetworkConnection", "No Internet Connection", e)
+            Log.e(TAG, "No Internet Connection", e)
 
         } catch (e: NoConnectivityException) {
             Toast.makeText(context, e.message, Toast.LENGTH_SHORT).show()
-            Log.e("NetworkConnection", "Backend Host Unreachable", e)
+            Log.e(TAG, "Backend Host Unreachable", e)
         }
 
     }
@@ -307,14 +306,13 @@ class CreateFragment : BaseFragment(), OfflineListener , KodeinAware {
 //                val projects = authViewModel.projects.await()
                 projects.observe(viewLifecycleOwner, Observer { projec_t ->
                     data_loading.hide()
-                    val projects = projec_t
                     val projectNmbr = arrayOfNulls<String>(projec_t.size)
                     for (project in projec_t.indices) {
                         projectNmbr[project] = projec_t[project].projectCode
                     }
                     setSpinner(context!!.applicationContext,
                         projectSpinner,
-                        projects,
+                        projec_t,
                         projectNmbr, //null)
                         object : SpinnerHelper.SelectionListener<ProjectDTO> {
                             override fun onItemSelected(position: Int, item: ProjectDTO) {

@@ -8,7 +8,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.data.repositories.JobCreationDataRepository
-import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.IJobSubmit
 import za.co.xisystems.itis_rrm.ui.mainview.create.select_item.SectionProj_Item
 import za.co.xisystems.itis_rrm.utils.JobUtils
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
@@ -28,8 +27,8 @@ class CreateViewModel(
         jobtoEdit_Item.value = jobEdit_Item
     }
 
-    val EstimateQty = MutableLiveData<Int>()
-    fun Estimate(Qty: Int) {
+    private val EstimateQty = MutableLiveData<Int>()
+    fun estimate(Qty: Int) {
         EstimateQty.value = Qty
     }
 
@@ -38,7 +37,7 @@ class CreateViewModel(
         costLineRate.value = rate
     }
 
-    val offlinedata by lazyDeferred {
+    val offlineSectionItems by lazyDeferred {
         jobCreationDataRepository.getSectionItems()
     }
 
@@ -58,7 +57,7 @@ class CreateViewModel(
         loggedUser.value = user_n
     }
 
-    val descriptioN = MutableLiveData<String>()
+    private val descriptioN = MutableLiveData<String>()
     fun userN(desc: String) {
         descriptioN.value = desc
     }
@@ -79,7 +78,7 @@ class CreateViewModel(
         contract_ID.value = contract_Id
     }
 
-    val project_ID = MutableLiveData<String>()
+    private val project_ID = MutableLiveData<String>()
     fun contractI(project_Id: String) {
         project_ID.value = project_Id
     }
@@ -89,7 +88,7 @@ class CreateViewModel(
         project_Code.value = projec_Code
     }
 
-    val projectSec_Item = MutableLiveData<ProjectItemDTO>()
+    private val projectSec_Item = MutableLiveData<ProjectItemDTO>()
     fun projecI(projec_Item: ProjectItemDTO) {
         projectSec_Item.value = projec_Item
     }
@@ -109,7 +108,7 @@ class CreateViewModel(
         project_Item.value = projec_Item
     }
 
-    val project_Rate = MutableLiveData<Double>()
+    private val project_Rate = MutableLiveData<Double>()
     fun projecRate(projec_Rate: Double) {
         project_Rate.value = projec_Rate
     }
@@ -140,9 +139,8 @@ class CreateViewModel(
 
 
     suspend fun getSomeProjects(contractId: String): LiveData<List<ProjectDTO>> {
-        val contrId = contractId
         return withContext(Dispatchers.IO) {
-            jobCreationDataRepository.getContractProjects(contrId)
+            jobCreationDataRepository.getContractProjects(contractId)
         }
     }
 
@@ -166,16 +164,16 @@ class CreateViewModel(
         jobCreationDataRepository.saveNewItem(newjItem)
     }
 
-    suspend fun delete(item: ItemDTOTemp) {
+    fun delete(item: ItemDTOTemp) {
         jobCreationDataRepository.delete(item)
     }
 
 
-    suspend fun deleJobfromList(jobId: String) {
-        jobCreationDataRepository.deleJobfromList(jobId)
+    fun deleJobfromList(jobId: String) {
+        jobCreationDataRepository.deleteJobfromList(jobId)
     }
 
-    suspend fun updateNewJob(
+    fun updateNewJob(
         newjobId: String,
         startKM: Double,
         endKM: Double,
@@ -244,7 +242,7 @@ class CreateViewModel(
 
     suspend fun getAllProjecItems(projectId: String): LiveData<List<ItemDTOTemp>> {
         return withContext(Dispatchers.IO) {
-            jobCreationDataRepository.getAllProjecItems(projectId)
+            jobCreationDataRepository.getAllProjectItems(projectId)
         }
     }
 
@@ -288,12 +286,12 @@ class CreateViewModel(
 
     }
 
-    suspend fun deleteItemList(jobId: String) {
+    fun deleteItemList(jobId: String) {
         jobCreationDataRepository.deleteItemList(jobId)
     }
 
-    suspend fun deleteItemfromList(itemId: String) {
-        jobCreationDataRepository.deleteItemfromList(itemId)
+    fun deleteItemfromList(itemId: String) {
+        jobCreationDataRepository.deleteItemFromList(itemId)
     }
 
     suspend fun getContractNoForId(contractVoId: String?): String {

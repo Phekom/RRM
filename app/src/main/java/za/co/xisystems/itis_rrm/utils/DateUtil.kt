@@ -21,14 +21,14 @@ object DateUtil {
     // endregion (Private Static Final Fields)"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
 // region (Private Static Fields)SimpleDateFormat("yyyy-MM-dd HH:mm:ss") as DateFormat
     private val iso8601Format: DateFormat =
-        SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ") as DateFormat
+        SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
 
 //    private const val DATE_FORMAT_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
 
     private val readableDateForm: DateFormat = SimpleDateFormat("dd MMMM yyyy")
     // endregion (Private Static Fields)
 // region (Public Static Methods)
-    fun StringToDate(stringDate: String?): Date? {
+    private fun StringToDate(stringDate: String?): Date? {
         return if (null == stringDate) null else try {
             iso8601Format.parse(stringDate)
         } catch (e: ParseException) {
@@ -64,10 +64,8 @@ object DateUtil {
     }
 
     fun CalendarItemsToDate(year: Int, monthOfYear: Int, dayOfMonth: Int): Date? {
-        val mDate: String
-        val mMon: String
-        mDate = if (dayOfMonth < 10) zero + dayOfMonth else emptyString + dayOfMonth
-        mMon =
+        val mDate: String = if (dayOfMonth < 10) zero + dayOfMonth else emptyString + dayOfMonth
+        val mMon: String =
             if (monthOfYear + 1 < 10) zero + (monthOfYear + 1) else emptyString + (monthOfYear + 1)
         return StringToDate(emptyString + year + dash + mMon + dash + mDate + timeZeros)
     }

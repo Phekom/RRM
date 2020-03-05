@@ -11,11 +11,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
-import kotlinx.android.synthetic.main.fragment_job_info.*
 import kotlinx.android.synthetic.main.fragment_measure_approval.*
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
@@ -26,7 +25,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureViewModelFactory
-import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.approveMeasure_Item.ApproveMeasure_Item
+import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.approveMeasure_Item.ApproveMeasureItem
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DataConversion
@@ -49,11 +48,6 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -65,11 +59,10 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         approveViewModel = activity?.run {
-            ViewModelProviders.of(this, factory).get(ApproveMeasureViewModel::class.java)
-        } ?: throw Exception("Invalid Activity") as Throwable
+            ViewModelProvider(this, factory).get(ApproveMeasureViewModel::class.java)
+        } ?: throw Exception("Invalid Activity")
 
         Coroutines.main {
-//            mydata_loading.show()
 
             approveViewModel.measureapproval_Item.observe(viewLifecycleOwner, Observer { job ->
                 getMeasureItems(job)
@@ -120,7 +113,7 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
                     if (ServiceUtil.isNetworkConnected(context?.applicationContext)) {
 //                        moveJobToNextWorkflow(WorkflowDirection.FAIL)
                     } else {
-                        toast( R.string.no_connection_detected)
+                        toast(R.string.no_connection_detected)
                     }
                 }
                 // No button
@@ -157,11 +150,12 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
                         // } else if ( getEstimateItems(job.jobItemMeasureDTO.jobId) == null) {
                        // toast("Error: selectedJob is null")
                     } else {
-                        // TODO beware littlEndian conversion
-                        val trackRounteId: String = DataConversion.toLittleEndian(job.jobItemMeasureDTO.trackRouteId)!!
-                        val direction: Int = workflowDirection.getValue()
+                        // TODO beware littleEndian conversion
+                        val trackRouteId: String =
+                            DataConversion.toLittleEndian(job.jobItemMeasureDTO.trackRouteId)!!
+                        val direction: Int = workflowDirection.value
 
-                        var description : String = ""
+                        val description = ""
 //                        val messages = messages
 //                        if (workflow_comments_editText.text != null){
 //                            description = workflow_comments_editText.text.toString()
@@ -171,7 +165,7 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
 //                        }
 
 
-                        processWorkFlow(user_.userId, trackRounteId, direction, description)
+                        processWorkFlow(user_.userId, trackRouteId, direction, description)
                     }
 
                 })
@@ -180,17 +174,19 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
 
     }
 
-    private fun processWorkFlow( userId: String,   trackRounteId: String,    direction: Int,    description: String?
+    private fun processWorkFlow(
+        userId: String, trackRouteId: String, direction: Int, description: String?
     ) {
         Coroutines.main {
             val prog = ProgressDialog(activity)
             prog.setTitle(getString(R.string.please_wait))
             prog.setMessage(getString(R.string.loading_job_wait))
             prog.setCancelable(false)
-            prog.setIndeterminate(true)
+            prog.isIndeterminate = true
             prog.setProgressStyle(ProgressDialog.STYLE_SPINNER)
             prog.show()
-           val submit =  approveViewModel.processWorkflowMove(userId, trackRounteId,description,direction)
+            val submit =
+                approveViewModel.processWorkflowMove(userId, trackRouteId, description, direction)
 //            activity?.hideKeyboard()
             if (submit != null){
                 prog.dismiss()
@@ -203,9 +199,9 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
     }
 
     private fun popViewOnJobSubmit(direction: Int) {
-        if (direction.equals(WorkflowDirection.NEXT)) {
+        if (direction == WorkflowDirection.NEXT.value) {
             toast(R.string.job_approved)
-        } else if (direction.equals(WorkflowDirection.FAIL)) {
+        } else if (direction == WorkflowDirection.FAIL.value) {
             toast(R.string.job_declined)
         }
 
@@ -218,22 +214,22 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
     }
 
 
-    private fun getMeasureItems(job : ApproveMeasure_Item) {
+    private fun getMeasureItems(job: ApproveMeasureItem) {
         Coroutines.main {
             val measurements = approveViewModel.getJobMeasureItemsForJobId(job.jobItemMeasureDTO.jobId, ActivityIdConstants.MEASURE_COMPLETE)
             measurements.observe(viewLifecycleOwner, Observer { job_s ->
-                val measure_items = job_s.distinctBy{
+                val measureItems = job_s.distinctBy {
                     it.jobId
                 }
                 toast(job_s.size.toString())
-                initRecyclerView(measure_items.toMeasure_Item())
+                initRecyclerView(measureItems.toMeasureItem())
 
             })
 
         }
     }
 
-    private fun initRecyclerView(measureListItems: List<Measurements_Item>) {
+    private fun initRecyclerView(measureListItems: List<MeasurementsItem>) {
         val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
             addAll(measureListItems)
         }
@@ -245,10 +241,10 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
 
     }
 
-    private fun List<JobItemMeasureDTO>.toMeasure_Item(): List<Measurements_Item> {
-        return this.map { approvej_items ->
-            //            getEstimateItemsPhoto(approvej_items.estimateId)
-            Measurements_Item(approvej_items,approveViewModel, activity)
+    private fun List<JobItemMeasureDTO>.toMeasureItem(): List<MeasurementsItem> {
+        return this.map { approvedJobItem ->
+            //            getEstimateItemsPhoto(approvedJobItem.estimateId)
+            MeasurementsItem(approvedJobItem, approveViewModel, activity)
         }
     }
 
@@ -264,19 +260,6 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
     fun onButtonPressed(uri: Uri) {
 //        listener?.onFragmentInteraction(uri)
     }
-
-
-
-    override fun onDetach() {
-        super.onDetach()
-
-    }
-
-
-
-
-
-
 
 
 }

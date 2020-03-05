@@ -1,7 +1,6 @@
 package za.co.xisystems.itis_rrm.data.network.responses
 
 
-import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.gson.annotations.SerializedName
 import java.io.Serializable
 

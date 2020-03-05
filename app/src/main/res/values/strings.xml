@@ -93,7 +93,7 @@
     <string name="are_you_sure_you_want_to_save">Are you sure you want to save this Job?</string>
     <string name="are_you_sure_you_want_to_logout">Are you sure you want to logout?</string>
     <string name="are_you_sure_you_want_to_mark_this_as_done">Are you sure you want to mark this as Done?</string>
-    <string name="b_uppercase"></string>
+    <string name="b_uppercase" />
     <string name="back">Done</string>
     <string name="building_googleapiclient">Building GoogleApiClient</string>
     <string name="c_uppercase">C</string>
@@ -122,7 +122,7 @@
     <string name="could_not_read_json_unexpected_character">Could not read JSON: Unexpected character</string>
     <string name="could_not_step_the_job_through_workflow">Could not step the Job through workflow</string>
     <string name="create_job">Create Job</string>
-    <string name="create_job_error">Please fill necesary details, Job info incomplete</string>
+    <string name="create_job_error">Please fill necessary details, Job info incomplete</string>
     <string name="current_location_is_null">Current Location is null, so the userDTO will have to confirm that the Location Services are enabled.</string>
     <string name="dash">-</string>
     <string name="dayworks_section_m9100">Dayworks/Section M9100?</string>
@@ -444,7 +444,7 @@
     <string name="fetching_items_categories">Fetching items categories</string>
     <string name="fetching_categories">Fetching categories</string>
     <string name="fetching_project_items">Fetching projects items</string>
-    <string name="Ok">Ok</string>
+    <string name="Ok">OK</string>
     <string name="start_date_error"> The start date must not less than the current date</string>
     <string name="end_date_error">The end date must not be less than start</string>
     <string name="title_activity_main">MainActivity</string>
@@ -509,5 +509,11 @@
     <string name="start_taking_photo">Start Capturing Measurents Photos</string>
     <string name="capture_measure_photo">Capture Measurements</string>
     <string name="are_you_sure_you_want_to_submit_measurements">Are you Sure you want to submit Measurements</string>
+    <string name="action_search">Search</string>
+    <!-- Exception Strings -->
+    <string name="ex_no_internet">Make sure you have an active data connection</string>
+    <string name="ex_no_connectivity">Internet appears to be unreachable, please check your connection</string>
+    <string name="ex_no_service_host">Service Host for Mobile is offline, try again later</string>
+
 
 </resources>

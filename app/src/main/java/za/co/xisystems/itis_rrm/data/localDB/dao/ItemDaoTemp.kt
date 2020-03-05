@@ -3,8 +3,6 @@ package za.co.xisystems.itis_rrm.data.localDB.dao
 import androidx.lifecycle.LiveData
 import androidx.room.*
 import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
-import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.ItemSectionDTO
 
 /**
  * Created by Francis Mahlava on 2019/11/21.
@@ -12,7 +10,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.ItemSectionDTO
 
 
 @Dao
-interface ItemDao_Temp {
+interface ItemDaoTemp {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertItems( item : ItemDTOTemp) : Long
