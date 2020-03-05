@@ -510,7 +510,10 @@
     <string name="capture_measure_photo">Capture Measurements</string>
     <string name="are_you_sure_you_want_to_submit_measurements">Are you Sure you want to submit Measurements</string>
     <string name="action_search">Search</string>
-    <!-- MeasurementsItemUI strings -->
+    <!-- Exception Strings -->
+    <string name="ex_no_internet">Make sure you have an active data connection</string>
+    <string name="ex_no_connectivity">Internet appears to be unreachable, please check your connection</string>
+    <string name="ex_no_service_host">Service Host for Mobile is offline, try again later</string>
 
 
 </resources>

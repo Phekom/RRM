@@ -29,10 +29,10 @@ class NetworkConnectionInterceptor(
             throw NoInternetException("Make sure you have an active data connection")
 
         if (!isHostAvailable(testConnection))
-            throw NoConnectivityException("$testConnection is unreachable, please try again later.")
+            throw NoConnectivityException("Network appears to be down, please try again later.")
 
         if(!isHostAvailable(serviceURL)){
-            throw NoConnectivityException("Service Host for mobile is down, please try again later.")
+            throw NoConnectivityException("Service Host for RRM is down, please try again later.")
         }
 
         return chain.proceed(chain.request())

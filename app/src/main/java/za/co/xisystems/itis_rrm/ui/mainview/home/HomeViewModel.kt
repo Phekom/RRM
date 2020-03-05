@@ -14,16 +14,17 @@ class HomeViewModel(
     val context: Context
 ) : ViewModel() {
 
-    val offlinedata by lazyDeferred {
+    val offlineData by lazyDeferred {
         offlineDataRepository.getSectionItems()
         offlineDataRepository.getContracts()
         offlineDataRepository.getJobs()
+
     }
     val user by lazyDeferred {
         repository.getUser()
     }
 
-    val offlinedatas by lazyDeferred {
+    val offlineWorkFlows by lazyDeferred {
         offlineDataRepository.getWorkFlows()
     }
 

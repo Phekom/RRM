@@ -38,9 +38,10 @@ class ApproveMeasureFragment : BaseFragment(), KodeinAware {
     private lateinit var approveViewModel: ApproveMeasureViewModel
     private val factory: ApproveMeasureViewModelFactory by instance()
 
-companion object{
-    const val JOB_ID_FOR_MEASUREMENT_APPROVAL = "JOB_ID_FOR_MEASUREMENT_APPROVAL"
-}
+    companion object {
+        const val JOB_ID_FOR_MEASUREMENT_APPROVAL = "JOB_ID_FOR_MEASUREMENT_APPROVAL"
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?, savedInstanceState: Bundle?
@@ -57,22 +58,43 @@ companion object{
         approveViewModel = activity?.run {
             ViewModelProvider(this, factory).get(ApproveMeasureViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
+        val dialog =
+            setDataProgressDialog(activity!!, getString(R.string.data_loading_please_wait))
         Coroutines.main {
-            val dialog = setDataProgressDialog(activity!!, getString(R.string.data_loading_please_wait))
 
-            val measurements = approveViewModel.getJobApproveMeasureForActivityId(ActivityIdConstants.MEASURE_COMPLETE)
+            try {
+                dialog.show()
+                val measurements =
+                    approveViewModel.getJobApproveMeasureForActivityId(ActivityIdConstants.MEASURE_COMPLETE)
 //            val measurements  = approveViewModel.getJobsMeasureForActivityId(ActivityIdConstants.ESTIMATE_MEASURE,ActivityIdConstants.MEASURE_COMPLETE,ActivityIdConstants.EST_WORKS_COMPLETE,ActivityIdConstants.JOB_APPROVED)
 //            val measurements = approveViewModel.getEntitiesListForActivityId(ActivityIdConstants.MEASURE_COMPLETE)
 //            val measurements = approveViewModel.offlinedata.await()
-            measurements.observe(viewLifecycleOwner, Observer { job_s ->
-                noData.visibility = GONE
-                val measure_items = job_s.distinctBy{
-                    it.jobId
-                }
-                initRecyclerView(measure_items.toApproveListItems())
-                toast(measure_items.size.toString())
-                group4_loading.visibility = GONE
-            })
+                measurements.observe(viewLifecycleOwner, Observer { job_s ->
+                    noData.visibility = GONE
+                    val measureItems = job_s.distinctBy {
+                        it.jobId
+                    }
+                    initRecyclerView(measureItems.toApproveListItems())
+                    toast(measureItems.size.toString())
+                    group4_loading.visibility = GONE
+                })
+                dialog.dismiss()
+            } catch (e: ApiException) {
+                ToastUtils().toastLong(activity, e.message)
+                dialog.dismiss()
+                Log.e(ApproveJobsFragment.TAG, "API Exception", e)
+            } catch (e: NoInternetException) {
+                ToastUtils().toastLong(activity, e.message)
+                dialog.dismiss()
+                Log.e(ApproveJobsFragment.TAG, "No Internet Connection", e)
+            } catch (e: NoConnectivityException) {
+                ToastUtils().toastLong(activity, e.message)
+                dialog.dismiss()
+                Log.e(ApproveJobsFragment.TAG, "Service Host Unreachable", e)
+            }
+        }
+
+        Coroutines.main {
             approvem_swipe_to_refresh.setProgressBackgroundColorSchemeColor(
                 ContextCompat.getColor(
                     context!!.applicationContext,
@@ -80,42 +102,44 @@ companion object{
                 )
             )
             approvem_swipe_to_refresh.setColorSchemeColors(Color.WHITE)
+        }
 
-            approvem_swipe_to_refresh.setOnRefreshListener {
-                dialog.show()
-                Coroutines.main {
-                    try {
-                        val freshJobs = approveViewModel.offlinedatas.await()
-                        freshJobs.observe(viewLifecycleOwner, Observer {
-                            approvem_swipe_to_refresh.isRefreshing = false
-                            dialog.dismiss()
-                        })
-                    } catch (e: ApiException) {
-                        ToastUtils().toastLong(activity, e.message)
+        approvem_swipe_to_refresh.setOnRefreshListener {
+            dialog.show()
+            Coroutines.main {
+                try {
+                    val freshJobs = approveViewModel.offlineUserTaskList.await()
+                    freshJobs.observe(viewLifecycleOwner, Observer {
                         approvem_swipe_to_refresh.isRefreshing = false
                         dialog.dismiss()
-                        Log.e(ApproveJobsFragment.TAG, "API Exception", e)
-                    } catch (e: NoInternetException) {
-                        ToastUtils().toastLong(activity, e.message)
-                        dialog.dismiss()
-                        approvem_swipe_to_refresh.isRefreshing  = false
-                        Log.e(ApproveJobsFragment.TAG, "No Internet Connection", e)
-                    } catch (e: NoConnectivityException) {
-                        ToastUtils().toastLong(activity, e.message)
-                        dialog.dismiss()
-                        approvem_swipe_to_refresh.isRefreshing = false
-                        Log.e(ApproveJobsFragment.TAG, "Service Host Unreachable", e)
-                    }
+                    })
+                } catch (e: ApiException) {
+                    ToastUtils().toastLong(activity, e.message)
+                    approvem_swipe_to_refresh.isRefreshing = false
+                    dialog.dismiss()
+                    Log.e(ApproveJobsFragment.TAG, "API Exception", e)
+                } catch (e: NoInternetException) {
+                    ToastUtils().toastLong(activity, e.message)
+                    dialog.dismiss()
+                    approvem_swipe_to_refresh.isRefreshing = false
+                    Log.e(ApproveJobsFragment.TAG, "No Internet Connection", e)
+                } catch (e: NoConnectivityException) {
+                    ToastUtils().toastLong(activity, e.message)
+                    dialog.dismiss()
+                    approvem_swipe_to_refresh.isRefreshing = false
+                    Log.e(ApproveJobsFragment.TAG, "Service Host Unreachable", e)
                 }
             }
         }
     }
+
 
     private fun initRecyclerView(approveMeasureListItems: List<ApproveMeasureItem>) {
         val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
             addAll(approveMeasureListItems)
 
         }
+
         approve_measurements_list.apply {
             layoutManager = LinearLayoutManager(this.context)
             adapter = groupAdapter
@@ -154,13 +178,5 @@ companion object{
 
 }
 
-//(item as? ApproveMeasure_Item)?.let {
-////                    val descri = approveViewModel.getDescForProjectId(it.jobItemMeasureDTO.projectItemId!!)
-////                    val sectionId  =  approveViewModel.getProjectSectionIdForJobId(it.jobDTO.jobId)
-////                    val route  =  approveViewModel.getRouteForProjectSectionId(sectionId)
-////                    val section  =  approveViewModel.getSectionForProjectSectionId(sectionId)
-////                    sendJobtoAprove((it.jobItemMeasureDTO.jobId), view)
-//    sendJobtoAprove((it), view)
-//}
 
 

@@ -66,7 +66,7 @@ class OfflineDataRepository(
     private val voItems = MutableLiveData<ArrayList<VoItemDTO>>()
     private val projectSections = MutableLiveData<ArrayList<ProjectSectionDTO>>()
     private val job = MutableLiveData<JobDTO>()
-    private val new_job = MutableLiveData<JobDTOTemp>()
+    private val newJob = MutableLiveData<JobDTOTemp>()
     private val estimatePhoto = MutableLiveData<String>()
     private val measurePhoto = MutableLiveData<String>()
     private val workFlow = MutableLiveData<WorkFlowsDTO>()
@@ -112,7 +112,7 @@ class OfflineDataRepository(
 
         }
 
-        new_job.observeForever {
+        newJob.observeForever {
             processRrmJobResponse(it)
 
         }
@@ -1606,8 +1606,8 @@ class OfflineDataRepository(
                     for (toDoListEntity in entitiesArrayList) {
                         val jobId = getJobIdFromPrimaryKeyValues(toDoListEntity.primaryKeyValues)
                         insertEntity(toDoListEntity, jobId!!)
-                        val job_Id = DataConversion.toLittleEndian(jobId)
-                        fetchJobList(job_Id!!)
+                        val newJobId = DataConversion.toLittleEndian(jobId)
+                        fetchJobList(newJobId!!)
 //                        for (subEntity in toDoListEntity.entities) {
 //                            insertEntity(subEntity, jobId)
 ////                            val job_Id = DataConversion.toLittleEndian(jobId!!)
@@ -2012,10 +2012,10 @@ class OfflineDataRepository(
     private fun saveEstimatePhoto(estimatePhoto: String?, fileName: String) {
         Coroutines.io {
             if (estimatePhoto != null) {
-                PhotoUtil.createPhotofolder(estimatePhoto, fileName)
+                PhotoUtil.createPhotoFolder(estimatePhoto, fileName)
 //            PhotoUtil.createPhotofolder(fileName)
             } else {
-                PhotoUtil.createPhotofolder()
+                PhotoUtil.createPhotoFolder()
             }
 
         }

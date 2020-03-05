@@ -24,7 +24,7 @@ class ApproveJobsViewModel (
         jobApprovalDataRepository.getUser()
     }
 
-    val offlinedatas by lazyDeferred {
+    val offlineUserTaskList by lazyDeferred {
         offlineDataRepository.getUserTaskList()
     }
 

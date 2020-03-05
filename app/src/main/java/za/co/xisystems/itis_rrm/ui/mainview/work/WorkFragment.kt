@@ -57,30 +57,50 @@ class WorkFragment : BaseFragment(), KodeinAware {
         } ?: throw Exception("Invalid Activity")
 
         val dialog = setDataProgressDialog(activity!!, getString(R.string.data_loading_please_wait))
+
         Coroutines.main {
-            val works = workViewModel.getJobsForActivityId(
-                ActivityIdConstants.JOB_APPROVED,
-                ActivityIdConstants.ESTIMATE_INCOMPLETE
-            )
+            try {
+                val works = workViewModel.getJobsForActivityId(
+                    ActivityIdConstants.JOB_APPROVED,
+                    ActivityIdConstants.ESTIMATE_INCOMPLETE
+                )
 
-            works.observe(viewLifecycleOwner, Observer { work_s ->
-                noData.visibility = View.GONE
-                group7_loading.visibility = View.GONE
-                val header_items = work_s.distinctBy{
-                    it.JobId
-                }
-                initRecyclerView(header_items.toWorkListItems())
-//            initRecyclerView(works.toWorkListItems())
+                works.observe(viewLifecycleOwner, Observer { work_s ->
+                    noData.visibility = View.GONE
+                    group7_loading.visibility = View.GONE
+                    val headerItems = work_s.distinctBy {
+                        it.JobId
+                    }
+                    initRecyclerView(headerItems.toWorkListItems())
 
-            })
+                })
+            } catch (e: ApiException) {
+                ToastUtils().toastLong(activity, e.message)
+                works_swipe_to_refresh.isRefreshing = false
+                dialog.dismiss()
+                Log.e(TAG, "API Exception", e)
+            } catch (e: NoInternetException) {
+                ToastUtils().toastLong(activity, e.message)
+                // snackError(this.coordinator, e.message)
+                dialog.dismiss()
+                works_swipe_to_refresh.isRefreshing = false
+                Log.e(TAG, "No Internet Connection", e)
+            } catch (e: NoConnectivityException) {
+                ToastUtils().toastLong(activity, e.message)
+                dialog.dismiss()
+                works_swipe_to_refresh.isRefreshing = false
+                Log.e(TAG, "Service Host Unreachable", e)
+            }
 
         }
+
         works_swipe_to_refresh.setProgressBackgroundColorSchemeColor(
             ContextCompat.getColor(
                 context!!.applicationContext,
                 R.color.colorPrimary
             )
         )
+
         works_swipe_to_refresh.setColorSchemeColors(Color.WHITE)
 
         works_swipe_to_refresh.setOnRefreshListener {
@@ -96,18 +116,18 @@ class WorkFragment : BaseFragment(), KodeinAware {
                     ToastUtils().toastLong(activity, e.message)
                     works_swipe_to_refresh.isRefreshing = false
                     dialog.dismiss()
-                    Log.e("Service-Host", "API Exception", e)
+                    Log.e(TAG, "API Exception", e)
                 } catch (e: NoInternetException) {
                     ToastUtils().toastLong(activity, e.message)
                     // snackError(this.coordinator, e.message)
                     dialog.dismiss()
                     works_swipe_to_refresh.isRefreshing = false
-                    Log.e("Network-Connection", "No Internet Connection", e)
+                    Log.e(TAG, "No Internet Connection", e)
                 } catch (e: NoConnectivityException) {
                     ToastUtils().toastLong(activity, e.message)
                     dialog.dismiss()
                     works_swipe_to_refresh.isRefreshing = false
-                    Log.e("Network-Error", "Service Host Unreachable", e)
+                    Log.e(TAG, "Service Host Unreachable", e)
                 }
 
             }
@@ -191,12 +211,14 @@ class WorkFragment : BaseFragment(), KodeinAware {
                         Coroutines.main {
                                 for (item in i_tems) {
                                     Coroutines.main {
-                                            val   Desc =
+                                        val desc =
                                                 workViewModel.getDescForProjectItemId(item.projectItemId!!)
                                         val qty = item.qty.toString()
                                         val rate = item.lineRate.toString()
                                         val estimateId = item.estimateId
-                                            add(CardItem(  activity, Desc, qty,
+                                        add(
+                                            CardItem(
+                                                activity, desc, qty,
                                                 rate,
                                                 estimateId,  workViewModel, item  , work_items                                    )
                                         )

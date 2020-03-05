@@ -519,7 +519,7 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
     }
 
     private fun showZoomedImage(imageUrl: Uri) {
-        val dialog = Dialog(this.activity, R.style.dialog_full_screen)
+        val dialog = Dialog(activity?.applicationContext, R.style.dialog_full_screen)
         dialog.setContentView(R.layout.new_job_photo)
         val zoomageView =
             dialog.findViewById<ZoomageView>(R.id.zoomedImage)
@@ -573,13 +573,13 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
                 ActivityIdConstants.EST_WORKS_COMPLETE
             )
             if (workDone == itemEstiJob.JobItemEstimates?.size) {
-                val i_tems = itemEstiJob.JobItemEstimates
+                val iItems = itemEstiJob.JobItemEstimates
                 estimate
-                submitAllOutStandingEstimates(i_tems)
+                submitAllOutStandingEstimates(iItems)
             } else {
 
-                val estimate_works = workViewModel.getJobEstiItemForEstimateId(estimate.estimateId)
-                estimate_works.observe(viewLifecycleOwner, Observer { work_s ->
+                val estimateWorks = workViewModel.getJobEstiItemForEstimateId(estimate.estimateId)
+                estimateWorks.observe(viewLifecycleOwner, Observer { work_s ->
                     //                    setButtonStates(work_s.get(0).actId, work_s)
                     for (itemwork in work_s) {
                         if (itemwork.actId == 21) {
@@ -590,8 +590,8 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
                                     ActivityIdConstants.EST_WORKS_COMPLETE
                                 )
                                 if (workDone == itemEstiJob.JobItemEstimates?.size) {
-                                    val i_tems = itemEstiJob.JobItemEstimates
-                                    submitAllOutStandingEstimates(i_tems)
+                                    val iItems = itemEstiJob.JobItemEstimates
+                                    submitAllOutStandingEstimates(iItems)
                                 } else {
                                     popViewOnWorkSubmit(view)
                                 }
@@ -793,7 +793,7 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
         workS: List<JobEstimateWorksDTO>
     ) {
         for (jobEstimateWorks in workS) {
-            if (jobEstimateWorks.actId !== actId) {
+            if (jobEstimateWorks.actId != actId) {
                 comments_editText.visibility = View.GONE
                 headimg.visibility = View.GONE
                 take_photo_button.visibility = View.GONE

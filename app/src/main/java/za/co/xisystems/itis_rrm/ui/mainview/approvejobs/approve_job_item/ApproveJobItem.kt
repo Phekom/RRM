@@ -13,7 +13,7 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
  */
 
 
-class ApproveJob_Item(
+class ApproveJobItem(
     val jobDTO: JobDTO,
     private val approveViewModel: ApproveJobsViewModel
 ) : Item(){
@@ -26,15 +26,15 @@ class ApproveJob_Item(
            listview_item_textView.text = "JI:${jobDTO.JiNo} - "
            Coroutines.main {
 
-                sectionId  =  approveViewModel?.getProjectSectionIdForJobId(jobDTO.JobId)
+               sectionId = approveViewModel.getProjectSectionIdForJobId(jobDTO.JobId)
                if (sectionId.isNullOrEmpty()) sectionId = ""
-                  route  = approveViewModel?.getRouteForProjectSectionId(sectionId!!)
+               route = approveViewModel.getRouteForProjectSectionId(sectionId!!)
                if (route.isNullOrEmpty()) route = ""
                    section  =  approveViewModel.getSectionForProjectSectionId(sectionId!!)
                if (section.isNullOrEmpty()) section = ""
 
 
-               apv_section.text =  "( ${route} ${"/0$section"} )"
+               apv_section.text = "( $route ${"/0$section"} )"
            }
            apv_description.text = jobDTO.Descr
            updateItem()
@@ -43,16 +43,17 @@ class ApproveJob_Item(
 
     override fun getLayout() = R.layout.single_listview_item
 
-    private fun GroupieViewHolder.updateItem(){
+    private fun updateItem() {
 
     }
-    private fun GroupieViewHolder.updatePojectItem(){
+
+    private fun updatePojectItem() {
 
     }
 
 
 }
 
-private fun GroupieViewHolder.getItemId(position: Int): Long {
+private fun getItemId(position: Int): Long {
     return position.toLong()
 }

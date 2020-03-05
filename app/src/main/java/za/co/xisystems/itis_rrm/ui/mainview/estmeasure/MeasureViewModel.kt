@@ -11,6 +11,7 @@ import za.co.xisystems.itis_rrm.data.repositories.MeasureCreationDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.estimate_measure_item.EstimateMeasureItem
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
+import za.co.xisystems.itis_rrm.utils.uncaughtExceptionHandler
 
 class MeasureViewModel (
     private val measureCreationDataRepository: MeasureCreationDataRepository,
@@ -51,7 +52,7 @@ class MeasureViewModel (
         activityId: Int,
         activityId2: Int
     ): LiveData<List<JobItemEstimateDTO>> {
-        return withContext(Dispatchers.IO) {
+        return withContext(Dispatchers.IO + uncaughtExceptionHandler) {
             measureCreationDataRepository.getJobMeasureForActivityId(activityId, activityId2)
         }
     }
@@ -95,10 +96,11 @@ class MeasureViewModel (
         }
     }
 
-    suspend fun deleteItemMeasurefromList(itemMeasureId: String) {
+    fun deleteItemMeasurefromList(itemMeasureId: String) {
         measureCreationDataRepository.deleteItemMeasurefromList(itemMeasureId)
     }
-    suspend fun deleteItemMeasurephotofromList(itemMeasureId: String) {
+
+    fun deleteItemMeasurephotofromList(itemMeasureId: String) {
         measureCreationDataRepository.deleteItemMeasurephotofromList(itemMeasureId)
     }
     suspend fun processWorkflowMove(
@@ -160,7 +162,7 @@ class MeasureViewModel (
         measureCreationDataRepository.setJobItemMeasureImages(jobItemMeasurePhotoList,estimateId, selectedJobItemMeasure)
     }
 
-    suspend fun saveJobItemMeasureItems(jobItemMeasureDTO: ArrayList<JobItemMeasureDTO>) {
+    fun saveJobItemMeasureItems(jobItemMeasureDTO: ArrayList<JobItemMeasureDTO>) {
         measureCreationDataRepository.saveJobItemMeasureItems(jobItemMeasureDTO)
     }
 

@@ -28,8 +28,11 @@ class UnSubmittedFragment : BaseFragment(), KodeinAware {
     override val kodein by kodein()
     private lateinit var unsubmittedViewModel: UnSubmittedViewModel
     private val factory: UnSubmittedViewModelFactory by instance()
-    private lateinit var groupAdapter : GroupAdapter<GroupieViewHolder>
+    private lateinit var groupAdapter: GroupAdapter<GroupieViewHolder>
 
+    companion object {
+        val TAG: String = UnSubmittedFragment::class.java.simpleName
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -67,15 +70,15 @@ class UnSubmittedFragment : BaseFragment(), KodeinAware {
                     }
 
                 })
-            }  catch (e: ApiException) {
+            } catch (e: ApiException) {
                 ToastUtils().toastLong(activity, e.message)
-                Log.e("Service-Host", "API Exception", e)
+                Log.e(TAG, "API Exception", e)
             } catch (e: NoInternetException) {
                 ToastUtils().toastLong(activity, e.message)
-                Log.e("Network-Connection", "No Internet Connection", e)
+                Log.e(TAG, "No Internet Connection", e)
             } catch (e: NoConnectivityException) {
                 ToastUtils().toastLong(activity, e.message)
-                Log.e("Network-Error", "Service Host Unreachable", e)
+                Log.e(TAG, "Service Host Unreachable", e)
             }
         }
     }

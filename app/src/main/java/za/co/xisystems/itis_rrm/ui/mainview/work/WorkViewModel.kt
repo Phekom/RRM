@@ -10,6 +10,8 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.WorkDataRepository
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
+import za.co.xisystems.itis_rrm.utils.uncaughtExceptionHandler
+
 
 class WorkViewModel(
 private val workDataRepository: WorkDataRepository,
@@ -25,7 +27,7 @@ private val offlineDataRepository: OfflineDataRepository
 val user by lazyDeferred {
     workDataRepository.getUser()
 }
-    val offlinedatas by lazyDeferred {
+    val offlineUserTaskList by lazyDeferred {
         offlineDataRepository.getUserTaskList()
     }
 
@@ -40,7 +42,7 @@ val user by lazyDeferred {
     }
 
     suspend fun getJobsForActivityId(activityId1: Int, activityId2: Int): LiveData<List<JobDTO>> {
-        return withContext(Dispatchers.IO) {
+        return withContext(Dispatchers.IO + uncaughtExceptionHandler) {
             workDataRepository.getJobsForActivityIds(activityId1,activityId2)
         }
     }
@@ -54,36 +56,36 @@ val user by lazyDeferred {
 
 
     suspend fun getJobEstimationItemsForJobId(jobID: String?, actID: Int): LiveData<List<JobItemEstimateDTO>> {
-        return withContext(Dispatchers.IO) {
+        return withContext(Dispatchers.IO + uncaughtExceptionHandler) {
             workDataRepository.getJobEstimationItemsForJobId(jobID, actID)
         }
     }
 
     suspend fun getDescForProjectItemId(projectItemId: String): String {
-        return withContext(Dispatchers.IO) {
+        return withContext(Dispatchers.IO + uncaughtExceptionHandler) {
             workDataRepository.getProjectItemDescription(projectItemId)
         }
     }
 
     suspend fun getItemDescription(jobId: String): String {
-        return withContext(Dispatchers.IO) {
+        return withContext(Dispatchers.IO + uncaughtExceptionHandler) {
             workDataRepository.getItemDescription(jobId)
         }
     }
     suspend fun getItemJobNo(jobId: String): String {
-        return withContext(Dispatchers.IO) {
+        return withContext(Dispatchers.IO + uncaughtExceptionHandler) {
             workDataRepository.getItemJobNo(jobId)
         }
     }
 
     suspend fun getItemStartKm(jobId: String): Double {
-        return withContext(Dispatchers.IO) {
+        return withContext(Dispatchers.IO + uncaughtExceptionHandler) {
             workDataRepository.getItemStartKm(jobId)
         }
     }
 
     suspend fun getItemEndKm(jobId: String): Double {
-        return withContext(Dispatchers.IO) {
+        return withContext(Dispatchers.IO + uncaughtExceptionHandler) {
             workDataRepository.getItemEndKm(jobId)
         }
     }

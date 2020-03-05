@@ -1,15 +1,16 @@
 package za.co.xisystems.itis_rrm.utils
 
+import android.annotation.SuppressLint
 import android.annotation.TargetApi
 import android.content.Context
 import android.content.res.AssetFileDescriptor
 import android.graphics.*
-import android.media.ExifInterface
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.util.Log
 import androidx.core.content.FileProvider
+import androidx.exifinterface.media.ExifInterface
 import org.apache.sanselan.ImageReadException
 import org.apache.sanselan.ImageWriteException
 import org.apache.sanselan.Sanselan
@@ -26,14 +27,16 @@ import java.io.*
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.math.roundToLong
 
 object PhotoUtil {
     const val FOLDER = "ITIS_RRM_Photos"
 //    const val FOLDER = "ITISMaintenancePhotos"
-    private val ISO_8601_FORMAT: DateFormat =
+@SuppressLint("SimpleDateFormat")
+private val ISO_8601_FORMAT: DateFormat =
         SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
 
-    fun DateToString(date: Date?): String {
+    fun dateToString(date: Date?): String {
         return ISO_8601_FORMAT.format(date)
     }
 
@@ -238,9 +241,9 @@ object PhotoUtil {
                 e.printStackTrace()
             }
             byteArrayOutputStream = ByteArrayOutputStream()
-            val ER = ExifRewriter()
+            val exifRewriter = ExifRewriter()
             try {
-                ER.updateExifMetadataLossless(data, byteArrayOutputStream, outputSet)
+                exifRewriter.updateExifMetadataLossless(data, byteArrayOutputStream, outputSet)
             } catch (e: IOException) {
                 e.printStackTrace()
             } catch (e: ImageWriteException) {
@@ -306,17 +309,21 @@ object PhotoUtil {
             val maxRatio = maxWidth / maxHeight
             //      width and height values are set maintaining the aspect ratio of the image
             if (actualHeight > maxHeight || actualWidth > maxWidth) {
-                if (imgRatio < maxRatio) {
-                    imgRatio = maxHeight / actualHeight
-                    actualWidth = (imgRatio * actualWidth).toInt()
-                    actualHeight = maxHeight.toInt()
-                } else if (imgRatio > maxRatio) {
-                    imgRatio = maxWidth / actualWidth
-                    actualHeight = (imgRatio * actualHeight).toInt()
-                    actualWidth = maxWidth.toInt()
-                } else {
-                    actualHeight = maxHeight.toInt()
-                    actualWidth = maxWidth.toInt()
+                when {
+                    imgRatio < maxRatio -> {
+                        imgRatio = maxHeight / actualHeight
+                        actualWidth = (imgRatio * actualWidth).toInt()
+                        actualHeight = maxHeight.toInt()
+                    }
+                    imgRatio > maxRatio -> {
+                        imgRatio = maxWidth / actualWidth
+                        actualHeight = (imgRatio * actualHeight).toInt()
+                        actualWidth = maxWidth.toInt()
+                    }
+                    else -> {
+                        actualHeight = maxHeight.toInt()
+                        actualWidth = maxWidth.toInt()
+                    }
                 }
             }
             //      setting inSampleSize value allows to load a scaled down version of the original image
@@ -362,15 +369,19 @@ object PhotoUtil {
                 )
                 Log.d("EXIF", "Exif: $orientation")
                 val matrix = Matrix()
-                if (orientation == 6) {
-                    matrix.postRotate(90f)
-                    Log.d("EXIF", "Exif: $orientation")
-                } else if (orientation == 3) {
-                    matrix.postRotate(180f)
-                    Log.d("EXIF", "Exif: $orientation")
-                } else if (orientation == 8) {
-                    matrix.postRotate(270f)
-                    Log.d("EXIF", "Exif: $orientation")
+                when (orientation) {
+                    6 -> {
+                        matrix.postRotate(90f)
+                        Log.d("EXIF", "Exif: $orientation")
+                    }
+                    3 -> {
+                        matrix.postRotate(180f)
+                        Log.d("EXIF", "Exif: $orientation")
+                    }
+                    8 -> {
+                        matrix.postRotate(270f)
+                        Log.d("EXIF", "Exif: $orientation")
+                    }
                 }
                 scaledBitmap = Bitmap.createBitmap(
                     scaledBitmap, 0, 0,

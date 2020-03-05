@@ -180,11 +180,11 @@ abstract class NewJobBase : AppCompatActivity(), OfflineListener, IProgressView,
         }
     }
 
-    override fun showProgressDialog(vararg messageArray: String?) {
-        if (messageArray != null) {
-            var message = messageArray[0]
-            for (i in 1 until messageArray.size) {
-                message += "\n" + messageArray[i]
+    override fun showProgressDialog(vararg messages: String?) {
+        if (messages != null) {
+            var message = messages[0]
+            for (i in 1 until messages.size) {
+                message += "\n" + messages[i]
             }
             showHorizontalProgressDialog(message)
         }

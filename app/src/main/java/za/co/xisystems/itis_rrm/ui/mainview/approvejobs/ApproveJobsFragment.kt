@@ -63,12 +63,12 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
             val dialog = setDataProgressDialog(activity!!, getString(R.string.data_loading_please_wait))
             val jobs = approveViewModel.getJobsForActivityId(ActivityIdConstants.JOB_APPROVE)
             jobs.observe(viewLifecycleOwner, Observer { job_s ->
-                val j_items = job_s.distinctBy{
+                val jItems = job_s.distinctBy {
                     it.JobId
                 }
                 noData.visibility = GONE
                 toast(job_s.size.toString())
-                initRecyclerView(j_items.toApproveListItems())
+                initRecyclerView(jItems.toApproveListItems())
                 group3_loading.visibility = GONE
             })
 
@@ -78,13 +78,14 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
                     R.color.colorPrimary
                 )
             )
+
             jobs_swipe_to_refresh.setColorSchemeColors(Color.WHITE)
 
             jobs_swipe_to_refresh.setOnRefreshListener {
                 dialog.show()
                 Coroutines.main {
                     try {
-                        val freshJobs = approveViewModel.offlinedatas.await()
+                        val freshJobs = approveViewModel.offlineUserTaskList.await()
                         freshJobs.observe(viewLifecycleOwner, Observer {
                             jobs_swipe_to_refresh.isRefreshing = false
                             dialog.dismiss()
