@@ -142,7 +142,9 @@ object PhotoUtil {
     ): Uri {
         var photoName = photoName
         photoName =
-            if (!photoName.toLowerCase().contains(".jpg")) "$photoName.jpg" else photoName
+            if (!photoName.toLowerCase(Locale.ROOT)
+                    .contains(".jpg")
+            ) "$photoName.jpg" else photoName
         var fileName =
             Environment.getExternalStorageDirectory().toString() + File.separator + FOLDER + File.separator + photoName
         var file = File(fileName)
@@ -408,10 +410,10 @@ object PhotoUtil {
         var inSampleSize = 1
         if (height > actualHeight || width > actualWidth) {
             val heightRatio =
-                Math.round(height.toFloat() / actualHeight.toFloat())
+                (height.toFloat() / actualHeight.toFloat()).roundToLong()
             val widthRatio =
-                Math.round(width.toFloat() / actualWidth.toFloat())
-            inSampleSize = if (heightRatio < widthRatio) heightRatio else widthRatio
+                (width.toFloat() / actualWidth.toFloat()).roundToLong()
+            inSampleSize = (if (heightRatio < widthRatio) heightRatio else widthRatio).toInt()
         }
         val totalPixels = width * height.toFloat()
         val totalReqPixelsCap = actualWidth * actualHeight * 2.toFloat()
@@ -462,8 +464,7 @@ object PhotoUtil {
         return File(storageDir, "$imageFileName.jpg")
     } //    public static void createFile(String fileName, byte[] bytes) throws IOException {photoByteArray: ByteArray?,
 
-    fun createPhotofolder( photo: String, fileName: String) {
-//    fun createPhotofolder( fileName: String) {
+    fun createPhotoFolder(photo: String, fileName: String) {
 
         val storageDir =
             File(Environment.getExternalStorageDirectory().toString() + File.separator + FOLDER)
@@ -471,43 +472,24 @@ object PhotoUtil {
             storageDir.mkdirs()
         }
 
-        val imageByteArray = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+
+        val imageByteArray: ByteArray = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             Base64.getDecoder().decode(photo)
         } else {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                Base64.getDecoder().decode(photo)
-            } else {
-                android.util.Base64.decode(photo, android.util.Base64.DEFAULT)
-            }
+            android.util.Base64.decode(photo, android.util.Base64.DEFAULT)
         }
+
         File(storageDir.path + "/" + fileName).writeBytes(imageByteArray)
-
-
-
-
     }
 
 
-    fun createPhotofolder() {
-//    fun createPhotofolder( fileName: String) {
+    fun createPhotoFolder() {
 
         val storageDir =
             File(Environment.getExternalStorageDirectory().toString() + File.separator + FOLDER)
         if (!storageDir.exists()) {
             storageDir.mkdirs()
         }
-
-//        val imageByteArray = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-//            Base64.getDecoder().decode(photo)
-//        } else {
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-//                Base64.getDecoder().decode(photo)
-//            } else {
-//                android.util.Base64.decode(photo, android.util.Base64.DEFAULT)
-//            }
-//        }
-//        File(storageDir.path + "/" ).writeBytes()
-
     }
 
     fun getUri2(captureItemMeasurePhotoActivity: CaptureItemMeasurePhotoActivity): Uri? {
@@ -541,20 +523,7 @@ object PhotoUtil {
           val pointLocation =  pointLocation
         val  sectionId =  sectionId
         val  projectId = projectId
-
     }
-
-
-//    fun <ByteArray1> createPhoto(fileName: String, photoByteArray: ByteArray1) {
-//
-//    }
-//        File f = new File(fileName);
-//        f.createNewFile();
-//        FileOutputStream fo = new FileOutputStream(f);
-//        fo.write(bytes);
-//        fo.close();
-//    }
-
 
 
 }

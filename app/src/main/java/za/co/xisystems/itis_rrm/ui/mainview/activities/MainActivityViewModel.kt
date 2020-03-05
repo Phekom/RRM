@@ -27,8 +27,8 @@ class MainActivityViewModel (
     }
 
 
-    val measureapproval_Item = MutableLiveData<ApproveMeasure_Item>()
-    fun Item5(measureapproval: ApproveMeasure_Item) {
+    val measureapproval_Item = MutableLiveData<ApproveMeasureItem>()
+    fun Item5(measureapproval: ApproveMeasureItem) {
         measureapproval_Item.value = measureapproval
     }
 

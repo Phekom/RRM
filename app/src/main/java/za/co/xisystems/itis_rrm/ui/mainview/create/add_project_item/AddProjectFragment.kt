@@ -6,7 +6,6 @@ import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.text.method.TextKeyListener.clear
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
@@ -61,8 +60,8 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
     private val rainbow200: IntArray by lazy { resources.getIntArray(R.array.rainbow_200) }
     private val swipeSection = Section()
     private var useR: Int? = null
-    var contractID : String? = null
-    var projectID : String? = null
+    private var contractID: String? = null
+    private var projectID: String? = null
     private lateinit var groupAdapter : GroupAdapter<GroupieViewHolder>
     private lateinit var newJobItemEstimatesList: ArrayList<JobItemEstimateDTO>
     private val startDate: Date? = null
@@ -261,9 +260,7 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
     }
 
 
-
-
-    private fun initRecyclerView(projecListItems: List<Project_Item>) {
+    private fun initRecyclerView(projecListItems: List<ProjectItem>) {
         groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
             addAll(projecListItems)
 //            for(item in projecListItems)
@@ -278,10 +275,10 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
 
     }
 
-    private fun List<ItemDTOTemp>.toProjecListItems(): List<Project_Item> {
+    private fun List<ItemDTOTemp>.toProjecListItems(): List<ProjectItem> {
         return this.map { approvej_items ->
 
-            Project_Item(approvej_items, activity,createViewModel,contractID, job)
+            ProjectItem(approvej_items, createViewModel, contractID, job)
 
         }
     }
@@ -393,7 +390,7 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
                             dueDateCardView.startAnimation(shake_long)
                         }
                         if (job?.DueDate != null) {
-                            if (job?.DueDate!! < job!!.StartDate!! || job!!.DueDate!! < yesterday || job?.DueDate!!.equals(yesterday)
+                            if (job?.DueDate!! < job!!.StartDate!! || job!!.DueDate!! < yesterday || job?.DueDate!! == yesterday
                             ) {
 //                                toast(R.string.end_date_error)
                             } else {
@@ -404,9 +401,7 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
                             dueDateCardView.startAnimation(shake_long)
                         }
                         if (job!!.StartDate != null) {
-                            if (job!!.StartDate!! < yesterday || job!!.DueDate!!.equals(
-                                    yesterday
-                                )
+                            if (job!!.StartDate!! < yesterday || job!!.DueDate!! == yesterday
                             ) {
 //                                toast(R.string.start_date_error)
 
@@ -423,7 +418,7 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
                         toast("Error: incomplete estimates.\n Quantity can't be zero!")
                         itemsCardView.startAnimation(shake_long)
                     } else  {
-                        var valid  = createViewModel.areEstimatesValid(job, ArrayList<Any?>(items))
+                        val valid = createViewModel.areEstimatesValid(job, ArrayList<Any?>(items))
                                if (!valid){
                                   onInvalidJob()
                                }
@@ -596,8 +591,7 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
     }
 
 
-
-     fun onInvalidJob() {
+    private fun onInvalidJob() {
         toast("Incomplete estimates!")
         itemsCardView.startAnimation(shake_long)
     }

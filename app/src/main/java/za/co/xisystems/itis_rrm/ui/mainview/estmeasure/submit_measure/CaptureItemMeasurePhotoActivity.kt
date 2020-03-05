@@ -37,13 +37,13 @@ import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.submit_measure.Expandable
 import za.co.xisystems.itis_rrm.utils.*
 import java.util.*
 
-class CaptureItemMeasurePhotoActivity : AppCompatActivity() , KodeinAware {
+open class CaptureItemMeasurePhotoActivity : AppCompatActivity(), KodeinAware {
 
     override val kodein by kodein()
     private lateinit var measureViewModel: MeasureViewModel
     private val factory: MeasureViewModelFactory by instance()
 
-    lateinit var locationHelper: LocationHelper
+    private lateinit var locationHelper: LocationHelper
     private var currentLocation: Location? = null
 
     private lateinit var jobItemMeasurePhotoArrayList: ArrayList<JobItemMeasurePhotoDTO>
@@ -64,18 +64,17 @@ class CaptureItemMeasurePhotoActivity : AppCompatActivity() , KodeinAware {
 
     companion object {
         val TAG: String = CaptureItemMeasurePhotoActivity::class.java.simpleName
-        const val JOB_ITEM_MEASURE_PHOTO_ARRAY_LIST = "JobItemMeasurePhotoArrayList"
         const val PHOTO_RESULT = 9000
         private const val REQUEST_IMAGE_CAPTURE = 1
         private const val REQUEST_STORAGE_PERMISSION = 1
-        private val FILE_PROVIDER_AUTHORITY = BuildConfig.APPLICATION_ID + ".provider"
+        private const val FILE_PROVIDER_AUTHORITY = BuildConfig.APPLICATION_ID + ".provider"
 
         const val URI_LIST_DATA = "URI_LIST_DATA"
         const val IMAGE_FULL_SCREEN_CURRENT_POS = "IMAGE_FULL_SCREEN_CURRENT_POS"
 
         protected const val LOCATION_KEY = "location-key"
         // region (Public Static Final Fields)
-        const val UPDATE_INTERVAL_IN_MILLISECONDS: Long = 10000
+        private const val UPDATE_INTERVAL_IN_MILLISECONDS: Long = 10000
         const val FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS = UPDATE_INTERVAL_IN_MILLISECONDS / 2
 
 
@@ -114,7 +113,7 @@ class CaptureItemMeasurePhotoActivity : AppCompatActivity() , KodeinAware {
             photoButtons.visibility = View.GONE
 //            getIntent().getSerializableExtra(JOB_IMEASURE)
 
-            if (intent.hasExtra(ExpandableHeaderMeasureItem.JOB_IMEASURE)) {
+            if (intent.hasExtra(JOB_IMEASURE)) {
                 selectedJobItemMeasure = intent.extras[JOB_IMEASURE] as JobItemMeasureDTO
                 takeMeasurePhoto()
                 toast(selectedJobItemMeasure.jimNo.toString())
@@ -195,12 +194,12 @@ class CaptureItemMeasurePhotoActivity : AppCompatActivity() , KodeinAware {
         val jobItemMeasurePhoto = JobItemMeasurePhotoDTO(
             0,
             null,
-            filename_path.get("filename"),
+            filename_path["filename"],
             selectedJobItemMeasure.estimateId,
             selectedJobItemMeasure.itemMeasureId,
             DateUtil.DateToString(Date()),
             photoId,   currentLocation.latitude,  currentLocation.longitude,
-            filename_path.get("path"), jobItemMeasure, 0,   0
+            filename_path["path"], jobItemMeasure, 0, 0
 
         )
 
@@ -227,7 +226,7 @@ class CaptureItemMeasurePhotoActivity : AppCompatActivity() , KodeinAware {
                 ActivityCompat.requestPermissions(
                     this,
                     arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-                    CaptureItemMeasurePhotoActivity.REQUEST_STORAGE_PERMISSION
+                    REQUEST_STORAGE_PERMISSION
                 )
             } else {
                 launchCamera()
@@ -275,10 +274,11 @@ class CaptureItemMeasurePhotoActivity : AppCompatActivity() , KodeinAware {
 
     private fun updateValuesFromBundle(savedInstanceState: Bundle?) {
         Log.i(
-            CaptureItemMeasurePhotoActivity.TAG,
+            TAG,
             getString(R.string.updating_location_values_from_bundle)
         )
         if (savedInstanceState != null) {
+            // TODO: What are we planning to do here?
 //            @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
 //            if (savedInstanceState.keySet().contains(CaptureItemMeasurePhotoActivity.LOCATION_KEY))
 //                currentLocation = savedInstanceState.getParcelable<Location>(

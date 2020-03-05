@@ -2,13 +2,12 @@ package za.co.xisystems.itis_rrm.utils
 
 //import sun.plugin2.util.PojoUtil.toJson
 //import jdk.nashorn.internal.objects.NativeDate.getTime
+//import sun.plugin2.util.PojoUtil.toJson
 import androidx.room.TypeConverter
-import com.fasterxml.jackson.module.kotlin.*
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-//import sun.plugin2.util.PojoUtil.toJson
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
-import java.lang.reflect.Type
 import java.util.*
 
 
@@ -41,12 +40,12 @@ class Converters {
         }
         val listType = object :TypeToken<ArrayList<UserRoleDTO>>() {
 
-        }.getType()
-        return gson.fromJson<ArrayList<UserRoleDTO>>(data, listType)
+        }.type
+        return gson.fromJson(data, listType)
     }
 
     @TypeConverter
-    fun UserRoleDTOToStoredString(myObjects: ArrayList<UserRoleDTO>): String {
+    fun userRoleDTOToStoredString(myObjects: ArrayList<UserRoleDTO>): String {
         val gson = Gson()
         return gson.toJson(myObjects)
     }
@@ -62,12 +61,12 @@ class Converters {
         }
         val listType = object : TypeToken<ArrayList<ProjectDTO>>() {
 
-        }.getType()
-        return gson.fromJson<ArrayList<ProjectDTO>>(data, listType)
+        }.type
+        return gson.fromJson(data, listType)
     }
 
     @TypeConverter
-    fun ProjectDTOToStoredString(myObjects: ArrayList<ProjectDTO>): String {
+    fun projectDTOToStoredString(myObjects: ArrayList<ProjectDTO>): String {
         val gson = Gson()
         return gson.toJson(myObjects)
     }
@@ -82,12 +81,12 @@ class Converters {
         }
         val listType = object :TypeToken<ArrayList<WorkFlowRouteDTO>>() {
 
-        }.getType()
-        return gson.fromJson<ArrayList<WorkFlowRouteDTO>>(data, listType)
+        }.type
+        return gson.fromJson(data, listType)
     }
 
     @TypeConverter
-    fun WorkFlowRouteDTOToStoredString(myObjects: ArrayList<WorkFlowRouteDTO>): String {
+    fun workFlowRouteDTOToStoredString(myObjects: ArrayList<WorkFlowRouteDTO>): String {
         val gson = Gson()
         return gson.toJson(myObjects)
     }
@@ -103,12 +102,12 @@ class Converters {
         }
         val listType = object :TypeToken<ArrayList<JobSectionDTO>>() {
 
-        }.getType()
-        return gson.fromJson<ArrayList<JobSectionDTO>>(data, listType)
+        }.type
+        return gson.fromJson(data, listType)
     }
 
     @TypeConverter
-    fun JobSectionDTOToStoredString(myObjects:ArrayList<JobSectionDTO>): String {
+    fun jobSectionDTOToStoredString(myObjects: ArrayList<JobSectionDTO>): String {
         val gson = Gson()
         return gson.toJson(myObjects)
     }
@@ -144,8 +143,8 @@ class Converters {
         }
         val listType = object :TypeToken<ArrayList<ItemSectionDTO>>() {
 
-        }.getType()
-        return gson.fromJson<ArrayList<ItemSectionDTO>>(data, listType)
+        }.type
+        return gson.fromJson(data, listType)
     }
 
     @TypeConverter
@@ -164,8 +163,8 @@ class Converters {
         }
         val listType = object :TypeToken<ArrayList<JobItemEstimateDTO>>() {
 
-        }.getType()
-        return gson.fromJson<ArrayList<JobItemEstimateDTO>>(data, listType)
+        }.type
+        return gson.fromJson(data, listType)
     }
 
     @TypeConverter
@@ -186,12 +185,12 @@ class Converters {
         }
         val listType = object :TypeToken<ArrayList<JobItemMeasureDTO>>() {
 
-        }.getType()
-        return gson.fromJson<ArrayList<JobItemMeasureDTO>>(data, listType)
+        }.type
+        return gson.fromJson(data, listType)
     }
 
     @TypeConverter
-    fun JobItemMeasureDTOToStoredString(myObjects:ArrayList<JobItemMeasureDTO>): String {
+    fun jobItemMeasureDTOToStoredString(myObjects: ArrayList<JobItemMeasureDTO>): String {
         val gson = Gson()
         return gson.toJson(myObjects)
     }
@@ -209,12 +208,12 @@ class Converters {
         }
         val listType = object :TypeToken<ArrayList<ToDoListEntityDTO>>() {
 
-        }.getType()
-        return gson.fromJson<ArrayList<ToDoListEntityDTO>>(data, listType)
+        }.type
+        return gson.fromJson(data, listType)
     }
 
     @TypeConverter
-    fun ToDoListEntityDTOToStoredString(myObjects:ArrayList<ToDoListEntityDTO>): String {
+    fun toDoListEntityDTOToStoredString(myObjects: ArrayList<ToDoListEntityDTO>): String {
         val gson = Gson()
         return gson.toJson(myObjects)
     }
@@ -233,8 +232,8 @@ class Converters {
         }
         val listType = object :TypeToken<ArrayList<ProjectItemDTO>>() {
 
-        }.getType()
-        return gson.fromJson<ArrayList<ProjectItemDTO>>(data, listType)
+        }.type
+        return gson.fromJson(data, listType)
     }
 
     @TypeConverter
@@ -267,8 +266,8 @@ class Converters {
         }
         val listType = object :TypeToken<ArrayList<ProjectSectionDTO>>() {
 
-        }.getType()
-        return gson.fromJson<ArrayList<ProjectSectionDTO>>(data, listType)
+        }.type
+        return gson.fromJson(data, listType)
     }
 
     @TypeConverter
@@ -288,8 +287,8 @@ class Converters {
         }
         val listType = object :TypeToken<ArrayList<VoItemDTO>>() {
 
-        }.getType()
-        return gson.fromJson<ArrayList<VoItemDTO>>(data, listType)
+        }.type
+        return gson.fromJson(data, listType)
     }
 
     @TypeConverter
@@ -311,8 +310,8 @@ class Converters {
         }
         val listType = object :TypeToken<ArrayList<ChildLookupDTO>>() {
 
-        }.getType()
-        return gson.fromJson<ArrayList<ChildLookupDTO>>(data, listType)
+        }.type
+        return gson.fromJson(data, listType)
     }
 
     @TypeConverter
@@ -333,8 +332,8 @@ class Converters {
         }
         val listType = object :TypeToken<ArrayList<LookupOptionDTO>>() {
 
-        }.getType()
-        return gson.fromJson<ArrayList<LookupOptionDTO>>(data, listType)
+        }.type
+        return gson.fromJson(data, listType)
     }
 
     @TypeConverter
@@ -355,8 +354,8 @@ class Converters {
         }
         val listType = object :TypeToken<ArrayList<PrimaryKeyValueDTO>>() {
 
-        }.getType()
-        return gson.fromJson<ArrayList<PrimaryKeyValueDTO>>(data, listType)
+        }.type
+        return gson.fromJson(data, listType)
     }
 
     @TypeConverter
@@ -377,8 +376,8 @@ class Converters {
         }
         val listType = object :TypeToken<ArrayList<JobItemEstimatesPhotoDTO>>() {
 
-        }.getType()
-        return gson.fromJson<ArrayList<JobItemEstimatesPhotoDTO>>(data, listType)
+        }.type
+        return gson.fromJson(data, listType)
     }
 
     @TypeConverter
@@ -398,7 +397,7 @@ class Converters {
         }
         val listType = object :TypeToken<JobItemEstimatesPhotoDTO?>() {
 
-        }.getType()
+        }.type
         return gson.fromJson< JobItemEstimatesPhotoDTO? >(data, listType)
     }
 
@@ -418,8 +417,8 @@ class Converters {
         }
         val listType = object :TypeToken<ArrayList<JobEstimateWorksDTO>>() {
 
-        }.getType()
-        return gson.fromJson<ArrayList<JobEstimateWorksDTO>>(data, listType)
+        }.type
+        return gson.fromJson(data, listType)
     }
 
     @TypeConverter
@@ -440,7 +439,7 @@ class Converters {
         }
         val listType = object :TypeToken< ArrayList<JobEstimateWorksPhotoDTO>? >() {
 
-        }.getType()
+        }.type
         return gson.fromJson<ArrayList<JobEstimateWorksPhotoDTO>>(data, listType)
     }
 
@@ -462,8 +461,8 @@ class Converters {
         }
         val listType = object :TypeToken<ArrayList<JobDTO>>() {
 
-        }.getType()
-        return gson.fromJson<ArrayList<JobDTO>>(data, listType)
+        }.type
+        return gson.fromJson(data, listType)
     }
 
     @TypeConverter
@@ -484,8 +483,8 @@ class Converters {
         }
         val listType = object :TypeToken<ArrayList<JobItemMeasurePhotoDTO>>() {
 
-        }.getType()
-        return gson.fromJson<ArrayList<JobItemMeasurePhotoDTO>>(data, listType)
+        }.type
+        return gson.fromJson(data, listType)
     }
 
     @TypeConverter
@@ -506,8 +505,8 @@ class Converters {
         }
         val listType = object :TypeToken<ArrayList<ActivityDTO>>() {
 
-        }.getType()
-        return gson.fromJson<ArrayList<ActivityDTO>>(data, listType)
+        }.type
+        return gson.fromJson(data, listType)
     }
 
     @TypeConverter
@@ -528,8 +527,8 @@ class Converters {
         }
         val listType = object :TypeToken<ArrayList<InfoClassDTO>>() {
 
-        }.getType()
-        return gson.fromJson<ArrayList<InfoClassDTO>>(data, listType)
+        }.type
+        return gson.fromJson(data, listType)
     }
 
     @TypeConverter
@@ -550,8 +549,8 @@ class Converters {
         }
         val listType = object :TypeToken<ArrayList<WorkFlowDTO>>() {
 
-        }.getType()
-        return gson.fromJson<ArrayList<WorkFlowDTO>>(data, listType)
+        }.type
+        return gson.fromJson(data, listType)
     }
 
     @TypeConverter
@@ -572,8 +571,8 @@ class Converters {
         }
         val listType = object :TypeToken<ArrayList<ToDoGroupsDTO>>() {
 
-        }.getType()
-        return gson.fromJson<ArrayList<ToDoGroupsDTO>>(data, listType)
+        }.type
+        return gson.fromJson(data, listType)
     }
 
     @TypeConverter
@@ -594,7 +593,7 @@ class Converters {
         }
         val listType = object :TypeToken<JobDTO?>() {
 
-        }.getType()
+        }.type
         return gson.fromJson<JobDTO>(data, listType)
     }
 
@@ -616,7 +615,7 @@ class Converters {
         }
         val listType = object :TypeToken< JobItemEstimateDTO?>() {
 
-        }.getType()
+        }.type
         return gson.fromJson< JobItemEstimateDTO >(data, listType)
     }
 
@@ -640,7 +639,7 @@ class Converters {
         }
         val listType = object :TypeToken<JobItemMeasureDTO?>() {
 
-        }.getType()
+        }.type
         return gson.fromJson<JobItemMeasureDTO>(data, listType)
     }
 

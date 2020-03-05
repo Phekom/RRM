@@ -1,6 +1,6 @@
 package za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.adapters
 
-import android.R
+import android.R.layout
 import android.util.Log
 import android.view.View
 import android.widget.Filter
@@ -14,7 +14,7 @@ import java.util.*
 internal class ItemsAdapter(
     data: List<ProjectItemDTO?>?,
     listener: OnItemClickListener<ProjectItemDTO?>?
-) : AbstractAdapter<ProjectItemDTO?>(data, R.layout.simple_list_item_1, listener),
+) : AbstractAdapter<ProjectItemDTO?>(data, layout.simple_list_item_1, listener),
     Filterable, IItemsAdapter<ProjectItemDTO?> {
 
     override fun createViewHolder(view: View?): AbstractViewHolder {
@@ -38,12 +38,15 @@ internal class ItemsAdapter(
         return object : Filter() {
             override fun performFiltering(constraint: CharSequence): FilterResults {
                 val filteredData: MutableList<ProjectItemDTO> = ArrayList<ProjectItemDTO>()
-                val originalData: MutableList<ProjectItemDTO?> = getOriginalData()
+                val originalData: MutableList<ProjectItemDTO?> = originalData
                 if (originalData != null) for (item in originalData) {
                     val itemCode: String = item?.itemCode!!
                     val descr: String = item.descr!!
-                    val query = constraint.toString().toLowerCase()
-                    if (itemCode != null && itemCode.toLowerCase().contains(query) || descr != null && descr.toLowerCase().contains(
+                    val query = constraint.toString().toLowerCase(Locale.ROOT)
+                    if (itemCode != null && itemCode.toLowerCase(Locale.ROOT)
+                            .contains(query) || descr != null && descr.toLowerCase(
+                            Locale.ROOT
+                        ).contains(
                             query
                         )
                     ) {

@@ -59,7 +59,7 @@ abstract class BaseFragment : Fragment(), IProgressView, HorizontalProgressBar{
         initAnims()
     }
 
-    fun initAnims() {
+    private fun initAnims() {
         click = AnimationUtils.loadAnimation(context!!.applicationContext, R.anim.click)
         bounce = AnimationUtils.loadAnimation(context!!.applicationContext, R.anim.bounce)
         bounce_short = AnimationUtils.loadAnimation(context!!.applicationContext, R.anim.bounce_short)
@@ -122,13 +122,11 @@ abstract class BaseFragment : Fragment(), IProgressView, HorizontalProgressBar{
         prog.isIndeterminate = true
         prog.setProgressStyle(ProgressDialog.STYLE_SPINNER)
 //        prog.show()
-    return  prog
+        return prog
     }
 
     fun disMissProgressDialog(prog : ProgressDialog){
-        if(prog != null){
-            prog.dismiss()
-        }
+        prog.dismiss()
     }
 
     /**
@@ -150,7 +148,8 @@ abstract class BaseFragment : Fragment(), IProgressView, HorizontalProgressBar{
     override fun toast(resid: String?) {
         if (!activity?.isFinishing!!) Toast.makeText(context?.applicationContext, resid, Toast.LENGTH_LONG).show()
     }
-    protected fun snackError(coordinator: View?, string: String?) {
+
+    private fun snackError(coordinator: View?, string: String?) {
         if (coordinator != null) {
             val snackbar = Snackbar.make(coordinator, string!!, 3000)
             snackbar.view.setBackgroundColor(Color.RED)

@@ -58,12 +58,12 @@ class NetworkConnectionInterceptor(
     private fun isHostAvailable(testURL: String) : Boolean {
         var result: Boolean
         try {
-            val connection = URL(testURL).openConnection() as HttpURLConnection
-            connection.setRequestProperty("User-Agent", "Test")
-            connection.setRequestProperty("Connection", "close")
-            connection.connectTimeout = 1000
-            connection.connect()
-            result = when (connection.responseCode) {
+            val connection = URL(testURL).openConnection() as HttpURLConnection?
+            connection?.setRequestProperty("User-Agent", "Test")
+            connection?.setRequestProperty("Connection", "close")
+            connection?.connectTimeout = 500
+            connection?.connect()
+            result = when (connection?.responseCode) {
                 200 -> true
                 else -> false
             }
@@ -74,22 +74,5 @@ class NetworkConnectionInterceptor(
 
         return result
     }
-
-//    @RequiresApi(Build.VERSION_CODES.M)
-//    private fun isHostReachable(): Boolean {
-//        var result: Boolean
-//        try {
-//            val connection = URL(testConnection).openConnection() as HttpURLConnection
-//            connection.setRequestProperty("User-Agent", "Test")
-//            connection.setRequestProperty("Connection", "close")
-//            connection.connectTimeout = 1000
-//            connection.connect()
-//            result = (connection.responseCode == 200)
-//        } catch (e: IOException) {
-//            result = false
-//        }
-//
-//        return result
-//    }
 
 }

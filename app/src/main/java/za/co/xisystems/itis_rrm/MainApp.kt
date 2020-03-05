@@ -45,7 +45,7 @@ open class MainApp : Application(), KodeinAware {
         bind() from singleton { AppDatabase(instance()) }
         bind() from singleton { PreferenceProvider(instance()) }
 
-        bind() from singleton { UserRepository(instance(), instance(),instance()) }
+        bind() from singleton { UserRepository(instance(), instance()) }
         bind() from singleton { ContractsRepository() }
 
         bind() from singleton { HomeRepository(instance(), instance()) }
@@ -54,10 +54,10 @@ open class MainApp : Application(), KodeinAware {
 
 
         bind() from singleton { JobCreationDataRepository(instance(), instance(), instance()) }
-        bind() from singleton { JobApprovalDataRepository(instance(), instance(), instance()) }
-        bind() from singleton { WorkDataRepository(instance(), instance(), instance()) }
-        bind() from singleton { MeasureCreationDataRepository(instance(), instance(), instance()) }
-        bind() from singleton { MeasureApprovalDataRepository(instance(), instance(), instance()) }
+        bind() from singleton { JobApprovalDataRepository(instance(), instance()) }
+        bind() from singleton { WorkDataRepository(instance(), instance()) }
+        bind() from singleton { MeasureCreationDataRepository(instance(), instance()) }
+        bind() from singleton { MeasureApprovalDataRepository(instance(), instance()) }
 
 //        bind<ID_Provider>() with singleton { IdProviderImpl(instance()) }
 
@@ -74,10 +74,6 @@ open class MainApp : Application(), KodeinAware {
         bind() from provider{ MainActivityViewModelFactory(instance()) }
 
     }
-
-    override fun onCreate() {
-        super.onCreate()
-         }
 
 
 }

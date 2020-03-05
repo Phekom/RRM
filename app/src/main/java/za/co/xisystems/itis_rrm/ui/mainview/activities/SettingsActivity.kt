@@ -1,7 +1,6 @@
 package za.co.xisystems.itis_rrm.ui.mainview.activities
 
 import android.app.AlertDialog
-import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Switch

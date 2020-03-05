@@ -36,7 +36,7 @@ class RegisterActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runna
 
     override val kodein by kodein()
     private val factory : AuthViewModelFactory by instance()
-    lateinit var viewModel : AuthViewModel
+    private lateinit var viewModel: AuthViewModel
     private lateinit var appContext: Context
     private var permissions = arrayOf(
         Manifest.permission.WRITE_EXTERNAL_STORAGE,
@@ -128,7 +128,7 @@ class RegisterActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runna
             for (i in permissions.indices){
                if (grantResults[i] == PackageManager.PERMISSION_DENIED){
                    allAllowed = false
-                   var requestAgain = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                   val requestAgain = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                        shouldShowRequestPermissionRationale(permissions[i])
                    } else {
                        TODO("VERSION.SDK_INT < M")
@@ -145,7 +145,7 @@ class RegisterActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runna
         }
     }
 
-    fun  startPermissionRequest(context : Context, permissions: Array<String>) : Boolean {
+    private fun startPermissionRequest(context: Context, permissions: Array<String>): Boolean {
         var allAccess = true
         for (i in permissions.indices){
             if(checkCallingOrSelfPermission(permissions[i]) == PackageManager.PERMISSION_DENIED){
@@ -190,7 +190,7 @@ class RegisterActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runna
         reg_container.snackbar(message)
     }
 
-    fun isOnline(): Boolean {
+    private fun isOnline(): Boolean {
         val cm =
             getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val netInfo = cm.activeNetworkInfo

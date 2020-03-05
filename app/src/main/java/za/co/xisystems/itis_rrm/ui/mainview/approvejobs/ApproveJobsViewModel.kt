@@ -7,11 +7,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimatesPhotoDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.ToDoListEntityDTO
 import za.co.xisystems.itis_rrm.data.repositories.JobApprovalDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
-import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.approve_job_item.ApproveJob_Item
+import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.approve_job_item.ApproveJobItem
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
 
 /**
@@ -52,8 +50,8 @@ class ApproveJobsViewModel (
         }
     }
 
-    val jobapproval_Item6 = MutableLiveData<ApproveJob_Item>()
-    fun Itemss(jobapproval6: ApproveJob_Item) {
+    val jobapproval_Item6 = MutableLiveData<ApproveJobItem>()
+    fun Itemss(jobapproval6: ApproveJobItem) {
         jobapproval_Item6.value = jobapproval6
     }
 

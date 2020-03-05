@@ -2,7 +2,6 @@ package za.co.xisystems.itis_rrm.ui.mainview.estmeasure.submit_measure
 
 
 import android.app.AlertDialog
-import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.drawable.Animatable
 import android.text.InputType
@@ -22,7 +21,7 @@ import kotlinx.android.synthetic.main.item_measure_header.*
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModel
-import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.estimate_measure_item.Measure_HeaderItem
+import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.estimate_measure_item.MeasureHeaderItem
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
@@ -34,17 +33,15 @@ class ExpandableHeaderMeasureItem(
     measureItem: JobItemEstimateDTO,
     measureViewModel: MeasureViewModel,
     private val jobItemMeasurePhotoDTOArrayList: ArrayList<JobItemMeasurePhotoDTO>,
-    private val jobItemMeasureArrayList: ArrayList<JobItemMeasureDTO>,
-    private var jobItemEstimatesForJob: ArrayList<JobItemEstimateDTO>,
-    private var listDataChild: HashMap<JobItemEstimateDTO, List<JobItemMeasureDTO>>
+    private val jobItemMeasureArrayList: ArrayList<JobItemMeasureDTO>
 
-    ) : Measure_HeaderItem(null, measureItem, measureViewModel), ExpandableItem {
+) : MeasureHeaderItem(null, measureItem, measureViewModel), ExpandableItem {
 
 
-    var clickListener: ((ExpandableHeaderMeasureItem) -> Unit)? = null
-    var navController: ((NavController) -> Unit)? = null
-    val measureItem = measureItem
-    var projIDz = measureItem.projectItemId
+    private var clickListener: ((ExpandableHeaderMeasureItem) -> Unit)? = null
+    private var navController: ((NavController) -> Unit)? = null
+    private val measureItem = measureItem
+    private var projIDz = measureItem.projectItemId
 
     private var jobItemEst: JobDTO? =  null
     private var itemEs : JobItemEstimateDTO? = null
@@ -137,7 +134,7 @@ class ExpandableHeaderMeasureItem(
                     var message: String = activity!!.getString(R.string.enter_quantity_measured)
                     quantityInputEditText.textAlignment = View.TEXT_ALIGNMENT_CENTER
                     if (!selected.uom.equals(activity?.getString(R.string.none))) {
-                        quantityInputEditText.setHint(selected.uom)
+                        quantityInputEditText.hint = selected.uom
                         message += activity?.getString(R.string.parenthesis_open) + selected.uom + activity?.getString(
                             R.string.parenthesis_close
                         )
@@ -156,26 +153,29 @@ class ExpandableHeaderMeasureItem(
                                 .setCancelable(false)
                                 .setIcon(R.drawable.ic_border_)
                                 .setView(quantityInputEditText)
-                                .setPositiveButton(R.string.ok,
-                                    DialogInterface.OnClickListener { dialog, whichButton ->
-                                        if (quantityInputEditText.text.toString() == "") { Toast.makeText( activity?.getApplicationContext(),
-                                                activity?.getString(R.string.place_quantity), Toast.LENGTH_LONG ).show()
-                                        } else {
-                                            if (!quantityInputEditText.text.toString().isEmpty()) {
-                                                Coroutines.main {
+                                .setPositiveButton(
+                                    R.string.ok
+                                ) { _, _ ->
+                                    if (quantityInputEditText.text.toString() == "") {
+                                        Toast.makeText(
+                                            activity?.applicationContext,
+                                            activity?.getString(R.string.place_quantity),
+                                            Toast.LENGTH_LONG
+                                        ).show()
+                                    } else {
+                                        if (quantityInputEditText.text.toString().isNotEmpty()) {
+                                            Coroutines.main {
                                                 val jobItemMeasure = setJobItemMeasure(selected, quantityInputEditText.text.toString().toDouble(), jobForJobItemEstimate, measureItem, jobItemMeasurePhotoDTO,jobItemMeasureArrayList)
-//                                                    setJobItemMeasures(jobItemMeasureArrayList,measureViewModel)
-//                                                   measureViewModel.createJobItemMeasureItem(selected, quantityInputEditText.text.toString().toDouble(), jobForJobItemEstimate, measureItem, jobItemMeasurePhotoDTO)
-//                                                    measureViewModel.createJobItemMeasureItem(jobItemMeasure)
-                                                    captureItemMeasureImages(jobItemMeasure)
+                                                captureItemMeasureImages(jobItemMeasure)
 
-                                                }
                                             }
                                         }
-                                    })
+                                    }
+                                }
 
-                                .setNegativeButton(R.string.cancel,
-                                    DialogInterface.OnClickListener { dialog, which -> }).show()
+                                .setNegativeButton(
+                                    R.string.cancel
+                                ) { _, _ -> }.show()
                         quantityInputEditText.onFocusChangeListener =
                             OnFocusChangeListener { v, hasFocus ->
                                 if (hasFocus) enterQuantityDialog.window.setSoftInputMode(
@@ -211,7 +211,7 @@ class ExpandableHeaderMeasureItem(
             (DataConversion.toBigEndian(newItemMeasureId)).toString(),
             jobForJobItemEstimate.JiNo,
             (jobForJobItemEstimate.JobDirectionId).toString().toInt(),
-            (jobForJobItemEstimate?.JobId),
+            (jobForJobItemEstimate.JobId),
             (selectedJobItemEstimate.lineRate * quantity).toString().toDouble(),
             (selectedJobItemEstimate.lineRate).toString().toDouble(),
             (Date()).toString(),
@@ -232,7 +232,7 @@ class ExpandableHeaderMeasureItem(
         jobItemMeasureArrayList.add(itemMeasure)
 //        setJobItemMeasures( jobItemMeasureArrayList,measureViewModel )
 
-        return itemMeasure!!
+        return itemMeasure
     }
 
     private fun captureItemMeasureImages(jobItemMeasu: JobItemMeasureDTO) {
@@ -277,7 +277,7 @@ class ExpandableHeaderMeasureItem(
     private fun bindIcon(viewHolder: GroupieViewHolder) {
         viewHolder.icon.apply {
             visibility = View.VISIBLE
-            setImageResource(if (expandableGroup!!.isExpanded) R.drawable.collapse_animated else R.drawable.expand_animated)
+            setImageResource(if (expandableGroup.isExpanded) R.drawable.collapse_animated else R.drawable.expand_animated)
             (drawable as Animatable).start()
         }
     }
@@ -300,6 +300,6 @@ private fun setJobItemMeasures(
 //    this.JobItemMeasures = jobItemMeasures
 }
 
-private fun GroupieViewHolder.getItemId(position: Int): Long {
+private fun getItemId(position: Int): Long {
     return position.toLong()
 }

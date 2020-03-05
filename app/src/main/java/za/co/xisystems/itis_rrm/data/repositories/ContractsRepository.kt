@@ -1,20 +1,13 @@
 package za.co.xisystems.itis_rrm.data.repositories
 
 import android.app.Activity
-import android.os.Build
-import android.os.Environment
-import android.util.Log
 import androidx.lifecycle.MutableLiveData
-import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
-import za.co.xisystems.itis_rrm.data.localDB.entities.*
-import za.co.xisystems.itis_rrm.data.network.OfflineListener
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectSectionDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ToDoGroupsDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.VoItemDTO
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
-import za.co.xisystems.itis_rrm.utils.*
-import java.io.File
-import java.time.LocalDateTime
-import java.time.temporal.ChronoUnit
-import java.util.ArrayList
-import java.util.regex.Pattern
+import java.util.*
 
 /**
  * Created by Francis Mahlava on 2019/11/19.
@@ -22,11 +15,7 @@ import java.util.regex.Pattern
 
 //const val MINIMUM_INTERVAL = 5
 
-class ContractsRepository(
-//    private val api: BaseConnectionApi,
-//    private val Db: AppDatabase,
-//    private val prefs: PreferenceProvider
-) : SafeApiRequest() {
+class ContractsRepository : SafeApiRequest() {
 
 //
 //    private val conTracts = MutableLiveData<List<ContractDTO>>()
@@ -39,18 +28,19 @@ private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
 
 
     private val activity: Activity? = null
-    private var rListener: OfflineListener? = null
-    private val conTracts = MutableLiveData<List<ContractDTO>>()
+
+    // private var rListener: OfflineListener? = null
+    // private val conTracts = MutableLiveData<List<ContractDTO>>()
     //    private val sectionItems = MutableLiveData<ArrayList<SectionItemDTO>>()
-    private val sectionItems = MutableLiveData<ArrayList<String>>()
-    private val projects = MutableLiveData<ArrayList<ProjectDTO>>()
-    private val projectItems = MutableLiveData<ArrayList<ProjectItemDTO>>()
+    // private val sectionItems = MutableLiveData<ArrayList<String>>()
+    // private val projects = MutableLiveData<ArrayList<ProjectDTO>>()
+    // private val projectItems = MutableLiveData<ArrayList<ProjectItemDTO>>()
     private val voItems = MutableLiveData<ArrayList<VoItemDTO>>()
     private val projectSections = MutableLiveData<ArrayList<ProjectSectionDTO>>()
-    private val estimatePhoto = MutableLiveData<String>()
-    private val measurePhoto = MutableLiveData<String>()
-    private val workFlow = MutableLiveData<WorkFlowsDTO>()
-    private val lookups = MutableLiveData<ArrayList<LookupDTO>>()
+    // private val estimatePhoto = MutableLiveData<String>()
+    // private val measurePhoto = MutableLiveData<String>()
+    // private val workFlow = MutableLiveData<WorkFlowsDTO>()
+    // private val lookups = MutableLiveData<ArrayList<LookupDTO>>()
 
     private val workflows = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
 

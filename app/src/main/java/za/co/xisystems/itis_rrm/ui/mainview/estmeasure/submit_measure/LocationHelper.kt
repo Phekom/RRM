@@ -15,9 +15,7 @@ import com.google.android.gms.location.LocationListener
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
 import za.co.xisystems.itis_rrm.data.network.PermissionController
-import za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates.EstimatePhotoFragment
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.Constants
-import za.co.xisystems.itis_rrm.utils.toast
 
 class LocationHelper(private val captureItemMeasurePhotoActivity: CaptureItemMeasurePhotoActivity) : ConnectionCallbacks,
     OnConnectionFailedListener, LocationListener {
@@ -164,7 +162,7 @@ class LocationHelper(private val captureItemMeasurePhotoActivity: CaptureItemMea
         return captureItemMeasurePhotoActivity.getCurrentLocation()
     }
 
-    fun setCurrentLocation(location: Location?) {
+    private fun setCurrentLocation(location: Location?) {
         captureItemMeasurePhotoActivity.setCurrentLocation(location)
     }
 

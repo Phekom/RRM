@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
-import android.widget.EditText;
 
 import za.co.xisystems.itis_rrm.data._commons.Typefaces;
 
@@ -13,7 +12,7 @@ import za.co.xisystems.itis_rrm.data._commons.Typefaces;
  * Created by Mauritz Mollentze on 2015/05/14.
  * Updated by Pieter Jacobs during 2016/07.
  */
-public class ITISTextView extends EditText {
+public class ITISTextView extends androidx.appcompat.widget.AppCompatEditText {
 
     // region (Private Fields)
 

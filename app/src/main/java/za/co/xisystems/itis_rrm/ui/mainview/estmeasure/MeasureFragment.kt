@@ -65,10 +65,12 @@ class MeasureFragment : BaseFragment(), KodeinAware {
             ViewModelProvider(this, factory).get(MeasureViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
         Coroutines.main {
-            //            mydata_loading.show()
-//            val measurements = measureViewModel.getJobMeasureForActivityId(ActivityIdConstants.ESTIMATE_MEASURE)MEASURE_PART_COMPLETE
-     val measurements = measureViewModel.getJobMeasureForActivityId(ActivityIdConstants.ESTIMATE_MEASURE,ActivityIdConstants.MEASURE_PART_COMPLETE)
-//            val measurements = approveViewModel.offlinedata.await()
+
+            val measurements = measureViewModel.getJobMeasureForActivityId(
+                ActivityIdConstants.ESTIMATE_MEASURE,
+                ActivityIdConstants.MEASURE_PART_COMPLETE
+            )
+
             measurements.observe(viewLifecycleOwner, Observer { job_s ->
                 if (job_s.isEmpty()) {
                     Coroutines.main {
@@ -110,7 +112,7 @@ class MeasureFragment : BaseFragment(), KodeinAware {
     }
 
 
-    private fun initRecyclerView(measureListItems: List<EstimateMeasure_Item>) {
+    private fun initRecyclerView(measureListItems: List<EstimateMeasureItem>) {
         val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
             addAll(measureListItems)
         }
@@ -144,9 +146,9 @@ class MeasureFragment : BaseFragment(), KodeinAware {
             .navigate(R.id.action_nav_estMeasure_to_submitMeasureFragment)
     }
 
-    private fun List<JobItemEstimateDTO>.toMeasureListItems(): List<EstimateMeasure_Item> {
+    private fun List<JobItemEstimateDTO>.toMeasureListItems(): List<EstimateMeasureItem> {
         return this.map { measure_items ->
-            EstimateMeasureItem(measure_items,measureViewModel)
+            EstimateMeasureItem(measure_items, measureViewModel)
         }
     }
 }

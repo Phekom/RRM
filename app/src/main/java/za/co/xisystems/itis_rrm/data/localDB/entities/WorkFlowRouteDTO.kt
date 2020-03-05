@@ -4,7 +4,6 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
-import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.gson.annotations.SerializedName
 
 /**
@@ -14,14 +13,12 @@ import com.google.gson.annotations.SerializedName
 const val WORKFLOW_ROUTE_TABLE = "WORKFLOW_ROUTE_TABLE"
 @Entity(
     tableName = WORKFLOW_ROUTE_TABLE
-    , foreignKeys = arrayOf(
-        ForeignKey(
-            entity = WorkFlowDTO::class,
-            parentColumns = arrayOf("workflowId"),
-            childColumns = arrayOf("workflowId"),
-            onDelete = ForeignKey.CASCADE
-        )
-    )
+    , foreignKeys = [ForeignKey(
+        entity = WorkFlowDTO::class,
+        parentColumns = arrayOf("workflowId"),
+        childColumns = arrayOf("workflowId"),
+        onDelete = ForeignKey.CASCADE
+    )]
 )
 data class WorkFlowRouteDTO(
 

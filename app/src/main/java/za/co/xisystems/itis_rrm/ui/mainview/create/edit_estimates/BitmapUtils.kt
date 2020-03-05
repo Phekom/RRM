@@ -18,11 +18,12 @@ import java.io.IOException
 import java.io.OutputStream
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.math.min
 
 internal object BitmapUtils {
     private const val FILE_PROVIDER_AUTHORITY =
         BuildConfig.APPLICATION_ID + ".provider"
-    const val FOLDER = "ITIS_RRM_Photos"
+    private const val FOLDER = "ITIS_RRM_Photos"
 
     fun resamplePic(
         context: Context,
@@ -41,7 +42,7 @@ internal object BitmapUtils {
         val photoW = bmOptions.outWidth
         val photoH = bmOptions.outHeight
         // Determine how much to scale down the image
-        val scaleFactor = Math.min(photoW / targetW, photoH / targetH)
+        val scaleFactor = min(photoW / targetW, photoH / targetH)
         // Decode the image file into a Bitmap sized to fill the View
         bmOptions.inJustDecodeBounds = false
         bmOptions.inSampleSize = scaleFactor

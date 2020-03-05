@@ -7,7 +7,6 @@ import android.app.Activity.RESULT_OK
 import android.app.AlertDialog
 import android.app.Dialog
 import android.content.Context
-import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
@@ -23,8 +22,6 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.content.ContextCompat.getSystemService
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
@@ -67,20 +64,20 @@ class EstimatePhotoFragment : BaseFragment(), KodeinAware {
     private val REQUEST_STORAGE_PERMISSION = 1
     private val FILE_PROVIDER_AUTHORITY = BuildConfig.APPLICATION_ID + ".provider"
     private var mAppExcutor: AppExecutor? = null
-    lateinit var locationHelper: LocationHelper
-    lateinit var lm : LocationManager
-    var gps_enabled = false
-    var network_enabled = false
+    private lateinit var locationHelper: LocationHelper
+    private lateinit var lm: LocationManager
+    private var gps_enabled = false
+    private var network_enabled = false
 
-    var isEstimateDone: Boolean = false
+    private var isEstimateDone: Boolean = false
     var contractID: String? = null
     var projectID: String? = null
-    var startKM: Double? = null
-    var endKM: Double? = null
-    var section_id: String? = null
+    private var startKM: Double? = null
+    private var endKM: Double? = null
+    private var section_id: String? = null
 
     @State
-    var photoType: PhotoType = PhotoType.start
+    var photoType: PhotoType = PhotoType.Start
     @State
     var itemId_photoType = HashMap<String, String>()
 
@@ -364,7 +361,7 @@ class EstimatePhotoFragment : BaseFragment(), KodeinAware {
 
     private fun takePhotoStart() {
 
-        photoType = PhotoType.start
+        photoType = PhotoType.Start
         if (ContextCompat.checkSelfPermission(
                 activity!!.applicationContext,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE
@@ -383,7 +380,7 @@ class EstimatePhotoFragment : BaseFragment(), KodeinAware {
 
 
     private fun takePhotoEnd() {
-        photoType = PhotoType.end
+        photoType = PhotoType.End
         // Check for the external storage permission
         if (ContextCompat.checkSelfPermission(
                 activity!!.applicationContext,
@@ -401,17 +398,17 @@ class EstimatePhotoFragment : BaseFragment(), KodeinAware {
 
     }
 
-    fun displayPromptForEnablingGPS(
+    private fun displayPromptForEnablingGPS(
         activity: Activity
     ) {
 
         val builder: AlertDialog.Builder = AlertDialog.Builder(activity)
         val action = Settings.ACTION_LOCATION_SOURCE_SETTINGS
         val message = ("Your GPS seems to be disabled, Please enable it to continue")
-        builder.setMessage(message).setPositiveButton("OK", DialogInterface.OnClickListener { d, id ->
-                activity.startActivity(Intent(action))
-                d.dismiss()
-                })
+        builder.setMessage(message).setPositiveButton("OK") { d, id ->
+            activity.startActivity(Intent(action))
+            d.dismiss()
+        }
         builder.create().show()
 
 }
@@ -501,12 +498,12 @@ class EstimatePhotoFragment : BaseFragment(), KodeinAware {
     ) {
 
         when (photoType) {
-            PhotoType.start -> updatePhotos(
+            PhotoType.Start -> updatePhotos(
                 startImageView,
                 imageUri.also { startimageUri = it },
                 true,  startSectionTextView, true
             )
-            PhotoType.end -> updatePhotos(
+            PhotoType.End -> updatePhotos(
                 endImageView!!,
                 imageUri.also { endimageUri = it },
                 true,
@@ -666,7 +663,8 @@ class EstimatePhotoFragment : BaseFragment(), KodeinAware {
                                         val section = createViewModel.getSection(sec_id)
                                         section.observe(viewLifecycleOwner, Observer { section ->
                                             Coroutines.main {
-                                                val isPhotoStart = itemId_photoType.get("type") == "start"
+                                                val isPhotoStart =
+                                                    itemId_photoType["type"] == "start"
 //                                       if (section != null) {
                                                 startKM = section.startKm
                                                 endKM = section.endKm
@@ -782,13 +780,13 @@ class EstimatePhotoFragment : BaseFragment(), KodeinAware {
 // itemEstimate.setJobItemEstimatePhotoStart(jobItemEstimatePhoto!!)
 
 
-        val isPhotoStart = itemidPhototype.get("type") == "start"
+        val isPhotoStart = itemidPhototype["type"] == "start"
         val photoId: String = SqlLitUtils.generateUuid()
 
         val newEstimatePhoto = JobItemEstimatesPhotoDTO(
             "",
             itemEst.estimateId,
-            filename_path["filename"]!!,
+            filename_path["filename"] ?: error(""),
             DateUtil.DateToString(Date())!!,
             photoId,
             null,
@@ -799,7 +797,7 @@ class EstimatePhotoFragment : BaseFragment(), KodeinAware {
             currentLocation.longitude,
             currentLocation.latitude,
             currentLocation.longitude,
-            filename_path["path"]!!,
+            filename_path["path"] ?: error(""),
             estimate,
             0,
             0,
@@ -899,7 +897,7 @@ class EstimatePhotoFragment : BaseFragment(), KodeinAware {
         if (imageUri != null) {
 Coroutines.main {
     group13_loading.visibility = View.VISIBLE
-    val works = createViewModel.offlinedata.await()
+    val works = createViewModel.offlineSectionItems.await()
     works.observe(viewLifecycleOwner, Observer { works ->
         group13_loading.visibility = View.GONE
         createViewModel.sectionId.observe(viewLifecycleOwner, Observer { sectId ->
@@ -908,8 +906,9 @@ Coroutines.main {
                 section.observe(viewLifecycleOwner, Observer { section ->
                     if (section != null) {
                         val direction = section.direction
-                        if (direction == null )
-                        {}
+                        if (direction == null) {
+                            // TODO: What are we planning to do here?
+                        }
                         val sectionText =
                             section.route + " " + section.section + " " + section.direction + " " +
                                     if (isStart) section.startKm else section.endKm
@@ -936,7 +935,7 @@ Coroutines.main {
         }
     }
 
-    fun setValueEditText(qty: Double) {
+    private fun setValueEditText(qty: Double) {
         when (item?.uom) {
             "m²", "m³", "m" -> valueEditText!!.setText("" + qty)
             else -> valueEditText!!.setText("" + qty.toInt())
@@ -1110,7 +1109,7 @@ Coroutines.main {
         return jobItemEstimate?.qty ?: quantity
     }
 
-    fun getJobItemEstimate(): JobItemEstimateDTO? {
+    private fun getJobItemEstimate(): JobItemEstimateDTO? {
         return job?.getJobEstimateByItemId(item!!.itemId)
     }
 
@@ -1118,13 +1117,13 @@ Coroutines.main {
          return getJobItemEstimate() != null && getJobItemEstimate()!!.isEstimateComplete()
     }
 
-    fun getStartKm(): Double {
+    private fun getStartKm(): Double {
         val jobItemEstimate: JobItemEstimateDTO? = getJobItemEstimate()
         return if (jobItemEstimate?.jobItemEstimatePhotoStart != null) jobItemEstimate.jobItemEstimatePhotoStart
             .endKm else 0.0
     }
 
-    fun getEndKm(): Double {
+    private fun getEndKm(): Double {
         val jobItemEstimate: JobItemEstimateDTO? = getJobItemEstimate()
         return if (jobItemEstimate?.jobItemEstimatePhotoEnd != null) jobItemEstimate.jobItemEstimatePhotoEnd
             .endKm else 0.0

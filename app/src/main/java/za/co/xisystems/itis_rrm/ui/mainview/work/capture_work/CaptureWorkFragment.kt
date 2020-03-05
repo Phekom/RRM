@@ -39,7 +39,7 @@ import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.intents.Abstrac
 import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.work.work_utils.LocationHelper
-import za.co.xisystems.itis_rrm.ui.mainview.work.workstate_item.WorkState_Item
+import za.co.xisystems.itis_rrm.ui.mainview.work.workstate_item.WorkStateItem
 import za.co.xisystems.itis_rrm.utils.*
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
@@ -754,7 +754,7 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
     }
 
     private fun initRecyclerView(
-        stateItems: List<WorkState_Item>, workCodes: List<WF_WorkStepDTO>
+        stateItems: List<WorkStateItem>, workCodes: List<WF_WorkStepDTO>
     ) {
         groupAdapter.apply {
             Coroutines.main {
@@ -815,11 +815,11 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
 
     }
 
-    private fun List<JobEstimateWorksDTO>.toWorkStateItems(): List<WorkState_Item> {
+    private fun List<JobEstimateWorksDTO>.toWorkStateItems(): List<WorkStateItem> {
 //    private fun List<WF_WorkStepDTO>.toWorkStateItems(): List<WorkState_Item> {
 
         return this.map { approveJobItems ->
-            WorkState_Item(approveJobItems, workViewModel, activity, groupAdapter, jobWorkStep)
+            WorkStateItem(approveJobItems, activity, groupAdapter, jobWorkStep)
         }
     }
 

@@ -87,8 +87,8 @@ class WorkFragment : BaseFragment(), KodeinAware {
             dialog.show()
             Coroutines.main {
                 try {
-                    val jobs = workViewModel.offlinedatas.await()
-                    jobs.observe(viewLifecycleOwner, Observer { _ ->
+                    val jobs = workViewModel.offlineUserTaskList.await()
+                    jobs.observe(viewLifecycleOwner, Observer {
                         works_swipe_to_refresh.isRefreshing = false
                         dialog.dismiss()
                     })

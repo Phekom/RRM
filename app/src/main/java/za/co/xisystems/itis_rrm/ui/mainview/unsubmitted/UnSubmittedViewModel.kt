@@ -6,11 +6,8 @@ import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTOTemp
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectSectionDTO
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
-import za.co.xisystems.itis_rrm.utils.lazyDeferred
 
 class UnSubmittedViewModel(
     private val offlineDataRepository: OfflineDataRepository
@@ -56,11 +53,11 @@ class UnSubmittedViewModel(
         }
     }
 
-    suspend fun deleJobfromList(jobId: String) {
+    fun deleJobfromList(jobId: String) {
         offlineDataRepository.deleJobfromList(jobId)
     }
 
-    suspend fun deleteItemList(jobId: String) {
+    fun deleteItemList(jobId: String) {
         offlineDataRepository.deleteItemList(jobId)
     }
 

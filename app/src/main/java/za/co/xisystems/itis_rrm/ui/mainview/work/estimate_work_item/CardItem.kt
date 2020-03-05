@@ -22,9 +22,9 @@ open class CardItem(
     val qty: String,
     val rate: String,
     val estimateId: String,
-    val workViewModel: WorkViewModel,
-    val itemEsti: JobItemEstimateDTO,
-    val jobworkItems: JobDTO
+    private val workViewModel: WorkViewModel,
+    private val itemEsti: JobItemEstimateDTO,
+    private val jobworkItems: JobDTO
 ) : Item() {
 
     init {
@@ -47,9 +47,9 @@ open class CardItem(
 
             }
 
-            startWork_Btn.setOnClickListener(View.OnClickListener {
+            startWork_Btn.setOnClickListener {
                 sendJobToWork( workViewModel ,itemEsti, it,jobworkItems)
-            })
+            }
         }
 
     }

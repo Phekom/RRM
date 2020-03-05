@@ -34,7 +34,7 @@ object DataConversion {
         for (b in bigEndian) {
             stringBuilder.append(String.format("%02x", b))
         }
-        return stringBuilder.toString().toUpperCase()
+        return stringBuilder.toString().toUpperCase(Locale.ROOT)
     }
 
     // Actually one of Mauritz' methods.  I've moved it here because I need to make sure no
@@ -42,7 +42,7 @@ object DataConversion {
 // The parameter should be a DB Hex GUID (Big Endian).
 // There should be NO dashes to start off with!
     fun removeDashesAndUppercaseString(shouldBeABigEndianGuid: String?): String? {
-        return shouldBeABigEndianGuid?.toUpperCase()?.replace("-", "")
+        return shouldBeABigEndianGuid?.toUpperCase(Locale.ROOT)?.replace("-", "")
     }
 
     // endregion (Public Static Methods)
@@ -80,17 +80,15 @@ object DataConversion {
     private fun toLittleEndian(bigEndian: ByteArray): String {
         val littleEndian = swapBytes(bigEndian)
         val stringBuilder = StringBuilder()
-        var i = 0
-        for (b in littleEndian) {
-            if (Arrays.asList(4, 6, 8, 10).contains(i)) stringBuilder.append("-")
+        for ((i, b) in littleEndian.withIndex()) {
+            if (listOf(4, 6, 8, 10).contains(i)) stringBuilder.append("-")
             stringBuilder.append(String.format("%02x", b))
-            i++
         }
-        return stringBuilder.toString().toLowerCase()
+        return stringBuilder.toString().toLowerCase(Locale.ROOT)
     }
 
     private fun littleEndianToByteArray(littleEndian: String): ByteArray {
-        val tmpString = littleEndian.replace("(\\{|\\}|-)".toRegex(), "")
+        val tmpString = littleEndian.replace("([{}\\-])".toRegex(), "")
         val stringLength = tmpString.length
         val bytes = ByteArray(stringLength / 2)
         var i = 0
@@ -111,6 +109,6 @@ object DataConversion {
         for (b in bigEndian) {
             stringBuilder.append(String.format("%02x", b))
         }
-        return stringBuilder.toString().toUpperCase()
+        return stringBuilder.toString().toUpperCase(Locale.ROOT)
     } // endregion (Private Static Methods)
 }

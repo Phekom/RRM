@@ -7,7 +7,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
-import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.approveMeasure_Item.ApproveMeasure_Item
+import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.approveMeasure_Item.ApproveMeasureItem
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
 
 /**
@@ -27,8 +27,8 @@ class SettingsViewModel (
     }
 
 
-    val measureapproval_Item = MutableLiveData<ApproveMeasure_Item>()
-    fun Item5(measureapproval: ApproveMeasure_Item) {
+    val measureapproval_Item = MutableLiveData<ApproveMeasureItem>()
+    fun Item5(measureapproval: ApproveMeasureItem) {
         measureapproval_Item.value = measureapproval
     }
 

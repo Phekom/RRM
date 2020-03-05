@@ -8,11 +8,11 @@ private const val KEY_SAVED_AT = "key_saved_at"
 /**
  * Created by Francis Mahlava on 2019/10/18.
  */
-class PreferenceProvider(
+open class PreferenceProvider(
     context: Context
 ) {
 
-    val appContext = context.applicationContext
+    val appContext: Context = context.applicationContext
 
     protected val preferences : SharedPreferences
         get() = PreferenceManager.getDefaultSharedPreferences(appContext)

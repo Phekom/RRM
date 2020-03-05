@@ -16,7 +16,7 @@ class ToastUtils {
 
     fun toastVersion(context: Context?) {
         val versionName_flavor =
-            "Version " + BuildConfig.VERSION_NAME.toString() + " - " + BuildConfig.FLAVOR.toString() + "\n"
+            "Version " + BuildConfig.VERSION_NAME + " - " + BuildConfig.FLAVOR + "\n"
         val build = "Build " + BuildConfig.VERSION_BUILD
         val date: String = BuildConfig.VERSION_BUILD_DATE
         toastLong(context, "$versionName_flavor$build @ $date")

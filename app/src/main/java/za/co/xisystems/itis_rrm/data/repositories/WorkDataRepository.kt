@@ -9,7 +9,10 @@ import android.widget.Toast
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.google.gson.*
+import com.google.gson.Gson
+import com.google.gson.JsonElement
+import com.google.gson.JsonObject
+import com.google.gson.JsonParser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.R
@@ -17,19 +20,22 @@ import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
-import za.co.xisystems.itis_rrm.data.preferences.PreferenceProvider
-import za.co.xisystems.itis_rrm.utils.*
+import za.co.xisystems.itis_rrm.utils.Coroutines
+import za.co.xisystems.itis_rrm.utils.DataConversion
+import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import java.util.*
-import kotlin.collections.ArrayList
 
 
 /**
  * Created by Francis Mahlava on 2019/11/28.
  */
 
-class WorkDataRepository(private val api: BaseConnectionApi, private val Db: AppDatabase, private val prefs: PreferenceProvider) : SafeApiRequest() {
+class WorkDataRepository(
+    private val api: BaseConnectionApi,
+    private val Db: AppDatabase
+) : SafeApiRequest() {
     companion object {
         val TAG: String = WorkDataRepository::class.java.simpleName
     }
@@ -115,9 +121,10 @@ class WorkDataRepository(private val api: BaseConnectionApi, private val Db: App
 
         Log.e("JsonObject", "Json string $worksdata")
         val uploadWorksItemResponse = apiRequest { api.uploadWorksItem(worksdata) }
-        works.postValue(uploadWorksItemResponse.errorMessage,itemEstiWorks ,activity,itemEstiJob.UserId)
+        postValue(uploadWorksItemResponse.errorMessage, itemEstiWorks, activity, itemEstiJob.UserId)
 
-        val messages = activity.getResources().getString(R.string.please_wait) //uploadWorksItemResponse.errorMessage
+        val messages =
+            activity.resources.getString(R.string.please_wait) //uploadWorksItemResponse.errorMessage
         return withContext(Dispatchers.IO) {
             messages
         }
@@ -126,10 +133,14 @@ class WorkDataRepository(private val api: BaseConnectionApi, private val Db: App
     }
 
 
-    private fun <T> MutableLiveData<T>.postValue(response: String?, jobEstimateWorks : JobEstimateWorksDTO, activity: FragmentActivity,  useR: Int
+    private fun postValue(
+        response: String?,
+        jobEstimateWorks: JobEstimateWorksDTO,
+        activity: FragmentActivity,
+        useR: Int
     ) {
         if (response != null) {
-
+            // TODO: What are we planning to do here?
         }else{
             uploadworksImages(jobEstimateWorks, activity)
             moveJobToNextWorkflowStep(jobEstimateWorks, activity, useR)
@@ -141,7 +152,7 @@ class WorkDataRepository(private val api: BaseConnectionApi, private val Db: App
         activity: FragmentActivity
     ) {
         var imageCounter = 1
-        var totalImages = 0
+        val totalImages = 0
         if (jobEstimateWorks.jobEstimateWorksPhotos != null) {
             if (jobEstimateWorks.jobEstimateWorksPhotos !!.isEmpty()) {
 //                progressView.toast("(job.getPrjJobItemEstimates() is empty")
@@ -221,7 +232,7 @@ class WorkDataRepository(private val api: BaseConnectionApi, private val Db: App
         Coroutines.io {
             val imagedata = JsonObject()
             imagedata.addProperty("Filename", filename)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 imagedata.addProperty("ImageByteArray", Base64.getEncoder().encodeToString(photo))
             }
             imagedata.addProperty("ImageFileExtension", extension)
@@ -242,12 +253,11 @@ class WorkDataRepository(private val api: BaseConnectionApi, private val Db: App
         val uri = PhotoUtil.getPhotoPathFromExternalDirectory(activity.applicationContext, filename)
         val bitmap =
             PhotoUtil.getPhotoBitmapFromFile(activity.applicationContext, uri, photoQuality)
-        val photo = PhotoUtil.getCompressedPhotoWithExifInfo(
+        return PhotoUtil.getCompressedPhotoWithExifInfo(
             activity.applicationContext,
             bitmap!!,
             filename
         )
-        return photo
     }
 
     private fun moveJobToNextWorkflowStep(
@@ -260,9 +270,9 @@ class WorkDataRepository(private val api: BaseConnectionApi, private val Db: App
             Toast.makeText(activity, "Error: trackRouteId is null", Toast.LENGTH_LONG).show()
         } else {
 //            jobEstimateWorks.setTrackRouteId(jobEstimateWorks.trackRouteId)
-            val direction: Int = WorkflowDirection.NEXT.getValue()
-            val trackRouteId: String = jobEstimateWorks.trackRouteId!!
-            val description: String = "work step done"
+            val direction: Int = WorkflowDirection.NEXT.value
+            val trackRouteId: String = jobEstimateWorks.trackRouteId
+            val description = "work step done"
 
             Coroutines.io {
                 val workflowMoveResponse = apiRequest { api.getWorkflowMove(userId.toString(), trackRouteId, description, direction) }
@@ -299,6 +309,7 @@ class WorkDataRepository(private val api: BaseConnectionApi, private val Db: App
                     if (!Db.getEstimateWorkPhotoDao().checkIfEstimateWorksPhotoExist(estimateWorksPhoto.filename)) {
                         Db.getEstimateWorkPhotoDao().insertEstimateWorksPhoto(estimateWorksPhoto)
                     } else {
+                        // TODO: What are we planning to do here?
 //                Db.getEstimateWorkPhotoDao().updateExistingEstimateWorksPhoto(estimateWorksPhoto, estimatId)
                     }
 
@@ -386,7 +397,7 @@ class WorkDataRepository(private val api: BaseConnectionApi, private val Db: App
 
                 if (job.workflowItemMeasures != null && job.workflowItemMeasures.size !== 0) {
                     for (jobItemMeasure in job.workflowItemMeasures) {
-                        Db?.getJobItemMeasureDao()!!.updateWorkflowJobItemMeasure(
+                        Db.getJobItemMeasureDao().updateWorkflowJobItemMeasure(
                             jobItemMeasure.itemMeasureId,
                             jobItemMeasure.trackRouteId,
                             jobItemMeasure.actId,

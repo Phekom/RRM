@@ -3,7 +3,6 @@ package za.co.xisystems.itis_rrm.ui.mainview.approvejobs.view_job_info
 import android.app.Dialog
 import android.net.Uri
 import androidx.fragment.app.FragmentActivity
-import com.bumptech.glide.Glide
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import com.xwray.groupie.kotlinandroidextensions.Item
 import kotlinx.android.synthetic.main.estimates_item.*
@@ -20,7 +19,7 @@ import java.io.File
  * Created by Francis Mahlava on 2020/01/02.
  */
 class EstimatesItem(
-    val jobItemEstimateDTO: JobItemEstimateDTO,
+    private val jobItemEstimateDTO: JobItemEstimateDTO,
     private val approveViewModel: ApproveJobsViewModel,
     private val activity: FragmentActivity?
 ) : Item() {
@@ -105,7 +104,7 @@ class EstimatesItem(
     }
 }
 
-private fun GroupieViewHolder.getItemId(position: Int): Long {
+private fun getItemId(position: Int): Long {
     return position.toLong()
 }
 

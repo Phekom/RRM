@@ -15,10 +15,7 @@ import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
-import kotlinx.android.synthetic.main.fragment_approvejob.*
 import kotlinx.android.synthetic.main.fragment_approvemeasure.*
-import kotlinx.android.synthetic.main.fragment_approvemeasure.noData
-import kotlinx.android.synthetic.main.fragment_work.*
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
@@ -27,7 +24,7 @@ import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.ApproveJobsFragment
-import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.approveMeasure_Item.ApproveMeasure_Item
+import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.approveMeasure_Item.ApproveMeasureItem
 import za.co.xisystems.itis_rrm.utils.*
 
 /**
@@ -114,7 +111,7 @@ companion object{
         }
     }
 
-    private fun initRecyclerView(approveMeasureListItems: List<ApproveMeasure_Item>) {
+    private fun initRecyclerView(approveMeasureListItems: List<ApproveMeasureItem>) {
         val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
             addAll(approveMeasureListItems)
 
@@ -127,30 +124,30 @@ companion object{
 
         groupAdapter.setOnItemClickListener { item, view ->
             Coroutines.main {
-                (item as? ApproveMeasure_Item)?.let {
-                    sendJobtoAprove((it), view)
+                (item as? ApproveMeasureItem)?.let {
+                    sendJobToApprove((it), view)
                 }
 
             }
         }
     }
 
-    private fun sendJobtoAprove(
-        job: ApproveMeasure_Item?,
+    private fun sendJobToApprove(
+        job: ApproveMeasureItem?,
         view: View
     ) {
-        val jobId = job
         Coroutines.main {
-            approveViewModel.measureapproval_Item.value = jobId
+            approveViewModel.measureapproval_Item.value = job
         }
 
         Navigation.findNavController(view)
             .navigate(R.id.action_nav_approvMeasure_to_measureApprovalFragment)
     }
-    private fun List<JobItemMeasureDTO>.toApproveListItems(): List<ApproveMeasure_Item> {
+
+    private fun List<JobItemMeasureDTO>.toApproveListItems(): List<ApproveMeasureItem> {
 //    private fun List<JobDTO>.toApproveListItems(): List<ApproveMeasure_Item> {
         return this.map { approvej_items ->
-            ApproveMeasure_Item(approvej_items,approveViewModel)
+            ApproveMeasureItem(approvej_items, approveViewModel)
         }
     }
 

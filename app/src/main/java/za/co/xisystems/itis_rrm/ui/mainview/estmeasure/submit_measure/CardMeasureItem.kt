@@ -2,9 +2,7 @@ package za.co.xisystems.itis_rrm.ui.mainview.estmeasure.submit_measure
 
 import android.app.Dialog
 import android.net.Uri
-import android.view.View
 import androidx.fragment.app.FragmentActivity
-import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import com.xwray.groupie.kotlinandroidextensions.Item
 import kotlinx.android.synthetic.main.measure_estimate_list_item.*
@@ -40,14 +38,14 @@ open class CardMeasureItem(
             measure_estimation_qty_textView.text = qty
             measure_estimation_line_amount.text = "R  $rate"
 
-            measurements_photo_image.setOnClickListener(View.OnClickListener {
+            measurements_photo_image.setOnClickListener {
                 Coroutines.main {
                     val measurePhoto =
                         measureViewModel.getJobMeasureItemsPhotoPath(itemMeasureId)
-//                        approveViewModel?.getJobMeasureItemsPhotoPath(jobItemMeasureDTO.itemMeasureId!!)
+                    //                        approveViewModel?.getJobMeasureItemsPhotoPath(jobItemMeasureDTO.itemMeasureId!!)
                     showZoomedImage(measurePhoto)
                 }
-            })
+            }
 
             updateMeasureImage()
         }

@@ -12,9 +12,6 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import kotlinx.android.synthetic.main.activity_login.*
-import kotlinx.android.synthetic.main.activity_login.buildFlavorTextView
-import kotlinx.android.synthetic.main.activity_login.serverTextView
-import kotlinx.android.synthetic.main.activity_register.*
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.kodein
 import org.kodein.di.generic.instance
@@ -24,9 +21,7 @@ import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.databinding.ActivityLoginBinding
-import za.co.xisystems.itis_rrm.ui.auth.model.PinLock
 import za.co.xisystems.itis_rrm.utils.Coroutines
-import za.co.xisystems.itis_rrm.utils.ServiceUriUtil
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.toast
 
@@ -42,7 +37,7 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
 //    private val repository: UserRepository? = null
     override val kodein by kodein()
     private val factory: AuthViewModelFactory by instance()
-    lateinit var viewModel: AuthViewModel
+    private lateinit var viewModel: AuthViewModel
     private lateinit var appContext: Context
 
 
@@ -170,6 +165,7 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
             reset()
         } else if (v === activityPinLockBinding!!.btnDelete) {
             if (index == 0) {
+                // TODO: What are we planning to do here?
             } else {
                 if (index == 1) {
                     activityPinLockBinding!!.pin1.setImageResource(R.drawable.oval_pin_grey)
@@ -286,7 +282,7 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
     }
 
     override fun onSuccess(userDTO: UserDTO) {
-        toast("You are Loggedin as ${userDTO.userName}")
+        toast("You are Logged in as ${userDTO.userName}")
     }
 
     override fun onSignOut(userDTO: UserDTO) {

@@ -17,7 +17,6 @@ import com.google.android.gms.location.LocationServices
 import za.co.xisystems.itis_rrm.data.network.PermissionController
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.Constants
 import za.co.xisystems.itis_rrm.ui.mainview.work.capture_work.CaptureWorkFragment
-import za.co.xisystems.itis_rrm.utils.toast
 
 class LocationHelper(private val capturePhoto: CaptureWorkFragment) : ConnectionCallbacks,
     OnConnectionFailedListener, LocationListener {
@@ -164,7 +163,7 @@ class LocationHelper(private val capturePhoto: CaptureWorkFragment) : Connection
         return capturePhoto.getCurrentLocation()
     }
 
-    fun setCurrentLocation(location: Location?) {
+    private fun setCurrentLocation(location: Location?) {
         capturePhoto.setCurrentLocation(location)
     }
 

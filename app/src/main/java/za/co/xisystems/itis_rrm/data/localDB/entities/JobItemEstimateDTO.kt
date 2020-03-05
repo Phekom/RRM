@@ -63,22 +63,22 @@ data class JobItemEstimateDTO(
 
 ): Serializable {
 
-    fun getJobItemEstimatePhoto(lookForStartPhoto: Boolean): Pair<Int, JobItemEstimatesPhotoDTO> {
+    private fun getJobItemEstimatePhoto(lookForStartPhoto: Boolean): Pair<Int, JobItemEstimatesPhotoDTO> {
         val photos = jobItemEstimatePhotos
         var i = 0
-        while (photos != null && i < photos!!.size) {
-            val isPhotoStart = photos!!.get(i).isPhotoStart()
+        while (photos != null && i < photos.size) {
+            val isPhotoStart = photos[i].isPhotoStart()
             if (lookForStartPhoto) {
                 if (isPhotoStart) {
                     println("look: $lookForStartPhoto is:$isPhotoStart")
-                    val pair = Pair<Int, JobItemEstimatesPhotoDTO>(i, photos!!.get(i))
+                    val pair = Pair<Int, JobItemEstimatesPhotoDTO>(i, photos[i])
                     println("pari[" + pair.first + "]" + pair)
                     return pair
                 }
             } else {
                 if (!isPhotoStart) {
                     println("look: $lookForStartPhoto is:$isPhotoStart")
-                    return Pair<Int, JobItemEstimatesPhotoDTO>(i, photos!!.get(i))
+                    return Pair<Int, JobItemEstimatesPhotoDTO>(i, photos[i])
                 }
             }
             i++
@@ -93,22 +93,22 @@ data class JobItemEstimateDTO(
 //        return getJobItemEstimatePhoto(false).second!!
 //    }
 
-    fun getPhoto(x: Int): JobItemEstimatesPhotoDTO? {
-        return if ( jobItemEstimatePhotos != null && -1 < x && x < size()) {
-            jobItemEstimatePhotos!!.get(x)
-        } else null
-    }
+//    fun getPhoto(x: Int): JobItemEstimatesPhotoDTO? {
+//        return if ( jobItemEstimatePhotos != null && -1 < x && x < size()) {
+//            jobItemEstimatePhotos!![x]
+//        } else null
+//    }
 
-    fun setJobItemEstimatePhotoStart(photoStart: JobItemEstimatesPhotoDTO) {
-        photoStart.estimateId
-        setJobItemEstimatePhoto(photoStart)
-    }
+//    fun setJobItemEstimatePhotoStart(photoStart: JobItemEstimatesPhotoDTO) {
+//        photoStart.estimateId
+//        setJobItemEstimatePhoto(photoStart)
+//    }
 
 
-    fun setJobItemEstimatePhotoEnd(photoEnd: JobItemEstimatesPhotoDTO) {
-        photoEnd.estimateId
-        setJobItemEstimatePhoto(photoEnd)
-    }
+//    fun setJobItemEstimatePhotoEnd(photoEnd: JobItemEstimatesPhotoDTO) {
+//        photoEnd.estimateId
+//        setJobItemEstimatePhoto(photoEnd)
+//    }
 
     private fun setJobItemEstimatePhoto(photo: JobItemEstimatesPhotoDTO) {
         if (jobItemEstimatePhotos == null) {
@@ -120,18 +120,18 @@ data class JobItemEstimateDTO(
             if (index == -1)
                 jobItemEstimatePhotos!!.add(photo)
             else
-                jobItemEstimatePhotos!!.set(index, photo)
+                jobItemEstimatePhotos!![index] = photo
         }
         JobUtils.sort(jobItemEstimatePhotos)
     }
 
     fun isEstimateComplete(): Boolean {
-        if (size() < 2)
-            return false
+        return if (size() < 2)
+            false
         else {
             val photoStart = jobItemEstimatePhotos?.get(0)
             val photoEnd = jobItemEstimatePhotos?.get(1)
-            return !(photoStart?.filename == null || photoEnd == null || photoEnd?.filename == null)
+            !(photoStart?.filename == null || photoEnd == null || photoEnd.filename == null)
         }
     }
 

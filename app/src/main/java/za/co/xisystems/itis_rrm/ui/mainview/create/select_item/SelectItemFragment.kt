@@ -116,16 +116,15 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
             val sectionItems = createViewModel.getAllSectionItem()
 //            val sectionItems = createViewModel.offlinedata.await()
             sectionItems.observe(viewLifecycleOwner, Observer { sec_tions ->
-                val sections = sec_tions
-                val sectionNmbr = arrayOfNulls<String?>(sections.size)
+                val sectionNmbr = arrayOfNulls<String?>(sec_tions.size)
 
-                for (item in sections.indices) {
-                    sectionNmbr[item] = sections[item].description
+                for (item in sec_tions.indices) {
+                    sectionNmbr[item] = sec_tions[item].description
                 }
                 Coroutines.main {
                     setSpinner(context!!.applicationContext,
                         sectionItemSpinner,
-                        sections,
+                        sec_tions,
                         sectionNmbr,
                         object : SpinnerHelper.SelectionListener<SectionItemDTO> {
 
@@ -231,14 +230,13 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
         view: View,
         jobArrayList: List<SectionProj_Item>
     ) {
-        val selecteD = item
         val myList = jobArrayList
 //        val actionAddProject =  SelectItemFragmentDirection.actionAddProject(selecteD)
 //        navController?.navigate(R.id.action_selectItemFragment_to_addProjectFragment)
 
 
         Coroutines.main {
-            createViewModel.Sec_Item.value = selecteD
+            createViewModel.Sec_Item.value = item
 //            createViewModel.project_Rate.value = selectRte
         }
 

@@ -6,28 +6,19 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GooglePlayServicesUtil
-import kotlinx.android.synthetic.main.activity_login.*
 import kotlinx.android.synthetic.main.activity_register.*
-import kotlinx.android.synthetic.main.activity_register.buildFlavorTextView
-import kotlinx.android.synthetic.main.activity_register.loading
-import kotlinx.android.synthetic.main.activity_register.reg_container
-import kotlinx.android.synthetic.main.activity_register.serverTextView
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.kodein
 import org.kodein.di.generic.instance
-import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
-import za.co.xisystems.itis_rrm.databinding.ActivityRegisterBinding
-import za.co.xisystems.itis_rrm.databinding.ActivityRegisterPinBinding
 import za.co.xisystems.itis_rrm.databinding.ActivityResetPinBinding
 import za.co.xisystems.itis_rrm.utils.*
 
@@ -40,7 +31,7 @@ class ResetPinActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runna
 
     override val kodein by kodein()
     private val factory : AuthViewModelFactory by instance()
-    lateinit var viewModel : AuthViewModel
+    private lateinit var viewModel: AuthViewModel
     private lateinit var appContext: Context
     private var permissions = arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE ,Manifest.permission.ACCESS_FINE_LOCATION )
 
@@ -104,7 +95,7 @@ class ResetPinActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runna
             for (i in permissions.indices){
                if (grantResults[i] == PackageManager.PERMISSION_DENIED){
                    allAllowed = false
-                   var requestAgain = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                   val requestAgain = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                        shouldShowRequestPermissionRationale(permissions[i])
                    } else {
                        TODO("VERSION.SDK_INT < M")
@@ -121,7 +112,7 @@ class ResetPinActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runna
         }
     }
 
-    fun  startPermissionRequest(context : Context, permissions: Array<String>) : Boolean {
+    private fun startPermissionRequest(context: Context, permissions: Array<String>): Boolean {
         var allAccess = true
         for (i in permissions.indices){
             if(checkCallingOrSelfPermission(permissions[i]) == PackageManager.PERMISSION_DENIED){

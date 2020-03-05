@@ -1,6 +1,5 @@
 package za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.measure_approval
 
-import android.app.Activity
 import android.app.Dialog
 import android.net.Uri
 import androidx.fragment.app.FragmentActivity
@@ -9,7 +8,6 @@ import com.xwray.groupie.kotlinandroidextensions.Item
 import kotlinx.android.synthetic.main.estimates_item.measure_item_description_textView
 import kotlinx.android.synthetic.main.measurements_item.*
 import za.co.xisystems.itis_rrm.R
-import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureViewModel
 import za.co.xisystems.itis_rrm.utils.Coroutines
@@ -36,9 +34,9 @@ class MeasurementsItem(
                 val descri = approveViewModel.getDescForProjectId(jobItemMeasureDTO.projectItemId!!)
                 val uom =
                     approveViewModel.getUOMForProjectItemId(jobItemMeasureDTO.projectItemId!!)
-                measure_item_description_textView.text = "Estimate - " + descri
+                measure_item_description_textView.text = "Estimate - $descri"
                 measure_item_uom_textView.text = "Unit of Measure: $uom"
-                if (uom.equals("NONE")) {
+                if (uom == "NONE") {
                     measure_item_uom_textView.text = ""
                 } else {
                     measure_item_uom_textView.text = "Unit of Measure: $uom"
@@ -97,7 +95,7 @@ class MeasurementsItem(
 
 }
 
-private fun GroupieViewHolder.getItemId(position: Int): Long {
+private fun getItemId(position: Int): Long {
     return position.toLong()
 }
 

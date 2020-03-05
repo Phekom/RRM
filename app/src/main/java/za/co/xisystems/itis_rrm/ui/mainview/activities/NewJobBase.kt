@@ -39,15 +39,15 @@ abstract class NewJobBase : AppCompatActivity(), OfflineListener, IProgressView,
     @JvmField var shake_long: Animation? = null
     @JvmField var shake_longer: Animation? = null
 
-    var anims: Animations? = null
+    private var anims: Animations? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         anims = Animations(this)
-        initAnims();
+        initAnims()
     }
 
-    fun initAnims() {
+    private fun initAnims() {
         click = AnimationUtils.loadAnimation(this, R.anim.click)
         bounce = AnimationUtils.loadAnimation(this, R.anim.bounce)
         bounce_short = AnimationUtils.loadAnimation(this, R.anim.bounce_short)
@@ -82,7 +82,7 @@ abstract class NewJobBase : AppCompatActivity(), OfflineListener, IProgressView,
         if (!isFinishing) toastShort(getString(resid))
     }
 
-    fun toastShort(resid: String) {
+    private fun toastShort(resid: String) {
         if (!isFinishing) Toast.makeText(this, resid, Toast.LENGTH_SHORT).show()
     }
 
@@ -95,15 +95,13 @@ abstract class NewJobBase : AppCompatActivity(), OfflineListener, IProgressView,
     }
 
     fun <T> scheduleOnUi(o: Observable<T>): Observable<T> {
-        return RxUtils.schedule(o);
+        return RxUtils.schedule(o)
     }
 
     fun getThrowableConsumer(): Consumer<Throwable> {
-        return object : Consumer<Throwable> {
-            override fun accept(t: Throwable?) {
-                toastShort(t?.message ?: "Some error occur!")
-                dismissProgressDialog()
-            }
+        return Consumer<Throwable> { t ->
+            toastShort(t?.message ?: "Some error occur!")
+            dismissProgressDialog()
         }
     }
 
@@ -126,9 +124,9 @@ abstract class NewJobBase : AppCompatActivity(), OfflineListener, IProgressView,
         this.finish(null, resultCode)
     }
 
-    fun finish(data: Intent?, resultCode: Int) {
+    private fun finish(data: Intent?, resultCode: Int) {
         if (data == null) this.setResult(resultCode)
-        else this.setResult(resultCode, data);
+        else this.setResult(resultCode, data)
         this.finish()
     }
 
@@ -150,18 +148,18 @@ abstract class NewJobBase : AppCompatActivity(), OfflineListener, IProgressView,
     }
 
     private fun initializeProgressPercentage() {
-        this.progressDialog?.setMax(100)
-        this.progressDialog?.setProgress(0)
+        this.progressDialog?.max = 100
+        this.progressDialog?.progress = 0
     }
 
     override fun showHorizontalProgressDialog(message: CharSequence?) {
         if (null == this.progressDialog) {
             this.progressDialog = ProgressDialog(this, R.style.ThemeOverlay_MaterialComponents_Dialog)
-            this.progressDialog?.setIndeterminate(true)
+            this.progressDialog?.isIndeterminate = true
             this.progressDialog?.setCancelable(false)
             setProgressStyleHorizontal()
             removeProgressPercentages()
-            if (this.progressDialog?.isIndeterminate() == false) initializeProgressPercentage()
+            if (this.progressDialog?.isIndeterminate == false) initializeProgressPercentage()
         }
         this.progressDialog?.setMessage(message)
         this.progressDialog?.show()
@@ -172,7 +170,7 @@ abstract class NewJobBase : AppCompatActivity(), OfflineListener, IProgressView,
     }
 
     fun stepProgressDialogTo(num: Int) {
-        this.progressDialog?.setProgress(num)
+        this.progressDialog?.progress = num
     }
 
     override fun dismissProgressDialog() {

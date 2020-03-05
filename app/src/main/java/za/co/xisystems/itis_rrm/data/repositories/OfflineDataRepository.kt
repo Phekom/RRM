@@ -13,18 +13,14 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.gson.JsonObject
-import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.R
-import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.localDB.JobDataController
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
-import za.co.xisystems.itis_rrm.data.network.OfflineListener
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
-import za.co.xisystems.itis_rrm.data.network.request.RrmJobRequest
 import za.co.xisystems.itis_rrm.data.network.responses.JobResponse
 import za.co.xisystems.itis_rrm.data.network.responses.SaveMeasurementResponse
 import za.co.xisystems.itis_rrm.data.network.responses.UploadImageResponse
@@ -61,11 +57,11 @@ class OfflineDataRepository(
 
 
     private val activity: Activity? = null
-    private var rListener: OfflineListener? = null
     private val conTracts = MutableLiveData<List<ContractDTO>>()
     //    private val sectionItems = MutableLiveData<ArrayList<SectionItemDTO>>()
     private val sectionItems = MutableLiveData<ArrayList<String>>()
-    private val projects = MutableLiveData<ArrayList<ProjectDTO>>()
+
+    // private val projects = MutableLiveData<ArrayList<ProjectDTO>>()
     private val projectItems = MutableLiveData<ArrayList<ProjectItemDTO>>()
     private val voItems = MutableLiveData<ArrayList<VoItemDTO>>()
     private val projectSections = MutableLiveData<ArrayList<ProjectSectionDTO>>()
@@ -81,7 +77,7 @@ class OfflineDataRepository(
     private val workflowJ2 = MutableLiveData<WorkflowJobDTO>()
     private val photoupload = MutableLiveData<String>()
     private val works = MutableLiveData<String>()
-    private val routeSectionPoint = MutableLiveData<String>()
+    // private val routeSectionPoint = MutableLiveData<String>()
 
 
     init {
@@ -222,31 +218,31 @@ class OfflineDataRepository(
 //    }
 
 
-    suspend fun getContractProjects(contractId: String): LiveData<List<ProjectDTO>> {
-        return withContext(Dispatchers.IO) {
-            Db.getProjectDao().getAllProjectsByContract(contractId)
-        }
-    }
-
-
-    suspend fun getProjects(): LiveData<List<ProjectDTO>> {
-        return withContext(Dispatchers.IO) {
-            Db.getProjectDao().getAllProjects()
-        }
-    }
-
-    suspend fun getProjectItems(): LiveData<List<ProjectItemDTO>> {
-        return withContext(Dispatchers.IO) {
-            Db.getProjectItemDao().getAllItemsForAllProjects()
-        }
-    }
-
-    suspend fun getItemForItemCode(sectionItemId: String): LiveData<List<ProjectItemDTO>> {
-        return withContext(Dispatchers.IO) {
-            //            val projectId = DataConversion.toLittleEndian( Db.getProjectDao().getProjectId())
-            Db.getProjectItemDao().getItemForItemCode(sectionItemId)
-        }
-    }
+//    suspend fun getContractProjects(contractId: String): LiveData<List<ProjectDTO>> {
+//        return withContext(Dispatchers.IO) {
+//            Db.getProjectDao().getAllProjectsByContract(contractId)
+//        }
+//    }
+//
+//
+//    suspend fun getProjects(): LiveData<List<ProjectDTO>> {
+//        return withContext(Dispatchers.IO) {
+//            Db.getProjectDao().getAllProjects()
+//        }
+//    }
+//
+//    suspend fun getProjectItems(): LiveData<List<ProjectItemDTO>> {
+//        return withContext(Dispatchers.IO) {
+//            Db.getProjectItemDao().getAllItemsForAllProjects()
+//        }
+//    }
+//
+//    suspend fun getItemForItemCode(sectionItemId: String): LiveData<List<ProjectItemDTO>> {
+//        return withContext(Dispatchers.IO) {
+//            //            val projectId = DataConversion.toLittleEndian( Db.getProjectDao().getProjectId())
+//            Db.getProjectItemDao().getItemForItemCode(sectionItemId)
+//        }
+//    }
 //    suspend fun getJobItemsEstimatesDoneForJobId(
 //        jobId: String?,
 //        estimateWorkPartComplete: Int,
@@ -263,17 +259,17 @@ class OfflineDataRepository(
 //        }
 //    }
 
-    suspend fun getAllProjecItems(projectId: String): LiveData<List<ItemDTOTemp>> {
-        return withContext(Dispatchers.IO) {
-            Db.getItemDao_Temp().getAllProjecItems(projectId)
-        }
-    }
-
-    suspend fun getSection(sectionId: String): LiveData<ProjectSectionDTO> {
-        return withContext(Dispatchers.IO) {
-            Db.getProjectSectionDao().getSection(sectionId)
-        }
-    }
+//    suspend fun getAllProjecItems(projectId: String): LiveData<List<ItemDTOTemp>> {
+//        return withContext(Dispatchers.IO) {
+//            Db.getItemDaoTemp().getAllProjecItems(projectId)
+//        }
+//    }
+//
+//    suspend fun getSection(sectionId: String): LiveData<ProjectSectionDTO> {
+//        return withContext(Dispatchers.IO) {
+//            Db.getProjectSectionDao().getSection(sectionId)
+//        }
+//    }
 
 
     suspend fun getAllItemsForProjectId(projectId: String): LiveData<List<ProjectItemDTO>> {
@@ -293,31 +289,31 @@ class OfflineDataRepository(
         }
     }
 
-    suspend fun getJobforEstinmate(jobId: String): LiveData<JobDTO> {
-        return withContext(Dispatchers.IO) {
-            Db.getJobDao().getJobFromJobId(jobId)
-        }
-    }
+//    suspend fun getJobforEstinmate(jobId: String): LiveData<JobDTO> {
+//        return withContext(Dispatchers.IO) {
+//            Db.getJobDao().getJobFromJobId(jobId)
+//        }
+//    }
 
 
-    suspend fun getJobItemEstimatePhotoForEstimateId(estimateId: String): LiveData<List<JobItemEstimatesPhotoDTO>> {
-        return withContext(Dispatchers.IO) {
-            Db.getJobItemEstimatePhotoDao().getJobItemEstimatePhotoForEstimateId(estimateId)
-        }
-    }
+//    suspend fun getJobItemEstimatePhotoForEstimateId(estimateId: String): LiveData<List<JobItemEstimatesPhotoDTO>> {
+//        return withContext(Dispatchers.IO) {
+//            Db.getJobItemEstimatePhotoDao().getJobItemEstimatePhotoForEstimateId(estimateId)
+//        }
+//    }
 
-    suspend fun getAllSectionItem(): LiveData<List<SectionItemDTO>> {
-        return withContext(Dispatchers.IO) {
-            Db.getSectionItemDao().getAllSectionItems()
-        }
-    }
-
-    suspend fun getPointSectionData(projectId: String?): LiveData<SectionPointDTO> { //jobId,jobId: String,
-        return withContext(Dispatchers.IO) {
-            //            Db.getSectionItemDao().getAllSectionItems()
-            Db.getSectionPointDao().getPointSectionData(projectId)
-        }
-    }
+//    suspend fun getAllSectionItem(): LiveData<List<SectionItemDTO>> {
+//        return withContext(Dispatchers.IO) {
+//            Db.getSectionItemDao().getAllSectionItems()
+//        }
+//    }
+//
+//    suspend fun getPointSectionData(projectId: String?): LiveData<SectionPointDTO> { //jobId,jobId: String,
+//        return withContext(Dispatchers.IO) {
+//            //            Db.getSectionItemDao().getAllSectionItems()
+//            Db.getSectionPointDao().getPointSectionData(projectId)
+//        }
+//    }
 
 
 //    suspend fun getJobsEstimateForActivityId(activityId1: Int): LiveData<List<JobItemEstimateDTO>> {
@@ -327,20 +323,20 @@ class OfflineDataRepository(
 //    }
 
 
-    suspend fun getJobItemsToMeasureForJobId(jobID: String?): LiveData<List<JobItemEstimateDTO>> {
-        return withContext(Dispatchers.IO) {
-            Db.getJobItemEstimateDao().getJobItemsToMeasureForJobId(jobID!!)
-        }
-    }
-
-
-    suspend fun getJobEstimationItemsPhoto(estimateId: String): LiveData<List<JobItemEstimatesPhotoDTO>> {
-        return withContext(Dispatchers.IO) {
-            //           val filename =  Db.getJobItemEstimatePhotoDao().getJobEstimationItemsPhotoFilename(estimateId)
-//            getPhotoForJobItemEstimate(filename)
-            Db.getJobItemEstimatePhotoDao().getJobEstimationItemsPhoto(estimateId)
-        }
-    }
+//    suspend fun getJobItemsToMeasureForJobId(jobID: String?): LiveData<List<JobItemEstimateDTO>> {
+//        return withContext(Dispatchers.IO) {
+//            Db.getJobItemEstimateDao().getJobItemsToMeasureForJobId(jobID!!)
+//        }
+//    }
+//
+//
+//    suspend fun getJobEstimationItemsPhoto(estimateId: String): LiveData<List<JobItemEstimatesPhotoDTO>> {
+//        return withContext(Dispatchers.IO) {
+//            //           val filename =  Db.getJobItemEstimatePhotoDao().getJobEstimationItemsPhotoFilename(estimateId)
+////            getPhotoForJobItemEstimate(filename)
+//            Db.getJobItemEstimatePhotoDao().getJobEstimationItemsPhoto(estimateId)
+//        }
+//    }
 
 //    suspend fun getJobItemMeasurePhotosForItemMeasureID(itemMeasureId: String): LiveData<List<JobItemMeasureDTO>>  {
 //        return withContext(Dispatchers.IO) {
@@ -500,7 +496,7 @@ class OfflineDataRepository(
 
     }
 
-    suspend fun updateNewJob(
+    fun updateNewJob(
         newjobId: String,
         startKM: Double,
         endKM: Double,
@@ -614,17 +610,6 @@ class OfflineDataRepository(
     }
 
 
-    suspend fun checkIfJobItemMeasureExistsForJobIdAndEstimateId(
-        jobId: String?,
-        estimateId: String
-    ): Boolean {
-        return withContext(Dispatchers.IO) {
-            Db.getJobItemMeasureDao()
-                .checkIfJobItemMeasureExistsForJobIdAndEstimateId(jobId, estimateId)
-        }
-    }
-
-
     suspend fun getRouteForProjectSectionId(sectionId: String?): String {
         return withContext(Dispatchers.IO) {
             Db.getProjectSectionDao().getRouteForProjectSectionId(sectionId!!)
@@ -643,30 +628,30 @@ class OfflineDataRepository(
         }
     }
 
-    suspend fun delete(item: ItemDTOTemp) {
+    fun delete(item: ItemDTOTemp) {
         Coroutines.io {
-            Db.getItemDao_Temp().deleteItem(item)
+            Db.getItemDaoTemp().deleteItem(item)
         }
     }
 
     suspend fun saveNewItem(newjItem: ItemDTOTemp) {
         Coroutines.io {
             if (newjItem != null) {
-                if (!Db.getItemDao_Temp().checkItemExistsItemId(newjItem.itemId)) {
+                if (!Db.getItemDaoTemp().checkItemExistsItemId(newjItem.itemId)) {
 
-                    Db.getItemDao_Temp().insertItems(newjItem)
+                    Db.getItemDaoTemp().insertItems(newjItem)
                 }
             }
         }
     }
 
-    suspend fun deleteItemList(jobId: String) {
+    fun deleteItemList(jobId: String) {
         Coroutines.io {
-            Db.getItemDao_Temp().deleteItemList(jobId)
+            Db.getItemDaoTemp().deleteItemList(jobId)
         }
     }
 
-    suspend fun deleJobfromList(jobId: String) {
+    fun deleJobfromList(jobId: String) {
         Coroutines.io {
             Db.getJobDao().deleteJobForJobId(jobId)
         }
@@ -890,13 +875,12 @@ class OfflineDataRepository(
                 val matcher = pattern.matcher(section)
 
                 val sectionItemId = SqlLitUtils.generateUuid()
-                val activitySection = section
                 if (matcher.find()) {
                     if (section != null) {
                         val itemCode = matcher.group(1).replace("\\s+".toRegex(), "")
                         if (!Db.getSectionItemDao().checkIfSectionitemsExist(itemCode))
                             Db.getSectionItemDao().insertSectionitem(
-                                activitySection,
+                                section,
                                 itemCode,
                                 sectionItemId
                             )
@@ -1057,7 +1041,7 @@ class OfflineDataRepository(
     }
 
 
-    private fun <T> MutableLiveData<T>.postValue(
+    private fun postValue(
         direction: String,
         linearId: String,
         pointLocation: Double,
@@ -1066,7 +1050,15 @@ class OfflineDataRepository(
         jobId: String?,
         item: ItemDTOTemp?
     ) {
-        saveRouteSectionPoint(direction, linearId, pointLocation, sectionId, projectId, jobId, item)
+        saveRouteSectionPoint(
+            direction,
+            linearId,
+            pointLocation,
+            sectionId,
+            projectId,
+            jobId,
+            item
+        )
     }
 
     private fun saveRouteSectionPoint(
@@ -1462,39 +1454,40 @@ class OfflineDataRepository(
         }
     }
 
-    suspend fun getPhotoForJobItemMeasure(filename: String) {
+    private suspend fun getPhotoForJobItemMeasure(filename: String) {
         try {
             val photoMeasure = apiRequest { api.getPhotoMeasure(filename) }
-            measurePhoto.postValue(photoMeasure.photo, filename)
-            ToastUtils().toastLong(activity, "You do not have an active data connection ")
+            postValue(photoMeasure.photo, filename)
         } catch (e: ApiException) {
-            ToastUtils().toastLong(activity, e.message)
-            rListener?.onFailure(e.message)
+            Log.e(TAG, "API Exception", e)
+            e.printStackTrace()
+            throw e
         } catch (e: NoInternetException) {
-            ToastUtils().toastLong(activity, e.message)
-            rListener?.onFailure(e.message)
-            Log.e("Offline Connection", "No Internet Connection", e)
+            Log.e(TAG, "No Internet Connection", e)
+            e.printStackTrace()
+            throw e
         } catch (e: NoConnectivityException) {
-            ToastUtils().toastLong(activity, e.message)
-            rListener?.onFailure(e.message)
-            Log.e("NetworkConnection", "Backend Host Unreachable", e)
+            Log.e(TAG, "Service Host Unreachable", e)
+            e.printStackTrace()
+            throw e
         }
     }
 
-    private suspend fun getPhotoForJobItemEstimate(filename: String) {
-        try {
-            val photoEstimate = apiRequest { api.getPhotoEstimate(filename) }
-            estimatePhoto.postValue(photoEstimate.photo, filename)
-            ToastUtils().toastLong(activity, "You do not have an active data connection ")
-        } catch (e: ApiException) {
-            ToastUtils().toastLong(activity, e.message)
-        } catch (e: NoInternetException) {
-            ToastUtils().toastLong(activity, e.message)
-            Log.e("NetworkConnection", "No Internet Connection", e)
-        } catch (e: NoConnectivityException) {
-            ToastUtils().toastLong(activity, e.message)
-            Log.e("NetworkConnection", "Backend Host Unreachable", e)
-        }
+    private suspend fun getPhotoForJobItemEstimate(filename: String) = try {
+        val photoEstimate = apiRequest { api.getPhotoEstimate(filename) }
+        postValue(photoEstimate.photo, filename)
+    } catch (e: ApiException) {
+        Log.e(TAG, "API Exception", e)
+        e.printStackTrace()
+        throw e
+    } catch (e: NoInternetException) {
+        Log.e(TAG, "No Internet Connection", e)
+        e.printStackTrace()
+        throw e
+    } catch (e: NoConnectivityException) {
+        Log.e(TAG, "Service Host Unreachable", e)
+        e.printStackTrace()
+        throw e
     }
 
     private fun sendMSg(uploadResponse: String?) {
@@ -1685,10 +1678,17 @@ class OfflineDataRepository(
 //            }
 //            ToastUtils().toastLong(activity, "You do not have an active data connection ")
         } catch (e: ApiException) {
-            ToastUtils().toastLong(activity, e.message)
+            Log.e(TAG, "API Exception", e)
+            e.printStackTrace()
+            throw e
         } catch (e: NoInternetException) {
-            ToastUtils().toastLong(activity, e.message)
-            Log.e("Network-Connection", "No Internet Connection", e)
+            Log.e(TAG, "No Internet Connection", e)
+            e.printStackTrace()
+            throw e
+        } catch (e: NoConnectivityException) {
+            Log.e(TAG, "Service Host Unreachable", e)
+            e.printStackTrace()
+            throw e
         }
 
     }
@@ -1717,20 +1717,22 @@ class OfflineDataRepository(
                 conTracts.postValue(contractsResponse.contracts)
             }
         } catch (e: ApiException) {
-            ToastUtils().toastLong(activity, e.message)
+            Log.e(TAG, "API Exception", e)
+            e.printStackTrace()
+            throw e
         } catch (e: NoInternetException) {
-            ToastUtils().toastLong(activity, e.message)
-            rListener?.onFailure(e.message!!)
-            Log.e("Contract-Connection", "No Internet Connection", e)
+            Log.e(TAG, "No Internet Connection", e)
+            e.printStackTrace()
+            throw e
         } catch (e: NoConnectivityException) {
-            ToastUtils().toastLong(activity, e.message)
-            Log.e("Network-Failure", "Service Host Unreachable", e)
+            Log.e(TAG, "Service Host Unreachable", e)
+            e.printStackTrace()
+            throw e
         }
 
     }
 
     suspend fun getUserTaskList(): LiveData<List<ToDoListEntityDTO>> {
-
 
         return withContext(Dispatchers.IO) {
             val userId = Db.getUserDao().getuserID()
@@ -1741,7 +1743,7 @@ class OfflineDataRepository(
 
     }
 
-    suspend fun fetchUserTaskList(userId: String) {
+    private suspend fun fetchUserTaskList(userId: String) {
 
         try {
             val toDoListGroupsResponse = apiRequest { api.getUserTaskList(userId) }
@@ -1749,12 +1751,15 @@ class OfflineDataRepository(
 
         } catch (e: ApiException) {
             Log.e(TAG, "API Exception", e)
+            e.printStackTrace()
             throw e
         } catch (e: NoInternetException) {
             Log.e(TAG, "No Internet Connection", e)
+            e.printStackTrace()
             throw e
         } catch (e: NoConnectivityException) {
             Log.e(TAG, "Service Host Unreachable", e)
+            e.printStackTrace()
             throw e
         }
 
@@ -1784,13 +1789,16 @@ class OfflineDataRepository(
 
 
         } catch (e: ApiException) {
-            Log.e("Service-Error", "API Exception", e)
+            Log.e(TAG, "API Exception", e)
+            e.printStackTrace()
             throw e
         } catch (e: NoInternetException) {
-            Log.e("allData-Connection", "No Internet Connection", e)
+            Log.e(TAG, "No Internet Connection", e)
+            e.printStackTrace()
             throw e
         } catch (e: NoConnectivityException) {
-            Log.e("Network-Error", "Service Host Unreachable", e)
+            Log.e(TAG, "Service Host Unreachable", e)
+            e.printStackTrace()
             throw e
         }
 
@@ -1798,7 +1806,7 @@ class OfflineDataRepository(
 
 
     private fun isFetchNeeded(savedAt: LocalDateTime): Boolean {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             ChronoUnit.DAYS.between(savedAt, LocalDateTime.now()) > MINIMUM_INTERVAL
         } else {
             true
@@ -1806,7 +1814,7 @@ class OfflineDataRepository(
     }
 
 
-    fun saveLookups(lookups: ArrayList<LookupDTO>?) {
+    private fun saveLookups(lookups: ArrayList<LookupDTO>?) {
         Coroutines.io {
             if (lookups != null) {
                 for (lookup in lookups) {
@@ -1866,7 +1874,7 @@ class OfflineDataRepository(
             Db.getInfoClassDao().deleteAll()
             Db.getActivityDao().deleteAll()
             Db.getSectionItemDao().deleteAll()
-            Db.getItemDao_Temp().deleteAll()
+            Db.getItemDaoTemp().deleteAll()
             Db.getSectionPointDao().deleteAll()
 
 
@@ -1997,11 +2005,11 @@ class OfflineDataRepository(
 //    saveEstimatePhoto(photo ,fileName)
 //}
 
-    private fun <T> MutableLiveData<T>.postValue(photo: String?, fileName: String) {
+    private fun postValue(photo: String?, fileName: String) {
         saveEstimatePhoto(photo, fileName)
     }
 
-    fun saveEstimatePhoto(estimatePhoto: String?, fileName: String) {
+    private fun saveEstimatePhoto(estimatePhoto: String?, fileName: String) {
         Coroutines.io {
             if (estimatePhoto != null) {
                 PhotoUtil.createPhotofolder(estimatePhoto, fileName)
@@ -2014,7 +2022,7 @@ class OfflineDataRepository(
 
     }
 
-    private fun <T> MutableLiveData<T>.postValue(
+    private fun postValue(
         workflowjb: WorkflowJobDTO,
         jobItemMeasure: ArrayList<JobItemMeasureDTO>,
         activity: FragmentActivity?,
@@ -2040,7 +2048,7 @@ class OfflineDataRepository(
         activity: FragmentActivity?,
         itemMeasureJob: JobDTO
     ) {
-        var imageCounter = 1
+        val imageCounter = 1
         var totalImages = 0
         if (jobItemMeasures != null) {
             for (jobItemMeasure in jobItemMeasures.iterator()) {
@@ -2108,14 +2116,14 @@ class OfflineDataRepository(
 //        }
     }
 
-    private fun <T> MutableLiveData<T>.postValue(
+    private fun postValue(
         response: String?,
         jobEstimateWorks: JobEstimateWorksDTO,
         activity: FragmentActivity,
         useR: UserDTO
     ) {
         if (response != null) {
-
+            // TODO: What were we planning to do here?
         } else {
 //          uploadworksImages(jobEstimateWorks, activity)
 
@@ -2154,7 +2162,7 @@ class OfflineDataRepository(
         }
     }
 
-    private fun <T> MutableLiveData<T>.postValue(
+    private fun postValue(
         workflowj: WorkflowJobDTO,
         job: JobDTO,
         activity: FragmentActivity
@@ -2168,7 +2176,7 @@ class OfflineDataRepository(
 //        }
     }
 
-    suspend fun getUpdatedJob(jobId: String): JobDTO {
+    private suspend fun getUpdatedJob(jobId: String): JobDTO {
         return withContext(Dispatchers.IO) {
             Db.getJobDao().getJobForJobId(jobId)
         }
@@ -2216,7 +2224,7 @@ class OfflineDataRepository(
 
     private fun uploadcreateJobImages(packagejob: JobDTO, activity: FragmentActivity) {
         var imageCounter = 1
-        var totalImages = 0
+        val totalImages = 0
 
 //        if (packagejob.JobItemEstimates != null) {
 //            for (jobItemEstimate in packagejob.JobItemEstimates!!) {
@@ -2245,9 +2253,9 @@ class OfflineDataRepository(
                 for (jobItemEstimate in packagejob.JobItemEstimates!!) {
                     if (jobItemEstimate.jobItemEstimatePhotos != null && jobItemEstimate.jobItemEstimatePhotos!!.size > 0) {
                         val photos: Array<JobItemEstimatesPhotoDTO> =
-                            arrayOf<JobItemEstimatesPhotoDTO>(
-                                jobItemEstimate.jobItemEstimatePhotos!!.get(0),
-                                jobItemEstimate.jobItemEstimatePhotos!!.get(1)
+                            arrayOf(
+                                jobItemEstimate.jobItemEstimatePhotos!![0],
+                                jobItemEstimate.jobItemEstimatePhotos!![1]
                             )
                         for (jobItemEstimatePhoto in photos) {
 //                        for (jobItemEstimatePhoto in jobItemEstimate.jobItemEstimatePhotos!!) {
@@ -2312,12 +2320,11 @@ class OfflineDataRepository(
         val uri = getPhotoPathFromExternalDirectory(activity.applicationContext, filename)
         val bitmap =
             PhotoUtil.getPhotoBitmapFromFile(activity.applicationContext, uri, photoQuality)
-        val photo = PhotoUtil.getCompressedPhotoWithExifInfo(
+        return PhotoUtil.getCompressedPhotoWithExifInfo(
             activity.applicationContext,
             bitmap!!,
             filename
         )
-        return photo
     }
 
 
@@ -2583,21 +2590,21 @@ class OfflineDataRepository(
     }
 
 
-    suspend fun deleteItemMeasurefromList(itemMeasureId: String) {
+    fun deleteItemMeasurefromList(itemMeasureId: String) {
         Coroutines.io {
             Db.getJobItemMeasureDao().deleteItemMeasurefromList(itemMeasureId)
         }
     }
 
-    suspend fun deleteItemMeasurephotofromList(itemMeasureId: String) {
+    fun deleteItemMeasurephotofromList(itemMeasureId: String) {
         Coroutines.io {
             Db.getJobItemMeasurePhotoDao().deleteItemMeasurephotofromList(itemMeasureId)
         }
     }
 
-    suspend fun deleteItemfromList(itemId: String) {
+    fun deleteItemfromList(itemId: String) {
         Coroutines.io {
-            Db.getItemDao_Temp().deleteItemfromList(itemId)
+            Db.getItemDaoTemp().deleteItemfromList(itemId)
         }
     }
 
@@ -2615,6 +2622,7 @@ class OfflineDataRepository(
                     ) {
                         Db.getEstimateWorkPhotoDao().insertEstimateWorksPhoto(estimateWorksPhoto)
                     } else {
+                        // TODO: What were we planning for here?
 //                Db.getEstimateWorkPhotoDao().updateExistingEstimateWorksPhoto(estimateWorksPhoto, estimatId)
                     }
 
@@ -2675,28 +2683,12 @@ private fun JobResponse.getWorkflowJob(): WorkflowJobDTO {
     return workflowJob
 }
 
-private fun JobItemMeasureDTO.setItemMeasurePhotoDTO(jobItemMeasurePhotoDTO: java.util.ArrayList<JobItemMeasurePhotoDTO>) {
+private fun JobItemMeasureDTO.setItemMeasurePhotoDTO(jobItemMeasurePhotoDTO: ArrayList<JobItemMeasurePhotoDTO>) {
     this.jobItemMeasurePhotos = jobItemMeasurePhotoDTO
 }
 
 private fun JobItemMeasureDTO.setJob(jobForItemEstimate: JobDTO) {
     this.job = jobForItemEstimate
-}
-
-private fun JobItemMeasureDTO.setJobItemEstimate(selectedJobItemEstimate: JobItemEstimateDTO) {
-    this.jobItemEstimate = selectedJobItemEstimate
-}
-
-private fun JobItemMeasureDTO.setDesc(nothing: Nothing?) {
-    this.entityDescription = nothing
-}
-
-private fun JobItemMeasureDTO.setApproveldate(nothing: Nothing?) {
-    this.approvalDate = nothing
-}
-
-private fun JobItemMeasureDTO.setActId(actId: Int) {
-    this.actId = actId
 }
 
 
