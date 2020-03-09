@@ -47,8 +47,11 @@ interface JobItemMeasureDao {
     @Query("SELECT * FROM JOB_ITEM_MEASURE WHERE estimateId = :estimateId AND jobId LIKE :jobId")
     fun checkIfJobItemMeasureExistsForJobIdAndEstimateId(jobId: String?, estimateId: String): Boolean
 
+    @Query("SELECT * FROM JOB_ITEM_MEASURE WHERE jobId LIKE :jobId")
+    fun getJobItemMeasuresForJobIdAndEstimateId( jobId: String?): LiveData<List<JobItemMeasureDTO>>
+
     @Query("SELECT * FROM JOB_ITEM_MEASURE WHERE estimateId = :estimateId AND jobId LIKE :jobId")
-    fun getJobItemMeasuresForJobIdAndEstimateId( jobId: String?, estimateId: String ): LiveData<List<JobItemMeasureDTO>>
+    fun getJobItemMeasuresForJobIdAndEstimateId2( jobId: String?, estimateId: String ): LiveData<List<JobItemMeasureDTO>>
 
 
     @Query("SELECT * FROM JOB_ITEM_MEASURE WHERE jobId = :jobId ORDER BY jimNo ASC")

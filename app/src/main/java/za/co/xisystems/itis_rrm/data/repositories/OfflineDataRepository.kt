@@ -13,7 +13,6 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.gson.JsonObject
-import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.R
@@ -24,7 +23,6 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.OfflineListener
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
-import za.co.xisystems.itis_rrm.data.network.request.RrmJobRequest
 import za.co.xisystems.itis_rrm.data.network.responses.JobResponse
 import za.co.xisystems.itis_rrm.data.network.responses.SaveMeasurementResponse
 import za.co.xisystems.itis_rrm.data.network.responses.UploadImageResponse
@@ -263,11 +261,11 @@ class OfflineDataRepository(
 //        }
 //    }
 
-    suspend fun getAllProjecItems(projectId: String): LiveData<List<ItemDTOTemp>> {
-        return withContext(Dispatchers.IO) {
-            Db.getItemDao_Temp().getAllProjecItems(projectId)
-        }
-    }
+//    suspend fun getAllProjecItems(projectId: String): LiveData<List<ItemDTOTemp>> {
+//        return withContext(Dispatchers.IO) {
+//            Db.getItemDao_Temp().getAllProjecItems(projectId, jobId)
+//        }
+//    }
 
     suspend fun getSection(sectionId: String): LiveData<ProjectSectionDTO> {
         return withContext(Dispatchers.IO) {
@@ -1240,8 +1238,8 @@ class OfflineDataRepository(
                                         jobItemEstimatePhoto
                                     )
                                     if (!PhotoUtil.photoExist(jobItemEstimatePhoto.filename)) {
-                                        val fileName =
-                                            DataConversion.toLittleEndian(jobItemEstimatePhoto.filename)
+//                                        val fileName =
+//                                            DataConversion.toLittleEndian(jobItemEstimatePhoto.filename)
                                         getPhotoForJobItemEstimate(jobItemEstimatePhoto.filename)
                                     }
                                 }
@@ -1381,7 +1379,13 @@ class OfflineDataRepository(
 //                                    if (!PhotoUtil.photoExist(jobItemEstimatePhoto.filename)) {
 //                                        getPhotoForJobItemEstimate(jobItemEstimatePhoto.filename)
 //                                    }
+                                            jobItemMeasurePhoto.setPhotoPath(
+                                                Environment.getExternalStorageDirectory().toString() + File.separator
+                                                        + PhotoUtil.FOLDER + File.separator + jobItemMeasurePhoto.filename
+                                            )
                                         }
+                                    }else{
+
                                     }
                                 }
                             }
@@ -1692,6 +1696,7 @@ class OfflineDataRepository(
         }
 
     }
+
 
 
     @RequiresApi(Build.VERSION_CODES.O)

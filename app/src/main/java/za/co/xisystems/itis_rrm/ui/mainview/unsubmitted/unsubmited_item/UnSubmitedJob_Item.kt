@@ -47,6 +47,7 @@ class UnSubmitedJob_Item(
                Coroutines.main {
                    viewModel.deleJobfromList(jobDTO.JobId)
                    viewModel.deleteItemList(jobDTO!!.JobId)
+                   groupAdapter.clear()
                    groupAdapter.notifyDataSetChanged()
                    notifyChanged()
                }

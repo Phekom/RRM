@@ -8,7 +8,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.data.repositories.JobCreationDataRepository
-import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.IJobSubmit
 import za.co.xisystems.itis_rrm.ui.mainview.create.select_item.SectionProj_Item
 import za.co.xisystems.itis_rrm.utils.JobUtils
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
@@ -242,9 +241,9 @@ class CreateViewModel(
 
     }
 
-    suspend fun getAllProjecItems(projectId: String): LiveData<List<ItemDTOTemp>> {
+    suspend fun getAllProjecItems(projectId: String, jobId: String): LiveData<List<ItemDTOTemp>> {
         return withContext(Dispatchers.IO) {
-            jobCreationDataRepository.getAllProjecItems(projectId)
+            jobCreationDataRepository.getAllProjecItems(projectId, jobId)
         }
     }
 
@@ -281,7 +280,7 @@ class CreateViewModel(
         userId: Int,
         job: JobDTO,
         activity: FragmentActivity
-    ): String {//
+    ): String {
         return withContext(Dispatchers.IO) {
             jobCreationDataRepository.submitJob(userId, job, activity)
         }

@@ -132,11 +132,11 @@ class MeasureViewModel (
     }
 
     suspend fun getJobItemMeasuresForJobIdAndEstimateId(
-        jobId: String?,
-        estimateId: String
+        jobId: String?
+//        ,estimateId: String
     ): LiveData<List<JobItemMeasureDTO>> {
         return withContext(Dispatchers.IO) {
-            measureCreationDataRepository.getJobItemMeasuresForJobIdAndEstimateId(jobId,estimateId)
+            measureCreationDataRepository.getJobItemMeasuresForJobIdAndEstimateId(jobId)
         }
     }
 
@@ -164,6 +164,17 @@ class MeasureViewModel (
     suspend fun getJobFromJobId(jobId: String?):LiveData<JobDTO> {
         return withContext(Dispatchers.IO) {
             measureCreationDataRepository.getSingleJobFromJobId(jobId)
+        }
+    }
+
+    suspend fun errorMsg() : String {
+        return withContext(Dispatchers.IO) {
+            measureCreationDataRepository.errorMsg()
+        }
+    }
+    suspend fun errorState() : Boolean {
+        return withContext(Dispatchers.IO) {
+            measureCreationDataRepository.errorState()
         }
     }
 

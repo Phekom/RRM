@@ -65,7 +65,7 @@ class CreateFragment : BaseFragment(), OfflineListener , KodeinAware {
 //    internal var selectedProjectitem: String? = null
 
     @MyState
-    var the_job : JobDTO? = null
+    var new_job : JobDTO? = null
 
     private lateinit var newJobItemEstimatesPhotosList: ArrayList<JobItemEstimatesPhotoDTO>
     private lateinit var newJobItemEstimatesWorksList: ArrayList<JobEstimateWorksDTO>
@@ -208,7 +208,7 @@ class CreateFragment : BaseFragment(), OfflineListener , KodeinAware {
         )
 
 //        val IssueDate = DateUtil.toStringReadable(Calendar.getInstance().time)
-        the_job = newjob
+        new_job = newjob
 
         toast(newjob.JobId)
         return newjob
@@ -222,13 +222,13 @@ class CreateFragment : BaseFragment(), OfflineListener , KodeinAware {
         Navigation.findNavController(view).navigate(R.id.action_nav_create_to_addProjectFragment)
         Coroutines.main {
 
-            createViewModel.loggedUser.value = useR.userId.toInt()
-            createViewModel.contract_No.value = selectedContract?.contractNo.toString()
+//            createViewModel.loggedUser.value = useR.userId.toInt()
+//            createViewModel.contract_No.value = selectedContract?.contractNo.toString()
 //            createViewModel.contract_ID.value = selectedContract?.contractId
-            createViewModel.project_Code.value = selectedProject?.projectCode.toString()
+//            createViewModel.project_Code.value = selectedProject?.projectCode.toString()
 //            createViewModel.project_ID.value = selectedProject?.projectId
 //            createViewModel.descriptioN.value = description
-            createViewModel.newjob.value = the_job
+            createViewModel.newjob.value = new_job
         }
     }
 
@@ -244,7 +244,7 @@ class CreateFragment : BaseFragment(), OfflineListener , KodeinAware {
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putSerializable("selectedContract", selectedContract)
         outState.putSerializable("selectedProject", selectedProject)
-        outState.putSerializable("job", the_job)
+        outState.putSerializable("job", new_job)
         outState.putSerializable("items", selectedProjectitem)
         outState.putBoolean("isJobSaved", isJobSaved)
         outState.putSerializable("estimatesToRemoveFromDb", estimatesToRemoveFromDb)

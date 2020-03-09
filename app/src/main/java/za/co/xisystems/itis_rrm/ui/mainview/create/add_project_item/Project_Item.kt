@@ -80,13 +80,13 @@ open class Project_Item(
     ) {
         val contractId = contractID
         val newJob = job
-        val selecteDitem = item
+        val selectedItem = item
 ////        val selectProitem = proItem
         Coroutines.main {
 //            //            createViewModel.loggedUser.value = userId
             createViewModel.job_Item.value = newJob
             createViewModel.contract_ID.value = contractId
-            createViewModel.project_Item.value = selecteDitem
+            createViewModel.project_Item.value = selectedItem
 ////        createViewModel.projectSec_Item.value = selectProitem
         }
 

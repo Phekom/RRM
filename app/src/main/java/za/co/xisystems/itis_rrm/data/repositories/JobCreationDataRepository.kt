@@ -35,8 +35,7 @@ import java.util.*
  * Created by Francis Mahlava on 2019/11/28.
  */
 
-const val MINIMUM_INTERVALY = 3
-private val jobDataController : JobDataController? = null
+//const val MINIMUM_INTERVALY = 3
 class JobCreationDataRepository(private val api: BaseConnectionApi, private val Db: AppDatabase, private val prefs: PreferenceProvider) : SafeApiRequest() {
     companion object {
         val TAG: String = JobCreationDataRepository::class.java.simpleName
@@ -44,7 +43,7 @@ class JobCreationDataRepository(private val api: BaseConnectionApi, private val 
 
 
 
-
+    private val jobDataController : JobDataController? = null
     private val workflowJ = MutableLiveData<WorkflowJobDTO>()
     private val workflowJ2 = MutableLiveData<WorkflowJobDTO>()
     private val photoupload = MutableLiveData<String>()
@@ -255,9 +254,9 @@ class JobCreationDataRepository(private val api: BaseConnectionApi, private val 
 
     }
 
-    suspend fun getAllProjecItems(projectId: String): LiveData<List<ItemDTOTemp>> {
+    suspend fun getAllProjecItems(projectId: String, jobId: String): LiveData<List<ItemDTOTemp>> {
         return withContext(Dispatchers.IO) {
-            Db.getItemDao_Temp().getAllProjecItems(projectId)
+            Db.getItemDao_Temp().getAllProjecItems(projectId, jobId)
         }
     }
     suspend fun deleteItemList(jobId: String) {
@@ -292,11 +291,7 @@ class JobCreationDataRepository(private val api: BaseConnectionApi, private val 
         }
     }
 
-    private fun <T> MutableLiveData<T>.postValue(
-        workflowj: WorkflowJobDTO,
-        job: JobDTO,
-        activity: FragmentActivity
-    ) {
+    private fun <T> MutableLiveData<T>.postValue( workflowj: WorkflowJobDTO, job: JobDTO, activity: FragmentActivity ) {
         Coroutines.io {
         if (workflowj != null) {
             val createJob = setWorkflowJobBigEndianGuids(workflowj)
@@ -588,9 +583,7 @@ class JobCreationDataRepository(private val api: BaseConnectionApi, private val 
             if (!Db.getSectionPointDao().checkSectionExists(sectionId, projectId, jobId)) {
                 Db.getSectionPointDao().insertSection(direction,linearId,pointLocation,sectionId,projectId,jobId)
             }
-
-
-
+            Db.getProjectSectionDao().updateSectionDirection(direction,projectId)
         }
     }
 

@@ -16,6 +16,7 @@ import com.xwray.groupie.ExpandableGroup
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.GroupieViewHolder
 import kotlinx.android.synthetic.main.fragment_approvejob.noData
+import kotlinx.android.synthetic.main.fragment_approvemeasure.*
 import kotlinx.android.synthetic.main.fragment_work.*
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
@@ -83,7 +84,8 @@ class WorkFragment : BaseFragment(), KodeinAware {
             Coroutines.main {
                 try {
                     val jobs = workViewModel.offlinedatas.await()
-                    jobs.observe(viewLifecycleOwner, Observer { _ ->
+                    jobs.observe(viewLifecycleOwner, Observer { works ->
+                        if(works.isEmpty()){ noData.visibility = View.VISIBLE}
                         works_swipe_to_refresh.isRefreshing = false
                         dialog.dismiss()
                     })
@@ -194,13 +196,11 @@ class WorkFragment : BaseFragment(), KodeinAware {
                                 for (item in i_tems) {
                                         Coroutines.main {
                                             val   Desc =
-                                                workViewModel?.getDescForProjectItemId(item.projectItemId!!)
+                                                workViewModel?.getDescForProjectItemId(item.projectItemId!!)?:""
                                             val  qty = item.qty.toString()
                                             val  rate = item.lineRate.toString()
                                             val  estimateId = item.estimateId
-                                            add(CardItem(  activity, Desc,   qty!!,
-                                                rate!!,   estimateId!!,  workViewModel, item  , work_items                                    )
-                                            )
+                                            add(CardItem(  activity, Desc,   qty!!, rate!!,   estimateId!!,  workViewModel, item  , work_items                                    ))
 //                                add(CardItem( activity, Desc[i].toString(),  workViewModel)).toString()
                                         }
 

@@ -20,7 +20,6 @@ import java.io.File
 open class CardMeasureItem(
     val activity: FragmentActivity?,
     val itemMeasureId: String,
-
     val qty: String,
     val rate: String,
     val text: String,

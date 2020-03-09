@@ -210,7 +210,7 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
         }
 
         Intent(context?.applicationContext , MainActivity::class.java).also { home ->
-            home.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+//            home.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
             startActivity(home)
         }
         // Navigation.findNavController(view!!)
@@ -222,11 +222,9 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
         Coroutines.main {
             val measurements = approveViewModel.getJobMeasureItemsForJobId(job.jobItemMeasureDTO.jobId, ActivityIdConstants.MEASURE_COMPLETE)
             measurements.observe(viewLifecycleOwner, Observer { job_s ->
-                val measure_items = job_s.distinctBy{
-                    it.jobId
-                }
+//
                 toast(job_s.size.toString())
-                initRecyclerView(measure_items.toMeasure_Item())
+                initRecyclerView(job_s.toMeasure_Item())
 
             })
 

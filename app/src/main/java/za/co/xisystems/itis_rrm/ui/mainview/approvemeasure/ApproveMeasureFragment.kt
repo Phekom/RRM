@@ -69,6 +69,7 @@ companion object{
 //            val measurements = approveViewModel.offlinedata.await()
             measurements.observe(viewLifecycleOwner, Observer { job_s ->
                 noData.visibility = GONE
+                if(job_s.isEmpty()){ noData.visibility = View.VISIBLE}
                 val measure_items = job_s.distinctBy{
                     it.jobId
                 }
@@ -91,6 +92,7 @@ companion object{
                         val freshJobs = approveViewModel.offlinedatas.await()
                         freshJobs.observe(viewLifecycleOwner, Observer {
                             approvem_swipe_to_refresh.isRefreshing = false
+                            if(it.isEmpty()){ noData.visibility = View.VISIBLE}
                             dialog.dismiss()
                         })
                     } catch (e: ApiException) {

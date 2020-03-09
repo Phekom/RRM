@@ -265,12 +265,12 @@ class JobDTO(
         return -1
     }
 
-//    fun removeJobEstimateByItemId(itemId: String?): JobItemEstimateDTO? {
-//        val x = getJobEstimateIndexByItemId(itemId)
-//        return if (x > -1) {
-//            JobItemEstimates?.removeAt(x)
-//        } else null
-//    }
+    fun removeJobEstimateByItemId(itemId: String?): JobItemEstimateDTO? {
+        val x = getJobEstimateIndexByItemId(itemId)
+        return if (x > -1) {
+            JobItemEstimates?.removeAt(x)
+        } else null
+    }
 
     fun getJobEstimateByItemId(itemId: String?): JobItemEstimateDTO? {
         val x = getJobEstimateIndexByItemId(itemId)

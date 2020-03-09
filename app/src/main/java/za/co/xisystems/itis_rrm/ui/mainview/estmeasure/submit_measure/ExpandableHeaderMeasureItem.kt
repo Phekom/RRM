@@ -13,6 +13,7 @@ import android.widget.EditText
 import android.widget.Toast
 import androidx.fragment.app.FragmentActivity
 import androidx.navigation.NavController
+import androidx.navigation.Navigation
 import com.xwray.groupie.ExpandableGroup
 import com.xwray.groupie.ExpandableItem
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
@@ -167,7 +168,7 @@ class ExpandableHeaderMeasureItem(
 //                                                    setJobItemMeasures(jobItemMeasureArrayList,measureViewModel)
 //                                                   measureViewModel.createJobItemMeasureItem(selected, quantityInputEditText.text.toString().toDouble(), jobForJobItemEstimate, measureItem, jobItemMeasurePhotoDTO)
 //                                                    measureViewModel.createJobItemMeasureItem(jobItemMeasure)
-                                                    captureItemMeasureImages(jobItemMeasure)
+                                                    captureItemMeasureImages(jobItemMeasure, view)
 
                                                 }
                                             }
@@ -235,30 +236,36 @@ class ExpandableHeaderMeasureItem(
         return itemMeasure!!
     }
 
-    private fun captureItemMeasureImages(jobItemMeasu: JobItemMeasureDTO) {
-        Coroutines.main {
-//            val jobItemMeasure = measureViewModel.getJobItemMeasureForJobId(measureItem.jobId)
-//            jobItemMeasure.observe(activity!!, androidx.lifecycle.Observer { jItemMeasure ->
-//                Toast.makeText(activity,jItemMeasure.itemMeasureId.toString(),Toast.LENGTH_SHORT).show()
-                captureItemMeasurePhoto(jobItemMeasu)
-//                Navigation.findNavController(view).navigate(R.id.action_submitMeasureFragment_to_captureItemMeasurePhotoFragment)
+//    private fun captureItemMeasureImages(jobItemMeasu: JobItemMeasureDTO) {
+//        Coroutines.main {
+////            val jobItemMeasure = measureViewModel.getJobItemMeasureForJobId(measureItem.jobId)
+////            jobItemMeasure.observe(activity!!, androidx.lifecycle.Observer { jItemMeasure ->
+////                Toast.makeText(activity,jItemMeasure.itemMeasureId.toString(),Toast.LENGTH_SHORT).show()
+//                captureItemMeasurePhoto(jobItemMeasu)
+////                Navigation.findNavController(view).navigate(R.id.action_submitMeasureFragment_to_captureItemMeasurePhotoFragment)
+//
+////            })
+//
+//        }
+//    }
 
-//            })
-
-        }
-    }
-
-    private fun captureItemMeasurePhoto(
-        jobItemMeasure: JobItemMeasureDTO?
+    private fun captureItemMeasureImages(
+        jobItemMeasure: JobItemMeasureDTO?,
+        view: View
     ) {
-        val jobItemMeasure = jobItemMeasure
+//        val jobItemMeasure = jobItemMeasure
         measureViewModel.measurea1_Item1.value = jobItemMeasure
-//        Navigation.findNavController(view).navigate(R.id.action_submitMeasureFragment_to_captureItemMeasurePhotoFragment)
 
-        val intent = Intent()
-        intent.setClass(activity, CaptureItemMeasurePhotoActivity::class.java)
-        intent.putExtra(JOB_IMEASURE, jobItemMeasure)
-        activity!!.startActivity(intent)
+        Navigation.findNavController(view).navigate(R.id.action_submitMeasureFragment_to_captureItemMeasurePhotoFragment)
+
+
+
+//        val intent = Intent()
+//        intent.setClass(activity, CaptureItemMeasurePhotoActivity::class.java)
+//        intent.putExtra(JOB_IMEASURE, jobItemMeasure)
+//        activity!!.startActivity(intent)
+
+
 
 //        val intent = Intent()
 //        intent.setClass(activity, CaptureItemMeasurePhotoActivity::class.java)

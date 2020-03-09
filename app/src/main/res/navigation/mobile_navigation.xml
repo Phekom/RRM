@@ -154,6 +154,11 @@
 <!--                android:id="@+id/action_submitMeasureFragment_to_captureItemMeasurePhotoFragment"-->
 <!--                app:destination="@id/captureItemMeasurePhotoFragment"-->
 <!--                app:popUpTo="@+id/submitMeasureFragment" />-->
+        <action
+                android:id="@+id/action_submitMeasureFragment_to_captureItemMeasurePhotoFragment"
+                app:destination="@id/captureItemMeasurePhotoFragment"
+                app:enterAnim="@anim/scale_light"
+                app:popUpTo="@+id/submitMeasureFragment" />
     </fragment>
     <fragment
             android:id="@+id/captureWorkFragment"
@@ -164,7 +169,15 @@
                 android:id="@+id/action_captureWorkFragment_to_nav_work"
                 app:destination="@id/nav_work" />
     </fragment>
-<!--    <fragment-->
+    <fragment
+            android:id="@+id/captureItemMeasurePhotoFragment"
+            android:name="za.co.xisystems.itis_rrm.ui.mainview.estmeasure.submit_measure.CaptureItemMeasurePhotoFragment"
+            android:label="CaptureItemMeasurePhotoFragment" >
+        <action
+                android:id="@+id/action_captureItemMeasurePhotoFragment_to_submitMeasureFragment"
+                app:destination="@id/submitMeasureFragment" />
+    </fragment>
+    <!--    <fragment-->
 <!--            android:id="@+id/captureItemMeasurePhotoFragment"-->
 <!--            android:name="za.co.xisystems.itis_rrm.ui.mainview.estmeasure.submit_measure.CaptureItemMeasurePhotoFragment"-->
 <!--            android:label="fragment_capture_item_measure_photo"-->

@@ -20,7 +20,7 @@ import org.apache.sanselan.formats.tiff.write.TiffOutputSet
 import za.co.xisystems.itis_rrm.BuildConfig
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates.EstimatePhotoFragment
-import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.submit_measure.CaptureItemMeasurePhotoActivity
+//import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.submit_measure.CaptureItemMeasurePhotoActivity
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import java.io.*
 import java.text.DateFormat
@@ -510,17 +510,17 @@ object PhotoUtil {
 
     }
 
-    fun getUri2(captureItemMeasurePhotoActivity: CaptureItemMeasurePhotoActivity): Uri? {
-        try {
-            return FileProvider.getUriForFile(
-                captureItemMeasurePhotoActivity, BuildConfig.APPLICATION_ID + ".provider",
-                createImageFile()
-            )
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
-        return null
-    }
+//    fun getUri2(captureItemMeasurePhotoActivity: CaptureItemMeasurePhotoActivity): Uri? {
+//        try {
+//            return FileProvider.getUriForFile(
+//                captureItemMeasurePhotoActivity, BuildConfig.APPLICATION_ID + ".provider",
+//                createImageFile()
+//            )
+//        } catch (e: IOException) {
+//            e.printStackTrace()
+//        }
+//        return null
+//    }
 
 
     fun getUri3(context : Context): Uri? {

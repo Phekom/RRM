@@ -70,18 +70,24 @@ class HomeFragment : BaseFragment(), KodeinAware {
             ViewModelProviders.of(this, factory).get(HomeViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
         Coroutines.main {
-            data2_loading.show()
+
+//            data2_loading.show()
             val user = homeViewModel.user.await()
             user.observe(viewLifecycleOwner, Observer { user_ ->
-
                 username?.text = user_.userName
             })
 
             val contracts = homeViewModel.offlinedata.await()
+//            dialog.show()
             contracts.observe(viewLifecycleOwner, Observer { contrcts ->
-                val alldata =  contrcts.count()
+                dialog.show()
+                val alldata =  4//contrcts.count()
+                if (contrcts.isEmpty()){
+                    dialog.show()
+                    Coroutines.main { homeViewModel.offlinedatas.await()}
+                }else{
                 if (contrcts.size == alldata)
-                    dialog.dismiss()
+                    dialog.dismiss()}
                 group2_loading.visibility = View.GONE
             })
 

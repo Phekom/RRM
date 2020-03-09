@@ -52,7 +52,10 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
     internal var useR: Int? = null
 
     @MyState
-    lateinit var job: JobDTO
+    lateinit var newjob: JobDTO
+
+    @MyState
+    lateinit var editjob: JobDTO
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -79,7 +82,10 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
         createViewModel = activity?.run {
             ViewModelProviders.of(this, factory).get(CreateViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
+
         Coroutines.main {
+
+
             itemSections = ArrayList<ItemSectionDTO>()
             newJobItemEstimatesList = ArrayList<JobItemEstimateDTO>()
             bindUI()
@@ -99,26 +105,26 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
         })
 
         createViewModel.newjob.observe(viewLifecycleOwner, Observer { newJ ->
-                     job = newJ
+            newjob = newJ
         })
-
 
         createViewModel.jobtoEdit_Item.observe(viewLifecycleOwner, Observer { newJ_Edit ->
             setItemsBySections(newJ_Edit.ProjectId!!)
-            job = newJ_Edit
+            editjob = newJ_Edit
         })
-
 
     }
 
     private fun setItemsBySections(projectId: String) {
         Coroutines.main {
+            val dialog = setDataProgressDialog(activity!!, getString(R.string.data_loading_please_wait))
             val sectionItems = createViewModel.getAllSectionItem()
+            dialog.show()
 //            val sectionItems = createViewModel.offlinedata.await()
             sectionItems?.observe(viewLifecycleOwner, Observer { sec_tions ->
                 val sections = sec_tions
                 val sectionNmbr = arrayOfNulls<String?>(sections.size)
-
+                dialog.dismiss()
                 for (item in sections.indices) {
                     sectionNmbr[item] = sections[item].description
                 }
@@ -216,7 +222,7 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
     ): ItemDTOTemp {
         val newItem = ItemDTOTemp(
             0,itemDTO.itemId,itemDTO.descr,itemDTO.itemCode,itemSections,itemDTO.tenderRate,itemDTO.uom,itemDTO.workflowId,
-            itemDTO.sectionItemId,itemDTO.quantity,itemDTO.estimateId, itemDTO.projectId!!, job.JobId
+            itemDTO.sectionItemId,itemDTO.quantity,itemDTO.estimateId, itemDTO.projectId!!, newjob.JobId
         )
         items.add(newItem)
         return newItem

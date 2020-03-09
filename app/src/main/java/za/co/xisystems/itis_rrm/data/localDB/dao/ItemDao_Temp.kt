@@ -3,8 +3,6 @@ package za.co.xisystems.itis_rrm.data.localDB.dao
 import androidx.lifecycle.LiveData
 import androidx.room.*
 import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
-import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.ItemSectionDTO
 
 /**
  * Created by Francis Mahlava on 2019/11/21.
@@ -20,8 +18,8 @@ interface ItemDao_Temp {
     @Query("SELECT * FROM PROJECT_ITEM_TABLE_TEMP WHERE itemId = :itemId")
     fun checkItemExistsItemId(itemId: String): Boolean
 
-    @Query("SELECT * FROM PROJECT_ITEM_TABLE_TEMP WHERE projectId = :projectId ")
-    fun getAllProjecItems(projectId: String):  LiveData<List<ItemDTOTemp>>
+    @Query("SELECT * FROM PROJECT_ITEM_TABLE_TEMP WHERE projectId = :projectId AND jobId = :jobId")
+    fun getAllProjecItems(projectId: String, jobId: String):  LiveData<List<ItemDTOTemp>>
 
 //    @Query("SELECT * FROM PROJECT_ITEM_TABLE_TEMP WHERE itemId = :itemId")
 //    fun getItemForItemId(itemId: String): LiveData<ItemDTO>
