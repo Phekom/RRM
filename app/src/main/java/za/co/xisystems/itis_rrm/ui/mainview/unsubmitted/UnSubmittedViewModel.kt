@@ -54,7 +54,7 @@ class UnSubmittedViewModel(
     }
 
     fun deleJobfromList(jobId: String) {
-        offlineDataRepository.deleJobfromList(jobId)
+        offlineDataRepository.deleteJobFromList(jobId)
     }
 
     fun deleteItemList(jobId: String) {

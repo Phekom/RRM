@@ -3,6 +3,7 @@ package za.co.xisystems.itis_rrm.data.localDB.dao
 import androidx.lifecycle.LiveData
 import androidx.room.*
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksPhotoDTO
+import java.util.ArrayList
 
 /**
  * Created by Francis Mahlava on 2019/11/26.

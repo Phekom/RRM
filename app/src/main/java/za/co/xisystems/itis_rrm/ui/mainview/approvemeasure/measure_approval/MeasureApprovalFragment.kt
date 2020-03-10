@@ -48,6 +48,11 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -206,7 +211,7 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
         }
 
         Intent(context?.applicationContext , MainActivity::class.java).also { home ->
-            home.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+//            home.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
             startActivity(home)
         }
         // Navigation.findNavController(view!!)
@@ -221,6 +226,7 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
                 val measureItems = job_s.distinctBy {
                     it.jobId
                 }
+//
                 toast(job_s.size.toString())
                 initRecyclerView(measureItems.toMeasureItem())
 
@@ -260,6 +266,18 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
     fun onButtonPressed(uri: Uri) {
 //        listener?.onFragmentInteraction(uri)
     }
+
+
+    override fun onDetach() {
+        super.onDetach()
+
+    }
+
+
+
+
+
+
 
 
 }

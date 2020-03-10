@@ -1,6 +1,7 @@
 package za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.unsubmited_item
 
 import android.view.View
+import androidx.fragment.app.FragmentActivity
 import androidx.navigation.Navigation
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
@@ -17,12 +18,12 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
 
 
 class UnSubmittedJobItem(
-    private val jobDTO: JobDTO,
+    val jobDTO: JobDTO,
     private val viewModel: UnSubmittedViewModel,
     private val groupAdapter: GroupAdapter<GroupieViewHolder>
 ) : Item(){
 
-    private var clickListener: ((UnSubmittedJobItem) -> Unit)? = null
+    var clickListener: ((UnSubmittedJobItem) -> Unit)? = null
 
 
     override fun bind(viewHolder: GroupieViewHolder, position: Int) {
@@ -44,7 +45,8 @@ class UnSubmittedJobItem(
            deleteButton.setOnClickListener {
                Coroutines.main {
                    viewModel.deleJobfromList(jobDTO.JobId)
-                   viewModel.deleteItemList(jobDTO.JobId)
+                   viewModel.deleteItemList(jobDTO!!.JobId)
+                   groupAdapter.clear()
                    groupAdapter.notifyDataSetChanged()
                    notifyChanged()
                }
@@ -72,17 +74,17 @@ class UnSubmittedJobItem(
 
     override fun getLayout() = R.layout.unsubmtd_job_list_item
 
-    private fun updateItem() {
+    private fun GroupieViewHolder.updateItem() {
 
     }
 
-    private fun updatePojectItem() {
+    private fun GroupieViewHolder.updatePojectItem() {
 
     }
 
 
 }
 
-private fun getItemId(position: Int): Long {
+private fun GroupieViewHolder.getItemId(position: Int): Long {
     return position.toLong()
 }

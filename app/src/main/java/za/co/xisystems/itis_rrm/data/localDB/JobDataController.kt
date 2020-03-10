@@ -3,6 +3,7 @@ package za.co.xisystems.itis_rrm.data.localDB
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.utils.DataConversion
+import java.util.ArrayList
 
 /**
  * Created by Francis Mahlava on 2020/01/02.
@@ -124,6 +125,36 @@ object JobDataController{
         }
         return job
     }
+
+
+    fun setJobMeasureLittleEndianGuids(jim: JobItemMeasureDTO): JobItemMeasureDTO {
+        if (jim != null) {
+//            for (jim in jobItemMeasure) {
+            jim.setEstimateId(DataConversion.toLittleEndian(jim.estimateId))
+            jim.setJobId(DataConversion.toLittleEndian(jim.jobId))
+            jim.setProjectItemId(DataConversion.toLittleEndian(jim.projectItemId))
+            jim.setItemMeasureId(DataConversion.toLittleEndian(jim.itemMeasureId))
+
+//                if (jim.trackRouteId != null)
+//                    jim.setTrackRouteId(DataConversion.toLittleEndian(jim.trackRouteId))
+//                else jim.trackRouteId = null
+
+//                jim.setProjectVoId(DataConversion.toLittleEndian(jim.projectVoId))
+            if (jim.jobItemMeasurePhotos != null) {
+                for (jmep in jim.jobItemMeasurePhotos) {
+                    jmep.setPhotoId(DataConversion.toLittleEndian(jmep.photoId))
+                    jmep.setEstimateId(DataConversion.toLittleEndian(jmep.estimateId))
+                    jmep.setItemMeasureId(DataConversion.toLittleEndian(jmep.itemMeasureId))
+                }
+            }
+
+
+//            }
+        }
+
+        return jim
+    }
+
 
 
     fun setMsg( uplodmsg : String?): String? {
