@@ -85,12 +85,17 @@ class HomeFragment : BaseFragment(), KodeinAware {
                     username?.text = user_.userName
                 })
 
+                homeViewModel.offlineSectionItems.start()
+
                 val contracts = homeViewModel.offlineData.await()
                 contracts.observe(viewLifecycleOwner, Observer { mContracts ->
                     val allData = mContracts.count()
                     if (mContracts.size == allData)
                         group2_loading.visibility = View.GONE
                 })
+
+                homeViewModel.offlineSectionItems.start()
+
             } catch (e: ApiException) {
                 ToastUtils().toastLong(activity, e.message)
                 Log.e(TAG, "API Exception", e)

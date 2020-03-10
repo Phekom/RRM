@@ -1,8 +1,14 @@
 package za.co.xisystems.itis_rrm.ui.mainview.home
 
 import android.content.Context
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
+import za.co.xisystems.itis_rrm.data.localDB.entities.SectionItemDTO
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
@@ -15,9 +21,7 @@ class HomeViewModel(
 ) : ViewModel() {
 
     val offlineData by lazyDeferred {
-        offlineDataRepository.getSectionItems()
         offlineDataRepository.getContracts()
-//        offlineDataRepository.getJobs()
     }
     val user by lazyDeferred {
         repository.getUser()
@@ -25,6 +29,10 @@ class HomeViewModel(
 
     val offlineWorkFlows by lazyDeferred {
         offlineDataRepository.getWorkFlows()
+    }
+
+    val offlineSectionItems by lazyDeferred {
+        offlineDataRepository.getSectionItems()
     }
 
 ////    if (context?.applicationContext != null) {
