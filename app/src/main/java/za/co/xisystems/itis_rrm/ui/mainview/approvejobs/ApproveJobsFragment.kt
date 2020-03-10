@@ -16,6 +16,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.GroupieViewHolder
 import kotlinx.android.synthetic.main.fragment_approvejob.*
+import kotlinx.android.synthetic.main.fragment_approvejob.noData
+import kotlinx.android.synthetic.main.fragment_approvemeasure.*
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
@@ -67,6 +69,9 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
                     it.JobId
                 }
                 noData.visibility = GONE
+                if (job_s.isEmpty()) {
+                    noData.visibility = View.VISIBLE
+                }
                 toast(job_s.size.toString())
                 initRecyclerView(jItems.toApproveListItems())
                 group3_loading.visibility = GONE
@@ -88,6 +93,9 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
                         val freshJobs = approveViewModel.offlineUserTaskList.await()
                         freshJobs.observe(viewLifecycleOwner, Observer {
                             jobs_swipe_to_refresh.isRefreshing = false
+                            if (it.isEmpty()) {
+                                noData.visibility = View.VISIBLE
+                            }
                             dialog.dismiss()
                         })
                     } catch (e: ApiException) {

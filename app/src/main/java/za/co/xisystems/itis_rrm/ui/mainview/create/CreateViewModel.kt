@@ -240,9 +240,9 @@ class CreateViewModel(
 
     }
 
-    suspend fun getAllProjecItems(projectId: String): LiveData<List<ItemDTOTemp>> {
+    suspend fun getAllProjecItems(projectId: String, jobId: String): LiveData<List<ItemDTOTemp>> {
         return withContext(Dispatchers.IO) {
-            jobCreationDataRepository.getAllProjectItems(projectId)
+            jobCreationDataRepository.getAllProjectItems(projectId, jobId)
         }
     }
 
@@ -279,7 +279,7 @@ class CreateViewModel(
         userId: Int,
         job: JobDTO,
         activity: FragmentActivity
-    ): String {//
+    ): String {
         return withContext(Dispatchers.IO) {
             jobCreationDataRepository.submitJob(userId, job, activity)
         }

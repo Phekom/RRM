@@ -96,11 +96,11 @@ class MeasureViewModel (
         }
     }
 
-    fun deleteItemMeasurefromList(itemMeasureId: String) {
+    suspend fun deleteItemMeasurefromList(itemMeasureId: String) {
         measureCreationDataRepository.deleteItemMeasurefromList(itemMeasureId)
     }
 
-    fun deleteItemMeasurephotofromList(itemMeasureId: String) {
+    suspend fun deleteItemMeasurephotofromList(itemMeasureId: String) {
         measureCreationDataRepository.deleteItemMeasurephotofromList(itemMeasureId)
     }
     suspend fun processWorkflowMove(
@@ -119,11 +119,11 @@ class MeasureViewModel (
     }
 
     suspend fun getJobItemMeasuresForJobIdAndEstimateId(
-        jobId: String?,
-        estimateId: String
+        jobId: String?
+//        ,estimateId: String
     ): LiveData<List<JobItemMeasureDTO>> {
         return withContext(Dispatchers.IO) {
-            measureCreationDataRepository.getJobItemMeasuresForJobIdAndEstimateId(jobId,estimateId)
+            measureCreationDataRepository.getJobItemMeasuresForJobIdAndEstimateId(jobId)
         }
     }
 
@@ -154,6 +154,18 @@ class MeasureViewModel (
         }
     }
 
+    suspend fun errorMsg(): String {
+        return withContext(Dispatchers.IO) {
+            measureCreationDataRepository.errorMsg()
+        }
+    }
+
+    suspend fun errorState(): Boolean {
+        return withContext(Dispatchers.IO) {
+            measureCreationDataRepository.errorState()
+        }
+    }
+
     suspend fun setJobItemMeasureImages(
         jobItemMeasurePhotoList: ArrayList<JobItemMeasurePhotoDTO>,
         estimateId: String?,
@@ -162,7 +174,7 @@ class MeasureViewModel (
         measureCreationDataRepository.setJobItemMeasureImages(jobItemMeasurePhotoList,estimateId, selectedJobItemMeasure)
     }
 
-    fun saveJobItemMeasureItems(jobItemMeasureDTO: ArrayList<JobItemMeasureDTO>) {
+    suspend fun saveJobItemMeasureItems(jobItemMeasureDTO: ArrayList<JobItemMeasureDTO>) {
         measureCreationDataRepository.saveJobItemMeasureItems(jobItemMeasureDTO)
     }
 

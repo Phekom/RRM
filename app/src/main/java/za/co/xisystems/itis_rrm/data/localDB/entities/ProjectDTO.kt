@@ -71,7 +71,9 @@ data class ProjectDTO(
         TODO("projectSections"),
         TODO("voItems"),
         parcel.readString()
-    )
+    ) {
+
+    }
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeInt(id)

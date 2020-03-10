@@ -60,6 +60,7 @@ class UnSubmittedFragment : BaseFragment(), KodeinAware {
 
                 measurements.observe(viewLifecycleOwner, Observer { job_s ->
                     if (job_s.isEmpty()) {
+                        groupAdapter.clear()
                         noData.visibility = View.VISIBLE
                         group12_loading.visibility = View.GONE
                     } else {
@@ -100,7 +101,5 @@ class UnSubmittedFragment : BaseFragment(), KodeinAware {
         }
 
     }
-
-
 }
 

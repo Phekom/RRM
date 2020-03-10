@@ -12,7 +12,11 @@ val uncaughtExceptionHandler = CoroutineExceptionHandler { _, exception ->
     when (exception) {
         is NoConnectivityException -> throw exception
         is NoInternetException -> throw exception
-        else -> Log.e("LazyDeferred", "UncaughtException", exception)
+        else -> {
+            Log.e("LazyDeferred", "UncaughtException", exception)
+            exception.printStackTrace()
+            throw exception
+        }
     }
 }
 

@@ -24,7 +24,7 @@ const val PROJECT_ITEM_TABLE = "PROJECT_ITEM_TABLE"
             entity = ProjectDTO::class,
             parentColumns = arrayOf("projectId"),
             childColumns = arrayOf("projectId"),
-            onDelete = CASCADE
+            onDelete = ForeignKey.CASCADE
         )
     ]
 )

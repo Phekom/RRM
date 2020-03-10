@@ -16,6 +16,7 @@ import com.xwray.groupie.ExpandableGroup
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.GroupieViewHolder
 import kotlinx.android.synthetic.main.fragment_approvejob.noData
+import kotlinx.android.synthetic.main.fragment_approvemeasure.*
 import kotlinx.android.synthetic.main.fragment_work.*
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
@@ -72,24 +73,20 @@ class WorkFragment : BaseFragment(), KodeinAware {
                         it.JobId
                     }
                     initRecyclerView(headerItems.toWorkListItems())
+                    dialog.dismiss()
 
                 })
             } catch (e: ApiException) {
                 ToastUtils().toastLong(activity, e.message)
-                works_swipe_to_refresh.isRefreshing = false
-                dialog.dismiss()
                 Log.e(TAG, "API Exception", e)
             } catch (e: NoInternetException) {
                 ToastUtils().toastLong(activity, e.message)
-                // snackError(this.coordinator, e.message)
-                dialog.dismiss()
-                works_swipe_to_refresh.isRefreshing = false
                 Log.e(TAG, "No Internet Connection", e)
             } catch (e: NoConnectivityException) {
                 ToastUtils().toastLong(activity, e.message)
-                dialog.dismiss()
-                works_swipe_to_refresh.isRefreshing = false
                 Log.e(TAG, "Service Host Unreachable", e)
+            } finally {
+                dialog.dismiss()
             }
 
         }
@@ -108,26 +105,25 @@ class WorkFragment : BaseFragment(), KodeinAware {
             Coroutines.main {
                 try {
                     val jobs = workViewModel.offlineUserTaskList.await()
-                    jobs.observe(viewLifecycleOwner, Observer {
+                    jobs.observe(viewLifecycleOwner, Observer { works ->
+                        if (works.isEmpty()) {
+                            noData.visibility = View.VISIBLE
+                        }
                         works_swipe_to_refresh.isRefreshing = false
                         dialog.dismiss()
                     })
                 } catch (e: ApiException) {
                     ToastUtils().toastLong(activity, e.message)
-                    works_swipe_to_refresh.isRefreshing = false
-                    dialog.dismiss()
                     Log.e(TAG, "API Exception", e)
                 } catch (e: NoInternetException) {
                     ToastUtils().toastLong(activity, e.message)
-                    // snackError(this.coordinator, e.message)
-                    dialog.dismiss()
-                    works_swipe_to_refresh.isRefreshing = false
                     Log.e(TAG, "No Internet Connection", e)
                 } catch (e: NoConnectivityException) {
                     ToastUtils().toastLong(activity, e.message)
+                    Log.e(TAG, "Service Host Unreachable", e)
+                } finally {
                     dialog.dismiss()
                     works_swipe_to_refresh.isRefreshing = false
-                    Log.e(TAG, "Service Host Unreachable", e)
                 }
 
             }
@@ -212,7 +208,8 @@ class WorkFragment : BaseFragment(), KodeinAware {
                                 for (item in i_tems) {
                                     Coroutines.main {
                                         val desc =
-                                                workViewModel.getDescForProjectItemId(item.projectItemId!!)
+                                            workViewModel.getDescForProjectItemId(item.projectItemId!!)
+                                                ?: ""
                                         val qty = item.qty.toString()
                                         val rate = item.lineRate.toString()
                                         val estimateId = item.estimateId

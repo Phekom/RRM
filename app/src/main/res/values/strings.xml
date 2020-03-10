@@ -200,6 +200,7 @@
     <string name="job_saved">Job Saved</string>
     <string name="job_saved_and_can_be_found_under_unsubmitted_jobs">Job saved and can be found under Unsubmitted jobs.</string>
     <string name="job_submitted">Job Submitted</string>
+    <string name="measure_submitted">Measure Submitted</string>
     <string name="job_submitted_successfully">Job submitted successfully</string>
     <string name="jobid">JobId</string>
     <string name="jpg">.jpg</string>

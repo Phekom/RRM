@@ -110,10 +110,10 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
                 this
             )
         locationHelper.onCreate()
-        estimateWorksPhotoArrayList = ArrayList()
-        estimateWorksList = ArrayList()
-        estimateWorksArrayList = ArrayList()
-        jobWorkStep = ArrayList()
+        estimateWorksPhotoArrayList = ArrayList<JobEstimateWorksPhotoDTO>()
+        estimateWorksList = ArrayList<JobEstimateWorksDTO>()
+        estimateWorksArrayList = ArrayList<JobEstimateWorksDTO>()
+        jobWorkStep = ArrayList<WF_WorkStepDTO>()
 
     }
 
@@ -147,88 +147,6 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
 
             })
 
-            // access the ImageSwitcher
-//            work_imageView?.setFactory {
-//                val imgView = ImageView(activity!!.applicationContext)
-//                imgView.scaleType = ImageView.ScaleType.FIT_CENTER
-//                imgView.setPadding(2, 2, 2, 2)
-//                imgView
-//            }
-
-            // set the method and pass array as a parameter
-            val photo = intArrayOf(estimateWorksPhotoArrayList.size)
-
-//            var imageIds = intArrayOf(
-//                R.drawable.image1,
-//                R.drawable.images2,
-//                R.drawable.image3,
-//                R.drawable.images4,
-//                R.drawable.images5
-//            )
-
-//            var count = photo.size
-//            var count = imageIds.size
-            // to keep current Index of ImageID array
-//            var currentIndex = 0
-//            work_imageView?.setImageResource(photo[currentIndex])
-
-//            val imgIn = AnimationUtils.loadAnimation(
-//                context, android.R.anim.slide_in_left)
-//            work_imageView?.inAnimation = imgIn
-//
-//            val imgOut = AnimationUtils.loadAnimation(
-//                context, android.R.anim.slide_out_right)
-//            work_imageView?.outAnimation = imgOut
-
-            // previous button functionality
-//            val prev = activity?.findViewById<Button>(R.id.prev)
-//            prev?.setOnClickListener {
-////                currentIndex = if (currentIndex - 1 >= 0) currentIndex - 1 else 2
-//                currentIndex--
-//                if (currentIndex == photo.size) currentIndex = 0
-////                index = if (index - 1 >= estimateWorksPhotoArrayList.size) index - 1 else 2
-////                work_imageView?.setImageResource(photo[index])
-//                work_imageView?.setImageResource(photo[currentIndex])
-//            }
-            // next button functionality
-//            val next = activity?.findViewById<Button>(R.id.next)
-//            next?.setOnClickListener {
-////                // TODO Auto-generated method stub
-////                currentIndex++
-////                //  Check If index reaches maximum then reset it
-////                if (currentIndex == count)
-////                    currentIndex = 0
-//                currentIndex = if (currentIndex + 1 < photo.size) currentIndex +1 else 0
-////                work_imageView?.setImageResource(photo[currentIndex])
-//
-//                // TODO Auto-generated method stub
-////                currentIndex++
-////                if (currentIndex == count) currentIndex = 0
-//                work_imageView.setImageResource(photo[currentIndex])
-//
-//            }
-
-
-//            items_swipe_to_refresh.setProgressBackgroundColorSchemeColor(
-//                ContextCompat.getColor(
-//                    context!!.applicationContext,
-//                    R.color.colorPrimary
-//                )
-//            )
-//            items_swipe_to_refresh.setColorSchemeColors(Color.WHITE)
-//
-//            items_swipe_to_refresh.setOnRefreshListener {
-//                Coroutines.main {
-//                    workViewModel.work_Item.observe(viewLifecycleOwner, Observer { estimate ->
-//                        getWorkItems(estimate.estimateId)
-////                        estimatId = estimate.estimateId
-//                        itemEsti = estimate
-//                        items_swipe_to_refresh.isRefreshing = false
-//                    })
-//
-//                }
-//            }
-
 
         }
 
@@ -250,22 +168,17 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
         }
         move_workflow_button.setOnClickListener {
             if (estimateWorksPhotoArrayList.size > 0) {
-
+                val prog =
+                    setDataProgressDialog(activity!!, getString(R.string.data_loading_please_wait))
                 if (ServiceUtil.isNetworkConnected(activity!!.applicationContext)) { //  Lets Send to Service
-                    val prog = ProgressDialog(activity)
-                    prog.setTitle(getString(R.string.please_wait))
-                    prog.setMessage(getString(R.string.data_loading_please_wait))
-                    prog.setCancelable(false)
-                    prog.isIndeterminate = true
-                    prog.setProgressStyle(ProgressDialog.STYLE_SPINNER)
-                    prog.show()
+
                     itemEstiWorks.jobEstimateWorksPhotos = estimateWorksPhotoArrayList
                     itemEstiWorks.jobItemEstimate = jobitemEsti
 
                     sendJobToService(itemEstiWorks, prog)
                 } else {
                     val networkToast = Toast.makeText(
-                        activity?.applicationContext,
+                        activity?.getApplicationContext(),
                         R.string.no_connection_detected,
                         Toast.LENGTH_LONG
                     )
@@ -286,17 +199,6 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
 
             }
 
-//            refreshView()
-
-
-//            toast("Ready to Submit the Images")
-//            createUpdateDatabase(estimatId)
-//            if (ServiceUtil.isNetworkConnected(activity!!.applicationContext)) { //  Lets Send to Service
-////  sendJobToService(fetchLatestJobInfoFromSQLite());
-//                sendJobToService()
-//            } else {
-//
-//            }
         }
 
         work_imageView.setOnClickListener {
@@ -423,71 +325,10 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
             toast(R.string.error_getting_image)
             e.printStackTrace()
         }
-        Glide.with(this)
+        GlideApp.with(this)
             .asBitmap()
             .load(imageUri)
             .into(work_imageView)
-
-//            .into(work_imageView as ImageView)
-//        work_imageView.showNext()
-//        work_imageView.showPrevious()
-
-//
-//            .load(imageUri)
-//            .listener(object : RequestListener<Drawable> {
-//                override fun onLoadFailed(
-//                    e: GlideException?,
-//                    model: Any?,
-//                    target: Target<Drawable>?,
-//                    isFirstResource: Boolean
-//                ): Boolean {
-//                    return false
-//                }
-//
-//                override fun onResourceReady(
-//                    resource: Drawable?,
-//                    model: Any?,
-//                    target: Target<Drawable>?,
-//                    dataSource: DataSource?,
-//                    isFirstResource: Boolean
-//                ): Boolean {
-//                    work_imageView.setImageDrawable(resource)
-//                    return true
-//                }
-//
-//
-//            })
-//            .into(work_imageView.nextView as ImageView)
-//
-
-
-//        GlideApp.with(this)
-//            .asBitmap()
-//
-////            .asDrawable()
-//            .load(imageUri)
-//            .listener(object : RequestListener<Bitmap> {
-//                override fun onLoadFailed(
-//                    e: GlideException?,
-//                    model: Any?,
-//                    target: Target<Bitmap>?,
-//                    isFirstResource: Boolean
-//                ) = false
-//
-//                override fun onResourceReady(
-//                    resource: Bitmap?,
-//                    model: Any?,
-//                    target: Target<Bitmap>?,
-//                    dataSource: DataSource?,
-//                    isFirstResource: Boolean
-//                ): Boolean {
-//                    (work_imageView.nextView as? ImageView)?.setImageBitmap(resource)
-//                    work_imageView.showNext()
-//                    return true
-//                }
-//
-//            })
-//            .submit()
 
         groupAdapter.notifyItemChanged(0)
     }
@@ -523,7 +364,7 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
         dialog.setContentView(R.layout.new_job_photo)
         val zoomageView =
             dialog.findViewById<ZoomageView>(R.id.zoomedImage)
-        Glide.with(this.activity!!)
+        GlideApp.with(this.activity!!)
             .load(imageUrl)
             .into(zoomageView)
         dialog.show()
@@ -582,7 +423,7 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
                 estimateWorks.observe(viewLifecycleOwner, Observer { work_s ->
                     //                    setButtonStates(work_s.get(0).actId, work_s)
                     for (itemwork in work_s) {
-                        if (itemwork.actId == 21) {
+                        if (itemwork?.actId == ActivityIdConstants.EST_WORKS_COMPLETE) {
                             Coroutines.main {
                                 val workDone: Int = workViewModel.getJobItemsEstimatesDoneForJobId(
                                     itemEstiJob.JobId,
@@ -598,7 +439,7 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
                             }
                         } else {
                             val id =
-                                3 //TODO("THis part must be Deleted when the Dynamic workflow is Added")
+                                3 //TODO("THis part must be Deleted when the Dynamic workflow is Implemented ")
                             Coroutines.main {
                                 val workcode = workViewModel.getWokrCodes(id)
                                 workcode.observe(viewLifecycleOwner, Observer { workCodes ->
@@ -617,18 +458,7 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
                 })
 
             }
-//            val works = workViewModel.getJobsForActivityId(
-//                ActivityIdConstants.JOB_APPROVED
-//                , ActivityIdConstants.ESTIMATE_INCOMPLETE
-//            )
-//
-////            val jobs = approveViewModel.offlinedata.await()
-//            works.observe(viewLifecycleOwner, Observer { work_s ->
-//                noData.visibility = View.GONE
-//                toast(work_s.size.toString())
-//                initRecyclerView(work_s.toWorkListItems())
-//                group7_loading.visibility = View.GONE
-//
+
         }
     }
 
@@ -695,18 +525,16 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
                             toast("Error: selectedJob is null")
                         }
                         else -> {
-                            toast(jobItEstimate.jobId)
+                            toast(jobItEstimate?.jobId)
                             // TODO beware littlEndian conversion
                             val trackRounteId: String =
-                                DataConversion.toLittleEndian(jobItEstimate.trackRouteId)!!
-                            val direction: Int = workflowDirection.value
+                                DataConversion.toLittleEndian(jobItEstimate?.trackRouteId)!!
+                            val direction: Int = workflowDirection.getValue()
                             Coroutines.main {
-                                val prog = ProgressDialog(activity)
-                                prog.setTitle(getString(R.string.please_wait))
-                                prog.setMessage(getString(R.string.loading_job_wait))
-                                prog.setCancelable(false)
-                                prog.isIndeterminate = true
-                                prog.setProgressStyle(ProgressDialog.STYLE_SPINNER)
+                                val prog = setDataProgressDialog(
+                                    activity!!,
+                                    getString(R.string.data_loading_please_wait)
+                                )
                                 prog.show()
                                 val submit = workViewModel.processWorkflowMove(
                                     user_.userId,
@@ -714,7 +542,7 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
                                     null,
                                     direction
                                 )
-                                if (submit.isEmpty()) {
+                                if (submit.isNullOrEmpty()) {
                                     //                                toast(submit)
                                     //                                 prog.dismiss()
                                     popViewOnJobSubmit(direction, submit)
@@ -731,7 +559,6 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
                         }
                     }
                 }
-//                })
             })
 
         }

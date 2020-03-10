@@ -81,7 +81,6 @@ class HomeFragment : BaseFragment(), KodeinAware {
                 data2_loading.show()
                 val user = homeViewModel.user.await()
                 user.observe(viewLifecycleOwner, Observer { user_ ->
-
                     username?.text = user_.userName
                 })
 
