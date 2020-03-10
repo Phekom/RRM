@@ -7,10 +7,7 @@ import android.util.Log
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.google.gson.Gson
-import com.google.gson.JsonElement
-import com.google.gson.JsonObject
-import com.google.gson.JsonParser
+import com.google.gson.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.R
@@ -18,13 +15,13 @@ import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
-import za.co.xisystems.itis_rrm.utils.Coroutines
-import za.co.xisystems.itis_rrm.utils.DataConversion
-import za.co.xisystems.itis_rrm.utils.PhotoUtil
+import za.co.xisystems.itis_rrm.data.preferences.PreferenceProvider
+import za.co.xisystems.itis_rrm.utils.*
 import za.co.xisystems.itis_rrm.utils.PhotoUtil.getPhotoPathFromExternalDirectory
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import java.util.*
+import kotlin.collections.ArrayList
 
 
 /**
@@ -33,7 +30,8 @@ import java.util.*
 
 class MeasureCreationDataRepository(
     private val api: BaseConnectionApi,
-    private val Db: AppDatabase
+    private val Db: AppDatabase,
+    private val prefs: PreferenceProvider
 ) : SafeApiRequest() {
     companion object {
         val TAG: String = MeasureCreationDataRepository::class.java.simpleName
@@ -90,13 +88,8 @@ class MeasureCreationDataRepository(
 
 
     suspend fun saveMeasurementItems(
-        userId: String,
-        jobId: String,
-        jimNo: String?,
-        contractVoId: String?,
-        mSures: ArrayList<JobItemMeasureDTO>,
-        activity: FragmentActivity,
-        itemMeasureJob: JobDTO
+        userId: String, jobId: String, jimNo: String?, contractVoId: String?,
+        mSures: ArrayList<JobItemMeasureDTO>, activity: FragmentActivity, itemMeasureJob: JobDTO
     ) : String {
 
         val measuredata = JsonObject()
@@ -111,17 +104,13 @@ class MeasureCreationDataRepository(
         Log.e("JsonObject", "Json string $measuredata")
 
    val measurementItemResponse = apiRequest { api.saveMeasurementItems(measuredata) }
-        postValue(measurementItemResponse.workflowJob, mSures, activity, itemMeasureJob, userId)
-
-
-//        //TODO(finish building the MeasureItems and Location)
-////       measuredata.add("MeasurementItems", mSures)
-//        measuredata.addProperty("UserId", userId)
-
-
-//        Log.e("JsonObject", "Json string $measuredata")
-//        val measurementItemResponse = apiRequest { api.saveMeasurementItems(measuredata) }
-//        workflowJ.postValue(measurementItemResponse.workflowJob,mSures, activity, itemMeasureJob)
+        workflowJ.postValue(
+            measurementItemResponse.workflowJob,
+            mSures,
+            activity,
+            itemMeasureJob,
+            userId
+        )
 
         val messages = measurementItemResponse.errorMessage
        // activity?.getResources()?.getString(R.string.please_wait)!!
@@ -131,25 +120,25 @@ class MeasureCreationDataRepository(
     }
 
 
-    private fun postValue(
+    private fun <T> MutableLiveData<T>.postValue(
         workflowjb: WorkflowJobDTO,
         jobItemMeasure: ArrayList<JobItemMeasureDTO>,
         activity: FragmentActivity,
         itemMeasureJob: JobDTO,
         userId: String
     ) {
-        if (workflowjb != null) {
-            Coroutines.io {
-                val job =
-                    setWorkflowJobBigEndianGuids(workflowjb)
-                insertOrUpdateWorkflowJobInSQLite(job)
-                val myjob  = getUpdatedJob(itemMeasureJob.JobId)
-                moveJobToNextWorkflow(activity, myjob)
-                uploadmeasueImages(
-                    jobItemMeasure,
-                    activity,
-                    itemMeasureJob
-                )
+        Coroutines.io {
+            if (workflowjb != null) {
+                itemMeasureJob.JobItemMeasures = jobItemMeasure
+                val measurejob = setWorkflowJobBigEndianGuids(workflowjb)
+                insertOrUpdateWorkflowJobInSQLite(measurejob)
+                uploadmeasueImages(jobItemMeasure, activity, itemMeasureJob)
+                val myjo = getUpdatedJob(itemMeasureJob.JobId)
+//                val myjob  = getUpdatedJob(DataConversion.toBigEndian(itemMeasureJob.JobId)!!)
+                moveJobToNextWorkflow(activity, measurejob, myjo)
+
+
+//                moveJobToNextWorkflow(activity, myjob)
 
 //                val myjob  = getUpdatedJob(DataConversion.toBigEndian(job.JobId)!!)
 //                for (jobItemMeas in myjob.JobItemMeasures!!.iterator()) {
@@ -162,7 +151,7 @@ class MeasureCreationDataRepository(
         }
     }
 
-    private suspend fun getUpdatedJob(jobId: String): JobDTO {
+    suspend fun getUpdatedJob(jobId: String): JobDTO {
         return withContext(Dispatchers.IO) {
             Db.getJobDao().getJobForJobId(jobId)
         }
@@ -173,7 +162,7 @@ class MeasureCreationDataRepository(
         activity: FragmentActivity?,
         itemMeasureJob: JobDTO
     ) {
-        val imageCounter = 1
+        var imageCounter = 1
         var totalImages = 0
         if (jobItemMeasures != null) {
             for (jobItemMeasure in jobItemMeasures.iterator()) {
@@ -199,11 +188,12 @@ class MeasureCreationDataRepository(
     ): ByteArray {
         val uri = getPhotoPathFromExternalDirectory(activity.applicationContext, filename)
         val bitmap = PhotoUtil.getPhotoBitmapFromFile(activity.applicationContext, uri, photoQuality)
-        return PhotoUtil.getCompressedPhotoWithExifInfo(
+        val photo = PhotoUtil.getCompressedPhotoWithExifInfo(
             activity.applicationContext,
             bitmap!!,
             filename
         )
+        return photo
     }
 
 
@@ -261,25 +251,48 @@ class MeasureCreationDataRepository(
         }
     }
 
+    suspend fun errorMsg(): String {
+        val messages = getErrorMsg()
+        return withContext(Dispatchers.IO) {
+            messages
+        }
+    }
+
+    suspend fun errorState(): Boolean {
+        val state = getErrorState()
+        return withContext(Dispatchers.IO) {
+            state
+        }
+    }
+
     private fun moveJobToNextWorkflow(
-//        jobItemMeasure: java.util.ArrayList<JobItemMeasureDTO>?,
+//        jobItemMeasure: java.util.ArrayList<JobItemMeasureDTO>?,errorMessage
         activity: FragmentActivity,
-        myjob: JobDTO
+        myjob: WorkflowJobDTO?,
+        job: JobDTO
     ) {
 
-            if (myjob.JobItemMeasures == null) {
+        if (myjob?.workflowItemMeasures == null) {
+            getErrorMsg()
 //            Looper.prepare() // to be able to make toast
 //            Toast.makeText(activity, "Error: trackRouteId is null", Toast.LENGTH_LONG).show()
             } else {
-                for (jobItemMeasure in myjob.JobItemMeasures!!.iterator()) {
-
-                    val direction: Int = WorkflowDirection.NEXT.value
-                val trackRouteId: String = jobItemMeasure.trackRouteId!! //DataConversion.toLittleEndian()!!
-                    val description: String =
-                        activity.resources.getString(R.string.submit_for_approval)
+            for (jobItemMeasure in myjob.workflowItemMeasures!!.iterator()) {
+                val direction: Int = WorkflowDirection.NEXT.getValue()
+                val trackRouteId: String =
+                    DataConversion.toLittleEndian(jobItemMeasure.trackRouteId!!)!!
+                val description: String =
+                    activity.getResources().getString(R.string.submit_for_approval)
 
                 Coroutines.io {
-                    val workflowMoveResponse = apiRequest { api.getWorkflowMove(myjob.UserId.toString(), trackRouteId, description, direction) }
+                    val workflowMoveResponse = apiRequest {
+                        api.getWorkflowMove(
+                            job.UserId.toString(),
+                            trackRouteId,
+                            description,
+                            direction
+                        )
+                    }
                     workflowJ.postValue(workflowMoveResponse.workflowJob)
 //                workflows.postValue(workflowMoveResponse.toDoListGroups)
 //                workflows.postValue(workflowMoveResponse.toDoListGroups)
@@ -292,7 +305,17 @@ class MeasureCreationDataRepository(
 
     }
 
-        private fun saveWorkflowJob(workflowj : WorkflowJobDTO?) {
+    private fun getErrorMsg(): String {
+        getErrorState()
+        val error_message = "Error: WorkFlow Job is null"
+        return error_message
+    }
+
+    private fun getErrorState(): Boolean {
+        return true
+    }
+
+    private fun saveWorkflowJob(workflowj: WorkflowJobDTO?) {
         if (workflowj != null) {
             val job = setWorkflowJobBigEndianGuids(workflowj)
             insertOrUpdateWorkflowJobInSQLite(job)
@@ -324,35 +347,9 @@ class MeasureCreationDataRepository(
     suspend fun getJobItemMeasuresForJobIdAndEstimateId2(
         jobId: String?,
         estimateId: String
-//        ,jobItemMeasureArrayList: ArrayList<JobItemMeasureDTO>
     ): LiveData<List<JobItemMeasureDTO>>  {
-
-      //  val jobItemMeasures = Db.getJobItemMeasureDao().getJobItemMeasuresForJobIdAndEstimateId(jobId, estimateId)
-     //   if (jobItemMeasures != null) {
-//            for (jobItemMeasure in jobItemMeasureArrayList) {
-//                if (jobItemMeasure != null) {
-//                    if (Db.getJobItemMeasurePhotoDao().checkIfJobItemMeasurePhotoExistsForMeasureId(
-//                            jobItemMeasure.itemMeasureId
-//                        )
-//                    )
-//
-//                        for (itemMeasurePhoto in jobItemMeasure.jobItemMeasurePhotos) {
-//                            Db.getJobItemMeasurePhotoDao().getJobItemMeasurePhotosForItemMeasureID(jobItemMeasure.itemMeasureId)
-//
-//                            if (Db.getProjectItemDao().checkItemExistsItemId(jobItemMeasure.projectItemId!!)) {
-//                                val selectedItem: LiveData<ProjectItemDTO> = Db.getProjectItemDao().getItemForItemId(jobItemMeasure.projectItemId!!)
-//                                jobItemMeasure.selectedItemUom = selectedItem.value?.uom
-//                            }
-//                        }
-//
-//
-//                }
-//            }
-//        }
-
         return withContext(Dispatchers.IO) {
-        Db.getJobItemMeasureDao().getJobItemMeasuresForJobIdAndEstimateId(jobId, estimateId)
-//            jobItemMeasures!!
+            Db.getJobItemMeasureDao().getJobItemMeasuresForJobIdAndEstimateId2(jobId, estimateId)
         }
     }
 
@@ -366,11 +363,11 @@ class MeasureCreationDataRepository(
     }
 
 
-    fun saveJobItemMeasureItems(jobItemMeasures: ArrayList<JobItemMeasureDTO>) {
+    suspend fun saveJobItemMeasureItems(jobItemMeasures: ArrayList<JobItemMeasureDTO>) {
         Coroutines.io {
-            for (jobItemMeasure in jobItemMeasures.iterator()) {
+            for (jobItemMeasure in jobItemMeasures!!.iterator()) {
                 if (!Db.getJobItemMeasureDao().checkIfJobItemMeasureExists(jobItemMeasure.itemMeasureId!!)){
-                    Db.getJobItemMeasureDao().insertJobItemMeasure(jobItemMeasure)
+                    Db.getJobItemMeasureDao().insertJobItemMeasure(jobItemMeasure!!)
                 }
 
             }
@@ -392,13 +389,13 @@ class MeasureCreationDataRepository(
     }
 
 
-    fun deleteItemMeasurefromList(itemMeasureId: String) {
+    suspend fun deleteItemMeasurefromList(itemMeasureId: String) {
         Coroutines.io {
             Db.getJobItemMeasureDao().deleteItemMeasurefromList(itemMeasureId)
         }
     }
 
-    fun deleteItemMeasurephotofromList(itemMeasureId: String) {
+    suspend fun deleteItemMeasurephotofromList(itemMeasureId: String) {
         Coroutines.io {
             Db.getJobItemMeasurePhotoDao().deleteItemMeasurephotofromList(itemMeasureId)
         }
@@ -417,7 +414,7 @@ class MeasureCreationDataRepository(
                 Db.getJobItemEstimateDao().setMeasureActId(selectedJobItemMeasure.actId, estimateId!!)
                 if (!Db.getJobItemMeasurePhotoDao().checkIfJobItemMeasurePhotoExists(jobItemMeasurePhoto.filename!!)){
 
-                    Db.getJobItemMeasurePhotoDao().insertJobItemMeasurePhoto(jobItemMeasurePhoto)
+                    Db.getJobItemMeasurePhotoDao().insertJobItemMeasurePhoto(jobItemMeasurePhoto!!)
                     jobItemMeasurePhoto.setEstimateId(estimateId)
                     Db.getJobItemMeasureDao().upDatePhotList(jobItemMeasurePhotoList,selectedJobItemMeasure.itemMeasureId!!)
                 }
@@ -428,12 +425,11 @@ class MeasureCreationDataRepository(
     }
 
     suspend fun getJobItemMeasuresForJobIdAndEstimateId(
-        jobId: String?,
-        estimateId: String
+        jobId: String?
+        //, estimateId: String
     ): LiveData<List<JobItemMeasureDTO>>  {
-        val jobItemMeasures = Db.getJobItemMeasureDao().getJobItemMeasuresForJobIdAndEstimateId(jobId,estimateId)
         return withContext(Dispatchers.IO) {
-            jobItemMeasures
+            Db.getJobItemMeasureDao().getJobItemMeasuresForJobIdAndEstimateId(jobId)
         }
     }
 
@@ -473,6 +469,17 @@ class MeasureCreationDataRepository(
         Coroutines.io {
             Db.getJobDao().updateJob(job.trackRouteId, job.actId, job.jiNo, job.jobId)
 
+            if (job.workflowItemMeasures != null && job.workflowItemMeasures.size !== 0) {
+                for (jobItemMeasure in job.workflowItemMeasures) {
+                    Db?.getJobItemMeasureDao()!!.updateWorkflowJobItemMeasure(
+                        jobItemMeasure.itemMeasureId,
+                        jobItemMeasure.trackRouteId,
+                        jobItemMeasure.actId,
+                        jobItemMeasure.measureGroupId
+                    )
+                }
+            }
+
             if (job.workflowItemEstimates != null && job.workflowItemEstimates.size !== 0) {
                 for (jobItemEstimate in job.workflowItemEstimates) {
                     Db.getJobItemEstimateDao().updateExistingJobItemEstimateWorkflow2(
@@ -481,16 +488,6 @@ class MeasureCreationDataRepository(
                         jobItemEstimate.estimateId
 
                     )
-                    if (job.workflowItemMeasures != null && job.workflowItemMeasures.size !== 0) {
-                        for (jobItemMeasure in job.workflowItemMeasures) {
-                            Db.getJobItemMeasureDao().updateWorkflowJobItemMeasure(
-                                jobItemMeasure.itemMeasureId,
-                                jobItemMeasure.trackRouteId,
-                                jobItemMeasure.actId,
-                                jobItemMeasure.measureGroupId
-                            )
-                        }
-                    }
 
                     if (jobItemEstimate.workflowEstimateWorks != null) {
                         for (jobEstimateWorks in jobItemEstimate.workflowEstimateWorks) {

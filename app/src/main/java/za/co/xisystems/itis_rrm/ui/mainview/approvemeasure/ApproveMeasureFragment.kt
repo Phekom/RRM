@@ -71,11 +71,14 @@ class ApproveMeasureFragment : BaseFragment(), KodeinAware {
 //            val measurements = approveViewModel.offlinedata.await()
                 measurements.observe(viewLifecycleOwner, Observer { job_s ->
                     noData.visibility = GONE
-                    val measureItems = job_s.distinctBy {
+                    if (job_s.isEmpty()) {
+                        noData.visibility = View.VISIBLE
+                    }
+                    val measure_items = job_s.distinctBy {
                         it.jobId
                     }
-                    initRecyclerView(measureItems.toApproveListItems())
-                    toast(measureItems.size.toString())
+                    initRecyclerView(measure_items.toApproveListItems())
+                    toast(measure_items.size.toString())
                     group4_loading.visibility = GONE
                 })
                 dialog.dismiss()
@@ -111,6 +114,9 @@ class ApproveMeasureFragment : BaseFragment(), KodeinAware {
                     val freshJobs = approveViewModel.offlineUserTaskList.await()
                     freshJobs.observe(viewLifecycleOwner, Observer {
                         approvem_swipe_to_refresh.isRefreshing = false
+                        if (it.isEmpty()) {
+                            noData.visibility = View.VISIBLE
+                        }
                         dialog.dismiss()
                     })
                 } catch (e: ApiException) {

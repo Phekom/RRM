@@ -93,22 +93,22 @@ data class JobItemEstimateDTO(
 //        return getJobItemEstimatePhoto(false).second!!
 //    }
 
-//    fun getPhoto(x: Int): JobItemEstimatesPhotoDTO? {
-//        return if ( jobItemEstimatePhotos != null && -1 < x && x < size()) {
-//            jobItemEstimatePhotos!![x]
-//        } else null
-//    }
+    fun getPhoto(x: Int): JobItemEstimatesPhotoDTO? {
+        return if (jobItemEstimatePhotos != null && -1 < x && x < size()) {
+            jobItemEstimatePhotos!![x]
+        } else null
+    }
 
-//    fun setJobItemEstimatePhotoStart(photoStart: JobItemEstimatesPhotoDTO) {
-//        photoStart.estimateId
-//        setJobItemEstimatePhoto(photoStart)
-//    }
+    fun setJobItemEstimatePhotoStart(photoStart: JobItemEstimatesPhotoDTO) {
+        photoStart.estimateId
+        setJobItemEstimatePhoto(photoStart)
+    }
 
 
-//    fun setJobItemEstimatePhotoEnd(photoEnd: JobItemEstimatesPhotoDTO) {
-//        photoEnd.estimateId
-//        setJobItemEstimatePhoto(photoEnd)
-//    }
+    fun setJobItemEstimatePhotoEnd(photoEnd: JobItemEstimatesPhotoDTO) {
+        photoEnd.estimateId
+        setJobItemEstimatePhoto(photoEnd)
+    }
 
     private fun setJobItemEstimatePhoto(photo: JobItemEstimatesPhotoDTO) {
         if (jobItemEstimatePhotos == null) {

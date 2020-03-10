@@ -56,13 +56,13 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
     private val factory: CreateViewModelFactory by instance()
     private var dueDateDialog: DatePickerDialog? = null
     private var startDateDialog: DatePickerDialog? = null
-    private lateinit var jobDataController : JobDataController
+    private lateinit var jobDataController: JobDataController
     private val rainbow200: IntArray by lazy { resources.getIntArray(R.array.rainbow_200) }
     private val swipeSection = Section()
     private var useR: Int? = null
-    private var contractID: String? = null
-    private var projectID: String? = null
-    private lateinit var groupAdapter : GroupAdapter<GroupieViewHolder>
+    var contractID: String? = null
+    var projectID: String? = null
+    private lateinit var groupAdapter: GroupAdapter<GroupieViewHolder>
     private lateinit var newJobItemEstimatesList: ArrayList<JobItemEstimateDTO>
     private val startDate: Date? = null
     private val dueDate: Date? = null
@@ -75,10 +75,10 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
-        groupAdapter = GroupAdapter()
+        groupAdapter = GroupAdapter<GroupieViewHolder>()
         (activity as MainActivity).supportActionBar?.title = getString(R.string.new_job)
-        newJobItemEstimatesList = ArrayList()
-        jobDataController  =  JobDataController
+        newJobItemEstimatesList = ArrayList<JobItemEstimateDTO>()
+        jobDataController = JobDataController
     }
 
 
@@ -90,6 +90,7 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
         if (item1 != null) item1.isVisible = false
         if (item2 != null) item2.isVisible = false
     }
+
     override fun onAttach(context: Context) {
         super.onAttach(context)
         (activity as MainActivity).supportActionBar?.title = getString(R.string.new_job)
@@ -125,35 +126,27 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
             ViewModelProvider(this, myfactory).get(UnSubmittedViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
 
+        createViewModel.newjob.observe(viewLifecycleOwner, Observer { newJ ->
+            job = newJ
+            projectID = newJ.ProjectId
+            //            toast(newJ.JobId + "/n" + newJ.ProjectId )
+
+        })
         last_lin.visibility = View.GONE
         totalCostTextView.visibility = View.GONE
         dueDateTextView.text = DateUtil.toStringReadable(DateUtil.currentDateTime)
         startDateTextView.text = DateUtil.toStringReadable(DateUtil.currentDateTime)
-//        items = getSerializable("items") as ArrayList<ItemDTO>
-        createViewModel.project_Code.observe(viewLifecycleOwner, Observer { pro_code ->
-            selectedProjectTextView.text = pro_code
-        })
-        createViewModel.contract_No.observe(viewLifecycleOwner, Observer { contrct ->
+        Coroutines.main {
+            val contrct = createViewModel.getContractNoForId(job?.ContractVoId)
+            val pro_code = createViewModel.getProjectCodeForId(job?.ProjectId)
             selectedContractTextView.text = contrct
-        })
-        createViewModel.newjob.observe(viewLifecycleOwner, Observer { newJ ->
-//            toast(newJ.JobId + "/n" + newJ.ProjectId )
-            projectID = newJ.ProjectId
-            job = newJ
-        })
+            selectedProjectTextView.text = pro_code
+        }
 
 
-        createViewModel.loggedUser.observe(viewLifecycleOwner, Observer { user ->
-            useR = user
-//            selectedContractTextView.text = user
-        })
 
-//        createViewModel.contract_ID.observe(viewLifecycleOwner, Observer { contrct_id ->
-//            toast(contrct_id)
-//            contractID = contrct_id
-//        })
         unsubmittedViewModel.jobtoEdit_Item.observe(viewLifecycleOwner, Observer { jobToEdit ->
-                        toast( jobToEdit.Descr )
+            toast(jobToEdit.Descr)
             Coroutines.main {
                 projectID = jobToEdit.ProjectId
                 job = jobToEdit
@@ -169,10 +162,10 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
                 createViewModel.jobtoEdit_Item.value = jobToEdit
 
                 Coroutines.main {
-                    val projecItems = createViewModel.getAllProjecItems(projectID!!)
+                    val projecItems = createViewModel.getAllProjecItems(projectID!!, job!!.JobId)
                     projecItems.observe(viewLifecycleOwner, Observer { pro_Items ->
                         if (pro_Items.isEmpty()) {
-
+                            groupAdapter.clear()
                             totalCostTextView.text = ""
                             last_lin.visibility = View.GONE
                             totalCostTextView.visibility = View.GONE
@@ -181,10 +174,10 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
                         }
                         items = pro_Items
                         for (item in pro_Items.listIterator()) {
-                            if (job?.JobId != item.jobId){
+                            if (job?.JobId != item.jobId) {
                                 groupAdapter.clear()
                                 totalCostTextView.clearComposingText()
-                            }else{
+                            } else {
                                 // initRecyclerView(item, items)
                                 initRecyclerView(pro_Items.toProjecListItems())
                                 calculateTotalCost()
@@ -199,12 +192,10 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
         })
 
 
-
 //        createViewModel.project_ID.observe(viewLifecycleOwner, Observer { projec_id ->
 //                        toast(projec_id)
 //            projectID = projec_id
 //        })
-
 
 
         setmyClickListener()
@@ -223,22 +214,26 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
 //            assert(items.contains(pro_Item.itemDTO))
 
             Coroutines.main {
-                val projecItems = createViewModel.getAllProjecItems(projectID!!)
+                val projecItems = createViewModel.getAllProjecItems(projectID!!, job!!.JobId)
                 projecItems.observe(viewLifecycleOwner, Observer { pro_Items ->
-                    if (pro_Items.isEmpty()){
-
+                    if (pro_Items.isEmpty()) {
+                        groupAdapter.clear()
                         totalCostTextView.text = ""
                         last_lin.visibility = View.GONE
                         totalCostTextView.visibility = View.GONE
+                    } else {
+                        items = pro_Items
                     }
-                    items = pro_Items
-                    for (item in pro_Items.listIterator()) {
-                        if (job?.JobId != item.jobId){
+
+                    for (item in items.listIterator()) {
+                        if (item.jobId != job?.JobId) {
+                            items.drop(item.id)
                             groupAdapter.clear()
+                            groupAdapter.notifyDataSetChanged()
                             totalCostTextView.clearComposingText()
-                        }else{
+                        } else {
                             // initRecyclerView(item, items)
-                            initRecyclerView(pro_Items.toProjecListItems())
+                            initRecyclerView(items.toProjecListItems())
                         }
 
                     }
@@ -247,7 +242,7 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
 
                 })
                 createViewModel.costLineRate.observe(viewLifecycleOwner, Observer { cost ->
-//                    totalCostTextView.text = cost.toString()
+                    //                    totalCostTextView.text = cost.toString()
                     calculateTotalCost()
                 })
 
@@ -260,6 +255,7 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
     }
 
 
+
     private fun initRecyclerView(projecListItems: List<ProjectItem>) {
         groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
             addAll(projecListItems)
@@ -267,7 +263,7 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
 //            swipeSection += SwipeToDeleteItem(item, activity)
 
         }
-                project_recyclerView.apply {
+        project_recyclerView.apply {
             layoutManager = LinearLayoutManager(this.context)
             adapter = groupAdapter
         }
@@ -277,20 +273,17 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
 
     private fun List<ItemDTOTemp>.toProjecListItems(): List<ProjectItem> {
         return this.map { approvej_items ->
-
-            ProjectItem(approvej_items, createViewModel, contractID, job)
-
+            ProjectItem(approvej_items, activity, createViewModel, contractID, job)
         }
     }
 
 
-
-
-
     private val touchCallback: SwipeTouchCallback by lazy {
         object : SwipeTouchCallback() {
-            override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder,
-                                target: RecyclerView.ViewHolder ): Boolean {
+            override fun onMove(
+                recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder
+            ): Boolean {
                 return false
             }
 
@@ -308,9 +301,11 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
         val myClickListener = View.OnClickListener { view ->
             when (view?.id) {
                 R.id.addItemButton -> {
-//                    if (selectedProject == null) {
-//                        toast("Error: selectedProject is null!")
-//                    } else {
+                    createViewModel.newjob.observe(viewLifecycleOwner, Observer { newJ ->
+                        //            toast(newJ.JobId + "/n" + newJ.ProjectId )
+                        projectID = newJ.ProjectId
+                        job = newJ
+                    })
 
                     Navigation.findNavController(view)
                         .navigate(R.id.action_addProjectFragment_to_selectItemFragment)
@@ -373,6 +368,7 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
                     dueDateDialog!!.show()
 
                 }
+
                 R.id.submitButton -> {
 
                     val cal = Calendar.getInstance()
@@ -414,45 +410,42 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
                         }
                     }
                     Coroutines.main {
-                    if (!JobUtils.areQuantitiesValid(job)) {
-                        toast("Error: incomplete estimates.\n Quantity can't be zero!")
-                        itemsCardView.startAnimation(shake_long)
-                    } else  {
-                        val valid = createViewModel.areEstimatesValid(job, ArrayList<Any?>(items))
-                               if (!valid){
-                                  onInvalidJob()
-                               }
-                                else {
-                                   if (job!!.DueDate == null) {
-                                   toast("Select a due Date")
-                                   dueDateCardView.startAnimation(shake_long)
-                                   if (job!!.StartDate == null) {
-                                       toast("Select a Start Date")
-                                       startDateCardView.startAnimation(shake_long)
-                                   }
-                               } else {
-                                   val prog = ProgressDialog(activity)
-                                   prog.setTitle(getString(R.string.please_wait))
-                                   prog.setMessage(getString(R.string.loading_job_wait))
-                                   prog.setCancelable(false)
-                                       prog.isIndeterminate = true
-                                   prog.setProgressStyle(ProgressDialog.STYLE_SPINNER)
-                                   prog.show()
+                        if (!JobUtils.areQuantitiesValid(job)) {
+                            toast("Error: incomplete estimates.\n Quantity can't be zero!")
+                            itemsCardView.startAnimation(shake_long)
+                        } else {
+                            var valid =
+                                createViewModel.areEstimatesValid(job, ArrayList<Any?>(items))
+                            if (!valid) {
+                                onInvalidJob()
+                            } else {
+                                if (job!!.DueDate == null) {
+                                    toast("Select a due Date")
+                                    dueDateCardView.startAnimation(shake_long)
+                                    if (job!!.StartDate == null) {
+                                        toast("Select a Start Date")
+                                        startDateCardView.startAnimation(shake_long)
+                                    }
+                                } else {
+                                    val prog = setDataProgressDialog(
+                                        activity!!,
+                                        getString(R.string.loading_job_wait)
+                                    )
+                                    prog.show()
 
 //                            val saved: Boolean = saveJob()
 //                            if (job?.SectionId == null)
 //                                verifyPhotoLocation() else if (isNetworkAvailable()) {
-                                   job!!.IssueDate = Date().toString()
-                                   submitJob(job!!,prog)
+                                    job!!.IssueDate = Date().toString()
+                                    submitJob(job!!, prog)
 
-                                  }
+                                }
 
 //                                   toast("true")
-                               }
-
                             }
-                        }
 
+                        }
+                    }
 
 
                 }
@@ -490,14 +483,11 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
         job: JobDTO,
         prog: ProgressDialog
     ) {
-        val messages ="Please wait"
-
-//
+        val messages = "Please wait"
 //        JobUtils.compressJobEstimates(tmpJob)
         if (job != null) {
-           val jobTemp =  jobDataController.setJobLittleEndianGuids(job)!!
-            saveRrmJob(job.UserId, jobTemp ,prog)
-
+            val jobTemp = jobDataController.setJobLittleEndianGuids(job)!!
+            saveRrmJob(job.UserId, jobTemp, prog)
         }
 
     }
@@ -506,26 +496,28 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
         userId: Int,
         job: JobDTO,
         prog: ProgressDialog
-    ){
-     Coroutines.main {
-        val submit =
-            createViewModel.submitJob(userId, job, activity!!)
+    ) {
+        Coroutines.main {
+            val submit =
+                createViewModel.submitJob(userId, job, activity!!)
 
-         if (submit != null){
-             prog.dismiss()
-             toast(submit) }else {
-             prog.dismiss()
-             toast(R.string.job_submitted)
-             popViewOnJobSubmit()}
+            if (submit != null) {
+                prog.dismiss()
+                toast(submit)
+            } else {
+                prog.dismiss()
+                toast(R.string.job_submitted)
+                popViewOnJobSubmit()
+            }
 
-     }
+        }
 
     }
 
     private fun popViewOnJobSubmit() {
         // TODO("delete Items data from database after success upload")
-        Intent(context?.applicationContext  , MainActivity::class.java).also { home ->
-//            home.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+        Intent(context?.applicationContext, MainActivity::class.java).also { home ->
+            //            home.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
             startActivity(home)
         }
     }
@@ -591,16 +583,23 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
     }
 
 
-    private fun onInvalidJob() {
+    fun onInvalidJob() {
         toast("Incomplete estimates!")
         itemsCardView.startAnimation(shake_long)
+    }
+
+    override fun onDestroyOptionsMenu() {
+        super.onDestroyOptionsMenu()
+    }
+
+    override fun onDetach() {
+        super.onDetach()
     }
 
     override fun onStop() {
         super.onStop()
         Log.d("Tag", "FragmentA.onDestroyView() has been called.")
     }
-
 
 
     //    private fun initRecyclerView(

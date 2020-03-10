@@ -32,8 +32,8 @@ class HomeFragment : BaseFragment(), KodeinAware {
     private lateinit var homeViewModel: HomeViewModel
     private val factory: HomeViewModelFactory by instance()
 
-    var gps_enabled : Boolean =  false
-    var network_enabled :  Boolean = false
+    var gpsEnabled: Boolean = false
+    var networkEnabled: Boolean = false
     var appContext: Context? = null
 
     companion object {
@@ -46,12 +46,13 @@ class HomeFragment : BaseFragment(), KodeinAware {
         setHasOptionsMenu(true)
 
 
-
     }
+
     override fun onPrepareOptionsMenu(menu: Menu) {
         val item = menu.findItem(R.id.action_search)
         if (item != null) item.isVisible = false
     }
+
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
         activity?.menuInflater?.inflate(R.menu.search, menu)
@@ -81,32 +82,28 @@ class HomeFragment : BaseFragment(), KodeinAware {
                 data2_loading.show()
                 val user = homeViewModel.user.await()
                 user.observe(viewLifecycleOwner, Observer { user_ ->
-
                     username?.text = user_.userName
                 })
 
                 val contracts = homeViewModel.offlineData.await()
-                contracts.observe(viewLifecycleOwner, Observer { contrcts ->
-                    val alldata = contrcts.count()
-                    if (contrcts.size == alldata)
-                        dialog.dismiss()
-                    group2_loading.visibility = View.GONE
+                contracts.observe(viewLifecycleOwner, Observer { mContracts ->
+                    val allData = mContracts.count()
+                    if (mContracts.size == allData)
+                        group2_loading.visibility = View.GONE
                 })
             } catch (e: ApiException) {
                 ToastUtils().toastLong(activity, e.message)
-                items_swipe_to_refresh.isRefreshing = false
-                dialog.dismiss()
                 Log.e(TAG, "API Exception", e)
             } catch (e: NoInternetException) {
                 ToastUtils().toastLong(activity, e.message)
-                dialog.dismiss()
-                items_swipe_to_refresh.isRefreshing = false
                 Log.e(TAG, "No Internet Connection", e)
             } catch (e: NoConnectivityException) {
                 ToastUtils().toastLong(activity, e.message)
                 dialog.dismiss()
                 items_swipe_to_refresh.isRefreshing = false
                 Log.e(TAG, "Service Host Unreachable", e)
+            } finally {
+                group2_loading.visibility = View.GONE
             }
         }
 
@@ -125,26 +122,23 @@ class HomeFragment : BaseFragment(), KodeinAware {
                 try {
                     val works = homeViewModel.offlineWorkFlows.await()
                     works.observe(viewLifecycleOwner, Observer { work ->
-                        val alldata = work.count()
-                        if (work.size == alldata)
+                        val allData = work.count()
+                        if (work.size == allData)
                             dialog.dismiss()
                         items_swipe_to_refresh.isRefreshing = false
                     })
                 } catch (e: ApiException) {
                     ToastUtils().toastLong(activity, e.message)
-                    items_swipe_to_refresh.isRefreshing = false
-                    dialog.dismiss()
                     Log.e(TAG, "API Exception", e)
                 } catch (e: NoInternetException) {
                     ToastUtils().toastLong(activity, e.message)
-                    dialog.dismiss()
-                    items_swipe_to_refresh.isRefreshing = false
                     Log.e(TAG, "No Internet Connection", e)
                 } catch (e: NoConnectivityException) {
                     ToastUtils().toastLong(activity, e.message)
-                    dialog.dismiss()
-                    items_swipe_to_refresh.isRefreshing = false
                     Log.e(TAG, "Service Host Unreachable", e)
+                } finally {
+                    items_swipe_to_refresh.isRefreshing = false
+                    dialog.dismiss()
                 }
             }
         }
@@ -154,10 +148,10 @@ class HomeFragment : BaseFragment(), KodeinAware {
             val lm = activity!!.getSystemService(Context.LOCATION_SERVICE) as LocationManager
             val cm =
                 activity!!.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-            gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
-            network_enabled = cm.isDefaultNetworkActive
+            gpsEnabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
+            networkEnabled = cm.isDefaultNetworkActive
             //  Check if Network Enabled
-            if (!network_enabled) {
+            if (!networkEnabled) {
                 dataEnabled.setText(R.string.mobile_data_not_connected)
                 dataEnabled.setTextColor(colorNotConnected)
             } else {
@@ -166,7 +160,7 @@ class HomeFragment : BaseFragment(), KodeinAware {
             }
 
             // Check if GPS connected
-            if (!gps_enabled) {
+            if (!gpsEnabled) {
                 //            locationEnabled.text = "GPS NOT CONNECTED"
                 locationEnabled.text = activity!!.getString(R.string.gps_not_connected)
                 locationEnabled.setTextColor(colorNotConnected)
@@ -175,23 +169,20 @@ class HomeFragment : BaseFragment(), KodeinAware {
                 locationEnabled.setTextColor(colorConnected)
             }
             connectedTo.text = "Version " + BuildConfig.VERSION_NAME
-
-
-
-            serverTextView.setOnClickListener {
-                ToastUtils().toastServerAddress(context)
-            }
-
-
-
-
-            imageView7.setOnClickListener {
-                ToastUtils().toastVersion(context)
-            }
         }
 
-    }
 
+        serverTextView.setOnClickListener {
+            ToastUtils().toastServerAddress(context)
+        }
+
+
+
+
+        imageView7.setOnClickListener {
+            ToastUtils().toastVersion(context)
+        }
+    }
 
 
     private val health: HealthCheckResponse? = null

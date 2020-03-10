@@ -13,12 +13,14 @@ import com.google.gson.annotations.SerializedName
 const val WORKFLOW_ROUTE_TABLE = "WORKFLOW_ROUTE_TABLE"
 @Entity(
     tableName = WORKFLOW_ROUTE_TABLE
-    , foreignKeys = [ForeignKey(
+    , foreignKeys = arrayOf(
+        ForeignKey(
         entity = WorkFlowDTO::class,
         parentColumns = arrayOf("workflowId"),
         childColumns = arrayOf("workflowId"),
         onDelete = ForeignKey.CASCADE
-    )]
+        )
+    )
 )
 data class WorkFlowRouteDTO(
 
