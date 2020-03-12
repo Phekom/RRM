@@ -20,6 +20,8 @@ import za.co.xisystems.itis_rrm.data.repositories.*
 import za.co.xisystems.itis_rrm.ui.auth.AuthViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.activities.MainActivityViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SettingsViewModelFactory
+import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModel
+import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.ApproveJobsViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.corrections.CorrectionsViewModelFactory
@@ -72,6 +74,8 @@ open class MainApp : Application(), KodeinAware {
         bind() from provider{ CorrectionsViewModelFactory(instance()) }
         bind() from provider{ SettingsViewModelFactory(instance()) }
         bind() from provider{ MainActivityViewModelFactory(instance()) }
+        bind() from provider { SharedViewModelFactory() }
+        bind() from provider { SharedViewModel() }
 
     }
 
