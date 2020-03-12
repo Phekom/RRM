@@ -16,7 +16,6 @@ import com.google.gson.JsonParser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.R
-import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.localDB.JobDataController
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
@@ -243,13 +242,14 @@ class JobCreationDataRepository(
                 itemCode
             )
         } catch (e: ApiException) {
-            ToastUtils().toastLong(prefs.appContext, e.message)
+            throw e
         } catch (e: NoInternetException) {
-            ToastUtils().toastLong(prefs.appContext, e.message)
             Log.e(TAG, "No Internet Connection", e)
+            throw e
         } catch (e: NoConnectivityException) {
-            ToastUtils().toastLong(prefs.appContext, e.message)
+
             Log.e(TAG, "Service Host Unreachable", e)
+            throw e
         }
 
     }
