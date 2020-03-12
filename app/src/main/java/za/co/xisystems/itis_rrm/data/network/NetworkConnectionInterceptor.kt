@@ -73,7 +73,7 @@ class NetworkConnectionInterceptor(
         } finally {
             connection?.disconnect()
         }
-
+        connection?.disconnect()
         return result
     }
 

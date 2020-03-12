@@ -526,5 +526,8 @@
     <string name="label_volume_m3">\"Volume(m³): \"</string>
     <string name="todo">TODO</string>
     <string name="welcome">Welcome</string>
+    <string name="label_amount">\"Amount: \"</string>
+    <string name="label_length_m">\"Length(m): \"</string>
+    <string name="warning_estimate_incomplete">Incomplete estimate...</string>
 
 </resources>

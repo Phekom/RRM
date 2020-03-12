@@ -47,7 +47,6 @@ abstract class BaseFragment : Fragment(), IProgressView, HorizontalProgressBar{
     var anims: Animations? = null
 
 
-
     override fun onResume() {
         super.onResume()
         ViewLogger.logView(this)
@@ -59,7 +58,7 @@ abstract class BaseFragment : Fragment(), IProgressView, HorizontalProgressBar{
         initAnims()
     }
 
-    private fun initAnims() {
+    fun initAnims() {
         click = AnimationUtils.loadAnimation(context!!.applicationContext, R.anim.click)
         bounce = AnimationUtils.loadAnimation(context!!.applicationContext, R.anim.bounce)
         bounce_short = AnimationUtils.loadAnimation(context!!.applicationContext, R.anim.bounce_short)
@@ -149,7 +148,7 @@ abstract class BaseFragment : Fragment(), IProgressView, HorizontalProgressBar{
         if (!activity?.isFinishing!!) Toast.makeText(context?.applicationContext, resid, Toast.LENGTH_LONG).show()
     }
 
-    private fun snackError(coordinator: View?, string: String?) {
+    fun snackError(coordinator: View?, string: String?) {
         if (coordinator != null) {
             val snackbar = Snackbar.make(coordinator, string!!, 3000)
             snackbar.view.setBackgroundColor(Color.RED)
@@ -158,7 +157,7 @@ abstract class BaseFragment : Fragment(), IProgressView, HorizontalProgressBar{
         } else Log.e("x-", "coordinator is null")
     }
 
-    protected fun snackError(string: String?) {
+    fun snackError(string: String?) {
         snackError(coordinator, string)
     }
 
@@ -168,12 +167,12 @@ abstract class BaseFragment : Fragment(), IProgressView, HorizontalProgressBar{
         this.progressDialog?.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL)
     }
 
-    private fun removeProgressPercentages() {
+    fun removeProgressPercentages() {
         progressDialog?.setProgressNumberFormat(null)
         progressDialog?.setProgressPercentFormat(null)
     }
 
-    private fun initializeProgressPercentage() {
+    fun initializeProgressPercentage() {
         this.progressDialog?.max = 100
         this.progressDialog?.progress = 0
     }
@@ -217,10 +216,6 @@ abstract class BaseFragment : Fragment(), IProgressView, HorizontalProgressBar{
             showHorizontalProgressDialog(message)
         }
     }
-
-//
-//    abstract fun onCreate()
-//    abstract override fun onDestroy()
 
 
     abstract fun onCreateOptionsMenu(menu: Menu): Boolean

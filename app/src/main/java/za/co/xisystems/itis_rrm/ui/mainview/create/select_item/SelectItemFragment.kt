@@ -52,10 +52,10 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
     internal var useR: Int? = null
 
     @MyState
-    lateinit var newjob: JobDTO
+    var newJob: JobDTO? = null
 
     @MyState
-    lateinit var editjob: JobDTO
+    lateinit var editJob: JobDTO
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -105,12 +105,12 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
         })
 
         createViewModel.newjob.observe(viewLifecycleOwner, Observer { newJ ->
-            newjob = newJ
+            newJob = newJ
         })
 
         createViewModel.jobtoEdit_Item.observe(viewLifecycleOwner, Observer { newJ_Edit ->
             setItemsBySections(newJ_Edit.ProjectId!!)
-            editjob = newJ_Edit
+            editJob = newJ_Edit
         })
 
     }
@@ -122,7 +122,7 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
             val sectionItems = createViewModel.getAllSectionItem()
             dialog.show()
 //            val sectionItems = createViewModel.offlinedata.await()
-            sectionItems?.observe(viewLifecycleOwner, Observer { sec_tions ->
+            sectionItems.observe(viewLifecycleOwner, Observer { sec_tions ->
                 val sections = sec_tions
                 val sectionNmbr = arrayOfNulls<String?>(sections.size)
                 dialog.dismiss()
@@ -143,7 +143,7 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
                                 }
                                 selectedSectionitem = item
                                 setRecyclerItems(projectId, item.sectionItemId!!)
-//                                setRecyclerItems(item.sectionItemId)
+                                //                                setRecyclerItems(item.sectionItemId)
                             }
 
                         })
@@ -167,11 +167,11 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
         Coroutines.main {  //data_loading2.show()
             //            val projectsItems = createViewModel.getItemForItemCode(sectionItemId!!)
             val projectsItems = createViewModel.getAllItemsForSectionItem(sectionItemId, projectId)
-            projectsItems?.observe(viewLifecycleOwner, Observer { i_tems ->
+            projectsItems.observe(viewLifecycleOwner, Observer { i_tems ->
                 group_loading.visibility = View.GONE
                 initRecyclerView(i_tems.toProjectItems())
-//                data_loading2.hide()
-//                group_loading.visibility = View.GONE
+                //                data_loading2.hide()
+                //                group_loading.visibility = View.GONE
             })
 
         }
@@ -227,7 +227,7 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
             itemDTO.quantity,
             itemDTO.estimateId,
             itemDTO.projectId!!,
-            newjob.JobId
+            newJob?.JobId ?: editJob.JobId
         )
         items.add(newItem)
         return newItem
