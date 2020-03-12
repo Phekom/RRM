@@ -5,7 +5,7 @@
     <string name="nav_header_subtitle">android.studio@android.com</string>
     <string name="nav_header_desc">Navigation header</string>
     <string name="action_settings">Settings</string>
-<!--    <string name="next">Next</string>-->
+    <!--    <string name="next">Next</string>-->
     <string name="prev">Prev</string>
 
     <!-- Note that the DATABASE_NAME and DATABASE_VERSION have been set within:
@@ -516,5 +516,15 @@
     <string name="ex_no_connectivity">Internet appears to be unreachable, please check your connection</string>
     <string name="ex_no_service_host">Service Host for Mobile is offline, try again later</string>
 
+    <!-- Estimate Photo Gallery Fragment -->
+    <string name="fragment_estimate_title">M020.01(A): TYPE 1</string>
+    <string name="estimate_calculate_cost">Calculate Cost</string>
+    <string name="label_quantity">Quantity</string>
+    <string name="estimate_placeholder">* 500 = 1500</string>
+    <string name="action_update">UPDATE</string>
+    <string name="label_area_m2">\"Area(m²): \"</string>
+    <string name="label_volume_m3">\"Volume(m³): \"</string>
+    <string name="todo">TODO</string>
+    <string name="welcome">Welcome</string>
 
 </resources>

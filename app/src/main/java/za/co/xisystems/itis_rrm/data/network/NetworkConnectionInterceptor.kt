@@ -56,20 +56,22 @@ class NetworkConnectionInterceptor(
     }
 
     private fun isHostAvailable(testURL: String) : Boolean {
-        var result: Boolean
-        try {
-            val connection = URL(testURL).openConnection() as HttpURLConnection?
-            connection?.setRequestProperty("User-Agent", "Test")
-            connection?.setRequestProperty("Connection", "close")
-            connection?.connectTimeout = 500
+        val result: Boolean
+
+        val connection = URL(testURL).openConnection() as HttpURLConnection?
+        connection?.setRequestProperty("User-Agent", "Test")
+        connection?.setRequestProperty("Connection", "close")
+        connection?.connectTimeout = 500
+        result = try {
             connection?.connect()
-            result = when (connection?.responseCode) {
+            when (connection?.responseCode) {
                 200 -> true
                 else -> false
             }
-
         } catch (e: IOException) {
-            result = false
+            false
+        } finally {
+            connection?.disconnect()
         }
 
         return result

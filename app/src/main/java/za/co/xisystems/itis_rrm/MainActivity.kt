@@ -8,9 +8,9 @@ import android.graphics.Typeface
 import android.location.LocationManager
 import android.os.Bundle
 import android.provider.Settings
-import android.view.Gravity
-import android.view.Menu
-import android.view.MenuItem
+import android.util.Log
+import android.view.*
+import android.widget.ProgressBar
 import android.widget.Switch
 import android.widget.TextView
 import androidx.appcompat.app.ActionBarDrawerToggle
@@ -30,10 +30,9 @@ import kotlinx.android.synthetic.main.activity_main.*
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.kodein
 import org.kodein.di.generic.instance
+import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.ui.auth.LoginActivity
-import za.co.xisystems.itis_rrm.ui.mainview.activities.MainActivityViewModel
-import za.co.xisystems.itis_rrm.ui.mainview.activities.MainActivityViewModelFactory
-import za.co.xisystems.itis_rrm.ui.mainview.activities.SettingsActivity
+import za.co.xisystems.itis_rrm.ui.mainview.activities.*
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.hideKeyboard
@@ -44,6 +43,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override val kodein by kodein()
     private lateinit var mainActivityViewModel: MainActivityViewModel
     private val factory: MainActivityViewModelFactory by instance()
+
+    private lateinit var sharedViewModel: SharedViewModel
+    private val shareFactory: SharedViewModelFactory by instance()
 
     var navController: NavController? = null
     var toggle : ActionBarDrawerToggle? = null
@@ -59,6 +61,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     var gps_enabled = false
     var network_enabled = false
 
+    var progressBar: ProgressBar? = null
 
     val PROJECT_USER_ROLE_IDENTIFIER = "29DB5C213D034EDB88DEC54109EE1711"
     val PROJECT_SITE_ENGINEER_ROLE_IDENTIFIER = "3F9A15DF5D464EC5A5D954134A7F32BE"
@@ -77,6 +80,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         this.mainActivityViewModel = this.run {
                 ViewModelProvider(this, factory).get(MainActivityViewModel::class.java)
+        }
+
+        this.sharedViewModel = this.run {
+            ViewModelProvider(this, shareFactory).get(SharedViewModel::class.java)
         }
 
         initializeCountDrawer()
@@ -109,6 +116,20 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             navigationView.menu.findItem(R.id.nav_approvMeasure).actionView as TextView
         nav_estMeasure =
             navigationView.menu.findItem(R.id.nav_estMeasure).actionView as TextView
+        progressBar = findViewById<ProgressBar>(R.id.progressbar)
+
+        sharedViewModel.longRunning.observe(this, Observer {
+            when (it) {
+                true -> this.startLongRunningTask()
+                false -> this.endLongRunningTask()
+            }
+        })
+
+        sharedViewModel.message.observe(this, Observer {
+            toastMessage(it.toString())
+        })
+
+
     }
 
 
@@ -254,6 +275,25 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         drawer_layout.closeDrawer(GravityCompat.START)
         return true
+    }
+
+    fun startLongRunningTask() {
+        Log.i(TAG, "starting task...")
+        this.progressBar?.visibility = View.VISIBLE
+        window.setFlags(
+            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+        )
+    }
+
+    fun endLongRunningTask() {
+        Log.i(TAG, "stopping task ...")
+        this.progressBar?.visibility = View.INVISIBLE
+        window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+    }
+
+    fun toastMessage(message: String) {
+        ToastUtils().toastLong(this.applicationContext, message)
     }
 
 
@@ -535,6 +575,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     companion object {
         private val TAG = MainActivity::class.java.simpleName
         var switch: Switch? = null
+
     }
 
 
