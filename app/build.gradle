@@ -4,6 +4,7 @@ apply plugin: 'kotlin-kapt'
 apply plugin: "androidx.navigation.safeargs"
 apply plugin: 'deploygate'
 apply plugin: 'kotlin-android-extensions'
+apply plugin: "org.jlleitschuh.gradle.ktlint"
 
 static def getDate() {
     return new Date().format('yyyy-MM-dd HH-mm-ss')
@@ -217,7 +218,7 @@ android {
     dataBinding {
         enabled = true
     }
-    buildToolsVersion = '29.0.3'
+    buildToolsVersion = '28.0.3'
 }
 
 
@@ -237,7 +238,7 @@ dependencies {
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
 
     // Material
-    implementation 'com.google.android.material:material:1.2.0-alpha05'
+    implementation 'com.google.android.material:material:1.1.0'
 
     // Testing
     testImplementation 'junit:junit:4.13'
@@ -277,7 +278,7 @@ dependencies {
     // Annotation processor
     // kapt "androidx.lifecycle:lifecycle-compiler:$lifecycle_version"
     // alternately - if using Java8, use the following instead of lifecycle-compiler
-    implementation "androidx.lifecycle:lifecycle-common-java8:$lifecycle_version"
+    implementation "androidx.lifecycle:lifecycle-common-java8:2.2.0"
 
     // optional - helpers for implementing LifecycleOwner in a Service
     implementation "androidx.lifecycle:lifecycle-service:$lifecycle_version"
@@ -326,7 +327,7 @@ dependencies {
 
     //Location
     implementation 'com.google.android.gms:play-services-location:17.0.0'
-    implementation 'com.google.firebase:firebase-appindexing:19.1.0'
+    // implementation 'com.google.firebase:firebase-appindexing:19.1.0'
     // implementation 'com.google.android.gms:play-services:12.0.1'
 
     // Icepick
@@ -376,7 +377,7 @@ dependencies {
     implementation "com.fasterxml.jackson.module:jackson-module-kotlin:2.10.2"
 
     implementation 'com.raygun:raygun4android:4.0.1'
-    implementation 'org.springframework.android:spring-android-rest-template:2.0.0.M1'
+    implementation 'org.springframework.android:spring-android-rest-template:2.0.0.M3'
 
     implementation 'org.apache.sanselan:sanselan:0.97-incubator'
 
