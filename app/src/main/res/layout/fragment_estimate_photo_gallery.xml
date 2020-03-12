@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:id="@+id/photoLin"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:layout_marginEnd="8dp"
+        android:animateLayoutChanges="true"
+        android:orientation="vertical"
+        android:padding="@dimen/small"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/titleTextView"
+            style="@style/_orangeTextLabel"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_margin="@dimen/small"
+            android:layout_weight="1"
+            android:hint="@string/fragment_estimate_title"
+            android:textSize="@dimen/text_medium" />
+    </LinearLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvEstimatePictures"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="8dp"
+        android:background="#FFFFFF"
+        android:clipToPadding="false"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/photoLin"
+        tools:itemCount="15"
+        tools:layoutManager="GridLayoutManager"
+        tools:listitem="@layout/rrm_photo_gallery_item"
+        tools:spanCount="5" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_camera"
+        android:layout_width="wrap_content"
+        android:layout_height="86dp"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="16dp"
+        android:src="@drawable/ic_photo_camera_white_24dp"
+        app:backgroundTint="@color/sanral_burnt_orange"
+        app:layout_behavior="za.co.xisystems.itis_rrm.ui.behaviors.ScrollAwareFABBehavior"
+        app:layout_constraintBottom_toBottomOf="@id/rvEstimatePictures"
+        app:layout_constraintEnd_toEndOf="@id/rvEstimatePictures"
+        tools:srcCompat="@drawable/ic_photo_camera_white_24dp"
+        tools:visibility="visible" />
+
+
+    <LinearLayout
+        android:id="@+id/costingGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:orientation="vertical"
+        app:layout_constraintTop_toBottomOf="@id/rvEstimatePictures">
+
+        <TextView
+            style="@style/_default"
+            android:layout_marginTop="@dimen/small"
+            android:gravity="center"
+            android:hint="@string/estimate_calculate_cost" />
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/costCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/xsmall">
+
+            <LinearLayout
+                android:id="@+id/costingEntry"
+                style="@style/_linear_layout_horiz"
+                android:gravity="center_vertical|end"
+                android:paddingStart="@dimen/small"
+                android:paddingEnd="@dimen/small">
+
+                <TextView
+                    android:id="@+id/labelTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/small"
+                    android:layout_marginBottom="@dimen/small"
+                    android:gravity="end"
+                    android:text="@string/label_quantity" />
+
+                <EditText
+                    android:id="@+id/valueEditText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:backgroundTint="@color/itis_burnt_orange"
+                    android:digits="-.0123456789"
+                    android:gravity="center"
+                    android:hint="@string/no_1"
+                    android:importantForAutofill="no"
+                    android:inputType="numberDecimal"
+                    android:minWidth="48dp"
+                    android:text="@string/no_1"
+                    android:visibility="visible" />
+
+                <NumberPicker
+                    android:id="@+id/numberPicker"
+                    android:layout_width="wrap_content"
+                    android:layout_height="96dp"
+                    android:layout_margin="@dimen/xsmall"
+                    android:padding="@dimen/xsmall"
+                    android:scaleY="0.7"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/costTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="end"
+                    android:hint="@string/estimate_placeholder"
+                    android:textSize="@dimen/text_medium"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/crudGroup"
+        style="@style/_linear_layout_horiz"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="8dp"
+        android:gravity="center_vertical|end"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/costingGroup">
+
+        <Button
+            android:id="@+id/cancelButton"
+            style="@style/_button"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/button_size"
+            android:layout_margin="@dimen/small"
+            android:layout_weight="1"
+            android:text="@string/cancel" />
+
+        <Button
+            android:id="@+id/updateButton"
+            style="@style/_button"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/button_size"
+            android:layout_margin="@dimen/small"
+            android:layout_weight="1"
+            android:text="@string/action_update" />
+    </LinearLayout>
+
+    <androidx.constraintlayout.widget.Group
+        android:id="@+id/group13_loading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="365dp"
+        app:constraint_referenced_ids="data2_loading,textView_loading"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ProgressBar
+        android:id="@+id/data2_loading"
+        android:layout_width="46dp"
+        android:layout_height="51dp"
+        android:layout_marginTop="110dp"
+        android:layout_marginBottom="100dp"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.3" />
+
+    <TextView
+        android:id="@+id/textView_loading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:text="@string/loading_please_wait"
+        android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/data2_loading"
+        app:layout_constraintVertical_bias="0.0" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
