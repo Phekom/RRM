@@ -127,7 +127,7 @@ object JobDataController{
     }
 
 
-    fun setJobMeasureLittleEndianGuids(jim: JobItemMeasureDTO): JobItemMeasureDTO {
+    fun setJobMeasureLittleEndianGuids(jim: JobItemMeasureDTO?): JobItemMeasureDTO {
         if (jim != null) {
 //            for (jim in jobItemMeasure) {
             jim.setEstimateId(DataConversion.toLittleEndian(jim.estimateId))
@@ -152,7 +152,7 @@ object JobDataController{
 //            }
         }
 
-        return jim
+        return jim!!
     }
 
 

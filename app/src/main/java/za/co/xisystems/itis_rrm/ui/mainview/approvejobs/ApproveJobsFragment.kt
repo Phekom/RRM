@@ -17,7 +17,6 @@ import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.GroupieViewHolder
 import kotlinx.android.synthetic.main.fragment_approvejob.*
 import kotlinx.android.synthetic.main.fragment_approvejob.noData
-import kotlinx.android.synthetic.main.fragment_approvemeasure.*
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
@@ -32,7 +31,7 @@ import za.co.xisystems.itis_rrm.utils.*
  * Created by Francis Mahlava on 03,October,2019
  */
 
-class ApproveJobsFragment : BaseFragment(), KodeinAware {
+class ApproveJobsFragment : BaseFragment(R.layout.fragment_photo_estimate), KodeinAware {
 
     override val kodein by kodein()
     private lateinit var approveViewModel: ApproveJobsViewModel

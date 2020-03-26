@@ -33,7 +33,7 @@ data class PrimaryKeyValueDTO(
 
 ) {
     var p_value: ByteArray?
-        get() = if (valueString == null) valueBytes else Base64Utils.decode(valueString)
+        get() = if (valueString == null) valueBytes else Base64Utils.decodeFromString(valueString)
         set(value) {
             this.valueBytes = value
             this.valueString = Base64Utils.encode(value).toString()

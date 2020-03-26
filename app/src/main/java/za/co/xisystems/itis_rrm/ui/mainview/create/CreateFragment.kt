@@ -30,7 +30,7 @@ import java.util.*
  */
 
 
-class CreateFragment : BaseFragment(), OfflineListener , KodeinAware {
+class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListener, KodeinAware {
     companion object {
         val TAG: String = CreateFragment::class.java.simpleName
         const val PROJECT_ID1: String = "PROJECT_ID1"

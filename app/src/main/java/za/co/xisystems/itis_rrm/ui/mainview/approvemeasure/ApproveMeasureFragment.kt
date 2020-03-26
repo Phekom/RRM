@@ -32,7 +32,7 @@ import za.co.xisystems.itis_rrm.utils.*
  */
 
 
-class ApproveMeasureFragment : BaseFragment(), KodeinAware {
+class ApproveMeasureFragment : BaseFragment(R.layout.fragment_approvemeasure), KodeinAware {
 
     override val kodein by kodein()
     private lateinit var approveViewModel: ApproveMeasureViewModel

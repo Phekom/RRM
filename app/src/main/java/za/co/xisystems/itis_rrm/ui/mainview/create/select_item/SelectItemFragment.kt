@@ -33,7 +33,7 @@ import java.util.*
  * Created by Francis Mahlava on 2019/12/29.
  */
 
-class SelectItemFragment : BaseFragment(), KodeinAware {
+class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAware {
     override val kodein by kodein()
     private lateinit var createViewModel: CreateViewModel
     private val factory: CreateViewModelFactory by instance()

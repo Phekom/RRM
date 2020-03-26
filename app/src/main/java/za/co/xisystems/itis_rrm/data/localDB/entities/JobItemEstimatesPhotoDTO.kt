@@ -56,12 +56,9 @@ data class JobItemEstimatesPhotoDTO(
 
 //    val jobItemEstimate: ArrayList<JobItemEstimateDTO>,
 ) : Serializable {
-    //    @SerializedName("IsPhotoStart")
-    val is_photoStart: Boolean
-        get() = is_PhotoStart == isPhotoStart()
 
     fun isPhotoStart(): Boolean {
-        return isPhotoStart()
+        return is_PhotoStart
     }
 
 

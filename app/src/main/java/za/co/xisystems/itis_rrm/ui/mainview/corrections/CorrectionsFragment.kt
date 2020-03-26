@@ -19,7 +19,7 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
  */
 
 
-class CorrectionsFragment : BaseFragment(), KodeinAware {
+class CorrectionsFragment : BaseFragment(R.layout.fragment_correction), KodeinAware {
 
     override val kodein by kodein()
     private lateinit var correctionsViewModel: CorrectionsViewModel

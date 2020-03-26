@@ -48,7 +48,7 @@ import java.util.*
  * Created by Francis Mahlava on 2019/12/29.
  */
 
-class AddProjectFragment : BaseFragment(), KodeinAware {
+class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), KodeinAware {
     override val kodein by kodein()
     private lateinit var createViewModel: CreateViewModel
     private lateinit var unsubmittedViewModel: UnSubmittedViewModel
@@ -586,14 +586,6 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
     fun onInvalidJob() {
         toast("Incomplete estimates!")
         itemsCardView.startAnimation(shake_long)
-    }
-
-    override fun onDestroyOptionsMenu() {
-        super.onDestroyOptionsMenu()
-    }
-
-    override fun onDetach() {
-        super.onDetach()
     }
 
     override fun onStop() {

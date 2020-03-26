@@ -517,17 +517,17 @@
     <string name="ex_no_service_host">Service Host for Mobile is offline, try again later</string>
 
     <!-- Estimate Photo Gallery Fragment -->
-    <string name="fragment_estimate_title">M020.01(A): TYPE 1</string>
+    <string name="fragment_estimate_title">PLACEHOLDER TITLE</string>
     <string name="estimate_calculate_cost">Calculate Cost</string>
     <string name="label_quantity">Quantity</string>
     <string name="estimate_placeholder">* 500 = 1500</string>
     <string name="action_update">UPDATE</string>
-    <string name="label_area_m2">\"Area(m²): \"</string>
-    <string name="label_volume_m3">\"Volume(m³): \"</string>
+    <string name="label_area_m2">Area(m²): </string>
+    <string name="label_volume_m3">Volume(m³): </string>
     <string name="todo">TODO</string>
     <string name="welcome">Welcome</string>
-    <string name="label_amount">\"Amount: \"</string>
-    <string name="label_length_m">\"Length(m): \"</string>
-    <string name="warning_estimate_incomplete">Incomplete estimate...</string>
+    <string name="label_amount">Amount: </string>
+    <string name="label_length_m">Length(m): </string>
+    <string name="warning_estimate_incomplete">Incomplete estimate…</string>
 
 </resources>

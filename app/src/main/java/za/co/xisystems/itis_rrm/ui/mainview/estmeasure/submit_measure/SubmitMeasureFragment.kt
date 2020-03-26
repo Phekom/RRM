@@ -1,7 +1,6 @@
 package za.co.xisystems.itis_rrm.ui.mainview.estmeasure.submit_measure
 
 import android.app.AlertDialog
-import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
@@ -33,7 +32,7 @@ import za.co.xisystems.itis_rrm.utils.*
 import java.util.*
 
 
-class SubmitMeasureFragment : BaseFragment(), KodeinAware {
+class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), KodeinAware {
     override val kodein by kodein()
     private lateinit var measureViewModel: MeasureViewModel
     private val factory: MeasureViewModelFactory by instance()
@@ -64,7 +63,7 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
             getString(R.string.submit_measure_title)
         measureViewModel = activity?.run {
             ViewModelProvider(this, factory).get(MeasureViewModel::class.java)
-        } ?: throw Exception("Invalid Activity") as Throwable
+        } ?: throw Exception("Invalid Activity")
 
         Coroutines.main {
             measureViewModel.measure_Item.observe(viewLifecycleOwner, Observer { jobID ->
@@ -85,7 +84,7 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
         super.onActivityCreated(savedInstanceState)
         measureViewModel = activity?.run {
             ViewModelProvider(this, factory).get(MeasureViewModel::class.java)
-        } ?: throw Exception("Invalid Activity") as Throwable
+        } ?: throw Exception("Invalid Activity")
 
         Coroutines.main {
             jobItemMeasurePhotoDTO = ArrayList<JobItemMeasurePhotoDTO>()
@@ -382,7 +381,7 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
         }
 
         measure_listView.apply {
-            layoutManager = LinearLayoutManager(this.context) as RecyclerView.LayoutManager?
+            layoutManager = LinearLayoutManager(this.context)
             adapter = groupAdapter
         }
 

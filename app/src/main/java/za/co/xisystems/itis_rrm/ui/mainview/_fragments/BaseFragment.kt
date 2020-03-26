@@ -25,27 +25,63 @@ import za.co.xisystems.itis_rrm.utils.ViewLogger
  */
 
 
-abstract class BaseFragment : Fragment(), IProgressView, HorizontalProgressBar{
+abstract class BaseFragment(layoutContentId: Int) : Fragment(layoutContentId), IProgressView,
+    HorizontalProgressBar {
+
+    companion object {
     protected var progressView: IProgressView? = null
-    @JvmField var bounce: Animation? = null
-    @JvmField var bounce_short: Animation? = null
-    @JvmField var bounce_long: Animation? = null
-    @JvmField var bounce_soft: Animation? = null
-    @JvmField var bounce_250: Animation? = null
-    @JvmField var bounce_500: Animation? = null
-    @JvmField var bounce_750: Animation? = null
-    @JvmField var bounce_1000: Animation? = null
-    @JvmField var scale: Animation? = null
-    @JvmField var scale_light: Animation? = null
-    @JvmField var click: Animation? = null
-    @JvmField var shake_delay: Animation? = null
-    @JvmField var shake: Animation? = null
-    @JvmField var shake_long: Animation? = null
-    @JvmField var shake_longer: Animation? = null
+
+        @JvmField
+        var layoutContentId: Int? = null
+
+        @JvmField
+        var bounce: Animation? = null
+
+        @JvmField
+        var bounce_short: Animation? = null
+
+        @JvmField
+        var bounce_long: Animation? = null
+
+        @JvmField
+        var bounce_soft: Animation? = null
+
+        @JvmField
+        var bounce_250: Animation? = null
+
+        @JvmField
+        var bounce_500: Animation? = null
+
+        @JvmField
+        var bounce_750: Animation? = null
+
+        @JvmField
+        var bounce_1000: Animation? = null
+
+        @JvmField
+        var scale: Animation? = null
+
+        @JvmField
+        var scale_light: Animation? = null
+
+        @JvmField
+        var click: Animation? = null
+
+        @JvmField
+        var shake_delay: Animation? = null
+
+        @JvmField
+        var shake: Animation? = null
+
+        @JvmField
+        var shake_long: Animation? = null
+
+        @JvmField
+        var shake_longer: Animation? = null
     protected var coordinator: View? = null
 
     var anims: Animations? = null
-
+    }
 
     override fun onResume() {
         super.onResume()

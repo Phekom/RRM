@@ -21,9 +21,11 @@ class CreateViewModel(
     private val jobCreationDataRepository: JobCreationDataRepository
 ) : ViewModel() {
 
+    // TODO: Create Call to create a new job item
+
 
     val jobtoEdit_Item = MutableLiveData<JobDTO>()
-    fun Item5(jobEdit_Item: JobDTO) {
+    fun setJobToEdit_Item(jobEdit_Item: JobDTO) {
         jobtoEdit_Item.value = jobEdit_Item
     }
 
@@ -63,7 +65,7 @@ class CreateViewModel(
     }
 
     val newjob = MutableLiveData<JobDTO>()
-    fun userN(job: JobDTO) {
+    fun provisionNewJob(job: JobDTO) {
         newjob.value = job
     }
 
@@ -193,6 +195,8 @@ class CreateViewModel(
     }
 
     suspend fun getPointSectionData(projectId: String?): LiveData<SectionPointDTO> {//jobId: String,jobId,
+
+
         return withContext(Dispatchers.IO) {
             jobCreationDataRepository.getPointSectionData(projectId)
         }

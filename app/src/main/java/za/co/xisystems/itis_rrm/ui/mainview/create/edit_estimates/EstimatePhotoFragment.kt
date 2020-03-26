@@ -37,6 +37,7 @@ import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data._commons.AbstractTextWatcher
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
+import za.co.xisystems.itis_rrm.ui.delegates.viewBinding
 import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModelFactory
@@ -57,20 +58,19 @@ import kotlin.collections.HashMap
  * Created by Francis Mahlava on 2019/12/29.
  */
 
-class EstimatePhotoFragment : BaseFragment(), KodeinAware {
+class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), KodeinAware {
 
     private var sectionId: String? = null
     override val kodein by kodein()
     private lateinit var createViewModel: CreateViewModel
     private val factory: CreateViewModelFactory by instance()
 
-    private val REQUEST_IMAGE_CAPTURE = 1
-    private val REQUEST_STORAGE_PERMISSION = 1
+
     private var mAppExecutor: AppExecutor? = null
     private lateinit var locationHelper: LocationHelper
     private lateinit var lm: LocationManager
-    private var gps_enabled = false
-    private var network_enabled = false
+    private var gpsEnabled = false
+    private var networkEnabled = false
 
     private var isEstimateDone: Boolean = false
     private var startKM: Double? = null
@@ -79,7 +79,7 @@ class EstimatePhotoFragment : BaseFragment(), KodeinAware {
     private var disableGlide: Boolean = false
 
     @State
-    var photoType: PhotoType = PhotoType.Start
+    var photoType: PhotoType = PhotoType.START
     @State
     var itemIdPhotoType = HashMap<String, String>()
 
@@ -126,6 +126,9 @@ class EstimatePhotoFragment : BaseFragment(), KodeinAware {
 
     private lateinit var sharedViewModel: SharedViewModel
     private val shareFactory: SharedViewModelFactory by instance()
+
+
+    // TODO: Move non-UI functions to the ViewModel
 
     override fun onStart() {
         super.onStart()
@@ -224,7 +227,7 @@ class EstimatePhotoFragment : BaseFragment(), KodeinAware {
 
         createViewModel.project_Item.observe(viewLifecycleOwner, Observer { pro_Item ->
             item = pro_Item
-            if (item != null) titleTextView.text = item!!.itemCode + " " + item!!.descr else toast(
+            if (item != null) titleTextView.text = "${item!!.itemCode} ${item!!.descr}" else toast(
                 "item is null in " + javaClass.simpleName
             )
             setButtonClicks()
@@ -239,12 +242,12 @@ class EstimatePhotoFragment : BaseFragment(), KodeinAware {
 
         loadPhotos()
         try {
-            network_enabled = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
-            gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
+            networkEnabled = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+            gpsEnabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
         } catch (e: Exception) {
             e.printStackTrace()
         }
-        if (!gps_enabled) { // notify user && !network_enabled
+        if (!gpsEnabled) { // notify user && !network_enabled
             displayPromptForEnablingGPS(activity!!)
         }
         setValueEditText(getStoredValue())
@@ -313,7 +316,6 @@ class EstimatePhotoFragment : BaseFragment(), KodeinAware {
         endPhotoButton.setOnClickListener(myClickListener)
         cancelButton.setOnClickListener(myClickListener)
         updateButton.setOnClickListener(myClickListener)
-//        updateButton.setOnClickListener(myClickListener)
 
     }
 
@@ -329,7 +331,7 @@ class EstimatePhotoFragment : BaseFragment(), KodeinAware {
 
     private fun takePhotoStart() {
 
-        photoType = PhotoType.Start
+        photoType = PhotoType.START
         if (ContextCompat.checkSelfPermission(
                 activity!!.applicationContext,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE
@@ -348,7 +350,7 @@ class EstimatePhotoFragment : BaseFragment(), KodeinAware {
 
 
     private fun takePhotoEnd() {
-        photoType = PhotoType.End
+        photoType = PhotoType.END
         // Check for the external storage permission
         if (ContextCompat.checkSelfPermission(
                 activity!!.applicationContext,
@@ -384,7 +386,7 @@ class EstimatePhotoFragment : BaseFragment(), KodeinAware {
     }
 
     private fun launchCamera() {
-        // type is "start" or "end"
+        // type is START or END
         if (item != null) {
             itemIdPhotoType["itemId"] = item!!.itemId
             itemIdPhotoType["type"] = photoType.name
@@ -410,9 +412,10 @@ class EstimatePhotoFragment : BaseFragment(), KodeinAware {
                 "Error: JobItemEstimate not find in " + javaClass.simpleName
             )
         } else if (startImageUri == null || endImageUri == null) {
-            startImageUri = extractImageUri(jobItemEstimate.jobItemEstimatePhotoStart)
-            endImageUri = extractImageUri(jobItemEstimate.jobItemEstimatePhotoEnd)
+            startImageUri = extractImageUri(jobItemEstimate.jobItemEstimatePhotos?.get(0))
+            endImageUri = extractImageUri(jobItemEstimate.jobItemEstimatePhotos?.get(1))
         }
+
     }
 
 
@@ -448,7 +451,7 @@ class EstimatePhotoFragment : BaseFragment(), KodeinAware {
         resultCode: Int,
         data: Intent?
     ) { // If the image capture activity was called and was successful
-        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) { // Process the image and set it to the TextView
+        if (requestCode == Companion.REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) { // Process the image and set it to the TextView
             processAndSetImage(item, newJob)
         } else { // Otherwise, delete the temporary image file
             BitmapUtils.deleteImageFile(context!!, filenamePath.toString())
@@ -462,12 +465,12 @@ class EstimatePhotoFragment : BaseFragment(), KodeinAware {
     ) {
 
         when (photoType) {
-            PhotoType.Start -> updatePhotos(
+            PhotoType.START -> updatePhotos(
                 startImageView,
                 imageUri.also { startImageUri = it },
                 true, startSectionTextView, true
             )
-            PhotoType.End -> updatePhotos(
+            PhotoType.END -> updatePhotos(
                 endImageView!!,
                 imageUri.also { endImageUri = it },
                 true,
@@ -496,6 +499,8 @@ class EstimatePhotoFragment : BaseFragment(), KodeinAware {
 
     }
 
+
+    // TODO: Move non-UI portions of this code to ViewModel
     private fun processPhotoEstimate(
         currentLocation: Location,
         filename_path: Map<String, String>,
@@ -504,9 +509,8 @@ class EstimatePhotoFragment : BaseFragment(), KodeinAware {
         newJobDTO: JobDTO?
     ) {
         isEstimateDone = false
-        val isPhotoStart = itemId_photoType["type"] == "start"
+        val isPhotoStart = itemId_photoType["type"] == PhotoType.START.name
         val itemId = itemId_photoType["itemId"]
-        val photoPath = filename_path
 
 
         // create job estimate
@@ -518,55 +522,30 @@ class EstimatePhotoFragment : BaseFragment(), KodeinAware {
                 newJobDTO, newJobItemEstimatesPhotosList, newJobDTO?.JobItemMeasures!!,
                 newJobItemEstimatesWorksList, item
             )
-            val jobItemEstimatePhoto =
-                if (isPhotoStart) itemEstimate.jobItemEstimatePhotoStart else itemEstimate.jobItemEstimatePhotoEnd
-            if (jobItemEstimatePhoto == null) {
 
-                if (ServiceUtil.isNetworkConnected(activity!!.applicationContext)) {
+            if (ServiceUtil.isNetworkConnected(activity!!.applicationContext)) {
 
-                    getRouteSectionPoint(
-                        currentLocation, //       itemEstimate, photo, itemId_photoType,
-                        newJobDTO, item
-                    )
-                    Coroutines.main {
-                        createViewModel.getPointSectionData(newJobDTO.ProjectId).apply {
+                getRouteSectionPoint(
+                    currentLocation, //       itemEstimate, photo, itemId_photoType,
+                    newJobDTO, item
+                )
+                getPointSectionData(
+                    newJobDTO,
+                    itemEstimate,
+                    filename_path,
+                    currentLocation,
+                    itemId_photoType,
+                    isPhotoStart
+                )
 
-                            if (this.value?.direction != null && this.value?.pointLocation != null) {
-
-                                createItemEstimatePhoto(
-                                    itemEstimate,
-                                    photoPath,
-                                    currentLocation,
-                                    newJobItemEstimatesPhotosList,
-                                    itemId_photoType,
-                                    this.value!!.direction,
-                                    this.value!!.pointLocation
-
-                                )
-                            } else {
-                                this@EstimatePhotoFragment.disableGlide = true
-                                this@EstimatePhotoFragment.sharedViewModel.setMessage("GPS needed a moment to calibrate. Please retake photograph.")
-                            }
-                        }
-                    }
-
-                } else {
-                    val networkToast = Toast.makeText(
-                        activity?.applicationContext,
-                        R.string.no_connection_detected,
-                        Toast.LENGTH_LONG
-                    )
-                    networkToast.setGravity(Gravity.CENTER_VERTICAL, 0, 0)
-                    networkToast.show()
-
-                }
-//                if (currentLocation == null) {
-//                    activity!!.toast("Please make sure that you have activated the location on your device.")
-//                } else {
-//
-//
-//                }
-
+            } else {
+                val networkToast = Toast.makeText(
+                    activity?.applicationContext,
+                    R.string.no_connection_detected,
+                    Toast.LENGTH_LONG
+                )
+                networkToast.setGravity(Gravity.CENTER_VERTICAL, 0, 0)
+                networkToast.show()
 
             }
 
@@ -574,13 +553,11 @@ class EstimatePhotoFragment : BaseFragment(), KodeinAware {
         } else {
 
             if (ServiceUtil.isNetworkConnected(activity!!.applicationContext)) {
-                isEstimateDone = true
+                // Network connected
+                isEstimateDone = jobItemEstimate.isEstimateComplete()
 
                 getRouteSectionPoint(
                     currentLocation,
-//                    jobItemEstimate,
-//                    photo,
-//                    itemId_photoType,
                     newJobDTO,
                     item
                 )
@@ -592,23 +569,19 @@ class EstimatePhotoFragment : BaseFragment(), KodeinAware {
                         direction = sectionPoint.direction ?: ""
                         val photo = createItemEstimatePhoto(
 
-                            jobItemEstimate, photoPath,
+                            jobItemEstimate, filename_path,
                             currentLocation, newJobItemEstimatesPhotosList, itemId_photoType,
                             sectionPoint.direction, sectionPoint.pointLocation
                         )
+
+                        if (isPhotoStart) {
+                            jobItemEstimate.jobItemEstimatePhotos!!.add(0, photo)
+                        } else {
+                            jobItemEstimate.jobItemEstimatePhotos!!.add(1, photo)
+                        }
                     })
 
                 }
-//                val photo = createItemEstimatePhoto(
-//                    jobItemEstimate,
-//                    photoPath,
-//                    currentLocation,
-//                    newJobItemEstimatesPhotosList,
-//                    itemId_photoType,
-//                    sectionPoint.direction,
-//                    sectionPoint.pointLocation
-//                )
-
 
                 costCard.visibility = View.VISIBLE
                 updateButton.visibility = View.VISIBLE
@@ -624,21 +597,8 @@ class EstimatePhotoFragment : BaseFragment(), KodeinAware {
                 updateButton.visibility = View.GONE
             }
 
-
-//            if (currentLocation == null) {
-//                activity!!.toast("Please make sure that you have activated the location on your device.")
-//            } else {
-//
-//            }
-
         }
 
-//        createViewModel.sectionId.observe(viewLifecycleOwner, Observer { sectId ->
-//            Coroutines.main {
-//
-//            }
-//
-//        })
 
         Coroutines.main {
             if (isEstimateDone) {
@@ -706,14 +666,47 @@ class EstimatePhotoFragment : BaseFragment(), KodeinAware {
 
     }
 
+    private fun getPointSectionData(
+        newJobDTO: JobDTO,
+        itemEstimate: JobItemEstimateDTO,
+        filename_path: Map<String, String>,
+        currentLocation: Location,
+        itemId_photoType: Map<String, String>,
+        isPhotoStart: Boolean
+    ) {
+        Coroutines.main {
+            createViewModel.getPointSectionData(newJobDTO.ProjectId).apply {
+
+                if (this.value?.direction != null && this.value?.pointLocation != null) {
+
+                    val photo = createItemEstimatePhoto(
+                        itemEstimate,
+                        filename_path,
+                        currentLocation,
+                        newJobItemEstimatesPhotosList,
+                        itemId_photoType,
+                        this.value!!.direction,
+                        this.value!!.pointLocation
+                    )
+                    if (isPhotoStart) {
+                        itemEstimate.jobItemEstimatePhotos!!.add(0, photo)
+                    } else {
+                        itemEstimate.jobItemEstimatePhotos!!.add(1, photo)
+                    }
+                } else {
+                    this@EstimatePhotoFragment.disableGlide = true
+                    this@EstimatePhotoFragment.sharedViewModel.setMessage("GPS needed a moment to calibrate. Please retake photograph.")
+                }
+            }
+        }
+    }
+
     private fun showSectionOutOfBoundError(sectionPoint: SectionPointDTO?) {
         toast(
             "You are not between the start: " + sectionPoint?.pointLocation.toString() +
                     " and end: " + sectionPoint?.pointLocation.toString() + " co-ordinates for the project."
         )
     }
-
-
 
 
     private fun getRouteSectionPoint(
@@ -779,7 +772,7 @@ class EstimatePhotoFragment : BaseFragment(), KodeinAware {
 // itemEstimate.setJobItemEstimatePhotoStart(jobItemEstimatePhoto!!)
 
 
-        val isPhotoStart = itemIdPhotoType["type"] == "start"
+        val isPhotoStart = itemIdPhotoType["type"] == PhotoType.START.name
         val photoId: String = SqlLitUtils.generateUuid()
 
         val newEstimatePhoto = JobItemEstimatesPhotoDTO(
@@ -809,6 +802,7 @@ class EstimatePhotoFragment : BaseFragment(), KodeinAware {
 
     }
 
+    // TODO: Move this code to the CreateViewModel
 
     private fun createItemEstimate(
         itemId: String?,
@@ -852,6 +846,7 @@ class EstimatePhotoFragment : BaseFragment(), KodeinAware {
     }
 
 
+    // TODO: Move this code to the CreateViewModel
     private fun createRouteSection(
         secId: String,
         jobId: String,
@@ -923,9 +918,10 @@ class EstimatePhotoFragment : BaseFragment(), KodeinAware {
                         }
 
                     })
-                    if (disableGlide.not()) {
+                    if (!disableGlide) {
                         GlideApp.with(this)
                             .load(imageUri)
+                            .error(R.drawable.no_image)
                             .into(imageView)
                         if (animate) imageView.startAnimation(bounce_1000)
                     } else {
@@ -965,6 +961,7 @@ class EstimatePhotoFragment : BaseFragment(), KodeinAware {
 //        this.quantity = quantity
 //    }
 
+    // TODO: Mpve Non-UI portions to CreateViewModel
     private fun calculateCost() {
         val item: ItemDTOTemp? = item
         val currentStartKm = getStartKm()
@@ -1158,9 +1155,10 @@ class EstimatePhotoFragment : BaseFragment(), KodeinAware {
 
     }
 
-
-
-
+    companion object {
+        private const val REQUEST_IMAGE_CAPTURE = 1
+        private const val REQUEST_STORAGE_PERMISSION = 1
+    }
 
 }
 
