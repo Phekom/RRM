@@ -15,6 +15,7 @@ import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.localDB.JobDataController
@@ -196,7 +197,7 @@ class JobCreationDataRepository(
 
     suspend fun getPointSectionData(projectId: String?): LiveData<SectionPointDTO> { //jobId,jobId: String,
         return withContext(Dispatchers.IO) {
-            //            Db.getSectionItemDao().getAllSectionItems()
+            // Db.getSectionItemDao().getAllSectionItems()
             Db.getSectionPointDao().getPointSectionData(projectId)
         }
     }
@@ -232,6 +233,11 @@ class JobCreationDataRepository(
             val buffer = 0
             val routeSectionPointResponse =
                 apiRequest { api.getRouteSectionPoint(distance, buffer, latitude, longitude, useR) }
+
+            if (routeSectionPointResponse == null) {
+                Timber.e(NullPointerException("RouteSectionPoint is empty!"))
+            }
+
             routeSectionPoint.postValue(
                 routeSectionPointResponse.direction,
                 routeSectionPointResponse.linearId,
@@ -280,7 +286,7 @@ class JobCreationDataRepository(
         val jsonElement: JsonElement = JsonParser().parse(newjob)
         jobhead.add("Job", jsonElement)
         jobhead.addProperty("UserId", userId)
-        Log.e("JsonObject", "Json string $jobhead")
+        Timber.d("Json Job: $jobhead")
 
         val jobResponse = apiRequest { api.sendJobsForApproval(jobhead) }
         workflowJ2.postValue(jobResponse.workflowJob, job, activity)
@@ -534,7 +540,7 @@ class JobCreationDataRepository(
                 // TODO: use a generic utility to encode base64 string
             }
             imageData.addProperty("ImageFileExtension", extension)
-            Log.e("JsonObject", "Json string $imageData")
+            Timber.d("Json Image: $imageData")
 
             val uploadImageResponse = apiRequest { api.uploadRrmImage(imageData) }
             photoUpload.postValue(uploadImageResponse.errorMessage)

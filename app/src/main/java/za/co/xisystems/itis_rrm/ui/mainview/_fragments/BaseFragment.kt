@@ -125,13 +125,7 @@ abstract class BaseFragment(layoutContentId: Int) : Fragment(layoutContentId), I
             progressView = context
         }
     }
-//    override fun onDestroyView() {
-//        super.onDestroyView()
-//        if (view != null) {
-//            val parent = view!!.parent as ViewGroup
-//            parent?.removeAllViews()
-//        }
-//    }
+
     override fun onViewCreated(
         view: View,
         savedInstanceState: Bundle?
@@ -140,13 +134,6 @@ abstract class BaseFragment(layoutContentId: Int) : Fragment(layoutContentId), I
         coordinator = view.findViewById(R.id.coordinator)
     }
 
-//    fun toast(string: String?) {
-//        if (activity != null) Toast.makeText(activity, string, Toast.LENGTH_LONG).show()
-//    }
-//
-//    fun toast(string: Int) {
-//        if (activity != null) Toast.makeText(activity, string, Toast.LENGTH_LONG).show()
-//    }
 
     fun setDataProgressDialog(context: Context, message: String):ProgressDialog{
         //Assuming that you are using fragments.//
@@ -169,6 +156,7 @@ abstract class BaseFragment(layoutContentId: Int) : Fragment(layoutContentId), I
      */
     fun Activity.hideKeyboard() {
         val view = this.currentFocus
+
         if (view != null) {
             val imm = this.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             imm.hideSoftInputFromWindow(view.windowToken, 0)

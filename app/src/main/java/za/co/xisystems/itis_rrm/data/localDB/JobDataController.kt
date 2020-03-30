@@ -3,7 +3,6 @@ package za.co.xisystems.itis_rrm.data.localDB
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.utils.DataConversion
-import java.util.ArrayList
 
 /**
  * Created by Francis Mahlava on 2020/01/02.
@@ -68,11 +67,9 @@ object JobDataController{
         job.setVoId(DataConversion.toLittleEndian(job.VoId))
         if (job.JobSections != null) {
             for (jobSection in job.JobSections!!) {
-                if (jobSection != null) {
-                    jobSection.setJobSectionId(DataConversion.toLittleEndian(jobSection.jobSectionId))
-                    jobSection.setProjectSectionId(DataConversion.toLittleEndian(jobSection.projectSectionId))
-                    jobSection.setJobId(DataConversion.toLittleEndian(jobSection.jobId))
-                }
+                jobSection.setJobSectionId(DataConversion.toLittleEndian(jobSection.jobSectionId))
+                jobSection.setProjectSectionId(DataConversion.toLittleEndian(jobSection.projectSectionId))
+                jobSection.setJobId(DataConversion.toLittleEndian(jobSection.jobId))
             }
         }
         if (job.JobItemEstimates != null) {

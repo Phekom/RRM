@@ -4,6 +4,7 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 /**
  * Created by Francis Mahlava on 2019/10/18.
@@ -14,7 +15,11 @@ object Coroutines {
         when (exception) {
             is NoInternetException -> throw exception
             is NoConnectivityException -> throw exception
-            else -> throw exception
+            else -> {
+                Timber.e(exception, exception.message)
+                exception.printStackTrace()
+                throw exception
+            }
         }
     }
 
@@ -24,7 +29,7 @@ object Coroutines {
         }
 
     fun io(work: suspend (() -> Unit)) =
-        CoroutineScope(Dispatchers.IO).launch {
+        CoroutineScope(Dispatchers.IO + connectivityHandler).launch {
             work()
         }
 

@@ -17,7 +17,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.provider.Settings
-import android.util.Log
 import android.view.*
 import android.widget.ImageView
 import android.widget.TextView
@@ -33,11 +32,11 @@ import kotlinx.android.synthetic.main.fragment_photo_estimate.*
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
+import timber.log.Timber
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data._commons.AbstractTextWatcher
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
-import za.co.xisystems.itis_rrm.ui.delegates.viewBinding
 import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModelFactory
@@ -51,6 +50,7 @@ import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
 import java.io.File
 import java.text.DecimalFormat
 import java.util.*
+import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 
 
@@ -75,7 +75,6 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Ko
     private var isEstimateDone: Boolean = false
     private var startKM: Double? = null
     private var endKM: Double? = null
-    private var section_id: String? = null
     private var disableGlide: Boolean = false
 
     @State
@@ -83,9 +82,6 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Ko
     @State
     var itemIdPhotoType = HashMap<String, String>()
 
-
-    //    @State
-//    var itemId_photoType_tester = HashMap<String, String>()
     internal var job: JobDTO? = null
 
     @State
@@ -97,7 +93,7 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Ko
     @State
     internal var estimate: JobItemEstimateDTO? = null
     var direction: String? = null
-    private lateinit var newJobItemEstimate: JobItemEstimateDTO
+    private lateinit var jobItemEstimate: JobItemEstimateDTO
 
     @State
     var quantity = 1.0
@@ -105,18 +101,12 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Ko
     private var currentLocation: Location? = null
 
     private lateinit var jobArrayList: ArrayList<JobDTO>
-    private lateinit var newJobItemEstimatesPhotosList: ArrayList<JobItemEstimatesPhotoDTO>
-    private lateinit var newJobItemEstimatesWorksList: ArrayList<JobEstimateWorksDTO>
-    private lateinit var newJobItemEstimatesList: ArrayList<JobItemEstimateDTO>
+    private lateinit var jobItemEstimatesPhotosList: ArrayList<JobItemEstimatesPhotoDTO>
+    private lateinit var jobItemEstimatesWorksList: ArrayList<JobEstimateWorksDTO>
+    private lateinit var jobItemEstimatesList: ArrayList<JobItemEstimateDTO>
     private lateinit var jobItemMeasureArrayList: ArrayList<JobItemMeasureDTO>
     private lateinit var jobItemSectionArrayList: ArrayList<JobSectionDTO>
     private lateinit var itemSections: ArrayList<ItemSectionDTO>
-
-    private lateinit var newJobItemEstimatesPhotosList2: ArrayList<JobItemEstimatesPhotoDTO>
-    private lateinit var newJobItemEstimatesWorksList2: ArrayList<JobEstimateWorksDTO>
-
-    private lateinit var jobItemMeasureArrayList2: ArrayList<JobItemMeasureDTO>
-    private lateinit var jobItemSectionArrayList2: ArrayList<JobSectionDTO>
 
     internal var description: String? = null
     internal var useR: Int? = null
@@ -176,10 +166,6 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Ko
 
         setHasOptionsMenu(true)
         (activity as MainActivity).supportActionBar?.title = getString(R.string.edit_estimate)
-//        updatePhotoUI(false)
-//        updateSectionUI(false)
-//        updatePhotoUI()
-//        estimateCalculator =  EstimateCalculator(this)
         locationHelper = LocationHelper(this)
         locationHelper.onCreate()
         itemSections = ArrayList<ItemSectionDTO>()
@@ -187,17 +173,17 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Ko
 //        jobItemPhoto = JobItemEstimatesPhotoDTO
         jobItemSectionArrayList = ArrayList<JobSectionDTO>()
         jobItemMeasureArrayList = ArrayList<JobItemMeasureDTO>()
-        newJobItemEstimatesList = ArrayList<JobItemEstimateDTO>()
-        newJobItemEstimatesPhotosList = ArrayList<JobItemEstimatesPhotoDTO>()
-        newJobItemEstimatesWorksList = ArrayList<JobEstimateWorksDTO>()
+        jobItemEstimatesList = ArrayList<JobItemEstimateDTO>()
+        jobItemEstimatesPhotosList = ArrayList<JobItemEstimatesPhotoDTO>()
+        jobItemEstimatesWorksList = ArrayList<JobEstimateWorksDTO>()
 //        newJobItemEstimatesList2 = ArrayList<JobItemEstimateDTO>()
 
 
-        jobItemSectionArrayList2 = ArrayList<JobSectionDTO>()
-        jobItemMeasureArrayList2 = ArrayList<JobItemMeasureDTO>()
+//        jobItemSectionArrayList2 = ArrayList<JobSectionDTO>()
+//        jobItemMeasureArrayList2 = ArrayList<JobItemMeasureDTO>()
 //        newJobItemEstimatesList2 = ArrayList<JobItemEstimateDTO>()
-        newJobItemEstimatesPhotosList2 = ArrayList<JobItemEstimatesPhotoDTO>()
-        newJobItemEstimatesWorksList2 = ArrayList<JobEstimateWorksDTO>()
+//        newJobItemEstimatesPhotosList2 = ArrayList<JobItemEstimatesPhotoDTO>()
+//        newJobItemEstimatesWorksList2 = ArrayList<JobEstimateWorksDTO>()
 
     }
 
@@ -221,12 +207,12 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Ko
             useR = user
         })
 
-        createViewModel.job_Item.observe(viewLifecycleOwner, Observer { job_Item ->
-            newJob = job_Item
+        createViewModel.job_Item.observe(viewLifecycleOwner, Observer { jobItem ->
+            newJob = jobItem
         })
 
-        createViewModel.project_Item.observe(viewLifecycleOwner, Observer { pro_Item ->
-            item = pro_Item
+        createViewModel.project_Item.observe(viewLifecycleOwner, Observer { projectItem ->
+            item = projectItem
             if (item != null) titleTextView.text = "${item!!.itemCode} ${item!!.descr}" else toast(
                 "item is null in " + javaClass.simpleName
             )
@@ -281,7 +267,7 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Ko
                         fragmentManager?.beginTransaction()?.remove(this)?.commit()
                         fragmentManager?.beginTransaction()?.detach(this)?.commit()
                     }
-                    //TODO(clear temp database Tables fro Job And Items)
+                    //TODO(clear temp database Tables for Job And Items)
                 }
 
                 R.id.updateButton -> {
@@ -290,15 +276,15 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Ko
                         labelTextView.startAnimation(anims!!.shake_long)
                     } else {
                         Coroutines.main {
-                            newJobItemEstimate.qty = valueEditText.text.toString().toDouble()
-                            val qty = newJobItemEstimate.qty
-                            newJobItemEstimate.lineRate = (qty * newJobItemEstimate.lineRate)
+                            jobItemEstimate.qty = valueEditText.text.toString().toDouble()
+                            val qty = jobItemEstimate.qty
+                            jobItemEstimate.lineRate = (qty * jobItemEstimate.lineRate)
 
                             createViewModel.updateNewJob(
                                 newJob!!.JobId,
                                 startKM!!,
                                 endKM!!,
-                                section_id!!,
+                                sectionId!!,
                                 newJob?.JobItemEstimates!!,
                                 newJob?.JobSections!!
                             )
@@ -320,11 +306,6 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Ko
     }
 
     private fun updateData(view: View) {
-//        val qty = valueEditText.getText().toString().toInt()
-//        val cost =  costTextView.getText().toString()
-//        createViewModel.costLineRate.value = cost
-//        createViewModel.EstimateQty.value = qty
-
         Navigation.findNavController(view)
             .navigate(R.id.action_estimatePhotoFragment_to_addProjectFragment)
     }
@@ -405,15 +386,25 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Ko
     }
 
     private fun loadPhotos() {
-        val jobItemEstimate: JobItemEstimateDTO? = newJob?.getJobEstimateByItemId(item?.itemId)
-        if (jobItemEstimate == null) {
-            Log.d(
-                "x-",
-                "Error: JobItemEstimate not find in " + javaClass.simpleName
+        val existingJobItemEstimate = newJob?.getJobEstimateByItemId(item?.itemId)
+        if (existingJobItemEstimate == null) {
+            Timber.d(
+                "Error: existingJobItemEstimate not find in %s", javaClass.simpleName
             )
         } else if (startImageUri == null || endImageUri == null) {
-            startImageUri = extractImageUri(jobItemEstimate.jobItemEstimatePhotos?.get(0))
-            endImageUri = extractImageUri(jobItemEstimate.jobItemEstimatePhotos?.get(1))
+            startImageUri = extractImageUri(existingJobItemEstimate.jobItemEstimatePhotos?.get(0))
+            endImageUri = extractImageUri(existingJobItemEstimate.jobItemEstimatePhotos?.get(1))
+
+        }
+        if (startImageUri != null) {
+            displayEstimatePhoto(
+                imageUri = startImageUri,
+                imageView = startImageView,
+                animate = false
+            )
+        }
+        if (endImageUri != null) {
+            displayEstimatePhoto(imageUri = endImageUri, imageView = endImageView, animate = false)
         }
 
     }
@@ -435,7 +426,7 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Ko
     fun extractImageUri(jobItemEstimatePhoto: JobItemEstimatesPhotoDTO?): Uri? {
         if (jobItemEstimatePhoto != null) {
             val path: String = jobItemEstimatePhoto.photoPath
-            Log.d("x-", "photo $path")
+            Timber.d("x- photo $path")
             if (path != null) {
                 val file = File(path)
                 // resize
@@ -480,7 +471,7 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Ko
 
         }
         try { //  Location of picture
-            val currentLocation: Location = locationHelper.getCurrentLocation()!!
+            val currentLocation: Location? = locationHelper.getCurrentLocation()
             if (currentLocation == null) toast("Error: Current location is null!")
             //  Save Image to Internal Storage
 
@@ -489,10 +480,11 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Ko
                 imageUri!!
             ) as HashMap<String, String>
 
-            processPhotoEstimate(currentLocation, filenamePath, itemIdPhotoType, item, newJobDTO)
+            processPhotoEstimate(currentLocation!!, filenamePath, itemIdPhotoType, item, newJobDTO)
 
         } catch (e: Exception) {
             toast(R.string.error_getting_image)
+            Timber.e(e)
             e.printStackTrace()
         }
 
@@ -503,38 +495,50 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Ko
     // TODO: Move non-UI portions of this code to ViewModel
     private fun processPhotoEstimate(
         currentLocation: Location,
-        filename_path: Map<String, String>,
-        itemId_photoType: Map<String, String>,
+        filePath: Map<String, String>,
+        itemIdPhotoType: Map<String, String>,
         item: ItemDTOTemp?,
         newJobDTO: JobDTO?
     ) {
         isEstimateDone = false
-        val isPhotoStart = itemId_photoType["type"] == PhotoType.START.name
-        val itemId = itemId_photoType["itemId"]
+        val isPhotoStart = itemIdPhotoType["type"] == PhotoType.START.name
+        val itemId = itemIdPhotoType["itemId"]
 
 
         // create job estimate
-        val jobItemEstimate = newJobDTO?.getJobEstimateByItemId(itemId)
-        if (jobItemEstimate == null) {
+        val existingJobItemEstimate = newJobDTO?.getJobEstimateByItemId(itemId)
+        if (existingJobItemEstimate == null) {
 
-            val itemEstimate = createItemEstimate(
-                itemId,
-                newJobDTO, newJobItemEstimatesPhotosList, newJobDTO?.JobItemMeasures!!,
-                newJobItemEstimatesWorksList, item
-            )
+            jobItemEstimate = createItemEstimate(
+                itemId = itemId,
+                newJob = newJobDTO,
+                // newJobItemPhotosList = jobItemEstimatesPhotosList,
+                // jobItemMeasureArrayList = newJobDTO?.JobItemMeasures!!,
+                // jobItemWorksList = jobItemEstimatesWorksList,
+                item = item
+            )!!
+
+            if (newJobDTO?.JobItemEstimates == null) {
+                newJobDTO?.JobItemEstimates = ArrayList<JobItemEstimateDTO>()
+            }
+
+
+            newJobDTO?.JobItemEstimates?.add(jobItemEstimate)
+
 
             if (ServiceUtil.isNetworkConnected(activity!!.applicationContext)) {
 
                 getRouteSectionPoint(
-                    currentLocation, //       itemEstimate, photo, itemId_photoType,
-                    newJobDTO, item
+                    currentLocation = currentLocation,
+                    job = newJobDTO,
+                    item = item
                 )
                 getPointSectionData(
-                    newJobDTO,
-                    itemEstimate,
-                    filename_path,
+                    newJobDTO!!,
+                    jobItemEstimate,
+                    filePath,
                     currentLocation,
-                    itemId_photoType,
+                    itemIdPhotoType,
                     isPhotoStart
                 )
 
@@ -551,35 +555,34 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Ko
 
 
         } else {
-
+            jobItemEstimate = existingJobItemEstimate.copy()
             if (ServiceUtil.isNetworkConnected(activity!!.applicationContext)) {
                 // Network connected
                 isEstimateDone = jobItemEstimate.isEstimateComplete()
 
                 getRouteSectionPoint(
-                    currentLocation,
-                    newJobDTO,
-                    item
+                    currentLocation = currentLocation,
+                    job = newJobDTO,
+                    item = item
+                )
+
+                getPointSectionData(
+                    newJobDTO = newJobDTO,
+                    itemEstimate = jobItemEstimate,
+                    filePath = filePath,
+                    currentLocation = currentLocation,
+                    itemIdPhotoType = itemIdPhotoType,
+                    isPhotoStart = isPhotoStart
                 )
 
                 Coroutines.main {
-                    val section = createViewModel.getPointSectionData(newJobDTO.ProjectId)
-                    var direction: String? = null
-                    section.observe(this, Observer { sectionPoint ->
-                        direction = sectionPoint.direction ?: ""
-                        val photo = createItemEstimatePhoto(
-
-                            jobItemEstimate, filename_path,
-                            currentLocation, newJobItemEstimatesPhotosList, itemId_photoType,
-                            sectionPoint.direction, sectionPoint.pointLocation
-                        )
-
-                        if (isPhotoStart) {
-                            jobItemEstimate.jobItemEstimatePhotos!!.add(0, photo)
-                        } else {
-                            jobItemEstimate.jobItemEstimatePhotos!!.add(1, photo)
-                        }
-                    })
+                    setAndValidateEstimatePhoto(
+                        newJobDTO,
+                        filePath,
+                        currentLocation,
+                        itemIdPhotoType,
+                        isPhotoStart
+                    )
 
                 }
 
@@ -588,7 +591,7 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Ko
             } else {
                 val networkToast = Toast.makeText(
                     activity?.applicationContext,
-                    "Please make sure that you have activated the location on your device",
+                    "Please ensure that you have activated the location on your device",
                     Toast.LENGTH_LONG
                 )
                 networkToast.setGravity(Gravity.CENTER_VERTICAL, 0, 0)
@@ -602,62 +605,7 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Ko
 
         Coroutines.main {
             if (isEstimateDone) {
-//                val newJobId: String = SqlLitUtils.generateUuid()
-                val section = createViewModel.getPointSectionData(newJobDTO.ProjectId)
-                section.observe(this, Observer { sectionPoint ->
-                    //                    toast(sectionPoint.sectionId.toString())
-                    if (sectionPoint == null) {
-                        showSectionOutOfBoundError(sectionPoint)
-                        costCard.visibility = View.GONE
-                        updateButton.visibility = View.GONE
-                    } else {
-                        Coroutines.main {
-                            val sectionID = createViewModel.getSectionByRouteSectionProject(
-                                sectionPoint.sectionId,
-                                sectionPoint.linearId,
-                                this.newJob?.ProjectId
-                            )
-                            sectionID.observe(this, Observer { sec_id ->
-                                Coroutines.main {
-                                    if (sec_id == null) {
-                                        toast(R.string.no_section_for_project)
-                                        costCard.visibility = View.GONE
-                                        updateButton.visibility = View.GONE
-                                        return@main
-                                    } else {
-                                        costCard.visibility = View.VISIBLE
-                                        createViewModel.sectionId.value = sec_id
-                                        val section = createViewModel.getSection(sec_id)
-                                        section.observe(viewLifecycleOwner, Observer { section ->
-                                            Coroutines.main {
-                                                val isPhotoStart =
-                                                    itemId_photoType["type"] == "start"
-//                                       if (section != null) {
-                                                startKM = section.startKm
-                                                endKM = section.endKm
-                                                section_id = sec_id
-//                                       }
-                                                createRouteSection(
-                                                    sec_id,
-                                                    this.newJob!!.JobId,
-                                                    startKM!!,
-                                                    endKM!!
-                                                )
-
-                                            }
-                                        })
-
-                                    }
-
-                                }
-                            })
-
-
-                        }
-                    }
-
-
-                })
+                finalizeEstimate(newJobDTO)
 
 
             }
@@ -666,12 +614,113 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Ko
 
     }
 
+    private suspend fun finalizeEstimate(newJobDTO: JobDTO?) {
+        val section = createViewModel.getPointSectionData(newJobDTO?.ProjectId)
+        section.observe(this, Observer { sectionPoint ->
+            if (sectionPoint == null) {
+                showSectionOutOfBoundError(sectionPoint)
+                costCard.visibility = View.GONE
+                updateButton.visibility = View.GONE
+            } else {
+                Coroutines.main {
+                    val sectionID = createViewModel.getSectionByRouteSectionProject(
+                        sectionPoint.sectionId,
+                        sectionPoint.linearId,
+                        this.newJob?.ProjectId
+                    )
+                    sectionID.observe(this, Observer { projectSectionId ->
+                        Coroutines.main {
+                            if (projectSectionId == null) {
+                                toast(R.string.no_section_for_project)
+                                costCard.visibility = View.GONE
+                                updateButton.visibility = View.GONE
+                                return@main
+                            } else {
+                                costCard.visibility = View.VISIBLE
+                                setJobProjectSection(projectSectionId)
+
+
+                            }
+
+                        }
+                    })
+
+
+                }
+            }
+
+
+        })
+    }
+
+    private suspend fun setAndValidateEstimatePhoto(
+        newJobDTO: JobDTO?,
+        filePath: Map<String, String>,
+        currentLocation: Location,
+        itemIdPhotoType: Map<String, String>,
+        isPhotoStart: Boolean
+    ) {
+        val section = createViewModel.getPointSectionData(newJobDTO?.ProjectId)
+        var direction: String? = null
+        section.observe(this, Observer { sectionPoint ->
+            direction = sectionPoint.direction ?: ""
+            val photo = createItemEstimatePhoto(
+                jobItemEstimate,
+                filePath,
+                currentLocation,
+                itemIdPhotoType,
+                pointLocation = sectionPoint.pointLocation
+            )
+
+            if (photo != null) {
+
+                if (isPhotoStart) {
+                    jobItemEstimate.jobItemEstimatePhotos!!.add(0, photo)
+                    // jobItemEstimate.setJobItemEstimatePhotoStart(photo)
+                } else {
+                    jobItemEstimate.jobItemEstimatePhotos!!.add(1, photo)
+                    // jobItemEstimate.setJobItemEstimatePhotoEnd(photo)
+                }
+                isEstimateDone = jobItemEstimate.isEstimateComplete()
+            }
+
+        })
+    }
+
+    private suspend fun setJobProjectSection(
+        projectSectionId: String
+        // itemId_photoType: Map<String, String>
+    ) {
+        createViewModel.sectionId.value = projectSectionId
+
+        val section = createViewModel.getSection(projectSectionId)
+        section.observe(viewLifecycleOwner, Observer { section ->
+
+            startKM = section.startKm
+            endKM = section.endKm
+            sectionId = projectSectionId
+
+            val routeSection = createRouteSection(
+                projectSectionId = projectSectionId,
+                jobId = this.newJob!!.JobId,
+                startKm = startKM!!,
+                endKm = endKM!!
+            )
+
+            newJob?.JobSections?.add(routeSection)
+            newJob?.SectionId = routeSection.projectSectionId
+            newJob?.StartKm = routeSection.startKm
+            newJob?.EndKm = routeSection.endKm
+
+        })
+    }
+
     private fun getPointSectionData(
         newJobDTO: JobDTO,
         itemEstimate: JobItemEstimateDTO,
-        filename_path: Map<String, String>,
+        filePath: Map<String, String>,
         currentLocation: Location,
-        itemId_photoType: Map<String, String>,
+        itemIdPhotoType: Map<String, String>,
         isPhotoStart: Boolean
     ) {
         Coroutines.main {
@@ -680,18 +729,21 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Ko
                 if (this.value?.direction != null && this.value?.pointLocation != null) {
 
                     val photo = createItemEstimatePhoto(
-                        itemEstimate,
-                        filename_path,
-                        currentLocation,
-                        newJobItemEstimatesPhotosList,
-                        itemId_photoType,
-                        this.value!!.direction,
-                        this.value!!.pointLocation
+                        itemEstimate = itemEstimate,
+                        filePath = filePath,
+                        currentLocation = currentLocation,
+                        // jobItemEstimatesPhotosList,
+                        itemIdPhotoType = itemIdPhotoType,
+                        // direction = this.value!!.direction,
+                        pointLocation = this.value!!.pointLocation
                     )
+
                     if (isPhotoStart) {
-                        itemEstimate.jobItemEstimatePhotos!!.add(0, photo)
+                        itemEstimate.jobItemEstimatePhotos!!.add(0, photo!!)
+                        // itemEstimate.setJobItemEstimatePhotoStart(photo)
                     } else {
-                        itemEstimate.jobItemEstimatePhotos!!.add(1, photo)
+                        itemEstimate.jobItemEstimatePhotos!!.add(1, photo!!)
+                        ///itemEstimate.setJobItemEstimatePhotoEnd(photo)
                     }
                 } else {
                     this@EstimatePhotoFragment.disableGlide = true
@@ -730,76 +782,52 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Ko
     }
 
 
-//    private fun createNewJob(
-//        projectID: String?,
-//        jobArrayList: ArrayList<JobDTO>,
-//        useR: Int?,
-//        newJobItemEstimatesList: ArrayList<JobItemEstimateDTO>,
-//        jobItemMeasureArrayList: ArrayList<JobItemMeasureDTO>,
-//        jobItemSectionArrayList: ArrayList<JobSectionDTO>
-//    ): JobDTO {
-//
-//        val newJobId: String = SqlLitUtils.generateUuid()
-////            job.JobId = newJobId
-////        val estimateId: String = SqlLitUtils.generateUuid()
-//
-//        val newJob = JobDTO(
-//            newJobId, projectID, null, useR!!, 0, null, null,
-//            null, null, null, 0.0, 0.0, null, null,
-//            0, 0, null, null, null, newJobItemEstimatesList,
-//            jobItemMeasureArrayList, jobItemSectionArrayList, null, 0, null, null,
-//            null, null, 0, 0, 0, 0, 0,
-//            0, 0, 0, 0, null, 0,
-//            0, null, null, null, null, 0, null
-//        )
-//
-//        jobArrayList.add(newJob)
-//        return newJob!!
-//    }
 
     private fun createItemEstimatePhoto(
-        itemEst: JobItemEstimateDTO,
-        filename_path: Map<String, String>,
+        itemEstimate: JobItemEstimateDTO,
+        filePath: Map<String, String>,
         currentLocation: Location?,
-        newJobItemEstimatesPhotosList: ArrayList<JobItemEstimatesPhotoDTO>,
+        // jobItemEstimatesPhotosList: ArrayList<JobItemEstimatesPhotoDTO>,
         itemIdPhotoType: Map<String, String>,
-        direction: String?,
+        // direction: String?,
         pointLocation: Double
-    ): JobItemEstimatesPhotoDTO {
-
-//        val photoId: String = SqlLitUtils.generateUuid()
-//        val isPhotoStart = itemId_photoType.get("type") == "start"
-// itemEstimate.setJobItemEstimatePhotoStart(jobItemEstimatePhoto!!)
+    ): JobItemEstimatesPhotoDTO? {
 
 
         val isPhotoStart = itemIdPhotoType["type"] == PhotoType.START.name
         val photoId: String = SqlLitUtils.generateUuid()
 
         val newEstimatePhoto = JobItemEstimatesPhotoDTO(
-            "",
-            itemEst.estimateId,
-            filename_path["filename"] ?: error(""),
-            DateUtil.DateToString(Date())!!,
-            photoId,
-            null,
-            null,
-            pointLocation,
-            pointLocation,
-            currentLocation!!.latitude,
-            currentLocation.longitude,
-            currentLocation.latitude,
-            currentLocation.longitude,
-            filename_path["path"] ?: error(""),
-            estimate,
-            0,
-            0,
-            isPhotoStart,
-            null
+            descr = "",
+            estimateId = itemEstimate.estimateId,
+            filename = filePath["filename"] ?: error(""),
+            photoDate = DateUtil.DateToString(Date())!!,
+            photoId = photoId,
+            photoStart = null,
+            photoEnd = null,
+            startKm = pointLocation,
+            endKm = pointLocation,
+            photoLatitude = currentLocation!!.latitude,
+            photoLongitude = currentLocation.longitude,
+            photoLatitudeEnd = currentLocation.latitude,
+            photoLongitudeEnd = currentLocation.longitude,
+            photoPath = filePath["path"] ?: error(""),
+            jobItemEstimate = estimate,
+            recordSynchStateId = 0,
+            recordVersion = 0,
+            is_PhotoStart = isPhotoStart,
+            image = null
         )
-
-        newJobItemEstimatesPhotosList.add(newEstimatePhoto)
-        return newEstimatePhoto
-
+        return try {
+            assert(newEstimatePhoto.estimateId != itemEstimate.estimateId)
+            newEstimatePhoto
+        } catch (e: AssertionError) {
+            Timber.e(
+                e,
+                "Expecting ${itemEstimate.estimateId}, but got ${newEstimatePhoto.estimateId}."
+            )
+            null
+        }
     }
 
     // TODO: Move this code to the CreateViewModel
@@ -807,60 +835,66 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Ko
     private fun createItemEstimate(
         itemId: String?,
         newJob: JobDTO?,
-        newJobItemPhotosList: ArrayList<JobItemEstimatesPhotoDTO>,
-        jobItemMeasureArrayList: ArrayList<JobItemMeasureDTO>,
-        jobItemWorksList: ArrayList<JobEstimateWorksDTO>,
+        // newJobItemPhotosList: ArrayList<JobItemEstimatesPhotoDTO>,
+        // jobItemMeasureArrayList: ArrayList<JobItemMeasureDTO>,
+        // jobItemWorksList: ArrayList<JobEstimateWorksDTO>,
         item: ItemDTOTemp?
-
-//                                   jobItemPhoto: JobItemEstimatesPhotoDTO
-    ): JobItemEstimateDTO {
+    ): JobItemEstimateDTO? {
         val estimateId: String = SqlLitUtils.generateUuid()
 
         val newEstimate = JobItemEstimateDTO(
-            0,
-            estimateId,
-            newJob?.JobId,
-            item!!.tenderRate,
-            null,
-            newJobItemPhotosList,
-            null,
-            null,
-            itemId,
-            null,
-            quantity,
-            0,
-            0,
-            null,
-            null,
-            null,
-            null,
-            0,
-            null
-
+            actId = 0,
+            estimateId = estimateId,
+            jobId = newJob?.JobId,
+            lineRate = item!!.tenderRate,
+            jobEstimateWorks = null,
+            jobItemEstimatePhotos = ArrayList<JobItemEstimatesPhotoDTO>(),
+            jobItemMeasure = null,
+            job = null,
+            projectItemId = itemId,
+            projectVoId = null,
+            qty = quantity,
+            recordSynchStateId = 0,
+            recordVersion = 0,
+            trackRouteId = null,
+            jobItemEstimatePhotoStart = null,
+            jobItemEstimatePhotoEnd = null,
+            estimateComplete = null,
+            MEASURE_ACT_ID = 0,
+            SelectedItemUOM = null
 
         )
-        newJobItemEstimate = newEstimate
-        newJobItemEstimatesList.add(newEstimate)
-        newJob?.JobItemEstimates?.add(newJobItemEstimate)
-        return newEstimate
+
+        // id alignment validation
+        return try {
+            assert(newJob?.JobId == newEstimate.jobId)
+            newEstimate
+        } catch (e: AssertionError) {
+            Timber.e(e, "Expected ${newJob?.JobId} got ${newEstimate.jobId}")
+            null
+        }
     }
 
 
     // TODO: Move this code to the CreateViewModel
     private fun createRouteSection(
-        secId: String,
+        projectSectionId: String,
         jobId: String,
-        endKM: Double,
-        endKM1: Double
+        startKm: Double,
+        endKm: Double
 
     ): JobSectionDTO {
         val newJobSectionId: String = SqlLitUtils.generateUuid()
-        val newJobSection = JobSectionDTO(newJobSectionId, secId, jobId, endKM, endKM1, null, 0, 0)
-        newJob?.JobSections?.add(newJobSection)
-        newJob?.SectionId = secId
-        newJob?.StartKm = endKM
-        newJob?.EndKm = endKM1
-        newJobItemEstimate.isEstimateComplete()
+        val newJobSection = JobSectionDTO(
+            jobSectionId = newJobSectionId,
+            projectSectionId = projectSectionId,
+            jobId = jobId,
+            startKm = startKm,
+            endKm = endKm,
+            job = null,
+            recordSynchStateId = 0,
+            recordVersion = 0
+        )
         return newJobSection
     }
 
@@ -886,52 +920,72 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Ko
         imageView: ImageView,
         imageUri: Uri?,
         animate: Boolean,
-        textView: TextView,
+        sectionTextView: TextView,
         isStart: Boolean
     ) {
-//        imageView: ImageView, imageUri: Uri?, animate: Boolean) {
         if (imageUri != null) {
-            Coroutines.main {
-                group13_loading.visibility = View.VISIBLE
-    val works = createViewModel.offlineSectionItems.await()
-                works.observe(viewLifecycleOwner, Observer { works ->
-                    group13_loading.visibility = View.GONE
-                    createViewModel.sectionId.observe(viewLifecycleOwner, Observer { sectId ->
-                        Coroutines.main {
-                            val section = createViewModel.getSection(sectId)
-                            section.observe(viewLifecycleOwner, Observer { section ->
-                                if (section != null) {
-                                    val direction = section.direction
-                                    if (direction != null) {
+            enumerateOfflineSections(isStart, sectionTextView, animate, imageUri, imageView)
+        }
+    }
 
-                                        val sectionText =
-                                            section.route + " " + section.section + " " + section.direction + " " +
-                                                    if (isStart) section.startKm else section.endKm
-
-                                        textView.text = sectionText
-                                        if (animate) textView.startAnimation(anims?.bounce_long)
-                                    }
-                                }
-
-                            })
-
-                        }
-
-                    })
-                    if (!disableGlide) {
-                        GlideApp.with(this)
-                            .load(imageUri)
-                            .error(R.drawable.no_image)
-                            .into(imageView)
-                        if (animate) imageView.startAnimation(bounce_1000)
-                    } else {
-                        disableGlide = false
-                    }
+    private fun enumerateOfflineSections(
+        isStart: Boolean,
+        sectionTextView: TextView,
+        animate: Boolean,
+        imageUri: Uri?,
+        imageView: ImageView
+    ) {
+        Coroutines.main {
+            group13_loading.visibility = View.VISIBLE
+            val works = createViewModel.offlineSectionItems.await()
+            works.observe(viewLifecycleOwner, Observer { sectionItems ->
+                group13_loading.visibility = View.GONE
+                createViewModel.sectionId.observe(viewLifecycleOwner, Observer { sectId ->
+                    labelPhotoSection(sectId, isStart, sectionTextView, animate)
                 })
+                displayEstimatePhoto(imageUri, imageView, animate)
+            })
+        }
+    }
 
+    private fun labelPhotoSection(
+        sectId: String,
+        isStart: Boolean,
+        sectionTextView: TextView,
+        animate: Boolean
+    ) {
+        Coroutines.main {
+            val section = createViewModel.getSection(sectId)
+            section.observe(viewLifecycleOwner, Observer { section ->
+                if (section != null) {
+                    val direction = section.direction
+                    if (direction != null) {
 
-            }
+                        val sectionText =
+                            section.route + " " + section.section + " " + section.direction + " " +
+                                    if (isStart) section.startKm else section.endKm
 
+                        sectionTextView.text = sectionText
+                        if (animate) sectionTextView.startAnimation(anims?.bounce_long)
+                    }
+                }
+            })
+        }
+    }
+
+    private fun displayEstimatePhoto(
+        imageUri: Uri?,
+        imageView: ImageView,
+        animate: Boolean
+    ) {
+        if (!disableGlide) {
+            GlideApp.with(this)
+                .load(imageUri)
+                .error(R.drawable.no_image)
+                .into(imageView)
+            if (animate) imageView.startAnimation(bounce_1000)
+        } else {
+            disableGlide = false
         }
     }
 
@@ -957,11 +1011,8 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Ko
         }
     }
 
-//    fun setQuantity(quantity: Double) {
-//        this.quantity = quantity
-//    }
 
-    // TODO: Mpve Non-UI portions to CreateViewModel
+    // TODO: Move Non-UI portions to CreateViewModel
     private fun calculateCost() {
         val item: ItemDTOTemp? = item
         val currentStartKm = getStartKm()
@@ -980,88 +1031,13 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Ko
 
         when (item!!.uom) {
             "No" -> {
-                labelTextView!!.text = getString(R.string.label_quantity)
-                try { //  make the change in the array and update view
-                    lineRate = qty * item.tenderRate
-
-                } catch (e: NumberFormatException) {
-                    e.printStackTrace()
-                    toast("Please place the Quantity.")
-                    activity!!.hideKeyboard()
-                }
-                labelTextView.text = getString(R.string.label_area_m2)
-                try { //  Set the Area to the QTY
-                    lineRate = qty * item.tenderRate
-                    activity!!.hideKeyboard()
-                } catch (e: NumberFormatException) {
-                    e.printStackTrace()
-                    toast("Please place the Area.")
-                    activity!!.hideKeyboard()
-                }
-                labelTextView.text = getString(R.string.label_volume_m3)
-                try { //  Set the Area to the QTY
-                    lineRate = qty * item.tenderRate
-                    activity!!.hideKeyboard()
-                } catch (e: NumberFormatException) {
-                    e.printStackTrace()
-                    toast("Please place the Volume.")
-                    activity!!.hideKeyboard()
-                }
-                labelTextView.text = getString(R.string.label_amount)
-                try { //  Set the Area to the QTY
-                    lineRate = qty * item.tenderRate
-                } catch (e: NumberFormatException) {
-                    e.printStackTrace()
-                    toast("Please place the Prov Sum.")
-                    activity!!.hideKeyboard()
-                }
+                lineRate = runNumberCosting(lineRate, qty, item)
             }
             "m²" -> {
-                labelTextView!!.text = getString(R.string.label_area_m2)
-                try {
-                    lineRate = qty * item.tenderRate
-                    activity!!.hideKeyboard()
-                } catch (e: NumberFormatException) {
-                    e.printStackTrace()
-                    toast("Please place the Area.")
-
-                }
-                labelTextView.text = getString(R.string.label_volume_m3)
-                try {
-                    lineRate = qty * item.tenderRate
-                    activity!!.hideKeyboard()
-                } catch (e: NumberFormatException) {
-                    e.printStackTrace()
-                    toast("Please place the Volume.")
-
-                }
-                labelTextView.text = getString(R.string.label_quantity)
-                try {
-                    lineRate = qty * item.tenderRate
-                    activity!!.hideKeyboard()
-                } catch (e: NumberFormatException) {
-                    e.printStackTrace()
-                    toast("Please place the Prov Sum.")
-                }
+                lineRate = runAreaCosting(lineRate, qty, item)
             }
             "m³" -> {
-                labelTextView!!.text = getString(R.string.label_volume_m3)
-                try {
-                    lineRate = qty * item.tenderRate
-                    activity!!.hideKeyboard()
-                } catch (e: NumberFormatException) {
-                    e.printStackTrace()
-                    toast("Please place the Volume.")
-
-                }
-                labelTextView!!.text = getString(R.string.label_amount)
-                try {
-                    lineRate = qty * item.tenderRate
-                    activity!!.hideKeyboard()
-                } catch (e: NumberFormatException) {
-                    e.printStackTrace()
-                    toast("Please place the Prov Sum.")
-                }
+                lineRate = runVolumeCosting(lineRate, qty, item)
             }
             "Prov Sum" -> {
                 labelTextView!!.text = getString(R.string.label_amount)
@@ -1070,7 +1046,7 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Ko
                     activity!!.hideKeyboard()
                 } catch (e: NumberFormatException) {
                     e.printStackTrace()
-                    toast("Please place the Prov Sum.")
+                    toast(getString(R.string.warning_estimate_enter_prov_sum))
                 }
             }
             "m" -> {
@@ -1109,6 +1085,111 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Ko
         }
     }
 
+    private fun runVolumeCosting(
+        lineRate: Double?,
+        qty: Double,
+        item: ItemDTOTemp
+    ): Double? {
+        var lineRate1 = lineRate
+        labelTextView!!.text = getString(R.string.label_volume_m3)
+        try {
+            lineRate1 = qty * item.tenderRate
+            activity!!.hideKeyboard()
+        } catch (e: NumberFormatException) {
+            e.printStackTrace()
+            toast(getString(R.string.warning_estimate_enter_volume))
+
+        }
+        labelTextView!!.text = getString(R.string.label_amount)
+        try {
+            lineRate1 = qty * item.tenderRate
+            activity!!.hideKeyboard()
+        } catch (e: NumberFormatException) {
+            e.printStackTrace()
+            toast(getString(R.string.warning_estimate_enter_prov_sum))
+        }
+        return lineRate1
+    }
+
+    private fun runAreaCosting(
+        lineRate: Double?,
+        qty: Double,
+        item: ItemDTOTemp
+    ): Double? {
+        var lineRate1 = lineRate
+        labelTextView!!.text = getString(R.string.label_area_m2)
+        try {
+            lineRate1 = qty * item.tenderRate
+            activity!!.hideKeyboard()
+        } catch (e: NumberFormatException) {
+            e.printStackTrace()
+            toast("Please place the Area.")
+
+        }
+        labelTextView.text = getString(R.string.label_volume_m3)
+        try {
+            lineRate1 = qty * item.tenderRate
+            activity!!.hideKeyboard()
+        } catch (e: NumberFormatException) {
+            e.printStackTrace()
+            toast(getString(R.string.warning_estimate_enter_volume))
+
+        }
+        labelTextView.text = getString(R.string.label_quantity)
+        try {
+            lineRate1 = qty * item.tenderRate
+            activity!!.hideKeyboard()
+        } catch (e: NumberFormatException) {
+            e.printStackTrace()
+            toast(getString(R.string.warning_estimate_enter_prov_sum))
+        }
+        return lineRate1
+    }
+
+    private fun runNumberCosting(
+        lineRate: Double?,
+        qty: Double,
+        item: ItemDTOTemp
+    ): Double? {
+        var lineRate1 = lineRate
+        labelTextView!!.text = getString(R.string.label_quantity)
+        try { //  make the change in the array and update view
+            lineRate1 = qty * item.tenderRate
+
+        } catch (e: NumberFormatException) {
+            e.printStackTrace()
+            toast("Please place the Quantity.")
+            activity!!.hideKeyboard()
+        }
+        labelTextView.text = getString(R.string.label_area_m2)
+        try { //  Set the Area to the QTY
+            lineRate1 = qty * item.tenderRate
+            activity!!.hideKeyboard()
+        } catch (e: NumberFormatException) {
+            e.printStackTrace()
+            toast("Please place the Area.")
+            activity!!.hideKeyboard()
+        }
+        labelTextView.text = getString(R.string.label_volume_m3)
+        try { //  Set the Area to the QTY
+            lineRate1 = qty * item.tenderRate
+            activity!!.hideKeyboard()
+        } catch (e: NumberFormatException) {
+            e.printStackTrace()
+            toast(getString(R.string.warning_estimate_enter_volume))
+            activity!!.hideKeyboard()
+        }
+        labelTextView.text = getString(R.string.label_amount)
+        try { //  Set the Area to the QTY
+            lineRate1 = qty * item.tenderRate
+        } catch (e: NumberFormatException) {
+            e.printStackTrace()
+            toast(getString(R.string.warning_estimate_enter_prov_sum))
+            activity!!.hideKeyboard()
+        }
+        return lineRate1
+    }
+
 
     private fun getStoredValue(): Double {
         val jobItemEstimate: JobItemEstimateDTO? = getJobItemEstimate()
@@ -1120,15 +1201,14 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Ko
     }
 
     fun getStartKm(): Double {
-        val jobItemEstimate: JobItemEstimateDTO? = getJobItemEstimate()
-        return if (jobItemEstimate?.jobItemEstimatePhotoStart != null) jobItemEstimate.jobItemEstimatePhotoStart
-            .endKm else 0.0
+        jobItemEstimate = getJobItemEstimate()!!
+        return if (jobItemEstimate.jobItemEstimatePhotos?.get(0) != null) jobItemEstimate.jobItemEstimatePhotos!![0].startKm else 0.0
+
     }
 
     fun getEndKm(): Double {
-        val jobItemEstimate: JobItemEstimateDTO? = getJobItemEstimate()
-        return if (jobItemEstimate?.jobItemEstimatePhotoEnd != null) jobItemEstimate.jobItemEstimatePhotoEnd
-            .endKm else 0.0
+        jobItemEstimate = getJobItemEstimate()!!
+        return if (jobItemEstimate.jobItemEstimatePhotos?.get(1) != null) jobItemEstimate.jobItemEstimatePhotos!![1].endKm else 0.0
     }
 
     fun getCurrentLocation(): Location? {

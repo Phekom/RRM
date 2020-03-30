@@ -9,13 +9,6 @@ plugins {
     id "eu.davidea.grabver"
 }
 
-ext {
-    REGISTER_AUTO_FILL_TEST="false"
-    QA_HOST="https://itisqa.nra.co.za/ITISServicesMobile/api/RRM/"
-    DEV_HOST="https://itisqa.nra.co.za/ITISServicesMobile/api/RRM/"
-
-}
-
 versioning {
     // Required (number)
     major 1
@@ -27,13 +20,25 @@ versioning {
     // Optional, custom task name to trigger the increase of the version
     // incrementOn "<task-name>"
     // Optional, custom task name for which you want to save the versioning file
-    // saveOn "<task-name>"
+    saveOn "build"
 }
 
 
 static def getDate() {
     return new Date().format('yyyy-MM-dd HH-mm-ss')
 }
+
+static def safePropertyGetter(Properties properties, String key, String defaultValue) {
+    System.out.println(key)
+    if(properties.hasProperty(key)) {
+        def result = '"' + properties[key] + '"'
+        System.out.println(result)
+        return result
+    }
+
+    return defaultValue
+}
+
 
 allprojects {
     tasks.withType(JavaCompile) {
@@ -75,28 +80,23 @@ android {
     versionBuild = (versionBuild == null) ? 0 : versionBuild + 1
 
     // local properties
-//    def propertyFile = file(project.rootProject.file("local.properties").toString())
-//    System.out.println(propertyFile)
-//    Properties localProps = new Properties()
-//    InputStream inputStream = new FileInputStream(propertyFile)
-//    localProps.load(inputStream)
-//    inputStream.close()
-//    System.out.println(localProps)
+    def propertyFile = file(project.rootProject.file("local.properties").toString())
+    System.out.println(propertyFile)
+    Properties localProps = new Properties()
+    InputStream inputStream = new FileInputStream(propertyFile)
+    localProps.load(inputStream)
+    inputStream.close()
+    System.out.println(localProps)
 
-    def qa_env = project.ext['DEV_HOST'].toString()
-    def dev_env = project.ext['DEV_HOST'].toString()
-    def xi_env = project.ext['DEV_HOST'].toString()
-    def prod_env = project.ext['DEV_HOST'].toString()
-    def sdev_env = project.ext['DEV_HOST'].toString()
+    def qa_env = localProps['QA_HOST'].toString()
+    def dev_env = localProps['DEV_HOST'].toString()
+    def xi_env = localProps['XI_HOST'].toString()
+    def prod_env = localProps['PROD_HOST'].toString()
+    def sdev_env = localProps['SDEV_HOST'].toString()
 
-    def registerAutoFillTest =  project.ext['REGISTER_AUTO_FILL_TEST']
+    def registerAutoFillTest =  safePropertyGetter(localProps,'REGISTER_AUTO_FILL_TEST',"false") as Boolean
 
-//    localProps.setProperty('REGISTER_AUTO_FILL_TEST', registerAutoFillTest.toString())
-//    localProps.setProperty('VERSION_BUILD', versionBuild.toString())
     versionBuildDate = getDate()
-//    localProps.setProperty('VERSION_BUILD_DATE',versionBuildDate)
-//    OutputStream outputStream = new FileOutputStream(propertyFile)
-//    localProps.store(outputStream, String.format("Built on {0}",getDate().toString()))
 
     defaultConfig {
         applicationId appId
@@ -289,6 +289,9 @@ dependencies {
     implementation 'androidx.core:core-ktx:1.2.0'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
 
+    // OkHttpProfiler
+    debugImplementation 'com.itkacher.okhttpprofiler:okhttpprofiler:1.0.5'
+
     // Material
     implementation 'com.google.android.material:material:1.2.0-alpha02'
 
@@ -386,7 +389,7 @@ dependencies {
 
     //Location
     implementation 'com.google.android.gms:play-services-location:17.0.0'
-    implementation 'com.google.firebase:firebase-appindexing:19.1.0'
+    // implementation 'com.google.firebase:firebase-appindexing:19.1.0'
     // implementation 'com.google.android.gms:play-services:12.0.1'
 
     // Icepick
@@ -413,7 +416,7 @@ dependencies {
     implementation 'com.github.tntkhang:full-screen-image-view-library:1.1.0'
 
     //Android  Room
-    def room_version = '2.2.1' // alpha06 has bugs
+    def room_version = '2.2.5' // alpha06 has bugs
     kapt "androidx.room:room-compiler:$room_version"
     implementation "androidx.room:room-runtime:$room_version"
     implementation "androidx.room:room-ktx:$room_version"

@@ -219,7 +219,7 @@ interface BaseConnectionApi {
                 connectTimeout(5, TimeUnit.MINUTES)
                     protocols(listOf(Protocol.HTTP_1_1))
 //                .pingInterval(100, TimeUnit.MILLISECONDS)
-                addInterceptor(interceptor)
+
                 addInterceptor(networkConnectionInterceptor)
                 addInterceptor { chain ->
                     var request = chain.request()
@@ -229,6 +229,9 @@ interface BaseConnectionApi {
                 }
 
             }
+
+            if (BuildConfig.DEBUG)
+                okkHttpclient.addInterceptor(interceptor)
 
             return Retrofit.Builder()
                 .client(okkHttpclient.build())
