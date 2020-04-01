@@ -4,7 +4,6 @@ package za.co.xisystems.itis_rrm.data.repositories
 
 import android.os.Build
 import android.os.Looper
-import android.util.Log
 import android.widget.Toast
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LiveData
@@ -24,10 +23,13 @@ import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
 import za.co.xisystems.itis_rrm.data.network.responses.UploadImageResponse
 import za.co.xisystems.itis_rrm.data.preferences.PreferenceProvider
-import za.co.xisystems.itis_rrm.utils.*
+import za.co.xisystems.itis_rrm.utils.Coroutines
+import za.co.xisystems.itis_rrm.utils.DataConversion
+import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.PhotoUtil.getPhotoPathFromExternalDirectory
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
+import java.io.IOException
 import java.util.*
 
 
@@ -100,7 +102,7 @@ class JobCreationDataRepository(
     }
 
 
-    suspend fun saveNewJob(newJob: JobDTO) {
+    suspend fun saveNewJob(newJob: JobDTO?) {
         Coroutines.io {
             if (newJob != null) {
                 if (!Db.getJobDao().checkIfJobExist(newJob.JobId)) {
@@ -146,7 +148,7 @@ class JobCreationDataRepository(
         }
     }
 
-    suspend fun saveNewItem(newJobItem: ItemDTOTemp) {
+    suspend fun saveNewItem(newJobItem: ItemDTOTemp?) {
         Coroutines.io {
             if (newJobItem != null) {
                 if (!Db.getItemDaoTemp().checkItemExistsItemId(newJobItem.itemId)) {
@@ -299,17 +301,20 @@ class JobCreationDataRepository(
     }
 
     private fun <T> MutableLiveData<T>.postValue(
-        workflowj: WorkflowJobDTO,
+        workflowJob: WorkflowJobDTO?,
         job: JobDTO,
         activity: FragmentActivity
     ) {
         Coroutines.io {
-            if (workflowj != null) {
-                val createJob = setWorkflowJobBigEndianGuids(workflowj)
+            if (workflowJob != null) {
+                val createJob = setWorkflowJobBigEndianGuids(workflowJob)
                 insertOrUpdateWorkflowJobInSQLite(createJob)
-                uploadCreateJobImages(job, activity)
-                val myjob = getUpdatedJob(DataConversion.toBigEndian(job.JobId)!!)
-                moveJobToNextWorkflow(myjob, activity)
+                uploadCreateJobImages(
+                    packageJob = job,
+                    activity = activity
+                )
+                val myJob = getUpdatedJob(DataConversion.toBigEndian(job.JobId)!!)
+                moveJobToNextWorkflow(myJob, activity)
             }
         }
     }
@@ -325,37 +330,29 @@ class JobCreationDataRepository(
         job.actId = job.actId
         job.jobId = DataConversion.toBigEndian(job.jobId)
         job.trackRouteId = DataConversion.toBigEndian(job.trackRouteId)
-        job.jiNo = job.jiNo
-        if (job.workflowItemEstimates != null) {
-            for (jie in job.workflowItemEstimates) {
-                jie.actId = jie.actId
-                jie.estimateId = DataConversion.toBigEndian(jie.estimateId)!!
-                jie.trackRouteId = DataConversion.toBigEndian(jie.trackRouteId)!!
-                //  Lets go through the WorkFlowEstimateWorks
-                for (wfe in jie.workflowEstimateWorks) {
-                    wfe.trackRouteId = DataConversion.toBigEndian(wfe.trackRouteId)!!
-                    wfe.worksId = DataConversion.toBigEndian(wfe.worksId)!!
-                    wfe.actId = wfe.actId
-                    wfe.estimateId = DataConversion.toBigEndian(wfe.estimateId)!!
-                    wfe.recordVersion = wfe.recordVersion
-                    wfe.recordSynchStateId = wfe.recordSynchStateId
-                }
+        job.workflowItemEstimates?.map { jie ->
+            jie.estimateId = DataConversion.toBigEndian(jie.estimateId)!!
+            jie.trackRouteId = DataConversion.toBigEndian(jie.trackRouteId)!!
+            jie.workflowEstimateWorks.map { wfe ->
+                wfe.trackRouteId = DataConversion.toBigEndian(wfe.trackRouteId)!!
+                wfe.worksId = DataConversion.toBigEndian(wfe.worksId)!!
+                wfe.estimateId = DataConversion.toBigEndian(wfe.estimateId)!!
             }
         }
-        if (job.workflowItemMeasures != null) {
-            for (jim in job.workflowItemMeasures) {
-                jim.actId = jim.actId
-                jim.itemMeasureId = DataConversion.toBigEndian(jim.itemMeasureId)!!
-                jim.measureGroupId = DataConversion.toBigEndian(jim.measureGroupId)!!
-                jim.trackRouteId = DataConversion.toBigEndian(jim.trackRouteId)!!
-            }
+
+        // WorkflowItemMeasures
+        job.workflowItemMeasures?.map { jim ->
+            jim.itemMeasureId = DataConversion.toBigEndian(jim.itemMeasureId)!!
+            jim.measureGroupId = DataConversion.toBigEndian(jim.measureGroupId)!!
+            jim.trackRouteId = DataConversion.toBigEndian(jim.trackRouteId)!!
         }
-        if (job.workflowJobSections != null) {
-            for (js in job.workflowJobSections) {
-                js.jobSectionId = DataConversion.toBigEndian(js.jobSectionId)!!
-                js.projectSectionId = DataConversion.toBigEndian(js.projectSectionId)!!
-                js.jobId = DataConversion.toBigEndian(js.jobId)
-            }
+
+        // WorkflowJobSections
+        job.workflowJobSections?.map { js ->
+            js.jobSectionId = DataConversion.toBigEndian(js.jobSectionId)!!
+            js.projectSectionId = DataConversion.toBigEndian(js.projectSectionId)!!
+            js.jobId = DataConversion.toBigEndian(js.jobId)
+
         }
         return job
     }
@@ -537,7 +534,11 @@ class JobCreationDataRepository(
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 imageData.addProperty("ImageByteArray", Base64.getEncoder().encodeToString(photo))
             } else {
-                // TODO: use a generic utility to encode base64 string
+                // Generic Base64 utility
+                imageData.addProperty(
+                    "ImageByteArray",
+                    android.util.Base64.encodeToString(photo, android.util.Base64.DEFAULT)
+                )
             }
             imageData.addProperty("ImageFileExtension", extension)
             Timber.d("Json Image: $imageData")
@@ -628,7 +629,7 @@ class JobCreationDataRepository(
 
 
     private fun <T> MutableLiveData<T>.postValue(photo: String?, fileName: String) {
-        saveEstimatePhoto(photo, fileName)
+        return saveEstimatePhoto(photo, fileName)
     }
 
     fun saveEstimatePhoto(estimatePhoto: String?, fileName: String) {
