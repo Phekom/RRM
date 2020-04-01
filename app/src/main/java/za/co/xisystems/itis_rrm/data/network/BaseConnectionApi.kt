@@ -120,7 +120,7 @@ interface BaseConnectionApi {
     @POST("GetRouteSectionPoint")
     suspend fun getRouteSectionPoint(
 
-        @Field("Distance") distance : Double,
+        @Field("Distance") distance: Int,
         @Field("MustBeInBuffer") buffer: Int,
         @Field("Latitude") latitude: Double,
         @Field("Longitude") longitude: Double,
@@ -139,72 +139,6 @@ interface BaseConnectionApi {
     suspend fun uploadWorksItem(
         @Body job: JsonObject
     ): Response<UploadWorksItemResponse>
-
-
-
-
-
-
-
-
-
-
-
-
-
-//        @Field("UserId") userId: String,
-//        @Field("JobId") jobId: String,
-//        @Field("JiNo") jimNo: String?,
-//        @Field("ContractId") contractVoId: String?,
-//        @Field("MeasurementItems[]") measurementItems: ArrayList<JobItemMeasureDTOTemp>?
-//    @Headers("Content-Type: application/json")
-//    @FormUrlEncoded
-//    @POST("SaveMeasurementItems")
-//    suspend fun saveMeasurementItems(
-//        @Field("UserId") userId: String,
-//        @Field("JobId") jobId: String,
-//        @Field("JiNo") jimNo: String?,
-//        @Field("ContractId") contractVoId: String?,
-//        @Field("MeasurementItems") measurementItems: ArrayList<JobItemMeasureDTOTemp>
-//    ):  Response<SaveMeasurementResponse>
-//    @FormUrlEncoded
-    //    @FormUrlEncoded
-//    @POST("UploadRrmImage")
-//    suspend fun uploadRrmImage(
-//        @Field("Filename") Filename: String,
-//        @Field("ImageFileExtension") ext: String,
-//        @Field("ImageByteArray") photo: ByteArray
-//    ): Response<UploadImageResponse>
-
-//    @POST("UploadRrmImage")
-//    suspend fun sendJobsForApproval(
-//
-//    ): Response<JobResponse>
-
-//    @FormUrlEncoded
-//    @Headers("Content-Type : application/json")
-//    @POST("UserRolesRefresh")
-//    suspend fun userRoles(
-//        @Field("UserId") UserId : String
-//    ) : Response<UserRoleResponse>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     companion object {
         operator fun invoke(
@@ -242,93 +176,4 @@ interface BaseConnectionApi {
 
         }
     }
-
-
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//            return Retrofit.Builder()
-//                .client(okkHttpclient)
-//
-//                .baseUrl("https://itisqa.nra.co.za/ITISServicesMobile/api/RRM/")
-//                .addConverterFactory(JacksonConverterFactory.create())
-////                .addConverterFactory(GsonConverterFactory.create())
-////                .addCallAdapterFactory(CoroutineCallAdapterFactory())
-//                .build()
-//                .create(BaseConnectionApi::class.java)
