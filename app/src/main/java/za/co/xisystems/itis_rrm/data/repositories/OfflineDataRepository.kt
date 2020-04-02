@@ -155,7 +155,7 @@ class OfflineDataRepository(
     }
 
 
-    suspend fun getSectionItems(): LiveData<SectionItemDTO> {
+    suspend fun getSectionItems(): LiveData<List<SectionItemDTO>> {
         return withContext(Dispatchers.IO) {
             val userId = Db.getUserDao().getuserID()
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

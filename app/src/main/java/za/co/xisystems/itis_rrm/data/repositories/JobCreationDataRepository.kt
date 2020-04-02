@@ -55,7 +55,7 @@ class JobCreationDataRepository(
     private val workflowJ2 = MutableLiveData<WorkflowJobDTO>()
     private val photoUpload = MutableLiveData<String>()
     private val works = MutableLiveData<String>()
-    private val routeSectionPoint = MutableLiveData<String>()
+    private val routeSectionPoint = MutableLiveData<SectionPointDTO>()
 
 
     init {
@@ -69,7 +69,9 @@ class JobCreationDataRepository(
             sendMsg(it)
         }
 
+        routeSectionPoint.observeForever {
 
+        }
 
     }
 
@@ -111,7 +113,7 @@ class JobCreationDataRepository(
     }
 
 
-    suspend fun getSectionItems(): LiveData<SectionItemDTO> {
+    suspend fun getSectionItems(): LiveData<List<SectionItemDTO>> {
         return withContext(Dispatchers.IO) {
             appDb.getSectionItemDao().getSectionItems()
         }
@@ -246,9 +248,8 @@ class JobCreationDataRepository(
             projectId = projectId,
             jobId = jobId
         )
-
-
-
+        return withContext(Dispatchers.IO) {
+        }
     }
 
     suspend fun getAllProjectItems(projectId: String, jobId: String): LiveData<List<ItemDTOTemp>> {
@@ -283,7 +284,7 @@ class JobCreationDataRepository(
         workflowJ2.postValue(jobResponse.workflowJob, job, activity)
 
         val messages = jobResponse.errorMessage
-//          activity.getResources().getString(R.string.please_wait)
+
         return withContext(Dispatchers.IO) {
             messages
         }
@@ -410,13 +411,13 @@ class JobCreationDataRepository(
 
 
     private fun uploadCreateJobImages(packageJob: JobDTO, activity: FragmentActivity) {
-        var imageCounter = 1
+
         var jobCounter = 1
         val totalJobs = packageJob.JobItemEstimates?.size ?: 0
 
         packageJob.JobItemEstimates?.map { jobItemEstimate ->
             val totalImages = jobItemEstimate.jobItemEstimatePhotos?.size ?: 0
-
+            var imageCounter = 1
             jobItemEstimate.jobItemEstimatePhotos?.map { estimatePhoto ->
                 if (PhotoUtil.photoExist(estimatePhoto.filename)) {
 
@@ -575,7 +576,6 @@ class JobCreationDataRepository(
                     .insertSection(direction, linearId, pointLocation, sectionId, projectId, jobId)
             }
             appDb.getProjectSectionDao().updateSectionDirection(direction, projectId)
-
 
         }
     }

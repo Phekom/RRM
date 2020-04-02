@@ -69,7 +69,6 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
     @MyState
     private var job: JobDTO? = null
     @MyState
-//    private lateinit var items: MutableList<ItemDTO>
     private var items: List<ItemDTOTemp> = ArrayList<ItemDTOTemp>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -159,7 +158,7 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
                 last_lin.visibility = View.VISIBLE
                 totalCostTextView.visibility = View.VISIBLE
 
-                createViewModel.jobtoEdit_Item.value = jobToEdit
+                createViewModel.jobtoEditItem.value = jobToEdit
 
                 Coroutines.main {
                     val projecItems = createViewModel.getAllProjecItems(projectID!!, job!!.JobId)

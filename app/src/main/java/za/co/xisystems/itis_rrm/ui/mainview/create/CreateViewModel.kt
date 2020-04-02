@@ -24,9 +24,9 @@ class CreateViewModel(
     // TODO: Create Call to create a new job item
 
 
-    val jobtoEdit_Item = MutableLiveData<JobDTO>()
-    fun setJobToEdit_Item(jobEdit_Item: JobDTO) {
-        jobtoEdit_Item.value = jobEdit_Item
+    val jobtoEditItem = MutableLiveData<JobDTO>()
+    fun setJobToEditItem(jobEdit_Item: JobDTO) {
+        jobtoEditItem.value = jobEdit_Item
     }
 
     private val EstimateQty = MutableLiveData<Int>()
@@ -114,11 +114,6 @@ class CreateViewModel(
     fun projecRate(projec_Rate: Double) {
         project_Rate.value = projec_Rate
     }
-
-//    val project_Rate = MutableLiveData<Double>()
-//    fun projecRate(projec_Rate: Double) {
-//        project_Rate.value = projec_Rate
-//    }
 
 
     val proId = MutableLiveData<String>()
@@ -231,6 +226,7 @@ class CreateViewModel(
         jobId: String,
         itemCode: ItemDTOTemp?
     ) {
+
         return withContext(Dispatchers.IO) {
             jobCreationDataRepository.getRouteSectionPoint(
                 latitude,
@@ -240,6 +236,8 @@ class CreateViewModel(
                 jobId,
                 itemCode
             )
+
+
         }
 
     }
@@ -266,14 +264,11 @@ class CreateViewModel(
         }
         if (!isValid) {
             return withContext(Dispatchers.IO) {
-//                !isValid
                 false
-
             }
         }
        return withContext(Dispatchers.IO) {
            isValid
-           true
        }
 
     }
@@ -286,6 +281,7 @@ class CreateViewModel(
     ): String {
         return withContext(Dispatchers.IO) {
             jobCreationDataRepository.submitJob(userId, job, activity)
+
         }
 
     }
