@@ -9,14 +9,12 @@ import kotlinx.android.synthetic.main.new_job_item.*
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTOTemp
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.work.INSET
 import za.co.xisystems.itis_rrm.ui.mainview.work.INSET_TYPE_KEY
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.JobUtils
-import za.co.xisystems.itis_rrm.utils.toast
 
 /**
  * Created by Francis Mahlava on 2019/12/29.
@@ -31,7 +29,6 @@ open class ProjectItem(
     private var job: JobDTO?
 ) : Item() {
 
-//    private var activity  = activity
     init {
         extras[INSET_TYPE_KEY] = INSET
     }
@@ -81,13 +78,11 @@ open class ProjectItem(
         val contractId = contractID
         val newJob = job
         val selectedItem = item
-////        val selectProitem = proItem
         Coroutines.main {
-//            //            createViewModel.loggedUser.value = userId
-            createViewModel.job_Item.value = newJob
-            createViewModel.contract_ID.value = contractId
-            createViewModel.project_Item.value = selectedItem
-////        createViewModel.projectSec_Item.value = selectProitem
+            createViewModel.jobItem.value = newJob
+            createViewModel.contractId.value = contractId
+            createViewModel.projectItemTemp.value = selectedItem
+
         }
 
         Navigation.findNavController(view)

@@ -156,10 +156,12 @@ abstract class BaseFragment(layoutContentId: Int) : Fragment(layoutContentId), I
      */
     fun Activity.hideKeyboard() {
         val view = this.currentFocus
-
-        if (view != null) {
-            val imm = this.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-            imm.hideSoftInputFromWindow(view.windowToken, 0)
+        // Now the keyboard should disappear when the user touches something else
+        view?.setOnFocusChangeListener { v, hasFocus ->
+            if (!hasFocus) {
+                val imm = this.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                imm.hideSoftInputFromWindow(view.windowToken, 0)
+            }
         }
     }
 

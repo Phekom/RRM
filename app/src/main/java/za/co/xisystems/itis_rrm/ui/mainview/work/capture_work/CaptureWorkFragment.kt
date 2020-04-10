@@ -649,7 +649,6 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
         }
     }
 
-
     // TODO: Rename method, update argument and hook method into UI event
     fun onButtonPressed(uri: Uri) {
 

@@ -72,7 +72,7 @@ data class JobItemEstimateDTO(
                 if (isPhotoStart) {
                     println("look: $lookForStartPhoto is:$isPhotoStart")
                     val pair = Pair<Int, JobItemEstimatesPhotoDTO>(i, photos[i])
-                    println("pari[" + pair.first + "]" + pair)
+                    println("pair[" + pair.first + "]" + pair)
                     return pair
                 }
             } else {
@@ -85,13 +85,6 @@ data class JobItemEstimateDTO(
         }
         return Pair<Int, JobItemEstimatesPhotoDTO>(-1, null)
     }
-
-//    fun getJobItemEstimatePhotoStart(): JobItemEstimatesPhotoDTO {
-//        return getJobItemEstimatePhoto(true).second!!
-//    }
-//    fun getJobItemEstimatePhotoEnd(): JobItemEstimatesPhotoDTO {
-//        return getJobItemEstimatePhoto(false).second!!
-//    }
 
     fun getPhoto(x: Int): JobItemEstimatesPhotoDTO? {
         return if (jobItemEstimatePhotos != null && -1 < x && x < size()) {
@@ -110,9 +103,9 @@ data class JobItemEstimateDTO(
         setJobItemEstimatePhoto(photoEnd)
     }
 
-    private fun setJobItemEstimatePhoto(photo: JobItemEstimatesPhotoDTO) {
+    fun setJobItemEstimatePhoto(photo: JobItemEstimatesPhotoDTO) {
         if (jobItemEstimatePhotos == null) {
-            ArrayList<JobItemEstimatesPhotoDTO>()
+            jobItemEstimatePhotos = ArrayList<JobItemEstimatesPhotoDTO>()
             jobItemEstimatePhotos?.add(photo)
         } else {
             val photoToChange = getJobItemEstimatePhoto(photo.isPhotoStart())

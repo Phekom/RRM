@@ -99,15 +99,15 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
             useR = user
         })
 
-        createViewModel.proId.observe(viewLifecycleOwner, Observer { pro_Id ->
-            setItemsBySections(pro_Id)
+        createViewModel.projectId.observe(viewLifecycleOwner, Observer { projectId ->
+            setItemsBySections(projectId)
         })
 
-        createViewModel.newjob.observe(viewLifecycleOwner, Observer { newJ ->
+        createViewModel.newJob.observe(viewLifecycleOwner, Observer { newJ ->
             newJob = newJ
         })
 
-        createViewModel.jobtoEditItem.observe(viewLifecycleOwner, Observer { newJ_Edit ->
+        createViewModel.jobToEditItem.observe(viewLifecycleOwner, Observer { newJ_Edit ->
             setItemsBySections(newJ_Edit.ProjectId!!)
             editJob = newJ_Edit
         })
@@ -243,7 +243,7 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
         val myList = jobArrayList
 
         Coroutines.main {
-            createViewModel.Sec_Item.value = selecteD
+            createViewModel.sectionProjectItem.value = selecteD
 //            createViewModel.project_Rate.value = selectRte
         }
 

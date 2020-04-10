@@ -55,7 +55,7 @@ class JobCreationDataRepository(
     private val workflowJ2 = MutableLiveData<WorkflowJobDTO>()
     private val photoUpload = MutableLiveData<String>()
     private val works = MutableLiveData<String>()
-    private val routeSectionPoint = MutableLiveData<SectionPointDTO>()
+    private val routeSectionPoint = MutableLiveData<String>()
 
 
     init {
@@ -73,6 +73,12 @@ class JobCreationDataRepository(
 
         }
 
+    }
+
+    suspend fun getJobSection(jobId: String): JobSectionDTO {
+        return withContext(Dispatchers.IO) {
+            appDb.getJobSectionDao().getJobSectionFromJobId(jobId)
+        }
     }
 
 
@@ -132,7 +138,7 @@ class JobCreationDataRepository(
         }
     }
 
-    suspend fun getAllSectionItem(): LiveData<List<SectionItemDTO>> {
+    suspend fun getAllSectionItems(): LiveData<List<SectionItemDTO>> {
         return withContext(Dispatchers.IO) {
             appDb.getSectionItemDao().getAllSectionItems()
         }
@@ -208,10 +214,10 @@ class JobCreationDataRepository(
         sectionId: Int,
         linearId: String?,
         projectId: String?
-    ): LiveData<String> {
+    ): LiveData<String?> {
         return withContext(Dispatchers.IO) {
             appDb.getProjectSectionDao()
-                .getSectionByRouteSectionProject(sectionId, linearId!!, projectId)
+                .getSectionByRouteSectionProject(sectionId.toString(), linearId!!, projectId!!)
         }
 
     }
@@ -229,27 +235,31 @@ class JobCreationDataRepository(
         projectId: String?,
         jobId: String,
         itemCode: ItemDTOTemp?
-    ) {
+    ): LiveData<String?> {
 
         val distance = 1
         val buffer = 0
         val routeSectionPointResponse =
             apiRequest { api.getRouteSectionPoint(distance, buffer, latitude, longitude, useR) }
 
-        if (routeSectionPointResponse == null) {
-            Timber.e(NullPointerException("RouteSectionPoint is empty!"))
-        }
 
-        routeSectionPoint.postValue(
+        val routeSection = routeSectionPoint.postValue(
             direction = routeSectionPointResponse.direction,
             linearId = routeSectionPointResponse.linearId,
             pointLocation = routeSectionPointResponse.pointLocation,
             sectionId = routeSectionPointResponse.sectionId,
             projectId = projectId,
-            jobId = jobId
+            jobId = jobId,
+            item = itemCode!!
         )
+
         return withContext(Dispatchers.IO) {
+            appDb.getProjectSectionDao().getSectionByRouteSectionProject(
+                routeSectionPointResponse.sectionId.toString(),
+                routeSectionPointResponse.linearId, projectId
+            )
         }
+
     }
 
     suspend fun getAllProjectItems(projectId: String, jobId: String): LiveData<List<ItemDTOTemp>> {
@@ -272,15 +282,15 @@ class JobCreationDataRepository(
 
     suspend fun submitJob(userId: Int, job: JobDTO, activity: FragmentActivity): String {
 
-        val jobhead = JsonObject()
+        val jobData = JsonObject()
         val gson = Gson()
-        val newjob = gson.toJson(job)
-        val jsonElement: JsonElement = JsonParser().parse(newjob)
-        jobhead.add("Job", jsonElement)
-        jobhead.addProperty("UserId", userId)
-        Timber.d("Json Job: $jobhead")
+        val newJob = gson.toJson(job)
+        val jsonElement: JsonElement = JsonParser().parse(newJob)
+        jobData.add("Job", jsonElement)
+        jobData.addProperty("UserId", userId)
+        Timber.i("Json Job: $jobData")
 
-        val jobResponse = apiRequest { api.sendJobsForApproval(jobhead) }
+        val jobResponse = apiRequest { api.sendJobsForApproval(jobData) }
         workflowJ2.postValue(jobResponse.workflowJob, job, activity)
 
         val messages = jobResponse.errorMessage
@@ -321,10 +331,10 @@ class JobCreationDataRepository(
         // Job + WorkflowItems + EstimateWorks
         job.jobId = DataConversion.toBigEndian(job.jobId)
         job.trackRouteId = DataConversion.toBigEndian(job.trackRouteId)
-        job.workflowItemEstimates?.map { jie ->
+        job.workflowItemEstimates?.forEach { jie ->
             jie.estimateId = DataConversion.toBigEndian(jie.estimateId)!!
             jie.trackRouteId = DataConversion.toBigEndian(jie.trackRouteId)!!
-            jie.workflowEstimateWorks.map { wfe ->
+            jie.workflowEstimateWorks.forEach { wfe ->
                 wfe.trackRouteId = DataConversion.toBigEndian(wfe.trackRouteId)!!
                 wfe.worksId = DataConversion.toBigEndian(wfe.worksId)!!
                 wfe.estimateId = DataConversion.toBigEndian(wfe.estimateId)!!
@@ -332,19 +342,20 @@ class JobCreationDataRepository(
         }
 
         // WorkflowItemMeasures
-        job.workflowItemMeasures?.map { jim ->
+        job.workflowItemMeasures?.forEach { jim ->
             jim.itemMeasureId = DataConversion.toBigEndian(jim.itemMeasureId)!!
             jim.measureGroupId = DataConversion.toBigEndian(jim.measureGroupId)!!
             jim.trackRouteId = DataConversion.toBigEndian(jim.trackRouteId)!!
         }
 
         // WorkflowJobSections
-        job.workflowJobSections?.map { js ->
+        job.workflowJobSections?.forEach { js ->
             js.jobSectionId = DataConversion.toBigEndian(js.jobSectionId)!!
             js.projectSectionId = DataConversion.toBigEndian(js.projectSectionId)!!
             js.jobId = DataConversion.toBigEndian(js.jobId)
 
         }
+
         return job
     }
 
@@ -364,13 +375,13 @@ class JobCreationDataRepository(
                 jobId = job.jobId
             )
 
-            job.workflowItemEstimates?.map { workflowItemEstimate ->
+            job.workflowItemEstimates?.forEach { workflowItemEstimate ->
                 appDb.getJobItemEstimateDao().updateExistingJobItemEstimateWorkflow(
                     trackRouteId = workflowItemEstimate.trackRouteId,
                     actId = workflowItemEstimate.actId,
                     estimateId = workflowItemEstimate.estimateId
                 )
-                workflowItemEstimate.workflowEstimateWorks.map { workflowEstimateWork ->
+                workflowItemEstimate.workflowEstimateWorks.forEach { workflowEstimateWork ->
                     appDb.getEstimateWorkDao().updateJobEstimateWorksWorkflow(
                         worksId = workflowEstimateWork.worksId,
                         estimateId = workflowEstimateWork.estimateId,
@@ -382,7 +393,7 @@ class JobCreationDataRepository(
                 }
             }
 
-            job.workflowItemMeasures?.map { workflowItemMeasure ->
+            job.workflowItemMeasures?.forEach { workflowItemMeasure ->
                 appDb.getJobItemMeasureDao().updateWorkflowJobItemMeasure(
                     itemMeasureId = workflowItemMeasure.itemMeasureId,
                     trackRouteId = workflowItemMeasure.trackRouteId,
@@ -391,7 +402,7 @@ class JobCreationDataRepository(
                 )
             }
 
-            job.workflowJobSections?.map { jobSection ->
+            job.workflowJobSections?.forEach { jobSection ->
                 if (!appDb.getJobSectionDao().checkIfJobSectionExist(jobSection.jobSectionId))
                     appDb.getJobSectionDao().insertJobSection(jobSection) else
                     appDb.getJobSectionDao().updateExistingJobSectionWorkflow(
@@ -429,18 +440,19 @@ class JobCreationDataRepository(
                         totalImages = totalImages
                     )
 
-                    Timber.i("Job $jobCounter of $totalJobs - $imageCounter of $totalImages images uploaded")
+                    Timber.d("Job $jobCounter of $totalJobs - $imageCounter of $totalImages images uploaded")
                     imageCounter++
                 } else {
                     val message = "${estimatePhoto.filename} could not be loaded"
                     Timber.e(IOException(message), message)
                 }
-                jobCounter++
+
             }
+            jobCounter++
         }
 
         if (totalJobs == 0) {
-            Timber.i("No estimate jobs found.")
+            Timber.d("No estimate jobs found.")
         }
     }
 
@@ -542,31 +554,33 @@ class JobCreationDataRepository(
 
     private fun <T> MutableLiveData<T>.postValue(
         direction: String,
-        linearId: String,
+        linearId: String?,
         pointLocation: Double,
         sectionId: Int,
         projectId: String?,
-        jobId: String?
-    ) {
-        saveRouteSectionPoint(
+        jobId: String?,
+        item: ItemDTOTemp
+    ): LiveData<String?> {
+        return saveRouteSectionPoint(
             direction,
             linearId,
             pointLocation,
             sectionId,
             projectId,
-            jobId
+            jobId,
+            item
         )
     }
 
     private fun saveRouteSectionPoint(
         direction: String,
-        linearId: String,
+        linearId: String?,
         pointLocation: Double,
         sectionId: Int,
         projectId: String?,
-        jobId: String?
-        //, item: ItemDTOTemp? // this parameter is never used.
-    ) {
+        jobId: String?,
+        item: ItemDTOTemp?
+    ): LiveData<String?> {
         val name = object {}.javaClass.enclosingMethod?.name
         Timber.d("x -> $name")
         if (linearId != null) {
@@ -574,10 +588,14 @@ class JobCreationDataRepository(
             if (!appDb.getSectionPointDao().checkSectionExists(sectionId, projectId, jobId)) {
                 appDb.getSectionPointDao()
                     .insertSection(direction, linearId, pointLocation, sectionId, projectId, jobId)
+
             }
             appDb.getProjectSectionDao().updateSectionDirection(direction, projectId)
-
         }
+
+        return appDb.getProjectSectionDao()
+            .getSectionByRouteSectionProject(sectionId.toString(), linearId, projectId)
+
     }
 
 
@@ -787,13 +805,6 @@ class JobCreationDataRepository(
     private fun JobItemEstimateDTO.setEstimateId(toBigEndian: String?) {
         this.estimateId = toBigEndian!!
     }
-
-
-    private operator fun <T> LiveData<T>.not(): Boolean {
-        return true
-    }
-
-
 }
 
 

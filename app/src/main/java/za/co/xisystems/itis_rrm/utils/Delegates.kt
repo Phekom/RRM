@@ -1,26 +1,30 @@
 package za.co.xisystems.itis_rrm.utils
 
-import android.util.Log
 import kotlinx.coroutines.*
+import timber.log.Timber
+import za.co.xisystems.itis_rrm.BuildConfig
 
 /**
  * Created by Francis Mahlava on 2019/10/20.
  */
 
+
 val uncaughtExceptionHandler = CoroutineExceptionHandler { _, exception ->
-    println("$exception caught!")
-    when (exception) {
-        is NoConnectivityException -> throw exception
-        is NoInternetException -> throw exception
-        else -> {
-            Log.e("LazyDeferred", "UncaughtException", exception)
-            exception.printStackTrace()
-            throw exception
-        }
+
+    if (BuildConfig.DEBUG) {
+        println("$exception caught!")
     }
+
+    Timber.e(exception, exception.localizedMessage)
+    throw exception
 }
 
-fun<T> lazyDeferred(block: suspend CoroutineScope.() -> T): Lazy<Deferred<T>>{
+/**
+ *
+ * @param block [@kotlin.ExtensionFunctionType] SuspendFunction1<CoroutineScope, T>
+ * @return Lazy<Deferred<T>>
+ */
+fun <T> lazyDeferred(block: suspend CoroutineScope.() -> T): Lazy<Deferred<T>> {
     return lazy {
         GlobalScope.async(start = CoroutineStart.LAZY, context = uncaughtExceptionHandler) {
             block.invoke(this)

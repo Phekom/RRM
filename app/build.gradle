@@ -184,7 +184,7 @@ android {
             buildConfigField("boolean", "REGISTER_AUTO_FILL_TEST", registerAutoFillTest.toString())
             manifestPlaceholders = [app_name: "RRM-Dev", app_icon: "@mipmap/ic_launcher_dev", HOCKEYAPP_APP_ID: ""]
             buildConfigField("boolean", "REGISTER_AUTO_FILL_TEST", "true")
-            buildConfigField("String", "API_HOST", '"' + dev_env + '"')
+            buildConfigField("String", "API_HOST",dev_env )
             buildConfigField "String", "HOCKEYAPP_APP_ID", "\"\""
         }
 

@@ -13,7 +13,6 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.xwray.groupie.ExpandableGroup
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
@@ -23,12 +22,14 @@ import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
-import za.co.xisystems.itis_rrm.data.localDB.*
+import za.co.xisystems.itis_rrm.data.localDB.JobDataController
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModelFactory
-import za.co.xisystems.itis_rrm.utils.*
+import za.co.xisystems.itis_rrm.utils.Coroutines
+import za.co.xisystems.itis_rrm.utils.DataConversion
+import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import java.util.*
 
 
@@ -73,13 +74,6 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
         return inflater.inflate(R.layout.fragment_submit_measure, container, false)
     }
 
-//    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-//        super.onViewCreated(view, savedInstanceState)
-//        (activity as MainActivity).supportActionBar?.title =
-//            getString(R.string.submit_measure_title)
-//
-//    }
-
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         measureViewModel = activity?.run {
@@ -98,7 +92,6 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
             measureViewModel.measure_Item.observe(viewLifecycleOwner, Observer { jobID ->
                 jobItemEstimate = jobID.jobItemEstimateDTO
                 getWorkItems(jobItemEstimate.jobId)
-//                populateHashMap(jobItemEstimatesForJob)
             })
 
 
@@ -125,10 +118,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                         items_swipe_to_refresh.isRefreshing = false
 
                     })
-//                    val jobItemMeasure = measureViewModel.getJobItemMeasuresForJobIdAndEstimateId2(it.JobId, measure_item.estimateId,jobItemMeasureArrayList)
-//                    jobItemMeasure.observe(activity!!, Observer { m_sures ->
-//
-//                    })
+
                 }
             }
 
@@ -158,13 +148,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
 //                            }
                     }
                     submitJobToMeasurements(jobForItemEstimate, jobItemMeasureList)
-
-
                 }
-
-//                                if (itemMeasure.job != null && itemMeasure.jobItemMeasurePhotos.isNullOrEmpty()) {
-//                                }
-
             })
         }
     }
@@ -185,8 +169,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
         // Yes button
         logoutBuilder.setPositiveButton( R.string.yes) { dialog, which ->
             if (ServiceUtil.isNetworkConnected(context?.applicationContext)) {
-                submiteMeasures(itemMeasureJob, mSures)
-//                uploadRrmImage(filename,jobItemMeasures)
+                submitMeasures(itemMeasureJob, mSures)
             } else {
                 toast(R.string.no_connection_detected)
             }
@@ -202,7 +185,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
         declineAlert.show()
     }
 
-    private fun submiteMeasures(
+    private fun submitMeasures(
         itemMeasureJob: JobDTO,
         mSures: ArrayList<JobItemMeasureDTO>
     ) {

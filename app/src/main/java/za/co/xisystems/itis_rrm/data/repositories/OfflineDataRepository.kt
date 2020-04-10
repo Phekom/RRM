@@ -397,10 +397,10 @@ class OfflineDataRepository(
         sectionId: Int,
         linearId: String?,
         projectId: String?
-    ): LiveData<String> {
+    ): LiveData<String?> {
         return withContext(Dispatchers.IO) {
             Db.getProjectSectionDao()
-                .getSectionByRouteSectionProject(sectionId, linearId!!, projectId)
+                .getSectionByRouteSectionProject(sectionId.toString(), linearId!!, projectId)
         }
 
     }
@@ -988,17 +988,17 @@ class OfflineDataRepository(
                                                 )
 //                                            val sectionItemId = Db.getSectionItemDao().getSectionItemId(item.itemCode!!)
                                             Db.getProjectItemDao().insertItem(
-                                                item.itemId,
-                                                item.itemCode,
-                                                item.descr,
-                                                item.itemSections,
-                                                item.tenderRate,
-                                                item.uom,
-                                                item.workflowId,
-                                                sectionItemId,
-                                                item.quantity,
-                                                item.estimateId,
-                                                project.projectId
+                                                itemId = item.itemId,
+                                                itemCode = item.itemCode,
+                                                descr = item.descr,
+                                                itemSections = item.itemSections,
+                                                tenderRate = item.tenderRate,
+                                                uom = item.uom,
+                                                workflowId = item.workflowId,
+                                                sectionItemId = sectionItemId,
+                                                quantity = item.quantity,
+                                                estimateId = item.estimateId,
+                                                projectId = project.projectId
                                             )
                                         }
                                     }
