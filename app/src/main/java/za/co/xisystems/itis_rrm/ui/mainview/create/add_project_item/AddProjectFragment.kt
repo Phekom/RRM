@@ -48,7 +48,7 @@ import java.util.*
  * Created by Francis Mahlava on 2019/12/29.
  */
 
-class AddProjectFragment : BaseFragment(), KodeinAware {
+class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), KodeinAware {
     override val kodein by kodein()
     private lateinit var createViewModel: CreateViewModel
     private lateinit var unsubmittedViewModel: UnSubmittedViewModel
@@ -69,7 +69,6 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
     @MyState
     private var job: JobDTO? = null
     @MyState
-//    private lateinit var items: MutableList<ItemDTO>
     private var items: List<ItemDTOTemp> = ArrayList<ItemDTOTemp>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -122,11 +121,12 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
         createViewModel = activity?.run {
             ViewModelProvider(this, factory).get(CreateViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
+
         unsubmittedViewModel = activity?.run {
             ViewModelProvider(this, myfactory).get(UnSubmittedViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
 
-        createViewModel.newjob.observe(viewLifecycleOwner, Observer { newJ ->
+        createViewModel.newJob.observe(viewLifecycleOwner, Observer { newJ ->
             job = newJ
             projectID = newJ.ProjectId
             //            toast(newJ.JobId + "/n" + newJ.ProjectId )
@@ -159,10 +159,10 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
                 last_lin.visibility = View.VISIBLE
                 totalCostTextView.visibility = View.VISIBLE
 
-                createViewModel.jobtoEdit_Item.value = jobToEdit
+                createViewModel.setJobToEditItem(jobToEdit)
 
                 Coroutines.main {
-                    val projecItems = createViewModel.getAllProjecItems(projectID!!, job!!.JobId)
+                    val projecItems = createViewModel.getAllProjectItems(projectID!!, job!!.JobId)
                     projecItems.observe(viewLifecycleOwner, Observer { pro_Items ->
                         if (pro_Items.isEmpty()) {
                             groupAdapter.clear()
@@ -191,31 +191,18 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
 
         })
 
-
-//        createViewModel.project_ID.observe(viewLifecycleOwner, Observer { projec_id ->
-//                        toast(projec_id)
-//            projectID = projec_id
-//        })
-
-
         setmyClickListener()
 
 
-        createViewModel.Sec_Item.observe(viewLifecycleOwner, Observer { p_Item ->
+        createViewModel.sectionProjectItem.observe(viewLifecycleOwner, Observer { p_Item ->
             infoTextView.visibility = View.GONE
             last_lin.visibility = View.VISIBLE
             totalCostTextView.visibility = View.VISIBLE
-//            if (pro_Item.itemDTO.itemId != null)
-//            if (pro_Item.itemDTO.itemId == items.get(0).itemId ){
-//                toast("Item already added!")
-//            }else{
 
-//            }
-//            assert(items.contains(pro_Item.itemDTO))
 
             Coroutines.main {
-                val projecItems = createViewModel.getAllProjecItems(projectID!!, job!!.JobId)
-                projecItems.observe(viewLifecycleOwner, Observer { pro_Items ->
+                val projectItems = createViewModel.getAllProjectItems(projectID!!, job!!.JobId)
+                projectItems.observe(viewLifecycleOwner, Observer { pro_Items ->
                     if (pro_Items.isEmpty()) {
                         groupAdapter.clear()
                         totalCostTextView.text = ""
@@ -232,17 +219,15 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
                             groupAdapter.notifyDataSetChanged()
                             totalCostTextView.clearComposingText()
                         } else {
-                            // initRecyclerView(item, items)
                             initRecyclerView(items.toProjecListItems())
                         }
 
                     }
-//                    initRecyclerView(pro_Items)
+
 
 
                 })
-                createViewModel.costLineRate.observe(viewLifecycleOwner, Observer { cost ->
-                    //                    totalCostTextView.text = cost.toString()
+                createViewModel.estimateLineRate.observe(viewLifecycleOwner, Observer { cost ->
                     calculateTotalCost()
                 })
 
@@ -259,10 +244,8 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
     private fun initRecyclerView(projecListItems: List<ProjectItem>) {
         groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
             addAll(projecListItems)
-//            for(item in projecListItems)
-//            swipeSection += SwipeToDeleteItem(item, activity)
-
         }
+
         project_recyclerView.apply {
             layoutManager = LinearLayoutManager(this.context)
             adapter = groupAdapter
@@ -301,7 +284,7 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
         val myClickListener = View.OnClickListener { view ->
             when (view?.id) {
                 R.id.addItemButton -> {
-                    createViewModel.newjob.observe(viewLifecycleOwner, Observer { newJ ->
+                    createViewModel.newJob.observe(viewLifecycleOwner, Observer { newJ ->
                         //            toast(newJ.JobId + "/n" + newJ.ProjectId )
                         projectID = newJ.ProjectId
                         job = newJ
@@ -310,17 +293,7 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
                     Navigation.findNavController(view)
                         .navigate(R.id.action_addProjectFragment_to_selectItemFragment)
 
-//                        last_lin.visibility = View.GONE
-//                        mid_lin.visibility = View.GONE
-//                        selectProjectItemdrop.visibility = View.VISIBLE
                 }
-//                    last_lin.visibility = View.GONE
-//                    mid_lin.visibility = View.GONE
-//
-//                    photoLin.visibility = View.GONE
-//                    selectProjectItemdrop.visibility = View.VISIBLE
-
-//                }
 
                 R.id.resetButton -> {
                     onResetClicked(view)
@@ -329,7 +302,6 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
                 R.id.infoTextView -> {
                     if (view.visibility == View.VISIBLE)
                         Navigation.findNavController(view).navigate(R.id.action_addProjectFragment_to_selectItemFragment)
-//                    infoTextView.startAnimation(click)
                 }
 
                 R.id.startDateCardView -> {
@@ -347,8 +319,6 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
                     )
                     startDateDialog!!.datePicker.minDate = System.currentTimeMillis() - 1000
                     startDateDialog!!.show()
-//                    startDateDialog?.getDatePicker()?.setMinDate(System.currentTimeMillis() - 1000)
-//                    startDateDialog?.show()
 
                 }
 
@@ -388,7 +358,7 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
                         if (job?.DueDate != null) {
                             if (job?.DueDate!! < job!!.StartDate!! || job!!.DueDate!! < yesterday || job?.DueDate!! == yesterday
                             ) {
-//                                toast(R.string.end_date_error)
+                                // TODO: What was the plan with this section?
                             } else {
                                 job?.DueDate
                             }
@@ -399,8 +369,7 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
                         if (job!!.StartDate != null) {
                             if (job!!.StartDate!! < yesterday || job!!.DueDate!! == yesterday
                             ) {
-//                                toast(R.string.start_date_error)
-
+                                // TODO: What was the plan with this section?
                             } else {
                                 job!!.StartDate
                             }
@@ -433,15 +402,11 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
                                     )
                                     prog.show()
 
-//                            val saved: Boolean = saveJob()
-//                            if (job?.SectionId == null)
-//                                verifyPhotoLocation() else if (isNetworkAvailable()) {
                                     job!!.IssueDate = Date().toString()
                                     submitJob(job!!, prog)
 
                                 }
 
-//                                   toast("true")
                             }
 
                         }
@@ -459,24 +424,6 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
         dueDateCardView.setOnClickListener(myClickListener)
         submitButton.setOnClickListener(myClickListener)
         infoTextView.setOnClickListener(myClickListener)
-    }
-
-    private fun verifyPhotoLocation() {
-//        offlineHelper.executeUpdatePhotosLocation(getJob(), object : OfflineCallBack() {
-//            fun onCompleted(
-//                message: String?,
-//                countSuccess: Int,
-//                countTotal: Int
-//            ) {
-//                if (countSuccess == countTotal && countTotal > 0) {
-//                    toastShort("Route sections info updated!")
-//                    submitJob()
-//                } else {
-//                    dismissProgressDialog()
-//                    toast(message)
-//                }
-//            }
-//        })
     }
 
     private fun submitJob(
@@ -542,8 +489,7 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
     private fun onResetClicked(view: View) {
         Coroutines.main {
             createViewModel.deleteItemList(job!!.JobId)
-            createViewModel.deleJobfromList(job!!.JobId)
-//                        createViewModel.deleJobItemList(newjob!!.JobId)
+            createViewModel.deleteJobFromList(job!!.JobId)
         }
         resetContractAndProjectSelection(view)
     }
@@ -553,92 +499,24 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-//        outState.putSerializable("selectedContract", selectedContract)
-//        outState.putSerializable("selectedProject", selectedProject)
-//        outState.putSerializable("job", job)
         outState.putSerializable("items", items as ArrayList<ProjectItemDTO>)
-//        outState.putBoolean("isJobSaved", isJobSaved)
-//        outState.putSerializable("estimatesToRemoveFromDb", estimatesToRemoveFromDb)
         super.onSaveInstanceState(outState)
     }
-
-
-//     fun onRestoreInstanceState(inState: Bundle) {
-//        items = inState.getSerializable("items") as ArrayList<ProjectItemDTO>
-//
-//    }
 
     private fun resetContractAndProjectSelection(view: View) {
         Navigation.findNavController(view).navigate(R.id.action_addProjectFragment_to_nav_create)
         infoTextView.text = null
-//        adapter?.setData(items)
-//        descriptionEditText.text!!.clear()
-////        mid_lin.visibility = View.GONE
-////        last_lin.visibility = View.GONE
-////        selectProjectItemdrop.visibility = View.GONE
-////        photoLin.visibility = View.GONE
-//        selectProjectLayout.visibility = View.VISIBLE
-//        setLayoutsVisibility()
-//        setMenuItems()
     }
-
 
     fun onInvalidJob() {
         toast("Incomplete estimates!")
         itemsCardView.startAnimation(shake_long)
     }
 
-    override fun onDestroyOptionsMenu() {
-        super.onDestroyOptionsMenu()
-    }
-
-    override fun onDetach() {
-        super.onDetach()
-    }
-
     override fun onStop() {
         super.onStop()
         Log.d("Tag", "FragmentA.onDestroyView() has been called.")
     }
-
-
-    //    private fun initRecyclerView(
-//        item: ItemDTOTemp,
-//        items: MutableList<ItemDTOTemp>
-//    ) {
-//        val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
-//            //            toast(itemList.size.toString())
-//
-////            for (item in itemList.listIterator()) {
-////                items.add(item)
-////                swipeSection += SwipeToDeleteItem(item, activity)
-//            swipeSection += SwipeToDeleteItem(item, activity)
-//                add(swipeSection)
-//
-////            }
-//
-//        }
-//
-//
-//        project_recyclerView.apply {
-//            layoutManager = LinearLayoutManager(this.context)
-//            adapter = groupAdapter
-//        }
-//        groupAdapter.setOnItemClickListener { item, view ->
-//
-//            (item as? Project_Item)?.let {
-//
-////                toast(it.getPosition(it).toString())
-//                //                sendSelectedItem((it.itemDTO.itemCode +"  "+ it.itemDTO.descr),(it.itemDTO.tenderRate) , view)
-////                sendSelectedItem((it),proItem,job,useR, view)
-////                sendSelectedItem((it), view)
-//            }
-//
-//
-//        }
-//    }
-
-
 }
 
 

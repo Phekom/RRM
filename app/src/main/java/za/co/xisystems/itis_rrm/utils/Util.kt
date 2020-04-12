@@ -17,8 +17,8 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 object Util {
-    fun toByteArray(stringUUID: String?): ByteArray? {
-        var stringUUID: String? = stringUUID
+    fun toByteArray(mStringUUID: String?): ByteArray? {
+        var stringUUID: String? = mStringUUID
         return if (stringUUID != null) {
             if (!stringUUID.contains("-")) stringUUID =
                 insertDashUUID(stringUUID)
@@ -42,7 +42,7 @@ object Util {
     }
 
     fun insertDashUUID(uuid: String?): String {
-        var sb = StringBuffer(uuid)
+        var sb = StringBuffer(uuid!!)
         sb.insert(8, "-")
         sb = StringBuffer(sb.toString())
         sb.insert(13, "-")

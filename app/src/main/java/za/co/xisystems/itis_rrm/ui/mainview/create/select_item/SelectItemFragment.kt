@@ -33,7 +33,7 @@ import java.util.*
  * Created by Francis Mahlava on 2019/12/29.
  */
 
-class SelectItemFragment : BaseFragment(), KodeinAware {
+class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAware {
     override val kodein by kodein()
     private lateinit var createViewModel: CreateViewModel
     private val factory: CreateViewModelFactory by instance()
@@ -97,18 +97,17 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
 
         createViewModel.loggedUser.observe(viewLifecycleOwner, Observer { user ->
             useR = user
-//            selectedContractTextView.text = user
-        })
-        createViewModel.proId.observe(viewLifecycleOwner, Observer { pro_Id ->
-            setItemsBySections(pro_Id)
-//            setItems(pro_Id)
         })
 
-        createViewModel.newjob.observe(viewLifecycleOwner, Observer { newJ ->
+        createViewModel.projectId.observe(viewLifecycleOwner, Observer { projectId ->
+            setItemsBySections(projectId)
+        })
+
+        createViewModel.newJob.observe(viewLifecycleOwner, Observer { newJ ->
             newJob = newJ
         })
 
-        createViewModel.jobtoEdit_Item.observe(viewLifecycleOwner, Observer { newJ_Edit ->
+        createViewModel.jobToEditItem.observe(viewLifecycleOwner, Observer { newJ_Edit ->
             setItemsBySections(newJ_Edit.ProjectId!!)
             editJob = newJ_Edit
         })
@@ -121,7 +120,7 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
                 setDataProgressDialog(activity!!, getString(R.string.data_loading_please_wait))
             val sectionItems = createViewModel.getAllSectionItem()
             dialog.show()
-//            val sectionItems = createViewModel.offlinedata.await()
+
             sectionItems.observe(viewLifecycleOwner, Observer { sec_tions ->
                 val sections = sec_tions
                 val sectionNmbr = arrayOfNulls<String?>(sections.size)
@@ -143,7 +142,6 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
                                 }
                                 selectedSectionitem = item
                                 setRecyclerItems(projectId, item.sectionItemId!!)
-                                //                                setRecyclerItems(item.sectionItemId)
                             }
 
                         })
@@ -157,22 +155,19 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
 
             })
 
-//            bindUI()
         }
     }
 
 
     //    private fun setRecyclerItems(sectionItemId: String) {
     private fun setRecyclerItems(projectId: String, sectionItemId: String) {
-        Coroutines.main {  //data_loading2.show()
-            //            val projectsItems = createViewModel.getItemForItemCode(sectionItemId!!)
+        Coroutines.main {
             val projectsItems = createViewModel.getAllItemsForSectionItem(sectionItemId, projectId)
             projectsItems.observe(viewLifecycleOwner, Observer { i_tems ->
                 group_loading.visibility = View.GONE
                 initRecyclerView(i_tems.toProjectItems())
-                //                data_loading2.hide()
-                //                group_loading.visibility = View.GONE
             })
+
 
         }
 
@@ -189,6 +184,7 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
 
             addAll(items)
         }
+
         item_recyclerView.apply {
             layoutManager = LinearLayoutManager(this.context)
             adapter = groupAdapter
@@ -197,12 +193,10 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
         groupAdapter.setOnItemClickListener { item, view ->
 
             (item as? SectionProj_Item)?.let {
-//                sendSelectedItem((it.itemDTO.itemCode +"  "+ it.itemDTO.descr),(it.itemDTO.tenderRate) , view)
+
                 val newjItem = createItemList(it.itemDTO, itemSections)
                 saveNewItem(newjItem)
                 sendSelectedItem((it) , view,items )
-//                if (job.JobId == null) { // New Job
-//                }
             }
 
 
@@ -222,20 +216,23 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
         itemSections: ArrayList<ItemSectionDTO>
     ): ItemDTOTemp {
         val newItem = ItemDTOTemp(
-            0,itemDTO.itemId,itemDTO.descr,itemDTO.itemCode,itemSections,itemDTO.tenderRate,itemDTO.uom,itemDTO.workflowId,
-            itemDTO.sectionItemId,
-            itemDTO.quantity,
-            itemDTO.estimateId,
-            itemDTO.projectId!!,
-            newJob?.JobId ?: editJob.JobId
+            id = 0,
+            itemId = itemDTO.itemId,
+            descr = itemDTO.descr,
+            itemCode = itemDTO.itemCode,
+            itemSections = itemSections,
+            tenderRate = itemDTO.tenderRate,
+            uom = itemDTO.uom,
+            workflowId = itemDTO.workflowId,
+            sectionItemId = itemDTO.sectionItemId,
+            quantity = itemDTO.quantity,
+            estimateId = itemDTO.estimateId,
+            projectId = itemDTO.projectId!!,
+            jobId = newJob?.JobId ?: editJob.JobId
         )
         items.add(newItem)
         return newItem
     }
-
-
-
-
 
     private fun sendSelectedItem(
         item: SectionProj_Item,
@@ -244,12 +241,9 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
     ) {
         val selecteD = item
         val myList = jobArrayList
-//        val actionAddProject =  SelectItemFragmentDirection.actionAddProject(selecteD)
-//        navController?.navigate(R.id.action_selectItemFragment_to_addProjectFragment)
-
 
         Coroutines.main {
-            createViewModel.Sec_Item.value = selecteD
+            createViewModel.sectionProjectItem.value = selecteD
 //            createViewModel.project_Rate.value = selectRte
         }
 
@@ -257,76 +251,10 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
             .navigate(R.id.action_selectItemFragment_to_addProjectFragment)
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        item_recyclerView.adapter = null
+        item_recyclerView.layoutManager = null
+    }
+
 }
-
-
-//            navController?.navigate(R.id.action_selectItemFragment_to_addProjectFragment)
-//            Coroutines.main {
-//               createViewModel.project_Item.value = selectedSectionitem?.itemCode.toString() + selectedSectionitem?.description.toString()
-//
-//            }
-
-//            val intent = Intent()
-//            intent.putExtra("item", item)
-//            setResult(RESULT_OK, intent)
-//            finish()
-
-
-//    private fun setItems(sectionItemId: String,projectId: String) {
-//        Coroutines.main {
-////            data_loading2.show()
-////            try {
-//            val projectsItems = createViewModel.getAllItemsForSectionItem(sectionItemId ,projectId)
-////            val projectsItems = createViewModel.getAllItemsForProjectId(projectId)
-////                val projectsItems = authViewModel.projectsItems.await()
-//            projectsItems?.observe(viewLifecycleOwner, Observer { i_tems ->
-//
-//                val items = i_tems
-//                val itemNmbr = arrayOfNulls<String>(i_tems.size)
-//
-////                for (project in i_tems.indices) {
-//////                    filterItem(i_tems[project].sectionItemId)
-////                    itemNmbr[project] = i_tems[project].itemCode + "  " +  //?.dropLast(2)
-////                            i_tems[project].descr //+ "  " +  "( " + i_tems[project].uom + " )"
-////                }
-////                Coroutines.main {
-////                    setSpinner(context!!.applicationContext, sectionItemSpinner, items, itemNmbr,
-////                        object : SpinnerHelper.SelectionListener<ItemDTO> {
-////
-////                            override fun onItemSelected(position: Int, item: ItemDTO) {
-////                                if (animate) {
-////                                    sectionItemSpinner.startAnimation(bounce_750)
-////                                    itemsDropCardView.startAnimation(bounce_1000)
-////                                }
-////                                selectedProjectitem = item
-////
-////                                if (position == 0) {
-////                                    filterItem(null)
-////                                } else {
-////                                    filterItem(item.sectionItemId)
-////                                    setRecyclerItems(item.sectionItemId)
-////                                }
-////
-////                            }
-////
-////                        })
-////
-////                    sectionItemSpinner.setOnTouchListener { v, event ->
-////                        animate = true
-////                        false
-////                    }
-////
-////            }
-//
-//            })
-//
-//
-//
-//
-////            } catch (e: ApiException) {
-////                Toast.makeText(context?.applicationContext, e.message!!, Toast.LENGTH_SHORT).show()
-////            } catch (e: NoInternetException) {
-////                Toast.makeText(context?.applicationContext, e.message!!, Toast.LENGTH_SHORT).show()
-////            }
-//        }
-//    }

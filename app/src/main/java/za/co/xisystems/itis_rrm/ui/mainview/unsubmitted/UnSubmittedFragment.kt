@@ -23,7 +23,7 @@ import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
 import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.unsubmited_item.UnSubmittedJobItem
 import za.co.xisystems.itis_rrm.utils.*
 
-class UnSubmittedFragment : BaseFragment(), KodeinAware {
+class UnSubmittedFragment : BaseFragment(R.layout.fragment_unsubmittedjobs), KodeinAware {
 
     override val kodein by kodein()
     private lateinit var unsubmittedViewModel: UnSubmittedViewModel

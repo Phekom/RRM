@@ -4,6 +4,7 @@ import android.os.Parcel
 import android.os.Parcelable
 import androidx.room.*
 import com.google.gson.annotations.SerializedName
+import org.jetbrains.annotations.NotNull
 import java.io.Serializable
 
 /**
@@ -24,9 +25,11 @@ const val PROJECT_TABLE = "PROJECT_TABLE"
 )
 data class ProjectDTO(
     @PrimaryKey
+    @NotNull
     val id: Int,
 
     @SerializedName("ProjectId")
+    @NotNull
     val projectId: String,
 
     @SerializedName("Descr")
@@ -71,9 +74,7 @@ data class ProjectDTO(
         TODO("projectSections"),
         TODO("voItems"),
         parcel.readString()
-    ) {
-
-    }
+    )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeInt(id)

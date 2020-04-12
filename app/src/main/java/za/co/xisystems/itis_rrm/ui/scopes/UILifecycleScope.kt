@@ -1,0 +1,46 @@
+package za.co.xisystems.itis_rrm.ui.scopes
+
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.OnLifecycleEvent
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import timber.log.Timber
+import za.co.xisystems.itis_rrm.BuildConfig
+import kotlin.coroutines.CoroutineContext
+
+/**
+ * Created by Shaun McDonald on 2020/04/06.
+ * Copyright (c) 2020 XI Systems. All rights reserved.
+ */
+
+/**
+ * Coroutine context that automatically is cancelled when UI is destroyed
+ * @property job Job?
+ * @property coroutineContext CoroutineContext
+ */
+class UiLifecycleScope : CoroutineScope, LifecycleObserver {
+    val handler = CoroutineExceptionHandler { _, throwable ->
+        if (BuildConfig.DEBUG) {
+            println(throwable)
+        }
+        Timber.e(throwable)
+        throw Exception(throwable)
+
+    }
+
+    lateinit var job: Job
+
+    override val coroutineContext: CoroutineContext
+        get() = job.plus(Dispatchers.Main).plus(handler)
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_START)
+    fun onCreate() {
+        job = Job()
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
+    fun destroy() = job.cancel()
+}

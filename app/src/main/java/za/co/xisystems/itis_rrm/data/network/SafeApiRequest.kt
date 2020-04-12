@@ -14,7 +14,7 @@ abstract class SafeApiRequest {
         if(response.isSuccessful){
             return response.body()!!
         }else{
-            val error = response.errorBody()?.toString()
+            val error = response.errorBody()?.string()
 
             val message = StringBuilder()
             error?.let{

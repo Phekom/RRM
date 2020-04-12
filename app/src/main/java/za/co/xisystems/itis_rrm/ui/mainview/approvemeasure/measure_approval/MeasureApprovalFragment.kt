@@ -33,7 +33,7 @@ import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 
 
-class MeasureApprovalFragment : BaseFragment(), KodeinAware {
+class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval), KodeinAware {
     override val kodein by kodein()
     private lateinit var approveViewModel: ApproveMeasureViewModel
     private val factory: ApproveMeasureViewModelFactory by instance()
@@ -46,11 +46,6 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
     }
 
     override fun onCreateView(
@@ -266,18 +261,6 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
     fun onButtonPressed(uri: Uri) {
 //        listener?.onFragmentInteraction(uri)
     }
-
-
-    override fun onDetach() {
-        super.onDetach()
-
-    }
-
-
-
-
-
-
 
 
 }

@@ -23,7 +23,6 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.bumptech.glide.Glide
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import icepick.State
@@ -47,7 +46,7 @@ import java.util.*
 import kotlin.collections.ArrayList
 
 
-class CaptureWorkFragment : BaseFragment(), KodeinAware {
+class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), KodeinAware {
 
     override val kodein by kodein()
     private lateinit var workViewModel: WorkViewModel
@@ -80,6 +79,7 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
     var filename_path = HashMap<String, String>()
     lateinit var locationHelper: LocationHelper
     private var currentLocation: Location? = null
+
     //    private var index = -1
     lateinit var useR: UserDTO
 
@@ -178,7 +178,7 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
                     sendJobToService(itemEstiWorks, prog)
                 } else {
                     val networkToast = Toast.makeText(
-                        activity?.getApplicationContext(),
+                        activity?.applicationContext,
                         R.string.no_connection_detected,
                         Toast.LENGTH_LONG
                     )
@@ -407,15 +407,16 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
         itemEstiJob: JobDTO
     ) {
         Coroutines.main {
-            //            submitAllOutStandingEstimates(estimate)/
+
             val workDone: Int = workViewModel.getJobItemsEstimatesDoneForJobId(
                 itemEstiJob.JobId,
                 ActivityIdConstants.ESTIMATE_WORK_PART_COMPLETE,
                 ActivityIdConstants.EST_WORKS_COMPLETE
             )
+
             if (workDone == itemEstiJob.JobItemEstimates?.size) {
                 val iItems = itemEstiJob.JobItemEstimates
-                estimate
+                // estimate
                 submitAllOutStandingEstimates(iItems)
             } else {
 
@@ -423,7 +424,7 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
                 estimateWorks.observe(viewLifecycleOwner, Observer { work_s ->
                     //                    setButtonStates(work_s.get(0).actId, work_s)
                     for (itemwork in work_s) {
-                        if (itemwork?.actId == ActivityIdConstants.EST_WORKS_COMPLETE) {
+                        if (itemwork.actId == ActivityIdConstants.EST_WORKS_COMPLETE) {
                             Coroutines.main {
                                 val workDone: Int = workViewModel.getJobItemsEstimatesDoneForJobId(
                                     itemEstiJob.JobId,
@@ -450,11 +451,9 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
 
                             }
                         }
-                        itemEstiWorks = itemwork
-                        estimateWorksArrayList = work_s as ArrayList<JobEstimateWorksDTO>
-
-
+                        this.itemEstiWorks = itemwork
                     }
+                    estimateWorksArrayList = work_s as ArrayList<JobEstimateWorksDTO>
                 })
 
             }
@@ -525,11 +524,11 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
                             toast("Error: selectedJob is null")
                         }
                         else -> {
-                            toast(jobItEstimate?.jobId)
+                            toast(jobItEstimate.jobId)
                             // TODO beware littlEndian conversion
                             val trackRounteId: String =
-                                DataConversion.toLittleEndian(jobItEstimate?.trackRouteId)!!
-                            val direction: Int = workflowDirection.getValue()
+                                DataConversion.toLittleEndian(jobItEstimate.trackRouteId)!!
+                            val direction: Int = workflowDirection.value
                             Coroutines.main {
                                 val prog = setDataProgressDialog(
                                     activity!!,
@@ -650,7 +649,6 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
         }
     }
 
-
     // TODO: Rename method, update argument and hook method into UI event
     fun onButtonPressed(uri: Uri) {
 
@@ -672,7 +670,6 @@ class CaptureWorkFragment : BaseFragment(), KodeinAware {
     fun setCurrentLocation(currentLocation: Location?) {
         this.currentLocation = currentLocation
     }
-
 }
 
 private fun JobEstimateWorksPhotoDTO.setWorksId(toLittleEndian: String?) {
@@ -694,6 +691,7 @@ private fun JobEstimateWorksDTO.setEstimateId(toLittleEndian: String?) {
 private fun JobEstimateWorksDTO.setTrackRouteId(toLittleEndian: String?) {
     this.trackRouteId = toLittleEndian!!
 }
+
 
 //val photos = intArrayOf(estimateWorksPhotoArrayList.size)
 //

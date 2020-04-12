@@ -14,14 +14,9 @@ class UnSubmittedViewModel(
 ) : ViewModel() {
 
 
-//    val offlinedata by lazyDeferred {
-//        offlineDataRepository.getSectionItems()
-//        offlineDataRepository.getContracts()
-//    }
-
     val jobtoEdit_Item = MutableLiveData<JobDTO>()
-    fun Item5(jobEdit_Item: JobDTO) {
-        jobtoEdit_Item.value = jobEdit_Item
+    suspend fun getJobToEdit(jobId: String) {
+        jobtoEdit_Item.value = offlineDataRepository.getUpdatedJob(jobId)
     }
 
 

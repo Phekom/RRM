@@ -2,7 +2,6 @@ package za.co.xisystems.itis_rrm.ui.mainview.approvejobs
 
 import android.graphics.Color
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
@@ -16,11 +15,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.GroupieViewHolder
 import kotlinx.android.synthetic.main.fragment_approvejob.*
-import kotlinx.android.synthetic.main.fragment_approvejob.noData
-import kotlinx.android.synthetic.main.fragment_approvemeasure.*
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
+import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
@@ -32,7 +30,7 @@ import za.co.xisystems.itis_rrm.utils.*
  * Created by Francis Mahlava on 03,October,2019
  */
 
-class ApproveJobsFragment : BaseFragment(), KodeinAware {
+class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAware {
 
     override val kodein by kodein()
     private lateinit var approveViewModel: ApproveJobsViewModel
@@ -61,6 +59,7 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
         approveViewModel = activity?.run {
             ViewModelProvider(this, factory).get(ApproveJobsViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
+
         Coroutines.main {
             val dialog = setDataProgressDialog(activity!!, getString(R.string.data_loading_please_wait))
             val jobs = approveViewModel.getJobsForActivityId(ActivityIdConstants.JOB_APPROVE)
@@ -100,19 +99,16 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
                         })
                     } catch (e: ApiException) {
                         ToastUtils().toastLong(activity, e.message)
-                        dialog.dismiss()
-                        jobs_swipe_to_refresh.isRefreshing  = false
-                        Log.e(TAG, "API Exception", e)
+                        Timber.e(e, "API Exception")
                     } catch (e: NoInternetException) {
                         ToastUtils().toastLong(activity, e.message)
-                        dialog.dismiss()
-                        jobs_swipe_to_refresh.isRefreshing  = false
-                        Log.e(TAG, "No Internet Connection", e)
+                        Timber.e(e, "No Internet Connection")
                     } catch (e: NoConnectivityException) {
                         ToastUtils().toastLong(activity, e.message)
+                        Timber.e(e, "Service Host Unreachable")
+                    } finally {
                         dialog.dismiss()
                         jobs_swipe_to_refresh.isRefreshing = false
-                        Log.e(TAG, "Service Host Unreachable", e)
                     }
                 }
             }

@@ -13,6 +13,7 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.GlideApp
 import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
 import java.io.File
+import java.lang.NullPointerException
 
 
 /**
@@ -35,20 +36,13 @@ class EstimatesItem(
                 val uom =
                     approveViewModel.getUOMForProjectItemId(jobItemEstimateDTO.projectItemId!!)
                 measure_item_description_textView.text = descr
-                estimation_item_uom_textView.text = "Unit of Measure: $uom"
+                // estimation_item_uom_textView.text = "Unit of Measure: $uom"
                 if (uom == "NONE" || uom == "") {
                     estimation_item_uom_textView.text = ""
                 } else {
                     estimation_item_uom_textView.text = "Unit of Measure: $uom"
                 }
 
-            }
-            photoPreviewStart.setOnClickListener {
-                Coroutines.main {
-                    val startPhoto =
-                        approveViewModel.getJobEstimationItemsPhotoStartPath(jobItemEstimateDTO.estimateId)
-                    showZoomedImage(startPhoto)
-                }
             }
             photoPreviewEnd.setOnClickListener {
                 Coroutines.main {
@@ -79,32 +73,48 @@ class EstimatesItem(
 
     private fun GroupieViewHolder.updateStartImage() {
         Coroutines.main {
+
             val startPhoto =
                 approveViewModel.getJobEstimationItemsPhotoStartPath(jobItemEstimateDTO.estimateId)
-            GlideApp.with(this.containerView)
-                .load(Uri.fromFile(File(startPhoto)))
-                .placeholder(R.drawable.logo_new_medium)
-                .into(photoPreviewStart)
+
+            if (null != startPhoto) {
+                GlideApp.with(this.containerView)
+                    .load(Uri.fromFile(File(startPhoto)))
+                    .placeholder(R.drawable.logo_new_medium)
+                    .into(photoPreviewStart)
+            } else {
+                GlideApp.with(this.containerView)
+                    .load(R.drawable.no_image)
+                    .placeholder(R.drawable.logo_new_medium)
+                    .into(photoPreviewStart)
+                photoPreviewStart.setOnClickListener(null)
+            }
+
+
         }
     }
+
+
     private fun GroupieViewHolder.updateEndImage() {
         Coroutines.main {
             val endPhoto =
                 approveViewModel.getJobEstimationItemsPhotoEndPath(jobItemEstimateDTO.estimateId)
-        GlideApp.with(this.containerView)
-                .load(Uri.fromFile(File(endPhoto)))
-                .placeholder(R.drawable.logo_new_medium)
-                .into(photoPreviewEnd)
-
-//        Glide.with(this)
-//            .load(Uri.fromFile(File(imageStoragePath)))
-//            .apply(RequestOptions().override(100, 100))
-//            .into(imageView)
+            if (null != endPhoto) {
+                GlideApp.with(this.containerView)
+                    .load(Uri.fromFile(File(endPhoto)))
+                    .placeholder(R.drawable.logo_new_medium)
+                    .into(photoPreviewEnd)
+            } else {
+                GlideApp.with(this.containerView)
+                    .load(R.drawable.no_image)
+                    .placeholder(R.drawable.logo_new_medium)
+                    .into(photoPreviewEnd)
+                photoPreviewEnd.setOnClickListener(null)
+            }
         }
     }
-}
 
-private fun getItemId(position: Int): Long {
-    return position.toLong()
+    private fun getItemId(position: Int): Long {
+        return position.toLong()
+    }
 }
-

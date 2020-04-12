@@ -42,9 +42,9 @@
     <string name="rrm_activity_sections_refresh">RrmActivitySectionsRefresh</string>
     <string name="get_route_section_point">GetRouteSectionPoint</string>
     <string name="working_offline">Note: You are currently working Offline. Co-Ordinates saved.</string>
-    <string name="no_section_for_project">The picture is out the range of the project section.</string>
+    <string name="no_section_for_project">The picture falls outside the range of the project section.</string>
     <string name="no_section_for_project_item">We could not find the SECTION for the ITEM:</string>
-    <string name="photo_from_other_section">Please make sure that the Photo you are taking of the item is from the same section.</string>
+    <string name="photo_from_other_section">Please ensure that the Photo you are taking of the item is from the same section.</string>
     <string name="photo_from_other_section_item">seems to be from a different section.</string>
     <string name="effective_roles_refresh_end_point">EffectiveRolesRefresh</string>
     <string name="get_rrm_job_end_point">GetRRMJob</string>
@@ -517,17 +517,19 @@
     <string name="ex_no_service_host">Service Host for Mobile is offline, try again later</string>
 
     <!-- Estimate Photo Gallery Fragment -->
-    <string name="fragment_estimate_title">M020.01(A): TYPE 1</string>
+    <string name="fragment_estimate_title">PLACEHOLDER TITLE</string>
     <string name="estimate_calculate_cost">Calculate Cost</string>
     <string name="label_quantity">Quantity</string>
     <string name="estimate_placeholder">* 500 = 1500</string>
     <string name="action_update">UPDATE</string>
-    <string name="label_area_m2">\"Area(m²): \"</string>
-    <string name="label_volume_m3">\"Volume(m³): \"</string>
+    <string name="label_area_m2">Area(m²): </string>
+    <string name="label_volume_m3">Volume(m³): </string>
     <string name="todo">TODO</string>
     <string name="welcome">Welcome</string>
-    <string name="label_amount">\"Amount: \"</string>
-    <string name="label_length_m">\"Length(m): \"</string>
-    <string name="warning_estimate_incomplete">Incomplete estimate...</string>
+    <string name="label_amount">Amount: </string>
+    <string name="label_length_m">Length(m): </string>
+    <string name="warning_estimate_incomplete">Incomplete estimate ...</string>
+    <string name="warning_estimate_enter_volume">Please enter the volume.</string>
+    <string name="warning_estimate_enter_prov_sum">Please enter the Prov Sum</string>
 
 </resources>

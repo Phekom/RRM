@@ -10,8 +10,9 @@ import okhttp3.Response
 import za.co.xisystems.itis_rrm.utils.NoConnectivityException
 import za.co.xisystems.itis_rrm.utils.NoInternetException
 import java.io.IOException
-import java.net.HttpURLConnection
-import java.net.URL
+import java.net.InetAddress
+import java.net.InetSocketAddress
+import java.net.Socket
 
 /**
  * Created by Francis Mahlava on 2019/10/18.
@@ -19,8 +20,8 @@ import java.net.URL
 class NetworkConnectionInterceptor(
     context: Context
 ) : Interceptor {
-    private val testConnection = "https://www.sanral.co.za"
-    private val serviceURL = "https://itisqa.nra.co.za/ITISServicesMobile"
+    private val testConnection = "www.google.com"
+    private val serviceURL = "itisqa.nra.co.za"
     private val applicationContext = context.applicationContext
 
     @RequiresApi(Build.VERSION_CODES.M)
@@ -28,10 +29,10 @@ class NetworkConnectionInterceptor(
         if (!isInternetAvailable())
             throw NoInternetException("Make sure you have an active data connection")
 
-        if (!isHostAvailable(testConnection))
+        if (!isHostAvailable(host = testConnection, port = 443, timeout = 1000))
             throw NoConnectivityException("Network appears to be down, please try again later.")
 
-        if(!isHostAvailable(serviceURL)){
+        if (!isHostAvailable(host = serviceURL, port = 443, timeout = 1000)) {
             throw NoConnectivityException("Service Host for RRM is down, please try again later.")
         }
 
@@ -55,26 +56,19 @@ class NetworkConnectionInterceptor(
         return result
     }
 
-    private fun isHostAvailable(testURL: String) : Boolean {
-        val result: Boolean
-
-        val connection = URL(testURL).openConnection() as HttpURLConnection?
-        connection?.setRequestProperty("User-Agent", "Test")
-        connection?.setRequestProperty("Connection", "close")
-        connection?.connectTimeout = 500
-        result = try {
-            connection?.connect()
-            when (connection?.responseCode) {
-                200 -> true
-                else -> false
+    fun isHostAvailable(host: String?, port: Int, timeout: Int): Boolean {
+        try {
+            Socket().use { socket ->
+                val inetAddress: InetAddress = InetAddress.getByName(host)
+                val inetSocketAddress = InetSocketAddress(inetAddress, port)
+                socket.connect(inetSocketAddress, timeout)
+                socket.close()
+                return true
             }
         } catch (e: IOException) {
-            false
-        } finally {
-            connection?.disconnect()
+            e.printStackTrace()
+            return false
         }
-        connection?.disconnect()
-        return result
     }
 
 }

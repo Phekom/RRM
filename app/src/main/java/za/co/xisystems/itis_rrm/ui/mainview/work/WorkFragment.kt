@@ -16,7 +16,6 @@ import com.xwray.groupie.ExpandableGroup
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.GroupieViewHolder
 import kotlinx.android.synthetic.main.fragment_approvejob.noData
-import kotlinx.android.synthetic.main.fragment_approvemeasure.*
 import kotlinx.android.synthetic.main.fragment_work.*
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
@@ -33,7 +32,7 @@ import za.co.xisystems.itis_rrm.utils.*
 const val INSET_TYPE_KEY = "inset_type"
 const val INSET = "inset"
 
-class WorkFragment : BaseFragment(), KodeinAware {
+class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
 
     override val kodein by kodein()
     private lateinit var workViewModel: WorkViewModel
@@ -209,7 +208,6 @@ class WorkFragment : BaseFragment(), KodeinAware {
                                     Coroutines.main {
                                         val desc =
                                             workViewModel.getDescForProjectItemId(item.projectItemId!!)
-                                                ?: ""
                                         val qty = item.qty.toString()
                                         val rate = item.lineRate.toString()
                                         val estimateId = item.estimateId

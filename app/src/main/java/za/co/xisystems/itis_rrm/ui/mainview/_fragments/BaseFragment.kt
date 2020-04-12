@@ -25,27 +25,63 @@ import za.co.xisystems.itis_rrm.utils.ViewLogger
  */
 
 
-abstract class BaseFragment : Fragment(), IProgressView, HorizontalProgressBar{
+abstract class BaseFragment(layoutContentId: Int) : Fragment(layoutContentId), IProgressView,
+    HorizontalProgressBar {
+
+    companion object {
     protected var progressView: IProgressView? = null
-    @JvmField var bounce: Animation? = null
-    @JvmField var bounce_short: Animation? = null
-    @JvmField var bounce_long: Animation? = null
-    @JvmField var bounce_soft: Animation? = null
-    @JvmField var bounce_250: Animation? = null
-    @JvmField var bounce_500: Animation? = null
-    @JvmField var bounce_750: Animation? = null
-    @JvmField var bounce_1000: Animation? = null
-    @JvmField var scale: Animation? = null
-    @JvmField var scale_light: Animation? = null
-    @JvmField var click: Animation? = null
-    @JvmField var shake_delay: Animation? = null
-    @JvmField var shake: Animation? = null
-    @JvmField var shake_long: Animation? = null
-    @JvmField var shake_longer: Animation? = null
+
+        @JvmField
+        var layoutContentId: Int? = null
+
+        @JvmField
+        var bounce: Animation? = null
+
+        @JvmField
+        var bounce_short: Animation? = null
+
+        @JvmField
+        var bounce_long: Animation? = null
+
+        @JvmField
+        var bounce_soft: Animation? = null
+
+        @JvmField
+        var bounce_250: Animation? = null
+
+        @JvmField
+        var bounce_500: Animation? = null
+
+        @JvmField
+        var bounce_750: Animation? = null
+
+        @JvmField
+        var bounce_1000: Animation? = null
+
+        @JvmField
+        var scale: Animation? = null
+
+        @JvmField
+        var scale_light: Animation? = null
+
+        @JvmField
+        var click: Animation? = null
+
+        @JvmField
+        var shake_delay: Animation? = null
+
+        @JvmField
+        var shake: Animation? = null
+
+        @JvmField
+        var shake_long: Animation? = null
+
+        @JvmField
+        var shake_longer: Animation? = null
     protected var coordinator: View? = null
 
     var anims: Animations? = null
-
+    }
 
     override fun onResume() {
         super.onResume()
@@ -89,13 +125,7 @@ abstract class BaseFragment : Fragment(), IProgressView, HorizontalProgressBar{
             progressView = context
         }
     }
-//    override fun onDestroyView() {
-//        super.onDestroyView()
-//        if (view != null) {
-//            val parent = view!!.parent as ViewGroup
-//            parent?.removeAllViews()
-//        }
-//    }
+
     override fun onViewCreated(
         view: View,
         savedInstanceState: Bundle?
@@ -104,13 +134,6 @@ abstract class BaseFragment : Fragment(), IProgressView, HorizontalProgressBar{
         coordinator = view.findViewById(R.id.coordinator)
     }
 
-//    fun toast(string: String?) {
-//        if (activity != null) Toast.makeText(activity, string, Toast.LENGTH_LONG).show()
-//    }
-//
-//    fun toast(string: Int) {
-//        if (activity != null) Toast.makeText(activity, string, Toast.LENGTH_LONG).show()
-//    }
 
     fun setDataProgressDialog(context: Context, message: String):ProgressDialog{
         //Assuming that you are using fragments.//
@@ -133,9 +156,12 @@ abstract class BaseFragment : Fragment(), IProgressView, HorizontalProgressBar{
      */
     fun Activity.hideKeyboard() {
         val view = this.currentFocus
-        if (view != null) {
-            val imm = this.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-            imm.hideSoftInputFromWindow(view.windowToken, 0)
+        // Now the keyboard should disappear when the user touches something else
+        view?.setOnFocusChangeListener { v, hasFocus ->
+            if (!hasFocus) {
+                val imm = this.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                imm.hideSoftInputFromWindow(view.windowToken, 0)
+            }
         }
     }
 

@@ -28,7 +28,7 @@ import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModelFactory
 import za.co.xisystems.itis_rrm.utils.*
 
 
-class HomeFragment : BaseFragment(), KodeinAware {
+class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
 
     override val kodein by kodein()
     private lateinit var homeViewModel: HomeViewModel

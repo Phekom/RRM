@@ -4,9 +4,9 @@ package za.co.xisystems.itis_rrm.data.localDB.entities
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
-import androidx.room.ForeignKey.CASCADE
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
+import org.jetbrains.annotations.NotNull
 import java.io.Serializable
 
 
@@ -50,6 +50,7 @@ data class ProjectItemDTO(
     @SerializedName("WorkflowId")
     val workflowId: Int?,
 
+
     val sectionItemId: String?,
 
     val quantity: Double = 0.toDouble(),
@@ -57,6 +58,7 @@ data class ProjectItemDTO(
     val estimateId: String?,
 
     @SerializedName("ProjectId")
+    @NotNull
     @ColumnInfo(name = "projectId", index = true)
     val projectId: String?
 

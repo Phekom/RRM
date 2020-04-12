@@ -1,7 +1,6 @@
 package za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.unsubmited_item
 
 import android.view.View
-import androidx.fragment.app.FragmentActivity
 import androidx.navigation.Navigation
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
@@ -34,10 +33,6 @@ class UnSubmittedJobItem(
            unsubmitted_project_textView.text = "JI:${jobDTO.JiNo} - "
            Coroutines.main {
                val descri = viewModel.getDescForProjectId(jobDTO.ProjectId!!)
-//               val section  =  viewModel.getProjectSection(jobDTO.SectionId)
-//                section.observe(activity!!, Observer {
-//                    unsubmitted_section_textView.text =  " ${it.route} " + " SEC " + " ${it.section} " + "(${it.route} / ${it.startKm} / ${it.endKm} )"
-//                })
                unsubmitted_project_textView.text = descri
            }
            unsubmitted_description_textView.text = jobDTO.Descr
@@ -45,7 +40,7 @@ class UnSubmittedJobItem(
            deleteButton.setOnClickListener {
                Coroutines.main {
                    viewModel.deleJobfromList(jobDTO.JobId)
-                   viewModel.deleteItemList(jobDTO!!.JobId)
+                   viewModel.deleteItemList(jobDTO.JobId)
                    groupAdapter.clear()
                    groupAdapter.notifyDataSetChanged()
                    notifyChanged()
@@ -65,7 +60,7 @@ class UnSubmittedJobItem(
 
         val job = jobDTO
         Coroutines.main {
-            viewModel.jobtoEdit_Item.value = job
+            viewModel.getJobToEdit(job.JobId)
         }
 
         Navigation.findNavController(view)

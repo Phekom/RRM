@@ -15,15 +15,12 @@ import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
-import com.google.android.gms.common.api.GoogleApiClient
-import com.google.android.gms.location.LocationRequest
 import icepick.State
 import kotlinx.android.synthetic.main.activity_capture_item_measure_photo.*
 import org.kodein.di.KodeinAware
@@ -42,7 +39,8 @@ import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModelFactory
 import za.co.xisystems.itis_rrm.utils.*
 import java.util.*
 
-class CaptureItemMeasurePhotoFragment : BaseFragment(), KodeinAware {
+class CaptureItemMeasurePhotoFragment : BaseFragment(R.layout.fragment_capture_item_measure_photo),
+    KodeinAware {
 
     override val kodein by kodein()
     private lateinit var measureViewModel: MeasureViewModel
@@ -126,7 +124,7 @@ class CaptureItemMeasurePhotoFragment : BaseFragment(), KodeinAware {
         super.onActivityCreated(savedInstanceState)
         measureViewModel = activity?.run {
             ViewModelProvider(this, factory).get(MeasureViewModel::class.java)
-        } ?: throw Exception("Invalid Activity") as Throwable
+        } ?: throw Exception("Invalid Activity")
 
         locationHelper = LocationHelperFragment(this)
         locationHelper.onCreate()
@@ -148,7 +146,7 @@ class CaptureItemMeasurePhotoFragment : BaseFragment(), KodeinAware {
 
 
         done_image_button.setOnClickListener { save ->
-            saveImgae()
+            saveImaqe()
 //            updateJobItemMeasures(jobItemMeasureArrayList,measureViewModel)
 //            setJobItemMeasureImage(jobItemMeasurePhotoArrayList, measureViewModel)
             setJobItemMeasureImage(
@@ -165,7 +163,7 @@ class CaptureItemMeasurePhotoFragment : BaseFragment(), KodeinAware {
         }
         Save.visibility = View.GONE
         Save.setOnClickListener { save ->
-            saveImgae()
+            saveImaqe()
             setJobItemMeasureImage(
                 jobItemMeasurePhotoArrayList,
                 measureViewModel,
@@ -180,9 +178,9 @@ class CaptureItemMeasurePhotoFragment : BaseFragment(), KodeinAware {
 
     }
 
-    private fun saveImgae(): JobItemMeasurePhotoDTO {
+    private fun saveImaqe(): JobItemMeasurePhotoDTO {
         //  Location of picture
-        val currentLocation: Location = locationHelper?.getCurrentLocation()!!
+        val currentLocation: Location = locationHelper.getCurrentLocation()!!
         if (currentLocation == null) toast("Error: Current location is null!")
         //  Save Image to Internal Storage
         val photoId = SqlLitUtils.generateUuid()
@@ -203,9 +201,9 @@ class CaptureItemMeasurePhotoFragment : BaseFragment(), KodeinAware {
 
         )
 
-        jobItemMeasurePhotoArrayList!!.add(jobItemMeasurePhoto)
+        jobItemMeasurePhotoArrayList.add(jobItemMeasurePhoto)
 //        jobForJobItemEstimate.setJobItemMeasures(jobItemMeasurePhotoArrayList)
-        return jobItemMeasurePhoto!!
+        return jobItemMeasurePhoto
     }
 
 
