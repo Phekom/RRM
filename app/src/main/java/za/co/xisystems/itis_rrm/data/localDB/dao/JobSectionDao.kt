@@ -1,6 +1,5 @@
 package za.co.xisystems.itis_rrm.data.localDB.dao
 
-import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
@@ -25,7 +24,7 @@ interface JobSectionDao {
     fun checkIfJobSectionExistForJobId(jobId: String?): Boolean
 
     @Query("SELECT * FROM JOB_SECTION_TABLE WHERE jobId = :jobId")
-    fun getJobSectionFromJobId(jobId: String): JobSectionDTO
+    fun getJobSectionFromJobId(jobId: String): JobSectionDTO?
 
     @Query("SELECT projectSectionId FROM JOB_SECTION_TABLE WHERE jobId = :jobId")
     fun getProjectSectionId(jobId: String): String

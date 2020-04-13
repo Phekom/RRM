@@ -60,7 +60,6 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
     private var imageUri: Uri? = null
     private var mTempPhotoPath: String? = null
 
-    //    private var estimatId :String? = null
     private lateinit var workFlowRoute: ArrayList<Long>
     private lateinit var workFlowMenuTitles: ArrayList<String>
     private lateinit var groupAdapter: GroupAdapter<GroupieViewHolder>
@@ -80,7 +79,7 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
     lateinit var locationHelper: LocationHelper
     private var currentLocation: Location? = null
 
-    //    private var index = -1
+
     lateinit var useR: UserDTO
 
     override fun onStart() {
@@ -257,21 +256,19 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
                 prog.dismiss()
                 fragmentManager?.beginTransaction()?.detach(this)?.attach(this)?.commit()
 
-//                                initRecyclerView(work_s.toWorkStateItems(),workCodes)
             }
-//            val works = workViewModel.getJobsForActivityId(ActivityIdConstants.JOB_APPROVED, ActivityIdConstants.ESTIMATE_INCOMPLETE)
-//            works.observe(viewLifecycleOwner, Observer { work_s ->
 
             workViewModel.work_Item.observe(viewLifecycleOwner, Observer { estimate ->
-                //                getWorkItems(estimate, itemEstiJob)
 
-                val id = 3 //TODO("THis part must be Deleted when the Dynamic workflow is Added")
+
+                val id = 3
+
+                // TODO: THis part must be Deleted when the Dynamic workflow is Added.
                 Coroutines.main {
                     val workcode = workViewModel.getWokrCodes(id)
                     workcode.observe(viewLifecycleOwner, Observer { workCodes ->
                         prog.dismiss()
                         groupAdapter.notifyItemChanged(2)
-//                        getWorkItems(estimate.estimateId, estimate, itemEstiJob)
                         Log.e("IsRefresh", "Yes")
                     })
                 }
@@ -422,7 +419,7 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
 
                 val estimateWorks = workViewModel.getJobEstiItemForEstimateId(estimate.estimateId)
                 estimateWorks.observe(viewLifecycleOwner, Observer { work_s ->
-                    //                    setButtonStates(work_s.get(0).actId, work_s)
+
                     for (itemwork in work_s) {
                         if (itemwork.actId == ActivityIdConstants.EST_WORKS_COMPLETE) {
                             Coroutines.main {
@@ -440,7 +437,8 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
                             }
                         } else {
                             val id =
-                                3 //TODO("THis part must be Deleted when the Dynamic workflow is Implemented ")
+                                3
+                            // TODO: THis part must be Deleted when the Dynamic workflow is Implemented
                             Coroutines.main {
                                 val workcode = workViewModel.getWokrCodes(id)
                                 workcode.observe(viewLifecycleOwner, Observer { workCodes ->
@@ -507,10 +505,7 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
         workflowDirection: WorkflowDirection,
         jobItEstimate: JobItemEstimateDTO?
     ) {
-        val messages = arrayOf(
-            getString(R.string.moving_to_next_step_in_workflow),
-            getString(R.string.please_wait)
-        )
+
         Coroutines.main {
             val user = workViewModel.user.await()
             user.observe(viewLifecycleOwner, Observer { user_ ->
@@ -535,26 +530,11 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
                                     getString(R.string.data_loading_please_wait)
                                 )
                                 prog.show()
-                                val submit = workViewModel.processWorkflowMove(
-                                    user_.userId,
-                                    trackRounteId,
-                                    null,
-                                    direction
-                                )
-                                if (submit.isNullOrEmpty()) {
-                                    //                                toast(submit)
-                                    //                                 prog.dismiss()
-                                    popViewOnJobSubmit(direction, submit)
-                                } else {
-                                    //                                prog.dismiss()
-                                    popViewOnJobSubmit(direction, submit)
-                                }
+
+                                popViewOnJobSubmit(direction)
 
                             }
 
-
-                            //                        processWorkFlow(user_.userId, trackRounteId, direction, description)
-                            //                        popViewOnJobSubmit(direction)
                         }
                     }
                 }
@@ -565,18 +545,17 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
 
     }
 
-    private fun popViewOnJobSubmit(direction: Int, submit: String) {
+    private fun popViewOnJobSubmit(direction: Int) {
         if (direction == WorkflowDirection.NEXT.value) {
             toast(R.string.job_approved)
         } else if (direction == WorkflowDirection.FAIL.value) {
             toast(R.string.job_declined)
         }
         Intent(activity, MainActivity::class.java).also { home ->
-            //            home.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+
             startActivity(home)
         }
-        // Navigation.findNavController(view!!)
-//                .navigate(R.id.action_jobInfoFragment_to_nav_home)
+
     }
 
     private fun initRecyclerView(
@@ -590,27 +569,14 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
                     groupAdapter.notifyDataSetChanged()
                 }
 
-//                val workcode =  workViewModel.getWorkCodes.await()
-//                workcode.observe(viewLifecycleOwner, Observer { workCodes ->
-//
-////
-//                })
-
-
             }
 
-
-            //val workState = arrayOf("TA", "START", "MIDDLE", "END", "RTA")
         }
         work_actions_listView.apply {
             layoutManager = LinearLayoutManager(this.context)
             adapter = groupAdapter
 
         }
-
-//        groupAdapter.setOnItemClickListener { item, view ->
-//
-//        }
 
     }
 
@@ -649,9 +615,9 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
         }
     }
 
-    // TODO: Rename method, update argument and hook method into UI event
-    fun onButtonPressed(uri: Uri) {
 
+    fun onButtonPressed(uri: Uri) {
+        // TODO: Rename method, update argument and hook method into UI event
     }
 
     override fun onAttach(context: Context) {
@@ -691,42 +657,3 @@ private fun JobEstimateWorksDTO.setEstimateId(toLittleEndian: String?) {
 private fun JobEstimateWorksDTO.setTrackRouteId(toLittleEndian: String?) {
     this.trackRouteId = toLittleEndian!!
 }
-
-
-//val photos = intArrayOf(estimateWorksPhotoArrayList.size)
-//
-//            // create the ImageSwitcher
-//            val imgSwitcher = ImageSwitcher(activity?.applicationContext)
-//
-//            imgSwitcher?.setFactory({
-//                val imgView = ImageView(activity?.applicationContext)
-//                imgView.scaleType = ImageView.ScaleType.FIT_CENTER
-//                imgView.setPadding(20, 20, 20, 20)
-//                imgView
-//            })
-//
-//            val c_Layout = activity?.findViewById<ConstraintLayout>(R.id.thumb_photo_place_holder_frameLayout)
-//            //add ImageSwitcher in constraint layout
-//            c_Layout?.addView(imgSwitcher)
-//
-//            // set the method and pass array as a parameter
-//            imgSwitcher?.setImageResource(photos[index])
-//
-//            val imgIn = AnimationUtils.loadAnimation(
-//                activity, android.R.anim.slide_in_left)
-//            imgSwitcher?.inAnimation = imgIn
-//            val imgOut = AnimationUtils.loadAnimation(
-//                activity, android.R.anim.slide_out_right)
-//            imgSwitcher?.outAnimation = imgOut
-//            // previous button functionality
-//            val prev = activity?.findViewById<Button>(R.id.prev)
-//            prev?.setOnClickListener {
-//                index = if (index - 1 >= 0) index - 1 else 1
-//                imgSwitcher?.setImageResource(photos[index])
-//            }
-//            // next button functionality
-//            val next = activity?.findViewById<Button>(R.id.next)
-//            next?.setOnClickListener {
-//                index = if (index + 1 < photos.size) index +1 else 0
-//                imgSwitcher?.setImageResource(photos[index])
-//            }

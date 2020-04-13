@@ -8,11 +8,17 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.whenCreated
+import androidx.lifecycle.whenStarted
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import kotlinx.android.synthetic.main.fragment_select_item.*
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
@@ -25,9 +31,10 @@ import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.MyState
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper.setSpinner
+import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import java.util.*
-
+import java.util.concurrent.CancellationException
 
 /**
  * Created by Francis Mahlava on 2019/12/29.
@@ -46,9 +53,9 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
     private lateinit var newJobItemEstimatesList: ArrayList<JobItemEstimateDTO>
     private lateinit var  itemSections : ArrayList<ItemSectionDTO>
     @MyState
-    internal var selectedSectionitem: SectionItemDTO? = null
+    internal var selectedSectionItem: SectionItemDTO? = null
+
     @MyState
-    internal var selectedProjectitem: ProjectItemDTO? = null
     internal var useR: Int? = null
 
     @MyState
@@ -56,7 +63,40 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
 
     @MyState
     lateinit var editJob: JobDTO
+    private var uiScope = UiLifecycleScope()
 
+    init {
+
+        lifecycleScope.launch {
+            whenCreated {
+                uiScope.onCreate()
+            }
+            whenStarted {
+                viewLifecycleOwner.lifecycle.addObserver(uiScope)
+
+                uiScope.launch(context = uiScope.coroutineContext, start = CoroutineStart.DEFAULT) {
+                    createViewModel.loggedUser.observe(viewLifecycleOwner, Observer { user ->
+                        useR = user
+                    })
+
+                    createViewModel.projectId.observe(viewLifecycleOwner, Observer { projectId ->
+                        setItemsBySections(projectId)
+                    })
+
+                    createViewModel.newJob.observe(viewLifecycleOwner, Observer { newJ ->
+                        newJob = newJ
+                    })
+
+                    createViewModel.jobToEditItem.observe(
+                        viewLifecycleOwner,
+                        Observer { newJ_Edit ->
+                            setItemsBySections(newJ_Edit.ProjectId!!)
+                            editJob = newJ_Edit
+                        })
+                }
+            }
+        }
+    }
     override fun onAttach(context: Context) {
         super.onAttach(context)
         (activity as MainActivity).supportActionBar?.title = getString(R.string.select_item_title)
@@ -83,7 +123,7 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
             ViewModelProvider(this, factory).get(CreateViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
 
-        Coroutines.main {
+        uiScope.run {
 
 
             itemSections = ArrayList<ItemSectionDTO>()
@@ -94,44 +134,26 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
     }
 
     private fun bindUI() {
-
-        createViewModel.loggedUser.observe(viewLifecycleOwner, Observer { user ->
-            useR = user
-        })
-
-        createViewModel.projectId.observe(viewLifecycleOwner, Observer { projectId ->
-            setItemsBySections(projectId)
-        })
-
-        createViewModel.newJob.observe(viewLifecycleOwner, Observer { newJ ->
-            newJob = newJ
-        })
-
-        createViewModel.jobToEditItem.observe(viewLifecycleOwner, Observer { newJ_Edit ->
-            setItemsBySections(newJ_Edit.ProjectId!!)
-            editJob = newJ_Edit
-        })
-
+        // moved to init
     }
 
     private fun setItemsBySections(projectId: String) {
-        Coroutines.main {
+        uiScope.launch(context = uiScope.coroutineContext) {
             val dialog =
                 setDataProgressDialog(activity!!, getString(R.string.data_loading_please_wait))
             val sectionItems = createViewModel.getAllSectionItem()
             dialog.show()
 
-            sectionItems.observe(viewLifecycleOwner, Observer { sec_tions ->
-                val sections = sec_tions
-                val sectionNmbr = arrayOfNulls<String?>(sections.size)
+            sectionItems.observe(viewLifecycleOwner, Observer { sectionData ->
+                val sectionNmbr = arrayOfNulls<String?>(sectionData.size)
                 dialog.dismiss()
-                for (item in sections.indices) {
-                    sectionNmbr[item] = sections[item].description
+                for (item in sectionData.indices) {
+                    sectionNmbr[item] = sectionData[item].description
                 }
-                Coroutines.main {
+                uiScope.launch(uiScope.coroutineContext) {
                     setSpinner(context!!.applicationContext,
                         sectionItemSpinner,
-                        sections,
+                        sectionData,
                         sectionNmbr,
                         object : SpinnerHelper.SelectionListener<SectionItemDTO> {
 
@@ -140,7 +162,7 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
                                     sectionItemSpinner.startAnimation(bounce_750)
                                     item_recyclerView.startAnimation(bounce_1000)
                                 }
-                                selectedSectionitem = item
+                                selectedSectionItem = item
                                 setRecyclerItems(projectId, item.sectionItemId!!)
                             }
 
@@ -161,14 +183,12 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
 
     //    private fun setRecyclerItems(sectionItemId: String) {
     private fun setRecyclerItems(projectId: String, sectionItemId: String) {
-        Coroutines.main {
+        uiScope.launch(context = uiScope.coroutineContext) {
             val projectsItems = createViewModel.getAllItemsForSectionItem(sectionItemId, projectId)
             projectsItems.observe(viewLifecycleOwner, Observer { i_tems ->
                 group_loading.visibility = View.GONE
                 initRecyclerView(i_tems.toProjectItems())
             })
-
-
         }
 
     }
@@ -206,7 +226,7 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
     }
 
     private fun saveNewItem(newjItem: ItemDTOTemp) {
-        Coroutines.main {
+        uiScope.launch(context = uiScope.coroutineContext) {
             createViewModel.saveNewItem(newjItem)
         }
     }
@@ -239,11 +259,10 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
         view: View,
         jobArrayList: List<SectionProj_Item>
     ) {
-        val selecteD = item
         val myList = jobArrayList
 
         Coroutines.main {
-            createViewModel.sectionProjectItem.value = selecteD
+            createViewModel.sectionProjectItem.value = item
 //            createViewModel.project_Rate.value = selectRte
         }
 
@@ -252,9 +271,11 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
     }
 
     override fun onDestroyView() {
-        super.onDestroyView()
+        // Prevents RecyclerView Memory leak
         item_recyclerView.adapter = null
-        item_recyclerView.layoutManager = null
+        uiScope.job.cancel(CancellationException("onDestroyView"))
+        viewLifecycleOwner.lifecycleScope.cancel(CancellationException("onDestroyView"))
+        super.onDestroyView()
     }
 
 }

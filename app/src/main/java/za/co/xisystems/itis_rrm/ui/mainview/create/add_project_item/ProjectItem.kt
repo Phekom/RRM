@@ -1,7 +1,6 @@
 package za.co.xisystems.itis_rrm.ui.mainview.create.add_project_item
 
 import android.view.View
-import androidx.fragment.app.FragmentActivity
 import androidx.navigation.Navigation
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import com.xwray.groupie.kotlinandroidextensions.Item
@@ -23,7 +22,6 @@ import za.co.xisystems.itis_rrm.utils.JobUtils
 //open class Project_Item(private val itemDesc: SectionProj_Item) : Item() {
 open class ProjectItem(
     private val itemDesc: ItemDTOTemp,
-    private val activity: FragmentActivity?,
     private val createViewModel: CreateViewModel,
     private val contractID: String?,
     private var job: JobDTO?
@@ -77,11 +75,10 @@ open class ProjectItem(
     ) {
         val contractId = contractID
         val newJob = job
-        val selectedItem = item
         Coroutines.main {
             createViewModel.jobItem.value = newJob
             createViewModel.contractId.value = contractId
-            createViewModel.projectItemTemp.value = selectedItem
+            createViewModel.projectItemTemp.value = item
 
         }
 

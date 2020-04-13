@@ -75,7 +75,7 @@ class JobCreationDataRepository(
 
     }
 
-    suspend fun getJobSection(jobId: String): JobSectionDTO {
+    suspend fun getJobSection(jobId: String): JobSectionDTO? {
         return withContext(Dispatchers.IO) {
             appDb.getJobSectionDao().getJobSectionFromJobId(jobId)
         }

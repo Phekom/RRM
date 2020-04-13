@@ -16,13 +16,17 @@ object SpinnerHelper {
     fun <T> setSpinner(
         context: Context,
         spinner: Spinner,
-        data: List<T>?,
-        datas : Array<String?>?,
+        values: List<T>?,
+        labels: Array<String?>?,
         listener: SelectionListener<T>?
     ) {
-        if (data != null) {
+        if (values != null) {
 
-            val adapter = ArrayAdapter(context, android.R.layout.simple_spinner_dropdown_item, datas!!)
+            val adapter = ArrayAdapter(
+                context,
+                android.R.layout.simple_spinner_dropdown_item,
+                labels!!
+            )
 
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             spinner.adapter = adapter
@@ -34,7 +38,7 @@ object SpinnerHelper {
                     position: Int,
                     id: Long
                 ) {
-                    val item = data[position]
+                    val item = values[position]
                     listener?.onItemSelected(position, item!!)
                 }
 

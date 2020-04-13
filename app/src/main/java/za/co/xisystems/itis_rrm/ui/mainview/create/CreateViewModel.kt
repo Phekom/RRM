@@ -164,7 +164,7 @@ class CreateViewModel(
         jobCreationDataRepository.deleteJobfromList(jobId)
     }
 
-    suspend fun getJobSectionForJobId(jobId: String): JobSectionDTO {
+    suspend fun getJobSectionForJobId(jobId: String): JobSectionDTO? {
         return withContext(Dispatchers.IO) {
             jobCreationDataRepository.getJobSection(jobId)
         }
