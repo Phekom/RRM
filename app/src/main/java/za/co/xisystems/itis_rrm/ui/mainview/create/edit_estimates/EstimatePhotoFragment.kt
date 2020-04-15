@@ -398,7 +398,7 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
                 R.id.updateButton -> {
                     if (costTextView.text.isNullOrEmpty()) {
                         toast("Please Make Sure you have Captured Both Images To Continue")
-                        labelTextView.startAnimation(anims!!.shake_long)
+                        labelTextView.startAnimation(animations!!.shake_long)
                     } else {
                         viewLifecycleOwner.lifecycle.coroutineScope.launch {
 
@@ -1065,7 +1065,7 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
                         if (isStart) section.startKm else section.endKm
 
             textView.text = sectionText
-            if (animate) textView.startAnimation(anims?.bounce_long)
+            if (animate) textView.startAnimation(animations?.bounce_long)
         }
     }
 
@@ -1082,10 +1082,10 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
             calculateCost()
             valueEditText!!.visibility = View.VISIBLE
             costTextView!!.visibility = View.VISIBLE
-            costTextView.startAnimation(anims!!.bounce_soft)
+            costTextView.startAnimation(animations!!.bounce_soft)
         } else {
             labelTextView!!.text = getString(R.string.warning_estimate_incomplete)
-            labelTextView.startAnimation(anims!!.shake_long)
+            labelTextView.startAnimation(animations!!.shake_long)
             valueEditText!!.visibility = View.GONE
             costTextView!!.visibility = View.GONE
         }
@@ -1332,10 +1332,8 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
                         updateButton.visibility = View.VISIBLE
                         startKm = getStartKm()
                         endKm = getEndKm()
-                        if (newJobItemEstimate!!.qty != null) {
-                            createViewModel.setEstimateQuantity(newJobItemEstimate!!.qty)
-                            setValueEditText(newJobItemEstimate!!.qty)
-                        }
+                        createViewModel.setEstimateQuantity(newJobItemEstimate!!.qty)
+                        setValueEditText(newJobItemEstimate!!.qty)
                     }
                 } catch (e: Exception) {
                     Timber.e(e)

@@ -133,7 +133,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
             val jobItemMeasure =
                 measureViewModel.getJobItemMeasuresForJobIdAndEstimateId(jobId) //estimateId
             jobItemMeasure.observe(activity!!, Observer { m_sures ->
-                if (m_sures.isNullOrEmpty() || m_sures.isEmpty() || m_sures.size == 0) {
+                if (m_sures.isNullOrEmpty() || m_sures.isEmpty()) {
                     toast(R.string.please_make_sure_you_have_captured_photos)
                 } else {
                     toast("You have Done " + m_sures.size.toString() + " Measurements on this Estimate")
@@ -370,13 +370,11 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
 
     }
 
-//   override fun onDestroyView() {
-//        super.onDestroyView()
-//        if (view != null) {
-//            val parent = view!!.parent as ViewGroup
-//            parent?.removeAllViews()
-//        }
-//    }
+    override fun onDestroyView() {
+
+        measure_listView.adapter = null
+        super.onDestroyView()
+    }
 
     private fun List<JobItemEstimateDTO>.toMeasure_Item(): List<ExpandableGroup> {
         return this.map { measure_item ->

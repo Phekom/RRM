@@ -214,6 +214,7 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
             ExpandableGroup(expandableHeaderItem, false).apply {
                 uiScope.launch(uiScope.coroutineContext) {
                     //ESTIMATE_WORK_PART_COMPLETE
+
                     val estimates = workViewModel.getJobEstimationItemsForJobId(
                         work_items.JobId,
                         ActivityIdConstants.ESTIMATE_INCOMPLETE
@@ -222,18 +223,23 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
                         uiScope.launch(uiScope.coroutineContext) {
                             for (item in estimateItems) {
                                 uiScope.launch(uiScope.coroutineContext) {
-                                    val desc =
-                                        workViewModel.getDescForProjectItemId(item.projectItemId!!)
-                                    val qty = item.qty.toString()
-                                    val rate = item.lineRate.toString()
-                                    val estimateId = item.estimateId
-                                    add(
-                                        CardItem(
-                                            activity, desc, qty,
-                                            rate,
-                                            estimateId, workViewModel, item, work_items
+                                    try {
+                                        val desc =
+                                            workViewModel.getDescForProjectItemId(item.projectItemId!!)
+                                        val qty = item.qty.toString()
+                                        val rate = item.lineRate.toString()
+                                        val estimateId = item.estimateId
+                                        add(
+                                            CardItem(
+                                                activity, desc, qty,
+                                                rate,
+                                                estimateId, workViewModel, item, work_items
+                                            )
                                         )
-                                    )
+                                    } catch (exception: Exception) {
+                                        Timber.e(exception)
+                                    }
+
                                 }
                             }
                         }

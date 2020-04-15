@@ -7,6 +7,7 @@ package za.co.xisystems.itis_rrm
 import android.app.Application
 import android.util.Log
 import androidx.annotation.NonNull
+import leakcanary.LeakCanary
 import org.kodein.di.Kodein
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.androidXModule
@@ -59,15 +60,11 @@ open class MainApp : Application(), KodeinAware {
         bind() from singleton { HomeRepository(instance(), instance()) }
         bind() from singleton { OfflineDataRepository(instance(), instance(), instance()) }
 
-
-
         bind() from singleton { JobCreationDataRepository(instance(), instance(), instance()) }
         bind() from singleton { JobApprovalDataRepository(instance(), instance()) }
         bind() from singleton { WorkDataRepository(instance(), instance()) }
-        bind() from singleton { MeasureCreationDataRepository(instance(), instance(), instance()) }
+        bind() from singleton { MeasureCreationDataRepository(instance(), instance()) }
         bind() from singleton { MeasureApprovalDataRepository(instance(), instance()) }
-
-//        bind<ID_Provider>() with singleton { IdProviderImpl(instance()) }
 
         bind() from provider { AuthViewModelFactory(instance(),instance()) }
         bind() from provider { HomeViewModelFactory(instance(),instance(),instance(),instance()) }
@@ -90,6 +87,7 @@ open class MainApp : Application(), KodeinAware {
 
         if (BuildConfig.DEBUG) {
             Timber.plant(DebugTree())
+            LeakCanary.config = LeakCanary.config.copy(retainedVisibleThreshold = 3)
         } else {
             Timber.plant(CrashReportingTree())
         }
@@ -117,34 +115,3 @@ open class MainApp : Application(), KodeinAware {
         }
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//class MainApp : Application() {
-//
-//    override fun onCreate() {
-//        super.onCreate()
-//        startKoin{
-//            androidLogger()
-//            androidContext(this@MainApp)
-//            modules(appModule)
-//            modules( viewmodelModule)
-//        }
-//
-//    }
-//
-//
-//}
