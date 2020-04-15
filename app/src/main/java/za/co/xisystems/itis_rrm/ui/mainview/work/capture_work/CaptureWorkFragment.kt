@@ -13,7 +13,6 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
-import android.util.Log
 import android.view.*
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -30,6 +29,7 @@ import kotlinx.android.synthetic.main.fragment_capture_work.*
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
+import timber.log.Timber
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
@@ -75,7 +75,7 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
 
 
     @State
-    var filename_path = HashMap<String, String>()
+    var filenamePath = HashMap<String, String>()
     lateinit var locationHelper: LocationHelper
     private var currentLocation: Location? = null
 
@@ -124,6 +124,12 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
         return inflater.inflate(R.layout.fragment_capture_work, container, false)
     }
 
+    override fun onDestroyView() {
+        // Remember to flush the RecyclerView's adaptor
+        work_actions_listView.adapter = null
+        super.onDestroyView()
+    }
+
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         workViewModel = activity?.run {
@@ -135,11 +141,11 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
                 useR = user_
 //                group10_loading.visibility = View.GONE
             })
-            workViewModel.work_ItemJob.observe(viewLifecycleOwner, Observer { estimateJob ->
+            workViewModel.workItemJob.observe(viewLifecycleOwner, Observer { estimateJob ->
                 itemEstiJob = estimateJob
 
             })
-            workViewModel.work_Item.observe(viewLifecycleOwner, Observer { estimate ->
+            workViewModel.workItem.observe(viewLifecycleOwner, Observer { estimate ->
                 getWorkItems(estimate, itemEstiJob)
 //                estimatId = estimate.estimateId
                 itemEsti = estimate
@@ -256,20 +262,20 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
                 prog.dismiss()
                 fragmentManager?.beginTransaction()?.detach(this)?.attach(this)?.commit()
 
+
             }
 
-            workViewModel.work_Item.observe(viewLifecycleOwner, Observer { estimate ->
+            workViewModel.workItem.observe(viewLifecycleOwner, Observer { estimate ->
 
 
-                val id = 3
-
-                // TODO: THis part must be Deleted when the Dynamic workflow is Added.
+                val id = ActivityIdConstants.JOB_APPROVED
+                // This part must be Deleted when the Dynamic workflow is complete.
                 Coroutines.main {
-                    val workcode = workViewModel.getWokrCodes(id)
+                    val workcode = workViewModel.getWorkFlowCodes(id)
                     workcode.observe(viewLifecycleOwner, Observer { workCodes ->
                         prog.dismiss()
                         groupAdapter.notifyItemChanged(2)
-                        Log.e("IsRefresh", "Yes")
+                        Timber.d("IsRefresh -> Yes")
                     })
                 }
 
@@ -311,12 +317,12 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
             if (currentLocation == null) toast("Error: Current location is null!")
             //  Save Image to Internal Storage
 
-            filename_path = PhotoUtil.saveImageToInternalStorage(
+            filenamePath = PhotoUtil.saveImageToInternalStorage(
                 activity!!,
                 imageUri!!
             ) as HashMap<String, String>
 
-            processPhotoWorks(currentLocation, filename_path, itemEsti)
+            processPhotoWorks(currentLocation, filenamePath, itemEsti)
 
         } catch (e: Exception) {
             toast(R.string.error_getting_image)
@@ -436,11 +442,12 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
                                 }
                             }
                         } else {
-                            val id =
-                                3
-                            // TODO: THis part must be Deleted when the Dynamic workflow is Implemented
+                            val id = ActivityIdConstants.JOB_APPROVED
+
+                            // Remove for Dynamic Workflow
+
                             Coroutines.main {
-                                val workcode = workViewModel.getWokrCodes(id)
+                                val workcode = workViewModel.getWorkFlowCodes(id)
                                 workcode.observe(viewLifecycleOwner, Observer { workCodes ->
                                     jobWorkStep = workCodes as ArrayList<WF_WorkStepDTO>
 
@@ -505,7 +512,10 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
         workflowDirection: WorkflowDirection,
         jobItEstimate: JobItemEstimateDTO?
     ) {
-
+        val messages = arrayOf(
+            getString(R.string.moving_to_next_step_in_workflow),
+            getString(R.string.please_wait)
+        )
         Coroutines.main {
             val user = workViewModel.user.await()
             user.observe(viewLifecycleOwner, Observer { user_ ->
@@ -530,8 +540,18 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
                                     getString(R.string.data_loading_please_wait)
                                 )
                                 prog.show()
-
-                                popViewOnJobSubmit(direction)
+                                val submit = workViewModel.processWorkflowMove(
+                                    user_.userId,
+                                    trackRounteId,
+                                    null,
+                                    direction
+                                )
+                                prog.dismiss()
+                                if (submit.isNullOrEmpty()) {
+                                    popViewOnJobSubmit(direction)
+                                } else {
+                                    toast("Problem with work submission: $submit")
+                                }
 
                             }
 
@@ -552,10 +572,11 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
             toast(R.string.job_declined)
         }
         Intent(activity, MainActivity::class.java).also { home ->
-
+            //            home.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
             startActivity(home)
         }
-
+        // Navigation.findNavController(view!!)
+//                .navigate(R.id.action_jobInfoFragment_to_nav_home)
     }
 
     private fun initRecyclerView(
@@ -568,9 +589,7 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
                     add(stateItems[0])
                     groupAdapter.notifyDataSetChanged()
                 }
-
             }
-
         }
         work_actions_listView.apply {
             layoutManager = LinearLayoutManager(this.context)
