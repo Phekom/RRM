@@ -27,11 +27,9 @@ object PermissionController {
             return permissions
         }
 
-    // TODO Context context not needed
     @JvmOverloads
     fun startPermissionRequests(
-        activity: Activity?,
-        context: Context? = null
+        activity: Activity?
     ) {
         val permissions =
             permissions
