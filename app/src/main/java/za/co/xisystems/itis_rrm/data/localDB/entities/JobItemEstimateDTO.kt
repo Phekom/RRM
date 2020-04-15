@@ -124,7 +124,7 @@ data class JobItemEstimateDTO(
         else {
             val photoStart = jobItemEstimatePhotos?.get(0)
             val photoEnd = jobItemEstimatePhotos?.get(1)
-            !(photoStart?.filename == null || photoEnd == null || photoEnd.filename == null)
+            !(photoStart?.filename == null || photoEnd == null)
         }
     }
 

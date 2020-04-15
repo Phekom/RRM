@@ -127,12 +127,10 @@ object JobDataController {
             jim.setProjectItemId(DataConversion.toLittleEndian(jim.projectItemId))
             jim.setItemMeasureId(DataConversion.toLittleEndian(jim.itemMeasureId))
 
-            if (jim.jobItemMeasurePhotos != null) {
-                for (jmep in jim.jobItemMeasurePhotos) {
-                    jmep.setPhotoId(DataConversion.toLittleEndian(jmep.photoId))
-                    jmep.setEstimateId(DataConversion.toLittleEndian(jmep.estimateId))
-                    jmep.setItemMeasureId(DataConversion.toLittleEndian(jmep.itemMeasureId))
-                }
+            for (jmep in jim.jobItemMeasurePhotos) {
+                jmep.setPhotoId(DataConversion.toLittleEndian(jmep.photoId))
+                jmep.setEstimateId(DataConversion.toLittleEndian(jmep.estimateId))
+                jmep.setItemMeasureId(DataConversion.toLittleEndian(jmep.itemMeasureId))
             }
 
 

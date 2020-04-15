@@ -84,7 +84,7 @@ class JobCreationDataRepository(
 
     suspend fun getUser(): LiveData<UserDTO> {
         return withContext(Dispatchers.IO) {
-            appDb.getUserDao().getuser()
+            appDb.getUserDao().getUser()
         }
     }
 
@@ -285,7 +285,7 @@ class JobCreationDataRepository(
         val jobData = JsonObject()
         val gson = Gson()
         val newJob = gson.toJson(job)
-        val jsonElement: JsonElement = JsonParser().parse(newJob)
+        val jsonElement: JsonElement = JsonParser.parseString(newJob)
         jobData.add("Job", jsonElement)
         jobData.addProperty("UserId", userId)
         Timber.i("Json Job: $jobData")
