@@ -13,6 +13,7 @@ import androidx.lifecycle.MutableLiveData
 import com.google.gson.JsonObject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.localDB.JobDataController
@@ -148,7 +149,7 @@ class OfflineDataRepository(
     suspend fun getWorkFlows(): LiveData<List<WorkFlowDTO>> {
 
         return withContext(Dispatchers.IO) {
-            val userId = Db.getUserDao().getuserID()
+            val userId = Db.getUserDao().getUserID()
             fetchAllData(userId)
             Db.getWorkFlowDao().getWorkflows()
         }
@@ -157,7 +158,7 @@ class OfflineDataRepository(
 
     suspend fun getSectionItems(): LiveData<List<SectionItemDTO>> {
         return withContext(Dispatchers.IO) {
-            val userId = Db.getUserDao().getuserID()
+            val userId = Db.getUserDao().getUserID()
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 fetchContracts(userId)
             }
@@ -167,7 +168,7 @@ class OfflineDataRepository(
 
     suspend fun getUser(): LiveData<UserDTO> {
         return withContext(Dispatchers.IO) {
-            Db.getUserDao().getuser()
+            Db.getUserDao().getUser()
         }
     }
 
@@ -920,9 +921,7 @@ class OfflineDataRepository(
 
     private fun saveContracts(contracts: List<ContractDTO>) {
         Coroutines.io {
-            //            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-//                prefs.savelastSavedAt(LocalDateTime.now().toString())
-//            }
+
             val actId = 3
             val workState = arrayOf("TA", "START", "MIDDLE", "END", "RTA")
             val workStateDescriptions = arrayOf(
@@ -942,38 +941,38 @@ class OfflineDataRepository(
                 }
             }
 
-//
             if (contracts != null) {
                 for (contract in contracts) {
                     if (!Db.getContractDao().checkIfContractExists(contract.contractId))
                         Db.getContractDao().insertContract(contract)
                     if (contract.projects != null) {
-//                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-//                            prefs.savelastSavedAt(LocalDateTime.now().toString())
-//                        }
+
                         for (project in contract.projects) {
                             if (!Db.getProjectDao().checkProjectExists(project.projectId)) {
-                                Db.getProjectDao().insertProject(
-                                    project.projectId,
-                                    project.descr,
-                                    project.endDate,
-                                    project.items,
-                                    project.projectCode,
-                                    project.projectMinus,
-                                    project.projectPlus,
-                                    project.projectSections,
-                                    project.voItems,
-                                    contract.contractId
-                                )
+                                try {
+                                    Db.getProjectDao().insertProject(
+                                        project.projectId,
+                                        project.descr,
+                                        project.endDate,
+                                        project.items,
+                                        project.projectCode,
+                                        project.projectMinus,
+                                        project.projectPlus,
+                                        project.projectSections,
+                                        project.voItems,
+                                        contract.contractId
+                                    )
+                                } catch (ex: Exception) {
+                                    Timber.e(ex, "ProjectId: ${project.projectId} -> ${ex.message}")
+                                }
                             }
                             if (project.items != null) {
-//                                val projectId = DataConversion.toLittleEndian(project.projectId)
+
                                 for (item in project.items) {
                                     if (!Db.getProjectItemDao()
                                             .checkItemExistsItemId(item.itemId)
                                     ) {
-//                                        Db.getItemDao().insertItem(item)
-                                        //  Lets get the ID from Sections Items
+                                        try {
                                         val pattern = Pattern.compile("(.*?)\\.")
                                         val matcher = pattern.matcher(item.itemCode)
                                         if (matcher.find()) {
@@ -986,7 +985,7 @@ class OfflineDataRepository(
                                                         ""
                                                     )
                                                 )
-//                                            val sectionItemId = Db.getSectionItemDao().getSectionItemId(item.itemCode!!)
+
                                             Db.getProjectItemDao().insertItem(
                                                 itemId = item.itemId,
                                                 itemCode = item.itemCode,
@@ -1001,6 +1000,9 @@ class OfflineDataRepository(
                                                 projectId = project.projectId
                                             )
                                         }
+                                        } catch (ex: Exception) {
+                                            Timber.e(ex, "ItemId: ${item.itemId} -> ${ex.message}")
+                                        }
                                     }
 
                                 }
@@ -1014,7 +1016,7 @@ class OfflineDataRepository(
                                     if (!Db.getProjectSectionDao()
                                             .checkSectionExists(section.sectionId)
                                     )
-//                                        Db.getProjectSectionDao().insertSections(section)
+                                        try {
                                         Db.getProjectSectionDao().insertSection(
                                             section.sectionId,
                                             section.route,
@@ -1024,34 +1026,44 @@ class OfflineDataRepository(
                                             section.direction,
                                             project.projectId
                                         )
+                                        } catch (ex: Exception) {
+                                            Timber.e(
+                                                ex,
+                                                "ProjectSectionItemId ${section.sectionId} -> ${ex.message}"
+                                            )
+                                        }
                                 }
                             }
 
                             if (project.voItems != null) {
                                 for (voItem in project.voItems) { //project.voItems
                                     if (!Db.getVoItemDao().checkIfVoItemExist(voItem.projectVoId))
-//                                        Db.getVoItemDao().insertVoItem(voItem)
-                                        Db.getVoItemDao().insertVoItem(
-                                            voItem.projectVoId,
-                                            voItem.itemCode,
-                                            voItem.voDescr,
-                                            voItem.descr,
-                                            voItem.uom,
-                                            voItem.rate,
-                                            voItem.projectItemId,
-                                            voItem.contractVoId,
-                                            voItem.contractVoItemId,
-                                            project.projectId
-                                        )
+                                        try {
+                                            Db.getVoItemDao().insertVoItem(
+                                                voItem.projectVoId,
+                                                voItem.itemCode,
+                                                voItem.voDescr,
+                                                voItem.descr,
+                                                voItem.uom,
+                                                voItem.rate,
+                                                voItem.projectItemId,
+                                                voItem.contractVoId,
+                                                voItem.contractVoItemId,
+                                                project.projectId
+                                            )
+                                        } catch (ex: Exception) {
+                                            Timber.e(
+                                                ex,
+                                                "VoItemProjectVoId: ${voItem.projectVoId} -> ${ex.message}"
+                                            )
+                                        }
                                 }
                             }
-
 
                         }
                     }
                 }
             }
-
         }
     }
 
@@ -1790,7 +1802,7 @@ class OfflineDataRepository(
 
 
         return withContext(Dispatchers.IO) {
-            val userId = Db.getUserDao().getuserID()
+            val userId = Db.getUserDao().getUserID()
             fetchUserTaskList(userId)
             Db.getEntitiesDao().getAllEntities()
         }
