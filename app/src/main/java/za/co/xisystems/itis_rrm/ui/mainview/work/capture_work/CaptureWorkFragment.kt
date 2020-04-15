@@ -346,7 +346,6 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
             activity!!.toast("Please make sure that you have activated the location on your device.")
         } else {
             val photo = createItemWorksPhoto(
-                itemEsti,
                 filenamePath,
                 currentLocation,
                 estimateWorksPhotoArrayList
@@ -374,7 +373,6 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
     }
 
     private fun createItemWorksPhoto(
-        itemEsti: JobItemEstimateDTO,
         filenamePath: HashMap<String, String>,
         currentLocation: Location,
         estimateWorksPhotoArrayList: ArrayList<JobEstimateWorksPhotoDTO>
