@@ -29,7 +29,7 @@ interface ProjectSectionDao {
     fun insertSection(sectionId: String,route: String,section: String,startKm: Double?,  endKm: Double?,direction: String?,projectId: String)
 
     @Query("UPDATE PROJECT_SECTION_TABLE SET direction =:direction WHERE projectId = :projectId")
-    fun updateSectionDirection(direction: String?, projectId: String?)
+    fun updateSectionDirection(direction: String?, projectId: String?): Int
 
     @Query("SELECT * FROM PROJECT_SECTION_TABLE ")
     fun getAllItemsForAllProjects() : LiveData<List<ProjectSectionDTO>>

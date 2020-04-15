@@ -71,7 +71,7 @@ class UserRepository(
 
     suspend fun getUser(): LiveData<UserDTO> {
         return withContext(Dispatchers.IO) {
-            Db.getUserDao().getuser()
+            Db.getUserDao().getUser()
         }
     }
 

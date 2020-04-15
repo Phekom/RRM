@@ -14,36 +14,31 @@ import za.co.xisystems.itis_rrm.utils.uncaughtExceptionHandler
 
 
 class WorkViewModel(
-private val workDataRepository: WorkDataRepository,
-private val offlineDataRepository: OfflineDataRepository
+    private val workDataRepository: WorkDataRepository,
+    private val offlineDataRepository: OfflineDataRepository
 ) : ViewModel() {
 
+    val user by lazyDeferred {
+        workDataRepository.getUser()
+    }
 
-//    val getWokrCodes by lazyDeferred {
-//        offlineDataRepository.getWokrCodes()
-////        offlineDataRepository.getContracts()
-//    }
-
-val user by lazyDeferred {
-    workDataRepository.getUser()
-}
     val offlineUserTaskList by lazyDeferred {
         offlineDataRepository.getUserTaskList()
     }
 
-    val work_Item = MutableLiveData<JobItemEstimateDTO>()
-    fun Item5(work: JobItemEstimateDTO) {
-        work_Item.value = work
+    val workItem = MutableLiveData<JobItemEstimateDTO>()
+    fun setWorkItem(work: JobItemEstimateDTO) {
+        workItem.value = work
     }
 
-    val work_ItemJob = MutableLiveData<JobDTO>()
-    fun Item5(workjob: JobDTO) {
-        work_ItemJob.value = workjob
+    val workItemJob = MutableLiveData<JobDTO>()
+    fun setWorkItemJob(workjob: JobDTO) {
+        workItemJob.value = workjob
     }
 
     suspend fun getJobsForActivityId(activityId1: Int, activityId2: Int): LiveData<List<JobDTO>> {
         return withContext(Dispatchers.IO + uncaughtExceptionHandler) {
-            workDataRepository.getJobsForActivityIds(activityId1,activityId2)
+            workDataRepository.getJobsForActivityIds(activityId1, activityId2)
         }
     }
 
@@ -55,7 +50,10 @@ val user by lazyDeferred {
     }
 
 
-    suspend fun getJobEstimationItemsForJobId(jobID: String?, actID: Int): LiveData<List<JobItemEstimateDTO>> {
+    suspend fun getJobEstimationItemsForJobId(
+        jobID: String?,
+        actID: Int
+    ): LiveData<List<JobItemEstimateDTO>> {
         return withContext(Dispatchers.IO + uncaughtExceptionHandler) {
             workDataRepository.getJobEstimationItemsForJobId(jobID, actID)
         }
@@ -72,6 +70,7 @@ val user by lazyDeferred {
             workDataRepository.getItemDescription(jobId)
         }
     }
+
     suspend fun getItemJobNo(jobId: String): String {
         return withContext(Dispatchers.IO + uncaughtExceptionHandler) {
             workDataRepository.getItemJobNo(jobId)
@@ -107,6 +106,7 @@ val user by lazyDeferred {
             workDataRepository.getRouteForProjectSectionId(sectionId)
         }
     }
+
     suspend fun getSectionForProjectSectionId(sectionId: String): String {
         return withContext(Dispatchers.IO) {
             workDataRepository.getSectionForProjectSectionId(sectionId)
@@ -114,19 +114,17 @@ val user by lazyDeferred {
     }
 
 
-
-
     suspend fun getJobEstiItemForEstimateId(estimateId: String?): LiveData<List<JobEstimateWorksDTO>> {
         return withContext(Dispatchers.IO) {
             workDataRepository.getJobEstiItemForEstimateId(estimateId)
         }
     }
-    suspend fun getWokrCodes(eId: Int): LiveData<List<WF_WorkStepDTO>> {
+
+    suspend fun getWorkFlowCodes(eId: Int): LiveData<List<WF_WorkStepDTO>> {
         return withContext(Dispatchers.IO) {
-            workDataRepository.getWokrCodes(eId)
+            workDataRepository.getWorkFlowCodes(eId)
         }
     }
-
 
 
     suspend fun createSaveWorksPhotos(
@@ -135,7 +133,7 @@ val user by lazyDeferred {
         itemEstiWorks: JobEstimateWorksDTO
     ) {
         return withContext(Dispatchers.IO) {
-            workDataRepository.createEstimateWorksPhoto(estimateWorksPhoto,estimat,itemEstiWorks)
+            workDataRepository.createEstimateWorksPhoto(estimateWorksPhoto, itemEstiWorks)
         }
     }
 
@@ -145,9 +143,9 @@ val user by lazyDeferred {
         activity: FragmentActivity,
         itemEstiJob: JobDTO
 
-    ) : String{
+    ): String {
         return withContext(Dispatchers.IO) {
-            workDataRepository.submitWorks( itemEstiWorks, activity, itemEstiJob)
+            workDataRepository.submitWorks(itemEstiWorks, activity, itemEstiJob)
         }
 
     }
@@ -159,12 +157,16 @@ val user by lazyDeferred {
 
     }
 
-    suspend fun processWorkflowMove( userId: String, trackRounteId: String, description: String?, direction: Int ) : String {
+    suspend fun processWorkflowMove(
+        userId: String,
+        trackRouteId: String,
+        description: String?,
+        direction: Int
+    ): String? {
         return withContext(Dispatchers.IO) {
-            workDataRepository.processWorkflowMove( userId ,trackRounteId, description, direction)
+            workDataRepository.processWorkflowMove(userId, trackRouteId, description, direction)
         }
     }
-
 
 
     suspend fun getJobItemsEstimatesDoneForJobId(
@@ -173,37 +175,18 @@ val user by lazyDeferred {
         estWorksComplete: Int
     ): Int {
         return withContext(Dispatchers.IO) {
-            workDataRepository.getJobItemsEstimatesDoneForJobId( jobId, estimateWorkPartComplete, estWorksComplete)
+            workDataRepository.getJobItemsEstimatesDoneForJobId(
+                jobId,
+                estimateWorkPartComplete,
+                estWorksComplete
+            )
         }
     }
 
     suspend fun getWorkItemsForActID(actId: Int): LiveData<List<JobEstimateWorksDTO>> {
         return withContext(Dispatchers.IO) {
-            workDataRepository.getWorkItemsForActID( actId)
+            workDataRepository.getWorkItemsForActID(actId)
         }
     }
-
-
-//    suspend fun getJobsForActivityId(activityId: Int): LiveData<List<JobItemEstimateDTO>> {
-//        return withContext(Dispatchers.IO) {
-//            offlineDataRepository.getJobsEstimateForActivityId(activityId)
-//        }
-//    }
-
-
-
-
-
-//    suspend fun getJobItemsEstimatesDoneForJobId(
-//        jobId: String?,
-//        estWorksComplete: Int
-//    ): LiveData<List<JobItemEstimateDTO>> {
-//        return withContext(Dispatchers.IO) {
-//            offlineDataRepository.getJobItemsEstimatesDoneForJobId( jobId, estWorksComplete)
-//        }
-//    }
-
-
-
 
 }

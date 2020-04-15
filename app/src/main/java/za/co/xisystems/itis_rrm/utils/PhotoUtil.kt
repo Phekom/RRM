@@ -8,7 +8,6 @@ import android.graphics.*
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
-import android.util.Log
 import androidx.core.content.FileProvider
 import androidx.exifinterface.media.ExifInterface
 import org.apache.sanselan.ImageReadException
@@ -18,10 +17,10 @@ import org.apache.sanselan.common.IImageMetadata
 import org.apache.sanselan.formats.jpeg.JpegImageMetadata
 import org.apache.sanselan.formats.jpeg.exifRewrite.ExifRewriter
 import org.apache.sanselan.formats.tiff.write.TiffOutputSet
+import timber.log.Timber
 import za.co.xisystems.itis_rrm.BuildConfig
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates.EstimatePhotoFragment
-//import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.submit_measure.CaptureItemMeasurePhotoActivity
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import java.io.*
 import java.text.DateFormat
@@ -31,9 +30,10 @@ import kotlin.math.roundToLong
 
 object PhotoUtil {
     const val FOLDER = "ITIS_RRM_Photos"
-//    const val FOLDER = "ITISMaintenancePhotos"
-@SuppressLint("SimpleDateFormat")
-private val ISO_8601_FORMAT: DateFormat =
+
+    //    const val FOLDER = "ITISMaintenancePhotos"
+    @SuppressLint("SimpleDateFormat")
+    private val ISO_8601_FORMAT: DateFormat =
         SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
 
     fun dateToString(date: Date?): String {
@@ -92,14 +92,18 @@ private val ISO_8601_FORMAT: DateFormat =
     }
 
     private fun exifToDegrees(exifOrientation: Int): Int {
-        if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_90) {
-            return 90
-        } else if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_180) {
-            return 180
-        } else if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_270) {
-            return 270
+        when (exifOrientation) {
+            ExifInterface.ORIENTATION_ROTATE_90 -> {
+                return 90
+            }
+            ExifInterface.ORIENTATION_ROTATE_180 -> {
+                return 180
+            }
+            ExifInterface.ORIENTATION_ROTATE_270 -> {
+                return 270
+            }
+            else -> return 0
         }
-        return 0
     }
 
     fun createPhoto(fileName: String, photoByteArray: ByteArray?) {
@@ -149,7 +153,8 @@ private val ISO_8601_FORMAT: DateFormat =
                     .contains(".jpg")
             ) "$photoName.jpg" else photoName
         var fileName =
-            Environment.getExternalStorageDirectory().toString() + File.separator + FOLDER + File.separator + photoName
+            Environment.getExternalStorageDirectory()
+                .toString() + File.separator + FOLDER + File.separator + photoName
         var file = File(fileName)
         if (!file.exists()) { //  if not in the folder then go to the PhotosDirectory to check if in their.
             fileName =
@@ -283,8 +288,10 @@ private val ISO_8601_FORMAT: DateFormat =
                         result = cursor.getString(index)
                         imageUri = if (result != null) Uri.parse(result) else return null
                     }
+                } catch (e: Exception) {
+                    Timber.e(e, "Ërror loading photo $imageUri")
                 } finally {
-                    cursor!!.close()
+                    cursor?.close()
                 }
             }
             result = imageUri.path
@@ -305,7 +312,7 @@ private val ISO_8601_FORMAT: DateFormat =
             //      max Height and width values of the compressed image is taken as 816x612
             val maxHeight = 816.0f
             val maxWidth = 612.0f
-            var imgRatio = actualWidth / actualHeight.toFloat()
+            var imgRatio = (actualWidth / actualHeight).toFloat()
             val maxRatio = maxWidth / maxHeight
             //      width and height values are set maintaining the aspect ratio of the image
             if (actualHeight > maxHeight || actualWidth > maxWidth) {
@@ -367,20 +374,20 @@ private val ISO_8601_FORMAT: DateFormat =
                 val orientation = exif.getAttributeInt(
                     ExifInterface.TAG_ORIENTATION, 0
                 )
-                Log.d("EXIF", "Exif: $orientation")
+                Timber.d("Exif: initial $orientation")
                 val matrix = Matrix()
                 when (orientation) {
                     6 -> {
                         matrix.postRotate(90f)
-                        Log.d("EXIF", "Exif: $orientation")
+                        Timber.d("Exif: $orientation")
                     }
                     3 -> {
                         matrix.postRotate(180f)
-                        Log.d("EXIF", "Exif: $orientation")
+                        Timber.d("Exif: $orientation")
                     }
                     8 -> {
                         matrix.postRotate(270f)
-                        Log.d("EXIF", "Exif: $orientation")
+                        Timber.d("Exif: $orientation")
                     }
                 }
                 scaledBitmap = Bitmap.createBitmap(
@@ -406,7 +413,7 @@ private val ISO_8601_FORMAT: DateFormat =
             map
         } catch (e: Exception) {
             e.printStackTrace()
-            Log.d("x-", "error saving photo: $e")
+            Timber.e(e, "error saving photo: $e")
             null
         }
     }
@@ -437,7 +444,8 @@ private val ISO_8601_FORMAT: DateFormat =
     fun getUri(estimatePhotoFragment: EstimatePhotoFragment?): Uri? {
         try {
             return FileProvider.getUriForFile(
-                estimatePhotoFragment?.context!!.applicationContext, BuildConfig.APPLICATION_ID + ".provider",
+                estimatePhotoFragment?.context!!.applicationContext,
+                BuildConfig.APPLICATION_ID + ".provider",
                 createImageFile()
             )
         } catch (e: IOException) {
@@ -516,7 +524,7 @@ private val ISO_8601_FORMAT: DateFormat =
 //    }
 
 
-    fun getUri3(context : Context): Uri? {
+    fun getUri3(context: Context): Uri? {
         try {
             return FileProvider.getUriForFile(
                 context, BuildConfig.APPLICATION_ID + ".provider",
@@ -528,12 +536,18 @@ private val ISO_8601_FORMAT: DateFormat =
         return null
     }
 
-    fun setRouteSecPoint(direction: String, linearId: String, pointLocation: Double, sectionId: Int, projectId: String?){
-          val direction = direction
-          val linearId =  linearId
-          val pointLocation =  pointLocation
-        val  sectionId =  sectionId
-        val  projectId = projectId
+    fun setRouteSecPoint(
+        direction: String,
+        linearId: String,
+        pointLocation: Double,
+        sectionId: Int,
+        projectId: String?
+    ) {
+        val direction = direction
+        val linearId = linearId
+        val pointLocation = pointLocation
+        val sectionId = sectionId
+        val projectId = projectId
     }
 
 

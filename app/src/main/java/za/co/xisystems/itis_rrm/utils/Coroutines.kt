@@ -11,16 +11,11 @@ import timber.log.Timber
  */
 object Coroutines {
 
-    val connectivityHandler = CoroutineExceptionHandler { _, exception ->
-        when (exception) {
-            is NoInternetException -> throw exception
-            is NoConnectivityException -> throw exception
-            else -> {
-                Timber.e(exception, exception.message)
-                exception.printStackTrace()
-                throw exception
-            }
-        }
+    private val connectivityHandler = CoroutineExceptionHandler { _, exception ->
+
+        Timber.e(Exception(exception))
+        Exception(exception).printStackTrace()
+        throw Exception(exception)
     }
 
     fun main(work: suspend (() -> Unit)) =
@@ -37,10 +32,6 @@ object Coroutines {
         CoroutineScope(Dispatchers.IO + connectivityHandler).launch {
             work()
         }
-
-
-
-
 
 
 }

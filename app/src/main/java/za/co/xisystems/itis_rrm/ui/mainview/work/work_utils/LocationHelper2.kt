@@ -49,7 +49,7 @@ class LocationHelper2(private val estimatePhotoFragment: EstimatePhotoFragment) 
         if (PermissionController.checkPermissionsEnabled(getApplicationContext())) {
             googleApiClient!!.connect()
         } else {
-            PermissionController.startPermissionRequests(estimatePhotoFragment.activity, getApplicationContext())
+            PermissionController.startPermissionRequests(estimatePhotoFragment.activity)
         }
     }
 
@@ -113,7 +113,7 @@ class LocationHelper2(private val estimatePhotoFragment: EstimatePhotoFragment) 
                 LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this)
             }
         } else {
-            PermissionController.startPermissionRequests(estimatePhotoFragment.activity, getApplicationContext())
+            PermissionController.startPermissionRequests(estimatePhotoFragment.activity)
         }
     }
 

@@ -15,9 +15,7 @@ import com.google.android.gms.location.LocationListener
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
 import za.co.xisystems.itis_rrm.data.network.PermissionController
-import za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates.EstimatePhotoFragment
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.Constants
-import za.co.xisystems.itis_rrm.utils.toast
 
 class LocationHelperFragment(private val captureItemMeasurePhotoFragment: CaptureItemMeasurePhotoFragment) :
     ConnectionCallbacks,
@@ -51,8 +49,7 @@ class LocationHelperFragment(private val captureItemMeasurePhotoFragment: Captur
             googleApiClient!!.connect()
         } else {
             PermissionController.startPermissionRequests(
-                captureItemMeasurePhotoFragment.activity!!,
-                getApplicationContext()
+                captureItemMeasurePhotoFragment.activity!!
             )
         }
     }
@@ -118,8 +115,7 @@ class LocationHelperFragment(private val captureItemMeasurePhotoFragment: Captur
             }
         } else {
             PermissionController.startPermissionRequests(
-                captureItemMeasurePhotoFragment.activity!!,
-                getApplicationContext()
+                captureItemMeasurePhotoFragment.activity!!
             )
         }
     }

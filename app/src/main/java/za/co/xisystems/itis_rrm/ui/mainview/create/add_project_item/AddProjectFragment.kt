@@ -6,7 +6,6 @@ import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
@@ -24,6 +23,7 @@ import kotlinx.android.synthetic.main.fragment_add_project_items.*
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
+import timber.log.Timber
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.localDB.JobDataController
@@ -137,10 +137,10 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
         dueDateTextView.text = DateUtil.toStringReadable(DateUtil.currentDateTime)
         startDateTextView.text = DateUtil.toStringReadable(DateUtil.currentDateTime)
         Coroutines.main {
-            val contrct = createViewModel.getContractNoForId(job?.ContractVoId)
-            val pro_code = createViewModel.getProjectCodeForId(job?.ProjectId)
-            selectedContractTextView.text = contrct
-            selectedProjectTextView.text = pro_code
+            val contractNo = createViewModel.getContractNoForId(job?.ContractVoId)
+            val projectCode = createViewModel.getProjectCodeForId(job?.ProjectId)
+            selectedContractTextView.text = contractNo
+            selectedProjectTextView.text = projectCode
         }
 
 
@@ -150,10 +150,10 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
             Coroutines.main {
                 projectID = jobToEdit.ProjectId
                 job = jobToEdit
-                val contrct = createViewModel.getContractNoForId(jobToEdit.ContractVoId)
-                val pro_code = createViewModel.getProjectCodeForId(jobToEdit.ProjectId)
-                selectedContractTextView.text = contrct
-                selectedProjectTextView.text = pro_code
+                val contractNo = createViewModel.getContractNoForId(jobToEdit.ContractVoId)
+                val projectCode = createViewModel.getProjectCodeForId(jobToEdit.ProjectId)
+                selectedContractTextView.text = contractNo
+                selectedProjectTextView.text = projectCode
 
                 infoTextView.visibility = View.GONE
                 last_lin.visibility = View.VISIBLE
@@ -256,7 +256,7 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
 
     private fun List<ItemDTOTemp>.toProjecListItems(): List<ProjectItem> {
         return this.map { approvej_items ->
-            ProjectItem(approvej_items, activity, createViewModel, contractID, job)
+            ProjectItem(approvej_items, createViewModel, contractID, job)
         }
     }
 
@@ -383,7 +383,7 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
                             toast("Error: incomplete estimates.\n Quantity can't be zero!")
                             itemsCardView.startAnimation(shake_long)
                         } else {
-                            var valid =
+                            val valid =
                                 createViewModel.areEstimatesValid(job, ArrayList<Any?>(items))
                             if (!valid) {
                                 onInvalidJob()
@@ -513,9 +513,14 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
         itemsCardView.startAnimation(shake_long)
     }
 
+    override fun onDestroyView() {
+        project_recyclerView.adapter = null
+        super.onDestroyView()
+    }
+
     override fun onStop() {
         super.onStop()
-        Log.d("Tag", "FragmentA.onDestroyView() has been called.")
+        Timber.d("onDestroyView() has been called.")
     }
 }
 

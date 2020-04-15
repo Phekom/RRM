@@ -152,6 +152,12 @@ class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAw
         }
     }
 
+    override fun onDestroyView() {
+        // jobs_swipe_to_refresh.setOnRefreshListener { null }
+        approve_job_listView.adapter = null
+        super.onDestroyView()
+    }
+
 }
 
 
