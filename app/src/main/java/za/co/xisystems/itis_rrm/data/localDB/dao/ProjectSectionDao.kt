@@ -1,7 +1,10 @@
 package za.co.xisystems.itis_rrm.data.localDB.dao
 
 import androidx.lifecycle.LiveData
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
 import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectSectionDTO
 
 /**
@@ -26,7 +29,7 @@ interface ProjectSectionDao {
     fun insertSection(sectionId: String,route: String,section: String,startKm: Double?,  endKm: Double?,direction: String?,projectId: String)
 
     @Query("UPDATE PROJECT_SECTION_TABLE SET direction =:direction WHERE projectId = :projectId")
-    fun updateSectionDirection(direction: String?, projectId: String?)
+    fun updateSectionDirection(direction: String?, projectId: String?): Int
 
     @Query("SELECT * FROM PROJECT_SECTION_TABLE ")
     fun getAllItemsForAllProjects() : LiveData<List<ProjectSectionDTO>>
@@ -38,8 +41,12 @@ interface ProjectSectionDao {
     @Query("SELECT section FROM PROJECT_SECTION_TABLE WHERE sectionId = :sectionId")
     fun getSectionForProjectSectionId(sectionId: String): String
 
-    @Query("SELECT sectionId FROM PROJECT_SECTION_TABLE WHERE section = :sectionId  AND route = :linearId AND projectId = :projectId")
-    fun getSectionByRouteSectionProject( sectionId: Int, linearId: String, projectId: String?) : LiveData<String>
+    @Query("SELECT sectionId FROM PROJECT_SECTION_TABLE WHERE section = :section  AND route = :linearId AND projectId = :projectId")
+    fun getSectionByRouteSectionProject(
+        section: String,
+        linearId: String?,
+        projectId: String?
+    ): LiveData<String?>
 //    fun getSectionByRouteSectionProject(linearId: String, sectionId: Int, direction: String, projectId: String?)
 
     @Query("SELECT * FROM PROJECT_SECTION_TABLE WHERE sectionId LIKE :sectionId")

@@ -4,7 +4,6 @@ package za.co.xisystems.itis_rrm.data.repositories
 
 import android.os.Build
 import android.os.Looper
-import android.util.Log
 import android.widget.Toast
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LiveData
@@ -15,6 +14,7 @@ import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.localDB.JobDataController
@@ -23,10 +23,13 @@ import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
 import za.co.xisystems.itis_rrm.data.network.responses.UploadImageResponse
 import za.co.xisystems.itis_rrm.data.preferences.PreferenceProvider
-import za.co.xisystems.itis_rrm.utils.*
+import za.co.xisystems.itis_rrm.utils.Coroutines
+import za.co.xisystems.itis_rrm.utils.DataConversion
+import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.PhotoUtil.getPhotoPathFromExternalDirectory
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
+import java.io.IOException
 import java.util.*
 
 
@@ -34,10 +37,10 @@ import java.util.*
  * Created by Francis Mahlava on 2019/11/28.
  */
 
-// const val MINIMUM_INTERVALY = 3
+
 class JobCreationDataRepository(
     private val api: BaseConnectionApi,
-    private val Db: AppDatabase,
+    private val appDb: AppDatabase,
     private val prefs: PreferenceProvider
 ) : SafeApiRequest() {
     companion object {
@@ -61,21 +64,27 @@ class JobCreationDataRepository(
             saveWorkflowJob(it)
 
         }
-//        workflowJ2.observeForever {
-//            saveWorkflowJob2(it)
-//        }
 
         photoUpload.observeForever {
             sendMsg(it)
         }
 
+        routeSectionPoint.observeForever {
 
+        }
+
+    }
+
+    suspend fun getJobSection(jobId: String): JobSectionDTO? {
+        return withContext(Dispatchers.IO) {
+            appDb.getJobSectionDao().getJobSectionFromJobId(jobId)
+        }
     }
 
 
     suspend fun getUser(): LiveData<UserDTO> {
         return withContext(Dispatchers.IO) {
-            Db.getUserDao().getuser()
+            appDb.getUserDao().getUser()
         }
     }
 
@@ -92,46 +101,46 @@ class JobCreationDataRepository(
             val job = setWorkflowJobBigEndianGuids(workflowJob)
             insertOrUpdateWorkflowJobInSQLite(job)
         } else {
-//            Looper.prepare() // to be able to make toast
-//        Toast.makeText(activity, "Error: WorkFlow Job is null", Toast.LENGTH_LONG).show()
-            Log.e(TAG, " WorkFlow Job is null")
+            val message = "Workflow job is null."
+            Timber.e(
+                java.lang.NullPointerException(message),
+                message
+            )
         }
     }
 
 
-    suspend fun saveNewJob(newJob: JobDTO) {
+    suspend fun saveNewJob(newJob: JobDTO?) {
         Coroutines.io {
-            if (newJob != null) {
-                if (!Db.getJobDao().checkIfJobExist(newJob.JobId)) {
-                    Db.getJobDao().insertOrUpdateJobs(newJob)
-                }
-
+            if (newJob != null && !appDb.getJobDao().checkIfJobExist(newJob.JobId)) {
+                appDb.getJobDao().insertOrUpdateJobs(newJob)
             }
         }
     }
 
-    suspend fun getSectionItems(): LiveData<SectionItemDTO> {
+
+    suspend fun getSectionItems(): LiveData<List<SectionItemDTO>> {
         return withContext(Dispatchers.IO) {
-            Db.getSectionItemDao().getSectionItems()
+            appDb.getSectionItemDao().getSectionItems()
         }
     }
 
 
     suspend fun getContracts(): LiveData<List<ContractDTO>> {
         return withContext(Dispatchers.IO) {
-            Db.getContractDao().getAllContracts()
+            appDb.getContractDao().getAllContracts()
         }
     }
 
     suspend fun getContractProjects(contractId: String): LiveData<List<ProjectDTO>> {
         return withContext(Dispatchers.IO) {
-            Db.getProjectDao().getAllProjectsByContract(contractId)
+            appDb.getProjectDao().getAllProjectsByContract(contractId)
         }
     }
 
-    suspend fun getAllSectionItem(): LiveData<List<SectionItemDTO>> {
+    suspend fun getAllSectionItems(): LiveData<List<SectionItemDTO>> {
         return withContext(Dispatchers.IO) {
-            Db.getSectionItemDao().getAllSectionItems()
+            appDb.getSectionItemDao().getAllSectionItems()
         }
     }
 
@@ -140,32 +149,32 @@ class JobCreationDataRepository(
         projectId: String
     ): LiveData<List<ProjectItemDTO>> {
         return withContext(Dispatchers.IO) {
-            //            val projectId = DataConversion.toLittleEndian( Db.getProjectDao().getProjectId())
-            Db.getProjectItemDao().getAllItemsForSectionItem(sectionItemId, projectId)
+
+            appDb.getProjectItemDao().getAllItemsForSectionItem(sectionItemId, projectId)
         }
     }
 
-    suspend fun saveNewItem(newJobItem: ItemDTOTemp) {
+    suspend fun saveNewItem(newJobItem: ItemDTOTemp?) {
         Coroutines.io {
-            if (newJobItem != null) {
-                if (!Db.getItemDaoTemp().checkItemExistsItemId(newJobItem.itemId)) {
+            if (newJobItem != null && !appDb.getItemDaoTemp()
+                    .checkItemExistsItemId(newJobItem.itemId)
+            ) {
 
-                    Db.getItemDaoTemp().insertItems(newJobItem)
-                }
+                appDb.getItemDaoTemp().insertItems(newJobItem)
             }
         }
     }
 
     fun delete(item: ItemDTOTemp) {
         Coroutines.io {
-            Db.getItemDaoTemp().deleteItem(item)
+            appDb.getItemDaoTemp().deleteItem(item)
         }
     }
 
 
     fun deleteJobfromList(jobId: String) {
         Coroutines.io {
-            Db.getJobDao().deleteJobForJobId(jobId)
+            appDb.getJobDao().deleteJobForJobId(jobId)
         }
     }
 
@@ -178,10 +187,10 @@ class JobCreationDataRepository(
         jobItemSectionArrayList: ArrayList<JobSectionDTO>
     ) {
         Coroutines.io {
-            if (!Db.getJobDao().checkIfJobExist(newJobId)) {
+            if (!appDb.getJobDao().checkIfJobExist(newJobId)) {
 //
             } else {
-                Db.getJobDao().updateJoSecId(
+                appDb.getJobDao().updateJoSecId(
                     newJobId,
                     startKM,
                     endKM,
@@ -196,8 +205,8 @@ class JobCreationDataRepository(
 
     suspend fun getPointSectionData(projectId: String?): LiveData<SectionPointDTO> { //jobId,jobId: String,
         return withContext(Dispatchers.IO) {
-            //            Db.getSectionItemDao().getAllSectionItems()
-            Db.getSectionPointDao().getPointSectionData(projectId)
+            // Db.getSectionItemDao().getAllSectionItems()
+            appDb.getSectionPointDao().getPointSectionData(projectId)
         }
     }
 
@@ -205,17 +214,17 @@ class JobCreationDataRepository(
         sectionId: Int,
         linearId: String?,
         projectId: String?
-    ): LiveData<String> {
+    ): LiveData<String?> {
         return withContext(Dispatchers.IO) {
-            Db.getProjectSectionDao()
-                .getSectionByRouteSectionProject(sectionId, linearId!!, projectId)
+            appDb.getProjectSectionDao()
+                .getSectionByRouteSectionProject(sectionId.toString(), linearId!!, projectId!!)
         }
 
     }
 
     suspend fun getSection(sectionId: String): LiveData<ProjectSectionDTO> {
         return withContext(Dispatchers.IO) {
-            Db.getProjectSectionDao().getSection(sectionId)
+            appDb.getProjectSectionDao().getSection(sectionId)
         }
     }
 
@@ -226,84 +235,86 @@ class JobCreationDataRepository(
         projectId: String?,
         jobId: String,
         itemCode: ItemDTOTemp?
-    ) {
-        try {
-            val distance = 0.50
-            val buffer = 0
-            val routeSectionPointResponse =
-                apiRequest { api.getRouteSectionPoint(distance, buffer, latitude, longitude, useR) }
-            routeSectionPoint.postValue(
-                routeSectionPointResponse.direction,
-                routeSectionPointResponse.linearId,
-                routeSectionPointResponse.pointLocation,
-                routeSectionPointResponse.sectionId,
-                projectId,
-                jobId,
-                itemCode
-            )
-        } catch (e: ApiException) {
-            throw e
-        } catch (e: NoInternetException) {
-            Log.e(TAG, "No Internet Connection", e)
-            throw e
-        } catch (e: NoConnectivityException) {
+    ): LiveData<String?> {
 
-            Log.e(TAG, "Service Host Unreachable", e)
-            throw e
+        val distance = 1
+        val buffer = 0
+        val routeSectionPointResponse =
+            apiRequest { api.getRouteSectionPoint(distance, buffer, latitude, longitude, useR) }
+
+
+        val routeSection = routeSectionPoint.postValue(
+            direction = routeSectionPointResponse.direction,
+            linearId = routeSectionPointResponse.linearId,
+            pointLocation = routeSectionPointResponse.pointLocation,
+            sectionId = routeSectionPointResponse.sectionId,
+            projectId = projectId,
+            jobId = jobId,
+            item = itemCode!!
+        )
+
+        return withContext(Dispatchers.IO) {
+            appDb.getProjectSectionDao().getSectionByRouteSectionProject(
+                routeSectionPointResponse.sectionId.toString(),
+                routeSectionPointResponse.linearId, projectId
+            )
         }
 
     }
 
     suspend fun getAllProjectItems(projectId: String, jobId: String): LiveData<List<ItemDTOTemp>> {
         return withContext(Dispatchers.IO) {
-            Db.getItemDaoTemp().getAllProjecItems(projectId, jobId)
+            appDb.getItemDaoTemp().getAllProjecItems(projectId, jobId)
         }
     }
 
     fun deleteItemList(jobId: String) {
         Coroutines.io {
-            Db.getItemDaoTemp().deleteItemList(jobId)
+            appDb.getItemDaoTemp().deleteItemList(jobId)
         }
     }
 
     fun deleteItemFromList(itemId: String) {
         Coroutines.io {
-            Db.getItemDaoTemp().deleteItemfromList(itemId)
+            appDb.getItemDaoTemp().deleteItemfromList(itemId)
         }
     }
 
     suspend fun submitJob(userId: Int, job: JobDTO, activity: FragmentActivity): String {
 
-        val jobhead = JsonObject()
+        val jobData = JsonObject()
         val gson = Gson()
-        val newjob = gson.toJson(job)
-        val jsonElement: JsonElement = JsonParser().parse(newjob)
-        jobhead.add("Job", jsonElement)
-        jobhead.addProperty("UserId", userId)
-        Log.e("JsonObject", "Json string $jobhead")
+        val newJob = gson.toJson(job)
+        val jsonElement: JsonElement = JsonParser.parseString(newJob)
+        jobData.add("Job", jsonElement)
+        jobData.addProperty("UserId", userId)
+        Timber.i("Json Job: $jobData")
 
-        val jobResponse = apiRequest { api.sendJobsForApproval(jobhead) }
+        val jobResponse = apiRequest { api.sendJobsForApproval(jobData) }
         workflowJ2.postValue(jobResponse.workflowJob, job, activity)
 
         val messages = jobResponse.errorMessage
-//          activity.getResources().getString(R.string.please_wait)
+
         return withContext(Dispatchers.IO) {
             messages
         }
     }
 
     private fun <T> MutableLiveData<T>.postValue(
-        workflowj: WorkflowJobDTO,
+        workflowJob: WorkflowJobDTO?,
         job: JobDTO,
         activity: FragmentActivity
     ) {
         Coroutines.io {
-            if (workflowj != null) {
-                val createJob = setWorkflowJobBigEndianGuids(workflowj)
+            if (workflowJob != null) {
+                val createJob = setWorkflowJobBigEndianGuids(workflowJob)
                 insertOrUpdateWorkflowJobInSQLite(createJob)
-                uploadCreateJobImages(job, activity)
-                val myjob = getUpdatedJob(DataConversion.toBigEndian(job.JobId)!!)
-                moveJobToNextWorkflow(myjob, activity)
+                uploadCreateJobImages(
+                    packageJob = job,
+                    activity = activity
+                )
+                val myJob = getUpdatedJob(DataConversion.toBigEndian(job.JobId)!!)
+                moveJobToNextWorkflow(myJob, activity)
             }
         }
     }
@@ -311,46 +322,40 @@ class JobCreationDataRepository(
 
     suspend fun getUpdatedJob(jobId: String): JobDTO {
         return withContext(Dispatchers.IO) {
-            Db.getJobDao().getJobForJobId(jobId)
+            appDb.getJobDao().getJobForJobId(jobId)
         }
     }
 
     private fun setWorkflowJobBigEndianGuids(job: WorkflowJobDTO): WorkflowJobDTO? {
-        job.actId = job.actId
+
+        // Job + WorkflowItems + EstimateWorks
         job.jobId = DataConversion.toBigEndian(job.jobId)
         job.trackRouteId = DataConversion.toBigEndian(job.trackRouteId)
-        job.jiNo = job.jiNo
-        if (job.workflowItemEstimates != null) {
-            for (jie in job.workflowItemEstimates) {
-                jie.actId = jie.actId
-                jie.estimateId = DataConversion.toBigEndian(jie.estimateId)!!
-                jie.trackRouteId = DataConversion.toBigEndian(jie.trackRouteId)!!
-                //  Lets go through the WorkFlowEstimateWorks
-                for (wfe in jie.workflowEstimateWorks) {
-                    wfe.trackRouteId = DataConversion.toBigEndian(wfe.trackRouteId)!!
-                    wfe.worksId = DataConversion.toBigEndian(wfe.worksId)!!
-                    wfe.actId = wfe.actId
-                    wfe.estimateId = DataConversion.toBigEndian(wfe.estimateId)!!
-                    wfe.recordVersion = wfe.recordVersion
-                    wfe.recordSynchStateId = wfe.recordSynchStateId
-                }
+        job.workflowItemEstimates?.forEach { jie ->
+            jie.estimateId = DataConversion.toBigEndian(jie.estimateId)!!
+            jie.trackRouteId = DataConversion.toBigEndian(jie.trackRouteId)!!
+            jie.workflowEstimateWorks.forEach { wfe ->
+                wfe.trackRouteId = DataConversion.toBigEndian(wfe.trackRouteId)!!
+                wfe.worksId = DataConversion.toBigEndian(wfe.worksId)!!
+                wfe.estimateId = DataConversion.toBigEndian(wfe.estimateId)!!
             }
         }
-        if (job.workflowItemMeasures != null) {
-            for (jim in job.workflowItemMeasures) {
-                jim.actId = jim.actId
-                jim.itemMeasureId = DataConversion.toBigEndian(jim.itemMeasureId)!!
-                jim.measureGroupId = DataConversion.toBigEndian(jim.measureGroupId)!!
-                jim.trackRouteId = DataConversion.toBigEndian(jim.trackRouteId)!!
-            }
+
+        // WorkflowItemMeasures
+        job.workflowItemMeasures?.forEach { jim ->
+            jim.itemMeasureId = DataConversion.toBigEndian(jim.itemMeasureId)!!
+            jim.measureGroupId = DataConversion.toBigEndian(jim.measureGroupId)!!
+            jim.trackRouteId = DataConversion.toBigEndian(jim.trackRouteId)!!
         }
-        if (job.workflowJobSections != null) {
-            for (js in job.workflowJobSections) {
-                js.jobSectionId = DataConversion.toBigEndian(js.jobSectionId)!!
-                js.projectSectionId = DataConversion.toBigEndian(js.projectSectionId)!!
-                js.jobId = DataConversion.toBigEndian(js.jobId)
-            }
+
+        // WorkflowJobSections
+        job.workflowJobSections?.forEach { js ->
+            js.jobSectionId = DataConversion.toBigEndian(js.jobSectionId)!!
+            js.projectSectionId = DataConversion.toBigEndian(js.projectSectionId)!!
+            js.jobId = DataConversion.toBigEndian(js.jobId)
+
         }
+
         return job
     }
 
@@ -363,129 +368,100 @@ class JobCreationDataRepository(
 
     private fun updateWorkflowJobValuesAndInsertWhenNeeded(job: WorkflowJobDTO) {
         Coroutines.io {
-            Db.getJobDao().updateJob(job.trackRouteId, job.actId, job.jiNo, job.jobId)
+            appDb.getJobDao().updateJob(
+                trackRouteId = job.trackRouteId,
+                actId = job.actId,
+                jiNo = job.jiNo,
+                jobId = job.jobId
+            )
 
-            if (job.workflowItemEstimates != null && job.workflowItemEstimates.size != 0) {
-                for (jobItemEstimate in job.workflowItemEstimates) {
-                    Db.getJobItemEstimateDao().updateExistingJobItemEstimateWorkflow(
-                        jobItemEstimate.trackRouteId,
-                        jobItemEstimate.actId,
-                        jobItemEstimate.estimateId
-                    )
-
-                    if (jobItemEstimate.workflowEstimateWorks != null) {
-                        for (jobEstimateWorks in jobItemEstimate.workflowEstimateWorks) {
-                            if (Db.getEstimateWorkDao()
-                                    .checkIfJobEstimateWorksExist(jobEstimateWorks.worksId)
-                            ) {
-                                // TODO: What were we planning to do here?
-                                // Db.getEstimateWorkDao().insertJobEstimateWorks(jobEstimateWorks as JobEstimateWorksDTO)
-                                Db.getEstimateWorkDao().updateJobEstimateWorksWorkflow(
-                                    jobEstimateWorks.worksId,
-                                    jobEstimateWorks.estimateId,
-                                    jobEstimateWorks.recordVersion,
-                                    jobEstimateWorks.recordSynchStateId,
-                                    jobEstimateWorks.actId,
-                                    jobEstimateWorks.trackRouteId
-                                )
-                            }
-                        }
-
-
-                    }
-                }
-            }
-
-            if (job.workflowItemMeasures != null && job.workflowItemMeasures.size !== 0) {
-                for (jobItemMeasure in job.workflowItemMeasures) {
-                    Db.getJobItemMeasureDao().updateWorkflowJobItemMeasure(
-                        jobItemMeasure.itemMeasureId,
-                        jobItemMeasure.trackRouteId,
-                        jobItemMeasure.actId,
-                        jobItemMeasure.measureGroupId
+            job.workflowItemEstimates?.forEach { workflowItemEstimate ->
+                appDb.getJobItemEstimateDao().updateExistingJobItemEstimateWorkflow(
+                    trackRouteId = workflowItemEstimate.trackRouteId,
+                    actId = workflowItemEstimate.actId,
+                    estimateId = workflowItemEstimate.estimateId
+                )
+                workflowItemEstimate.workflowEstimateWorks.forEach { workflowEstimateWork ->
+                    appDb.getEstimateWorkDao().updateJobEstimateWorksWorkflow(
+                        worksId = workflowEstimateWork.worksId,
+                        estimateId = workflowEstimateWork.estimateId,
+                        recordVersion = workflowEstimateWork.recordVersion,
+                        recordSynchStateId = workflowEstimateWork.recordSynchStateId,
+                        actId = workflowEstimateWork.actId,
+                        trackRouteId = workflowEstimateWork.trackRouteId
                     )
                 }
             }
 
-
-            //  Place the Job Section, UPDATE OR CREATE
-            if (job.workflowJobSections != null && job.workflowJobSections.size !== 0) {
-                for (jobSection in job.workflowJobSections) {
-                    if (!Db.getJobSectionDao().checkIfJobSectionExist(jobSection.jobSectionId))
-                        Db.getJobSectionDao().insertJobSection(jobSection) else
-                        Db.getJobSectionDao().updateExistingJobSectionWorkflow(
-                            jobSection.jobSectionId,
-                            jobSection.projectSectionId,
-                            jobSection.jobId,
-                            jobSection.startKm,
-                            jobSection.endKm,
-                            jobSection.recordVersion,
-                            jobSection.recordSynchStateId
-                        )
-                }
+            job.workflowItemMeasures?.forEach { workflowItemMeasure ->
+                appDb.getJobItemMeasureDao().updateWorkflowJobItemMeasure(
+                    itemMeasureId = workflowItemMeasure.itemMeasureId,
+                    trackRouteId = workflowItemMeasure.trackRouteId,
+                    actId = workflowItemMeasure.actId,
+                    measureGroupId = workflowItemMeasure.measureGroupId
+                )
             }
+
+            job.workflowJobSections?.forEach { jobSection ->
+                if (!appDb.getJobSectionDao().checkIfJobSectionExist(jobSection.jobSectionId))
+                    appDb.getJobSectionDao().insertJobSection(jobSection) else
+                    appDb.getJobSectionDao().updateExistingJobSectionWorkflow(
+                        jobSectionId = jobSection.jobSectionId,
+                        projectSectionId = jobSection.projectSectionId,
+                        jobId = jobSection.jobId,
+                        startKm = jobSection.startKm,
+                        endKm = jobSection.endKm,
+                        recordVersion = jobSection.recordVersion,
+                        recordSynchStateId = jobSection.recordSynchStateId
+                    )
+
+            }
+
         }
     }
 
 
     private fun uploadCreateJobImages(packageJob: JobDTO, activity: FragmentActivity) {
-        var imageCounter = 1
-        val totalImages = 0
 
-        if (packageJob.JobItemEstimates != null) {
-            if (packageJob.JobItemEstimates!!.isEmpty()) {
-//                progressView.toast("(job.getPrjJobItemEstimates() is empty")
-//                progressView.dismissProgressDialog()
-            } else {
-                for (jobItemEstimate in packageJob.JobItemEstimates!!) {
-                    if (jobItemEstimate.jobItemEstimatePhotos != null && jobItemEstimate.jobItemEstimatePhotos!!.size > 0) {
-                        val photos: Array<JobItemEstimatesPhotoDTO> =
-                            arrayOf(
-                                jobItemEstimate.jobItemEstimatePhotos!![0],
-                                jobItemEstimate.jobItemEstimatePhotos!![1]
-                            )
-                        for (jobItemEstimatePhoto in photos) {
-//                        for (jobItemEstimatePhoto in jobItemEstimate.jobItemEstimatePhotos!!) {
-                            if (PhotoUtil.photoExist(jobItemEstimatePhoto.filename)) {
-                                Log.d("x-", "UploadRrImage $imageCounter")
-                                uploadRrmImage(
-                                    jobItemEstimatePhoto.filename,
-                                    PhotoQuality.HIGH,
-                                    imageCounter,
-                                    totalImages,
-                                    packageJob,
-                                    activity
-                                )
-                                imageCounter++
-                            } else {
-//                                setProgressBarMessage(text)
-//                                progressView.toast("Error: photo filename is empty!")
-                                Log.d("x-", "Error: photo filename is empty!")
-                            }
-                        }
-                    } else {
-//                        progressView.toast("Error: photos are empty!")
-                        Log.d("x-", "Error: photos are empty!")
-//                        progressView.dismissProgressDialog()
-                    }
+        var jobCounter = 1
+        val totalJobs = packageJob.JobItemEstimates?.size ?: 0
+
+        packageJob.JobItemEstimates?.map { jobItemEstimate ->
+            val totalImages = jobItemEstimate.jobItemEstimatePhotos?.size ?: 0
+            var imageCounter = 1
+            jobItemEstimate.jobItemEstimatePhotos?.map { estimatePhoto ->
+                if (PhotoUtil.photoExist(estimatePhoto.filename)) {
+
+                    uploadRrmImage(
+                        activity = activity,
+                        filename = estimatePhoto.filename,
+                        photoQuality = PhotoQuality.HIGH,
+                        imageCounter = imageCounter,
+                        totalImages = totalImages
+                    )
+
+                    Timber.d("Job $jobCounter of $totalJobs - $imageCounter of $totalImages images uploaded")
+                    imageCounter++
+                } else {
+                    val message = "${estimatePhoto.filename} could not be loaded"
+                    Timber.e(IOException(message), message)
                 }
+
             }
-        } else {
-//            progressView.toast("Error: no job item estimates.")
-            Log.d("x-", "Error: no job item estimates.")
-//            progressView.dismissProgressDialog()
+            jobCounter++
         }
 
-
+        if (totalJobs == 0) {
+            Timber.d("No estimate jobs found.")
+        }
     }
 
     private fun uploadRrmImage(
+        activity: FragmentActivity,
         filename: String,
         photoQuality: PhotoQuality,
         imageCounter: Int,
-        totalImages: Int,
-        packageJob: JobDTO,
-        activity: FragmentActivity
+        totalImages: Int
     ) {
 
         val data: ByteArray = getData(filename, photoQuality, activity)
@@ -494,9 +470,7 @@ class JobCreationDataRepository(
             activity.getString(R.string.jpg),
             data,
             totalImages,
-            imageCounter,
-            packageJob,
-            activity
+            imageCounter
         )
     }
 
@@ -520,26 +494,27 @@ class JobCreationDataRepository(
         extension: String,
         photo: ByteArray,
         totalImages: Int,
-        imageCounter: Int,
-        packageJob: JobDTO,
-        activity: FragmentActivity
+        imageCounter: Int
     ) {
-
-        Coroutines.io {
+        Coroutines.api {
             val imageData = JsonObject()
             imageData.addProperty("Filename", filename)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 imageData.addProperty("ImageByteArray", Base64.getEncoder().encodeToString(photo))
             } else {
-                // TODO: use a generic utility to encode base64 string
+                // Generic Base64 utility
+                imageData.addProperty(
+                    "ImageByteArray",
+                    android.util.Base64.encodeToString(photo, android.util.Base64.DEFAULT)
+                )
             }
             imageData.addProperty("ImageFileExtension", extension)
-            Log.e("JsonObject", "Json string $imageData")
+            Timber.d("Json Image: $imageData")
 
             val uploadImageResponse = apiRequest { api.uploadRrmImage(imageData) }
             photoUpload.postValue(uploadImageResponse.errorMessage)
             if (totalImages <= imageCounter) {
-                Log.e("Coroutines", "Json string $totalImages")
+                Timber.d("Processed $imageCounter of $totalImages images.")
             }
 
         }
@@ -570,10 +545,7 @@ class JobCreationDataRepository(
                     )
                 }
                 workflowJobs.postValue(workflowMoveResponse.workflowJob)
-                Db.getItemDaoTemp().deleteItemList(job.JobId)
-
-//                toDoListGroups.postValue(workflowMoveResponse.toDoListGroups)
-//                workflows.postValue(workflowMoveResponse.toDoListGroups)
+                appDb.getItemDaoTemp().deleteItemList(job.JobId)
             }
 
         }
@@ -582,14 +554,14 @@ class JobCreationDataRepository(
 
     private fun <T> MutableLiveData<T>.postValue(
         direction: String,
-        linearId: String,
+        linearId: String?,
         pointLocation: Double,
         sectionId: Int,
         projectId: String?,
         jobId: String?,
-        item: ItemDTOTemp?
-    ) {
-        saveRouteSectionPoint(
+        item: ItemDTOTemp
+    ): LiveData<String?> {
+        return saveRouteSectionPoint(
             direction,
             linearId,
             pointLocation,
@@ -602,34 +574,39 @@ class JobCreationDataRepository(
 
     private fun saveRouteSectionPoint(
         direction: String,
-        linearId: String,
+        linearId: String?,
         pointLocation: Double,
         sectionId: Int,
         projectId: String?,
         jobId: String?,
         item: ItemDTOTemp?
-    ) {
+    ): LiveData<String?> {
+        val name = object {}.javaClass.enclosingMethod?.name
+        Timber.d("x -> $name")
         if (linearId != null) {
-            //Db.getProjectSectionDao().getSectionByRouteSectionProject(linearId, sectionId, direction, projectId)
-//           activity?.toast(direction + linearId +  "$pointLocation"  + sectionId.toString()+ projectId )
-            if (!Db.getSectionPointDao().checkSectionExists(sectionId, projectId, jobId)) {
-                Db.getSectionPointDao()
+
+            if (!appDb.getSectionPointDao().checkSectionExists(sectionId, projectId, jobId)) {
+                appDb.getSectionPointDao()
                     .insertSection(direction, linearId, pointLocation, sectionId, projectId, jobId)
+
             }
-            Db.getProjectSectionDao().updateSectionDirection(direction, projectId)
+            appDb.getProjectSectionDao().updateSectionDirection(direction, projectId)
         }
+
+        return appDb.getProjectSectionDao()
+            .getSectionByRouteSectionProject(sectionId.toString(), linearId, projectId)
+
     }
 
 
     private fun <T> MutableLiveData<T>.postValue(photo: String?, fileName: String) {
-        saveEstimatePhoto(photo, fileName)
+        return saveEstimatePhoto(photo, fileName)
     }
 
     fun saveEstimatePhoto(estimatePhoto: String?, fileName: String) {
         Coroutines.io {
             if (estimatePhoto != null) {
                 PhotoUtil.createPhotoFolder(estimatePhoto, fileName)
-//            PhotoUtil.createPhotofolder(fileName)
             } else {
                 PhotoUtil.createPhotoFolder()
             }
@@ -640,13 +617,13 @@ class JobCreationDataRepository(
 
     suspend fun getContractNoForId(contractVoId: String?): String {
         return withContext(Dispatchers.IO) {
-            Db.getContractDao().getContractNoForId(contractVoId)
+            appDb.getContractDao().getContractNoForId(contractVoId)
         }
     }
 
     suspend fun getProjectCodeForId(projectId: String?): String {
         return withContext(Dispatchers.IO) {
-            Db.getProjectDao().getProjectCodeForId(projectId)
+            appDb.getProjectDao().getProjectCodeForId(projectId)
         }
 
     }
@@ -828,13 +805,6 @@ class JobCreationDataRepository(
     private fun JobItemEstimateDTO.setEstimateId(toBigEndian: String?) {
         this.estimateId = toBigEndian!!
     }
-
-
-    private operator fun <T> LiveData<T>.not(): Boolean {
-        return true
-    }
-
-
 }
 
 

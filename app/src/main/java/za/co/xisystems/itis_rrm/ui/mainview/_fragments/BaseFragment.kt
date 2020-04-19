@@ -5,7 +5,6 @@ import android.app.ProgressDialog
 import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
-import android.util.Log
 import android.view.Menu
 import android.view.View
 import android.view.animation.Animation
@@ -14,6 +13,7 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.google.android.material.snackbar.Snackbar
+import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data._commons.Animations
 import za.co.xisystems.itis_rrm.data._commons.views.IProgressView
@@ -25,27 +25,63 @@ import za.co.xisystems.itis_rrm.utils.ViewLogger
  */
 
 
-abstract class BaseFragment : Fragment(), IProgressView, HorizontalProgressBar{
-    protected var progressView: IProgressView? = null
-    @JvmField var bounce: Animation? = null
-    @JvmField var bounce_short: Animation? = null
-    @JvmField var bounce_long: Animation? = null
-    @JvmField var bounce_soft: Animation? = null
-    @JvmField var bounce_250: Animation? = null
-    @JvmField var bounce_500: Animation? = null
-    @JvmField var bounce_750: Animation? = null
-    @JvmField var bounce_1000: Animation? = null
-    @JvmField var scale: Animation? = null
-    @JvmField var scale_light: Animation? = null
-    @JvmField var click: Animation? = null
-    @JvmField var shake_delay: Animation? = null
-    @JvmField var shake: Animation? = null
-    @JvmField var shake_long: Animation? = null
-    @JvmField var shake_longer: Animation? = null
-    protected var coordinator: View? = null
+abstract class BaseFragment(layoutContentId: Int) : Fragment(layoutContentId), IProgressView,
+    HorizontalProgressBar {
 
-    var anims: Animations? = null
+    companion object {
+        protected var progressView: IProgressView? = null
 
+        @JvmField
+        var layoutContentId: Int? = null
+
+        @JvmField
+        var bounce: Animation? = null
+
+        @JvmField
+        var bounce_short: Animation? = null
+
+        @JvmField
+        var bounce_long: Animation? = null
+
+        @JvmField
+        var bounce_soft: Animation? = null
+
+        @JvmField
+        var bounce_250: Animation? = null
+
+        @JvmField
+        var bounce_500: Animation? = null
+
+        @JvmField
+        var bounce_750: Animation? = null
+
+        @JvmField
+        var bounce_1000: Animation? = null
+
+        @JvmField
+        var scale: Animation? = null
+
+        @JvmField
+        var scale_light: Animation? = null
+
+        @JvmField
+        var click: Animation? = null
+
+        @JvmField
+        var shake_delay: Animation? = null
+
+        @JvmField
+        var shake: Animation? = null
+
+        @JvmField
+        var shake_long: Animation? = null
+
+        @JvmField
+        var shake_longer: Animation? = null
+        protected var coordinator: View? = null
+
+        var animations: Animations? = null
+    }
 
     override fun onResume() {
         super.onResume()
@@ -54,24 +90,27 @@ abstract class BaseFragment : Fragment(), IProgressView, HorizontalProgressBar{
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        anims = Animations(context!!.applicationContext)
-        initAnims()
+        animations = Animations(context!!.applicationContext)
+        initAnimations()
     }
 
-    fun initAnims() {
+    fun initAnimations() {
         click = AnimationUtils.loadAnimation(context!!.applicationContext, R.anim.click)
         bounce = AnimationUtils.loadAnimation(context!!.applicationContext, R.anim.bounce)
-        bounce_short = AnimationUtils.loadAnimation(context!!.applicationContext, R.anim.bounce_short)
+        bounce_short =
+            AnimationUtils.loadAnimation(context!!.applicationContext, R.anim.bounce_short)
         bounce_long = AnimationUtils.loadAnimation(context!!.applicationContext, R.anim.bounce_long)
         bounce_250 = AnimationUtils.loadAnimation(context!!.applicationContext, R.anim.bounce_250)
         bounce_500 = AnimationUtils.loadAnimation(context!!.applicationContext, R.anim.bounce_500)
         bounce_750 = AnimationUtils.loadAnimation(context!!.applicationContext, R.anim.bounce_750)
         bounce_1000 = AnimationUtils.loadAnimation(context!!.applicationContext, R.anim.bounce_1000)
         bounce_soft = AnimationUtils.loadAnimation(context!!.applicationContext, R.anim.bounce_soft)
-        shake_delay = AnimationUtils.loadAnimation(context!!.applicationContext, R.anim.shake_long_delay)
+        shake_delay =
+            AnimationUtils.loadAnimation(context!!.applicationContext, R.anim.shake_long_delay)
         shake = AnimationUtils.loadAnimation(context!!.applicationContext, R.anim.shake)
         shake_long = AnimationUtils.loadAnimation(context!!.applicationContext, R.anim.shake_long)
-        shake_longer = AnimationUtils.loadAnimation(context!!.applicationContext, R.anim.shake_longer)
+        shake_longer =
+            AnimationUtils.loadAnimation(context!!.applicationContext, R.anim.shake_longer)
         scale = AnimationUtils.loadAnimation(context!!.applicationContext, R.anim.scale)
         scale_light = AnimationUtils.loadAnimation(context!!.applicationContext, R.anim.scale_light)
     }
@@ -89,13 +128,7 @@ abstract class BaseFragment : Fragment(), IProgressView, HorizontalProgressBar{
             progressView = context
         }
     }
-//    override fun onDestroyView() {
-//        super.onDestroyView()
-//        if (view != null) {
-//            val parent = view!!.parent as ViewGroup
-//            parent?.removeAllViews()
-//        }
-//    }
+
     override fun onViewCreated(
         view: View,
         savedInstanceState: Bundle?
@@ -104,28 +137,16 @@ abstract class BaseFragment : Fragment(), IProgressView, HorizontalProgressBar{
         coordinator = view.findViewById(R.id.coordinator)
     }
 
-//    fun toast(string: String?) {
-//        if (activity != null) Toast.makeText(activity, string, Toast.LENGTH_LONG).show()
-//    }
-//
-//    fun toast(string: Int) {
-//        if (activity != null) Toast.makeText(activity, string, Toast.LENGTH_LONG).show()
-//    }
 
-    fun setDataProgressDialog(context: Context, message: String):ProgressDialog{
+    fun setDataProgressDialog(context: Context, message: String): ProgressDialog {
         //Assuming that you are using fragments.//
-        val prog = ProgressDialog(context)
-        prog.setTitle(getString(R.string.please_wait))
-        prog.setMessage(message)
-        prog.setCancelable(false)
-        prog.isIndeterminate = true
-        prog.setProgressStyle(ProgressDialog.STYLE_SPINNER)
-//        prog.show()
-        return prog
-    }
-
-    fun disMissProgressDialog(prog : ProgressDialog){
-        prog.dismiss()
+        val progressDialog = ProgressDialog(context)
+        progressDialog.setTitle(getString(R.string.please_wait))
+        progressDialog.setMessage(message)
+        progressDialog.setCancelable(false)
+        progressDialog.isIndeterminate = true
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER)
+        return progressDialog
     }
 
     /**
@@ -133,6 +154,7 @@ abstract class BaseFragment : Fragment(), IProgressView, HorizontalProgressBar{
      */
     fun Activity.hideKeyboard() {
         val view = this.currentFocus
+
         if (view != null) {
             val imm = this.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             imm.hideSoftInputFromWindow(view.windowToken, 0)
@@ -145,16 +167,20 @@ abstract class BaseFragment : Fragment(), IProgressView, HorizontalProgressBar{
     }
 
     override fun toast(resid: String?) {
-        if (!activity?.isFinishing!!) Toast.makeText(context?.applicationContext, resid, Toast.LENGTH_LONG).show()
+        if (!activity?.isFinishing!!) Toast.makeText(
+            context?.applicationContext,
+            resid,
+            Toast.LENGTH_LONG
+        ).show()
     }
 
     fun snackError(coordinator: View?, string: String?) {
         if (coordinator != null) {
-            val snackbar = Snackbar.make(coordinator, string!!, 3000)
-            snackbar.view.setBackgroundColor(Color.RED)
-            snackbar.view.startAnimation(shake)
-            snackbar.show()
-        } else Log.e("x-", "coordinator is null")
+            val snackBar = Snackbar.make(coordinator, string!!, 3000)
+            snackBar.view.setBackgroundColor(Color.RED)
+            snackBar.view.startAnimation(shake)
+            snackBar.show()
+        } else Timber.e("x -> coordinator is null")
     }
 
     fun snackError(string: String?) {
@@ -179,7 +205,10 @@ abstract class BaseFragment : Fragment(), IProgressView, HorizontalProgressBar{
 
     override fun showHorizontalProgressDialog(message: CharSequence?) {
         if (null == this.progressDialog) {
-            this.progressDialog = ProgressDialog(context?.applicationContext, android.R.style.Theme_DeviceDefault_Dialog)
+            this.progressDialog = ProgressDialog(
+                context?.applicationContext,
+                android.R.style.Theme_DeviceDefault_Dialog
+            )
             this.progressDialog?.isIndeterminate = true
             this.progressDialog?.setCancelable(false)
             setProgressStyleHorizontal()

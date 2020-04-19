@@ -26,7 +26,7 @@ import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.estimate_measure_item.EstimateMeasureItem
 import za.co.xisystems.itis_rrm.utils.*
 
-class MeasureFragment : BaseFragment(), KodeinAware {
+class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware {
 
     override val kodein by kodein()
     private lateinit var measureViewModel: MeasureViewModel
@@ -63,7 +63,7 @@ class MeasureFragment : BaseFragment(), KodeinAware {
         super.onActivityCreated(savedInstanceState)
         measureViewModel = activity?.run {
             ViewModelProvider(this, factory).get(MeasureViewModel::class.java)
-        } ?: throw Exception("Invalid Activity") as Throwable
+        } ?: throw Exception("Invalid Activity")
         Coroutines.main {
             val dialog =
                 setDataProgressDialog(activity!!, getString(R.string.data_loading_please_wait))

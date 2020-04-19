@@ -120,7 +120,7 @@ interface BaseConnectionApi {
     @POST("GetRouteSectionPoint")
     suspend fun getRouteSectionPoint(
 
-        @Field("Distance") distance : Double,
+        @Field("Distance") distance: Int,
         @Field("MustBeInBuffer") buffer: Int,
         @Field("Latitude") latitude: Double,
         @Field("Longitude") longitude: Double,
@@ -140,72 +140,6 @@ interface BaseConnectionApi {
         @Body job: JsonObject
     ): Response<UploadWorksItemResponse>
 
-
-
-
-
-
-
-
-
-
-
-
-
-//        @Field("UserId") userId: String,
-//        @Field("JobId") jobId: String,
-//        @Field("JiNo") jimNo: String?,
-//        @Field("ContractId") contractVoId: String?,
-//        @Field("MeasurementItems[]") measurementItems: ArrayList<JobItemMeasureDTOTemp>?
-//    @Headers("Content-Type: application/json")
-//    @FormUrlEncoded
-//    @POST("SaveMeasurementItems")
-//    suspend fun saveMeasurementItems(
-//        @Field("UserId") userId: String,
-//        @Field("JobId") jobId: String,
-//        @Field("JiNo") jimNo: String?,
-//        @Field("ContractId") contractVoId: String?,
-//        @Field("MeasurementItems") measurementItems: ArrayList<JobItemMeasureDTOTemp>
-//    ):  Response<SaveMeasurementResponse>
-//    @FormUrlEncoded
-    //    @FormUrlEncoded
-//    @POST("UploadRrmImage")
-//    suspend fun uploadRrmImage(
-//        @Field("Filename") Filename: String,
-//        @Field("ImageFileExtension") ext: String,
-//        @Field("ImageByteArray") photo: ByteArray
-//    ): Response<UploadImageResponse>
-
-//    @POST("UploadRrmImage")
-//    suspend fun sendJobsForApproval(
-//
-//    ): Response<JobResponse>
-
-//    @FormUrlEncoded
-//    @Headers("Content-Type : application/json")
-//    @POST("UserRolesRefresh")
-//    suspend fun userRoles(
-//        @Field("UserId") UserId : String
-//    ) : Response<UserRoleResponse>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     companion object {
         operator fun invoke(
             networkConnectionInterceptor: NetworkConnectionInterceptor
@@ -219,7 +153,7 @@ interface BaseConnectionApi {
                 connectTimeout(5, TimeUnit.MINUTES)
                     protocols(listOf(Protocol.HTTP_1_1))
 //                .pingInterval(100, TimeUnit.MILLISECONDS)
-                addInterceptor(interceptor)
+
                 addInterceptor(networkConnectionInterceptor)
                 addInterceptor { chain ->
                     var request = chain.request()
@@ -230,6 +164,9 @@ interface BaseConnectionApi {
 
             }
 
+            if (BuildConfig.DEBUG)
+                okkHttpclient.addInterceptor(interceptor)
+
             return Retrofit.Builder()
                 .client(okkHttpclient.build())
                 .baseUrl(BASE_URL)
@@ -239,93 +176,4 @@ interface BaseConnectionApi {
 
         }
     }
-
-
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//            return Retrofit.Builder()
-//                .client(okkHttpclient)
-//
-//                .baseUrl("https://itisqa.nra.co.za/ITISServicesMobile/api/RRM/")
-//                .addConverterFactory(JacksonConverterFactory.create())
-////                .addConverterFactory(GsonConverterFactory.create())
-////                .addCallAdapterFactory(CoroutineCallAdapterFactory())
-//                .build()
-//                .create(BaseConnectionApi::class.java)

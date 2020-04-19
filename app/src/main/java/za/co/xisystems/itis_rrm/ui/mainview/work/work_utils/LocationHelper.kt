@@ -48,7 +48,7 @@ class LocationHelper(private val capturePhoto: CaptureWorkFragment) : Connection
         if (PermissionController.checkPermissionsEnabled(getApplicationContext())) {
             googleApiClient!!.connect()
         } else {
-            PermissionController.startPermissionRequests(capturePhoto.activity, getApplicationContext())
+            PermissionController.startPermissionRequests(capturePhoto.activity)
         }
     }
 
@@ -112,7 +112,7 @@ class LocationHelper(private val capturePhoto: CaptureWorkFragment) : Connection
                 LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this)
             }
         } else {
-            PermissionController.startPermissionRequests(capturePhoto.activity, getApplicationContext())
+            PermissionController.startPermissionRequests(capturePhoto.activity)
         }
     }
 

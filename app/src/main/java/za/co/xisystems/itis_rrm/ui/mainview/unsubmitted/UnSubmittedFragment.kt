@@ -1,7 +1,6 @@
 package za.co.xisystems.itis_rrm.ui.mainview.unsubmitted
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
@@ -16,6 +15,7 @@ import kotlinx.android.synthetic.main.fragment_unsubmittedjobs.*
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
+import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
@@ -23,7 +23,7 @@ import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
 import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.unsubmited_item.UnSubmittedJobItem
 import za.co.xisystems.itis_rrm.utils.*
 
-class UnSubmittedFragment : BaseFragment(), KodeinAware {
+class UnSubmittedFragment : BaseFragment(R.layout.fragment_unsubmittedjobs), KodeinAware {
 
     override val kodein by kodein()
     private lateinit var unsubmittedViewModel: UnSubmittedViewModel
@@ -73,21 +73,21 @@ class UnSubmittedFragment : BaseFragment(), KodeinAware {
                 })
             } catch (e: ApiException) {
                 ToastUtils().toastLong(activity, e.message)
-                Log.e(TAG, "API Exception", e)
+                Timber.e(e, "API Exception")
             } catch (e: NoInternetException) {
                 ToastUtils().toastLong(activity, e.message)
-                Log.e(TAG, "No Internet Connection", e)
+                Timber.e(e, "No Internet Connection")
             } catch (e: NoConnectivityException) {
                 ToastUtils().toastLong(activity, e.message)
-                Log.e(TAG, "Service Host Unreachable", e)
+                Timber.e(e, "Service Host Unreachable")
             }
         }
     }
 
 
     private fun List<JobDTO>.toApproveListItems(): List<UnSubmittedJobItem> {
-        return this.map { approvej_items ->
-            UnSubmittedJobItem(approvej_items, unsubmittedViewModel, groupAdapter)
+        return this.map { jobsToApprove ->
+            UnSubmittedJobItem(jobsToApprove, unsubmittedViewModel, groupAdapter)
         }
     }
 
@@ -100,6 +100,11 @@ class UnSubmittedFragment : BaseFragment(), KodeinAware {
             adapter = groupAdapter
         }
 
+    }
+
+    override fun onDestroyView() {
+        incomplete_job_listView.adapter = null
+        super.onDestroyView()
     }
 }
 

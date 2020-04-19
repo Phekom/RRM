@@ -16,7 +16,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.SectionPointDTO
 interface SectionPointDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertSections(section : SectionPointDTO)
+    suspend fun insertSection(section: SectionPointDTO)
 
     @Query("SELECT * FROM SECTION_POINT_TABLE WHERE sectionId = :sectionId AND projectId LIKE :projectId AND jobId LIKE :jobId")
     fun checkSectionExists(sectionId: Int, projectId: String?, jobId: String?): Boolean
@@ -28,6 +28,12 @@ interface SectionPointDao {
     @Query("SELECT * FROM SECTION_POINT_TABLE WHERE  projectId LIKE :projectId")
     fun getPointSectionData( projectId: String?): LiveData<SectionPointDTO>  //jobId: String jobId LIKE :jobId AND
 
+    @Query("SELECT * FROM SECTION_POINT_TABLE WHERE sectionId = :sectionId AND projectId LIKE :projectId AND jobId LIKE :jobId")
+    fun getExistingSection(
+        sectionId: Int,
+        projectId: String?,
+        jobId: String?
+    ): LiveData<SectionPointDTO>
 //
 //    @Query("SELECT route FROM SECTION_POINT_TABLE WHERE sectionId = :sectionId")
 //    fun getRouteForProjectSectionId(sectionId: String): String

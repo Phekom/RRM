@@ -24,25 +24,15 @@ interface UserDao{
     @Query("UPDATE USER_TABLE SET PIN =:confirmNewPin WHERE PIN = :enterOldPin")
     fun upDateUserPin(confirmNewPin: String, enterOldPin: String)
 
-
-
-
-
-
-
-
-
     @Query("SELECT * FROM USER_TABLE WHERE userId = userId")
-    fun getuser() : LiveData<UserDTO>
+    fun getUser(): LiveData<UserDTO>
 
     @Query("SELECT UserId FROM USER_TABLE WHERE userId = userId")
-    fun getuserID() : String
+    fun getUserID(): String
 
     @Query("SELECT UserName FROM USER_TABLE WHERE userId = userId")
     fun getUserName() : String
 
-//    @Query("SELECT userRoles FROM USER_TABLE WHERE uid = $CURRENT_LOGGEDIN_USER")
-//    fun getUserRole() : LiveData<List<UserDTO>>
 
     @Delete
     suspend fun removeUser(userDTO: UserDTO)

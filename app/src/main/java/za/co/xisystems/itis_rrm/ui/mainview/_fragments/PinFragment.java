@@ -25,6 +25,7 @@ public class PinFragment extends BaseFragment {
     private TextView pinTextView;
 
     public PinFragment() {
+        super(R.layout.fragment_photo_estimate);
     }
 
     public static PinFragment newInstance() {
@@ -48,70 +49,70 @@ public class PinFragment extends BaseFragment {
         pinEditText = view.findViewById(R.id.pin_editText);
         pinTextView = view.findViewById(R.id.pinTextView);
 
-        Button oneButton = (Button) view.findViewById(R.id.pin_one_button);
+        Button oneButton = view.findViewById(R.id.pin_one_button);
         oneButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 pinChanged(getString(R.string.no_1));
             }
         });
-        Button twoButton = (Button) view.findViewById(R.id.pin_two_button);
+        Button twoButton = view.findViewById(R.id.pin_two_button);
         twoButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 pinChanged(getString(R.string.no_2));
             }
         });
-        Button threeButton = (Button) view.findViewById(R.id.pin_three_button);
+        Button threeButton = view.findViewById(R.id.pin_three_button);
         threeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 pinChanged(getString(R.string.no_3));
             }
         });
-        Button fourButton = (Button) view.findViewById(R.id.pin_four_button);
+        Button fourButton = view.findViewById(R.id.pin_four_button);
         fourButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 pinChanged(getString(R.string.no_4));
             }
         });
-        Button fiveButton = (Button) view.findViewById(R.id.pin_five_button);
+        Button fiveButton = view.findViewById(R.id.pin_five_button);
         fiveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 pinChanged(getString(R.string.no_5));
             }
         });
-        Button sixButton = (Button) view.findViewById(R.id.pin_six_button);
+        Button sixButton = view.findViewById(R.id.pin_six_button);
         sixButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 pinChanged(getString(R.string.no_6));
             }
         });
-        Button sevenButton = (Button) view.findViewById(R.id.pin_seven_button);
+        Button sevenButton = view.findViewById(R.id.pin_seven_button);
         sevenButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 pinChanged(getString(R.string.no_7));
             }
         });
-        Button eightButton = (Button) view.findViewById(R.id.pin_eight_button);
+        Button eightButton = view.findViewById(R.id.pin_eight_button);
         eightButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 pinChanged(getString(R.string.no_8));
             }
         });
-        Button nineButton = (Button) view.findViewById(R.id.pin_nine_button);
+        Button nineButton = view.findViewById(R.id.pin_nine_button);
         nineButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 pinChanged(getString(R.string.no_9));
             }
         });
-        Button zeroButton = (Button) view.findViewById(R.id.pin_zero_button);
+        Button zeroButton = view.findViewById(R.id.pin_zero_button);
         zeroButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -131,7 +132,7 @@ public class PinFragment extends BaseFragment {
                 }
             }
         });
-        Button clearButton = (Button) view.findViewById(R.id.pin_clear_button);
+        Button clearButton = view.findViewById(R.id.pin_clear_button);
         clearButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

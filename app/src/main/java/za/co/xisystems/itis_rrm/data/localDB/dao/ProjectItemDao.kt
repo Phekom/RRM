@@ -5,8 +5,8 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.ItemSectionDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
 
 /**
  * Created by Francis Mahlava on 2019/11/21.
@@ -50,6 +50,8 @@ interface ProjectItemDao {
     @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE projectId LIKE :projectId ORDER BY itemCode ASC "  )
     fun getAllItemsForProjectId(projectId: String): LiveData<List<ProjectItemDTO>>
 
+    @Query("SELECT DISTINCT sectionItemId FROM PROJECT_ITEM_TABLE WHERE sectionItemId LIKE :sectionItemId AND projectId LIKE :projectId")
+    fun getSectionItemIdsForProjectId(sectionItemId: String, projectId: String): List<String>
 
     @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE sectionItemId LIKE :sectionItem AND projectId LIKE :projectId")
     fun getAllItemsForSectionItem(sectionItem : String, projectId : String ): LiveData<List<ProjectItemDTO>>

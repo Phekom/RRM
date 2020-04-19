@@ -1,6 +1,5 @@
 package za.co.xisystems.itis_rrm.ui.auth
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -38,7 +37,6 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
     override val kodein by kodein()
     private val factory: AuthViewModelFactory by instance()
     private lateinit var viewModel: AuthViewModel
-    private lateinit var appContext: Context
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -71,13 +69,13 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
             })
 
             serverTextView.setOnClickListener {
-                ToastUtils().toastServerAddress(appContext)
+                ToastUtils().toastServerAddress(this.applicationContext)
             }
 
 
 
             buildFlavorTextView.setOnClickListener {
-                ToastUtils().toastVersion(appContext)
+                ToastUtils().toastVersion(this.applicationContext)
             }
 
 

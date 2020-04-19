@@ -4,9 +4,8 @@
     package="za.co.xisystems.itis_rrm"
     android:installLocation="auto">
 
-    <uses-feature
-        android:name="android.hardware.camera"
-        android:required="true" />
+    <uses-feature android:name="android.hardware.camera" android:required="true" />
+
     <!-- When adding a permission, also add to  "xisystemsms.itismaintenance.controllers.PermissionController"  if necessary. -->
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -21,7 +20,7 @@
     <uses-permission android:name="android.permission.CAMERA" />
 
     <application
-        android:name=".MainApp"
+        android:name="MainApp"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -31,8 +30,10 @@
 
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-        <!--        <activity android:name=".ui.mainview.create.edit_estimates.EstimatePhotoActivity"></activity> android:hardwareAccelerated="false"-->
-        <activity android:name=".ui.mainview.estmeasure.submit_measure.CaptureItemMeasurePhotoActivity" />
+        <!--
+            <activity android:name=".ui.mainview.create.edit_estimates.EstimatePhotoActivity"></activity> android:hardwareAccelerated="false"
+            <activity android:name=".ui.mainview.estmeasure.submit_measure.CaptureItemMeasurePhotoActivity" />
+        -->
 
         <provider
             android:name="androidx.core.content.FileProvider"
@@ -114,7 +115,7 @@
 
         <meta-data
             android:name="com.raygun.raygun4android.apikey"
-            android:value="kcgu9Beurf2BQphFwPHUw" />
+            android:value="ELsXRYNj5MJJPHUiZQxpw" />
 
     </application>
 

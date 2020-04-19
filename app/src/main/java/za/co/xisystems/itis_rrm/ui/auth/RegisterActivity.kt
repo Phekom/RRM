@@ -52,7 +52,7 @@ class RegisterActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runna
         super.onCreate(savedInstanceState)
         appContext = this
         if ( startPermissionRequest(appContext.applicationContext, permissions)){
-            toast("Permissions Are already provided ")
+            toast("Permissions already provided.")
         }else{
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 requestPermissions(permissions, PERMISSION_REQUEST)
@@ -136,12 +136,12 @@ class RegisterActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runna
                    if (requestAgain){
                        toast("Permission Denied")
                    }else{
-                       toast("Please Enable Pemmisions from your Device Settings")
+                       toast("Please Enable Permissions from your Device Settings")
                    }
                }
             }
             if (allAllowed)
-                toast("Permissons Granted")
+                toast("Permissions Granted")
         }
     }
 
@@ -169,7 +169,7 @@ class RegisterActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runna
         if (PermissionController.checkPermissionsEnabled(applicationContext)) {
 //            googleApiClient!!.connect()
         } else {
-            PermissionController.startPermissionRequests(this, applicationContext)
+            PermissionController.startPermissionRequests(this)
         }
 
     }
@@ -181,7 +181,7 @@ class RegisterActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runna
 
     override fun onSuccess(user:UserDTO) {
             loading.hide()
-        toast("You are Loggedin as ${user.userName}")
+        toast("You are logged in as ${user.userName}")
     }
 
     override fun onFailure(message: String) {
@@ -204,9 +204,9 @@ class RegisterActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runna
 
     override fun run() {
         Coroutines.main {
-            val contracts = viewModel.offlinedata.await()
-            contracts.observe(this, Observer { contrcts ->
-
+            val contractList = viewModel.offlinedata.await()
+            contractList.observe(this, Observer { contractItems ->
+                // TODO: What were we going to do with these values?
             })
         }
 

@@ -6,6 +6,7 @@ import androidx.fragment.app.FragmentActivity
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import com.xwray.groupie.kotlinandroidextensions.Item
 import kotlinx.android.synthetic.main.estimates_item.*
+import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.ApproveJobsViewModel
@@ -26,7 +27,6 @@ class EstimatesItem(
 
     override fun bind(viewHolder: GroupieViewHolder, position: Int) {
         viewHolder.apply {
-            //            appListID1.text = getItemId(position + 1).toString()
             estimation_item_quantity_textView.text = "Qty: " + jobItemEstimateDTO.qty.toString()
             estimation_item_price_textView.text = "R " + jobItemEstimateDTO.lineRate.toString()
             Coroutines.main {
@@ -35,7 +35,7 @@ class EstimatesItem(
                 val uom =
                     approveViewModel.getUOMForProjectItemId(jobItemEstimateDTO.projectItemId!!)
                 measure_item_description_textView.text = descr
-                estimation_item_uom_textView.text = "Unit of Measure: $uom"
+                // estimation_item_uom_textView.text = "Unit of Measure: $uom"
                 if (uom == "NONE" || uom == "") {
                     estimation_item_uom_textView.text = ""
                 } else {
@@ -43,20 +43,7 @@ class EstimatesItem(
                 }
 
             }
-            photoPreviewStart.setOnClickListener {
-                Coroutines.main {
-                    val startPhoto =
-                        approveViewModel.getJobEstimationItemsPhotoStartPath(jobItemEstimateDTO.estimateId)
-                    showZoomedImage(startPhoto)
-                }
-            }
-            photoPreviewEnd.setOnClickListener {
-                Coroutines.main {
-                    val endPhoto =
-                        approveViewModel.getJobEstimationItemsPhotoEndPath(jobItemEstimateDTO.estimateId)
-                    showZoomedImage(endPhoto)
-                }
-            }
+
             updateStartImage()
             updateEndImage()
 
@@ -65,11 +52,11 @@ class EstimatesItem(
     }
 
     private fun showZoomedImage(imageUrl: String?) {
-        val dialog = Dialog(this.activity, R.style.dialog_full_screen)
+        val dialog = Dialog(activity!!, R.style.dialog_full_screen)
         dialog.setContentView(R.layout.new_job_photo)
         val zoomageView =
             dialog.findViewById<ZoomageView>(R.id.zoomedImage)
-        GlideApp.with(this.activity!!)
+        GlideApp.with(activity)
             .load(imageUrl)
             .into(zoomageView)
         dialog.show()
@@ -79,32 +66,53 @@ class EstimatesItem(
 
     private fun GroupieViewHolder.updateStartImage() {
         Coroutines.main {
-            val startPhoto =
-                approveViewModel.getJobEstimationItemsPhotoStartPath(jobItemEstimateDTO.estimateId)
-            GlideApp.with(this.containerView)
-                .load(Uri.fromFile(File(startPhoto)))
-                .placeholder(R.drawable.logo_new_medium)
-                .into(photoPreviewStart)
+
+            try {
+
+                val startPhoto =
+                    approveViewModel.getJobEstimationItemsPhotoStartPath(jobItemEstimateDTO.estimateId)
+
+                GlideApp.with(this.containerView)
+                    .load(Uri.fromFile(File(startPhoto)))
+                    .error(R.drawable.no_image)
+                    .placeholder(R.drawable.logo_new_medium)
+                    .into(photoPreviewStart)
+
+                photoPreviewStart.setOnClickListener {
+                    showZoomedImage(startPhoto)
+                }
+            } catch (e: NullPointerException) {
+                photoPreviewStart.setOnClickListener(null)
+            } catch (e: Exception) {
+                Timber.e(e)
+            }
         }
     }
+
+
     private fun GroupieViewHolder.updateEndImage() {
         Coroutines.main {
-            val endPhoto =
-                approveViewModel.getJobEstimationItemsPhotoEndPath(jobItemEstimateDTO.estimateId)
-        GlideApp.with(this.containerView)
-                .load(Uri.fromFile(File(endPhoto)))
-                .placeholder(R.drawable.logo_new_medium)
-                .into(photoPreviewEnd)
+            try {
+                val endPhoto =
+                    approveViewModel.getJobEstimationItemsPhotoEndPath(jobItemEstimateDTO.estimateId)
 
-//        Glide.with(this)
-//            .load(Uri.fromFile(File(imageStoragePath)))
-//            .apply(RequestOptions().override(100, 100))
-//            .into(imageView)
+                GlideApp.with(this.containerView)
+                    .load(Uri.fromFile(File(endPhoto)))
+                    .error(R.drawable.no_image)
+                    .placeholder(R.drawable.logo_new_medium)
+                    .into(photoPreviewEnd)
+
+                photoPreviewEnd.setOnClickListener {
+                    showZoomedImage(endPhoto)
+                }
+
+            } catch (e: NullPointerException) {
+                photoPreviewEnd.setOnClickListener(null)
+            } catch (e: Exception) {
+                Timber.e(e)
+
+            }
         }
     }
-}
 
-private fun getItemId(position: Int): Long {
-    return position.toLong()
 }
-

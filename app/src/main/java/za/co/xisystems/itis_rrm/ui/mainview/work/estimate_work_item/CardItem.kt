@@ -63,8 +63,8 @@ open class CardItem(
         val jobworkItems = jobworkItems
         Coroutines.main {
 
-            workViewModel.work_ItemJob.value = jobworkItems
-            workViewModel.work_Item.value = estimate
+            workViewModel.workItemJob.value = jobworkItems
+            workViewModel.workItem.value = estimate
         }
         Navigation.findNavController(view!!)
             .navigate(R.id.action_nav_work_to_captureWorkFragment)

@@ -31,7 +31,7 @@ interface SectionItemDao {
     fun getDescriptionFromSectionItemId(sectionItemId: String) : List<SectionItemDTO>
 
     @Query("SELECT * FROM SECTION_ITEM_TABLE")
-    fun getSectionItems() : LiveData<SectionItemDTO>
+    fun getSectionItems(): LiveData<List<SectionItemDTO>>
 
     @Query("SELECT * FROM SECTION_ITEM_TABLE ORDER BY  itemCode  ASC")
     fun getAllSectionItems() : LiveData<List<SectionItemDTO>>

@@ -21,20 +21,22 @@ class CreateViewModel(
     private val jobCreationDataRepository: JobCreationDataRepository
 ) : ViewModel() {
 
+    // TODO: Create Call to create a new job item
 
-    val jobtoEdit_Item = MutableLiveData<JobDTO>()
-    fun Item5(jobEdit_Item: JobDTO) {
-        jobtoEdit_Item.value = jobEdit_Item
+
+    val jobToEditItem = MutableLiveData<JobDTO>()
+    fun setJobToEditItem(inJobItemToEdit: JobDTO) {
+        jobToEditItem.value = inJobItemToEdit
     }
 
-    private val EstimateQty = MutableLiveData<Int>()
-    fun estimate(Qty: Int) {
-        EstimateQty.value = Qty
+    val estimateQty = MutableLiveData<Double>()
+    fun setEstimateQuantity(inQty: Double) {
+        estimateQty.value = inQty
     }
 
-    val costLineRate = MutableLiveData<String>()
-    fun lineRate(rate: String) {
-        costLineRate.value = rate
+    val estimateLineRate = MutableLiveData<Double>()
+    fun setEstimateLineRate(inRate: Double) {
+        estimateLineRate.value = inRate
     }
 
     val offlineSectionItems by lazyDeferred {
@@ -43,8 +45,8 @@ class CreateViewModel(
 
 
     val sectionId = MutableLiveData<String>()
-    fun sectionId(section_Id: String) {
-        sectionId.value = section_Id
+    fun setSectionId(inSectionId: String) {
+        sectionId.value = inSectionId
     }
 
 
@@ -53,77 +55,64 @@ class CreateViewModel(
     }
 
     val loggedUser = MutableLiveData<Int>()
-    fun userN(user_n: Int) {
-        loggedUser.value = user_n
+    fun setLoggerUser(inLoggedUser: Int) {
+        loggedUser.value = inLoggedUser
     }
 
-    private val descriptioN = MutableLiveData<String>()
-    fun userN(desc: String) {
-        descriptioN.value = desc
+    val description = MutableLiveData<String>()
+    fun setDescription(desc: String) {
+        description.value = desc
     }
 
-    val newjob = MutableLiveData<JobDTO>()
-    fun userN(job: JobDTO) {
-        newjob.value = job
+    val newJob = MutableLiveData<JobDTO>()
+    fun createNewJob(job: JobDTO) {
+        newJob.value = job
     }
 
 
-    val contract_No = MutableLiveData<String>()
-    fun contractNmbr(contract_Nmbr: String) {
-        contract_No.value = contract_Nmbr
+    val contractNo = MutableLiveData<String>()
+    fun setContractorNo(inContractNo: String) {
+        contractNo.value = inContractNo
     }
 
-    val contract_ID = MutableLiveData<String>()
-    fun contractIdd(contract_Id: String) {
-        contract_ID.value = contract_Id
+    val contractId = MutableLiveData<String>()
+    fun setContractId(inContractId: String) {
+        contractId.value = inContractId
     }
 
-    private val project_ID = MutableLiveData<String>()
-    fun contractI(project_Id: String) {
-        project_ID.value = project_Id
+    val projectId = MutableLiveData<String>()
+    fun setProjectId(inProjectId: String) {
+        projectId.value = inProjectId
     }
 
-    val project_Code = MutableLiveData<String>()
-    fun projecCode(projec_Code: String) {
-        project_Code.value = projec_Code
+    val projectCode = MutableLiveData<String>()
+    fun setProjectCode(inProjectCode: String) {
+        projectCode.value = inProjectCode
     }
 
-    private val projectSec_Item = MutableLiveData<ProjectItemDTO>()
-    fun projecI(projec_Item: ProjectItemDTO) {
-        projectSec_Item.value = projec_Item
+    private val projectItem = MutableLiveData<ProjectItemDTO>()
+    fun setProjectItem(inProjectItem: ProjectItemDTO) {
+        projectItem.value = inProjectItem
     }
 
-    val Sec_Item = MutableLiveData<SectionProj_Item>()
-    fun projecItem(projec_Item: SectionProj_Item) {
-        Sec_Item.value = projec_Item
+    val sectionProjectItem = MutableLiveData<SectionProj_Item>()
+    fun setSectionProjectItem(inSectionProjectItem: SectionProj_Item) {
+        sectionProjectItem.value = inSectionProjectItem
     }
 
-    val job_Item = MutableLiveData<JobDTO>()
-    fun projecIte(job_Ite: JobDTO) {
-        job_Item.value = job_Ite
+    val jobItem = MutableLiveData<JobDTO>()
+    suspend fun getJob(inJobId: String) {
+        jobItem.value = jobCreationDataRepository.getUpdatedJob(jobId = inJobId)
     }
 
-    val project_Item = MutableLiveData<ItemDTOTemp>()
-    fun projecItem(projec_Item: ItemDTOTemp) {
-        project_Item.value = projec_Item
+    val projectItemTemp = MutableLiveData<ItemDTOTemp>()
+    fun setProjectItemTemp(inProjectItemTemp: ItemDTOTemp) {
+        projectItemTemp.value = inProjectItemTemp
     }
 
-    private val project_Rate = MutableLiveData<Double>()
-    fun projecRate(projec_Rate: Double) {
-        project_Rate.value = projec_Rate
-    }
-
-//    val project_Rate = MutableLiveData<Double>()
-//    fun projecRate(projec_Rate: Double) {
-//        project_Rate.value = projec_Rate
-//    }
-
-
-    val proId = MutableLiveData<String>()
-    suspend fun getProject(projectId: String) {
-        return withContext(Dispatchers.IO) {
-            proId.value = projectId
-        }
+    private val projectRate = MutableLiveData<Double>()
+    fun setProjectRate(inProjectRate: Double) {
+        projectRate.value = inProjectRate
     }
 
     suspend fun saveNewJob(newjob: JobDTO) {
@@ -146,7 +135,7 @@ class CreateViewModel(
 
     suspend fun getAllSectionItem(): LiveData<List<SectionItemDTO>> {
         return withContext(Dispatchers.IO) {
-            jobCreationDataRepository.getAllSectionItem()
+            jobCreationDataRepository.getAllSectionItems()
         }
     }
 
@@ -159,19 +148,28 @@ class CreateViewModel(
         }
     }
 
-
+    // TODO: Should return some sort of status
     suspend fun saveNewItem(newjItem: ItemDTOTemp) {
-        jobCreationDataRepository.saveNewItem(newjItem)
+        return withContext(Dispatchers.IO) {
+            jobCreationDataRepository.saveNewItem(newjItem)
+        }
     }
 
-    fun delete(item: ItemDTOTemp) {
+    fun deleteItemTemp(item: ItemDTOTemp) {
         jobCreationDataRepository.delete(item)
     }
 
 
-    fun deleJobfromList(jobId: String) {
+    fun deleteJobFromList(jobId: String) {
         jobCreationDataRepository.deleteJobfromList(jobId)
     }
+
+    suspend fun getJobSectionForJobId(jobId: String): JobSectionDTO? {
+        return withContext(Dispatchers.IO) {
+            jobCreationDataRepository.getJobSection(jobId)
+        }
+    }
+
 
     fun updateNewJob(
         newjobId: String,
@@ -193,6 +191,8 @@ class CreateViewModel(
     }
 
     suspend fun getPointSectionData(projectId: String?): LiveData<SectionPointDTO> {//jobId: String,jobId,
+
+
         return withContext(Dispatchers.IO) {
             jobCreationDataRepository.getPointSectionData(projectId)
         }
@@ -202,7 +202,7 @@ class CreateViewModel(
         sectionId: Int,
         linearId: String?,
         projectId: String?
-    ): LiveData<String> {
+    ): LiveData<String?> {
         return withContext(Dispatchers.IO) {
             jobCreationDataRepository.getSectionByRouteSectionProject(
                 sectionId,
@@ -226,7 +226,8 @@ class CreateViewModel(
         projectId: String?,
         jobId: String,
         itemCode: ItemDTOTemp?
-    ) {
+    ): LiveData<String?> {
+
         return withContext(Dispatchers.IO) {
             jobCreationDataRepository.getRouteSectionPoint(
                 latitude,
@@ -236,11 +237,13 @@ class CreateViewModel(
                 jobId,
                 itemCode
             )
+
+
         }
 
     }
 
-    suspend fun getAllProjecItems(projectId: String, jobId: String): LiveData<List<ItemDTOTemp>> {
+    suspend fun getAllProjectItems(projectId: String, jobId: String): LiveData<List<ItemDTOTemp>> {
         return withContext(Dispatchers.IO) {
             jobCreationDataRepository.getAllProjectItems(projectId, jobId)
         }
@@ -262,14 +265,11 @@ class CreateViewModel(
         }
         if (!isValid) {
             return withContext(Dispatchers.IO) {
-//                !isValid
                 false
-
             }
         }
        return withContext(Dispatchers.IO) {
            isValid
-           true
        }
 
     }
@@ -282,6 +282,7 @@ class CreateViewModel(
     ): String {
         return withContext(Dispatchers.IO) {
             jobCreationDataRepository.submitJob(userId, job, activity)
+
         }
 
     }
