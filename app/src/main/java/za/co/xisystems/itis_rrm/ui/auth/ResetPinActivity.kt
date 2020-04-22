@@ -58,7 +58,7 @@ class ResetPinActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runna
                 // Register the user
                 if (user != null) {
                     Coroutines.main {
-                    if (viewModel.enterOldPin == viewModel.confirmNewPin) else
+                        if (viewModel.enterOldPin != viewModel.confirmNewPin)
                         getToLogin()
                     }
                 }
@@ -103,12 +103,12 @@ class ResetPinActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runna
                    if (requestAgain){
                        toast("Permission Denied")
                    }else{
-                       toast("Please Enable Pemmisions from your Device Settings")
+                       toast("Please enable permissions from your Device Settings")
                    }
                }
             }
             if (allAllowed)
-                toast("Permissons Granted")
+                toast("Permissions Granted")
         }
     }
 
@@ -143,7 +143,7 @@ class ResetPinActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runna
     override fun onSuccess(user:UserDTO) {
             loading.hide()
 
-        toast("You are Loggedin as ${user.userName}")
+        toast("You are logged in as ${user.userName}")
     }
 
     override fun onFailure(message: String) {
@@ -156,16 +156,6 @@ class ResetPinActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runna
 
 
     override fun onSignOut(user: UserDTO) {
-
-    }
-
-    override fun run() {
-        Coroutines.main {
-            val contracts = viewModel.offlinedata.await()
-            contracts.observe(this, Observer { contrcts ->
-
-            })
-        }
 
     }
 

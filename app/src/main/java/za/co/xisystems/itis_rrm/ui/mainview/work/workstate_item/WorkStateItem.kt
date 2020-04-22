@@ -24,8 +24,7 @@ class WorkStateItem(
     private val jobWorkStep: ArrayList<WF_WorkStepDTO>
 
 ) : Item() {
-    private var selection = 0
-    //private var lastSelectedRow: GroupieViewHolder? = null
+
 
     companion object {
         var selected_position = -1
@@ -34,17 +33,6 @@ class WorkStateItem(
     private var clickListener: ((WorkStateItem) -> Unit)? = null
 
     override fun bind(viewHolder: GroupieViewHolder, position: Int) {
-//        Coroutines.main {
-//            val workState = workViewModel.getWokrCodes.await()
-//            workState.observe(activity!!, Observer { workCodes ->
-//                for (item in workCodes){
-//                    val code = arrayOfNulls<String>(workCodes.size)
-//                    for (i in workCodes.indices) {
-//                        code[i] = workCodes[i].Step_Code
-//                    }
-//                }
-//            })
-//        }
 
       val step =    jobWorkStep
         val workState = arrayOf(
@@ -58,7 +46,7 @@ class WorkStateItem(
 
        viewHolder.apply {
            state.text = workState[position]
-//           state.text = jobWorkStep.Step_Code!![position].toString()
+
            setNewState(position, viewHolder)
            if (selected_position ==  adapterPosition){
                viewHolder.stateBack.setBackgroundColor(
@@ -79,14 +67,6 @@ class WorkStateItem(
 
            }
 
-//           Coroutines.main {
-//               val sectionId  =  approveViewModel?.getProjectSectionIdForJobId(jobItemMeasureDTO.jobId!!)
-//               val route  =  approveViewModel?.getRouteForProjectSectionId(sectionId!!)
-//               val section  =  approveViewModel?.getSectionForProjectSectionId(sectionId!!)
-//               apv_section.text =  "( ${route} ${"/0$section"} )"
-//               val description  =  approveViewModel?.getItemDesc(jobItemMeasureDTO.jobId!!)
-//               apv_description.text = description //list_selector
-//           }
        }
         viewHolder.itemView.setOnClickListener {
             clickListener?.invoke(this)
@@ -97,7 +77,7 @@ class WorkStateItem(
         position: Int,
         viewHolder: GroupieViewHolder
     ) {
-        //TODO(Replace this when Dynamic workflow is Functional)
+        // TODO (Replace this when Dynamic workflow is Functional)
         when (jobItemWorks?.actId) {
             15 -> {
                 selected_position = 0
@@ -135,11 +115,3 @@ class WorkStateItem(
 }
 
 
-private fun getCount(position: Int): Long {
-    return position.toLong()
-}
-
-
-private fun getItemId(position: Int): Long {
-    return position.toLong()
-}

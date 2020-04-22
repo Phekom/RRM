@@ -16,11 +16,8 @@ public class ColorUtil {
     public static int getTextColor(Context context, int id) {
         final int version = Build.VERSION.SDK_INT;
 
-        if (version >= 23) {
-            return ContextCompat.getColor(context, id);
-        } else {
-            return context.getResources().getColor(id);
-        }
+        return ContextCompat.getColor(context, id);
+
     }
 
     // endregion (Public Static Methods)

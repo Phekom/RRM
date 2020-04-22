@@ -66,12 +66,12 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
             approveViewModel.jobapproval_Item6.observe(viewLifecycleOwner, Observer { job ->
                 Coroutines.main {
                     getEstimateItems(job.jobDTO.JobId)
-                    val descri = approveViewModel.getDescForProjectId(job.jobDTO.ProjectId!!)
+                    val description = approveViewModel.getDescForProjectId(job.jobDTO.ProjectId!!)
                     val sectionId = approveViewModel.getProjectSectionIdForJobId(job.jobDTO.JobId)
                     val route = approveViewModel.getRouteForProjectSectionId(sectionId)
                     val section = approveViewModel.getSectionForProjectSectionId(sectionId)
 
-                    project_description_textView.text = descri
+                    project_description_textView.text = description
                     section_description_textView.text = ("$route/ $section")
                     start_km_description_textView.text = (job.jobDTO.StartKm.toString())
                     end_km_description_textView.text = (job.jobDTO.EndKm.toString())
@@ -142,29 +142,30 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
 
     private fun moveJobToNextWorkflow(workflowDirection : WorkflowDirection) {
         Coroutines.main {
-            val messages = arrayOf(
-                getString(R.string.moving_to_next_step_in_workflow),
-                getString(R.string.please_wait)
-            )
 
             val user = approveViewModel.user.await()
             user.observe(viewLifecycleOwner, Observer { user_ ->
                 approveViewModel.jobapproval_Item6.observe(viewLifecycleOwner, Observer { job ->
 
-                    if (user_.userId == null) {
-                        toast("Error: userId is null")
-                    } else if ( getEstimateItems(job.jobDTO.JobId) == null) {
-                        toast("Error: selectedJob is null")
-                    } else {
-                      toast(job.jobDTO.JobId)
-                        // TODO beware littlEndian conversion
-                        val trackRounteId: String = DataConversion.toLittleEndian(job.jobDTO.TrackRouteId)!!
-                        val direction: Int = workflowDirection.value
+                    when {
+                        user_.userId == null -> {
+                            toast("Error: userId is null")
+                        }
+                        getEstimateItems(job.jobDTO.JobId) == null -> {
+                            toast("Error: selectedJob is null")
+                        }
+                        else -> {
+                            toast(job.jobDTO.JobId)
+                            // beware littleEndian conversion
+                            val trackRouteId: String =
+                                DataConversion.toLittleEndian(job.jobDTO.TrackRouteId)!!
+                            val direction: Int = workflowDirection.value
 
-                        var description : String? = ""
-                        if (workflow_comments_editText.text != null)
-                            description = workflow_comments_editText.text.toString()
-                       processWorkFlow(user_.userId, trackRounteId, direction, description)
+                            var description: String? = ""
+                            if (workflow_comments_editText.text != null)
+                                description = workflow_comments_editText.text.toString()
+                            processWorkFlow(user_.userId, trackRouteId, direction, description)
+                        }
                     }
 
                 })
@@ -175,24 +176,25 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
 
     private fun processWorkFlow(
         userId: String,
-        trackRounteId: String,
+        trackRouteId: String,
         direction: Int,
         description: String?
     ) {
-        Coroutines.main {       //  activity?.hideKeyboard()
-            val prog = ProgressDialog(activity)
-            prog.setTitle(getString(R.string.please_wait))
-            prog.setMessage(getString(R.string.loading_job_wait))
-            prog.setCancelable(false)
-            prog.isIndeterminate = true
-            prog.setProgressStyle(ProgressDialog.STYLE_SPINNER)
-            prog.show()
+        Coroutines.main {
+            val progressDialog = ProgressDialog(activity)
+            progressDialog.setTitle(getString(R.string.please_wait))
+            progressDialog.setMessage(getString(R.string.loading_job_wait))
+            progressDialog.setCancelable(false)
+            progressDialog.isIndeterminate = true
+            progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER)
+            progressDialog.show()
 
-        val submit = approveViewModel.processWorkflowMove(userId, trackRounteId,description,direction)
+            val submit =
+                approveViewModel.processWorkflowMove(userId, trackRouteId, description, direction)
             if (submit != null){
-                prog.dismiss()
+                progressDialog.dismiss()
                 toast(submit) }else {
-                prog.dismiss()
+                progressDialog.dismiss()
                 toast(R.string.job_submitted)
                 popViewOnJobSubmit(direction)}
 
@@ -221,7 +223,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
         val estimates = approveViewModel.getJobEstimationItemsForJobId(jobID)
             estimates.observe(viewLifecycleOwner, Observer { job_s ->
                 mydata_loading.hide()
-                initRecyclerView(job_s.toEstimates_Item())
+                initRecyclerView(job_s.toEstimatesListItem())
 
             })
 
@@ -240,16 +242,16 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
 
     }
 
-    private fun List<JobItemEstimateDTO>.toEstimates_Item(): List<EstimatesItem> {
-        return this.map { approvej_items ->
-//            getEstimateItemsPhoto(approvej_items.estimateId)
-            EstimatesItem(approvej_items, approveViewModel, activity)
+    private fun List<JobItemEstimateDTO>.toEstimatesListItem(): List<EstimatesItem> {
+        return this.map { approvedJobItems ->
+
+            EstimatesItem(approvedJobItems, approveViewModel, activity)
         }
     }
 
-//    private fun getEstimateItemsPhoto(estimateId: String) {
-//        Coroutines.main {
-//            val estimatesphoto = approveViewModel.getJobEstimationItemsPhoto(estimateId)
-//        }
-//    }
+
+    override fun onDestroyView() {
+        view_estimation_items_listView.adapter = null
+        super.onDestroyView()
+    }
 }

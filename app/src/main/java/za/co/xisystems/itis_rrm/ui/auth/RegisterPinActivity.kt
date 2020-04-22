@@ -99,7 +99,7 @@ class RegisterPinActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Ru
                    if (requestAgain){
                        toast("Permission Denied")
                    }else{
-                       toast("Please Enable Pemmissions from your Device Settings")
+                       toast("Please enable permissions from your Device Settings")
                    }
                }
             }
@@ -139,7 +139,7 @@ class RegisterPinActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Ru
     override fun onSuccess(user:UserDTO) {
             loading.hide()
 
-        toast("You are Loggedin as ${user.userName}")
+        toast("You are Logged in as ${user.userName}")
     }
 
     override fun onFailure(message: String) {
@@ -157,7 +157,7 @@ class RegisterPinActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Ru
 
     override fun run() {
         Coroutines.main {
-            val contracts = viewModel.offlinedata.await()
+            val contracts = viewModel.offlineData.await()
             contracts.observe(this, Observer { contrcts ->
 
             })

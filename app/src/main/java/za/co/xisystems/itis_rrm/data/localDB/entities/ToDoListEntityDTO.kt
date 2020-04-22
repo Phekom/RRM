@@ -1,10 +1,9 @@
 package za.co.xisystems.itis_rrm.data.localDB.entities
 
 
+//import com.google.android.gms.common.util.Base64Utils
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.fasterxml.jackson.annotation.JsonProperty
-//import com.google.android.gms.common.util.Base64Utils
 import com.google.gson.annotations.SerializedName
 import org.springframework.util.Base64Utils
 
@@ -45,7 +44,9 @@ data class ToDoListEntityDTO(
 
 ){
     var trackRouteId: ByteArray?
-        get() = if (trackRouteIdString == null) trackRouteIdBytes else Base64Utils.decode(trackRouteIdString)
+        get() = if (trackRouteIdString == null) trackRouteIdBytes else Base64Utils.decodeFromString(
+            trackRouteIdString
+        )
         set(trackRouteId) {
             this.trackRouteIdBytes = trackRouteId
             this.trackRouteIdString = Base64Utils.encode(trackRouteId).toString()
