@@ -70,7 +70,7 @@ object DateUtil {
         return StringToDate(emptyString + year + dash + mMon + dash + mDate + timeZeros)
     }
 
-    fun DateToCalendar(date: Date?): Calendar {
+    fun DateToCalendar(date: Date): Calendar {
         val cal = Calendar.getInstance()
         cal.time = date
         return cal

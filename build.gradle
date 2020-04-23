@@ -42,7 +42,7 @@ allprojects {
     }
     ext {
         daggerVersion = "2.15"
-        compile_version = 28
+        compile_version = 29
         android_min_sdk_version = 21
         appcompat_library_version = compile_version + ".0.0"
         support_library_version = "28.0.0"

@@ -34,7 +34,7 @@ data class ContractDTO(
 
 ) : Serializable, Parcelable {
     constructor(parcel: Parcel) : this(
-        parcel.readString(),
+        parcel.readString()!!,
         parcel.readString(),
         parcel.readString(),
         parcel.readString(),

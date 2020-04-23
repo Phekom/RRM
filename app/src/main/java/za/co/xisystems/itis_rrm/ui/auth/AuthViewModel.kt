@@ -141,8 +141,6 @@ class AuthViewModel(
             return
         }
 
-
-
         Coroutines.main {
             try {
                 // TODO: Read these metrics from the device.
@@ -157,7 +155,8 @@ class AuthViewModel(
                     IMEI,
                     androidDevice
                 )
-                authListener?.onFailure("User authentication failed. Please enter a valid User Id and Password.")
+            } catch (e: AuthException) {
+                authListener?.onFailure(e.message!!)
             } catch (e: ApiException) {
                 authListener?.onFailure(e.message!!)
             } catch (e: NoInternetException) {

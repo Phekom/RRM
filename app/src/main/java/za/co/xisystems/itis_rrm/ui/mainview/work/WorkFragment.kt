@@ -210,7 +210,7 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
         return this.map { work_items ->
 
             val expandableHeaderItem =
-                ExpandableHeaderWorkItem(activity, work_items, workViewModel, work_items.JobId)
+                ExpandableHeaderWorkItem(activity, work_items, workViewModel)
             ExpandableGroup(expandableHeaderItem, false).apply {
                 uiScope.launch(uiScope.coroutineContext) {
                     //ESTIMATE_WORK_PART_COMPLETE

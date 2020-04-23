@@ -349,13 +349,13 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
     }
 
     private fun showZoomedImage(imageUrl: Uri) {
-        val dialog = Dialog(activity?.applicationContext, R.style.dialog_full_screen)
-        dialog.setContentView(R.layout.new_job_photo)
+        val dialog = activity?.applicationContext?.let { Dialog(it, R.style.dialog_full_screen) }
+        dialog?.setContentView(R.layout.new_job_photo)
         val zoomageView =
             dialog?.findViewById<ZoomageView>(R.id.zoomedImage)
         GlideApp.with(this.requireActivity())
             .load(imageUrl)
-            .into(zoomageView)
+            .into(zoomageView!!)
         dialog.show()
     }
 

@@ -18,8 +18,7 @@ class ExpandableHeaderWorkItem(
     activity: FragmentActivity?,
     workItems: JobDTO,
 //    workItems: JobItemEstimateDTO,
-    workViewModel: WorkViewModel,
-    jobId: String?
+    workViewModel: WorkViewModel
 ) : HeaderItem(null, workItems ,workViewModel ), ExpandableItem {
 
     private var clickListener: ((ExpandableHeaderWorkItem) -> Unit)? = null
