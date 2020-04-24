@@ -1,5 +1,8 @@
 package za.co.xisystems.itis_rrm.ui.auth
 
+/**
+ * Updated by Shaun McDonald - 2020/04/15
+ */
 import android.Manifest
 import android.content.Context
 import android.content.Intent
@@ -30,9 +33,7 @@ import za.co.xisystems.itis_rrm.utils.*
 private const val PERMISSION_REQUEST = 10
 
 class RegisterActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runnable{
-    companion object{
-        val TAG: String = RegisterActivity::class.java.simpleName
-    }
+
 
     override val kodein by kodein()
     private val factory : AuthViewModelFactory by instance()
@@ -157,7 +158,6 @@ class RegisterActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runna
 
     }
 
-
     override fun onStart() {
         super.onStart()
         val resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this)
@@ -197,9 +197,8 @@ class RegisterActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runna
         return netInfo != null && netInfo.isConnectedOrConnecting
     }
 
-
     override fun onSignOut(user: UserDTO) {
-
+        // TODO: Implement sign-out message
     }
 
     override fun run() {
@@ -210,6 +209,10 @@ class RegisterActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runna
             })
         }
 
+    }
+
+    companion object {
+        val TAG: String = RegisterActivity::class.java.simpleName
     }
 
 

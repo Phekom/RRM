@@ -1,5 +1,8 @@
 package za.co.xisystems.itis_rrm.ui.auth
 
+/**
+ * Updated by Shaun McDonald 2020/04/15
+ */
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -27,13 +30,12 @@ import za.co.xisystems.itis_rrm.utils.toast
 
 class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, KodeinAware {
     private var activityPinLockBinding: ActivityLoginBinding? = null
-    //    private var pin = PinLock()
+
     private var pin = String()
     private var pinInput = ""
     private var index = 0
     private val Db: AppDatabase? = null
-    //    private val loginViewModel: AuthViewModel? = null
-//    private val repository: UserRepository? = null
+
     override val kodein by kodein()
     private val factory: AuthViewModelFactory by instance()
     private lateinit var viewModel: AuthViewModel
@@ -54,11 +56,6 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
                     initPin()
                     initListener()
                 } else {
-//                    val intent = Intent(this, RegisterActivity::class.java)
-//                    startActivity(intent)
-//                    finish()
-
-
 
                     Intent(this, RegisterActivity::class.java).also { home ->
                         home.flags =

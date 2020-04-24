@@ -12,6 +12,7 @@ import za.co.xisystems.itis_rrm.utils.*
 
 /**
  * Created by Francis Mahlava on 2019/10/23.
+ * Updated by Shaun McDonald 2020/04/15
  */
 
 
@@ -20,28 +21,28 @@ class AuthViewModel(
     private val offlineDataRepository: OfflineDataRepository
 ) : ViewModel() {
 
+
     var username: String? = null
     var password: String? = null
     var enterPin: String? = null
     var confirmPin: String? = null
-
     var enterOldPin: String? = null
     var enterNewPin: String? = null
     var confirmNewPin: String? = null
-
-
-
-
     var authListener: AuthListener? = null
-
+    val user by lazyDeferred {
+        repository.getUser()
+    }
+    val offlineData by lazyDeferred {
+        offlineDataRepository.getSectionItems()
+        offlineDataRepository.getContracts()
+    }
 
     suspend  fun getPin(): String {
         return withContext(Dispatchers.IO) {
             repository.getPin()
         }
     }
-
-
 
     fun onResetPinButtonClick(view: View) {
 
@@ -126,8 +127,6 @@ class AuthViewModel(
 
     }
 
-
-
     fun onRegButtonClick(view: View) {
         authListener?.onStarted()
 
@@ -167,17 +166,6 @@ class AuthViewModel(
         }
 
 
-    }
-
-
-
-
-    val user by lazyDeferred {
-        repository.getUser()
-    }
-    val offlineData by lazyDeferred {
-        offlineDataRepository.getSectionItems()
-        offlineDataRepository.getContracts()
     }
 
 }
