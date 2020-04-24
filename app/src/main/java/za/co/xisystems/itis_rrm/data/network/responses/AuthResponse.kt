@@ -6,6 +6,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 
 /**
  * Created by Francis Mahlava on 2019/10/23.
+ * Updated by Shaun McDonald on 2020/04/23
  */
 
 data class AuthResponse(
