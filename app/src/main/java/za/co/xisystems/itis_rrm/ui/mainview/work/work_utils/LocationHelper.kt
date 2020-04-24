@@ -14,6 +14,7 @@ import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListe
 import com.google.android.gms.location.LocationListener
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.LocationServices.FusedLocationApi
 import za.co.xisystems.itis_rrm.data.network.PermissionController
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.Constants
 import za.co.xisystems.itis_rrm.ui.mainview.work.capture_work.CaptureWorkFragment
@@ -75,7 +76,7 @@ class LocationHelper(private val capturePhoto: CaptureWorkFragment) : Connection
     // TODO fix ported legacy code
     private fun startLocationUpdates() {
         if (PermissionController.checkPermissionsEnabled(getApplicationContext())) {
-            if (LocationServices.FusedLocationApi != null) {
+            if (FusedLocationApi != null) {
                 if (ActivityCompat.checkSelfPermission(
                         capturePhoto.requireContext(),
                         Manifest.permission.ACCESS_FINE_LOCATION
@@ -94,7 +95,7 @@ class LocationHelper(private val capturePhoto: CaptureWorkFragment) : Connection
                     toast("Error: You need Location permissions!")
                     return
                 }
-                LocationServices.FusedLocationApi.requestLocationUpdates(
+                FusedLocationApi.requestLocationUpdates(
                     googleApiClient,
                     locationRequest,
                     this
@@ -108,8 +109,8 @@ class LocationHelper(private val capturePhoto: CaptureWorkFragment) : Connection
     // TODO fix ported legacy code
     private fun stopLocationUpdates() {
         if (PermissionController.checkPermissionsEnabled(getApplicationContext())) {
-            if (LocationServices.FusedLocationApi != null) {
-                LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this)
+            if (FusedLocationApi != null) {
+                FusedLocationApi.removeLocationUpdates(googleApiClient, this)
             }
         } else {
             PermissionController.startPermissionRequests(capturePhoto.activity)
@@ -135,7 +136,7 @@ class LocationHelper(private val capturePhoto: CaptureWorkFragment) : Connection
             toast("Error: You need Location permissions!")
             return
         }
-        setCurrentLocation(LocationServices.FusedLocationApi.getLastLocation(googleApiClient))
+        setCurrentLocation(FusedLocationApi.getLastLocation(googleApiClient))
         startLocationUpdates()
     }
 

@@ -36,7 +36,7 @@ object PhotoUtil {
     private val ISO_8601_FORMAT: DateFormat =
         SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
 
-    fun dateToString(date: Date?): String {
+    fun dateToString(date: Date): String {
         return ISO_8601_FORMAT.format(date)
     }
 
@@ -52,7 +52,7 @@ object PhotoUtil {
         // TODO improve this try-catch-finally
         try {
             fileDescriptor =
-                context.contentResolver.openAssetFileDescriptor(selectedImage, "r")
+                selectedImage?.let { context.contentResolver.openAssetFileDescriptor(it, "r") }
             if (fileDescriptor != null) bm = BitmapFactory.decodeFileDescriptor(
                 fileDescriptor.fileDescriptor,
                 null,
@@ -78,7 +78,7 @@ object PhotoUtil {
     fun getRotationForImage(path: Uri): Int {
         var rotation = 0
         try {
-            val exif = ExifInterface(path.path)
+            val exif = ExifInterface(path.path!!)
             rotation = exifToDegrees(
                 exif.getAttributeInt(
                     ExifInterface.TAG_ORIENTATION,
@@ -296,8 +296,8 @@ object PhotoUtil {
             }
             result = imageUri.path
             //get filename + ext of path
-            val cut = result.lastIndexOf('/')
-            if (cut != -1) result = result.substring(cut + 1)
+            val cut = result?.lastIndexOf('/')
+            if (cut != null && cut != -1) result = result?.substring(cut + 1)
             val imageFileName = result
             val direct =
                 File(Environment.getExternalStorageDirectory().toString() + File.separator + FOLDER)
@@ -359,8 +359,8 @@ object PhotoUtil {
             val middleY = actualHeight / 2.0f
             val scaleMatrix = Matrix()
             scaleMatrix.setScale(ratioX, ratioY, middleX, middleY)
-            val canvas = Canvas(scaledBitmap)
-            canvas.matrix = scaleMatrix
+            val canvas = Canvas(scaledBitmap!!)
+            canvas.setMatrix(scaleMatrix)
             canvas.drawBitmap(
                 bmp,
                 middleX - bmp.width / 2,
@@ -391,8 +391,12 @@ object PhotoUtil {
                     }
                 }
                 scaledBitmap = Bitmap.createBitmap(
-                    scaledBitmap, 0, 0,
-                    scaledBitmap!!.width, scaledBitmap.height, matrix,
+                    scaledBitmap,
+                    0,
+                    0,
+                    scaledBitmap.width,
+                    scaledBitmap.height,
+                    matrix,
                     true
                 )
             } catch (e: IOException) {
@@ -534,20 +538,6 @@ object PhotoUtil {
             e.printStackTrace()
         }
         return null
-    }
-
-    fun setRouteSecPoint(
-        direction: String,
-        linearId: String,
-        pointLocation: Double,
-        sectionId: Int,
-        projectId: String?
-    ) {
-        val direction = direction
-        val linearId = linearId
-        val pointLocation = pointLocation
-        val sectionId = sectionId
-        val projectId = projectId
     }
 
 

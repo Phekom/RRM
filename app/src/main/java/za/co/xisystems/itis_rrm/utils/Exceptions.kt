@@ -8,4 +8,5 @@ class ApiException(message: String) : IOException(message)
 class NoInternetException(message: String) : IOException(message)
 class NoConnectivityException(message: String) : IOException(message)
 class NoDataException(message: String) : NullPointerException(message)
+class AuthException(message: String) : SecurityException(message)
 

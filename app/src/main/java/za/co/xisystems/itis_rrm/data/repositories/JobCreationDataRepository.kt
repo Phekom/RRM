@@ -243,7 +243,7 @@ class JobCreationDataRepository(
             apiRequest { api.getRouteSectionPoint(distance, buffer, latitude, longitude, useR) }
 
 
-        val routeSection = routeSectionPoint.postValue(
+        routeSectionPoint.postValue(
             direction = routeSectionPointResponse.direction,
             linearId = routeSectionPointResponse.linearId,
             pointLocation = routeSectionPointResponse.pointLocation,
@@ -567,8 +567,7 @@ class JobCreationDataRepository(
             pointLocation,
             sectionId,
             projectId,
-            jobId,
-            item
+            jobId
         )
     }
 
@@ -578,8 +577,7 @@ class JobCreationDataRepository(
         pointLocation: Double,
         sectionId: Int,
         projectId: String?,
-        jobId: String?,
-        item: ItemDTOTemp?
+        jobId: String?
     ): LiveData<String?> {
         val name = object {}.javaClass.enclosingMethod?.name
         Timber.d("x -> $name")

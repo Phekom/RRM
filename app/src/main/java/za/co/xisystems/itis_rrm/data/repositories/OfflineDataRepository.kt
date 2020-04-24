@@ -113,10 +113,7 @@ class OfflineDataRepository(
 
         }
 
-        newJob.observeForever {
-            processRrmJobResponse(it)
 
-        }
         workflowJ.observeForever {
             //            saveSectionItems(it)
             saveWorkflowJob(it)//
@@ -192,32 +189,12 @@ class OfflineDataRepository(
 
     suspend fun getJobMeasureForActivityId(
         activityId: Int,
-        activityId2: Int,
-        activityId3: Int
+        activityId2: Int
     ): LiveData<List<JobItemEstimateDTO>> {
         return withContext(Dispatchers.IO) {
             Db.getJobItemEstimateDao().getJobMeasureForActivityId(activityId, activityId2)
         }
     }
-
-
-    private fun processRrmJobResponse(jobDTO: JobDTOTemp) {
-        val imageCounter = 1
-        val totalImages = 0
-
-    }
-//    suspend fun getWokrCodes(eId: Int): LiveData<List<WF_WorkStepDTO>> {
-//        return withContext(Dispatchers.IO) {
-//            Db.getWorkStepDao().getWorkflowSteps(eId)
-//        }
-//    }
-
-//    suspend fun getWokrCodes(): LiveData<List<WF_WorkStepDTO>> {
-//        return withContext(Dispatchers.IO) {
-//            Db.getWorkStepDao().getWorkflowSteps()
-//        }
-//    }
-
 
     suspend fun getContractProjects(contractId: String): LiveData<List<ProjectDTO>> {
         return withContext(Dispatchers.IO) {
@@ -648,11 +625,9 @@ class OfflineDataRepository(
 
     suspend fun saveNewItem(newjItem: ItemDTOTemp) {
         Coroutines.io {
-            if (newjItem != null) {
-                if (!Db.getItemDaoTemp().checkItemExistsItemId(newjItem.itemId)) {
+            if (!Db.getItemDaoTemp().checkItemExistsItemId(newjItem.itemId)) {
 
-                    Db.getItemDaoTemp().insertItems(newjItem)
-                }
+                Db.getItemDaoTemp().insertItems(newjItem)
             }
         }
     }

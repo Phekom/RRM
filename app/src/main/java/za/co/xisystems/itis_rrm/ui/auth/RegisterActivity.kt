@@ -204,7 +204,7 @@ class RegisterActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runna
 
     override fun run() {
         Coroutines.main {
-            val contractList = viewModel.offlinedata.await()
+            val contractList = viewModel.offlineData.await()
             contractList.observe(this, Observer { contractItems ->
                 // TODO: What were we going to do with these values?
             })

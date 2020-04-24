@@ -495,7 +495,7 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
 
         imageUri = PhotoUtil.getUri(this)
         val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-        if (takePictureIntent.resolveActivity(activity?.packageManager) != null) {
+        if (this.activity?.packageManager?.let { takePictureIntent.resolveActivity(it) } != null) {
             takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri)
             takePictureIntent.putExtra(
                 MediaStore.EXTRA_SCREEN_ORIENTATION,

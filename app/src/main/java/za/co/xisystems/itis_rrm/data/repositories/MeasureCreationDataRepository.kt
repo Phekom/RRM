@@ -89,8 +89,7 @@ class MeasureCreationDataRepository(
             measurementItemResponse.workflowJob,
             mSures,
             activity,
-            itemMeasureJob,
-            userId
+            itemMeasureJob
         )
 
         val messages = measurementItemResponse.errorMessage
@@ -105,8 +104,7 @@ class MeasureCreationDataRepository(
         workflowJobDTO: WorkflowJobDTO,
         jobItemMeasure: ArrayList<JobItemMeasureDTO>,
         activity: FragmentActivity,
-        itemMeasureJob: JobDTO,
-        userId: String
+        itemMeasureJob: JobDTO
     ) {
         Coroutines.io {
             if (workflowJobDTO != null) {

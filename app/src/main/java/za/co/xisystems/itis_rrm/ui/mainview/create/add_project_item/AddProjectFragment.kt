@@ -129,7 +129,6 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
         createViewModel.newJob.observe(viewLifecycleOwner, Observer { newJ ->
             job = newJ
             projectID = newJ.ProjectId
-            //            toast(newJ.JobId + "/n" + newJ.ProjectId )
 
         })
         last_lin.visibility = View.GONE
@@ -178,7 +177,6 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
                                 groupAdapter.clear()
                                 totalCostTextView.clearComposingText()
                             } else {
-                                // initRecyclerView(item, items)
                                 initRecyclerView(pro_Items.toProjecListItems())
                                 calculateTotalCost()
                             }
@@ -285,7 +283,7 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
             when (view?.id) {
                 R.id.addItemButton -> {
                     createViewModel.newJob.observe(viewLifecycleOwner, Observer { newJ ->
-                        //            toast(newJ.JobId + "/n" + newJ.ProjectId )
+
                         projectID = newJ.ProjectId
                         job = newJ
                     })
@@ -311,12 +309,14 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
                     val startYear = startDateCalender[Calendar.YEAR]
                     val startMonth = startDateCalender[Calendar.MONTH]
                     val startDay = startDateCalender[Calendar.DAY_OF_MONTH]
-                    startDateDialog = DatePickerDialog(
-                        activity,
-                        OnDateSetListener { view, year, month, dayOfMonth ->
-                            setStartDateTextView(year, month, dayOfMonth)
-                        }, startYear, startMonth, startDay
-                    )
+                    startDateDialog = activity?.let {
+                        DatePickerDialog(
+                            it,
+                            OnDateSetListener { view, year, month, dayOfMonth ->
+                                setStartDateTextView(year, month, dayOfMonth)
+                            }, startYear, startMonth, startDay
+                        )
+                    }
                     startDateDialog!!.datePicker.minDate = System.currentTimeMillis() - 1000
                     startDateDialog!!.show()
 
@@ -328,12 +328,14 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
                     val year = c[Calendar.YEAR]
                     val month = c[Calendar.MONTH]
                     val day = c[Calendar.DAY_OF_MONTH]
-                    dueDateDialog = DatePickerDialog(
-                        activity,
-                        OnDateSetListener { view, year, month, dayOfMonth ->
-                            setDueDateTextView(year, month, dayOfMonth)
-                        }, year, month, day
-                    )
+                    dueDateDialog = activity?.let {
+                        DatePickerDialog(
+                            it,
+                            OnDateSetListener { view, year, month, dayOfMonth ->
+                                setDueDateTextView(year, month, dayOfMonth)
+                            }, year, month, day
+                        )
+                    }
                     dueDateDialog!!.datePicker.minDate = System.currentTimeMillis() - 1000
                     dueDateDialog!!.show()
 
@@ -430,8 +432,6 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
         job: JobDTO,
         prog: ProgressDialog
     ) {
-        val messages = "Please wait"
-//        JobUtils.compressJobEstimates(tmpJob)
         if (job != null) {
             val jobTemp = jobDataController.setJobLittleEndianGuids(job)!!
             saveRrmJob(job.UserId, jobTemp, prog)
@@ -462,9 +462,8 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
     }
 
     private fun popViewOnJobSubmit() {
-        // TODO("delete Items data from database after success upload")
+        // TODO: delete Items data from database after success upload
         Intent(context?.applicationContext, MainActivity::class.java).also { home ->
-            //            home.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
             startActivity(home)
         }
     }

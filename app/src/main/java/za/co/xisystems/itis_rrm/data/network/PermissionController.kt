@@ -27,7 +27,6 @@ object PermissionController {
             return permissions
         }
 
-    @JvmOverloads
     fun startPermissionRequests(
         activity: Activity?
     ) {
