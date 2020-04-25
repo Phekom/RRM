@@ -36,7 +36,7 @@ interface ProjectDao {
     @Query("SELECT * FROM PROJECT_TABLE ")
     fun getAllProjects() : LiveData<List<ProjectDTO>>
 
-    @Query("SELECT * FROM PROJECT_TABLE WHERE projectId = :projectId")
+    @Query("SELECT projectId FROM PROJECT_TABLE WHERE projectId = :projectId")
     fun checkProjectExists(projectId: String): Boolean
 
     @Query("SELECT * FROM PROJECT_TABLE WHERE contractId = :contractId")

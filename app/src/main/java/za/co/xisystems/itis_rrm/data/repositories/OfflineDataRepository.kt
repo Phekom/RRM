@@ -919,14 +919,18 @@ class OfflineDataRepository(
                 }
             }
 
-            if (contracts != null) {
+        if (contracts.isNotEmpty()) {
                 for (contract in contracts) {
                     if (!Db.getContractDao().checkIfContractExists(contract.contractId))
                         Db.getContractDao().insertContract(contract)
-                    if (contract.projects != null) {
-
-                        for (project in contract.projects) {
-                            if (!Db.getProjectDao().checkProjectExists(project.projectId)) {
+                    if (contract.projects != null && contract.contractId != null) {
+                        val distinctProjects =
+                            contract.projects.distinctBy { project -> project.projectId }
+                        for (project in distinctProjects) {
+                            if (Db.getProjectDao().checkProjectExists(project.projectId)) {
+                                Timber.i("Contract: ${contract.descr} (${contract.contractId}) ProjectId: ${project.descr} (${project.projectId}) -> Duplicated")
+                                continue
+                            } else {
                                 try {
                                     Db.getProjectDao().insertProject(
                                         project.projectId,
@@ -941,43 +945,48 @@ class OfflineDataRepository(
                                         contract.contractId
                                     )
                                 } catch (ex: Exception) {
-                                    Timber.e(ex, "ProjectId: ${project.projectId} -> ${ex.message}")
+                                    Timber.e(
+                                        ex,
+                                        "Contract: ${contract.descr} (${contract.contractId}) ProjectId: ${project.descr} (${project.projectId}) -> ${ex.message}"
+                                    )
                                 }
                             }
                             if (project.items != null) {
-
-                                for (item in project.items) {
-                                    if (!Db.getProjectItemDao()
+                                val distinctItems = project.items.distinctBy { item -> item.itemId }
+                                for (item in distinctItems) {
+                                    if (Db.getProjectItemDao()
                                             .checkItemExistsItemId(item.itemId)
                                     ) {
+                                        continue
+                                    } else {
                                         try {
-                                        val pattern = Pattern.compile("(.*?)\\.")
-                                        val matcher = pattern.matcher(item.itemCode)
-                                        if (matcher.find()) {
-                                            val itemCode = matcher.group(1) + "0"
-                                            //  Lets Get the ID Back on Match
-                                            val sectionItemId = Db.getSectionItemDao()
-                                                .getSectionItemId(
-                                                    itemCode.replace(
-                                                        "\\s+".toRegex(),
-                                                        ""
+                                            val pattern = Pattern.compile("(.*?)\\.")
+                                            val matcher = pattern.matcher(item.itemCode)
+                                            if (matcher.find()) {
+                                                val itemCode = matcher.group(1) + "0"
+                                                //  Lets Get the ID Back on Match
+                                                val sectionItemId = Db.getSectionItemDao()
+                                                    .getSectionItemId(
+                                                        itemCode.replace(
+                                                            "\\s+".toRegex(),
+                                                            ""
+                                                        )
                                                     )
-                                                )
 
-                                            Db.getProjectItemDao().insertItem(
-                                                itemId = item.itemId,
-                                                itemCode = item.itemCode,
-                                                descr = item.descr,
-                                                itemSections = item.itemSections,
-                                                tenderRate = item.tenderRate,
-                                                uom = item.uom,
-                                                workflowId = item.workflowId,
-                                                sectionItemId = sectionItemId,
-                                                quantity = item.quantity,
-                                                estimateId = item.estimateId,
-                                                projectId = project.projectId
-                                            )
-                                        }
+                                                Db.getProjectItemDao().insertItem(
+                                                    itemId = item.itemId,
+                                                    itemCode = item.itemCode,
+                                                    descr = item.descr,
+                                                    itemSections = item.itemSections,
+                                                    tenderRate = item.tenderRate,
+                                                    uom = item.uom,
+                                                    workflowId = item.workflowId,
+                                                    sectionItemId = sectionItemId,
+                                                    quantity = item.quantity,
+                                                    estimateId = item.estimateId,
+                                                    projectId = project.projectId
+                                                )
+                                            }
                                         } catch (ex: Exception) {
                                             Timber.e(ex, "ItemId: ${item.itemId} -> ${ex.message}")
                                         }
