@@ -36,7 +36,7 @@ interface WorkStepDao {
 //    @Query("SELECT * FROM WorkStep_TABLE ")
 //    fun getWorkflowSteps() : LiveData<List<WF_WorkStepDTO>>
 
-    @Query("SELECT * FROM WorkStep_TABLE  WHERE Act_Type_id LIKE :eId")
+    @Query("SELECT DISTINCT * FROM WorkStep_TABLE  WHERE Act_Type_id LIKE :eId")
     fun getWorkflowSteps(eId: Int): LiveData<List<WF_WorkStepDTO>>
 
     @Query("DELETE FROM WorkStep_TABLE")

@@ -20,6 +20,7 @@ import kotlinx.android.synthetic.main.fragment_approvejob.noData
 import kotlinx.android.synthetic.main.fragment_work.*
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
@@ -49,12 +50,6 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
     private var uiScope = UiLifecycleScope()
     private lateinit var dialog: ProgressDialog
 
-
-    companion object {
-        private val TAG = WorkFragment::class.java.simpleName
-    }
-
-
     init {
         lifecycleScope.launch {
 
@@ -62,7 +57,10 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
                 uiScope.onCreate()
                 viewLifecycleOwner.lifecycle.addObserver(uiScope)
                 dialog =
-                    setDataProgressDialog(activity!!, getString(R.string.data_loading_please_wait))
+                    setDataProgressDialog(
+                        requireActivity(),
+                        getString(R.string.data_loading_please_wait)
+                    )
 
                 uiScope.launch(coroutineContext) {
                     try {
@@ -120,7 +118,7 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
 
         works_swipe_to_refresh.setProgressBackgroundColorSchemeColor(
             ContextCompat.getColor(
-                context!!.applicationContext,
+                requireContext().applicationContext,
                 R.color.colorPrimary
             )
         )
@@ -222,10 +220,12 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
                     estimates.observe(viewLifecycleOwner, Observer { estimateItems ->
                         uiScope.launch(uiScope.coroutineContext) {
                             for (item in estimateItems) {
-                                uiScope.launch(uiScope.coroutineContext) {
+                                withContext(uiScope.coroutineContext) {
                                     try {
+
                                         val desc =
                                             workViewModel.getDescForProjectItemId(item.projectItemId!!)
+
                                         val qty = item.qty.toString()
                                         val rate = item.lineRate.toString()
                                         val estimateId = item.estimateId
@@ -236,14 +236,16 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
                                                 estimateId, workViewModel, item, work_items
                                             )
                                         )
+
                                     } catch (exception: Exception) {
                                         Timber.e(exception)
                                     }
-
                                 }
+
                             }
                         }
                     })
+
                 }
             }
         }
