@@ -586,7 +586,7 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
 
 
         try { //  Location of picture
-            val currentLocation: Location = locationHelper.getCurrentLocation()!!
+            val currentLocation: Location = this.getCurrentLocation()!!
             if (currentLocation != null) {
 
                 //  Save Image to Internal Storage
