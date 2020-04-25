@@ -83,8 +83,11 @@ class OfflineDataRepository(
 
     init {
         conTracts.observeForever {
-            saveContracts(it)
+            Coroutines.io {
+                saveContracts(it)
+            }
         }
+
         sectionItems.observeForever {
             saveSectionsItems(it)
         }
@@ -894,8 +897,8 @@ class OfflineDataRepository(
 //    }
 
 
-    private fun saveContracts(contracts: List<ContractDTO>) {
-        Coroutines.io {
+    private suspend fun saveContracts(contracts: List<ContractDTO>) {
+
 
             val actId = 3
             val workState = arrayOf("TA", "START", "MIDDLE", "END", "RTA")
@@ -1040,7 +1043,6 @@ class OfflineDataRepository(
                 }
             }
         }
-    }
 
 
     private fun <T> MutableLiveData<T>.postValue(

@@ -5,8 +5,8 @@ import androidx.room.Dao
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectSectionDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.VoItemDTO
 
@@ -21,9 +21,6 @@ interface ProjectDao {
 //    suspend fun insertProjects(project : List<ProjectDTO>)
 
 //    @Insert(onConflict = OnConflictStrategy.REPLACE)
-//    suspend fun insertProject(project : ProjectDTO)
-
-
     @Query("INSERT INTO PROJECT_TABLE (projectId,descr, endDate, items, projectCode, projectMinus, projectPlus,projectSections, voItems, contractId) VALUES (:projectId,:descr, :endDate, :items, :projectCode, :projectMinus, :projectPlus, :projectSections, :voItems, :contractId)")
     fun insertProject(projectId: String, descr: String?, endDate: String?,
                       items: ArrayList<ProjectItemDTO>?, projectCode: String?, projectMinus: String?, projectPlus: String?,
