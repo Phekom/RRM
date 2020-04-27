@@ -41,7 +41,7 @@ class RegisterPinActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Ru
         appContext = this
 
         if ( startPermissionRequest(appContext.applicationContext, permissions)){
-            toast("Permissions Are already provided ")
+            toast("Permissions are already provided ")
         }else{
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 requestPermissions(permissions, PERMISSION_REQUEST)
