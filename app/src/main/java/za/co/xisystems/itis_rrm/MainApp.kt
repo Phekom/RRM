@@ -16,7 +16,6 @@ import org.kodein.di.generic.instance
 import org.kodein.di.generic.provider
 import org.kodein.di.generic.singleton
 import timber.log.Timber
-import timber.log.Timber.DebugTree
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.NetworkConnectionInterceptor
@@ -86,10 +85,19 @@ open class MainApp : Application(), KodeinAware {
         super.onCreate()
 
         if (BuildConfig.DEBUG) {
-            Timber.plant(DebugTree())
+            Timber.plant(HyperlinkDebugTree())
             LeakCanary.config = LeakCanary.config.copy(retainedVisibleThreshold = 3)
         } else {
             Timber.plant(CrashReportingTree())
+        }
+    }
+
+    /** A tree which adds the filename, line-number and method call when debugging. */
+    private class HyperlinkDebugTree : Timber.DebugTree() {
+        override fun createStackElementTag(element: StackTraceElement): String? {
+            with(element) {
+                return ("($fileName:$lineNumber)$methodName")
+            }
         }
     }
 
