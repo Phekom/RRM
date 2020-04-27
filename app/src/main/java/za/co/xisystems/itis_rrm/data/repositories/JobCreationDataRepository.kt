@@ -144,6 +144,12 @@ class JobCreationDataRepository(
         }
     }
 
+    suspend fun getAllSectionItemsForProject(projectId: String): LiveData<List<SectionItemDTO>> {
+        return withContext(Dispatchers.IO) {
+            appDb.getSectionItemDao().getFilteredSectionItems(projectId)
+        }
+    }
+
     suspend fun getAllItemsForSectionItem(
         sectionItemId: String,
         projectId: String

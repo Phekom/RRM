@@ -38,4 +38,7 @@ interface SectionItemDao {
 
     @Query("DELETE FROM SECTION_ITEM_TABLE")
     fun deleteAll()
+
+    @Query("SELECT * FROM SECTION_ITEM_TABLE  WHERE sectionItemId IN (SELECT DISTINCT sectionItemId FROM PROJECT_ITEM_TABLE WHERE projectId = :projectId) ORDER BY itemCode ASC")
+    fun getFilteredSectionItems(projectId: String): LiveData<List<SectionItemDTO>>
 }

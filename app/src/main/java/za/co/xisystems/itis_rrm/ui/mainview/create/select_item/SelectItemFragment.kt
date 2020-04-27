@@ -125,7 +125,6 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
 
         uiScope.run {
 
-
             itemSections = ArrayList<ItemSectionDTO>()
             newJobItemEstimatesList = ArrayList<JobItemEstimateDTO>()
             bindUI()
@@ -140,8 +139,13 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
     private fun setItemsBySections(projectId: String) {
         uiScope.launch(context = uiScope.coroutineContext) {
             val dialog =
-                setDataProgressDialog(activity!!, getString(R.string.data_loading_please_wait))
-            val sectionItems = createViewModel.getAllSectionItem()
+                setDataProgressDialog(
+                    requireActivity(),
+                    getString(R.string.data_loading_please_wait)
+                )
+
+            // SectionItems filtered by projectId
+            val sectionItems = createViewModel.getSectionItemsForProject(projectId)
             dialog.show()
 
             sectionItems.observe(viewLifecycleOwner, Observer { sectionData ->
@@ -151,7 +155,8 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
                     sectionNmbr[item] = sectionData[item].description
                 }
                 uiScope.launch(uiScope.coroutineContext) {
-                    setSpinner(context!!.applicationContext,
+                    setSpinner(
+                        requireContext().applicationContext,
                         sectionItemSpinner,
                         sectionData,
                         sectionNmbr,

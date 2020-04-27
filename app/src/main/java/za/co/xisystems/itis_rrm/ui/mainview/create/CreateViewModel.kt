@@ -148,6 +148,12 @@ class CreateViewModel(
         }
     }
 
+    suspend fun getSectionItemsForProject(projectId: String): LiveData<List<SectionItemDTO>> {
+        return withContext(Dispatchers.IO) {
+            jobCreationDataRepository.getAllSectionItemsForProject(projectId)
+        }
+    }
+
     // TODO: Should return some sort of status
     suspend fun saveNewItem(newjItem: ItemDTOTemp) {
         return withContext(Dispatchers.IO) {
