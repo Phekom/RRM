@@ -50,8 +50,8 @@ interface ProjectItemDao {
     @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE projectId LIKE :projectId ORDER BY itemCode ASC "  )
     fun getAllItemsForProjectId(projectId: String): LiveData<List<ProjectItemDTO>>
 
-    @Query("SELECT DISTINCT sectionItemId FROM PROJECT_ITEM_TABLE WHERE sectionItemId LIKE :sectionItemId AND projectId LIKE :projectId")
-    fun getSectionItemIdsForProjectId(sectionItemId: String, projectId: String): List<String>
+    @Query("SELECT DISTINCT sectionItemId FROM PROJECT_ITEM_TABLE WHERE projectId = :projectId")
+    fun getSectionItemIdsForProjectId(projectId: String): List<String>
 
     @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE sectionItemId LIKE :sectionItem AND projectId LIKE :projectId")
     fun getAllItemsForSectionItem(sectionItem : String, projectId : String ): LiveData<List<ProjectItemDTO>>

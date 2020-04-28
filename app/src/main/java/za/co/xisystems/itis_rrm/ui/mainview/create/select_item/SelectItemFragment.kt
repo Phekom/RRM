@@ -44,11 +44,8 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
     override val kodein by kodein()
     private lateinit var createViewModel: CreateViewModel
     private val factory: CreateViewModelFactory by instance()
-    private lateinit var iTemArrayList: ArrayList<JobDTO>
     private var items: MutableList<ItemDTOTemp> = ArrayList<ItemDTOTemp>()
     private var animate = false
-    private val itemsMap: MutableMap<String, MutableList<ProjectItemDTO>?> =
-        LinkedHashMap<String, MutableList<ProjectItemDTO>?>()
 
     private lateinit var newJobItemEstimatesList: ArrayList<JobItemEstimateDTO>
     private lateinit var  itemSections : ArrayList<ItemSectionDTO>
@@ -125,7 +122,6 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
 
         uiScope.run {
 
-
             itemSections = ArrayList<ItemSectionDTO>()
             newJobItemEstimatesList = ArrayList<JobItemEstimateDTO>()
             bindUI()
@@ -140,21 +136,27 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
     private fun setItemsBySections(projectId: String) {
         uiScope.launch(context = uiScope.coroutineContext) {
             val dialog =
-                setDataProgressDialog(activity!!, getString(R.string.data_loading_please_wait))
-            val sectionItems = createViewModel.getAllSectionItem()
+                setDataProgressDialog(
+                    requireActivity(),
+                    getString(R.string.data_loading_please_wait)
+                )
+
+            // SectionItems filtered by projectId
+            val sectionItems = createViewModel.getSectionItemsForProject(projectId)
             dialog.show()
 
             sectionItems.observe(viewLifecycleOwner, Observer { sectionData ->
-                val sectionNmbr = arrayOfNulls<String?>(sectionData.size)
+                val sectionSelections = arrayOfNulls<String?>(sectionData.size)
                 dialog.dismiss()
                 for (item in sectionData.indices) {
-                    sectionNmbr[item] = sectionData[item].description
+                    sectionSelections[item] = sectionData[item].description
                 }
                 uiScope.launch(uiScope.coroutineContext) {
-                    setSpinner(context!!.applicationContext,
+                    setSpinner(
+                        requireContext().applicationContext,
                         sectionItemSpinner,
                         sectionData,
-                        sectionNmbr,
+                        sectionSelections,
                         object : SpinnerHelper.SelectionListener<SectionItemDTO> {
 
                             override fun onItemSelected(position: Int, item: SectionItemDTO) {
@@ -185,17 +187,17 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
     private fun setRecyclerItems(projectId: String, sectionItemId: String) {
         uiScope.launch(context = uiScope.coroutineContext) {
             val projectsItems = createViewModel.getAllItemsForSectionItem(sectionItemId, projectId)
-            projectsItems.observe(viewLifecycleOwner, Observer { i_tems ->
+            projectsItems.observe(viewLifecycleOwner, Observer { projectItemList ->
                 group_loading.visibility = View.GONE
-                initRecyclerView(i_tems.toProjectItems())
+                initRecyclerView(projectItemList.toProjectItems())
             })
         }
 
     }
 
     private fun List<ProjectItemDTO>.toProjectItems(): List<SectionProj_Item> {
-        return this.map { proj_items ->
-            SectionProj_Item(proj_items)
+        return this.map { projectItem ->
+            SectionProj_Item(projectItem)
         }
     }
 
@@ -214,8 +216,8 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
 
             (item as? SectionProj_Item)?.let {
 
-                val newjItem = createItemList(it.itemDTO, itemSections)
-                saveNewItem(newjItem)
+                val tempItem = createItemList(it.itemDTO, itemSections)
+                saveNewItem(tempItem)
                 sendSelectedItem((it) , view,items )
             }
 
@@ -225,9 +227,9 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
 
     }
 
-    private fun saveNewItem(newjItem: ItemDTOTemp) {
+    private fun saveNewItem(tempItem: ItemDTOTemp) {
         uiScope.launch(context = uiScope.coroutineContext) {
-            createViewModel.saveNewItem(newjItem)
+            createViewModel.saveNewItem(tempItem)
         }
     }
 

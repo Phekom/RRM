@@ -245,6 +245,9 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
         totalCostTextView.visibility = View.GONE
         dueDateTextView.text = DateUtil.toStringReadable(DateUtil.currentDateTime)
         startDateTextView.text = DateUtil.toStringReadable(DateUtil.currentDateTime)
+        startDate = DateUtil.currentDateTime!!
+        dueDate = DateUtil.currentDateTime!!
+
         Coroutines.main {
             val contractNo = createViewModel.getContractNoForId(job?.ContractVoId)
             val projectCode = createViewModel.getProjectCodeForId(job?.ProjectId)
@@ -438,6 +441,7 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
                 it,
                 OnDateSetListener { view, year, month, dayOfMonth ->
                     setDueDateTextView(year, month, dayOfMonth)
+                    dueDate = Date(year, month, dayOfMonth)
                 }, year, month, day
             )
         }
@@ -507,21 +511,20 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
 
     private fun setDueDateTextView(year: Int, month: Int, dayOfMonth: Int) {
         dueDateTextView.text = DateUtil.toStringReadable(year, month, dayOfMonth)
-
+        Timber.d("")
+        // dueDate = DateUtil.CalendarItemsToDate(year,month,dayOfMonth)!!
         dueDateCardView.startAnimation(bounce_500)
         val calendar = Calendar.getInstance()
         calendar[year, month] = dayOfMonth
-        dueDate = calendar.time
         job?.DueDate = calendar.time.toString()
     }
 
     private fun setStartDateTextView(year: Int, month: Int, dayOfMonth: Int) {
         startDateTextView.text = DateUtil.toStringReadable(year, month, dayOfMonth)
-
+        startDate = DateUtil.CalendarItemsToDate(year, month, dayOfMonth)!!
         startDateCardView.startAnimation(bounce_500)
         val calendar = Calendar.getInstance()
         calendar[year, month] = dayOfMonth
-        startDate = calendar.time
         job?.StartDate = calendar.time.toString()
     }
 

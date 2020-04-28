@@ -456,10 +456,10 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
             .navigate(R.id.action_captureWorkFragment_to_nav_work)
     }
 
-    private fun submitAllOutStandingEstimates(estimate: ArrayList<JobItemEstimateDTO>?) {
+    private fun submitAllOutStandingEstimates(estimates: ArrayList<JobItemEstimateDTO>?) {
         // get Data from db Search for all estimates 8 and work 21 = result is int > 0  then button yes else fetch
         Coroutines.main {
-            if (estimate?.size != 0) {
+            if (estimates?.size != 0) {
                 val dialogBuilder: AlertDialog.Builder = AlertDialog.Builder(requireActivity())
                 dialogBuilder.setTitle(R.string.confirm)
                 dialogBuilder.setIcon(R.drawable.ic_error)
@@ -469,7 +469,7 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
                     R.string.yes
                 ) { dialog, which ->
 
-                    for (jobEstimate in estimate!!.iterator()) {
+                    for (jobEstimate in estimates!!.iterator()) {
                         Coroutines.main {
                             //                                if(jobEstimate != null){
                             val jobItemEstimate = workViewModel.getJobItemEstimateForEstimateId(

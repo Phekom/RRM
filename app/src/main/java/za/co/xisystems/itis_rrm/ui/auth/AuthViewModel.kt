@@ -47,7 +47,7 @@ class AuthViewModel(
     fun onResetPinButtonClick(view: View) {
 
     if (enterOldPin.isNullOrEmpty()) {
-        authListener?.onFailure("Please  Enter Old pin")
+        authListener?.onFailure("Please Enter Old pin")
         return
     }
 
@@ -70,7 +70,7 @@ class AuthViewModel(
             if (enterOldPin == repository.getPin()) {
                 repository.upDateUserPin(confirmNewPin!!, enterOldPin!!)
             } else {
-                authListener?.onFailure("Old Pin Is incorrect, pLease enter your current Pin")
+                authListener?.onFailure("Old Pin is incorrect, pLease enter your current Pin")
             }
 
         } catch (e: AuthException) {
@@ -100,6 +100,16 @@ class AuthViewModel(
             authListener?.onFailure("Pin did not match")
             return
         }
+
+        // Length restrictions
+        if (!enterPin.isNullOrBlank()) {
+            val pin = enterPin
+            if (pin!!.length < 4 || pin.length > 4) {
+                authListener?.onFailure("Pin needs to be four digits long.")
+                return
+            }
+        }
+
         Coroutines.main {
             try {
                 // TODO: Get these metrics for the device
@@ -131,12 +141,12 @@ class AuthViewModel(
         authListener?.onStarted()
 
         if (username.isNullOrEmpty()) {
-            authListener?.onFailure("UserName is required")
+            authListener?.onFailure("User Name required")
             return
         }
 
         if (password.isNullOrEmpty()) {
-            authListener?.onFailure("Password is required")
+            authListener?.onFailure("Password required")
             return
         }
 

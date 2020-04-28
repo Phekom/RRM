@@ -15,10 +15,10 @@ import com.google.android.gms.location.LocationListener
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
 import za.co.xisystems.itis_rrm.data.network.PermissionController
-import za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates.EstimatePhotoFragment
+import za.co.xisystems.itis_rrm.utils.interfaces.LocationAware
 import za.co.xisystems.itis_rrm.utils.toast
 
-class LocationHelper(private val estimatePhotoFragment: EstimatePhotoFragment) : ConnectionCallbacks,
+class LocationHelper(private val locationConsumer: LocationAware) : ConnectionCallbacks,
     OnConnectionFailedListener, LocationListener {
     private var googleApiClient: GoogleApiClient? = null
     private var locationRequest: LocationRequest? = null
@@ -27,7 +27,7 @@ class LocationHelper(private val estimatePhotoFragment: EstimatePhotoFragment) :
     // TODO fix ported legacy code
     @SuppressLint("RestrictedApi")
     fun onCreate() {
-        googleApiClient = GoogleApiClient.Builder(estimatePhotoFragment.activity!!)
+        googleApiClient = GoogleApiClient.Builder(locationConsumer.getHostActivity())
             .addConnectionCallbacks(this)
             .addOnConnectionFailedListener(this)
             .addApi(LocationServices.API)
@@ -48,7 +48,7 @@ class LocationHelper(private val estimatePhotoFragment: EstimatePhotoFragment) :
         if (PermissionController.checkPermissionsEnabled(getApplicationContext())) {
             googleApiClient!!.connect()
         } else {
-            PermissionController.startPermissionRequests(estimatePhotoFragment.activity)
+            PermissionController.startPermissionRequests(locationConsumer.getHostActivity())
         }
     }
 
@@ -69,6 +69,7 @@ class LocationHelper(private val estimatePhotoFragment: EstimatePhotoFragment) :
     // TODO fix ported legacy code
     fun onStop() {
         googleApiClient!!.disconnect()
+
     }
 
 
@@ -77,11 +78,11 @@ class LocationHelper(private val estimatePhotoFragment: EstimatePhotoFragment) :
         if (PermissionController.checkPermissionsEnabled(getApplicationContext())) {
             if (LocationServices.FusedLocationApi != null) {
                 if (ActivityCompat.checkSelfPermission(
-                        estimatePhotoFragment.activity!!,
+                        locationConsumer.getHostActivity(),
                         Manifest.permission.ACCESS_FINE_LOCATION
                     ) != PackageManager.PERMISSION_GRANTED
                     && ActivityCompat.checkSelfPermission(
-                        estimatePhotoFragment.activity!!,
+                        locationConsumer.getHostActivity(),
                         Manifest.permission.ACCESS_COARSE_LOCATION
                     ) != PackageManager.PERMISSION_GRANTED
                 ) { // TODO: Consider calling
@@ -101,7 +102,7 @@ class LocationHelper(private val estimatePhotoFragment: EstimatePhotoFragment) :
                 )
             }
         } else {
-            PermissionController.startPermissionRequests(estimatePhotoFragment.activity)
+            PermissionController.startPermissionRequests(locationConsumer.getHostActivity())
         }
     }
 
@@ -112,23 +113,23 @@ class LocationHelper(private val estimatePhotoFragment: EstimatePhotoFragment) :
                 LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this)
             }
         } else {
-            PermissionController.startPermissionRequests(estimatePhotoFragment.activity)
+            PermissionController.startPermissionRequests(locationConsumer.getHostActivity())
         }
     }
 
     // TODO fix ported legacy code
     private fun getApplicationContext(): Context? {
-        return estimatePhotoFragment.activity!!.applicationContext
+        return locationConsumer.getHostActivity().applicationContext
     }
 
     // TODO fix ported legacy code
     override fun onConnected(connectionHint: Bundle?) {
         if (null == getCurrentLocation()) if (ActivityCompat.checkSelfPermission(
-                estimatePhotoFragment.activity!!,
+                locationConsumer.getHostActivity(),
                 Manifest.permission.ACCESS_FINE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
             && ActivityCompat.checkSelfPermission(
-                estimatePhotoFragment.activity!!,
+                locationConsumer.getHostActivity(),
                 Manifest.permission.ACCESS_COARSE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) { // TODO: Consider calling
@@ -157,7 +158,7 @@ class LocationHelper(private val estimatePhotoFragment: EstimatePhotoFragment) :
 
     // TODO fix ported legacy code
     private fun toast(s: String) {
-        estimatePhotoFragment.activity!!.toast(s)
+        locationConsumer.getHostActivity().toast(s)
     }
 
     // TODO fix ported legacy code
@@ -166,11 +167,11 @@ class LocationHelper(private val estimatePhotoFragment: EstimatePhotoFragment) :
     }
 
     fun getCurrentLocation(): Location? {
-        return estimatePhotoFragment.getCurrentLocation()
+        return locationConsumer.getCurrentLocation()
     }
 
     fun setCurrentLocation(location: Location?) {
-        estimatePhotoFragment.setCurrentLocation(location)
+        locationConsumer.setCurrentLocation(location)
     }
 
 }

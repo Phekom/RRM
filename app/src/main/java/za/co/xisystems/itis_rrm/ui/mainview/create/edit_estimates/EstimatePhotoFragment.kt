@@ -22,6 +22,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.*
 import androidx.lifecycle.Observer
 import androidx.navigation.Navigation
@@ -48,6 +49,7 @@ import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.intents.Abstrac
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.models.PhotoType
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.*
+import za.co.xisystems.itis_rrm.utils.interfaces.LocationAware
 import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
 import java.io.File
 import java.text.DecimalFormat
@@ -61,7 +63,7 @@ import kotlin.collections.HashMap
  */
 
 class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), LifecycleOwner,
-    KodeinAware {
+    KodeinAware, LocationAware {
 
     private var sectionId: String? = null
     override val kodein by kodein()
@@ -338,12 +340,9 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
             onRestoreInstanceState(savedInstanceState)
         }
 
-
-
-
         group13_loading.visibility = View.GONE
         mAppExecutor = AppExecutor()
-        lm = activity!!.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        lm = requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager
 
         setButtonClicks()
 
@@ -356,9 +355,8 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
 
 
         if (!gpsEnabled) { // notify user && !network_enabled
-            displayPromptForEnablingGPS(activity!!)
+            displayPromptForEnablingGPS(requireActivity())
         }
-
 
         valueEditText!!.addTextChangedListener(object : AbstractTextWatcher() {
             override fun onTextChanged(text: String) {
@@ -367,9 +365,7 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
         })
 
         setValueEditText(getStoredValue())
-
     }
-
 
     private fun setButtonClicks() {
 
@@ -392,7 +388,7 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
                         fragmentManager?.beginTransaction()?.remove(this)?.commit()
                         fragmentManager?.beginTransaction()?.detach(this)?.commit()
                     }
-                    //TODO(clear temp database Tables for Job And Items)
+                    // TODO(clear temp database Tables for Job And Items)
                 }
 
                 R.id.updateButton -> {
@@ -422,7 +418,6 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
 
                         updateData(view)
 
-
                     }
 
                 }
@@ -448,12 +443,12 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
 
         photoType = picType
         if (ContextCompat.checkSelfPermission(
-                activity!!.applicationContext,
+                requireActivity().applicationContext,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE
             ) != PackageManager.PERMISSION_GRANTED
         ) {
             ActivityCompat.requestPermissions(
-                activity!!,
+                requireActivity(),
                 arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
                 REQUEST_STORAGE_PERMISSION
             )
@@ -578,7 +573,7 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
             processAndSetImage()
 
         } else { // Otherwise, delete the temporary image file
-            BitmapUtils.deleteImageFile(context!!, filenamePath.toString())
+            BitmapUtils.deleteImageFile(requireContext(), filenamePath.toString())
         }
     }
 
@@ -591,12 +586,12 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
 
 
         try { //  Location of picture
-            val currentLocation: Location = locationHelper.getCurrentLocation()!!
+            val currentLocation: Location = this.getCurrentLocation()!!
             if (currentLocation != null) {
 
                 //  Save Image to Internal Storage
                 filenamePath = PhotoUtil.saveImageToInternalStorage(
-                    activity!!,
+                    requireActivity(),
                     imageUri!!
                 ) as HashMap<String, String>
 
@@ -662,7 +657,7 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
 
         }
 
-        if (ServiceUtil.isNetworkConnected(activity!!.applicationContext)) {
+        if (ServiceUtil.isNetworkConnected(requireActivity().applicationContext)) {
 
             // isRouteSectionPoint = newJob?.SectionId != null
 
@@ -952,13 +947,17 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
         )
     }
 
+    override fun onDestroyView() {
+        locationHelper.onDestroy()
+        super.onDestroyView()
+    }
 
     private fun showZoomedImage(imageUrl: Uri?) {
-        val dialog = Dialog(context!!, R.style.dialog_full_screen)
+        val dialog = Dialog(requireContext(), R.style.dialog_full_screen)
         dialog.setContentView(R.layout.new_job_photo)
         val zoomageView =
             dialog.findViewById<ZoomageView>(R.id.zoomedImage)
-        GlideApp.with(this.activity!!)
+        GlideApp.with(this.requireActivity())
             .load(imageUrl)
             .into(zoomageView)
         dialog.show()
@@ -1131,11 +1130,10 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
                 labelTextView!!.text = getString(R.string.label_quantity)
                 try { //  Default Calculation
                     lineRate = qty * tenderRate!!
-                    activity!!.hideKeyboard()
-
                 } catch (e: NumberFormatException) {
+                    requireActivity().hideKeyboard()
                     e.printStackTrace()
-                    toast("Please place the Quantity.")
+                    toast("Please enter the Quantity.")
 
                 }
             }
@@ -1163,10 +1161,11 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
                 try { //  Set the Area to the QTY
                     val length = (currentEndKm - currentStartKm) * 1000
                     inlineRate = length * tenderRate!!
-                    activity!!.hideKeyboard()
+
                 } catch (e: NumberFormatException) {
+                    requireActivity().hideKeyboard()
                     e.printStackTrace()
-                    toast("Please place the m.")
+                    toast("Please enter the m.")
                 }
         }
         return inlineRate
@@ -1181,8 +1180,9 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
         labelTextView!!.text = getString(R.string.label_amount)
         try {
             inlineRate = qty * tenderRate!!
-            activity!!.hideKeyboard()
+
         } catch (e: NumberFormatException) {
+            requireActivity().hideKeyboard()
             e.printStackTrace()
             toast(getString(R.string.warning_estimate_enter_prov_sum))
         }
@@ -1198,8 +1198,9 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
         labelTextView!!.text = getString(R.string.label_volume_m3)
         try {
             inlineRate = qty * tenderRate!!
-            activity!!.hideKeyboard()
+
         } catch (e: NumberFormatException) {
+            requireActivity().hideKeyboard()
             e.printStackTrace()
             inlineRate = null
             toast(getString(R.string.warning_estimate_enter_volume))
@@ -1217,8 +1218,9 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
         try {
             inlineRate = qty * tenderRate!!
 
-            activity!!.hideKeyboard()
+
         } catch (e: NumberFormatException) {
+            requireActivity().hideKeyboard()
             e.printStackTrace()
             toast("Please place the Area.")
         }
@@ -1236,9 +1238,10 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
             inlineRate = qty * tenderRate!!
 
         } catch (e: NumberFormatException) {
+            requireActivity().hideKeyboard()
             e.printStackTrace()
             toast("Please place the Quantity.")
-            activity!!.hideKeyboard()
+
         }
         return inlineRate
     }
@@ -1271,11 +1274,15 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
         }
     }
 
-    fun getCurrentLocation(): Location? {
+    override fun getHostActivity(): FragmentActivity {
+        return this.requireActivity()
+    }
+
+    override fun getCurrentLocation(): Location? {
         return currentLocation
     }
 
-    fun setCurrentLocation(currentLocation: Location?) {
+    override fun setCurrentLocation(currentLocation: Location?) {
         this.currentLocation = currentLocation
     }
 
