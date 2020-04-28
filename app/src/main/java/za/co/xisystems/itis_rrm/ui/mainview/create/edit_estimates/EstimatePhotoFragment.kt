@@ -37,16 +37,16 @@ import timber.log.Timber
 import za.co.xisystems.itis_rrm.BuildConfig
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.data._commons.AbstractTextWatcher
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
-import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModelFactory
-import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModel
-import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.LocationHelper
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.intents.AbstractIntent
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.models.PhotoType
+import za.co.xisystems.itis_rrm.ui.models.CreateViewModel
+import za.co.xisystems.itis_rrm.ui.models.CreateViewModelFactory
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.*
 import za.co.xisystems.itis_rrm.utils.interfaces.LocationAware
@@ -573,7 +573,7 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
             processAndSetImage()
 
         } else { // Otherwise, delete the temporary image file
-            BitmapUtils.deleteImageFile(requireContext(), filenamePath.toString())
+            PhotoUtil.deleteImageFile(requireContext(), filenamePath.toString())
         }
     }
 

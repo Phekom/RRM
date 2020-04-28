@@ -3,7 +3,7 @@
 //import androidx.fragment.app.FragmentActivity
 //import androidx.recyclerview.widget.ItemTouchHelper
 //import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
-//import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModel
+//import za.co.xisystems.itis_rrm.ui.models.CreateViewModel
 //
 ////, cost: String
 //class SwipeToDeleteItem(

@@ -1,4 +1,4 @@
-package za.co.xisystems.itis_rrm.ui.mainview.create
+package za.co.xisystems.itis_rrm.ui.models
 
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LiveData

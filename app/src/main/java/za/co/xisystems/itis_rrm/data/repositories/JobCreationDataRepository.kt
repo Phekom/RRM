@@ -43,20 +43,15 @@ class JobCreationDataRepository(
     private val appDb: AppDatabase,
     private val prefs: PreferenceProvider
 ) : SafeApiRequest() {
-    companion object {
-        val TAG: String = JobCreationDataRepository::class.java.simpleName
-    }
 
 
     private val workflowJobs = MutableLiveData<WorkflowJobDTO>()
-
     private val jobDataController: JobDataController? = null
     private val workflowJ = MutableLiveData<WorkflowJobDTO>()
     private val workflowJ2 = MutableLiveData<WorkflowJobDTO>()
     private val photoUpload = MutableLiveData<String>()
     private val works = MutableLiveData<String>()
     private val routeSectionPoint = MutableLiveData<String>()
-
 
     init {
 
@@ -81,20 +76,17 @@ class JobCreationDataRepository(
         }
     }
 
-
     suspend fun getUser(): LiveData<UserDTO> {
         return withContext(Dispatchers.IO) {
             appDb.getUserDao().getUser()
         }
     }
 
-
     private fun sendMsg(uploadResponse: String?) {
         val response: UploadImageResponse? = null
         if (uploadResponse.isNullOrEmpty())
             jobDataController?.setMsg(response!!.errorMessage)
     }
-
 
     private fun saveWorkflowJob(workflowJob: WorkflowJobDTO?) {
         if (workflowJob != null) {
@@ -109,7 +101,6 @@ class JobCreationDataRepository(
         }
     }
 
-
     suspend fun saveNewJob(newJob: JobDTO?) {
         Coroutines.io {
             if (newJob != null && !appDb.getJobDao().checkIfJobExist(newJob.JobId)) {
@@ -118,13 +109,11 @@ class JobCreationDataRepository(
         }
     }
 
-
     suspend fun getSectionItems(): LiveData<List<SectionItemDTO>> {
         return withContext(Dispatchers.IO) {
             appDb.getSectionItemDao().getSectionItems()
         }
     }
-
 
     suspend fun getContracts(): LiveData<List<ContractDTO>> {
         return withContext(Dispatchers.IO) {
@@ -177,7 +166,6 @@ class JobCreationDataRepository(
         }
     }
 
-
     fun deleteJobfromList(jobId: String) {
         Coroutines.io {
             appDb.getJobDao().deleteJobForJobId(jobId)
@@ -207,7 +195,6 @@ class JobCreationDataRepository(
             }
         }
     }
-
 
     suspend fun getPointSectionData(projectId: String?): LiveData<SectionPointDTO> { //jobId,jobId: String,
         return withContext(Dispatchers.IO) {
@@ -325,7 +312,6 @@ class JobCreationDataRepository(
         }
     }
 
-
     suspend fun getUpdatedJob(jobId: String): JobDTO {
         return withContext(Dispatchers.IO) {
             appDb.getJobDao().getJobForJobId(jobId)
@@ -364,7 +350,6 @@ class JobCreationDataRepository(
 
         return job
     }
-
 
     private fun insertOrUpdateWorkflowJobInSQLite(job: WorkflowJobDTO?) {
         job?.let {
@@ -426,7 +411,6 @@ class JobCreationDataRepository(
         }
     }
 
-
     private fun uploadCreateJobImages(packageJob: JobDTO, activity: FragmentActivity) {
 
         var jobCounter = 1
@@ -480,7 +464,6 @@ class JobCreationDataRepository(
         )
     }
 
-
     private fun getData(
         filename: String, photoQuality: PhotoQuality, activity: FragmentActivity
     ): ByteArray {
@@ -493,7 +476,6 @@ class JobCreationDataRepository(
             filename
         )
     }
-
 
     private fun processImageUpload(
         filename: String,
@@ -557,7 +539,6 @@ class JobCreationDataRepository(
         }
     }
 
-
     private fun <T> MutableLiveData<T>.postValue(
         direction: String,
         linearId: String?,
@@ -602,7 +583,6 @@ class JobCreationDataRepository(
 
     }
 
-
     private fun <T> MutableLiveData<T>.postValue(photo: String?, fileName: String) {
         return saveEstimatePhoto(photo, fileName)
     }
@@ -631,7 +611,6 @@ class JobCreationDataRepository(
         }
 
     }
-
 
     private fun JobItemMeasureDTO.setSelectedItemUom(selectedItemUom: String?) {
         this.selectedItemUom = selectedItemUom
@@ -769,7 +748,6 @@ class JobCreationDataRepository(
         this.trackRouteId = toBigEndian
     }
 
-
     private fun JobEstimateWorksDTO.setTrackRouteId(toBigEndian: String?) {
         this.trackRouteId = toBigEndian!!
     }
@@ -808,6 +786,10 @@ class JobCreationDataRepository(
 
     private fun JobItemEstimateDTO.setEstimateId(toBigEndian: String?) {
         this.estimateId = toBigEndian!!
+    }
+
+    companion object {
+        val TAG: String = JobCreationDataRepository::class.java.simpleName
     }
 }
 

@@ -15,13 +15,20 @@ import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.base.BaseFragment
+import za.co.xisystems.itis_rrm.custom.errors.NoConnectivityException
+import za.co.xisystems.itis_rrm.custom.errors.NoInternetException
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.data.network.OfflineListener
-import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.MyState
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper.setSpinner
-import za.co.xisystems.itis_rrm.utils.*
+import za.co.xisystems.itis_rrm.ui.models.CreateViewModel
+import za.co.xisystems.itis_rrm.ui.models.CreateViewModelFactory
+import za.co.xisystems.itis_rrm.utils.Coroutines
+import za.co.xisystems.itis_rrm.utils.SqlLitUtils
+import za.co.xisystems.itis_rrm.utils.hide
+import za.co.xisystems.itis_rrm.utils.show
 import java.util.*
 
 

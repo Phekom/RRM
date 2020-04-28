@@ -1,4 +1,3 @@
-
 /**
  * Created by Francis Mahlava on 2019/10/23.
  */
@@ -30,11 +29,7 @@ import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.ApproveJobsViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.corrections.CorrectionsViewModelFactory
-import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModelFactory
-import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModelFactory
-import za.co.xisystems.itis_rrm.ui.mainview.home.HomeViewModelFactory
-import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedViewModelFactory
-import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModelFactory
+import za.co.xisystems.itis_rrm.ui.models.*
 
 
 /**
@@ -49,7 +44,6 @@ open class MainApp : Application(), KodeinAware {
 
         bind() from singleton { NetworkConnectionInterceptor(instance()) }
         bind() from singleton { BaseConnectionApi(instance()) }
-
         bind() from singleton { AppDatabase(instance()) }
         bind() from singleton { PreferenceProvider(instance()) }
 
@@ -65,17 +59,42 @@ open class MainApp : Application(), KodeinAware {
         bind() from singleton { MeasureCreationDataRepository(instance(), instance()) }
         bind() from singleton { MeasureApprovalDataRepository(instance(), instance()) }
 
-        bind() from provider { AuthViewModelFactory(instance(),instance()) }
-        bind() from provider { HomeViewModelFactory(instance(),instance(),instance(),instance()) }
-        bind() from provider { CreateViewModelFactory(instance() ) }
-        bind() from provider { ApproveMeasureViewModelFactory(instance() ,instance()) }
-        bind() from provider { ApproveJobsViewModelFactory(instance(),instance() ) }
-        bind() from provider { MeasureViewModelFactory(instance(),instance() ) }
-        bind() from provider { UnSubmittedViewModelFactory(instance() ) }
-        bind() from provider{ WorkViewModelFactory(instance(),instance()) }
-        bind() from provider{ CorrectionsViewModelFactory(instance()) }
-        bind() from provider{ SettingsViewModelFactory(instance()) }
-        bind() from provider{ MainActivityViewModelFactory(instance()) }
+        bind() from provider { AuthViewModelFactory(instance(), instance()) }
+        bind() from provider {
+            HomeViewModelFactory(
+                instance(),
+                instance(),
+                instance(),
+                instance()
+            )
+        }
+        bind() from provider {
+            CreateViewModelFactory(
+                instance()
+            )
+        }
+        bind() from provider { ApproveMeasureViewModelFactory(instance(), instance()) }
+        bind() from provider { ApproveJobsViewModelFactory(instance(), instance()) }
+        bind() from provider {
+            MeasureViewModelFactory(
+                instance(),
+                instance()
+            )
+        }
+        bind() from provider {
+            UnSubmittedViewModelFactory(
+                instance()
+            )
+        }
+        bind() from provider {
+            WorkViewModelFactory(
+                instance(),
+                instance()
+            )
+        }
+        bind() from provider { CorrectionsViewModelFactory(instance()) }
+        bind() from provider { SettingsViewModelFactory(instance()) }
+        bind() from provider { MainActivityViewModelFactory(instance()) }
         bind() from provider { SharedViewModelFactory() }
         bind() from provider { SharedViewModel() }
 
@@ -92,9 +111,19 @@ open class MainApp : Application(), KodeinAware {
         }
     }
 
-    /** A tree which adds the filename, line-number and method call when debugging. */
+    /**
+     * A tree which adds the filename, line-number and method call when debugging.
+     * The production code will not implement this tree, our secrets are safe.
+     */
     private class HyperlinkDebugTree : Timber.DebugTree() {
+
+        /**
+         * In this override, we replace the usual TAG with the filename, line number and method name.
+         * Ctrl + click from logcat will get you to the spot.
+         */
         override fun createStackElementTag(element: StackTraceElement): String? {
+
+
             with(element) {
                 return ("($fileName:$lineNumber)$methodName")
             }

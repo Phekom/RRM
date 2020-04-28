@@ -20,11 +20,17 @@ import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.base.BaseFragment
+import za.co.xisystems.itis_rrm.custom.errors.ApiException
+import za.co.xisystems.itis_rrm.custom.errors.NoConnectivityException
+import za.co.xisystems.itis_rrm.custom.errors.NoInternetException
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
-import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.estimate_measure_item.EstimateMeasureItem
-import za.co.xisystems.itis_rrm.utils.*
+import za.co.xisystems.itis_rrm.ui.models.MeasureViewModel
+import za.co.xisystems.itis_rrm.ui.models.MeasureViewModelFactory
+import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
+import za.co.xisystems.itis_rrm.utils.Coroutines
 
 class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware {
 

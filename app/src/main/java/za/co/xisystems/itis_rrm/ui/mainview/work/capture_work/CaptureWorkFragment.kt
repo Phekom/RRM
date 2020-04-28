@@ -32,13 +32,13 @@ import org.kodein.di.generic.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
-import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.intents.AbstractIntent
-import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModel
-import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.work.work_utils.LocationHelper
 import za.co.xisystems.itis_rrm.ui.mainview.work.workstate_item.WorkStateItem
+import za.co.xisystems.itis_rrm.ui.models.WorkViewModel
+import za.co.xisystems.itis_rrm.ui.models.WorkViewModelFactory
 import za.co.xisystems.itis_rrm.utils.*
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView

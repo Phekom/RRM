@@ -3,7 +3,9 @@ package za.co.xisystems.itis_rrm.data.network
 import org.json.JSONException
 import org.json.JSONObject
 import retrofit2.Response
-import za.co.xisystems.itis_rrm.utils.ApiException
+import timber.log.Timber
+import za.co.xisystems.itis_rrm.custom.errors.ApiException
+
 /**
  * Created by Francis Mahlava on 2019/10/18.
  */
@@ -17,15 +19,20 @@ abstract class SafeApiRequest {
             val error = response.errorBody()?.string()
 
             val message = StringBuilder()
-            error?.let{
-                try{
+            try {
+                error?.let {
+                    message.append("Error Code: ${response.code()}")
+                    message.append("\n")
                     message.append(JSONObject(it).getString("message"))
-                }catch(e: JSONException){ }
-                message.append("\n")
+                    throw ApiException(message.toString())
+                }
+            } catch (e: JSONException) {
+                Timber.e(e, e.localizedMessage)
+            } catch (e: ApiException) {
+                err
             }
-            message.append("Error Code: ${response.code()}")
-            throw ApiException(message.toString())
         }
-    }
 
+    }
 }
+

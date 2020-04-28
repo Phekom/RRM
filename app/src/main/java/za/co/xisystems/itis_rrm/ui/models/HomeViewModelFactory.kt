@@ -1,4 +1,4 @@
-package za.co.xisystems.itis_rrm.ui.mainview.home
+package za.co.xisystems.itis_rrm.ui.models
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
@@ -19,6 +19,11 @@ class HomeViewModelFactory(
     val context: Context
 ): ViewModelProvider.NewInstanceFactory() {
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-        return HomeViewModel(repository,offlineDataRepository,Db ,context) as T
+        return HomeViewModel(
+            repository,
+            offlineDataRepository,
+            Db,
+            context
+        ) as T
     }
 }

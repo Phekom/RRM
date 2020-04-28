@@ -90,9 +90,6 @@ class OfflineDataRepository(
         lookups.observeForever {
             saveLookups(it)
         }
-        projectItems.observeForever {
-            //            saveProjectItems(it)
-        }
 
         toDoListGroups.observeForever {
             saveUserTaskList(it)
@@ -231,7 +228,7 @@ class OfflineDataRepository(
         }
     }
 
-    suspend fun getJobforEstinmate(jobId: String): LiveData<JobDTO> {
+    suspend fun getJobForJobId(jobId: String): LiveData<JobDTO> {
         return withContext(Dispatchers.IO) {
             Db.getJobDao().getJobFromJobId(jobId)
         }
@@ -537,7 +534,7 @@ class OfflineDataRepository(
 
         if (contracts.isNotEmpty()) {
             val validContracts = contracts.filter { contract ->
-                contract.projects != null && !contract.contractId.isNullOrBlank()
+                contract.projects != null && !contract.contractId.isBlank()
             }
                 .distinctBy { contract -> contract.contractId }
             for (contract in validContracts) {
@@ -546,7 +543,7 @@ class OfflineDataRepository(
 
                 val validProjects =
                     contract.projects?.filter { project ->
-                        !project.projectId.isNullOrBlank()
+                        !project.projectId.isBlank()
                     }?.distinctBy { project -> project.projectId }
 
                 if (validProjects != null) {
@@ -1091,11 +1088,11 @@ class OfflineDataRepository(
     }
 
     private fun saveWorkflowJob(workflowj: WorkflowJobDTO?) {
-        if (workflowj != null) {
-            val job = setWorkflowJobBigEndianGuids(workflowj)
+        try {
+            val job = setWorkflowJobBigEndianGuids(workflowj!!)
             insertOrUpdateWorkflowJobInSQLite(job)
-        } else {
-            Log.e("Error:", " WorkFlow Job is null")
+        } catch (ex: NullPointerException) {
+            Timber.e(ex, "Non-nullable WorkFlow Job is null.")
         }
     }
 
@@ -1230,23 +1227,40 @@ class OfflineDataRepository(
         toDoListGroups.postValue(toDoListGroupsResponse.toDoListGroups)
     }
 
-    private suspend fun fetchAllData(userId: String) {
-        // TODO: Redo as async calls in parallel
+    suspend fun refreshActivitySections(userId: String) {
         val activitySectionsResponse =
             apiRequest { api.activitySectionsRefresh(userId) }
         sectionItems.postValue(activitySectionsResponse.activitySections)
+    }
 
+    suspend fun refreshWorkflows(userId: String) {
         val workFlowResponse = apiRequest { api.workflowsRefresh(userId) }
         workFlow.postValue(workFlowResponse.workFlows)
+    }
 
+    suspend fun refreshLookups(userId: String) {
         val lookupResponse = apiRequest { api.lookupsRefresh(userId) }
         lookups.postValue(lookupResponse.mobileLookups)
+    }
 
-        val toDoListGroupsResponse = apiRequest { api.getUserTaskList(userId) }
-        toDoListGroups.postValue(toDoListGroupsResponse.toDoListGroups)
-
+    suspend fun refreshContractInfo(userId: String) {
         val contractsResponse = apiRequest { api.refreshContractInfo(userId) }
         conTracts.postValue(contractsResponse.contracts)
+    }
+
+    private suspend fun fetchAllData(userId: String) {
+        // TODO: Redo as async calls in parallel
+
+        refreshActivitySections(userId)
+
+        refreshWorkflows(userId)
+
+        refreshLookups(userId)
+
+        fetchUserTaskList(userId)
+
+        refreshContractInfo(userId)
+
     }
 
     private fun isFetchNeeded(savedAt: LocalDateTime): Boolean {
@@ -1628,7 +1642,7 @@ class OfflineDataRepository(
                                 )
                             for (jobItemEstimatePhoto in photos) {
                                 if (PhotoUtil.photoExist(jobItemEstimatePhoto.filename)) {
-                                    Log.d("x-", "UploadRrImage $imageCounter")
+                                    Timber.d("x -> UploadRrImage $imageCounter")
                                     uploadRrmImage(
                                         jobItemEstimatePhoto.filename,
                                         PhotoQuality.HIGH,
@@ -1639,17 +1653,17 @@ class OfflineDataRepository(
                                     )
                                     imageCounter++
                                 } else {
-                                    Log.d("x-", "Error: photo filename is empty!")
+                                    Timber.d("x -> Error: photo filename is empty!")
                                 }
                             }
                         } else {
-                            Log.d("x-", "Error: photos are empty!")
+                            Timber.d("x -> Error: photos are empty!")
                         }
                     }
                 }
             }
             else -> {
-                Log.d("x-", "Error: no job item estimates.")
+                Timber.d("x -> Error: no job item estimates.")
             }
         }
     }
