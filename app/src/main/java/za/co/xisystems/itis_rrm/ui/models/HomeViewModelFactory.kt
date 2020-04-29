@@ -22,7 +22,6 @@ class HomeViewModelFactory(
         return HomeViewModel(
             repository,
             offlineDataRepository,
-            Db,
             context
         ) as T
     }

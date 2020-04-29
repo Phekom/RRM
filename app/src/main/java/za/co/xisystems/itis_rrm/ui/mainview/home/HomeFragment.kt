@@ -6,7 +6,6 @@ import android.graphics.Color
 import android.location.LocationManager
 import android.net.ConnectivityManager
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
@@ -48,10 +47,10 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
     private val factory: HomeViewModelFactory by instance()
     private lateinit var sharedViewModel: SharedViewModel
     private val shareFactory: SharedViewModelFactory by instance()
+    private var userId: String? = null
 
-    var gpsEnabled: Boolean = false
-    var networkEnabled: Boolean = false
-    var appContext: Context? = null
+    private var gpsEnabled: Boolean = false
+    private var networkEnabled: Boolean = false
 
     companion object {
         val TAG: String = HomeFragment::class.java.simpleName
@@ -77,9 +76,9 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                         val user = homeViewModel.user.await()
                         user.observe(viewLifecycleOwner, Observer { user_ ->
                             username?.text = user_.userName
+                            userId = user_.userId
                         })
 
-                        homeViewModel.offlineSectionItems.start()
 
                         val contracts = homeViewModel.offlineData.await()
                         contracts.observe(viewLifecycleOwner, Observer { mContracts ->
@@ -103,7 +102,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                         group2_loading.visibility = View.GONE
                     }
                 }
-                Timber.d("Fetch contracts complete in ${time / 1000} seconds.")
+                Timber.d("Fetch contracts complete in $time seconds.")
             }
         }
     }
@@ -136,7 +135,52 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
-        // val dialog = setDataProgressDialog(activity!!, getString(R.string.data_loading_please_wait))
+
+        swipeToRefreshInit()
+
+
+
+        checkGPSConnectivity()
+
+        connectedTo.text = "Version " + BuildConfig.VERSION_NAME
+
+
+        serverTextView.setOnClickListener {
+            ToastUtils().toastServerAddress(context)
+        }
+
+        imageView7.setOnClickListener {
+            ToastUtils().toastVersion(context)
+        }
+    }
+
+    private fun checkGPSConnectivity() {
+        val lm = requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        val cm =
+            requireActivity().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        gpsEnabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
+        networkEnabled = cm.isDefaultNetworkActive
+        //  Check if Network Enabled
+        if (!networkEnabled) {
+            dataEnabled.setText(R.string.mobile_data_not_connected)
+            dataEnabled.setTextColor(colorNotConnected)
+        } else {
+            dataEnabled.setText(R.string.mobile_data_connected)
+            dataEnabled.setTextColor(colorConnected)
+        }
+
+        // Check if GPS connected
+        if (!gpsEnabled) {
+            //            locationEnabled.text = "GPS NOT CONNECTED"
+            locationEnabled.text = requireActivity().getString(R.string.gps_not_connected)
+            locationEnabled.setTextColor(colorNotConnected)
+        } else {
+            locationEnabled.text = requireActivity().getString(R.string.gps_connected)
+            locationEnabled.setTextColor(colorConnected)
+        }
+    }
+
+    private fun swipeToRefreshInit() {
 
         items_swipe_to_refresh.setProgressBackgroundColorSchemeColor(
             ContextCompat.getColor(
@@ -163,55 +207,19 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                 } catch (e: ApiException) {
                     //ToastUtils().toastLong(activity, e.message)
                     sharedViewModel.setMessage(e.message)
-                    Log.e(TAG, "API Exception", e)
+                    Timber.e(e, "API Exception")
                 } catch (e: NoInternetException) {
                     //ToastUtils().toastLong(activity, e.message)
                     sharedViewModel.setMessage(e.message)
-                    Log.e(TAG, "No Internet Connection", e)
+                    Timber.e(e, "No Internet Connection")
                 } catch (e: NoConnectivityException) {
                     sharedViewModel.setMessage(e.message)
-                    Log.e(TAG, "Service Host Unreachable", e)
+                    Timber.e(e, "Service Host Unreachable")
                 } finally {
                     items_swipe_to_refresh.isRefreshing = false
                     sharedViewModel.toggleLongRunning(false)
                 }
             }
-        }
-
-
-        val lm = requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager
-        val cm =
-            requireActivity().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        gpsEnabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
-        networkEnabled = cm.isDefaultNetworkActive
-        //  Check if Network Enabled
-        if (!networkEnabled) {
-            dataEnabled.setText(R.string.mobile_data_not_connected)
-            dataEnabled.setTextColor(colorNotConnected)
-        } else {
-            dataEnabled.setText(R.string.mobile_data_connected)
-            dataEnabled.setTextColor(colorConnected)
-        }
-
-        // Check if GPS connected
-        if (!gpsEnabled) {
-            //            locationEnabled.text = "GPS NOT CONNECTED"
-            locationEnabled.text = requireActivity().getString(R.string.gps_not_connected)
-            locationEnabled.setTextColor(colorNotConnected)
-        } else {
-            locationEnabled.text = requireActivity().getString(R.string.gps_connected)
-            locationEnabled.setTextColor(colorConnected)
-        }
-
-        connectedTo.text = "Version " + BuildConfig.VERSION_NAME
-
-
-        serverTextView.setOnClickListener {
-            ToastUtils().toastServerAddress(context)
-        }
-
-        imageView7.setOnClickListener {
-            ToastUtils().toastVersion(context)
         }
     }
 

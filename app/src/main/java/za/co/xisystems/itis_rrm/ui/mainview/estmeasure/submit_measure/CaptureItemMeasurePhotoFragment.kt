@@ -65,7 +65,7 @@ class CaptureItemMeasurePhotoFragment : BaseFragment(R.layout.fragment_capture_i
     private lateinit var imageUri: Uri
 
     @State
-    var filename_path = HashMap<String, String>()
+    var filePath = HashMap<String, String>()
 
     @State
     var location = HashMap<String, String>()
@@ -165,23 +165,24 @@ class CaptureItemMeasurePhotoFragment : BaseFragment(R.layout.fragment_capture_i
         if (currentLocation == null) toast("Error: Current location is null!")
         //  Save Image to Internal Storage
         val photoId = SqlLitUtils.generateUuid()
-        filename_path =
+        filePath =
             PhotoUtil.saveImageToInternalStorage(
                 requireContext(),
                 imageUri
             ) as HashMap<String, String>
 
-        Timber.e(e, "location -> ${currentLocation.longitude}")
+        Timber.d("location -> ${currentLocation.longitude}, ${currentLocation.longitude}")
+        Timber.d("accuracy: ${currentLocation.accuracy}")
 
         val jobItemMeasurePhoto = JobItemMeasurePhotoDTO(
             0,
             null,
-            filename_path.get("filename"),
+            filePath["filename"],
             selectedJobItemMeasure.estimateId,
             selectedJobItemMeasure.itemMeasureId,
             DateUtil.DateToString(Date()),
             photoId, currentLocation.latitude, currentLocation.longitude,
-            filename_path.get("path"), jobItemMeasure, 0, 0
+            filePath["path"], jobItemMeasure, 0, 0
 
         )
 
@@ -247,7 +248,7 @@ class CaptureItemMeasurePhotoFragment : BaseFragment(R.layout.fragment_capture_i
     }
 
     private fun processAndSetImage() {
-        GlideApp.with(CaptureItemMeasurePhotoFragment.requireActivity())
+        GlideApp.with(requireActivity())
             .load(imageUri)
             .into(m_imageView)
         photoButtons.visibility = View.VISIBLE

@@ -34,14 +34,10 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
 
 class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware {
 
+
     override val kodein by kodein()
     private lateinit var measureViewModel: MeasureViewModel
     private val factory: MeasureViewModelFactory by instance()
-
-    companion object {
-        const val JOB_MEASURE_EST_JOB_ID = "JOB_MEASURE_EST_JOB_ID"
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
@@ -70,60 +66,56 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
         measureViewModel = activity?.run {
             ViewModelProvider(this, factory).get(MeasureViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
+
         Coroutines.main {
             val dialog =
-                setDataProgressDialog(activity!!, getString(R.string.data_loading_please_wait))
-//            val measurements = measureViewModel.getJobMeasureForActivityId(ActivityIdConstants.ESTIMATE_MEASURE)MEASURE_PART_COMPLETE
-            val measurements = measureViewModel.getJobMeasureForActivityId(
+                setDataProgressDialog(
+                    requireActivity(),
+                    getString(R.string.data_loading_please_wait)
+                )
+
+            val itemEstimateData = measureViewModel.getJobMeasureForActivityId(
                 ActivityIdConstants.ESTIMATE_MEASURE,
                 ActivityIdConstants.MEASURE_PART_COMPLETE
             )
-//            val measurements = approveViewModel.offlinedata.await()
-            measurements.observe(viewLifecycleOwner, Observer { job_s ->
-                val measure_items = job_s.distinctBy {
+
+            itemEstimateData.observe(viewLifecycleOwner, Observer { itemEstimateList ->
+                val jobHeaders = itemEstimateList.distinctBy {
                     it.jobId
                 }
-                if (job_s.isEmpty()) {
+                if (itemEstimateList.isEmpty()) {
                     Coroutines.main {
-                        val measurement = measureViewModel.getJobMeasureForActivityId(
+                        val jobEstimateData = measureViewModel.getJobMeasureForActivityId(
                             ActivityIdConstants.ESTIMATE_MEASURE,
                             ActivityIdConstants.JOB_ESTIMATE
                         )
-                        measurement.observe(viewLifecycleOwner, Observer { jos ->
+                        jobEstimateData.observe(viewLifecycleOwner, Observer { jos ->
                             val measure_items = jos.distinctBy {
                                 it.jobId
                             }
                             noData.visibility = View.GONE
                             initRecyclerView(measure_items.toMeasureListItems())
-                            toast(job_s.size.toString())
+                            toast(itemEstimateList.size.toString())
                             group5_loading.visibility = View.GONE
                         })
                     }
                 } else {
                     noData.visibility = View.GONE
-                    initRecyclerView(measure_items.toMeasureListItems())
-                    toast(job_s.size.toString())
+                    initRecyclerView(jobHeaders.toMeasureListItems())
+                    toast(itemEstimateList.size.toString())
                     group5_loading.visibility = View.GONE
                 }
-
             })
 
             estimations_swipe_to_refresh.setProgressBackgroundColorSchemeColor(
                 ContextCompat.getColor(
-                    context!!.applicationContext,
+                    requireContext().applicationContext,
                     R.color.colorPrimary
                 )
             )
             estimations_swipe_to_refresh.setColorSchemeColors(Color.WHITE)
 
             estimations_swipe_to_refresh.setOnRefreshListener {
-                //                Coroutines.main {
-//                    val jobs = measureViewModel.offlinedatas.await()
-//                    jobs.observe(viewLifecycleOwner, Observer { works ->
-//                        estimations_swipe_to_refresh.isRefreshing = false
-//                    })
-//
-//                }
                 dialog.show()
                 Coroutines.main {
                     try {
@@ -158,7 +150,6 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
         }
     }
 
-
     private fun initRecyclerView(measureListItems: List<EstimateMeasureItem>) {
         val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
             addAll(measureListItems)
@@ -172,26 +163,20 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
         groupAdapter.setOnItemClickListener { item, view ->
             Coroutines.main {
                 (item as? EstimateMeasureItem)?.let {
-                    //                    val descri = approveViewModel.getDescForProjectId(it.jobDTO.projectId!!)
-//                    val sectionId  =  approveViewModel.getProjectSectionIdForJobId(it.jobDTO.jobId)
-//                    val route  =  approveViewModel.getRouteForProjectSectionId(sectionId)
-//                    val section  =  approveViewModel.getSectionForProjectSectionId(sectionId)
-//                    sendJobtoAprove((it.jobItemEstimateDTO.jobId), view)
-                    sendJobtoApprove((it), view)
+                    sendForApproval((it), view)
                 }
 
             }
         }
     }
 
-    private fun sendJobtoApprove(
-        job: EstimateMeasureItem?,
+    private fun sendForApproval(
+        measureItem: EstimateMeasureItem,
         view: View
     ) {
-        val jobId = job
 
         Coroutines.main {
-            measureViewModel.measure_Item.value = jobId
+            measureViewModel.measure_Item.value = measureItem
         }
 
         Navigation.findNavController(view)
@@ -203,4 +188,10 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
             EstimateMeasureItem(measure_items, measureViewModel)
         }
     }
+
+    override fun onDestroyView() {
+        estimations_to_be_measured_listView.adapter = null
+        super.onDestroyView()
+    }
+
 }

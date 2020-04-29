@@ -5,7 +5,6 @@ package za.co.xisystems.itis_rrm.data.repositories
 // import android.app.Activity
 import android.os.Build
 import android.os.Environment
-import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LiveData
@@ -1713,15 +1712,13 @@ class OfflineDataRepository(
     ) {
 
         Coroutines.io {
-            val imagedata = JsonObject()
-            imagedata.addProperty("Filename", filename)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                imagedata.addProperty("ImageByteArray", Base64.getEncoder().encodeToString(photo))
-            }
-            imagedata.addProperty("ImageFileExtension", extension)
-            Log.e("JsonObject", "Json string $imagedata")
+            val imageData = JsonObject()
+            imageData.addProperty("Filename", filename)
+            imageData.addProperty("ImageByteArray", encode64Pic(photo))
+            imageData.addProperty("ImageFileExtension", extension)
+            Timber.d("ImageDate: $imageData")
 
-            val uploadImageResponse = apiRequest { api.uploadRrmImage(imagedata) }
+            val uploadImageResponse = apiRequest { api.uploadRrmImage(imageData) }
             photoupload.postValue(uploadImageResponse.errorMessage)
             if (totalImages <= imageCounter)
                 Coroutines.io {
@@ -1729,6 +1726,17 @@ class OfflineDataRepository(
                 }
         }
     }
+
+    fun encode64Pic(photo: ByteArray): String {
+        return when {
+            Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O ->
+                Base64.getEncoder().encodeToString(photo)
+            else ->
+                android.util.Base64.encodeToString(photo, android.util.Base64.DEFAULT)
+        }
+    }
+
+
 
     private fun moveJobToNextWorkflow(
         job: JobDTO,
