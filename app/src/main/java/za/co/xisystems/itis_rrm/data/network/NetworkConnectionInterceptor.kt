@@ -62,7 +62,7 @@ class NetworkConnectionInterceptor(
                 }
             }
         } else {
-            // For Android versions older than Marshmallow, this will work.
+            // Pre-Marshmallow Fallback
             connectivityManager?.run {
                 @Suppress("DEPRECATION")
                 activeNetworkInfo?.run {

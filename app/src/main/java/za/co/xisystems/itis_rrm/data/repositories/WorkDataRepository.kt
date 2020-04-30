@@ -2,7 +2,6 @@ package za.co.xisystems.itis_rrm.data.repositories
 
 //import sun.security.krb5.Confounder.bytes
 
-import android.os.Build
 import android.os.Looper
 import android.widget.Toast
 import androidx.fragment.app.FragmentActivity
@@ -224,14 +223,7 @@ class WorkDataRepository(
         Coroutines.io {
             val imagedata = JsonObject()
             imagedata.addProperty("Filename", filename)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                imagedata.addProperty("ImageByteArray", Base64.getEncoder().encodeToString(photo))
-            } else {
-                imagedata.addProperty(
-                    "ImageByteArray",
-                    android.util.Base64.encodeToString(photo, android.util.Base64.DEFAULT)
-                )
-            }
+            imagedata.addProperty("ImageByteArray", PhotoUtil.encode64Pic(photo))
             imagedata.addProperty("ImageFileExtension", extension)
             Timber.d("ImageData: $imagedata")
 

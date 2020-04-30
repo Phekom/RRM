@@ -55,6 +55,7 @@ class RegisterActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runna
         if ( startPermissionRequest(appContext.applicationContext, permissions)){
             toast("Permissions already provided.")
         }else{
+            // The only fallback from Marshmallow is to grant all permissions
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 requestPermissions(permissions, PERMISSION_REQUEST)
             }

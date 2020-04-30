@@ -241,6 +241,8 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
             work_imageView.clearFocus()
             estimateWorksPhotoArrayList.clear()
             comments_editText.setText("")
+
+            // TODO: Fix deprecated fragmentManager calls
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
 
                 fragmentManager?.beginTransaction()?.detach(this)?.commitNow()

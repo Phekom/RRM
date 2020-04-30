@@ -37,7 +37,6 @@ import java.util.*
  * Updated by Shaun McDonald on 2020/04/22
  */
 
-
 class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListener, KodeinAware {
 
 
@@ -335,7 +334,7 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
                     object : SpinnerHelper.SelectionListener<ProjectDTO> {
                         override fun onItemSelected(position: Int, item: ProjectDTO) {
 
-                            if (item == null)
+                            if (item.projectId == null)
                                 Toast.makeText(
                                     context!!.applicationContext,
                                     "Error: Project is NULL",
