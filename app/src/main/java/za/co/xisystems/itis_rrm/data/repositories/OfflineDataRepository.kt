@@ -5,7 +5,6 @@ package za.co.xisystems.itis_rrm.data.repositories
 // import android.app.Activity
 import android.os.Build
 import android.os.Environment
-import androidx.annotation.RequiresApi
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -142,9 +141,7 @@ class OfflineDataRepository(
     suspend fun getSectionItems(): LiveData<List<SectionItemDTO>> {
         return withContext(Dispatchers.IO) {
             val userId = Db.getUserDao().getUserID()
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                fetchContracts(userId)
-            }
+            fetchContracts(userId)
             Db.getSectionItemDao().getSectionItems()
         }
     }
@@ -616,6 +613,7 @@ class OfflineDataRepository(
                         }
 
                         if (project.projectSections != null) {
+                            // TODO: Fix isFetchNeeded for Time and Offline Mode
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                                 prefs.savelastSavedAt(LocalDateTime.now().toString())
                             }
@@ -710,6 +708,7 @@ class OfflineDataRepository(
 
     private fun saveWorkFlowsInfo(workFlows: WorkFlowsDTO) {
         Coroutines.io {
+            // TODO: Fix isFetchNeeded for Time and Offline Mode
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 prefs.savelastSavedAt(LocalDateTime.now().toString())
             }
@@ -1183,7 +1182,6 @@ class OfflineDataRepository(
         job.postValue(jobResponse.job)
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     private suspend fun fetchContracts(userId: String) {
         val lastSavedAt = prefs.getLastSavedAt()
 
@@ -1267,6 +1265,7 @@ class OfflineDataRepository(
 
     }
 
+    // TODO: Fix isFetchNeeded for Time and Offline Mode
     private fun isFetchNeeded(savedAt: LocalDateTime): Boolean {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             ChronoUnit.DAYS.between(savedAt, LocalDateTime.now()) > MINIMUM_INTERVAL
@@ -1722,7 +1721,7 @@ class OfflineDataRepository(
         Coroutines.io {
             val imageData = JsonObject()
             imageData.addProperty("Filename", filename)
-            imageData.addProperty("ImageByteArray", encode64Pic(photo))
+            imageData.addProperty("ImageByteArray", PhotoUtil.encode64Pic(photo))
             imageData.addProperty("ImageFileExtension", extension)
             Timber.d("ImageDate: $imageData")
 
@@ -1734,16 +1733,6 @@ class OfflineDataRepository(
                 }
         }
     }
-
-    fun encode64Pic(photo: ByteArray): String {
-        return when {
-            Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O ->
-                Base64.getEncoder().encodeToString(photo)
-            else ->
-                android.util.Base64.encodeToString(photo, android.util.Base64.DEFAULT)
-        }
-    }
-
 
 
     private fun moveJobToNextWorkflow(

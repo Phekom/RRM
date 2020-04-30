@@ -4,6 +4,7 @@ package za.co.xisystems.itis_rrm.extensions
  *
  */
 
+import com.androidnetworking.utils.Utils
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -12,7 +13,6 @@ import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.retryWhen
 import okhttp3.Call
-import okhttp3.OkHttpClient
 import okhttp3.Request
 import retrofit2.Retrofit
 import za.co.xisystems.itis_rrm.base.Progress
@@ -29,12 +29,6 @@ internal inline fun Retrofit.Builder.callFactory(crossinline body: (Request) -> 
     callFactory(object : Call.Factory {
         override fun newCall(request: Request): Call = body(request)
     })
-
-@Suppress("NOTHING_TO_INLINE")
-inline fun Retrofit.Builder.delegatingCallFactory(delegate: dagger.Lazy<OkHttpClient>): Retrofit.Builder =
-    callFactory {
-        delegate.get().newCall(it)
-    }
 
 /**
  * You may want to apply some common side-effects to your flow to avoid repeating commonly used
