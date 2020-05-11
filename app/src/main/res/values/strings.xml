@@ -271,6 +271,7 @@
     <string name="please_enter_valid_end_point">Please enter valid Endpoint.</string>
     <string name="please_make_sure_start_km_is_smaller_than_end_km">Please make sure start km is smaller than end km</string>
     <string name="please_make_sure_workflow_items_contain_photos">Please make sure workflow Items contain photos</string>
+    <string name="please_provide_a_comment">Please provide a short comment.</string>
     <string name="please_make_sure_you_have_captured_photos">Please make sure you\'ve captured photos for all measurement items.</string>
     <string name="please_refresh_data">Please Refresh Data.</string>
     <string name="please_select_a_future_due_Date">Please select a future due date</string>
@@ -531,5 +532,6 @@
     <string name="warning_estimate_incomplete">Incomplete estimate ...</string>
     <string name="warning_estimate_enter_volume">Please enter the volume.</string>
     <string name="warning_estimate_enter_prov_sum">Please enter the Prov Sum</string>
+    <string name="capture_workflow_comments">Capture workflow comments</string>
 
 </resources>

@@ -1678,7 +1678,7 @@ class OfflineDataRepository(
     private fun getData(
         filename: String, photoQuality: PhotoQuality, activity: FragmentActivity
     ): ByteArray {
-        val uri = getPhotoPathFromExternalDirectory(activity.applicationContext, filename)
+        val uri = getPhotoPathFromExternalDirectory(filename)
         val bitmap =
             PhotoUtil.getPhotoBitmapFromFile(activity.applicationContext, uri, photoQuality)
         return PhotoUtil.getCompressedPhotoWithExifInfo(

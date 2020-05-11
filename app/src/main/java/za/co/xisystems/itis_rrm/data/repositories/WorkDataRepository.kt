@@ -240,7 +240,7 @@ class WorkDataRepository(
     private fun getData(
         filename: String, photoQuality: PhotoQuality, activity: FragmentActivity
     ): ByteArray {
-        val uri = PhotoUtil.getPhotoPathFromExternalDirectory(activity.applicationContext, filename)
+        val uri = PhotoUtil.getPhotoPathFromExternalDirectory(filename)
         val bitmap =
             PhotoUtil.getPhotoBitmapFromFile(activity.applicationContext, uri, photoQuality)
         return PhotoUtil.getCompressedPhotoWithExifInfo(

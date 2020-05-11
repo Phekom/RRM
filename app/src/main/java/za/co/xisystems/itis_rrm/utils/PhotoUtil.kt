@@ -31,7 +31,6 @@ import kotlin.math.roundToLong
 object PhotoUtil {
     const val FOLDER = "ITIS_RRM_Photos"
 
-    //    const val FOLDER = "ITISMaintenancePhotos"
     @SuppressLint("SimpleDateFormat")
     private val ISO_8601_FORMAT: DateFormat =
         SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
@@ -139,12 +138,11 @@ object PhotoUtil {
 
     fun photoExist(fileName: String): Boolean {
         val image =
-            File(getPhotoPathFromExternalDirectory(null, fileName).path)
+            File(getPhotoPathFromExternalDirectory(fileName).path)
         return image.exists()
     }
 
     fun getPhotoPathFromExternalDirectory(
-        context: Context?,
         photoName: String
     ): Uri {
         var photoName = photoName
@@ -169,8 +167,6 @@ object PhotoUtil {
         selectedImage: Uri?,
         photoQuality: PhotoQuality
     ): Bitmap? {
-        val width = 0
-        val height = 0
         var bm: Bitmap? = null
         try {
             val options = BitmapFactory.Options()
@@ -217,7 +213,6 @@ object PhotoUtil {
             metadata = Sanselan.getMetadata(
                 File(
                     getPhotoPathFromExternalDirectory(
-                        null,
                         fileName
                     ).path
                 )
@@ -515,17 +510,6 @@ object PhotoUtil {
         }
     }
 
-//    fun getUri2(captureItemMeasurePhotoActivity: CaptureItemMeasurePhotoActivity): Uri? {
-//        try {
-//            return FileProvider.getUriForFile(
-//                captureItemMeasurePhotoActivity, BuildConfig.APPLICATION_ID + ".provider",
-//                createImageFile()
-//            )
-//        } catch (e: IOException) {
-//            e.printStackTrace()
-//        }
-//        return null
-//    }
 
 
     fun getUri3(context: Context): Uri? {

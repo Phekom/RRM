@@ -84,19 +84,24 @@
                     <!--                            app:layout_constraintStart_toStartOf="parent"-->
                     <!--                            app:layout_constraintTop_toTopOf="parent" >-->
 
-                    <ImageView
-                            android:id="@+id/work_imageView"
-                            android:layout_width="291dp"
-                            android:layout_height="369dp"
-                            android:layout_marginTop="8dp"
-                            android:padding="@dimen/small"
-                            android:visibility="visible"
+                    <pereira.agnaldo.previewimgcol.ImageCollectionView
+                        android:id="@+id/image_collection_view"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_marginTop="30dp"
+                        android:layout_marginBottom="30dp"
+                        app:backgroundColor="#80000000"
+                        app:baseRowHeight="150dp"
+                        app:imageMargin="5dp"
                             app:layout_constraintBottom_toBottomOf="parent"
                             app:layout_constraintEnd_toEndOf="parent"
-                            app:layout_constraintHorizontal_bias="0.49"
+                        app:layout_constraintHorizontal_bias="0.50"
                             app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toTopOf="parent" />
-
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:maxImagePerRow="2"
+                        app:maxRows="3"
+                        app:pinchToZoom="true"
+                        app:showExternalBorderMargins="true" />
 <!--                    <ImageSwitcher-->
 <!--                            android:id="@+id/work_imageView"-->
 <!--                            android:layout_width="293dp"-->
@@ -159,6 +164,9 @@
                         android:singleLine="true"
                         android:backgroundTint="@color/itis_burnt_orange"
                         android:textAppearance="@style/ItisRegularText"
+                    android:hint="@string/capture_workflow_comments"
+                    android:importantForAutofill="no"
+                    android:inputType="text"
                         android:textColor="@color/itis_gray" />
 
                 <LinearLayout

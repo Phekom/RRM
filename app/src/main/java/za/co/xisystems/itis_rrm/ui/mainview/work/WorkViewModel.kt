@@ -129,7 +129,6 @@ class WorkViewModel(
 
     suspend fun createSaveWorksPhotos(
         estimateWorksPhoto: ArrayList<JobEstimateWorksPhotoDTO>,
-        estimat: JobItemEstimateDTO,
         itemEstiWorks: JobEstimateWorksDTO
     ) {
         return withContext(Dispatchers.IO) {
