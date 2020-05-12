@@ -20,7 +20,7 @@ versioning {
     // Optional, custom task name to trigger the increase of the version
     // incrementOn "installDevDebug"
     // Optional, custom task name for which you want to save the versioning file
-    saveOn "installDevDebug"
+    saveOn "app:installDevDebug"
 }
 
 
@@ -101,7 +101,7 @@ android {
     defaultConfig {
         applicationId appId
         minSdkVersion 21
-        targetSdkVersion 28
+        targetSdkVersion 29
         versionCode 1
         versionName versioning.name
         vectorDrawables.useSupportLibrary = false
@@ -119,7 +119,10 @@ android {
 
         javaCompileOptions {
             annotationProcessorOptions {
-                arguments = ["room.schemaLocation": "$projectDir/schemas".toString()]
+                arguments = ["room.schemaLocation": "$projectDir/schemas".toString(),
+                             "room.incremental":"true",
+                             "room.expandProjection":"true"]
+
             }
         }
 
@@ -355,7 +358,7 @@ dependencies {
 
 
     // Recyclerview
-    implementation 'androidx.recyclerview:recyclerview:1.2.0-alpha02'
+    implementation 'androidx.recyclerview:recyclerview:1.2.0-alpha03'
 
     // Cardview
     implementation 'androidx.cardview:cardview:1.0.0'

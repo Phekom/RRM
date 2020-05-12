@@ -6,9 +6,9 @@ import android.net.NetworkCapabilities
 import android.os.Build
 import okhttp3.Interceptor
 import okhttp3.Response
-import za.co.xisystems.itis_rrm.custom.errors.NoConnectivityException
-import za.co.xisystems.itis_rrm.custom.errors.NoInternetException
-import za.co.xisystems.itis_rrm.custom.errors.ServiceHostUnreachableException
+import za.co.xisystems.itis_rrm.utils.NoConnectivityException
+import za.co.xisystems.itis_rrm.utils.NoInternetException
+import za.co.xisystems.itis_rrm.utils.ServiceHostUnreachableException
 import java.io.IOException
 import java.net.InetAddress
 import java.net.InetSocketAddress
@@ -76,7 +76,7 @@ class NetworkConnectionInterceptor(
         return result
     }
 
-    fun isHostAvailable(host: String?, port: Int, timeout: Int): Boolean {
+    private fun isHostAvailable(host: String?, port: Int, timeout: Int): Boolean {
         try {
             Socket().use { socket ->
                 val inetAddress: InetAddress = InetAddress.getByName(host)
