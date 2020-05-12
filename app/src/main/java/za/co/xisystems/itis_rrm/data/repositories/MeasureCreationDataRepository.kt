@@ -107,7 +107,7 @@ class MeasureCreationDataRepository(
         itemMeasureJob: JobDTO
     ) {
         Coroutines.io {
-            if (workflowJobDTO != null) {
+            if (workflowJobDTO.jobId != null) {
                 itemMeasureJob.JobItemMeasures = jobItemMeasure
                 val measureJob = setWorkflowJobBigEndianGuids(workflowJobDTO)
                 insertOrUpdateWorkflowJobInSQLite(measureJob)
