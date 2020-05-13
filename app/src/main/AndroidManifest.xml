@@ -28,7 +28,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
 
-        android:theme="@style/AppTheme"
+        android:theme="@style/Theme.MaterialComponents"
         tools:ignore="GoogleAppIndexingWarning">
         <!--
             <activity android:name=".ui.mainview.create.edit_estimates.EstimatePhotoActivity"></activity> android:hardwareAccelerated="false"

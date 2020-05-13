@@ -1,4 +1,4 @@
-package za.co.xisystems.itis_rrm.ui.mainview.estmeasure
+package za.co.xisystems.itis_rrm.ui.models
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -15,6 +15,9 @@ class MeasureViewModelFactory(
     private val offlineDataRepository: OfflineDataRepository
 ) : ViewModelProvider.NewInstanceFactory() {
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-        return MeasureViewModel(measureCreationDataRepository, offlineDataRepository) as T
+        return MeasureViewModel(
+            measureCreationDataRepository,
+            offlineDataRepository
+        ) as T
     }
 }

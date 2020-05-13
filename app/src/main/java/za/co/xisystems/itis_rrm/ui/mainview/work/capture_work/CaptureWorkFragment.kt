@@ -37,11 +37,9 @@ import pereira.agnaldo.previewimgcol.ImageCollectionView
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
-import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.intents.AbstractIntent
-import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModel
-import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.work.work_utils.LocationHelper
 import za.co.xisystems.itis_rrm.ui.mainview.work.workstate_item.WorkStateItem
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
@@ -287,6 +285,8 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
             image_collection_view.clearImages()
             estimateWorksPhotoArrayList.clear()
             comments_editText.setText("")
+
+            // TODO: Fix deprecated fragmentManager calls
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
 
                 parentFragmentManager.beginTransaction().detach(this).commitNow()

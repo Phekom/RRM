@@ -23,7 +23,7 @@ const val BASE_URL = BuildConfig.API_HOST
 interface BaseConnectionApi {
 
     @FormUrlEncoded
-//    @Headers("Content-Type : application/json")
+
     @POST("Register")
     suspend fun userRegister(
         @Field("device") device: String,
@@ -34,63 +34,63 @@ interface BaseConnectionApi {
     ): Response<AuthResponse>
 
     @FormUrlEncoded
-//    @Headers("Content-Type : application/json")
+
     @POST("HealthCheck")
     suspend fun healthCheck(
         @Field("UserLogon") UserLogon: String
     ): Response<HealthCheckResponse>
 
     @FormUrlEncoded
-//    @Headers("Content-Type : application/json")
+
     @POST("RrmActivitySectionsRefresh")
     suspend fun activitySectionsRefresh(
         @Field("UserId") UserId: String
     ): Response<ActivitySectionsResponse>
 
     @FormUrlEncoded
-//    @Headers("Content-Type : application/json")
+
     @POST("ContractInfoRefresh")
     suspend fun refreshContractInfo(
         @Field("UserId") UserId: String
     ): Response<ContractsResponse>
 
     @FormUrlEncoded
-//    @Headers("Content-Type : application/json")
+
     @POST("WorkflowsRefresh")
     suspend fun workflowsRefresh(
         @Field("UserId") UserId: String
     ): Response<WorkflowResponse>
 
     @FormUrlEncoded
-//    @Headers("Content-Type : application/json")
+
     @POST("MobileLookupsRefresh")
     suspend fun lookupsRefresh(
         @Field("UserId") UserId: String
     ): Response<LookupResponse>
 
     @FormUrlEncoded
-//    @Headers("Content-Type : application/json")
+
     @POST("GetUserTaskList")
     suspend fun getUserTaskList(
         @Field("UserId") UserId: String
     ): Response<ToDoListGroupsResponse>
 
     @FormUrlEncoded
-//    @Headers("Content-Type : application/json")
+
     @POST("GetRRMJob")
     suspend fun getJobsForApproval(
         @Field("JobId") JobId: String
     ): Response<JobResponse>
 
     @FormUrlEncoded
-//    @Headers("Content-Type : application/json")
+
     @POST("GetRrmJobPhotoEstimate")
     suspend fun getPhotoEstimate(
         @Field("FileName") FileName: String
     ): Response<PhotoEstimateResponse>
 
     @FormUrlEncoded
-//    @Headers("Content-Type: application/json")
+
     @POST("GetRrmJobPhoto")
     suspend fun getPhotoMeasure(
         @Field("FileName") FileName: String
@@ -116,10 +116,8 @@ interface BaseConnectionApi {
     ): Response<UploadImageResponse>
 
     @FormUrlEncoded
-//    @Headers("Content-Type : application/json")
     @POST("GetRouteSectionPoint")
     suspend fun getRouteSectionPoint(
-
         @Field("Distance") distance: Int,
         @Field("MustBeInBuffer") buffer: Int,
         @Field("Latitude") latitude: Double,
@@ -152,7 +150,6 @@ interface BaseConnectionApi {
                 writeTimeout(5, TimeUnit.MINUTES)
                 connectTimeout(5, TimeUnit.MINUTES)
                     protocols(listOf(Protocol.HTTP_1_1))
-//                .pingInterval(100, TimeUnit.MILLISECONDS)
 
                 addInterceptor(networkConnectionInterceptor)
                 addInterceptor { chain ->
@@ -164,6 +161,10 @@ interface BaseConnectionApi {
 
             }
 
+            /**
+             * Add the http logging interceptor.
+             * Debug build only.
+             */
             if (BuildConfig.DEBUG)
                 okkHttpclient.addInterceptor(interceptor)
 

@@ -2,7 +2,6 @@ package za.co.xisystems.itis_rrm.data.repositories
 
 //import sun.security.krb5.Confounder.bytes
 
-import android.os.Build
 import android.os.Looper
 import android.widget.Toast
 import androidx.fragment.app.FragmentActivity
@@ -16,11 +15,15 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.custom.errors.ApiException
+import za.co.xisystems.itis_rrm.custom.errors.NoDataException
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
-import za.co.xisystems.itis_rrm.utils.*
+import za.co.xisystems.itis_rrm.utils.Coroutines
+import za.co.xisystems.itis_rrm.utils.DataConversion
+import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import java.util.*
@@ -139,7 +142,8 @@ class WorkDataRepository(
         useR: Int
     ) {
         if (response != null) {
-            val apiException = ApiException(response)
+            val apiException =
+                ApiException(response)
             Timber.e(apiException)
             throw apiException
         } else {
@@ -175,7 +179,9 @@ class WorkDataRepository(
                         imageCounter++
                     } else {
                         val noDataException =
-                            NoDataException("Photo ${jobItemPhotos.filename} could not be loaded.")
+                            NoDataException(
+                                "Photo ${jobItemPhotos.filename} could not be loaded."
+                            )
                         Timber.e(noDataException)
                         throw noDataException
                     }
@@ -217,14 +223,7 @@ class WorkDataRepository(
         Coroutines.io {
             val imagedata = JsonObject()
             imagedata.addProperty("Filename", filename)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                imagedata.addProperty("ImageByteArray", Base64.getEncoder().encodeToString(photo))
-            } else {
-                imagedata.addProperty(
-                    "ImageByteArray",
-                    android.util.Base64.encodeToString(photo, android.util.Base64.DEFAULT)
-                )
-            }
+            imagedata.addProperty("ImageByteArray", PhotoUtil.encode64Pic(photo))
             imagedata.addProperty("ImageFileExtension", extension)
             Timber.d("ImageData: $imagedata")
 
@@ -349,7 +348,8 @@ class WorkDataRepository(
             val job = setWorkflowJobBigEndianGuids(workflowj)
             insertOrUpdateWorkflowJobInSQLite(job)
         } else {
-            val noDataException = NoDataException("Workflow Job is null")
+            val noDataException =
+                NoDataException("Workflow Job is null")
             Timber.e(noDataException)
             throw noDataException
         }

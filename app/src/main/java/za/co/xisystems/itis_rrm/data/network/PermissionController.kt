@@ -45,6 +45,7 @@ object PermissionController {
     }
 
     fun checkPermissionsEnabled(context: Context?): Boolean {
+        // Before Marshmallow the only fallback is to grant all permissions.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             val permissions =
                 permissions

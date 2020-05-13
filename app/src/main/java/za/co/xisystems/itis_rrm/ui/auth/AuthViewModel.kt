@@ -6,9 +6,14 @@ import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.custom.errors.ApiException
+import za.co.xisystems.itis_rrm.custom.errors.AuthException
+import za.co.xisystems.itis_rrm.custom.errors.NoConnectivityException
+import za.co.xisystems.itis_rrm.custom.errors.NoInternetException
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
-import za.co.xisystems.itis_rrm.utils.*
+import za.co.xisystems.itis_rrm.utils.Coroutines
+import za.co.xisystems.itis_rrm.utils.lazyDeferred
 
 /**
  * Created by Francis Mahlava on 2019/10/23.

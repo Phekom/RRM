@@ -13,6 +13,7 @@ import android.widget.TextView;
 import org.jetbrains.annotations.NotNull;
 
 import za.co.xisystems.itis_rrm.R;
+import za.co.xisystems.itis_rrm.base.BaseFragment;
 
 /**
  * Created by Mauritz Mollentze in 2015.

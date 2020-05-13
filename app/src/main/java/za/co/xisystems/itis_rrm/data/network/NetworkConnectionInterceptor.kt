@@ -6,9 +6,9 @@ import android.net.NetworkCapabilities
 import android.os.Build
 import okhttp3.Interceptor
 import okhttp3.Response
-import za.co.xisystems.itis_rrm.utils.NoConnectivityException
-import za.co.xisystems.itis_rrm.utils.NoInternetException
-import za.co.xisystems.itis_rrm.utils.ServiceHostUnreachableException
+import za.co.xisystems.itis_rrm.custom.errors.NoConnectivityException
+import za.co.xisystems.itis_rrm.custom.errors.NoInternetException
+import za.co.xisystems.itis_rrm.custom.errors.ServiceHostUnreachableException
 import java.io.IOException
 import java.net.InetAddress
 import java.net.InetSocketAddress
@@ -16,6 +16,8 @@ import java.net.Socket
 
 /**
  * Created by Francis Mahlava on 2019/10/18.
+ *
+ * Updated by Shaun McDonald on 2019/04/17
  */
 class NetworkConnectionInterceptor(
     context: Context
@@ -60,7 +62,7 @@ class NetworkConnectionInterceptor(
                 }
             }
         } else {
-            // For Android versions older than Marshmallow, this will work.
+            // Pre-Marshmallow Fallback
             connectivityManager?.run {
                 @Suppress("DEPRECATION")
                 activeNetworkInfo?.run {

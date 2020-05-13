@@ -8,23 +8,28 @@ import android.view.View
 import android.view.View.GONE
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.*
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.GroupieViewHolder
 import kotlinx.android.synthetic.main.fragment_approvejob.*
+import kotlinx.coroutines.launch
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.base.BaseFragment
+import za.co.xisystems.itis_rrm.custom.errors.ApiException
+import za.co.xisystems.itis_rrm.custom.errors.NoConnectivityException
+import za.co.xisystems.itis_rrm.custom.errors.NoInternetException
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
-import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.approve_job_item.ApproveJobItem
-import za.co.xisystems.itis_rrm.utils.*
+import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
+import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
+import za.co.xisystems.itis_rrm.utils.Coroutines
 
 /**
  * Created by Francis Mahlava on 03,October,2019
@@ -35,10 +40,29 @@ class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAw
     override val kodein by kodein()
     private lateinit var approveViewModel: ApproveJobsViewModel
     private val factory: ApproveJobsViewModelFactory by instance()
-
+    private var uiScope = UiLifecycleScope()
 
     companion object {
         val TAG: String = ApproveJobsFragment::class.java.simpleName
+    }
+
+
+    init {
+        lifecycleScope.launch {
+
+            whenCreated {
+                uiScope.onCreate()
+            }
+
+            whenStarted {
+                viewLifecycleOwner.lifecycle.addObserver(uiScope)
+                uiScope.launch {
+
+                }
+            }
+
+
+        }
     }
 
 
@@ -61,7 +85,10 @@ class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAw
         } ?: throw Exception("Invalid Activity")
 
         Coroutines.main {
-            val dialog = setDataProgressDialog(activity!!, getString(R.string.data_loading_please_wait))
+            val dialog = setDataProgressDialog(
+                requireActivity(),
+                getString(R.string.data_loading_please_wait)
+            )
             val jobs = approveViewModel.getJobsForActivityId(ActivityIdConstants.JOB_APPROVE)
             jobs.observe(viewLifecycleOwner, Observer { job_s ->
                 val jItems = job_s.distinctBy {
@@ -78,7 +105,7 @@ class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAw
 
             jobs_swipe_to_refresh.setProgressBackgroundColorSchemeColor(
                 ContextCompat.getColor(
-                    context!!.applicationContext,
+                    requireContext().applicationContext,
                     R.color.colorPrimary
                 )
             )

@@ -9,14 +9,27 @@ import android.provider.MediaStore
 import android.view.View
 import androidx.core.content.FileProvider
 import za.co.xisystems.itis_rrm.BuildConfig
+import za.co.xisystems.itis_rrm.data.localDB.entities.StringKeyValuePair
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
 import java.nio.ByteBuffer
+import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.util.*
 
-object Util {
+
+object Utils {
+
+    const val LAST_CONTRACT_REFRESH_TIMESTAMP = "last_contract_refresh_timestamp"
+    const val LAST_WORKFLOW_REFRESH_TIMESTAMP = "last_workflow_refresh_timestamp"
+    const val LAST_MAP_REFRESH_TIMESTAMP = "last_map_refresh_timestamp"
+    const val MAX_RETRIES = 3L
+    private const val INITIAL_BACKOFF = 2000L
+    private var formatter = SimpleDateFormat("h:mm aa", Locale.getDefault())
+    private var dateFormatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+    private val df = DecimalFormat("###.##")
+
     fun toByteArray(mStringUUID: String?): ByteArray? {
         var stringUUID: String? = mStringUUID
         return if (stringUUID != null) {
@@ -53,10 +66,7 @@ object Util {
         return sb.toString()
     }
 
-    fun ByteArrayToStringUUID(bytes: ByteArray?): String? { //        if (isStub()) {
-//            String uud = UUID.randomUUID().toString();
-//            return removeDashesAndUppercaseString(uud);
-//        }
+    fun byteArrayToStringUUID(bytes: ByteArray?): String? { //        if (isStub()) {
         val bb = ByteBuffer.wrap(bytes)
         val high = bb.long
         val low = bb.long
@@ -98,9 +108,9 @@ object Util {
     }
 
     fun bitmapToByteArray(bitmap: Bitmap): ByteArray {
-        val baos = ByteArrayOutputStream()
-        bitmap.compress(Bitmap.CompressFormat.PNG, 50, baos)
-        return baos.toByteArray()
+        val byteArrayOutputStream = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.PNG, 50, byteArrayOutputStream)
+        return byteArrayOutputStream.toByteArray()
     }
 
     fun getImageUri(context: Context, inImage: Bitmap): Uri {
@@ -116,11 +126,33 @@ object Util {
     }
 
     fun arrayToString(array: Array<String?>): String {
-        if (array.size == 0) return ""
+        if (array.isEmpty()) return ""
         val sb = StringBuilder()
         for (string in array) {
             sb.append(",'").append(string).append("'")
         }
         return sb.substring(1)
     }
+
+    fun getTimeString(timeInMillis: Long): String {
+        return formatter.format(Date(timeInMillis * 1000))
+    }
+
+    fun getDateString(timeInMillis: Long): String {
+        return dateFormatter.format(Date(timeInMillis * 1000))
+    }
+
+    fun shouldCallApi(
+        lastApiCallMillis: String,
+        cacheThresholdInMillis: Long = 300000L //default value is 5 minutes//
+    ): Boolean {
+        return (System.currentTimeMillis() - lastApiCallMillis.toLong()) >= cacheThresholdInMillis
+    }
+
+    fun getCurrentTimeKeyValuePair(key: String): StringKeyValuePair {
+        return StringKeyValuePair(key, System.currentTimeMillis().toString())
+    }
+
+    fun getBackoffDelay(attempt: Long) = INITIAL_BACKOFF * (attempt + 1)
+
 }

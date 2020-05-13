@@ -31,8 +31,8 @@
 //import za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates.AppExecutor
 //import za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates.BitmapUtils
 //import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.intents.AbstractIntent
-//import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModel
-//import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModelFactory
+//import za.co.xisystems.itis_rrm.ui.models.MeasureViewModel
+//import za.co.xisystems.itis_rrm.ui.models.MeasureViewModelFactory
 //import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.submit_measure.ExpandableHeaderMeasureItem.Companion.JOB_IMEASURE
 //import za.co.xisystems.itis_rrm.utils.*
 //import java.util.*

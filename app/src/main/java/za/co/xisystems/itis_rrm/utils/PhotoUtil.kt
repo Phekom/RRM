@@ -490,16 +490,9 @@ object PhotoUtil {
             storageDir.mkdirs()
         }
 
-
-        val imageByteArray: ByteArray = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            Base64.getDecoder().decode(photo)
-        } else {
-            android.util.Base64.decode(photo, android.util.Base64.DEFAULT)
-        }
-
+        val imageByteArray: ByteArray = decode64Pic(photo)
         File(storageDir.path + "/" + fileName).writeBytes(imageByteArray)
     }
-
 
     fun createPhotoFolder() {
 
@@ -510,7 +503,26 @@ object PhotoUtil {
         }
     }
 
+    /**
+     * Encode bitmap array to a Base64 string for transmission to the backend.
+     */
+    fun encode64Pic(photo: ByteArray): String {
+        return when {
+            Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O ->
+                Base64.getEncoder().encodeToString(photo)
+            else ->
+                // Fallback for pre-Marshmallow
+                android.util.Base64.encodeToString(photo, android.util.Base64.DEFAULT)
+        }
+    }
 
+    private fun decode64Pic(photo: String): ByteArray {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Base64.getDecoder().decode(photo)
+        } else {
+            android.util.Base64.decode(photo, android.util.Base64.DEFAULT)
+        }
+    }
 
     fun getUri3(context: Context): Uri? {
         try {

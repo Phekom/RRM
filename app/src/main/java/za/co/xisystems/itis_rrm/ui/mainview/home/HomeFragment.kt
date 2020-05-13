@@ -6,26 +6,38 @@ import android.graphics.Color
 import android.location.LocationManager
 import android.net.ConnectivityManager
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.*
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.whenStarted
 import kotlinx.android.synthetic.main.fragment_home.*
 import kotlinx.coroutines.launch
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
+import timber.log.Timber
 import za.co.xisystems.itis_rrm.BuildConfig
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.base.BaseFragment
+import za.co.xisystems.itis_rrm.base.Error
+import za.co.xisystems.itis_rrm.custom.errors.ApiException
+import za.co.xisystems.itis_rrm.custom.errors.ErrorHandler
+import za.co.xisystems.itis_rrm.custom.errors.NoConnectivityException
+import za.co.xisystems.itis_rrm.custom.errors.NoInternetException
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.network.responses.HealthCheckResponse
-import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModelFactory
-import za.co.xisystems.itis_rrm.utils.*
+import za.co.xisystems.itis_rrm.ui.models.HomeViewModel
+import za.co.xisystems.itis_rrm.ui.models.HomeViewModelFactory
+import za.co.xisystems.itis_rrm.utils.Coroutines
+import za.co.xisystems.itis_rrm.utils.show
+import kotlin.system.measureTimeMillis
 
 
 class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
@@ -35,10 +47,10 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
     private val factory: HomeViewModelFactory by instance()
     private lateinit var sharedViewModel: SharedViewModel
     private val shareFactory: SharedViewModelFactory by instance()
+    private var userId: String? = null
 
-    var gpsEnabled: Boolean = false
-    var networkEnabled: Boolean = false
-    var appContext: Context? = null
+    private var gpsEnabled: Boolean = false
+    private var networkEnabled: Boolean = false
 
     companion object {
         val TAG: String = HomeFragment::class.java.simpleName
@@ -48,6 +60,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
 
         lifecycleScope.launch {
             whenStarted {
+
                 homeViewModel = activity?.run {
                     ViewModelProvider(this, factory).get(HomeViewModel::class.java)
                 } ?: throw Exception("Invalid Activity")
@@ -56,48 +69,40 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                     ViewModelProvider(this, shareFactory).get(SharedViewModel::class.java)
                 } ?: throw Exception("Invalid Activity")
 
-            }
 
-            whenResumed {
-                homeViewModel = activity?.run {
-                    ViewModelProvider(this, factory).get(HomeViewModel::class.java)
-                } ?: throw Exception("Invalid Activity")
-
-                sharedViewModel = activity?.run {
-                    ViewModelProvider(this, shareFactory).get(SharedViewModel::class.java)
-                } ?: throw Exception("Invalid Activity")
-            }
-
-            try {
+                val time = measureTimeMillis {
+                    try {
+                        data2_loading.show()
+                        val user = homeViewModel.user.await()
+                        user.observe(viewLifecycleOwner, Observer { user_ ->
+                            username?.text = user_.userName
+                            userId = user_.userId
+                        })
 
 
-                data2_loading.show()
-                val user = homeViewModel.user.await()
-                user.observe(viewLifecycleOwner, Observer { user_ ->
-                    username?.text = user_.userName
-                })
+                        val contracts = homeViewModel.offlineData.await()
+                        contracts.observe(viewLifecycleOwner, Observer { mContracts ->
 
-                homeViewModel.offlineSectionItems.start()
+                            val allData = mContracts.count()
+                            Timber.d("Fetched ${mContracts.size} contracts")
 
-                val contracts = homeViewModel.offlineData.await()
-                contracts.observe(viewLifecycleOwner, Observer { mContracts ->
-                    val allData = mContracts.count()
-                    if (mContracts.size == allData)
+                        })
+                    } catch (e: Exception) {
+                        val ex = Error(
+                            message = "Error while retrieving contracts.",
+                            exception = e
+                        )
+                        ErrorHandler.handleError(
+                            view = this@HomeFragment.requireView(),
+                            throwable = ex,
+                            shouldToast = true,
+                            shouldShowSnackBar = false
+                        )
+                    } finally {
                         group2_loading.visibility = View.GONE
-                })
-
-
-            } catch (e: ApiException) {
-                ToastUtils().toastLong(activity, e.message)
-                Log.e(TAG, "API Exception", e)
-            } catch (e: NoInternetException) {
-                ToastUtils().toastLong(activity, e.message)
-                Log.e(TAG, "No Internet Connection", e)
-            } catch (e: NoConnectivityException) {
-                ToastUtils().toastLong(activity, e.message)
-                Log.e(TAG, "Service Host Unreachable", e)
-            } finally {
-                group2_loading.visibility = View.GONE
+                    }
+                }
+                Timber.d("Fetch contracts complete in $time seconds.")
             }
         }
     }
@@ -130,11 +135,56 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
-        // val dialog = setDataProgressDialog(activity!!, getString(R.string.data_loading_please_wait))
+
+        swipeToRefreshInit()
+
+
+
+        checkGPSConnectivity()
+
+        connectedTo.text = "Version " + BuildConfig.VERSION_NAME
+
+
+        serverTextView.setOnClickListener {
+            ToastUtils().toastServerAddress(context)
+        }
+
+        imageView7.setOnClickListener {
+            ToastUtils().toastVersion(context)
+        }
+    }
+
+    private fun checkGPSConnectivity() {
+        val lm = requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        val cm =
+            requireActivity().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        gpsEnabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
+        networkEnabled = cm.isDefaultNetworkActive
+        //  Check if Network Enabled
+        if (!networkEnabled) {
+            dataEnabled.setText(R.string.mobile_data_not_connected)
+            dataEnabled.setTextColor(colorNotConnected)
+        } else {
+            dataEnabled.setText(R.string.mobile_data_connected)
+            dataEnabled.setTextColor(colorConnected)
+        }
+
+        // Check if GPS connected
+        if (!gpsEnabled) {
+            //            locationEnabled.text = "GPS NOT CONNECTED"
+            locationEnabled.text = requireActivity().getString(R.string.gps_not_connected)
+            locationEnabled.setTextColor(colorNotConnected)
+        } else {
+            locationEnabled.text = requireActivity().getString(R.string.gps_connected)
+            locationEnabled.setTextColor(colorConnected)
+        }
+    }
+
+    private fun swipeToRefreshInit() {
 
         items_swipe_to_refresh.setProgressBackgroundColorSchemeColor(
             ContextCompat.getColor(
-                context!!.applicationContext,
+                requireContext().applicationContext,
                 R.color.colorPrimary
             )
         )
@@ -157,58 +207,19 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                 } catch (e: ApiException) {
                     //ToastUtils().toastLong(activity, e.message)
                     sharedViewModel.setMessage(e.message)
-                    Log.e(TAG, "API Exception", e)
+                    Timber.e(e, "API Exception")
                 } catch (e: NoInternetException) {
                     //ToastUtils().toastLong(activity, e.message)
                     sharedViewModel.setMessage(e.message)
-                    Log.e(TAG, "No Internet Connection", e)
+                    Timber.e(e, "No Internet Connection")
                 } catch (e: NoConnectivityException) {
                     sharedViewModel.setMessage(e.message)
-                    Log.e(TAG, "Service Host Unreachable", e)
+                    Timber.e(e, "Service Host Unreachable")
                 } finally {
                     items_swipe_to_refresh.isRefreshing = false
                     sharedViewModel.toggleLongRunning(false)
                 }
             }
-        }
-
-
-        Coroutines.io {
-            val lm = activity!!.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-            val cm =
-                activity!!.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-            gpsEnabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
-            networkEnabled = cm.isDefaultNetworkActive
-            //  Check if Network Enabled
-            if (!networkEnabled) {
-                dataEnabled.setText(R.string.mobile_data_not_connected)
-                dataEnabled.setTextColor(colorNotConnected)
-            } else {
-                dataEnabled.setText(R.string.mobile_data_connected)
-                dataEnabled.setTextColor(colorConnected)
-            }
-
-            // Check if GPS connected
-            if (!gpsEnabled) {
-                //            locationEnabled.text = "GPS NOT CONNECTED"
-                locationEnabled.text = activity!!.getString(R.string.gps_not_connected)
-                locationEnabled.setTextColor(colorNotConnected)
-            } else {
-                locationEnabled.text = activity!!.getString(R.string.gps_connected)
-                locationEnabled.setTextColor(colorConnected)
-            }
-        }
-
-
-        connectedTo.text = "Version " + BuildConfig.VERSION_NAME
-
-
-        serverTextView.setOnClickListener {
-            ToastUtils().toastServerAddress(context)
-        }
-
-        imageView7.setOnClickListener {
-            ToastUtils().toastVersion(context)
         }
     }
 
@@ -256,26 +267,4 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
         super.onDetach()
         ping()
     }
-//    override fun onDestroyView() {
-//        super.onDestroyView()
-//        if (view != null) {
-//            val parent = view!!.parent as ViewGroup
-//            parent?.removeAllViews()
-//        }
-//    }
-
 }
-
-//  Check every 2 secs if Mobile data or Location is off/on
-//        val t = object : CountDownTimer(java.lang.Long.MAX_VALUE, 2000) {
-//            override fun onFinish() {
-//                start()
-//            }
-//
-//            override fun onTick(millisUntilFinished: Long) {
-//
-//
-//
-//            }
-//
-//        }.start()

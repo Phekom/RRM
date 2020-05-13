@@ -98,7 +98,7 @@ class ResetPinActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runna
                    val requestAgain = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                        shouldShowRequestPermissionRationale(permissions[i])
                    } else {
-                       TODO("VERSION.SDK_INT < M")
+                       false
                    }
                    if (requestAgain){
                        toast("Permission Denied")
