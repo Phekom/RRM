@@ -131,9 +131,9 @@ class MeasureCreationDataRepository(
     ) {
         var imageCounter = 1
         var totalImages = 0
-        if (jobItemMeasures != null) {
+        if (jobItemMeasures.isNotEmpty()) {
             for (jobItemMeasure in jobItemMeasures.iterator()) {
-                if (jobItemMeasure.jobItemMeasurePhotos != null) {
+                if (jobItemMeasure.jobItemMeasurePhotos.isNotEmpty()) {
                     totalImages += jobItemMeasure.jobItemMeasurePhotos.size
                     for (photo in jobItemMeasure.jobItemMeasurePhotos) {
                         if (PhotoUtil.photoExist(photo.filename!!)) {
@@ -163,7 +163,6 @@ class MeasureCreationDataRepository(
         val bitmap =
             PhotoUtil.getPhotoBitmapFromFile(activity.applicationContext, uri, photoQuality)
         return PhotoUtil.getCompressedPhotoWithExifInfo(
-            activity.applicationContext,
             bitmap!!,
             filename
         )

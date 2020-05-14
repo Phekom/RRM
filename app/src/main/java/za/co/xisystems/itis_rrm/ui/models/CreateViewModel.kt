@@ -240,11 +240,8 @@ class CreateViewModel(
                 longitude,
                 useR,
                 projectId,
-                jobId,
-                itemCode
+                jobId
             )
-
-
         }
 
     }

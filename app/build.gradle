@@ -102,7 +102,7 @@ android {
     defaultConfig {
         applicationId appId
         minSdkVersion 21
-        targetSdkVersion 29
+        targetSdkVersion 28
         versionCode 1
         versionName versioning.name
         vectorDrawables.useSupportLibrary = false
@@ -126,6 +126,7 @@ android {
 
             }
         }
+
 
         dataBinding {
             enabled = true
@@ -297,7 +298,7 @@ dependencies {
     debugImplementation 'com.itkacher.okhttpprofiler:okhttpprofiler:1.0.5'
 
     // Material
-    implementation 'com.google.android.material:material:1.2.0-alpha06'
+    implementation 'com.google.android.material:material:1.2.0-alpha02'
 
     // Testing
     testImplementation 'junit:junit:4.13'
@@ -381,7 +382,7 @@ dependencies {
     implementation 'com.squareup.retrofit2:adapter-rxjava2:2.8.1'
     implementation 'com.jakewharton.retrofit:retrofit2-kotlin-coroutines-adapter:0.9.2'
     implementation 'com.squareup.retrofit2:converter-jackson:2.8.1'
-    implementation 'com.squareup.okhttp3:logging-interceptor:4.5.0'
+    implementation 'com.squareup.okhttp3:logging-interceptor:4.6.0'
 
     // Rx
     implementation "io.reactivex.rxjava2:rxjava:2.2.17"
@@ -404,7 +405,7 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.3"
 
     // Better Date-time
-    implementation 'com.jakewharton.threetenabp:threetenabp:1.2.3'
+    implementation 'com.jakewharton.threetenabp:threetenabp:1.2.4'
 
     //Kodein Dependency Injection
     implementation 'org.kodein.di:kodein-di-framework-android-core:6.5.5'
@@ -439,10 +440,10 @@ dependencies {
     implementation 'com.amitshekhar.android:jackson-android-networking:1.0.2'
 
     // Jackson
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.10.3'
-    implementation 'com.fasterxml.jackson.core:jackson-core:2.10.3'
-    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.10.3'
-    implementation 'com.fasterxml.jackson.module:jackson-module-kotlin:2.10.3'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.11.0'
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.11.0'
+    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.11.0'
+    implementation 'com.fasterxml.jackson.module:jackson-module-kotlin:2.11.0'
 
     implementation 'com.raygun:raygun4android:4.0.1'
     implementation 'org.springframework.android:spring-android-rest-template:2.0.0.M3'
@@ -453,5 +454,9 @@ dependencies {
     implementation 'commons-io:commons-io:20030203.000550'
 
     implementation 'org.greenrobot:eventbus:3.1.1'
+
+    // Preview Image Collection
+    implementation 'com.github.AgnaldoNP:PreviewImageCollection:1.2'
+
 
 }

@@ -21,7 +21,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
 import icepick.State
-import kotlinx.android.synthetic.main.activity_capture_item_measure_photo.*
+import kotlinx.android.synthetic.main.fragment_capture_item_measure_photo.*
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance

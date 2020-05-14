@@ -4,19 +4,8 @@ package za.co.xisystems.itis_rrm.extensions
  *
  */
 
-import com.androidnetworking.utils.Utils
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.onCompletion
-import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.flow.retryWhen
-import okhttp3.Call
-import okhttp3.Request
-import retrofit2.Retrofit
-import za.co.xisystems.itis_rrm.base.Progress
-import java.io.IOException
 
 /**
  * A String class extension function which will captitalize
@@ -24,11 +13,11 @@ import java.io.IOException
  */
 fun String.capitalizeWords(): String = this.split(' ').joinToString(" ") { it.capitalize() }
 
-@PublishedApi
-internal inline fun Retrofit.Builder.callFactory(crossinline body: (Request) -> Call) =
-    callFactory(object : Call.Factory {
-        override fun newCall(request: Request): Call = body(request)
-    })
+//@PublishedApi
+//internal inline fun Retrofit.Builder.callFactory(crossinline body: (Request) -> Call) =
+//    callFactory(object : Call.Factory {
+//        override fun newCall(request: Request): Call = body(request)
+//    })
 
 /**
  * You may want to apply some common side-effects to your flow to avoid repeating commonly used
@@ -42,21 +31,21 @@ internal inline fun Retrofit.Builder.callFactory(crossinline body: (Request) -> 
  * is of type IOException.
  *
  */
-@ExperimentalCoroutinesApi
-fun <T : Any> Flow<Result<T>>.applyCommonSideEffects() =
-    retryWhen { cause, attempt ->
-        when {
-            (cause is IOException && attempt < Utils.MAX_RETRIES) -> {
-                delay(Utils.getBackoffDelay(attempt))
-                true
-            }
-            else -> {
-                false
-            }
-        }
-    }
-        .onStart { emit(Progress(isLoading = true)) }
-        .onCompletion { emit(Progress(isLoading = false)) }
+//@ExperimentalCoroutinesApi
+//fun <T : Any> Flow<Result<T>>.applyCommonSideEffects() =
+//    retryWhen { cause, attempt ->
+//        when {
+//            (cause is IOException && attempt < Utils.MAX_RETRIES) -> {
+//                delay(Utils.getBackoffDelay(attempt))
+//                true
+//            }
+//            else -> {
+//                false
+//            }
+//        }
+//    }
+//        .onStart { emit(Progress(isLoading = true)) }
+//        .onCompletion { emit(Progress(isLoading = false)) }
 
 fun Job?.cancelIfActive() {
     if (this?.isActive == true) {

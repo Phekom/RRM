@@ -42,6 +42,8 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.intents.AbstractIntent
 import za.co.xisystems.itis_rrm.ui.mainview.work.work_utils.LocationHelper
 import za.co.xisystems.itis_rrm.ui.mainview.work.workstate_item.WorkStateItem
+import za.co.xisystems.itis_rrm.ui.models.WorkViewModel
+import za.co.xisystems.itis_rrm.ui.models.WorkViewModelFactory
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.*
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
@@ -441,8 +443,6 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
     ): JobEstimateWorksPhotoDTO {
         val photoId = SqlLitUtils.generateUuid()
 
-//        = estimateWorksPhotoArrayList
-//        itemEstiWorks.jobEstimateWorksPhotos?.add(jobItemWorksPhoto)
         return JobEstimateWorksPhotoDTO(
             Id = 0,
             descr = "",
@@ -494,7 +494,7 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
                                     val iItems = estimateJob.JobItemEstimates
                                     submitAllOutStandingEstimates(iItems)
                                 } else {
-                                    popViewOnWorkSubmit(view)
+                                    popViewOnWorkSubmit(this.requireView())
                                 }
                             }
                         } else {
@@ -526,7 +526,7 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
     }
 
     private fun popViewOnWorkSubmit(view: View) {
-        Navigation.findNavController(requireView())
+        Navigation.findNavController(this.requireView())
             .navigate(R.id.action_captureWorkFragment_to_nav_work)
     }
 

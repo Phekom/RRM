@@ -8,7 +8,6 @@ import okhttp3.Interceptor
 import okhttp3.Response
 import za.co.xisystems.itis_rrm.custom.errors.NoConnectivityException
 import za.co.xisystems.itis_rrm.custom.errors.NoInternetException
-import za.co.xisystems.itis_rrm.custom.errors.ServiceHostUnreachableException
 import java.io.IOException
 import java.net.InetAddress
 import java.net.InetSocketAddress
@@ -37,7 +36,7 @@ class NetworkConnectionInterceptor(
             )
 
         if (!isHostAvailable(host = serviceURL, port = 443, timeout = 1000)) {
-            throw ServiceHostUnreachableException(
+            throw NoConnectivityException(
                 "Service Host for RRM is down, please try again later."
             )
         }

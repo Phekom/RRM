@@ -225,8 +225,7 @@ class JobCreationDataRepository(
         longitude: Double,
         useR: String,
         projectId: String?,
-        jobId: String,
-        itemCode: ItemDTOTemp?
+        jobId: String
     ): LiveData<String?> {
 
         val distance = 1
@@ -241,8 +240,7 @@ class JobCreationDataRepository(
             pointLocation = routeSectionPointResponse.pointLocation,
             sectionId = routeSectionPointResponse.sectionId,
             projectId = projectId,
-            jobId = jobId,
-            item = itemCode!!
+            jobId = jobId
         )
 
         return withContext(Dispatchers.IO) {
@@ -470,7 +468,6 @@ class JobCreationDataRepository(
         val bitmap =
             PhotoUtil.getPhotoBitmapFromFile(activity.applicationContext, uri, photoQuality)
         return PhotoUtil.getCompressedPhotoWithExifInfo(
-            activity.applicationContext,
             bitmap!!,
             filename
         )
@@ -538,8 +535,7 @@ class JobCreationDataRepository(
         pointLocation: Double,
         sectionId: Int,
         projectId: String?,
-        jobId: String?,
-        item: ItemDTOTemp
+        jobId: String?
     ): LiveData<String?> {
         return saveRouteSectionPoint(
             direction,
