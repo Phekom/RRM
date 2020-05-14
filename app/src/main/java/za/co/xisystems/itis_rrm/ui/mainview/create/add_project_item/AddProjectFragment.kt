@@ -255,14 +255,6 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
             selectedProjectTextView.text = projectCode
         }
 
-
-
-
-
-
-
-
-
         ItemTouchHelper(touchCallback).attachToRecyclerView(project_recyclerView)
         setmyClickListener()
     }
