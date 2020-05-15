@@ -47,6 +47,8 @@ import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.intents.Abstrac
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.models.PhotoType
 import za.co.xisystems.itis_rrm.ui.models.CreateViewModel
 import za.co.xisystems.itis_rrm.ui.models.CreateViewModelFactory
+import za.co.xisystems.itis_rrm.ui.models.UnSubmittedViewModel
+import za.co.xisystems.itis_rrm.ui.models.UnSubmittedViewModelFactory
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.*
 import za.co.xisystems.itis_rrm.utils.interfaces.LocationAware
@@ -69,6 +71,9 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
     override val kodein by kodein()
     private lateinit var createViewModel: CreateViewModel
     private val factory: CreateViewModelFactory by instance()
+
+    private lateinit var unsubmittedViewModel: UnSubmittedViewModel
+    private val unsubFactory: UnSubmittedViewModelFactory by instance()
 
 
     private var mAppExecutor: AppExecutor? = null
@@ -153,6 +158,9 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
                     ViewModelProvider(this, shareFactory).get(SharedViewModel::class.java)
                 } ?: throw Exception("Invalid Activity")
 
+                unsubmittedViewModel = activity?.run {
+                    ViewModelProvider(this, unsubFactory).get(UnSubmittedViewModel::class.java)
+                } ?: throw Exception("Invalid Activity")
 
                 viewLifecycleOwner.lifecycleScope.launch {
                     whenCreated {
@@ -177,13 +185,24 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
                             }
 
                             withContext(uiScope.coroutineContext) {
+                                var editJob: JobDTO?
+                                unsubmittedViewModel.jobtoEdit_Item.observe(viewLifecycleOwner,
+                                    Observer { oldJob ->
+                                        oldJob?.let { jobDto ->
+                                            editJob = jobDto
+                                            onJobFound(editJob)
+                                        }
+                                    })
+                            }
+
+                            withContext(uiScope.coroutineContext) {
                                 var myJobDTO: JobDTO?
                                 createViewModel.jobItem.observe(
                                     viewLifecycleOwner,
                                     Observer { jobDto ->
                                         jobDto?.let { jobDTO ->
                                             myJobDTO = jobDTO
-                                            onJobFound(myJobDTO!!)
+                                            onJobFound(myJobDTO)
                                         }
                                     })
                             }
@@ -270,14 +289,15 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
     }
 
     override fun onPause() {
-        super.onPause()
         locationHelper.onPause()
+        super.onPause()
+
     }
 
     override fun onStop() {
-        super.onStop()
         locationHelper.onStop()
         uiScope.job = Job()
+        super.onStop()
     }
 
     override fun onCreateView(
@@ -710,8 +730,6 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
                 }
             }
         })
-
-
     }
 
     private suspend fun onSectionPointFound(sectionPoint: SectionPointDTO?) {

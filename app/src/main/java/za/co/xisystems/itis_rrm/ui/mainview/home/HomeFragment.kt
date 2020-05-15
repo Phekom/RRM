@@ -128,14 +128,13 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
         inflater: LayoutInflater,
         container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
-        activity?.hideKeyboard()
+
         return inflater.inflate(R.layout.fragment_home, container, false)
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-
-
+        activity?.hideKeyboard()
         swipeToRefreshInit()
 
 
