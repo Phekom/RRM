@@ -137,7 +137,6 @@ class JobApprovalDataRepository(
             insertOrUpdateWorkflowJobInSQLite(job!!)
         } catch (ex: NullPointerException) {
             Timber.e(ex, "Error: WorkFlow Job is null")
-            throw ex
         }
     }
 

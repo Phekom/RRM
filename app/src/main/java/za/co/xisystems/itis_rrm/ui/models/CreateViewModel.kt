@@ -90,7 +90,7 @@ class CreateViewModel(
         projectCode.value = inProjectCode
     }
 
-    private val projectItem = MutableLiveData<ProjectItemDTO>()
+    val projectItem = MutableLiveData<ProjectItemDTO>()
     fun setProjectItem(inProjectItem: ProjectItemDTO) {
         projectItem.value = inProjectItem
     }
@@ -177,7 +177,7 @@ class CreateViewModel(
     }
 
 
-    fun updateNewJob(
+    suspend fun updateNewJob(
         newjobId: String,
         startKM: Double,
         endKM: Double,
@@ -185,15 +185,16 @@ class CreateViewModel(
         newJobItemEstimatesList: ArrayList<JobItemEstimateDTO>,
         jobItemSectionArrayList: ArrayList<JobSectionDTO>
     ) {
-
-        jobCreationDataRepository.updateNewJob(
-            newjobId,
-            startKM,
-            endKM,
-            sectionId,
-            newJobItemEstimatesList,
-            jobItemSectionArrayList
-        )
+        withContext(Dispatchers.IO) {
+            jobCreationDataRepository.updateNewJob(
+                newjobId,
+                startKM,
+                endKM,
+                sectionId,
+                newJobItemEstimatesList,
+                jobItemSectionArrayList
+            )
+        }
     }
 
     suspend fun getPointSectionData(projectId: String?): LiveData<SectionPointDTO> {//jobId: String,jobId,

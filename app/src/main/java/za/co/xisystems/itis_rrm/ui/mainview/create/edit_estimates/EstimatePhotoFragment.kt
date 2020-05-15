@@ -419,22 +419,30 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
                     } else {
                         viewLifecycleOwner.lifecycle.coroutineScope.launch {
 
-                            newJobItemEstimate?.qty = valueEditText.text.toString().toDouble()
-                            val qty = newJobItemEstimate?.qty
-                            if (qty != null && item?.tenderRate != null) {
-                                newJobItemEstimate?.lineRate = (qty * item!!.tenderRate)
+                            withContext(Dispatchers.Main) {
+                                newJobItemEstimate?.qty = valueEditText.text.toString().toDouble()
+                                val qty = newJobItemEstimate?.qty
+                                if (qty != null && item?.tenderRate != null) {
+                                    newJobItemEstimate?.lineRate = (qty * item!!.tenderRate)
+                                }
                             }
 
-                            createViewModel.saveNewJob(newJob!!)
+                            withContext(Dispatchers.IO) {
+                                newJob!!.addOrUpdateJobItemEstimate(newJobItemEstimate!!)
+                                createViewModel.saveNewJob(newJob!!)
 
-                            createViewModel.updateNewJob(
-                                newJob!!.JobId,
-                                startKm!!,
-                                endKm!!,
-                                newJob?.SectionId!!,
-                                newJob?.JobItemEstimates!!,
-                                newJob?.JobSections!!
-                            )
+
+                                createViewModel.updateNewJob(
+                                    newJob!!.JobId,
+                                    startKm!!,
+                                    endKm!!,
+                                    newJob?.SectionId!!,
+                                    newJob?.JobItemEstimates!!,
+                                    newJob?.JobSections!!
+                                )
+
+                            }
+
                         }
 
                         updateData(view)
@@ -1165,6 +1173,7 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
 
         newJobItemEstimate?.qty = qty
         newJobItemEstimate?.lineRate = lineRate!!
+        requireActivity().hideKeyboard()
 
     }
 

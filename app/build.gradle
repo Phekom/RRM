@@ -76,7 +76,7 @@ android {
     def versionBuildDate
     def appId = "za.co.xisystems.itismaintenance"
 
-    versionBuild =  versioning.build
+    versionBuild =  versioning.patch
 
     versionBuild = (versionBuild == null) ? 0 : versionBuild + 1
 
@@ -121,8 +121,8 @@ android {
         javaCompileOptions {
             annotationProcessorOptions {
                 arguments = ["room.schemaLocation": "$projectDir/schemas".toString(),
-                             "room.incremental":"true",
-                             "room.expandProjection":"true"]
+                             "room.incremental":"false",
+                             "room.expandProjection":"false"]
 
             }
         }

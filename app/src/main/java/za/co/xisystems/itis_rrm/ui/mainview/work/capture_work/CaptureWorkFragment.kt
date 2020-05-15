@@ -28,8 +28,7 @@ import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import icepick.State
 import kotlinx.android.synthetic.main.fragment_capture_work.*
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.cancel
+import kotlinx.coroutines.Job
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
@@ -94,7 +93,7 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
     }
 
     override fun onDestroy() {
-        uiScope.cancel(CancellationException("onDestroy"))
+        uiScope.job = Job()
         super.onDestroy()
     }
 

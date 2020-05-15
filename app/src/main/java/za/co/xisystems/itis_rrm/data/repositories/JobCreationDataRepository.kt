@@ -102,7 +102,7 @@ class JobCreationDataRepository(
 
     suspend fun saveNewJob(newJob: JobDTO?) {
         Coroutines.io {
-            if (newJob != null && !appDb.getJobDao().checkIfJobExist(newJob.JobId)) {
+            if (newJob != null) { // && !appDb.getJobDao().checkIfJobExist(newJob.JobId)) {
                 appDb.getJobDao().insertOrUpdateJobs(newJob)
             }
         }

@@ -74,7 +74,7 @@ class Converters {
 
     //======================================================================================
     @TypeConverter
-    fun storedStringToWorkFlowRouteDTO(data: String?): ArrayList<WorkFlowRouteDTO> {
+    fun StoredStringToWorkFlowRouteDTO(data: String?): ArrayList<WorkFlowRouteDTO> {
         val gson = Gson()
         if (data == null) {
             return Collections.EMPTY_LIST as ArrayList<WorkFlowRouteDTO>
@@ -86,7 +86,7 @@ class Converters {
     }
 
     @TypeConverter
-    fun workFlowRouteDTOToStoredString(myObjects: ArrayList<WorkFlowRouteDTO>): String {
+    fun WorkFlowRouteDTOToStoredString(myObjects: ArrayList<WorkFlowRouteDTO>): String {
         val gson = Gson()
         return gson.toJson(myObjects)
     }
@@ -95,7 +95,7 @@ class Converters {
 
     //======================================================================================
     @TypeConverter
-    fun storedStringToJobSectionDTO(data: String?):ArrayList<JobSectionDTO> {
+    fun StoredStringToJobSectionDTO(data: String?): ArrayList<JobSectionDTO> {
         val gson = Gson()
         if (data == null) {
             return Collections.EMPTY_LIST as ArrayList<JobSectionDTO>
@@ -107,7 +107,7 @@ class Converters {
     }
 
     @TypeConverter
-    fun jobSectionDTOToStoredString(myObjects: ArrayList<JobSectionDTO>): String {
+    fun JobSectionDTOToStoredString(myObjects: ArrayList<JobSectionDTO>): String {
         val gson = Gson()
         return gson.toJson(myObjects)
     }
@@ -156,10 +156,10 @@ class Converters {
 
     //======================================================================================
     @TypeConverter
-    fun storedStringToJobItemEstimateDTO(data: String?): ArrayList<JobItemEstimateDTO> {
+    fun storedStringToJobItemEstimateDTOList(data: String?): ArrayList<JobItemEstimateDTO>? {
         val gson = Gson()
         if (data == null) {
-            return Collections.EMPTY_LIST as ArrayList<JobItemEstimateDTO>
+            return Collections.EMPTY_LIST as ArrayList<JobItemEstimateDTO>?
         }
         val listType = object : TypeToken<ArrayList<JobItemEstimateDTO>>() {
 
@@ -168,7 +168,7 @@ class Converters {
     }
 
     @TypeConverter
-    fun jobItemEstimateDTOToStoredString(myObjects: ArrayList<JobItemEstimateDTO>?): String {
+    fun jobItemEstimateDTOListToStoredString(myObjects: ArrayList<JobItemEstimateDTO>?): String {
         val gson = Gson()
        return gson.toJson(myObjects)
 
@@ -395,10 +395,10 @@ class Converters {
         if (data == null) {
             return Collections.EMPTY_LIST as JobItemEstimatesPhotoDTO?
         }
-        val listType = object :TypeToken<JobItemEstimatesPhotoDTO?>() {
+        val listType = object : TypeToken<JobItemEstimatesPhotoDTO>() {
 
         }.type
-        return gson.fromJson<JobItemEstimatesPhotoDTO?>(data, listType)
+        return gson.fromJson<JobItemEstimatesPhotoDTO>(data, listType)
     }
 
     @TypeConverter
@@ -608,19 +608,19 @@ class Converters {
 
 
     @TypeConverter
-    fun storedStringToJobItemEstimate(data: String?): JobItemEstimateDTO? {
+    fun StoredStringToJobItemEstimateDTO(data: String?): JobItemEstimateDTO? {
         val gson = Gson()
         if (data == null) {
             return Collections.EMPTY_LIST as JobItemEstimateDTO?
         }
-        val listType = object : TypeToken<JobItemEstimateDTO?>() {
+        val listType = object : TypeToken<JobItemEstimateDTO>() {
 
         }.type
         return gson.fromJson<JobItemEstimateDTO>(data, listType)
     }
 
     @TypeConverter
-    fun JobItemEstimateToStoredString(myObjects: JobItemEstimateDTO? ): String {
+    fun JobItemEstimateDTOToStoredString(myObjects: JobItemEstimateDTO?): String {
         val gson = Gson()
         return gson.toJson(myObjects)
     }
@@ -632,7 +632,7 @@ class Converters {
 
 
     @TypeConverter
-    fun storedStringToJobItemMeasure(data: String?): JobItemMeasureDTO? {
+    fun StoredStringToJobItemMeasure(data: String?): JobItemMeasureDTO? {
         val gson = Gson()
         if (data == null) {
             return Collections.EMPTY_LIST as JobItemMeasureDTO?
