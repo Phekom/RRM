@@ -8,7 +8,6 @@ import android.graphics.Typeface
 import android.location.LocationManager
 import android.os.Bundle
 import android.provider.Settings
-import android.util.Log
 import android.view.*
 import android.widget.ProgressBar
 import android.widget.Switch
@@ -30,6 +29,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.kodein
 import org.kodein.di.generic.instance
+import timber.log.Timber
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.ui.auth.LoginActivity
 import za.co.xisystems.itis_rrm.ui.mainview.activities.*
@@ -89,33 +89,44 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         initializeCountDrawer()
 
         lm = getSystemService(Context.LOCATION_SERVICE) as LocationManager
-//        this.delegate.localNightMode.equals( AppCompatDelegate.MODE_NIGHT_YES)
-//        (this@MainActivity as MainActivity?)?.delegate?.localNightMode = AppCompatDelegate.MODE_NIGHT_YES
+
         getUserRoles()
+
         displayPromptForEnablingGPS(this)
+
         this.toggle = ActionBarDrawerToggle(
                 this, drawer_layout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close)
         drawer_layout.addDrawerListener(toggle!!)
+
         toggle!!.syncState()
+
         this.hideKeyboard()
+
         navigationView  = findViewById(R.id.nav_view)
+
         navController = Navigation.findNavController(this, R.id.nav_host_fragment)
+
         NavigationUI.setupActionBarWithNavController(this, navController!!)
+
         NavigationUI.setupWithNavController(navigationView, navController!!)
 
         nav_view.setNavigationItemSelectedListener(this)
+
         nav_unSubmitted =
             navigationView.menu.findItem(R.id.nav_unSubmitted).actionView as TextView
-//        nav_correction =
-//            MenuItemCompat.getActionView(navigationView.menu.findItem(R.id.nav_correction)) as TextView
+
         nav_work =
             navigationView.menu.findItem(R.id.nav_work).actionView as TextView
+
         nav_approveJbs =
             navigationView.menu.findItem(R.id.nav_approveJbs).actionView as TextView
+
         nav_approvMeasure =
             navigationView.menu.findItem(R.id.nav_approvMeasure).actionView as TextView
+
         nav_estMeasure =
             navigationView.menu.findItem(R.id.nav_estMeasure).actionView as TextView
+
         progressBar = findViewById<ProgressBar>(R.id.progressbar)
 
         sharedViewModel.longRunning.observe(this, Observer {
@@ -278,7 +289,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     fun startLongRunningTask() {
-        Log.i(TAG, "starting task...")
+        Timber.i("starting task...")
         this.progressBar?.visibility = View.VISIBLE
         window.setFlags(
             WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
@@ -287,7 +298,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     fun endLongRunningTask() {
-        Log.i(TAG, "stopping task ...")
+        Timber.i("ending task ...")
         this.progressBar?.visibility = View.INVISIBLE
         window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
     }

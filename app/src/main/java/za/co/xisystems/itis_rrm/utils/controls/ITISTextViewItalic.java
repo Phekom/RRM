@@ -51,7 +51,7 @@ public class ITISTextViewItalic extends androidx.appcompat.widget.AppCompatTextV
 
     @Override
     public void setTypeface(Typeface tf) {
-        tf = Typefaces.get(getContext(),"MyriadPro-It.otf");
+        tf = Typefaces.get(getContext(), "myriadproit.otf");
         super.setTypeface(tf);
     }
 
@@ -60,8 +60,8 @@ public class ITISTextViewItalic extends androidx.appcompat.widget.AppCompatTextV
     // region (Private Methods)
 
     private void init() {
-        if(this.getTypeface() != null && !this.getTypeface().equals(Typefaces.get(getContext(), "MyriadPro-It.otf")))
-            this.setTypeface(Typefaces.get(getContext(), "MyriadPro-It.otf"));
+        if (this.getTypeface() != null && !this.getTypeface().equals(Typefaces.get(getContext(), "myriadproit.otf")))
+            this.setTypeface(Typefaces.get(getContext(), "myriadproit.otf"));
         this.setBackgroundColor(Color.TRANSPARENT);
         this.setFocusable(false);
     }

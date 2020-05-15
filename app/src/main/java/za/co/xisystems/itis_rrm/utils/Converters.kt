@@ -156,12 +156,12 @@ class Converters {
 
     //======================================================================================
     @TypeConverter
-    fun storedStringToJobItemEstimateDTO(data: String?):ArrayList<JobItemEstimateDTO> {
+    fun storedStringToJobItemEstimateDTO(data: String?): ArrayList<JobItemEstimateDTO> {
         val gson = Gson()
         if (data == null) {
             return Collections.EMPTY_LIST as ArrayList<JobItemEstimateDTO>
         }
-        val listType = object :TypeToken<ArrayList<JobItemEstimateDTO>>() {
+        val listType = object : TypeToken<ArrayList<JobItemEstimateDTO>>() {
 
         }.type
         return gson.fromJson(data, listType)
@@ -393,12 +393,12 @@ class Converters {
     fun storedStringToJobItemEstimatesPhotoDO(data: String?): JobItemEstimatesPhotoDTO? {
         val gson = Gson()
         if (data == null) {
-            return Collections.EMPTY_LIST as JobItemEstimatesPhotoDTO
+            return Collections.EMPTY_LIST as JobItemEstimatesPhotoDTO?
         }
         val listType = object :TypeToken<JobItemEstimatesPhotoDTO?>() {
 
         }.type
-        return gson.fromJson< JobItemEstimatesPhotoDTO? >(data, listType)
+        return gson.fromJson<JobItemEstimatesPhotoDTO?>(data, listType)
     }
 
     @TypeConverter
@@ -611,12 +611,12 @@ class Converters {
     fun storedStringToJobItemEstimate(data: String?): JobItemEstimateDTO? {
         val gson = Gson()
         if (data == null) {
-            return Collections.EMPTY_LIST as JobItemEstimateDTO
+            return Collections.EMPTY_LIST as JobItemEstimateDTO?
         }
-        val listType = object :TypeToken< JobItemEstimateDTO?>() {
+        val listType = object : TypeToken<JobItemEstimateDTO?>() {
 
         }.type
-        return gson.fromJson< JobItemEstimateDTO >(data, listType)
+        return gson.fromJson<JobItemEstimateDTO>(data, listType)
     }
 
     @TypeConverter
@@ -635,7 +635,7 @@ class Converters {
     fun storedStringToJobItemMeasure(data: String?): JobItemMeasureDTO? {
         val gson = Gson()
         if (data == null) {
-            return Collections.EMPTY_LIST as JobItemMeasureDTO
+            return Collections.EMPTY_LIST as JobItemMeasureDTO?
         }
         val listType = object :TypeToken<JobItemMeasureDTO?>() {
 
@@ -689,7 +689,6 @@ class Converters {
 //        val gson = Gson()
 //        return gson.toJson(myObjects)
 //    }
-
 
 
     //===========================================================================

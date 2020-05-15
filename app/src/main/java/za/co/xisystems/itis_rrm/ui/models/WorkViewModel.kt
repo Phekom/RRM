@@ -1,4 +1,4 @@
-package za.co.xisystems.itis_rrm.ui.mainview.work
+package za.co.xisystems.itis_rrm.ui.models
 
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LiveData
@@ -129,7 +129,6 @@ class WorkViewModel(
 
     suspend fun createSaveWorksPhotos(
         estimateWorksPhoto: ArrayList<JobEstimateWorksPhotoDTO>,
-        estimat: JobItemEstimateDTO,
         itemEstiWorks: JobEstimateWorksDTO
     ) {
         return withContext(Dispatchers.IO) {

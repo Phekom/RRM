@@ -4,12 +4,12 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import za.co.xisystems.itis_rrm.custom.errors.AuthException
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
 import za.co.xisystems.itis_rrm.ui.auth.AuthListener
-import za.co.xisystems.itis_rrm.utils.AuthException
 import za.co.xisystems.itis_rrm.utils.Coroutines
 
 /**
@@ -34,7 +34,10 @@ class UserRepository(
         }
         userError.observeForever { error_msg ->
             Coroutines.main {
-                val authEx = AuthException(error_msg)
+                val authEx =
+                    AuthException(
+                        error_msg
+                    )
                 throw authEx
             }
         }
@@ -65,7 +68,8 @@ class UserRepository(
             apiRequest { api.userRegister(androidDevice, IMEI, phoneNumber, username, password) }
 
         if (authResponse.errorMessage != null) {
-            val authException = AuthException(authResponse.errorMessage)
+            val authException =
+                AuthException(authResponse.errorMessage)
             throw authException
         } else {
             users.postValue(authResponse.user)

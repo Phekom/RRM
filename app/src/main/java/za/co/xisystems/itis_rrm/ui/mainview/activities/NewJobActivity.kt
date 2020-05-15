@@ -16,8 +16,8 @@
 //import za.co.xisystems.itis_rrm.R
 //import za.co.xisystems.itis_rrm.data.localDB.entities.*
 //import za.co.xisystems.itis_rrm.data.network.OfflineListener
-//import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModel
-//import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModelFactory
+//import za.co.xisystems.itis_rrm.ui.models.CreateViewModel
+//import za.co.xisystems.itis_rrm.ui.models.CreateViewModelFactory
 //import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.IJobSubmit
 //import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.MyState
 //import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper

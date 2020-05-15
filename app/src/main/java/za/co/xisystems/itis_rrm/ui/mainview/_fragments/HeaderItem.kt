@@ -7,7 +7,7 @@ import com.xwray.groupie.kotlinandroidextensions.Item
 import kotlinx.android.synthetic.main.item_header.*
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
-import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModel
+import za.co.xisystems.itis_rrm.ui.models.WorkViewModel
 import za.co.xisystems.itis_rrm.utils.Coroutines
 
 open class HeaderItem(

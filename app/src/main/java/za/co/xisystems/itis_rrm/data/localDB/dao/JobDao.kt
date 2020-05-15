@@ -8,7 +8,7 @@ import androidx.room.Query
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobSectionDTO
-import java.util.ArrayList
+import java.util.*
 
 /**
  * Created by Francis Mahlava on 2019/11/21.
@@ -20,10 +20,13 @@ interface JobDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertOrUpdateJobs(job: JobDTO)
 
-    @Query("SELECT * FROM JOB_TABLE WHERE jobId = :jobId")
+    // One row is all we need to make the result true.
+    // Also, unless we need all the columns in a row, avoid using "SELECT *"
+    @Query("SELECT jobId FROM JOB_TABLE WHERE jobId = :jobId")
     fun checkIfJobExist(jobId: String): Boolean
 
-    @Query("SELECT * FROM JOB_TABLE WHERE ActId = null OR ActId = 0 ")
+    // Ditto here
+    @Query("SELECT jobId FROM JOB_TABLE WHERE ActId = null OR ActId = 0")
     fun checkIfUnsubmittedJobsExist(): Boolean
 
     @Query("UPDATE JOB_TABLE SET route =:route, section =:section WHERE jobId = :jobId")
@@ -43,7 +46,7 @@ interface JobDao {
     fun setMeasureActId(actId: Int, jobId: String)
 
 
-    @Query("SELECT descr FROM JOB_TABLE WHERE jobId = :jobId")
+    @Query("SELECT descr FROM JOB_TABLE WHERE jobId = :jobId LIMIT 1")
     fun getItemDescription(jobId: String): String
 
     @Query("SELECT jiNo FROM JOB_TABLE WHERE jobId = :jobId")
@@ -75,8 +78,7 @@ interface JobDao {
 
     @Query( " SELECT j.*, e.* FROM JOB_TABLE AS j JOIN JOB_ITEM_ESTIMATE AS e ON e.JobId = j.JobId WHERE j.ActId Like :actId and e.ActId Like :actId2 ORDER BY jiNo ASC ")
     fun getJobsForActivityIds1(actId: Int, actId2: Int): LiveData<List<JobDTO>>
-//    LiveData<List<JobDTO>>
-//OR e.ActId Like 8
+
     @Query("UPDATE JOB_TABLE SET SectionId =:sectionId ,StartKm =:startKM , EndKm =:endKM ,JobItemEstimates =:newJobItemEstimatesList, JobSections =:jobItemSectionArrayList  WHERE jobId = :newjobId ")
     fun updateJoSecId(
         newjobId: String,
@@ -101,26 +103,7 @@ interface JobDao {
     @Query("DELETE FROM JOB_TABLE WHERE jobId = :jobId")
     fun deleteJobForJobId(jobId: String)
 
-//    @Query("SELECT * FROM JOB_TABLE WHERE actId = :actId  AND SELECT * FROM JOB_ITEM_ESTIMATE WHERE actId = :actId2 ORDER BY jiNo ASC")
-//    @Query("SELECT * FROM JOB_TABLE WHERE sectionItemId = :sectionItem AND projectId = :projectId")
-//    "SELECT COUNT(A." + ESTIMATE_ID + ") AS 'WorkDone' FROM " + TABLE_JOB_ITEM_ESTIMATE + " A "
-//                    + "JOIN " + TABLE_JOB_ESTIMATE_WORKS + " B ON B." + ESTIMATE_ID + " = A." + ESTIMATE_ID + " AND B."
-//                    + ACT_ID + " = " + workActId + " WHERE A." + JOB_ID + " = '" + jobId + "' AND A." + ACT_ID + " = " + estimateActId
-//    fun getAllItemsForSectionItem(sectionItem : String, projectId : String ): LiveData<List<JobDTO>>
-
-
     @Query("DELETE FROM JOB_TABLE")
     fun deleteAll()
 
-
-
 }
-
-
-
-
-//    updateJob(Job existingJob)
-//    INSERT INTO Customers (CustomerName, City, Country)
-//    SELECT SupplierName, City, Country FROM Suppliers
-//    WHERE Country='Germany';
-//    setJobToSynced(Job job)

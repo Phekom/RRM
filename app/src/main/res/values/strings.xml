@@ -98,6 +98,7 @@
     <string name="building_googleapiclient">Building GoogleApiClient</string>
     <string name="c_uppercase">C</string>
     <string name="cancel">Cancel</string>
+    <string name="retry">Retry</string>
     <string name="capture_item_measure_photo">Capture Item Measure Photo</string>
     <string name="capture_job_details">Capture Job Details</string>
     <string name="capture_job_estimates">Capture Job Estimates</string>
@@ -271,6 +272,7 @@
     <string name="please_enter_valid_end_point">Please enter valid Endpoint.</string>
     <string name="please_make_sure_start_km_is_smaller_than_end_km">Please make sure start km is smaller than end km</string>
     <string name="please_make_sure_workflow_items_contain_photos">Please make sure workflow Items contain photos</string>
+    <string name="please_provide_a_comment">Please provide a short comment.</string>
     <string name="please_make_sure_you_have_captured_photos">Please make sure you\'ve captured photos for all measurement items.</string>
     <string name="please_refresh_data">Please Refresh Data.</string>
     <string name="please_select_a_future_due_Date">Please select a future due date</string>
@@ -531,5 +533,24 @@
     <string name="warning_estimate_incomplete">Incomplete estimate ...</string>
     <string name="warning_estimate_enter_volume">Please enter the volume.</string>
     <string name="warning_estimate_enter_prov_sum">Please enter the Prov Sum</string>
+    <string name="capture_workflow_comments">Capture workflow comments</string>
+
+
+    <!-- ForegroundOnly Location Service -->
+
+    <string name="launch_activity">Launch activity</string>
+    <string name="location_unknown">Location Unknown</string>
+    <string name="location_updates_label">Location Updates</string>
+
+    <string name="permission_rationale">Location permission needed for core functionality</string>
+    <string name="permission_denied_explanation">Permission was denied, but is needed for core functionality.</string>
+
+    <string name="start_location_updates_button_text">Start receiving location updates</string>
+    <string name="stop_location_updates_button_text">Stop receiving location updates</string>
+
+    <string name="location_updated">Location Updated: %1$s</string>
+
+    <string name="preference_file_key">com.example.android.while_in_use_location.PREFERENCE_FILE_KEY</string>
+    <string name="no_location_text">No current location</string>
 
 </resources>

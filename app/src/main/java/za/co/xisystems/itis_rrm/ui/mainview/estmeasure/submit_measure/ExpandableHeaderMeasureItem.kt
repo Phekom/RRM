@@ -21,8 +21,8 @@ import kotlinx.android.synthetic.main.item_header.icon
 import kotlinx.android.synthetic.main.item_measure_header.*
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
-import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.estimate_measure_item.MeasureHeaderItem
+import za.co.xisystems.itis_rrm.ui.models.MeasureViewModel
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils

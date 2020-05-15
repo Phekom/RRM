@@ -30,18 +30,18 @@ import org.kodein.di.generic.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.data.localDB.JobDataController
 import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
-import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
-import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModel
-import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.MyState
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SwipeTouchCallback
-import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedViewModel
-import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedViewModelFactory
+import za.co.xisystems.itis_rrm.ui.models.CreateViewModel
+import za.co.xisystems.itis_rrm.ui.models.CreateViewModelFactory
+import za.co.xisystems.itis_rrm.ui.models.UnSubmittedViewModel
+import za.co.xisystems.itis_rrm.ui.models.UnSubmittedViewModelFactory
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DateUtil
 import za.co.xisystems.itis_rrm.utils.JobUtils
@@ -254,14 +254,6 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
             selectedContractTextView.text = contractNo
             selectedProjectTextView.text = projectCode
         }
-
-
-
-
-
-
-
-
 
         ItemTouchHelper(touchCallback).attachToRecyclerView(project_recyclerView)
         setmyClickListener()

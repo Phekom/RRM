@@ -8,7 +8,7 @@ import com.xwray.groupie.kotlinandroidextensions.Item
 import kotlinx.android.synthetic.main.unsubmtd_job_list_item.*
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
-import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedViewModel
+import za.co.xisystems.itis_rrm.ui.models.UnSubmittedViewModel
 import za.co.xisystems.itis_rrm.utils.Coroutines
 
 /**
