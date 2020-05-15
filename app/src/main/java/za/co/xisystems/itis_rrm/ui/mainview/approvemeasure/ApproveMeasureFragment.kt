@@ -166,6 +166,11 @@ class ApproveMeasureFragment : BaseFragment(R.layout.fragment_approvemeasure), K
         }
     }
 
+    override fun onDestroyView() {
+        approve_measurements_list.adapter = null
+        super.onDestroyView()
+    }
+
     private fun sendJobToApprove(
         job: ApproveMeasureItem?,
         view: View
