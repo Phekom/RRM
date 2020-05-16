@@ -32,7 +32,6 @@ import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasurePhotoDTO
 import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
-import za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates.BitmapUtils
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.intents.AbstractIntent
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModelFactory
@@ -145,7 +144,7 @@ class CaptureItemMeasurePhotoFragment : BaseFragment(R.layout.fragment_capture_i
 
 
         done_image_button.setOnClickListener { save ->
-            saveImaqe()
+            saveImage()
             setJobItemMeasureImage(
                 jobItemMeasurePhotoArrayList,
                 measureViewModel,
@@ -160,7 +159,7 @@ class CaptureItemMeasurePhotoFragment : BaseFragment(R.layout.fragment_capture_i
         }
         Save.visibility = View.GONE
         Save.setOnClickListener { save ->
-            saveImaqe()
+            saveImage()
             setJobItemMeasureImage(
                 jobItemMeasurePhotoArrayList,
                 measureViewModel,
@@ -168,40 +167,44 @@ class CaptureItemMeasurePhotoFragment : BaseFragment(R.layout.fragment_capture_i
                 selectedJobItemMeasure
             )
         }
-
-
     }
 
-    private fun saveImaqe(): JobItemMeasurePhotoDTO {
+    // TODO: Have location validated here
+    // TODO: Check earlier and get user to switch Location on.
+    private fun saveImage(): JobItemMeasurePhotoDTO? {
         //  Location of picture
-        val currentLocation: Location? = locationHelper.getCurrentLocation()!!
-        if (currentLocation == null) toast("Error: Current location is null!")
-        //  Save Image to Internal Storage
-        val photoId = SqlLitUtils.generateUuid()
-        filename_path =
-            PhotoUtil.saveImageToInternalStorage(
-                requireContext(),
-                imageUri
-            ) as HashMap<String, String>
+        val currentLocation: Location? = locationHelper.getCurrentLocation()
+        if (currentLocation != null) {
+            //  Save Image to Internal Storage
+            val photoId = SqlLitUtils.generateUuid()
+            filename_path =
+                PhotoUtil.saveImageToInternalStorage(
+                    requireContext(),
+                    imageUri
+                ) as HashMap<String, String>
 
-        Timber.d("location: ${currentLocation?.longitude}, ${currentLocation?.latitude}")
-        Timber.d("accuracy: ${currentLocation?.accuracy}")
+            Timber.d("location: ${currentLocation.longitude}, ${currentLocation.latitude}")
+            Timber.d("accuracy: ${currentLocation.accuracy}")
 
-        val jobItemMeasurePhoto = JobItemMeasurePhotoDTO(
-            0,
-            null,
-            filename_path.get("filename"),
-            selectedJobItemMeasure.estimateId,
-            selectedJobItemMeasure.itemMeasureId,
-            DateUtil.DateToString(Date()),
-            photoId, currentLocation.latitude, currentLocation.longitude,
-            filename_path.get("path"), jobItemMeasure, 0, 0
+            val jobItemMeasurePhoto = JobItemMeasurePhotoDTO(
+                0,
+                null,
+                filename_path.get("filename"),
+                selectedJobItemMeasure.estimateId,
+                selectedJobItemMeasure.itemMeasureId,
+                DateUtil.DateToString(Date()),
+                photoId, currentLocation.latitude, currentLocation.longitude,
+                filename_path.get("path"), jobItemMeasure, 0, 0
+            )
 
-        )
-
-        jobItemMeasurePhotoArrayList.add(jobItemMeasurePhoto)
+            jobItemMeasurePhotoArrayList.add(jobItemMeasurePhoto)
 //        jobForJobItemEstimate.setJobItemMeasures(jobItemMeasurePhotoArrayList)
-        return jobItemMeasurePhoto
+            return jobItemMeasurePhoto
+
+        } else {
+            toast("Error: Current location is null!")
+            return null
+        }
     }
 
 
@@ -255,7 +258,7 @@ class CaptureItemMeasurePhotoFragment : BaseFragment(R.layout.fragment_capture_i
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
             processAndSetImage()
         } else { // Otherwise, delete the temporary image file
-            BitmapUtils.deleteImageFile(requireContext().applicationContext, mTempPhotoPath)
+            PhotoUtil.deleteImageFile(requireContext().applicationContext, mTempPhotoPath)
         }
     }
 

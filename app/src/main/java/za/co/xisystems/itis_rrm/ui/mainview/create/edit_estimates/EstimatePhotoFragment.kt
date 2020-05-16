@@ -573,7 +573,7 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
             processAndSetImage()
 
         } else { // Otherwise, delete the temporary image file
-            BitmapUtils.deleteImageFile(requireContext(), filenamePath.toString())
+            PhotoUtil.deleteImageFile(requireContext(), filenamePath.toString())
         }
     }
 

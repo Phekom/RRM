@@ -70,7 +70,7 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
 
            approve_measure_button.setOnClickListener {
                 val logoutBuilder = AlertDialog.Builder(
-                    activity!! //, android.R.style.Theme_DeviceDefault_Dialog
+                    requireActivity() //, android.R.style.Theme_DeviceDefault_Dialog
                 )
                 logoutBuilder.setTitle(R.string.confirm)
                 logoutBuilder.setIcon(R.drawable.ic_approve)
@@ -101,7 +101,7 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
             decline_measure_button.setOnClickListener {
                 val logoutBuilder =
                     AlertDialog.Builder(
-                        activity!! //, android.R.style.Theme_DeviceDefault_Dialog
+                        requireActivity() //, android.R.style.Theme_DeviceDefault_Dialog
                     )
                 logoutBuilder.setTitle(R.string.confirm)
                 logoutBuilder.setIcon(R.drawable.ic_warning)
@@ -130,10 +130,6 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
         }
     }
 
-//    private fun moveJobToNextWorkflow(workflowDirection: WorkflowDirection) {
-//        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-//    }
-
     private fun moveJobToNextWorkflow(workflowDirection : WorkflowDirection) {
         Coroutines.main {
             val messages = arrayOf(
@@ -145,26 +141,14 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
             user.observe(viewLifecycleOwner, Observer { user_ ->
                 approveViewModel.measureapproval_Item.observe(viewLifecycleOwner, Observer { job ->
 
-                    if (user_.userId == null) {
+                    if (user_.userId.isBlank()) {
                         toast("Error: userId is null")
-                        // } else if ( getEstimateItems(job.jobItemMeasureDTO.jobId) == null) {
-                       // toast("Error: selectedJob is null")
                     } else {
                         // TODO beware littleEndian conversion
                         val trackRouteId: String =
                             DataConversion.toLittleEndian(job.jobItemMeasureDTO.trackRouteId)!!
                         val direction: Int = workflowDirection.value
-
                         val description = ""
-//                        val messages = messages
-//                        if (workflow_comments_editText.text != null){
-//                            description = workflow_comments_editText.text.toString()
-//                        }else{
-//                            toast(context?.applicationContext!!.getString(R.string.enter_comment))
-//                            return@Observer
-//                        }
-
-
                         processWorkFlow(user_.userId, trackRouteId, direction, description)
                     }
 
@@ -187,14 +171,14 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
             prog.show()
             val submit =
                 approveViewModel.processWorkflowMove(userId, trackRouteId, description, direction)
-//            activity?.hideKeyboard()
-            if (submit != null){
+            if (submit.isNotEmpty()) {
                 prog.dismiss()
-                toast(submit) }else {
+                toast(submit)
+            } else {
                 prog.dismiss()
                 toast(R.string.job_submitted)
-                popViewOnJobSubmit(direction)}
-//            popViewOnJobSubmit(direction)
+                popViewOnJobSubmit(direction)
+            }
         }
     }
 
@@ -206,11 +190,8 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
         }
 
         Intent(context?.applicationContext , MainActivity::class.java).also { home ->
-//            home.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
             startActivity(home)
         }
-        // Navigation.findNavController(view!!)
-//                .navigate(R.id.action_jobInfoFragment_to_nav_home)
     }
 
 
@@ -221,7 +202,7 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
                 val measureItems = job_s.distinctBy {
                     it.jobId
                 }
-//
+
                 toast(job_s.size.toString())
                 initRecyclerView(measureItems.toMeasureItem())
 
@@ -242,20 +223,16 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
 
     }
 
+    override fun onDestroyView() {
+        view_measured_items.adapter = null
+        super.onDestroyView()
+    }
+
     private fun List<JobItemMeasureDTO>.toMeasureItem(): List<MeasurementsItem> {
         return this.map { approvedJobItem ->
-            //            getEstimateItemsPhoto(approvedJobItem.estimateId)
             MeasurementsItem(approvedJobItem, approveViewModel, activity)
         }
     }
-
-
-
-
-
-
-
-
 
     // TODO: Rename method, update argument and hook method into UI event
     fun onButtonPressed(uri: Uri) {
