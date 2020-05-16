@@ -149,9 +149,7 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
             workViewModel.workItem.observe(viewLifecycleOwner, Observer { estimate ->
                 itemEstimate = estimate
 
-                if (itemEstimateJob.JobId != null) {
-                    getWorkItems(itemEstimate, itemEstimateJob)
-                }
+                getWorkItems(itemEstimate, itemEstimateJob)
             })
 
 
@@ -243,11 +241,10 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
             val newitemEstiWorks = setJobWorksLittleEndianGuids(itemEstiWorks)
             val response =
                 workViewModel.submitWorks(newitemEstiWorks, requireActivity(), itemEstimateJob)
-            if (response != null) {
+            if (response.isBlank()) {
                 refreshView(prog)
             } else
                 activity?.toast(response)
-
         }
     }
 
@@ -265,19 +262,17 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
     }
 
     private fun setJobWorksLittleEndianGuids(works: JobEstimateWorksDTO): JobEstimateWorksDTO {
-        if (works != null) {
-//            for (jew in works) {
-            works.setWorksId(DataConversion.toLittleEndian(works.worksId))
-            works.setEstimateId(DataConversion.toLittleEndian(works.estimateId))
-            works.setTrackRouteId(DataConversion.toLittleEndian(works.trackRouteId))
-            if (works.jobEstimateWorksPhotos != null) {
-                for (ewp in works.jobEstimateWorksPhotos!!) {
-                    ewp.setWorksId(DataConversion.toLittleEndian(ewp.worksId))
-                    ewp.setPhotoId(DataConversion.toLittleEndian(ewp.photoId))
-                }
+        //            for (jew in works) {
+        works.setWorksId(DataConversion.toLittleEndian(works.worksId))
+        works.setEstimateId(DataConversion.toLittleEndian(works.estimateId))
+        works.setTrackRouteId(DataConversion.toLittleEndian(works.trackRouteId))
+        if (works.jobEstimateWorksPhotos != null) {
+            for (ewp in works.jobEstimateWorksPhotos!!) {
+                ewp.setWorksId(DataConversion.toLittleEndian(ewp.worksId))
+                ewp.setPhotoId(DataConversion.toLittleEndian(ewp.photoId))
             }
-//            }
         }
+//            }
         return works
     }
 
@@ -347,7 +342,7 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
         }
     }
 
-    private fun processAndSetImage(itemEstiWorks: JobEstimateWorksDTO) {
+    private fun processAndSetImage(itemEstiWorks: JobEstimateWorksDTO) =
         try { //  Location of picture
             val currentLocation: Location? = locationHelper.getCurrentLocation()
             when (currentLocation != null) {
@@ -368,9 +363,6 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
             toast(R.string.error_getting_image)
             e.printStackTrace()
         }
-
-
-    }
 
     private fun processPhotoWorks(
         currentLocation: Location?,
@@ -485,16 +477,17 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
                     for (workItem in estimateWorksList) {
                         if (workItem.actId == ActivityIdConstants.EST_WORKS_COMPLETE) {
                             Coroutines.main {
-                                val workDone: Int = workViewModel.getJobItemsEstimatesDoneForJobId(
+                                val estWorkDone: Int =
+                                    workViewModel.getJobItemsEstimatesDoneForJobId(
                                     estimateJob.JobId,
                                     ActivityIdConstants.ESTIMATE_WORK_PART_COMPLETE,
                                     ActivityIdConstants.EST_WORKS_COMPLETE
                                 )
-                                if (workDone == estimateJob.JobItemEstimates?.size) {
+                                if (estWorkDone == estimateJob.JobItemEstimates?.size) {
                                     val iItems = estimateJob.JobItemEstimates
                                     submitAllOutStandingEstimates(iItems)
                                 } else {
-                                    popViewOnWorkSubmit(view)
+                                    popViewOnWorkSubmit(requireView())
                                 }
                             }
                         } else {
@@ -503,13 +496,15 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
                             // Remove for Dynamic Workflow
 
                             Coroutines.main {
-                                val workcode = workViewModel.getWorkFlowCodes(id)
-                                workcode.observe(viewLifecycleOwner, Observer { workCodes ->
-                                    jobWorkStep = workCodes as ArrayList<WF_WorkStepDTO>
+                                val workflowStepData = workViewModel.getWorkFlowCodes(id)
+                                workflowStepData.observe(
+                                    viewLifecycleOwner,
+                                    Observer { workflowSteps ->
+                                        jobWorkStep = workflowSteps as ArrayList<WF_WorkStepDTO>
 
                                     initRecyclerView(
                                         estimateWorksList.toWorkStateItems(),
-                                        workCodes
+                                        workflowSteps
                                     )
                                 })
 

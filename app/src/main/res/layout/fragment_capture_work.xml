@@ -88,11 +88,11 @@
                         android:id="@+id/image_collection_view"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:layout_marginTop="30dp"
-                        android:layout_marginBottom="30dp"
-                        app:backgroundColor="#80000000"
+                        android:layout_marginTop="20dp"
+                        android:layout_marginBottom="20dp"
+                        app:backgroundColor="#00000000"
                         app:baseRowHeight="150dp"
-                        app:imageMargin="5dp"
+                        app:imageMargin="2dp"
                             app:layout_constraintBottom_toBottomOf="parent"
                             app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintHorizontal_bias="0.50"
@@ -101,7 +101,7 @@
                         app:maxImagePerRow="2"
                         app:maxRows="3"
                         app:pinchToZoom="true"
-                        app:showExternalBorderMargins="true" />
+                        app:showExternalBorderMargins="false" />
 <!--                    <ImageSwitcher-->
 <!--                            android:id="@+id/work_imageView"-->
 <!--                            android:layout_width="293dp"-->
@@ -202,7 +202,6 @@
             android:id="@+id/items_swipe_to_refresh"
             android:layout_width="wrap_content"
             android:layout_height="0px"
-            android:layout_weight="1"
             app:layout_constraintBottom_toTopOf="@+id/linearLayout2"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
