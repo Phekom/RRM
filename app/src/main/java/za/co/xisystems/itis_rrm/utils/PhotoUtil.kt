@@ -10,6 +10,7 @@ import android.os.Build
 import android.os.Environment
 import androidx.core.content.FileProvider
 import androidx.exifinterface.media.ExifInterface
+import androidx.fragment.app.Fragment
 import org.apache.sanselan.ImageReadException
 import org.apache.sanselan.ImageWriteException
 import org.apache.sanselan.Sanselan
@@ -20,7 +21,6 @@ import org.apache.sanselan.formats.tiff.write.TiffOutputSet
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.BuildConfig
 import za.co.xisystems.itis_rrm.R
-import za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates.EstimatePhotoFragment
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import java.io.*
 import java.text.DateFormat
@@ -145,18 +145,18 @@ object PhotoUtil {
     fun getPhotoPathFromExternalDirectory(
         photoName: String
     ): Uri {
-        var photoName = photoName
-        photoName =
-            if (!photoName.toLowerCase(Locale.ROOT)
+        var pictureName = photoName
+        pictureName =
+            if (!pictureName.toLowerCase(Locale.ROOT)
                     .contains(".jpg")
-            ) "$photoName.jpg" else photoName
+            ) "$pictureName.jpg" else pictureName
         var fileName =
             Environment.getExternalStorageDirectory()
-                .toString() + File.separator + FOLDER + File.separator + photoName
+                .toString() + File.separator + FOLDER + File.separator + pictureName
         var file = File(fileName)
         if (!file.exists()) { //  if not in the folder then go to the PhotosDirectory to check if in their.
             fileName =
-                Environment.getExternalStorageDirectory().toString() + File.separator + photoName
+                Environment.getExternalStorageDirectory().toString() + File.separator + pictureName
             file = File(fileName)
         }
         return Uri.fromFile(file)
@@ -200,7 +200,6 @@ object PhotoUtil {
     }
 
     fun getCompressedPhotoWithExifInfo(
-        context: Context?,
         bitmap: Bitmap,
         fileName: String
     ): ByteArray {
@@ -222,17 +221,7 @@ object PhotoUtil {
         } catch (e: IOException) {
             e.printStackTrace()
         }
-        val jpegMetadata = metadata as JpegImageMetadata?
-        if (jpegMetadata != null) {
-            val exif = jpegMetadata.exif
-            if (exif != null) {
-                try {
-                    outputSet = exif.outputSet
-                } catch (e: ImageWriteException) {
-                    e.printStackTrace()
-                }
-            }
-        }
+        outputSet = extractJpegData(metadata, outputSet)
         if (null != outputSet) {
             try {
                 byteArrayOutputStream.flush()
@@ -255,6 +244,25 @@ object PhotoUtil {
         }
         return data
     }
+
+    private fun extractJpegData(
+        metadata: IImageMetadata?,
+        outputSet: TiffOutputSet?
+    ): TiffOutputSet? {
+        var outputSet1 = outputSet
+        val jpegMetadata = metadata as JpegImageMetadata?
+        if (jpegMetadata != null) {
+            val exif = jpegMetadata.exif
+            if (exif != null) {
+                try {
+                    outputSet1 = exif.outputSet
+                } catch (e: ImageWriteException) {
+                    e.printStackTrace()
+                }
+            }
+        }
+        return outputSet1
+    }
     //=============================================================================================================================================================
     /**
      * saveImageToInternalStorage
@@ -266,30 +274,30 @@ object PhotoUtil {
         context: Context,
         imageUri: Uri
     ): Map<String, String?>? {
-        var imageUri = imageUri
+        var scaledUri = imageUri
         return try {
             var scaledBitmap: Bitmap? = null
             val options = BitmapFactory.Options()
             var result: String?
             //if uri is content
-            if (imageUri.scheme != null && imageUri.scheme == "content") {
+            if (scaledUri.scheme != null && scaledUri.scheme == "content") {
                 val cursor =
-                    context.contentResolver.query(imageUri, null, null, null, null)
+                    context.contentResolver.query(scaledUri, null, null, null, null)
                 try {
                     if (cursor != null && cursor.moveToFirst()) { //local filesystem
                         var index = cursor.getColumnIndex("_data")
                         if (index == -1) //google drive
                             index = cursor.getColumnIndex("_display_name")
                         result = cursor.getString(index)
-                        imageUri = if (result != null) Uri.parse(result) else return null
+                        scaledUri = if (result != null) Uri.parse(result) else return null
                     }
                 } catch (e: Exception) {
-                    Timber.e(e, "Ërror loading photo $imageUri")
+                    Timber.e(e, "Ërror loading photo $scaledUri")
                 } finally {
                     cursor?.close()
                 }
             }
-            result = imageUri.path
+            result = scaledUri.path
             //get filename + ext of path
             val cut = result?.lastIndexOf('/')
             if (cut != null && cut != -1) result = result?.substring(cut + 1)
@@ -305,29 +313,9 @@ object PhotoUtil {
             var actualHeight = options.outHeight
             var actualWidth = options.outWidth
             //      max Height and width values of the compressed image is taken as 816x612
-            val maxHeight = 816.0f
-            val maxWidth = 612.0f
-            var imgRatio = (actualWidth / actualHeight).toFloat()
-            val maxRatio = maxWidth / maxHeight
-            //      width and height values are set maintaining the aspect ratio of the image
-            if (actualHeight > maxHeight || actualWidth > maxWidth) {
-                when {
-                    imgRatio < maxRatio -> {
-                        imgRatio = maxHeight / actualHeight
-                        actualWidth = (imgRatio * actualWidth).toInt()
-                        actualHeight = maxHeight.toInt()
-                    }
-                    imgRatio > maxRatio -> {
-                        imgRatio = maxWidth / actualWidth
-                        actualHeight = (imgRatio * actualHeight).toInt()
-                        actualWidth = maxWidth.toInt()
-                    }
-                    else -> {
-                        actualHeight = maxHeight.toInt()
-                        actualWidth = maxWidth.toInt()
-                    }
-                }
-            }
+            val pair = resizeBitmapToMax(actualWidth, actualHeight)
+            actualHeight = pair.first
+            actualWidth = pair.second
             //      setting inSampleSize value allows to load a scaled down version of the original image
             options.inSampleSize =
                 calculateInSampleSize(options, actualWidth, actualHeight)
@@ -363,45 +351,12 @@ object PhotoUtil {
                 Paint(Paint.FILTER_BITMAP_FLAG)
             )
             //      check the rotation of the image and display it properly
-            val exif: ExifInterface
-            try {
-                exif = ExifInterface(path)
-                val orientation = exif.getAttributeInt(
-                    ExifInterface.TAG_ORIENTATION, 0
-                )
-                Timber.d("Exif: initial $orientation")
-                val matrix = Matrix()
-                when (orientation) {
-                    6 -> {
-                        matrix.postRotate(90f)
-                        Timber.d("Exif: $orientation")
-                    }
-                    3 -> {
-                        matrix.postRotate(180f)
-                        Timber.d("Exif: $orientation")
-                    }
-                    8 -> {
-                        matrix.postRotate(270f)
-                        Timber.d("Exif: $orientation")
-                    }
-                }
-                scaledBitmap = Bitmap.createBitmap(
-                    scaledBitmap,
-                    0,
-                    0,
-                    scaledBitmap.width,
-                    scaledBitmap.height,
-                    matrix,
-                    true
-                )
-            } catch (e: IOException) {
-                e.printStackTrace()
-            }
-            var out: FileOutputStream? = null
+            scaledBitmap = applyExifRotation(path, scaledBitmap)
+            var out: FileOutputStream?
             try {
                 out = FileOutputStream(path)
                 //          write the compressed bitmap at the destination specified by filename.
-                scaledBitmap!!.compress(Bitmap.CompressFormat.JPEG, 100, out)
+                scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
             } catch (e: FileNotFoundException) {
                 e.printStackTrace()
             }
@@ -415,6 +370,80 @@ object PhotoUtil {
             Timber.e(e, "error saving photo: $e")
             null
         }
+    }
+
+    private fun applyExifRotation(
+        path: String,
+        scaledBitmap: Bitmap
+    ): Bitmap {
+        var scaledBitmap1 = scaledBitmap
+        val exif: ExifInterface
+        try {
+            exif = ExifInterface(path)
+            val orientation = exif.getAttributeInt(
+                ExifInterface.TAG_ORIENTATION, 0
+            )
+            Timber.d("Exif: initial $orientation")
+            val matrix = Matrix()
+            when (orientation) {
+                6 -> {
+                    matrix.postRotate(90f)
+                    Timber.d("Exif: $orientation")
+                }
+                3 -> {
+                    matrix.postRotate(180f)
+                    Timber.d("Exif: $orientation")
+                }
+                8 -> {
+                    matrix.postRotate(270f)
+                    Timber.d("Exif: $orientation")
+                }
+            }
+            scaledBitmap1 = Bitmap.createBitmap(
+                scaledBitmap1,
+                0,
+                0,
+                scaledBitmap1.width,
+                scaledBitmap1.height,
+                matrix,
+                true
+            )
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+        return scaledBitmap1
+    }
+
+    private fun resizeBitmapToMax(
+        actualWidth: Int,
+        actualHeight: Int
+    ): Pair<Int, Int> {
+        var actualWidth1 = actualWidth
+        var actualHeight1 = actualHeight
+        val maxHeight = 816.0f
+        val maxWidth = 612.0f
+        var imgRatio = (actualWidth1 / actualHeight1).toFloat()
+        val maxRatio = maxWidth / maxHeight
+        //      width and height values are set maintaining the aspect ratio of the image
+        if (actualHeight1 > maxHeight || actualWidth1 > maxWidth) {
+            when {
+                imgRatio < maxRatio -> {
+                    imgRatio = maxHeight / actualHeight1
+                    actualWidth1 = (imgRatio * actualWidth1).toInt()
+                    actualHeight1 = maxHeight.toInt()
+                }
+                imgRatio > maxRatio -> {
+                    imgRatio = maxWidth / actualWidth1
+                    actualHeight1 = (imgRatio * actualHeight1).toInt()
+                    actualWidth1 = maxWidth.toInt()
+                }
+                else -> {
+                    actualHeight1 = maxHeight.toInt()
+                    actualWidth1 = maxWidth.toInt()
+            }
+        }
+    }
+        return Pair(actualHeight1, actualWidth1)
     }
 
     private fun calculateInSampleSize(
@@ -440,10 +469,10 @@ object PhotoUtil {
         return inSampleSize
     }
 
-    fun getUri(estimatePhotoFragment: EstimatePhotoFragment?): Uri? {
+    fun getUri(fragment: Fragment?): Uri? {
         try {
             return FileProvider.getUriForFile(
-                estimatePhotoFragment?.context!!.applicationContext,
+                fragment?.requireContext()?.applicationContext!!,
                 BuildConfig.APPLICATION_ID + ".provider",
                 createImageFile()
             )
@@ -457,30 +486,33 @@ object PhotoUtil {
         context: Context,
         imagePath: String?
     ): Boolean { // Get the file
-        val imageFile = File(imagePath)
-        // Delete the image
-        val deleted = imageFile.delete()
-        // If there is an error deleting the file, show a Toast
-        if (!deleted) {
-            val errorMessage = context.getString(R.string.error)
+        return if (imagePath != null) {
+            val imageFile = File(imagePath)
+            // Delete the image
+            val deleted = imageFile.delete()
+            // If there is an error deleting the file, show a Toast
+            if (!deleted) {
+                val errorMessage = context.getString(R.string.error)
+            }
+            deleted
+        } else {
+            true
         }
-        return deleted
     }
 
     @Throws(IOException::class)
     private fun createImageFile(): File {
         val uuid = UUID.randomUUID()
         val imageFileName = uuid.toString()
-        //        String imageFileName = "010";
+
         val storageDir =
             File(Environment.getExternalStorageDirectory().toString() + File.separator + FOLDER)
         if (!storageDir.exists()) {
             storageDir.mkdirs()
         }
-        //        File image = File.createTempFile(
-//               "111" ,imageFileName + ".jpg",  storageDir);
+
         return File(storageDir, "$imageFileName.jpg")
-    } //    public static void createFile(String fileName, byte[] bytes) throws IOException {photoByteArray: ByteArray?,
+    }
 
     fun createPhotoFolder(photo: String, fileName: String) {
 
@@ -490,16 +522,9 @@ object PhotoUtil {
             storageDir.mkdirs()
         }
 
-
-        val imageByteArray: ByteArray = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            Base64.getDecoder().decode(photo)
-        } else {
-            android.util.Base64.decode(photo, android.util.Base64.DEFAULT)
-        }
-
+        val imageByteArray: ByteArray = decode64Pic(photo)
         File(storageDir.path + "/" + fileName).writeBytes(imageByteArray)
     }
-
 
     fun createPhotoFolder() {
 
@@ -510,7 +535,26 @@ object PhotoUtil {
         }
     }
 
+    /**
+     * Encode bitmap array to a Base64 string for transmission to the backend.
+     */
+    fun encode64Pic(photo: ByteArray): String {
+        return when {
+            Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O ->
+                Base64.getEncoder().encodeToString(photo)
+            else ->
+                // Fallback for pre-Marshmallow
+                android.util.Base64.encodeToString(photo, android.util.Base64.DEFAULT)
+        }
+    }
 
+    private fun decode64Pic(photo: String): ByteArray {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Base64.getDecoder().decode(photo)
+        } else {
+            android.util.Base64.decode(photo, android.util.Base64.DEFAULT)
+        }
+    }
 
     fun getUri3(context: Context): Uri? {
         try {

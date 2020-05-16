@@ -5,8 +5,6 @@ package za.co.xisystems.itis_rrm.data.repositories
 // import android.app.Activity
 import android.os.Build
 import android.os.Environment
-import android.util.Log
-import androidx.annotation.RequiresApi
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -20,8 +18,6 @@ import za.co.xisystems.itis_rrm.data.localDB.JobDataController
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
-import za.co.xisystems.itis_rrm.data.network.responses.JobResponse
-import za.co.xisystems.itis_rrm.data.network.responses.SaveMeasurementResponse
 import za.co.xisystems.itis_rrm.data.network.responses.UploadImageResponse
 import za.co.xisystems.itis_rrm.data.preferences.PreferenceProvider
 import za.co.xisystems.itis_rrm.utils.Coroutines
@@ -33,16 +29,10 @@ import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import java.io.File
 import java.time.LocalDateTime
-import java.time.temporal.ChronoUnit
 import java.util.*
 import java.util.regex.Pattern
 
 
-/**
- * Created by Francis Mahlava on 2019/11/28.
- */
-
-const val MINIMUM_INTERVAL = 3
 private val jobDataController: JobDataController? = null
 
 class OfflineDataRepository(
@@ -54,12 +44,7 @@ class OfflineDataRepository(
 
     private val conTracts = MutableLiveData<List<ContractDTO>>()
     private val sectionItems = MutableLiveData<ArrayList<String>>()
-    private val projects = MutableLiveData<ArrayList<ProjectDTO>>()
-    private val projectItems = MutableLiveData<ArrayList<ProjectItemDTO>>()
-    private val voItems = MutableLiveData<ArrayList<VoItemDTO>>()
-    private val projectSections = MutableLiveData<ArrayList<ProjectSectionDTO>>()
     private val job = MutableLiveData<JobDTO>()
-    private val newJob = MutableLiveData<JobDTOTemp>()
     private val estimatePhoto = MutableLiveData<String>()
     private val measurePhoto = MutableLiveData<String>()
     private val workFlow = MutableLiveData<WorkFlowsDTO>()
@@ -68,9 +53,7 @@ class OfflineDataRepository(
     private val workflows = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
     private val workflowJ = MutableLiveData<WorkflowJobDTO>()
     private val workflowJ2 = MutableLiveData<WorkflowJobDTO>()
-    private val photoupload = MutableLiveData<String>()
-    private val works = MutableLiveData<String>()
-    private val routeSectionPoint = MutableLiveData<String>()
+    private val photoUpload = MutableLiveData<String>()
 
     init {
         conTracts.observeForever {
@@ -89,9 +72,6 @@ class OfflineDataRepository(
 
         lookups.observeForever {
             saveLookups(it)
-        }
-        projectItems.observeForever {
-            //            saveProjectItems(it)
         }
 
         toDoListGroups.observeForever {
@@ -115,7 +95,7 @@ class OfflineDataRepository(
             saveWorkflowJob2(it)
         }
 
-        photoupload.observeForever {
+        photoUpload.observeForever {
             sendMSg(it)
         }
 
@@ -146,9 +126,7 @@ class OfflineDataRepository(
     suspend fun getSectionItems(): LiveData<List<SectionItemDTO>> {
         return withContext(Dispatchers.IO) {
             val userId = Db.getUserDao().getUserID()
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                fetchContracts(userId)
-            }
+            fetchContracts(userId)
             Db.getSectionItemDao().getSectionItems()
         }
     }
@@ -186,36 +164,6 @@ class OfflineDataRepository(
         }
     }
 
-    suspend fun getContractProjects(contractId: String): LiveData<List<ProjectDTO>> {
-        return withContext(Dispatchers.IO) {
-            Db.getProjectDao().getAllProjectsByContract(contractId)
-        }
-    }
-
-    suspend fun getProjects(): LiveData<List<ProjectDTO>> {
-        return withContext(Dispatchers.IO) {
-            Db.getProjectDao().getAllProjects()
-        }
-    }
-
-    suspend fun getProjectItems(): LiveData<List<ProjectItemDTO>> {
-        return withContext(Dispatchers.IO) {
-            Db.getProjectItemDao().getAllItemsForAllProjects()
-        }
-    }
-
-    suspend fun getItemForItemCode(sectionItemId: String): LiveData<List<ProjectItemDTO>> {
-        return withContext(Dispatchers.IO) {
-            Db.getProjectItemDao().getItemForItemCode(sectionItemId)
-        }
-    }
-
-    suspend fun getSection(sectionId: String): LiveData<ProjectSectionDTO> {
-        return withContext(Dispatchers.IO) {
-            Db.getProjectSectionDao().getSection(sectionId)
-        }
-    }
-
     suspend fun getAllItemsForProjectId(projectId: String): LiveData<List<ProjectItemDTO>> {
         return withContext(Dispatchers.IO) {
             Db.getProjectItemDao().getAllItemsForProjectId(projectId)
@@ -231,83 +179,10 @@ class OfflineDataRepository(
         }
     }
 
-    suspend fun getJobforEstinmate(jobId: String): LiveData<JobDTO> {
-        return withContext(Dispatchers.IO) {
-            Db.getJobDao().getJobFromJobId(jobId)
-        }
-    }
-
-    suspend fun getJobItemEstimatePhotoForEstimateId(estimateId: String): LiveData<List<JobItemEstimatesPhotoDTO>> {
-        return withContext(Dispatchers.IO) {
-            Db.getJobItemEstimatePhotoDao().getJobItemEstimatePhotoForEstimateId(estimateId)
-        }
-    }
-
-    suspend fun getAllSectionItem(): LiveData<List<SectionItemDTO>> {
-        return withContext(Dispatchers.IO) {
-            Db.getSectionItemDao().getAllSectionItems()
-        }
-    }
-
-    suspend fun getPointSectionData(projectId: String?): LiveData<SectionPointDTO> { //jobId,jobId: String,
-        return withContext(Dispatchers.IO) {
-            //            Db.getSectionItemDao().getAllSectionItems()
-            Db.getSectionPointDao().getPointSectionData(projectId)
-        }
-    }
-
-    suspend fun getJobItemsToMeasureForJobId(jobID: String?): LiveData<List<JobItemEstimateDTO>> {
-        return withContext(Dispatchers.IO) {
-            Db.getJobItemEstimateDao().getJobItemsToMeasureForJobId(jobID!!)
-        }
-    }
-
-    suspend fun getJobEstimationItemsPhoto(estimateId: String): LiveData<List<JobItemEstimatesPhotoDTO>> {
-        return withContext(Dispatchers.IO) {
-            Db.getJobItemEstimatePhotoDao().getJobEstimationItemsPhoto(estimateId)
-        }
-    }
-
-    suspend fun getJobEstimationItemsPhotoStartPath(estimateId: String): String {
-        return withContext(Dispatchers.IO) {
-            Db.getJobItemEstimatePhotoDao().getJobEstimationItemsPhotoStartPath(estimateId)
-        }
-    }
-
-    suspend fun getJobEstimationItemsPhotoEndPath(estimateId: String): String {
-        return withContext(Dispatchers.IO) {
-            Db.getJobItemEstimatePhotoDao().getJobEstimationItemsPhotoEndPath(estimateId)
-        }
-    }
-
     suspend fun getJobMeasureItemsPhotoPath(itemMeasureId: String): String {
         return withContext(Dispatchers.IO) {
             Db.getJobItemMeasurePhotoDao().getJobMeasureItemsPhotoPath(itemMeasureId)
         }
-    }
-
-    suspend fun getJobEstiItemForEstimateId(estimateId: String?): LiveData<List<JobEstimateWorksDTO>> {
-        return withContext(Dispatchers.IO) {
-            Db.getEstimateWorkDao().getJobMeasureItemsForJobId(estimateId)
-        }
-    }
-
-    suspend fun getWokrCodes(eId: Int): LiveData<List<WF_WorkStepDTO>> {
-        return withContext(Dispatchers.IO) {
-            Db.getWorkStepDao().getWorkflowSteps(eId)
-        }
-    }
-
-    suspend fun getSectionByRouteSectionProject(
-        sectionId: Int,
-        linearId: String?,
-        projectId: String?
-    ): LiveData<String?> {
-        return withContext(Dispatchers.IO) {
-            Db.getProjectSectionDao()
-                .getSectionByRouteSectionProject(sectionId.toString(), linearId!!, projectId)
-        }
-
     }
 
     suspend fun getProjectSection(sectionId: String?): LiveData<ProjectSectionDTO> {
@@ -322,46 +197,6 @@ class OfflineDataRepository(
             Db.getProjectItemDao().getItemForItemId(projectItemId!!)
         }
 
-    }
-
-    fun updateNewJob(
-        newjobId: String,
-        startKM: Double,
-        endKM: Double,
-        sectionId: String,
-        newJobItemEstimatesList: ArrayList<JobItemEstimateDTO>,
-        jobItemSectionArrayList: ArrayList<JobSectionDTO>
-    ) {
-        Coroutines.io {
-            if (Db.getJobDao().checkIfJobExist(newjobId)) {
-                Db.getJobDao().updateJoSecId(
-                    newjobId,
-                    startKM,
-                    endKM,
-                    sectionId,
-                    newJobItemEstimatesList,
-                    jobItemSectionArrayList
-                )
-            }
-        }
-    }
-
-    suspend fun getSingleJobFromJobId(jobId: String?): LiveData<JobDTO> {
-        return withContext(Dispatchers.IO) {
-            Db.getJobDao().getJobFromJobId(jobId!!)
-        }
-    }
-
-    suspend fun jobExists(jobId: String?): Boolean {
-        return withContext(Dispatchers.IO) {
-            Db.getJobDao().checkIfJobExist(jobId!!)
-        }
-    }
-
-    suspend fun getJobItemEstimateForEstimateId(estimateId: String): LiveData<JobItemEstimateDTO> {
-        return withContext(Dispatchers.IO) {
-            Db.getJobItemEstimateDao().getJobItemEstimateForEstimateId(estimateId)
-        }
     }
 
     suspend fun getProjectSectionIdForJobId(jobId: String?): String {
@@ -409,34 +244,6 @@ class OfflineDataRepository(
         }
     }
 
-    suspend fun getItemStartKm(jobId: String): Double {
-        return withContext(Dispatchers.IO) {
-            Db.getJobDao().getItemStartKm(jobId)
-        }
-    }
-
-    suspend fun getItemEndKm(jobId: String): Double {
-        return withContext(Dispatchers.IO) {
-            Db.getJobDao().getItemEndKm(jobId)
-        }
-    }
-
-    suspend fun getItemTrackRouteId(jobId: String): String {
-        return withContext(Dispatchers.IO) {
-            Db.getJobDao().getItemTrackRouteId(jobId)
-        }
-    }
-
-    suspend fun checkIfJobItemMeasureExistsForJobIdAndEstimateId(
-        jobId: String?,
-        estimateId: String
-    ): Boolean {
-        return withContext(Dispatchers.IO) {
-            Db.getJobItemMeasureDao()
-                .checkIfJobItemMeasureExistsForJobIdAndEstimateId(jobId, estimateId)
-        }
-    }
-
     suspend fun getRouteForProjectSectionId(sectionId: String?): String {
         return withContext(Dispatchers.IO) {
             Db.getProjectSectionDao().getRouteForProjectSectionId(sectionId!!)
@@ -449,24 +256,9 @@ class OfflineDataRepository(
         }
     }
 
-    suspend fun getJobs(): LiveData<List<JobDTO>> {
-        return withContext(Dispatchers.IO) {
-            Db.getJobDao().getAllJobsForAllProjects()
-        }
-    }
-
     fun delete(item: ItemDTOTemp) {
         Coroutines.io {
             Db.getItemDaoTemp().deleteItem(item)
-        }
-    }
-
-    suspend fun saveNewItem(newjItem: ItemDTOTemp) {
-        Coroutines.io {
-            if (!Db.getItemDaoTemp().checkItemExistsItemId(newjItem.itemId)) {
-
-                Db.getItemDaoTemp().insertItems(newjItem)
-            }
         }
     }
 
@@ -482,31 +274,27 @@ class OfflineDataRepository(
         }
     }
 
-    suspend fun saveNewJob(newJob: JobDTO?) {
-        Coroutines.io {
-            if (newJob != null && !Db.getJobDao().checkIfJobExist(newJob.JobId)) {
-                Db.getJobDao().insertOrUpdateJobs(newJob)
-            }
-        }
-    }
-
     private fun saveSectionsItems(sections: ArrayList<String>?) {
         Coroutines.io {
 
             for (section in sections!!) {
-                //  Lets get the String
+                //  Let's get the String
                 val pattern = Pattern.compile("(.*?):")
                 val matcher = pattern.matcher(section)
 
                 val sectionItemId = SqlLitUtils.generateUuid()
-                if (matcher.find() && section != null) {
-                    val itemCode = matcher.group(1).replace("\\s+".toRegex(), "")
-                    if (!Db.getSectionItemDao().checkIfSectionitemsExist(itemCode))
-                        Db.getSectionItemDao().insertSectionitem(
-                            section,
-                            itemCode,
-                            sectionItemId
-                        )
+                if (matcher.find() && section.isNotEmpty()) {
+                    val itemCode = matcher.group(1)?.replace("\\s+".toRegex(), "")
+                    if (itemCode != null) {
+                        if (!Db.getSectionItemDao().checkIfSectionitemsExist(itemCode))
+                            Db.getSectionItemDao().insertSectionitem(
+                                section,
+                                itemCode,
+                                sectionItemId
+                            )
+                    } else {
+                        Timber.e("itemCode is null")
+                    }
                 }
 
             }
@@ -529,15 +317,15 @@ class OfflineDataRepository(
             if (!Db.getWorkStepDao().checkWorkFlowStepExistsWorkCode(step_code))
                 Db.getWorkStepDao().insertStepsCode(step_code, actId)
 
-            for (desccri in workStateDescriptions.iterator()) {
-                if (!Db.getWorkStepDao().checkWorkFlowStepExistsDesc(desccri))
-                    Db.getWorkStepDao().updateStepsDesc(desccri, step_code)
+            for (description in workStateDescriptions.iterator()) {
+                if (!Db.getWorkStepDao().checkWorkFlowStepExistsDesc(description))
+                    Db.getWorkStepDao().updateStepsDesc(description, step_code)
             }
         }
 
         if (contracts.isNotEmpty()) {
             val validContracts = contracts.filter { contract ->
-                contract.projects != null && !contract.contractId.isNullOrBlank()
+                contract.projects != null && !contract.contractId.isBlank()
             }
                 .distinctBy { contract -> contract.contractId }
             for (contract in validContracts) {
@@ -546,180 +334,146 @@ class OfflineDataRepository(
 
                 val validProjects =
                     contract.projects?.filter { project ->
-                        !project.projectId.isNullOrBlank()
+                        !project.projectId.isBlank()
                     }?.distinctBy { project -> project.projectId }
 
                 if (validProjects != null) {
                     for (project in validProjects) {
-                            if (Db.getProjectDao().checkProjectExists(project.projectId)) {
-                                Timber.i("Contract: ${contract.descr} (${contract.contractId}) ProjectId: ${project.descr} (${project.projectId}) -> Duplicated")
-                                continue
-                            } else {
-                                try {
-                                    Db.getProjectDao().insertProject(
-                                        project.projectId,
-                                        project.descr,
-                                        project.endDate,
-                                        project.items,
-                                        project.projectCode,
-                                        project.projectMinus,
-                                        project.projectPlus,
-                                        project.projectSections,
-                                        project.voItems,
-                                        contract.contractId
-                                    )
-                                } catch (ex: Exception) {
-                                    Timber.e(
-                                        ex,
-                                        "Contract: ${contract.descr} (${contract.contractId}) ProjectId: ${project.descr} (${project.projectId}) -> ${ex.message}"
-                                    )
-                                }
+                        if (Db.getProjectDao().checkProjectExists(project.projectId)) {
+                            Timber.i("Contract: ${contract.descr} (${contract.contractId}) ProjectId: ${project.descr} (${project.projectId}) -> Duplicated")
+                            continue
+                        } else {
+                            try {
+                                Db.getProjectDao().insertProject(
+                                    project.projectId,
+                                    project.descr,
+                                    project.endDate,
+                                    project.items,
+                                    project.projectCode,
+                                    project.projectMinus,
+                                    project.projectPlus,
+                                    project.projectSections,
+                                    project.voItems,
+                                    contract.contractId
+                                )
+                            } catch (ex: Exception) {
+                                Timber.e(
+                                    ex,
+                                    "Contract: ${contract.descr} (${contract.contractId}) ProjectId: ${project.descr} (${project.projectId}) -> ${ex.message}"
+                                )
                             }
-                            if (project.items != null) {
-                                val distinctItems = project.items.distinctBy { item -> item.itemId }
-                                for (item in distinctItems) {
-                                    if (Db.getProjectItemDao()
-                                            .checkItemExistsItemId(item.itemId)
-                                    ) {
-                                        continue
-                                    } else {
-                                        try {
-                                            val pattern = Pattern.compile("(.*?)\\.")
-                                            val matcher = pattern.matcher(item.itemCode)
-                                            if (matcher.find()) {
-                                                val itemCode = matcher.group(1) + "0"
-                                                //  Lets Get the ID Back on Match
-                                                val sectionItemId = Db.getSectionItemDao()
-                                                    .getSectionItemId(
-                                                        itemCode.replace(
-                                                            "\\s+".toRegex(),
-                                                            ""
-                                                        )
-                                                    )
-
-                                                Db.getProjectItemDao().insertItem(
-                                                    itemId = item.itemId,
-                                                    itemCode = item.itemCode,
-                                                    descr = item.descr,
-                                                    itemSections = item.itemSections,
-                                                    tenderRate = item.tenderRate,
-                                                    uom = item.uom,
-                                                    workflowId = item.workflowId,
-                                                    sectionItemId = sectionItemId,
-                                                    quantity = item.quantity,
-                                                    estimateId = item.estimateId,
-                                                    projectId = project.projectId
-                                                )
-                                            }
-                                        } catch (ex: Exception) {
-                                            Timber.e(ex, "ItemId: ${item.itemId} -> ${ex.message}")
-                                        }
-                                    }
-
-                                }
-                            }
-
-                            if (project.projectSections != null) {
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                    prefs.savelastSavedAt(LocalDateTime.now().toString())
-                                }
-                                for (section in project.projectSections) { //project.projectSections
-                                    if (!Db.getProjectSectionDao()
-                                            .checkSectionExists(section.sectionId)
-                                    )
-                                        try {
-                                            Db.getProjectSectionDao().insertSection(
-                                                section.sectionId,
-                                                section.route,
-                                                section.section,
-                                                section.startKm,
-                                                section.endKm,
-                                                section.direction,
-                                                project.projectId
-                                            )
-                                        } catch (ex: Exception) {
-                                            Timber.e(
-                                                ex,
-                                                "ProjectSectionItemId ${section.sectionId} -> ${ex.message}"
-                                            )
-                                        }
-                                }
-                            }
-
-                            if (project.voItems != null) {
-                                for (voItem in project.voItems) { //project.voItems
-                                    if (!Db.getVoItemDao().checkIfVoItemExist(voItem.projectVoId))
-                                        try {
-                                            Db.getVoItemDao().insertVoItem(
-                                                voItem.projectVoId,
-                                                voItem.itemCode,
-                                                voItem.voDescr,
-                                                voItem.descr,
-                                                voItem.uom,
-                                                voItem.rate,
-                                                voItem.projectItemId,
-                                                voItem.contractVoId,
-                                                voItem.contractVoItemId,
-                                                project.projectId
-                                            )
-                                        } catch (ex: Exception) {
-                                            Timber.e(
-                                                ex,
-                                                "VoItemProjectVoId: ${voItem.projectVoId} -> ${ex.message}"
-                                            )
-                                        }
-                                }
-                            }
-
                         }
+                        if (project.items != null) {
+                            val distinctItems = project.items.distinctBy { item -> item.itemId }
+                            for (item in distinctItems) {
+                                if (Db.getProjectItemDao()
+                                        .checkItemExistsItemId(item.itemId)
+                                ) {
+                                    continue
+                                } else {
+                                    try {
+                                        val pattern = Pattern.compile("(.*?)\\.")
+                                        val matcher = pattern.matcher(item.itemCode)
+                                        if (matcher.find()) {
+                                            val itemCode = "${matcher.group(1)}0"
+                                            //  Let's Get the ID Back on Match
+                                            val sectionItemId = Db.getSectionItemDao()
+                                                .getSectionItemId(
+                                                    itemCode.replace(
+                                                        "\\s+".toRegex(),
+                                                        ""
+                                                    )
+                                                )
+
+                                            Db.getProjectItemDao().insertItem(
+                                                itemId = item.itemId,
+                                                itemCode = item.itemCode,
+                                                descr = item.descr,
+                                                itemSections = item.itemSections,
+                                                tenderRate = item.tenderRate,
+                                                uom = item.uom,
+                                                workflowId = item.workflowId,
+                                                sectionItemId = sectionItemId,
+                                                quantity = item.quantity,
+                                                estimateId = item.estimateId,
+                                                projectId = project.projectId
+                                            )
+                                        }
+                                    } catch (ex: Exception) {
+                                        Timber.e(ex, "ItemId: ${item.itemId} -> ${ex.message}")
+                                    }
+                                }
+
+                            }
+                        }
+
+                        if (project.projectSections != null) {
+                            // TODO: Fix isFetchNeeded for Time and Offline Mode
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                prefs.savelastSavedAt(LocalDateTime.now().toString())
+                            }
+                            for (section in project.projectSections) { //project.projectSections
+                                if (!Db.getProjectSectionDao()
+                                        .checkSectionExists(section.sectionId)
+                                )
+                                    try {
+                                        Db.getProjectSectionDao().insertSection(
+                                            section.sectionId,
+                                            section.route,
+                                            section.section,
+                                            section.startKm,
+                                            section.endKm,
+                                            section.direction,
+                                            project.projectId
+                                        )
+                                    } catch (ex: Exception) {
+                                        Timber.e(
+                                            ex,
+                                            "ProjectSectionItemId ${section.sectionId} -> ${ex.message}"
+                                        )
+                                    }
+                            }
+                        }
+
+                        if (project.voItems != null) {
+                            for (voItem in project.voItems) { //project.voItems
+                                if (!Db.getVoItemDao().checkIfVoItemExist(voItem.projectVoId))
+                                    try {
+                                        Db.getVoItemDao().insertVoItem(
+                                            voItem.projectVoId,
+                                            voItem.itemCode,
+                                            voItem.voDescr,
+                                            voItem.descr,
+                                            voItem.uom,
+                                            voItem.rate,
+                                            voItem.projectItemId,
+                                            voItem.contractVoId,
+                                            voItem.contractVoItemId,
+                                            project.projectId
+                                        )
+                                    } catch (ex: Exception) {
+                                        Timber.e(
+                                            ex,
+                                            "VoItemProjectVoId: ${voItem.projectVoId} -> ${ex.message}"
+                                        )
+                                    }
+                            }
+                        }
+
                     }
+                }
             }
-        }
-    }
-
-    private fun <T> MutableLiveData<T>.postValue(
-        direction: String,
-        linearId: String,
-        pointLocation: Double,
-        sectionId: Int,
-        projectId: String?,
-        jobId: String?,
-        item: ItemDTOTemp?
-    ) {
-        return saveRouteSectionPoint(
-            direction,
-            linearId,
-            pointLocation,
-            sectionId,
-            projectId,
-            jobId
-        )
-    }
-
-    private fun saveRouteSectionPoint(
-        direction: String,
-        linearId: String,
-        pointLocation: Double,
-        sectionId: Int,
-        projectId: String?,
-        jobId: String?
-    ) {
-        if (linearId != null && !Db.getSectionPointDao()
-                .checkSectionExists(sectionId, projectId, jobId)
-        ) {
-            Db.getSectionPointDao()
-                .insertSection(direction, linearId, pointLocation, sectionId, projectId, jobId)
         }
     }
 
     private fun saveWorkFlowsInfo(workFlows: WorkFlowsDTO) {
         Coroutines.io {
+            // TODO: Fix isFetchNeeded for Time and Offline Mode
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 prefs.savelastSavedAt(LocalDateTime.now().toString())
             }
-            if (workFlows != null)
-                Db.getWorkflowsDao().insertWorkFlows(workFlows)
-            if (workFlows.workflows != null) {
+            Db.getWorkflowsDao().insertWorkFlows(workFlows)
+            if (workFlows.workflows.isNotEmpty()) {
                 for (workFlow in workFlows.workflows) {
                     if (!Db.getWorkFlowDao().checkWorkFlowExistsWorkflowID(workFlow.workflowId))
                         Db.getWorkFlowDao().insertWorkFlow(workFlow)
@@ -743,17 +497,15 @@ class OfflineDataRepository(
                 }
             }
 
-            if (workFlows.activities != null) {
+            if (workFlows.activities.isNotEmpty()) {
                 for (activity in workFlows.activities) {
                     Db.getActivityDao().insertActivitys(activity)
-//                    Db.getActivityDao().insertActivity( activity.actId,  activity.actTypeId, activity.approvalId, activity.sContentId,  activity.actName, activity.descr )
                 }
             }
 
-            if (workFlows.infoClasses != null) {
+            if (workFlows.infoClasses.isNotEmpty()) {
                 for (infoClass in workFlows.infoClasses) {
                     Db.getInfoClassDao().insertInfoClasses(infoClass)
-//                    Db.getInfoClassDao().insertInfoClass(infoClass.sLinkId, infoClass.sInfoClassId,  infoClass.wfId)
                 }
             }
         }
@@ -956,7 +708,7 @@ class OfflineDataRepository(
                                         jobItemMeasure.estimateId!!
                                     )
 //                            job.setMeasureActId(jobItemMeasure.actId)
-                                    if (jobItemMeasure.jobItemMeasurePhotos != null) {
+                                    if (jobItemMeasure.jobItemMeasurePhotos.isNotEmpty()) {
                                         for (jobItemMeasurePhoto in jobItemMeasure.jobItemMeasurePhotos) {
                                             if (!Db.getJobItemMeasurePhotoDao()
                                                     .checkIfJobItemMeasurePhotoExists(
@@ -1037,7 +789,7 @@ class OfflineDataRepository(
                             Db.getJobItemEstimateDao()
                                 .setMeasureActId(jobItemMeasure.actId, jobItemMeasure.estimateId!!)
 //                            job.setMeasureActId(jobItemMeasure.actId)
-                            if (jobItemMeasure.jobItemMeasurePhotos != null) {
+                            if (jobItemMeasure.jobItemMeasurePhotos.isNotEmpty()) {
                                 for (jobItemMeasurePhoto in jobItemMeasure.jobItemMeasurePhotos) {
                                     if (!Db.getJobItemMeasurePhotoDao()
                                             .checkIfJobItemMeasurePhotoExists(
@@ -1073,7 +825,7 @@ class OfflineDataRepository(
         }
     }
 
-    suspend fun getPhotoForJobItemMeasure(filename: String) {
+    private suspend fun getPhotoForJobItemMeasure(filename: String) {
 
         val photoMeasure = apiRequest { api.getPhotoMeasure(filename) }
         measurePhoto.postValue(photoMeasure.photo, filename)
@@ -1090,18 +842,18 @@ class OfflineDataRepository(
             jobDataController?.setMsg(response!!.errorMessage)
     }
 
-    private fun saveWorkflowJob(workflowj: WorkflowJobDTO?) {
-        if (workflowj != null) {
-            val job = setWorkflowJobBigEndianGuids(workflowj)
+    private fun saveWorkflowJob(workflowJob: WorkflowJobDTO?) {
+        try {
+            val job = setWorkflowJobBigEndianGuids(workflowJob!!)
             insertOrUpdateWorkflowJobInSQLite(job)
-        } else {
-            Log.e("Error:", " WorkFlow Job is null")
+        } catch (ex: NullPointerException) {
+            Timber.e(ex, "Non-nullable WorkFlow Job is null.")
         }
     }
 
-    private fun saveWorkflowJob2(workflowj: WorkflowJobDTO?) {
-        if (workflowj != null) {
-            val job = setWorkflowJobBigEndianGuids(workflowj)
+    private fun saveWorkflowJob2(workflowJob: WorkflowJobDTO?) {
+        if (workflowJob != null) {
+            val job = setWorkflowJobBigEndianGuids(workflowJob)
             insertOrUpdateWorkflowJobInSQLite(job)
         }
 
@@ -1187,51 +939,10 @@ class OfflineDataRepository(
         job.postValue(jobResponse.job)
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     private suspend fun fetchContracts(userId: String) {
         val lastSavedAt = prefs.getLastSavedAt()
 
-        if (lastSavedAt == null || isFetchNeeded(LocalDateTime.parse(lastSavedAt))) {
 
-            val activitySectionsResponse =
-                apiRequest { api.activitySectionsRefresh(userId) }
-            sectionItems.postValue(activitySectionsResponse.activitySections)
-
-            val workFlowResponse = apiRequest { api.workflowsRefresh(userId) }
-            workFlow.postValue(workFlowResponse.workFlows)
-
-            val lookupResponse = apiRequest { api.lookupsRefresh(userId) }
-            lookups.postValue(lookupResponse.mobileLookups)
-
-            val toDoListGroupsResponse = apiRequest { api.getUserTaskList(userId) }
-            toDoListGroups.postValue(toDoListGroupsResponse.toDoListGroups)
-
-            val contractsResponse = apiRequest { api.refreshContractInfo(userId) }
-            conTracts.postValue(contractsResponse.contracts)
-        }
-
-    }
-
-    suspend fun getUserTaskList(): LiveData<List<ToDoListEntityDTO>> {
-
-
-        return withContext(Dispatchers.IO) {
-            val userId = Db.getUserDao().getUserID()
-            fetchUserTaskList(userId)
-            Db.getEntitiesDao().getAllEntities()
-        }
-
-
-    }
-
-    suspend fun fetchUserTaskList(userId: String) {
-
-        val toDoListGroupsResponse = apiRequest { api.getUserTaskList(userId) }
-        toDoListGroups.postValue(toDoListGroupsResponse.toDoListGroups)
-    }
-
-    private suspend fun fetchAllData(userId: String) {
-        // TODO: Redo as async calls in parallel
         val activitySectionsResponse =
             apiRequest { api.activitySectionsRefresh(userId) }
         sectionItems.postValue(activitySectionsResponse.activitySections)
@@ -1247,34 +958,89 @@ class OfflineDataRepository(
 
         val contractsResponse = apiRequest { api.refreshContractInfo(userId) }
         conTracts.postValue(contractsResponse.contracts)
+
     }
 
-    private fun isFetchNeeded(savedAt: LocalDateTime): Boolean {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            ChronoUnit.DAYS.between(savedAt, LocalDateTime.now()) > MINIMUM_INTERVAL
-        } else {
-            true
+    suspend fun getUserTaskList(): LiveData<List<ToDoListEntityDTO>> {
+
+
+        return withContext(Dispatchers.IO) {
+            val userId = Db.getUserDao().getUserID()
+            fetchUserTaskList(userId)
+            Db.getEntitiesDao().getAllEntities()
         }
+
+
     }
 
-    fun saveLookups(lookups: ArrayList<LookupDTO>?) {
-        Coroutines.io {
-            if (lookups != null) {
-                for (lookup in lookups) {
-                    if (!Db.getLookupDao().checkIfLookupExist(lookup.lookupName))
-                        Db.getLookupDao().insertLookup(lookup)
+    suspend fun fetchUserTaskList(userId: String): Int {
+        val toDoListGroupsResponse = apiRequest { api.getUserTaskList(userId) }
+        toDoListGroups.postValue(toDoListGroupsResponse.toDoListGroups)
+        return 5
+    }
 
-                    if (lookup.lookupOptions != null) {
-                        for (lookupOption in lookup.lookupOptions) {
+    suspend fun refreshActivitySections(userId: String): Int {
+        val activitySectionsResponse =
+            apiRequest { api.activitySectionsRefresh(userId) }
+        sectionItems.postValue(activitySectionsResponse.activitySections)
+        return 1
+    }
+
+    suspend fun refreshWorkflows(userId: String): Int {
+        val workFlowResponse = apiRequest { api.workflowsRefresh(userId) }
+        workFlow.postValue(workFlowResponse.workFlows)
+        return 2
+    }
+
+    suspend fun refreshLookups(userId: String): Int {
+        val lookupResponse = apiRequest { api.lookupsRefresh(userId) }
+        lookups.postValue(lookupResponse.mobileLookups)
+        return 3
+    }
+
+    suspend fun refreshContractInfo(userId: String): Int {
+        val contractsResponse = apiRequest { api.refreshContractInfo(userId) }
+        conTracts.postValue(contractsResponse.contracts)
+        return 4
+    }
+
+    private suspend fun fetchAllData(userId: String) {
+        // TODO: Redo as async calls in parallel
+
+
+        refreshActivitySections(userId)
+
+        refreshWorkflows(userId)
+
+        refreshLookups(userId)
+
+        fetchUserTaskList(userId)
+
+        refreshContractInfo(userId)
+
+    }
+
+    private fun saveLookups(lookups: ArrayList<LookupDTO>?) {
+        Coroutines.io {
+            lookups?.forEach { lookup ->
+                lookup.let {
+                    if (!Db.getLookupDao().checkIfLookupExist(it.lookupName))
+                        Db.getLookupDao().insertLookup(it)
+
+
+                    if (!lookup.lookupOptions.isNullOrEmpty()) {
+                        lookup.lookupOptions.forEach { lookupOption ->
                             if (!Db.getLookupOptionDao().checkLookupOptionExists(
                                     lookupOption.valueMember,
                                     lookup.lookupName
                                 )
                             )
+
                                 Db.getLookupOptionDao().insertLookupOption(
                                     lookupOption.valueMember, lookupOption.displayMember,
                                     lookupOption.contextMember, lookup.lookupName
                                 )
+
                         }
                     }
                 }
@@ -1334,7 +1100,7 @@ class OfflineDataRepository(
         Coroutines.io {
             Db.getJobDao().updateJob(job.trackRouteId, job.actId, job.jiNo, job.jobId)
 
-            if (job.workflowItemEstimates != null && job.workflowItemEstimates.size !== 0) {
+            if (!job.workflowItemEstimates.isNullOrEmpty()) {
                 for (jobItemEstimate in job.workflowItemEstimates) {
                     Db.getJobItemEstimateDao().updateExistingJobItemEstimateWorkflow(
                         jobItemEstimate.trackRouteId,
@@ -1342,13 +1108,14 @@ class OfflineDataRepository(
                         jobItemEstimate.estimateId
                     )
 
-                    if (jobItemEstimate.workflowEstimateWorks != null) {
+                    if (jobItemEstimate.workflowEstimateWorks.isNotEmpty()) {
                         for (jobEstimateWorks in jobItemEstimate.workflowEstimateWorks) {
                             if (!Db.getEstimateWorkDao().checkIfJobEstimateWorksExist(
                                     jobEstimateWorks.worksId
                                 )
                             )
                                 Db.getEstimateWorkDao().insertJobEstimateWorks(
+                                    // TODO: Fix this broken casting.
                                     jobEstimateWorks as JobEstimateWorksDTO
                                 ) else Db.getEstimateWorkDao().updateJobEstimateWorksWorkflow(
                                 jobEstimateWorks.worksId,
@@ -1362,7 +1129,7 @@ class OfflineDataRepository(
                     }
                 }
 
-                if (job.workflowItemMeasures != null && job.workflowItemMeasures.size !== 0) {
+                if (!job.workflowItemMeasures.isNullOrEmpty()) {
                     for (jobItemMeasure in job.workflowItemMeasures) {
                         Db.getJobItemMeasureDao().updateWorkflowJobItemMeasure(
                             jobItemMeasure.itemMeasureId,
@@ -1377,7 +1144,7 @@ class OfflineDataRepository(
 
 
             //  Place the Job Section, UPDATE OR CREATE
-            if (job.workflowJobSections != null && job.workflowJobSections.size !== 0) {
+            if (!job.workflowJobSections.isNullOrEmpty()) {
                 for (jobSection in job.workflowJobSections) {
                     if (!Db.getJobSectionDao().checkIfJobSectionExist(jobSection.jobSectionId))
                         Db.getJobSectionDao().insertJobSection(jobSection) else
@@ -1395,30 +1162,6 @@ class OfflineDataRepository(
         }
     }
 
-    private fun JobDTO.setEstimateWorksActId(actId: Int) {
-        this.WORKS_ACT_ID = actId
-    }
-
-    private fun JobDTO.setMeasureActId(actId: Int) {
-        this.MEASURE_ACT_ID = actId
-    }
-
-    private fun JobDTO.setEstimateActId(actId: Int) {
-        this.ESTIMATES_ACT_ID = actId
-    }
-
-    private fun SectionItemDTO.setDescription(activitySection: String) {
-        this.description = activitySection
-    }
-
-    private fun SectionItemDTO.setItemCode(itemCode: String) {
-        this.itemCode = itemCode
-    }
-
-    private fun SectionItemDTO.setSecctionItemId(sectionItemId: String) {
-        this.sectionItemId = sectionItemId
-    }
-
     private fun JobItemMeasureDTO.setJobNo(jiNo: String?) {
         this.jimNo = jiNo
     }
@@ -1427,7 +1170,7 @@ class OfflineDataRepository(
         saveEstimatePhoto(photo, fileName)
     }
 
-    fun saveEstimatePhoto(estimatePhoto: String?, fileName: String) {
+    private fun saveEstimatePhoto(estimatePhoto: String?, fileName: String) {
         Coroutines.io {
             if (estimatePhoto != null) {
                 PhotoUtil.createPhotoFolder(estimatePhoto, fileName)
@@ -1437,134 +1180,6 @@ class OfflineDataRepository(
 
         }
 
-    }
-
-    private fun <T> MutableLiveData<T>.postValue(
-        workflowJob: WorkflowJobDTO,
-        jobItemMeasure: ArrayList<JobItemMeasureDTO>,
-        activity: FragmentActivity?,
-        itemMeasureJob: JobDTO
-    ) {
-        if (workflowJob != null) {
-            val job = setWorkflowJobBigEndianGuids(workflowJob)
-            insertOrUpdateWorkflowJobInSQLite(job)
-            Coroutines.io {
-                val myjob = getUpdatedJob(itemMeasureJob.JobId)
-                uploadmeasueImages(jobItemMeasure, activity, myjob)
-            }
-
-        }
-    }
-
-    private fun uploadmeasueImages(
-        jobItemMeasures: ArrayList<JobItemMeasureDTO>,
-        activity: FragmentActivity?,
-        itemMeasureJob: JobDTO
-    ) {
-        val imageCounter = 1
-        var totalImages = 0
-        if (jobItemMeasures != null) {
-            for (jobItemMeasure in jobItemMeasures.iterator()) {
-                if (jobItemMeasure.jobItemMeasurePhotos != null) {
-                    for (photo in jobItemMeasure.jobItemMeasurePhotos) {
-                        if (PhotoUtil.photoExist(photo.filename!!)) {
-                            val data: ByteArray =
-                                getData(photo.filename, PhotoQuality.HIGH, activity!!)
-                            uploadmeasueImage(
-                                photo.filename,
-                                activity.getString(R.string.jpg),
-                                data,
-                                imageCounter,
-                                totalImages,
-                                itemMeasureJob,
-                                activity
-                            )
-                            totalImages++
-                        }
-                    }
-
-
-                }
-            }
-        }
-
-
-    }
-
-    private fun uploadmeasueImage(
-        filename: String,
-        extension: String,
-        photo: ByteArray,
-        imageCounter: Int,
-        totalImages: Int,
-        itemMeasureJob: JobDTO,
-        activity: FragmentActivity?
-    ) {
-
-        processImageUpload(
-            filename,
-            extension,
-            photo,
-            totalImages,
-            imageCounter,
-            itemMeasureJob,
-            activity!!
-        )
-
-    }
-
-    private fun <T> MutableLiveData<T>.postValue(
-        response: String?,
-        jobEstimateWorks: JobEstimateWorksDTO,
-        activity: FragmentActivity,
-        useR: UserDTO
-    ) {
-        if (response == null) {
-            moveJobToNextWorkflowStep(jobEstimateWorks, useR)
-        }
-    }
-
-    private fun moveJobToNextWorkflowStep(
-        jobEstimateWorks: JobEstimateWorksDTO,
-        useR: UserDTO
-    ) {
-        if (jobEstimateWorks.trackRouteId == null) {
-            throw Exception("Error: trackRouteId is null")
-        } else {
-            jobEstimateWorks.setTrackRouteId(DataConversion.toLittleEndian(jobEstimateWorks.trackRouteId))
-            val direction: Int = WorkflowDirection.NEXT.value
-            val trackRouteId: String = jobEstimateWorks.trackRouteId
-            val description = "work step done"
-
-            Coroutines.io {
-                val workflowMoveResponse = apiRequest {
-                    api.getWorkflowMove(
-                        useR.userId,
-                        trackRouteId,
-                        description,
-                        direction
-                    )
-                }
-                workflowJ.postValue(workflowMoveResponse.workflowJob)
-                workflows.postValue(workflowMoveResponse.toDoListGroups)
-            }
-
-
-        }
-    }
-
-    private fun <T> MutableLiveData<T>.postValue(
-        workflowj: WorkflowJobDTO,
-        job: JobDTO,
-        activity: FragmentActivity
-    ) {
-//        Coroutines.io {
-        if (workflowj != null) {
-            val createJob = setWorkflowJobBigEndianGuids(workflowj)
-            insertOrUpdateWorkflowJobInSQLite(createJob)
-            uploadcreateJobImages(job, activity)
-        }
-//        }
     }
 
     suspend fun getUpdatedJob(jobId: String): JobDTO {
@@ -1583,7 +1198,7 @@ class OfflineDataRepository(
 
                 jie.estimateId = DataConversion.toBigEndian(jie.estimateId)!!
                 jie.trackRouteId = DataConversion.toBigEndian(jie.trackRouteId)!!
-                //  Lets go through the WorkFlowEstimateWorks
+                //  Let's go through the WorkFlowEstimateWorks
                 for (wfe in jie.workflowEstimateWorks) {
                     wfe.trackRouteId = DataConversion.toBigEndian(wfe.trackRouteId)!!
                     wfe.worksId = DataConversion.toBigEndian(wfe.worksId)!!
@@ -1611,55 +1226,12 @@ class OfflineDataRepository(
         return job
     }
 
-    private fun uploadcreateJobImages(packagejob: JobDTO, activity: FragmentActivity) {
-        var imageCounter = 1
-        var totalImages = 0
-
-
-        when {
-            packagejob.JobItemEstimates != null -> {
-                if (packagejob.JobItemEstimates!!.isNotEmpty()) {
-                    for (jobItemEstimate in packagejob.JobItemEstimates!!) {
-                        if (jobItemEstimate.jobItemEstimatePhotos != null && jobItemEstimate.jobItemEstimatePhotos!!.size > 0) {
-                            val photos: Array<JobItemEstimatesPhotoDTO> =
-                                arrayOf<JobItemEstimatesPhotoDTO>(
-                                    jobItemEstimate.jobItemEstimatePhotos!![0],
-                                    jobItemEstimate.jobItemEstimatePhotos!![1]
-                                )
-                            for (jobItemEstimatePhoto in photos) {
-                                if (PhotoUtil.photoExist(jobItemEstimatePhoto.filename)) {
-                                    Log.d("x-", "UploadRrImage $imageCounter")
-                                    uploadRrmImage(
-                                        jobItemEstimatePhoto.filename,
-                                        PhotoQuality.HIGH,
-                                        imageCounter,
-                                        totalImages,
-                                        packagejob,
-                                        activity
-                                    )
-                                    imageCounter++
-                                } else {
-                                    Log.d("x-", "Error: photo filename is empty!")
-                                }
-                            }
-                        } else {
-                            Log.d("x-", "Error: photos are empty!")
-                        }
-                    }
-                }
-            }
-            else -> {
-                Log.d("x-", "Error: no job item estimates.")
-            }
-        }
-    }
-
     private fun uploadRrmImage(
         filename: String,
         photoQuality: PhotoQuality,
         imageCounter: Int,
         totalImages: Int,
-        packagejob: JobDTO,
+        packageJob: JobDTO,
         activity: FragmentActivity
     ) {
 
@@ -1670,7 +1242,7 @@ class OfflineDataRepository(
             data,
             totalImages,
             imageCounter,
-            packagejob,
+            packageJob,
             activity
         )
     }
@@ -1682,7 +1254,6 @@ class OfflineDataRepository(
         val bitmap =
             PhotoUtil.getPhotoBitmapFromFile(activity.applicationContext, uri, photoQuality)
         return PhotoUtil.getCompressedPhotoWithExifInfo(
-            activity.applicationContext,
             bitmap!!,
             filename
         )
@@ -1694,27 +1265,26 @@ class OfflineDataRepository(
         photo: ByteArray,
         totalImages: Int,
         imageCounter: Int,
-        packagejob: JobDTO,
+        packageJob: JobDTO,
         activity: FragmentActivity
     ) {
 
         Coroutines.io {
-            val imagedata = JsonObject()
-            imagedata.addProperty("Filename", filename)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                imagedata.addProperty("ImageByteArray", Base64.getEncoder().encodeToString(photo))
-            }
-            imagedata.addProperty("ImageFileExtension", extension)
-            Log.e("JsonObject", "Json string $imagedata")
+            val imageData = JsonObject()
+            imageData.addProperty("Filename", filename)
+            imageData.addProperty("ImageByteArray", PhotoUtil.encode64Pic(photo))
+            imageData.addProperty("ImageFileExtension", extension)
+            Timber.d("ImageDate: $imageData")
 
-            val uploadImageResponse = apiRequest { api.uploadRrmImage(imagedata) }
-            photoupload.postValue(uploadImageResponse.errorMessage)
+            val uploadImageResponse = apiRequest { api.uploadRrmImage(imageData) }
+            photoUpload.postValue(uploadImageResponse.errorMessage)
             if (totalImages <= imageCounter)
                 Coroutines.io {
-                    moveJobToNextWorkflow(packagejob, activity)
+                    moveJobToNextWorkflow(packageJob, activity)
                 }
         }
     }
+
 
     private fun moveJobToNextWorkflow(
         job: JobDTO,
@@ -1745,50 +1315,6 @@ class OfflineDataRepository(
         }
     }
 
-    private fun JobItemMeasureDTO.setSelectedItemUom(selectedItemUom: String?) {
-        this.selectedItemUom = selectedItemUom
-    }
-
-    private fun JobItemMeasureDTO.setMeasureDate(measureDate: Date) {
-        this.measureDate = measureDate.toString()
-    }
-
-    private fun JobItemMeasureDTO.setLineAmount(lineAmount: Double) {
-        this.lineAmount = lineAmount
-    }
-
-    private fun JobItemMeasureDTO.setCpa(cpa: Int) {
-        this.cpa = cpa
-    }
-
-    private fun JobItemMeasureDTO.setRecordSynchStateId(recordSynchStateId: Int) {
-        this.recordSynchStateId = recordSynchStateId
-    }
-
-    private fun JobItemMeasureDTO.setRecordVersion(recordVersion: Int) {
-        this.recordVersion = recordVersion
-    }
-
-    private fun JobItemMeasureDTO.setJobDirectionId(jobDirectionId: Int) {
-        this.jobDirectionId = jobDirectionId
-    }
-
-    private fun JobItemMeasureDTO.setEndKm(endKm: Double) {
-        this.endKm = endKm
-    }
-
-    private fun JobItemMeasureDTO.setStartKm(startKm: Double) {
-        this.startKm = startKm
-    }
-
-    private fun JobItemMeasureDTO.setLineRate(lineRate: Double) {
-        this.lineRate = lineRate
-    }
-
-    private fun JobItemMeasureDTO.setQty(quantity: Double) {
-        this.qty = quantity
-    }
-
     private fun JobItemMeasurePhotoDTO.setPhotoPath(photoPath: String) {
         this.photoPath = photoPath
     }
@@ -1799,14 +1325,6 @@ class OfflineDataRepository(
 
     private fun JobItemEstimatesPhotoDTO.setPhotoPath(photoPath: String) {
         this.photoPath = photoPath
-    }
-
-    private fun JobDTO.setRoute(route: String?) {
-        this.Route = route!!
-    }
-
-    private fun JobDTO.setDescr(descr: String?) {
-        this.Descr = descr
     }
 
     private fun JobDTO.setJobId(toBigEndian: String?) {
@@ -1923,83 +1441,6 @@ class OfflineDataRepository(
 
     private operator fun <T> LiveData<T>.not(): Boolean {
         return true
-    }
-
-    fun deleteItemMeasurefromList(itemMeasureId: String) {
-        Coroutines.io {
-            Db.getJobItemMeasureDao().deleteItemMeasurefromList(itemMeasureId)
-        }
-    }
-
-    fun deleteItemMeasurephotofromList(itemMeasureId: String) {
-        Coroutines.io {
-            Db.getJobItemMeasurePhotoDao().deleteItemMeasurephotofromList(itemMeasureId)
-        }
-    }
-
-    fun deleteItemfromList(itemId: String) {
-        Coroutines.io {
-            Db.getItemDaoTemp().deleteItemfromList(itemId)
-        }
-    }
-
-    suspend fun createEstimateWorksPhoto(
-        estimateWorksPhotos: ArrayList<JobEstimateWorksPhotoDTO>,
-        itemEstiWorks: JobEstimateWorksDTO
-    ) {
-        Coroutines.io {
-            if (estimateWorksPhotos != null) {
-                for (estimateWorksPhoto in estimateWorksPhotos) {
-                    if (!Db.getEstimateWorkPhotoDao().checkIfEstimateWorksPhotoExist(
-                            estimateWorksPhoto.filename
-                        )
-                    ) {
-                        Db.getEstimateWorkPhotoDao().insertEstimateWorksPhoto(estimateWorksPhoto)
-                    } // else {
-//                Db.getEstimateWorkPhotoDao().updateExistingEstimateWorksPhoto(estimateWorksPhoto, estimatId)
-                    // }
-
-                }
-                Db.getEstimateWorkDao().updateJobEstimateWorkForEstimateID(
-                    itemEstiWorks.jobEstimateWorksPhotos!!,
-                    itemEstiWorks.estimateId
-                )
-            }
-
-        }
-
-    }
-
-    private fun SaveMeasurementResponse.getWorkflowJob(): WorkflowJobDTO {
-        return workflowJob
-    }
-
-    private fun JobResponse.getWorkflowJob(): WorkflowJobDTO {
-        return workflowJob
-    }
-
-    private fun JobItemMeasureDTO.setItemMeasurePhotoDTO(jobItemMeasurePhotoDTO: ArrayList<JobItemMeasurePhotoDTO>) {
-        this.jobItemMeasurePhotos = jobItemMeasurePhotoDTO
-    }
-
-    private fun JobItemMeasureDTO.setJob(jobForItemEstimate: JobDTO) {
-        this.job = jobForItemEstimate
-    }
-
-    private fun JobItemMeasureDTO.setJobItemEstimate(selectedJobItemEstimate: JobItemEstimateDTO) {
-        this.jobItemEstimate = selectedJobItemEstimate
-    }
-
-    private fun JobItemMeasureDTO.setDesc(nothing: Nothing?) {
-        this.entityDescription = nothing
-    }
-
-    private fun JobItemMeasureDTO.setApproveldate(nothing: Nothing?) {
-        this.approvalDate = nothing
-    }
-
-    private fun JobItemMeasureDTO.setActId(actId: Int) {
-        this.actId = actId
     }
 
     companion object {

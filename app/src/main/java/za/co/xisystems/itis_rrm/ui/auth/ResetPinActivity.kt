@@ -26,7 +26,7 @@ private const val PERMISSION_REQUEST = 10
 
 class ResetPinActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runnable{
     companion object{
-        val TAG: String = RegisterPinActivity::class.java.simpleName
+        val TAG: String = ResetPinActivity::class.java.simpleName
     }
 
     override val kodein by kodein()
@@ -39,7 +39,7 @@ class ResetPinActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runna
         super.onCreate(savedInstanceState)
         appContext = this
 
-        if ( startPermissionRequest(appContext.applicationContext, permissions)){
+        if (startPermissionRequest(permissions)) {
             toast("Permissions Are already provided ")
         }else{
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -98,7 +98,7 @@ class ResetPinActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runna
                    val requestAgain = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                        shouldShowRequestPermissionRationale(permissions[i])
                    } else {
-                       TODO("VERSION.SDK_INT < M")
+                       false
                    }
                    if (requestAgain){
                        toast("Permission Denied")
@@ -112,7 +112,7 @@ class ResetPinActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runna
         }
     }
 
-    private fun startPermissionRequest(context: Context, permissions: Array<String>): Boolean {
+    private fun startPermissionRequest(permissions: Array<String>): Boolean {
         var allAccess = true
         for (i in permissions.indices){
             if(checkCallingOrSelfPermission(permissions[i]) == PackageManager.PERMISSION_DENIED){
@@ -140,10 +140,10 @@ class ResetPinActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runna
         hideKeyboard()
     }
 
-    override fun onSuccess(user:UserDTO) {
+    override fun onSuccess(userDTO: UserDTO) {
             loading.hide()
 
-        toast("You are logged in as ${user.userName}")
+        toast("You are logged in as ${userDTO.userName}")
     }
 
     override fun onFailure(message: String) {
@@ -153,9 +153,7 @@ class ResetPinActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runna
     }
 
 
-
-
-    override fun onSignOut(user: UserDTO) {
+    override fun onSignOut(userDTO: UserDTO) {
 
     }
 

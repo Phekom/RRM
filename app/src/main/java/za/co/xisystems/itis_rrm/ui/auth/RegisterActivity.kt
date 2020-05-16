@@ -52,9 +52,10 @@ class RegisterActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runna
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         appContext = this
-        if ( startPermissionRequest(appContext.applicationContext, permissions)){
+        if (startPermissionRequest(permissions)) {
             toast("Permissions already provided.")
         }else{
+            // The only fallback from Marshmallow is to grant all permissions
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 requestPermissions(permissions, PERMISSION_REQUEST)
             }
@@ -132,7 +133,8 @@ class RegisterActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runna
                    val requestAgain = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                        shouldShowRequestPermissionRationale(permissions[i])
                    } else {
-                       TODO("VERSION.SDK_INT < M")
+                       // Fallback granting all permissions
+                       false
                    }
                    if (requestAgain){
                        toast("Permission Denied")
@@ -146,7 +148,7 @@ class RegisterActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runna
         }
     }
 
-    private fun startPermissionRequest(context: Context, permissions: Array<String>): Boolean {
+    private fun startPermissionRequest(permissions: Array<String>): Boolean {
         var allAccess = true
         for (i in permissions.indices){
             if(checkCallingOrSelfPermission(permissions[i]) == PackageManager.PERMISSION_DENIED){
@@ -179,9 +181,9 @@ class RegisterActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runna
         hideKeyboard()
     }
 
-    override fun onSuccess(user:UserDTO) {
+    override fun onSuccess(userDTO: UserDTO) {
             loading.hide()
-        toast("You are logged in as ${user.userName}")
+        toast("You are logged in as ${userDTO.userName}")
     }
 
     override fun onFailure(message: String) {
@@ -197,7 +199,7 @@ class RegisterActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runna
         return netInfo != null && netInfo.isConnectedOrConnecting
     }
 
-    override fun onSignOut(user: UserDTO) {
+    override fun onSignOut(userDTO: UserDTO) {
         // TODO: Implement sign-out message
     }
 
