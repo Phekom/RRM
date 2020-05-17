@@ -3,7 +3,6 @@ package za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.measure_approval
 import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
@@ -132,7 +131,7 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
 
     private fun moveJobToNextWorkflow(workflowDirection : WorkflowDirection) {
         Coroutines.main {
-            val messages = arrayOf(
+            arrayOf(
                 getString(R.string.moving_to_next_step_in_workflow),
                 getString(R.string.please_wait)
             )
@@ -171,7 +170,7 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
             prog.show()
             val submit =
                 approveViewModel.processWorkflowMove(userId, trackRouteId, description, direction)
-            if (submit.isNotEmpty()) {
+            if (!submit.isEmpty()) {
                 prog.dismiss()
                 toast(submit)
             } else {
@@ -194,20 +193,15 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
         }
     }
 
-
     private fun getMeasureItems(job: ApproveMeasureItem) {
         Coroutines.main {
             val measurements = approveViewModel.getJobMeasureItemsForJobId(job.jobItemMeasureDTO.jobId, ActivityIdConstants.MEASURE_COMPLETE)
-            measurements.observe(viewLifecycleOwner, Observer { job_s ->
-                val measureItems = job_s.distinctBy {
-                    it.jobId
-                }
+            measurements.observe(viewLifecycleOwner, Observer { measureItems ->
+                val allData = measureItems.count()
 
-                toast(job_s.size.toString())
-                initRecyclerView(measureItems.toMeasureItem())
-
+                if (allData == measureItems.size)
+                    initRecyclerView(measureItems.toMeasureItem())
             })
-
         }
     }
 
@@ -233,11 +227,5 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
             MeasurementsItem(approvedJobItem, approveViewModel, activity)
         }
     }
-
-    // TODO: Rename method, update argument and hook method into UI event
-    fun onButtonPressed(uri: Uri) {
-//        listener?.onFragmentInteraction(uri)
-    }
-
 
 }

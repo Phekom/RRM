@@ -273,8 +273,7 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
         val myList = jobArrayList
 
         Coroutines.main {
-            createViewModel.sectionProjectItem.value = item
-//            createViewModel.project_Rate.value = selectRte
+            createViewModel.setSectionProjectItem(item)
         }
 
         Navigation.findNavController(view)

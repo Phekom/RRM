@@ -78,7 +78,7 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
             )
 
             measurements.observe(viewLifecycleOwner, Observer { job_s ->
-                val measure_items = job_s.distinctBy {
+                val partCompleteHeaders = job_s.distinctBy {
                     it.jobId
                 }
                 if (job_s.isEmpty()) {
@@ -88,18 +88,18 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
                             ActivityIdConstants.JOB_ESTIMATE
                         )
                         measurement.observe(viewLifecycleOwner, Observer { jos ->
-                            val measure_items = jos.distinctBy {
+                            val estimateHeaders = jos.distinctBy {
                                 it.jobId
                             }
                             noData.visibility = View.GONE
-                            initRecyclerView(measure_items.toMeasureListItems())
+                            initRecyclerView(estimateHeaders.toMeasureListItems())
                             toast(job_s.size.toString())
                             group5_loading.visibility = View.GONE
                         })
                     }
                 } else {
                     noData.visibility = View.GONE
-                    initRecyclerView(measure_items.toMeasureListItems())
+                    initRecyclerView(partCompleteHeaders.toMeasureListItems())
                     toast(job_s.size.toString())
                     group5_loading.visibility = View.GONE
                 }
@@ -149,7 +149,6 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
         }
     }
 
-
     private fun initRecyclerView(measureListItems: List<EstimateMeasureItem>) {
         val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
             addAll(measureListItems)
@@ -163,26 +162,20 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
         groupAdapter.setOnItemClickListener { item, view ->
             Coroutines.main {
                 (item as? EstimateMeasureItem)?.let {
-                    //                    val descri = approveViewModel.getDescForProjectId(it.jobDTO.projectId!!)
-//                    val sectionId  =  approveViewModel.getProjectSectionIdForJobId(it.jobDTO.jobId)
-//                    val route  =  approveViewModel.getRouteForProjectSectionId(sectionId)
-//                    val section  =  approveViewModel.getSectionForProjectSectionId(sectionId)
-//                    sendJobtoAprove((it.jobItemEstimateDTO.jobId), view)
-                    sendJobtoApprove((it), view)
+                    sendForApproval((it), view)
                 }
 
             }
         }
     }
 
-    private fun sendJobtoApprove(
-        job: EstimateMeasureItem?,
+    private fun sendForApproval(
+        measureItem: EstimateMeasureItem,
         view: View
     ) {
-        val jobId = job
 
         Coroutines.main {
-            measureViewModel.measure_Item.value = jobId
+            measureViewModel.measure_Item.value = measureItem
         }
 
         Navigation.findNavController(view)
@@ -194,4 +187,10 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
             EstimateMeasureItem(measure_items, measureViewModel)
         }
     }
+
+    override fun onDestroyView() {
+        estimations_to_be_measured_listView.adapter = null
+        super.onDestroyView()
+    }
+
 }

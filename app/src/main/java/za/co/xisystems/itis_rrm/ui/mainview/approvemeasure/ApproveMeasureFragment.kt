@@ -3,7 +3,6 @@ package za.co.xisystems.itis_rrm.ui.mainview.approvemeasure
 import android.app.ProgressDialog
 import android.graphics.Color
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
@@ -25,7 +24,6 @@ import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
-import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.ApproveJobsFragment
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.approveMeasure_Item.ApproveMeasureItem
 import za.co.xisystems.itis_rrm.utils.*
 
@@ -167,6 +165,11 @@ class ApproveMeasureFragment : BaseFragment(R.layout.fragment_approvemeasure), K
 
             }
         }
+    }
+
+    override fun onDestroyView() {
+        approve_measurements_list.adapter = null
+        super.onDestroyView()
     }
 
     private fun sendJobToApprove(

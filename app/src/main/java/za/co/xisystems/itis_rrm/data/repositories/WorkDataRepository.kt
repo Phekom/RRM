@@ -2,7 +2,6 @@ package za.co.xisystems.itis_rrm.data.repositories
 
 //import sun.security.krb5.Confounder.bytes
 
-import android.os.Build
 import android.os.Looper
 import android.widget.Toast
 import androidx.fragment.app.FragmentActivity
@@ -217,14 +216,7 @@ class WorkDataRepository(
         Coroutines.io {
             val imagedata = JsonObject()
             imagedata.addProperty("Filename", filename)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                imagedata.addProperty("ImageByteArray", Base64.getEncoder().encodeToString(photo))
-            } else {
-                imagedata.addProperty(
-                    "ImageByteArray",
-                    android.util.Base64.encodeToString(photo, android.util.Base64.DEFAULT)
-                )
-            }
+            imagedata.addProperty("ImageByteArray", PhotoUtil.encode64Pic(photo))
             imagedata.addProperty("ImageFileExtension", extension)
             Timber.d("ImageData: $imagedata")
 
@@ -244,7 +236,6 @@ class WorkDataRepository(
         val bitmap =
             PhotoUtil.getPhotoBitmapFromFile(activity.applicationContext, uri, photoQuality)
         return PhotoUtil.getCompressedPhotoWithExifInfo(
-            activity.applicationContext,
             bitmap!!,
             filename
         )
@@ -255,7 +246,7 @@ class WorkDataRepository(
         activity: FragmentActivity,
         userId: Int
     ) {
-        if (jobEstimateWorks.trackRouteId == null) {
+        if (jobEstimateWorks.trackRouteId.isEmpty()) {
             Looper.prepare() // to be able to make toast
             Toast.makeText(activity, "Error: trackRouteId is null", Toast.LENGTH_LONG).show()
         } else {
@@ -298,7 +289,7 @@ class WorkDataRepository(
         estimateWorksItem: JobEstimateWorksDTO
     ) {
         Coroutines.io {
-            if (estimateWorksPhotos != null) {
+            if (estimateWorksPhotos.isNotEmpty()) {
                 for (estimateWorksPhoto in estimateWorksPhotos) {
                     if (!Db.getEstimateWorkPhotoDao()
                             .checkIfEstimateWorksPhotoExist(estimateWorksPhoto.filename)
@@ -379,6 +370,7 @@ class WorkDataRepository(
                             .checkIfJobEstimateWorksExist(jobEstimateWorks.worksId)
                     )
                         Db.getEstimateWorkDao().insertJobEstimateWorks(
+                            // TODO: b0rk3d - Fix this broken casting.
                             jobEstimateWorks as JobEstimateWorksDTO
                         )
                     else

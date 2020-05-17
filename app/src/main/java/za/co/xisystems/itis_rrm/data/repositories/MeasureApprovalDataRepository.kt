@@ -1,11 +1,11 @@
 package za.co.xisystems.itis_rrm.data.repositories
 
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import timber.log.Timber
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
@@ -102,9 +102,8 @@ class MeasureApprovalDataRepository(
             apiRequest { api.getWorkflowMove(userId, trackRouteId, description, direction) }
         workflowJ.postValue(workflowMoveResponse.workflowJob)
 
-//        workflows.postValue(workflowMoveResponse.toDoListGroups)
         val messages = workflowMoveResponse.errorMessage
-//          activity.getResources().getString(R.string.please_wait)
+
         return withContext(Dispatchers.IO) {
             messages
         }
@@ -181,6 +180,7 @@ class MeasureApprovalDataRepository(
                             .checkIfJobEstimateWorksExist(jobEstimateWorks.worksId)
                     )
                         Db.getEstimateWorkDao().insertJobEstimateWorks(
+                            // TODO: b0rk3d - this broken cast needs fixing.
                             jobEstimateWorks as JobEstimateWorksDTO
                         )
                     else

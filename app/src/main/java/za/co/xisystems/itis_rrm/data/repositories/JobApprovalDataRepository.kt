@@ -137,7 +137,6 @@ class JobApprovalDataRepository(
             insertOrUpdateWorkflowJobInSQLite(job!!)
         } catch (ex: NullPointerException) {
             Timber.e(ex, "Error: WorkFlow Job is null")
-            throw ex
         }
     }
 
@@ -165,6 +164,7 @@ class JobApprovalDataRepository(
                             .checkIfJobEstimateWorksExist(jobEstimateWorks.worksId)
                     )
                         Db.getEstimateWorkDao().insertJobEstimateWorks(
+                            // TODO: b0rk3d! This broken cast needs fixing.
                             jobEstimateWorks as JobEstimateWorksDTO
                         ) else
                         Db.getEstimateWorkDao().updateJobEstimateWorksWorkflow(
