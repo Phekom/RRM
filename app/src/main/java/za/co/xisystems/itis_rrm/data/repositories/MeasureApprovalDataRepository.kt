@@ -152,7 +152,7 @@ class MeasureApprovalDataRepository(
             insertOrUpdateWorkflowJobInSQLite(job)
         } else {
 
-            Log.e("Error:", " WorkFlow Job is null")
+            Timber.e("WorkFlow Job is null")
         }
     }
 

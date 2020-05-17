@@ -135,7 +135,6 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
                     Timber.e(e, e.message)
                 } catch (e: NoInternetException) {
                     ToastUtils().toastLong(activity, e.message)
-                    // snackError(this.coordinator, e.message)
                     Timber.e(e, e.message)
                 } catch (e: NoConnectivityException) {
                     ToastUtils().toastLong(activity, e.message)

@@ -118,27 +118,22 @@ class ApproveMeasureFragment : BaseFragment(R.layout.fragment_approvemeasure), K
                 try {
                     val freshJobs = approveViewModel.offlineUserTaskList.await()
                     freshJobs.observe(viewLifecycleOwner, Observer {
-                        approvem_swipe_to_refresh.isRefreshing = false
                         if (it.isEmpty()) {
                             noData.visibility = View.VISIBLE
                         }
-                        dialog.dismiss()
                     })
                 } catch (e: ApiException) {
                     ToastUtils().toastLong(activity, e.message)
-                    approvem_swipe_to_refresh.isRefreshing = false
-                    dialog.dismiss()
-                    Log.e(ApproveJobsFragment.TAG, "API Exception", e)
+                    Timber.e(e, "API Exception")
                 } catch (e: NoInternetException) {
                     ToastUtils().toastLong(activity, e.message)
-                    dialog.dismiss()
-                    approvem_swipe_to_refresh.isRefreshing = false
-                    Log.e(ApproveJobsFragment.TAG, "No Internet Connection", e)
+                    Timber.e(e, "No Internet Connection")
                 } catch (e: NoConnectivityException) {
                     ToastUtils().toastLong(activity, e.message)
+                    Timber.e(e, "Service Host Unreachable")
+                } finally {
                     dialog.dismiss()
                     approvem_swipe_to_refresh.isRefreshing = false
-                    Log.e(ApproveJobsFragment.TAG, "Service Host Unreachable", e)
                 }
             }
         }

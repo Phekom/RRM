@@ -227,7 +227,7 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
 
                 val tempItem = createItemList(it.itemDTO, itemSections)
                 saveNewItem(tempItem)
-                sendSelectedItem((it) , view,items )
+                sendSelectedItem((it), view)
             }
 
 
@@ -267,10 +267,9 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
 
     private fun sendSelectedItem(
         item: SectionProj_Item,
-        view: View,
-        jobArrayList: List<SectionProj_Item>
+        view: View
     ) {
-        val myList = jobArrayList
+
 
         Coroutines.main {
             createViewModel.setSectionProjectItem(item)
