@@ -65,8 +65,8 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
     private lateinit var estimateWorksPhotoArrayList: ArrayList<JobEstimateWorksPhotoDTO>
     private lateinit var estimateWorksArrayList: ArrayList<JobEstimateWorksDTO>
     private lateinit var estimateWorksList: ArrayList<JobEstimateWorksDTO>
-    private lateinit var estimateObject: JobItemEstimateDTO
-    private lateinit var jobObject: JobDTO
+    private lateinit var itemEstimate: JobItemEstimateDTO
+    private lateinit var itemEstimateJob: JobDTO
     private var jobitemEsti: JobItemEstimateDTO? = null
     private lateinit var itemEstiWorks: JobEstimateWorksDTO
     private lateinit var jobWorkStep: ArrayList<WF_WorkStepDTO>
@@ -76,7 +76,7 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
     var filenamePath = HashMap<String, String>()
     private lateinit var locationHelper: LocationHelper
     private var currentLocation: Location? = null
-    lateinit var userObject: UserDTO
+    lateinit var useR: UserDTO
     override fun onStart() {
         super.onStart()
         locationHelper.onStart()
@@ -136,19 +136,20 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
         } ?: throw Exception("Invalid Activity")
 
         Coroutines.main {
-            val userSubscription = workViewModel.user.await()
-            userSubscription.observe(viewLifecycleOwner, Observer { userData ->
-                userObject = userData
+            val user = workViewModel.user.await()
+            user.observe(viewLifecycleOwner, Observer { user_ ->
+                useR = user_
+//                group10_loading.visibility = View.GONE
             })
 
-            workViewModel.workItemJob.observe(viewLifecycleOwner, Observer { jobData ->
-                jobObject = jobData
+            workViewModel.workItemJob.observe(viewLifecycleOwner, Observer { estimateJob ->
+                itemEstimateJob = estimateJob
             })
 
-            workViewModel.workItem.observe(viewLifecycleOwner, Observer { estimateData ->
-                estimateObject = estimateData
+            workViewModel.workItem.observe(viewLifecycleOwner, Observer { estimate ->
+                itemEstimate = estimate
 
-                getWorkItems(estimateObject, jobObject)
+                getWorkItems(itemEstimate, itemEstimateJob)
             })
 
 
@@ -187,7 +188,7 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
 
     private fun uploadEstimateWorksItem(prog: ProgressDialog) {
         if (ServiceUtil.isNetworkConnected(requireActivity().applicationContext)) { //  Lets Send to Service
-            prog.show()
+
             itemEstiWorks.jobEstimateWorksPhotos = estimateWorksPhotoArrayList
             itemEstiWorks.jobItemEstimate = jobitemEsti
 
@@ -201,7 +202,7 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
             networkToast.setGravity(Gravity.CENTER_VERTICAL, 0, 0)
             networkToast.show()
 
-            // persistJobToDevice(itemEstiWorks, prog)
+            persistJobToDevice(itemEstiWorks, prog)
         }
     }
 
@@ -239,7 +240,7 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
 
             val newitemEstiWorks = setJobWorksLittleEndianGuids(itemEstiWorks)
             val response =
-                workViewModel.submitWorks(newitemEstiWorks, requireActivity(), jobObject)
+                workViewModel.submitWorks(newitemEstiWorks, requireActivity(), itemEstimateJob)
             if (response.isBlank()) {
                 refreshView(prog)
             } else
@@ -261,17 +262,19 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
     }
 
     private fun setJobWorksLittleEndianGuids(works: JobEstimateWorksDTO): JobEstimateWorksDTO {
-        //            for (jew in works) {
-        works.setWorksId(DataConversion.toLittleEndian(works.worksId))
-        works.setEstimateId(DataConversion.toLittleEndian(works.estimateId))
-        works.setTrackRouteId(DataConversion.toLittleEndian(works.trackRouteId))
-        if (works.jobEstimateWorksPhotos != null) {
-            for (ewp in works.jobEstimateWorksPhotos!!) {
-                ewp.setWorksId(DataConversion.toLittleEndian(ewp.worksId))
-                ewp.setPhotoId(DataConversion.toLittleEndian(ewp.photoId))
+        if (works != null) {
+//            for (jew in works) {
+            works.setWorksId(DataConversion.toLittleEndian(works.worksId))
+            works.setEstimateId(DataConversion.toLittleEndian(works.estimateId))
+            works.setTrackRouteId(DataConversion.toLittleEndian(works.trackRouteId))
+            if (works.jobEstimateWorksPhotos != null) {
+                for (ewp in works.jobEstimateWorksPhotos!!) {
+                    ewp.setWorksId(DataConversion.toLittleEndian(ewp.worksId))
+                    ewp.setPhotoId(DataConversion.toLittleEndian(ewp.photoId))
+                }
             }
-        }
 //            }
+        }
         return works
     }
 
@@ -341,7 +344,7 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
         }
     }
 
-    private fun processAndSetImage(itemEstiWorks: JobEstimateWorksDTO) =
+    private fun processAndSetImage(itemEstiWorks: JobEstimateWorksDTO) {
         try { //  Location of picture
             val currentLocation: Location? = locationHelper.getCurrentLocation()
             when (currentLocation != null) {
@@ -362,6 +365,9 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
             toast(R.string.error_getting_image)
             e.printStackTrace()
         }
+
+
+    }
 
     private fun processPhotoWorks(
         currentLocation: Location?,
@@ -527,7 +533,7 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
     private fun submitAllOutStandingEstimates(estimates: ArrayList<JobItemEstimateDTO>?) {
         // get Data from db Search for all estimates 8 and work 21 = result is int > 0  then button yes else fetch
         Coroutines.main {
-            if (!estimates.isNullOrEmpty()) {
+            if (estimates?.size != 0) {
                 val dialogBuilder: AlertDialog.Builder = AlertDialog.Builder(requireActivity())
                 dialogBuilder.setTitle(R.string.confirm)
                 dialogBuilder.setIcon(R.drawable.ic_error)
@@ -536,81 +542,90 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
                 dialogBuilder.setPositiveButton(
                     R.string.yes
                 ) { dialog, which ->
-                    Coroutines.main {
 
-                        try {
-                            workViewModel.submitCompletedEstimates(estimates)
-                        } catch (ex: Exception) {
-                            popViewOnJobSubmit(WorkflowDirection.ERROR.value, ex.message)
+                    for (jobEstimate in estimates!!.iterator()) {
+                        Coroutines.main {
+                            //                                if(jobEstimate != null){
+                            val jobItemEstimate = workViewModel.getJobItemEstimateForEstimateId(
+                                DataConversion.toBigEndian(jobEstimate.estimateId)!!
+                            )
+                            jobItemEstimate.observe(viewLifecycleOwner, Observer { jobItEstmt ->
+                                moveJobItemEstimateToNextWorkflow(
+                                    WorkflowDirection.NEXT,
+                                    jobItEstmt
+                                )
+                            })
+
                         }
-                        popViewOnJobSubmit(WorkflowDirection.NEXT.value)
+
                     }
                 }
 
                 dialogBuilder.show()
+
             }
+
         }
     }
 
-//    private fun moveJobItemEstimateToNextWorkflow(
-//        workflowDirection: WorkflowDirection,
-//        jobItEstimate: JobItemEstimateDTO?
-//    ) {
-//
-//        Coroutines.main {
-//            val user = workViewModel.user.await()
-//            user.observe(viewLifecycleOwner, Observer { user_ ->
-//
-//                Coroutines.main {
-//                    when {
-//                        user_.userId.isBlank() -> {
-//                            toast("Error: userId is null")
-//                        }
-//                        jobItEstimate?.jobId == null -> {
-//                            toast("Error: selectedJob is null")
-//                        }
-//                        else -> {
-//                            toast(jobItEstimate.jobId)
-//                            // TODO beware littleEndian conversion
-//                            val trackRouteId: String =
-//                                DataConversion.toLittleEndian(jobItEstimate.trackRouteId)!!
-//                            val direction: Int = workflowDirection.value
-//                            Coroutines.main {
-//                                val progressDialog = setDataProgressDialog(
-//                                    requireActivity(),
-//                                    getString(R.string.data_loading_please_wait)
-//                                )
-//                                progressDialog.show()
-//                                val submit = workViewModel.processWorkflowMove(
-//                                    user_.userId,
-//                                    trackRouteId,
-//                                    null,
-//                                    direction
-//                                )
-//                                progressDialog.dismiss()
-//                                if (submit.isNullOrEmpty()) {
-//                                    popViewOnJobSubmit(direction)
-//                                } else {
-//                                    toast("Problem with work submission: $submit")
-//                                }
-//
-//                            }
-//
-//                        }
-//                    }
-//                }
-//            })
-//
-//        }
-//    }
+    private fun moveJobItemEstimateToNextWorkflow(
+        workflowDirection: WorkflowDirection,
+        jobItEstimate: JobItemEstimateDTO?
+    ) {
 
-    private fun popViewOnJobSubmit(direction: Int, error: String? = null) {
+        Coroutines.main {
+            val user = workViewModel.user.await()
+            user.observe(viewLifecycleOwner, Observer { user_ ->
+
+                Coroutines.main {
+                    when {
+                        user_.userId.isBlank() -> {
+                            toast("Error: userId is null")
+                        }
+                        jobItEstimate?.jobId == null -> {
+                            toast("Error: selectedJob is null")
+                        }
+                        else -> {
+                            toast(jobItEstimate.jobId)
+                            // TODO beware littleEndian conversion
+                            val trackRouteId: String =
+                                DataConversion.toLittleEndian(jobItEstimate.trackRouteId)!!
+                            val direction: Int = workflowDirection.value
+                            Coroutines.main {
+                                val progressDialog = setDataProgressDialog(
+                                    requireActivity(),
+                                    getString(R.string.data_loading_please_wait)
+                                )
+                                progressDialog.show()
+                                val submit = workViewModel.processWorkflowMove(
+                                    user_.userId,
+                                    trackRouteId,
+                                    null,
+                                    direction
+                                )
+                                progressDialog.dismiss()
+                                if (submit.isNullOrEmpty()) {
+                                    popViewOnJobSubmit(direction)
+                                } else {
+                                    toast("Problem with work submission: $submit")
+                                }
+
+                            }
+
+                        }
+                    }
+                }
+            })
+
+        }
+    }
+
+    private fun popViewOnJobSubmit(direction: Int) {
         if (direction == WorkflowDirection.NEXT.value) {
             toast(R.string.job_approved)
         } else if (direction == WorkflowDirection.FAIL.value) {
-            toast("${getString(R.string.job_declined)} - $error")
+            toast(R.string.job_declined)
         }
-
         Intent(activity, MainActivity::class.java).also { home ->
             startActivity(home)
         }

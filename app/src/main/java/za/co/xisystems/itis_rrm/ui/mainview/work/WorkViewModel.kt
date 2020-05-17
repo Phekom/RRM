@@ -9,8 +9,8 @@ import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.WorkDataRepository
-import za.co.xisystems.itis_rrm.utils.*
-import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
+import za.co.xisystems.itis_rrm.utils.lazyDeferred
+import za.co.xisystems.itis_rrm.utils.uncaughtExceptionHandler
 
 
 class WorkViewModel(
@@ -188,50 +188,4 @@ class WorkViewModel(
         }
     }
 
-    suspend fun submitCompletedEstimates(estimates: ArrayList<JobItemEstimateDTO>) {
-        return withContext(Dispatchers.IO) {
-            try {
-                val loggedInUser = user.await().value
-                val authorized = loggedInUser?.userId?.isBlank() ?: false && loggedInUser != null
-                if (authorized) {
-                    for (jobEstimate in estimates.iterator()) {
-                        val jobItemEstimate = getJobItemEstimateForEstimateId(
-                            DataConversion.toBigEndian(jobEstimate.estimateId)!!
-                        ).value
-                        if (jobItemEstimate != null) {
-                            val processResponse = moveJobItemEstimateToNextWorkflow(
-                                WorkflowDirection.NEXT,
-                                jobItemEstimate,
-                                loggedInUser!!
-                            )
-                            if (!processResponse.isNullOrEmpty()) {
-                                throw NoDataException(processResponse)
-                            }
-                        } else {
-                            throw NoDataException("Cannot workflow unsupported estimate!")
-                        }
-                    }
-                } else {
-                    throw AuthException("User is not logged in!")
-                }
-            } catch (e: Exception) {
-                throw e
-            }
-        }
-    }
-
-    suspend fun moveJobItemEstimateToNextWorkflow(
-        workflowDirection: WorkflowDirection,
-        jobItemEstimate: JobItemEstimateDTO,
-        user: UserDTO
-    ): String? {
-        return withContext(Dispatchers.IO) {
-            processWorkflowMove(
-                user.userId,
-                DataConversion.toLittleEndian(jobItemEstimate.trackRouteId)!!,
-                null,
-                workflowDirection.value
-            )
-        }
-    }
 }
