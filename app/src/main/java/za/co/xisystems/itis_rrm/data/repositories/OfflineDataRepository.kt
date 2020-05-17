@@ -5,14 +5,11 @@ package za.co.xisystems.itis_rrm.data.repositories
 // import android.app.Activity
 import android.os.Build
 import android.os.Environment
-import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.google.gson.JsonObject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
-import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.localDB.JobDataController
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
@@ -23,10 +20,7 @@ import za.co.xisystems.itis_rrm.data.preferences.PreferenceProvider
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
-import za.co.xisystems.itis_rrm.utils.PhotoUtil.getPhotoPathFromExternalDirectory
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
-import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
-import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import java.io.File
 import java.time.LocalDateTime
 import java.util.*
@@ -175,7 +169,7 @@ class OfflineDataRepository(
         projectId: String
     ): LiveData<List<ProjectItemDTO>> {
         return withContext(Dispatchers.IO) {
-            Db.getProjectItemDao().getAllItemsForSectionItem(sectionItemId, projectId)
+            Db.getProjectItemDao().getAllItemsForSectionItemByProject(sectionItemId, projectId)
         }
     }
 
@@ -940,7 +934,6 @@ class OfflineDataRepository(
     }
 
     private suspend fun fetchContracts(userId: String) {
-        val lastSavedAt = prefs.getLastSavedAt()
 
 
         val activitySectionsResponse =
@@ -1048,7 +1041,7 @@ class OfflineDataRepository(
         }
     }
 
-    fun deleteAllData(vararg voids: Void?): Void? {
+    fun deleteAllData(): Void? {
 
         Db.run {
             getEstimateWorkDao().deleteAll()
@@ -1226,94 +1219,6 @@ class OfflineDataRepository(
         return job
     }
 
-    private fun uploadRrmImage(
-        filename: String,
-        photoQuality: PhotoQuality,
-        imageCounter: Int,
-        totalImages: Int,
-        packageJob: JobDTO,
-        activity: FragmentActivity
-    ) {
-
-        val data: ByteArray = getData(filename, photoQuality, activity)
-        processImageUpload(
-            filename,
-            activity.getString(R.string.jpg),
-            data,
-            totalImages,
-            imageCounter,
-            packageJob,
-            activity
-        )
-    }
-
-    private fun getData(
-        filename: String, photoQuality: PhotoQuality, activity: FragmentActivity
-    ): ByteArray {
-        val uri = getPhotoPathFromExternalDirectory(filename)
-        val bitmap =
-            PhotoUtil.getPhotoBitmapFromFile(activity.applicationContext, uri, photoQuality)
-        return PhotoUtil.getCompressedPhotoWithExifInfo(
-            bitmap!!,
-            filename
-        )
-    }
-
-    private fun processImageUpload(
-        filename: String,
-        extension: String,
-        photo: ByteArray,
-        totalImages: Int,
-        imageCounter: Int,
-        packageJob: JobDTO,
-        activity: FragmentActivity
-    ) {
-
-        Coroutines.io {
-            val imageData = JsonObject()
-            imageData.addProperty("Filename", filename)
-            imageData.addProperty("ImageByteArray", PhotoUtil.encode64Pic(photo))
-            imageData.addProperty("ImageFileExtension", extension)
-            Timber.d("ImageDate: $imageData")
-
-            val uploadImageResponse = apiRequest { api.uploadRrmImage(imageData) }
-            photoUpload.postValue(uploadImageResponse.errorMessage)
-            if (totalImages <= imageCounter)
-                Coroutines.io {
-                    moveJobToNextWorkflow(packageJob, activity)
-                }
-        }
-    }
-
-
-    private fun moveJobToNextWorkflow(
-        job: JobDTO,
-        activity: FragmentActivity
-    ) {
-
-        if (job.TrackRouteId == null) {
-            throw Exception("Error: trackRouteId is null")
-        } else {
-            job.setTrackRouteId(DataConversion.toLittleEndian(job.TrackRouteId))
-            val direction: Int = WorkflowDirection.NEXT.value
-            val trackRouteId: String = job.TrackRouteId!!
-            val description: String = activity.resources.getString(R.string.submit_for_approval)
-
-            Coroutines.io {
-                val workflowMoveResponse = apiRequest {
-                    api.getWorkflowMove(
-                        job.UserId.toString(),
-                        trackRouteId,
-                        description,
-                        direction
-                    )
-                }
-                workflowJ.postValue(workflowMoveResponse.workflowJob)
-                workflows.postValue(workflowMoveResponse.toDoListGroups)
-            }
-
-        }
-    }
 
     private fun JobItemMeasurePhotoDTO.setPhotoPath(photoPath: String) {
         this.photoPath = photoPath

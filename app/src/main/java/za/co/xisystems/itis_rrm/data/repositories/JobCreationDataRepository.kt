@@ -2,7 +2,6 @@ package za.co.xisystems.itis_rrm.data.repositories
 
 //import sun.security.krb5.Confounder.bytes
 
-import android.os.Build
 import android.os.Looper
 import android.widget.Toast
 import androidx.fragment.app.FragmentActivity
@@ -43,20 +42,15 @@ class JobCreationDataRepository(
     private val appDb: AppDatabase,
     private val prefs: PreferenceProvider
 ) : SafeApiRequest() {
-    companion object {
-        val TAG: String = JobCreationDataRepository::class.java.simpleName
-    }
 
 
     private val workflowJobs = MutableLiveData<WorkflowJobDTO>()
-
     private val jobDataController: JobDataController? = null
     private val workflowJ = MutableLiveData<WorkflowJobDTO>()
     private val workflowJ2 = MutableLiveData<WorkflowJobDTO>()
     private val photoUpload = MutableLiveData<String>()
     private val works = MutableLiveData<String>()
     private val routeSectionPoint = MutableLiveData<String>()
-
 
     init {
 
@@ -81,20 +75,17 @@ class JobCreationDataRepository(
         }
     }
 
-
     suspend fun getUser(): LiveData<UserDTO> {
         return withContext(Dispatchers.IO) {
             appDb.getUserDao().getUser()
         }
     }
 
-
     private fun sendMsg(uploadResponse: String?) {
         val response: UploadImageResponse? = null
         if (uploadResponse.isNullOrEmpty())
             jobDataController?.setMsg(response!!.errorMessage)
     }
-
 
     private fun saveWorkflowJob(workflowJob: WorkflowJobDTO?) {
         if (workflowJob != null) {
@@ -150,13 +141,13 @@ class JobCreationDataRepository(
         }
     }
 
-    suspend fun getAllItemsForSectionItem(
+    suspend fun getAllItemsForSectionItemByProject(
         sectionItemId: String,
         projectId: String
     ): LiveData<List<ProjectItemDTO>> {
         return withContext(Dispatchers.IO) {
 
-            appDb.getProjectItemDao().getAllItemsForSectionItem(sectionItemId, projectId)
+            appDb.getProjectItemDao().getAllItemsForSectionItemByProject(sectionItemId, projectId)
         }
     }
 
@@ -239,8 +230,7 @@ class JobCreationDataRepository(
         longitude: Double,
         useR: String,
         projectId: String?,
-        jobId: String,
-        itemCode: ItemDTOTemp?
+        jobId: String
     ): LiveData<String?> {
 
         val distance = 1
@@ -255,8 +245,7 @@ class JobCreationDataRepository(
             pointLocation = routeSectionPointResponse.pointLocation,
             sectionId = routeSectionPointResponse.sectionId,
             projectId = projectId,
-            jobId = jobId,
-            item = itemCode!!
+            jobId = jobId
         )
 
         return withContext(Dispatchers.IO) {
@@ -488,7 +477,6 @@ class JobCreationDataRepository(
         val bitmap =
             PhotoUtil.getPhotoBitmapFromFile(activity.applicationContext, uri, photoQuality)
         return PhotoUtil.getCompressedPhotoWithExifInfo(
-            activity.applicationContext,
             bitmap!!,
             filename
         )
@@ -505,15 +493,7 @@ class JobCreationDataRepository(
         Coroutines.api {
             val imageData = JsonObject()
             imageData.addProperty("Filename", filename)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                imageData.addProperty("ImageByteArray", Base64.getEncoder().encodeToString(photo))
-            } else {
-                // Generic Base64 utility
-                imageData.addProperty(
-                    "ImageByteArray",
-                    android.util.Base64.encodeToString(photo, android.util.Base64.DEFAULT)
-                )
-            }
+            imageData.addProperty("ImageByteArray", PhotoUtil.encode64Pic(photo))
             imageData.addProperty("ImageFileExtension", extension)
             Timber.d("Json Image: $imageData")
 
@@ -564,8 +544,7 @@ class JobCreationDataRepository(
         pointLocation: Double,
         sectionId: Int,
         projectId: String?,
-        jobId: String?,
-        item: ItemDTOTemp
+        jobId: String?
     ): LiveData<String?> {
         return saveRouteSectionPoint(
             direction,

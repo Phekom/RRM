@@ -1,5 +1,6 @@
 package za.co.xisystems.itis_rrm.ui.mainview.approvemeasure
 
+import android.app.ProgressDialog
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
@@ -19,6 +20,7 @@ import kotlinx.android.synthetic.main.fragment_approvemeasure.*
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
+import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
@@ -58,54 +60,59 @@ class ApproveMeasureFragment : BaseFragment(R.layout.fragment_approvemeasure), K
         approveViewModel = activity?.run {
             ViewModelProvider(this, factory).get(ApproveMeasureViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
-        val dialog =
-            setDataProgressDialog(activity!!, getString(R.string.data_loading_please_wait))
-        Coroutines.main {
 
-            try {
-                dialog.show()
-                val measurements =
+        val dialog =
+            setDataProgressDialog(requireActivity(), getString(R.string.data_loading_please_wait))
+
+        loadJobHeaders(dialog)
+
+        swipeToRefreshInit(dialog)
+    }
+
+    private fun loadJobHeaders(dialog: ProgressDialog) {
+        try {
+            dialog.show()
+            Coroutines.main {
+                val measurementsSubscription =
                     approveViewModel.getJobApproveMeasureForActivityId(ActivityIdConstants.MEASURE_COMPLETE)
-//            val measurements  = approveViewModel.getJobsMeasureForActivityId(ActivityIdConstants.ESTIMATE_MEASURE,ActivityIdConstants.MEASURE_COMPLETE,ActivityIdConstants.EST_WORKS_COMPLETE,ActivityIdConstants.JOB_APPROVED)
-//            val measurements = approveViewModel.getEntitiesListForActivityId(ActivityIdConstants.MEASURE_COMPLETE)
-//            val measurements = approveViewModel.offlinedata.await()
-                measurements.observe(viewLifecycleOwner, Observer { job_s ->
+
+                measurementsSubscription.observe(viewLifecycleOwner, Observer { measurementData ->
                     noData.visibility = GONE
-                    if (job_s.isEmpty()) {
+                    if (measurementData.isEmpty()) {
                         noData.visibility = View.VISIBLE
                     }
-                    val measure_items = job_s.distinctBy {
+                    val jobHeaders = measurementData.distinctBy {
                         it.jobId
                     }
-                    initRecyclerView(measure_items.toApproveListItems())
-                    toast(measure_items.size.toString())
+                    initRecyclerView(jobHeaders.toApproveListItems())
+                    toast(jobHeaders.size.toString())
                     group4_loading.visibility = GONE
                 })
-                dialog.dismiss()
-            } catch (e: ApiException) {
-                ToastUtils().toastLong(activity, e.message)
-                dialog.dismiss()
-                Log.e(ApproveJobsFragment.TAG, "API Exception", e)
-            } catch (e: NoInternetException) {
-                ToastUtils().toastLong(activity, e.message)
-                dialog.dismiss()
-                Log.e(ApproveJobsFragment.TAG, "No Internet Connection", e)
-            } catch (e: NoConnectivityException) {
-                ToastUtils().toastLong(activity, e.message)
-                dialog.dismiss()
-                Log.e(ApproveJobsFragment.TAG, "Service Host Unreachable", e)
             }
+        } catch (e: ApiException) {
+            ToastUtils().toastLong(activity, e.message)
+            Timber.e(e, e.message)
+        } catch (e: NoInternetException) {
+            ToastUtils().toastLong(activity, e.message)
+            Timber.e(e, e.message)
+        } catch (e: NoConnectivityException) {
+            ToastUtils().toastLong(activity, e.message)
+            Timber.e(e, e.message)
+        } finally {
+            dialog.dismiss()
         }
+    }
 
-        Coroutines.main {
-            approvem_swipe_to_refresh.setProgressBackgroundColorSchemeColor(
-                ContextCompat.getColor(
-                    context!!.applicationContext,
-                    R.color.colorPrimary
-                )
+    private fun swipeToRefreshInit(dialog: ProgressDialog) {
+        approvem_swipe_to_refresh.setProgressBackgroundColorSchemeColor(
+            ContextCompat.getColor(
+                requireContext().applicationContext,
+                R.color.colorPrimary
             )
-            approvem_swipe_to_refresh.setColorSchemeColors(Color.WHITE)
-        }
+        )
+
+        approvem_swipe_to_refresh.setColorSchemeColors(Color.WHITE)
+
 
         approvem_swipe_to_refresh.setOnRefreshListener {
             dialog.show()

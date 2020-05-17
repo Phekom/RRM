@@ -90,7 +90,7 @@ class CreateViewModel(
         projectCode.value = inProjectCode
     }
 
-    private val projectItem = MutableLiveData<ProjectItemDTO>()
+    val projectItem = MutableLiveData<ProjectItemDTO>()
     fun setProjectItem(inProjectItem: ProjectItemDTO) {
         projectItem.value = inProjectItem
     }
@@ -139,12 +139,12 @@ class CreateViewModel(
         }
     }
 
-    suspend fun getAllItemsForSectionItem(
+    suspend fun getAllItemsForSectionItemByProjectId(
         sectionItemId: String,
         projectId: String
     ): LiveData<List<ProjectItemDTO>> {
         return withContext(Dispatchers.IO) {
-            jobCreationDataRepository.getAllItemsForSectionItem(sectionItemId, projectId)
+            jobCreationDataRepository.getAllItemsForSectionItemByProject(sectionItemId, projectId)
         }
     }
 
@@ -177,7 +177,7 @@ class CreateViewModel(
     }
 
 
-    fun updateNewJob(
+    suspend fun updateNewJob(
         newjobId: String,
         startKM: Double,
         endKM: Double,
@@ -185,7 +185,7 @@ class CreateViewModel(
         newJobItemEstimatesList: ArrayList<JobItemEstimateDTO>,
         jobItemSectionArrayList: ArrayList<JobSectionDTO>
     ) {
-
+        withContext(Dispatchers.IO) {
         jobCreationDataRepository.updateNewJob(
             newjobId,
             startKM,
@@ -194,6 +194,7 @@ class CreateViewModel(
             newJobItemEstimatesList,
             jobItemSectionArrayList
         )
+    }
     }
 
     suspend fun getPointSectionData(projectId: String?): LiveData<SectionPointDTO> {//jobId: String,jobId,
@@ -230,8 +231,7 @@ class CreateViewModel(
         longitude: Double,
         useR: String,
         projectId: String?,
-        jobId: String,
-        itemCode: ItemDTOTemp?
+        jobId: String
     ): LiveData<String?> {
 
         return withContext(Dispatchers.IO) {
@@ -240,11 +240,8 @@ class CreateViewModel(
                 longitude,
                 useR,
                 projectId,
-                jobId,
-                itemCode
+                jobId
             )
-
-
         }
 
     }

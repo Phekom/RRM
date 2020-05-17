@@ -281,18 +281,10 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
                         contractIndices, //null)
                         object : SpinnerHelper.SelectionListener<ContractDTO> {
                             override fun onItemSelected(position: Int, item: ContractDTO) {
-                                if (item == null)
-                                    Toast.makeText(
-                                        context!!.applicationContext,
-                                        "Error: Contract is NULL",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                else {
-                                    selectedContract = item
-                                    setProjects(item.contractId)
-                                    Coroutines.main {
-                                        createViewModel.setContractId(item.contractId)
-                                    }
+                                selectedContract = item
+                                setProjects(item.contractId)
+                                Coroutines.main {
+                                    createViewModel.setContractId(item.contractId)
                                 }
                             }
 
@@ -327,18 +319,9 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
                     projectNmbr, //null)
                     object : SpinnerHelper.SelectionListener<ProjectDTO> {
                         override fun onItemSelected(position: Int, item: ProjectDTO) {
-
-                            if (item == null)
-                                Toast.makeText(
-                                    context!!.applicationContext,
-                                    "Error: Project is NULL",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            else {
-                                selectedProject = item
-                                Coroutines.main {
-                                    createViewModel.setProjectId(item.projectId)
-                                }
+                            selectedProject = item
+                            Coroutines.main {
+                                createViewModel.setProjectId(item.projectId)
                             }
                         }
                     })

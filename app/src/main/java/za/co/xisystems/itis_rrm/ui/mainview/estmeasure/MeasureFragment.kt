@@ -1,8 +1,8 @@
 package za.co.xisystems.itis_rrm.ui.mainview.estmeasure
 
+import android.app.ProgressDialog
 import android.graphics.Color
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
@@ -19,6 +19,7 @@ import kotlinx.android.synthetic.main.fragment_estmeasure.*
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
+import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
@@ -66,13 +67,16 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
         } ?: throw Exception("Invalid Activity")
         Coroutines.main {
             val dialog =
-                setDataProgressDialog(activity!!, getString(R.string.data_loading_please_wait))
-//            val measurements = measureViewModel.getJobMeasureForActivityId(ActivityIdConstants.ESTIMATE_MEASURE)MEASURE_PART_COMPLETE
+                setDataProgressDialog(
+                    requireActivity(),
+                    getString(R.string.data_loading_please_wait)
+                )
+
             val measurements = measureViewModel.getJobMeasureForActivityId(
                 ActivityIdConstants.ESTIMATE_MEASURE,
                 ActivityIdConstants.MEASURE_PART_COMPLETE
             )
-//            val measurements = approveViewModel.offlinedata.await()
+
             measurements.observe(viewLifecycleOwner, Observer { job_s ->
                 val measure_items = job_s.distinctBy {
                     it.jobId
@@ -102,52 +106,45 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
 
             })
 
-            estimations_swipe_to_refresh.setProgressBackgroundColorSchemeColor(
-                ContextCompat.getColor(
-                    context!!.applicationContext,
-                    R.color.colorPrimary
-                )
+            swipeToRefreshInit(dialog)
+        }
+    }
+
+    private fun swipeToRefreshInit(dialog: ProgressDialog) {
+        estimations_swipe_to_refresh.setProgressBackgroundColorSchemeColor(
+            ContextCompat.getColor(
+                requireContext().applicationContext,
+                R.color.colorPrimary
             )
-            estimations_swipe_to_refresh.setColorSchemeColors(Color.WHITE)
+        )
+        estimations_swipe_to_refresh.setColorSchemeColors(Color.WHITE)
 
-            estimations_swipe_to_refresh.setOnRefreshListener {
-                //                Coroutines.main {
-//                    val jobs = measureViewModel.offlinedatas.await()
-//                    jobs.observe(viewLifecycleOwner, Observer { works ->
-//                        estimations_swipe_to_refresh.isRefreshing = false
-//                    })
-//
-//                }
+        estimations_swipe_to_refresh.setOnRefreshListener {
+
+            Coroutines.main {
                 dialog.show()
-                Coroutines.main {
-                    try {
-                        val jobs = measureViewModel.offlineUserTaskList.await()
-                        jobs.observe(viewLifecycleOwner, Observer { works ->
-                            if (works.isEmpty()) {
-                                noData.visibility = View.VISIBLE
-                            }
-                            estimations_swipe_to_refresh.isRefreshing = false
-                            dialog.dismiss()
-                        })
-                    } catch (e: ApiException) {
-                        ToastUtils().toastLong(activity, e.message)
-                        estimations_swipe_to_refresh.isRefreshing = false
-                        dialog.dismiss()
-                        Log.e("Service-Host", "API Exception", e)
-                    } catch (e: NoInternetException) {
-                        ToastUtils().toastLong(activity, e.message)
-                        // snackError(this.coordinator, e.message)
-                        dialog.dismiss()
-                        estimations_swipe_to_refresh.isRefreshing = false
-                        Log.e("Network-Connection", "No Internet Connection", e)
-                    } catch (e: NoConnectivityException) {
-                        ToastUtils().toastLong(activity, e.message)
-                        dialog.dismiss()
-                        estimations_swipe_to_refresh.isRefreshing = false
-                        Log.e("Network-Error", "Service Host Unreachable", e)
-                    }
-
+                try {
+                    val jobs = measureViewModel.offlineUserTaskList.await()
+                    jobs.observe(viewLifecycleOwner, Observer { works ->
+                        if (works.isEmpty()) {
+                            noData.visibility = View.VISIBLE
+                        }
+                    })
+                } catch (e: ApiException) {
+                    ToastUtils().toastLong(activity, e.message)
+                    Timber.e(e, e.message)
+                } catch (e: NoInternetException) {
+                    ToastUtils().toastLong(activity, e.message)
+                    // snackError(this.coordinator, e.message)
+                    Timber.e(e, e.message)
+                } catch (e: NoConnectivityException) {
+                    ToastUtils().toastLong(activity, e.message)
+                    Timber.e(e, e.message)
+                } finally {
+                    dialog.dismiss()
+                    estimations_swipe_to_refresh.isRefreshing = false
                 }
+
             }
         }
     }

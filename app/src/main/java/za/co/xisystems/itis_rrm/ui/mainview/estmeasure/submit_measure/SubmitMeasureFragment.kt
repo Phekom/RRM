@@ -97,8 +97,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
 
             submit_measurements_button.setOnClickListener {
                 submitMeasurements(
-                    jobItemEstimate.jobId,
-                    jobItemEstimate.estimateId
+                    jobItemEstimate.jobId
                 )
 
             }
@@ -128,7 +127,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
 
     }
 
-    private fun submitMeasurements(jobId: String?, estimateId: String) {
+    private fun submitMeasurements(jobId: String?) {
         Coroutines.main {
             val jobItemMeasure =
                 measureViewModel.getJobItemMeasuresForJobIdAndEstimateId(jobId) //estimateId

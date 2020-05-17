@@ -13,6 +13,7 @@ import androidx.lifecycle.whenCreated
 import androidx.lifecycle.whenStarted
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import kotlinx.android.synthetic.main.fragment_select_item.*
@@ -183,10 +184,16 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
     }
 
 
-    //    private fun setRecyclerItems(sectionItemId: String) {
+    /**
+     * Get only the section items relevant for the section, filtered by what is relevant
+     * to the Project
+     * @param projectId String
+     * @param sectionItemId String
+     */
     private fun setRecyclerItems(projectId: String, sectionItemId: String) {
         uiScope.launch(context = uiScope.coroutineContext) {
-            val projectsItems = createViewModel.getAllItemsForSectionItem(sectionItemId, projectId)
+            val projectsItems =
+                createViewModel.getAllItemsForSectionItemByProjectId(sectionItemId, projectId)
             projectsItems.observe(viewLifecycleOwner, Observer { projectItemList ->
                 group_loading.visibility = View.GONE
                 initRecyclerView(projectItemList.toProjectItems())
@@ -210,6 +217,8 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
         item_recyclerView.apply {
             layoutManager = LinearLayoutManager(this.context)
             adapter = groupAdapter
+            adapter!!.stateRestorationPolicy =
+                RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
         }
 
         groupAdapter.setOnItemClickListener { item, view ->

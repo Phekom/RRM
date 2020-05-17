@@ -2,7 +2,6 @@ package za.co.xisystems.itis_rrm.data.repositories
 
 //import sun.security.krb5.Confounder.bytes
 
-import android.os.Build
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -107,7 +106,7 @@ class MeasureCreationDataRepository(
         itemMeasureJob: JobDTO
     ) {
         Coroutines.io {
-            if (workflowJobDTO != null) {
+            if (workflowJobDTO.jobId != null) {
                 itemMeasureJob.JobItemMeasures = jobItemMeasure
                 val measureJob = setWorkflowJobBigEndianGuids(workflowJobDTO)
                 insertOrUpdateWorkflowJobInSQLite(measureJob)
@@ -132,9 +131,9 @@ class MeasureCreationDataRepository(
     ) {
         var imageCounter = 1
         var totalImages = 0
-        if (jobItemMeasures != null) {
+        if (jobItemMeasures.isNotEmpty()) {
             for (jobItemMeasure in jobItemMeasures.iterator()) {
-                if (jobItemMeasure.jobItemMeasurePhotos != null) {
+                if (jobItemMeasure.jobItemMeasurePhotos.isNotEmpty()) {
                     totalImages += jobItemMeasure.jobItemMeasurePhotos.size
                     for (photo in jobItemMeasure.jobItemMeasurePhotos) {
                         if (PhotoUtil.photoExist(photo.filename!!)) {
@@ -164,7 +163,6 @@ class MeasureCreationDataRepository(
         val bitmap =
             PhotoUtil.getPhotoBitmapFromFile(activity.applicationContext, uri, photoQuality)
         return PhotoUtil.getCompressedPhotoWithExifInfo(
-            activity.applicationContext,
             bitmap!!,
             filename
         )
@@ -183,14 +181,7 @@ class MeasureCreationDataRepository(
         Coroutines.io {
             val imageData = JsonObject()
             imageData.addProperty("Filename", filename)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                imageData.addProperty("ImageByteArray", Base64.getEncoder().encodeToString(photo))
-            } else {
-                imageData.addProperty(
-                    "ImageByteArray",
-                    android.util.Base64.encodeToString(photo, android.util.Base64.DEFAULT)
-                )
-            }
+            imageData.addProperty("ImageByteArray", PhotoUtil.encode64Pic(photo))
             imageData.addProperty("ImageFileExtension", extension)
             Timber.d("imageData: $imageData")
 
