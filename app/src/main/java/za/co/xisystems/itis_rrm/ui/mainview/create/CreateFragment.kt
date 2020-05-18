@@ -318,8 +318,8 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
     }
 
     private fun setProjects(contractId: String?) {
-        uiScope.launch(context = uiScope.coroutineContext) {
-//            try {
+
+        Coroutines.main {
             val projects = createViewModel.getSomeProjects(contractId!!)
 
             projects.observe(viewLifecycleOwner, Observer { projec_t ->
@@ -342,9 +342,7 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
                     })
 
             })
-
         }
-
     }
 
     override fun onStarted() {
@@ -357,11 +355,6 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
 
     override fun onFailure(message: String?) {
         data_loading.hide()
-    }
-
-    override fun onStop() {
-        uiScope.destroy()
-        super.onStop()
     }
 
     companion object {
