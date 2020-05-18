@@ -323,9 +323,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                 measure_item,
                 measureViewModel,
                 jobItemMeasurePhotoDTO,
-                jobItemMeasureArrayList,
-                jobItemEstimatesForJob,
-                jobItemMeasuresForJobItemEstimates
+                jobItemMeasureArrayList
             )
             ExpandableGroup(expandableHeaderItem, true).apply {
 

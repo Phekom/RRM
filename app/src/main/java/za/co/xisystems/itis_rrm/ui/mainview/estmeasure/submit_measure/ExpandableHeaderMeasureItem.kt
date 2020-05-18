@@ -56,6 +56,7 @@ class ExpandableHeaderMeasureItem(
     }
 
 
+
     private lateinit var expandableGroup: ExpandableGroup
     private var activity = activity
     override fun bind(viewHolder: GroupieViewHolder, position: Int) {
@@ -75,6 +76,10 @@ class ExpandableHeaderMeasureItem(
             headerLin.apply {
                 setOnClickListener { view ->
                     measureJobItemEstimate(view)
+//                   setupWithNavController(bnv, navController);
+
+
+                    //                clickListener?.invoke(LinearLayout.this)
                     navController?.invoke(NavController(activity!!))
 
                 }
@@ -103,6 +108,7 @@ class ExpandableHeaderMeasureItem(
                         measureItem,
                         job,
                         jobItemMeasurePhotoDTOArrayList,
+                        jobItemMeasureArrayList,
                         view
                     )
             })
@@ -113,6 +119,7 @@ class ExpandableHeaderMeasureItem(
         measureItem: JobItemEstimateDTO,
         jobForJobItemEstimate: JobDTO,
         jobItemMeasurePhotoDTO: ArrayList<JobItemMeasurePhotoDTO>,
+        jobItemMeasureArrayList: ArrayList<JobItemMeasureDTO>,
         view: View
     ) {
 
@@ -120,7 +127,11 @@ class ExpandableHeaderMeasureItem(
             val quantityInputEditText = EditText(activity)
             quantityInputEditText.inputType =
                 InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
-
+//            quantityInputEditText.setTextColor(
+//                ColorUtil.getTextColor(activity?.applicationContext,
+//                    R.color.itis_gray
+//                )
+//            )
             quantityInputEditText.setSingleLine()
 
             val selectedItemMeasure = measureViewModel.getItemForItemId(measureItem.projectItemId)
@@ -167,8 +178,12 @@ class ExpandableHeaderMeasureItem(
                                                             .toDouble(),
                                                         jobForJobItemEstimate,
                                                         measureItem,
-                                                        jobItemMeasurePhotoDTO
+                                                        jobItemMeasurePhotoDTO,
+                                                        jobItemMeasureArrayList
                                                     )
+//                                                    setJobItemMeasures(jobItemMeasureArrayList,measureViewModel)
+//                                                   measureViewModel.createJobItemMeasureItem(selected, quantityInputEditText.text.toString().toDouble(), jobForJobItemEstimate, measureItem, jobItemMeasurePhotoDTO)
+//                                                    measureViewModel.createJobItemMeasureItem(jobItemMeasure)
                                                     captureItemMeasureImages(jobItemMeasure, view)
 
                                                 }
@@ -180,7 +195,7 @@ class ExpandableHeaderMeasureItem(
                                     DialogInterface.OnClickListener { dialog, which -> }).show()
                         quantityInputEditText.onFocusChangeListener =
                             OnFocusChangeListener { v, hasFocus ->
-                                if (hasFocus) enterQuantityDialog.window?.setSoftInputMode(
+                                if (hasFocus) enterQuantityDialog.window.setSoftInputMode(
                                     WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE
                                 )
                             }
@@ -199,7 +214,8 @@ class ExpandableHeaderMeasureItem(
         quantity: Double,
         jobForJobItemEstimate: JobDTO,
         selectedJobItemEstimate: JobItemEstimateDTO,
-        jobItemMeasurePhotoDTO: ArrayList<JobItemMeasurePhotoDTO>
+        jobItemMeasurePhotoDTO: ArrayList<JobItemMeasurePhotoDTO>,
+        jobItemMeasureDTO: ArrayList<JobItemMeasureDTO>
     ): JobItemMeasureDTO {
         val newItemMeasureId: String = SqlLitUtils.generateUuid()
         val itemMeasure = JobItemMeasureDTO(
@@ -232,19 +248,51 @@ class ExpandableHeaderMeasureItem(
         )
 
         jobItemMeasureArrayList.add(itemMeasure)
+//        setJobItemMeasures( jobItemMeasureArrayList,measureViewModel )
 
         return itemMeasure
     }
 
+//    private fun captureItemMeasureImages(jobItemMeasu: JobItemMeasureDTO) {
+//        Coroutines.main {
+////            val jobItemMeasure = measureViewModel.getJobItemMeasureForJobId(measureItem.jobId)
+////            jobItemMeasure.observe(activity!!, androidx.lifecycle.Observer { jItemMeasure ->
+////                Toast.makeText(activity,jItemMeasure.itemMeasureId.toString(),Toast.LENGTH_SHORT).show()
+//                captureItemMeasurePhoto(jobItemMeasu)
+////                Navigation.findNavController(view).navigate(R.id.action_submitMeasureFragment_to_captureItemMeasurePhotoFragment)
+//
+////            })
+//
+//        }
+//    }
 
     private fun captureItemMeasureImages(
         jobItemMeasure: JobItemMeasureDTO?,
-        view: View?
+        view: View
     ) {
+//        val jobItemMeasure = jobItemMeasure
         measureViewModel.measurea1_Item1.value = jobItemMeasure
 
-        Navigation.findNavController(view!!)
+        Navigation.findNavController(view)
             .navigate(R.id.action_submitMeasureFragment_to_captureItemMeasurePhotoFragment)
+
+
+//        val intent = Intent()
+//        intent.setClass(activity, CaptureItemMeasurePhotoActivity::class.java)
+//        intent.putExtra(JOB_IMEASURE, jobItemMeasure)
+//        activity!!.startActivity(intent)
+
+
+//        val intent = Intent()
+//        intent.setClass(activity, CaptureItemMeasurePhotoActivity::class.java)
+////        val bundle = Bundle()
+////        bundle.putSerializable("JobItemMeasure", jobItemMeasure)
+////        intent.putExtras(bundle)
+//        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+//        activity!!.startActivity(intent)
+
+
+
     }
 
 

@@ -3,13 +3,16 @@ package za.co.xisystems.itis_rrm.ui.mainview.home
 import android.content.Context
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import kotlinx.coroutines.*
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
-import za.co.xisystems.itis_rrm.utils.uncaughtExceptionHandler
 import kotlin.system.measureTimeMillis
 
 class HomeViewModel(
@@ -34,47 +37,62 @@ class HomeViewModel(
         offlineDataRepository.getSectionItems()
     }
 
-    val fetchResult = MutableLiveData<Boolean>()
+    val fetchResult: MutableLiveData<Boolean>
+        get() = MutableLiveData(false)
+
+    fun setFetchResult(flag: Boolean) {
+        fetchResult.postValue(flag)
+    }
 
     suspend fun fetchAllData() {
 
         val time = measureTimeMillis {
-            val superViewScope = CoroutineScope(Dispatchers.IO + Job() + uncaughtExceptionHandler)
-            val jobs = ArrayList<Deferred<*>>()
-            superViewScope.launch {
-                fetchResult.postValue(false)
+            viewModelScope.launch {
+                withContext(Dispatchers.IO) {
+                    try {
+                        val userId = Db.getUserDao().getUserID()
 
-                val userId = Db.getUserDao().getUserID()
-                jobs.add(async {
-                    offlineDataRepository.refreshLookups(userId)
-                })
-
-                jobs.add(async {
-                    offlineDataRepository.refreshActivitySections(userId)
-                })
-
-                jobs.add(async {
-                    offlineDataRepository.refreshWorkflows(userId)
-                })
-
-                jobs.add(async {
-                    offlineDataRepository.fetchUserTaskList(userId)
-
-                })
-
-                jobs.add(async {
-                    offlineDataRepository.refreshContractInfo(userId)
-                })
+                        val entities = async {
+                            offlineDataRepository.getAllEntities()
+                            7
+                        }
 
 
-                try {
-                    val result = jobs.joinAll()
-                    Timber.d("$result")
-                    fetchResult.postValue(true)
-                } catch (e: Exception) {
-                    Timber.e(e, "Failed fetching allData: ${e.message}")
-                    throw e
+                        val lookups = async {
+                            offlineDataRepository.refreshLookups(userId)
+                        }
+
+                        val actJob = async {
+                            offlineDataRepository.refreshActivitySections(userId)
+                        }
+
+                        val workflows = async {
+                            offlineDataRepository.refreshWorkflows(userId)
+                        }
+
+                        val taskList = async {
+                            offlineDataRepository.fetchUserTaskList(userId)
+
+                        }
+
+                        val contracts = async {
+                            offlineDataRepository.refreshContractInfo(userId)
+                        }
+
+                        val result =
+                            entities.await() + lookups.await() + actJob.await() + workflows.await() + taskList.await() + contracts.await()
+                        Timber.d("$result")
+                        withContext(Dispatchers.Main) {
+                            setFetchResult(true)
+                        }
+                    } catch (e: Exception) {
+                        setFetchResult(false)
+                        Timber.e(e, "Failed to Get All Data.")
+                        throw e
+                    }
                 }
+
+
             }
 
 
@@ -82,7 +100,6 @@ class HomeViewModel(
         Timber.d("Time taken: $time")
 
     }
-
 ////    if (context?.applicationContext != null) {
 //        //  Check every 2 secs if Mobile data or Location is off/on
 //        val t = object : CountDownTimer(java.lang.Long.MAX_VALUE, 2000) {

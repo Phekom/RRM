@@ -963,10 +963,14 @@ class OfflineDataRepository(
         }
     }
 
+    suspend fun getAllEntities() {
+        Db.getEntitiesDao().getAllEntities()
+    }
+
     suspend fun fetchUserTaskList(userId: String): Int {
         val toDoListGroupsResponse = apiRequest { api.getUserTaskList(userId) }
         toDoListGroups.postValue(toDoListGroupsResponse.toDoListGroups)
-        Db.getEntitiesDao().getAllEntities()
+
         return 5
     }
 
