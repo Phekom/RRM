@@ -22,14 +22,15 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.whenStarted
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import icepick.State
 import kotlinx.android.synthetic.main.fragment_capture_work.*
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
@@ -88,14 +89,10 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
     }
 
     override fun onStop() {
+        uiScope.destroy()
         locationHelper.onStop()
         super.onStop()
 
-    }
-
-    override fun onDestroy() {
-        uiScope.cancel(CancellationException("onDestroy"))
-        super.onDestroy()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -129,31 +126,36 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
         super.onDestroyView()
     }
 
+    init {
+        lifecycleScope.launch {
+            whenStarted {
+                uiScope.onCreate()
+                viewLifecycleOwner.lifecycle.addObserver(uiScope)
+                uiScope.launch(uiScope.coroutineContext) {
+                    val user = workViewModel.user.await()
+                    user.observe(viewLifecycleOwner, Observer { user_ ->
+                        useR = user_
+                    })
+
+                    workViewModel.workItemJob.observe(viewLifecycleOwner, Observer { estimateJob ->
+                        itemEstimateJob = estimateJob
+                    })
+
+                    workViewModel.workItem.observe(viewLifecycleOwner, Observer { estimate ->
+                        itemEstimate = estimate
+
+                        getWorkItems(itemEstimate, itemEstimateJob)
+                    })
+                }
+            }
+        }
+    }
+
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         workViewModel = activity?.run {
             ViewModelProvider(this, factory).get(WorkViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
-
-        Coroutines.main {
-            val user = workViewModel.user.await()
-            user.observe(viewLifecycleOwner, Observer { user_ ->
-                useR = user_
-//                group10_loading.visibility = View.GONE
-            })
-
-            workViewModel.workItemJob.observe(viewLifecycleOwner, Observer { estimateJob ->
-                itemEstimateJob = estimateJob
-            })
-
-            workViewModel.workItem.observe(viewLifecycleOwner, Observer { estimate ->
-                itemEstimate = estimate
-
-                getWorkItems(itemEstimate, itemEstimateJob)
-            })
-
-
-        }
 
         image_collection_view.visibility = View.GONE
         take_photo_button.setOnClickListener {
@@ -202,7 +204,7 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
             networkToast.setGravity(Gravity.CENTER_VERTICAL, 0, 0)
             networkToast.show()
 
-            persistJobToDevice(itemEstiWorks, prog)
+            // persistJobToDevice(itemEstiWorks, prog)
         }
     }
 
@@ -236,7 +238,7 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
         itemEstiWorks: JobEstimateWorksDTO,
         prog: ProgressDialog
     ) {
-        Coroutines.main {
+        uiScope.launch(context = uiScope.coroutineContext) {
 
             val newitemEstiWorks = setJobWorksLittleEndianGuids(itemEstiWorks)
             val response =
@@ -262,19 +264,17 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
     }
 
     private fun setJobWorksLittleEndianGuids(works: JobEstimateWorksDTO): JobEstimateWorksDTO {
-        if (works != null) {
-//            for (jew in works) {
-            works.setWorksId(DataConversion.toLittleEndian(works.worksId))
-            works.setEstimateId(DataConversion.toLittleEndian(works.estimateId))
-            works.setTrackRouteId(DataConversion.toLittleEndian(works.trackRouteId))
-            if (works.jobEstimateWorksPhotos != null) {
-                for (ewp in works.jobEstimateWorksPhotos!!) {
-                    ewp.setWorksId(DataConversion.toLittleEndian(ewp.worksId))
-                    ewp.setPhotoId(DataConversion.toLittleEndian(ewp.photoId))
-                }
+        //            for (jew in works) {
+        works.setWorksId(DataConversion.toLittleEndian(works.worksId))
+        works.setEstimateId(DataConversion.toLittleEndian(works.estimateId))
+        works.setTrackRouteId(DataConversion.toLittleEndian(works.trackRouteId))
+        if (works.jobEstimateWorksPhotos != null) {
+            for (ewp in works.jobEstimateWorksPhotos!!) {
+                ewp.setWorksId(DataConversion.toLittleEndian(ewp.worksId))
+                ewp.setPhotoId(DataConversion.toLittleEndian(ewp.photoId))
             }
-//            }
         }
+//            }
         return works
     }
 

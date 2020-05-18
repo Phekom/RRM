@@ -10,6 +10,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
 import kotlinx.android.synthetic.main.fragment_createjob.*
+import kotlinx.coroutines.launch
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
@@ -21,6 +22,7 @@ import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.MyState
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper.setSpinner
+import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.*
 import java.util.*
 
@@ -34,6 +36,7 @@ import java.util.*
 class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListener, KodeinAware {
 
 
+    private var uiScope = UiLifecycleScope()
     override val kodein by kodein()
     private lateinit var createViewModel: CreateViewModel
     private val factory: CreateViewModelFactory by instance()
@@ -108,7 +111,6 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
 
         return inflater.inflate(R.layout.fragment_createjob, container, false)
     }
-
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
@@ -303,7 +305,7 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
     }
 
     private fun setProjects(contractId: String?) {
-        Coroutines.main {
+        uiScope.launch(context = uiScope.coroutineContext) {
 //            try {
             val projects = createViewModel.getSomeProjects(contractId!!)
 
@@ -342,6 +344,11 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
 
     override fun onFailure(message: String?) {
         data_loading.hide()
+    }
+
+    override fun onStop() {
+        uiScope.destroy()
+        super.onStop()
     }
 
     companion object {

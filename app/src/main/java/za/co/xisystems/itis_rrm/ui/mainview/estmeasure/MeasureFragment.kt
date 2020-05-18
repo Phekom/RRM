@@ -1,8 +1,8 @@
 package za.co.xisystems.itis_rrm.ui.mainview.estmeasure
 
-import android.app.ProgressDialog
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
@@ -19,7 +19,6 @@ import kotlinx.android.synthetic.main.fragment_estmeasure.*
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
-import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
@@ -29,14 +28,10 @@ import za.co.xisystems.itis_rrm.utils.*
 
 class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware {
 
+
     override val kodein by kodein()
     private lateinit var measureViewModel: MeasureViewModel
     private val factory: MeasureViewModelFactory by instance()
-
-    companion object {
-        const val JOB_MEASURE_EST_JOB_ID = "JOB_MEASURE_EST_JOB_ID"
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
@@ -65,6 +60,7 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
         measureViewModel = activity?.run {
             ViewModelProvider(this, factory).get(MeasureViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
+
         Coroutines.main {
             val dialog =
                 setDataProgressDialog(
@@ -72,45 +68,39 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
                     getString(R.string.data_loading_please_wait)
                 )
 
-            val measurements = measureViewModel.getJobMeasureForActivityId(
+            val itemEstimateData = measureViewModel.getJobMeasureForActivityId(
                 ActivityIdConstants.ESTIMATE_MEASURE,
                 ActivityIdConstants.MEASURE_PART_COMPLETE
             )
 
-            measurements.observe(viewLifecycleOwner, Observer { job_s ->
-                val partCompleteHeaders = job_s.distinctBy {
+            itemEstimateData.observe(viewLifecycleOwner, Observer { itemEstimateList ->
+                val jobHeaders = itemEstimateList.distinctBy {
                     it.jobId
                 }
-                if (job_s.isEmpty()) {
+                if (itemEstimateList.isEmpty()) {
                     Coroutines.main {
-                        val measurement = measureViewModel.getJobMeasureForActivityId(
+                        val jobEstimateData = measureViewModel.getJobMeasureForActivityId(
                             ActivityIdConstants.ESTIMATE_MEASURE,
                             ActivityIdConstants.JOB_ESTIMATE
                         )
-                        measurement.observe(viewLifecycleOwner, Observer { jos ->
-                            val estimateHeaders = jos.distinctBy {
+                        jobEstimateData.observe(viewLifecycleOwner, Observer { jos ->
+                            val measure_items = jos.distinctBy {
                                 it.jobId
                             }
                             noData.visibility = View.GONE
-                            initRecyclerView(estimateHeaders.toMeasureListItems())
-                            toast(job_s.size.toString())
+                            initRecyclerView(measure_items.toMeasureListItems())
+                            toast(itemEstimateList.size.toString())
                             group5_loading.visibility = View.GONE
                         })
                     }
                 } else {
                     noData.visibility = View.GONE
-                    initRecyclerView(partCompleteHeaders.toMeasureListItems())
-                    toast(job_s.size.toString())
+                    initRecyclerView(jobHeaders.toMeasureListItems())
+                    toast(itemEstimateList.size.toString())
                     group5_loading.visibility = View.GONE
                 }
-
             })
 
-            swipeToRefreshInit(dialog)
-        }
-    }
-
-    private fun swipeToRefreshInit(dialog: ProgressDialog) {
         estimations_swipe_to_refresh.setProgressBackgroundColorSchemeColor(
             ContextCompat.getColor(
                 requireContext().applicationContext,
@@ -120,31 +110,37 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
         estimations_swipe_to_refresh.setColorSchemeColors(Color.WHITE)
 
         estimations_swipe_to_refresh.setOnRefreshListener {
-
-            Coroutines.main {
                 dialog.show()
+            Coroutines.main {
                 try {
                     val jobs = measureViewModel.offlineUserTaskList.await()
                     jobs.observe(viewLifecycleOwner, Observer { works ->
                         if (works.isEmpty()) {
                             noData.visibility = View.VISIBLE
                         }
+                        estimations_swipe_to_refresh.isRefreshing = false
+                        dialog.dismiss()
                     })
                 } catch (e: ApiException) {
                     ToastUtils().toastLong(activity, e.message)
-                    Timber.e(e, e.message)
+                    estimations_swipe_to_refresh.isRefreshing = false
+                    dialog.dismiss()
+                    Log.e("Service-Host", "API Exception", e)
                 } catch (e: NoInternetException) {
                     ToastUtils().toastLong(activity, e.message)
-                    Timber.e(e, e.message)
-                } catch (e: NoConnectivityException) {
-                    ToastUtils().toastLong(activity, e.message)
-                    Timber.e(e, e.message)
-                } finally {
+                    // snackError(this.coordinator, e.message)
                     dialog.dismiss()
                     estimations_swipe_to_refresh.isRefreshing = false
+                    Log.e("Network-Connection", "No Internet Connection", e)
+                } catch (e: NoConnectivityException) {
+                    ToastUtils().toastLong(activity, e.message)
+                    dialog.dismiss()
+                    estimations_swipe_to_refresh.isRefreshing = false
+                    Log.e("Network-Error", "Service Host Unreachable", e)
                 }
 
             }
+        }
         }
     }
 

@@ -120,7 +120,7 @@ class OfflineDataRepository(
     suspend fun getSectionItems(): LiveData<List<SectionItemDTO>> {
         return withContext(Dispatchers.IO) {
             val userId = Db.getUserDao().getUserID()
-            fetchContracts(userId)
+            // fetchContracts(userId)
             Db.getSectionItemDao().getSectionItems()
         }
     }
@@ -956,19 +956,17 @@ class OfflineDataRepository(
 
     suspend fun getUserTaskList(): LiveData<List<ToDoListEntityDTO>> {
 
-
         return withContext(Dispatchers.IO) {
             val userId = Db.getUserDao().getUserID()
             fetchUserTaskList(userId)
             Db.getEntitiesDao().getAllEntities()
         }
-
-
     }
 
     suspend fun fetchUserTaskList(userId: String): Int {
         val toDoListGroupsResponse = apiRequest { api.getUserTaskList(userId) }
         toDoListGroups.postValue(toDoListGroupsResponse.toDoListGroups)
+        Db.getEntitiesDao().getAllEntities()
         return 5
     }
 
@@ -999,7 +997,6 @@ class OfflineDataRepository(
 
     private suspend fun fetchAllData(userId: String) {
         // TODO: Redo as async calls in parallel
-
 
         refreshActivitySections(userId)
 

@@ -18,9 +18,7 @@ import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.GroupieViewHolder
 import kotlinx.android.synthetic.main.fragment_approvejob.noData
 import kotlinx.android.synthetic.main.fragment_work.*
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
@@ -36,7 +34,6 @@ import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.ApiException
 import za.co.xisystems.itis_rrm.utils.NoConnectivityException
 import za.co.xisystems.itis_rrm.utils.NoInternetException
-import java.util.concurrent.CancellationException
 
 
 const val INSET_TYPE_KEY = "inset_type"
@@ -48,37 +45,28 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
     private lateinit var workViewModel: WorkViewModel
     private val factory: WorkViewModelFactory by instance()
     private var uiScope = UiLifecycleScope()
-    private lateinit var dialog: ProgressDialog
+    private var dialog: ProgressDialog? = null
 
     init {
+
+
         lifecycleScope.launch {
 
             whenStarted {
-                uiScope.onCreate()
-                viewLifecycleOwner.lifecycle.addObserver(uiScope)
+
                 dialog =
                     setDataProgressDialog(
                         requireActivity(),
                         getString(R.string.data_loading_please_wait)
                     )
 
+                uiScope.onCreate()
+                viewLifecycleOwner.lifecycle.addObserver(uiScope)
+
+
                 uiScope.launch(coroutineContext) {
                     try {
-                        val works = workViewModel.getJobsForActivityId(
-                            ActivityIdConstants.JOB_APPROVED,
-                            ActivityIdConstants.ESTIMATE_INCOMPLETE
-                        )
-
-                        works.observe(viewLifecycleOwner, Observer { work_s ->
-                            noData.visibility = View.GONE
-                            group7_loading.visibility = View.GONE
-                            val headerItems = work_s.distinctBy {
-                                it.JobId
-                            }
-                            initRecyclerView(headerItems.toWorkListItems())
-                            dialog.dismiss()
-
-                        })
+                        refreshEstimateJobsFromLocal()
                     } catch (e: ApiException) {
                         ToastUtils().toastLong(activity, e.message)
                         Timber.e(e, "API Exception")
@@ -88,15 +76,29 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
                     } catch (e: NoConnectivityException) {
                         ToastUtils().toastLong(activity, e.message)
                         Timber.e(e, "Service Host Unreachable")
-                    } finally {
-                        dialog.dismiss()
                     }
-
                 }
             }
 
         }
 
+    }
+
+    private suspend fun refreshEstimateJobsFromLocal() {
+        workViewModel.getJobsForActivityId(
+            ActivityIdConstants.JOB_APPROVED,
+            ActivityIdConstants.ESTIMATE_INCOMPLETE
+        ).observe(viewLifecycleOwner, Observer { work_s ->
+            noData.visibility = View.GONE
+            group7_loading.visibility = View.GONE
+            val headerItems = work_s.distinctBy {
+                it.JobId
+            }
+            uiScope.launch(uiScope.coroutineContext) {
+                initRecyclerView(headerItems.toWorkListItems())
+            }
+
+        })
     }
 
     override fun onCreateView(
@@ -108,6 +110,7 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
 
+
         super.onActivityCreated(savedInstanceState)
 
         workViewModel = activity?.run {
@@ -115,6 +118,13 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
         } ?: throw Exception("Invalid Activity")
 
 
+
+
+
+        initSwipeToRefresh()
+    }
+
+    private fun initSwipeToRefresh() {
 
         works_swipe_to_refresh.setProgressBackgroundColorSchemeColor(
             ContextCompat.getColor(
@@ -126,17 +136,12 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
         works_swipe_to_refresh.setColorSchemeColors(Color.WHITE)
 
         works_swipe_to_refresh.setOnRefreshListener {
-            dialog.show()
+
+            dialog!!.show()
             uiScope.launch(uiScope.coroutineContext) {
                 try {
-                    val jobs = workViewModel.offlineUserTaskList.await()
-                    jobs.observe(viewLifecycleOwner, Observer { works ->
-                        if (works.isEmpty()) {
-                            noData.visibility = View.VISIBLE
-                        }
-                        works_swipe_to_refresh.isRefreshing = false
-                        dialog.dismiss()
-                    })
+                    refreshUserTaskListFromApi()
+                    refreshEstimateJobsFromLocal()
                 } catch (e: ApiException) {
                     ToastUtils().toastLong(activity, e.message)
                     Timber.e(e, "API Exception")
@@ -147,10 +152,22 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
                     ToastUtils().toastLong(activity, e.message)
                     Timber.e(e, "Service Host Unreachable")
                 } finally {
-                    dialog.dismiss()
+                    works_swipe_to_refresh.isRefreshing = false
+                    dialog!!.dismiss()
                 }
             }
         }
+    }
+
+    private suspend fun refreshUserTaskListFromApi() {
+        // This definitely needs to be a one-shot operation
+        val jobs = workViewModel.offlineUserTaskList.await()
+        jobs.observe(viewLifecycleOwner, Observer { works ->
+            if (works.isEmpty()) {
+                noData.visibility = View.VISIBLE
+            }
+
+        })
     }
 
 
@@ -184,13 +201,12 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
     }
 
     override fun onStop() {
-        uiScope.cancel(CancellationException("onStop"))
+        uiScope.destroy()
         super.onStop()
 
     }
 
     override fun onDestroyView() {
-        works_swipe_to_refresh?.setOnRefreshListener { null }
         work_listView?.adapter = null
         super.onDestroyView()
 
@@ -201,8 +217,7 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
     }
 
 
-    //    private fun List<JobItemEstimateDTO>.toWorkListItems(): List<ExpandableGroup> {
-    private fun List<JobDTO>.toWorkListItems(): List<ExpandableGroup> {
+    private suspend fun List<JobDTO>.toWorkListItems(): List<ExpandableGroup> {
         //Initialize Expandable group with expandable item and specify whether it should be expanded by default or not
 
         return this.map { work_items ->
@@ -210,43 +225,42 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
             val expandableHeaderItem =
                 ExpandableHeaderWorkItem(activity, work_items, workViewModel)
             ExpandableGroup(expandableHeaderItem, false).apply {
-                uiScope.launch(uiScope.coroutineContext) {
-                    //ESTIMATE_WORK_PART_COMPLETE
 
-                    val estimates = workViewModel.getJobEstimationItemsForJobId(
-                        work_items.JobId,
-                        ActivityIdConstants.ESTIMATE_INCOMPLETE
-                    )
-                    estimates.observe(viewLifecycleOwner, Observer { estimateItems ->
+                //ESTIMATE_WORK_PART_COMPLETE
+
+                val estimates = workViewModel.getJobEstimationItemsForJobId(
+                    work_items.JobId,
+                    ActivityIdConstants.ESTIMATE_INCOMPLETE
+                )
+                estimates.observe(viewLifecycleOwner, Observer { estimateItems ->
+
+                    for (item in estimateItems) {
+
                         uiScope.launch(uiScope.coroutineContext) {
-                            for (item in estimateItems) {
-                                withContext(uiScope.coroutineContext) {
-                                    try {
+                            try {
+                                val desc =
+                                    workViewModel.getDescForProjectItemId(item.projectItemId!!)
+                                val qty = item.qty.toString()
+                                val rate = item.lineRate.toString()
+                                val estimateId = item.estimateId
 
-                                        val desc =
-                                            workViewModel.getDescForProjectItemId(item.projectItemId!!)
+                                add(
+                                    CardItem(
+                                        activity, desc, qty,
+                                        rate,
+                                        estimateId, workViewModel, item, work_items
+                                    )
+                                )
 
-                                        val qty = item.qty.toString()
-                                        val rate = item.lineRate.toString()
-                                        val estimateId = item.estimateId
-                                        add(
-                                            CardItem(
-                                                activity, desc, qty,
-                                                rate,
-                                                estimateId, workViewModel, item, work_items
-                                            )
-                                        )
-
-                                    } catch (exception: Exception) {
-                                        Timber.e(exception)
-                                    }
-                                }
-
+                            } catch (exception: Exception) {
+                                Timber.e(exception)
                             }
                         }
-                    })
 
-                }
+                    }
+
+                })
+
             }
         }
     }

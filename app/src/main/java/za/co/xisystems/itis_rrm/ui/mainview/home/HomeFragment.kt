@@ -12,7 +12,10 @@ import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.*
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.whenStarted
 import kotlinx.android.synthetic.main.fragment_home.*
 import kotlinx.coroutines.launch
 import org.kodein.di.KodeinAware
@@ -21,10 +24,12 @@ import org.kodein.di.generic.instance
 import za.co.xisystems.itis_rrm.BuildConfig
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
+import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.data.network.responses.HealthCheckResponse
 import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModelFactory
+import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.*
 
 
@@ -36,9 +41,10 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
     private lateinit var sharedViewModel: SharedViewModel
     private val shareFactory: SharedViewModelFactory by instance()
 
-    var gpsEnabled: Boolean = false
-    var networkEnabled: Boolean = false
-    var appContext: Context? = null
+    private var gpsEnabled: Boolean = false
+    private var networkEnabled: Boolean = false
+    var userDTO: UserDTO? = null
+    private var uiScope = UiLifecycleScope()
 
     companion object {
         val TAG: String = HomeFragment::class.java.simpleName
@@ -48,6 +54,10 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
 
         lifecycleScope.launch {
             whenStarted {
+
+                uiScope.onCreate()
+                viewLifecycleOwner.lifecycle.addObserver(uiScope)
+
                 homeViewModel = activity?.run {
                     ViewModelProvider(this, factory).get(HomeViewModel::class.java)
                 } ?: throw Exception("Invalid Activity")
@@ -56,50 +66,42 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                     ViewModelProvider(this, shareFactory).get(SharedViewModel::class.java)
                 } ?: throw Exception("Invalid Activity")
 
-            }
+                uiScope.launch(uiScope.coroutineContext) {
+                    try {
+                        Coroutines.main {
+                            data2_loading.show()
+                        }
+                        val user = homeViewModel.user.await()
+                        user.observe(viewLifecycleOwner, Observer { user_ ->
+                            username?.text = user_.userName
+                        })
 
-            whenResumed {
-                homeViewModel = activity?.run {
-                    ViewModelProvider(this, factory).get(HomeViewModel::class.java)
-                } ?: throw Exception("Invalid Activity")
+                        val contracts = homeViewModel.offlineSectionItems.await()
+                        contracts.observe(viewLifecycleOwner, Observer { mSectionItem ->
+                            val allData = mSectionItem.count()
+                            if (mSectionItem.size == allData)
+                                Coroutines.main {
+                                    group2_loading.visibility = View.GONE
+                                }
+                        })
 
-                sharedViewModel = activity?.run {
-                    ViewModelProvider(this, shareFactory).get(SharedViewModel::class.java)
-                } ?: throw Exception("Invalid Activity")
-            }
-
-            try {
-
-
-                data2_loading.show()
-                val user = homeViewModel.user.await()
-                user.observe(viewLifecycleOwner, Observer { user_ ->
-                    username?.text = user_.userName
-                })
-
-                homeViewModel.offlineSectionItems.start()
-
-                val contracts = homeViewModel.offlineData.await()
-                contracts.observe(viewLifecycleOwner, Observer { mContracts ->
-                    val allData = mContracts.count()
-                    if (mContracts.size == allData)
+                    } catch (e: ApiException) {
+                        ToastUtils().toastLong(activity, e.message)
+                        Log.e(TAG, "API Exception", e)
+                    } catch (e: NoInternetException) {
+                        ToastUtils().toastLong(activity, e.message)
+                        Log.e(TAG, "No Internet Connection", e)
+                    } catch (e: NoConnectivityException) {
+                        ToastUtils().toastLong(activity, e.message)
+                        Log.e(TAG, "Service Host Unreachable", e)
+                    } finally {
                         group2_loading.visibility = View.GONE
-                })
+                    }
+                }
 
-
-            } catch (e: ApiException) {
-                ToastUtils().toastLong(activity, e.message)
-                Log.e(TAG, "API Exception", e)
-            } catch (e: NoInternetException) {
-                ToastUtils().toastLong(activity, e.message)
-                Log.e(TAG, "No Internet Connection", e)
-            } catch (e: NoConnectivityException) {
-                ToastUtils().toastLong(activity, e.message)
-                Log.e(TAG, "Service Host Unreachable", e)
-            } finally {
-                group2_loading.visibility = View.GONE
             }
         }
+
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -134,7 +136,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
 
         items_swipe_to_refresh.setProgressBackgroundColorSchemeColor(
             ContextCompat.getColor(
-                context!!.applicationContext,
+                requireContext().applicationContext,
                 R.color.colorPrimary
             )
         )
@@ -142,24 +144,22 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
         items_swipe_to_refresh.setColorSchemeColors(Color.WHITE)
 
         items_swipe_to_refresh.setOnRefreshListener {
-            Coroutines.main {
+            uiScope.launch(uiScope.coroutineContext) {
                 try {
-                    // dialog.show()
+
                     sharedViewModel.setMessage("Data Loading")
                     sharedViewModel.toggleLongRunning(true)
-                    val works = homeViewModel.offlineWorkFlows.await()
-                    works.observe(viewLifecycleOwner, Observer { work ->
-                        val allData = work.count()
-                        if (work.size == allData)
+                    homeViewModel.fetchAllData()
+                    homeViewModel.fetchResult.observe(viewLifecycleOwner, Observer { work ->
+                        if (work == true) {
+                            sharedViewModel.setMessage("Data Retrieved")
                             sharedViewModel.toggleLongRunning(false)
-                        sharedViewModel.setMessage("Data Retrieved")
+                        }
                     })
                 } catch (e: ApiException) {
-                    //ToastUtils().toastLong(activity, e.message)
                     sharedViewModel.setMessage(e.message)
                     Log.e(TAG, "API Exception", e)
                 } catch (e: NoInternetException) {
-                    //ToastUtils().toastLong(activity, e.message)
                     sharedViewModel.setMessage(e.message)
                     Log.e(TAG, "No Internet Connection", e)
                 } catch (e: NoConnectivityException) {
@@ -174,9 +174,9 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
 
 
         Coroutines.io {
-            val lm = activity!!.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+            val lm = requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager
             val cm =
-                activity!!.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+                requireActivity().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             gpsEnabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
             networkEnabled = cm.isDefaultNetworkActive
             //  Check if Network Enabled
@@ -190,11 +190,10 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
 
             // Check if GPS connected
             if (!gpsEnabled) {
-                //            locationEnabled.text = "GPS NOT CONNECTED"
-                locationEnabled.text = activity!!.getString(R.string.gps_not_connected)
+                locationEnabled.text = requireActivity().getString(R.string.gps_not_connected)
                 locationEnabled.setTextColor(colorNotConnected)
             } else {
-                locationEnabled.text = activity!!.getString(R.string.gps_connected)
+                locationEnabled.text = requireActivity().getString(R.string.gps_connected)
                 locationEnabled.setTextColor(colorConnected)
             }
         }
@@ -214,28 +213,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
 
     private val health: HealthCheckResponse? = null
     private fun ping() {
-
-
         Coroutines.main {
-            //            val user_nm = homeViewModel.user_n.await()
-//            user_nm.observe(viewLifecycleOwner, Observer {
-//
-//                var responseListener: OfflineListener? = null
-//                try {
-//                    responseListener?.onSuccess(health!!.isAlive)
-//                    connectedTo.setTextColor(colorConnected)
-//
-//
-//                    responseListener?.onFailure(health!!.errorMessage)
-//                    connectedTo.setTextColor(colorNotConnected)
-//                }catch(e: ApiException){
-//                    responseListener?.onFailure(e.message!!)
-//                }catch (e: NoInternetException){
-//                    responseListener?.onFailure(e.message!!)
-//                }
-//
-//            })
-
         }
     }
 
@@ -256,26 +234,4 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
         super.onDetach()
         ping()
     }
-//    override fun onDestroyView() {
-//        super.onDestroyView()
-//        if (view != null) {
-//            val parent = view!!.parent as ViewGroup
-//            parent?.removeAllViews()
-//        }
-//    }
-
 }
-
-//  Check every 2 secs if Mobile data or Location is off/on
-//        val t = object : CountDownTimer(java.lang.Long.MAX_VALUE, 2000) {
-//            override fun onFinish() {
-//                start()
-//            }
-//
-//            override fun onTick(millisUntilFinished: Long) {
-//
-//
-//
-//            }
-//
-//        }.start()

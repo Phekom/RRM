@@ -1,17 +1,16 @@
 package za.co.xisystems.itis_rrm.ui.mainview.home
 
 import android.content.Context
-import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
+import timber.log.Timber
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
-import za.co.xisystems.itis_rrm.data.localDB.entities.SectionItemDTO
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
+import za.co.xisystems.itis_rrm.utils.uncaughtExceptionHandler
+import kotlin.system.measureTimeMillis
 
 class HomeViewModel(
     private val repository: UserRepository,
@@ -33,6 +32,55 @@ class HomeViewModel(
 
     val offlineSectionItems by lazyDeferred {
         offlineDataRepository.getSectionItems()
+    }
+
+    val fetchResult = MutableLiveData<Boolean>()
+
+    suspend fun fetchAllData() {
+
+        val time = measureTimeMillis {
+            val superViewScope = CoroutineScope(Dispatchers.IO + Job() + uncaughtExceptionHandler)
+            val jobs = ArrayList<Deferred<*>>()
+            superViewScope.launch {
+                fetchResult.postValue(false)
+
+                val userId = Db.getUserDao().getUserID()
+                jobs.add(async {
+                    offlineDataRepository.refreshLookups(userId)
+                })
+
+                jobs.add(async {
+                    offlineDataRepository.refreshActivitySections(userId)
+                })
+
+                jobs.add(async {
+                    offlineDataRepository.refreshWorkflows(userId)
+                })
+
+                jobs.add(async {
+                    offlineDataRepository.fetchUserTaskList(userId)
+
+                })
+
+                jobs.add(async {
+                    offlineDataRepository.refreshContractInfo(userId)
+                })
+
+
+                try {
+                    val result = jobs.joinAll()
+                    Timber.d("$result")
+                    fetchResult.postValue(true)
+                } catch (e: Exception) {
+                    Timber.e(e, "Failed fetching allData: ${e.message}")
+                    throw e
+                }
+            }
+
+
+        }
+        Timber.d("Time taken: $time")
+
     }
 
 ////    if (context?.applicationContext != null) {

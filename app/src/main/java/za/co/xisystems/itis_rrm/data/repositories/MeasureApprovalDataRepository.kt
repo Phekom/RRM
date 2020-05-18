@@ -102,7 +102,7 @@ class MeasureApprovalDataRepository(
             apiRequest { api.getWorkflowMove(userId, trackRouteId, description, direction) }
         workflowJ.postValue(workflowMoveResponse.workflowJob)
 
-        val messages = workflowMoveResponse.errorMessage
+        val messages: String = workflowMoveResponse.errorMessage
 
         return withContext(Dispatchers.IO) {
             messages

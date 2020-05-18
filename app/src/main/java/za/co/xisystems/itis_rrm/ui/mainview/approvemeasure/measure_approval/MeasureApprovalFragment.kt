@@ -170,7 +170,7 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
             prog.show()
             val submit =
                 approveViewModel.processWorkflowMove(userId, trackRouteId, description, direction)
-            if (!submit.isEmpty()) {
+            if (submit.isEmpty()) {
                 prog.dismiss()
                 toast(submit)
             } else {
