@@ -57,22 +57,24 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
+        (activity as MainActivity).supportActionBar?.title =
+            getString(R.string.submit_measure_title)
 
+        measureViewModel = activity?.run {
+            ViewModelProvider(this, factory).get(MeasureViewModel::class.java)
+        } ?: throw Exception("Invalid Activity")
 
         Coroutines.main {
             measureViewModel.measure_Item.observe(viewLifecycleOwner, Observer { jobID ->
                 getWorkItems(jobID.jobItemEstimateDTO.jobId)
             })
         }
+
         return inflater.inflate(R.layout.fragment_submit_measure, container, false)
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-
-        (activity as MainActivity).supportActionBar?.title =
-            getString(R.string.submit_measure_title)
-
         measureViewModel = activity?.run {
             ViewModelProvider(this, factory).get(MeasureViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
@@ -105,6 +107,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                     R.color.colorPrimary
                 )
             )
+
             items_swipe_to_refresh.setColorSchemeColors(Color.WHITE)
 
             items_swipe_to_refresh.setOnRefreshListener {
@@ -120,9 +123,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                 }
             }
 
-
         }
-
 
     }
 
@@ -138,7 +139,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
 
                     val itemMeasures = m_sures as ArrayList
                     for (jim in itemMeasures) {
-                        val newJim = setJobMeasureLittleEndianGuids(jim)
+                        val newJim = setJobMeasureLittleEndianGuids(jim)!!
                         jobItemMeasureList.add(newJim)
                     }
                     submitJobToMeasurements(jobForItemEstimate, jobItemMeasureList)
@@ -150,31 +151,33 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
     private fun submitJobToMeasurements(
         itemMeasureJob: JobDTO,
         mSures: ArrayList<JobItemMeasureDTO>
+
     ) {
         val logoutBuilder = AlertDialog.Builder(
-            requireActivity()
+            requireActivity() //, android.R.style.Theme_DeviceDefault_Dialog
         )
-        logoutBuilder.setTitle(R.string.confirm)
-        logoutBuilder.setIcon(R.drawable.ic_approve)
-        logoutBuilder.setMessage(R.string.are_you_sure_you_want_to_submit_measurements)
-
-        // Yes button
-        logoutBuilder.setPositiveButton(R.string.yes) { dialog, which ->
-            if (ServiceUtil.isNetworkConnected(context?.applicationContext)) {
-                submitMeasures(itemMeasureJob, mSures)
-            } else {
-                toast(R.string.no_connection_detected)
+        logoutBuilder.run {
+            setTitle(R.string.confirm)
+            setIcon(R.drawable.ic_approve)
+            setMessage(R.string.are_you_sure_you_want_to_submit_measurements)
+            // Yes button
+            setPositiveButton(R.string.yes) { dialog, which ->
+                if (ServiceUtil.isNetworkConnected(context?.applicationContext)) {
+                    submitMeasures(itemMeasureJob, mSures)
+                } else {
+                    toast(R.string.no_connection_detected)
+                }
             }
+            // No button
+            setNegativeButton(
+                R.string.no
+            ) { dialog, which ->
+                // Do nothing but close dialog
+                dialog.dismiss()
+            }
+            create()
+            show()
         }
-        // No button
-        logoutBuilder.setNegativeButton(
-            R.string.no
-        ) { dialog, which ->
-            // Do nothing but close dialog
-            dialog.dismiss()
-        }
-        val declineAlert = logoutBuilder.create()
-        declineAlert.show()
     }
 
     private fun submitMeasures(
@@ -184,13 +187,12 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
         Coroutines.main {
             val user = measureViewModel.user.await()
             user.observe(viewLifecycleOwner, Observer { user_ ->
-                //  measureViewModel.jobapproval_Item6.observe(viewLifecycleOwner, Observer { job ->
-                //                                popViewOnJobSubmit()
                 if (user_.userId == null) {
                     toast("Error: userId is null")
                 } else if (itemMeasureJob.JobId == null) {
                     toast("Error: selectedJob is null")
                 } else {
+                    // beware littleEndian conversion for transport to Ser
                     val ContractVoId: String =
                         DataConversion.toLittleEndian(itemMeasureJob.ContractVoId)!!
                     val JobId: String = DataConversion.toLittleEndian(itemMeasureJob.JobId)!!
@@ -208,11 +210,10 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                                 it, itemMeasureJob
                             )
                         }
+                        prog.dismiss()
                         if (submit != null) {
-                            prog.dismiss()
                             toast(submit)
                         } else {
-                            prog.dismiss()
                             toast(R.string.measure_submitted)
                             popViewOnJobSubmit()
                         }
@@ -220,11 +221,12 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
 
                     }
                 }
+
             })
         }
     }
 
-    fun setJobMeasureLittleEndianGuids(jim: JobItemMeasureDTO): JobItemMeasureDTO {
+    fun setJobMeasureLittleEndianGuids(jim: JobItemMeasureDTO?): JobItemMeasureDTO? {
         if (jim != null) {
             jim.setEstimateId(DataConversion.toLittleEndian(jim.estimateId))
             jim.setJobId(DataConversion.toLittleEndian(jim.jobId))
@@ -238,6 +240,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
             if (jim.measureGroupId != null)
                 jim.setMeasureGroupId(DataConversion.toLittleEndian(jim.measureGroupId))
 
+
             if (jim.jobItemMeasurePhotos != null) {
                 for (jmep in jim.jobItemMeasurePhotos) {
                     jmep.setPhotoId(DataConversion.toLittleEndian(jmep.photoId))
@@ -245,7 +248,6 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                     jmep.setItemMeasureId(DataConversion.toLittleEndian(jmep.itemMeasureId))
                 }
             }
-
         }
 
         return jim
@@ -253,9 +255,8 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
 
 
     private fun popViewOnJobSubmit() {
-        // TODO: delete data from database after success upload
+        // TODO: Delete data from database after successful upload
         Intent(context?.applicationContext, MainActivity::class.java).also { home ->
-//            home.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
             startActivity(home)
         }
     }
@@ -299,9 +300,9 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
         }
     }
 
-    private fun initRecyclerView(toMeasureItems: List<ExpandableGroup>) {
+    private fun initRecyclerView(tomeasureItem: List<ExpandableGroup>) {
         val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
-            addAll(toMeasureItems)
+            addAll(tomeasureItem)
         }
 
         measure_listView.apply {
@@ -312,6 +313,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
     }
 
     override fun onDestroyView() {
+
         measure_listView.adapter = null
         super.onDestroyView()
     }
@@ -323,7 +325,9 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                 measure_item,
                 measureViewModel,
                 jobItemMeasurePhotoDTO,
-                jobItemMeasureArrayList
+                jobItemMeasureArrayList,
+                jobItemEstimatesForJob,
+                jobItemMeasuresForJobItemEstimates
             )
             ExpandableGroup(expandableHeaderItem, true).apply {
 
@@ -339,7 +343,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                                     measureViewModel.getJobItemMeasuresForJobIdAndEstimateId2(
                                         job.JobId,
                                         measure_item.estimateId
-                                    )//, jobItemMeasureArrayList
+                                    )
                                 jobItemMeasure.observe(requireActivity(), Observer { m_sures ->
                                     Coroutines.main {
                                         for (jobItemM in m_sures) {
@@ -359,22 +363,17 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                                                     )
                                                 )
                                             }
-
                                         }
                                     }
-
 
                                 })
 
                             }
 
-//                        }
-
-
                         })
 
                 }
-//
+
 
             }
         }

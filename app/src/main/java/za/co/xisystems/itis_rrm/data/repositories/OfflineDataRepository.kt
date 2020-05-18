@@ -367,7 +367,7 @@ class OfflineDataRepository(
                                 } else {
                                     try {
                                         val pattern = Pattern.compile("(.*?)\\.")
-                                        val matcher = pattern.matcher(item.itemCode)
+                                        val matcher = pattern.matcher(item.itemCode!!)
                                         if (matcher.find()) {
                                             val itemCode = "${matcher.group(1)}0"
                                             //  Let's Get the ID Back on Match

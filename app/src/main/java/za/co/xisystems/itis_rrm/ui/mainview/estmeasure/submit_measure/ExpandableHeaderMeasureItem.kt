@@ -195,7 +195,7 @@ class ExpandableHeaderMeasureItem(
                                     DialogInterface.OnClickListener { dialog, which -> }).show()
                         quantityInputEditText.onFocusChangeListener =
                             OnFocusChangeListener { v, hasFocus ->
-                                if (hasFocus) enterQuantityDialog.window.setSoftInputMode(
+                                if (hasFocus) enterQuantityDialog.window?.setSoftInputMode(
                                     WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE
                                 )
                             }
