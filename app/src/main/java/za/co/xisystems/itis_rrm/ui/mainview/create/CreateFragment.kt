@@ -8,6 +8,8 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.whenStarted
 import androidx.navigation.Navigation
 import kotlinx.android.synthetic.main.fragment_createjob.*
 import kotlinx.coroutines.launch
@@ -110,6 +112,17 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
         }
 
         return inflater.inflate(R.layout.fragment_createjob, container, false)
+    }
+
+    init {
+        // setuo for CreateFragment
+
+        lifecycleScope.launch {
+            whenStarted {
+
+            }
+
+        }
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
