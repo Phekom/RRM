@@ -26,6 +26,11 @@ class MeasureViewModel (
         measureCreationDataRepository.getUser()
     }
 
+    val measureJob = MutableLiveData<JobDTO>()
+    fun Item1(value: JobDTO) {
+        measureJob.value = value
+    }
+
     val measurea1_Item1 = MutableLiveData<JobItemMeasureDTO>()
     fun Item1(measurea1: JobItemMeasureDTO) {
         measurea1_Item1.value = measurea1
@@ -112,6 +117,7 @@ class MeasureViewModel (
         activity: FragmentActivity,
         itemMeasureJob: JobDTO
     ) : String {
+
         return withContext(Dispatchers.IO) {
             measureCreationDataRepository.saveMeasurementItems( userId, jobId,jimNo,contractVoId,mSures, activity, itemMeasureJob)
         }
