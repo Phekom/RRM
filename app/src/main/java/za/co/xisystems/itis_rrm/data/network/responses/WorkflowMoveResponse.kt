@@ -9,7 +9,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.WorkflowJobDTO
 
 data class WorkflowMoveResponse(
     @SerializedName("ErrorMessage")
-    val errorMessage: String,
+    val errorMessage: String?,
     @SerializedName("ToDoListGroups")
     val toDoListGroups: ArrayList<ToDoGroupsDTO>,
     @SerializedName("JobDTO")

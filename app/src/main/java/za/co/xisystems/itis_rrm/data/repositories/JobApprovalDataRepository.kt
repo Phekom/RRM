@@ -96,9 +96,9 @@ class JobApprovalDataRepository(
         val workflowMoveResponse =
             apiRequest { api.getWorkflowMove(userId, trackRouteId, description, direction) }
         workflowJ.postValue(workflowMoveResponse.workflowJob)
-//        workflows.postValue(workflowMoveResponse.toDoListGroups)
-        val messages = workflowMoveResponse.errorMessage
-//          activity.getResources().getString(R.string.please_wait)
+
+        val messages = workflowMoveResponse.errorMessage ?: ""
+
         return withContext(Dispatchers.IO) {
             messages
         }

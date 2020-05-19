@@ -174,7 +174,9 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
                             requireActivity(),
                             getString(R.string.data_loading_please_wait)
                         )
+                    move_workflow_button.isClickable = false
                     uploadEstimateWorksItem(prog)
+                    move_workflow_button.isClickable = true
                 }
             }
         }
@@ -185,7 +187,7 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
 
             itemEstiWorks.jobEstimateWorksPhotos = estimateWorksPhotoArrayList
             itemEstiWorks.jobItemEstimate = jobitemEsti
-
+            prog.show()
             sendJobToService(itemEstiWorks, prog)
         } else {
             val networkToast = Toast.makeText(
@@ -196,7 +198,7 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
             networkToast.setGravity(Gravity.CENTER_VERTICAL, 0, 0)
             networkToast.show()
 
-            persistJobToDevice(itemEstiWorks, prog)
+            // persistJobToDevice(itemEstiWorks, prog)
         }
     }
 
@@ -432,8 +434,6 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
     ): JobEstimateWorksPhotoDTO {
         val photoId = SqlLitUtils.generateUuid()
 
-//        = estimateWorksPhotoArrayList
-//        itemEstiWorks.jobEstimateWorksPhotos?.add(jobItemWorksPhoto)
         return JobEstimateWorksPhotoDTO(
             Id = 0,
             descr = "",

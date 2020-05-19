@@ -103,7 +103,7 @@ class MeasureApprovalDataRepository(
         workflowJ.postValue(workflowMoveResponse.workflowJob)
 
         // Damn you Elvis !!
-        val messages: String = workflowMoveResponse.errorMessage
+        val messages: String = workflowMoveResponse.errorMessage ?: ""
 
         return withContext(Dispatchers.IO) {
             messages

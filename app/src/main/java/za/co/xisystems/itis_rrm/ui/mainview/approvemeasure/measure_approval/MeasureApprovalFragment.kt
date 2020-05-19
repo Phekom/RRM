@@ -18,6 +18,7 @@ import kotlinx.android.synthetic.main.fragment_measure_approval.*
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
+import timber.log.Timber
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
@@ -36,10 +37,11 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
     override val kodein by kodein()
     private lateinit var approveViewModel: ApproveMeasureViewModel
     private val factory: ApproveMeasureViewModelFactory by instance()
-
+    private lateinit var measurementsToApprove: ArrayList<JobItemMeasureDTO>
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        (activity as MainActivity).supportActionBar?.title = getString(R.string.measure_approval_title)
+        (activity as MainActivity).supportActionBar?.title =
+            getString(R.string.measure_approval_title)
 
     }
 
@@ -67,7 +69,7 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
                 getMeasureItems(job)
             })
 
-           approve_measure_button.setOnClickListener {
+            approve_measure_button.setOnClickListener {
                 val logoutBuilder = AlertDialog.Builder(
                     requireActivity() //, android.R.style.Theme_DeviceDefault_Dialog
                 )
@@ -82,7 +84,7 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
                     if (ServiceUtil.isNetworkConnected(context?.applicationContext)) {
                         moveJobToNextWorkflow(WorkflowDirection.NEXT)
                     } else {
-                        toast( R.string.no_connection_detected)
+                        toast(R.string.no_connection_detected)
                     }
                 }
                 // No button
@@ -129,32 +131,37 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
         }
     }
 
-    private fun moveJobToNextWorkflow(workflowDirection : WorkflowDirection) {
+    private fun moveJobToNextWorkflow(workflowDirection: WorkflowDirection) {
         Coroutines.main {
             arrayOf(
                 getString(R.string.moving_to_next_step_in_workflow),
                 getString(R.string.please_wait)
             )
 
+
             val user = approveViewModel.user.await()
             user.observe(viewLifecycleOwner, Observer { user_ ->
-                approveViewModel.measureapproval_Item.observe(viewLifecycleOwner, Observer { job ->
-
-                    if (user_.userId.isBlank()) {
-                        toast("Error: userId is null")
-                    } else {
-                        // TODO beware littleEndian conversion
-                        val trackRouteId: String =
-                            DataConversion.toLittleEndian(job.jobItemMeasureDTO.trackRouteId)!!
-                        val direction: Int = workflowDirection.value
-                        val description = ""
-                        processWorkFlow(user_.userId, trackRouteId, direction, description)
+                try {
+                    measurementsToApprove.forEach { measureItem ->
+                        if (user_.userId.isBlank()) {
+                            toast("Error: userId is null")
+                        } else {
+                            // TODO beware littleEndian conversion
+                            val trackRouteId: String =
+                                DataConversion.toLittleEndian(measureItem.trackRouteId)!!
+                            val direction: Int = workflowDirection.value
+                            val description = ""
+                            processWorkFlow(user_.userId, trackRouteId, direction, description)
+                        }
                     }
-
-                })
+                    measurementsToApprove.clear()
+                    toast(R.string.job_submitted)
+                    popViewOnJobSubmit(workflowDirection.value)
+                } catch (e: Exception) {
+                    Timber.e(e, "Failed to Approve Measurments!")
+                }
             })
         }
-
     }
 
     private fun processWorkFlow(
@@ -170,13 +177,11 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
             prog.show()
             val submit =
                 approveViewModel.processWorkflowMove(userId, trackRouteId, description, direction)
-            if (submit.isEmpty()) {
+            if (submit.isNotEmpty()) {
                 prog.dismiss()
                 toast(submit)
             } else {
                 prog.dismiss()
-                toast(R.string.job_submitted)
-                popViewOnJobSubmit(direction)
             }
         }
     }
@@ -188,19 +193,25 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
             toast(R.string.job_declined)
         }
 
-        Intent(context?.applicationContext , MainActivity::class.java).also { home ->
+        Intent(context?.applicationContext, MainActivity::class.java).also { home ->
             startActivity(home)
         }
     }
 
     private fun getMeasureItems(job: ApproveMeasureItem) {
         Coroutines.main {
-            val measurements = approveViewModel.getJobMeasureItemsForJobId(job.jobItemMeasureDTO.jobId, ActivityIdConstants.MEASURE_COMPLETE)
+            val measurements = approveViewModel.getJobMeasureItemsForJobId(
+                job.jobItemMeasureDTO.jobId,
+                ActivityIdConstants.MEASURE_COMPLETE
+            )
             measurements.observe(viewLifecycleOwner, Observer { measureItems ->
                 val allData = measureItems.count()
 
-                if (allData == measureItems.size)
+                if (allData == measureItems.size) {
+                    measurementsToApprove = ArrayList()
+                    measurementsToApprove.addAll(measureItems)
                     initRecyclerView(measureItems.toMeasureItem())
+                }
             })
         }
     }
