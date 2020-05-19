@@ -115,5 +115,10 @@ class ApproveMeasureViewModel (
         }
     }
 
+    suspend fun getJobFromJobId(jobId: String): JobDTO {
+        return withContext(Dispatchers.IO) {
+            offlineDataRepository.getUpdatedJob(jobId)
+        }
+    }
 
 }
