@@ -28,7 +28,7 @@ class UiLifecycleScope : CoroutineScope, LifecycleObserver {
 
     }
 
-    lateinit var job: Job
+    private var job = SupervisorJob()
 
     override val coroutineContext: CoroutineContext
         get() = job.plus(Dispatchers.Main).plus(handler)

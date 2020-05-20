@@ -1006,19 +1006,21 @@ class OfflineDataRepository(
         return 4
     }
 
-    private suspend fun fetchAllData(userId: String) {
+    suspend fun fetchAllData(userId: String): Boolean {
         // TODO: Redo as async calls in parallel
+        return withContext(Dispatchers.IO) {
+            refreshActivitySections(userId)
 
-        refreshActivitySections(userId)
+            refreshWorkflows(userId)
 
-        refreshWorkflows(userId)
+            refreshLookups(userId)
 
-        refreshLookups(userId)
+            fetchUserTaskList(userId)
 
-        fetchUserTaskList(userId)
+            refreshContractInfo(userId)
 
-        refreshContractInfo(userId)
-
+            true
+        }
     }
 
     private fun saveLookups(lookups: ArrayList<LookupDTO>?) {

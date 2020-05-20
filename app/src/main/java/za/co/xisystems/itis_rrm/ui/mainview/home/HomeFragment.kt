@@ -16,9 +16,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenStarted
 import kotlinx.android.synthetic.main.fragment_home.*
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
@@ -45,7 +43,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
 
     private var gpsEnabled: Boolean = false
     private var networkEnabled: Boolean = false
-    var userDTO: UserDTO? = null
+    private lateinit var userDTO: UserDTO
     private var uiScope = UiLifecycleScope()
 
     companion object {
@@ -57,27 +55,24 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
         lifecycleScope.launch {
             whenStarted {
 
-                uiScope.onCreate()
-                viewLifecycleOwner.lifecycle.addObserver(uiScope)
-
 
                 uiScope.launch(uiScope.coroutineContext) {
                     try {
-                        Coroutines.main {
-                            data2_loading.show()
-                        }
+
+                        data2_loading.show()
+
                         val user = homeViewModel.user.await()
                         user.observe(viewLifecycleOwner, Observer { user_ ->
+                            userDTO = user_
                             username?.text = user_.userName
                         })
-                        val entities = homeViewModel.offlineData.await()
+
                         val contracts = homeViewModel.offlineSectionItems.await()
                         contracts.observe(viewLifecycleOwner, Observer { mSectionItem ->
                             val allData = mSectionItem.count()
                             if (mSectionItem.size == allData)
-                                Coroutines.main {
-                                    group2_loading.visibility = View.GONE
-                                }
+                                group2_loading.visibility = View.GONE
+
                         })
 
                     } catch (e: ApiException) {
@@ -101,6 +96,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        lifecycle.addObserver(uiScope)
         setHasOptionsMenu(true)
     }
 
@@ -135,6 +131,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
             ViewModelProvider(this, shareFactory).get(SharedViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
 
+        // val dialog = setDataProgressDialog(activity!!, getString(R.string.data_loading_please_wait))
 
         items_swipe_to_refresh.setProgressBackgroundColorSchemeColor(
             ContextCompat.getColor(
@@ -146,38 +143,31 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
         items_swipe_to_refresh.setColorSchemeColors(Color.WHITE)
 
         items_swipe_to_refresh.setOnRefreshListener {
+            uiScope.launch(uiScope.coroutineContext) {
+                try {
 
-            sharedViewModel.setMessage("Data Loading")
-            sharedViewModel.longRunning.postValue(true)
-
-            Coroutines.main {
-                withContext(Dispatchers.Main + uncaughtExceptionHandler) {
-                    try {
-                        homeViewModel.fetchAllData()
-                        homeViewModel.offlineWorkFlows.await()
-                        homeViewModel.fetchResult.observe(viewLifecycleOwner, Observer { work ->
-                            if (work == 22) {
-                                sharedViewModel.setMessage("Data Retrieved")
-                                sharedViewModel.longRunning.postValue(false)
-                            }
-                        })
-                    } catch (e: ApiException) {
-                        sharedViewModel.setMessage(e.message)
-                        Timber.tag(TAG).e(e, "API Exception")
-                    } catch (e: NoInternetException) {
-                        sharedViewModel.setMessage(e.message)
-                        Timber.e(e, "No Internet Connection")
-                    } catch (e: NoConnectivityException) {
-                        sharedViewModel.setMessage(e.message)
-                        Timber.e(e, "Service Host Unreachable")
-                    } finally {
-                        items_swipe_to_refresh.isRefreshing = false
-                        sharedViewModel.longRunning.postValue(false)
+                    sharedViewModel.setMessage("Data Loading")
+                    sharedViewModel.toggleLongRunning(true)
+                    val fetched = homeViewModel.fetchAllData(userDTO.userId)
+                    if (fetched) {
+                        sharedViewModel.setMessage("Data Retrieved")
+                        sharedViewModel.toggleLongRunning(false)
                     }
+
+                } catch (e: ApiException) {
+                    sharedViewModel.setMessage(e.message)
+                    Timber.e(e, "API Exception")
+                } catch (e: NoInternetException) {
+                    sharedViewModel.setMessage(e.message)
+                    Timber.e(e, "No Internet Connection")
+                } catch (e: NoConnectivityException) {
+                    sharedViewModel.setMessage(e.message)
+                    Timber.e(e, "Service Host Unreachable")
+                } finally {
+                    items_swipe_to_refresh.isRefreshing = false
+                    sharedViewModel.toggleLongRunning(false)
                 }
             }
-
-
         }
 
 

@@ -282,7 +282,7 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
     override fun onDestroyView() {
         // Prevents RecyclerView Memory leak
         item_recyclerView.adapter = null
-        uiScope.job.cancel(CancellationException("onDestroyView"))
+        uiScope.destroy()
         viewLifecycleOwner.lifecycleScope.cancel(CancellationException("onDestroyView"))
         super.onDestroyView()
     }
