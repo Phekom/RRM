@@ -91,6 +91,7 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
                             initRecyclerView(measure_items.toMeasureListItems())
                             toast(itemEstimateList.size.toString())
                             group5_loading.visibility = View.GONE
+
                         })
                     }
                 } else {

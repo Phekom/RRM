@@ -132,7 +132,8 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
             ViewModelProvider(this, factory).get(WorkViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
 
-        Coroutines.main {
+        uiScope.launch(uiScope.coroutineContext) {
+
             val user = workViewModel.user.await()
             user.observe(viewLifecycleOwner, Observer { user_ ->
                 useR = user_
@@ -235,7 +236,7 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
         itemEstiWorks: JobEstimateWorksDTO,
         prog: ProgressDialog
     ) {
-        Coroutines.main {
+        uiScope.launch(uiScope.coroutineContext) {
 
             val newitemEstiWorks = setJobWorksLittleEndianGuids(itemEstiWorks)
             val response =
@@ -278,33 +279,33 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
     }
 
     private fun refreshView(prog: ProgressDialog) {
-        Coroutines.main {
-            groupAdapter.clear()
-            image_collection_view.clearImages()
-            estimateWorksPhotoArrayList.clear()
-            comments_editText.setText("")
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
 
-                parentFragmentManager.beginTransaction().detach(this).commitNow()
-                prog.dismiss()
-                parentFragmentManager.beginTransaction().attach(this).commitNow()
+        groupAdapter.clear()
+        image_collection_view.clearImages()
+        estimateWorksPhotoArrayList.clear()
+        comments_editText.setText("")
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+
+            parentFragmentManager.beginTransaction().detach(this).commitNow()
+            prog.dismiss()
+            parentFragmentManager.beginTransaction().attach(this).commitNow()
 
 
-            } else {
-                prog.dismiss()
-                parentFragmentManager.beginTransaction().detach(this)
-                    .attach(this).commit()
+        } else {
+            prog.dismiss()
+            parentFragmentManager.beginTransaction().detach(this)
+                .attach(this).commit()
 
-            }
+        }
 
-            // Await the updated estimate record
-
+        // Await the updated estimate record
+        uiScope.launch(uiScope.coroutineContext) {
             workViewModel.workItem.observe(viewLifecycleOwner, Observer {
                 Timber.d("$it")
 
                 val id = ActivityIdConstants.JOB_APPROVED
                 // This part must be Deleted when the Dynamic workflow is complete.
-                Coroutines.main {
+                uiScope.launch(uiScope.coroutineContext) {
                     val workCodeData = workViewModel.getWorkFlowCodes(id)
                     workCodeData.observe(viewLifecycleOwner, Observer {
 
@@ -456,7 +457,7 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
         estimateItem: JobItemEstimateDTO,
         estimateJob: JobDTO
     ) {
-        Coroutines.main {
+        uiScope.launch(uiScope.coroutineContext) {
 
             val workDone: Int = workViewModel.getJobItemsEstimatesDoneForJobId(
                 estimateJob.JobId,
@@ -476,7 +477,7 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
 
                     for (workItem in estimateWorksList) {
                         if (workItem.actId == ActivityIdConstants.EST_WORKS_COMPLETE) {
-                            Coroutines.main {
+                            uiScope.launch(uiScope.coroutineContext) {
                                 val estWorkDone: Int =
                                     workViewModel.getJobItemsEstimatesDoneForJobId(
                                         estimateJob.JobId,
@@ -495,7 +496,7 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
 
                             // Remove for Dynamic Workflow
 
-                            Coroutines.main {
+                            uiScope.launch(uiScope.coroutineContext) {
                                 val workflowStepData = workViewModel.getWorkFlowCodes(id)
                                 workflowStepData.observe(
                                     viewLifecycleOwner,
@@ -527,38 +528,36 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
 
     private fun submitAllOutStandingEstimates(estimates: ArrayList<JobItemEstimateDTO>?) {
         // get Data from db Search for all estimates 8 and work 21 = result is int > 0  then button yes else fetch
-        Coroutines.main {
-            if (estimates?.size != 0) {
-                val dialogBuilder: AlertDialog.Builder = AlertDialog.Builder(requireActivity())
-                dialogBuilder.setTitle(R.string.confirm)
-                dialogBuilder.setIcon(R.drawable.ic_error)
-                dialogBuilder.setMessage("Work Complete - Submit for Measurements")
-                dialogBuilder.setCancelable(false)
-                dialogBuilder.setPositiveButton(
-                    R.string.yes
-                ) { dialog, which ->
 
-                    for (jobEstimate in estimates!!.iterator()) {
-                        Coroutines.main {
-                            //                                if(jobEstimate != null){
-                            val jobItemEstimate = workViewModel.getJobItemEstimateForEstimateId(
-                                DataConversion.toBigEndian(jobEstimate.estimateId)!!
+        if (estimates?.size != 0) {
+            val dialogBuilder: AlertDialog.Builder = AlertDialog.Builder(requireActivity())
+            dialogBuilder.setTitle(R.string.confirm)
+            dialogBuilder.setIcon(R.drawable.ic_error)
+            dialogBuilder.setMessage("Work Complete - Submit for Measurements")
+            dialogBuilder.setCancelable(false)
+            dialogBuilder.setPositiveButton(
+                R.string.yes
+            ) { dialog, which ->
+
+                for (jobEstimate in estimates!!.iterator()) {
+                    uiScope.launch(uiScope.coroutineContext) {
+                        val jobItemEstimate = workViewModel.getJobItemEstimateForEstimateId(
+                            DataConversion.toBigEndian(jobEstimate.estimateId)!!
+                        )
+                        jobItemEstimate.observe(viewLifecycleOwner, Observer { jobItEstmt ->
+                            moveJobItemEstimateToNextWorkflow(
+                                WorkflowDirection.NEXT,
+                                jobItEstmt
                             )
-                            jobItemEstimate.observe(viewLifecycleOwner, Observer { jobItEstmt ->
-                                moveJobItemEstimateToNextWorkflow(
-                                    WorkflowDirection.NEXT,
-                                    jobItEstmt
-                                )
-                            })
-
-                        }
+                        })
 
                     }
+
                 }
-
-                dialogBuilder.show()
-
             }
+
+            dialogBuilder.show()
+
 
         }
     }
