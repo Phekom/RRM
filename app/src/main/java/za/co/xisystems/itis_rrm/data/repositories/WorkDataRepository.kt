@@ -342,7 +342,6 @@ class WorkDataRepository(
         } else {
             val noDataException = NoDataException("Workflow Job is null")
             Timber.e(noDataException)
-            throw noDataException
         }
     }
 
