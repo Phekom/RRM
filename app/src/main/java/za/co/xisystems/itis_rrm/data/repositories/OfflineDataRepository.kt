@@ -963,8 +963,11 @@ class OfflineDataRepository(
         }
     }
 
-    suspend fun getAllEntities() {
-        Db.getEntitiesDao().getAllEntities()
+    suspend fun getAllEntities(): Int {
+        return withContext(Dispatchers.IO) {
+            Db.getEntitiesDao().getAllEntities()
+            7
+        }
     }
 
     suspend fun fetchUserTaskList(userId: String): Int {

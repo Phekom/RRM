@@ -8,7 +8,6 @@ import android.graphics.Typeface
 import android.location.LocationManager
 import android.os.Bundle
 import android.provider.Settings
-import android.util.Log
 import android.view.*
 import android.widget.ProgressBar
 import android.widget.Switch
@@ -30,6 +29,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.kodein
 import org.kodein.di.generic.instance
+import timber.log.Timber
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.ui.auth.LoginActivity
 import za.co.xisystems.itis_rrm.ui.mainview.activities.*
@@ -278,8 +278,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     fun startLongRunningTask() {
-        Log.i(TAG, "starting task...")
-        this.progressBar?.visibility = View.VISIBLE
+        Timber.i("starting task...")
+        progressBar?.visibility = View.VISIBLE
         window.setFlags(
             WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
             WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
@@ -287,8 +287,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     fun endLongRunningTask() {
-        Log.i(TAG, "stopping task ...")
-        this.progressBar?.visibility = View.INVISIBLE
+        Timber.i("stopping task...")
+        progressBar?.visibility = View.GONE
         window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
     }
 

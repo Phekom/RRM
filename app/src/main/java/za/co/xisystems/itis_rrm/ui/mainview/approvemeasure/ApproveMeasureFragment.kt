@@ -89,13 +89,13 @@ class ApproveMeasureFragment : BaseFragment(R.layout.fragment_approvemeasure), K
             }
         } catch (e: ApiException) {
             ToastUtils().toastLong(activity, e.message)
-            Timber.e(e, e.message)
+            Timber.e(e, "API exception")
         } catch (e: NoInternetException) {
             ToastUtils().toastLong(activity, e.message)
-            Timber.e(e, e.message)
+            Timber.e(e, "No active internet connection")
         } catch (e: NoConnectivityException) {
             ToastUtils().toastLong(activity, e.message)
-            Timber.e(e, e.message)
+            Timber.e(e, "No route to service host")
         } finally {
             dialog.dismiss()
         }
@@ -139,7 +139,6 @@ class ApproveMeasureFragment : BaseFragment(R.layout.fragment_approvemeasure), K
         }
     }
 
-
     private fun initRecyclerView(approveMeasureListItems: List<ApproveMeasureItem>) {
         val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
             addAll(approveMeasureListItems)
@@ -180,7 +179,6 @@ class ApproveMeasureFragment : BaseFragment(R.layout.fragment_approvemeasure), K
     }
 
     private fun List<JobItemMeasureDTO>.toApproveListItems(): List<ApproveMeasureItem> {
-//    private fun List<JobDTO>.toApproveListItems(): List<ApproveMeasure_Item> {
         return this.map { approvej_items ->
             ApproveMeasureItem(approvej_items, approveViewModel)
         }
