@@ -191,12 +191,14 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
 
             val submit =
                 approveViewModel.processWorkflowMove(userId, trackRouteId, description, direction)
-            if (submit != null){
+            if (submit.isNotBlank()) {
                 progressDialog.dismiss()
-                toast(submit) }else {
+                toast(submit)
+            } else {
                 progressDialog.dismiss()
                 toast(R.string.job_submitted)
-                popViewOnJobSubmit(direction)}
+                popViewOnJobSubmit(direction)
+            }
 
     }
 

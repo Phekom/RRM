@@ -6,7 +6,6 @@ import android.graphics.Color
 import android.location.LocationManager
 import android.net.ConnectivityManager
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
@@ -17,10 +16,13 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenStarted
 import kotlinx.android.synthetic.main.fragment_home.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
+import timber.log.Timber
 import za.co.xisystems.itis_rrm.BuildConfig
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
@@ -58,13 +60,6 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                 uiScope.onCreate()
                 viewLifecycleOwner.lifecycle.addObserver(uiScope)
 
-                homeViewModel = activity?.run {
-                    ViewModelProvider(this, factory).get(HomeViewModel::class.java)
-                } ?: throw Exception("Invalid Activity")
-
-                sharedViewModel = activity?.run {
-                    ViewModelProvider(this, shareFactory).get(SharedViewModel::class.java)
-                } ?: throw Exception("Invalid Activity")
 
                 uiScope.launch(uiScope.coroutineContext) {
                     try {
@@ -75,7 +70,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                         user.observe(viewLifecycleOwner, Observer { user_ ->
                             username?.text = user_.userName
                         })
-
+                        val entities = homeViewModel.offlineData.await()
                         val contracts = homeViewModel.offlineSectionItems.await()
                         contracts.observe(viewLifecycleOwner, Observer { mSectionItem ->
                             val allData = mSectionItem.count()
@@ -87,13 +82,13 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
 
                     } catch (e: ApiException) {
                         ToastUtils().toastLong(activity, e.message)
-                        Log.e(TAG, "API Exception", e)
+                        Timber.e(e, "API Exception")
                     } catch (e: NoInternetException) {
                         ToastUtils().toastLong(activity, e.message)
-                        Log.e(TAG, "No Internet Connection", e)
+                        Timber.e(e, "No Internet Connection")
                     } catch (e: NoConnectivityException) {
                         ToastUtils().toastLong(activity, e.message)
-                        Log.e(TAG, "Service Host Unreachable", e)
+                        Timber.e(e, "Service Host Unreachable")
                     } finally {
                         group2_loading.visibility = View.GONE
                     }
@@ -132,7 +127,14 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
-        // val dialog = setDataProgressDialog(activity!!, getString(R.string.data_loading_please_wait))
+        homeViewModel = activity?.run {
+            ViewModelProvider(this, factory).get(HomeViewModel::class.java)
+        } ?: throw Exception("Invalid Activity")
+
+        sharedViewModel = activity?.run {
+            ViewModelProvider(this, shareFactory).get(SharedViewModel::class.java)
+        } ?: throw Exception("Invalid Activity")
+
 
         items_swipe_to_refresh.setProgressBackgroundColorSchemeColor(
             ContextCompat.getColor(
@@ -144,32 +146,38 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
         items_swipe_to_refresh.setColorSchemeColors(Color.WHITE)
 
         items_swipe_to_refresh.setOnRefreshListener {
-            uiScope.launch(uiScope.coroutineContext) {
-                try {
 
-                    sharedViewModel.setMessage("Data Loading")
-                    sharedViewModel.toggleLongRunning(true)
-                    homeViewModel.fetchAllData()
-                    homeViewModel.fetchResult.observe(viewLifecycleOwner, Observer { work ->
-                        if (work == true) {
-                            sharedViewModel.setMessage("Data Retrieved")
-                            sharedViewModel.toggleLongRunning(false)
-                        }
-                    })
-                } catch (e: ApiException) {
-                    sharedViewModel.setMessage(e.message)
-                    Log.e(TAG, "API Exception", e)
-                } catch (e: NoInternetException) {
-                    sharedViewModel.setMessage(e.message)
-                    Log.e(TAG, "No Internet Connection", e)
-                } catch (e: NoConnectivityException) {
-                    sharedViewModel.setMessage(e.message)
-                    Log.e(TAG, "Service Host Unreachable", e)
-                } finally {
-                    items_swipe_to_refresh.isRefreshing = false
-                    sharedViewModel.toggleLongRunning(false)
+            sharedViewModel.setMessage("Data Loading")
+            sharedViewModel.longRunning.postValue(true)
+
+            Coroutines.main {
+                withContext(Dispatchers.Main + uncaughtExceptionHandler) {
+                    try {
+                        homeViewModel.fetchAllData()
+                        homeViewModel.offlineWorkFlows.await()
+                        homeViewModel.fetchResult.observe(viewLifecycleOwner, Observer { work ->
+                            if (work == 22) {
+                                sharedViewModel.setMessage("Data Retrieved")
+                                sharedViewModel.longRunning.postValue(false)
+                            }
+                        })
+                    } catch (e: ApiException) {
+                        sharedViewModel.setMessage(e.message)
+                        Timber.tag(TAG).e(e, "API Exception")
+                    } catch (e: NoInternetException) {
+                        sharedViewModel.setMessage(e.message)
+                        Timber.e(e, "No Internet Connection")
+                    } catch (e: NoConnectivityException) {
+                        sharedViewModel.setMessage(e.message)
+                        Timber.e(e, "Service Host Unreachable")
+                    } finally {
+                        items_swipe_to_refresh.isRefreshing = false
+                        sharedViewModel.longRunning.postValue(false)
+                    }
                 }
             }
+
+
         }
 
 

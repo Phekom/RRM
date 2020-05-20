@@ -280,12 +280,16 @@ class OfflineDataRepository(
                 if (matcher.find() && section.isNotEmpty()) {
                     val itemCode = matcher.group(1)?.replace("\\s+".toRegex(), "")
                     if (itemCode != null) {
-                        if (!Db.getSectionItemDao().checkIfSectionitemsExist(itemCode))
-                            Db.getSectionItemDao().insertSectionitem(
-                                section,
-                                itemCode,
-                                sectionItemId
-                            )
+                        try {
+                            if (!Db.getSectionItemDao().checkIfSectionitemsExist(itemCode))
+                                Db.getSectionItemDao().insertSectionitem(
+                                    section,
+                                    itemCode,
+                                    sectionItemId
+                                )
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
                     } else {
                         Timber.e("itemCode is null")
                     }
@@ -963,8 +967,11 @@ class OfflineDataRepository(
         }
     }
 
-    suspend fun getAllEntities() {
-        Db.getEntitiesDao().getAllEntities()
+    suspend fun getAllEntities(): Int {
+        return withContext(Dispatchers.IO) {
+            Db.getEntitiesDao().getAllEntities()
+            7
+        }
     }
 
     suspend fun fetchUserTaskList(userId: String): Int {
