@@ -48,6 +48,8 @@ class OfflineDataRepository(
     private val workflowJ = MutableLiveData<WorkflowJobDTO>()
     private val workflowJ2 = MutableLiveData<WorkflowJobDTO>()
     private val photoUpload = MutableLiveData<String>()
+    private val qtyUpDate = MutableLiveData<String>()
+
 
     init {
         conTracts.observeForever {
@@ -1185,9 +1187,44 @@ class OfflineDataRepository(
 
     }
 
+    suspend fun upDateMeasure(newQuantity: String, itemMeasureId: String): String {
+        val new_estimateId = DataConversion.toLittleEndian(itemMeasureId)
+        val new_Quantity = newQuantity + ".0"
+
+//        val quantityUpdateResponse = apiRequest { api.updateEstimateQty(new_estimateId,new_Quantity.toDouble() ) }
+//        qtyUpDate.postValue(quantityUpdateResponse.errorMessage , itemMeasureId,new_Quantity.toDouble() )
+        val messages = "" // quantityUpdateResponse.errorMessage ?: ""
+        return withContext(Dispatchers.IO) {
+            messages
+        }
+    }
+
+//    private fun <T> MutableLiveData<T>.postValue(errorMessage: String, itemMeasureId: String?, new_Quantity: Double) {
+//        if (errorMessage == null) {
+//            Db.getJobItemMeasureDao().upDateLineRate(itemMeasureId!!, new_Quantity)
+//        } else {
+//            Timber.e("newQty is null")
+//        }
+//    }
+
+
     suspend fun getUpdatedJob(jobId: String): JobDTO {
         return withContext(Dispatchers.IO) {
             Db.getJobDao().getJobForJobId(jobId)
+        }
+    }
+
+    suspend fun getQuantityForMeasureItemId(itemMeasureId: String): LiveData<Double> {
+        return withContext(Dispatchers.IO) {
+            Db.getJobItemMeasureDao().getQuantityForMeasureItemId(itemMeasureId)
+
+        }
+    }
+
+
+    suspend fun getLineRateForMeasureItemId(itemMeasureId: String): LiveData<Double> {
+        return withContext(Dispatchers.IO) {
+            Db.getJobItemMeasureDao().getLineRateForMeasureItemId(itemMeasureId)
         }
     }
 

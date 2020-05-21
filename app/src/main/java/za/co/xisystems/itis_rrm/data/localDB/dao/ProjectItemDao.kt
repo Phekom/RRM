@@ -37,6 +37,9 @@ interface ProjectItemDao {
     @Query("SELECT uom FROM PROJECT_ITEM_TABLE WHERE itemId = :itemId")
     fun getUOMForProjectItemId(itemId: String): String
 
+    @Query("SELECT tenderRate FROM PROJECT_ITEM_TABLE WHERE itemId = :itemId")
+    fun getTenderRateForProjectItemId(itemId: String): Double
+
     @Query("SELECT * FROM PROJECT_ITEM_TABLE ")
     fun getAllItemsForAllProjects() : LiveData<List<ProjectItemDTO>>
 

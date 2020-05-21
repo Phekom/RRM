@@ -51,7 +51,7 @@ import java.util.*
 /**
  * Created by Francis Mahlava on 2019/12/29.
  */
-
+//
 class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), KodeinAware {
     override val kodein by kodein()
     private lateinit var createViewModel: CreateViewModel
@@ -521,7 +521,7 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
 
     private fun setStartDateTextView(year: Int, month: Int, dayOfMonth: Int) {
         startDateTextView.text = DateUtil.toStringReadable(year, month, dayOfMonth)
-        startDate = DateUtil.CalendarItemsToDate(year, month, dayOfMonth)!!
+//        startDate = DateUtil.CalendarItemsToDate(year, month, dayOfMonth)!!
         startDateCardView.startAnimation(bounce_500)
         val calendar = Calendar.getInstance()
         calendar[year, month] = dayOfMonth

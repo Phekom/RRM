@@ -60,17 +60,19 @@ interface JobItemMeasureDao {
     @Query("SELECT * FROM JOB_ITEM_MEASURE WHERE jobId = :jobId ORDER BY jimNo ASC")
     fun getJobItemMeasureForJobId(jobId: String): LiveData<JobItemMeasureDTO>
 
-    @Query("DELETE FROM JOB_ITEM_MEASURE WHERE ItemMeasureId = :ItemMeasureId")
+    @Query("DELETE FROM JOB_ITEM_MEASURE WHERE itemMeasureId = :ItemMeasureId")
     fun deleteItemMeasurefromList(ItemMeasureId: String)
 
-//    @Query("SELECT * FROM JOB_ITEM_MEASURE WHERE  jobId LIKE :jobId")
-//    fun getJobItemMeasuresForJobIdAndEstimateId( jobId: String?): LiveData<List<JobItemMeasureDTOTemp>>
+    @Query("SELECT qty FROM JOB_ITEM_MEASURE WHERE itemMeasureId = :itemMeasureId")
+    fun getQuantityForMeasureItemId(itemMeasureId: String): LiveData<Double>
 
 
-//    @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE itemId = :itemId")
-//    fun getItemForItemId(itemId: String): LiveData<ItemDTO>
-//
-//
+    @Query("SELECT lineRate FROM JOB_ITEM_MEASURE WHERE itemMeasureId = :itemMeasureId")
+    fun getLineRateForMeasureItemId(itemMeasureId: String): LiveData<Double>
+
+    @Query("UPDATE JOB_ITEM_MEASURE SET qty =:newQuantity WHERE estimateId = :newEstimateId")
+    fun upDateLineRate(newEstimateId: String, newQuantity: Double)
+
 //    @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE projectId = :projectId")
 //    fun getAllItemsForProjectId(projectId: String): LiveData<List<ItemDTO>>
 //

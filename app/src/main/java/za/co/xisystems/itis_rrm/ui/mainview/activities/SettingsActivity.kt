@@ -81,9 +81,6 @@ class SettingsActivity : AppCompatActivity(), KodeinAware {
                             Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
                         startActivity(home)
                     }
-//                val registerIntent = Intent(applicationContext, RegisterActivity::class.java)
-//                startActivity(registerIntent)
-//                finish()
                 }
             }
             // No button

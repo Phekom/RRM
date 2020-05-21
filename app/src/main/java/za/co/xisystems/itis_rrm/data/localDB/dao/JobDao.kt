@@ -18,7 +18,7 @@ import java.util.ArrayList
 interface JobDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertOrUpdateJobs(job: JobDTO)
+    fun insertOrUpdateJobs(job: JobDTO)
 
     @Query("SELECT * FROM JOB_TABLE WHERE jobId = :jobId")
     fun checkIfJobExist(jobId: String): Boolean

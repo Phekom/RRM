@@ -1,5 +1,6 @@
 package za.co.xisystems.itis_rrm.ui.mainview.approvejobs
 
+import android.app.Dialog
 import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -30,12 +31,14 @@ import za.co.xisystems.itis_rrm.utils.*
  * Created by Francis Mahlava on 03,October,2019
  */
 
-class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAware {
+class ApproveJobsFragment : BaseFragment( R.layout.fragment_approvejob), KodeinAware {
+//
+
 
     override val kodein by kodein()
     private lateinit var approveViewModel: ApproveJobsViewModel
     private val factory: ApproveJobsViewModelFactory by instance()
-
+    lateinit var dialog : Dialog
 
     companion object {
         val TAG: String = ApproveJobsFragment::class.java.simpleName
@@ -61,7 +64,7 @@ class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAw
         } ?: throw Exception("Invalid Activity")
 
         Coroutines.main {
-            val dialog = setDataProgressDialog(activity!!, getString(R.string.data_loading_please_wait))
+            dialog = setDataProgressDialog(requireActivity(), getString(R.string.data_loading_please_wait))
             val jobs = approveViewModel.getJobsForActivityId(ActivityIdConstants.JOB_APPROVE)
             jobs.observe(viewLifecycleOwner, Observer { job_s ->
                 val jItems = job_s.distinctBy {
@@ -78,7 +81,7 @@ class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAw
 
             jobs_swipe_to_refresh.setProgressBackgroundColorSchemeColor(
                 ContextCompat.getColor(
-                    context!!.applicationContext,
+                    requireContext().applicationContext,
                     R.color.colorPrimary
                 )
             )
@@ -115,7 +118,9 @@ class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAw
         }
     }
 
-    private fun initRecyclerView(approveJobListItems: List<ApproveJobItem>) {
+    private fun initRecyclerView(
+        approveJobListItems: List<ApproveJobItem>
+    ) {
         val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
             addAll(approveJobListItems)
         }

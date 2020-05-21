@@ -121,4 +121,26 @@ class ApproveMeasureViewModel (
         }
     }
 
+    suspend fun upDateMeasure(new_quantity: String, itemMeasureId: String?) : String{
+        return withContext(Dispatchers.IO) {
+            offlineDataRepository.upDateMeasure(new_quantity, itemMeasureId!!)
+        }
+    }
+
+
+    suspend fun getQuantityForMeasureItemId(itemMeasureId: String): LiveData<Double> {
+        return withContext(Dispatchers.IO) {
+            offlineDataRepository.getQuantityForMeasureItemId(itemMeasureId)
+        }
+    }
+
+
+
+    suspend fun getLineRateForMeasureItemId(itemMeasureId: String):  LiveData<Double> {
+        return withContext(Dispatchers.IO) {
+            offlineDataRepository.getLineRateForMeasureItemId(itemMeasureId)
+        }
+    }
+
+
 }

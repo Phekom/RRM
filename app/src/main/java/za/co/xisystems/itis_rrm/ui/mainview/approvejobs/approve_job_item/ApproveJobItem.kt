@@ -1,5 +1,6 @@
 package za.co.xisystems.itis_rrm.ui.mainview.approvejobs.approve_job_item
 
+import android.app.Dialog
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import com.xwray.groupie.kotlinandroidextensions.Item
 import kotlinx.android.synthetic.main.single_listview_item.*
@@ -32,7 +33,6 @@ class ApproveJobItem(
                if (route.isNullOrEmpty()) route = ""
                    section  =  approveViewModel.getSectionForProjectSectionId(sectionId!!)
                if (section.isNullOrEmpty()) section = ""
-
 
                apv_section.text = "( $route ${"/0$section"} )"
            }

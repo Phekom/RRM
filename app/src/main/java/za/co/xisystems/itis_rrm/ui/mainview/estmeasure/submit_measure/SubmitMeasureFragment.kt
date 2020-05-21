@@ -24,6 +24,7 @@ import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
+import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModelFactory
 import za.co.xisystems.itis_rrm.utils.Coroutines
@@ -63,6 +64,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
         measureViewModel = activity?.run {
             ViewModelProvider(this, factory).get(MeasureViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
+
 
         Coroutines.main {
             measureViewModel.measure_Item.observe(viewLifecycleOwner, Observer { jobID ->
@@ -209,12 +211,14 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                                 user_.userId, JobId, itemMeasureJob.JiNo, ContractVoId, mSures,
                                 it, itemMeasureJob
                             )
+
                         }
                         prog.dismiss()
                         if (submit != null) {
                             toast(submit)
                         } else {
                             toast(R.string.measure_submitted)
+//                            sendJobToApprove((itemMeasureJob), view)
                             popViewOnJobSubmit()
                         }
 
@@ -225,6 +229,16 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
             })
         }
     }
+
+//    private fun sendJobToApprove(
+//        itemMeasureJob: JobDTO,
+//        view: View?
+//    ) {
+//        Coroutines.main {
+//            approveViewModel.measurea1_Job.value = itemMeasureJob
+//        }
+//
+//    }
 
     fun setJobMeasureLittleEndianGuids(jim: JobItemMeasureDTO?): JobItemMeasureDTO? {
         if (jim != null) {

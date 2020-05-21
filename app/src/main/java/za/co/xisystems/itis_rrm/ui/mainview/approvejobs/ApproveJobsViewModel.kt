@@ -34,6 +34,12 @@ class ApproveJobsViewModel (
         }
     }
 
+    suspend fun getTenderRateForProjectItemId(projectItemId: String): Double {
+        return withContext(Dispatchers.IO) {
+            jobApprovalDataRepository.getTenderRateForProjectItemId(projectItemId)
+        }
+    }
+
     suspend fun getProjectSectionIdForJobId(jobId: String): String {
         return withContext(Dispatchers.IO) {
             jobApprovalDataRepository.getProjectSectionIdForJobId(jobId)
@@ -102,37 +108,27 @@ class ApproveJobsViewModel (
         }
     }
 
+    suspend fun upDateEstimate(new_quantity: String, new_total: String, estimateId: String) : String{
+        return withContext(Dispatchers.IO) {
+            jobApprovalDataRepository.upDateEstimate(new_quantity, new_total, estimateId)
+        }
+    }
+
+
+    suspend fun getQuantityForEstimationItemId(estimateId: String): LiveData<Double> {
+        return withContext(Dispatchers.IO) {
+            jobApprovalDataRepository.getQuantityForEstimationItemId(estimateId)
+        }
+    }
 
 
 
+    suspend fun getLineRateForEstimationItemId(estimateId: String):  LiveData<Double> {
+        return withContext(Dispatchers.IO) {
+            jobApprovalDataRepository.getLineRateForEstimationItemId(estimateId)
+        }
+    }
 
-
-
-
-
-
-
-
-
-
-
-
-
-//
-//    suspend fun getEntitiesListForActivityId(activityId: Int): LiveData<List<ToDoListEntityDTO>> {
-//        return withContext(Dispatchers.IO) {
-//            jobApprovalDataRepository.getEntitiesListForActivityId(activityId)
-//        }
-//    }
-//
-//
-//
-//    suspend fun getJobEstimationItemsPhoto(estimateId: String):  LiveData<List<JobItemEstimatesPhotoDTO>> {
-//        return withContext(Dispatchers.IO) {
-//            jobApprovalDataRepository.getJobEstimationItemsPhoto(estimateId)
-//        }
-//    }
-//
 
 //    suspend fun getMessages() : String {
 //        return withContext(Dispatchers.IO) {

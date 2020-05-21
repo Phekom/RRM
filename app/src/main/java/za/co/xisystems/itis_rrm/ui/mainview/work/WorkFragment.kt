@@ -40,7 +40,7 @@ const val INSET_TYPE_KEY = "inset_type"
 const val INSET = "inset"
 
 class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
-
+//
     override val kodein by kodein()
     private lateinit var workViewModel: WorkViewModel
     private val factory: WorkViewModelFactory by instance()

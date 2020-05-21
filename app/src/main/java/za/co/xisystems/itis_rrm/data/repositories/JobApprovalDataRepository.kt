@@ -29,7 +29,7 @@ class JobApprovalDataRepository(
 
 
     private val workflowJ = MutableLiveData<WorkflowJobDTO>()
-
+    private val qtyUpDate = MutableLiveData<String>()
 
     init {
 
@@ -37,9 +37,17 @@ class JobApprovalDataRepository(
             saveWorkflowJob(it)
 
         }
+        qtyUpDate.observeForever {
+            saveqtyUpDate(it)
 
+        }
 
     }
+
+    private fun saveqtyUpDate( newQty : String?) {
+
+    }
+
 
 
     suspend fun getUser(): LiveData<UserDTO> {
@@ -52,6 +60,12 @@ class JobApprovalDataRepository(
     suspend fun getSectionForProjectSectionId(sectionId: String?): String {
         return withContext(Dispatchers.IO) {
             Db.getProjectSectionDao().getSectionForProjectSectionId(sectionId!!)
+        }
+    }
+
+    suspend fun getTenderRateForProjectItemId(projectItemId: String): Double {
+        return withContext(Dispatchers.IO) {
+            Db.getProjectItemDao().getTenderRateForProjectItemId(projectItemId)
         }
     }
 
@@ -87,6 +101,27 @@ class JobApprovalDataRepository(
         }
     }
 
+    suspend fun upDateEstimate(newQuantity: String, newTotal: String, estimateId: String): String {
+        val new_estimateId = DataConversion.toLittleEndian(estimateId)
+       val new_Quantity = newQuantity + ".0"
+       val new_Total = newTotal + ".0"
+
+        val quantityUpdateResponse = apiRequest { api.updateEstimateQty(new_estimateId,new_Quantity.toDouble(), new_Total.toDouble() ) }
+        qtyUpDate.postValue(quantityUpdateResponse.errorMessage , estimateId,new_Quantity.toDouble(), new_Total.toDouble())
+        val messages = quantityUpdateResponse.errorMessage ?: ""
+        return withContext(Dispatchers.IO) {
+            messages
+        }
+    }
+
+    private fun <T> MutableLiveData<T>.postValue(errorMessage: String, newEstimateid: String?, new_Quantity: Double, new_Total: Double) {
+        if (errorMessage == null) {
+                    Db.getJobItemEstimateDao().upDateLineRate(newEstimateid!!, new_Quantity, new_Total)
+        } else {
+            Timber.e("newQty is null")
+        }
+    }
+
     suspend fun processWorkflowMove(
         userId: String,
         trackRouteId: String,
@@ -104,6 +139,19 @@ class JobApprovalDataRepository(
         }
     }
 
+
+    suspend fun getQuantityForEstimationItemId(estimateId: String): LiveData<Double> {
+        return withContext(Dispatchers.IO) {
+            Db.getJobItemEstimateDao().getQuantityForEstimationItemId(estimateId)
+        }
+    }
+
+
+    suspend fun getLineRateForEstimationItemId(estimateId: String): LiveData<Double> {
+        return withContext(Dispatchers.IO) {
+            Db.getJobItemEstimateDao().getLineRateForEstimationItemId(estimateId)
+        }
+    }
 
     suspend fun getJobEstimationItemsForJobId(jobID: String?): LiveData<List<JobItemEstimateDTO>> {
         return withContext(Dispatchers.IO) {
@@ -131,7 +179,7 @@ class JobApprovalDataRepository(
         }
     }
 
-    private fun saveWorkflowJob(workflowJob: WorkflowJobDTO?) {
+    private fun saveWorkflowJob( workflowJob: WorkflowJobDTO? ) {
         try {
             val job = setWorkflowJobBigEndianGuids(workflowJob!!)
             insertOrUpdateWorkflowJobInSQLite(job!!)
@@ -243,7 +291,11 @@ class JobApprovalDataRepository(
     }
 
 
+
+
 }
+
+
 
 
 

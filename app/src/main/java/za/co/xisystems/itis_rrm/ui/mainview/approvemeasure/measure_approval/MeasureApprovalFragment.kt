@@ -1,5 +1,6 @@
 package za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.measure_approval
 
+import android.app.Dialog
 import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
@@ -38,6 +39,8 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
     private lateinit var approveViewModel: ApproveMeasureViewModel
     private val factory: ApproveMeasureViewModelFactory by instance()
     private lateinit var measurementsToApprove: ArrayList<JobItemMeasureDTO>
+    lateinit var dialog : Dialog
+
     override fun onAttach(context: Context) {
         super.onAttach(context)
         (activity as MainActivity).supportActionBar?.title =
@@ -62,7 +65,7 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
         approveViewModel = activity?.run {
             ViewModelProvider(this, factory).get(ApproveMeasureViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
-
+        dialog = setDataProgressDialog(requireActivity(), getString(R.string.data_loading_please_wait))
         Coroutines.main {
 
             approveViewModel.measureapproval_Item.observe(viewLifecycleOwner, Observer { job ->
@@ -99,34 +102,34 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
                 declineAlert.show()
             }
 
-            decline_measure_button.setOnClickListener {
-                val logoutBuilder =
-                    AlertDialog.Builder(
-                        requireActivity() //, android.R.style.Theme_DeviceDefault_Dialog
-                    )
-                logoutBuilder.setTitle(R.string.confirm)
-                logoutBuilder.setIcon(R.drawable.ic_warning)
-                logoutBuilder.setMessage(R.string.are_you_sure_you_want_to_decline2)
-                // Yes button
-                logoutBuilder.setPositiveButton(
-                    R.string.yes
-                ) { dialog, which ->
-                    if (ServiceUtil.isNetworkConnected(context?.applicationContext)) {
-//                        moveJobToNextWorkflow(WorkflowDirection.FAIL)
-                    } else {
-                        toast(R.string.no_connection_detected)
-                    }
-                }
-                // No button
-                logoutBuilder.setNegativeButton(
-                    R.string.no
-                ) { dialog, which ->
-                    // Do nothing but close dialog
-                    dialog.dismiss()
-                }
-                val declineAlert = logoutBuilder.create()
-                declineAlert.show()
-            }
+//            decline_measure_button.setOnClickListener {
+//                val logoutBuilder =
+//                    AlertDialog.Builder(
+//                        requireActivity() //, android.R.style.Theme_DeviceDefault_Dialog
+//                    )
+//                logoutBuilder.setTitle(R.string.confirm)
+//                logoutBuilder.setIcon(R.drawable.ic_warning)
+//                logoutBuilder.setMessage(R.string.are_you_sure_you_want_to_decline2)
+//                // Yes button
+//                logoutBuilder.setPositiveButton(
+//                    R.string.yes
+//                ) { dialog, which ->
+//                    if (ServiceUtil.isNetworkConnected(context?.applicationContext)) {
+////                        moveJobToNextWorkflow(WorkflowDirection.FAIL)
+//                    } else {
+//                        toast(R.string.no_connection_detected)
+//                    }
+//                }
+//                // No button
+//                logoutBuilder.setNegativeButton(
+//                    R.string.no
+//                ) { dialog, which ->
+//                    // Do nothing but close dialog
+//                    dialog.dismiss()
+//                }
+//                val declineAlert = logoutBuilder.create()
+//                declineAlert.show()
+//            }
 
         }
     }
@@ -235,7 +238,7 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
 
     private fun List<JobItemMeasureDTO>.toMeasureItem(): List<MeasurementsItem> {
         return this.map { approvedJobItem ->
-            MeasurementsItem(approvedJobItem, approveViewModel, activity)
+            MeasurementsItem(approvedJobItem, approveViewModel, activity, dialog, viewLifecycleOwner)
         }
     }
 

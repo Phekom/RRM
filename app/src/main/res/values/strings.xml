@@ -87,6 +87,8 @@
     <string name="are_you_sure_you_want_to_request_correction">Are you sure you want to Request Correction for this Job?</string>
     <string name="are_you_sure_you_want_to_decline">Are you sure you want to Decline This Job?</string>
     <string name="are_you_sure_you_want_to_decline2">Are you sure you want to Decline These Measurements?</string>
+    <string name="are_you_sure_you_want_to_correct">Are you sure you want to Correct These Measurements?</string>
+    <string name="are_you_sure_you_want_to_correct_esti">Are you sure you want to Correct These Estimates?</string>
     <string name="are_you_sure_you_want_to_approve">Are you sure you want to Approve This Job?</string>
     <string name="are_you_sure_you_want_to_approve2">Are you sure you want to Approve These Measurements?</string>
     <string name="are_you_sure_you_want_to_exit">Are you sure you want to exit?</string>
@@ -132,6 +134,9 @@
     <string name="decline">Decline</string>
     <string name="approve">Approve</string>
     <string name="correct">Correct</string>
+    <string name="correct_estimate">Correct Estimates</string>
+    <string name="correct_measure">Correct Measurements</string>
+<!--    <string name="correct">Correct</string>-->
     <string name="decline_measurement_item">Decline Measure Item</string>
     <string name="declining_measurements">Declining measurements</string>
     <string name="delete">Delete</string>
@@ -394,6 +399,7 @@
     <string name="title_activity_view_job_info">View Job Info</string>
     <string name="workflow_items_refreshed_successfully">Workflow items refreshed successfully</string>
     <string name="total">Total</string>
+    <string name="total_amount">Total Amount</string>
     <string name="unfortunately_a_connection_could_not_be_established_to_the_remote_server">Unfortunately a connection could not be established to the remote server</string>
     <string name="unsubmitted_jobs">Unsubmitted Jobs</string>
     <string name="update_google_play_services">Google Play services out of date. Please update</string>

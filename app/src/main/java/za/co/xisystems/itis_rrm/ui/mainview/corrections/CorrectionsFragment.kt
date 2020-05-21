@@ -19,8 +19,8 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
  */
 
 
-class CorrectionsFragment : BaseFragment(R.layout.fragment_correction), KodeinAware {
-
+class CorrectionsFragment : BaseFragment( R.layout.fragment_correction), KodeinAware {
+//
     override val kodein by kodein()
     private lateinit var correctionsViewModel: CorrectionsViewModel
     private val factory: CorrectionsViewModelFactory by instance()
@@ -28,7 +28,7 @@ class CorrectionsFragment : BaseFragment(R.layout.fragment_correction), KodeinAw
     override fun onDestroyView() {
         super.onDestroyView()
         if (view != null) {
-            val parent = view!!.parent as ViewGroup
+            val parent = requireView().parent as ViewGroup
             parent.removeAllViews()
         }
     }

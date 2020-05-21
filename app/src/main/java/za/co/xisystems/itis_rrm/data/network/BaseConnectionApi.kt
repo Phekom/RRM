@@ -40,15 +40,23 @@ interface BaseConnectionApi {
         @Field("UserLogon") UserLogon: String
     ): Response<HealthCheckResponse>
 
-    @FormUrlEncoded
 
+    @FormUrlEncoded
+    @POST("UpdateEstQty")
+    suspend fun updateEstimateQty(
+        @Field("EstimateId") estimateId: String?,
+        @Field("Quantity") quantity: Double?,
+        @Field("TotalAmount") totalAmount: Double?
+    ): Response<QuantityUpdateResponse>
+
+    @FormUrlEncoded
     @POST("RrmActivitySectionsRefresh")
     suspend fun activitySectionsRefresh(
         @Field("UserId") UserId: String
     ): Response<ActivitySectionsResponse>
 
-    @FormUrlEncoded
 
+    @FormUrlEncoded
     @POST("ContractInfoRefresh")
     suspend fun refreshContractInfo(
         @Field("UserId") UserId: String

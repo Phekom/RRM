@@ -1,6 +1,7 @@
 package za.co.xisystems.itis_rrm.ui.mainview.approvejobs.view_job_info
 
 import android.app.AlertDialog
+import android.app.Dialog
 import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
@@ -33,6 +34,8 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
     private lateinit var approveViewModel: ApproveJobsViewModel
     private val factory: ApproveJobsViewModelFactory by instance()
 
+    lateinit var dialog : Dialog
+
     override fun onAttach(context: Context) {
         super.onAttach(context)
         (activity as MainActivity).supportActionBar?.title = getString(R.string.jobinfo_item_title)
@@ -60,8 +63,11 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
         approveViewModel = activity?.run {
             ViewModelProvider(this, factory).get(ApproveJobsViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
+
+        dialog = setDataProgressDialog(requireActivity(), getString(R.string.data_loading_please_wait))
         Coroutines.main {
             mydata_loading.show()
+
 
             approveViewModel.jobapproval_Item6.observe(viewLifecycleOwner, Observer { job ->
                 Coroutines.main {
@@ -247,7 +253,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
     private fun List<JobItemEstimateDTO>.toEstimatesListItem(): List<EstimatesItem> {
         return this.map { approvedJobItems ->
 
-            EstimatesItem(approvedJobItems, approveViewModel, activity)
+            EstimatesItem(approvedJobItems, approveViewModel, dialog, activity, viewLifecycleOwner)
         }
     }
 

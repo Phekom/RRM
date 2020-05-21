@@ -22,11 +22,13 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.databinding.ActivityResetPinBinding
 import za.co.xisystems.itis_rrm.utils.*
 
-private const val PERMISSION_REQUEST = 10
+
 
 class ResetPinActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runnable{
     companion object{
         val TAG: String = ResetPinActivity::class.java.simpleName
+        private const val PERMISSION_REQUEST = 10
+
     }
 
     override val kodein by kodein()

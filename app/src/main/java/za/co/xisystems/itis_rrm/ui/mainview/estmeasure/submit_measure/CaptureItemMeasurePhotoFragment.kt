@@ -37,7 +37,7 @@ import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModelFactory
 import za.co.xisystems.itis_rrm.utils.*
 import java.util.*
-
+//
 class CaptureItemMeasurePhotoFragment : BaseFragment(R.layout.fragment_capture_item_measure_photo),
     KodeinAware {
 
