@@ -7,7 +7,6 @@ package za.co.xisystems.itis_rrm
 import android.app.Application
 import android.util.Log
 import androidx.annotation.NonNull
-import leakcanary.LeakCanary
 import org.kodein.di.Kodein
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.androidXModule
@@ -86,7 +85,6 @@ open class MainApp : Application(), KodeinAware {
 
         if (BuildConfig.DEBUG) {
             Timber.plant(HyperlinkDebugTree())
-            LeakCanary.config = LeakCanary.config.copy(retainedVisibleThreshold = 3)
         } else {
             Timber.plant(CrashReportingTree())
         }
