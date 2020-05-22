@@ -69,7 +69,8 @@ class LocationHelper(private val locationConsumer: LocationAware) : ConnectionCa
     // TODO fix ported legacy code
     fun onStop() {
         googleApiClient!!.disconnect()
-
+        stopLocationUpdates()
+        locationConsumer.getHostActivity().finish()
     }
 
 

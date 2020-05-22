@@ -18,7 +18,7 @@ versioning {
     // Optional (any string)
     preRelease "RC1"
     // Optional, custom task name to trigger the increase of the version
-    // incrementOn "installDevDebug"
+    incrementOn "app:installDevDebug"
     // Optional, custom task name for which you want to save the versioning file
     saveOn "app:installDevDebug"
 }
@@ -78,6 +78,8 @@ android {
     versionBuild =  versioning.patch
 
     versionBuild = (versionBuild == null) ? 0 : versionBuild + 1
+
+    versioning.patch = versionBuild
 
     // local properties
     def propertyFile = file(project.rootProject.file("local.properties").toString())
@@ -302,7 +304,7 @@ dependencies {
     testImplementation 'junit:junit:4.13'
     androidTestImplementation 'androidx.test:runner:1.2.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
-
+    androidTestImplementation 'androidx.test.espresso:espresso-contrib:3.3.0-beta01'
 
     // VectorDrawable
     def vectorVersion = "1.1.0"
@@ -375,12 +377,12 @@ dependencies {
     implementation 'androidx.paging:paging-runtime:2.1.2'
 
     //Retrofit2
-    implementation 'com.squareup.retrofit2:retrofit:2.8.1'
-    implementation 'com.squareup.retrofit2:converter-gson:2.8.1'
-    implementation 'com.squareup.retrofit2:adapter-rxjava2:2.8.1'
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
+    implementation 'com.squareup.retrofit2:adapter-rxjava2:2.9.0'
     implementation 'com.jakewharton.retrofit:retrofit2-kotlin-coroutines-adapter:0.9.2'
-    implementation 'com.squareup.retrofit2:converter-jackson:2.8.1'
-    implementation 'com.squareup.okhttp3:logging-interceptor:4.6.0'
+    implementation 'com.squareup.retrofit2:converter-jackson:2.9.0'
+    implementation 'com.squareup.okhttp3:logging-interceptor:4.7.2'
 
     // Rx
     implementation "io.reactivex.rxjava2:rxjava:2.2.17"
@@ -399,8 +401,8 @@ dependencies {
     annotationProcessor 'frankiesardo:icepick-processor:3.2.0'
 
     //Kotlin Coroutines
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.3"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.3"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.5"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.5"
 
     // Better Date-time
     implementation 'com.jakewharton.threetenabp:threetenabp:1.2.4'
@@ -455,6 +457,12 @@ dependencies {
 
     // Preview Image Collection
     implementation 'com.github.AgnaldoNP:PreviewImageCollection:1.2'
+
+    // GeoLocator
+    implementation 'com.sprotte:Geolocator:1.2.2'
+
+
+
 
 
 }

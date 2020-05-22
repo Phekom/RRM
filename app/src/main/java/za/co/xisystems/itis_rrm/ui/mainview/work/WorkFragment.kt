@@ -84,7 +84,7 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
 
     }
 
-    private suspend fun refreshEstimateJobsFromLocal() {
+    private suspend fun refreshEstimateJobsFromLocal() = uiScope.launch(uiScope.coroutineContext) {
         workViewModel.getJobsForActivityId(
             ActivityIdConstants.JOB_APPROVED,
             ActivityIdConstants.ESTIMATE_INCOMPLETE
@@ -116,10 +116,6 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
         workViewModel = activity?.run {
             ViewModelProvider(this, factory).get(WorkViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
-
-
-
-
 
         initSwipeToRefresh()
     }

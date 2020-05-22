@@ -88,6 +88,7 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
     }
 
     override fun onStop() {
+        uiScope.destroy()
         locationHelper.onStop()
         super.onStop()
 
@@ -120,8 +121,10 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
         return inflater.inflate(R.layout.fragment_capture_work, container, false)
     }
 
+
     override fun onDestroyView() {
         // Remember to flush the RecyclerView's adaptor
+
         work_actions_listView.adapter = null
         super.onDestroyView()
     }
@@ -137,7 +140,6 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
             val user = workViewModel.user.await()
             user.observe(viewLifecycleOwner, Observer { user_ ->
                 useR = user_
-//                group10_loading.visibility = View.GONE
             })
 
             workViewModel.workItemJob.observe(viewLifecycleOwner, Observer { estimateJob ->
@@ -459,11 +461,7 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
     ) {
         uiScope.launch(uiScope.coroutineContext) {
 
-            val workDone: Int = workViewModel.getJobItemsEstimatesDoneForJobId(
-                estimateJob.JobId,
-                ActivityIdConstants.ESTIMATE_WORK_PART_COMPLETE,
-                ActivityIdConstants.EST_WORKS_COMPLETE
-            )
+            val workDone: Int = getEstimatesCompleted(estimateJob)
 
             if (workDone == estimateJob.JobItemEstimates?.size) {
                 val iItems = estimateJob.JobItemEstimates
@@ -479,37 +477,12 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
                         if (workItem.actId == ActivityIdConstants.EST_WORKS_COMPLETE) {
                             uiScope.launch(uiScope.coroutineContext) {
                                 val estWorkDone: Int =
-                                    workViewModel.getJobItemsEstimatesDoneForJobId(
-                                        estimateJob.JobId,
-                                        ActivityIdConstants.ESTIMATE_WORK_PART_COMPLETE,
-                                        ActivityIdConstants.EST_WORKS_COMPLETE
-                                    )
-                                if (estWorkDone == estimateJob.JobItemEstimates?.size) {
-                                    val iItems = estimateJob.JobItemEstimates
-                                    submitAllOutStandingEstimates(iItems)
-                                } else {
-                                    popViewOnWorkSubmit(requireView())
-                                }
+                                    getEstimatesCompleted(estimateJob)
+                                submitEstimatesOrPop(estWorkDone, estimateJob)
                             }
                         } else {
-                            val id = ActivityIdConstants.JOB_APPROVED
 
-                            // Remove for Dynamic Workflow
-
-                            uiScope.launch(uiScope.coroutineContext) {
-                                val workflowStepData = workViewModel.getWorkFlowCodes(id)
-                                workflowStepData.observe(
-                                    viewLifecycleOwner,
-                                    Observer { workflowSteps ->
-                                        jobWorkStep = workflowSteps as ArrayList<WF_WorkStepDTO>
-
-                                        initRecyclerView(
-                                            estimateWorksList.toWorkStateItems(),
-                                            workflowSteps
-                                        )
-                                    })
-
-                            }
+                            generateWorkflowSteps(estimateWorksList)
                         }
                         itemEstiWorks = workItem
                     }
@@ -521,8 +494,48 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
         }
     }
 
+    private fun submitEstimatesOrPop(
+        estWorkDone: Int,
+        estimateJob: JobDTO
+    ) {
+        if (estWorkDone == estimateJob.JobItemEstimates?.size) {
+            val iItems = estimateJob.JobItemEstimates
+            submitAllOutStandingEstimates(iItems)
+        } else {
+            popViewOnWorkSubmit(requireView())
+        }
+    }
+
+    private fun generateWorkflowSteps(estimateWorksList: List<JobEstimateWorksDTO>) {
+        // Remove for Dynamic Workflow
+        val id = ActivityIdConstants.JOB_APPROVED
+        uiScope.launch(uiScope.coroutineContext) {
+            val workflowStepData = workViewModel.getWorkFlowCodes(id)
+            workflowStepData.observe(
+                viewLifecycleOwner,
+                Observer { workflowSteps ->
+                    jobWorkStep = workflowSteps as ArrayList<WF_WorkStepDTO>
+
+                    initRecyclerView(
+                        estimateWorksList.toWorkStateItems(),
+                        workflowSteps
+                    )
+                })
+
+        }
+    }
+
+    private suspend fun getEstimatesCompleted(estimateJob: JobDTO): Int {
+        val workDone: Int = workViewModel.getJobItemsEstimatesDoneForJobId(
+            estimateJob.JobId,
+            ActivityIdConstants.ESTIMATE_WORK_PART_COMPLETE,
+            ActivityIdConstants.EST_WORKS_COMPLETE
+        )
+        return workDone
+    }
+
     private fun popViewOnWorkSubmit(view: View) {
-        Navigation.findNavController(requireView())
+        Navigation.findNavController(view)
             .navigate(R.id.action_captureWorkFragment_to_nav_work)
     }
 
@@ -539,26 +552,29 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
                 R.string.yes
             ) { dialog, which ->
 
-                for (jobEstimate in estimates!!.iterator()) {
-                    uiScope.launch(uiScope.coroutineContext) {
-                        val jobItemEstimate = workViewModel.getJobItemEstimateForEstimateId(
-                            DataConversion.toBigEndian(jobEstimate.estimateId)!!
-                        )
-                        jobItemEstimate.observe(viewLifecycleOwner, Observer { jobItEstmt ->
-                            moveJobItemEstimateToNextWorkflow(
-                                WorkflowDirection.NEXT,
-                                jobItEstmt
-                            )
-                        })
-
-                    }
-
-                }
+                pushCompletedEstimates(estimates)
             }
 
             dialogBuilder.show()
 
 
+        }
+    }
+
+    private fun pushCompletedEstimates(estimates: ArrayList<JobItemEstimateDTO>?) {
+
+        uiScope.launch(uiScope.coroutineContext) {
+            for (jobEstimate in estimates!!.iterator()) {
+                val jobItemEstimate = workViewModel.getJobItemEstimateForEstimateId(
+                    DataConversion.toBigEndian(jobEstimate.estimateId)!!
+                )
+                jobItemEstimate.observe(viewLifecycleOwner, Observer { jobItEstmt ->
+                    moveJobItemEstimateToNextWorkflow(
+                        WorkflowDirection.NEXT,
+                        jobItEstmt
+                    )
+                })
+            }
         }
     }
 
@@ -579,7 +595,7 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
                 }
                 else -> {
                     toast(jobItEstimate.jobId)
-                    // TODO beware littleEndian conversion
+                    // beware littleEndian conversion
                     val trackRouteId: String =
                         DataConversion.toLittleEndian(jobItEstimate.trackRouteId)!!
                     val direction: Int = workflowDirection.value
