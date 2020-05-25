@@ -25,7 +25,6 @@ class UiLifecycleScope : CoroutineScope, LifecycleObserver {
         }
         Timber.e(throwable)
         throw Exception(throwable)
-
     }
 
     private var job = SupervisorJob()
