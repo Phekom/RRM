@@ -68,21 +68,18 @@ import kotlin.collections.HashMap
 class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), LifecycleOwner,
     KodeinAware, LocationAware {
 
+
     private var sectionId: String? = null
     override val kodein by kodein()
     private lateinit var createViewModel: CreateViewModel
-    private val factory: CreateViewModelFactory by instance()
-
-
+    private val factory: CreateViewModelFactory by instance<CreateViewModelFactory>()
     private var mAppExecutor: AppExecutor? = null
     private lateinit var locationHelper: LocationHelper
     private lateinit var lm: LocationManager
     private var gpsEnabled = false
     private var networkEnabled = false
-
     private var isEstimateDone: Boolean = false
     private var isRouteSectionPoint: Boolean = false
-
     private var startKm: Double? = null
     private var endKm: Double? = null
     private var disableGlide: Boolean = false
@@ -92,8 +89,6 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
 
     @State
     var itemIdPhotoType = HashMap<String, String>()
-
-
     internal var job: JobDTO? = null
 
     @State
@@ -112,9 +107,7 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
 
     @State
     var quantity = 1.0
-
     private var currentLocation: Location? = null
-
     private var estimateId: String? = null
     private lateinit var jobArrayList: ArrayList<JobDTO>
     private lateinit var newJobItemEstimatesPhotosList: ArrayList<JobItemEstimatesPhotoDTO>
@@ -123,23 +116,18 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
     private lateinit var jobItemMeasureArrayList: ArrayList<JobItemMeasureDTO>
     private lateinit var jobItemSectionArrayList: ArrayList<JobSectionDTO>
     private lateinit var itemSections: ArrayList<ItemSectionDTO>
-
     private lateinit var newJobItemEstimatesPhotosList2: ArrayList<JobItemEstimatesPhotoDTO>
     private lateinit var newJobItemEstimatesWorksList2: ArrayList<JobEstimateWorksDTO>
-
     private lateinit var jobItemMeasureArrayList2: ArrayList<JobItemMeasureDTO>
     private lateinit var jobItemSectionArrayList2: ArrayList<JobSectionDTO>
-
     internal var description: String? = null
     internal var useR: Int = -1
     private var startImageUri: Uri? = null
     private var endImageUri: Uri? = null
     private var imageUri: Uri? = null
-
     private lateinit var sharedViewModel: SharedViewModel
-    private val shareFactory: SharedViewModelFactory by instance()
+    private val shareFactory: SharedViewModelFactory by instance<SharedViewModelFactory>()
     private val uiScope = UiLifecycleScope()
-
 
     init {
         System.setProperty("kotlinx.coroutines.debug", if (BuildConfig.DEBUG) "on" else "off")
@@ -207,20 +195,12 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
         }
     }
 
-
-    companion object {
-        private const val REQUEST_IMAGE_CAPTURE = 1
-        private const val REQUEST_STORAGE_PERMISSION = 1
-    }
-
-
     private fun onUserFound(foundUserId: Int?): Int? {
         if (foundUserId != null) {
             useR = foundUserId
         }
         return useR
     }
-
 
     private fun onJobFound(foundJobDTO: JobDTO?): JobDTO? {
         newJob = foundJobDTO!!
@@ -286,7 +266,6 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-
     override fun onPrepareOptionsMenu(menu: Menu) {
         val item = menu.findItem(R.id.action_settings)
         val item1 = menu.findItem(R.id.action_logout)
@@ -295,7 +274,6 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
         if (item1 != null) item1.isVisible = false
         if (item2 != null) item2.isVisible = false
     }
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -321,7 +299,6 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
         newJobItemEstimatesWorksList2 = ArrayList()
 
     }
-
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
@@ -450,7 +427,6 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
             launchCamera()
         }
     }
-
 
     private fun displayPromptForEnablingGPS(
         activity: Activity
@@ -696,7 +672,6 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
         }
     }
 
-
     private suspend fun validateRouteSection() {
 
         val sectionPoint = createViewModel.getPointSectionData(newJob?.ProjectId!!)
@@ -839,7 +814,6 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
         }
     }
 
-
     private suspend fun getRouteSectionPoint(
         currentLocation: Location
     ): LiveData<String?> =
@@ -850,7 +824,6 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
             newJob!!.ProjectId,
             newJob!!.JobId
         )
-
 
     private fun createItemEstimatePhoto(
         itemEst: JobItemEstimateDTO,
@@ -888,7 +861,6 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
 
     }
 
-
     private fun createItemEstimate(
         itemId: String?,
         newJob: JobDTO?,
@@ -921,7 +893,6 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
             SelectedItemUOM = item.uom
         )
     }
-
 
     private fun createRouteSection(
         secId: String,
@@ -958,7 +929,6 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
             .into(zoomageView)
         dialog.show()
     }
-
 
     override fun onResume() {
         super.onResume()
@@ -1064,13 +1034,16 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
         }
     }
 
-    private fun setValueEditText(qty: Double) {
-        when (item?.uom) {
-            "m²", "m³", "m" -> valueEditText!!.setText("" + qty)
-            else -> valueEditText!!.setText("" + qty.toInt())
+    private fun setValueEditText(qty: Double) = when (item?.uom) {
+        "m²", "m³", "m" -> {
+            var decQty = "" + qty
+            valueEditText!!.setText(decQty)
+        }
+        else -> {
+            var intQty: String = "" + qty.toInt()
+            valueEditText!!.setText(intQty)
         }
     }
-
 
     private fun setCost() {
         if (isEstimateDone) {
@@ -1085,7 +1058,6 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
             costTextView!!.visibility = View.GONE
         }
     }
-
 
     private fun calculateCost() {
         val item: ItemDTOTemp? = item
@@ -1243,7 +1215,6 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
         return inlineRate
     }
 
-
     private fun getStoredValue(): Double {
         val jobItemEstimate: JobItemEstimateDTO? = getJobItemEstimate()
         return jobItemEstimate?.qty ?: quantity
@@ -1282,7 +1253,6 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
     override fun setCurrentLocation(location: Location?) {
         this.currentLocation = location
     }
-
 
     override fun onSaveInstanceState(outState: Bundle) {
         outState.run {
@@ -1345,5 +1315,10 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
                 }
             }
         }
+    }
+
+    companion object {
+        private const val REQUEST_IMAGE_CAPTURE = 1
+        private const val REQUEST_STORAGE_PERMISSION = 1
     }
 }

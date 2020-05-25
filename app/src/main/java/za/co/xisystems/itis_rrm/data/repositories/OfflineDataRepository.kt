@@ -23,7 +23,6 @@ import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import java.io.File
 import java.time.LocalDateTime
-import java.util.*
 import java.util.regex.Pattern
 
 
@@ -304,6 +303,29 @@ class OfflineDataRepository(
 
     private suspend fun saveContracts(contracts: List<ContractDTO>) {
 
+        createWorkflowSteps()
+
+        if (contracts.isNotEmpty()) {
+            val validContracts = contracts.filter { contract ->
+                contract.projects != null && !contract.contractId.isBlank()
+            }
+                .distinctBy { contract -> contract.contractId }
+            for (contract in validContracts) {
+                if (!Db.getContractDao().checkIfContractExists(contract.contractId)) {
+                    Db.getContractDao().insertContract(contract)
+
+                    val validProjects =
+                        contract.projects?.filter { project ->
+                            !project.projectId.isBlank()
+                        }?.distinctBy { project -> project.projectId }
+
+                    updateProjects(validProjects, contract)
+                }
+            }
+        }
+    }
+
+    private fun createWorkflowSteps() {
         val actId = 3
         val workState = arrayOf("TA", "START", "MIDDLE", "END", "RTA")
         val workStateDescriptions = arrayOf(
@@ -322,147 +344,155 @@ class OfflineDataRepository(
                     Db.getWorkStepDao().updateStepsDesc(description, step_code)
             }
         }
+    }
 
-        if (contracts.isNotEmpty()) {
-            val validContracts = contracts.filter { contract ->
-                contract.projects != null && !contract.contractId.isBlank()
-            }
-                .distinctBy { contract -> contract.contractId }
-            for (contract in validContracts) {
-                if (!Db.getContractDao().checkIfContractExists(contract.contractId))
-                    Db.getContractDao().insertContract(contract)
-
-                val validProjects =
-                    contract.projects?.filter { project ->
-                        !project.projectId.isBlank()
-                    }?.distinctBy { project -> project.projectId }
-
-                if (validProjects != null) {
-                    for (project in validProjects) {
-                        if (Db.getProjectDao().checkProjectExists(project.projectId)) {
-                            Timber.i("Contract: ${contract.descr} (${contract.contractId}) ProjectId: ${project.descr} (${project.projectId}) -> Duplicated")
-                            continue
-                        } else {
-                            try {
-                                Db.getProjectDao().insertProject(
-                                    project.projectId,
-                                    project.descr,
-                                    project.endDate,
-                                    project.items,
-                                    project.projectCode,
-                                    project.projectMinus,
-                                    project.projectPlus,
-                                    project.projectSections,
-                                    project.voItems,
-                                    contract.contractId
-                                )
-                            } catch (ex: Exception) {
-                                Timber.e(
-                                    ex,
-                                    "Contract: ${contract.descr} (${contract.contractId}) ProjectId: ${project.descr} (${project.projectId}) -> ${ex.message}"
-                                )
-                            }
+    private suspend fun updateProjects(
+        validProjects: List<ProjectDTO>?,
+        contract: ContractDTO
+    ) {
+        Coroutines.api {
+            if (validProjects != null) {
+                for (project in validProjects) {
+                    if (Db.getProjectDao().checkProjectExists(project.projectId)) {
+                        Timber.i("Contract: ${contract.shortDescr} (${contract.contractId}) ProjectId: ${project.descr} (${project.projectId}) -> Duplicated")
+                        continue
+                    } else {
+                        try {
+                            Db.getProjectDao().insertProject(
+                                project.projectId,
+                                project.descr,
+                                project.endDate,
+                                project.items,
+                                project.projectCode,
+                                project.projectMinus,
+                                project.projectPlus,
+                                project.projectSections,
+                                project.voItems,
+                                contract.contractId
+                            )
+                        } catch (ex: Exception) {
+                            Timber.e(
+                                ex,
+                                "Contract: ${contract.shortDescr} (${contract.contractId}) ProjectId: ${project.descr} (${project.projectId}) -> ${ex.message}"
+                            )
+                            throw ex
                         }
-                        if (project.items != null) {
-                            val distinctItems = project.items.distinctBy { item -> item.itemId }
-                            for (item in distinctItems) {
-                                if (Db.getProjectItemDao()
-                                        .checkItemExistsItemId(item.itemId)
-                                ) {
-                                    continue
-                                } else {
-                                    try {
-                                        val pattern = Pattern.compile("(.*?)\\.")
-                                        val matcher = pattern.matcher(item.itemCode!!)
-                                        if (matcher.find()) {
-                                            val itemCode = "${matcher.group(1)}0"
-                                            //  Let's Get the ID Back on Match
-                                            val sectionItemId = Db.getSectionItemDao()
-                                                .getSectionItemId(
-                                                    itemCode.replace(
-                                                        "\\s+".toRegex(),
-                                                        ""
-                                                    )
-                                                )
-
-                                            Db.getProjectItemDao().insertItem(
-                                                itemId = item.itemId,
-                                                itemCode = item.itemCode,
-                                                descr = item.descr,
-                                                itemSections = item.itemSections,
-                                                tenderRate = item.tenderRate,
-                                                uom = item.uom,
-                                                workflowId = item.workflowId,
-                                                sectionItemId = sectionItemId,
-                                                quantity = item.quantity,
-                                                estimateId = item.estimateId,
-                                                projectId = project.projectId
-                                            )
-                                        }
-                                    } catch (ex: Exception) {
-                                        Timber.e(ex, "ItemId: ${item.itemId} -> ${ex.message}")
-                                    }
-                                }
-
-                            }
-                        }
-
-                        if (project.projectSections != null) {
-                            // TODO: Fix isFetchNeeded for Time and Offline Mode
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                prefs.savelastSavedAt(LocalDateTime.now().toString())
-                            }
-                            for (section in project.projectSections) { //project.projectSections
-                                if (!Db.getProjectSectionDao()
-                                        .checkSectionExists(section.sectionId)
-                                )
-                                    try {
-                                        Db.getProjectSectionDao().insertSection(
-                                            section.sectionId,
-                                            section.route,
-                                            section.section,
-                                            section.startKm,
-                                            section.endKm,
-                                            section.direction,
-                                            project.projectId
-                                        )
-                                    } catch (ex: Exception) {
-                                        Timber.e(
-                                            ex,
-                                            "ProjectSectionItemId ${section.sectionId} -> ${ex.message}"
-                                        )
-                                    }
-                            }
-                        }
-
-                        if (project.voItems != null) {
-                            for (voItem in project.voItems) { //project.voItems
-                                if (!Db.getVoItemDao().checkIfVoItemExist(voItem.projectVoId))
-                                    try {
-                                        Db.getVoItemDao().insertVoItem(
-                                            voItem.projectVoId,
-                                            voItem.itemCode,
-                                            voItem.voDescr,
-                                            voItem.descr,
-                                            voItem.uom,
-                                            voItem.rate,
-                                            voItem.projectItemId,
-                                            voItem.contractVoId,
-                                            voItem.contractVoItemId,
-                                            project.projectId
-                                        )
-                                    } catch (ex: Exception) {
-                                        Timber.e(
-                                            ex,
-                                            "VoItemProjectVoId: ${voItem.projectVoId} -> ${ex.message}"
-                                        )
-                                    }
-                            }
-                        }
-
                     }
+                    if (project.items != null) {
+                        updateProjectItems(project.items, project)
+                    }
+
+                    if (project.projectSections != null) {
+                        updateProjectSections(project.projectSections, project)
+                    }
+
+                    if (project.voItems != null) {
+                        updateVOItems(project.voItems, project)
+                    }
+
                 }
             }
+        }
+    }
+
+    private suspend fun updateProjectItems(
+        distinctItems: List<ProjectItemDTO>,
+        project: ProjectDTO
+    ) {
+        for (item in distinctItems) {
+            if (Db.getProjectItemDao()
+                    .checkItemExistsItemId(item.itemId)
+            ) {
+                continue
+            } else {
+                try {
+                    val pattern = Pattern.compile("(.*?)\\.")
+                    val matcher = pattern.matcher(item.itemCode!!)
+                    if (matcher.find()) {
+                        val itemCode = "${matcher.group(1)}0"
+                        //  Let's Get the ID Back on Match
+                        val sectionItemId = Db.getSectionItemDao()
+                            .getSectionItemId(
+                                itemCode.replace(
+                                    "\\s+".toRegex(),
+                                    ""
+                                )
+                            )
+
+                        Db.getProjectItemDao().insertItem(
+                            itemId = item.itemId,
+                            itemCode = item.itemCode,
+                            descr = item.descr,
+                            itemSections = item.itemSections,
+                            tenderRate = item.tenderRate,
+                            uom = item.uom,
+                            workflowId = item.workflowId,
+                            sectionItemId = sectionItemId,
+                            quantity = item.quantity,
+                            estimateId = item.estimateId,
+                            projectId = project.projectId
+                        )
+                    }
+                } catch (ex: Exception) {
+                    Timber.e(ex, "ItemId: ${item.itemId} -> ${ex.message}")
+                }
+            }
+
+        }
+    }
+
+    private suspend fun updateProjectSections(
+        projectSections: ArrayList<ProjectSectionDTO>,
+        project: ProjectDTO
+    ) {
+        for (section in projectSections) { //project.projectSections
+            if (!Db.getProjectSectionDao()
+                    .checkSectionExists(section.sectionId)
+            )
+                try {
+                    Db.getProjectSectionDao().insertSection(
+                        section.sectionId,
+                        section.route,
+                        section.section,
+                        section.startKm,
+                        section.endKm,
+                        section.direction,
+                        project.projectId
+                    )
+                } catch (ex: Exception) {
+                    Timber.e(
+                        ex,
+                        "ProjectSectionItemId ${section.sectionId} -> ${ex.message}"
+                    )
+                }
+        }
+    }
+
+    private suspend fun updateVOItems(
+        voItems: ArrayList<VoItemDTO>,
+        project: ProjectDTO
+    ) {
+        for (voItem in voItems) { //project.voItems
+            if (!Db.getVoItemDao().checkIfVoItemExist(voItem.projectVoId))
+                try {
+                    Db.getVoItemDao().insertVoItem(
+                        voItem.projectVoId,
+                        voItem.itemCode,
+                        voItem.voDescr,
+                        voItem.descr,
+                        voItem.uom,
+                        voItem.rate,
+                        voItem.projectItemId,
+                        voItem.contractVoId,
+                        voItem.contractVoItemId,
+                        project.projectId
+                    )
+                } catch (ex: Exception) {
+                    Timber.e(
+                        ex,
+                        "VoItemProjectVoId: ${voItem.projectVoId} -> ${ex.message}"
+                    )
+                }
         }
     }
 

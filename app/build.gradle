@@ -30,7 +30,7 @@ static def getDate() {
 
 static def safePropertyGetter(Properties properties, String key, String defaultValue) {
     System.out.println(key)
-    if(properties.hasProperty(key)) {
+    if (properties.hasProperty(key)) {
         def result = '"' + properties[key] + '"'
         System.out.println(result)
         return result
@@ -70,12 +70,11 @@ android {
     // def localPropsFile = InputFile("$rootDir/local.properties")
 
 
-
     def versionBuild
     def versionBuildDate
     def appId = "za.co.xisystems.itismaintenance"
 
-    versionBuild =  versioning.patch
+    versionBuild = versioning.patch
 
     versionBuild = (versionBuild == null) ? 0 : versionBuild + 1
 
@@ -96,7 +95,7 @@ android {
     def prod_env = localProps['PROD_HOST'].toString()
     def sdev_env = localProps['SDEV_HOST'].toString()
 
-    def registerAutoFillTest =  safePropertyGetter(localProps,'REGISTER_AUTO_FILL_TEST',"false") as Boolean
+    def registerAutoFillTest = safePropertyGetter(localProps, 'REGISTER_AUTO_FILL_TEST', "false") as Boolean
 
     versionBuildDate = getDate()
 
@@ -121,9 +120,9 @@ android {
 
         javaCompileOptions {
             annotationProcessorOptions {
-                arguments = ["room.schemaLocation": "$projectDir/schemas".toString(),
-                             "room.incremental":"true",
-                             "room.expandProjection":"false"]
+                arguments = ["room.schemaLocation"  : "$projectDir/schemas".toString(),
+                             "room.incremental"     : "true",
+                             "room.expandProjection": "false"]
 
             }
         }
@@ -189,7 +188,7 @@ android {
             buildConfigField("boolean", "REGISTER_AUTO_FILL_TEST", registerAutoFillTest.toString())
             manifestPlaceholders = [app_name: "RRM-Dev", app_icon: "@mipmap/ic_launcher_dev", HOCKEYAPP_APP_ID: ""]
             buildConfigField("boolean", "REGISTER_AUTO_FILL_TEST", "true")
-            buildConfigField("String", "API_HOST",dev_env )
+            buildConfigField("String", "API_HOST", dev_env)
             buildConfigField "String", "HOCKEYAPP_APP_ID", "\"\""
         }
 
@@ -284,6 +283,7 @@ dependencies {
 
     // LeakCanary
     // debugImplementation because LeakCanary should only run in debug builds.
+    implementation 'com.google.android.gms:play-services-maps:17.0.0'
     debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.3'
     debugImplementation 'com.squareup.leakcanary:leakcanary-object-watcher-android-androidx:2.3'
 
@@ -462,9 +462,6 @@ dependencies {
 
     // GeoLocator
     implementation 'com.sprotte:Geolocator:1.2.2'
-
-
-
 
 
 }

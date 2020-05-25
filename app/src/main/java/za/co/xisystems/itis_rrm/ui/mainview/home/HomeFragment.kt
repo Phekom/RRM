@@ -37,9 +37,9 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
 
     override val kodein by kodein()
     private lateinit var homeViewModel: HomeViewModel
-    private val factory: HomeViewModelFactory by instance()
+    private val factory: HomeViewModelFactory by instance<HomeViewModelFactory>()
     private lateinit var sharedViewModel: SharedViewModel
-    private val shareFactory: SharedViewModelFactory by instance()
+    private val shareFactory: SharedViewModelFactory by instance<SharedViewModelFactory>()
 
     private var gpsEnabled: Boolean = false
     private var networkEnabled: Boolean = false

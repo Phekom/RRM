@@ -26,7 +26,7 @@
     <uses-permission android:name="android.permission.CAMERA" />
 
     <application
-        android:name=".MainApp"
+        android:name=".DebugMainApp"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -34,7 +34,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
-        tools:ignore="GoogleAppIndexingWarning">
+        tools:ignore="GoogleAppIndexingWarning"
+        tools:replace="android:name">
 
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
