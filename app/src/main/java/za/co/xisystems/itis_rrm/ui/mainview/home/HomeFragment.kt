@@ -123,6 +123,25 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
+        loadViewModels()
+
+        initSwipeToRefresh()
+
+        checkNetworkLocationStatus()
+
+        connectedTo.text = "Version " + BuildConfig.VERSION_NAME
+
+
+        serverTextView.setOnClickListener {
+            ToastUtils().toastServerAddress(context)
+        }
+
+        imageView7.setOnClickListener {
+            ToastUtils().toastVersion(context)
+        }
+    }
+
+    private fun loadViewModels() {
         homeViewModel = activity?.run {
             ViewModelProvider(this, factory).get(HomeViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
@@ -130,9 +149,9 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
         sharedViewModel = activity?.run {
             ViewModelProvider(this, shareFactory).get(SharedViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
+    }
 
-        // val dialog = setDataProgressDialog(activity!!, getString(R.string.data_loading_please_wait))
-
+    private fun initSwipeToRefresh() {
         items_swipe_to_refresh.setProgressBackgroundColorSchemeColor(
             ContextCompat.getColor(
                 requireContext().applicationContext,
@@ -169,43 +188,30 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                 }
             }
         }
+    }
 
-
-        Coroutines.io {
-            val lm = requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager
-            val cm =
-                requireActivity().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-            gpsEnabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
-            networkEnabled = cm.isDefaultNetworkActive
-            //  Check if Network Enabled
-            if (!networkEnabled) {
-                dataEnabled.setText(R.string.mobile_data_not_connected)
-                dataEnabled.setTextColor(colorNotConnected)
-            } else {
-                dataEnabled.setText(R.string.mobile_data_connected)
-                dataEnabled.setTextColor(colorConnected)
-            }
-
-            // Check if GPS connected
-            if (!gpsEnabled) {
-                locationEnabled.text = requireActivity().getString(R.string.gps_not_connected)
-                locationEnabled.setTextColor(colorNotConnected)
-            } else {
-                locationEnabled.text = requireActivity().getString(R.string.gps_connected)
-                locationEnabled.setTextColor(colorConnected)
-            }
+    private fun checkNetworkLocationStatus() {
+        val lm = requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        val cm =
+            requireActivity().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        gpsEnabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
+        networkEnabled = cm.isDefaultNetworkActive
+        //  Check if Network Enabled
+        if (!networkEnabled) {
+            dataEnabled.setText(R.string.mobile_data_not_connected)
+            dataEnabled.setTextColor(colorNotConnected)
+        } else {
+            dataEnabled.setText(R.string.mobile_data_connected)
+            dataEnabled.setTextColor(colorConnected)
         }
 
-
-        connectedTo.text = "Version " + BuildConfig.VERSION_NAME
-
-
-        serverTextView.setOnClickListener {
-            ToastUtils().toastServerAddress(context)
-        }
-
-        imageView7.setOnClickListener {
-            ToastUtils().toastVersion(context)
+        // Check if GPS connected
+        if (!gpsEnabled) {
+            locationEnabled.text = requireActivity().getString(R.string.gps_not_connected)
+            locationEnabled.setTextColor(colorNotConnected)
+        } else {
+            locationEnabled.text = requireActivity().getString(R.string.gps_connected)
+            locationEnabled.setTextColor(colorConnected)
         }
     }
 

@@ -41,5 +41,8 @@ class UiLifecycleScope : CoroutineScope, LifecycleObserver {
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
-    fun destroy() = coroutineContext.cancelChildren()
+    fun destroy(): () -> Unit = {
+        coroutineContext.cancelChildren()
+        ioContext.cancelChildren()
+    }
 }

@@ -43,7 +43,7 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
 //
     override val kodein by kodein()
     private lateinit var workViewModel: WorkViewModel
-    private val factory: WorkViewModelFactory by instance()
+    private val factory: WorkViewModelFactory by instance<WorkViewModelFactory>()
     private var uiScope = UiLifecycleScope()
     private var dialog: ProgressDialog? = null
 
