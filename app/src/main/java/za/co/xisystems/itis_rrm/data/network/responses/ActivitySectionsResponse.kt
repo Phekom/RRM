@@ -13,5 +13,5 @@ data class ActivitySectionsResponse(
 //    @SerializedName("ActivitySections")
 //    val activitySections: ArrayList<SectionItemDTO>,
     @SerializedName("ErrorMessage")
-    val errorMessage: String // null
+    val errorMessage: String?
 )

@@ -21,6 +21,9 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
+import za.co.xisystems.itis_rrm.utils.results.Failure
+import za.co.xisystems.itis_rrm.utils.results.ResultSet
+import za.co.xisystems.itis_rrm.utils.results.Success
 import java.io.File
 import java.time.LocalDateTime
 import java.util.regex.Pattern
@@ -393,7 +396,7 @@ class OfflineDataRepository(
         }
     }
 
-    private suspend fun updateProjectItems(
+    private fun updateProjectItems(
         distinctItems: List<ProjectItemDTO>,
         project: ProjectDTO
     ) {
@@ -439,7 +442,7 @@ class OfflineDataRepository(
         }
     }
 
-    private suspend fun updateProjectSections(
+    private fun updateProjectSections(
         projectSections: ArrayList<ProjectSectionDTO>,
         project: ProjectDTO
     ) {
@@ -466,7 +469,7 @@ class OfflineDataRepository(
         }
     }
 
-    private suspend fun updateVOItems(
+    private fun updateVOItems(
         voItems: ArrayList<VoItemDTO>,
         project: ProjectDTO
     ) {
@@ -577,7 +580,7 @@ class OfflineDataRepository(
         }
     }
 
-    private suspend fun OfflineDataRepository.saveJobItemMeasuresForJob(
+    private suspend fun saveJobItemMeasuresForJob(
         job: JobDTO
     ) {
         for (jobItemMeasure in job.JobItemMeasures!!) {
@@ -633,7 +636,7 @@ class OfflineDataRepository(
         }
     }
 
-    private suspend fun OfflineDataRepository.saveJobItemEstimates(
+    private suspend fun saveJobItemEstimates(
         job: JobDTO
     ) {
         for (jobItemEstimate in job.JobItemEstimates!!) {
@@ -669,13 +672,13 @@ class OfflineDataRepository(
                 }
             }
             if (jobItemEstimate.jobItemMeasure != null) {
-                saveJobIteamMeasuresForEstimate(jobItemEstimate.jobItemMeasure, job)
+                saveJobIteamMeasuresForEstimate(jobItemEstimate.jobItemMeasure!!, job)
             }
 
         }
     }
 
-    private suspend fun OfflineDataRepository.saveJobItemEstimatePhotos(
+    private suspend fun saveJobItemEstimatePhotos(
         jobItemEstimate: JobItemEstimateDTO
     ) {
         for (jobItemEstimatePhoto in jobItemEstimate.jobItemEstimatePhotos!!) {
@@ -712,7 +715,7 @@ class OfflineDataRepository(
         }
     }
 
-    private suspend fun OfflineDataRepository.saveJobItemEstimateWorks(
+    private suspend fun saveJobItemEstimateWorks(
         jobItemEstimate: JobItemEstimateDTO,
         job: JobDTO
     ) {
@@ -769,11 +772,11 @@ class OfflineDataRepository(
         }
     }
 
-    private suspend fun OfflineDataRepository.saveJobIteamMeasuresForEstimate(
-        jobItemMeasure: java.util.ArrayList<JobItemMeasureDTO>,
+    private suspend fun saveJobIteamMeasuresForEstimate(
+        jobItemMeasures: java.util.ArrayList<JobItemMeasureDTO>,
         job: JobDTO
     ) {
-        for (jobItemMeasure in jobItemMeasure) {
+        for (jobItemMeasure in jobItemMeasures) {
             if (!Db.getJobItemMeasureDao().checkIfJobItemMeasureExists(
                     jobItemMeasure.itemMeasureId!!
                 )
@@ -877,12 +880,12 @@ class OfflineDataRepository(
     private suspend fun getPhotoForJobItemMeasure(filename: String) {
 
         val photoMeasure = apiRequest { api.getPhotoMeasure(filename) }
-        measurePhoto.postValue(photoMeasure.photo, filename)
+        postValue(photoMeasure.photo, filename)
     }
 
     private suspend fun getPhotoForJobItemEstimate(filename: String) {
         val photoEstimate = apiRequest { api.getPhotoEstimate(filename) }
-        estimatePhoto.postValue(photoEstimate.photo, filename)
+        postValue(photoEstimate.photo, filename)
     }
 
     private fun sendMSg(uploadResponse: String?) {
@@ -1055,22 +1058,27 @@ class OfflineDataRepository(
         return 4
     }
 
-    suspend fun fetchAllData(userId: String): Boolean {
+    suspend fun fetchAllData(userId: String): ResultSet<Boolean> {
         // TODO: Redo as async calls in parallel
         return withContext(Dispatchers.IO) {
-            refreshActivitySections(userId)
+            try {
+                refreshActivitySections(userId)
 
-            refreshWorkflows(userId)
+                refreshWorkflows(userId)
 
-            refreshLookups(userId)
+                refreshLookups(userId)
 
-            fetchUserTaskList(userId)
+                fetchUserTaskList(userId)
 
-            refreshContractInfo(userId)
+                refreshContractInfo(userId)
 
-            true
+                Success(true)
+            } catch (e: Exception) {
+                Failure(e, e.localizedMessage)
+            }
         }
     }
+
 
     private fun saveLookups(lookups: ArrayList<LookupDTO>?) {
         Coroutines.io {
@@ -1231,7 +1239,7 @@ class OfflineDataRepository(
         this.jimNo = jiNo
     }
 
-    private fun <T> MutableLiveData<T>.postValue(photo: String?, fileName: String) {
+    private fun postValue(photo: String?, fileName: String) {
         saveEstimatePhoto(photo, fileName)
     }
 
@@ -1249,7 +1257,7 @@ class OfflineDataRepository(
 
     suspend fun upDateMeasure(newQuantity: String, itemMeasureId: String): String {
         val new_estimateId = DataConversion.toLittleEndian(itemMeasureId)
-        val new_Quantity = newQuantity + ".0"
+        val new_Quantity = "$newQuantity.0"
 
 //        val quantityUpdateResponse = apiRequest { api.updateEstimateQty(new_estimateId,new_Quantity.toDouble() ) }
 //        qtyUpDate.postValue(quantityUpdateResponse.errorMessage , itemMeasureId,new_Quantity.toDouble() )

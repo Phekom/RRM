@@ -9,8 +9,9 @@ import androidx.lifecycle.ViewModel
 
 class SharedViewModel : ViewModel() {
     val message: MutableLiveData<*> = MutableLiveData<Any?>()
-    val progressCaption: MutableLiveData<String?> = MutableLiveData()
+    val progressCaption: MutableLiveData<String> = MutableLiveData()
     var longRunning: MutableLiveData<Boolean> = MutableLiveData(false)
+    val actionCaption: MutableLiveData<String> = MutableLiveData()
 
     fun setMessage(msg: String?) {
         message.value = msg
@@ -20,8 +21,12 @@ class SharedViewModel : ViewModel() {
         longRunning.value = toggle
     }
 
-    fun setProgressCaption(caption: String?) {
+    fun setProgressCaption(caption: String) {
         progressCaption.value = caption
+    }
+
+    fun setActionCaption(caption: String) {
+        actionCaption.value = caption
     }
 
 }

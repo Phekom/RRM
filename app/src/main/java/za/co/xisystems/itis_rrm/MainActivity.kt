@@ -42,10 +42,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override val kodein by kodein()
     private lateinit var mainActivityViewModel: MainActivityViewModel
-    private val factory: MainActivityViewModelFactory by instance()
+    private val factory: MainActivityViewModelFactory by instance<MainActivityViewModelFactory>()
 
     private lateinit var sharedViewModel: SharedViewModel
-    private val shareFactory: SharedViewModelFactory by instance()
+    private val shareFactory: SharedViewModelFactory by instance<SharedViewModelFactory>()
 
     var navController: NavController? = null
     var toggle : ActionBarDrawerToggle? = null
@@ -127,6 +127,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         sharedViewModel.message.observe(this, Observer {
             toastMessage(it.toString())
+        })
+
+        sharedViewModel.actionCaption.observe(this, Observer {
+            setCaption(it)
         })
 
 
@@ -296,6 +300,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         ToastUtils().toastLong(this.applicationContext, message)
     }
 
+    fun setCaption(caption: String) {
+        supportActionBar?.title = caption
+    }
 
     // Control Menu drawer View Access Based on who is logged in
     fun getUserRoles() {

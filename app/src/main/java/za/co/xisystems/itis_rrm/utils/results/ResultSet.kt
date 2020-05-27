@@ -11,13 +11,13 @@ import za.co.xisystems.itis_rrm.utils.errors.ErrorHandler
  * @param out T : Any
  */
 
-sealed class Result<out T : Any>
+sealed class ResultSet<out T : Any>
 
-class Success<out T : Any>(val data: T) : Result<T>()
+class Success<out T : Any>(val data: T) : ResultSet<T>()
 
-class Error(
+class Failure(
     val exception: Throwable,
     val message: String = exception.message ?: ErrorHandler.UNKNOWN_ERROR
-) : Result<Nothing>()
+) : ResultSet<Nothing>()
 
-class Progress(val isLoading: Boolean) : Result<Nothing>()
+class Progress(val isLoading: Boolean) : ResultSet<Nothing>()

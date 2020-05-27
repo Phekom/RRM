@@ -17,6 +17,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenStarted
 import kotlinx.android.synthetic.main.fragment_home.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
@@ -31,6 +32,11 @@ import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModelFactory
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.*
+import za.co.xisystems.itis_rrm.utils.errors.ErrorHandler.handleError
+import za.co.xisystems.itis_rrm.utils.results.Failure
+import za.co.xisystems.itis_rrm.utils.results.Progress
+import za.co.xisystems.itis_rrm.utils.results.ResultSet
+import za.co.xisystems.itis_rrm.utils.results.Success
 
 
 class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
@@ -45,6 +51,32 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
     private var networkEnabled: Boolean = false
     private lateinit var userDTO: UserDTO
     private var uiScope = UiLifecycleScope()
+    private val observer = Observer<ResultSet<Boolean>> { handleResponse(it) }
+
+    private fun handleResponse(it: ResultSet<Boolean>) {
+        sharedViewModel.toggleLongRunning(false)
+        items_swipe_to_refresh.isRefreshing = false
+        when (it) {
+            is Success -> {
+                sharedViewModel.setMessage("Data Retrieved")
+
+            }
+            is Failure -> {
+                sharedViewModel.setMessage("Data Retrieval Failed")
+                handleError(
+                    view = this@HomeFragment.requireView(),
+                    throwable = it,
+                    shouldToast = false,
+                    shouldShowSnackBar = true,
+                    refreshAction = { retryFetchAllData() }
+                )
+            }
+            is Progress -> {
+                sharedViewModel.toggleLongRunning(it.isLoading)
+            }
+        }
+
+    }
 
     companion object {
         val TAG: String = HomeFragment::class.java.simpleName
@@ -66,7 +98,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                             userDTO = user_
                             username?.text = user_.userName
                         })
-
+                        val entities = homeViewModel.offlineEnitities.await()
                         val contracts = homeViewModel.offlineSectionItems.await()
                         contracts.observe(viewLifecycleOwner, Observer { mSectionItem ->
                             val allData = mSectionItem.count()
@@ -162,32 +194,23 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
         items_swipe_to_refresh.setColorSchemeColors(Color.WHITE)
 
         items_swipe_to_refresh.setOnRefreshListener {
-            uiScope.launch(uiScope.coroutineContext) {
-                try {
+            fetchAllData()
+        }
+    }
 
-                    sharedViewModel.setMessage("Data Loading")
-                    sharedViewModel.toggleLongRunning(true)
-                    val fetched = homeViewModel.fetchAllData(userDTO.userId)
-                    if (fetched) {
-                        sharedViewModel.setMessage("Data Retrieved")
-                        sharedViewModel.toggleLongRunning(false)
-                    }
-
-                } catch (e: ApiException) {
-                    sharedViewModel.setMessage(e.message)
-                    Timber.e(e, "API Exception")
-                } catch (e: NoInternetException) {
-                    sharedViewModel.setMessage(e.message)
-                    Timber.e(e, "No Internet Connection")
-                } catch (e: NoConnectivityException) {
-                    sharedViewModel.setMessage(e.message)
-                    Timber.e(e, "Service Host Unreachable")
-                } finally {
-                    items_swipe_to_refresh.isRefreshing = false
-                    sharedViewModel.toggleLongRunning(false)
-                }
+    private fun fetchAllData() {
+        uiScope.launch(uiScope.coroutineContext) {
+            sharedViewModel.setMessage("Data Loading")
+            sharedViewModel.toggleLongRunning(true)
+            withContext(uiScope.coroutineContext) {
+                homeViewModel.fetchAllData(userDTO.userId)
+                homeViewModel.fetchResult.observe(viewLifecycleOwner, observer)
             }
         }
+    }
+
+    private fun retryFetchAllData() {
+        fetchAllData()
     }
 
     private fun checkNetworkLocationStatus() {

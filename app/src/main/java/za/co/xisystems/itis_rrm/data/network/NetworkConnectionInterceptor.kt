@@ -9,10 +9,7 @@ import okhttp3.Response
 import za.co.xisystems.itis_rrm.utils.NoConnectivityException
 import za.co.xisystems.itis_rrm.utils.NoInternetException
 import java.io.IOException
-import java.net.InetAddress
-import java.net.InetSocketAddress
-import java.net.Socket
-import java.net.SocketException
+import java.net.*
 
 /**
  * Created by Francis Mahlava on 2019/10/18.
@@ -88,7 +85,10 @@ class NetworkConnectionInterceptor(
         } catch (e: IOException) {
             e.printStackTrace()
             return false
-        } catch (e: SocketException) {
+        } catch (e: SocketTimeoutException) {
+            e.printStackTrace()
+            return false
+        } catch (e: UnknownHostException) {
             e.printStackTrace()
             return false
         }
