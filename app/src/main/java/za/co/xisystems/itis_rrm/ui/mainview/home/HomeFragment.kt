@@ -17,6 +17,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenStarted
 import kotlinx.android.synthetic.main.fragment_home.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
@@ -26,25 +27,57 @@ import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.data.network.responses.HealthCheckResponse
+import za.co.xisystems.itis_rrm.ui.custom.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModelFactory
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.*
+import za.co.xisystems.itis_rrm.utils.errors.ErrorHandler.handleError
+import za.co.xisystems.itis_rrm.utils.results.Failure
+import za.co.xisystems.itis_rrm.utils.results.Progress
+import za.co.xisystems.itis_rrm.utils.results.ResultSet
+import za.co.xisystems.itis_rrm.utils.results.Success
 
 
 class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
 
     override val kodein by kodein()
     private lateinit var homeViewModel: HomeViewModel
-    private val factory: HomeViewModelFactory by instance()
+    private val factory: HomeViewModelFactory by instance<HomeViewModelFactory>()
     private lateinit var sharedViewModel: SharedViewModel
-    private val shareFactory: SharedViewModelFactory by instance()
+    private val shareFactory: SharedViewModelFactory by instance<SharedViewModelFactory>()
 
     private var gpsEnabled: Boolean = false
     private var networkEnabled: Boolean = false
     private lateinit var userDTO: UserDTO
     private var uiScope = UiLifecycleScope()
+    private val observer = Observer<ResultSet<Boolean>> { handleResponse(it) }
+
+    private fun handleResponse(it: ResultSet<Boolean>) {
+        sharedViewModel.toggleLongRunning(false)
+        items_swipe_to_refresh.isRefreshing = false
+        when (it) {
+            is Success -> {
+                sharedViewModel.setMessage("Data Retrieved")
+
+            }
+            is Failure -> {
+                sharedViewModel.setMessage("Data Retrieval Failed")
+                handleError(
+                    view = this@HomeFragment.requireView(),
+                    throwable = it,
+                    shouldToast = false,
+                    shouldShowSnackBar = true,
+                    refreshAction = { retryFetchAllData() }
+                )
+            }
+            is Progress -> {
+                sharedViewModel.toggleLongRunning(it.isLoading)
+            }
+        }
+
+    }
 
     companion object {
         val TAG: String = HomeFragment::class.java.simpleName
@@ -66,7 +99,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                             userDTO = user_
                             username?.text = user_.userName
                         })
-
+                        val entities = homeViewModel.offlineEnitities.await()
                         val contracts = homeViewModel.offlineSectionItems.await()
                         contracts.observe(viewLifecycleOwner, Observer { mSectionItem ->
                             val allData = mSectionItem.count()
@@ -123,79 +156,11 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
-        homeViewModel = activity?.run {
-            ViewModelProvider(this, factory).get(HomeViewModel::class.java)
-        } ?: throw Exception("Invalid Activity")
+        loadViewModels()
 
-        sharedViewModel = activity?.run {
-            ViewModelProvider(this, shareFactory).get(SharedViewModel::class.java)
-        } ?: throw Exception("Invalid Activity")
+        initSwipeToRefresh()
 
-        // val dialog = setDataProgressDialog(activity!!, getString(R.string.data_loading_please_wait))
-
-        items_swipe_to_refresh.setProgressBackgroundColorSchemeColor(
-            ContextCompat.getColor(
-                requireContext().applicationContext,
-                R.color.colorPrimary
-            )
-        )
-
-        items_swipe_to_refresh.setColorSchemeColors(Color.WHITE)
-
-        items_swipe_to_refresh.setOnRefreshListener {
-            uiScope.launch(uiScope.coroutineContext) {
-                try {
-
-                    sharedViewModel.setMessage("Data Loading")
-                    sharedViewModel.toggleLongRunning(true)
-                    val fetched = homeViewModel.fetchAllData(userDTO.userId)
-                    if (fetched) {
-                        sharedViewModel.setMessage("Data Retrieved")
-                        sharedViewModel.toggleLongRunning(false)
-                    }
-
-                } catch (e: ApiException) {
-                    sharedViewModel.setMessage(e.message)
-                    Timber.e(e, "API Exception")
-                } catch (e: NoInternetException) {
-                    sharedViewModel.setMessage(e.message)
-                    Timber.e(e, "No Internet Connection")
-                } catch (e: NoConnectivityException) {
-                    sharedViewModel.setMessage(e.message)
-                    Timber.e(e, "Service Host Unreachable")
-                } finally {
-                    items_swipe_to_refresh.isRefreshing = false
-                    sharedViewModel.toggleLongRunning(false)
-                }
-            }
-        }
-
-
-        Coroutines.io {
-            val lm = requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager
-            val cm =
-                requireActivity().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-            gpsEnabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
-            networkEnabled = cm.isDefaultNetworkActive
-            //  Check if Network Enabled
-            if (!networkEnabled) {
-                dataEnabled.setText(R.string.mobile_data_not_connected)
-                dataEnabled.setTextColor(colorNotConnected)
-            } else {
-                dataEnabled.setText(R.string.mobile_data_connected)
-                dataEnabled.setTextColor(colorConnected)
-            }
-
-            // Check if GPS connected
-            if (!gpsEnabled) {
-                locationEnabled.text = requireActivity().getString(R.string.gps_not_connected)
-                locationEnabled.setTextColor(colorNotConnected)
-            } else {
-                locationEnabled.text = requireActivity().getString(R.string.gps_connected)
-                locationEnabled.setTextColor(colorConnected)
-            }
-        }
-
+        checkNetworkLocationStatus()
 
         connectedTo.text = "Version " + BuildConfig.VERSION_NAME
 
@@ -206,6 +171,72 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
 
         imageView7.setOnClickListener {
             ToastUtils().toastVersion(context)
+        }
+    }
+
+    private fun loadViewModels() {
+        homeViewModel = activity?.run {
+            ViewModelProvider(this, factory).get(HomeViewModel::class.java)
+        } ?: throw Exception("Invalid Activity")
+
+        sharedViewModel = activity?.run {
+            ViewModelProvider(this, shareFactory).get(SharedViewModel::class.java)
+        } ?: throw Exception("Invalid Activity")
+    }
+
+    private fun initSwipeToRefresh() {
+        items_swipe_to_refresh.setProgressBackgroundColorSchemeColor(
+            ContextCompat.getColor(
+                requireContext().applicationContext,
+                R.color.colorPrimary
+            )
+        )
+
+        items_swipe_to_refresh.setColorSchemeColors(Color.WHITE)
+
+        items_swipe_to_refresh.setOnRefreshListener {
+            fetchAllData()
+        }
+    }
+
+    private fun fetchAllData() {
+        uiScope.launch(uiScope.coroutineContext) {
+            sharedViewModel.setMessage("Data Loading")
+            sharedViewModel.toggleLongRunning(true)
+            withContext(uiScope.coroutineContext) {
+                homeViewModel.fetchAllData(userDTO.userId)
+                homeViewModel.fetchResult.observe(viewLifecycleOwner, observer)
+            }
+        }
+    }
+
+    private fun retryFetchAllData() {
+        IndefiniteSnackbar.hide()
+        fetchAllData()
+    }
+
+    private fun checkNetworkLocationStatus() {
+        val lm = requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        val cm =
+            requireActivity().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        gpsEnabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
+        networkEnabled = cm.isDefaultNetworkActive
+        //  Check if Network Enabled
+        if (!networkEnabled) {
+            dataEnabled.setText(R.string.mobile_data_not_connected)
+            dataEnabled.setTextColor(colorNotConnected)
+        } else {
+            dataEnabled.setText(R.string.mobile_data_connected)
+            dataEnabled.setTextColor(colorConnected)
+        }
+
+        // Check if GPS connected
+        if (!gpsEnabled) {
+            locationEnabled.text = requireActivity().getString(R.string.gps_not_connected)
+            locationEnabled.setTextColor(colorNotConnected)
+        } else {
+            locationEnabled.text = requireActivity().getString(R.string.gps_connected)
+            locationEnabled.setTextColor(colorConnected)
         }
     }
 
