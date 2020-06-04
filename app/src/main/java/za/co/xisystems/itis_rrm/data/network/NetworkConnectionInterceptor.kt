@@ -8,11 +8,9 @@ import okhttp3.Interceptor
 import okhttp3.Response
 import za.co.xisystems.itis_rrm.utils.NoConnectivityException
 import za.co.xisystems.itis_rrm.utils.NoInternetException
-import java.io.IOException
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.Socket
-import java.net.SocketException
 
 /**
  * Created by Francis Mahlava on 2019/10/18.
@@ -20,7 +18,7 @@ import java.net.SocketException
 class NetworkConnectionInterceptor(
     context: Context
 ) : Interceptor {
-    private val testConnection = "www.google.com"
+    private val testConnection = "www.google.co.za"
     private val serviceURL = "itisqa.nra.co.za"
     private val applicationContext = context.applicationContext
 
@@ -85,10 +83,7 @@ class NetworkConnectionInterceptor(
                 socket.close()
                 return true
             }
-        } catch (e: IOException) {
-            e.printStackTrace()
-            return false
-        } catch (e: SocketException) {
+        } catch (e: Exception) {
             e.printStackTrace()
             return false
         }
