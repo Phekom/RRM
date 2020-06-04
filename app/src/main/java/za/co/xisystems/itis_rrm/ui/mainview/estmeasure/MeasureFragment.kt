@@ -74,31 +74,40 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
             )
 
             itemEstimateData.observe(viewLifecycleOwner, Observer { itemEstimateList ->
-                val jobHeaders = itemEstimateList.distinctBy {
-                    it.jobId
-                }
-                if (itemEstimateList.isEmpty()) {
-                    Coroutines.main {
-                        val jobEstimateData = measureViewModel.getJobMeasureForActivityId(
-                            ActivityIdConstants.ESTIMATE_MEASURE,
-                            ActivityIdConstants.JOB_ESTIMATE
-                        )
-                        jobEstimateData.observe(viewLifecycleOwner, Observer { jos ->
-                            val measure_items = jos.distinctBy {
-                                it.jobId
-                            }
-                            noData.visibility = View.GONE
-                            initRecyclerView(measure_items.toMeasureListItems())
-                            toast(itemEstimateList.size.toString())
-                            group5_loading.visibility = View.GONE
+                val allData = itemEstimateList.count()
+                if (allData == itemEstimateList.size) {
 
-                        })
+                    val jobHeaders = itemEstimateList.distinctBy {
+                        it.jobId
                     }
-                } else {
-                    noData.visibility = View.GONE
-                    initRecyclerView(jobHeaders.toMeasureListItems())
-                    toast(itemEstimateList.size.toString())
-                    group5_loading.visibility = View.GONE
+                    Timber.d("Estimate measures detected: ${itemEstimateList.size}")
+                    if (itemEstimateList.isEmpty()) {
+                        Coroutines.main {
+                            val jobEstimateData = measureViewModel.getJobMeasureForActivityId(
+                                ActivityIdConstants.ESTIMATE_MEASURE,
+                                ActivityIdConstants.JOB_ESTIMATE
+                            )
+                            jobEstimateData.observe(viewLifecycleOwner, Observer { jos ->
+                                val allJobs = jos.count()
+                                if (allJobs == jos.size) {
+                                    val measure_items = jos.distinctBy {
+                                        it.jobId
+                                    }
+                                    Timber.d("Job measures detected: ${jos.size}")
+                                    noData.visibility = View.GONE
+                                    initRecyclerView(measure_items.toMeasureListItems())
+                                    toast(jos.size.toString())
+                                    group5_loading.visibility = View.GONE
+                                }
+
+                            })
+                        }
+                    } else {
+                        noData.visibility = View.GONE
+                        initRecyclerView(jobHeaders.toMeasureListItems())
+                        toast(itemEstimateList.size.toString())
+                        group5_loading.visibility = View.GONE
+                    }
                 }
             })
 

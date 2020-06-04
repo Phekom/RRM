@@ -133,7 +133,7 @@ class MeasureCreationDataRepository(
 
                 itemMeasureJob.JobItemMeasures = jobItemMeasure
                 val measureJob = setWorkflowJobBigEndianGuids(workflowJobDTO)
-                insertOrUpdateWorkflowJobInSQLite(measureJob)
+                insertOrUpdateWorkflowJobInSQLite(measureJob, false)
                 uploadMeasurementImages(jobItemMeasure, activity)
                 val myJob = getUpdatedJob(itemMeasureJob.JobId)
                 moveJobToNextWorkflow(activity, measureJob, myJob)
@@ -313,7 +313,7 @@ class MeasureCreationDataRepository(
         try {
             if (workflowJob != null) {
                 val job = setWorkflowJobBigEndianGuids(workflowJob)
-                insertOrUpdateWorkflowJobInSQLite(job)
+                insertOrUpdateWorkflowJobInSQLite(job, true)
             } else {
                 Timber.e("Error -> WorkFlow Job is null")
             }
@@ -476,74 +476,87 @@ class MeasureCreationDataRepository(
         }
     }
 
-    private fun insertOrUpdateWorkflowJobInSQLite(job: WorkflowJobDTO?) {
+    private fun insertOrUpdateWorkflowJobInSQLite(job: WorkflowJobDTO?, final: Boolean?) {
         job?.let {
-            updateWorkflowJobValuesAndInsertWhenNeeded(it)
+            updateWorkflowJobValuesAndInsertWhenNeeded(it, final)
+
         }
     }
 
-    private fun updateWorkflowJobValuesAndInsertWhenNeeded(job: WorkflowJobDTO) {
+    private fun updateWorkflowJobValuesAndInsertWhenNeeded(
+        job: WorkflowJobDTO,
+        final: Boolean?
+    ) {
         Coroutines.io {
-            Db.getJobDao()
-                .updateJob(job.trackRouteId, job.actId, job.jiNo, job.jobId)
+            try {
+                Db.getJobDao()
+                    .updateJob(job.trackRouteId, job.actId, job.jiNo, job.jobId)
 
 
-            job.workflowItemEstimates?.forEach { jobItemEstimate ->
-                Db.getJobItemEstimateDao().updateExistingJobItemEstimateWorkflow(
-                    jobItemEstimate.trackRouteId,
-                    jobItemEstimate.actId,
-                    jobItemEstimate.estimateId
-                )
-
-
-                jobItemEstimate.workflowEstimateWorks.forEach { jobEstimateWorks ->
-                    if (!Db.getEstimateWorkDao()
-                            .checkIfJobEstimateWorksExist(jobEstimateWorks.worksId)
+                job.workflowItemEstimates?.forEach { jobItemEstimate ->
+                    Db.getJobItemEstimateDao().updateExistingJobItemEstimateWorkflow(
+                        jobItemEstimate.trackRouteId,
+                        jobItemEstimate.actId,
+                        jobItemEstimate.estimateId
                     )
-                        Db.getEstimateWorkDao().insertJobEstimateWorks(
-                            jobEstimateWorks as JobEstimateWorksDTO
-                        )
-                    else
-                        Db.getEstimateWorkDao().updateJobEstimateWorksWorkflow(
-                            jobEstimateWorks.worksId,
-                            jobEstimateWorks.estimateId,
-                            jobEstimateWorks.recordVersion,
-                            jobEstimateWorks.recordSynchStateId,
-                            jobEstimateWorks.actId,
-                            jobEstimateWorks.trackRouteId
-                        )
-                }
 
-                if (job.workflowItemMeasures != null) {
-                    job.workflowItemMeasures.forEach { jobItemMeasure ->
-                        Db.getJobItemMeasureDao().updateWorkflowJobItemMeasure(
-                            jobItemMeasure.itemMeasureId,
-                            jobItemMeasure.trackRouteId,
-                            jobItemMeasure.actId,
-                            jobItemMeasure.measureGroupId
+
+                    jobItemEstimate.workflowEstimateWorks.forEach { jobEstimateWorks ->
+                        if (!Db.getEstimateWorkDao()
+                                .checkIfJobEstimateWorksExist(jobEstimateWorks.worksId)
                         )
+                            Db.getEstimateWorkDao().insertJobEstimateWorks(
+                                jobEstimateWorks as JobEstimateWorksDTO
+                            )
+                        else
+                            Db.getEstimateWorkDao().updateJobEstimateWorksWorkflow(
+                                jobEstimateWorks.worksId,
+                                jobEstimateWorks.estimateId,
+                                jobEstimateWorks.recordVersion,
+                                jobEstimateWorks.recordSynchStateId,
+                                jobEstimateWorks.actId,
+                                jobEstimateWorks.trackRouteId
+                            )
+                    }
+
+                    if (job.workflowItemMeasures != null) {
+                        job.workflowItemMeasures.forEach { jobItemMeasure ->
+                            Db.getJobItemMeasureDao().updateWorkflowJobItemMeasure(
+                                jobItemMeasure.itemMeasureId,
+                                jobItemMeasure.trackRouteId,
+                                jobItemMeasure.actId,
+                                jobItemMeasure.measureGroupId
+                            )
+                        }
                     }
                 }
-            }
 
 
-            //  Place the Job Section, UPDATE OR CREATE
+                //  Place the Job Section, UPDATE OR CREATE
 
-            job.workflowJobSections?.forEach { jobSection ->
-                if (!Db.getJobSectionDao()
-                        .checkIfJobSectionExist(jobSection.jobSectionId)
-                )
-                    Db.getJobSectionDao().insertJobSection(jobSection)
-                else
-                    Db.getJobSectionDao().updateExistingJobSectionWorkflow(
-                        jobSection.jobSectionId,
-                        jobSection.projectSectionId,
-                        jobSection.jobId,
-                        jobSection.startKm,
-                        jobSection.endKm,
-                        jobSection.recordVersion,
-                        jobSection.recordSynchStateId
+                job.workflowJobSections?.forEach { jobSection ->
+                    if (!Db.getJobSectionDao()
+                            .checkIfJobSectionExist(jobSection.jobSectionId)
                     )
+                        Db.getJobSectionDao().insertJobSection(jobSection)
+                    else
+                        Db.getJobSectionDao().updateExistingJobSectionWorkflow(
+                            jobSection.jobSectionId,
+                            jobSection.projectSectionId,
+                            jobSection.jobId,
+                            jobSection.startKm,
+                            jobSection.endKm,
+                            jobSection.recordVersion,
+                            jobSection.recordSynchStateId
+                        )
+                }
+
+                if (null != final && final == true)
+                    workflowStatus.postValue(XISuccess("${job.jiNo}"))
+
+            } catch (e: Exception) {
+                val saveFail = XIError(e, "Failed to save updates: ${e.message}")
+                workflowStatus.postValue(saveFail)
             }
 
         }
@@ -615,50 +628,3 @@ class MeasureCreationDataRepository(
         }
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

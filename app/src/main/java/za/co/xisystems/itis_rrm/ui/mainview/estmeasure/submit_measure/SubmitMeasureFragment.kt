@@ -62,16 +62,16 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
         (activity as MainActivity).supportActionBar?.title =
             getString(R.string.submit_measure_title)
 
-        measureViewModel = activity?.run {
-            ViewModelProvider(this, factory).get(MeasureViewModel::class.java)
-        } ?: throw Exception("Invalid Activity")
-
-
-        Coroutines.main {
-            measureViewModel.measure_Item.observe(viewLifecycleOwner, Observer { jobID ->
-                getWorkItems(jobID.jobItemEstimateDTO.jobId)
-            })
-        }
+//        measureViewModel = activity?.run {
+//            ViewModelProvider(this, factory).get(MeasureViewModel::class.java)
+//        } ?: throw Exception("Invalid Activity")
+//
+//
+//        Coroutines.main {
+//            measureViewModel.measure_Item.observe(viewLifecycleOwner, Observer { jobID ->
+//                getWorkItems(jobID.jobItemEstimateDTO.jobId)
+//            })
+//        }
 
         return inflater.inflate(R.layout.fragment_submit_measure, container, false)
     }
@@ -136,12 +136,15 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
             val jobItemMeasure =
                 measureViewModel.getJobItemMeasuresForJobIdAndEstimateId(jobId) //estimateId
             jobItemMeasure.observe(viewLifecycleOwner, Observer { m_sures ->
-                if (m_sures.isNullOrEmpty() || m_sures.isEmpty()) {
+                val validMeasures = m_sures.filter { msure ->
+                    msure.qty > 0 && msure.jobItemMeasurePhotos.isNotEmpty()
+                }
+                if (validMeasures.isNullOrEmpty() || validMeasures.isEmpty()) {
                     toast(R.string.please_make_sure_you_have_captured_photos)
                 } else {
-                    toast("You have Done " + m_sures.size.toString() + " Measurements on this Estimate")
+                    toast("You have Done " + validMeasures.size.toString() + " Measurements on this Estimate")
 
-                    val itemMeasures = m_sures as ArrayList
+                    val itemMeasures = validMeasures as ArrayList
                     for (jim in itemMeasures) {
                         val newJim = setJobMeasureLittleEndianGuids(jim)!!
                         jobItemMeasureList.add(newJim)
