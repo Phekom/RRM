@@ -7,7 +7,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasurePhotoDTO
-import java.util.ArrayList
+import java.util.*
 
 /**
  * Created by Francis Mahlava on 2019/11/21.
@@ -70,8 +70,8 @@ interface JobItemMeasureDao {
     @Query("SELECT lineRate FROM JOB_ITEM_MEASURE WHERE itemMeasureId = :itemMeasureId")
     fun getLineRateForMeasureItemId(itemMeasureId: String): LiveData<Double>
 
-    @Query("UPDATE JOB_ITEM_MEASURE SET qty =:newQuantity WHERE estimateId = :newEstimateId")
-    fun upDateLineRate(newEstimateId: String, newQuantity: Double)
+    @Query("UPDATE JOB_ITEM_MEASURE SET qty =:newQuantity WHERE itemMeasureId = :newitemMeasureId")
+    fun upDateQty(newitemMeasureId: String, newQuantity: Double)
 
 //    @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE projectId = :projectId")
 //    fun getAllItemsForProjectId(projectId: String): LiveData<List<ItemDTO>>
