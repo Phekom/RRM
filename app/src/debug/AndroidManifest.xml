@@ -49,9 +49,9 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
 
-        <activity
-            android:name=".ui.mainview.activities.MapActivity"
-            android:label="@string/title_activity_map"></activity>
+        <!--        <activity-->
+        <!--            android:name=".ui.mainview.activities.MapActivity"-->
+        <!--            android:label="@string/title_activity_map"></activity>-->
         <!--
             <activity android:name=".ui.mainview.create.edit_estimates.EstimatePhotoActivity"></activity> android:hardwareAccelerated="false"
             <activity android:name=".ui.mainview.estmeasure.submit_measure.CaptureItemMeasurePhotoActivity" />
