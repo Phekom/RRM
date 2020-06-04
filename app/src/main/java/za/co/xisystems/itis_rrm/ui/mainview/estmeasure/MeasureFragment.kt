@@ -2,7 +2,6 @@ package za.co.xisystems.itis_rrm.ui.mainview.estmeasure
 
 import android.graphics.Color
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
@@ -19,6 +18,7 @@ import kotlinx.android.synthetic.main.fragment_estmeasure.*
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
+import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
@@ -31,7 +31,7 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
 
     override val kodein by kodein()
     private lateinit var measureViewModel: MeasureViewModel
-    private val factory: MeasureViewModelFactory by instance()
+    private val factory: MeasureViewModelFactory by instance<MeasureViewModelFactory>()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
@@ -126,18 +126,18 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
                     ToastUtils().toastLong(activity, e.message)
                     estimations_swipe_to_refresh.isRefreshing = false
                     dialog.dismiss()
-                    Log.e("Service-Host", "API Exception", e)
+                    Timber.e(e, "API Exception")
                 } catch (e: NoInternetException) {
                     ToastUtils().toastLong(activity, e.message)
                     // snackError(this.coordinator, e.message)
                     dialog.dismiss()
                     estimations_swipe_to_refresh.isRefreshing = false
-                    Log.e("Network-Connection", "No Internet Connection", e)
+                    Timber.e(e, "No Internet Connection")
                 } catch (e: NoConnectivityException) {
                     ToastUtils().toastLong(activity, e.message)
                     dialog.dismiss()
                     estimations_swipe_to_refresh.isRefreshing = false
-                    Log.e("Network-Error", "Service Host Unreachable", e)
+                    Timber.e(e, "Service Host Unreachable")
                 }
 
             }

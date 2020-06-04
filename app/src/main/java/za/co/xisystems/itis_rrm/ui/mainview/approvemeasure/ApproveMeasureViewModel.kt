@@ -115,22 +115,25 @@ class ApproveMeasureViewModel (
         }
     }
 
-    suspend fun getJobFromJobId(jobId: String): JobDTO {
-        return withContext(Dispatchers.IO) {
-            offlineDataRepository.getUpdatedJob(jobId)
-        }
-    }
+//    suspend fun getJobFromJobId(jobId: String): JobDTO {
+//        return withContext(Dispatchers.IO) {
+//            offlineDataRepository.getUpdatedJob(jobId)
+//        }
+//    }
 
-    suspend fun upDateMeasure(new_quantity: String, itemMeasureId: String?) : String{
+    suspend fun upDateMeasure(
+        new_quantity: String,
+        itemMeasureId: String?
+    ): String {
         return withContext(Dispatchers.IO) {
-            offlineDataRepository.upDateMeasure(new_quantity, itemMeasureId!!)
+            measureApprovalDataRepository.upDateMeasure(new_quantity, itemMeasureId!!)
         }
     }
 
 
     suspend fun getQuantityForMeasureItemId(itemMeasureId: String): LiveData<Double> {
         return withContext(Dispatchers.IO) {
-            offlineDataRepository.getQuantityForMeasureItemId(itemMeasureId)
+            measureApprovalDataRepository.getQuantityForMeasureItemId(itemMeasureId)
         }
     }
 
@@ -138,7 +141,7 @@ class ApproveMeasureViewModel (
 
     suspend fun getLineRateForMeasureItemId(itemMeasureId: String):  LiveData<Double> {
         return withContext(Dispatchers.IO) {
-            offlineDataRepository.getLineRateForMeasureItemId(itemMeasureId)
+            measureApprovalDataRepository.getLineRateForMeasureItemId(itemMeasureId)
         }
     }
 

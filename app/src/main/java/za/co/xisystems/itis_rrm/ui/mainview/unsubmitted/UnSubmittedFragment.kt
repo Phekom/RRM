@@ -27,7 +27,7 @@ class UnSubmittedFragment : BaseFragment( R.layout.fragment_unsubmittedjobs), Ko
 //
     override val kodein by kodein()
     private lateinit var unsubmittedViewModel: UnSubmittedViewModel
-    private val factory: UnSubmittedViewModelFactory by instance()
+    private val factory: UnSubmittedViewModelFactory by instance<UnSubmittedViewModelFactory>()
     private lateinit var groupAdapter: GroupAdapter<GroupieViewHolder>
 
     companion object {

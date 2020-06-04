@@ -56,8 +56,8 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
     override val kodein by kodein()
     private lateinit var createViewModel: CreateViewModel
     private lateinit var unsubmittedViewModel: UnSubmittedViewModel
-    private val unsubFactory: UnSubmittedViewModelFactory by instance()
-    private val createFactory: CreateViewModelFactory by instance()
+    private val unsubFactory: UnSubmittedViewModelFactory by instance<UnSubmittedViewModelFactory>()
+    private val createFactory: CreateViewModelFactory by instance<CreateViewModelFactory>()
     private var dueDateDialog: DatePickerDialog? = null
     private var startDateDialog: DatePickerDialog? = null
     private lateinit var jobDataController: JobDataController
@@ -74,6 +74,8 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
 
     @MyState
     private var items: List<ItemDTOTemp> = ArrayList<ItemDTOTemp>()
+
+    // TODO: Restore to last state saved when user arrives here by clicking the back button.
 
     init {
         lifecycleScope.launch {

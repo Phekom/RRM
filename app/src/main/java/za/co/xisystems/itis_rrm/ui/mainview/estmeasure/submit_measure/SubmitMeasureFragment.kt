@@ -23,20 +23,21 @@ import org.kodein.di.generic.instance
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
+import za.co.xisystems.itis_rrm.ui.custom.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
-import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModelFactory
-import za.co.xisystems.itis_rrm.utils.Coroutines
-import za.co.xisystems.itis_rrm.utils.DataConversion
-import za.co.xisystems.itis_rrm.utils.ServiceUtil
+import za.co.xisystems.itis_rrm.utils.*
+import za.co.xisystems.itis_rrm.utils.errors.ErrorHandler.handleError
+import za.co.xisystems.itis_rrm.utils.results.XIError
+import za.co.xisystems.itis_rrm.utils.results.XISuccess
 import java.util.*
 
 
 class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), KodeinAware {
     override val kodein by kodein()
     private lateinit var measureViewModel: MeasureViewModel
-    private val factory: MeasureViewModelFactory by instance()
+    private val factory: MeasureViewModelFactory by instance<MeasureViewModelFactory>()
     private lateinit var jobItemMeasurePhotoDTO: ArrayList<JobItemMeasurePhotoDTO>
     private lateinit var jobItemMeasureArrayList: ArrayList<JobItemMeasureDTO>
     private lateinit var jobItemEstimatesForJob: ArrayList<JobItemEstimateDTO>
@@ -131,9 +132,10 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
 
     private fun submitMeasurements(jobId: String?) {
         Coroutines.main {
+            measureViewModel.setBackupJobId(jobId!!)
             val jobItemMeasure =
                 measureViewModel.getJobItemMeasuresForJobIdAndEstimateId(jobId) //estimateId
-            jobItemMeasure.observe(requireActivity(), Observer { m_sures ->
+            jobItemMeasure.observe(viewLifecycleOwner, Observer { m_sures ->
                 if (m_sures.isNullOrEmpty() || m_sures.isEmpty()) {
                     toast(R.string.please_make_sure_you_have_captured_photos)
                 } else {
@@ -147,7 +149,18 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                     submitJobToMeasurements(jobForItemEstimate, jobItemMeasureList)
                 }
             })
+            // jobItemMeasure.removeObservers(viewLifecycleOwner)
         }
+    }
+
+    private fun retryMeasurements() {
+        IndefiniteSnackbar.hide()
+        val backupJob = measureViewModel.backupJobId
+        backupJob.observe(viewLifecycleOwner, Observer { response ->
+            response?.let { jobId ->
+                submitMeasurements(jobId)
+            }
+        })
     }
 
     private fun submitJobToMeasurements(
@@ -155,6 +168,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
         mSures: ArrayList<JobItemMeasureDTO>
 
     ) {
+
         val logoutBuilder = AlertDialog.Builder(
             requireActivity() //, android.R.style.Theme_DeviceDefault_Dialog
         )
@@ -189,15 +203,15 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
         Coroutines.main {
             val user = measureViewModel.user.await()
             user.observe(viewLifecycleOwner, Observer { user_ ->
-                if (user_.userId == null) {
+                if (user_.userId.isBlank()) {
                     toast("Error: userId is null")
-                } else if (itemMeasureJob.JobId == null) {
+                } else if (itemMeasureJob.JobId.isBlank()) {
                     toast("Error: selectedJob is null")
                 } else {
                     // beware littleEndian conversion for transport to Ser
-                    val ContractVoId: String =
+                    val contractVoId: String =
                         DataConversion.toLittleEndian(itemMeasureJob.ContractVoId)!!
-                    val JobId: String = DataConversion.toLittleEndian(itemMeasureJob.JobId)!!
+                    val jobId: String = DataConversion.toLittleEndian(itemMeasureJob.JobId)!!
 
                     Coroutines.main {
                         val prog =
@@ -205,40 +219,61 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                                 requireActivity(),
                                 getString(R.string.loading_job_wait)
                             )
-                        prog.show()
-                        val submit = activity?.let {
-                            measureViewModel.processWorkflowMove(
-                                user_.userId, JobId, itemMeasureJob.JiNo, ContractVoId, mSures,
+
+                        activity?.let {
+
+
+                            val result = measureViewModel.processWorkflowMove(
+                                user_.userId, jobId, itemMeasureJob.JiNo, contractVoId, mSures,
                                 it, itemMeasureJob
                             )
+                            val workflowOutcome = measureViewModel.workflowMoveResponse
+                            workflowOutcome.observe(viewLifecycleOwner, Observer { response ->
+                                response?.let { outcome ->
+                                    result.cancel()
+                                    when (outcome) {
+                                        is XISuccess -> {
+                                            prog.dismiss()
+                                            toast(R.string.measure_submitted)
+                                            popViewOnJobSubmit()
+                                        }
+                                        is XIError -> {
+                                            prog.dismiss()
+                                            when (outcome.exception) {
+                                                is NoInternetException -> {
+                                                    handleConnectivityError(outcome)
+                                                }
+                                                is NoConnectivityException -> {
+                                                    handleConnectivityError(outcome)
+                                                }
 
+                                                else -> {
+                                                    handleError(
+                                                        view = this@SubmitMeasureFragment.requireView(),
+                                                        throwable = outcome,
+                                                        shouldToast = true,
+                                                        shouldShowSnackBar = false
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            })
                         }
-                        prog.dismiss()
-                        if (submit != null) {
-                            toast(submit)
-                        } else {
-                            toast(R.string.measure_submitted)
-//                            sendJobToApprove((itemMeasureJob), view)
-                            popViewOnJobSubmit()
-                        }
-
-
                     }
                 }
-
             })
         }
     }
 
-//    private fun sendJobToApprove(
-//        itemMeasureJob: JobDTO,
-//        view: View?
-//    ) {
-//        Coroutines.main {
-//            approveViewModel.measurea1_Job.value = itemMeasureJob
-//        }
-//
-//    }
+    private fun handleConnectivityError(outcome: XIError) {
+        handleError(this@SubmitMeasureFragment.requireView(),
+            throwable = outcome,
+            shouldToast = false,
+            shouldShowSnackBar = true,
+            refreshAction = { retryMeasurements() })
+    }
 
     fun setJobMeasureLittleEndianGuids(jim: JobItemMeasureDTO?): JobItemMeasureDTO? {
         if (jim != null) {
@@ -255,7 +290,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                 jim.setMeasureGroupId(DataConversion.toLittleEndian(jim.measureGroupId))
 
 
-            if (jim.jobItemMeasurePhotos != null) {
+            if (jim.jobItemMeasurePhotos.isNotEmpty()) {
                 for (jmep in jim.jobItemMeasurePhotos) {
                     jmep.setPhotoId(DataConversion.toLittleEndian(jmep.photoId))
                     jmep.setEstimateId(DataConversion.toLittleEndian(jmep.estimateId))

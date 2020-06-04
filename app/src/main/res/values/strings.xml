@@ -535,9 +535,15 @@
     <string name="welcome">Welcome</string>
     <string name="label_amount">Amount: </string>
     <string name="label_length_m">Length(m): </string>
-    <string name="warning_estimate_incomplete">Incomplete estimate ...</string>
+    <string name="warning_estimate_incomplete">Incomplete estimate …</string>
     <string name="warning_estimate_enter_volume">Please enter the volume.</string>
     <string name="warning_estimate_enter_prov_sum">Please enter the Prov Sum</string>
     <string name="capture_workflow_comments">Capture workflow comments</string>
+    <string name="title_activity_map">Map</string>
+    <string name="retry">Retry?</string>
+
+    <!-- Location Rationale -->
+    <string name="alert_location_title">Location Services</string>
+    <string name="alert_location_message">RRM Mobile needs location services enabled in order to work</string>
 
 </resources>

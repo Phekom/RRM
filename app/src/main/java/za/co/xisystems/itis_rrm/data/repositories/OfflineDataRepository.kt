@@ -5,6 +5,7 @@ package za.co.xisystems.itis_rrm.data.repositories
 // import android.app.Activity
 import android.os.Build
 import android.os.Environment
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import kotlinx.coroutines.Dispatchers
@@ -34,7 +35,7 @@ class OfflineDataRepository(
     private val prefs: PreferenceProvider
 ) : SafeApiRequest() {
 
-
+    private val activity: FragmentActivity? = null
     private val conTracts = MutableLiveData<List<ContractDTO>>()
     private val sectionItems = MutableLiveData<ArrayList<String>>()
     private val job = MutableLiveData<JobDTO>()
@@ -47,7 +48,6 @@ class OfflineDataRepository(
     private val workflowJ = MutableLiveData<WorkflowJobDTO>()
     private val workflowJ2 = MutableLiveData<WorkflowJobDTO>()
     private val photoUpload = MutableLiveData<String>()
-    private val qtyUpDate = MutableLiveData<String>()
 
 
     init {
@@ -120,8 +120,6 @@ class OfflineDataRepository(
 
     suspend fun getSectionItems(): LiveData<List<SectionItemDTO>> {
         return withContext(Dispatchers.IO) {
-            val userId = Db.getUserDao().getUserID()
-            // fetchContracts(userId)
             Db.getSectionItemDao().getSectionItems()
         }
     }
@@ -292,7 +290,7 @@ class OfflineDataRepository(
                             e.printStackTrace()
                         }
                     } else {
-                        Timber.e("itemCode is null")
+                        Timber.d("itemCode is null")
                     }
                 }
 
@@ -346,7 +344,7 @@ class OfflineDataRepository(
         }
     }
 
-    private suspend fun updateProjects(
+    private fun updateProjects(
         validProjects: List<ProjectDTO>?,
         contract: ContractDTO
     ) {
@@ -377,17 +375,18 @@ class OfflineDataRepository(
                             )
                             throw ex
                         }
-                    }
-                    if (project.items != null) {
-                        updateProjectItems(project.items, project)
-                    }
 
-                    if (project.projectSections != null) {
-                        updateProjectSections(project.projectSections, project)
-                    }
+                        if (project.items != null) {
+                            updateProjectItems(project.items, project)
+                        }
 
-                    if (project.voItems != null) {
-                        updateVOItems(project.voItems, project)
+                        if (project.projectSections != null) {
+                            updateProjectSections(project.projectSections, project)
+                        }
+
+                        if (project.voItems != null) {
+                            updateVOItems(project.voItems, project)
+                        }
                     }
 
                 }
@@ -395,7 +394,7 @@ class OfflineDataRepository(
         }
     }
 
-    private suspend fun updateProjectItems(
+    private fun updateProjectItems(
         distinctItems: List<ProjectItemDTO>,
         project: ProjectDTO
     ) {
@@ -441,7 +440,7 @@ class OfflineDataRepository(
         }
     }
 
-    private suspend fun updateProjectSections(
+    private fun updateProjectSections(
         projectSections: ArrayList<ProjectSectionDTO>,
         project: ProjectDTO
     ) {
@@ -468,7 +467,7 @@ class OfflineDataRepository(
         }
     }
 
-    private suspend fun updateVOItems(
+    private fun updateVOItems(
         voItems: ArrayList<VoItemDTO>,
         project: ProjectDTO
     ) {
@@ -509,20 +508,7 @@ class OfflineDataRepository(
                         Db.getWorkFlowDao().insertWorkFlow(workFlow)
 
                     if (workFlow.workFlowRoute != null) {
-                        for (workFlowRoute in workFlow.workFlowRoute!!) {
-                            if (!Db.getWorkFlowRouteDao()
-                                    .checkWorkFlowRouteExists(workFlowRoute.routeId)
-                            )
-                                Db.getWorkFlowRouteDao().insertWorkFlowRoute(
-                                    workFlowRoute.routeId,
-                                    workFlowRoute.actId,
-                                    workFlowRoute.nextRouteId,
-                                    workFlowRoute.failRouteId,
-                                    workFlowRoute.errorRouteId,
-                                    workFlowRoute.canStart,
-                                    workFlow.workflowId
-                                )
-                        }
+                        saveWorkflowRoutes(workFlow)
                     }
                 }
             }
@@ -538,6 +524,23 @@ class OfflineDataRepository(
                     Db.getInfoClassDao().insertInfoClasses(infoClass)
                 }
             }
+        }
+    }
+
+    private fun saveWorkflowRoutes(workFlow: WorkFlowDTO) {
+        for (workFlowRoute in workFlow.workFlowRoute!!) {
+            if (!Db.getWorkFlowRouteDao()
+                    .checkWorkFlowRouteExists(workFlowRoute.routeId)
+            )
+                Db.getWorkFlowRouteDao().insertWorkFlowRoute(
+                    workFlowRoute.routeId,
+                    workFlowRoute.actId,
+                    workFlowRoute.nextRouteId,
+                    workFlowRoute.failRouteId,
+                    workFlowRoute.errorRouteId,
+                    workFlowRoute.canStart,
+                    workFlow.workflowId
+                )
         }
     }
 
@@ -559,7 +562,74 @@ class OfflineDataRepository(
                     Db.getJobDao().insertOrUpdateJobs(job)
                 }
 
-                if (job.JobSections != null && job.JobSections!!.size != 0) {
+                if (job.JobSections != null) {
+                    saveJobSections(job)
+                }
+
+                if (job.JobItemEstimates != null) {
+                    saveJobItemEstimates(job)
+                }
+
+                if (job.JobItemMeasures != null) {
+//                    if (!Db.getJobItemMeasureDao().checkIfJobItemMeasureExists(jobItemMeasure.itemMeasureId!!)
+//                    ) {
+                    saveJobItemMeasuresForJob(job)
+//                    }
+                }
+
+            }
+        }
+    }
+
+    suspend fun saveJobItemMeasuresForJob(
+        job: JobDTO
+    ) {
+        for (jobItemMeasure in job.JobItemMeasures!!) {
+            if (!Db.getJobItemMeasureDao()
+                    .checkIfJobItemMeasureExists(jobItemMeasure.itemMeasureId!!)
+            ) {
+                jobItemMeasure.setItemMeasureId(
+                    DataConversion.toBigEndian(
+                        jobItemMeasure.itemMeasureId
+                    )
+                )
+                jobItemMeasure.setJobId(DataConversion.toBigEndian(jobItemMeasure.jobId))
+                jobItemMeasure.setProjectItemId(
+                    DataConversion.toBigEndian(
+                        jobItemMeasure.projectItemId
+                    )
+                )
+                jobItemMeasure.setMeasureGroupId(
+                    DataConversion.toBigEndian(
+                        jobItemMeasure.measureGroupId
+                    )
+                )
+                jobItemMeasure.setEstimateId(DataConversion.toBigEndian(jobItemMeasure.estimateId))
+                jobItemMeasure.setProjectVoId(DataConversion.toBigEndian(jobItemMeasure.projectVoId))
+                jobItemMeasure.setTrackRouteId(DataConversion.toBigEndian(jobItemMeasure.trackRouteId))
+                jobItemMeasure.setJobNo(job.JiNo)
+                jobItemMeasure.setQty(jobItemMeasure.qty)
+                if (!Db.getJobItemMeasureDao()
+                        .checkIfJobItemMeasureExists(jobItemMeasure.itemMeasureId!!)
+                )//{
+                    Db.getJobItemMeasureDao().insertJobItemMeasure(jobItemMeasure)
+//               }else{
+//                    jobItemMeasure.setQty(jobItemMeasure.qty)
+//                }
+
+
+                Db.getJobDao().setMeasureActId(jobItemMeasure.actId, job.JobId)
+                Db.getJobItemEstimateDao()
+                    .setMeasureActId(jobItemMeasure.actId, jobItemMeasure.estimateId!!)
+
+                if (jobItemMeasure.jobItemMeasurePhotos.isNotEmpty()) {
+                    saveJobItemMeasurePhotos(jobItemMeasure)
+                }
+            }
+        }
+    }
+
+    private suspend fun saveJobSections(job: JobDTO) {
                     for (jobSection in job.JobSections!!) {
                         if (!Db.getJobSectionDao().checkIfJobSectionExist(jobSection.jobSectionId))
                             jobSection.setJobSectionId(DataConversion.toBigEndian(jobSection.jobSectionId))
@@ -573,7 +643,9 @@ class OfflineDataRepository(
 
                 }
 
-                if (job.JobItemEstimates != null && job.JobItemEstimates!!.size != 0) {
+    private suspend fun saveJobItemEstimates(
+        job: JobDTO
+    ) {
                     for (jobItemEstimate in job.JobItemEstimates!!) {
                         if (!Db.getJobItemEstimateDao()
                                 .checkIfJobItemEstimateExist(jobItemEstimate.estimateId)
@@ -591,49 +663,69 @@ class OfflineDataRepository(
                                         jobItemEstimate.trackRouteId
                                     )
                                 ) else jobItemEstimate.trackRouteId = null
-
                             jobItemEstimate.setProjectVoId(
                                 DataConversion.toBigEndian(
                                     jobItemEstimate.projectVoId
                                 )
                             )
+
                             Db.getJobItemEstimateDao().insertJobItemEstimate(jobItemEstimate)
                             Db.getJobDao().setEstimateActId(jobItemEstimate.actId, job.JobId)
                             if (jobItemEstimate.jobItemEstimatePhotos != null) {
-                                for (jobItemEstimatePhoto in jobItemEstimate.jobItemEstimatePhotos!!) {
-                                    if (!Db.getJobItemEstimatePhotoDao()
-                                            .checkIfJobItemEstimatePhotoExistsByPhotoId(
-                                                jobItemEstimatePhoto.photoId
-                                            )
-                                    )
-                                        jobItemEstimatePhoto.setPhotoPath(
-                                            Environment.getExternalStorageDirectory()
-                                                .toString() + File.separator
-                                                    + PhotoUtil.FOLDER + File.separator + jobItemEstimatePhoto.filename
-                                        )
-                                    when (jobItemEstimatePhoto.descr) {
-                                        "photo_start" -> jobItemEstimatePhoto.setIsPhotoStart(true)
-                                        "photo_end" -> jobItemEstimatePhoto.setIsPhotoStart(false)
-                                    }
-                                    jobItemEstimatePhoto.setPhotoId(
-                                        DataConversion.toBigEndian(
-                                            jobItemEstimatePhoto.photoId
-                                        )
-                                    )
-                                    jobItemEstimatePhoto.setEstimateId(
-                                        DataConversion.toBigEndian(
-                                            jobItemEstimatePhoto.estimateId
-                                        )
-                                    )
-                                    Db.getJobItemEstimatePhotoDao().insertJobItemEstimatePhoto(
-                                        jobItemEstimatePhoto
-                                    )
-                                    if (!PhotoUtil.photoExist(jobItemEstimatePhoto.filename)) {
-                                        getPhotoForJobItemEstimate(jobItemEstimatePhoto.filename)
-                                    }
-                                }
+                                saveJobItemEstimatePhotos(jobItemEstimate)
                             }
                             if (jobItemEstimate.jobEstimateWorks != null) {
+                                saveJobItemEstimateWorks(jobItemEstimate, job)
+                            }
+                        }
+                        if (jobItemEstimate.jobItemMeasure != null) {
+                            saveJobIteamMeasuresForEstimate(jobItemEstimate.jobItemMeasure, job)
+                        }
+
+                    }
+    }
+
+    private suspend fun saveJobItemEstimatePhotos(
+        jobItemEstimate: JobItemEstimateDTO
+    ) {
+        for (jobItemEstimatePhoto in jobItemEstimate.jobItemEstimatePhotos!!) {
+            if (!Db.getJobItemEstimatePhotoDao()
+                    .checkIfJobItemEstimatePhotoExistsByPhotoId(
+                        jobItemEstimatePhoto.photoId
+                    )
+            )
+                jobItemEstimatePhoto.setPhotoPath(
+                    Environment.getExternalStorageDirectory()
+                        .toString() + File.separator
+                            + PhotoUtil.FOLDER + File.separator + jobItemEstimatePhoto.filename
+                )
+            when (jobItemEstimatePhoto.descr) {
+                "photo_start" -> jobItemEstimatePhoto.setIsPhotoStart(true)
+                "photo_end" -> jobItemEstimatePhoto.setIsPhotoStart(false)
+            }
+            jobItemEstimatePhoto.setPhotoId(
+                DataConversion.toBigEndian(
+                    jobItemEstimatePhoto.photoId
+                )
+            )
+            jobItemEstimatePhoto.setEstimateId(
+                DataConversion.toBigEndian(
+                    jobItemEstimatePhoto.estimateId
+                )
+            )
+            Db.getJobItemEstimatePhotoDao().insertJobItemEstimatePhoto(
+                jobItemEstimatePhoto
+            )
+            if (!PhotoUtil.photoExist(jobItemEstimatePhoto.filename)) {
+                getPhotoForJobItemEstimate(jobItemEstimatePhoto.filename)
+            }
+        }
+    }
+
+    private suspend fun saveJobItemEstimateWorks(
+        jobItemEstimate: JobItemEstimateDTO,
+        job: JobDTO
+    ) {
                                 for (jobEstimateWorks in jobItemEstimate.jobEstimateWorks!!) {
                                     if (!Db.getEstimateWorkDao().checkIfJobEstimateWorksExist(
                                             jobEstimateWorks.worksId
@@ -660,31 +752,38 @@ class OfflineDataRepository(
                                         .setEstimateWorksActId(jobEstimateWorks.actId, job.JobId)
 //                                    job.setEstimateWorksActId(jobEstimateWorks.actId)
                                     if (jobEstimateWorks.jobEstimateWorksPhotos != null) {
-                                        for (estimateWorksPhoto in jobEstimateWorks.jobEstimateWorksPhotos!!) {
-                                            if (!Db.getEstimateWorkPhotoDao()
-                                                    .checkIfEstimateWorksPhotoExist(
-                                                        estimateWorksPhoto.filename
-                                                    )
-                                            ) estimateWorksPhoto.setWorksId(
-                                                DataConversion.toBigEndian(
-                                                    estimateWorksPhoto.worksId
-                                                )
-                                            )
-                                            estimateWorksPhoto.setPhotoId(
-                                                DataConversion.toBigEndian(
-                                                    estimateWorksPhoto.photoId
-                                                )
-                                            )
-                                            Db.getEstimateWorkPhotoDao().insertEstimateWorksPhoto(
-                                                estimateWorksPhoto
-                                            )
-                                        }
+                                        saveJobItemEstimateWorksPhotos(jobEstimateWorks)
                                     }
                                 }
-                            }
-                        }
-                        if (jobItemEstimate.jobItemMeasure != null) {
-                            for (jobItemMeasure in jobItemEstimate.jobItemMeasure) {
+    }
+
+    private suspend fun saveJobItemEstimateWorksPhotos(jobEstimateWorks: JobEstimateWorksDTO) {
+        for (estimateWorksPhoto in jobEstimateWorks.jobEstimateWorksPhotos!!) {
+            if (!Db.getEstimateWorkPhotoDao()
+                    .checkIfEstimateWorksPhotoExist(
+                        estimateWorksPhoto.filename
+                    )
+            ) estimateWorksPhoto.setWorksId(
+                DataConversion.toBigEndian(
+                    estimateWorksPhoto.worksId
+                )
+            )
+            estimateWorksPhoto.setPhotoId(
+                DataConversion.toBigEndian(
+                    estimateWorksPhoto.photoId
+                )
+            )
+            Db.getEstimateWorkPhotoDao().insertEstimateWorksPhoto(
+                estimateWorksPhoto
+            )
+        }
+    }
+
+    private suspend fun saveJobIteamMeasuresForEstimate(
+        jobItemMeasures: java.util.ArrayList<JobItemMeasureDTO>,
+        job: JobDTO
+    ) {
+        for (jobItemMeasure in jobItemMeasures) {
                                 if (!Db.getJobItemMeasureDao().checkIfJobItemMeasureExists(
                                         jobItemMeasure.itemMeasureId!!
                                     )
@@ -737,133 +836,63 @@ class OfflineDataRepository(
                                         jobItemMeasure.actId,
                                         jobItemMeasure.estimateId!!
                                     )
-//                            job.setMeasureActId(jobItemMeasure.actId)
+
                                     if (jobItemMeasure.jobItemMeasurePhotos.isNotEmpty()) {
-                                        for (jobItemMeasurePhoto in jobItemMeasure.jobItemMeasurePhotos) {
-                                            if (!Db.getJobItemMeasurePhotoDao()
-                                                    .checkIfJobItemMeasurePhotoExists(
-                                                        jobItemMeasurePhoto.filename!!
-                                                    )
-                                            ) jobItemMeasurePhoto.setPhotoPath(
-                                                Environment.getExternalStorageDirectory()
-                                                    .toString() + File.separator
-                                                        + PhotoUtil.FOLDER + File.separator + jobItemMeasurePhoto.filename
-                                            )
-                                            jobItemMeasurePhoto.setPhotoId(
-                                                DataConversion.toBigEndian(
-                                                    jobItemMeasurePhoto.photoId
-                                                )
-                                            )
-                                            jobItemMeasurePhoto.setItemMeasureId(
-                                                DataConversion.toBigEndian(
-                                                    jobItemMeasurePhoto.itemMeasureId
-                                                )
-                                            )
-                                            Db.getJobItemMeasurePhotoDao()
-                                                .insertJobItemMeasurePhoto(
-                                                    jobItemMeasurePhoto
-                                                )
-                                            if (!PhotoUtil.photoExist(jobItemMeasurePhoto.filename))
-                                                getPhotoForJobItemMeasure(jobItemMeasurePhoto.filename)
-//                                    else {
-//                                        populateAppropriateViewForPhotos()
-//                                    }
-//                                    if (!PhotoUtil.photoExist(jobItemEstimatePhoto.filename)) {
-//                                        getPhotoForJobItemEstimate(jobItemEstimatePhoto.filename)
-//                                    }
-                                            jobItemMeasurePhoto.setPhotoPath(
-                                                Environment.getExternalStorageDirectory()
-                                                    .toString() + File.separator
-                                                        + PhotoUtil.FOLDER + File.separator + jobItemMeasurePhoto.filename
-                                            )
-                                        }
+                                        saveJobItemMeasurePhotos(jobItemMeasure)
                                     }
                                 }
-                            }
-                        }
+        }
+    }
 
-                    }
-                }
+    private suspend fun saveJobItemMeasurePhotos(
+        jobItemMeasure: JobItemMeasureDTO
+    ) {
+        for (jobItemMeasurePhoto in jobItemMeasure.jobItemMeasurePhotos) {
+            if (!Db.getJobItemMeasurePhotoDao()
+                    .checkIfJobItemMeasurePhotoExists(
+                        jobItemMeasurePhoto.filename!!
+                    )
+            ) jobItemMeasurePhoto.setPhotoPath(
+                Environment.getExternalStorageDirectory()
+                    .toString() + File.separator
+                        + PhotoUtil.FOLDER + File.separator + jobItemMeasurePhoto.filename
+            )
+            jobItemMeasurePhoto.setPhotoId(
+                DataConversion.toBigEndian(
+                    jobItemMeasurePhoto.photoId
+                )
+            )
+            jobItemMeasurePhoto.setItemMeasureId(
+                DataConversion.toBigEndian(
+                    jobItemMeasurePhoto.itemMeasureId
+                )
+            )
 
-                if (job.JobItemMeasures != null) {
-                    for (jobItemMeasure in job.JobItemMeasures!!) {
-                        if (!Db.getJobItemMeasureDao()
-                                .checkIfJobItemMeasureExists(jobItemMeasure.itemMeasureId!!)
-                        ) {
-                            jobItemMeasure.setItemMeasureId(
-                                DataConversion.toBigEndian(
-                                    jobItemMeasure.itemMeasureId
-                                )
-                            )
-                            jobItemMeasure.setJobId(DataConversion.toBigEndian(jobItemMeasure.jobId))
-                            jobItemMeasure.setProjectItemId(
-                                DataConversion.toBigEndian(
-                                    jobItemMeasure.projectItemId
-                                )
-                            )
-                            jobItemMeasure.setMeasureGroupId(
-                                DataConversion.toBigEndian(
-                                    jobItemMeasure.measureGroupId
-                                )
-                            )
-                            jobItemMeasure.setEstimateId(DataConversion.toBigEndian(jobItemMeasure.estimateId))
-                            jobItemMeasure.setProjectVoId(DataConversion.toBigEndian(jobItemMeasure.projectVoId))
-                            jobItemMeasure.setTrackRouteId(DataConversion.toBigEndian(jobItemMeasure.trackRouteId))
-                            jobItemMeasure.setJobNo(job.JiNo)
-                            if (!Db.getJobItemMeasureDao().checkIfJobItemMeasureExists(
-                                    jobItemMeasure.itemMeasureId!!
-                                )
-                            )
-                                Db.getJobItemMeasureDao().insertJobItemMeasure(jobItemMeasure)
-                            Db.getJobDao().setMeasureActId(jobItemMeasure.actId, job.JobId)
-                            Db.getJobItemEstimateDao()
-                                .setMeasureActId(jobItemMeasure.actId, jobItemMeasure.estimateId!!)
-//                            job.setMeasureActId(jobItemMeasure.actId)
-                            if (jobItemMeasure.jobItemMeasurePhotos.isNotEmpty()) {
-                                for (jobItemMeasurePhoto in jobItemMeasure.jobItemMeasurePhotos) {
-                                    if (!Db.getJobItemMeasurePhotoDao()
-                                            .checkIfJobItemMeasurePhotoExists(
-                                                jobItemMeasurePhoto.filename!!
-                                            )
-                                    ) jobItemMeasurePhoto.setPhotoPath(
-                                        Environment.getExternalStorageDirectory()
-                                            .toString() + File.separator
-                                                + PhotoUtil.FOLDER + File.separator + jobItemMeasurePhoto.filename
-                                    )
-                                    jobItemMeasurePhoto.setPhotoId(
-                                        DataConversion.toBigEndian(
-                                            jobItemMeasurePhoto.photoId
-                                        )
-                                    )
-                                    jobItemMeasurePhoto.setItemMeasureId(
-                                        DataConversion.toBigEndian(
-                                            jobItemMeasurePhoto.itemMeasureId
-                                        )
-                                    )
-                                    Db.getJobItemMeasurePhotoDao().insertJobItemMeasurePhoto(
-                                        jobItemMeasurePhoto
-                                    )
-                                    if (!PhotoUtil.photoExist(jobItemMeasurePhoto.filename))
-                                        getPhotoForJobItemMeasure(jobItemMeasurePhoto.filename)
-                                }
-                            }
-                        }
-                    }
-                }
+            if (!PhotoUtil.photoExist(jobItemMeasurePhoto.filename))
+                getPhotoForJobItemMeasure(jobItemMeasurePhoto.filename)
 
-            }
+            jobItemMeasurePhoto.setPhotoPath(
+                Environment.getExternalStorageDirectory()
+                    .toString() + File.separator
+                        + PhotoUtil.FOLDER + File.separator + jobItemMeasurePhoto.filename
+            )
+
+            Db.getJobItemMeasurePhotoDao()
+                .insertJobItemMeasurePhoto(
+                    jobItemMeasurePhoto
+                )
         }
     }
 
     private suspend fun getPhotoForJobItemMeasure(filename: String) {
 
         val photoMeasure = apiRequest { api.getPhotoMeasure(filename) }
-        measurePhoto.postValue(photoMeasure.photo, filename)
+        postValue(photoMeasure.photo, filename)
     }
 
     private suspend fun getPhotoForJobItemEstimate(filename: String) {
         val photoEstimate = apiRequest { api.getPhotoEstimate(filename) }
-        estimatePhoto.postValue(photoEstimate.photo, filename)
+        postValue(photoEstimate.photo, filename)
     }
 
     private fun sendMSg(uploadResponse: String?) {
@@ -1144,35 +1173,13 @@ class OfflineDataRepository(
                     )
 
                     if (jobItemEstimate.workflowEstimateWorks.isNotEmpty()) {
-                        for (jobEstimateWorks in jobItemEstimate.workflowEstimateWorks) {
-                            if (!Db.getEstimateWorkDao().checkIfJobEstimateWorksExist(
-                                    jobEstimateWorks.worksId
-                                )
-                            )
-                                Db.getEstimateWorkDao().insertJobEstimateWorks(
-                                    // TODO: Fix this broken casting.
-                                    jobEstimateWorks as JobEstimateWorksDTO
-                                ) else Db.getEstimateWorkDao().updateJobEstimateWorksWorkflow(
-                                jobEstimateWorks.worksId,
-                                jobEstimateWorks.estimateId,
-                                jobEstimateWorks.recordVersion,
-                                jobEstimateWorks.recordSynchStateId,
-                                jobEstimateWorks.actId,
-                                jobEstimateWorks.trackRouteId
-                            )
-                        }
+                        updateWorkflowEstimateWorks(jobItemEstimate)
                     }
+
                 }
 
                 if (!job.workflowItemMeasures.isNullOrEmpty()) {
-                    for (jobItemMeasure in job.workflowItemMeasures) {
-                        Db.getJobItemMeasureDao().updateWorkflowJobItemMeasure(
-                            jobItemMeasure.itemMeasureId,
-                            jobItemMeasure.trackRouteId,
-                            jobItemMeasure.actId,
-                            jobItemMeasure.measureGroupId
-                        )
-                    }
+                    updateWorkflowItemMeasures(job.workflowItemMeasures)
                 }
 
             }
@@ -1180,7 +1187,44 @@ class OfflineDataRepository(
 
             //  Place the Job Section, UPDATE OR CREATE
             if (!job.workflowJobSections.isNullOrEmpty()) {
-                for (jobSection in job.workflowJobSections) {
+                saveJobSectionsForWorkflow(job.workflowJobSections)
+            }
+        }
+    }
+
+    private fun updateWorkflowItemMeasures(workflowItemMeasures: java.util.ArrayList<WorkflowItemMeasureDTO>) {
+        for (jobItemMeasure in workflowItemMeasures) {
+            Db.getJobItemMeasureDao().updateWorkflowJobItemMeasure(
+                jobItemMeasure.itemMeasureId,
+                jobItemMeasure.trackRouteId,
+                jobItemMeasure.actId,
+                jobItemMeasure.measureGroupId
+            )
+        }
+    }
+
+    private suspend fun updateWorkflowEstimateWorks(jobItemEstimate: WorkflowItemEstimateDTO) {
+        for (jobEstimateWorks in jobItemEstimate.workflowEstimateWorks) {
+            if (!Db.getEstimateWorkDao().checkIfJobEstimateWorksExist(
+                    jobEstimateWorks.worksId
+                )
+            )
+                Db.getEstimateWorkDao().insertJobEstimateWorks(
+                    // TODO: Fix this broken casting.
+                    jobEstimateWorks as JobEstimateWorksDTO
+                ) else Db.getEstimateWorkDao().updateJobEstimateWorksWorkflow(
+                jobEstimateWorks.worksId,
+                jobEstimateWorks.estimateId,
+                jobEstimateWorks.recordVersion,
+                jobEstimateWorks.recordSynchStateId,
+                jobEstimateWorks.actId,
+                jobEstimateWorks.trackRouteId
+            )
+        }
+    }
+
+    private suspend fun saveJobSectionsForWorkflow(workflowJobSections: java.util.ArrayList<JobSectionDTO>) {
+        for (jobSection in workflowJobSections) {
                     if (!Db.getJobSectionDao().checkIfJobSectionExist(jobSection.jobSectionId))
                         Db.getJobSectionDao().insertJobSection(jobSection) else
                         Db.getJobSectionDao().updateExistingJobSectionWorkflow(
@@ -1194,14 +1238,12 @@ class OfflineDataRepository(
                         )
                 }
             }
-        }
-    }
 
     private fun JobItemMeasureDTO.setJobNo(jiNo: String?) {
         this.jimNo = jiNo
     }
 
-    private fun <T> MutableLiveData<T>.postValue(photo: String?, fileName: String) {
+    private fun postValue(photo: String?, fileName: String) {
         saveEstimatePhoto(photo, fileName)
     }
 
@@ -1217,26 +1259,6 @@ class OfflineDataRepository(
 
     }
 
-    suspend fun upDateMeasure(newQuantity: String, itemMeasureId: String): String {
-        val new_estimateId = DataConversion.toLittleEndian(itemMeasureId)
-        val new_Quantity = newQuantity + ".0"
-
-//        val quantityUpdateResponse = apiRequest { api.updateEstimateQty(new_estimateId,new_Quantity.toDouble() ) }
-//        qtyUpDate.postValue(quantityUpdateResponse.errorMessage , itemMeasureId,new_Quantity.toDouble() )
-        val messages = "" // quantityUpdateResponse.errorMessage ?: ""
-        return withContext(Dispatchers.IO) {
-            messages
-        }
-    }
-
-//    private fun <T> MutableLiveData<T>.postValue(errorMessage: String, itemMeasureId: String?, new_Quantity: Double) {
-//        if (errorMessage == null) {
-//            Db.getJobItemMeasureDao().upDateLineRate(itemMeasureId!!, new_Quantity)
-//        } else {
-//            Timber.e("newQty is null")
-//        }
-//    }
-
 
     suspend fun getUpdatedJob(jobId: String): JobDTO {
         return withContext(Dispatchers.IO) {
@@ -1244,19 +1266,6 @@ class OfflineDataRepository(
         }
     }
 
-    suspend fun getQuantityForMeasureItemId(itemMeasureId: String): LiveData<Double> {
-        return withContext(Dispatchers.IO) {
-            Db.getJobItemMeasureDao().getQuantityForMeasureItemId(itemMeasureId)
-
-        }
-    }
-
-
-    suspend fun getLineRateForMeasureItemId(itemMeasureId: String): LiveData<Double> {
-        return withContext(Dispatchers.IO) {
-            Db.getJobItemMeasureDao().getLineRateForMeasureItemId(itemMeasureId)
-        }
-    }
 
     private fun setWorkflowJobBigEndianGuids(job: WorkflowJobDTO): WorkflowJobDTO? {
 
@@ -1369,6 +1378,10 @@ class OfflineDataRepository(
         this.measureGroupId = toBigEndian
     }
 
+    private fun JobItemMeasureDTO.setQty(qty: Double) {
+        this.qty = qty
+    }
+
     private fun JobItemMeasureDTO.setEstimateId(toBigEndian: String?) {
         this.estimateId = toBigEndian
     }
@@ -1423,6 +1436,12 @@ class OfflineDataRepository(
 
     private operator fun <T> LiveData<T>.not(): Boolean {
         return true
+    }
+
+    suspend fun getServiceHealth(): Boolean {
+
+        val healthCheck = apiRequest { api.healthCheck("HowdyDoody") }
+        return healthCheck.errorMessage.isNullOrEmpty() || healthCheck.isAlive == 1
     }
 
     companion object {

@@ -38,6 +38,8 @@ import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
+import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModel
+import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.intents.AbstractIntent
 import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModelFactory
@@ -57,7 +59,9 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
 
     override val kodein by kodein()
     private lateinit var workViewModel: WorkViewModel
-    private val factory: WorkViewModelFactory by instance()
+    private val factory: WorkViewModelFactory by instance<WorkViewModelFactory>()
+    private lateinit var sharedViewModel: SharedViewModel
+    private val shareFactory: SharedViewModelFactory by instance<SharedViewModelFactory>()
     private var imageUri: Uri? = null
     private lateinit var workFlowMenuTitles: ArrayList<String>
     private lateinit var groupAdapter: GroupAdapter<GroupieViewHolder>
@@ -75,7 +79,7 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
     var filenamePath = HashMap<String, String>()
     private lateinit var locationHelper: LocationHelper
     private var currentLocation: Location? = null
-    lateinit var useR: UserDTO
+    private lateinit var useR: UserDTO
 
     override fun onStart() {
         super.onStart()
@@ -526,12 +530,11 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
     }
 
     private suspend fun getEstimatesCompleted(estimateJob: JobDTO): Int {
-        val workDone: Int = workViewModel.getJobItemsEstimatesDoneForJobId(
+        return workViewModel.getJobItemsEstimatesDoneForJobId(
             estimateJob.JobId,
             ActivityIdConstants.ESTIMATE_WORK_PART_COMPLETE,
             ActivityIdConstants.EST_WORKS_COMPLETE
         )
-        return workDone
     }
 
     private fun popViewOnWorkSubmit(view: View) {

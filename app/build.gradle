@@ -16,7 +16,7 @@ versioning {
     // Optional, force custom patch (number)
     patch 52
     // Optional (any string)
-    preRelease "RC1"
+    preRelease "RC2"
     // Optional, custom task name to trigger the increase of the version
     incrementOn "app:installDevDebug"
     // Optional, custom task name for which you want to save the versioning file
@@ -293,7 +293,7 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
 
     implementation 'androidx.appcompat:appcompat:1.1.0'
-    implementation 'androidx.core:core-ktx:1.2.0'
+    implementation 'androidx.core:core-ktx:1.3.0'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
 
     // OkHttpProfiler
@@ -304,9 +304,9 @@ dependencies {
 
     // Testing
     testImplementation 'junit:junit:4.13'
-    androidTestImplementation 'androidx.test:runner:1.3.0-beta01'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0-beta01'
-    androidTestImplementation 'androidx.test.espresso:espresso-contrib:3.3.0-beta01'
+    androidTestImplementation 'androidx.test:runner:1.3.0-rc01'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0-rc01'
+    androidTestImplementation 'androidx.test.espresso:espresso-contrib:3.3.0-rc01'
 
     // VectorDrawable
     def vectorVersion = "1.1.0"
@@ -463,5 +463,7 @@ dependencies {
     // GeoLocator
     implementation 'com.sprotte:Geolocator:1.2.2'
 
+    // AndroidVeil
+    implementation "com.github.skydoves:androidveil:1.0.9"
 
 }

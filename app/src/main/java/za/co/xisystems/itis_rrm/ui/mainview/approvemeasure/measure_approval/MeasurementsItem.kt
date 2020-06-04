@@ -92,12 +92,12 @@ class MeasurementsItem(
 
     private fun alertdialog(jobItemMeasureDTO: JobItemMeasureDTO) {
         val text = arrayOfNulls<String>(2)
-        val textEntryView: View = activity!!.getLayoutInflater().inflate(R.layout.measure_dialog, null)
+        val textEntryView: View = activity!!.layoutInflater.inflate(R.layout.measure_dialog, null)
         val new_quantity = textEntryView.findViewById<View>(R.id.new_qty) as EditText
 //        val structure_Type = textEntryView.findViewById<View>(R.id.structure_Type1) as TextView
 //        val structure_InspTitle = textEntryView.findViewById<View>(R.id.structure_InspTitle) as TextView
 
-        val alert = AlertDialog.Builder(activity!! )//,android.R.style.Theme_DeviceDefault_Dialog
+        val alert = AlertDialog.Builder(activity)//,android.R.style.Theme_DeviceDefault_Dialog
         alert.setView(textEntryView)
         alert.setTitle(R.string.correct_measure)
         alert.setIcon(R.drawable.ic_edit)
@@ -109,13 +109,13 @@ class MeasurementsItem(
         alert.setPositiveButton(
             R.string.save
         ) { dialog, which ->
-            if (ServiceUtil.isNetworkConnected(activity?.applicationContext)) {
+            if (ServiceUtil.isNetworkConnected(activity.applicationContext)) {
                 Coroutines.main{
                     if(new_quantity.text.toString() == "" || Integer.parseInt(new_quantity.text.toString()) == 0 ){
                         activity.toast("Please Enter a valid Quantity")
                     }else{
                         val updated =  approveViewModel.upDateMeasure(new_quantity.text.toString(), jobItemMeasureDTO.itemMeasureId)
-                        if(updated == null){
+                        if (updated.isBlank()) {
                             activity.toast("Data Updated was Successful")
                         }else{
                             activity.toast("Data Updated Error!!  Server Not Reachable")

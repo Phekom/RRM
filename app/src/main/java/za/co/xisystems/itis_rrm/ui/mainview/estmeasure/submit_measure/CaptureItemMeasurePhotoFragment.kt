@@ -43,7 +43,7 @@ class CaptureItemMeasurePhotoFragment : BaseFragment(R.layout.fragment_capture_i
 
     override val kodein by kodein()
     private lateinit var measureViewModel: MeasureViewModel
-    private val factory: MeasureViewModelFactory by instance()
+    private val factory: MeasureViewModelFactory by instance<MeasureViewModelFactory>()
 
     companion object {
         val TAG: String = CaptureItemMeasurePhotoFragment::class.java.simpleName

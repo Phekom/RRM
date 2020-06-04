@@ -37,7 +37,7 @@ class ApproveJobsFragment : BaseFragment( R.layout.fragment_approvejob), KodeinA
 
     override val kodein by kodein()
     private lateinit var approveViewModel: ApproveJobsViewModel
-    private val factory: ApproveJobsViewModelFactory by instance()
+    private val factory: ApproveJobsViewModelFactory by instance<ApproveJobsViewModelFactory>()
     lateinit var dialog : Dialog
 
     companion object {

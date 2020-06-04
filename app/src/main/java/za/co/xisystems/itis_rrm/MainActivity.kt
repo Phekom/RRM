@@ -38,36 +38,39 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.hideKeyboard
 
 
-class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener , KodeinAware {
+class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener,
+    KodeinAware {
 
     override val kodein by kodein()
     private lateinit var mainActivityViewModel: MainActivityViewModel
-    private val factory: MainActivityViewModelFactory by instance()
-
+    private val factory: MainActivityViewModelFactory by instance<MainActivityViewModelFactory>()
     private lateinit var sharedViewModel: SharedViewModel
-    private val shareFactory: SharedViewModelFactory by instance()
-
+    private val shareFactory: SharedViewModelFactory by instance<SharedViewModelFactory>()
     var navController: NavController? = null
-    var toggle : ActionBarDrawerToggle? = null
+    var toggle: ActionBarDrawerToggle? = null
     lateinit var navigationView: NavigationView
     var qty = 0
     var nav_unSubmitted: TextView? = null
-    var nav_work:TextView? = null
-    var nav_approveJbs:TextView? = null
-    var nav_estMeasure:TextView? = null
-    var nav_approvMeasure:TextView? = null
+    var nav_work: TextView? = null
+    var nav_approveJbs: TextView? = null
+    var nav_estMeasure: TextView? = null
+    var nav_approvMeasure: TextView? = null
 
-    lateinit var lm : LocationManager
+    lateinit var lm: LocationManager
     var gps_enabled = false
     var network_enabled = false
 
     var progressBar: ProgressBar? = null
 
-    val PROJECT_USER_ROLE_IDENTIFIER = "29DB5C213D034EDB88DEC54109EE1711"
-    val PROJECT_SITE_ENGINEER_ROLE_IDENTIFIER = "3F9A15DF5D464EC5A5D954134A7F32BE"
-    val PROJECT_ENGINEER_ROLE_IDENTIFIER = "D9E16C2A31FA4CC28961E20B652B292C"
-    val PROJECT_SUB_CONTRACTOR_ROLE_IDENTIFIER = "E398A3EF1C18431DBAEE4A4AC5D6F07D"
-    val PROJECT_CONTRACTOR_ROLE_IDENTIFIER = "E398A3EF1C18431DBAEE4A4AC5D6F07D"
+    val PROJECT_USER_ROLE_IDENTIFIER = "RRM Job Mobile User" //"29DB5C213D034EDB88DEC54109EE1711"
+    val PROJECT_SITE_ENGINEER_ROLE_IDENTIFIER =
+        "RRM Job Mobile - Site Engineer" //"3F9A15DF5D464EC5A5D954134A7F32BE"
+    val PROJECT_ENGINEER_ROLE_IDENTIFIER =
+        "RRM Job Mobile - Engineer" //"D9E16C2A31FA4CC28961E20B652B292C"
+    val PROJECT_SUB_CONTRACTOR_ROLE_IDENTIFIER =
+        "RRM Job Mobile - Sub Contractor" //"03F493BDD6D68944A94BE038B6C1C3D2" //"F836F6BF14404E749E6748A31A0262AD"
+    val PROJECT_CONTRACTOR_ROLE_IDENTIFIER =
+        "RRM Job Mobile - Contractor"  //"E398A3EF1C18431DBAEE4A4AC5D6F07D"
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -79,7 +82,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         RaygunClient.enableCrashReporting()
 
         this.mainActivityViewModel = this.run {
-                ViewModelProvider(this, factory).get(MainActivityViewModel::class.java)
+            ViewModelProvider(this, factory).get(MainActivityViewModel::class.java)
         }
 
         this.sharedViewModel = this.run {
@@ -94,11 +97,16 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         getUserRoles()
         displayPromptForEnablingGPS(this)
         this.toggle = ActionBarDrawerToggle(
-                this, drawer_layout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close)
+            this,
+            drawer_layout,
+            toolbar,
+            R.string.navigation_drawer_open,
+            R.string.navigation_drawer_close
+        )
         drawer_layout.addDrawerListener(toggle!!)
         toggle!!.syncState()
         this.hideKeyboard()
-        navigationView  = findViewById(R.id.nav_view)
+        navigationView = findViewById(R.id.nav_view)
         navController = Navigation.findNavController(this, R.id.nav_host_fragment)
         NavigationUI.setupActionBarWithNavController(this, navController!!)
         NavigationUI.setupWithNavController(navigationView, navController!!)
@@ -116,7 +124,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             navigationView.menu.findItem(R.id.nav_approvMeasure).actionView as TextView
         nav_estMeasure =
             navigationView.menu.findItem(R.id.nav_estMeasure).actionView as TextView
-        progressBar = findViewById<ProgressBar>(R.id.progressbar)
+        progressBar = findViewById(R.id.progressbar)
 
         sharedViewModel.longRunning.observe(this, Observer {
             when (it) {
@@ -129,7 +137,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             toastMessage(it.toString())
         })
 
-
+        sharedViewModel.actionCaption.observe(this@MainActivity, Observer {
+            setCaption(it)
+        })
     }
 
 
@@ -150,16 +160,16 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         if (!gps_enabled && !network_enabled) { // notify user
 
-        val builder: AlertDialog.Builder = AlertDialog.Builder(activity)
-        val action = Settings.ACTION_LOCATION_SOURCE_SETTINGS
-        val message = ("Your GPS seems to be disabled, Please enable it to continue")
-        builder.setMessage(message)
-            .setPositiveButton(
-                "OK"
-            ) { d, _ ->
-                activity.startActivity(Intent(action))
-                d.dismiss()
-            }
+            val builder: AlertDialog.Builder = AlertDialog.Builder(activity)
+            val action = Settings.ACTION_LOCATION_SOURCE_SETTINGS
+            val message = ("Your GPS seems to be disabled, Please enable it to continue")
+            builder.setMessage(message)
+                .setPositiveButton(
+                    "OK"
+                ) { d, _ ->
+                    activity.startActivity(Intent(action))
+                    d.dismiss()
+                }
             builder.create().show()
         }
     }
@@ -180,7 +190,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         menuInflater.inflate(R.menu.main, menu)
         val searchItem = menu.findItem(R.id.action_search)
         val searchView = searchItem.actionView as SearchView
-        searchView.setOnQueryTextListener(object :  SearchView.OnQueryTextListener {
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
 
             override fun onQueryTextChange(newText: String): Boolean {
                 return false
@@ -202,19 +212,17 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         when (item.itemId) {
-            R.id.action_search ->{
-
-
+            R.id.action_search -> {
 
 
 //                startActivity(Intent(this, SettingsActivity::class.java))
                 return true
             }
-            R.id.action_settings ->{
+            R.id.action_settings -> {
                 startActivity(Intent(this, SettingsActivity::class.java))
                 return true
             }
-            R.id.action_logout ->{
+            R.id.action_logout -> {
                 Intent(this, LoginActivity::class.java).also { home ->
                     home.flags =
                         Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
@@ -227,10 +235,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             else -> return super.onOptionsItemSelected(item)
         }
     }
+
     override fun onSupportNavigateUp(): Boolean {
         val navController = Navigation.findNavController(this, R.id.nav_host_fragment)
         return NavigationUI.navigateUp(navController, drawer_layout) || super.onSupportNavigateUp()
     }
+
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         // Handle navigation view item clicks here.
         when (item.itemId) {
@@ -296,17 +306,21 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         ToastUtils().toastLong(this.applicationContext, message)
     }
 
+    fun setCaption(caption: String) {
+        sharedViewModel.originalCaption = supportActionBar?.title.toString()
+        supportActionBar?.title = caption
+    }
 
     // Control Menu drawer View Access Based on who is logged in
     fun getUserRoles() {
         Coroutines.main {
-           val userRoles = mainActivityViewModel.getRoles()
+            val userRoles = mainActivityViewModel.getRoles()
             userRoles.observe(this, Observer { roleList ->
                 val menuNav = navigationView.menu
                 var navItem: MenuItem
 
                 for (role in roleList) {
-                    val roleID = role.roleIdentifier
+                    val roleID = role.roleDescription
 
                     if (roleID.equals(PROJECT_USER_ROLE_IDENTIFIER, ignoreCase = true)) {
 //                initializeCountDrawer()
@@ -415,10 +429,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     if (roleID.equals(PROJECT_ENGINEER_ROLE_IDENTIFIER, ignoreCase = true)) {
 //                initializeCountDrawer()
                         val nav_item1 = menuNav.findItem(R.id.nav_create)
-                        nav_item1.isEnabled = false
+                        nav_item1.isEnabled = true
 
                         val nav_item2 = menuNav.findItem(R.id.nav_unSubmitted)
-                        nav_item2.isEnabled = false
+                        nav_item2.isEnabled = true
 
 //                        val nav_item3 = menuNav.findItem(R.id.nav_correction)
 //                        nav_item3.setEnabled(false)
@@ -430,7 +444,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                         nav_item5.isEnabled = true
 
                         val nav_item6 = menuNav.findItem(R.id.nav_estMeasure)
-                        nav_item6.isEnabled = false
+                        nav_item6.isEnabled = true
 
                         val nav_item7 = menuNav.findItem(R.id.nav_approvMeasure)
                         nav_item7.isEnabled = true
@@ -446,13 +460,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
 
-
     fun initializeCountDrawer() {
         // Estimates are completed needs to be submitted currently saved in the local DB
 
         Coroutines.main {
             val new_job = mainActivityViewModel.getJobsForActivityId(
-                ActivityIdConstants.JOB_ESTIMATE)
+                ActivityIdConstants.JOB_ESTIMATE
+            )
             new_job.observe(this, androidx.lifecycle.Observer { job_s ->
                 qty = job_s.size
 //            qty = 50
@@ -470,7 +484,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
 //        //====================================================================================================================================================
 // Estimates are completed needs Correction for approval
-        //        CorrectionsFragment.addEntitiesToJobArrayList(
+            //        CorrectionsFragment.addEntitiesToJobArrayList(
 //                jobDataController,
 //                toDoListDataController.getEntitiesForActivityId(ActivityIdConstants.JOB_APPROVE),
 //                jobArrayList1);
@@ -484,21 +498,28 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 //        }
 //        //====================================================================================================================================================
 //// Estimates are approved and work can start
-            val work = mainActivityViewModel.getJobsForActivityId2(ActivityIdConstants.JOB_APPROVED,
-                ActivityIdConstants.ESTIMATE_INCOMPLETE)
+            val work = mainActivityViewModel.getJobsForActivityId2(
+                ActivityIdConstants.JOB_APPROVED,
+                ActivityIdConstants.ESTIMATE_INCOMPLETE
+            )
             work.observe(this, androidx.lifecycle.Observer { job_s ->
                 qty = job_s.size
                 if (qty == 0) {
                     nav_work?.text = ""
-        } else {
+                } else {
                     nav_work?.gravity = Gravity.CENTER_VERTICAL
-            nav_work?.setTypeface(null, Typeface.BOLD)
+                    nav_work?.setTypeface(null, Typeface.BOLD)
                     nav_work?.setTextColor(ContextCompat.getColor(applicationContext, R.color.red))
                     nav_work?.text = "( $qty )"
-        } })
+                }
+            })
 //        //====================================================================================================================================================
 //            val measurements = mainActivityViewModel.getJobMeasureForActivityId(ActivityIdConstants.ESTIMATE_MEASURE, ActivityIdConstants.JOB_ESTIMATE)
-            val measurements = mainActivityViewModel.getJobMeasureForActivityId(ActivityIdConstants.ESTIMATE_MEASURE, ActivityIdConstants.JOB_ESTIMATE,ActivityIdConstants.MEASURE_PART_COMPLETE)
+            val measurements = mainActivityViewModel.getJobMeasureForActivityId(
+                ActivityIdConstants.ESTIMATE_MEASURE,
+                ActivityIdConstants.JOB_ESTIMATE,
+                ActivityIdConstants.MEASURE_PART_COMPLETE
+            )
 //            val measurements = mainActivityViewModel.getJobMeasureForActivityId(ActivityIdConstants.ESTIMATE_MEASURE)
             measurements.observe(this, androidx.lifecycle.Observer { job_s ->
                 qty = job_s.size
@@ -521,7 +542,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 //        //===================================================================================================================================================\
 
             val j_approval = mainActivityViewModel.getJobsForActivityId(
-                ActivityIdConstants.JOB_APPROVE)
+                ActivityIdConstants.JOB_APPROVE
+            )
             j_approval.observe(this, androidx.lifecycle.Observer { job_s ->
                 qty = job_s.size
                 if (qty == 0) {
@@ -540,7 +562,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             })
 //        //=====================================================================================================================================================
             // Measurements are completed needs approval for payment
-            val m_approval = mainActivityViewModel.getJobApproveMeasureForActivityId(ActivityIdConstants.MEASURE_COMPLETE)
+            val m_approval =
+                mainActivityViewModel.getJobApproveMeasureForActivityId(ActivityIdConstants.MEASURE_COMPLETE)
             m_approval.observe(this, androidx.lifecycle.Observer { job_s ->
                 qty = job_s.size
                 if (qty == 0) {
@@ -558,7 +581,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 }
             })
 
-       }
+        }
     }
 
     override fun onResume() {
@@ -577,7 +600,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         var switch: Switch? = null
 
     }
-
 
 
 }

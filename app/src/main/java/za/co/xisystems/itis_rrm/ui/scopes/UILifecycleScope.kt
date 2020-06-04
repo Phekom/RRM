@@ -33,8 +33,6 @@ class UiLifecycleScope : CoroutineScope, LifecycleObserver {
     override val coroutineContext: CoroutineContext
         get() = job.plus(Dispatchers.Main).plus(handler)
 
-    val ioContext: CoroutineContext
-        get() = job.plus(Dispatchers.IO).plus(handler)
 
     @OnLifecycleEvent(Lifecycle.Event.ON_START)
     fun onCreate() {

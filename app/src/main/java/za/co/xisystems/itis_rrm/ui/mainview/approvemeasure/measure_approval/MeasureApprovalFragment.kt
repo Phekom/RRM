@@ -37,7 +37,7 @@ import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval), KodeinAware {
     override val kodein by kodein()
     private lateinit var approveViewModel: ApproveMeasureViewModel
-    private val factory: ApproveMeasureViewModelFactory by instance()
+    private val factory: ApproveMeasureViewModelFactory by instance<ApproveMeasureViewModelFactory>()
     private lateinit var measurementsToApprove: ArrayList<JobItemMeasureDTO>
     lateinit var dialog : Dialog
 

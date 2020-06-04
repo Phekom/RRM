@@ -50,6 +50,15 @@ interface BaseConnectionApi {
     ): Response<QuantityUpdateResponse>
 
     @FormUrlEncoded
+    @POST("UpdateMeasureQty")
+    suspend fun upDateMeasureQty(
+        @Field("MeasurementId") newMeasureid: String?,
+        @Field("Quantity") quantity: Double?
+    ): Response<QuantityUpdateResponse>
+
+
+
+    @FormUrlEncoded
     @POST("RrmActivitySectionsRefresh")
     suspend fun activitySectionsRefresh(
         @Field("UserId") UserId: String

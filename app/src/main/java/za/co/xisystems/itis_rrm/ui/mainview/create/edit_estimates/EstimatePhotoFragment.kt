@@ -1036,11 +1036,11 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
 
     private fun setValueEditText(qty: Double) = when (item?.uom) {
         "m²", "m³", "m" -> {
-            var decQty = "" + qty
+            val decQty = "" + qty
             valueEditText!!.setText(decQty)
         }
         else -> {
-            var intQty: String = "" + qty.toInt()
+            val intQty: String = "" + qty.toInt()
             valueEditText!!.setText(intQty)
         }
     }
@@ -1066,7 +1066,7 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
 
         val value = valueEditText!!.text.toString()
         //  Lose focus on fields
-        valueEditText.clearFocus()
+        //  valueEditText.clearFocus()
 
         var lineRate: Double? = null
         val tenderRate = item?.tenderRate

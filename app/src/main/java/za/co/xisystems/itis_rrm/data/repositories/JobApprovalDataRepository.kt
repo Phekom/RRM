@@ -114,7 +114,12 @@ class JobApprovalDataRepository(
         }
     }
 
-    private fun <T> MutableLiveData<T>.postValue(errorMessage: String, newEstimateid: String?, new_Quantity: Double, new_Total: Double) {
+    private fun <T> MutableLiveData<T>.postValue(
+        errorMessage: String?,
+        newEstimateid: String?,
+        new_Quantity: Double,
+        new_Total: Double
+    ) {
         if (errorMessage == null) {
                     Db.getJobItemEstimateDao().upDateLineRate(newEstimateid!!, new_Quantity, new_Total)
         } else {
