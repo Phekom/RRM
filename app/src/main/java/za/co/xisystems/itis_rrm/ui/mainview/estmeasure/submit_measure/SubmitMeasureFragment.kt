@@ -90,7 +90,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
 
         Coroutines.main {
 
-            measureViewModel.measure_Item.observeOnce(viewLifecycleOwner, Observer { jobID ->
+            measureViewModel.measure_Item.observe(viewLifecycleOwner, Observer { jobID ->
                 jobItemEstimate = jobID.jobItemEstimateDTO
                 getWorkItems(jobItemEstimate.jobId)
             })

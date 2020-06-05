@@ -626,6 +626,8 @@ class OfflineDataRepository(
                 if (jobItemMeasure.jobItemMeasurePhotos.isNotEmpty()) {
                     saveJobItemMeasurePhotos(jobItemMeasure)
                 }
+
+                Db.getJobItemMeasureDao().undeleteMeasurement(jobItemMeasure.itemMeasureId!!)
             }
         }
     }

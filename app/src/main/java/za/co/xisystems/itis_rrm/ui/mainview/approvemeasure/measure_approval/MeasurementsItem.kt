@@ -111,7 +111,7 @@ class MeasurementsItem(
         ) { dialog, which ->
             if (ServiceUtil.isNetworkConnected(activity.applicationContext)) {
                 Coroutines.main{
-                    if(new_quantity.text.toString() == "" || Integer.parseInt(new_quantity.text.toString()) == 0 ){
+                    if (new_quantity.text.toString() == "" || nanCheck(new_quantity.text.toString())) {
                         activity.toast("Please Enter a valid Quantity")
                     }else{
                         val updated =  approveViewModel.upDateMeasure(new_quantity.text.toString(), jobItemMeasureDTO.itemMeasureId)
@@ -137,6 +137,15 @@ class MeasurementsItem(
         val declineAlert = alert.create()
         declineAlert.show()
 
+    }
+
+    private fun nanCheck(toString: String): Boolean {
+        try {
+            val dbl = toString.toDouble()
+            return dbl.isNaN()
+        } catch (e: Exception) {
+            return true
+        }
     }
 
     private fun showZoomedImage(imageUrl: String?) {

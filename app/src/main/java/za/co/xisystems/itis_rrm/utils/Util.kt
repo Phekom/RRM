@@ -123,4 +123,13 @@ object Util {
         }
         return sb.substring(1)
     }
+
+    fun nanCheck(toString: String): Boolean {
+        try {
+            val dbl = toString.toDouble()
+            return dbl.isNaN()
+        } catch (e: Exception) {
+            return true
+        }
+    }
 }
