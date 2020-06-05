@@ -32,55 +32,56 @@ interface JobItemMeasureDao {
 //                      items: ArrayList<ItemDTO>?, projectCode: String?, projectMinus: String?, projectPlus: String?,
 //                      projectSections: ArrayList<ProjectSectionDTO>?, voItems: ArrayList<VoItemDTO>?, contractId : String?) : Long
 
-    @Query("SELECT * FROM JOB_ITEM_MEASURE WHERE itemMeasureId = :itemMeasureId")
+    @Query("SELECT * FROM JOB_ITEM_MEASURE WHERE itemMeasureId = :itemMeasureId AND deleted = 0")
     fun checkIfJobItemMeasureExists(itemMeasureId: String): Boolean
 
-    @Query("SELECT * FROM JOB_ITEM_MEASURE WHERE actId = :actId ORDER BY jimNo ASC")
+    @Query("SELECT * FROM JOB_ITEM_MEASURE WHERE actId = :actId AND deleted = 0 ORDER BY jimNo ASC")
     fun getJobApproveMeasureForActivityId(actId: Int): LiveData<List<JobItemMeasureDTO>>
 
-    @Query("SELECT * FROM JOB_ITEM_MEASURE WHERE jobId = :jobId AND actId = :actId ORDER BY jimNo ASC")
+    @Query("SELECT * FROM JOB_ITEM_MEASURE WHERE jobId = :jobId AND actId = :actId AND deleted = 0 ORDER BY jimNo ASC")
     fun getJobMeasureItemsForJobId(jobId: String?,actId: Int): LiveData<List<JobItemMeasureDTO>>
 
     @Query("UPDATE JOB_ITEM_MEASURE SET trackRouteId =:trackRouteId, ActId =:actId , measureGroupId =:measureGroupId  WHERE itemMeasureId = :itemMeasureId")
     fun updateWorkflowJobItemMeasure(itemMeasureId: String?, trackRouteId: String?, actId: Int, measureGroupId: String?)
 
-    @Query("SELECT * FROM JOB_ITEM_MEASURE WHERE estimateId = :estimateId AND jobId LIKE :jobId")
+    @Query("SELECT * FROM JOB_ITEM_MEASURE WHERE estimateId = :estimateId AND jobId LIKE :jobId AND deleted = 0")
     fun checkIfJobItemMeasureExistsForJobIdAndEstimateId(jobId: String?, estimateId: String): Boolean
 
-    @Query("SELECT * FROM JOB_ITEM_MEASURE WHERE jobId LIKE :jobId")
+    @Query("SELECT * FROM JOB_ITEM_MEASURE WHERE jobId = :jobId AND deleted = 0")
     fun getJobItemMeasuresForJobIdAndEstimateId(jobId: String?): LiveData<List<JobItemMeasureDTO>>
 
-    @Query("SELECT * FROM JOB_ITEM_MEASURE WHERE estimateId = :estimateId AND jobId LIKE :jobId")
+    @Query("SELECT * FROM JOB_ITEM_MEASURE WHERE estimateId = :estimateId AND jobId LIKE :jobId AND deleted = 0")
     fun getJobItemMeasuresForJobIdAndEstimateId2(
         jobId: String?,
         estimateId: String
     ): LiveData<List<JobItemMeasureDTO>>
 
 
-    @Query("SELECT * FROM JOB_ITEM_MEASURE WHERE jobId = :jobId ORDER BY jimNo ASC")
+    @Query("SELECT * FROM JOB_ITEM_MEASURE WHERE jobId = :jobId AND deleted = 0 ORDER BY jimNo ASC")
     fun getJobItemMeasureForJobId(jobId: String): LiveData<JobItemMeasureDTO>
 
-    @Query("DELETE FROM JOB_ITEM_MEASURE WHERE itemMeasureId = :ItemMeasureId")
+    @Query("DELETE FROM JOB_ITEM_MEASURE WHERE itemMeasureId = :ItemMeasureId AND deleted = 0")
     fun deleteItemMeasurefromList(ItemMeasureId: String)
 
-    @Query("SELECT qty FROM JOB_ITEM_MEASURE WHERE itemMeasureId = :itemMeasureId")
+    @Query("SELECT qty FROM JOB_ITEM_MEASURE WHERE itemMeasureId = :itemMeasureId AND deleted = 0")
     fun getQuantityForMeasureItemId(itemMeasureId: String): LiveData<Double>
 
 
-    @Query("SELECT lineRate FROM JOB_ITEM_MEASURE WHERE itemMeasureId = :itemMeasureId")
+    @Query("SELECT lineRate FROM JOB_ITEM_MEASURE WHERE itemMeasureId = :itemMeasureId AND deleted = 0")
     fun getLineRateForMeasureItemId(itemMeasureId: String): LiveData<Double>
 
-    @Query("UPDATE JOB_ITEM_MEASURE SET qty =:newQuantity WHERE itemMeasureId = :newitemMeasureId")
+    @Query("UPDATE JOB_ITEM_MEASURE SET qty =:newQuantity WHERE itemMeasureId = :newitemMeasureId AND deleted = 0")
     fun upDateQty(newitemMeasureId: String, newQuantity: Double)
 
-//    @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE projectId = :projectId")
-//    fun getAllItemsForProjectId(projectId: String): LiveData<List<ItemDTO>>
-//
-//
-//    @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE sectionItemId = :sectionItem AND projectId = :projectId")
-//    fun getAllItemsForSectionItem(sectionItem : String, projectId : String ): LiveData<List<ItemDTO>>
-//
-//
+    @Query("UPDATE JOB_ITEM_MEASURE SET deleted = 1 WHERE itemMeasureId= :itemMeasureId AND deleted = 0")
+    fun deleteMeasurement(itemMeasureId: String): Int
+
+    @Query("UPDATE JOB_ITEM_MEASURE SET deleted = 0 WHERE itemMeasureId= :itemMeasureId AND deleted = 1")
+    fun undeleteMeasurement(itemMeasureId: String): Int
+
+
+    @Query("UPDATE JOB_ITEM_MEASURE SET deleted = 0 WHERE deleted = 1")
+    fun undeleteAllMeasurements(): Int
     @Query("DELETE FROM JOB_ITEM_MEASURE")
     fun deleteAll()
 

@@ -26,6 +26,7 @@ import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
+import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
 import za.co.xisystems.itis_rrm.ui.mainview.work.estimate_work_item.CardItem
 import za.co.xisystems.itis_rrm.ui.mainview.work.estimate_work_item.ExpandableHeaderWorkItem
@@ -88,7 +89,7 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
         workViewModel.getJobsForActivityId(
             ActivityIdConstants.JOB_APPROVED,
             ActivityIdConstants.ESTIMATE_INCOMPLETE
-        ).observe(viewLifecycleOwner, Observer { work_s ->
+        ).observeOnce(viewLifecycleOwner, Observer { work_s ->
             noData.visibility = View.GONE
             group7_loading.visibility = View.GONE
             val headerItems = work_s.distinctBy {
@@ -158,7 +159,7 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
     private suspend fun refreshUserTaskListFromApi() {
         // This definitely needs to be a one-shot operation
         val jobs = workViewModel.offlineUserTaskList.await()
-        jobs.observe(viewLifecycleOwner, Observer { works ->
+        jobs.observeOnce(viewLifecycleOwner, Observer { works ->
             if (works.isEmpty()) {
                 noData.visibility = View.VISIBLE
             }

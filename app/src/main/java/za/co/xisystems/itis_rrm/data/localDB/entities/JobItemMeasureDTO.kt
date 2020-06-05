@@ -61,8 +61,8 @@ data class JobItemMeasureDTO(
     var startKm: Double,
     @SerializedName("TrackRouteId")
     var trackRouteId: String?,
-
-
+    @SerializedName("Deleted")
+    var deleted: Int = 0,
     var entityDescription: String?,
 
     var selectedItemUom: String?

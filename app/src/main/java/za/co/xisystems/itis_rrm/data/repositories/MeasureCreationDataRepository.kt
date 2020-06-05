@@ -133,7 +133,7 @@ class MeasureCreationDataRepository(
 
                 itemMeasureJob.JobItemMeasures = jobItemMeasure
                 val measureJob = setWorkflowJobBigEndianGuids(workflowJobDTO)
-                insertOrUpdateWorkflowJobInSQLite(measureJob, false)
+                insertOrUpdateWorkflowJobInSQLite(measureJob)
                 uploadMeasurementImages(jobItemMeasure, activity)
                 val myJob = getUpdatedJob(itemMeasureJob.JobId)
                 moveJobToNextWorkflow(activity, measureJob, myJob)
@@ -143,6 +143,24 @@ class MeasureCreationDataRepository(
                 workflowStatus.postValue(XIError(e, e.message!!))
             }
 
+        }
+    }
+
+    private suspend fun softdeleteMeasurement(itemMeasureId: String): Int {
+        return withContext(Dispatchers.IO) {
+            Db.getJobItemMeasureDao().deleteMeasurement(itemMeasureId)
+        }
+    }
+
+    private suspend fun undeleteMeasurement(itemMeasureId: String): Int {
+        return withContext(Dispatchers.IO) {
+            Db.getJobItemMeasureDao().undeleteMeasurement(itemMeasureId)
+        }
+    }
+
+    private suspend fun undeleteAllMeasurements(itemMeasureId: String): Int {
+        return withContext(Dispatchers.IO) {
+            Db.getJobItemMeasureDao().undeleteAllMeasurements()
         }
     }
 
@@ -284,7 +302,8 @@ class MeasureCreationDataRepository(
                         else -> {
                             Timber.d("${workflowMoveResponse.workflowJob}")
                             workflowJ.postValue(workflowMoveResponse.workflowJob)
-                            workflowStatus.postValue(XISuccess(""))
+                            val rows = softdeleteMeasurement(jobItemMeasure.itemMeasureId)
+                            Timber.d("Deleted $rows rows.")
                         }
                     }
                 }
@@ -313,7 +332,7 @@ class MeasureCreationDataRepository(
         try {
             if (workflowJob != null) {
                 val job = setWorkflowJobBigEndianGuids(workflowJob)
-                insertOrUpdateWorkflowJobInSQLite(job, true)
+                insertOrUpdateWorkflowJobInSQLite(job)
             } else {
                 Timber.e("Error -> WorkFlow Job is null")
             }
@@ -476,16 +495,15 @@ class MeasureCreationDataRepository(
         }
     }
 
-    private fun insertOrUpdateWorkflowJobInSQLite(job: WorkflowJobDTO?, final: Boolean?) {
+    private fun insertOrUpdateWorkflowJobInSQLite(job: WorkflowJobDTO?) {
         job?.let {
-            updateWorkflowJobValuesAndInsertWhenNeeded(it, final)
+            updateWorkflowJobValuesAndInsertWhenNeeded(it)
 
         }
     }
 
     private fun updateWorkflowJobValuesAndInsertWhenNeeded(
-        job: WorkflowJobDTO,
-        final: Boolean?
+        job: WorkflowJobDTO
     ) {
         Coroutines.io {
             try {
@@ -551,12 +569,10 @@ class MeasureCreationDataRepository(
                         )
                 }
 
-                if (null != final && final == true)
-                    workflowStatus.postValue(XISuccess("${job.jiNo}"))
-
             } catch (e: Exception) {
                 val saveFail = XIError(e, "Failed to save updates: ${e.message}")
                 workflowStatus.postValue(saveFail)
+                Timber.e(e, "Failed to save updates: ${e.message}")
             }
 
         }

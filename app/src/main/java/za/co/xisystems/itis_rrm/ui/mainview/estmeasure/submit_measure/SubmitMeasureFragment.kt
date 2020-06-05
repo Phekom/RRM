@@ -51,6 +51,14 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
         setHasOptionsMenu(true)
         (activity as MainActivity).supportActionBar?.title =
             getString(R.string.submit_measure_title)
+        jobItemMeasurePhotoDTO = ArrayList<JobItemMeasurePhotoDTO>()
+        jobItemMeasureArrayList = ArrayList<JobItemMeasureDTO>()
+        jobItemEstimatesForJob = ArrayList<JobItemEstimateDTO>()
+        jobItemMeasureList = ArrayList<JobItemMeasureDTO>()
+
+        jobItemMeasuresForJobItemEstimates =
+            HashMap<JobItemEstimateDTO, List<JobItemMeasureDTO>>()
+
 
     }
 
@@ -78,20 +86,14 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+
         measureViewModel = activity?.run {
             ViewModelProvider(this, factory).get(MeasureViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
 
         Coroutines.main {
-            jobItemMeasurePhotoDTO = ArrayList<JobItemMeasurePhotoDTO>()
-            jobItemMeasureArrayList = ArrayList<JobItemMeasureDTO>()
-            jobItemEstimatesForJob = ArrayList<JobItemEstimateDTO>()
-            jobItemMeasureList = ArrayList<JobItemMeasureDTO>()
 
-            jobItemMeasuresForJobItemEstimates =
-                HashMap<JobItemEstimateDTO, List<JobItemMeasureDTO>>()
-
-            measureViewModel.measure_Item.observe(viewLifecycleOwner, Observer { jobID ->
+            measureViewModel.measure_Item.observeOnce(viewLifecycleOwner, Observer { jobID ->
                 jobItemEstimate = jobID.jobItemEstimateDTO
                 getWorkItems(jobItemEstimate.jobId)
             })
@@ -115,7 +117,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
 
             items_swipe_to_refresh.setOnRefreshListener {
                 Coroutines.main {
-                    measureViewModel.measure_Item.observe(
+                    measureViewModel.measure_Item.observeOnce(
                         viewLifecycleOwner,
                         Observer { measureItem ->
                             getWorkItems(measureItem.jobItemEstimateDTO.jobId)
@@ -135,7 +137,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
             measureViewModel.setBackupJobId(jobId!!)
             val jobItemMeasure =
                 measureViewModel.getJobItemMeasuresForJobIdAndEstimateId(jobId) //estimateId
-            jobItemMeasure.observe(viewLifecycleOwner, Observer { m_sures ->
+            jobItemMeasure.observeOnce(viewLifecycleOwner, Observer { m_sures ->
                 val validMeasures = m_sures.filter { msure ->
                     msure.qty > 0 && msure.jobItemMeasurePhotos.isNotEmpty()
                 }
