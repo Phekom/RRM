@@ -545,5 +545,6 @@
     <!-- Location Rationale -->
     <string name="alert_location_title">Location Services</string>
     <string name="alert_location_message">RRM Mobile needs location services enabled in order to work</string>
+    <string name="enable_softdelete">Ënable SoftDelete</string>
 
 </resources>

@@ -307,6 +307,7 @@ class MeasureCreationDataRepository(
                         }
                     }
                 }
+                workflowStatus.postValue(XISuccess("Workflow Complete!"))
             } catch (e: Exception) {
                 Timber.e(e)
                 workflowStatus.postValue(XIError(e, e.message!!))

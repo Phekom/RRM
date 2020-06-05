@@ -17,16 +17,20 @@ import com.xwray.groupie.ExpandableGroup
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import kotlinx.android.synthetic.main.fragment_submit_measure.*
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.launch
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
+import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.ui.custom.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModelFactory
+import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.*
 import za.co.xisystems.itis_rrm.utils.errors.ErrorHandler.handleError
 import za.co.xisystems.itis_rrm.utils.results.XIError
@@ -45,9 +49,12 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
     private lateinit var jobForItemEstimate: JobDTO
     private lateinit var jobItemMeasureList: ArrayList<JobItemMeasureDTO>
     private lateinit var jobItemEstimate: JobItemEstimateDTO
-
+    private var uiScope = UiLifecycleScope()
     override fun onCreate(savedInstanceState: Bundle?) {
+
+
         super.onCreate(savedInstanceState)
+        lifecycle.addObserver(uiScope)
         setHasOptionsMenu(true)
         (activity as MainActivity).supportActionBar?.title =
             getString(R.string.submit_measure_title)
@@ -70,16 +77,6 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
         (activity as MainActivity).supportActionBar?.title =
             getString(R.string.submit_measure_title)
 
-//        measureViewModel = activity?.run {
-//            ViewModelProvider(this, factory).get(MeasureViewModel::class.java)
-//        } ?: throw Exception("Invalid Activity")
-//
-//
-//        Coroutines.main {
-//            measureViewModel.measure_Item.observe(viewLifecycleOwner, Observer { jobID ->
-//                getWorkItems(jobID.jobItemEstimateDTO.jobId)
-//            })
-//        }
 
         return inflater.inflate(R.layout.fragment_submit_measure, container, false)
     }
@@ -132,6 +129,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
 
     }
 
+
     private fun submitMeasurements(jobId: String?) {
         Coroutines.main {
             measureViewModel.setBackupJobId(jobId!!)
@@ -161,7 +159,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
     private fun retryMeasurements() {
         IndefiniteSnackbar.hide()
         val backupJob = measureViewModel.backupJobId
-        backupJob.observe(viewLifecycleOwner, Observer { response ->
+        backupJob.observeOnce(viewLifecycleOwner, Observer { response ->
             response?.let { jobId ->
                 submitMeasurements(jobId)
             }
@@ -227,48 +225,53 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
 
                         activity?.let {
 
+                            uiScope.launch(uiScope.coroutineContext) {
 
-                            val result = measureViewModel.processWorkflowMove(
-                                user_.userId, jobId, itemMeasureJob.JiNo, contractVoId, mSures,
-                                it, itemMeasureJob
-                            )
-                            val workflowOutcome = measureViewModel.workflowMoveResponse
-                            workflowOutcome.observe(viewLifecycleOwner, Observer { response ->
-                                response?.let { outcome ->
-                                    result.cancel()
-                                    when (outcome) {
-                                        is XISuccess -> {
-                                            prog.dismiss()
-                                            toast(R.string.measure_submitted)
-                                            popViewOnJobSubmit()
-                                        }
-                                        is XIError -> {
-                                            prog.dismiss()
-                                            when (outcome.exception) {
-                                                is NoInternetException -> {
-                                                    handleConnectivityError(outcome)
-                                                }
-                                                is NoConnectivityException -> {
-                                                    handleConnectivityError(outcome)
-                                                }
+                                val result = measureViewModel.processWorkflowMove(
+                                    user_.userId, jobId, itemMeasureJob.JiNo, contractVoId, mSures,
+                                    it, itemMeasureJob
+                                )
+                                val workflowOutcome = measureViewModel.workflowMoveResponse
+                                workflowOutcome.observe(viewLifecycleOwner, Observer { response ->
+                                    response?.let { outcome ->
+                                        when (outcome) {
+                                            is XISuccess -> {
+                                                prog.dismiss()
+                                                toast(R.string.measure_submitted)
+                                                popViewOnJobSubmit()
+                                            }
+                                            is XIError -> {
+                                                result.cancel(CancellationException(outcome.message))
+                                                prog.dismiss()
+                                                when (outcome.exception) {
+                                                    is NoInternetException -> {
+                                                        handleConnectivityError(outcome)
+                                                    }
+                                                    is NoConnectivityException -> {
+                                                        handleConnectivityError(outcome)
+                                                    }
 
-                                                else -> {
-                                                    handleError(
-                                                        view = this@SubmitMeasureFragment.requireView(),
-                                                        throwable = outcome,
-                                                        shouldToast = true,
-                                                        shouldShowSnackBar = false
-                                                    )
+                                                    else -> {
+                                                        handleError(
+                                                            view = this@SubmitMeasureFragment.requireView(),
+                                                            throwable = outcome,
+                                                            shouldToast = true,
+                                                            shouldShowSnackBar = false
+                                                        )
+                                                    }
                                                 }
                                             }
                                         }
                                     }
-                                }
-                            })
+                                })
+
+                            }
+
                         }
                     }
                 }
             })
+
         }
     }
 
@@ -348,7 +351,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
     private fun getWorkItems(jobID: String?) {
         Coroutines.main {
             val measurements = measureViewModel.getJobItemsToMeasureForJobId(jobID)
-            measurements.observe(viewLifecycleOwner, Observer { job_s ->
+            measurements.observeOnce(viewLifecycleOwner, Observer { job_s ->
                 initRecyclerView(job_s.toMeasure_Item())
             })
         }
@@ -367,7 +370,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
     }
 
     override fun onDestroyView() {
-
+        uiScope.destroy()
         measure_listView.adapter = null
         super.onDestroyView()
     }
@@ -387,7 +390,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
 
                 Coroutines.main {
                     val jobForJobItemEstimate = measureViewModel.getJobFromJobId(measure_item.jobId)
-                    jobForJobItemEstimate.observe(
+                    jobForJobItemEstimate.observeOnce(
                         viewLifecycleOwner,
                         androidx.lifecycle.Observer { job ->
                             //                        for (measure_i in jobItemMeasureArrayList) {
@@ -398,7 +401,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                                         job.JobId,
                                         measure_item.estimateId
                                     )
-                                jobItemMeasure.observe(requireActivity(), Observer { m_sures ->
+                                jobItemMeasure.observeOnce(requireActivity(), Observer { m_sures ->
                                     Coroutines.main {
                                         for (jobItemM in m_sures) {
                                             Coroutines.main {

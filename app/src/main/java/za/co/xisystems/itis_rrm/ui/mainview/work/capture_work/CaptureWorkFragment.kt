@@ -37,6 +37,7 @@ import timber.log.Timber
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
+import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModelFactory
@@ -587,7 +588,7 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
     ) = uiScope.launch(uiScope.coroutineContext) {
 
         val user = workViewModel.user.await()
-        user.observe(viewLifecycleOwner, Observer { user_ ->
+        user.observeOnce(viewLifecycleOwner, Observer { user_ ->
 
             when {
                 user_.userId.isBlank() -> {

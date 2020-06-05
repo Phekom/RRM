@@ -609,6 +609,7 @@ class OfflineDataRepository(
                 jobItemMeasure.setTrackRouteId(DataConversion.toBigEndian(jobItemMeasure.trackRouteId))
                 jobItemMeasure.setJobNo(job.JiNo)
                 jobItemMeasure.setQty(jobItemMeasure.qty)
+                jobItemMeasure.setDeleted(0)
                 if (!Db.getJobItemMeasureDao()
                         .checkIfJobItemMeasureExists(jobItemMeasure.itemMeasureId!!)
                 )//{
@@ -1448,5 +1449,9 @@ class OfflineDataRepository(
         val TAG: String = OfflineDataRepository::class.java.simpleName
     }
 
+}
+
+private fun JobItemMeasureDTO.setDeleted(i: Int) {
+    this.deleted = i
 }
 

@@ -103,7 +103,7 @@ class ExpandableHeaderMeasureItem(
     ) {
         Coroutines.main {
             val jobForJobItemEstimate = measureViewModel.getJobFromJobId(measureItem.jobId)
-            jobForJobItemEstimate.observe(activity!!, androidx.lifecycle.Observer { job ->
+            jobForJobItemEstimate.observeOnce(activity!!, androidx.lifecycle.Observer { job ->
                 if (measureItem != null && jobForJobItemEstimate != null)
                     showAddMeasurementQuantityDialog(
                         measureItem,
@@ -182,9 +182,6 @@ class ExpandableHeaderMeasureItem(
                                                         jobItemMeasurePhotoDTO,
                                                         jobItemMeasureArrayList
                                                     )
-//                                                    setJobItemMeasures(jobItemMeasureArrayList,measureViewModel)
-//                                                   measureViewModel.createJobItemMeasureItem(selected, quantityInputEditText.text.toString().toDouble(), jobForJobItemEstimate, measureItem, jobItemMeasurePhotoDTO)
-//                                                    measureViewModel.createJobItemMeasureItem(jobItemMeasure)
                                                     captureItemMeasureImages(jobItemMeasure, view)
 
                                                 }
