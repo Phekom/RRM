@@ -266,15 +266,15 @@ class MeasureApprovalDataRepository(
         newQuantity: String,
         itemMeasureId: String
     ): String {
-        val new_measureId = DataConversion.toLittleEndian(itemMeasureId)
-        val new_Quantity = "$newQuantity.0"
+        val newMeasureId = DataConversion.toLittleEndian(itemMeasureId)
+
 
         val quantityUpdateResponse =
-            apiRequest { api.upDateMeasureQty(new_measureId, new_Quantity.toDouble()) }
+            apiRequest { api.upDateMeasureQty(newMeasureId, newQuantity.toDouble()) }
         qtyUpDate.postValue(
             quantityUpdateResponse.errorMessage,
             itemMeasureId,
-            new_Quantity.toDouble()
+            newQuantity.toDouble()
         )
         val messages = quantityUpdateResponse.errorMessage ?: ""
         return withContext(Dispatchers.IO) {
