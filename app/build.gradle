@@ -16,7 +16,7 @@ versioning {
     // Optional, force custom patch (number)
     patch 52
     // Optional (any string)
-    preRelease "RC2"
+    preRelease ""
     // Optional, custom task name to trigger the increase of the version
     incrementOn "app:installDevDebug"
     // Optional, custom task name for which you want to save the versioning file
