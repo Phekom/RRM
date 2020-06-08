@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -16,7 +17,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.ExpandableGroup
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.GroupieViewHolder
-import kotlinx.android.synthetic.main.fragment_approvejob.noData
 import kotlinx.android.synthetic.main.fragment_work.*
 import kotlinx.coroutines.launch
 import org.kodein.di.KodeinAware
@@ -41,13 +41,14 @@ const val INSET_TYPE_KEY = "inset_type"
 const val INSET = "inset"
 
 class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
-//
+    private lateinit var noDataLayout: LinearLayout
+
+    //
     override val kodein by kodein()
     private lateinit var workViewModel: WorkViewModel
     private val factory: WorkViewModelFactory by instance<WorkViewModelFactory>()
     private var uiScope = UiLifecycleScope()
     private var dialog: ProgressDialog? = null
-
     init {
 
 
@@ -90,13 +91,17 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
             ActivityIdConstants.JOB_APPROVED,
             ActivityIdConstants.ESTIMATE_INCOMPLETE
         ).observeOnce(viewLifecycleOwner, Observer { work_s ->
-            noData.visibility = View.GONE
-            group7_loading.visibility = View.GONE
-            val headerItems = work_s.distinctBy {
-                it.JobId
-            }
-            uiScope.launch(uiScope.coroutineContext) {
-                initRecyclerView(headerItems.toWorkListItems())
+            if (work_s.isNullOrEmpty()) {
+                noDataLayout.visibility = View.VISIBLE
+            } else {
+                noDataLayout.visibility = View.GONE
+                group7_loading.visibility = View.GONE
+                val headerItems = work_s.distinctBy {
+                    it.JobId
+                }
+                uiScope.launch(uiScope.coroutineContext) {
+                    initRecyclerView(headerItems.toWorkListItems())
+                }
             }
 
         })
@@ -111,9 +116,8 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
 
-
         super.onActivityCreated(savedInstanceState)
-
+        noDataLayout = no_data_layout!!
         workViewModel = activity?.run {
             ViewModelProvider(this, factory).get(WorkViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
@@ -160,8 +164,8 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
         // This definitely needs to be a one-shot operation
         val jobs = workViewModel.offlineUserTaskList.await()
         jobs.observeOnce(viewLifecycleOwner, Observer { works ->
-            if (works.isEmpty()) {
-                noData.visibility = View.VISIBLE
+            if (!works.isEmpty()) {
+                noDataLayout.visibility = View.GONE
             }
 
         })

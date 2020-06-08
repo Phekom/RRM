@@ -9,7 +9,6 @@ import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
-import android.location.Location
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -36,15 +35,15 @@ import pereira.agnaldo.previewimgcol.ImageCollectionView
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.base.LocationFragment
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.extensions.observeOnce
-import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
+import za.co.xisystems.itis_rrm.services.LocationModel
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.intents.AbstractIntent
 import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModelFactory
-import za.co.xisystems.itis_rrm.ui.mainview.work.work_utils.LocationHelper
 import za.co.xisystems.itis_rrm.ui.mainview.work.workstate_item.WorkStateItem
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.*
@@ -55,7 +54,7 @@ import java.util.*
 import kotlin.collections.ArrayList
 
 
-class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), KodeinAware {
+class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), KodeinAware {
 
 
     override val kodein by kodein()
@@ -78,23 +77,11 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
 
     @State
     var filenamePath = HashMap<String, String>()
-    private lateinit var locationHelper: LocationHelper
-    private var currentLocation: Location? = null
+    private var workLocation: LocationModel? = null
     private lateinit var useR: UserDTO
-
-    override fun onStart() {
-        super.onStart()
-        locationHelper.onStart()
-    }
-
-    override fun onPause() {
-        locationHelper.onPause()
-        super.onPause()
-    }
 
     override fun onStop() {
         uiScope.destroy()
-        locationHelper.onStop()
         super.onStop()
 
     }
@@ -106,11 +93,6 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
         (activity as MainActivity).supportActionBar?.title = getString(R.string.capture_work_title)
         workFlowMenuTitles = ArrayList()
         groupAdapter = GroupAdapter()
-        locationHelper =
-            LocationHelper(
-                this
-            )
-        locationHelper.onCreate()
         estimateWorksPhotoArrayList = ArrayList()
         estimateWorksList = ArrayList()
         estimateWorksArrayList = ArrayList()
@@ -353,7 +335,8 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
 
     private fun processAndSetImage(itemEstiWorks: JobEstimateWorksDTO) {
         try { //  Location of picture
-            val currentLocation: Location? = locationHelper.getCurrentLocation()
+            val currentLocation: LocationModel? = this.getCurrentLocation()
+            Timber.d("$currentLocation")
             when (currentLocation != null) {
                 true -> {
                     filenamePath = PhotoUtil.saveImageToInternalStorage(
@@ -377,7 +360,7 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
     }
 
     private fun processPhotoWorks(
-        currentLocation: Location?,
+        currentLocation: LocationModel?,
         filenamePath: HashMap<String, String>,
         itemEstiWorks: JobEstimateWorksDTO
     ) {
@@ -400,6 +383,29 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
                     estimateWorksPhotoArrayList,
                     itemEstiWorks
                 )
+
+                when (estimateWorksPhotoArrayList.size) {
+                    1 -> {
+                        image_collection_view.baseImageHeight = Util.convertDpToPixel(
+                            390.00F,
+                            this@CaptureWorkFragment.requireContext()
+                        ).toInt()
+                        image_collection_view.maxImagePerRow = 1
+                    }
+                    2, 3, 4 -> {
+                        image_collection_view.baseImageHeight = Util.convertDpToPixel(
+                            180.00F,
+                            this@CaptureWorkFragment.requireContext()
+                        ).toInt()// show first image in full-size image view
+                        image_collection_view.maxImagePerRow = 2
+                    }
+                    else -> {
+                        image_collection_view.baseImageHeight =
+                            Util.convertDpToPixel(90.00F, this@CaptureWorkFragment.requireContext())
+                                .toInt()
+                        image_collection_view.maxImagePerRow = 3
+                    }
+                }
 
                 // Get imageUri from filename
                 val imageUrl = PhotoUtil.getPhotoPathFromExternalDirectory(
@@ -439,7 +445,7 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
 
     private fun createItemWorksPhoto(
         filenamePath: HashMap<String, String>,
-        currentLocation: Location
+        currentLocation: LocationModel
     ): JobEstimateWorksPhotoDTO {
         val photoId = SqlLitUtils.generateUuid()
 
@@ -507,7 +513,7 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
             val iItems = estimateJob.JobItemEstimates
             submitAllOutStandingEstimates(iItems)
         } else {
-            popViewOnWorkSubmit(requireView())
+            popViewOnWorkSubmit(this.requireView())
         }
     }
 
@@ -676,12 +682,8 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    fun getCurrentLocation(): Location? {
-        return currentLocation
-    }
-
-    fun setCurrentLocation(currentLocation: Location?) {
-        this.currentLocation = currentLocation
+    fun getCurrentLocation(): LocationModel? {
+        return super.getLocation()
     }
 
     companion object {

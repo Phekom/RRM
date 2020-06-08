@@ -140,8 +140,6 @@
     <string name="decline_measurement_item">Decline Measure Item</string>
     <string name="declining_measurements">Declining measurements</string>
     <string name="delete">Delete</string>
-    <string name="description">Description</string>
-    <string name="description_of_work">Description of work</string>
     <string name="device_cleanup_failed">Device cleanup failed</string>
     <string name="device_info">registerRequest</string>
     <string name="direction">Direction</string>
@@ -546,5 +544,9 @@
     <string name="alert_location_title">Location Services</string>
     <string name="alert_location_message">RRM Mobile needs location services enabled in order to work</string>
     <string name="enable_softdelete">Ënable SoftDelete</string>
+    <string name="NoData">Query returned no data</string>
+    <string name="confirm_project_selection">Confirm Project Selection</string>
+    <string name="description">Description</string>
+    <string name="permission_request" />
 
 </resources>
