@@ -22,10 +22,7 @@ import za.co.xisystems.itis_rrm.data.preferences.PreferenceProvider
 import za.co.xisystems.itis_rrm.data.repositories.*
 import za.co.xisystems.itis_rrm.logging.LameCrashLibrary
 import za.co.xisystems.itis_rrm.ui.auth.AuthViewModelFactory
-import za.co.xisystems.itis_rrm.ui.mainview.activities.MainActivityViewModelFactory
-import za.co.xisystems.itis_rrm.ui.mainview.activities.SettingsViewModelFactory
-import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModel
-import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModelFactory
+import za.co.xisystems.itis_rrm.ui.mainview.activities.*
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.ApproveJobsViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.corrections.CorrectionsViewModelFactory
@@ -45,6 +42,7 @@ open class MainApp : Application(), KodeinAware {
     override val kodein = Kodein.lazy {
 
         import(androidXModule(this@MainApp))
+
 
         bind() from singleton { NetworkConnectionInterceptor(instance()) }
         bind() from singleton { BaseConnectionApi(instance()) }
@@ -75,6 +73,8 @@ open class MainApp : Application(), KodeinAware {
         bind() from provider{ CorrectionsViewModelFactory(instance()) }
         bind() from provider{ SettingsViewModelFactory(instance()) }
         bind() from provider{ MainActivityViewModelFactory(instance()) }
+        bind() from provider { LocationViewModelFactory(this@MainApp) }
+
         bind() from provider { SharedViewModelFactory() }
         bind() from provider { SharedViewModel() }
 
@@ -82,22 +82,10 @@ open class MainApp : Application(), KodeinAware {
 
     override fun onCreate() {
         super.onCreate()
+        Timber.plant(CrashReportingTree())
 
-        if (BuildConfig.DEBUG) {
-            Timber.plant(HyperlinkDebugTree())
-        } else {
-            Timber.plant(CrashReportingTree())
-        }
     }
 
-    /** A tree which adds the filename, line-number and method call when debugging. */
-    private class HyperlinkDebugTree : Timber.DebugTree() {
-        override fun createStackElementTag(element: StackTraceElement): String? {
-            with(element) {
-                return ("($fileName:$lineNumber)$methodName")
-            }
-        }
-    }
 
     /** A tree which logs important information for crash reporting.  */
     private class CrashReportingTree : Timber.Tree() {

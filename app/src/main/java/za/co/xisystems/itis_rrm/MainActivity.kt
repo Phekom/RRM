@@ -460,6 +460,18 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
 
+//    fun nextLocation() {
+//        // Fire again after 15 seconds
+//        val handler = Handler()
+//        val delay = 15_000 // 15 seconds
+//        handler.postDelayed(object : Runnable {
+//            override fun run() {
+//                locationProvider.requestLocation()
+//                handler.postDelayed(this, delay.toLong())
+//            }
+//        }, delay.toLong())
+//    }
+
     fun initializeCountDrawer() {
         // Estimates are completed needs to be submitted currently saved in the local DB
 

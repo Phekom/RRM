@@ -47,8 +47,7 @@
                         android:id="@+id/image_collection_view"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:layout_marginTop="20dp"
-                        android:layout_marginBottom="20dp"
+                        android:layout_margin="@dimen/dimen_5dp"
                         app:backgroundColor="#00000000"
                         app:baseRowHeight="100dp"
                         app:imageMargin="2dp"
@@ -60,7 +59,7 @@
                         app:maxImagePerRow="3"
                         app:maxRows="4"
                         app:pinchToZoom="true"
-                        app:showExternalBorderMargins="false" />
+                        app:showExternalBorderMargins="true" />
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
