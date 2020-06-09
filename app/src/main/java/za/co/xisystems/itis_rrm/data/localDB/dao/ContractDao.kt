@@ -21,7 +21,7 @@ interface ContractDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertContract(contract : ContractDTO )
 
-    @Query("SELECT * FROM CONTRACTS_TABLE")
+    @Query("SELECT * FROM CONTRACTS_TABLE ORDER BY contractNo")
     fun getAllContracts() : LiveData<List<ContractDTO>>
 
     @Query("SELECT * FROM CONTRACTS_TABLE WHERE contractId = :contractId")

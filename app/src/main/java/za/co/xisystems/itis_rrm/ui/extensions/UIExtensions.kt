@@ -2,7 +2,9 @@ package za.co.xisystems.itis_rrm.ui.extensions
 
 import android.app.Dialog
 import android.content.Context
+import android.graphics.Bitmap
 import android.net.Uri
+import android.widget.ImageView
 import androidx.fragment.app.FragmentActivity
 import pereira.agnaldo.previewimgcol.ImageCollectionView
 import za.co.xisystems.itis_rrm.R
@@ -22,18 +24,36 @@ fun ImageCollectionView.scaleForSize(context: Context, imageCount: Int) {
             this.maxImagePerRow = 1
             this.maxRows = 1
         }
-        2, 3, 4 -> {
-            this.baseImageHeight = (this.measuredHeight / 2) - 10
+        in 2..4 -> {
+            this.baseImageHeight = (this.measuredHeight / 2) - 5
             this.maxImagePerRow = 2
             this.maxRows = 2
         }
         else -> {
-            this.baseImageHeight = (this.measuredHeight / 4) - 20
+            this.baseImageHeight = (this.measuredHeight / 4) - 5
             this.maxImagePerRow = 3
             this.maxRows = 4
         }
     }
 }
+
+fun ImageCollectionView.addZoomedImages(
+    photoPaths: List<Pair<Uri, Bitmap?>>,
+    activity: FragmentActivity
+) {
+
+    photoPaths.forEach { pair ->
+        this.addImage(pair.second!!, object : ImageCollectionView.OnImageClickListener {
+            override fun onClick(bitmap: Bitmap, imageView: ImageView) {
+                showZoomedImage(
+                    pair.first,
+                    activity
+                )
+            }
+        })
+    }
+}
+
 
 fun showZoomedImage(imageUrl: Uri, activity: FragmentActivity) {
     val dialog = Dialog(activity, R.style.dialog_full_screen)

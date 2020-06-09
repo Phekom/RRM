@@ -158,7 +158,7 @@ class MeasureCreationDataRepository(
         }
     }
 
-    private suspend fun undeleteAllMeasurements(itemMeasureId: String): Int {
+    private suspend fun undeleteAllMeasurements(): Int {
         return withContext(Dispatchers.IO) {
             Db.getJobItemMeasureDao().undeleteAllMeasurements()
         }
@@ -400,17 +400,17 @@ class MeasureCreationDataRepository(
     }
 
 
-    suspend fun getJobMeasureItemsPhotoPath(itemMeasureId: String): String {
+    suspend fun getJobMeasureItemsPhotoPath(itemMeasureId: String): List<String> {
         return withContext(Dispatchers.IO) {
             Db.getJobItemMeasurePhotoDao()
-                .getJobMeasureItemsPhotoPath(itemMeasureId)
+                .getJobMeasureItemPhotoPaths(itemMeasureId)
         }
     }
 
-    suspend fun getJobMeasureItemsPhotoPath2(itemMeasureId: String): String {
+    suspend fun getJobMeasureItemsPhotoPath2(itemMeasureId: String): List<String> {
         return withContext(Dispatchers.IO) {
             Db.getJobItemMeasurePhotoDao()
-                .getJobMeasureItemsPhotoPath(itemMeasureId)
+                .getJobMeasureItemPhotoPaths(itemMeasureId)
         }
     }
 

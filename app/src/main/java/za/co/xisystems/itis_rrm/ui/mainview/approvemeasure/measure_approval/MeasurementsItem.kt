@@ -9,6 +9,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
+import androidx.navigation.Navigation
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import com.xwray.groupie.kotlinandroidextensions.Item
 import kotlinx.android.synthetic.main.estimates_item.measure_item_description_textView
@@ -69,9 +70,12 @@ class MeasurementsItem(
             }
             view_captured_item_photo.setOnClickListener {
                 Coroutines.main {
-                    val measurePhoto =
-                        approveViewModel.getJobMeasureItemsPhotoPath(jobItemMeasureDTO.itemMeasureId!!)
-                    showZoomedImage(measurePhoto)
+//                    val measurePhoto =
+//                        approveViewModel.getJobMeasureItemsPhotoPath(jobItemMeasureDTO.itemMeasureId!!)
+//                    showZoomedImage(measurePhoto)
+                    approveViewModel.generateGalleryUI(jobItemMeasureDTO.itemMeasureId!!)
+                    Navigation.findNavController(it)
+                        .navigate(R.id.action_measureApprovalFragment_to_measureGalleryFragment)
                 }
             }
             updateMeasureImage()
@@ -140,11 +144,11 @@ class MeasurementsItem(
     }
 
     private fun nanCheck(toString: String): Boolean {
-        try {
+        return try {
             val dbl = toString.toDouble()
-            return dbl.isNaN()
+            dbl.isNaN()
         } catch (e: Exception) {
-            return true
+            true
         }
     }
 
@@ -164,7 +168,7 @@ class MeasurementsItem(
     private fun GroupieViewHolder.updateMeasureImage() {
         Coroutines.main {
             val measurePhoto =
-                approveViewModel.getJobMeasureItemsPhotoPath(jobItemMeasureDTO.itemMeasureId!!)
+                approveViewModel.getJobMeasureItemsPhotoPath(jobItemMeasureDTO.itemMeasureId!!)[0]
 //            ToastUtils().toastLong(activity,measurePhoto)
 
             if (measurePhoto != null) {

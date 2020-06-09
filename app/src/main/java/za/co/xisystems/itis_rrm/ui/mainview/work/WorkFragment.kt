@@ -92,9 +92,9 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
             ActivityIdConstants.ESTIMATE_INCOMPLETE
         ).observeOnce(viewLifecycleOwner, Observer { work_s ->
             if (work_s.isNullOrEmpty()) {
-                noDataLayout.visibility = View.VISIBLE
+                no_data_layout.visibility = View.VISIBLE
             } else {
-                noDataLayout.visibility = View.GONE
+                no_data_layout.visibility = View.GONE
                 group7_loading.visibility = View.GONE
                 val headerItems = work_s.distinctBy {
                     it.JobId
@@ -117,7 +117,7 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
 
         super.onActivityCreated(savedInstanceState)
-        noDataLayout = no_data_layout!!
+
         workViewModel = activity?.run {
             ViewModelProvider(this, factory).get(WorkViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
@@ -164,8 +164,8 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
         // This definitely needs to be a one-shot operation
         val jobs = workViewModel.offlineUserTaskList.await()
         jobs.observeOnce(viewLifecycleOwner, Observer { works ->
-            if (!works.isEmpty()) {
-                noDataLayout.visibility = View.GONE
+            if (works.isEmpty()) {
+                no_data_layout.visibility = View.VISIBLE
             }
 
         })

@@ -51,7 +51,6 @@ open class MainApp : Application(), KodeinAware {
         bind() from singleton { PreferenceProvider(instance()) }
 
         bind() from singleton { UserRepository(instance(), instance()) }
-        bind() from singleton { ContractsRepository() }
 
         bind() from singleton { HomeRepository(instance(), instance()) }
         bind() from singleton { OfflineDataRepository(instance(), instance(), instance()) }
@@ -65,7 +64,13 @@ open class MainApp : Application(), KodeinAware {
         bind() from provider { AuthViewModelFactory(instance(),instance()) }
         bind() from provider { HomeViewModelFactory(instance(),instance(),instance(),instance()) }
         bind() from provider { CreateViewModelFactory(instance() ) }
-        bind() from provider { ApproveMeasureViewModelFactory(instance() ,instance()) }
+        bind() from provider {
+            ApproveMeasureViewModelFactory(
+                this@MainApp,
+                instance(),
+                instance()
+            )
+        }
         bind() from provider { ApproveJobsViewModelFactory(instance(),instance() ) }
         bind() from provider { MeasureViewModelFactory(instance(),instance() ) }
         bind() from provider { UnSubmittedViewModelFactory(instance() ) }

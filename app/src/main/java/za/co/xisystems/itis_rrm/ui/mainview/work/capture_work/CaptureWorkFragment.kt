@@ -2,7 +2,6 @@ package za.co.xisystems.itis_rrm.ui.mainview.work.capture_work
 
 import android.Manifest
 import android.app.Activity
-import android.app.Dialog
 import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
@@ -39,6 +38,8 @@ import za.co.xisystems.itis_rrm.base.LocationFragment
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.services.LocationModel
+import za.co.xisystems.itis_rrm.ui.extensions.scaleForSize
+import za.co.xisystems.itis_rrm.ui.extensions.showZoomedImage
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.intents.AbstractIntent
@@ -49,7 +50,6 @@ import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.*
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
-import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -113,6 +113,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
         // Remember to flush the RecyclerView's adaptor
 
         work_actions_listView.adapter = null
+        image_collection_view.clearImages()
         super.onDestroyView()
     }
 
@@ -384,29 +385,6 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                     itemEstiWorks
                 )
 
-                when (estimateWorksPhotoArrayList.size) {
-                    1 -> {
-                        image_collection_view.baseImageHeight = Util.convertDpToPixel(
-                            390.00F,
-                            this@CaptureWorkFragment.requireContext()
-                        ).toInt()
-                        image_collection_view.maxImagePerRow = 1
-                    }
-                    2, 3, 4 -> {
-                        image_collection_view.baseImageHeight = Util.convertDpToPixel(
-                            180.00F,
-                            this@CaptureWorkFragment.requireContext()
-                        ).toInt()// show first image in full-size image view
-                        image_collection_view.maxImagePerRow = 2
-                    }
-                    else -> {
-                        image_collection_view.baseImageHeight =
-                            Util.convertDpToPixel(90.00F, this@CaptureWorkFragment.requireContext())
-                                .toInt()
-                        image_collection_view.maxImagePerRow = 3
-                    }
-                }
-
                 // Get imageUri from filename
                 val imageUrl = PhotoUtil.getPhotoPathFromExternalDirectory(
                     photo.filename
@@ -425,22 +403,16 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                     bitmap!!,
                     object : ImageCollectionView.OnImageClickListener {
                         override fun onClick(bitmap: Bitmap, imageView: ImageView) {
-                            showZoomedImage(imageUrl)
+                            showZoomedImage(imageUrl, this@CaptureWorkFragment.requireActivity())
                         }
                     })
+
+                image_collection_view.scaleForSize(
+                    this@CaptureWorkFragment.requireContext(),
+                    estimateWorksPhotoArrayList.size
+                )
             }
         }
-    }
-
-    private fun showZoomedImage(imageUrl: Uri) {
-        val dialog = Dialog(this.requireActivity(), R.style.dialog_full_screen)
-        dialog.setContentView(R.layout.new_job_photo)
-        val zoomageView =
-            dialog.findViewById<ZoomageView>(R.id.zoomedImage)
-        GlideApp.with(this.requireActivity())
-            .load(imageUrl)
-            .into(zoomageView!!)
-        dialog.show()
     }
 
     private fun createItemWorksPhoto(
@@ -572,7 +544,8 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
     }
 
     private fun pushCompletedEstimates(estimates: ArrayList<JobItemEstimateDTO>?) {
-
+        submitError = false
+        var estCount = 0
         uiScope.launch(uiScope.coroutineContext) {
             for (jobEstimate in estimates!!.iterator()) {
                 val jobItemEstimate = workViewModel.getJobItemEstimateForEstimateId(
@@ -583,11 +556,19 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                         WorkflowDirection.NEXT,
                         jobItEstmt
                     )
+                    estCount++
+                    Timber.d("$estCount of ${estimates.size} processed.")
+                    if (estCount == estimates.size && !submitError) {
+                        popViewOnJobSubmit(WorkflowDirection.NEXT.value)
+                    }
                 })
+
             }
+
         }
     }
 
+    private var submitError = false
     private fun moveJobItemEstimateToNextWorkflow(
         workflowDirection: WorkflowDirection,
         jobItEstimate: JobItemEstimateDTO?
@@ -600,7 +581,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                 user_.userId.isBlank() -> {
                     toast("Error: userId is null")
                 }
-                jobItEstimate?.jobId == null -> {
+                jobItEstimate == null -> {
                     toast("Error: selectedJob is null")
                 }
                 else -> {
@@ -623,9 +604,8 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                             direction
                         )
                         progressDialog.dismiss()
-                        if (submit.isNullOrEmpty()) {
-                            popViewOnJobSubmit(direction)
-                        } else {
+                        if (!submit.isNullOrEmpty()) {
+                            submitError = true
                             toast("Problem with work submission: $submit")
                         }
                     }

@@ -136,7 +136,7 @@
     <string name="correct">Correct</string>
     <string name="correct_estimate">Correct Estimates</string>
     <string name="correct_measure">Correct Measurements</string>
-<!--    <string name="correct">Correct</string>-->
+    <!--    <string name="correct">Correct</string>-->
     <string name="decline_measurement_item">Decline Measure Item</string>
     <string name="declining_measurements">Declining measurements</string>
     <string name="delete">Delete</string>
@@ -421,6 +421,7 @@
     <string name="role_tester">CEE622559D0640BFAE98E39BA4917AF3RRM</string>
     <string name="run_as_tester">Run as Tester!</string>
     <string name="run_normal">Run as Normal</string>
+    <string name="measurement_gallery">Measurement Gallery</string>
 
     <!-- Errors -->
     <string name="not_authorized">Credential error, please re-install app with your valid credentials.</string>

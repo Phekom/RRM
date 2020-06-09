@@ -149,7 +149,7 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
                         if (user_.userId.isBlank()) {
                             toast("Error: userId is null")
                         } else {
-                            // TODO beware littleEndian conversion
+                            // littleEndian conversion for transport to the backend
                             val trackRouteId: String =
                                 DataConversion.toLittleEndian(measureItem.trackRouteId)!!
                             val direction: Int = workflowDirection.value

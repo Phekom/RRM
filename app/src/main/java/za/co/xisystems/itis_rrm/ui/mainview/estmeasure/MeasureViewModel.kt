@@ -104,7 +104,7 @@ class MeasureViewModel (
     }
 
 
-    suspend fun getJobMeasureItemsPhotoPath(itemMeasureId: String): String {
+    suspend fun getJobMeasureItemsPhotoPath(itemMeasureId: String): List<String> {
         return withContext(Dispatchers.IO) {
             measureCreationDataRepository.getJobMeasureItemsPhotoPath(itemMeasureId)
         }

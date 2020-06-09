@@ -121,7 +121,7 @@
 
         <meta-data
             android:name="com.raygun.raygun4android.apikey"
-            android:value="9aWmjT3hyHAkIScySuFvjg" />
+            android:value="dbosfZ07DZmgvukZjDbesQ" />
     </application>
 
 </manifest>

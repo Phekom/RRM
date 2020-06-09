@@ -85,5 +85,8 @@ interface JobItemMeasureDao {
     @Query("DELETE FROM JOB_ITEM_MEASURE")
     fun deleteAll()
 
+    @Query("SELECT * FROM JOB_ITEM_MEASURE WHERE itemMeasureId = :itemMeasureId LIMIT 1")
+    fun getJobItemMeasureByItemMeasureId(itemMeasureId: String): LiveData<JobItemMeasureDTO>
+
 
 }
