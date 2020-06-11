@@ -42,7 +42,7 @@ open class CardMeasureItem(
                 Coroutines.main {
                     val measurePhoto =
                         measureViewModel.getJobMeasureItemsPhotoPath(itemMeasureId)
-                    showZoomedImage(measurePhoto)
+                    showZoomedImage(measurePhoto[0])
                 }
             }
 
@@ -64,7 +64,7 @@ open class CardMeasureItem(
         Coroutines.main {
 
             val measurePhoto =
-                measureViewModel.getJobMeasureItemsPhotoPath(itemMeasureId)
+                measureViewModel.getJobMeasureItemsPhotoPath(itemMeasureId)[0]
             if (measurePhoto != null) {
                 GlideApp.with(this.containerView)
                     .load(Uri.fromFile(File(measurePhoto)))

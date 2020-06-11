@@ -9,6 +9,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
+import androidx.navigation.Navigation
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import com.xwray.groupie.kotlinandroidextensions.Item
 import kotlinx.android.synthetic.main.estimates_item.measure_item_description_textView
@@ -69,9 +70,12 @@ class MeasurementsItem(
             }
             view_captured_item_photo.setOnClickListener {
                 Coroutines.main {
-                    val measurePhoto =
-                        approveViewModel.getJobMeasureItemsPhotoPath(jobItemMeasureDTO.itemMeasureId!!)
-                    showZoomedImage(measurePhoto)
+//                    val measurePhoto =
+//                        approveViewModel.getJobMeasureItemsPhotoPath(jobItemMeasureDTO.itemMeasureId!!)
+//                    showZoomedImage(measurePhoto)
+                    approveViewModel.generateGalleryUI(jobItemMeasureDTO.itemMeasureId!!)
+                    Navigation.findNavController(it)
+                        .navigate(R.id.action_measureApprovalFragment_to_measureGalleryFragment)
                 }
             }
             updateMeasureImage()
@@ -92,12 +96,12 @@ class MeasurementsItem(
 
     private fun alertdialog(jobItemMeasureDTO: JobItemMeasureDTO) {
         val text = arrayOfNulls<String>(2)
-        val textEntryView: View = activity!!.getLayoutInflater().inflate(R.layout.measure_dialog, null)
+        val textEntryView: View = activity!!.layoutInflater.inflate(R.layout.measure_dialog, null)
         val new_quantity = textEntryView.findViewById<View>(R.id.new_qty) as EditText
 //        val structure_Type = textEntryView.findViewById<View>(R.id.structure_Type1) as TextView
 //        val structure_InspTitle = textEntryView.findViewById<View>(R.id.structure_InspTitle) as TextView
 
-        val alert = AlertDialog.Builder(activity!! )//,android.R.style.Theme_DeviceDefault_Dialog
+        val alert = AlertDialog.Builder(activity)//,android.R.style.Theme_DeviceDefault_Dialog
         alert.setView(textEntryView)
         alert.setTitle(R.string.correct_measure)
         alert.setIcon(R.drawable.ic_edit)
@@ -109,13 +113,13 @@ class MeasurementsItem(
         alert.setPositiveButton(
             R.string.save
         ) { dialog, which ->
-            if (ServiceUtil.isNetworkConnected(activity?.applicationContext)) {
+            if (ServiceUtil.isNetworkConnected(activity.applicationContext)) {
                 Coroutines.main{
-                    if(new_quantity.text.toString() == "" || Integer.parseInt(new_quantity.text.toString()) == 0 ){
+                    if (new_quantity.text.toString() == "" || nanCheck(new_quantity.text.toString())) {
                         activity.toast("Please Enter a valid Quantity")
                     }else{
                         val updated =  approveViewModel.upDateMeasure(new_quantity.text.toString(), jobItemMeasureDTO.itemMeasureId)
-                        if(updated == null){
+                        if (updated.isBlank()) {
                             activity.toast("Data Updated was Successful")
                         }else{
                             activity.toast("Data Updated Error!!  Server Not Reachable")
@@ -139,6 +143,15 @@ class MeasurementsItem(
 
     }
 
+    private fun nanCheck(toString: String): Boolean {
+        return try {
+            val dbl = toString.toDouble()
+            dbl.isNaN()
+        } catch (e: Exception) {
+            true
+        }
+    }
+
     private fun showZoomedImage(imageUrl: String?) {
         val dialog = this.activity?.let { Dialog(it, R.style.dialog_full_screen) }
         dialog?.setContentView(R.layout.new_job_photo)
@@ -155,7 +168,7 @@ class MeasurementsItem(
     private fun GroupieViewHolder.updateMeasureImage() {
         Coroutines.main {
             val measurePhoto =
-                approveViewModel.getJobMeasureItemsPhotoPath(jobItemMeasureDTO.itemMeasureId!!)
+                approveViewModel.getJobMeasureItemsPhotoPath(jobItemMeasureDTO.itemMeasureId!!)[0]
 //            ToastUtils().toastLong(activity,measurePhoto)
 
             if (measurePhoto != null) {

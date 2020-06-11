@@ -9,5 +9,5 @@ import com.google.gson.annotations.SerializedName
 
 data class QuantityUpdateResponse(
     @SerializedName("ErrorMessage")
-    val errorMessage: String // null
+    val errorMessage: String? // null
 )

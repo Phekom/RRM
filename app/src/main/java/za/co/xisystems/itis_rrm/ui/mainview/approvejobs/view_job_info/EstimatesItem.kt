@@ -21,6 +21,7 @@ import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.ApproveJobsViewModel
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.GlideApp
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
+import za.co.xisystems.itis_rrm.utils.Util.nanCheck
 import za.co.xisystems.itis_rrm.utils.toast
 import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
 import java.io.File
@@ -89,13 +90,13 @@ class EstimatesItem(
     ) {
         val text = arrayOfNulls<String>(2)
         val textEntryView: View =
-            activity!!.getLayoutInflater().inflate(R.layout.estimate_dialog, null)
+            activity!!.layoutInflater.inflate(R.layout.estimate_dialog, null)
         val new_quantity = textEntryView.findViewById<View>(R.id.new_qty) as EditText
         var new_total = textEntryView.findViewById<View>(R.id.new_total) as TextView
         val rate = textEntryView.findViewById<View>(R.id.current_rate) as TextView
 
 
-        val alert = AlertDialog.Builder(activity!!)//,android.R.style.Theme_DeviceDefault_Dialog
+        val alert = AlertDialog.Builder(activity)//,android.R.style.Theme_DeviceDefault_Dialog
         alert.setView(textEntryView)
         alert.setTitle(R.string.correct_estimate)
         alert.setIcon(R.drawable.ic_edit)
@@ -108,19 +109,19 @@ class EstimatesItem(
 
             rate.text = "R $tenderRate"
             var cost = 0.0
-            var newQuantity = jobItemEstimateDTO.qty.toInt()
+            var newQuantity = jobItemEstimateDTO.qty.toDouble()
             val defaultQty = 0.0
 
             new_quantity.text = Editable.Factory.getInstance().newEditable("$newQuantity")
 
             new_quantity.addTextChangedListener(object : AbstractTextWatcher() {
                 override fun onTextChanged(quantity : String) {
-                    if(quantity == "" || Integer.parseInt(quantity) == 0 ){
+                    if (quantity == "" || nanCheck(quantity) || quantity.toDouble() == 0.0) {
                         cost = 0.0
                         new_total.text = "R $cost"
                     }else{
 
-                            var qty = Integer.parseInt(quantity).toDouble()
+                        val qty = quantity.toDouble()
                         if ( quantity.length > 9) {
                             new_quantity.text = Editable.Factory.getInstance().newEditable("$defaultQty")
                             activity.toast("You Have exceeded the amount of Quantity allowed")
@@ -143,16 +144,18 @@ class EstimatesItem(
         alert.setPositiveButton(
             R.string.save
         ) { dialog, which ->
-            if (ServiceUtil.isNetworkConnected(activity?.applicationContext)) {
+            if (ServiceUtil.isNetworkConnected(activity.applicationContext)) {
              Coroutines.main{
-                 if(new_quantity.text.toString() == "" || Integer.parseInt(new_quantity.text.toString()) == 0 ){
+                 if (new_quantity.text.toString() == "" || nanCheck(new_quantity.text.toString()) || new_quantity.text.toString()
+                         .toDouble() == 0.0
+                 ) {
                      activity.toast("Please Enter a valid Quantity")
                  }else{
                      val updated =  approveViewModel.upDateEstimate(new_quantity.text.toString(), new_total.text.toString(), jobItemEstimateDTO.estimateId)
-                     if(updated == null){
+                     if (updated.isBlank()) {
                          activity.toast("Data Updated was Successful")
                      }else{
-                         activity.toast("Data Updated was Successful")
+                         activity.toast("Data Updated was Unsuccessful")
                      }
                  }
 
@@ -172,7 +175,6 @@ class EstimatesItem(
         declineAlert.show()
 
     }
-
 
 
     private fun showZoomedImage(imageUrl: String?) {

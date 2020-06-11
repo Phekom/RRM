@@ -2,8 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    xmlns:tools="http://schemas.android.com/tools">
+    android:layout_height="match_parent">
 
     <androidx.core.widget.NestedScrollView
         style="@style/_default"
@@ -24,7 +23,7 @@
 
                 <TextView
                     style="@style/_orangeTextLabel"
-                    android:layout_marginLeft="@dimen/xsmall"
+                    android:layout_marginStart="@dimen/xsmall"
                     android:layout_marginTop="@dimen/small"
                     android:text="@string/select_contract" />
 
@@ -38,7 +37,7 @@
                 <TextView
                         android:id="@+id/TextLabel"
                     style="@style/_orangeTextLabel"
-                    android:layout_marginLeft="@dimen/xsmall"
+                    android:layout_marginStart="@dimen/xsmall"
                     android:layout_marginTop="@dimen/medium"
                     android:text="@string/select_project" />
 
@@ -52,13 +51,11 @@
                 <androidx.appcompat.widget.AppCompatEditText
                     android:id="@+id/descriptionEditText"
                     style="@style/_default"
-                    android:layout_marginLeft="@dimen/xsmall"
+                    android:layout_marginStart="@dimen/xsmall"
                     android:layout_marginTop="@dimen/medium"
                     android:layout_marginBottom="@dimen/xsmall"
                     android:backgroundTint="@color/itis_burnt_orange"
-                    android:hint="Description"
-                    android:outlineAmbientShadowColor="@color/red"
-                    android:outlineSpotShadowColor="@color/red"
+                    android:hint="@string/description"
                     android:shadowColor="@color/red"
                     android:textColorHighlight="@color/red" />
 
@@ -68,7 +65,7 @@
                         android:layout_height="@dimen/button_size"
                     android:id="@+id/selectContractProjectContinueButton"
                     android:layout_margin="@dimen/small"
-                    android:text="Confirm Project Selection" />
+                    android:text="@string/confirm_project_selection" />
 
             </LinearLayout>
 

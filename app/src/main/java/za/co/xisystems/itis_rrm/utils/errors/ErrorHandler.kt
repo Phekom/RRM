@@ -8,7 +8,7 @@ import timber.log.Timber
 import za.co.xisystems.itis_rrm.ui.custom.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.utils.NoDataException
 import za.co.xisystems.itis_rrm.utils.NoResponseException
-import za.co.xisystems.itis_rrm.utils.results.Failure
+import za.co.xisystems.itis_rrm.utils.results.XIError
 import java.io.IOException
 
 //
@@ -25,7 +25,7 @@ object ErrorHandler {
 
     fun handleError(
         view: View,
-        throwable: Failure,
+        throwable: XIError,
         shouldToast: Boolean = false,
         shouldShowSnackBar: Boolean = false,
         refreshAction: () -> Unit = {}

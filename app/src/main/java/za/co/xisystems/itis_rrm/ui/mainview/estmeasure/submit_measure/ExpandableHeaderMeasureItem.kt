@@ -21,6 +21,7 @@ import kotlinx.android.synthetic.main.item_header.icon
 import kotlinx.android.synthetic.main.item_measure_header.*
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
+import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.estimate_measure_item.MeasureHeaderItem
 import za.co.xisystems.itis_rrm.utils.Coroutines
@@ -102,7 +103,7 @@ class ExpandableHeaderMeasureItem(
     ) {
         Coroutines.main {
             val jobForJobItemEstimate = measureViewModel.getJobFromJobId(measureItem.jobId)
-            jobForJobItemEstimate.observe(activity!!, androidx.lifecycle.Observer { job ->
+            jobForJobItemEstimate.observeOnce(activity!!, androidx.lifecycle.Observer { job ->
                 if (measureItem != null && jobForJobItemEstimate != null)
                     showAddMeasurementQuantityDialog(
                         measureItem,
@@ -135,7 +136,7 @@ class ExpandableHeaderMeasureItem(
             quantityInputEditText.setSingleLine()
 
             val selectedItemMeasure = measureViewModel.getItemForItemId(measureItem.projectItemId)
-            selectedItemMeasure.observe(activity!!, androidx.lifecycle.Observer { selected ->
+            selectedItemMeasure.observeOnce(activity!!, androidx.lifecycle.Observer { selected ->
 
                 if (selected != null) {
                     var message: String = activity!!.getString(R.string.enter_quantity_measured)
@@ -181,9 +182,6 @@ class ExpandableHeaderMeasureItem(
                                                         jobItemMeasurePhotoDTO,
                                                         jobItemMeasureArrayList
                                                     )
-//                                                    setJobItemMeasures(jobItemMeasureArrayList,measureViewModel)
-//                                                   measureViewModel.createJobItemMeasureItem(selected, quantityInputEditText.text.toString().toDouble(), jobForJobItemEstimate, measureItem, jobItemMeasurePhotoDTO)
-//                                                    measureViewModel.createJobItemMeasureItem(jobItemMeasure)
                                                     captureItemMeasureImages(jobItemMeasure, view)
 
                                                 }
@@ -202,11 +200,8 @@ class ExpandableHeaderMeasureItem(
                         quantityInputEditText.requestFocus()
                     }
                 }
-
             })
-
         }
-
     }
 
     private fun setJobItemMeasure(
@@ -219,79 +214,50 @@ class ExpandableHeaderMeasureItem(
     ): JobItemMeasureDTO {
         val newItemMeasureId: String = SqlLitUtils.generateUuid()
         val itemMeasure = JobItemMeasureDTO(
-            0,
-            0,
-            null,
-            (jobForJobItemEstimate.Cpa).toString().toInt(),
-            (jobForJobItemEstimate.EndKm).toString().toDouble(),
-            (selectedJobItemEstimate.estimateId),
-            (DataConversion.toBigEndian(newItemMeasureId)).toString(),
-            jobForJobItemEstimate.JiNo,
-            (jobForJobItemEstimate.JobDirectionId).toString().toInt(),
-            (jobForJobItemEstimate.JobId),
-            (selectedJobItemEstimate.lineRate * quantity).toString().toDouble(),
-            (selectedJobItemEstimate.lineRate).toString().toDouble(),
-            (Date()).toString(),
-            null,
-            jobItemMeasurePhotoDTO,
-            jobItemEst,
-            itemEs,
-            (selectedJobItemEstimate.projectItemId).toString(),
-            jobForJobItemEstimate.VoId,
-            (quantity).toString().toDouble(),
-            0,
-            0,
-            (jobForJobItemEstimate.StartKm).toString().toDouble(),
-            null,
-            null,
-            (selectedItemToMeasure?.uom).toString()
+            ID = 0,
+            actId = 0,
+            approvalDate = null,
+            cpa = (jobForJobItemEstimate.Cpa).toString().toInt(),
+            endKm = (jobForJobItemEstimate.EndKm).toString().toDouble(),
+            estimateId = (selectedJobItemEstimate.estimateId),
+            itemMeasureId = (DataConversion.toBigEndian(newItemMeasureId)).toString(),
+            jimNo = jobForJobItemEstimate.JiNo,
+            jobDirectionId = (jobForJobItemEstimate.JobDirectionId).toString().toInt(),
+            jobId = (jobForJobItemEstimate.JobId),
+            lineAmount = (selectedJobItemEstimate.lineRate * quantity).toString().toDouble(),
+            lineRate = (selectedJobItemEstimate.lineRate).toString().toDouble(),
+            measureDate = (Date()).toString(),
+            measureGroupId = null,
+            jobItemMeasurePhotos = jobItemMeasurePhotoDTO,
+            job = jobItemEst,
+            jobItemEstimate = itemEs,
+            projectItemId = (selectedJobItemEstimate.projectItemId).toString(),
+            projectVoId = jobForJobItemEstimate.VoId,
+            qty = (quantity).toString().toDouble(),
+            recordSynchStateId = 0,
+            recordVersion = 0,
+            startKm = (jobForJobItemEstimate.StartKm).toString().toDouble(),
+            trackRouteId = null,
+            deleted = 0,
+            entityDescription = null,
+            selectedItemUom = (selectedItemToMeasure?.uom).toString()
         )
 
         jobItemMeasureArrayList.add(itemMeasure)
-//        setJobItemMeasures( jobItemMeasureArrayList,measureViewModel )
 
         return itemMeasure
     }
 
-//    private fun captureItemMeasureImages(jobItemMeasu: JobItemMeasureDTO) {
-//        Coroutines.main {
-////            val jobItemMeasure = measureViewModel.getJobItemMeasureForJobId(measureItem.jobId)
-////            jobItemMeasure.observe(activity!!, androidx.lifecycle.Observer { jItemMeasure ->
-////                Toast.makeText(activity,jItemMeasure.itemMeasureId.toString(),Toast.LENGTH_SHORT).show()
-//                captureItemMeasurePhoto(jobItemMeasu)
-////                Navigation.findNavController(view).navigate(R.id.action_submitMeasureFragment_to_captureItemMeasurePhotoFragment)
-//
-////            })
-//
-//        }
-//    }
 
     private fun captureItemMeasureImages(
         jobItemMeasure: JobItemMeasureDTO?,
         view: View
     ) {
-//        val jobItemMeasure = jobItemMeasure
+
         measureViewModel.measurea1_Item1.value = jobItemMeasure
 
         Navigation.findNavController(view)
             .navigate(R.id.action_submitMeasureFragment_to_captureItemMeasurePhotoFragment)
-
-
-//        val intent = Intent()
-//        intent.setClass(activity, CaptureItemMeasurePhotoActivity::class.java)
-//        intent.putExtra(JOB_IMEASURE, jobItemMeasure)
-//        activity!!.startActivity(intent)
-
-
-//        val intent = Intent()
-//        intent.setClass(activity, CaptureItemMeasurePhotoActivity::class.java)
-////        val bundle = Bundle()
-////        bundle.putSerializable("JobItemMeasure", jobItemMeasure)
-////        intent.putExtras(bundle)
-//        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-//        activity!!.startActivity(intent)
-
-
 
     }
 

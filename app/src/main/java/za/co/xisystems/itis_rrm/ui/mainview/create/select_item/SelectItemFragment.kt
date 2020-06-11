@@ -44,7 +44,7 @@ import java.util.concurrent.CancellationException
 class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAware {
     override val kodein by kodein()
     private lateinit var createViewModel: CreateViewModel
-    private val factory: CreateViewModelFactory by instance()
+    private val factory: CreateViewModelFactory by instance<CreateViewModelFactory>()
     private var items: MutableList<ItemDTOTemp> = ArrayList<ItemDTOTemp>()
     private var animate = false
 

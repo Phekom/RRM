@@ -2,8 +2,6 @@ package za.co.xisystems.itis_rrm.data.repositories
 
 //import sun.security.krb5.Confounder.bytes
 
-import android.os.Looper
-import android.widget.Toast
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -40,7 +38,7 @@ class WorkDataRepository(
 
     val workflowJobs = MutableLiveData<WorkflowJobDTO>()
     val works = MutableLiveData<String>()
-    val photoUpload = MutableLiveData<String>()
+    val photoUpload = MutableLiveData<String?>()
 
 
     init {
@@ -116,17 +114,28 @@ class WorkDataRepository(
         worksData.add("JobEstimateWorksItem", jsonElement)
 
         Timber.d("WorkEstimate $worksData")
-        val uploadWorksItemResponse = apiRequest { api.uploadWorksItem(worksData) }
-        postValue(
-            uploadWorksItemResponse.errorMessage,
-            estimateWorksItem,
-            activity,
-            estimateJob.UserId
-        )
 
-        val messages = uploadWorksItemResponse.errorMessage ?: ""
-        return withContext(Dispatchers.IO) {
-            messages
+        try {
+            val uploadWorksItemResponse = apiRequest { api.uploadWorksItem(worksData) }
+            postValue(
+                uploadWorksItemResponse.errorMessage,
+                estimateWorksItem,
+                activity,
+                estimateJob.UserId
+            )
+
+            val messages = uploadWorksItemResponse.errorMessage ?: ""
+
+            if (messages.isNotBlank()) {
+                val uploadException = ApiException(messages)
+                throw uploadException
+            }
+
+            return withContext(Dispatchers.IO) {
+                messages
+            }
+        } catch (e: Exception) {
+            throw e
         }
     }
 
@@ -143,7 +152,7 @@ class WorkDataRepository(
             throw apiException
         } else {
             uploadWorksImages(jobEstimateWorks, activity)
-            moveJobToNextWorkflowStep(jobEstimateWorks, activity, useR)
+            moveJobToNextWorkflowStep(jobEstimateWorks, useR)
         }
     }
 
@@ -243,18 +252,20 @@ class WorkDataRepository(
 
     private fun moveJobToNextWorkflowStep(
         jobEstimateWorks: JobEstimateWorksDTO,
-        activity: FragmentActivity,
         userId: Int
     ) {
         if (jobEstimateWorks.trackRouteId.isEmpty()) {
-            Looper.prepare() // to be able to make toast
-            Toast.makeText(activity, "Error: trackRouteId is null", Toast.LENGTH_LONG).show()
+            // Looper.prepare() // to be able to make toast
+
+            // Toast.makeText(activity, "Error: trackRouteId is null", Toast.LENGTH_LONG).show()
+            val wfEx = ApiException("Error: trackRouteId is null")
+            throw wfEx
         } else {
 //            jobEstimateWorks.setTrackRouteId(jobEstimateWorks.trackRouteId)
             val direction: Int = WorkflowDirection.NEXT.value
             val trackRouteId: String = jobEstimateWorks.trackRouteId
             val description = "work step done"
-
+            try {
             Coroutines.io {
                 val workflowMoveResponse = apiRequest {
                     api.getWorkflowMove(
@@ -264,10 +275,21 @@ class WorkDataRepository(
                         direction
                     )
                 }
-                workflowJobs.postValue(workflowMoveResponse.workflowJob)
+                if (workflowMoveResponse.errorMessage != null) {
+                    throw ApiException(workflowMoveResponse.errorMessage)
+                }
+                if (workflowMoveResponse.workflowJob != null) {
+                    workflowJobs.postValue(workflowMoveResponse.workflowJob)
+                } else {
+                    throw ApiException("Workflow Job is null.")
+                }
+
 //                workflows.postValue(workflowMoveResponse.toDoListGroups)
             }
-
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to update workflow")
+                throw e
+            }
 
         }
     }
@@ -342,11 +364,12 @@ class WorkDataRepository(
         } else {
             val noDataException = NoDataException("Workflow Job is null")
             Timber.e(noDataException)
+            throw noDataException
         }
     }
 
 
-    private fun insertOrUpdateWorkflowJobInSQLite(job: WorkflowJobDTO?) {
+    fun insertOrUpdateWorkflowJobInSQLite(job: WorkflowJobDTO?) {
         job?.let {
             updateWorkflowJobValuesAndInsertWhenNeeded(it)
         }
@@ -502,15 +525,42 @@ class WorkDataRepository(
         description: String?,
         direction: Int
     ): String? {
-        val workflowMoveResponse =
-            apiRequest { api.getWorkflowMove(userId, trackRouteId, description, direction) }
-        workflowJobs.postValue(workflowMoveResponse.workflowJob)
-//        workflows.postValue(workflowMoveResponse.toDoListGroups)
-
-        val messages = workflowMoveResponse.errorMessage
-        // activity?.getResources()?.getString(R.string.please_wait)!!
         return withContext(Dispatchers.IO) {
-            messages
+            try {
+                val workflowMoveResponse =
+                    apiRequest { api.getWorkflowMove(userId, trackRouteId, description, direction) }
+                val messages = workflowMoveResponse.errorMessage
+                if (messages == null)
+                    workflowJobs.postValue(workflowMoveResponse.workflowJob)
+                messages
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to process workflow move: ${e.message}")
+                e.message
+            }
+        }
+
+    }
+
+    suspend fun processWorkflowMoveV2(
+        userId: String,
+        trackRouteId: String,
+        description: String?,
+        direction: Int
+    ) {
+        try {
+            val workflowMoveResponse =
+                apiRequest { api.getWorkflowMove(userId, trackRouteId, description, direction) }
+            val messages = workflowMoveResponse.errorMessage
+            when (messages == null) {
+                true -> workflowJobs.postValue(workflowMoveResponse.workflowJob)
+                else -> {
+                    val apEx = ApiException(messages)
+                    throw apEx
+                }
+            }
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to process workflow move: ${e.message}")
+            throw e
         }
 
     }

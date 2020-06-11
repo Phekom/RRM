@@ -103,8 +103,8 @@ class JobApprovalDataRepository(
 
     suspend fun upDateEstimate(newQuantity: String, newTotal: String, estimateId: String): String {
         val new_estimateId = DataConversion.toLittleEndian(estimateId)
-       val new_Quantity = newQuantity + ".0"
-       val new_Total = newTotal + ".0"
+        val new_Quantity = newQuantity
+        val new_Total = newTotal
 
         val quantityUpdateResponse = apiRequest { api.updateEstimateQty(new_estimateId,new_Quantity.toDouble(), new_Total.toDouble() ) }
         qtyUpDate.postValue(quantityUpdateResponse.errorMessage , estimateId,new_Quantity.toDouble(), new_Total.toDouble())
@@ -114,7 +114,12 @@ class JobApprovalDataRepository(
         }
     }
 
-    private fun <T> MutableLiveData<T>.postValue(errorMessage: String, newEstimateid: String?, new_Quantity: Double, new_Total: Double) {
+    private fun <T> MutableLiveData<T>.postValue(
+        errorMessage: String?,
+        newEstimateid: String?,
+        new_Quantity: Double,
+        new_Total: Double
+    ) {
         if (errorMessage == null) {
                     Db.getJobItemEstimateDao().upDateLineRate(newEstimateid!!, new_Quantity, new_Total)
         } else {

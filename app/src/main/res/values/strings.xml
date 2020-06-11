@@ -140,8 +140,6 @@
     <string name="decline_measurement_item">Decline Measure Item</string>
     <string name="declining_measurements">Declining measurements</string>
     <string name="delete">Delete</string>
-    <string name="description">Description</string>
-    <string name="description_of_work">Description of work</string>
     <string name="device_cleanup_failed">Device cleanup failed</string>
     <string name="device_info">registerRequest</string>
     <string name="direction">Direction</string>
@@ -423,6 +421,7 @@
     <string name="role_tester">CEE622559D0640BFAE98E39BA4917AF3RRM</string>
     <string name="run_as_tester">Run as Tester!</string>
     <string name="run_normal">Run as Normal</string>
+    <string name="measurement_gallery">Measurement Gallery</string>
 
     <!-- Errors -->
     <string name="not_authorized">Credential error, please re-install app with your valid credentials.</string>
@@ -541,5 +540,14 @@
     <string name="capture_workflow_comments">Capture workflow comments</string>
     <string name="title_activity_map">Map</string>
     <string name="retry">Retry?</string>
+
+    <!-- Location Rationale -->
+    <string name="alert_location_title">Location Services</string>
+    <string name="alert_location_message">RRM Mobile needs location services enabled in order to work</string>
+    <string name="enable_softdelete">Ënable SoftDelete</string>
+    <string name="NoData">Query returned no data</string>
+    <string name="confirm_project_selection">Confirm Project Selection</string>
+    <string name="description">Description</string>
+    <string name="permission_request" />
 
 </resources>

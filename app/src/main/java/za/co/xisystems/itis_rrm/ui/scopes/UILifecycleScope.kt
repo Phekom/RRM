@@ -25,6 +25,7 @@ class UiLifecycleScope : CoroutineScope, LifecycleObserver {
         }
         Timber.e(throwable)
         throw Exception(throwable)
+
     }
 
     private var job = SupervisorJob()
@@ -32,8 +33,6 @@ class UiLifecycleScope : CoroutineScope, LifecycleObserver {
     override val coroutineContext: CoroutineContext
         get() = job.plus(Dispatchers.Main).plus(handler)
 
-    val ioContext: CoroutineContext
-        get() = job.plus(Dispatchers.IO).plus(handler)
 
     @OnLifecycleEvent(Lifecycle.Event.ON_START)
     fun onCreate() {
@@ -41,8 +40,5 @@ class UiLifecycleScope : CoroutineScope, LifecycleObserver {
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
-    fun destroy(): () -> Unit = {
-        coroutineContext.cancelChildren()
-        ioContext.cancelChildren()
-    }
+    fun destroy() = coroutineContext.cancelChildren()
 }

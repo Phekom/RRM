@@ -91,17 +91,17 @@ object PhotoUtil {
     }
 
     private fun exifToDegrees(exifOrientation: Int): Int {
-        when (exifOrientation) {
+        return when (exifOrientation) {
             ExifInterface.ORIENTATION_ROTATE_90 -> {
-                return 90
+                90
             }
             ExifInterface.ORIENTATION_ROTATE_180 -> {
-                return 180
+                180
             }
             ExifInterface.ORIENTATION_ROTATE_270 -> {
-                return 270
+                270
             }
-            else -> return 0
+            else -> 0
         }
     }
 
@@ -352,7 +352,7 @@ object PhotoUtil {
             )
             //      check the rotation of the image and display it properly
             scaledBitmap = applyExifRotation(path, scaledBitmap)
-            var out: FileOutputStream?
+            val out: FileOutputStream?
             try {
                 out = FileOutputStream(path)
                 //          write the compressed bitmap at the destination specified by filename.
@@ -540,7 +540,7 @@ object PhotoUtil {
      */
     fun encode64Pic(photo: ByteArray): String {
         return when {
-            Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O ->
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ->
                 Base64.getEncoder().encodeToString(photo)
             else ->
                 // Fallback for pre-Marshmallow
@@ -566,6 +566,17 @@ object PhotoUtil {
             e.printStackTrace()
         }
         return null
+    }
+
+    fun getUriFromPath(filePath: String): Uri? {
+        return try {
+            val file = File(filePath)
+            val uri = Uri.fromFile(file)
+            uri
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to extract image Uri: ${e.message}")
+            null
+        }
     }
 
 

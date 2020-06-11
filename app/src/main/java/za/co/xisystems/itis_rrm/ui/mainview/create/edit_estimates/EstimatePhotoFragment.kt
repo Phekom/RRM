@@ -10,7 +10,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
-import android.location.Location
 import android.location.LocationManager
 import android.net.Uri
 import android.os.Bundle
@@ -22,7 +21,6 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.*
 import androidx.lifecycle.Observer
 import androidx.navigation.Navigation
@@ -40,19 +38,18 @@ import timber.log.Timber
 import za.co.xisystems.itis_rrm.BuildConfig
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.base.LocationFragment
 import za.co.xisystems.itis_rrm.data._commons.AbstractTextWatcher
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
-import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
+import za.co.xisystems.itis_rrm.services.LocationModel
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModelFactory
-import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.LocationHelper
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.intents.AbstractIntent
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.models.PhotoType
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.*
-import za.co.xisystems.itis_rrm.utils.interfaces.LocationAware
 import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
 import java.io.File
 import java.text.DecimalFormat
@@ -65,8 +62,8 @@ import kotlin.collections.HashMap
  * Created by Francis Mahlava on 2019/12/29.
  */
 
-class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), LifecycleOwner,
-    KodeinAware, LocationAware {
+class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate),
+    KodeinAware {
 
 
     private var sectionId: String? = null
@@ -74,7 +71,6 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
     private lateinit var createViewModel: CreateViewModel
     private val factory: CreateViewModelFactory by instance<CreateViewModelFactory>()
     private var mAppExecutor: AppExecutor? = null
-    private lateinit var locationHelper: LocationHelper
     private lateinit var lm: LocationManager
     private var gpsEnabled = false
     private var networkEnabled = false
@@ -88,11 +84,11 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
     var photoType: PhotoType = PhotoType.START
 
     @State
-    var itemIdPhotoType = HashMap<String, String>()
+    var itemIdPhotoType: HashMap<String, String> = HashMap<String, String>()
     internal var job: JobDTO? = null
 
     @State
-    var filenamePath = HashMap<String, String>()
+    var filenamePath: HashMap<String, String> = HashMap<String, String>()
 
     @State
     private var item: ItemDTOTemp? = null
@@ -106,8 +102,7 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
     private var newJobItemEstimate: JobItemEstimateDTO? = null
 
     @State
-    var quantity = 1.0
-    private var currentLocation: Location? = null
+    var quantity: Double = 1.0
     private var estimateId: String? = null
     private lateinit var jobArrayList: ArrayList<JobDTO>
     private lateinit var newJobItemEstimatesPhotosList: ArrayList<JobItemEstimatesPhotoDTO>
@@ -121,7 +116,7 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
     private lateinit var jobItemMeasureArrayList2: ArrayList<JobItemMeasureDTO>
     private lateinit var jobItemSectionArrayList2: ArrayList<JobSectionDTO>
     internal var description: String? = null
-    internal var useR: Int = -1
+    private var currentUser: Int = -1
     private var startImageUri: Uri? = null
     private var endImageUri: Uri? = null
     private var imageUri: Uri? = null
@@ -197,9 +192,9 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
 
     private fun onUserFound(foundUserId: Int?): Int? {
         if (foundUserId != null) {
-            useR = foundUserId
+            currentUser = foundUserId
         }
-        return useR
+        return currentUser
     }
 
     private fun onJobFound(foundJobDTO: JobDTO?): JobDTO? {
@@ -235,21 +230,6 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
         return item
     }
 
-    override fun onStart() {
-        super.onStart()
-        locationHelper.onStart()
-    }
-
-    override fun onPause() {
-        super.onPause()
-        locationHelper.onPause()
-    }
-
-    override fun onStop() {
-        super.onStop()
-        locationHelper.onStop()
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?, savedInstanceState: Bundle?
@@ -281,8 +261,6 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
         setHasOptionsMenu(true)
         (activity as MainActivity).supportActionBar?.title = getString(R.string.edit_estimate)
 
-        locationHelper = LocationHelper(this)
-        locationHelper.onCreate()
         itemSections = ArrayList()
         jobArrayList = ArrayList()
 
@@ -559,8 +537,9 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
 
 
         try { //  Location of picture
-            val currentLocation: Location? = this.getCurrentLocation()
-            if (currentLocation != null) {
+            val estimateLocation: LocationModel? = this.getCurrentLocation()
+            Timber.d("$estimateLocation")
+            if (estimateLocation != null) {
 
                 //  Save Image to Internal Storage
                 filenamePath = PhotoUtil.saveImageToInternalStorage(
@@ -569,7 +548,7 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
                 ) as HashMap<String, String>
 
                 processPhotoEstimate(
-                    currentLocation = currentLocation,
+                    estimateLocation = estimateLocation,
                     filename_path = filenamePath,
                     itemId_photoType = itemIdPhotoType
                 )
@@ -602,7 +581,7 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
     }
 
     private fun processPhotoEstimate(
-        currentLocation: Location,
+        estimateLocation: LocationModel,
         filename_path: Map<String, String>,
         itemId_photoType: Map<String, String>
         // item: ItemDTOTemp?,
@@ -639,7 +618,7 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
 
                 withContext(uiScope.coroutineContext) {
                     getRouteSectionPoint(
-                        currentLocation
+                        estimateLocation
                     )
                 }
                 withContext(uiScope.coroutineContext) { validateRouteSection() }
@@ -649,7 +628,7 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
                     if (!this@EstimatePhotoFragment.disableGlide) {
                         placeEstimatePhotoInRouteSection(
                             filename_path,
-                            currentLocation,
+                            estimateLocation,
                             itemId_photoType
                         )
                     }
@@ -759,7 +738,7 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
 
     private suspend fun placeEstimatePhotoInRouteSection(
         filename_path: Map<String, String>,
-        currentLocation: Location,
+        currentLocation: LocationModel,
         itemId_photoType: Map<String, String>
     ) {
         var photo: JobItemEstimatesPhotoDTO?
@@ -815,7 +794,7 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
     }
 
     private suspend fun getRouteSectionPoint(
-        currentLocation: Location
+        currentLocation: LocationModel
     ): LiveData<String?> =
         createViewModel.getRouteSectionPoint(
             currentLocation.latitude,
@@ -828,7 +807,7 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
     private fun createItemEstimatePhoto(
         itemEst: JobItemEstimateDTO,
         filename_path: Map<String, String>,
-        currentLocation: Location?,
+        currentLocation: LocationModel?,
         itemIdPhotoType: Map<String, String>,
         pointLocation: Double
     ): JobItemEstimatesPhotoDTO {
@@ -912,11 +891,6 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
             recordSynchStateId = 0,
             recordVersion = 0
         )
-    }
-
-    override fun onDestroyView() {
-        locationHelper.onDestroy()
-        super.onDestroyView()
     }
 
     private fun showZoomedImage(imageUrl: Uri?) {
@@ -1036,11 +1010,11 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
 
     private fun setValueEditText(qty: Double) = when (item?.uom) {
         "m²", "m³", "m" -> {
-            var decQty = "" + qty
+            val decQty = "" + qty
             valueEditText!!.setText(decQty)
         }
         else -> {
-            var intQty: String = "" + qty.toInt()
+            val intQty: String = "" + qty.toInt()
             valueEditText!!.setText(intQty)
         }
     }
@@ -1066,7 +1040,7 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
 
         val value = valueEditText!!.text.toString()
         //  Lose focus on fields
-        valueEditText.clearFocus()
+        //  valueEditText.clearFocus()
 
         var lineRate: Double? = null
         val tenderRate = item?.tenderRate
@@ -1242,17 +1216,10 @@ class EstimatePhotoFragment : BaseFragment(R.layout.fragment_photo_estimate), Li
         }
     }
 
-    override fun getHostActivity(): FragmentActivity {
-        return this.requireActivity()
+    fun getCurrentLocation(): LocationModel? {
+        return super.getLocation()
     }
 
-    override fun getCurrentLocation(): Location? {
-        return currentLocation
-    }
-
-    override fun setCurrentLocation(location: Location?) {
-        this.currentLocation = location
-    }
 
     override fun onSaveInstanceState(outState: Bundle) {
         outState.run {

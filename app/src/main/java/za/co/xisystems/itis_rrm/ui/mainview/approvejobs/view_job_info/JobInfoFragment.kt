@@ -32,7 +32,7 @@ import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
     override val kodein by kodein()
     private lateinit var approveViewModel: ApproveJobsViewModel
-    private val factory: ApproveJobsViewModelFactory by instance()
+    private val factory: ApproveJobsViewModelFactory by instance<ApproveJobsViewModelFactory>()
 
     lateinit var dialog : Dialog
 
