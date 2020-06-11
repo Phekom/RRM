@@ -30,7 +30,10 @@ import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModelFactory
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
-import za.co.xisystems.itis_rrm.utils.*
+import za.co.xisystems.itis_rrm.utils.ApiException
+import za.co.xisystems.itis_rrm.utils.Coroutines
+import za.co.xisystems.itis_rrm.utils.NoConnectivityException
+import za.co.xisystems.itis_rrm.utils.NoInternetException
 
 
 class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
@@ -59,7 +62,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                 uiScope.launch(uiScope.coroutineContext) {
                     try {
 
-                        data2_loading.show()
+                        group2_loading.visibility = View.VISIBLE
 
                         val user = homeViewModel.user.await()
                         user.observe(viewLifecycleOwner, Observer { user_ ->

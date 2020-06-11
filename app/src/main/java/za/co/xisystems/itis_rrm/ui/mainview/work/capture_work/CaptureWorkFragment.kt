@@ -544,8 +544,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
     }
 
     private fun pushCompletedEstimates(estimates: ArrayList<JobItemEstimateDTO>?) {
-        submitError = false
-        var estCount = 0
+
         uiScope.launch(uiScope.coroutineContext) {
             for (jobEstimate in estimates!!.iterator()) {
                 val jobItemEstimate = workViewModel.getJobItemEstimateForEstimateId(
@@ -556,11 +555,6 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                         WorkflowDirection.NEXT,
                         jobItEstmt
                     )
-                    estCount++
-                    Timber.d("$estCount of ${estimates.size} processed.")
-                    if (estCount == estimates.size && !submitError) {
-                        popViewOnJobSubmit(WorkflowDirection.NEXT.value)
-                    }
                 })
 
             }
@@ -568,7 +562,6 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
         }
     }
 
-    private var submitError = false
     private fun moveJobItemEstimateToNextWorkflow(
         workflowDirection: WorkflowDirection,
         jobItEstimate: JobItemEstimateDTO?
@@ -581,7 +574,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                 user_.userId.isBlank() -> {
                     toast("Error: userId is null")
                 }
-                jobItEstimate == null -> {
+                jobItEstimate?.jobId == null -> {
                     toast("Error: selectedJob is null")
                 }
                 else -> {
@@ -604,8 +597,9 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                             direction
                         )
                         progressDialog.dismiss()
-                        if (!submit.isNullOrEmpty()) {
-                            submitError = true
+                        if (submit.isNullOrEmpty()) {
+                            popViewOnJobSubmit(direction)
+                        } else {
                             toast("Problem with work submission: $submit")
                         }
                     }
