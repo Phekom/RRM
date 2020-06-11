@@ -25,6 +25,7 @@ class UiLifecycleScope : CoroutineScope, LifecycleObserver {
         }
         Timber.e(throwable)
         throw Exception(throwable)
+
     }
 
     private var job = SupervisorJob()
@@ -39,8 +40,5 @@ class UiLifecycleScope : CoroutineScope, LifecycleObserver {
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
-    fun destroy(): () -> Unit = {
-        coroutineContext.cancelChildren()
-        ioContext.cancelChildren()
-    }
+    fun destroy() = coroutineContext.cancelChildren()
 }

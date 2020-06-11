@@ -3,19 +3,12 @@ package za.co.xisystems.itis_rrm.ui.mainview.home
 import android.content.Context
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
-import za.co.xisystems.itis_rrm.utils.results.Failure
-import za.co.xisystems.itis_rrm.utils.results.Progress
-import za.co.xisystems.itis_rrm.utils.results.ResultSet
-import za.co.xisystems.itis_rrm.utils.uncaughtExceptionHandler
 
 class HomeViewModel(
     private val repository: UserRepository,
@@ -39,35 +32,69 @@ class HomeViewModel(
         offlineDataRepository.getSectionItems()
     }
 
-    val offlineEnitities by lazyDeferred {
-        offlineDataRepository.getAllEntities()
+    val fetchResult: MutableLiveData<Boolean>
+        get() = MutableLiveData(false)
+
+    fun setFetchResult(flag: Boolean) {
+        fetchResult.postValue(flag)
     }
 
-    val fetchError: MutableLiveData<Failure?>
-        get() = MutableLiveData(null)
+    suspend fun fetchAllData(userId: String): Boolean {
 
-
-    private val lastResult: MutableLiveData<ResultSet<Boolean>> = MutableLiveData(Progress(true))
-
-
-    val fetchResult = lastResult
-
-    fun setFetchResult(result: ResultSet<Boolean>) {
-        lastResult.postValue(result)
-
-    }
-
-    val job = SupervisorJob()
-    val viewModelContext = Dispatchers.Main + job + uncaughtExceptionHandler
-    fun fetchAllData(userId: String) {
-        viewModelScope.launch(viewModelContext) {
-            withContext(Dispatchers.IO) {
-                val result = offlineDataRepository.fetchAllData(userId)
-                setFetchResult(result)
-            }
+        return withContext(Dispatchers.IO) {
+            offlineDataRepository.fetchAllData(userId)
         }
+
+//        val job = Job()
+//        val ioContext = Dispatchers.IO + uncaughtExceptionHandler + job
+//        val time = measureTimeMillis {
+//            viewModelScope.launch(Dispatchers.Main) {
+//
+//                val entities = async(ioContext) {
+//                    offlineDataRepository.getAllEntities()
+//                    7
+//                }
+//
+//
+//                val lookups = async(ioContext) {
+//                    offlineDataRepository.refreshLookups(userId)
+//                }
+//
+//                val actJob = async(ioContext) {
+//                    offlineDataRepository.refreshActivitySections(userId)
+//                }
+//
+//                val workflows = async(ioContext) {
+//                    offlineDataRepository.refreshWorkflows(userId)
+//                }
+//
+//                val taskList = async(ioContext) {
+//                    offlineDataRepository.fetchUserTaskList(userId)
+//
+//                }
+//
+//                val contracts = async(ioContext) {
+//                    offlineDataRepository.refreshContractInfo(userId)
+//                }
+//
+//                try {
+//                    val result =
+//                        entities.await() + lookups.await() + actJob.await() + workflows.await() + taskList.await() + contracts.await()
+//                    Timber.d("$result")
+//                    withContext(Dispatchers.Main) {
+//                        setFetchResult(true)
+//                    }
+//                } catch (e: Exception) {
+//                    setFetchResult(false)
+//                    Timber.e(e, "Failed to Get All Data.")
+//                    throw e
+//                }
+//
+//            }
+//
+//        }
+//        Timber.d("Time taken: $time")
+
+
     }
 }
-
-
-
