@@ -79,13 +79,13 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
     var filenamePath = HashMap<String, String>()
     private var workLocation: LocationModel? = null
     private lateinit var useR: UserDTO
+    private var submitError = false
 
     override fun onStop() {
         uiScope.destroy()
         super.onStop()
 
     }
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -107,7 +107,6 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_capture_work, container, false)
     }
-
 
     override fun onDestroyView() {
         // Remember to flush the RecyclerView's adaptor
@@ -568,7 +567,6 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
         }
     }
 
-    private var submitError = false
     private fun moveJobItemEstimateToNextWorkflow(
         workflowDirection: WorkflowDirection,
         jobItEstimate: JobItemEstimateDTO?
@@ -613,7 +611,6 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
             }
         })
     }
-
 
     private fun popViewOnJobSubmit(direction: Int) {
         if (direction == WorkflowDirection.NEXT.value) {
