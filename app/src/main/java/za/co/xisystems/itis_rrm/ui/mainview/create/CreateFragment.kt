@@ -41,7 +41,7 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
     private var uiScope = UiLifecycleScope()
     override val kodein by kodein()
     private lateinit var createViewModel: CreateViewModel
-    private val factory: CreateViewModelFactory by instance()
+    private val factory: CreateViewModelFactory by instance<CreateViewModelFactory>()
     private val estimatesToRemoveFromDb: ArrayList<JobItemEstimateDTO> =
         ArrayList()
 

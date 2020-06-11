@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:id="@+id/measurement"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:orientation="vertical"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <TextView
+                android:id="@+id/measurement_description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:gravity="start"
+                android:maxWidth="160dp"
+                android:text="@string/some_super_long_item_name_in_case_it_gets_cut_off"
+                android:textColor="@color/sanral_burnt_orange"
+                android:textSize="17sp" />
+
+
+        </LinearLayout>
+
+
+        <pereira.agnaldo.previewimgcol.ImageCollectionView
+            android:id="@+id/estimate_image_gallery_view"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_margin="@dimen/dimen_5dp"
+            android:layout_marginTop="531dp"
+            app:backgroundColor="@color/cornsilk"
+            app:baseRowHeight="100dp"
+            app:imageMargin="2dp"
+            app:layout_constraintBottom_toTopOf="@id/photoButtons"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.50"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/measurement"
+            app:maxImagePerRow="3"
+            app:maxRows="4"
+            app:pinchToZoom="true"
+            app:showExternalBorderMargins="true" />
+
+        <LinearLayout
+            android:id="@+id/photoButtons"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/dimen_8dp"
+            android:layout_marginTop="16dp"
+            android:gravity="center"
+            android:orientation="vertical"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
+
+            <TextView
+                android:id="@+id/measurement_costing"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="end"
+                android:textAppearance="@style/TextAppearance.AppCompat.Display1"
+                android:textSize="15sp"
+                tools:text="@android:string/httpErrorUnsupportedScheme" />
+
+            <Button
+                android:id="@+id/done_image_button"
+                style="@style/_button"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_margin="5dp"
+                android:layout_weight="1"
+                android:background="@drawable/orange_round_corner"
+                android:text="@string/back"
+                android:textColor="@android:color/white"
+                android:visibility="visible" />
+        </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</FrameLayout>

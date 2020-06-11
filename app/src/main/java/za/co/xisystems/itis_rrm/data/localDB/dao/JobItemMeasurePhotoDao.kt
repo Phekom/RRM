@@ -5,7 +5,6 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasurePhotoDTO
 
 /**
@@ -24,7 +23,7 @@ interface JobItemMeasurePhotoDao {
     fun checkIfJobItemMeasurePhotoExists(filename: String): Boolean
 
     @Query("SELECT photoPath FROM JOB_ITEM_MEASURE_PHOTO WHERE itemMeasureId = :itemMeasureId ")
-    fun getJobMeasureItemsPhotoPath(itemMeasureId: String) :  String
+    fun getJobMeasureItemPhotoPaths(itemMeasureId: String): List<String>
 
     @Query("SELECT * FROM JOB_ITEM_MEASURE_PHOTO WHERE itemMeasureId = :itemMeasureId")
     fun checkIfJobItemMeasurePhotoExistsForMeasureId(itemMeasureId: String?): Boolean

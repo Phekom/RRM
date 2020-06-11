@@ -6,7 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
-import android.location.Location
+import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
@@ -14,6 +14,7 @@ import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -21,29 +22,41 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
 import icepick.State
-import kotlinx.android.synthetic.main.activity_capture_item_measure_photo.*
+import kotlinx.android.synthetic.main.activity_capture_item_measure_photo.done_image_button
+import kotlinx.android.synthetic.main.activity_capture_item_measure_photo.photoButtons
+import kotlinx.android.synthetic.main.fragment_capture_item_measure_photo.*
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
+import pereira.agnaldo.previewimgcol.ImageCollectionView
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.BuildConfig
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.base.LocationFragment
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasurePhotoDTO
-import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
+import za.co.xisystems.itis_rrm.services.LocationModel
+import za.co.xisystems.itis_rrm.ui.extensions.scaleForSize
+import za.co.xisystems.itis_rrm.ui.extensions.showZoomedImage
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.intents.AbstractIntent
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModelFactory
-import za.co.xisystems.itis_rrm.utils.*
+import za.co.xisystems.itis_rrm.utils.Coroutines
+import za.co.xisystems.itis_rrm.utils.DateUtil
+import za.co.xisystems.itis_rrm.utils.PhotoUtil
+import za.co.xisystems.itis_rrm.utils.SqlLitUtils
+import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import java.util.*
+
 //
-class CaptureItemMeasurePhotoFragment : BaseFragment(R.layout.fragment_capture_item_measure_photo),
+class CaptureItemMeasurePhotoFragment :
+    LocationFragment(R.layout.fragment_capture_item_measure_photo),
     KodeinAware {
 
     override val kodein by kodein()
     private lateinit var measureViewModel: MeasureViewModel
-    private val factory: MeasureViewModelFactory by instance()
+    private val factory: MeasureViewModelFactory by instance<MeasureViewModelFactory>()
 
     companion object {
         val TAG: String = CaptureItemMeasurePhotoFragment::class.java.simpleName
@@ -65,8 +78,8 @@ class CaptureItemMeasurePhotoFragment : BaseFragment(R.layout.fragment_capture_i
 
     }
 
-    lateinit var locationHelper: LocationHelperFragment
-    private var currentLocation: Location? = null
+    // lateinit var locationHelper: LocationHelperFragment
+    private var measureLocation: LocationModel? = null
 
     private lateinit var jobItemMeasurePhotoArrayList: ArrayList<JobItemMeasurePhotoDTO>
     private var mTempPhotoPath: String? = null
@@ -75,28 +88,13 @@ class CaptureItemMeasurePhotoFragment : BaseFragment(R.layout.fragment_capture_i
     private lateinit var imageUri: Uri
 
     @State
-    var filename_path = HashMap<String, String>()
+    var filenamePath = HashMap<String, String>()
 
     @State
     var location = HashMap<String, String>()
 
     var viewPhotosOnly = false
 
-
-    override fun onStart() {
-        super.onStart()
-        locationHelper.onStart()
-    }
-
-    override fun onPause() {
-        super.onPause()
-        locationHelper.onPause()
-    }
-
-    override fun onStop() {
-        super.onStop()
-        locationHelper.onStop()
-    }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -121,14 +119,13 @@ class CaptureItemMeasurePhotoFragment : BaseFragment(R.layout.fragment_capture_i
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+
         measureViewModel = activity?.run {
             ViewModelProvider(this, factory).get(MeasureViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
 
-        locationHelper = LocationHelperFragment(this)
-        locationHelper.onCreate()
-
         Coroutines.main {
+            jobItemMeasurePhotoArrayList = ArrayList<JobItemMeasurePhotoDTO>()
             photoButtons.visibility = View.GONE
             measureViewModel.measurea1_Item1.observe(
                 viewLifecycleOwner,
@@ -138,13 +135,17 @@ class CaptureItemMeasurePhotoFragment : BaseFragment(R.layout.fragment_capture_i
                     takeMeasurePhoto()
 
                 })
-            jobItemMeasurePhotoArrayList = ArrayList<JobItemMeasurePhotoDTO>()
 
+            photoButtons.visibility = View.VISIBLE
+
+        }
+
+        capture_another_photo_button.setOnClickListener { capture ->
+            launchCamera()
         }
 
 
         done_image_button.setOnClickListener { save ->
-            saveImage()
             setJobItemMeasureImage(
                 jobItemMeasurePhotoArrayList,
                 measureViewModel,
@@ -157,47 +158,47 @@ class CaptureItemMeasurePhotoFragment : BaseFragment(R.layout.fragment_capture_i
             Navigation.findNavController(save)
                 .navigate(R.id.action_captureItemMeasurePhotoFragment_to_submitMeasureFragment)
         }
-        Save.visibility = View.GONE
-        Save.setOnClickListener { save ->
-            saveImage()
-            setJobItemMeasureImage(
-                jobItemMeasurePhotoArrayList,
-                measureViewModel,
-                selectedJobItemMeasure.estimateId,
-                selectedJobItemMeasure
-            )
-        }
+//        Save.visibility = View.GONE
+//        Save.setOnClickListener { save ->
+//            saveImage()
+//            setJobItemMeasureImage(
+//                jobItemMeasurePhotoArrayList,
+//                measureViewModel,
+//                selectedJobItemMeasure.estimateId,
+//                selectedJobItemMeasure
+//            )
+//        }
     }
 
     // TODO: Have location validated here
     // TODO: Check earlier and get user to switch Location on.
     private fun saveImage(): JobItemMeasurePhotoDTO? {
         //  Location of picture
-        val currentLocation: Location? = locationHelper.getCurrentLocation()
-        if (currentLocation != null) {
+        val measurementLocation: LocationModel? = getCurrentLocation()
+        if (measurementLocation != null) {
             //  Save Image to Internal Storage
             val photoId = SqlLitUtils.generateUuid()
-            filename_path =
+            filenamePath =
                 PhotoUtil.saveImageToInternalStorage(
                     requireContext(),
                     imageUri
                 ) as HashMap<String, String>
 
-            Timber.d("location: ${currentLocation.longitude}, ${currentLocation.latitude}")
-            Timber.d("accuracy: ${currentLocation.accuracy}")
+            Timber.d("location: ${measurementLocation.longitude}, ${measurementLocation.latitude}")
+            Timber.d("accuracy: ${measurementLocation.accuracy}")
 
             val jobItemMeasurePhoto = JobItemMeasurePhotoDTO(
                 0,
                 null,
-                filename_path.get("filename"),
+                filenamePath["filename"],
                 selectedJobItemMeasure.estimateId,
                 selectedJobItemMeasure.itemMeasureId,
                 DateUtil.DateToString(Date()),
-                photoId, currentLocation.latitude, currentLocation.longitude,
-                filename_path.get("path"), jobItemMeasure, 0, 0
+                photoId, measurementLocation.latitude, measurementLocation.longitude,
+                filenamePath["path"], jobItemMeasure, 0, 0
             )
 
-            jobItemMeasurePhotoArrayList.add(jobItemMeasurePhoto)
+
 //        jobForJobItemEstimate.setJobItemMeasures(jobItemMeasurePhotoArrayList)
             return jobItemMeasurePhoto
 
@@ -256,17 +257,39 @@ class CaptureItemMeasurePhotoFragment : BaseFragment(R.layout.fragment_capture_i
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
-            processAndSetImage()
+
+            val photo = saveImage()
+            photo?.let {
+                jobItemMeasurePhotoArrayList.add(it)
+                processAndSetImage()
+            }
         } else { // Otherwise, delete the temporary image file
             PhotoUtil.deleteImageFile(requireContext().applicationContext, mTempPhotoPath)
         }
     }
 
     private fun processAndSetImage() {
-        GlideApp.with(this.requireActivity())
-            .load(imageUri)
-            .into(m_imageView)
-        photoButtons.visibility = View.VISIBLE
+
+        val bitmap = PhotoUtil.getPhotoBitmapFromFile(
+            requireActivity(),
+            imageUri,
+            PhotoQuality.HIGH
+        )
+
+        estimate_image_collection_view.addImage(bitmap!!,
+            object : ImageCollectionView.OnImageClickListener {
+                override fun onClick(bitmap: Bitmap, imageView: ImageView) {
+                    showZoomedImage(
+                        imageUri,
+                        this@CaptureItemMeasurePhotoFragment.requireActivity()
+                    )
+                }
+            })
+
+        estimate_image_collection_view.scaleForSize(
+            this@CaptureItemMeasurePhotoFragment.requireContext(),
+            jobItemMeasurePhotoArrayList.size
+        )
     }
 
     private fun setJobItemMeasureImage(
@@ -285,13 +308,8 @@ class CaptureItemMeasurePhotoFragment : BaseFragment(R.layout.fragment_capture_i
     }
 
 
-
-    fun getCurrentLocation(): Location? {
-        return currentLocation
-    }
-
-    fun setCurrentLocation(currentLocation: Location?) {
-        this.currentLocation = currentLocation
+    fun getCurrentLocation(): LocationModel? {
+        return super.getLocation()
     }
 
 }

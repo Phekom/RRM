@@ -11,6 +11,7 @@ import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.api.GoogleApiClient
 import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks
 import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener
+import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationListener
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
@@ -48,7 +49,7 @@ class LocationHelper(private val locationConsumer: LocationAware) : ConnectionCa
         if (PermissionController.checkPermissionsEnabled(getApplicationContext())) {
             googleApiClient!!.connect()
         } else {
-            PermissionController.startPermissionRequests(locationConsumer.getHostActivity())
+            PermissionController.startPermissionRequests(activity = locationConsumer.getHostActivity())
         }
     }
 
@@ -68,8 +69,13 @@ class LocationHelper(private val locationConsumer: LocationAware) : ConnectionCa
 
     // TODO fix ported legacy code
     fun onStop() {
-        googleApiClient!!.disconnect()
+        if (googleApiClient != null && googleApiClient!!.isConnected) {
+            stopLocationUpdates()
+            LocationServices.FusedLocationApi
+                .removeLocationUpdates(googleApiClient, this)
 
+            googleApiClient!!.disconnect()
+        }
     }
 
 
@@ -98,7 +104,7 @@ class LocationHelper(private val locationConsumer: LocationAware) : ConnectionCa
                 LocationServices.FusedLocationApi.requestLocationUpdates(
                     googleApiClient,
                     locationRequest,
-                    this
+                    locationListener
                 )
             }
         } else {
@@ -110,7 +116,10 @@ class LocationHelper(private val locationConsumer: LocationAware) : ConnectionCa
     private fun stopLocationUpdates() {
         if (PermissionController.checkPermissionsEnabled(getApplicationContext())) {
             if (LocationServices.FusedLocationApi != null) {
-                LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this)
+                LocationServices.FusedLocationApi.removeLocationUpdates(
+                    googleApiClient,
+                    locationListener
+                )
             }
         } else {
             PermissionController.startPermissionRequests(locationConsumer.getHostActivity())
@@ -124,14 +133,14 @@ class LocationHelper(private val locationConsumer: LocationAware) : ConnectionCa
 
     // TODO fix ported legacy code
     override fun onConnected(connectionHint: Bundle?) {
-        if (null == getCurrentLocation()) if (ActivityCompat.checkSelfPermission(
+        if (null == getCurrentLocation() && (ActivityCompat.checkSelfPermission(
                 locationConsumer.getHostActivity(),
                 Manifest.permission.ACCESS_FINE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
-            && ActivityCompat.checkSelfPermission(
+                    && ActivityCompat.checkSelfPermission(
                 locationConsumer.getHostActivity(),
                 Manifest.permission.ACCESS_COARSE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED
+            ) != PackageManager.PERMISSION_GRANTED)
         ) { // TODO: Consider calling
 //    ActivityCompat#requestPermissions
 // here to request the missing permissions, and then overriding
@@ -166,12 +175,28 @@ class LocationHelper(private val locationConsumer: LocationAware) : ConnectionCa
         setCurrentLocation(location)
     }
 
+
     fun getCurrentLocation(): Location? {
         return locationConsumer.getCurrentLocation()
     }
 
     fun setCurrentLocation(location: Location?) {
         locationConsumer.setCurrentLocation(location)
+    }
+
+    var callback: LocationCallback? = object : com.google.android.gms.location.LocationCallback() {
+        override fun onLocationResult(p0: com.google.android.gms.location.LocationResult?) {
+            super.onLocationResult(p0)
+            this@LocationHelper.setCurrentLocation(p0?.lastLocation)
+        }
+
+
+    }
+
+    var locationListener = LocationListener {
+        it?.let {
+            setCurrentLocation(it)
+        }
     }
 
 }

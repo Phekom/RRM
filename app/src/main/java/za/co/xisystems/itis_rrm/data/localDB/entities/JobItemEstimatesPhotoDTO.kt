@@ -1,10 +1,8 @@
 package za.co.xisystems.itis_rrm.data.localDB.entities
 
 
-import androidx.core.util.Pair
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.gson.annotations.SerializedName
 import java.io.Serializable
 
@@ -13,7 +11,7 @@ const val JOB_ITEM_ESTIMATE_PHOTO = "JOB_ITEM_ESTIMATE_PHOTO"
 @Entity(tableName = JOB_ITEM_ESTIMATE_PHOTO)
 data class JobItemEstimatesPhotoDTO(
     @SerializedName("Descr")
-    val descr: String,
+    var descr: String,
     @SerializedName("EstimateId")
     var estimateId: String,
     @SerializedName("Filename")
@@ -98,16 +96,8 @@ data class JobItemEstimatesPhotoDTO(
         result = 31 * result + (image?.contentHashCode() ?: 0)
         return result
     }
-
-
-//    fun getJobItemEstimatePhotoStart(): JobItemEstimatesPhotoDTO {
-//        return getJobItemEstimatePhoto(true).second!!
-//    }
-//    fun getJobItemEstimatePhotoEnd(): JobItemEstimatesPhotoDTO {
-//        return getJobItemEstimatePhoto(false).second!!
-//    }
-
-
-
-
 }
+
+
+
+

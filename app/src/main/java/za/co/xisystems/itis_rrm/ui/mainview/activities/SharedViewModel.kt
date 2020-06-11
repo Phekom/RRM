@@ -12,6 +12,7 @@ class SharedViewModel : ViewModel() {
     val progressCaption: MutableLiveData<String> = MutableLiveData()
     var longRunning: MutableLiveData<Boolean> = MutableLiveData(false)
     val actionCaption: MutableLiveData<String> = MutableLiveData()
+    var originalCaption: String = ""
 
     fun setMessage(msg: String?) {
         message.value = msg
@@ -27,6 +28,10 @@ class SharedViewModel : ViewModel() {
 
     fun setActionCaption(caption: String) {
         actionCaption.value = caption
+    }
+
+    fun resetCaption() {
+        actionCaption.value = originalCaption
     }
 
 }

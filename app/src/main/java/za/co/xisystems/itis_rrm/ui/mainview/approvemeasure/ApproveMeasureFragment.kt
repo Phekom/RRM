@@ -36,7 +36,7 @@ class ApproveMeasureFragment : BaseFragment(R.layout.fragment_approvemeasure), K
 
     override val kodein by kodein()
     private lateinit var approveViewModel: ApproveMeasureViewModel
-    private val factory: ApproveMeasureViewModelFactory by instance()
+    private val factory: ApproveMeasureViewModelFactory by instance<ApproveMeasureViewModelFactory>()
 
     companion object {
         const val JOB_ID_FOR_MEASUREMENT_APPROVAL = "JOB_ID_FOR_MEASUREMENT_APPROVAL"
@@ -60,7 +60,10 @@ class ApproveMeasureFragment : BaseFragment(R.layout.fragment_approvemeasure), K
         } ?: throw Exception("Invalid Activity")
 
         val dialog =
-            setDataProgressDialog(requireActivity(), getString(R.string.data_loading_please_wait))
+            setDataProgressDialog(
+                this.requireActivity(),
+                getString(R.string.data_loading_please_wait)
+            )
 
         loadJobHeaders(dialog)
 

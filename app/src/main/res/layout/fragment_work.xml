@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-xmlns:app="http://schemas.android.com/apk/res-auto"
-android:layout_width="match_parent"
-android:layout_height="match_parent"
-xmlns:tools="http://schemas.android.com/tools">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
-<LinearLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:animateLayoutChanges="true"
@@ -14,7 +14,31 @@ xmlns:tools="http://schemas.android.com/tools">
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
-    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+
+        <LinearLayout
+            android:id="@+id/no_data_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:visibility="visible">
+
+
+            <ImageView
+                android:id="@+id/noData"
+                android:layout_width="@dimen/image_size"
+                android:layout_height="@dimen/image_size"
+                android:layout_gravity="center"
+                android:layout_marginTop="@dimen/xlarge"
+                android:contentDescription="@string/NoData"
+                android:src="@drawable/no_data"
+                android:visibility="visible"
+                tools:visibility="visible" />
+
+        </LinearLayout>
+
+
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
             android:id="@+id/works_swipe_to_refresh"
             android:layout_width="wrap_content"
             android:layout_height="0px"
@@ -23,26 +47,16 @@ xmlns:tools="http://schemas.android.com/tools">
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
-        <androidx.recyclerview.widget.RecyclerView
+            <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/work_listView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 tools:listitem="@layout/item_expandable_header" />
-    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+    </LinearLayout>
 
 
-    <ImageView
-            android:id="@+id/noData"
-            android:layout_width="@dimen/image_size"
-            android:layout_height="@dimen/image_size"
-            android:layout_gravity="center"
-            android:layout_marginTop="@dimen/xlarge"
-            android:src="@drawable/no_data"
-            android:visibility="visible"
-            tools:visibility="visible" />
-
-</LinearLayout>
-<androidx.constraintlayout.widget.Group
+    <androidx.constraintlayout.widget.Group
         android:id="@+id/group7_loading"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -52,7 +66,7 @@ xmlns:tools="http://schemas.android.com/tools">
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-<ProgressBar
+    <ProgressBar
         android:id="@+id/mydata_loading"
         android:layout_width="46dp"
         android:layout_height="51dp"
@@ -65,7 +79,7 @@ xmlns:tools="http://schemas.android.com/tools">
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.3" />
 
-<TextView
+    <TextView
         android:id="@+id/textView_loading"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -80,7 +94,6 @@ xmlns:tools="http://schemas.android.com/tools">
 
         app:layout_constraintTop_toBottomOf="@+id/mydata_loading"
         app:layout_constraintVertical_bias="0.0" />
-
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

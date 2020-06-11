@@ -2,14 +2,12 @@ package za.co.xisystems.itis_rrm.ui.mainview.work.capture_work
 
 import android.Manifest
 import android.app.Activity
-import android.app.Dialog
 import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
-import android.location.Location
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -36,28 +34,34 @@ import pereira.agnaldo.previewimgcol.ImageCollectionView
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.base.LocationFragment
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
-import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
+import za.co.xisystems.itis_rrm.extensions.observeOnce
+import za.co.xisystems.itis_rrm.services.LocationModel
+import za.co.xisystems.itis_rrm.ui.extensions.scaleForSize
+import za.co.xisystems.itis_rrm.ui.extensions.showZoomedImage
+import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModel
+import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.intents.AbstractIntent
 import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModelFactory
-import za.co.xisystems.itis_rrm.ui.mainview.work.work_utils.LocationHelper
 import za.co.xisystems.itis_rrm.ui.mainview.work.workstate_item.WorkStateItem
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.*
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
-import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
 import java.util.*
 import kotlin.collections.ArrayList
 
 
-class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), KodeinAware {
+class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), KodeinAware {
 
 
     override val kodein by kodein()
     private lateinit var workViewModel: WorkViewModel
     private val factory: WorkViewModelFactory by instance<WorkViewModelFactory>()
+    private lateinit var sharedViewModel: SharedViewModel
+    private val shareFactory: SharedViewModelFactory by instance<SharedViewModelFactory>()
     private var imageUri: Uri? = null
     private lateinit var workFlowMenuTitles: ArrayList<String>
     private lateinit var groupAdapter: GroupAdapter<GroupieViewHolder>
@@ -73,27 +77,15 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
 
     @State
     var filenamePath = HashMap<String, String>()
-    private lateinit var locationHelper: LocationHelper
-    private var currentLocation: Location? = null
-    lateinit var useR: UserDTO
-
-    override fun onStart() {
-        super.onStart()
-        locationHelper.onStart()
-    }
-
-    override fun onPause() {
-        locationHelper.onPause()
-        super.onPause()
-    }
+    private var workLocation: LocationModel? = null
+    private lateinit var useR: UserDTO
+    private var submitError = false
 
     override fun onStop() {
         uiScope.destroy()
-        locationHelper.onStop()
         super.onStop()
 
     }
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -101,11 +93,6 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
         (activity as MainActivity).supportActionBar?.title = getString(R.string.capture_work_title)
         workFlowMenuTitles = ArrayList()
         groupAdapter = GroupAdapter()
-        locationHelper =
-            LocationHelper(
-                this
-            )
-        locationHelper.onCreate()
         estimateWorksPhotoArrayList = ArrayList()
         estimateWorksList = ArrayList()
         estimateWorksArrayList = ArrayList()
@@ -121,11 +108,11 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
         return inflater.inflate(R.layout.fragment_capture_work, container, false)
     }
 
-
     override fun onDestroyView() {
         // Remember to flush the RecyclerView's adaptor
 
         work_actions_listView.adapter = null
+        image_collection_view.clearImages()
         super.onDestroyView()
     }
 
@@ -348,7 +335,8 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
 
     private fun processAndSetImage(itemEstiWorks: JobEstimateWorksDTO) {
         try { //  Location of picture
-            val currentLocation: Location? = locationHelper.getCurrentLocation()
+            val currentLocation: LocationModel? = this.getCurrentLocation()
+            Timber.d("$currentLocation")
             when (currentLocation != null) {
                 true -> {
                     filenamePath = PhotoUtil.saveImageToInternalStorage(
@@ -372,7 +360,7 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
     }
 
     private fun processPhotoWorks(
-        currentLocation: Location?,
+        currentLocation: LocationModel?,
         filenamePath: HashMap<String, String>,
         itemEstiWorks: JobEstimateWorksDTO
     ) {
@@ -414,27 +402,21 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
                     bitmap!!,
                     object : ImageCollectionView.OnImageClickListener {
                         override fun onClick(bitmap: Bitmap, imageView: ImageView) {
-                            showZoomedImage(imageUrl)
+                            showZoomedImage(imageUrl, this@CaptureWorkFragment.requireActivity())
                         }
                     })
+
+                image_collection_view.scaleForSize(
+                    this@CaptureWorkFragment.requireContext(),
+                    estimateWorksPhotoArrayList.size
+                )
             }
         }
     }
 
-    private fun showZoomedImage(imageUrl: Uri) {
-        val dialog = Dialog(this.requireActivity(), R.style.dialog_full_screen)
-        dialog.setContentView(R.layout.new_job_photo)
-        val zoomageView =
-            dialog.findViewById<ZoomageView>(R.id.zoomedImage)
-        GlideApp.with(this.requireActivity())
-            .load(imageUrl)
-            .into(zoomageView!!)
-        dialog.show()
-    }
-
     private fun createItemWorksPhoto(
         filenamePath: HashMap<String, String>,
-        currentLocation: Location
+        currentLocation: LocationModel
     ): JobEstimateWorksPhotoDTO {
         val photoId = SqlLitUtils.generateUuid()
 
@@ -502,7 +484,7 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
             val iItems = estimateJob.JobItemEstimates
             submitAllOutStandingEstimates(iItems)
         } else {
-            popViewOnWorkSubmit(requireView())
+            popViewOnWorkSubmit(this.requireView())
         }
     }
 
@@ -526,12 +508,11 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
     }
 
     private suspend fun getEstimatesCompleted(estimateJob: JobDTO): Int {
-        val workDone: Int = workViewModel.getJobItemsEstimatesDoneForJobId(
+        return workViewModel.getJobItemsEstimatesDoneForJobId(
             estimateJob.JobId,
             ActivityIdConstants.ESTIMATE_WORK_PART_COMPLETE,
             ActivityIdConstants.EST_WORKS_COMPLETE
         )
-        return workDone
     }
 
     private fun popViewOnWorkSubmit(view: View) {
@@ -562,7 +543,8 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
     }
 
     private fun pushCompletedEstimates(estimates: ArrayList<JobItemEstimateDTO>?) {
-
+        submitError = false
+        var estCount = 0
         uiScope.launch(uiScope.coroutineContext) {
             for (jobEstimate in estimates!!.iterator()) {
                 val jobItemEstimate = workViewModel.getJobItemEstimateForEstimateId(
@@ -573,8 +555,15 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
                         WorkflowDirection.NEXT,
                         jobItEstmt
                     )
+                    estCount++
+                    Timber.d("$estCount of ${estimates.size} processed.")
+                    if (estCount == estimates.size && !submitError) {
+                        popViewOnJobSubmit(WorkflowDirection.NEXT.value)
+                    }
                 })
+
             }
+
         }
     }
 
@@ -584,13 +573,13 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
     ) = uiScope.launch(uiScope.coroutineContext) {
 
         val user = workViewModel.user.await()
-        user.observe(viewLifecycleOwner, Observer { user_ ->
+        user.observeOnce(viewLifecycleOwner, Observer { user_ ->
 
             when {
                 user_.userId.isBlank() -> {
                     toast("Error: userId is null")
                 }
-                jobItEstimate?.jobId == null -> {
+                jobItEstimate == null -> {
                     toast("Error: selectedJob is null")
                 }
                 else -> {
@@ -613,9 +602,8 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
                             direction
                         )
                         progressDialog.dismiss()
-                        if (submit.isNullOrEmpty()) {
-                            popViewOnJobSubmit(direction)
-                        } else {
+                        if (!submit.isNullOrEmpty()) {
+                            submitError = true
                             toast("Problem with work submission: $submit")
                         }
                     }
@@ -623,7 +611,6 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
             }
         })
     }
-
 
     private fun popViewOnJobSubmit(direction: Int) {
         if (direction == WorkflowDirection.NEXT.value) {
@@ -672,12 +659,8 @@ class CaptureWorkFragment : BaseFragment(R.layout.fragment_capture_work), Kodein
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    fun getCurrentLocation(): Location? {
-        return currentLocation
-    }
-
-    fun setCurrentLocation(currentLocation: Location?) {
-        this.currentLocation = currentLocation
+    fun getCurrentLocation(): LocationModel? {
+        return super.getLocation()
     }
 
     companion object {

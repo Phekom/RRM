@@ -28,7 +28,7 @@ class MeasureApprovalDataRepository(
 
 
     private val workflowJ = MutableLiveData<WorkflowJobDTO>()
-
+    private val qtyUpDate = MutableLiveData<String>()
 
     init {
 
@@ -46,6 +46,11 @@ class MeasureApprovalDataRepository(
         }
     }
 
+    suspend fun getJobItemMeasureByItemMeasureId(itemMeasureId: String): LiveData<JobItemMeasureDTO> {
+        return withContext(Dispatchers.IO) {
+            Db.getJobItemMeasureDao().getJobItemMeasureByItemMeasureId(itemMeasureId)
+        }
+    }
 
     suspend fun getJobApproveMeasureForActivityId(activityId: Int): LiveData<List<JobItemMeasureDTO>> {
         return withContext(Dispatchers.IO) {
@@ -141,9 +146,9 @@ class MeasureApprovalDataRepository(
     }
 
 
-    suspend fun getJobMeasureItemsPhotoPath(itemMeasureId: String): String {
+    suspend fun getJobMeasureItemPhotoPaths(itemMeasureId: String): List<String> {
         return withContext(Dispatchers.IO) {
-            Db.getJobItemMeasurePhotoDao().getJobMeasureItemsPhotoPath(itemMeasureId)
+            Db.getJobItemMeasurePhotoDao().getJobMeasureItemPhotoPaths(itemMeasureId)
         }
     }
 
@@ -260,6 +265,58 @@ class MeasureApprovalDataRepository(
         }
         return job
     }
+
+
+    suspend fun upDateMeasure(
+        newQuantity: String,
+        itemMeasureId: String
+    ): String {
+        val newMeasureId = DataConversion.toLittleEndian(itemMeasureId)
+
+
+        val quantityUpdateResponse =
+            apiRequest { api.upDateMeasureQty(newMeasureId, newQuantity.toDouble()) }
+        qtyUpDate.postValue(
+            quantityUpdateResponse.errorMessage,
+            itemMeasureId,
+            newQuantity.toDouble()
+        )
+        val messages = quantityUpdateResponse.errorMessage ?: ""
+        return withContext(Dispatchers.IO) {
+            messages
+        }
+    }
+
+    private fun <T> MutableLiveData<T>.postValue(
+        errorMessage: String?,
+        itemMeasureId: String?,
+        new_Quantity: Double
+    ) {
+        if (errorMessage.isNullOrBlank()) {
+            Db.getJobItemMeasureDao().upDateQty(itemMeasureId!!, new_Quantity)
+        } else {
+            Timber.e("newQty is null")
+        }
+    }
+
+
+    suspend fun getQuantityForMeasureItemId(itemMeasureId: String): LiveData<Double> {
+        return withContext(Dispatchers.IO) {
+            Db.getJobItemMeasureDao().getQuantityForMeasureItemId(itemMeasureId)
+
+        }
+    }
+
+
+    suspend fun getLineRateForMeasureItemId(itemMeasureId: String): LiveData<Double> {
+        return withContext(Dispatchers.IO) {
+            Db.getJobItemMeasureDao().getLineRateForMeasureItemId(itemMeasureId)
+        }
+    }
+
+
+
+
 
 }
 
