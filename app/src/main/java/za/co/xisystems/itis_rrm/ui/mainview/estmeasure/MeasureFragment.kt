@@ -22,7 +22,6 @@ import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
-import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.estimate_measure_item.EstimateMeasureItem
 import za.co.xisystems.itis_rrm.utils.*
@@ -74,7 +73,7 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
                 ActivityIdConstants.MEASURE_PART_COMPLETE
             )
 
-            itemEstimateData.observeOnce(viewLifecycleOwner, Observer { itemEstimateList ->
+            itemEstimateData.observe(viewLifecycleOwner, Observer { itemEstimateList ->
                 val allData = itemEstimateList.count()
                 if (allData == itemEstimateList.size) {
 
@@ -88,7 +87,7 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
                                 ActivityIdConstants.ESTIMATE_MEASURE,
                                 ActivityIdConstants.JOB_ESTIMATE
                             )
-                            jobEstimateData.observeOnce(viewLifecycleOwner, Observer { jos ->
+                            jobEstimateData.observe(viewLifecycleOwner, Observer { jos ->
                                 val allJobs = jos.count()
                                 if (allJobs == jos.size) {
                                     val measure_items = jos.distinctBy {

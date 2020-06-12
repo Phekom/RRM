@@ -69,6 +69,14 @@ android {
     // def versionPropsFile =  InputFile("$rootDir/app/version.properties")
     // def localPropsFile = InputFile("$rootDir/local.properties")
 
+    signingConfigs {
+        release {
+            storeFile file('C:\\Users\\XiCenMcDonaldS\\AndroidStudioProjects\\RRM_MvvM\\release.RRMkey')
+            keyAlias 'RRM_releasekey'
+            storePassword 'thecowmakesmoo'
+            keyPassword 'thecowmakesmoo'
+        }
+    }
 
     def versionBuild
     def versionBuildDate
@@ -140,7 +148,7 @@ android {
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release
         }
         debug {
             // Disables PNG crunching for the release build type.
@@ -286,8 +294,10 @@ dependencies {
     implementation 'com.google.android.gms:play-services-maps:17.0.0'
     implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0'
-    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.3'
-    debugImplementation 'com.squareup.leakcanary:leakcanary-object-watcher-android-androidx:2.3'
+
+    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.4'
+    debugImplementation 'com.squareup.leakcanary:leakcanary-object-watcher-android-androidx:2.4'
+    debugImplementation 'com.squareup.leakcanary:plumber-android:2.4'
 
 
     // Kotlin

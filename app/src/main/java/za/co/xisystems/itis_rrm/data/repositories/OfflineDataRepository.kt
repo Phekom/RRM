@@ -8,7 +8,6 @@ import android.os.Environment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.room.Transaction
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -301,7 +300,7 @@ class OfflineDataRepository(
         }
     }
 
-    @Transaction
+
     private suspend fun saveContracts(contracts: List<ContractDTO>) {
 
         createWorkflowSteps()
@@ -347,7 +346,7 @@ class OfflineDataRepository(
         }
     }
 
-    @Transaction
+
     private fun updateProjects(
         validProjects: List<ProjectDTO>?,
         contract: ContractDTO
@@ -398,7 +397,7 @@ class OfflineDataRepository(
         }
     }
 
-    @Transaction
+
     private fun updateProjectItems(
         distinctItems: List<ProjectItemDTO>,
         project: ProjectDTO
@@ -445,7 +444,7 @@ class OfflineDataRepository(
         }
     }
 
-    @Transaction
+
     private fun updateProjectSections(
         projectSections: ArrayList<ProjectSectionDTO>,
         project: ProjectDTO
@@ -473,7 +472,7 @@ class OfflineDataRepository(
         }
     }
 
-    @Transaction
+
     private fun updateVOItems(
         voItems: ArrayList<VoItemDTO>,
         project: ProjectDTO
