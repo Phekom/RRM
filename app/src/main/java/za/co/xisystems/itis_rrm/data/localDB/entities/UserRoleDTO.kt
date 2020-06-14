@@ -19,7 +19,4 @@ data class UserRoleDTO(
     @SerializedName("RoleDescription")
     val roleDescription: String // RRM Job Mobile - Engineer
 
-
-
 )
-

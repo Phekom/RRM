@@ -13,17 +13,31 @@ import java.util.*
  * Created by Francis Mahlava on 2019/11/21.
  */
 
-
 @Dao
 interface JobItemMeasureDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertJobItemMeasure( jobItemMeasure : JobItemMeasureDTO) : Long
+    fun insertJobItemMeasure(jobItemMeasure: JobItemMeasureDTO): Long
 
     @Query("INSERT INTO JOB_ITEM_MEASURE (itemMeasureId, jobId, projectItemId, qty, lineRate, startKm, endKm, jobDirectionId, recordVersion, recordSynchStateId, estimateId, projectVoId, cpa, lineAmount, measureDate, selectedItemUom ) VALUES ( :itemMeasureId, :jobId, :projectItemId, :qty, :lineRate, :startKm, :endKm, :jobDirectionId, :recordVersion, :recordSynchStateId, :estimateId, :projectVoId, :cpa, :lineAmount, :measureDate, :selectedItemUom )")
-    fun insertJobItemMeasure2(itemMeasureId: String, jobId: String, projectItemId: String, qty: Double, lineRate: Double, startKm: Double, endKm: Double, jobDirectionId: Int,
-         recordVersion: Int, recordSynchStateId: Int, estimateId: String, projectVoId: String, cpa: Int, lineAmount: Double, measureDate: String, selectedItemUom: String): Long
-
+    fun insertJobItemMeasure2(
+        itemMeasureId: String,
+        jobId: String,
+        projectItemId: String,
+        qty: Double,
+        lineRate: Double,
+        startKm: Double,
+        endKm: Double,
+        jobDirectionId: Int,
+        recordVersion: Int,
+        recordSynchStateId: Int,
+        estimateId: String,
+        projectVoId: String,
+        cpa: Int,
+        lineAmount: Double,
+        measureDate: String,
+        selectedItemUom: String
+    ): Long
 
     @Query("UPDATE JOB_ITEM_MEASURE SET jobItemMeasurePhotos =:jobItemMeasurePhotoList WHERE itemMeasureId = :itemMeasureId")
     fun upDatePhotList(jobItemMeasurePhotoList: ArrayList<JobItemMeasurePhotoDTO>, itemMeasureId: String)
@@ -39,7 +53,7 @@ interface JobItemMeasureDao {
     fun getJobApproveMeasureForActivityId(actId: Int): LiveData<List<JobItemMeasureDTO>>
 
     @Query("SELECT * FROM JOB_ITEM_MEASURE WHERE jobId = :jobId AND actId = :actId AND deleted = 0 ORDER BY jimNo ASC")
-    fun getJobMeasureItemsForJobId(jobId: String?,actId: Int): LiveData<List<JobItemMeasureDTO>>
+    fun getJobMeasureItemsForJobId(jobId: String?, actId: Int): LiveData<List<JobItemMeasureDTO>>
 
     @Query("UPDATE JOB_ITEM_MEASURE SET trackRouteId =:trackRouteId, ActId =:actId , measureGroupId =:measureGroupId  WHERE itemMeasureId = :itemMeasureId")
     fun updateWorkflowJobItemMeasure(itemMeasureId: String?, trackRouteId: String?, actId: Int, measureGroupId: String?)
@@ -56,7 +70,6 @@ interface JobItemMeasureDao {
         estimateId: String
     ): LiveData<List<JobItemMeasureDTO>>
 
-
     @Query("SELECT * FROM JOB_ITEM_MEASURE WHERE jobId = :jobId AND deleted = 0 ORDER BY jimNo ASC")
     fun getJobItemMeasureForJobId(jobId: String): LiveData<JobItemMeasureDTO>
 
@@ -65,7 +78,6 @@ interface JobItemMeasureDao {
 
     @Query("SELECT qty FROM JOB_ITEM_MEASURE WHERE itemMeasureId = :itemMeasureId AND deleted = 0")
     fun getQuantityForMeasureItemId(itemMeasureId: String): LiveData<Double>
-
 
     @Query("SELECT lineRate FROM JOB_ITEM_MEASURE WHERE itemMeasureId = :itemMeasureId AND deleted = 0")
     fun getLineRateForMeasureItemId(itemMeasureId: String): LiveData<Double>
@@ -79,7 +91,6 @@ interface JobItemMeasureDao {
     @Query("UPDATE JOB_ITEM_MEASURE SET deleted = 0 WHERE itemMeasureId= :itemMeasureId AND deleted = 1")
     fun undeleteMeasurement(itemMeasureId: String): Int
 
-
     @Query("UPDATE JOB_ITEM_MEASURE SET deleted = 0 WHERE deleted = 1")
     fun undeleteAllMeasurements(): Int
     @Query("DELETE FROM JOB_ITEM_MEASURE")
@@ -87,6 +98,4 @@ interface JobItemMeasureDao {
 
     @Query("SELECT * FROM JOB_ITEM_MEASURE WHERE itemMeasureId = :itemMeasureId LIMIT 1")
     fun getJobItemMeasureByItemMeasureId(itemMeasureId: String): LiveData<JobItemMeasureDTO>
-
-
 }

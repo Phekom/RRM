@@ -1,16 +1,16 @@
-//package za.co.xisystems.itis_rrm.data.localDB.entities
+// package za.co.xisystems.itis_rrm.data.localDB.entities
 //
-//import androidx.room.Entity
-//import androidx.room.PrimaryKey
-//import com.fasterxml.jackson.annotation.JsonProperty
-//import com.google.gson.annotations.SerializedName
-//import java.io.Serializable
-//import java.util.*
+// import androidx.room.Entity
+// import androidx.room.PrimaryKey
+// import com.fasterxml.jackson.annotation.JsonProperty
+// import com.google.gson.annotations.SerializedName
+// import java.io.Serializable
+// import java.util.*
 //
-//const val JOB_ITEM_MEASURE_TEMP = "JOB_ITEM_MEASURE_TEMP"
+// const val JOB_ITEM_MEASURE_TEMP = "JOB_ITEM_MEASURE_TEMP"
 //
-//@Entity(tableName = JOB_ITEM_MEASURE_TEMP)
-//data class JobItemMeasureDTOTemp(
+// @Entity(tableName = JOB_ITEM_MEASURE_TEMP)
+// data class JobItemMeasureDTOTemp(
 //    @PrimaryKey(autoGenerate = true)
 //    val ID: Int,
 //    @SerializedName("ActId")
@@ -44,7 +44,7 @@
 //    @SerializedName("PrjJobDto")
 //    val job: JobDTO? = null,
 //    @SerializedName("PrjJobItemEstimateDto")
-////    val prjJobItemEstimateDto: ArrayList<JobItemEstimateDTO>,
+// //    val prjJobItemEstimateDto: ArrayList<JobItemEstimateDTO>,
 //    var jobItemEstimate: JobItemEstimateDTO? = null,
 //    @SerializedName("ProjectItemId")
 //    var projectItemId: String?,
@@ -66,4 +66,4 @@
 //
 //    var selectedItemUom: String?
 //
-//) : Serializable
+// ) : Serializable

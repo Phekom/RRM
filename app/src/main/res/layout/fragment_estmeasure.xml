@@ -26,23 +26,36 @@
                 app:layout_constraintTop_toTopOf="parent">
 
             <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/estimations_to_be_measured_listView"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    tools:listitem="@layout/single_listview_item" />
+                android:id="@+id/estimations_to_be_measured_listView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:padding="@dimen/dimen_8dp"
+                tools:listitem="@layout/single_listview_item" />
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
 
-        <ImageView
-            android:id="@+id/noData"
-            android:layout_width="@dimen/image_size"
-            android:layout_height="@dimen/image_size"
-            android:layout_gravity="center"
-            android:layout_marginTop="@dimen/xlarge"
-            android:src="@drawable/no_data"
-            android:visibility="visible"
-            tools:visibility="visible" />
+        <LinearLayout
+            android:id="@+id/no_data_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+
+            <ImageView
+                android:id="@+id/noData"
+                android:layout_width="@dimen/image_size"
+                android:layout_height="@dimen/image_size"
+                android:layout_gravity="center"
+                android:layout_marginTop="@dimen/xlarge"
+                android:contentDescription="@string/NoData"
+                android:src="@drawable/no_data"
+                android:visibility="visible"
+                tools:visibility="visible" />
+
+        </LinearLayout>
     </LinearLayout>
 
     <androidx.constraintlayout.widget.Group

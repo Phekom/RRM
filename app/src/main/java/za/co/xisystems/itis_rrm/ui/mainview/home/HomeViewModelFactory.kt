@@ -15,10 +15,10 @@ import za.co.xisystems.itis_rrm.data.repositories.UserRepository
 class HomeViewModelFactory(
     private val repository: UserRepository,
     private val offlineDataRepository: OfflineDataRepository,
-    private val Db : AppDatabase,
+    private val Db: AppDatabase,
     val context: Context
-): ViewModelProvider.NewInstanceFactory() {
+) : ViewModelProvider.NewInstanceFactory() {
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-        return HomeViewModel(repository,offlineDataRepository,Db ,context) as T
+        return HomeViewModel(repository, offlineDataRepository, Db, context) as T
     }
 }

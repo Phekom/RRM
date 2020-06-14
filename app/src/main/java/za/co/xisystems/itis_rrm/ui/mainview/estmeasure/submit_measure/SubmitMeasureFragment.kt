@@ -37,7 +37,6 @@ import za.co.xisystems.itis_rrm.utils.results.XIError
 import za.co.xisystems.itis_rrm.utils.results.XISuccess
 import java.util.*
 
-
 class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), KodeinAware {
     override val kodein by kodein()
     private lateinit var measureViewModel: MeasureViewModel
@@ -52,7 +51,6 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
     private var uiScope = UiLifecycleScope()
     override fun onCreate(savedInstanceState: Bundle?) {
 
-
         super.onCreate(savedInstanceState)
         lifecycle.addObserver(uiScope)
         setHasOptionsMenu(true)
@@ -65,18 +63,16 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
 
         jobItemMeasuresForJobItemEstimates =
             HashMap<JobItemEstimateDTO, List<JobItemMeasureDTO>>()
-
-
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
         (activity as MainActivity).supportActionBar?.title =
             getString(R.string.submit_measure_title)
-
 
         return inflater.inflate(R.layout.fragment_submit_measure, container, false)
     }
@@ -90,17 +86,15 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
 
         Coroutines.main {
 
-            measureViewModel.measure_Item.observe(viewLifecycleOwner, Observer { jobID ->
+            measureViewModel.estimateMeasureItem.observe(viewLifecycleOwner, Observer { jobID ->
                 jobItemEstimate = jobID.jobItemEstimateDTO
                 getWorkItems(jobItemEstimate.jobId)
             })
-
 
             submit_measurements_button.setOnClickListener {
                 submitMeasurements(
                     jobItemEstimate.jobId
                 )
-
             }
 
             items_swipe_to_refresh.setProgressBackgroundColorSchemeColor(
@@ -114,27 +108,22 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
 
             items_swipe_to_refresh.setOnRefreshListener {
                 Coroutines.main {
-                    measureViewModel.measure_Item.observeOnce(
+                    measureViewModel.estimateMeasureItem.observeOnce(
                         viewLifecycleOwner,
                         Observer { measureItem ->
                             getWorkItems(measureItem.jobItemEstimateDTO.jobId)
                             items_swipe_to_refresh.isRefreshing = false
-
                         })
-
                 }
             }
-
         }
-
     }
-
 
     private fun submitMeasurements(jobId: String?) {
         Coroutines.main {
             measureViewModel.setBackupJobId(jobId!!)
             val jobItemMeasure =
-                measureViewModel.getJobItemMeasuresForJobIdAndEstimateId(jobId) //estimateId
+                measureViewModel.getJobItemMeasuresForJobIdAndEstimateId(jobId) // estimateId
             jobItemMeasure.observeOnce(viewLifecycleOwner, Observer { m_sures ->
                 val validMeasures = m_sures.filter { msure ->
                     msure.qty > 0 && msure.jobItemMeasurePhotos.isNotEmpty()
@@ -173,7 +162,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
     ) {
 
         val logoutBuilder = AlertDialog.Builder(
-            requireActivity() //, android.R.style.Theme_DeviceDefault_Dialog
+            requireActivity() // , android.R.style.Theme_DeviceDefault_Dialog
         )
         logoutBuilder.run {
             setTitle(R.string.confirm)
@@ -264,14 +253,11 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                                         }
                                     }
                                 })
-
                             }
-
                         }
                     }
                 }
             })
-
         }
     }
 
@@ -297,7 +283,6 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
             if (jim.measureGroupId != null)
                 jim.setMeasureGroupId(DataConversion.toLittleEndian(jim.measureGroupId))
 
-
             if (jim.jobItemMeasurePhotos.isNotEmpty()) {
                 for (jmep in jim.jobItemMeasurePhotos) {
                     jmep.setPhotoId(DataConversion.toLittleEndian(jmep.photoId))
@@ -310,7 +295,6 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
         return jim
     }
 
-
     private fun popViewOnJobSubmit() {
         // TODO: Delete data from database after successful upload
         Intent(context?.applicationContext, MainActivity::class.java).also { home ->
@@ -319,24 +303,20 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
     override fun onResume() {
         super.onResume()
         (activity as MainActivity).supportActionBar?.title =
             getString(R.string.submit_measure_title)
-
     }
-
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
         (activity as MainActivity).supportActionBar?.title =
             getString(R.string.submit_measure_title)
-
     }
-
 
     override fun onPrepareOptionsMenu(menu: Menu) {
         val item = menu.findItem(R.id.action_settings)
@@ -346,7 +326,6 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
         if (item1 != null) item1.isVisible = false
         if (item2 != null) item2.isVisible = false
     }
-
 
     private fun getWorkItems(jobID: String?) {
         Coroutines.main {
@@ -366,7 +345,6 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
             layoutManager = LinearLayoutManager(this.context)
             adapter = groupAdapter
         }
-
     }
 
     override fun onDestroyView() {
@@ -411,33 +389,25 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                                                 val jNo = jobItemM.jimNo.toString()
                                                 add(
                                                     CardMeasureItem(
-                                                        activity,
-                                                        itemMeasureId,
-                                                        qty,
-                                                        rate,
-                                                        jNo,
-                                                        measureViewModel
+                                                        activity = activity,
+                                                        itemMeasureId = itemMeasureId,
+                                                        qty = qty,
+                                                        rate = rate,
+                                                        text = jNo,
+                                                        measureViewModel = measureViewModel,
+                                                        uiScope = uiScope
                                                     )
                                                 )
                                             }
                                         }
                                     }
-
                                 })
-
                             }
-
                         })
-
                 }
-
-
             }
         }
-
-
     }
-
 
     private fun JobItemMeasureDTO.setProjectItemId(toLittleEndian: String?) {
         this.projectItemId = toLittleEndian
@@ -486,9 +456,4 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
     private fun JobItemMeasureDTO.setItemMeasureId(toLittleEndian: String?) {
         this.itemMeasureId = toLittleEndian
     }
-
-
 }
-
-
-

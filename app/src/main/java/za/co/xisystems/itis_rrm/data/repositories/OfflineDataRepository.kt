@@ -1,6 +1,6 @@
 package za.co.xisystems.itis_rrm.data.repositories
 
-//import sun.security.krb5.Confounder.bytes
+// import sun.security.krb5.Confounder.bytes
 
 // import android.app.Activity
 import android.os.Build
@@ -26,7 +26,6 @@ import java.io.File
 import java.time.LocalDateTime
 import java.util.regex.Pattern
 
-
 private val jobDataController: JobDataController? = null
 private var entitiesFetched = false
 
@@ -49,7 +48,6 @@ class OfflineDataRepository(
     private val workflowJ = MutableLiveData<WorkflowJobDTO>()
     private val workflowJ2 = MutableLiveData<WorkflowJobDTO>()
     private val photoUpload = MutableLiveData<String>()
-
 
     init {
         conTracts.observeForever {
@@ -80,9 +78,7 @@ class OfflineDataRepository(
 
         job.observeForever {
             saveJobs(it)
-
         }
-
 
         workflowJ.observeForever {
             saveWorkflowJob(it)
@@ -94,8 +90,6 @@ class OfflineDataRepository(
         photoUpload.observeForever {
             sendMSg(it)
         }
-
-
     }
 
     suspend fun getContracts(): LiveData<List<ContractDTO>> {
@@ -183,14 +177,12 @@ class OfflineDataRepository(
         return withContext(Dispatchers.IO) {
             Db.getProjectSectionDao().getSection(sectionId!!)
         }
-
     }
 
     suspend fun getItemForItemId(projectItemId: String?): LiveData<ProjectItemDTO> {
         return withContext(Dispatchers.IO) {
             Db.getProjectItemDao().getItemForItemId(projectItemId!!)
         }
-
     }
 
     suspend fun getProjectSectionIdForJobId(jobId: String?): String {
@@ -294,12 +286,9 @@ class OfflineDataRepository(
                         Timber.d("itemCode is null")
                     }
                 }
-
             }
-
         }
     }
-
 
     private suspend fun saveContracts(contracts: List<ContractDTO>) {
 
@@ -346,7 +335,6 @@ class OfflineDataRepository(
         }
     }
 
-
     private fun updateProjects(
         validProjects: List<ProjectDTO>?,
         contract: ContractDTO
@@ -391,12 +379,10 @@ class OfflineDataRepository(
                             updateVOItems(project.voItems, project)
                         }
                     }
-
                 }
             }
         }
     }
-
 
     private fun updateProjectItems(
         distinctItems: List<ProjectItemDTO>,
@@ -440,16 +426,14 @@ class OfflineDataRepository(
                     Timber.e(ex, "ItemId: ${item.itemId} -> ${ex.message}")
                 }
             }
-
         }
     }
-
 
     private fun updateProjectSections(
         projectSections: ArrayList<ProjectSectionDTO>,
         project: ProjectDTO
     ) {
-        for (section in projectSections) { //project.projectSections
+        for (section in projectSections) { // project.projectSections
             if (!Db.getProjectSectionDao()
                     .checkSectionExists(section.sectionId)
             )
@@ -472,12 +456,11 @@ class OfflineDataRepository(
         }
     }
 
-
     private fun updateVOItems(
         voItems: ArrayList<VoItemDTO>,
         project: ProjectDTO
     ) {
-        for (voItem in voItems) { //project.voItems
+        for (voItem in voItems) { // project.voItems
             if (!Db.getVoItemDao().checkIfVoItemExist(voItem.projectVoId))
                 try {
                     Db.getVoItemDao().insertVoItem(
@@ -582,7 +565,6 @@ class OfflineDataRepository(
                     saveJobItemMeasuresForJob(job)
 //                    }
                 }
-
             }
         }
     }
@@ -618,12 +600,11 @@ class OfflineDataRepository(
                 jobItemMeasure.setDeleted(0)
                 if (!Db.getJobItemMeasureDao()
                         .checkIfJobItemMeasureExists(jobItemMeasure.itemMeasureId!!)
-                )//{
+                ) // {
                     Db.getJobItemMeasureDao().insertJobItemMeasure(jobItemMeasure)
 //               }else{
 //                    jobItemMeasure.setQty(jobItemMeasure.qty)
 //                }
-
 
                 Db.getJobDao().setMeasureActId(jobItemMeasure.actId, job.JobId)
                 Db.getJobItemEstimateDao()
@@ -647,9 +628,7 @@ class OfflineDataRepository(
                         Db.getJobSectionDao().insertJobSection(
                             jobSection
                         )
-
                     }
-
                 }
 
     private suspend fun saveJobItemEstimates(
@@ -690,7 +669,6 @@ class OfflineDataRepository(
                         if (jobItemEstimate.jobItemMeasure != null) {
                             saveJobIteamMeasuresForEstimate(jobItemEstimate.jobItemMeasure, job)
                         }
-
                     }
     }
 
@@ -705,8 +683,8 @@ class OfflineDataRepository(
             )
                 jobItemEstimatePhoto.setPhotoPath(
                     Environment.getExternalStorageDirectory()
-                        .toString() + File.separator
-                            + PhotoUtil.FOLDER + File.separator + jobItemEstimatePhoto.filename
+                        .toString() + File.separator +
+                            PhotoUtil.FOLDER + File.separator + jobItemEstimatePhoto.filename
                 )
             when (jobItemEstimatePhoto.descr) {
                 "photo_start" -> jobItemEstimatePhoto.setIsPhotoStart(true)
@@ -863,8 +841,8 @@ class OfflineDataRepository(
                     )
             ) jobItemMeasurePhoto.setPhotoPath(
                 Environment.getExternalStorageDirectory()
-                    .toString() + File.separator
-                        + PhotoUtil.FOLDER + File.separator + jobItemMeasurePhoto.filename
+                    .toString() + File.separator +
+                        PhotoUtil.FOLDER + File.separator + jobItemMeasurePhoto.filename
             )
             jobItemMeasurePhoto.setPhotoId(
                 DataConversion.toBigEndian(
@@ -882,8 +860,8 @@ class OfflineDataRepository(
 
             jobItemMeasurePhoto.setPhotoPath(
                 Environment.getExternalStorageDirectory()
-                    .toString() + File.separator
-                        + PhotoUtil.FOLDER + File.separator + jobItemMeasurePhoto.filename
+                    .toString() + File.separator +
+                        PhotoUtil.FOLDER + File.separator + jobItemMeasurePhoto.filename
             )
 
             Db.getJobItemMeasurePhotoDao()
@@ -924,14 +902,12 @@ class OfflineDataRepository(
             val job = setWorkflowJobBigEndianGuids(workflowJob)
             insertOrUpdateWorkflowJobInSQLite(job)
         }
-
     }
 
     private fun saveTaskList(toDoListGroups: ArrayList<ToDoGroupsDTO>?) {
 
         if (toDoListGroups != null) {
             saveUserTaskList(toDoListGroups)
-
         }
     }
 
@@ -951,9 +927,7 @@ class OfflineDataRepository(
                         val newJobId = DataConversion.toLittleEndian(jobId)
                         fetchJobList(newJobId!!)
                     }
-
                 }
-
             }
         }
     }
@@ -965,8 +939,7 @@ class OfflineDataRepository(
                     .checkIfEntitiesExist(DataConversion.bigEndianToString(entity.trackRouteId!!))
             ) {
                 Db.getEntitiesDao().insertEntitie(
-                    DataConversion.bigEndianToString(entity.trackRouteId!!)
-                    ,
+                    DataConversion.bigEndianToString(entity.trackRouteId!!),
                     if (entity.actionable) 1 else 0,
                     entity.activityId,
                     entity.currentRouteId,
@@ -988,7 +961,6 @@ class OfflineDataRepository(
                         entity.activityId
                     )
                 }
-
             }
         }
     }
@@ -1009,7 +981,6 @@ class OfflineDataRepository(
 
     private suspend fun fetchContracts(userId: String) {
 
-
         val activitySectionsResponse =
             apiRequest { api.activitySectionsRefresh(userId) }
         sectionItems.postValue(activitySectionsResponse.activitySections)
@@ -1025,7 +996,6 @@ class OfflineDataRepository(
 
         val contractsResponse = apiRequest { api.refreshContractInfo(userId) }
         conTracts.postValue(contractsResponse.contracts)
-
     }
 
     suspend fun getUserTaskList(): LiveData<List<ToDoListEntityDTO>> {
@@ -1080,7 +1050,9 @@ class OfflineDataRepository(
         // TODO: Redo as async calls in parallel
         return withContext(Dispatchers.IO) {
 
-            getAllEntities()
+            if (!entitiesFetched) {
+                getAllEntities()
+            }
 
             refreshActivitySections(userId)
 
@@ -1103,7 +1075,6 @@ class OfflineDataRepository(
                     if (!Db.getLookupDao().checkIfLookupExist(it.lookupName))
                         Db.getLookupDao().insertLookup(it)
 
-
                     if (!lookup.lookupOptions.isNullOrEmpty()) {
                         lookup.lookupOptions.forEach { lookupOption ->
                             if (!Db.getLookupOptionDao().checkLookupOptionExists(
@@ -1116,7 +1087,6 @@ class OfflineDataRepository(
                                     lookupOption.valueMember, lookupOption.displayMember,
                                     lookupOption.contextMember, lookup.lookupName
                                 )
-
                         }
                     }
                 }
@@ -1126,37 +1096,8 @@ class OfflineDataRepository(
 
     fun deleteAllData(): Void? {
 
-        Db.run {
-            getEstimateWorkDao().deleteAll()
-            getEstimateWorkPhotoDao().deleteAll()
-            getLookupDao().deleteAll()
-            getLookupOptionDao().deleteAll()
-            getPrimaryKeyValueDao().deleteAll()
-            getToDoGroupsDao().deleteAll()
-            getEntitiesDao().deleteAll()
-            getUserRoleDao().deleteAll()
-            getUserDao().deleteAll()
-            getJobDao().deleteAll()
-            getJobSectionDao().deleteAll()
-            getJobItemEstimateDao().deleteAll()
-            getJobItemMeasureDao().deleteAll()
-            getJobItemEstimatePhotoDao().deleteAll()
-            getJobItemMeasurePhotoDao().deleteAll()
-            getContractDao().deleteAll()
-            getVoItemDao().deleteAll()
-            getProjectDao().deleteAll()
-            getProjectItemDao().deleteAll()
-            getItemSectionDao().deleteAll()
-            getProjectSectionDao().deleteAll()
-            getWorkFlowDao().deleteAll()
-            getWorkFlowRouteDao().deleteAll()
-            getWorkflowsDao().deleteAll()
-            getInfoClassDao().deleteAll()
-            getActivityDao().deleteAll()
-            getSectionItemDao().deleteAll()
-            getItemDaoTemp().deleteAll()
-            getSectionPointDao().deleteAll()
-        }
+        Db.clearAllTables()
+        entitiesFetched = false
         return null
     }
 
@@ -1187,15 +1128,12 @@ class OfflineDataRepository(
                     if (jobItemEstimate.workflowEstimateWorks.isNotEmpty()) {
                         updateWorkflowEstimateWorks(jobItemEstimate)
                     }
-
                 }
 
                 if (!job.workflowItemMeasures.isNullOrEmpty()) {
                     updateWorkflowItemMeasures(job.workflowItemMeasures)
                 }
-
             }
-
 
             //  Place the Job Section, UPDATE OR CREATE
             if (!job.workflowJobSections.isNullOrEmpty()) {
@@ -1223,7 +1161,8 @@ class OfflineDataRepository(
             )
                 Db.getEstimateWorkDao().insertJobEstimateWorks(
                     // TODO: Fix this broken casting.
-                    jobEstimateWorks as JobEstimateWorksDTO
+                    // jobEstimateWorks as JobEstimateWorksDTO
+                    TODO("This should never happen.")
                 ) else Db.getEstimateWorkDao().updateJobEstimateWorksWorkflow(
                 jobEstimateWorks.worksId,
                 jobEstimateWorks.estimateId,
@@ -1266,18 +1205,14 @@ class OfflineDataRepository(
             } else {
                 PhotoUtil.createPhotoFolder()
             }
-
         }
-
     }
-
 
     suspend fun getUpdatedJob(jobId: String): JobDTO {
         return withContext(Dispatchers.IO) {
             Db.getJobDao().getJobForJobId(jobId)
         }
     }
-
 
     private fun setWorkflowJobBigEndianGuids(job: WorkflowJobDTO): WorkflowJobDTO? {
 
@@ -1295,7 +1230,6 @@ class OfflineDataRepository(
                     wfe.worksId = DataConversion.toBigEndian(wfe.worksId)!!
 
                     wfe.estimateId = DataConversion.toBigEndian(wfe.estimateId)!!
-
                 }
             }
         }
@@ -1316,7 +1250,6 @@ class OfflineDataRepository(
         }
         return job
     }
-
 
     private fun JobItemMeasurePhotoDTO.setPhotoPath(photoPath: String) {
         this.photoPath = photoPath
@@ -1459,10 +1392,8 @@ class OfflineDataRepository(
     companion object {
         val TAG: String = OfflineDataRepository::class.java.simpleName
     }
-
 }
 
 private fun JobItemMeasureDTO.setDeleted(i: Int) {
     this.deleted = i
 }
-

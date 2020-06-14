@@ -1,6 +1,6 @@
 package za.co.xisystems.itis_rrm.data.repositories
 
-//import sun.security.krb5.Confounder.bytes
+// import sun.security.krb5.Confounder.bytes
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -8,12 +8,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
-import za.co.xisystems.itis_rrm.data.localDB.entities.*
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.WorkflowJobDTO
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DataConversion
-
 
 /**
  * Created by Francis Mahlava on 2019/11/28.
@@ -27,7 +29,6 @@ class JobApprovalDataRepository(
         val TAG: String = JobApprovalDataRepository::class.java.simpleName
     }
 
-
     private val workflowJ = MutableLiveData<WorkflowJobDTO>()
     private val qtyUpDate = MutableLiveData<String>()
 
@@ -35,27 +36,20 @@ class JobApprovalDataRepository(
 
         workflowJ.observeForever {
             saveWorkflowJob(it)
-
         }
         qtyUpDate.observeForever {
             saveqtyUpDate(it)
-
         }
-
     }
 
-    private fun saveqtyUpDate( newQty : String?) {
-
+    private fun saveqtyUpDate(newQty: String?) {
     }
-
-
 
     suspend fun getUser(): LiveData<UserDTO> {
         return withContext(Dispatchers.IO) {
             Db.getUserDao().getUser()
         }
     }
-
 
     suspend fun getSectionForProjectSectionId(sectionId: String?): String {
         return withContext(Dispatchers.IO) {
@@ -68,7 +62,6 @@ class JobApprovalDataRepository(
             Db.getProjectItemDao().getTenderRateForProjectItemId(projectItemId)
         }
     }
-
 
     suspend fun getUOMForProjectItemId(projectItemId: String): String {
         return withContext(Dispatchers.IO) {
@@ -88,7 +81,6 @@ class JobApprovalDataRepository(
         }
     }
 
-
     suspend fun getProjectDescription(projectId: String): String {
         return withContext(Dispatchers.IO) {
             Db.getProjectDao().getProjectDescription(projectId)
@@ -106,8 +98,19 @@ class JobApprovalDataRepository(
         val new_Quantity = newQuantity
         val new_Total = newTotal
 
-        val quantityUpdateResponse = apiRequest { api.updateEstimateQty(new_estimateId,new_Quantity.toDouble(), new_Total.toDouble() ) }
-        qtyUpDate.postValue(quantityUpdateResponse.errorMessage , estimateId,new_Quantity.toDouble(), new_Total.toDouble())
+        val quantityUpdateResponse = apiRequest {
+            api.updateEstimateQty(
+                new_estimateId,
+                new_Quantity.toDouble(),
+                new_Total.toDouble()
+            )
+        }
+        qtyUpDate.postValue(
+            quantityUpdateResponse.errorMessage,
+            estimateId,
+            new_Quantity.toDouble(),
+            new_Total.toDouble()
+        )
         val messages = quantityUpdateResponse.errorMessage ?: ""
         return withContext(Dispatchers.IO) {
             messages
@@ -144,13 +147,11 @@ class JobApprovalDataRepository(
         }
     }
 
-
     suspend fun getQuantityForEstimationItemId(estimateId: String): LiveData<Double> {
         return withContext(Dispatchers.IO) {
             Db.getJobItemEstimateDao().getQuantityForEstimationItemId(estimateId)
         }
     }
-
 
     suspend fun getLineRateForEstimationItemId(estimateId: String): LiveData<Double> {
         return withContext(Dispatchers.IO) {
@@ -170,13 +171,11 @@ class JobApprovalDataRepository(
         }
     }
 
-
     suspend fun getJobEstimationItemsPhotoStartPath(estimateId: String): String {
         return withContext(Dispatchers.IO) {
             Db.getJobItemEstimatePhotoDao().getJobEstimationItemsPhotoStartPath(estimateId)
         }
     }
-
 
     suspend fun getJobEstimationItemsPhotoEndPath(estimateId: String): String {
         return withContext(Dispatchers.IO) {
@@ -184,7 +183,7 @@ class JobApprovalDataRepository(
         }
     }
 
-    private fun saveWorkflowJob( workflowJob: WorkflowJobDTO? ) {
+    private fun saveWorkflowJob(workflowJob: WorkflowJobDTO?) {
         try {
             val job = setWorkflowJobBigEndianGuids(workflowJob!!)
             insertOrUpdateWorkflowJobInSQLite(job!!)
@@ -192,7 +191,6 @@ class JobApprovalDataRepository(
             Timber.e(ex, "Error: WorkFlow Job is null")
         }
     }
-
 
     private fun insertOrUpdateWorkflowJobInSQLite(job: WorkflowJobDTO?) {
         job?.let {
@@ -211,14 +209,14 @@ class JobApprovalDataRepository(
                     jobItemEstimate.estimateId
                 )
 
-
                 jobItemEstimate.workflowEstimateWorks.forEach { jobEstimateWorks ->
                     if (!Db.getEstimateWorkDao()
                             .checkIfJobEstimateWorksExist(jobEstimateWorks.worksId)
                     )
                         Db.getEstimateWorkDao().insertJobEstimateWorks(
                             // TODO: b0rk3d! This broken cast needs fixing.
-                            jobEstimateWorks as JobEstimateWorksDTO
+                            // jobEstimateWorks as JobEstimateWorksDTO
+                            TODO("This should never happen!")
                         ) else
                         Db.getEstimateWorkDao().updateJobEstimateWorksWorkflow(
                             jobEstimateWorks.worksId,
@@ -240,7 +238,6 @@ class JobApprovalDataRepository(
                 )
             }
 
-
             //  Place the Job Section, UPDATE OR CREATE
             job.workflowJobSections?.forEach { jobSection ->
                 if (!Db.getJobSectionDao().checkIfJobSectionExist(jobSection.jobSectionId))
@@ -257,7 +254,6 @@ class JobApprovalDataRepository(
             }
         }
     }
-
 
     private fun setWorkflowJobBigEndianGuids(job: WorkflowJobDTO): WorkflowJobDTO? {
         job.jobId = DataConversion.toBigEndian(job.jobId)
@@ -280,68 +276,15 @@ class JobApprovalDataRepository(
             jim.trackRouteId = DataConversion.toBigEndian(jim.trackRouteId)!!
         }
 
-
         job.workflowJobSections?.forEach { js ->
             js.jobSectionId = DataConversion.toBigEndian(js.jobSectionId)!!
             js.projectSectionId = DataConversion.toBigEndian(js.projectSectionId)!!
             js.jobId = DataConversion.toBigEndian(js.jobId)
-
         }
         return job
     }
 
-
     private operator fun <T> LiveData<T>.not(): Boolean {
         return true
     }
-
-
-
-
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

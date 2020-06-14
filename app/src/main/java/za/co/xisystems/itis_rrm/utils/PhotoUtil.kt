@@ -263,7 +263,7 @@ object PhotoUtil {
         }
         return outputSet1
     }
-    //=============================================================================================================================================================
+    // =============================================================================================================================================================
     /**
      * saveImageToInternalStorage
      * Todo Make Image Quality Better
@@ -279,14 +279,14 @@ object PhotoUtil {
             var scaledBitmap: Bitmap? = null
             val options = BitmapFactory.Options()
             var result: String?
-            //if uri is content
+            // if uri is content
             if (scaledUri.scheme != null && scaledUri.scheme == "content") {
                 val cursor =
                     context.contentResolver.query(scaledUri, null, null, null, null)
                 try {
-                    if (cursor != null && cursor.moveToFirst()) { //local filesystem
+                    if (cursor != null && cursor.moveToFirst()) { // local filesystem
                         var index = cursor.getColumnIndex("_data")
-                        if (index == -1) //google drive
+                        if (index == -1) // google drive
                             index = cursor.getColumnIndex("_display_name")
                         result = cursor.getString(index)
                         scaledUri = if (result != null) Uri.parse(result) else return null
@@ -298,7 +298,7 @@ object PhotoUtil {
                 }
             }
             result = scaledUri.path
-            //get filename + ext of path
+            // get filename + ext of path
             val cut = result?.lastIndexOf('/')
             if (cut != null && cut != -1) result = result?.substring(cut + 1)
             val imageFileName = result
@@ -578,6 +578,4 @@ object PhotoUtil {
             null
         }
     }
-
-
 }

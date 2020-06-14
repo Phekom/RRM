@@ -1,25 +1,25 @@
 package za.co.xisystems.itis_rrm.ui.mainview.work.work_utils
 
-//import android.Manifest
-//import android.annotation.SuppressLint
-//import android.content.Context
-//import android.content.pm.PackageManager
-//import android.location.Location
-//import android.os.Bundle
-//import androidx.core.app.ActivityCompat
-//import com.google.android.gms.common.ConnectionResult
-//import com.google.android.gms.common.api.GoogleApiClient
-//import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks
-//import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener
-//import com.google.android.gms.location.LocationListener
-//import com.google.android.gms.location.LocationRequest
-//import com.google.android.gms.location.LocationServices
-//import com.google.android.gms.location.LocationServices.FusedLocationApi
-//import za.co.xisystems.itis_rrm.data.network.PermissionController
-//import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.Constants
-//import za.co.xisystems.itis_rrm.ui.mainview.work.capture_work.CaptureWorkFragment
+// import android.Manifest
+// import android.annotation.SuppressLint
+// import android.content.Context
+// import android.content.pm.PackageManager
+// import android.location.Location
+// import android.os.Bundle
+// import androidx.core.app.ActivityCompat
+// import com.google.android.gms.common.ConnectionResult
+// import com.google.android.gms.common.api.GoogleApiClient
+// import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks
+// import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener
+// import com.google.android.gms.location.LocationListener
+// import com.google.android.gms.location.LocationRequest
+// import com.google.android.gms.location.LocationServices
+// import com.google.android.gms.location.LocationServices.FusedLocationApi
+// import za.co.xisystems.itis_rrm.data.network.PermissionController
+// import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.Constants
+// import za.co.xisystems.itis_rrm.ui.mainview.work.capture_work.CaptureWorkFragment
 //
-//class LocationHelper(private val capturePhoto: CaptureWorkFragment) : ConnectionCallbacks,
+// class LocationHelper(private val capturePhoto: CaptureWorkFragment) : ConnectionCallbacks,
 //    OnConnectionFailedListener, LocationListener {
 //    private var googleApiClient: GoogleApiClient? = null
 //    private var locationRequest: LocationRequest? = null
@@ -86,12 +86,12 @@ package za.co.xisystems.itis_rrm.ui.mainview.work.work_utils
 //                        Manifest.permission.ACCESS_COARSE_LOCATION
 //                    ) != PackageManager.PERMISSION_GRANTED
 //                ) { // TODO: Consider calling
-////    ActivityCompat#requestPermissions
-//// here to request the missing permissions, and then overriding
-////   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-////                                          int[] grantResults)
-//// to handle the case where the user grants the permission. See the documentation
-//// for ActivityCompat#requestPermissions for more details.
+// //    ActivityCompat#requestPermissions
+// // here to request the missing permissions, and then overriding
+// //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+// //                                          int[] grantResults)
+// // to handle the case where the user grants the permission. See the documentation
+// // for ActivityCompat#requestPermissions for more details.
 //                    toast("Error: You need Location permissions!")
 //                    return
 //                }
@@ -168,4 +168,4 @@ package za.co.xisystems.itis_rrm.ui.mainview.work.work_utils
 //        capturePhoto.setCurrentLocation(location)
 //    }
 
-//}
+// }

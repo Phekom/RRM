@@ -189,7 +189,4 @@ abstract class NewJobBase : AppCompatActivity(), OfflineListener, IProgressView,
             showHorizontalProgressDialog(message)
         }
     }
-
-
-
 }

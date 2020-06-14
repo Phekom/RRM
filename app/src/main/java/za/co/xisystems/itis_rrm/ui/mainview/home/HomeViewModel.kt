@@ -94,7 +94,5 @@ class HomeViewModel(
 //
 //        }
 //        Timber.d("Time taken: $time")
-
-
     }
 }

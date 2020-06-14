@@ -1,4 +1,3 @@
-
 /**
  * Created by Francis Mahlava on 2019/10/23.
  */
@@ -32,17 +31,14 @@ import za.co.xisystems.itis_rrm.ui.mainview.home.HomeViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModelFactory
 
-
 /**
  * Created by Francis Mahlava on 2019/10/23.
  */
 open class MainApp : Application(), KodeinAware {
 
-
     override val kodein = Kodein.lazy {
 
         import(androidXModule(this@MainApp))
-
 
         bind() from singleton { NetworkConnectionInterceptor(instance()) }
         bind() from singleton { BaseConnectionApi(instance()) }
@@ -61,9 +57,16 @@ open class MainApp : Application(), KodeinAware {
         bind() from singleton { MeasureCreationDataRepository(instance(), instance()) }
         bind() from singleton { MeasureApprovalDataRepository(instance(), instance()) }
 
-        bind() from provider { AuthViewModelFactory(instance(),instance()) }
-        bind() from provider { HomeViewModelFactory(instance(),instance(),instance(),instance()) }
-        bind() from provider { CreateViewModelFactory(instance() ) }
+        bind() from provider { AuthViewModelFactory(instance(), instance()) }
+        bind() from provider {
+            HomeViewModelFactory(
+                instance(),
+                instance(),
+                instance(),
+                instance()
+            )
+        }
+        bind() from provider { CreateViewModelFactory(instance()) }
         bind() from provider {
             ApproveMeasureViewModelFactory(
                 this@MainApp,
@@ -71,26 +74,23 @@ open class MainApp : Application(), KodeinAware {
                 instance()
             )
         }
-        bind() from provider { ApproveJobsViewModelFactory(instance(),instance() ) }
-        bind() from provider { MeasureViewModelFactory(instance(),instance() ) }
-        bind() from provider { UnSubmittedViewModelFactory(instance() ) }
-        bind() from provider{ WorkViewModelFactory(instance(),instance()) }
-        bind() from provider{ CorrectionsViewModelFactory(instance()) }
-        bind() from provider{ SettingsViewModelFactory(instance()) }
-        bind() from provider{ MainActivityViewModelFactory(instance()) }
+        bind() from provider { ApproveJobsViewModelFactory(instance(), instance()) }
+        bind() from provider { MeasureViewModelFactory(this@MainApp, instance(), instance()) }
+        bind() from provider { UnSubmittedViewModelFactory(instance()) }
+        bind() from provider { WorkViewModelFactory(instance(), instance()) }
+        bind() from provider { CorrectionsViewModelFactory(instance()) }
+        bind() from provider { SettingsViewModelFactory(instance()) }
+        bind() from provider { MainActivityViewModelFactory(instance()) }
         bind() from provider { LocationViewModelFactory(this@MainApp) }
 
         bind() from provider { SharedViewModelFactory() }
         bind() from provider { SharedViewModel() }
-
     }
 
     override fun onCreate() {
         super.onCreate()
         Timber.plant(CrashReportingTree())
-
     }
-
 
     /** A tree which logs important information for crash reporting.  */
     private class CrashReportingTree : Timber.Tree() {

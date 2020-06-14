@@ -1,7 +1,7 @@
 package za.co.xisystems.itis_rrm.utils.interfaces
 
-import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
 import java.util.*
 
 /**

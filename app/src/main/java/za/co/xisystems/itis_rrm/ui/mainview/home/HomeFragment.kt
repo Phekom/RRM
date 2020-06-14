@@ -1,6 +1,5 @@
 package za.co.xisystems.itis_rrm.ui.mainview.home
 
-
 import android.content.Context
 import android.graphics.Color
 import android.location.LocationManager
@@ -35,7 +34,6 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.NoConnectivityException
 import za.co.xisystems.itis_rrm.utils.NoInternetException
 
-
 class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
 
     override val kodein by kodein()
@@ -58,7 +56,6 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
         lifecycleScope.launch {
             whenStarted {
 
-
                 uiScope.launch(uiScope.coroutineContext) {
                     try {
 
@@ -75,9 +72,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                             val allData = mSectionItem.count()
                             if (mSectionItem.size == allData)
                                 group2_loading.visibility = View.GONE
-
                         })
-
                     } catch (e: ApiException) {
                         ToastUtils().toastLong(activity, e.message)
                         Timber.e(e, "API Exception")
@@ -91,10 +86,8 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                         group2_loading.visibility = View.GONE
                     }
                 }
-
             }
         }
-
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -114,10 +107,10 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
         return true
     }
 
-
     override fun onCreateView(
         inflater: LayoutInflater,
-        container: ViewGroup?, savedInstanceState: Bundle?
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
     ): View? {
         activity?.hideKeyboard()
         return inflater.inflate(R.layout.fragment_home, container, false)
@@ -156,7 +149,6 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                         sharedViewModel.setMessage("Data Retrieved")
                         sharedViewModel.toggleLongRunning(false)
                     }
-
                 } catch (e: ApiException) {
                     sharedViewModel.setMessage(e.message)
                     Timber.e(e, "API Exception")
@@ -172,7 +164,6 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                 }
             }
         }
-
 
         Coroutines.io {
             val lm = requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager
@@ -199,9 +190,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
             }
         }
 
-
         connectedTo.text = "Version " + BuildConfig.VERSION_NAME
-
 
         serverTextView.setOnClickListener {
             ToastUtils().toastServerAddress(context)
@@ -218,13 +207,11 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
         }
     }
 
-
     private val colorConnected: Int
         get() = Color.parseColor("#55A359")
 
     private val colorNotConnected: Int
         get() = Color.RED
-
 
     override fun onResume() {
         super.onResume()

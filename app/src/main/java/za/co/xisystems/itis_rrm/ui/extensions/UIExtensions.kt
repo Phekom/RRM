@@ -16,7 +16,6 @@ import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
  * Copyright (c) 2020 XI Systems. All rights reserved.
  **/
 
-
 fun ImageCollectionView.scaleForSize(context: Context, imageCount: Int) {
     when (imageCount) {
         1 -> {
@@ -54,7 +53,6 @@ fun ImageCollectionView.addZoomedImages(
     }
 }
 
-
 fun showZoomedImage(imageUrl: Uri, activity: FragmentActivity) {
     val dialog = Dialog(activity, R.style.dialog_full_screen)
     dialog.setContentView(R.layout.new_job_photo)
@@ -65,5 +63,3 @@ fun showZoomedImage(imageUrl: Uri, activity: FragmentActivity) {
         .into(zoomageView!!)
     dialog.show()
 }
-
-

@@ -25,7 +25,6 @@ import za.co.xisystems.itis_rrm.utils.toast
 import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
 import java.io.File
 
-
 /**
  * Created by Francis Mahlava on 2020/01/02.
  */
@@ -63,10 +62,9 @@ class MeasurementsItem(
                 } else {
                     measure_item_uom_textView.text = "Unit of Measure: $uom"
                 }
-
             }
             correctButton.setOnClickListener {
-                sendItemType((it), jobItemMeasureDTO,approveViewModel)
+                sendItemType((it), jobItemMeasureDTO, approveViewModel)
             }
             view_captured_item_photo.setOnClickListener {
                 Coroutines.main {
@@ -79,9 +77,7 @@ class MeasurementsItem(
                 }
             }
             updateMeasureImage()
-
         }
-
     }
 
     private fun sendItemType(
@@ -101,7 +97,7 @@ class MeasurementsItem(
 //        val structure_Type = textEntryView.findViewById<View>(R.id.structure_Type1) as TextView
 //        val structure_InspTitle = textEntryView.findViewById<View>(R.id.structure_InspTitle) as TextView
 
-        val alert = AlertDialog.Builder(activity)//,android.R.style.Theme_DeviceDefault_Dialog
+        val alert = AlertDialog.Builder(activity) // ,android.R.style.Theme_DeviceDefault_Dialog
         alert.setView(textEntryView)
         alert.setTitle(R.string.correct_measure)
         alert.setIcon(R.drawable.ic_edit)
@@ -114,18 +110,20 @@ class MeasurementsItem(
             R.string.save
         ) { dialog, which ->
             if (ServiceUtil.isNetworkConnected(activity.applicationContext)) {
-                Coroutines.main{
+                Coroutines.main {
                     if (new_quantity.text.toString() == "" || nanCheck(new_quantity.text.toString())) {
                         activity.toast("Please Enter a valid Quantity")
-                    }else{
-                        val updated =  approveViewModel.upDateMeasure(new_quantity.text.toString(), jobItemMeasureDTO.itemMeasureId)
+                    } else {
+                        val updated = approveViewModel.upDateMeasure(
+                            new_quantity.text.toString(),
+                            jobItemMeasureDTO.itemMeasureId
+                        )
                         if (updated.isBlank()) {
                             activity.toast("Data Updated was Successful")
-                        }else{
+                        } else {
                             activity.toast("Data Updated Error!!  Server Not Reachable")
                         }
                     }
-
                 }
             } else {
                 activity.toast("No connection detected.")
@@ -140,7 +138,6 @@ class MeasurementsItem(
         }
         val declineAlert = alert.create()
         declineAlert.show()
-
     }
 
     private fun nanCheck(toString: String): Boolean {
@@ -182,16 +179,10 @@ class MeasurementsItem(
                     .placeholder(R.drawable.logo_new_medium)
                     .into(view_captured_item_photo)
             }
-
         }
     }
-
-
-
-
 }
 
 private fun getItemId(position: Int): Long {
     return position.toLong()
 }
-

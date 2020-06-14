@@ -23,7 +23,7 @@ import za.co.xisystems.itis_rrm.utils.ViewLogger
 /**
  * Created by Francis Mahlava on 03,October,2019
  */
-//R.layout.fragment_home
+// R.layout.fragment_home
 //
 abstract class BaseFragment(layoutContentId: Int) : Fragment(), IProgressView,
     HorizontalProgressBar {
@@ -137,9 +137,8 @@ abstract class BaseFragment(layoutContentId: Int) : Fragment(), IProgressView,
         coordinator = view.findViewById(R.id.coordinator)
     }
 
-
     fun setDataProgressDialog(context: Context, message: String): ProgressDialog {
-        //Assuming that you are using fragments.//
+        // Assuming that you are using fragments.//
         val progressDialog = ProgressDialog(context)
         progressDialog.setTitle(getString(R.string.please_wait))
         progressDialog.setMessage(message)
@@ -160,7 +159,6 @@ abstract class BaseFragment(layoutContentId: Int) : Fragment(), IProgressView,
             imm.hideSoftInputFromWindow(view.windowToken, 0)
         }
     }
-
 
     override fun toast(resid: Int) {
         if (!activity?.isFinishing!!) toast(getString(resid))
@@ -245,7 +243,6 @@ abstract class BaseFragment(layoutContentId: Int) : Fragment(), IProgressView,
             showHorizontalProgressDialog(message)
         }
     }
-
 
     abstract fun onCreateOptionsMenu(menu: Menu): Boolean
 }

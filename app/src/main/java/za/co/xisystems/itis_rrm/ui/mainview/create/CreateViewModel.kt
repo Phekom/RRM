@@ -23,7 +23,6 @@ class CreateViewModel(
 
     // TODO: Create Call to create a new job item
 
-
     val jobToEditItem = MutableLiveData<JobDTO>()
     fun setJobToEditItem(inJobItemToEdit: JobDTO) {
         jobToEditItem.value = inJobItemToEdit
@@ -43,12 +42,10 @@ class CreateViewModel(
         jobCreationDataRepository.getSectionItems()
     }
 
-
     val sectionId = MutableLiveData<String>()
     fun setSectionId(inSectionId: String) {
         sectionId.value = inSectionId
     }
-
 
     val user by lazyDeferred {
         jobCreationDataRepository.getUser()
@@ -68,7 +65,6 @@ class CreateViewModel(
     fun createNewJob(job: JobDTO) {
         newJob.value = job
     }
-
 
     val contractNo = MutableLiveData<String>()
     fun setContractorNo(inContractNo: String) {
@@ -126,7 +122,6 @@ class CreateViewModel(
         }
     }
 
-
     suspend fun getSomeProjects(contractId: String): LiveData<List<ProjectDTO>> {
         return withContext(Dispatchers.IO) {
             jobCreationDataRepository.getContractProjects(contractId)
@@ -165,7 +160,6 @@ class CreateViewModel(
         jobCreationDataRepository.delete(item)
     }
 
-
     fun deleteJobFromList(jobId: String) {
         jobCreationDataRepository.deleteJobfromList(jobId)
     }
@@ -175,7 +169,6 @@ class CreateViewModel(
             jobCreationDataRepository.getJobSection(jobId)
         }
     }
-
 
     suspend fun updateNewJob(
         newjobId: String,
@@ -197,8 +190,7 @@ class CreateViewModel(
     }
     }
 
-    suspend fun getPointSectionData(projectId: String?): LiveData<SectionPointDTO> {//jobId: String,jobId,
-
+    suspend fun getPointSectionData(projectId: String?): LiveData<SectionPointDTO> { // jobId: String,jobId,
 
         return withContext(Dispatchers.IO) {
             jobCreationDataRepository.getPointSectionData(projectId)
@@ -225,7 +217,6 @@ class CreateViewModel(
         }
     }
 
-
     suspend fun getRouteSectionPoint(
         latitude: Double,
         longitude: Double,
@@ -243,7 +234,6 @@ class CreateViewModel(
                 jobId
             )
         }
-
     }
 
     suspend fun getAllProjectItems(projectId: String, jobId: String): LiveData<List<ItemDTOTemp>> {
@@ -274,9 +264,7 @@ class CreateViewModel(
        return withContext(Dispatchers.IO) {
            isValid
        }
-
     }
-
 
     suspend fun submitJob(
         userId: Int,
@@ -285,9 +273,7 @@ class CreateViewModel(
     ): String {
         return withContext(Dispatchers.IO) {
             jobCreationDataRepository.submitJob(userId, job, activity)
-
         }
-
     }
 
     fun deleteItemList(jobId: String) {
@@ -309,7 +295,4 @@ class CreateViewModel(
             jobCreationDataRepository.getProjectCodeForId(projectId)
         }
     }
-
 }
-
-

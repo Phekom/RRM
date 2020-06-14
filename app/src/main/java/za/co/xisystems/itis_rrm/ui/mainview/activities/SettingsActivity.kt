@@ -23,20 +23,16 @@ class SettingsActivity : AppCompatActivity(), KodeinAware {
     private lateinit var settingsViewModel: SettingsViewModel
     private val factory: SettingsViewModelFactory by instance()
 
-
     private var serviceVersionTextView: TextView? = null
     private val errorOccurredDuringRegistration = false
-
 
     companion object {
         private val TAG = SettingsActivity::class.java.simpleName
         const val HOME = "general_switch"
 
-
         var switch: Switch? = null
         const val PREFS_NAME = "DarkeModeSwitch"
     }
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,8 +46,6 @@ class SettingsActivity : AppCompatActivity(), KodeinAware {
 
         settingsViewModel = ViewModelProvider(this, factory).get(SettingsViewModel::class.java)
 
-
-
         Coroutines.main {
             val loggedInUser = settingsViewModel.user.await()
             loggedInUser.observe(this, Observer { user ->
@@ -60,9 +54,7 @@ class SettingsActivity : AppCompatActivity(), KodeinAware {
                     username1.text = user.userName
                 }
             })
-
         }
-
 
         button_reset_app.setOnClickListener {
             val builder = AlertDialog.Builder(this@SettingsActivity, android.R.style.Theme_DeviceDefault_Dialog
@@ -98,15 +90,6 @@ class SettingsActivity : AppCompatActivity(), KodeinAware {
             finish()
         }
 
-
-
-
-
-
-
-
-
-
 //        serviceVersionTextView = findViewById(R.id.serviceVersionTextView)
 //
 //
@@ -118,6 +101,4 @@ class SettingsActivity : AppCompatActivity(), KodeinAware {
     }
 
     var isChecked = false
-
-
 }

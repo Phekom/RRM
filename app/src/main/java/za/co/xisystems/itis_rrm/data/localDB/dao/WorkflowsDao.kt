@@ -11,20 +11,18 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.WorkFlowsDTO
  * Created by Francis Mahlava on 2019/12/04.
  */
 
-
 @Dao
 interface WorkflowsDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertWorkFlows( workFlows : WorkFlowsDTO)
+    suspend fun insertWorkFlows(workFlows: WorkFlowsDTO)
 
 //    @Query("SELECT * FROM WORKFLOWs_TABLE WHERE workflowId = :workflowId")
 //    fun checkWorkFlowExistsWorkflowID(workflowId: Long): Boolean
 
     @Query("SELECT * FROM WORKFLOWs_TABLE ")
-    fun getWorkflows() : LiveData<List<WorkFlowsDTO>>
+    fun getWorkflows(): LiveData<List<WorkFlowsDTO>>
 
     @Query("DELETE FROM WORKFLOWs_TABLE")
     fun deleteAll()
-
 }

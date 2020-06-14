@@ -21,20 +21,28 @@ interface ProjectDao {
 //    suspend fun insertProjects(project : List<ProjectDTO>)
 
 //    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    @Query("INSERT INTO PROJECT_TABLE (projectId,descr, endDate, items, projectCode, projectMinus, projectPlus,projectSections, voItems, contractId) VALUES (:projectId,:descr, :endDate, :items, :projectCode, :projectMinus, :projectPlus, :projectSections, :voItems, :contractId)")
-    fun insertProject(projectId: String, descr: String?, endDate: String?,
-                      items: ArrayList<ProjectItemDTO>?, projectCode: String?, projectMinus: String?, projectPlus: String?,
-                      projectSections: ArrayList<ProjectSectionDTO>?, voItems: ArrayList<VoItemDTO>?, contractId : String?) : Long
+@Query("INSERT INTO PROJECT_TABLE (projectId,descr, endDate, items, projectCode, projectMinus, projectPlus,projectSections, voItems, contractId) VALUES (:projectId,:descr, :endDate, :items, :projectCode, :projectMinus, :projectPlus, :projectSections, :voItems, :contractId)")
+fun insertProject(
+    projectId: String,
+    descr: String?,
+    endDate: String?,
+    items: ArrayList<ProjectItemDTO>?,
+    projectCode: String?,
+    projectMinus: String?,
+    projectPlus: String?,
+    projectSections: ArrayList<ProjectSectionDTO>?,
+    voItems: ArrayList<VoItemDTO>?,
+    contractId: String?
+): Long
 
     @Update(onConflict = OnConflictStrategy.REPLACE)
-    fun updateProject(project : ProjectDTO)
+    fun updateProject(project: ProjectDTO)
 
     @Query("SELECT projectId FROM PROJECT_TABLE WHERE projectId = projectId")
-    fun getProjectId() : String
-
+    fun getProjectId(): String
 
     @Query("SELECT * FROM PROJECT_TABLE ")
-    fun getAllProjects() : LiveData<List<ProjectDTO>>
+    fun getAllProjects(): LiveData<List<ProjectDTO>>
 
     @Query("SELECT projectId FROM PROJECT_TABLE WHERE projectId = :projectId")
     fun checkProjectExists(projectId: String): Boolean
@@ -44,7 +52,6 @@ interface ProjectDao {
 
     @Query("SELECT descr FROM PROJECT_TABLE WHERE projectId = :projectId")
     fun getProjectDescription(projectId: String): String
-
 
     @Query("SELECT * FROM PROJECT_TABLE WHERE projectId = :projectId")
     fun getProjectById(projectId: String): ProjectDTO
@@ -58,6 +65,4 @@ interface ProjectDao {
 
     @Query("SELECT projectCode FROM PROJECT_TABLE WHERE projectId LIKE :projectId")
     fun getProjectCodeForId(projectId: String?): String
-
-
 }

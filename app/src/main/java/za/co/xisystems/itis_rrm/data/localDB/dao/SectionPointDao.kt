@@ -11,7 +11,6 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.SectionPointDTO
  * Created by Francis Mahlava on 2019/11/21.
  */
 
-
 @Dao
 interface SectionPointDao {
 
@@ -24,9 +23,8 @@ interface SectionPointDao {
     @Query("INSERT INTO SECTION_POINT_TABLE (direction, linearId ,pointLocation,sectionId ,projectId ,  jobId ) VALUES (:direction ,:linearId ,:pointLocation  ,:sectionId ,:projectId ,:jobId)")
     fun insertSection(direction: String, linearId: String, pointLocation: Double, sectionId: Int, projectId: String?, jobId: String?)
 
-
     @Query("SELECT * FROM SECTION_POINT_TABLE WHERE  projectId LIKE :projectId")
-    fun getPointSectionData( projectId: String?): LiveData<SectionPointDTO>  //jobId: String jobId LIKE :jobId AND
+    fun getPointSectionData(projectId: String?): LiveData<SectionPointDTO> // jobId: String jobId LIKE :jobId AND
 
     @Query("SELECT * FROM SECTION_POINT_TABLE WHERE sectionId = :sectionId AND projectId LIKE :projectId AND jobId LIKE :jobId")
     fun getExistingSection(
@@ -43,14 +41,9 @@ interface SectionPointDao {
 //
 //    @Query("SELECT sectionId FROM PROJECT_SECTION_TABLE WHERE section = :sectionId  AND route = :linearId AND projectId = :projectId")
 //    fun getSectionByRouteSectionProject(linearId: String, sectionId: Int, projectId: String?) : String
-////    fun getSectionByRouteSectionProject(linearId: String, sectionId: Int, direction: String, projectId: String?)
+// //    fun getSectionByRouteSectionProject(linearId: String, sectionId: Int, direction: String, projectId: String?)
 //
 //
-
-
-
-
-
 
     //    @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE projectId = :projectId")
 //    fun getAllItemsForProjectId(projectId: String): LiveData<List<ItemDTO>>
@@ -62,6 +55,4 @@ interface SectionPointDao {
 //
     @Query("DELETE FROM SECTION_POINT_TABLE")
     fun deleteAll()
-
-
 }

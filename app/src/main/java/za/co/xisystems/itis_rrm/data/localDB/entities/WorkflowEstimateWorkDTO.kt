@@ -1,8 +1,6 @@
 package za.co.xisystems.itis_rrm.data.localDB.entities
 
-
 import com.google.gson.annotations.SerializedName
-
 
 data class WorkflowEstimateWorkDTO(
     @SerializedName("ActId")

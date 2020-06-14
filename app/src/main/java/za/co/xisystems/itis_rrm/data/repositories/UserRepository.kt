@@ -38,7 +38,6 @@ class UserRepository(
                 throw authEx
             }
         }
-
     }
 
     suspend fun getPin(): String {
@@ -52,7 +51,6 @@ class UserRepository(
             Db.getUserDao().getUser()
         }
     }
-
 
     suspend fun userRegister(
         username: String,
@@ -79,13 +77,13 @@ class UserRepository(
         confirmPin: String
     ) {
         Coroutines.io {
-            Db.getUserDao().updateUser(confirmPin, phoneNumber, IMEI, androidDevice)//userId,
+            Db.getUserDao().updateUser(confirmPin, phoneNumber, IMEI, androidDevice) // userId,
         }
     }
 
     fun upDateUserPin(confirmNewPin: String, enterOldPin: String) {
         Coroutines.io {
-            Db.getUserDao().upDateUserPin(confirmNewPin, enterOldPin)//userId,
+            Db.getUserDao().upDateUserPin(confirmNewPin, enterOldPin) // userId,
         }
     }
 
@@ -96,13 +94,11 @@ class UserRepository(
                 Db.getUserDao().insert(user)
             }
 
-            if (user.userRoles != null) {
+            if (user.userRoles.isNotEmpty()) {
                 for (userRole in user.userRoles) {
                     Db.getUserRoleDao().saveRole(userRole)
                 }
-
             }
         }
     }
-
 }

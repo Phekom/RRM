@@ -1,6 +1,6 @@
 package za.co.xisystems.itis_rrm.data.repositories
 
-//import sun.security.krb5.Confounder.bytes
+// import sun.security.krb5.Confounder.bytes
 
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LiveData
@@ -22,7 +22,6 @@ import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import java.util.*
 
-
 /**
  * Created by Francis Mahlava on 2019/11/28.
  */
@@ -35,22 +34,16 @@ class WorkDataRepository(
         val TAG: String = WorkDataRepository::class.java.simpleName
     }
 
-
     val workflowJobs = MutableLiveData<WorkflowJobDTO>()
     val works = MutableLiveData<String>()
     val photoUpload = MutableLiveData<String?>()
-
 
     init {
 
         workflowJobs.observeForever {
             saveWorkflowJob(it)
-
         }
-
-
     }
-
 
     suspend fun getUser(): LiveData<UserDTO> {
         return withContext(Dispatchers.IO) {
@@ -100,7 +93,6 @@ class WorkDataRepository(
         }
     }
 
-
     suspend fun submitWorks(
         estimateWorksItem: JobEstimateWorksDTO,
         activity: FragmentActivity,
@@ -138,7 +130,6 @@ class WorkDataRepository(
             throw e
         }
     }
-
 
     private fun postValue(
         response: String?,
@@ -195,7 +186,6 @@ class WorkDataRepository(
             Timber.e(emptyPhotosException)
             throw emptyPhotosException
         }
-
     }
 
     private fun uploadRrmImage(
@@ -234,12 +224,13 @@ class WorkDataRepository(
             if (totalImages <= imageCounter) {
                 Timber.d("Total Images: $totalImages")
             }
-
         }
     }
 
     private fun getData(
-        filename: String, photoQuality: PhotoQuality, activity: FragmentActivity
+        filename: String,
+        photoQuality: PhotoQuality,
+        activity: FragmentActivity
     ): ByteArray {
         val uri = PhotoUtil.getPhotoPathFromExternalDirectory(filename)
         val bitmap =
@@ -290,7 +281,6 @@ class WorkDataRepository(
                 Timber.e(e, "Failed to update workflow")
                 throw e
             }
-
         }
     }
 
@@ -298,13 +288,11 @@ class WorkDataRepository(
         this.trackRouteId = toBigEndian!!
     }
 
-
     suspend fun getWorkFlowCodes(eId: Int): LiveData<List<WF_WorkStepDTO>> {
         return withContext(Dispatchers.IO) {
             Db.getWorkStepDao().getWorkflowSteps(eId)
         }
     }
-
 
     suspend fun createEstimateWorksPhoto(
         estimateWorksPhotos: ArrayList<JobEstimateWorksPhotoDTO>,
@@ -320,16 +308,13 @@ class WorkDataRepository(
                     } else {
                         Timber.d("${estimateWorksPhoto.filename} was already in the database")
                     }
-
                 }
                 Db.getEstimateWorkDao().updateJobEstimateWorkForEstimateID(
                     estimateWorksItem.jobEstimateWorksPhotos!!,
                     estimateWorksItem.estimateId
                 )
             }
-
         }
-
     }
 
     suspend fun getJobItemsEstimatesDoneForJobId(
@@ -343,13 +328,11 @@ class WorkDataRepository(
         }
     }
 
-
     suspend fun getJobEstiItemForEstimateId(estimateId: String?): LiveData<List<JobEstimateWorksDTO>> {
         return withContext(Dispatchers.IO) {
             Db.getEstimateWorkDao().getJobMeasureItemsForJobId(estimateId)
         }
     }
-
 
     suspend fun getJobItemEstimateForEstimateId(estimateId: String): LiveData<JobItemEstimateDTO> {
         return withContext(Dispatchers.IO) {
@@ -368,7 +351,6 @@ class WorkDataRepository(
         }
     }
 
-
     fun insertOrUpdateWorkflowJobInSQLite(job: WorkflowJobDTO?) {
         job?.let {
             updateWorkflowJobValuesAndInsertWhenNeeded(it)
@@ -378,7 +360,6 @@ class WorkDataRepository(
     private fun updateWorkflowJobValuesAndInsertWhenNeeded(job: WorkflowJobDTO) {
         Coroutines.io {
             Db.getJobDao().updateJob(job.trackRouteId, job.actId, job.jiNo, job.jobId)
-
 
             job.workflowItemEstimates?.forEach { jobItemEstimate ->
                 Db.getJobItemEstimateDao().updateExistingJobItemEstimateWorkflow(
@@ -393,7 +374,8 @@ class WorkDataRepository(
                     )
                         Db.getEstimateWorkDao().insertJobEstimateWorks(
                             // TODO: b0rk3d - Fix this broken casting.
-                            jobEstimateWorks as JobEstimateWorksDTO
+                            // jobEstimateWorks as JobEstimateWorksDTO
+                            TODO("This should never happen!")
                         )
                     else
                         Db.getEstimateWorkDao().updateJobEstimateWorksWorkflow(
@@ -405,9 +387,7 @@ class WorkDataRepository(
                             jobEstimateWorks.trackRouteId
                         )
                 }
-
             }
-
 
             job.workflowItemMeasures?.forEach { jobItemMeasure ->
                 Db.getJobItemMeasureDao().updateWorkflowJobItemMeasure(
@@ -417,7 +397,6 @@ class WorkDataRepository(
                     jobItemMeasure.measureGroupId
                 )
             }
-
 
             //  Place the Job Section, UPDATE OR CREATE
             job.workflowJobSections?.forEach { jobSection ->
@@ -437,12 +416,10 @@ class WorkDataRepository(
         }
     }
 
-
     private fun setWorkflowJobBigEndianGuids(job: WorkflowJobDTO): WorkflowJobDTO? {
 
         job.jobId = DataConversion.toBigEndian(job.jobId)
         job.trackRouteId = DataConversion.toBigEndian(job.trackRouteId)
-
 
         job.workflowItemEstimates?.forEach { jie ->
             jie.estimateId = DataConversion.toBigEndian(jie.estimateId)!!
@@ -455,13 +432,11 @@ class WorkDataRepository(
             }
         }
 
-
         job.workflowItemMeasures?.forEach { jim ->
             jim.itemMeasureId = DataConversion.toBigEndian(jim.itemMeasureId)!!
             jim.measureGroupId = DataConversion.toBigEndian(jim.measureGroupId)!!
             jim.trackRouteId = DataConversion.toBigEndian(jim.trackRouteId)!!
         }
-
 
         job.workflowJobSections?.forEach { js ->
             js.jobSectionId = DataConversion.toBigEndian(js.jobSectionId)!!
@@ -472,18 +447,15 @@ class WorkDataRepository(
         return job
     }
 
-
     private operator fun <T> LiveData<T>.not(): Boolean {
         return true
     }
-
 
     suspend fun getSectionForProjectSectionId(sectionId: String?): String {
         return withContext(Dispatchers.IO) {
             Db.getProjectSectionDao().getSectionForProjectSectionId(sectionId!!)
         }
     }
-
 
     suspend fun getUOMForProjectItemId(projectItemId: String): String {
         return withContext(Dispatchers.IO) {
@@ -502,7 +474,6 @@ class WorkDataRepository(
             Db.getJobSectionDao().getProjectSectionId(jobId!!)
         }
     }
-
 
     suspend fun getJobEstimationItemsForJobId(
         jobID: String?,
@@ -538,7 +509,6 @@ class WorkDataRepository(
                 e.message
             }
         }
-
     }
 
     suspend fun processWorkflowMoveV2(
@@ -562,7 +532,6 @@ class WorkDataRepository(
             Timber.e(e, "Failed to process workflow move: ${e.message}")
             throw e
         }
-
     }
 
     suspend fun getWorkItemsForActID(actId: Int): LiveData<List<JobEstimateWorksDTO>> {
@@ -571,47 +540,3 @@ class WorkDataRepository(
         }
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

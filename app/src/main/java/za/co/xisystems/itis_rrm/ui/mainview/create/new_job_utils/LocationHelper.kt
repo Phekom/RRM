@@ -24,7 +24,6 @@ class LocationHelper(private val locationConsumer: LocationAware) : ConnectionCa
     private var googleApiClient: GoogleApiClient? = null
     private var locationRequest: LocationRequest? = null
 
-
     // TODO fix ported legacy code
     @SuppressLint("RestrictedApi")
     fun onCreate() {
@@ -78,7 +77,6 @@ class LocationHelper(private val locationConsumer: LocationAware) : ConnectionCa
         }
     }
 
-
     // TODO fix ported legacy code
     private fun startLocationUpdates() {
         if (PermissionController.checkPermissionsEnabled(getApplicationContext())) {
@@ -86,8 +84,8 @@ class LocationHelper(private val locationConsumer: LocationAware) : ConnectionCa
                 if (ActivityCompat.checkSelfPermission(
                         locationConsumer.getHostActivity(),
                         Manifest.permission.ACCESS_FINE_LOCATION
-                    ) != PackageManager.PERMISSION_GRANTED
-                    && ActivityCompat.checkSelfPermission(
+                    ) != PackageManager.PERMISSION_GRANTED &&
+                    ActivityCompat.checkSelfPermission(
                         locationConsumer.getHostActivity(),
                         Manifest.permission.ACCESS_COARSE_LOCATION
                     ) != PackageManager.PERMISSION_GRANTED
@@ -136,11 +134,11 @@ class LocationHelper(private val locationConsumer: LocationAware) : ConnectionCa
         if (null == getCurrentLocation() && (ActivityCompat.checkSelfPermission(
                 locationConsumer.getHostActivity(),
                 Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED
-                    && ActivityCompat.checkSelfPermission(
-                locationConsumer.getHostActivity(),
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED)
+            ) != PackageManager.PERMISSION_GRANTED &&
+                    ActivityCompat.checkSelfPermission(
+                        locationConsumer.getHostActivity(),
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                    ) != PackageManager.PERMISSION_GRANTED)
         ) { // TODO: Consider calling
 //    ActivityCompat#requestPermissions
 // here to request the missing permissions, and then overriding
@@ -175,7 +173,6 @@ class LocationHelper(private val locationConsumer: LocationAware) : ConnectionCa
         setCurrentLocation(location)
     }
 
-
     fun getCurrentLocation(): Location? {
         return locationConsumer.getCurrentLocation()
     }
@@ -189,8 +186,6 @@ class LocationHelper(private val locationConsumer: LocationAware) : ConnectionCa
             super.onLocationResult(p0)
             this@LocationHelper.setCurrentLocation(p0?.lastLocation)
         }
-
-
     }
 
     var locationListener = LocationListener {
@@ -198,5 +193,4 @@ class LocationHelper(private val locationConsumer: LocationAware) : ConnectionCa
             setCurrentLocation(it)
         }
     }
-
 }

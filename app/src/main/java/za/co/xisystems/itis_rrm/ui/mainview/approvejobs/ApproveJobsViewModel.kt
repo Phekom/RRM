@@ -15,7 +15,7 @@ import za.co.xisystems.itis_rrm.utils.lazyDeferred
 /**
  * Created by Francis Mahlava on 03,October,2019
  */
-class ApproveJobsViewModel (
+class ApproveJobsViewModel(
     private val jobApprovalDataRepository: JobApprovalDataRepository,
     private val offlineDataRepository: OfflineDataRepository
 ) : ViewModel() {
@@ -61,9 +61,19 @@ class ApproveJobsViewModel (
         jobapproval_Item6.value = jobapproval6
     }
 
-    suspend fun processWorkflowMove( userId: String, trackRounteId: String, description: String?, direction: Int ) : String {
+    suspend fun processWorkflowMove(
+        userId: String,
+        trackRounteId: String,
+        description: String?,
+        direction: Int
+    ): String {
         return withContext(Dispatchers.IO) {
-            jobApprovalDataRepository.processWorkflowMove( userId ,trackRounteId, description, direction)
+            jobApprovalDataRepository.processWorkflowMove(
+                userId,
+                trackRounteId,
+                description,
+                direction
+            )
         }
     }
 
@@ -90,7 +100,6 @@ class ApproveJobsViewModel (
         }
     }
 
-
     suspend fun getJobEstimationItemsPhotoStartPath(estimateId: String): String {
         return withContext(Dispatchers.IO) {
             jobApprovalDataRepository.getJobEstimationItemsPhotoStartPath(estimateId)
@@ -108,12 +117,15 @@ class ApproveJobsViewModel (
         }
     }
 
-    suspend fun upDateEstimate(new_quantity: String, new_total: String, estimateId: String) : String{
+    suspend fun upDateEstimate(
+        new_quantity: String,
+        new_total: String,
+        estimateId: String
+    ): String {
         return withContext(Dispatchers.IO) {
             jobApprovalDataRepository.upDateEstimate(new_quantity, new_total, estimateId)
         }
     }
-
 
     suspend fun getQuantityForEstimationItemId(estimateId: String): LiveData<Double> {
         return withContext(Dispatchers.IO) {
@@ -121,14 +133,11 @@ class ApproveJobsViewModel (
         }
     }
 
-
-
-    suspend fun getLineRateForEstimationItemId(estimateId: String):  LiveData<Double> {
+    suspend fun getLineRateForEstimationItemId(estimateId: String): LiveData<Double> {
         return withContext(Dispatchers.IO) {
             jobApprovalDataRepository.getLineRateForEstimationItemId(estimateId)
         }
     }
-
 
 //    suspend fun getMessages() : String {
 //        return withContext(Dispatchers.IO) {
@@ -156,6 +165,4 @@ class ApproveJobsViewModel (
 //    fun Item5(jobapproval5: String) {
 //        jobapproval_Item5.value = jobapproval5
 //    }
-
-
 }

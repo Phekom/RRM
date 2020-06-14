@@ -28,15 +28,12 @@ import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.*
 import java.util.*
 
-
 /**
  * Created by Francis Mahlava on 2019/10/18.
  * Updated by Shaun McDonald on 2020/04/22
  */
 
-
 class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListener, KodeinAware {
-
 
     private var uiScope = UiLifecycleScope()
     override val kodein by kodein()
@@ -80,11 +77,10 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
         newJobItemEstimatesWorksList = ArrayList()
 
         setHasOptionsMenu(true)
-
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
     override fun onPrepareOptionsMenu(menu: Menu) {
@@ -98,7 +94,8 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
 
     override fun onCreateView(
         inflater: LayoutInflater,
-        container: ViewGroup?, savedInstanceState: Bundle?
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
     ): View? {
 
         try {
@@ -119,9 +116,7 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
 
         lifecycleScope.launch {
             whenStarted {
-
             }
-
         }
     }
 
@@ -154,16 +149,12 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
                         descri = description
                         createViewModel.setDescription(descri!!)
                         setContractAndProjectSelection(view)
-
                     }
-
                 }
-
             }
         }
 
         selectContractProjectContinueButton.setOnClickListener(myClickListener)
-
     }
 
     private fun createNewJob() {
@@ -179,7 +170,6 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
             )
             createViewModel.saveNewJob(createdJob)
         }
-
     }
 
     private fun createNewJob(
@@ -214,7 +204,7 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
             today.toString(),
             today.toString(),
             today.toString(),
-            null,//null,null,null,null,
+            null, // null,null,null,null,
             newJobItemEstimatesList,
             jobItemMeasureArrayList,
             jobItemSectionArrayList,
@@ -293,7 +283,7 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
                         requireContext().applicationContext,
                         contractSpinner,
                         contractList,
-                        contractIndices, //null)
+                        contractIndices, // null)
                         object : SpinnerHelper.SelectionListener<ContractDTO> {
                             override fun onItemSelected(position: Int, item: ContractDTO) {
                                 selectedContract = item
@@ -302,19 +292,16 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
                                     createViewModel.setContractId(item.contractId)
                                 }
                             }
-
                         })
                 })
             }
         } catch (e: NoInternetException) {
             Toast.makeText(context, e.message, Toast.LENGTH_SHORT).show()
             Timber.e(e, "No Internet Connection")
-
         } catch (e: NoConnectivityException) {
             Toast.makeText(context, e.message, Toast.LENGTH_SHORT).show()
             Timber.e(e, "Backend Host Unreachable")
         }
-
     }
 
     private fun setProjects(contractId: String?) {
@@ -331,7 +318,7 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
                 setSpinner(requireContext().applicationContext,
                     projectSpinner,
                     projec_t,
-                    projectNmbr, //null)
+                    projectNmbr, // null)
                     object : SpinnerHelper.SelectionListener<ProjectDTO> {
                         override fun onItemSelected(position: Int, item: ProjectDTO) {
                             selectedProject = item
@@ -340,7 +327,6 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
                             }
                         }
                     })
-
             })
         }
     }
@@ -359,18 +345,5 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
 
     companion object {
         val TAG: String = CreateFragment::class.java.simpleName
-
     }
-
 }
-
-
-
-
-
-
-
-
-
-
-

@@ -1,16 +1,16 @@
-//package za.co.xisystems.itis_rrm.data.localDB.entities
+// package za.co.xisystems.itis_rrm.data.localDB.entities
 //
 //
-//import androidx.room.Entity
-//import androidx.room.PrimaryKey
-//import com.fasterxml.jackson.annotation.JsonProperty
-//import com.google.gson.annotations.SerializedName
-//import java.io.Serializable
+// import androidx.room.Entity
+// import androidx.room.PrimaryKey
+// import com.fasterxml.jackson.annotation.JsonProperty
+// import com.google.gson.annotations.SerializedName
+// import java.io.Serializable
 //
-//const val JOB_ITEM_MEASURE_PHOTO_TEMP = "JOB_ITEM_MEASURE_PHOTO_TEMP"
+// const val JOB_ITEM_MEASURE_PHOTO_TEMP = "JOB_ITEM_MEASURE_PHOTO_TEMP"
 //
-//@Entity(tableName = JOB_ITEM_MEASURE_PHOTO_TEMP)
-//data class JobItemMeasurePhotoDTOTemp(
+// @Entity(tableName = JOB_ITEM_MEASURE_PHOTO_TEMP)
+// data class JobItemMeasurePhotoDTOTemp(
 //    @PrimaryKey(autoGenerate = true)
 //    val ID: Int,
 //    @SerializedName("Descr")
@@ -45,4 +45,4 @@
 //    val recordSynchStateId: Int,
 //    @SerializedName("RecordVersion")
 //    val recordVersion: Int
-//): Serializable
+// ): Serializable

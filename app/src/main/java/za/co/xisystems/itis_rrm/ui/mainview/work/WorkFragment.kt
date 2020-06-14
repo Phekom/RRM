@@ -19,6 +19,7 @@ import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.GroupieViewHolder
 import kotlinx.android.synthetic.main.fragment_work.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
@@ -36,7 +37,6 @@ import za.co.xisystems.itis_rrm.utils.ApiException
 import za.co.xisystems.itis_rrm.utils.NoConnectivityException
 import za.co.xisystems.itis_rrm.utils.NoInternetException
 
-
 const val INSET_TYPE_KEY = "inset_type"
 const val INSET = "inset"
 
@@ -49,8 +49,8 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
     private val factory: WorkViewModelFactory by instance<WorkViewModelFactory>()
     private var uiScope = UiLifecycleScope()
     private var dialog: ProgressDialog? = null
-    init {
 
+    init {
 
         lifecycleScope.launch {
 
@@ -65,8 +65,7 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
                 uiScope.onCreate()
                 viewLifecycleOwner.lifecycle.addObserver(uiScope)
 
-
-                uiScope.launch(coroutineContext) {
+                uiScope.launch(uiScope.coroutineContext) {
                     try {
                         refreshEstimateJobsFromLocal()
                     } catch (e: ApiException) {
@@ -83,33 +82,41 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
             }
 
         }
-
     }
 
-    private suspend fun refreshEstimateJobsFromLocal() = uiScope.launch(uiScope.coroutineContext) {
-        workViewModel.getJobsForActivityId(
-            ActivityIdConstants.JOB_APPROVED,
-            ActivityIdConstants.ESTIMATE_INCOMPLETE
-        ).observeOnce(viewLifecycleOwner, Observer { work_s ->
-            if (work_s.isNullOrEmpty()) {
-                no_data_layout.visibility = View.VISIBLE
-            } else {
-                no_data_layout.visibility = View.GONE
-                group7_loading.visibility = View.GONE
-                val headerItems = work_s.distinctBy {
-                    it.JobId
-                }
-                uiScope.launch(uiScope.coroutineContext) {
-                    initRecyclerView(headerItems.toWorkListItems())
-                }
-            }
+    private suspend fun refreshEstimateJobsFromLocal() {
 
-        })
+        withContext(uiScope.coroutineContext) {
+            group7_loading.visibility = View.VISIBLE
+            workViewModel.getJobsForActivityId(
+                ActivityIdConstants.JOB_APPROVED,
+                ActivityIdConstants.ESTIMATE_INCOMPLETE
+            ).observeOnce(viewLifecycleOwner, Observer { jobsList ->
+                group7_loading.visibility = View.GONE
+                if (jobsList.isNullOrEmpty()) {
+                    no_data_layout.visibility = View.VISIBLE
+                } else {
+
+                    no_data_layout.visibility = View.GONE
+
+                    val headerItems = jobsList.distinctBy {
+                        it.JobId
+                    }
+
+                    uiScope.launch(uiScope.coroutineContext) {
+                        this@WorkFragment.initRecyclerView(headerItems.toWorkListItems())
+                    }
+
+
+                }
+            })
+        }
     }
 
     override fun onCreateView(
         inflater: LayoutInflater,
-        container: ViewGroup?, savedInstanceState: Bundle?
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
     ): View? {
         return inflater.inflate(R.layout.fragment_work, container, false)
     }
@@ -141,8 +148,10 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
             dialog!!.show()
             uiScope.launch(uiScope.coroutineContext) {
                 try {
-                    refreshUserTaskListFromApi()
-                    refreshEstimateJobsFromLocal()
+                    withContext(uiScope.coroutineContext) {
+                        refreshUserTaskListFromApi()
+                        refreshEstimateJobsFromLocal()
+                    }
                 } catch (e: ApiException) {
                     ToastUtils().toastLong(activity, e.message)
                     Timber.e(e, "API Exception")
@@ -160,17 +169,15 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
         }
     }
 
-    private suspend fun refreshUserTaskListFromApi() {
+    private suspend fun refreshUserTaskListFromApi() = uiScope.launch(uiScope.coroutineContext) {
         // This definitely needs to be a one-shot operation
-        val jobs = workViewModel.offlineUserTaskList.await()
-        jobs.observeOnce(viewLifecycleOwner, Observer { works ->
-            if (works.isEmpty()) {
-                no_data_layout.visibility = View.VISIBLE
-            }
-
-        })
+        withContext(uiScope.coroutineContext) {
+            val jobs = workViewModel.offlineUserTaskList.await()
+            jobs.observeOnce(viewLifecycleOwner, Observer { works ->
+                toast("${works.size} / ${works.count()} loaded.")
+            })
+        }
     }
-
 
     private fun initRecyclerView(
         workListItems: List<ExpandableGroup>
@@ -184,7 +191,6 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
             adapter = groupAdapter
             work_listView.itemAnimator = null
         }
-
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -198,28 +204,24 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
 
         if (item != null) item.isVisible = false
         if (item1 != null) item1.isVisible = false
-
     }
 
     override fun onStop() {
         uiScope.destroy()
         super.onStop()
-
     }
 
     override fun onDestroyView() {
         work_listView?.adapter = null
         super.onDestroyView()
-
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
-
     private suspend fun List<JobDTO>.toWorkListItems(): List<ExpandableGroup> {
-        //Initialize Expandable group with expandable item and specify whether it should be expanded by default or not
+        // Initialize Expandable group with expandable item and specify whether it should be expanded by default or not
 
         return this.map { work_items ->
 
@@ -227,7 +229,7 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
                 ExpandableHeaderWorkItem(activity, work_items, workViewModel)
             ExpandableGroup(expandableHeaderItem, false).apply {
 
-                //ESTIMATE_WORK_PART_COMPLETE
+                // ESTIMATE_WORK_PART_COMPLETE
 
                 val estimates = workViewModel.getJobEstimationItemsForJobId(
                     work_items.JobId,
@@ -252,19 +254,13 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
                                         estimateId, workViewModel, item, work_items
                                     )
                                 )
-
                             } catch (exception: Exception) {
                                 Timber.e(exception)
                             }
                         }
-
                     }
-
                 })
-
             }
         }
     }
 }
-
-

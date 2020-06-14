@@ -96,8 +96,8 @@
                 <TextView
                         style="@style/_orangeTextLabel"
                         android:layout_width="0dp"
-                        android:layout_marginLeft="@dimen/medium"
-                        android:layout_weight="1"
+                    android:layout_marginStart="@dimen/medium"
+                    android:layout_weight="1"
                         android:text="@string/project_items" />
 
                 <ImageButton
@@ -158,16 +158,16 @@
                         android:alpha="0.1" />
 
                 <TextView
-                        android:id="@+id/totalCostTextView"
-                        style="@style/_default"
-                        android:gravity="right|end"
-                        android:hint="Total: R 0"
-                        android:paddingLeft="@dimen/small"
-                        android:paddingTop="@dimen/xsmall"
-                        android:paddingRight="@dimen/small"
-                        android:paddingBottom="@dimen/xsmall"
-                        android:textSize="@dimen/text_medium"
-                        android:textStyle="bold" />
+                    android:id="@+id/totalCostTextView"
+                    style="@style/_default"
+                    android:gravity="end"
+                    android:hint="Total: R 0"
+                    android:paddingLeft="@dimen/small"
+                    android:paddingTop="@dimen/xsmall"
+                    android:paddingRight="@dimen/small"
+                    android:paddingBottom="@dimen/xsmall"
+                    android:textSize="@dimen/text_medium"
+                    android:textStyle="bold" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
@@ -203,27 +203,27 @@
                     android:orientation="horizontal">
 
                 <TextView
-                        style="@style/_orangeTextLabel"
-                        android:layout_width="wrap_content"
-                        android:layout_margin="@dimen/small"
-                        android:gravity="left"
-                        android:paddingLeft="@dimen/xsmall"
-                        android:paddingRight="@dimen/xsmall"
-                        android:text="Estimated Start Date: " />
+                    style="@style/_orangeTextLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_margin="@dimen/small"
+                    android:gravity="start"
+                    android:paddingLeft="@dimen/xsmall"
+                    android:paddingRight="@dimen/xsmall"
+                    android:text="Estimated Start Date: " />
 
                 <TextView
-                        android:id="@+id/startDateTextView"
-                        style="@style/_default"
-                        android:layout_margin="@dimen/small"
-                        android:drawableRight="@drawable/ic_baseline_chevron_right_24px"
-                        android:ellipsize="end"
-                        android:gravity="left"
-                        android:hint="(Click to select date)"
-                        android:maxLines="1"
-                        android:paddingLeft="@dimen/xsmall"
-                        android:paddingRight="@dimen/xsmall"
-                        android:textColor="@color/black"
-                        android:textColorHint="@color/silver" />
+                    android:id="@+id/startDateTextView"
+                    style="@style/_default"
+                    android:layout_margin="@dimen/small"
+                    android:drawableEnd="@drawable/ic_baseline_chevron_right_24px"
+                    android:ellipsize="end"
+                    android:gravity="start"
+                    android:hint="(Click to select date)"
+                    android:maxLines="1"
+                    android:paddingLeft="@dimen/xsmall"
+                    android:paddingRight="@dimen/xsmall"
+                    android:textColor="@color/black"
+                    android:textColorHint="@color/silver" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
@@ -242,27 +242,27 @@
                     android:orientation="horizontal">
 
                 <TextView
-                        style="@style/_orangeTextLabel"
-                        android:layout_width="wrap_content"
-                        android:layout_margin="@dimen/small"
-                        android:gravity="left"
-                        android:paddingLeft="@dimen/xsmall"
-                        android:paddingRight="@dimen/xsmall"
-                        android:text="Estimated Due Date: " />
+                    style="@style/_orangeTextLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_margin="@dimen/small"
+                    android:gravity="start"
+                    android:paddingLeft="@dimen/xsmall"
+                    android:paddingRight="@dimen/xsmall"
+                    android:text="Estimated Due Date: " />
 
                 <TextView
-                        android:id="@+id/dueDateTextView"
-                        style="@style/_default"
-                        android:layout_margin="@dimen/small"
-                        android:drawableRight="@drawable/ic_baseline_chevron_right_24px"
-                        android:ellipsize="end"
-                        android:gravity="left"
-                        android:hint="(Click to select date)"
-                        android:maxLines="1"
-                        android:paddingLeft="@dimen/xsmall"
-                        android:paddingRight="@dimen/xsmall"
-                        android:textColor="@color/black"
-                        android:textColorHint="@color/silver" />
+                    android:id="@+id/dueDateTextView"
+                    style="@style/_default"
+                    android:layout_margin="@dimen/small"
+                    android:drawableEnd="@drawable/ic_baseline_chevron_right_24px"
+                    android:ellipsize="end"
+                    android:gravity="start"
+                    android:hint="(Click to select date)"
+                    android:maxLines="1"
+                    android:paddingLeft="@dimen/xsmall"
+                    android:paddingRight="@dimen/xsmall"
+                    android:textColor="@color/black"
+                    android:textColorHint="@color/silver" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 

@@ -16,15 +16,9 @@ import za.co.xisystems.itis_rrm.utils.Converters
  */
 
 @Database(
-    entities = [JobDTO::class, UserDTO::class , UserRoleDTO::class, ProjectItemDTO::class, ItemDTOTemp::class, JobDTOTemp::class,
-        ContractDTO::class, VoItemDTO::class, ProjectDTO::class , ProjectSectionDTO::class ,PrimaryKeyValueDTO::class
-        , LookupOptionDTO::class ,LookupDTO::class ,ItemSectionDTO::class ,WorkFlowDTO::class, SectionPointDTO::class
-        , WorkFlowRouteDTO::class ,JobSectionDTO::class ,InfoClassDTO::class ,ActivityDTO::class , ToDoGroupsDTO::class
-        , JobItemEstimatesPhotoDTO::class ,JobItemMeasurePhotoDTO::class ,JobItemEstimateDTO::class ,JobItemMeasureDTO::class
-        , ToDoListEntityDTO::class , ChildLookupDTO::class,JobEstimateWorksDTO::class , JobEstimateWorksPhotoDTO::class
-        ,SectionItemDTO::class,WorkFlowsDTO::class, WF_WorkStepDTO::class
-        //JobItemMeasureDTOTemp::class,JobItemMeasurePhotoDTOTemp::class,
-
+    entities = [JobDTO::class, UserDTO::class, UserRoleDTO::class, ProjectItemDTO::class, ItemDTOTemp::class, JobDTOTemp::class,
+        ContractDTO::class, VoItemDTO::class, ProjectDTO::class, ProjectSectionDTO::class, PrimaryKeyValueDTO::class, LookupOptionDTO::class, LookupDTO::class, ItemSectionDTO::class, WorkFlowDTO::class, SectionPointDTO::class, WorkFlowRouteDTO::class, JobSectionDTO::class, InfoClassDTO::class, ActivityDTO::class, ToDoGroupsDTO::class, JobItemEstimatesPhotoDTO::class, JobItemMeasurePhotoDTO::class, JobItemEstimateDTO::class, JobItemMeasureDTO::class, ToDoListEntityDTO::class, ChildLookupDTO::class, JobEstimateWorksDTO::class, JobEstimateWorksPhotoDTO::class, SectionItemDTO::class, WorkFlowsDTO::class, WF_WorkStepDTO::class
+        // JobItemMeasureDTOTemp::class,JobItemMeasurePhotoDTOTemp::class,
 
     ],
     version = 2
@@ -38,7 +32,6 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun getJobItemMeasureDao(): JobItemMeasureDao
     abstract fun getJobItemEstimatePhotoDao(): JobItemEstimatePhotoDao
     abstract fun getJobItemMeasurePhotoDao(): JobItemMeasurePhotoDao
-
 
     abstract fun getUserDao(): UserDao
     abstract fun getUserRoleDao(): UserRoleDao
@@ -61,7 +54,6 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun getEstimateWorkDao(): EstimateWorkDao
     abstract fun getEstimateWorkPhotoDao(): EstimateWorkPhotoDao
 
-
     abstract fun getSectionItemDao(): SectionItemDao
 //    abstract fun getJobItemMeasureDao_Temp(): JobItemMeasureDao_Temp
 //    abstract fun getJobItemMeasurePhotoDao_Temp(): JobItemMeasurePhotoDao_Temp
@@ -70,13 +62,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun getSectionPointDao(): SectionPointDao
     abstract fun getWorkStepDao(): WorkStepDao
 
-
-
 //    abstract fun getWorkFlowRouteDao(): WorkFlowRouteDao
-
-
-
-
 
     companion object {
 
@@ -96,14 +82,11 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
-
         private fun buildDatabase(context: Context) =
             Room.databaseBuilder(
                 context.applicationContext,
                 AppDatabase::class.java,
                 "myRRM_Database.db"
             ).addMigrations(MIGRATION_1_2).build()
-
-
     }
 }

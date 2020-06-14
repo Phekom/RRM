@@ -13,12 +13,10 @@ class UnSubmittedViewModel(
     private val offlineDataRepository: OfflineDataRepository
 ) : ViewModel() {
 
-
     val jobtoEdit_Item = MutableLiveData<JobDTO>()
     suspend fun getJobToEdit(jobId: String) {
         jobtoEdit_Item.value = offlineDataRepository.getUpdatedJob(jobId)
     }
-
 
     suspend fun getJobsForActivityId(activityId: Int): LiveData<List<JobDTO>> {
         return withContext(Dispatchers.IO) {
@@ -61,6 +59,4 @@ class UnSubmittedViewModel(
             offlineDataRepository.getProjectSection(sectionId)
         }
     }
-
-
 }

@@ -32,6 +32,4 @@ object Coroutines {
         CoroutineScope(Dispatchers.IO + connectivityHandler).launch {
             work()
         }
-
-
 }

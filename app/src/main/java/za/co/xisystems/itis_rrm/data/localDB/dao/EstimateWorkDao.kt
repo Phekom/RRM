@@ -15,7 +15,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksPhotoDTO
 interface EstimateWorkDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertJobEstimateWorks( estimates : JobEstimateWorksDTO )
+    suspend fun insertJobEstimateWorks(estimates: JobEstimateWorksDTO)
 
     @Query("SELECT * FROM JOB_ESTIMATE_WORKS WHERE worksId = :worksId")
     fun checkIfJobEstimateWorksExist(worksId: String): Boolean
@@ -26,9 +26,15 @@ interface EstimateWorkDao {
         @Query("UPDATE JOB_ESTIMATE_WORKS SET jobEstimateWorksPhotos =:jobEstimateWorksPhotos WHERE estimateId = :estimateId")
     fun updateJobEstimateWorkForEstimateID(jobEstimateWorksPhotos: ArrayList<JobEstimateWorksPhotoDTO>, estimateId: String?)
 
-
     @Query("UPDATE JOB_ESTIMATE_WORKS SET estimateId =:estimateId, recordVersion=:recordVersion,recordSynchStateId =:recordSynchStateId, trackRouteId =:trackRouteId, ActId =:actId WHERE worksId = :worksId")
-    fun updateJobEstimateWorksWorkflow( worksId: String?, estimateId: String?, recordVersion: Int, recordSynchStateId: Int,  actId: Int, trackRouteId: String? )
+    fun updateJobEstimateWorksWorkflow(
+        worksId: String?,
+        estimateId: String?,
+        recordVersion: Int,
+        recordSynchStateId: Int,
+        actId: Int,
+        trackRouteId: String?
+    )
 
     @Query("SELECT * FROM JOB_ESTIMATE_WORKS WHERE estimateId = :estimateId")
     fun checkIfJobEstimateWorksExistForEstimateId(estimateId: String): Boolean
@@ -36,12 +42,9 @@ interface EstimateWorkDao {
     @Query("SELECT * FROM JOB_ESTIMATE_WORKS WHERE estimateId = :estimateId")
     fun getJobEstimateWorksForEstimateId(estimateId: String?): JobEstimateWorksDTO
 
-
     @Query("DELETE FROM JOB_ESTIMATE_WORKS")
     fun deleteAll()
 
     @Query("SELECT * FROM JOB_ESTIMATE_WORKS WHERE actId < :actId")
     fun getWorkItemsForActID(actId: Int): LiveData<List<JobEstimateWorksDTO>>
-
-
 }

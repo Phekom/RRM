@@ -1,6 +1,6 @@
 package za.co.xisystems.itis_rrm.data.localDB.entities
 
-//import com.google.android.gms.common.util.Base64Utils
+// import com.google.android.gms.common.util.Base64Utils
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
@@ -62,4 +62,3 @@ data class PrimaryKeyValueDTO(
         return result
     }
 }
-

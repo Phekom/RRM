@@ -31,7 +31,6 @@ import za.co.xisystems.itis_rrm.utils.*
  * Created by Francis Mahlava on 03,October,2019
  */
 
-
 class ApproveMeasureFragment : BaseFragment(R.layout.fragment_approvemeasure), KodeinAware {
 
     override val kodein by kodein()
@@ -44,13 +43,14 @@ class ApproveMeasureFragment : BaseFragment(R.layout.fragment_approvemeasure), K
 
     override fun onCreateView(
         inflater: LayoutInflater,
-        container: ViewGroup?, savedInstanceState: Bundle?
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
     ): View? {
         return inflater.inflate(R.layout.fragment_approvemeasure, container, false)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -114,7 +114,6 @@ class ApproveMeasureFragment : BaseFragment(R.layout.fragment_approvemeasure), K
 
         approvem_swipe_to_refresh.setColorSchemeColors(Color.WHITE)
 
-
         approvem_swipe_to_refresh.setOnRefreshListener {
             dialog.show()
             Coroutines.main {
@@ -145,13 +144,11 @@ class ApproveMeasureFragment : BaseFragment(R.layout.fragment_approvemeasure), K
     private fun initRecyclerView(approveMeasureListItems: List<ApproveMeasureItem>) {
         val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
             addAll(approveMeasureListItems)
-
         }
 
         approve_measurements_list.apply {
             layoutManager = LinearLayoutManager(this.context)
             adapter = groupAdapter
-
         }
 
         groupAdapter.setOnItemClickListener { item, view ->
@@ -159,7 +156,6 @@ class ApproveMeasureFragment : BaseFragment(R.layout.fragment_approvemeasure), K
                 (item as? ApproveMeasureItem)?.let {
                     sendJobToApprove((it), view)
                 }
-
             }
         }
     }
@@ -174,7 +170,7 @@ class ApproveMeasureFragment : BaseFragment(R.layout.fragment_approvemeasure), K
         view: View
     ) {
         Coroutines.main {
-            approveViewModel.measureapproval_Item.value = job
+            job?.let { approveViewModel.setApproveMeasureItem(job) }
         }
 
         Navigation.findNavController(view)
@@ -186,9 +182,4 @@ class ApproveMeasureFragment : BaseFragment(R.layout.fragment_approvemeasure), K
             ApproveMeasureItem(approvej_items, approveViewModel)
         }
     }
-
-
 }
-
-
-

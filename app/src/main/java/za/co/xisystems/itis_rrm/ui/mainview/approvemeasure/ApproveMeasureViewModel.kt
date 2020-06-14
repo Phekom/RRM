@@ -1,8 +1,6 @@
 package za.co.xisystems.itis_rrm.ui.mainview.approvemeasure
 
 import android.app.Application
-import android.graphics.Bitmap
-import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -17,6 +15,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.ToDoListEntityDTO
 import za.co.xisystems.itis_rrm.data.repositories.MeasureApprovalDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
+import za.co.xisystems.itis_rrm.ui.custom.GalleryUIState
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.approveMeasure_Item.ApproveMeasureItem
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
@@ -35,7 +34,6 @@ class ApproveMeasureViewModel(
     private val offlineDataRepository: OfflineDataRepository
 ) : AndroidViewModel(application) {
 
-
     //    suspend fun getJobApproveMeasureForActivityId(activityId: Int): LiveData<List<JobItemMeasureDTO>> {
 //        return withContext(Dispatchers.IO) {
 //            offlineDataRepository.getJobApproveMeasureForActivityId(activityId)
@@ -48,7 +46,6 @@ class ApproveMeasureViewModel(
 //        }
 //    }
 
-
     val offlineUserTaskList by lazyDeferred {
         offlineDataRepository.getUserTaskList()
     }
@@ -58,7 +55,6 @@ class ApproveMeasureViewModel(
     val measureapproval_Item = MutableLiveData<ApproveMeasureItem>()
     var galleryUIState: MutableLiveData<XIResult<GalleryUIState>> = MutableLiveData()
     val job = SupervisorJob()
-
 
     var galleryMeasure: MutableLiveData<JobItemMeasureDTO> = MutableLiveData()
 
@@ -70,9 +66,8 @@ class ApproveMeasureViewModel(
         }
     }
 
-
-    fun Item5(measureapproval: ApproveMeasureItem) {
-        measureapproval_Item.value = measureapproval
+    fun setApproveMeasureItem(measureapproval: ApproveMeasureItem) {
+        measureapproval_Item.postValue(measureapproval)
     }
 
     suspend fun getJobApproveMeasureForActivityId(activityId: Int): LiveData<List<JobItemMeasureDTO>> {
@@ -233,20 +228,18 @@ class ApproveMeasureViewModel(
                     )
                 }
                 Pair(uri!!, bmap!!)
-
             }
 
             val uiState = GalleryUIState(
                 description = measureDescription,
                 qty = measureItem.qty,
                 lineRate = measureItem.lineRate,
-                photoPaths = bitmaps
+                photoPairs = bitmaps
             )
 
             uiState.lineAmount = uiState.qty * uiState.lineRate
 
             galleryUIState.postValue(XISuccess(uiState))
-
         } catch (e: Exception) {
             Timber.e(e, "Failed to retrieve itemMeasure for Gallery")
             val galleryFail = XIError(e, "Failed to retrieve itemMeasure for Gallery")
@@ -260,14 +253,5 @@ class ApproveMeasureViewModel(
         }
     }
 
-    data class GalleryUIState(
-        var description: String?,
-        var qty: Double,
-        var lineRate: Double,
-        var lineAmount: Double = 0.0,
-        var photoPaths: List<Pair<Uri, Bitmap?>>
-    )
 
 }
-
-

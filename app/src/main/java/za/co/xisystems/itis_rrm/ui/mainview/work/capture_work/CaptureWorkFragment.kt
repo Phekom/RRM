@@ -53,9 +53,7 @@ import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import java.util.*
 import kotlin.collections.ArrayList
 
-
 class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), KodeinAware {
-
 
     override val kodein by kodein()
     private lateinit var workViewModel: WorkViewModel
@@ -83,9 +81,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
     override fun onStop() {
         uiScope.destroy()
         super.onStop()
-
     }
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -97,17 +93,16 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
         estimateWorksList = ArrayList()
         estimateWorksArrayList = ArrayList()
         jobWorkStep = ArrayList()
-
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_capture_work, container, false)
     }
-
 
     override fun onDestroyView() {
         // Remember to flush the RecyclerView's adaptor
@@ -139,8 +134,6 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
 
                 getWorkItems(itemEstimate, itemEstimateJob)
             })
-
-
         }
 
         image_collection_view.visibility = View.GONE
@@ -279,13 +272,10 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
             parentFragmentManager.beginTransaction().detach(this).commitNow()
             prog.dismiss()
             parentFragmentManager.beginTransaction().attach(this).commitNow()
-
-
         } else {
             prog.dismiss()
             parentFragmentManager.beginTransaction().detach(this)
                 .attach(this).commit()
-
         }
 
         // Await the updated estimate record
@@ -303,8 +293,6 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                         Timber.d("IsRefresh -> Yes")
                     })
                 }
-
-
             })
         }
     }
@@ -322,7 +310,6 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                 )
                 startActivityForResult(takePictureIntent, AbstractIntent.REQUEST_TAKE_PHOTO)
             }
-
         }
     }
 
@@ -351,13 +338,10 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                 }
                 else -> toast("Error: Current location is null!")
             }
-
         } catch (e: Exception) {
             toast(R.string.error_getting_image)
             e.printStackTrace()
         }
-
-
     }
 
     private fun processPhotoWorks(
@@ -471,9 +455,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                     }
                     estimateWorksArrayList = estimateWorksList as ArrayList<JobEstimateWorksDTO>
                 })
-
             }
-
         }
     }
 
@@ -504,7 +486,6 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                         workflowSteps
                     )
                 })
-
         }
     }
 
@@ -538,8 +519,6 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
             }
 
             dialogBuilder.show()
-
-
         }
     }
 
@@ -556,9 +535,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                         jobItEstmt
                     )
                 })
-
             }
-
         }
     }
 
@@ -608,7 +585,6 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
         })
     }
 
-
     private fun popViewOnJobSubmit(direction: Int) {
         if (direction == WorkflowDirection.NEXT.value) {
             toast(R.string.job_approved)
@@ -621,12 +597,13 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
     }
 
     private fun initRecyclerView(
-        stateItems: List<WorkStateItem>, workCodes: List<WF_WorkStepDTO>
+        stateItems: List<WorkStateItem>,
+        workCodes: List<WF_WorkStepDTO>
     ) {
         groupAdapter.apply {
             Coroutines.main {
                 groupAdapter.clear()
-                for (i in workCodes.indices) {//stateItems.indices
+                for (i in workCodes.indices) { // stateItems.indices
                     add(stateItems[0])
                     groupAdapter.notifyDataSetChanged()
                 }
@@ -636,7 +613,6 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
             layoutManager = LinearLayoutManager(this.context)
             adapter = groupAdapter
         }
-
     }
 
     private fun List<JobEstimateWorksDTO>.toWorkStateItems(): List<WorkStateItem> {
@@ -653,7 +629,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
     fun getCurrentLocation(): LocationModel? {

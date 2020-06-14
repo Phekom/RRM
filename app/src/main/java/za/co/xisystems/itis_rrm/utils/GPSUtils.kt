@@ -20,7 +20,6 @@ import za.co.xisystems.itis_rrm.services.LocationLiveData
  **/
 class GpsUtils(private val context: Context) {
 
-
     private val settingsClient: SettingsClient = LocationServices.getSettingsClient(context)
     private val locationSettingsRequest: LocationSettingsRequest?
     private val locationManager =
@@ -76,6 +75,4 @@ class GpsUtils(private val context: Context) {
     interface OnGpsListener {
         fun gpsStatus(isGPSEnable: Boolean)
     }
-
-
 }
