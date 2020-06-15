@@ -29,7 +29,7 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnabl
     }
 
     override val kodein by kodein()
-    private val factory: AuthViewModelFactory by instance()
+    private val factory: AuthViewModelFactory by instance<AuthViewModelFactory>()
     private lateinit var viewModel: AuthViewModel
     private lateinit var appContext: Context
     private var permissions = arrayOf(

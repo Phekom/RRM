@@ -7,7 +7,7 @@ import za.co.xisystems.itis_rrm.R
 
 class Animations {
     @JvmField
-    val bounce: Animation;
+    val bounce: Animation
     @JvmField val bounce_short: Animation
     @JvmField val bounce_long: Animation
     @JvmField val bounce_soft: Animation

@@ -21,7 +21,7 @@ class SettingsActivity : AppCompatActivity(), KodeinAware {
 
     override val kodein by kodein()
     private lateinit var settingsViewModel: SettingsViewModel
-    private val factory: SettingsViewModelFactory by instance()
+    private val factory: SettingsViewModelFactory by instance<SettingsViewModelFactory>()
 
     private var serviceVersionTextView: TextView? = null
     private val errorOccurredDuringRegistration = false
