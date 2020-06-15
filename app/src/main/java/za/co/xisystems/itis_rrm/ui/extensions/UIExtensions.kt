@@ -1,7 +1,6 @@
 package za.co.xisystems.itis_rrm.ui.extensions
 
 import android.app.Dialog
-import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
 import android.widget.ImageView
@@ -16,7 +15,7 @@ import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
  * Copyright (c) 2020 XI Systems. All rights reserved.
  **/
 
-fun ImageCollectionView.scaleForSize(context: Context, imageCount: Int) {
+fun ImageCollectionView.scaleForSize(imageCount: Int) {
     when (imageCount) {
         1 -> {
             this.baseImageHeight = this.measuredHeight - 5

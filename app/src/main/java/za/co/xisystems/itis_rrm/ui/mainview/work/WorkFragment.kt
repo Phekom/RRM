@@ -7,7 +7,6 @@ import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
-import android.widget.LinearLayout
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -41,9 +40,7 @@ const val INSET_TYPE_KEY = "inset_type"
 const val INSET = "inset"
 
 class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
-    private lateinit var noDataLayout: LinearLayout
 
-    //
     override val kodein by kodein()
     private lateinit var workViewModel: WorkViewModel
     private val factory: WorkViewModelFactory by instance<WorkViewModelFactory>()
@@ -80,7 +77,6 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
                     }
                 }
             }
-
         }
     }
 
@@ -106,8 +102,6 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
                     uiScope.launch(uiScope.coroutineContext) {
                         this@WorkFragment.initRecyclerView(headerItems.toWorkListItems())
                     }
-
-
                 }
             })
         }

@@ -112,7 +112,7 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
     }
 
     init {
-        // setuo for CreateFragment
+        // setup for CreateFragment
 
         lifecycleScope.launch {
             whenStarted {
@@ -131,8 +131,7 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
             val user = createViewModel.user.await()
             user.observe(viewLifecycleOwner, Observer { user_ ->
                 useR = user_
-            }
-            )
+            })
         }
 
         val myClickListener = View.OnClickListener { view ->

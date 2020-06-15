@@ -180,7 +180,9 @@ object PhotoUtil {
                     e.printStackTrace()
                 } finally {
                     try {
-                        assert(fileDescriptor != null)
+                        if (BuildConfig.DEBUG && fileDescriptor == null) {
+                            error("Assertion failed")
+                        }
                         bm = BitmapFactory.decodeFileDescriptor(
                             fileDescriptor!!.fileDescriptor,
                             null,

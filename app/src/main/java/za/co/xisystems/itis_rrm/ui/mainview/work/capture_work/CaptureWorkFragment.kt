@@ -392,7 +392,6 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                     })
 
                 image_collection_view.scaleForSize(
-                    this@CaptureWorkFragment.requireContext(),
                     estimateWorksPhotoArrayList.size
                 )
             }

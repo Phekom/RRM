@@ -43,8 +43,6 @@ class MeasureViewModel(
                     }
                 }
             }
-
-
         }
     }
 
@@ -53,7 +51,7 @@ class MeasureViewModel(
     suspend fun generateGallery(measureItem: JobItemMeasureDTO) {
         try {
             galleryBackup.postValue(measureItem.itemMeasureId)
-            var forDeletion = ArrayList<JobItemMeasurePhotoDTO>()
+            val forDeletion = ArrayList<JobItemMeasurePhotoDTO>()
             val measureDescription =
                 measureItem.projectItemId?.let {
                     getDescForProjectId(it)
@@ -65,7 +63,7 @@ class MeasureViewModel(
                 else -> PhotoQuality.THUMB
             }
 
-            var bitmaps = measureItem.jobItemMeasurePhotos.map { photo ->
+            var bitmaps = measureItem.jobItemMeasurePhotos.mapNotNull { photo ->
 
                 try {
                     val uri = photo.filename?.let { fileName ->
@@ -83,7 +81,7 @@ class MeasureViewModel(
                     Timber.e(ex, "Failed to load ${photo.filename}")
                     null
                 }
-            }.filterNotNull()
+            }
 
             if (forDeletion.size >= 1) {
                 measureItem.itemMeasureId?.let {
@@ -117,7 +115,6 @@ class MeasureViewModel(
         }
     }
 
-
     val offlineUserTaskList: Deferred<LiveData<List<ToDoListEntityDTO>>> by lazyDeferred {
         offlineDataRepository.getUserTaskList()
     }
@@ -136,12 +133,17 @@ class MeasureViewModel(
         jobItemMeasure.postValue(measurea1)
     }
 
-
     val measureItemPhotos: MutableLiveData<List<JobItemMeasurePhotoDTO>> =
         MutableLiveData<List<JobItemMeasurePhotoDTO>>()
 
     fun setMeasureItemPhotos(measurePhotoList: List<JobItemMeasurePhotoDTO>) {
         measureItemPhotos.postValue(measurePhotoList)
+    }
+
+    suspend fun getMeasureItemPhotos(itemMeasureId: String): LiveData<List<JobItemMeasurePhotoDTO>> {
+        return withContext(Dispatchers.IO) {
+            measureCreationDataRepository.getJobItemMeasurePhotosForItemMeasureID(itemMeasureId)
+        }
     }
 
     val estimateMeasureItem: MutableLiveData<EstimateMeasureItem> =
@@ -314,7 +316,6 @@ class MeasureViewModel(
 
     val backupJobId: MutableLiveData<String> = MutableLiveData()
 
-
     fun setBackupJobId(jobId: String) {
         backupJobId.postValue(jobId)
     }
@@ -340,5 +341,4 @@ class MeasureViewModel(
             measureCreationDataRepository.getJobItemMeasureByItemMeasureId(itemMeasureId)
         }
     }
-
 }

@@ -156,7 +156,9 @@ class ExpandableHeaderMeasureItem(
                                                 Toast.LENGTH_LONG
                                             ).show()
                                         } else {
-                                            if (!quantityInputEditText.text.toString().isEmpty()) {
+                                            if (quantityInputEditText.text.toString()
+                                                    .isNotEmpty()
+                                            ) {
                                                 Coroutines.main {
                                                     val jobItemMeasure = setJobItemMeasure(
                                                         selected,
@@ -247,10 +249,8 @@ class ExpandableHeaderMeasureItem(
 
                 Navigation.findNavController(view)
                     .navigate(R.id.action_submitMeasureFragment_to_captureItemMeasurePhotoFragment)
-
             }
         }
-
     }
 
     private fun bindIcon(viewHolder: GroupieViewHolder) {

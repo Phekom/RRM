@@ -114,6 +114,12 @@ class JobCreationDataRepository(
         }
     }
 
+    suspend fun getProjects(): LiveData<List<ProjectDTO>> {
+        return withContext(Dispatchers.IO) {
+            appDb.getProjectDao().getAllProjects()
+        }
+    }
+
     suspend fun getContractProjects(contractId: String): LiveData<List<ProjectDTO>> {
         return withContext(Dispatchers.IO) {
             appDb.getProjectDao().getAllProjectsByContract(contractId)

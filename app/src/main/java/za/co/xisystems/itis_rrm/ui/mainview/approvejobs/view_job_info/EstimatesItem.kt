@@ -89,7 +89,7 @@ class EstimatesItem(
         val textEntryView: View =
             activity!!.layoutInflater.inflate(R.layout.estimate_dialog, null)
         val new_quantity = textEntryView.findViewById<View>(R.id.new_qty) as EditText
-        var new_total = textEntryView.findViewById<View>(R.id.new_total) as TextView
+        val new_total = textEntryView.findViewById<View>(R.id.new_total) as TextView
         val rate = textEntryView.findViewById<View>(R.id.current_rate) as TextView
 
         val alert = AlertDialog.Builder(activity) // ,android.R.style.Theme_DeviceDefault_Dialog
@@ -104,7 +104,7 @@ class EstimatesItem(
 
             rate.text = "R $tenderRate"
             var cost = 0.0
-            var newQuantity = jobItemEstimateDTO.qty.toDouble()
+            val newQuantity = jobItemEstimateDTO.qty
             val defaultQty = 0.0
 
             new_quantity.text = Editable.Factory.getInstance().newEditable("$newQuantity")
@@ -180,7 +180,7 @@ class EstimatesItem(
         dialog.show()
     }
 
-    override fun getLayout() = R.layout.estimates_item
+    override fun getLayout(): Int = R.layout.estimates_item
 
     private fun GroupieViewHolder.updateStartImage() {
         Coroutines.main {

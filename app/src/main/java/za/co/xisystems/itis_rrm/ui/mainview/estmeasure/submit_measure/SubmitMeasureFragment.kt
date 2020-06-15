@@ -195,64 +195,75 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
         Coroutines.main {
             val user = measureViewModel.user.await()
             user.observe(viewLifecycleOwner, Observer { user_ ->
-                if (user_.userId.isBlank()) {
-                    toast("Error: userId is null")
-                } else if (itemMeasureJob.JobId.isBlank()) {
-                    toast("Error: selectedJob is null")
-                } else {
-                    // beware littleEndian conversion for transport to Ser
-                    val contractVoId: String =
-                        DataConversion.toLittleEndian(itemMeasureJob.ContractVoId)!!
-                    val jobId: String = DataConversion.toLittleEndian(itemMeasureJob.JobId)!!
+                when {
+                    user_.userId.isBlank() -> {
+                        toast("Error: userId is null")
+                    }
+                    itemMeasureJob.JobId.isBlank() -> {
+                        toast("Error: selectedJob is null")
+                    }
+                    else -> {
+                        // beware littleEndian conversion for transport to Ser
+                        val contractVoId: String =
+                            DataConversion.toLittleEndian(itemMeasureJob.ContractVoId)!!
+                        val jobId: String = DataConversion.toLittleEndian(itemMeasureJob.JobId)!!
 
-                    Coroutines.main {
-                        val prog =
-                            setDataProgressDialog(
-                                requireActivity(),
-                                getString(R.string.loading_job_wait)
-                            )
-
-                        activity?.let {
-
-                            uiScope.launch(uiScope.coroutineContext) {
-
-                                val result = measureViewModel.processWorkflowMove(
-                                    user_.userId, jobId, itemMeasureJob.JiNo, contractVoId, mSures,
-                                    it, itemMeasureJob
+                        Coroutines.main {
+                            val prog =
+                                setDataProgressDialog(
+                                    requireActivity(),
+                                    getString(R.string.loading_job_wait)
                                 )
-                                val workflowOutcome = measureViewModel.workflowMoveResponse
-                                workflowOutcome.observe(viewLifecycleOwner, Observer { response ->
-                                    response?.let { outcome ->
-                                        when (outcome) {
-                                            is XISuccess -> {
-                                                prog.dismiss()
-                                                toast(R.string.measure_submitted)
-                                                popViewOnJobSubmit()
-                                            }
-                                            is XIError -> {
-                                                result.cancel(CancellationException(outcome.message))
-                                                prog.dismiss()
-                                                when (outcome.exception) {
-                                                    is NoInternetException -> {
-                                                        handleConnectivityError(outcome)
-                                                    }
-                                                    is NoConnectivityException -> {
-                                                        handleConnectivityError(outcome)
-                                                    }
 
-                                                    else -> {
-                                                        handleError(
-                                                            view = this@SubmitMeasureFragment.requireView(),
-                                                            throwable = outcome,
-                                                            shouldToast = true,
-                                                            shouldShowSnackBar = false
-                                                        )
+                            activity?.let {
+
+                                uiScope.launch(uiScope.coroutineContext) {
+                                    prog.show()
+                                    val result = measureViewModel.processWorkflowMove(
+                                        user_.userId,
+                                        jobId,
+                                        itemMeasureJob.JiNo,
+                                        contractVoId,
+                                        mSures,
+                                        it,
+                                        itemMeasureJob
+                                    )
+                                    val workflowOutcome = measureViewModel.workflowMoveResponse
+                                    workflowOutcome.observe(
+                                        viewLifecycleOwner,
+                                        Observer { response ->
+                                            response?.let { outcome ->
+                                                when (outcome) {
+                                                    is XISuccess -> {
+                                                        prog.dismiss()
+                                                        toast(R.string.measure_submitted)
+                                                        popViewOnJobSubmit()
+                                                    }
+                                                    is XIError -> {
+                                                        result.cancel(CancellationException(outcome.message))
+                                                        prog.dismiss()
+                                                        when (outcome.exception) {
+                                                            is NoInternetException -> {
+                                                                handleConnectivityError(outcome)
+                                                            }
+                                                            is NoConnectivityException -> {
+                                                                handleConnectivityError(outcome)
+                                                            }
+
+                                                            else -> {
+                                                                handleError(
+                                                                    view = this@SubmitMeasureFragment.requireView(),
+                                                                    throwable = outcome,
+                                                                    shouldToast = true,
+                                                                    shouldShowSnackBar = false
+                                                                )
+                                                            }
+                                                        }
                                                     }
                                                 }
                                             }
-                                        }
-                                    }
-                                })
+                                        })
+                                }
                             }
                         }
                     }

@@ -624,4 +624,10 @@ class MeasureCreationDataRepository(
             Db.getJobItemMeasureDao().getJobItemMeasureByItemMeasureId(itemMeasureId)
         }
     }
+
+    suspend fun getJobItemMeasurePhotosForItemMeasureID(itemMeasureId: String): LiveData<List<JobItemMeasurePhotoDTO>> {
+        return withContext(Dispatchers.IO) {
+            Db.getJobItemMeasurePhotoDao().getJobItemMeasurePhotosForItemMeasureID(itemMeasureId)
+        }
+    }
 }

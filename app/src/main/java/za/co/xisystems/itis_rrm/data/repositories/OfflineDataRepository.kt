@@ -284,7 +284,7 @@ class OfflineDataRepository(
                                     sectionItemId
                                 )
                         } catch (e: Exception) {
-                            Timber.e(e, "Exception creating section item ${itemCode}")
+                            Timber.e(e, "Exception creating section item $itemCode")
                         }
                     } else {
                         Timber.e("itemCode is null")
@@ -315,7 +315,6 @@ class OfflineDataRepository(
                     updateProjects(validProjects, contract)
                 }
             }
-
             databaseStatus.postValue(XISuccess(true))
         }
     }
@@ -578,7 +577,7 @@ class OfflineDataRepository(
         }
     }
 
-    suspend fun saveJobItemMeasuresForJob(
+    private suspend fun saveJobItemMeasuresForJob(
         job: JobDTO
     ) {
         for (jobItemMeasure in job.JobItemMeasures!!) {
@@ -937,6 +936,7 @@ class OfflineDataRepository(
                         fetchJobList(newJobId!!)
                     }
                 }
+                databaseStatus.postValue(XISuccess(true))
             }
         }
     }
@@ -988,7 +988,7 @@ class OfflineDataRepository(
         job.postValue(jobResponse.job)
     }
 
-    private suspend fun fetchContracts(userId: String) {
+    suspend fun fetchContracts(userId: String): Boolean {
 
         val activitySectionsResponse =
             apiRequest { api.activitySectionsRefresh(userId) }
@@ -1005,6 +1005,8 @@ class OfflineDataRepository(
 
         val contractsResponse = apiRequest { api.refreshContractInfo(userId) }
         conTracts.postValue(contractsResponse.contracts)
+
+        return true
     }
 
     suspend fun getUserTaskList(): LiveData<List<ToDoListEntityDTO>> {
@@ -1063,6 +1065,8 @@ class OfflineDataRepository(
                 getAllEntities()
             }
 
+            refreshContractInfo(userId)
+
             refreshActivitySections(userId)
 
             refreshWorkflows(userId)
@@ -1070,8 +1074,6 @@ class OfflineDataRepository(
             refreshLookups(userId)
 
             fetchUserTaskList(userId)
-
-            refreshContractInfo(userId)
 
             true
         }
@@ -1396,6 +1398,12 @@ class OfflineDataRepository(
 
         val healthCheck = apiRequest { api.healthCheck("HowdyDoody") }
         return healthCheck.errorMessage.isNullOrEmpty() || healthCheck.isAlive == 1
+    }
+
+    suspend fun getProjects(): LiveData<List<ProjectDTO>> {
+        return withContext(Dispatchers.IO) {
+            Db.getProjectDao().getAllProjects()
+        }
     }
 
     companion object {

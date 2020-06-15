@@ -1,10 +1,13 @@
 package za.co.xisystems.itis_rrm.ui.mainview.home
 
 import android.content.Context
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import za.co.xisystems.itis_rrm.base.BaseViewModel
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
@@ -17,7 +20,7 @@ class HomeViewModel(
     private val offlineDataRepository: OfflineDataRepository,
     private val Db: AppDatabase,
     val context: Context
-) : ViewModel() {
+) : LifecycleOwner, BaseViewModel() {
 
     val offlineData by lazyDeferred {
         offlineDataRepository.getContracts()
@@ -43,68 +46,38 @@ class HomeViewModel(
 
     val databaseResult: MutableLiveData<XIResult<Boolean>> = MutableLiveData()
 
-    val dataBaseStatus = offlineDataRepository.databaseStatus.observeForever {
-        when (it) {
-            is XISuccess -> {
-                databaseResult.postValue(it)
+    val dataBaseStatus = scope.launch(scope.coroutineContext) {
+        offlineDataRepository.databaseStatus.observeForever {
+            when (it) {
+                is XISuccess -> {
+
+                    scope.launch(scope.coroutineContext) {
+                        fetchContractsAndProjects(it)
+                    }
+                }
             }
         }
+    }
+
+    suspend fun fetchContractsAndProjects(it: XIResult<Boolean>) {
+        val contracts = offlineDataRepository.getContracts().value
+        val projects = offlineDataRepository.getProjects().value
+        databaseResult.postValue(it)
     }
 
     suspend fun fetchAllData(userId: String): Boolean {
 
         return withContext(Dispatchers.IO) {
-            offlineDataRepository.fetchAllData(userId)
+            offlineDataRepository.fetchContracts(userId)
         }
+    }
 
-//        val job = Job()
-//        val ioContext = Dispatchers.IO + uncaughtExceptionHandler + job
-//        val time = measureTimeMillis {
-//            viewModelScope.launch(Dispatchers.Main) {
-//
-//                val entities = async(ioContext) {
-//                    offlineDataRepository.getAllEntities()
-//                    7
-//                }
-//
-//
-//                val lookups = async(ioContext) {
-//                    offlineDataRepository.refreshLookups(userId)
-//                }
-//
-//                val actJob = async(ioContext) {
-//                    offlineDataRepository.refreshActivitySections(userId)
-//                }
-//
-//                val workflows = async(ioContext) {
-//                    offlineDataRepository.refreshWorkflows(userId)
-//                }
-//
-//                val taskList = async(ioContext) {
-//                    offlineDataRepository.fetchUserTaskList(userId)
-//
-//                }
-//
-//                val contracts = async(ioContext) {
-//                    offlineDataRepository.refreshContractInfo(userId)
-//                }
-//
-//                try {
-//                    val result =
-//                        entities.await() + lookups.await() + actJob.await() + workflows.await() + taskList.await() + contracts.await()
-//                    Timber.d("$result")
-//                    withContext(Dispatchers.Main) {
-//                        setFetchResult(true)
-//                    }
-//                } catch (e: Exception) {
-//                    setFetchResult(false)
-//                    Timber.e(e, "Failed to Get All Data.")
-//                    throw e
-//                }
-//
-//            }
-//
-//        }
-//        Timber.d("Time taken: $time")
+    /**
+     * Returns the Lifecycle of the provider.
+     *
+     * @return The lifecycle of the provider.
+     */
+    override fun getLifecycle(): Lifecycle {
+        TODO("Not yet implemented")
     }
 }

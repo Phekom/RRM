@@ -67,9 +67,8 @@ open class CardMeasureItem(
 
             val photoPaths = measureViewModel.getJobMeasureItemsPhotoPath(itemMeasureId)
 
-            if (photoPaths.size >= 1) {
+            if (photoPaths.isNotEmpty()) {
                 val measurePhoto = photoPaths[0]
-
 
                 GlideApp.with(this.containerView)
                     .load(Uri.fromFile(File(measurePhoto)))
@@ -86,7 +85,6 @@ open class CardMeasureItem(
                     Navigation.findNavController(view)
                         .navigate(R.id.action_submitMeasureFragment_to_captureItemMeasurePhotoFragment)
                 }
-
             } else {
                 GlideApp.with(this.containerView)
                     .load(R.drawable.logo_new_medium)

@@ -148,6 +148,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                     sharedViewModel.toggleLongRunning(true)
                     val fetched = homeViewModel.fetchAllData(userDTO.userId)
                     if (fetched) {
+                        homeViewModel.dataBaseStatus.start()
                         homeViewModel.databaseResult.observeOnce(
                             viewLifecycleOwner,
                             Observer { t ->

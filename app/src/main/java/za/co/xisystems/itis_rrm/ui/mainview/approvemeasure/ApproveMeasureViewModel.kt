@@ -151,14 +151,14 @@ class ApproveMeasureViewModel(
 
     suspend fun processWorkflowMove(
         userId: String,
-        trackRounteId: String,
+        trackRouteId: String,
         description: String?,
         direction: Int
     ): String {
         return withContext(Dispatchers.IO) {
             measureApprovalDataRepository.processWorkflowMove(
                 userId,
-                trackRounteId,
+                trackRouteId,
                 description,
                 direction
             )
@@ -252,6 +252,4 @@ class ApproveMeasureViewModel(
             measureApprovalDataRepository.getJobItemMeasureByItemMeasureId(itemMeasureId)
         }
     }
-
-
 }

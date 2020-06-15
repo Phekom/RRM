@@ -148,7 +148,6 @@ class MeasureApprovalDataRepository(
             val job = setWorkflowJobBigEndianGuids(workflowj)
             insertOrUpdateWorkflowJobInSQLite(job)
         } else {
-
             Timber.e("WorkFlow Job is null")
         }
     }

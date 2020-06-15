@@ -86,7 +86,6 @@ class MeasureGalleryFragment : BaseFragment(R.layout.fragment_measure_gallery), 
                     this@MeasureGalleryFragment.requireActivity()
                 )
                 estimate_image_gallery_view.scaleForSize(
-                    this@MeasureGalleryFragment.requireContext(),
                     uiState.photoPairs.size
                 )
             }

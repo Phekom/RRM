@@ -61,7 +61,6 @@ class CaptureItemMeasurePhotoFragment :
     LocationFragment(R.layout.fragment_capture_item_measure_photo),
     KodeinAware {
 
-
     override val kodein by kodein()
     private lateinit var measureViewModel: MeasureViewModel
     private val factory: MeasureViewModelFactory by instance<MeasureViewModelFactory>()
@@ -106,9 +105,7 @@ class CaptureItemMeasurePhotoFragment :
             ViewModelProvider(this, factory).get(MeasureViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
 
-
         jobItemMeasurePhotoArrayList = ArrayList<JobItemMeasurePhotoDTO>()
-
 
         photoButtons.visibility = View.GONE
 
@@ -119,12 +116,11 @@ class CaptureItemMeasurePhotoFragment :
                     selectedJobItemM?.let { it ->
                         toast(it.jimNo)
                         selectedJobItemMeasure = it
-                        takeMeasurePhoto()
+                        checkForPhotos(selectedJobItemMeasure)
                     }
-
                 })
 
-            measureViewModel.galleryUIState.observe(viewLifecycleOwner, galleryObserver)
+            measureViewModel.galleryUIState.observeOnce(viewLifecycleOwner, galleryObserver)
         }
 
         photoButtons.visibility = View.VISIBLE
@@ -157,6 +153,23 @@ class CaptureItemMeasurePhotoFragment :
 //                selectedJobItemMeasure
 //            )
 //        }
+    }
+
+    private fun checkForPhotos(selectedJobItemMeasure: JobItemMeasureDTO) {
+        uiScope.launch(uiScope.coroutineContext) {
+            val photoFetch =
+                measureViewModel.getJobItemMeasurePhotosForItemEstimateID(selectedJobItemMeasure.itemMeasureId!!)
+            photoFetch.observeOnce(viewLifecycleOwner, Observer {
+                it?.let {
+                    if (it.isEmpty()) {
+                        takeMeasurePhoto()
+                    } else {
+                        jobItemMeasurePhotoArrayList = it as ArrayList<JobItemMeasurePhotoDTO>
+                        photoButtons.visibility = View.VISIBLE
+                    }
+                }
+            })
+        }
     }
 
     // TODO: Have location validated here
@@ -275,7 +288,6 @@ class CaptureItemMeasurePhotoFragment :
                 })
 
             estimate_image_collection_view.scaleForSize(
-                this@CaptureItemMeasurePhotoFragment.requireContext(),
                 jobItemMeasurePhotoArrayList.size
             )
         }
@@ -313,7 +325,6 @@ class CaptureItemMeasurePhotoFragment :
                     this@CaptureItemMeasurePhotoFragment.requireActivity()
                 )
                 estimate_image_collection_view.scaleForSize(
-                    this@CaptureItemMeasurePhotoFragment.requireContext(),
                     uiState.photoPairs.size
                 )
             }
