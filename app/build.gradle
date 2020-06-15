@@ -14,13 +14,13 @@ versioning {
     major 1
     minor 5
     // Optional, force custom patch (number)
-    // patch 52
+    // patch 54
     // Optional (any string)
     // preRelease ""
     // Optional, custom task name to trigger the increase of the version
-    incrementOn "app:installDevDebug"
+    incrementOn "RRM_MvvM.app:assembleQaRelease"
     // Optional, custom task name for which you want to save the versioning file
-    saveOn "app:installDevDebug"
+    saveOn "RRM_MvvM.app:assembleQaRelease"
 }
 
 
@@ -77,7 +77,7 @@ android {
 
     versionBuild = versioning.patch
 
-    versionBuild = (versionBuild == null) ? 0 : versionBuild + 1
+    versionBuild = (versionBuild == null) ? 54 : versionBuild + 54
 
     versioning.patch = versionBuild
 
@@ -96,8 +96,8 @@ android {
         release {
             storeFile file('C:\\Users\\XiCenMcDonaldS\\AndroidStudioProjects\\RRM_MvvM\\release.RRMkey')
             keyAlias 'rrmkey'
-            storePassword localProps['store_pass'].toString()
-            keyPassword  localProps['key_pass'].toString()
+            storePassword 'thecowmakesmoo'
+            keyPassword 'thecowmakesmoo'
         }
     }
 
@@ -150,7 +150,7 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled true
+            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.release
         }

@@ -29,7 +29,6 @@ fun View.snackbar(message: String) {
     Snackbar.make(this, message, Snackbar.LENGTH_SHORT).also { snackbar ->
 
         snackbar.setAction("Ok") {
-            val snackbarView = snackbar.view
             snackbar.dismiss()
         }
     }.show()

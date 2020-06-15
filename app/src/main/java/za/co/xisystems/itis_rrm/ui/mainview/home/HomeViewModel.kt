@@ -9,6 +9,8 @@ import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
+import za.co.xisystems.itis_rrm.utils.results.XIResult
+import za.co.xisystems.itis_rrm.utils.results.XISuccess
 
 class HomeViewModel(
     private val repository: UserRepository,
@@ -37,6 +39,16 @@ class HomeViewModel(
 
     fun setFetchResult(flag: Boolean) {
         fetchResult.postValue(flag)
+    }
+
+    val databaseResult: MutableLiveData<XIResult<Boolean>> = MutableLiveData()
+
+    val dataBaseStatus = offlineDataRepository.databaseStatus.observeForever {
+        when (it) {
+            is XISuccess -> {
+                databaseResult.postValue(it)
+            }
+        }
     }
 
     suspend fun fetchAllData(userId: String): Boolean {

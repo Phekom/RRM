@@ -25,6 +25,7 @@ import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.data.network.responses.HealthCheckResponse
+import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModelFactory
@@ -33,6 +34,7 @@ import za.co.xisystems.itis_rrm.utils.ApiException
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.NoConnectivityException
 import za.co.xisystems.itis_rrm.utils.NoInternetException
+import za.co.xisystems.itis_rrm.utils.results.XISuccess
 
 class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
 
@@ -146,8 +148,18 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                     sharedViewModel.toggleLongRunning(true)
                     val fetched = homeViewModel.fetchAllData(userDTO.userId)
                     if (fetched) {
-                        sharedViewModel.setMessage("Data Retrieved")
-                        sharedViewModel.toggleLongRunning(false)
+                        homeViewModel.databaseResult.observeOnce(
+                            viewLifecycleOwner,
+                            Observer { t ->
+                                t?.let {
+                                    when (t) {
+                                        is XISuccess -> {
+                                            sharedViewModel.setMessage("Data Retrieved")
+                                            sharedViewModel.toggleLongRunning(false)
+                                        }
+                                    }
+                                }
+                            })
                     }
                 } catch (e: ApiException) {
                     sharedViewModel.setMessage(e.message)
