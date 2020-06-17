@@ -347,10 +347,14 @@ class WorkDataRepository(
     private fun saveWorkflowJob(workflowj: WorkflowJobDTO) {
         try {
             val job = setWorkflowJobBigEndianGuids(workflowj)
-            insertOrUpdateWorkflowJobInSQLite(job)
-            job?.jiNo?.let {
-                val workComplete = XISuccess(data = it)
-                workStatus.postValue(workComplete)
+            if (job != null) {
+                insertOrUpdateWorkflowJobInSQLite(job)
+                job.jobId?.let {
+                    val workComplete = XISuccess(data = it)
+                    workStatus.postValue(workComplete)
+                }
+            } else {
+                throw NullPointerException("Workflow job is undefined!")
             }
         } catch (ex: Exception) {
             val saveFail = XIError(ex, "Failed to save updated job.")

@@ -52,6 +52,7 @@ import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import za.co.xisystems.itis_rrm.utils.errors.ErrorHandler
 import za.co.xisystems.itis_rrm.utils.results.XIError
 import za.co.xisystems.itis_rrm.utils.results.XIResult
+import za.co.xisystems.itis_rrm.utils.results.XIStatus
 import za.co.xisystems.itis_rrm.utils.results.XISuccess
 import java.io.IOException
 import java.util.*
@@ -227,7 +228,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
     ) {
         uiScope.launch(uiScope.coroutineContext) {
             workViewModel.backupWorkSubmission.postValue(itemEstiWorks)
-            workViewModel.workflowResponse.observe(viewLifecycleOwner, workObserver)
+            workViewModel.workflowResponse.observeOnce(viewLifecycleOwner, workObserver)
             val newItemEstimateWorks = setJobWorksLittleEndianGuids(itemEstiWorks)
             val response =
                 workViewModel.submitWorks(newItemEstimateWorks, requireActivity(), itemEstimateJob)
@@ -267,6 +268,9 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                     }
 
                 }
+            }
+            is XIStatus -> {
+                ErrorHandler.showMessage(this.requireView(), result.message)
             }
         }
     }
@@ -624,7 +628,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
             dialogBuilder.setPositiveButton(
                 R.string.yes
             ) { dialog, which ->
-
+                workViewModel.workflowResponse.postValue(XIStatus("Cleared!"))
                 pushCompletedEstimates(estimates)
             }
 
@@ -647,9 +651,10 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
         errorState = false
         workViewModel.backupCompletedEstimates.postValue(estimates as List<JobItemEstimateDTO>)
 
+
+
         uiScope.launch(uiScope.coroutineContext) {
-            val workflowStatus = workViewModel.workflowResponse
-            workflowStatus.observe(viewLifecycleOwner, jobObserver)
+
             for (jobEstimate in estimates) {
                 Timber.d("Id: ${jobEstimate.estimateId}")
                 val convertedId = DataConversion.toBigEndian(jobEstimate.estimateId)
@@ -659,6 +664,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                 )
                 jobItemEstimate.observe(viewLifecycleOwner, Observer { jobItEstmt ->
                     jobItEstmt?.let {
+                        workViewModel.workflowResponse.observe(viewLifecycleOwner, jobObserver)
                         moveJobItemEstimateToNextWorkflow(
                             WorkflowDirection.NEXT,
                             it
@@ -679,7 +685,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
     ) = uiScope.launch(uiScope.coroutineContext) {
 
         val user = workViewModel.user.await()
-        user.observeOnce(viewLifecycleOwner, Observer { user_ ->
+        user.observe(viewLifecycleOwner, Observer { user_ ->
 
             when {
                 user_.userId.isBlank() -> {
