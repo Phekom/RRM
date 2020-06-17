@@ -240,11 +240,11 @@ class ExpandableHeaderMeasureItem(
     ) {
         when {
             jobItemMeasure != null -> {
+                measureViewModel.setJobItemMeasure(jobItemMeasure)
                 when {
                     jobItemMeasure.jobItemMeasurePhotos.size > 0 -> {
                         jobItemMeasure.itemMeasureId?.let { measureViewModel.generateGalleryUI(it) }
                     }
-                    else -> measureViewModel.setJobItemMeasure(jobItemMeasure)
                 }
 
                 Navigation.findNavController(view)
