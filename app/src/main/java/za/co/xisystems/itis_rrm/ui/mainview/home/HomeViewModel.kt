@@ -53,7 +53,7 @@ class HomeViewModel(
 
         return withContext(Dispatchers.IO) {
             try {
-                offlineDataRepository.fetchAllData(userId)
+                offlineDataRepository.fetchContracts(userId)
             } catch (ex: Exception) {
                 val fetchFail = XIError(ex, "Failed to fetch data: ${ex.message}")
                 dataBaseStatus.postValue(fetchFail)

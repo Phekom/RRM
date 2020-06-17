@@ -990,24 +990,25 @@ class OfflineDataRepository(
     }
 
     suspend fun fetchContracts(userId: String): Boolean {
+        return withContext(Dispatchers.Default) {
+            val activitySectionsResponse =
+                apiRequest { api.activitySectionsRefresh(userId) }
+            sectionItems.postValue(activitySectionsResponse.activitySections)
 
-        val activitySectionsResponse =
-            apiRequest { api.activitySectionsRefresh(userId) }
-        sectionItems.postValue(activitySectionsResponse.activitySections)
+            val workFlowResponse = apiRequest { api.workflowsRefresh(userId) }
+            workFlow.postValue(workFlowResponse.workFlows)
 
-        val workFlowResponse = apiRequest { api.workflowsRefresh(userId) }
-        workFlow.postValue(workFlowResponse.workFlows)
+            val lookupResponse = apiRequest { api.lookupsRefresh(userId) }
+            lookups.postValue(lookupResponse.mobileLookups)
 
-        val lookupResponse = apiRequest { api.lookupsRefresh(userId) }
-        lookups.postValue(lookupResponse.mobileLookups)
+            val toDoListGroupsResponse = apiRequest { api.getUserTaskList(userId) }
+            toDoListGroups.postValue(toDoListGroupsResponse.toDoListGroups)
 
-        val toDoListGroupsResponse = apiRequest { api.getUserTaskList(userId) }
-        toDoListGroups.postValue(toDoListGroupsResponse.toDoListGroups)
+            val contractsResponse = apiRequest { api.refreshContractInfo(userId) }
+            conTracts.postValue(contractsResponse.contracts)
 
-        val contractsResponse = apiRequest { api.refreshContractInfo(userId) }
-        conTracts.postValue(contractsResponse.contracts)
-
-        return true
+            true
+        }
     }
 
     suspend fun getUserTaskList(): LiveData<List<ToDoListEntityDTO>> {
