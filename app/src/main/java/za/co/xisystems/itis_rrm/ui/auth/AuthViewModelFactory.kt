@@ -13,8 +13,8 @@ import za.co.xisystems.itis_rrm.data.repositories.UserRepository
 class AuthViewModelFactory(
     private val repository: UserRepository,
     private val offlineDataRepository: OfflineDataRepository
-    ) : ViewModelProvider.NewInstanceFactory() {
+) : ViewModelProvider.NewInstanceFactory() {
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-        return AuthViewModel(repository,offlineDataRepository) as T
+        return AuthViewModel(repository, offlineDataRepository) as T
     }
 }

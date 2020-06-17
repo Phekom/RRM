@@ -1,6 +1,7 @@
 package za.co.xisystems.itis_rrm.ui.mainview.estmeasure.submit_measure
 
 import android.app.AlertDialog
+import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
@@ -10,6 +11,7 @@ import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -37,7 +39,6 @@ import za.co.xisystems.itis_rrm.utils.results.XIError
 import za.co.xisystems.itis_rrm.utils.results.XISuccess
 import java.util.*
 
-
 class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), KodeinAware {
     override val kodein by kodein()
     private lateinit var measureViewModel: MeasureViewModel
@@ -52,7 +53,6 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
     private var uiScope = UiLifecycleScope()
     override fun onCreate(savedInstanceState: Bundle?) {
 
-
         super.onCreate(savedInstanceState)
         lifecycle.addObserver(uiScope)
         setHasOptionsMenu(true)
@@ -65,18 +65,16 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
 
         jobItemMeasuresForJobItemEstimates =
             HashMap<JobItemEstimateDTO, List<JobItemMeasureDTO>>()
-
-
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
         (activity as MainActivity).supportActionBar?.title =
             getString(R.string.submit_measure_title)
-
 
         return inflater.inflate(R.layout.fragment_submit_measure, container, false)
     }
@@ -90,17 +88,15 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
 
         Coroutines.main {
 
-            measureViewModel.measure_Item.observe(viewLifecycleOwner, Observer { jobID ->
+            measureViewModel.estimateMeasureItem.observe(viewLifecycleOwner, Observer { jobID ->
                 jobItemEstimate = jobID.jobItemEstimateDTO
                 getWorkItems(jobItemEstimate.jobId)
             })
-
 
             submit_measurements_button.setOnClickListener {
                 submitMeasurements(
                     jobItemEstimate.jobId
                 )
-
             }
 
             items_swipe_to_refresh.setProgressBackgroundColorSchemeColor(
@@ -114,27 +110,22 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
 
             items_swipe_to_refresh.setOnRefreshListener {
                 Coroutines.main {
-                    measureViewModel.measure_Item.observeOnce(
+                    measureViewModel.estimateMeasureItem.observeOnce(
                         viewLifecycleOwner,
                         Observer { measureItem ->
                             getWorkItems(measureItem.jobItemEstimateDTO.jobId)
                             items_swipe_to_refresh.isRefreshing = false
-
                         })
-
                 }
             }
-
         }
-
     }
-
 
     private fun submitMeasurements(jobId: String?) {
         Coroutines.main {
             measureViewModel.setBackupJobId(jobId!!)
             val jobItemMeasure =
-                measureViewModel.getJobItemMeasuresForJobIdAndEstimateId(jobId) //estimateId
+                measureViewModel.getJobItemMeasuresForJobIdAndEstimateId(jobId) // estimateId
             jobItemMeasure.observeOnce(viewLifecycleOwner, Observer { m_sures ->
                 val validMeasures = m_sures.filter { msure ->
                     msure.qty > 0 && msure.jobItemMeasurePhotos.isNotEmpty()
@@ -173,7 +164,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
     ) {
 
         val logoutBuilder = AlertDialog.Builder(
-            requireActivity() //, android.R.style.Theme_DeviceDefault_Dialog
+            requireActivity() // , android.R.style.Theme_DeviceDefault_Dialog
         )
         logoutBuilder.run {
             setTitle(R.string.confirm)
@@ -206,72 +197,100 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
         Coroutines.main {
             val user = measureViewModel.user.await()
             user.observe(viewLifecycleOwner, Observer { user_ ->
-                if (user_.userId.isBlank()) {
-                    toast("Error: userId is null")
-                } else if (itemMeasureJob.JobId.isBlank()) {
-                    toast("Error: selectedJob is null")
-                } else {
-                    // beware littleEndian conversion for transport to Ser
-                    val contractVoId: String =
-                        DataConversion.toLittleEndian(itemMeasureJob.ContractVoId)!!
-                    val jobId: String = DataConversion.toLittleEndian(itemMeasureJob.JobId)!!
+                when {
+                    user_.userId.isBlank() -> {
+                        toast("Error: userId is null")
+                    }
+                    itemMeasureJob.JobId.isBlank() -> {
+                        toast("Error: selectedJob is null")
+                    }
+                    else -> {
+                        // beware littleEndian conversion for transport to backend
+                        val contractVoId: String =
+                            DataConversion.toLittleEndian(itemMeasureJob.ContractVoId)!!
+                        val jobId: String = DataConversion.toLittleEndian(itemMeasureJob.JobId)!!
 
-                    Coroutines.main {
-                        val prog =
-                            setDataProgressDialog(
-                                requireActivity(),
-                                getString(R.string.loading_job_wait)
-                            )
-
-                        activity?.let {
-
-                            uiScope.launch(uiScope.coroutineContext) {
-
-                                val result = measureViewModel.processWorkflowMove(
-                                    user_.userId, jobId, itemMeasureJob.JiNo, contractVoId, mSures,
-                                    it, itemMeasureJob
+                        Coroutines.main {
+                            val prog =
+                                setDataProgressDialog(
+                                    requireActivity(),
+                                    getString(R.string.loading_job_wait)
                                 )
-                                val workflowOutcome = measureViewModel.workflowMoveResponse
-                                workflowOutcome.observe(viewLifecycleOwner, Observer { response ->
-                                    response?.let { outcome ->
-                                        when (outcome) {
-                                            is XISuccess -> {
-                                                prog.dismiss()
-                                                toast(R.string.measure_submitted)
-                                                popViewOnJobSubmit()
-                                            }
-                                            is XIError -> {
-                                                result.cancel(CancellationException(outcome.message))
-                                                prog.dismiss()
-                                                when (outcome.exception) {
-                                                    is NoInternetException -> {
-                                                        handleConnectivityError(outcome)
-                                                    }
-                                                    is NoConnectivityException -> {
-                                                        handleConnectivityError(outcome)
-                                                    }
 
-                                                    else -> {
-                                                        handleError(
-                                                            view = this@SubmitMeasureFragment.requireView(),
-                                                            throwable = outcome,
-                                                            shouldToast = true,
-                                                            shouldShowSnackBar = false
-                                                        )
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                })
+                            activity?.let {
 
+                                processMeasurementWorkflow(
+                                    prog,
+                                    user_,
+                                    jobId,
+                                    itemMeasureJob,
+                                    contractVoId,
+                                    mSures,
+                                    it
+                                )
                             }
-
                         }
                     }
                 }
             })
+        }
+    }
 
+    private fun processMeasurementWorkflow(
+        prog: ProgressDialog,
+        user_: UserDTO,
+        jobId: String,
+        itemMeasureJob: JobDTO,
+        contractVoId: String,
+        mSures: ArrayList<JobItemMeasureDTO>,
+        it: FragmentActivity
+    ) {
+        uiScope.launch(uiScope.coroutineContext) {
+            prog.show()
+            val result = measureViewModel.processWorkflowMove(
+                user_.userId,
+                jobId,
+                itemMeasureJob.JiNo,
+                contractVoId,
+                mSures,
+                it,
+                itemMeasureJob
+            )
+            val workflowOutcome = measureViewModel.workflowMoveResponse
+            workflowOutcome.observe(
+                viewLifecycleOwner,
+                Observer { response ->
+                    response?.let { outcome ->
+                        when (outcome) {
+                            is XISuccess -> {
+                                prog.dismiss()
+                                toast(R.string.measure_submitted)
+                                popViewOnJobSubmit()
+                            }
+                            is XIError -> {
+                                result.cancel(CancellationException(outcome.message))
+                                prog.dismiss()
+                                when (outcome.exception) {
+                                    is NoInternetException -> {
+                                        handleConnectivityError(outcome)
+                                    }
+                                    is NoConnectivityException -> {
+                                        handleConnectivityError(outcome)
+                                    }
+
+                                    else -> {
+                                        handleError(
+                                            view = this@SubmitMeasureFragment.requireView(),
+                                            throwable = outcome,
+                                            shouldToast = true,
+                                            shouldShowSnackBar = false
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                })
         }
     }
 
@@ -297,7 +316,6 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
             if (jim.measureGroupId != null)
                 jim.setMeasureGroupId(DataConversion.toLittleEndian(jim.measureGroupId))
 
-
             if (jim.jobItemMeasurePhotos.isNotEmpty()) {
                 for (jmep in jim.jobItemMeasurePhotos) {
                     jmep.setPhotoId(DataConversion.toLittleEndian(jmep.photoId))
@@ -310,7 +328,6 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
         return jim
     }
 
-
     private fun popViewOnJobSubmit() {
         // TODO: Delete data from database after successful upload
         Intent(context?.applicationContext, MainActivity::class.java).also { home ->
@@ -319,24 +336,20 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
     override fun onResume() {
         super.onResume()
         (activity as MainActivity).supportActionBar?.title =
             getString(R.string.submit_measure_title)
-
     }
-
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
         (activity as MainActivity).supportActionBar?.title =
             getString(R.string.submit_measure_title)
-
     }
-
 
     override fun onPrepareOptionsMenu(menu: Menu) {
         val item = menu.findItem(R.id.action_settings)
@@ -346,7 +359,6 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
         if (item1 != null) item1.isVisible = false
         if (item2 != null) item2.isVisible = false
     }
-
 
     private fun getWorkItems(jobID: String?) {
         Coroutines.main {
@@ -366,7 +378,6 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
             layoutManager = LinearLayoutManager(this.context)
             adapter = groupAdapter
         }
-
     }
 
     override fun onDestroyView() {
@@ -391,7 +402,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                 Coroutines.main {
                     val jobForJobItemEstimate = measureViewModel.getJobFromJobId(measure_item.jobId)
                     jobForJobItemEstimate.observeOnce(
-                        viewLifecycleOwner,
+                        requireActivity(),
                         androidx.lifecycle.Observer { job ->
                             //                        for (measure_i in jobItemMeasureArrayList) {
                             jobForItemEstimate = job
@@ -411,33 +422,25 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                                                 val jNo = jobItemM.jimNo.toString()
                                                 add(
                                                     CardMeasureItem(
-                                                        activity,
-                                                        itemMeasureId,
-                                                        qty,
-                                                        rate,
-                                                        jNo,
-                                                        measureViewModel
+                                                        activity = activity,
+                                                        itemMeasureId = itemMeasureId,
+                                                        qty = qty,
+                                                        rate = rate,
+                                                        text = jNo,
+                                                        measureViewModel = measureViewModel,
+                                                        uiScope = uiScope
                                                     )
                                                 )
                                             }
                                         }
                                     }
-
                                 })
-
                             }
-
                         })
-
                 }
-
-
             }
         }
-
-
     }
-
 
     private fun JobItemMeasureDTO.setProjectItemId(toLittleEndian: String?) {
         this.projectItemId = toLittleEndian
@@ -486,9 +489,4 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
     private fun JobItemMeasureDTO.setItemMeasureId(toLittleEndian: String?) {
         this.itemMeasureId = toLittleEndian
     }
-
-
 }
-
-
-

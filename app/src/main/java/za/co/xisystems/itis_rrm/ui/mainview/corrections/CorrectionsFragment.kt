@@ -13,14 +13,12 @@ import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
 import za.co.xisystems.itis_rrm.utils.Coroutines
 
-
 /**
  * Created by Francis Mahlava on 03,October,2019
  */
 
-
-class CorrectionsFragment : BaseFragment( R.layout.fragment_correction), KodeinAware {
-//
+class CorrectionsFragment : BaseFragment(R.layout.fragment_correction), KodeinAware {
+    //
     override val kodein by kodein()
     private lateinit var correctionsViewModel: CorrectionsViewModel
     private val factory: CorrectionsViewModelFactory by instance()
@@ -34,13 +32,14 @@ class CorrectionsFragment : BaseFragment( R.layout.fragment_correction), KodeinA
     }
     override fun onCreateView(
         inflater: LayoutInflater,
-        container: ViewGroup?, savedInstanceState: Bundle?
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
     ): View? {
         return inflater.inflate(R.layout.fragment_correction, container, false)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -61,8 +60,4 @@ class CorrectionsFragment : BaseFragment( R.layout.fragment_correction), KodeinA
 //            })
         }
     }
-
 }
-
-
-

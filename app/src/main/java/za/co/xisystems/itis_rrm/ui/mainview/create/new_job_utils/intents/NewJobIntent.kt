@@ -1,11 +1,11 @@
-//package za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.intents
+// package za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.intents
 //
-//import android.content.Context
-//import android.content.Intent
-//import io.reactivex.annotations.NonNull
-//import za.co.xisystems.itis_rrm.ui.mainview.activities.NewJobActivity
+// import android.content.Context
+// import android.content.Intent
+// import io.reactivex.annotations.NonNull
+// import za.co.xisystems.itis_rrm.ui.mainview.activities.NewJobActivity
 //
-//class NewJobIntent(var context: Context) : AbstractIntent() {
+// class NewJobIntent(var context: Context) : AbstractIntent() {
 //    fun getIntent(): Intent {
 //        return flags(Intent(context, NewJobActivity::class.java))
 //    }
@@ -25,4 +25,4 @@
 //    fun getJobId(@NonNull intent: Intent): String? {
 //        return intent.extras?.getString(JOB_ID, null)
 //    }
-//}
+// }

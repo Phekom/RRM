@@ -37,7 +37,6 @@ import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.hideKeyboard
 
-
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener,
     KodeinAware {
 
@@ -62,16 +61,15 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     var progressBar: ProgressBar? = null
 
-    val PROJECT_USER_ROLE_IDENTIFIER = "RRM Job Mobile User" //"29DB5C213D034EDB88DEC54109EE1711"
+    val PROJECT_USER_ROLE_IDENTIFIER = "RRM Job Mobile User" // "29DB5C213D034EDB88DEC54109EE1711"
     val PROJECT_SITE_ENGINEER_ROLE_IDENTIFIER =
-        "RRM Job Mobile - Site Engineer" //"3F9A15DF5D464EC5A5D954134A7F32BE"
+        "RRM Job Mobile - Site Engineer" // "3F9A15DF5D464EC5A5D954134A7F32BE"
     val PROJECT_ENGINEER_ROLE_IDENTIFIER =
-        "RRM Job Mobile - Engineer" //"D9E16C2A31FA4CC28961E20B652B292C"
+        "RRM Job Mobile - Engineer" // "D9E16C2A31FA4CC28961E20B652B292C"
     val PROJECT_SUB_CONTRACTOR_ROLE_IDENTIFIER =
-        "RRM Job Mobile - Sub Contractor" //"03F493BDD6D68944A94BE038B6C1C3D2" //"F836F6BF14404E749E6748A31A0262AD"
+        "RRM Job Mobile - Sub Contractor" // "03F493BDD6D68944A94BE038B6C1C3D2" //"F836F6BF14404E749E6748A31A0262AD"
     val PROJECT_CONTRACTOR_ROLE_IDENTIFIER =
-        "RRM Job Mobile - Contractor"  //"E398A3EF1C18431DBAEE4A4AC5D6F07D"
-
+        "RRM Job Mobile - Contractor" // "E398A3EF1C18431DBAEE4A4AC5D6F07D"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -142,7 +140,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         })
     }
 
-
     fun displayPromptForEnablingGPS(
         activity: Activity
     ) {
@@ -177,11 +174,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onBackPressed() {
         if (drawer_layout.isDrawerOpen(GravityCompat.START)) {
             drawer_layout.closeDrawer(GravityCompat.START)
-
         } else {
             super.onBackPressed()
             toggle?.syncState()
-
         }
     }
 
@@ -198,10 +193,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
             override fun onQueryTextSubmit(query: String): Boolean {
                 // task HERE
-                //on submit send entire query
+                // on submit send entire query
                 return false
             }
-
         })
         searchView.queryHint = "Search "
         return true
@@ -213,7 +207,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         // as you specify a parent activity in AndroidManifest.xml.
         when (item.itemId) {
             R.id.action_search -> {
-
 
 //                startActivity(Intent(this, SettingsActivity::class.java))
                 return true
@@ -230,7 +223,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 }
                 return true
             }
-
 
             else -> return super.onOptionsItemSelected(item)
         }
@@ -259,7 +251,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             R.id.nav_unSubmitted -> {
                 navController?.navigate(R.id.nav_unSubmitted)
                 toggle?.syncState()
-
             }
             R.id.nav_correction -> {
                 navController?.navigate(R.id.nav_correction)
@@ -344,8 +335,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
                         navItem = menuNav.findItem(R.id.nav_approvMeasure)
                         navItem.isEnabled = false
-
-
                     }
 
                     if (roleID.equals(PROJECT_SUB_CONTRACTOR_ROLE_IDENTIFIER, ignoreCase = true)) {
@@ -370,8 +359,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
                         val nav_item7 = menuNav.findItem(R.id.nav_approvMeasure)
                         nav_item7.isEnabled = false
-
-
                     }
 
                     if (roleID.equals(PROJECT_CONTRACTOR_ROLE_IDENTIFIER, ignoreCase = true)) {
@@ -396,8 +383,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
                         val nav_item7 = menuNav.findItem(R.id.nav_approvMeasure)
                         nav_item7.isEnabled = false
-
-
                     }
 
                     if (roleID.equals(PROJECT_SITE_ENGINEER_ROLE_IDENTIFIER, ignoreCase = true)) {
@@ -422,8 +407,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
                         val nav_item7 = menuNav.findItem(R.id.nav_approvMeasure)
                         nav_item7.isEnabled = false
-
-
                     }
 
                     if (roleID.equals(PROJECT_ENGINEER_ROLE_IDENTIFIER, ignoreCase = true)) {
@@ -448,17 +431,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
                         val nav_item7 = menuNav.findItem(R.id.nav_approvMeasure)
                         nav_item7.isEnabled = true
-
-
                     }
                 }
             })
-
         }
-
-
     }
-
 
 //    fun nextLocation() {
 //        // Fire again after 15 seconds
@@ -480,7 +457,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 ActivityIdConstants.JOB_ESTIMATE
             )
             new_job.observe(this, androidx.lifecycle.Observer { job_s ->
-                qty = job_s.size
+                qty = job_s.distinctBy { job -> job.JiNo }.size
 //            qty = 50
                 if (qty == 0) {
                     nav_unSubmitted?.text = ""
@@ -509,13 +486,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 //            nav_correction?.setText("( $qty )")
 //        }
 //        //====================================================================================================================================================
-//// Estimates are approved and work can start
+// // Estimates are approved and work can start
             val work = mainActivityViewModel.getJobsForActivityId2(
                 ActivityIdConstants.JOB_APPROVED,
                 ActivityIdConstants.ESTIMATE_INCOMPLETE
             )
             work.observe(this, androidx.lifecycle.Observer { job_s ->
-                qty = job_s.size
+                qty = job_s.distinctBy { job -> job.JiNo }.size
                 if (qty == 0) {
                     nav_work?.text = ""
                 } else {
@@ -534,7 +511,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             )
 //            val measurements = mainActivityViewModel.getJobMeasureForActivityId(ActivityIdConstants.ESTIMATE_MEASURE)
             measurements.observe(this, androidx.lifecycle.Observer { job_s ->
-                qty = job_s.size
+                qty = job_s.distinctBy { job -> job.jobId }.size
                 if (qty == 0) {
                     nav_estMeasure?.text = ""
                 } else {
@@ -577,7 +554,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             val m_approval =
                 mainActivityViewModel.getJobApproveMeasureForActivityId(ActivityIdConstants.MEASURE_COMPLETE)
             m_approval.observe(this, androidx.lifecycle.Observer { job_s ->
-                qty = job_s.size
+                qty = job_s.distinctBy { job -> job.jobId }.size
                 if (qty == 0) {
                     nav_approvMeasure?.text = ""
                 } else {
@@ -592,7 +569,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     nav_approvMeasure?.text = "( $qty )"
                 }
             })
-
         }
     }
 
@@ -606,12 +582,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
-
     companion object {
         private val TAG = MainActivity::class.java.simpleName
         var switch: Switch? = null
-
     }
-
-
 }

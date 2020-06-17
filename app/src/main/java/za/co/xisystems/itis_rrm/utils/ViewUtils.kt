@@ -8,34 +8,31 @@ import android.widget.ProgressBar
 import android.widget.Toast
 import com.google.android.material.snackbar.Snackbar
 
-
 /**
  * Created by Francis Mahlava on 2019/10/18.
  */
 
-fun Context.toast(message: String){
-    Toast.makeText(this, message, Toast.LENGTH_SHORT ).show()
+fun Context.toast(message: String) {
+    Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
 }
 
-fun ProgressBar.show(){
+fun ProgressBar.show() {
     visibility = View.VISIBLE
 }
 
-fun ProgressBar.hide(){
+fun ProgressBar.hide() {
     visibility = View.GONE
     setBackgroundColor(1)
 }
 
-fun View.snackbar(message: String){
+fun View.snackbar(message: String) {
     Snackbar.make(this, message, Snackbar.LENGTH_SHORT).also { snackbar ->
 
         snackbar.setAction("Ok") {
-            val snackbarView = snackbar.view
             snackbar.dismiss()
         }
     }.show()
 }
-
 
 /**
  * Hide keyboard.

@@ -1,15 +1,15 @@
-//package za.co.xisystems.itis_rrm.data.localDB.entities
+// package za.co.xisystems.itis_rrm.data.localDB.entities
 //
 //
-//import androidx.room.Entity
-//import androidx.room.PrimaryKey
-//import com.google.gson.annotations.SerializedName
+// import androidx.room.Entity
+// import androidx.room.PrimaryKey
+// import com.google.gson.annotations.SerializedName
 //
-//const val ENTITY_TABLE = "ENTITY_TABLE"
-//const val TRACK_ROUTE_ID = "TRACK_ROUTE_ID"
+// const val ENTITY_TABLE = "ENTITY_TABLE"
+// const val TRACK_ROUTE_ID = "TRACK_ROUTE_ID"
 //
-//@Entity(tableName = ENTITY_TABLE)
-//data class EntitiesDTO(
+// @Entity(tableName = ENTITY_TABLE)
+// data class EntitiesDTO(
 //    @SerializedName("Actionable")
 //    val actionable: Boolean, // true
 //    @SerializedName("ActivityId")
@@ -37,4 +37,4 @@
 //    var jobId: String?
 //
 //
-//)
+// )

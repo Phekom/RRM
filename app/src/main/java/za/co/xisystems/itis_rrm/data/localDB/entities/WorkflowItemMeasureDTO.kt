@@ -1,6 +1,5 @@
 package za.co.xisystems.itis_rrm.data.localDB.entities
 
-
 import androidx.room.Entity
 import com.google.gson.annotations.SerializedName
 
@@ -15,4 +14,3 @@ data class WorkflowItemMeasureDTO(
     @SerializedName("TrackRouteId")
     var trackRouteId: String // sample string 2
 )
-

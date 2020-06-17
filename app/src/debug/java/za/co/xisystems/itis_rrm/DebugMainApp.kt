@@ -8,7 +8,6 @@ import leakcanary.LeakCanary
 import org.kodein.di.KodeinAware
 import timber.log.Timber
 
-
 /**
  * Created by Francis Mahlava on 2019/10/23.
  *
@@ -34,5 +33,4 @@ open class DebugMainApp : MainApp(), KodeinAware {
             }
         }
     }
-
 }

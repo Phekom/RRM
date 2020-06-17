@@ -13,13 +13,13 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
  * Created by Francis Mahlava on 2019/12/22.
  */
 
-
 class EstimateMeasureItem(
     val jobItemEstimateDTO: JobItemEstimateDTO,
     private val measureViewModel: MeasureViewModel
-) : Item(){
+) : Item() {
 
     var sectionId: String? = null
+
     @SuppressLint("SetTextI18n")
     override fun bind(viewHolder: GroupieViewHolder, position: Int) {
         viewHolder.apply {
@@ -27,7 +27,7 @@ class EstimateMeasureItem(
 
             Coroutines.main {
                 val jiNo = measureViewModel.getItemJobNo(jobItemEstimateDTO.jobId!!)
-                listview_item_textView.text = "JI:${jiNo} - "
+                listview_item_textView.text = "JI:$jiNo - "
                 val sectionId =
                     measureViewModel.getProjectSectionIdForJobId(jobItemEstimateDTO.jobId!!)
                 val route = measureViewModel.getRouteForProjectSectionId(sectionId)
@@ -36,12 +36,10 @@ class EstimateMeasureItem(
                 val description = measureViewModel.getItemDescription(jobItemEstimateDTO.jobId!!)
                 apv_description.text = description
             }
-
         }
     }
 
     override fun getLayout() = R.layout.single_listview_item
-
 }
 
 private fun GroupieViewHolder.getItemId(position: Int): Long {

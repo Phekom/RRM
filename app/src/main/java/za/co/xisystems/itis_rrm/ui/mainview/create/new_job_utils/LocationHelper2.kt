@@ -1,30 +1,30 @@
-//package za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils
+// package za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils
 //
-//import android.app.AlertDialog
-//import android.app.Service
-//import android.content.Context
-//import android.content.Context.LOCATION_SERVICE
-//import android.content.DialogInterface
-//import android.content.Intent
-//import android.location.Location
-//import android.location.LocationManager
-//import android.os.Bundle
-//import android.os.IBinder
-//import android.util.Log
-//import com.google.android.gms.location.LocationListener
+// import android.app.AlertDialog
+// import android.app.Service
+// import android.content.Context
+// import android.content.Context.LOCATION_SERVICE
+// import android.content.DialogInterface
+// import android.content.Intent
+// import android.location.Location
+// import android.location.LocationManager
+// import android.os.Bundle
+// import android.os.IBinder
+// import android.util.Log
+// import com.google.android.gms.location.LocationListener
 //
 //
-///**
+// /**
 // * Created by Francis Mahlava on 2020/01/13.
 // */
-//class LocationHelper2(context: Context) : Service(), LocationListener {
+// class LocationHelper2(context: Context) : Service(), LocationListener {
 //
 //
 //
 //
-//}
+// }
 //
-//class GPSTracker(context: Context) : Service(), LocationListener {
+// class GPSTracker(context: Context) : Service(), LocationListener {
 //    private val mContext: Context
 //    // Flag for GPS status
 //    var isGPSEnabled = false
@@ -176,4 +176,4 @@
 //        mContext = context
 //        getLocation()
 //    }
-//}
+// }

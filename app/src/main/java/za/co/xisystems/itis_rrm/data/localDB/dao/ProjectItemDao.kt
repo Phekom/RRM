@@ -12,12 +12,11 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
  * Created by Francis Mahlava on 2019/11/21.
  */
 
-
 @Dao
 interface ProjectItemDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertItems( item : ProjectItemDTO)
+    suspend fun insertItems(item: ProjectItemDTO)
 
     @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE itemId = :itemId")
     fun checkItemExistsItemId(itemId: String): Boolean
@@ -29,7 +28,19 @@ interface ProjectItemDao {
     fun getSectionItemId(itemId: String): String
 
     @Query("INSERT INTO PROJECT_ITEM_TABLE (itemId ,itemCode,descr, itemSections, tenderRate, uom, workflowId,sectionItemId, quantity, estimateId, projectId) VALUES (:itemId, :itemCode,:descr, :itemSections, :tenderRate, :uom, :workflowId, :sectionItemId, :quantity, :estimateId, :projectId)")
-    fun insertItem(itemId :String, itemCode :String?, descr :String?, itemSections : ArrayList<ItemSectionDTO>, tenderRate :Double, uom :String?, workflowId :Int?, sectionItemId :String?, quantity :Double, estimateId :String?, projectId :String)
+    fun insertItem(
+        itemId: String,
+        itemCode: String?,
+        descr: String?,
+        itemSections: ArrayList<ItemSectionDTO>,
+        tenderRate: Double,
+        uom: String?,
+        workflowId: Int?,
+        sectionItemId: String?,
+        quantity: Double,
+        estimateId: String?,
+        projectId: String
+    )
 
     @Query("SELECT descr FROM PROJECT_ITEM_TABLE WHERE itemId = :itemId")
     fun getProjectItemDescription(itemId: String): String
@@ -41,8 +52,7 @@ interface ProjectItemDao {
     fun getTenderRateForProjectItemId(itemId: String): Double
 
     @Query("SELECT * FROM PROJECT_ITEM_TABLE ")
-    fun getAllItemsForAllProjects() : LiveData<List<ProjectItemDTO>>
-
+    fun getAllItemsForAllProjects(): LiveData<List<ProjectItemDTO>>
 
     @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE itemId LIKE :itemId")
     fun getItemForItemId(itemId: String): LiveData<ProjectItemDTO>
@@ -50,7 +60,7 @@ interface ProjectItemDao {
     @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE sectionItemId LIKE :sectionItemId")
     fun getItemForItemCode(sectionItemId: String): LiveData<List<ProjectItemDTO>>
 
-    @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE projectId LIKE :projectId ORDER BY itemCode ASC "  )
+    @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE projectId LIKE :projectId ORDER BY itemCode ASC ")
     fun getAllItemsForProjectId(projectId: String): LiveData<List<ProjectItemDTO>>
 
     @Query("SELECT DISTINCT sectionItemId FROM PROJECT_ITEM_TABLE WHERE projectId = :projectId")
@@ -61,7 +71,6 @@ interface ProjectItemDao {
         sectionItem: String,
         projectId: String
     ): LiveData<List<ProjectItemDTO>>
-
 
     @Query("DELETE FROM PROJECT_ITEM_TABLE")
     fun deleteAll()

@@ -6,7 +6,6 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimatesPhotoDTO
 import java.text.DecimalFormat
 import java.util.*
 
-
 object JobUtils {
     fun formatCost(value: Double): String {
         val out = "R " + DecimalFormat("###,##0.00").format(value)
@@ -47,8 +46,6 @@ object JobUtils {
                 compressJobEstimates(jobItemEstimate)
             }
     }
-
-
 
     private fun compressJobEstimates(jobItemEstimate: JobItemEstimateDTO?) {
         if (jobItemEstimate == null) return

@@ -1,28 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-        android:id="@+id/singleItem"
+    android:id="@+id/singleItem"
     android:animateLayoutChanges="true"
     android:orientation="vertical"
     android:padding="@dimen/small">
 
     <TextView
-            android:id="@+id/textViewItem"
-            style="@style/_orangeTextLabel"
-            android:layout_width="367dp"
-            android:layout_height="51dp"
-            android:layout_marginRight="@dimen/small"
-            android:layout_weight="1"
-            android:paddingLeft="@dimen/xsmall"
-            android:gravity="center_vertical"
-            android:text="M020.03(A): Advertising Cost"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toLeftOf="@+id/editImageView"
-            app:layout_constraintTop_toTopOf="parent" />
+        android:id="@+id/textViewItem"
+        style="@style/_orangeTextLabel"
+        android:layout_width="0dp"
+        android:layout_height="51dp"
+        android:layout_margin="@dimen/small"
+        android:layout_weight="1"
+        android:padding="@dimen/xsmall"
+        android:gravity="center_vertical"
+        android:text="M020.03(A): Advertising Cost"
+        app:layout_constraintEnd_toStartOf="@+id/editImageView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
             android:id="@+id/editImageView"
@@ -37,31 +35,31 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/small"
-            android:hint="(Click to )"
-            android:paddingLeft="@dimen/xsmall"
-            android:textColor="@color/red"
+        android:hint="(Click to )"
+        android:padding="@dimen/xsmall"
+        android:textColor="@color/red"
             android:textColorHint="@color/silver"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/textViewItem" />
 
     <TextView
-            android:id="@+id/costTextView"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="176dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginRight="8dp"
-            android:gravity="right|end"
-            android:text="2 x  R150 = R300"
-            android:textStyle="bold"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/subTextView"
-            app:layout_constraintTop_toBottomOf="@+id/textViewItem" />
+        android:id="@+id/costTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:gravity="end"
+        android:text="2 x R150 = R300"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textViewItem" />
 
     <View
         style="@style/_hline"
         android:id="@+id/line"
         android:layout_marginTop="@dimen/small"
         app:layout_constraintTop_toBottomOf="@+id/costTextView"
-            tools:ignore="MissingConstraints" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

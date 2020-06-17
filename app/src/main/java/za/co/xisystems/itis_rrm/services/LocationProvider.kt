@@ -267,7 +267,7 @@ class LocationProvider private constructor(builder: Builder) :
 
     private fun outputLog(log: String) {
         if (loggingEnabled) {
-            Timber.d("\$log")
+            Timber.d("$log")
         }
     }
 

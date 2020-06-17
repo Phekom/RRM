@@ -1,6 +1,5 @@
 package za.co.xisystems.itis_rrm.ui.mainview.estmeasure.submit_measure
 
-
 import android.app.AlertDialog
 import android.content.DialogInterface
 import android.graphics.drawable.Animatable
@@ -29,7 +28,6 @@ import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import java.util.*
 
-
 class ExpandableHeaderMeasureItem(
     activity: FragmentActivity?,
     measureItem: JobItemEstimateDTO,
@@ -41,28 +39,23 @@ class ExpandableHeaderMeasureItem(
 
 ) : MeasureHeaderItem(null, measureItem, measureViewModel), ExpandableItem {
 
-
     var clickListener: ((ExpandableHeaderMeasureItem) -> Unit)? = null
     var navController: ((NavController) -> Unit)? = null
-    val measureItem = measureItem
-    var projIDz = measureItem.projectItemId
+    val measureItem: JobItemEstimateDTO = measureItem
+    var projIDz: String? = measureItem.projectItemId
 
     private var jobItemEst: JobDTO? = null
     private var itemEs: JobItemEstimateDTO? = null
 
     companion object {
-        const val JOB_IMEASURE = "JobItemMeasure"
+        const val JOB_IMEASURE: String = "JobItemMeasure"
         const val PHOTO_RESULT = 9000
-
     }
-
-
 
     private lateinit var expandableGroup: ExpandableGroup
     private var activity = activity
     override fun bind(viewHolder: GroupieViewHolder, position: Int) {
         super.bind(viewHolder, position)
-
 
         viewHolder.apply {
             appListID.text = getItemId(position + 1).toString()
@@ -79,24 +72,16 @@ class ExpandableHeaderMeasureItem(
                     measureJobItemEstimate(view)
 //                   setupWithNavController(bnv, navController);
 
-
                     //                clickListener?.invoke(LinearLayout.this)
                     navController?.invoke(NavController(activity!!))
-
                 }
             }
-
         }
-
 
         viewHolder.itemView.setOnClickListener { view ->
             clickListener?.invoke(this)
-
         }
-
-
     }
-
 
     private fun measureJobItemEstimate(
         view: View
@@ -151,7 +136,7 @@ class ExpandableHeaderMeasureItem(
                         val desc = measureViewModel.getDescForProjectItemId(projIDz!!)
 
                         val enterQuantityDialog: AlertDialog =
-                            AlertDialog.Builder(activity)//android.R.style.Theme_DeviceDefault_Dialog
+                            AlertDialog.Builder(activity) // android.R.style.Theme_DeviceDefault_Dialog
                                 .setTitle(
                                     "Estimate - " + desc + System.lineSeparator() + "Quantity : " + measureItem.qty.toString()
                                         .dropLast(
@@ -171,7 +156,9 @@ class ExpandableHeaderMeasureItem(
                                                 Toast.LENGTH_LONG
                                             ).show()
                                         } else {
-                                            if (!quantityInputEditText.text.toString().isEmpty()) {
+                                            if (quantityInputEditText.text.toString()
+                                                    .isNotEmpty()
+                                            ) {
                                                 Coroutines.main {
                                                     val jobItemMeasure = setJobItemMeasure(
                                                         selected,
@@ -183,7 +170,6 @@ class ExpandableHeaderMeasureItem(
                                                         jobItemMeasureArrayList
                                                     )
                                                     captureItemMeasureImages(jobItemMeasure, view)
-
                                                 }
                                             }
                                         }
@@ -248,19 +234,24 @@ class ExpandableHeaderMeasureItem(
         return itemMeasure
     }
 
-
     private fun captureItemMeasureImages(
         jobItemMeasure: JobItemMeasureDTO?,
         view: View
     ) {
+        when {
+            jobItemMeasure != null -> {
+                when {
+                    jobItemMeasure.jobItemMeasurePhotos.size > 0 -> {
+                        jobItemMeasure.itemMeasureId?.let { measureViewModel.generateGalleryUI(it) }
+                    }
+                    else -> measureViewModel.setJobItemMeasure(jobItemMeasure)
+                }
 
-        measureViewModel.measurea1_Item1.value = jobItemMeasure
-
-        Navigation.findNavController(view)
-            .navigate(R.id.action_submitMeasureFragment_to_captureItemMeasurePhotoFragment)
-
+                Navigation.findNavController(view)
+                    .navigate(R.id.action_submitMeasureFragment_to_captureItemMeasurePhotoFragment)
+            }
+        }
     }
-
 
     private fun bindIcon(viewHolder: GroupieViewHolder) {
         viewHolder.icon.apply {
@@ -274,7 +265,6 @@ class ExpandableHeaderMeasureItem(
         this.expandableGroup = onToggleListener
     }
 }
-
 
 private fun setJobItemMeasures(
     jobItemMeasures: ArrayList<JobItemMeasureDTO>,

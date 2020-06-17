@@ -40,5 +40,4 @@ class AppExecutor private constructor(
             mainThreadHandler.post(command)
         }
     }
-
 }

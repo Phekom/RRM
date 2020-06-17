@@ -15,6 +15,5 @@ class LocationViewModelFactory(private val application: Application) :
     ViewModelProvider.NewInstanceFactory() {
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
         return LocationViewModel(application) as T
-
     }
 }

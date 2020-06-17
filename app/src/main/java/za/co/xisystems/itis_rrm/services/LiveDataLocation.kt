@@ -18,7 +18,6 @@ class LocationLiveData(context: Context) : LiveData<LocationModel>() {
         fusedLocationClient.removeLocationUpdates(locationCallback)
     }
 
-
     /**
      *
      */

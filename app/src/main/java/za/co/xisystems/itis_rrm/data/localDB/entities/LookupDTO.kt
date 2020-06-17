@@ -8,11 +8,10 @@ import com.google.gson.annotations.SerializedName
  * Created by Francis Mahlava on 2019/11/21.
  */
 
-
 const val LOOKUP_TABLE = "LOOKUP_TABLE"
 
 @Entity(tableName = LOOKUP_TABLE)
-class LookupDTO (
+class LookupDTO(
 //    @SerializedName("ChildLookups")
 //    val childLookups: ArrayList<ChildLookupDTO>? = null,
     @SerializedName("LookupName")

@@ -57,14 +57,12 @@ import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 
-
 /**
  * Created by Francis Mahlava on 2019/12/29.
  */
 
 class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate),
     KodeinAware {
-
 
     private var sectionId: String? = null
     override val kodein by kodein()
@@ -134,12 +132,9 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
                     ViewModelProvider(this, factory).get(CreateViewModel::class.java)
                 } ?: throw Exception("Invalid Activity")
 
-
                 sharedViewModel = activity?.run {
                     ViewModelProvider(this, shareFactory).get(SharedViewModel::class.java)
                 } ?: throw Exception("Invalid Activity")
-
-
 
                 uiScope.launch(uiScope.coroutineContext) {
 
@@ -177,7 +172,6 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
                                 if (itemDTO != null) {
                                     onItemFound(itemDTO)
                                 }
-
                             })
                     }
                 }
@@ -186,7 +180,6 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
             whenResumed {
                 // uiScope.job.cancel(cause = CancellationException("onResume"))
             }
-
         }
     }
 
@@ -225,14 +218,14 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
                 newJobItemEstimate = newJob?.getJobEstimateByItemId(item?.itemId)
 
             restoreEstimateViewState()
-
         }
         return item
     }
 
     override fun onCreateView(
         inflater: LayoutInflater,
-        container: ViewGroup?, savedInstanceState: Bundle?
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
     ): View? {
         return inflater.inflate(R.layout.fragment_photo_estimate, container, false)
     }
@@ -243,7 +236,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
     override fun onPrepareOptionsMenu(menu: Menu) {
@@ -275,7 +268,6 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
 
         newJobItemEstimatesPhotosList2 = ArrayList()
         newJobItemEstimatesWorksList2 = ArrayList()
-
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -298,7 +290,6 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
         } catch (e: Exception) {
             Timber.e(e)
         }
-
 
         if (!gpsEnabled) { // notify user && !network_enabled
             displayPromptForEnablingGPS(requireActivity())
@@ -363,11 +354,8 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
                         }
 
                         updateData(view)
-
                     }
-
                 }
-
             }
         }
 
@@ -375,7 +363,6 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
         endPhotoButton.setOnClickListener(myClickListener)
         cancelButton.setOnClickListener(myClickListener)
         updateButton.setOnClickListener(myClickListener)
-
     }
 
     private fun updateData(view: View) {
@@ -400,7 +387,6 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
                 arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
                 REQUEST_STORAGE_PERMISSION
             )
-
         } else {
             launchCamera()
         }
@@ -420,7 +406,6 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
                 d.dismiss()
             }
         builder.create().show()
-
     }
 
     private fun launchCamera() {
@@ -470,7 +455,6 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
             else -> endSectionTextView
         }
 
-
         val targetUri =
             null
                 ?: extractImageUri(
@@ -498,7 +482,6 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
             )
             loadEstimateItemPhoto(targetUri, targetImageView, false)
         }
-
     }
 
     private fun extractImageUri(jobItemEstimatePhoto: JobItemEstimatesPhotoDTO?): Uri? {
@@ -522,7 +505,6 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
             // Process the image and set it to the TextView
 
             processAndSetImage()
-
         } else { // Otherwise, delete the temporary image file
             PhotoUtil.deleteImageFile(requireContext(), filenamePath.toString())
         }
@@ -534,7 +516,6 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
         // newJobDTO: JobDTO?,
         // estimate: JobItemEstimateDTO?
     ) {
-
 
         try { //  Location of picture
             val estimateLocation: LocationModel? = this.getCurrentLocation()
@@ -552,7 +533,6 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
                     filename_path = filenamePath,
                     itemId_photoType = itemIdPhotoType
                 )
-
 
                 when (photoType) {
                     PhotoType.START -> updatePhotos(
@@ -576,8 +556,6 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
             Timber.e(e)
             throw e
         }
-
-
     }
 
     private fun processPhotoEstimate(
@@ -589,7 +567,6 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
     ) {
 
         val itemId = item?.itemId ?: itemId_photoType["itemId"]
-
 
         if (newJobItemEstimate == null)
             newJobItemEstimate = newJob?.getJobEstimateByItemId(itemId)
@@ -606,7 +583,6 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
             }
 
             newJob?.JobItemEstimates!!.add(newJobItemEstimate!!)
-
         }
 
         if (ServiceUtil.isNetworkConnected(requireActivity().applicationContext)) {
@@ -615,14 +591,12 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
 
             uiScope.launch(context = uiScope.coroutineContext) {
 
-
                 withContext(uiScope.coroutineContext) {
                     getRouteSectionPoint(
                         estimateLocation
                     )
                 }
                 withContext(uiScope.coroutineContext) { validateRouteSection() }
-
 
                 withContext(uiScope.coroutineContext) {
                     if (!this@EstimatePhotoFragment.disableGlide) {
@@ -634,11 +608,8 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
                     }
 
                     this@EstimatePhotoFragment.disableGlide = false
-
                 }
             }
-
-
         } else {
             val networkToast = Toast.makeText(
                 activity?.applicationContext,
@@ -647,7 +618,6 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
             )
             networkToast.setGravity(Gravity.CENTER_VERTICAL, 0, 0)
             networkToast.show()
-
         }
     }
 
@@ -661,8 +631,6 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
                 }
             }
         })
-
-
     }
 
     private suspend fun onSectionPointFound(sectionPoint: SectionPointDTO?) {
@@ -680,7 +648,6 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
         sectionPoint: SectionPointDTO
     ) {
 
-
         val projectSection = createViewModel.getSectionByRouteSectionProject(
             sectionPoint.sectionId,
             sectionPoint.linearId,
@@ -695,7 +662,6 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
                 }
             }
         })
-
     }
 
     private suspend fun onProjectSectionIdFound(projectSectionId: String?) {
@@ -729,7 +695,6 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
                         newJob!!.StartKm = this.startKm
                         newJob!!.EndKm = this.endKm
                         isRouteSectionPoint = true
-
                     }
                 }
             })
@@ -760,7 +725,6 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
                             photo!!
                         )
                         this@EstimatePhotoFragment.disableGlide = false
-
 
                         val targetUri: Uri? = extractImageUri(photo!!)
                         val targetView = when (photo!!.is_PhotoStart) {
@@ -837,14 +801,12 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
             is_PhotoStart = isPhotoStart,
             image = null
         )
-
     }
 
     private fun createItemEstimate(
         itemId: String?,
         newJob: JobDTO?,
         item: ItemDTOTemp?
-
 
     ): JobItemEstimateDTO {
         val estimateId = SqlLitUtils.generateUuid()
@@ -919,7 +881,6 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
         if (imageUri != null) {
             // Coroutines.main {
             establishRouteSectionData(isStart, textView, animate)
-
         }
     }
 
@@ -937,7 +898,6 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
         imageView.setOnClickListener {
             showZoomedImage(imageUri)
         }
-
     } catch (e: Exception) {
         Timber.e(e)
     } finally {
@@ -953,8 +913,6 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
             costCard.visibility = View.GONE
             updateButton.visibility = View.GONE
         }
-
-
     }
 
     private fun establishRouteSectionData(
@@ -977,10 +935,8 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
                                     animate
                                 )
                             }
-
                         })
                     }
-
                 })
             } catch (throwable: KotlinNullPointerException) {
                 Timber.e(throwable)
@@ -1077,7 +1033,6 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
                     requireActivity().hideKeyboard()
                     e.printStackTrace()
                     toast("Please enter the Quantity.")
-
                 }
             }
         }
@@ -1089,7 +1044,6 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
 
         newJobItemEstimate?.qty = qty
         newJobItemEstimate?.lineRate = lineRate!!
-
     }
 
     private fun validateLengthCosting(
@@ -1104,7 +1058,6 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
                 try { //  Set the Area to the QTY
                     val length = (currentEndKm - currentStartKm) * 1000
                     inlineRate = length * tenderRate!!
-
                 } catch (e: NumberFormatException) {
                     requireActivity().hideKeyboard()
                     e.printStackTrace()
@@ -1123,7 +1076,6 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
         labelTextView!!.text = getString(R.string.label_amount)
         try {
             inlineRate = qty * tenderRate!!
-
         } catch (e: NumberFormatException) {
             requireActivity().hideKeyboard()
             e.printStackTrace()
@@ -1141,7 +1093,6 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
         labelTextView!!.text = getString(R.string.label_volume_m3)
         try {
             inlineRate = qty * tenderRate!!
-
         } catch (e: NumberFormatException) {
             requireActivity().hideKeyboard()
             e.printStackTrace()
@@ -1160,8 +1111,6 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
         labelTextView!!.text = getString(R.string.label_area_m2)
         try {
             inlineRate = qty * tenderRate!!
-
-
         } catch (e: NumberFormatException) {
             requireActivity().hideKeyboard()
             e.printStackTrace()
@@ -1179,12 +1128,10 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
         labelTextView!!.text = getString(R.string.label_quantity)
         try { //  make the change in the array and update view
             inlineRate = qty * tenderRate!!
-
         } catch (e: NumberFormatException) {
             requireActivity().hideKeyboard()
             e.printStackTrace()
             toast("Please place the Quantity.")
-
         }
         return inlineRate
     }
@@ -1220,7 +1167,6 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
         return super.getLocation()
     }
 
-
     override fun onSaveInstanceState(outState: Bundle) {
         outState.run {
             outState.putString("jobId", newJob?.JobId)
@@ -1228,7 +1174,6 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
         }
         super.onSaveInstanceState(outState)
         Timber.i("$outState")
-
     }
 
     private fun onRestoreInstanceState(inState: Bundle?) {

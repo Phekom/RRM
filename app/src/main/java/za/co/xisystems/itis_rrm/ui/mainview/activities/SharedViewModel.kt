@@ -33,5 +33,4 @@ class SharedViewModel : ViewModel() {
     fun resetCaption() {
         actionCaption.value = originalCaption
     }
-
 }

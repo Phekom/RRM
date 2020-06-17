@@ -11,7 +11,7 @@ import java.util.*
  */
 
 const val JOB_TABLE_TEMP = "JOB_TABLE_TEMP"
-//val JOB_ID = UUID.randomUUID().toString()
+// val JOB_ID = UUID.randomUUID().toString()
 
 @Entity(tableName = JOB_TABLE_TEMP)
 class JobDTOTemp(
@@ -25,7 +25,7 @@ class JobDTOTemp(
     @SerializedName("ProjectId")
     var ProjectId: String?,
 
-    var SectionId : String?,
+    var SectionId: String?,
     @SerializedName("StartKm")
     var StartKm: Double,
     @SerializedName("EndKm")
@@ -56,9 +56,9 @@ class JobDTOTemp(
     @SerializedName("StartDate")
     var StartDate: Date? = Date(),
     @SerializedName("DueDate")
-    var DueDate:  Date? = Date(),
+    var DueDate: Date? = Date(),
     @SerializedName("ApprovalDate")
-    val ApprovalDate:Date? = Date(),
+    val ApprovalDate: Date? = Date(),
 
     @SerializedName("MobileJobItemEstimates")
     var JobItemEstimates: ArrayList<JobItemEstimateDTO>?,
@@ -94,7 +94,6 @@ class JobDTOTemp(
     @SerializedName("JobStatusId")
     val JobStatusId: Int,
 
-
     @SerializedName("ProjectVoId")
     var ProjectVoId: String?,
     @SerializedName("QtyUpdateAllowed")
@@ -109,9 +108,7 @@ class JobDTOTemp(
     @SerializedName("WorkStartDate")
     val WorkStartDate: String?
 
-
-
-) : Serializable{
+) : Serializable {
 
     fun addOrUpdateJobItemEstimate(newEstimate: JobItemEstimateDTO) {
         val x = getJobEstimateIndexByItemId(newEstimate.projectItemId)
@@ -124,7 +121,6 @@ class JobDTOTemp(
     fun jobEstimateExist(itemId: String?): Boolean {
         return getJobEstimateIndexByItemId(itemId) > -1
     }
-
 
     fun getJobEstimateIndexByItemId(itemId: String?): Int {
         if (itemId != null) for (i in JobItemEstimates!!.indices) {
@@ -167,11 +163,7 @@ class JobDTOTemp(
 //        this.sortString = sortString
 //    }
 
-
 //    fun clearJobItemEstimates() {
 //        JobItemEstimates?.clear()
 //    }
-
-
-
 }

@@ -25,14 +25,12 @@ class UiLifecycleScope : CoroutineScope, LifecycleObserver {
         }
         Timber.e(throwable)
         throw Exception(throwable)
-
     }
 
     private var job = SupervisorJob()
 
     override val coroutineContext: CoroutineContext
         get() = job.plus(Dispatchers.Main).plus(handler)
-
 
     @OnLifecycleEvent(Lifecycle.Event.ON_START)
     fun onCreate() {

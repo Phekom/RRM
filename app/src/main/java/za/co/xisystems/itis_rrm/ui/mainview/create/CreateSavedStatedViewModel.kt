@@ -22,6 +22,4 @@ class CreateSavedStatedViewModel(
     val newJob: MutableLiveData<JobDao>? = null
 
     val editJob: MutableLiveData<JobDao>? = null
-
-
 }

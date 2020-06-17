@@ -27,7 +27,6 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.toast
 
-
 class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, KodeinAware {
     private var activityPinLockBinding: ActivityLoginBinding? = null
 
@@ -39,7 +38,6 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
     override val kodein by kodein()
     private val factory: AuthViewModelFactory by instance()
     private lateinit var viewModel: AuthViewModel
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -69,17 +67,11 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
                 ToastUtils().toastServerAddress(this.applicationContext)
             }
 
-
-
             buildFlavorTextView.setOnClickListener {
                 ToastUtils().toastVersion(this.applicationContext)
             }
-
-
         }
-
     }
-
 
     private fun initPin() {
         Coroutines.main {
@@ -89,13 +81,9 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
                     Coroutines.main {
                         pin = viewModel.getPin()
                     }
-
-
                 }
-
             })
         }
-
     }
 
     private fun checkPinColor() {
@@ -189,7 +177,6 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
                     pinInput = pinInput.substring(0, pinInput.length - 1)
                     index--
                 }
-
             }
         }
         Timber.d("<TEST> -> Masuk$index")
@@ -201,9 +188,10 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
         Coroutines.main {
             val loggedInUser = viewModel.user.await()
             loggedInUser.observe(this, Observer { user ->
-                if (user.PIN.isNullOrEmpty()){
+                if (user.PIN.isNullOrEmpty()) {
 
-                    val logoutBuilder = AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog)
+                    val logoutBuilder =
+                        AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog)
                     logoutBuilder.setTitle(R.string.set_pin)
                     logoutBuilder.setIcon(R.drawable.ic_baseline_lock_24px)
                     logoutBuilder.setMessage(R.string.set_pin_msg)
@@ -211,8 +199,9 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
                     // Yes button
                     logoutBuilder.setPositiveButton(R.string.ok) { dialog, which ->
                         if (ServiceUtil.isNetworkConnected(this.applicationContext)) {
-                            Intent(this, RegisterPinActivity::class.java).also {pin ->
-                                pin.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                            Intent(this, RegisterPinActivity::class.java).also { pin ->
+                                pin.flags =
+                                    Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
                                 startActivity(pin)
                             }
                         } else {
@@ -221,20 +210,14 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
                     }
                     val declineAlert = logoutBuilder.create()
                     declineAlert.show()
-
-                }
-
-                else {
+                } else {
 
                     if (index == 4) {
                         validatePin()
                     }
                 }
-
-
             })
         }
-
     }
 
     override fun onResume() {
@@ -279,7 +262,7 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
     }
 
     override fun onStarted() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
     override fun onSuccess(userDTO: UserDTO) {
@@ -287,10 +270,10 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
     }
 
     override fun onSignOut(userDTO: UserDTO) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
     override fun onFailure(message: String) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 }

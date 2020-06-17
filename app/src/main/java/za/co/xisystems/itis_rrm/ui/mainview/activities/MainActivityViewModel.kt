@@ -16,7 +16,7 @@ import za.co.xisystems.itis_rrm.utils.lazyDeferred
 /**
  * Created by Francis Mahlava on 03,October,2019
  */
-class MainActivityViewModel (
+class MainActivityViewModel(
     private val offlineDataRepository: OfflineDataRepository
 ) : ViewModel() {
 
@@ -29,7 +29,6 @@ class MainActivityViewModel (
         offlineDataRepository.getUser()
     }
 
-
     val measureapproval_Item = MutableLiveData<ApproveMeasureItem>()
     fun Item5(measureapproval: ApproveMeasureItem) {
         measureapproval_Item.value = measureapproval
@@ -37,7 +36,7 @@ class MainActivityViewModel (
 
     suspend fun getJobsForActivityId2(activityId1: Int, activityId2: Int): LiveData<List<JobDTO>> {
         return withContext(Dispatchers.IO) {
-            offlineDataRepository.getJobsForActivityIds1(activityId1,activityId2)
+            offlineDataRepository.getJobsForActivityIds1(activityId1, activityId2)
         }
     }
 
@@ -46,8 +45,6 @@ class MainActivityViewModel (
             offlineDataRepository.getJobsForActId(activityId)
         }
     }
-
-
 
     suspend fun getJobMeasureForActivityId(
         activityId: Int,
@@ -64,21 +61,15 @@ class MainActivityViewModel (
         }
     }
 
-
     suspend fun getJobApproveMeasureForActivityId(activityId: Int): LiveData<List<JobItemMeasureDTO>> {
         return withContext(Dispatchers.IO) {
             offlineDataRepository.getJobApproveMeasureForActivityId(activityId)
         }
     }
 
-
-
-    suspend fun deleteAllData() : Void?{
+    suspend fun deleteAllData(): Void? {
         return withContext(Dispatchers.IO) {
             offlineDataRepository.deleteAllData()
         }
     }
-
-
-
 }

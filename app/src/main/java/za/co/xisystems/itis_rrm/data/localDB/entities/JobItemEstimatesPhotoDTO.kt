@@ -1,6 +1,5 @@
 package za.co.xisystems.itis_rrm.data.localDB.entities
 
-
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
@@ -26,13 +25,13 @@ data class JobItemEstimatesPhotoDTO(
     @SerializedName("PhotoEnd")
     val photoEnd: String?,
     @SerializedName("Startkm")
-    val startKm : Double = 0.0,
+    val startKm: Double = 0.0,
     @SerializedName("Endkm")
-    val endKm : Double = 0.0,
+    val endKm: Double = 0.0,
     @SerializedName("PhotoLatitude")
-    var photoLatitude : Double? = 0.0,
+    var photoLatitude: Double? = 0.0,
     @SerializedName("PhotoLongitude")
-    var photoLongitude:  Double? = 0.0,
+    var photoLongitude: Double? = 0.0,
 
     @SerializedName("PhotoLatitudeEnd")
     var photoLatitudeEnd: Double = 0.0,
@@ -58,7 +57,6 @@ data class JobItemEstimatesPhotoDTO(
     fun isPhotoStart(): Boolean {
         return is_PhotoStart
     }
-
 
     fun setPhotoLatitude(photoLatitude: Double) {
         this.photoLatitude = photoLatitude
@@ -97,7 +95,3 @@ data class JobItemEstimatesPhotoDTO(
         return result
     }
 }
-
-
-
-

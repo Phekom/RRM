@@ -8,7 +8,6 @@ import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
 
-
 object Util {
 
     fun disableDoubleClick(view: View) {
@@ -27,7 +26,6 @@ object Util {
         sb.insert(23, "-")
         return sb.toString()
     }
-
 
     @SuppressLint("SimpleDateFormat")
     @Throws(IOException::class)
@@ -53,5 +51,4 @@ object Util {
             true
         }
     }
-
 }

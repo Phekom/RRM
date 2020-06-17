@@ -10,12 +10,11 @@ private const val MINIMUM_INTERVAL1 = 6
 
 class VoItemsRepository : SafeApiRequest() {
 
-
 //    private val voItems = MutableLiveData<List<VoItemDTO>>()
 
 //    init {
 //        voItems.observeForever {
-////            saveVoItems(it)
+// //            saveVoItems(it)
 //        }
 //    }
 
@@ -38,12 +37,11 @@ class VoItemsRepository : SafeApiRequest() {
 //        }
 //    }
 
-
 //    private suspend fun fetchVoItems(){
 //        val lastSavedAt = prefs.getLastSavedAt()
 //
 //        if (lastSavedAt == null || isFetchNeeded(LocalDateTime.parse(lastSavedAt))){
-////            var userId :String = .toString()
+// //            var userId :String = .toString()
 //            val ProjectId = "3a9ddf6c-eb4f-421a-947b-de486ac55875"
 //            val myResponse = apiRequest { api.projectVosRefresh(ProjectId) }
 //            voItems.postValue(myResponse.voItems)
@@ -53,9 +51,4 @@ class VoItemsRepository : SafeApiRequest() {
 //    private fun isFetchNeeded(savedAt: LocalDateTime): Boolean {
 //        return ChronoUnit.HOURS.between(savedAt, LocalDateTime.now()) > MINIMUM_INTERVAL
 //    }
-
-
-
-
 }
-

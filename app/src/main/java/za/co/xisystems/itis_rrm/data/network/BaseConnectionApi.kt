@@ -40,7 +40,6 @@ interface BaseConnectionApi {
         @Field("UserLogon") UserLogon: String
     ): Response<HealthCheckResponse>
 
-
     @FormUrlEncoded
     @POST("UpdateEstQty")
     suspend fun updateEstimateQty(
@@ -56,14 +55,11 @@ interface BaseConnectionApi {
         @Field("Quantity") quantity: Double?
     ): Response<QuantityUpdateResponse>
 
-
-
     @FormUrlEncoded
     @POST("RrmActivitySectionsRefresh")
     suspend fun activitySectionsRefresh(
         @Field("UserId") UserId: String
     ): Response<ActivitySectionsResponse>
-
 
     @FormUrlEncoded
     @POST("ContractInfoRefresh")
@@ -142,13 +138,10 @@ interface BaseConnectionApi {
         @Field("UserId") UserId: String
     ): Response<RouteSectionPointResponse>
 
-
-
     @POST("SaveRrmJob")
     suspend fun sendJobsForApproval(
         @Body job: JsonObject
     ): Response<JobResponse>
-
 
     @POST("UploadWorksItem")
     suspend fun uploadWorksItem(
@@ -175,7 +168,6 @@ interface BaseConnectionApi {
                     val response = chain.proceed(request)
                     response
                 }
-
             }
 
             /**
@@ -191,7 +183,6 @@ interface BaseConnectionApi {
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()
                 .create(BaseConnectionApi::class.java)
-
         }
     }
 }

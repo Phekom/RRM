@@ -1,6 +1,5 @@
 package za.co.xisystems.itis_rrm.data.network.responses
 
-
 import com.google.gson.annotations.SerializedName
 
 data class HealthCheckResponse(

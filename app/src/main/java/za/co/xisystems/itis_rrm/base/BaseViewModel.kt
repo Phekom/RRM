@@ -28,5 +28,4 @@ abstract class BaseViewModel : ViewModel() {
     override fun onCleared() {
         scope.coroutineContext.cancelChildren()
     }
-
 }

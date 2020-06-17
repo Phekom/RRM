@@ -24,7 +24,7 @@ const val TABLE_JOB_VO_ITEM = "TABLE_JOB_VO_ITEM"
 )
 data class VoItemDTO(
     @PrimaryKey
-    val id :Int,
+    val id: Int,
     @SerializedName("ProjectVoId")
     val projectVoId: String,
     @SerializedName("ItemCode")
@@ -47,4 +47,4 @@ data class VoItemDTO(
     @ColumnInfo(name = "projectId", index = true)
     val projectId: String
 
-): Serializable
+) : Serializable

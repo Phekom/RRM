@@ -22,7 +22,6 @@ class NetworkConnectionInterceptor(
     private val serviceURL = "itisqa.nra.co.za"
     private val applicationContext = context.applicationContext
 
-
     override fun intercept(chain: Interceptor.Chain): Response {
         if (!isInternetAvailable())
             throw NoInternetException("Please ensure you have an active data connection")
@@ -40,7 +39,6 @@ class NetworkConnectionInterceptor(
 
         return chain.proceed(chain.request())
     }
-
 
     private fun isInternetAvailable(): Boolean {
         var result = false
@@ -88,5 +86,4 @@ class NetworkConnectionInterceptor(
             return false
         }
     }
-
 }

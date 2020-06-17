@@ -14,18 +14,22 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.ActivityDTO
 @Dao
 interface ActivityDao {
 //
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertActivitys( activities : ActivityDTO )
-
+@Insert(onConflict = OnConflictStrategy.REPLACE)
+suspend fun insertActivitys(activities: ActivityDTO)
 
     @Query("INSERT INTO ACTIVITY_TABLE ( actId,  actTypeId, approvalId, sContentId,  actName, descr) VALUES ( :ACT_ID, :ACT_NAME, :ACT_TYPE_ID, :APPROVAL_ID,  :DESCRIPTION,:CONTENT_ID)")
-    fun insertActivity(  ACT_ID: Long, ACT_TYPE_ID: Long?, APPROVAL_ID: Long?,CONTENT_ID: Long?, ACT_NAME: String?,  DESCRIPTION: String?)
+    fun insertActivity(
+        ACT_ID: Long,
+        ACT_TYPE_ID: Long?,
+        APPROVAL_ID: Long?,
+        CONTENT_ID: Long?,
+        ACT_NAME: String?,
+        DESCRIPTION: String?
+    )
 
     @Query("SELECT * FROM ACTIVITY_TABLE ")
-    fun getAllActivities() : LiveData<List<ActivityDTO>>
+    fun getAllActivities(): LiveData<List<ActivityDTO>>
 
     @Query("DELETE FROM ACTIVITY_TABLE")
     fun deleteAll()
-
 }
-

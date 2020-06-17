@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
 
-class CorrectionsViewModel (
+class CorrectionsViewModel(
     private val offlineDataRepository: OfflineDataRepository
 ) : ViewModel() {
 
