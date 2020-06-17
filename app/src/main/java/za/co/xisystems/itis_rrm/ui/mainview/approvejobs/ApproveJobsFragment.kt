@@ -138,11 +138,11 @@ class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAw
     }
 
     private fun sendJobToApprove(
-        job: ApproveJobItem?,
+        job: ApproveJobItem,
         view: View
     ) {
         Coroutines.main {
-            approveViewModel.jobapproval_Item6.value = job
+            approveViewModel.setJobForApproval(job)
         }
 
         Navigation.findNavController(view)

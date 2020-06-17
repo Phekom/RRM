@@ -110,14 +110,14 @@ class EstimatesItem(
             new_quantity.text = Editable.Factory.getInstance().newEditable("$newQuantity")
 
             new_quantity.addTextChangedListener(object : AbstractTextWatcher() {
-                override fun onTextChanged(quantity: String) {
-                    if (quantity == "" || nanCheck(quantity) || quantity.toDouble() == 0.0) {
+                override fun onTextChanged(text: String) {
+                    if (text == "" || nanCheck(text) || text.toDouble() == 0.0) {
                         cost = 0.0
                         new_total.text = "R $cost"
                     } else {
 
-                        val qty = quantity.toDouble()
-                        if (quantity.length > 9) {
+                        val qty = text.toDouble()
+                        if (text.length > 9) {
                             new_quantity.text =
                                 Editable.Factory.getInstance().newEditable("$defaultQty")
                             activity.toast("You Have exceeded the amount of Quantity allowed")

@@ -68,7 +68,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
         Coroutines.main {
             mydata_loading.show()
 
-            approveViewModel.jobapproval_Item6.observe(viewLifecycleOwner, Observer { job ->
+            approveViewModel.jobApprovalItem.observe(viewLifecycleOwner, Observer { job ->
                 Coroutines.main {
                     getEstimateItems(job.jobDTO.JobId)
                     val description = approveViewModel.getDescForProjectId(job.jobDTO.ProjectId!!)
@@ -149,7 +149,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
 
             val user = approveViewModel.user.await()
             user.observe(viewLifecycleOwner, Observer { user_ ->
-                approveViewModel.jobapproval_Item6.observe(viewLifecycleOwner, Observer { job ->
+                approveViewModel.jobApprovalItem.observe(viewLifecycleOwner, Observer { job ->
 
                     when {
                         user_.userId == null -> {

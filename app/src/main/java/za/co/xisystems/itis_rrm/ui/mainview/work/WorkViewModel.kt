@@ -148,12 +148,15 @@ class WorkViewModel(
         }
     }
 
+    val backupWorkSubmission: MutableLiveData<JobEstimateWorksDTO> = MutableLiveData()
+    val workflowResponse = workDataRepository.workStatus
+
     suspend fun processWorkflowMove(
         userId: String,
         trackRouteId: String,
         description: String?,
         direction: Int
-    ): String? {
+    ): String {
         return withContext(Dispatchers.IO) {
             workDataRepository.processWorkflowMove(userId, trackRouteId, description, direction)
         }
@@ -178,4 +181,6 @@ class WorkViewModel(
             workDataRepository.getWorkItemsForActID(actId)
         }
     }
+
+    val backupCompletedEstimates: MutableLiveData<List<JobItemEstimateDTO>> = MutableLiveData()
 }

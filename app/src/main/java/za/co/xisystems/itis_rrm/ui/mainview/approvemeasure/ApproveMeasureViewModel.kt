@@ -5,10 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
@@ -33,18 +30,6 @@ class ApproveMeasureViewModel(
     private val measureApprovalDataRepository: MeasureApprovalDataRepository,
     private val offlineDataRepository: OfflineDataRepository
 ) : AndroidViewModel(application) {
-
-    //    suspend fun getJobApproveMeasureForActivityId(activityId: Int): LiveData<List<JobItemMeasureDTO>> {
-//        return withContext(Dispatchers.IO) {
-//            offlineDataRepository.getJobApproveMeasureForActivityId(activityId)
-//        }
-//    }
-
-    //    suspend fun getJobFromJobId(jobId: String): JobDTO {
-//        return withContext(Dispatchers.IO) {
-//            offlineDataRepository.getUpdatedJob(jobId)
-//        }
-//    }
 
     val offlineUserTaskList by lazyDeferred {
         offlineDataRepository.getUserTaskList()
@@ -201,55 +186,61 @@ class ApproveMeasureViewModel(
         }
     }
 
-    suspend fun generateGallery(measureItem: JobItemMeasureDTO) {
-        try {
+    suspend fun generateGallery(measureItem: JobItemMeasureDTO) =
+        viewModelScope.launch(viewModelScope.coroutineContext) {
+            try {
 
-            val measureDescription =
-                measureItem.projectItemId?.let {
-                    getDescForProjectId(it)
+                val measureDescription =
+                    measureItem.projectItemId?.let {
+                        getDescForProjectId(it)
+                    }
+
+                val photoQuality = when (measureItem.jobItemMeasurePhotos.size) {
+                    in 1..4 -> PhotoQuality.HIGH
+                    in 5..10 -> PhotoQuality.MEDIUM
+                    else -> PhotoQuality.THUMB
                 }
 
-            val photoQuality = when (measureItem.jobItemMeasurePhotos.size) {
-                in 1..4 -> PhotoQuality.HIGH
-                in 5..10 -> PhotoQuality.MEDIUM
-                else -> PhotoQuality.THUMB
+                val bitmaps = measureItem.jobItemMeasurePhotos.map { photo ->
+
+                    val uri = photo.filename?.let { fileName ->
+                        PhotoUtil.getPhotoPathFromExternalDirectory(fileName)
+                    }
+                    val bmap = uri?.let { mUri ->
+                        PhotoUtil.getPhotoBitMapFromFile(
+                            this@ApproveMeasureViewModel.getApplication(),
+                            mUri,
+                            photoQuality
+                        )
+                    }
+                    Pair(uri!!, bmap!!)
+                }
+
+                val uiState = GalleryUIState(
+                    description = measureDescription,
+                    qty = measureItem.qty,
+                    lineRate = measureItem.lineRate,
+                    photoPairs = bitmaps
+                )
+
+                uiState.lineAmount = uiState.qty * uiState.lineRate
+
+                galleryUIState.postValue(XISuccess(uiState))
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to retrieve itemMeasure for Gallery")
+                val galleryFail = XIError(e, "Failed to retrieve itemMeasure for Gallery")
+                galleryUIState.postValue(galleryFail)
             }
-
-            val bitmaps = measureItem.jobItemMeasurePhotos.map { photo ->
-
-                val uri = photo.filename?.let { fileName ->
-                    PhotoUtil.getPhotoPathFromExternalDirectory(fileName)
-                }
-                val bmap = uri?.let { uri ->
-                    PhotoUtil.getPhotoBitMapFromFile(
-                        this@ApproveMeasureViewModel.getApplication(),
-                        uri,
-                        photoQuality
-                    )
-                }
-                Pair(uri!!, bmap!!)
-            }
-
-            val uiState = GalleryUIState(
-                description = measureDescription,
-                qty = measureItem.qty,
-                lineRate = measureItem.lineRate,
-                photoPairs = bitmaps
-            )
-
-            uiState.lineAmount = uiState.qty * uiState.lineRate
-
-            galleryUIState.postValue(XISuccess(uiState))
-        } catch (e: Exception) {
-            Timber.e(e, "Failed to retrieve itemMeasure for Gallery")
-            val galleryFail = XIError(e, "Failed to retrieve itemMeasure for Gallery")
-            galleryUIState.postValue(galleryFail)
         }
-    }
 
     suspend fun getJobItemMeasureByItemMeasureId(itemMeasureId: String): LiveData<JobItemMeasureDTO> {
         return withContext(Dispatchers.IO) {
             measureApprovalDataRepository.getJobItemMeasureByItemMeasureId(itemMeasureId)
         }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        job.cancelChildren()
     }
 }

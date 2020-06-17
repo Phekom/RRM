@@ -61,8 +61,6 @@ open class MainApp : Application(), KodeinAware {
         bind() from provider {
             HomeViewModelFactory(
                 instance(),
-                instance(),
-                instance(),
                 instance()
             )
         }

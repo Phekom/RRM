@@ -278,9 +278,9 @@ object PhotoUtil {
     ): Map<String, String?>? {
         var scaledUri = imageUri
         return try {
-            var scaledBitmap: Bitmap? = null
+            lateinit var scaledBitmap: Bitmap
             val options = BitmapFactory.Options()
-            var result: String?
+            lateinit var result: String
             // if uri is content
             if (scaledUri.scheme != null && scaledUri.scheme == "content") {
                 val cursor =
@@ -299,10 +299,10 @@ object PhotoUtil {
                     cursor?.close()
                 }
             }
-            result = scaledUri.path
+            result = scaledUri.path ?: ""
             // get filename + ext of path
-            val cut = result?.lastIndexOf('/')
-            if (cut != null && cut != -1) result = result?.substring(cut + 1)
+            val cut = result.lastIndexOf('/')
+            if (cut != null && cut != -1) result = result.substring(cut + 1)
             val imageFileName = result
             val direct =
                 File(Environment.getExternalStorageDirectory().toString() + File.separator + FOLDER)
@@ -344,7 +344,7 @@ object PhotoUtil {
             val middleY = actualHeight / 2.0f
             val scaleMatrix = Matrix()
             scaleMatrix.setScale(ratioX, ratioY, middleX, middleY)
-            val canvas = Canvas(scaledBitmap!!)
+            val canvas = Canvas(scaledBitmap)
             canvas.setMatrix(scaleMatrix)
             canvas.drawBitmap(
                 bmp,
@@ -362,7 +362,7 @@ object PhotoUtil {
             } catch (e: FileNotFoundException) {
                 e.printStackTrace()
             }
-            val map: MutableMap<String, String?> =
+            val map: MutableMap<String, String> =
                 HashMap()
             map["filename"] = imageFileName
             map["path"] = path

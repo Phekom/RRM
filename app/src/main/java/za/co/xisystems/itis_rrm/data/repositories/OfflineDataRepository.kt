@@ -23,6 +23,7 @@ import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import za.co.xisystems.itis_rrm.utils.results.XIResult
+import za.co.xisystems.itis_rrm.utils.results.XIStatus
 import za.co.xisystems.itis_rrm.utils.results.XISuccess
 import java.io.File
 import java.time.LocalDateTime
@@ -1061,22 +1062,34 @@ class OfflineDataRepository(
         // TODO: Redo as async calls in parallel
         return withContext(Dispatchers.IO) {
 
-            if (!entitiesFetched) {
-                getAllEntities()
-            }
 
+            if (!entitiesFetched) {
+                postStatus("Fetching Entities")
+                getAllEntities()
+                entitiesFetched = true
+            }
+            postStatus("Refreshing Contracts")
             refreshContractInfo(userId)
 
+            postStatus("Refreshing Activity Sessions")
             refreshActivitySections(userId)
 
+            postStatus("Refreshing Workflows")
             refreshWorkflows(userId)
 
+            postStatus("Refreshing Lookups")
             refreshLookups(userId)
 
+            postStatus("Fetching Task List")
             fetchUserTaskList(userId)
 
             true
         }
+    }
+
+    private fun postStatus(message: String) {
+        var status = XIStatus(message)
+        databaseStatus.postValue(status)
     }
 
     private fun saveLookups(lookups: ArrayList<LookupDTO>?) {
@@ -1166,22 +1179,18 @@ class OfflineDataRepository(
 
     private suspend fun updateWorkflowEstimateWorks(jobItemEstimate: WorkflowItemEstimateDTO) {
         for (jobEstimateWorks in jobItemEstimate.workflowEstimateWorks) {
-            if (!Db.getEstimateWorkDao().checkIfJobEstimateWorksExist(
-                    jobEstimateWorks.worksId
+            if (!Db.getEstimateWorkDao().checkIfJobEstimateWorksExist(jobEstimateWorks.worksId)) {
+                TODO("This should never happen.")
+            } else {
+                Db.getEstimateWorkDao().updateJobEstimateWorksWorkflow(
+                    jobEstimateWorks.worksId,
+                    jobEstimateWorks.estimateId,
+                    jobEstimateWorks.recordVersion,
+                    jobEstimateWorks.recordSynchStateId,
+                    jobEstimateWorks.actId,
+                    jobEstimateWorks.trackRouteId
                 )
-            )
-                Db.getEstimateWorkDao().insertJobEstimateWorks(
-                    // TODO: Fix this broken casting.
-                    // jobEstimateWorks as JobEstimateWorksDTO
-                    TODO("This should never happen.")
-                ) else Db.getEstimateWorkDao().updateJobEstimateWorksWorkflow(
-                jobEstimateWorks.worksId,
-                jobEstimateWorks.estimateId,
-                jobEstimateWorks.recordVersion,
-                jobEstimateWorks.recordSynchStateId,
-                jobEstimateWorks.actId,
-                jobEstimateWorks.trackRouteId
-            )
+            }
         }
     }
 

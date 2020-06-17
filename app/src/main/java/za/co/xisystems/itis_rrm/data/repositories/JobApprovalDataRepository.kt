@@ -8,10 +8,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.WorkflowJobDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
 import za.co.xisystems.itis_rrm.utils.Coroutines
@@ -38,11 +35,11 @@ class JobApprovalDataRepository(
             saveWorkflowJob(it)
         }
         qtyUpDate.observeForever {
-            saveqtyUpDate(it)
+            saveQtyUpDate(it)
         }
     }
 
-    private fun saveqtyUpDate(newQty: String?) {
+    private fun saveQtyUpDate(newQty: String?) {
     }
 
     suspend fun getUser(): LiveData<UserDTO> {
@@ -95,21 +92,19 @@ class JobApprovalDataRepository(
 
     suspend fun upDateEstimate(newQuantity: String, newTotal: String, estimateId: String): String {
         val new_estimateId = DataConversion.toLittleEndian(estimateId)
-        val new_Quantity = newQuantity
-        val new_Total = newTotal
 
         val quantityUpdateResponse = apiRequest {
             api.updateEstimateQty(
                 new_estimateId,
-                new_Quantity.toDouble(),
-                new_Total.toDouble()
+                newQuantity.toDouble(),
+                newTotal.toDouble()
             )
         }
         qtyUpDate.postValue(
             quantityUpdateResponse.errorMessage,
             estimateId,
-            new_Quantity.toDouble(),
-            new_Total.toDouble()
+            newQuantity.toDouble(),
+            newTotal.toDouble()
         )
         val messages = quantityUpdateResponse.errorMessage ?: ""
         return withContext(Dispatchers.IO) {
@@ -119,12 +114,12 @@ class JobApprovalDataRepository(
 
     private fun <T> MutableLiveData<T>.postValue(
         errorMessage: String?,
-        newEstimateid: String?,
+        newEstimateId: String?,
         new_Quantity: Double,
         new_Total: Double
     ) {
         if (errorMessage == null) {
-                    Db.getJobItemEstimateDao().upDateLineRate(newEstimateid!!, new_Quantity, new_Total)
+            Db.getJobItemEstimateDao().upDateLineRate(newEstimateId!!, new_Quantity, new_Total)
         } else {
             Timber.e("newQty is null")
         }
@@ -138,9 +133,13 @@ class JobApprovalDataRepository(
     ): String {
         val workflowMoveResponse =
             apiRequest { api.getWorkflowMove(userId, trackRouteId, description, direction) }
-        workflowJ.postValue(workflowMoveResponse.workflowJob)
 
         val messages = workflowMoveResponse.errorMessage ?: ""
+
+        if (messages.isBlank()) {
+            workflowJ.postValue(workflowMoveResponse.workflowJob)
+        }
+
 
         return withContext(Dispatchers.IO) {
             messages
@@ -200,6 +199,7 @@ class JobApprovalDataRepository(
 
     private fun updateWorkflowJobValuesAndInsertWhenNeeded(job: WorkflowJobDTO) {
         Coroutines.io {
+
             Db.getJobDao().updateJob(job.trackRouteId, job.actId, job.jiNo, job.jobId)
 
             job.workflowItemEstimates?.forEach { jobItemEstimate ->
@@ -212,12 +212,22 @@ class JobApprovalDataRepository(
                 jobItemEstimate.workflowEstimateWorks.forEach { jobEstimateWorks ->
                     if (!Db.getEstimateWorkDao()
                             .checkIfJobEstimateWorksExist(jobEstimateWorks.worksId)
-                    )
+                    ) {
+                        // Create Bare Bones
+                        val estimateWorks = JobEstimateWorksDTO(
+                            worksId = jobEstimateWorks.worksId,
+                            estimateId = jobEstimateWorks.estimateId,
+                            recordVersion = jobEstimateWorks.recordVersion,
+                            recordSynchStateId = jobEstimateWorks.recordSynchStateId,
+                            actId = jobEstimateWorks.actId,
+                            trackRouteId = jobEstimateWorks.trackRouteId,
+                            jobEstimateWorksPhotos = ArrayList()
+                        )
+
                         Db.getEstimateWorkDao().insertJobEstimateWorks(
-                            // TODO: b0rk3d! This broken cast needs fixing.
-                            // jobEstimateWorks as JobEstimateWorksDTO
-                            TODO("This should never happen!")
-                        ) else
+                            estimateWorks
+                        )
+                    } else {
                         Db.getEstimateWorkDao().updateJobEstimateWorksWorkflow(
                             jobEstimateWorks.worksId,
                             jobEstimateWorks.estimateId,
@@ -226,6 +236,7 @@ class JobApprovalDataRepository(
                             jobEstimateWorks.actId,
                             jobEstimateWorks.trackRouteId
                         )
+                    }
                 }
             }
 

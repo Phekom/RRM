@@ -50,27 +50,28 @@ class ApproveJobsViewModel(
             jobApprovalDataRepository.getRouteForProjectSectionId(sectionId)
         }
     }
+
     suspend fun getSectionForProjectSectionId(sectionId: String): String {
         return withContext(Dispatchers.IO) {
             jobApprovalDataRepository.getSectionForProjectSectionId(sectionId)
         }
     }
 
-    val jobapproval_Item6 = MutableLiveData<ApproveJobItem>()
-    fun Itemss(jobapproval6: ApproveJobItem) {
-        jobapproval_Item6.value = jobapproval6
+    val jobApprovalItem = MutableLiveData<ApproveJobItem>()
+    fun setJobForApproval(jobapproval6: ApproveJobItem) {
+        jobApprovalItem.postValue(jobapproval6)
     }
 
     suspend fun processWorkflowMove(
         userId: String,
-        trackRounteId: String,
+        trackRouteId: String,
         description: String?,
         direction: Int
     ): String {
         return withContext(Dispatchers.IO) {
             jobApprovalDataRepository.processWorkflowMove(
                 userId,
-                trackRounteId,
+                trackRouteId,
                 description,
                 direction
             )
@@ -138,31 +139,4 @@ class ApproveJobsViewModel(
             jobApprovalDataRepository.getLineRateForEstimationItemId(estimateId)
         }
     }
-
-//    suspend fun getMessages() : String {
-//        return withContext(Dispatchers.IO) {
-//            offlineDataRepository.getMessages()
-//        }
-//    }
-
-//    val jobapproval_Item1 = MutableLiveData<String>()
-//    fun Item1(jobapproval: String) {
-//        jobapproval_Item1.value = jobapproval
-//    }
-//    val jobapproval_Item2 = MutableLiveData<String>()
-//    fun Item2(jobapproval2: String) {
-//        jobapproval_Item2.value = jobapproval2
-//    }
-//    val jobapproval_Item3 = MutableLiveData<String>()
-//    fun Item3(jobapproval3: String) {
-//        jobapproval_Item3.value = jobapproval3
-//    }
-//    val jobapproval_Item4 = MutableLiveData<String>()
-//    fun Item4(jobapproval4: String) {
-//        jobapproval_Item4.value = jobapproval4
-//    }
-//    val jobapproval_Item5 = MutableLiveData<String>()
-//    fun Item5(jobapproval5: String) {
-//        jobapproval_Item5.value = jobapproval5
-//    }
 }

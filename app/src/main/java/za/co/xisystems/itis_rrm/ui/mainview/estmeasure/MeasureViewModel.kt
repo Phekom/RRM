@@ -51,7 +51,6 @@ class MeasureViewModel(
     suspend fun generateGallery(measureItem: JobItemMeasureDTO) {
         try {
             galleryBackup.postValue(measureItem.itemMeasureId)
-            val forDeletion = ArrayList<JobItemMeasurePhotoDTO>()
             val measureDescription =
                 measureItem.projectItemId?.let {
                     getDescForProjectId(it)
@@ -63,7 +62,7 @@ class MeasureViewModel(
                 else -> PhotoQuality.THUMB
             }
 
-            var bitmaps = measureItem.jobItemMeasurePhotos.mapNotNull { photo ->
+            val bitmaps = measureItem.jobItemMeasurePhotos.mapNotNull { photo ->
 
                 try {
                     val uri = photo.filename?.let { fileName ->
@@ -83,25 +82,19 @@ class MeasureViewModel(
                 }
             }
 
-            if (forDeletion.size >= 1) {
-                measureItem.itemMeasureId?.let {
-                    deleteItemMeasurephotofromList(it)
-                    bitmaps = emptyList()
-                }
-            } else {
 
-                val uiState = GalleryUIState(
-                    description = measureDescription,
-                    qty = measureItem.qty,
-                    lineRate = measureItem.lineRate,
-                    photoPairs = bitmaps
-                )
+            val uiState = GalleryUIState(
+                description = measureDescription,
+                qty = measureItem.qty,
+                lineRate = measureItem.lineRate,
+                photoPairs = bitmaps
+            )
 
-                uiState.lineAmount = uiState.qty * uiState.lineRate
+            uiState.lineAmount = uiState.qty * uiState.lineRate
 
-                galleryUIState.postValue(XISuccess(uiState))
-                setJobItemMeasure(measureItem)
-            }
+            galleryUIState.postValue(XISuccess(uiState))
+            // setJobItemMeasure(measureItem)
+
         } catch (e: Exception) {
             Timber.e(e, "Failed to retrieve itemMeasure for Gallery")
             val galleryFail = XIError(e, "Failed to retrieve itemMeasure for Gallery")

@@ -137,6 +137,8 @@ class CaptureItemMeasurePhotoFragment :
                 selectedJobItemMeasure
             )
 
+            estimate_image_collection_view.clearImages()
+
             uiScope.launch(uiScope.coroutineContext) {
                 measureViewModel.setMeasureItemPhotos(jobItemMeasurePhotoArrayList as List<JobItemMeasurePhotoDTO>)
             }

@@ -25,7 +25,6 @@ import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.data.network.responses.HealthCheckResponse
-import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModelFactory
@@ -34,6 +33,9 @@ import za.co.xisystems.itis_rrm.utils.ApiException
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.NoConnectivityException
 import za.co.xisystems.itis_rrm.utils.NoInternetException
+import za.co.xisystems.itis_rrm.utils.errors.ErrorHandler
+import za.co.xisystems.itis_rrm.utils.results.XIError
+import za.co.xisystems.itis_rrm.utils.results.XIStatus
 import za.co.xisystems.itis_rrm.utils.results.XISuccess
 
 class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
@@ -148,8 +150,8 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                     sharedViewModel.toggleLongRunning(true)
                     val fetched = homeViewModel.fetchAllData(userDTO.userId)
                     if (fetched) {
-                        homeViewModel.dataBaseStatus.start()
-                        homeViewModel.databaseResult.observeOnce(
+
+                        homeViewModel.dataBaseStatus.observe(
                             viewLifecycleOwner,
                             Observer { t ->
                                 t?.let {
@@ -157,6 +159,17 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                                         is XISuccess -> {
                                             sharedViewModel.setMessage("Data Retrieved")
                                             sharedViewModel.toggleLongRunning(false)
+                                        }
+                                        is XIStatus -> {
+                                            sharedViewModel.setMessage(t.message)
+                                        }
+                                        is XIError -> {
+                                            ErrorHandler.handleError(
+                                                view = this@HomeFragment.requireView(),
+                                                shouldShowSnackBar = true,
+                                                throwable = t,
+                                                refreshAction = { retrySynch() }
+                                            )
                                         }
                                     }
                                 }
@@ -177,6 +190,8 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                 }
             }
         }
+
+
 
         Coroutines.io {
             val lm = requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager
@@ -212,6 +227,10 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
         imageView7.setOnClickListener {
             ToastUtils().toastVersion(context)
         }
+    }
+
+    fun retrySynch() {
+        Timber.d("Retry here ...")
     }
 
     private val health: HealthCheckResponse? = null
