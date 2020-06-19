@@ -370,7 +370,7 @@ class OfflineDataRepository(
                                 ex,
                                 "Contract: ${contract.shortDescr} (${contract.contractId}) ProjectId: ${project.descr} (${project.projectId}) -> ${ex.message}"
                             )
-                            throw ex
+                            // throw ex
                         }
 
                         if (project.items != null) {
@@ -430,7 +430,7 @@ class OfflineDataRepository(
                     }
                 } catch (ex: Exception) {
                     Timber.e(ex, "ItemId: ${item.itemId} -> ${ex.message}")
-                    throw ex
+                    // throw ex
                 }
             }
         }
@@ -459,7 +459,7 @@ class OfflineDataRepository(
                         ex,
                         "ProjectSectionItemId ${section.sectionId} -> ${ex.message}"
                     )
-                    throw ex
+                    // throw ex
                 }
         }
     }
@@ -488,7 +488,7 @@ class OfflineDataRepository(
                         ex,
                         "VoItemProjectVoId: ${voItem.projectVoId} -> ${ex.message}"
                     )
-                    throw ex
+                    // throw ex
                 }
         }
     }

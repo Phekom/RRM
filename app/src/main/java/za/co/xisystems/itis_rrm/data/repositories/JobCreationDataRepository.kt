@@ -232,6 +232,9 @@ class JobCreationDataRepository(
         val routeSectionPointResponse =
             apiRequest { api.getRouteSectionPoint(distance, buffer, latitude, longitude, useR) }
 
+
+        Timber.d("$routeSectionPointResponse")
+
         routeSectionPoint.postValue(
             direction = routeSectionPointResponse.direction,
             linearId = routeSectionPointResponse.linearId,

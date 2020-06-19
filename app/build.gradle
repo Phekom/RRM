@@ -77,7 +77,7 @@ android {
 
     versionBuild = versioning.patch
 
-    versionBuild = (versionBuild == null) ? 54 : versionBuild + 54
+    versionBuild = (versionBuild == null) ? 55 : versionBuild + 55
 
     versioning.patch = versionBuild
 
@@ -301,7 +301,7 @@ dependencies {
 
     debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.4'
     debugImplementation 'com.squareup.leakcanary:leakcanary-object-watcher-android-androidx:2.4'
-    debugImplementation 'com.squareup.leakcanary:plumber-android:2.4'
+    // debugImplementation 'com.squareup.leakcanary:plumber-android:2.4'
 
 
     // Kotlin
