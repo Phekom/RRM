@@ -306,6 +306,7 @@ class OfflineDataRepository(
                 .distinctBy { contract -> contract.contractId }
             for (contract in validContracts) {
                 if (!Db.getContractDao().checkIfContractExists(contract.contractId)) {
+                    postStatus("Setting Contract: ${contract.shortDescr}")
                     Db.getContractDao().insertContract(contract)
 
                     val validProjects =
@@ -316,7 +317,7 @@ class OfflineDataRepository(
                     updateProjects(validProjects, contract)
                 }
             }
-            databaseStatus.postValue(XISuccess(true))
+
         }
     }
 
@@ -353,6 +354,7 @@ class OfflineDataRepository(
                         continue
                     } else {
                         try {
+                            postStatus("Setting project: ${project.descr}")
                             Db.getProjectDao().insertProject(
                                 project.projectId,
                                 project.descr,
@@ -676,7 +678,7 @@ class OfflineDataRepository(
                 }
             }
             if (jobItemEstimate.jobItemMeasure != null) {
-                saveJobIteamMeasuresForEstimate(jobItemEstimate.jobItemMeasure, job)
+                saveJobItemMeasuresForEstimate(jobItemEstimate.jobItemMeasure, job)
             }
         }
     }
@@ -775,7 +777,7 @@ class OfflineDataRepository(
         }
     }
 
-    private suspend fun saveJobIteamMeasuresForEstimate(
+    private suspend fun saveJobItemMeasuresForEstimate(
         jobItemMeasures: java.util.ArrayList<JobItemMeasureDTO>,
         job: JobDTO
     ) {
@@ -937,7 +939,7 @@ class OfflineDataRepository(
                         fetchJobList(newJobId!!)
                     }
                 }
-                databaseStatus.postValue(XISuccess(true))
+                // databaseStatus.postValue(XISuccess(true))
             }
         }
     }
@@ -991,22 +993,28 @@ class OfflineDataRepository(
 
     suspend fun fetchContracts(userId: String): Boolean {
         return withContext(Dispatchers.Default) {
+            postStatus("Fetching Activity Sections")
             val activitySectionsResponse =
                 apiRequest { api.activitySectionsRefresh(userId) }
             sectionItems.postValue(activitySectionsResponse.activitySections)
 
+            postStatus("Updating Workflows")
             val workFlowResponse = apiRequest { api.workflowsRefresh(userId) }
             workFlow.postValue(workFlowResponse.workFlows)
 
+            postStatus("Updating Lookups")
             val lookupResponse = apiRequest { api.lookupsRefresh(userId) }
             lookups.postValue(lookupResponse.mobileLookups)
 
+            postStatus("Updating Task List")
             val toDoListGroupsResponse = apiRequest { api.getUserTaskList(userId) }
             toDoListGroups.postValue(toDoListGroupsResponse.toDoListGroups)
 
+            postStatus("Updating Contracts")
             val contractsResponse = apiRequest { api.refreshContractInfo(userId) }
-            conTracts.postValue(contractsResponse.contracts)
-
+            // conTracts.postValue(contractsResponse.contracts)
+            saveContracts(contractsResponse.contracts)
+            databaseStatus.postValue(XISuccess(true))
             true
         }
     }

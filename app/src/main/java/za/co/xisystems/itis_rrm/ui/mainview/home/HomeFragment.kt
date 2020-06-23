@@ -148,33 +148,37 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
 
                     sharedViewModel.setMessage("Data Loading")
                     sharedViewModel.toggleLongRunning(true)
-                    val fetched = homeViewModel.fetchAllData(userDTO.userId)
-                    if (fetched) {
 
-                        homeViewModel.dataBaseStatus.observe(
-                            viewLifecycleOwner,
-                            Observer { t ->
-                                t?.let {
-                                    when (t) {
-                                        is XISuccess -> {
-                                            sharedViewModel.setMessage("Data Retrieved")
-                                            sharedViewModel.toggleLongRunning(false)
-                                        }
-                                        is XIStatus -> {
-                                            sharedViewModel.setMessage(t.message)
-                                        }
-                                        is XIError -> {
-                                            ErrorHandler.handleError(
-                                                view = this@HomeFragment.requireView(),
-                                                shouldShowSnackBar = true,
-                                                throwable = t,
-                                                refreshAction = { retrySynch() }
-                                            )
-                                        }
+
+                    homeViewModel.dataBaseStatus.observe(
+                        viewLifecycleOwner,
+                        Observer { t ->
+                            t?.let {
+                                when (t) {
+                                    is XISuccess -> {
+                                        sharedViewModel.setMessage("Data Retrieved")
+                                        sharedViewModel.toggleLongRunning(false)
+                                        items_swipe_to_refresh.isRefreshing = false
+                                    }
+                                    is XIStatus -> {
+                                        sharedViewModel.setMessage(t.message)
+                                    }
+                                    is XIError -> {
+                                        sharedViewModel.setMessage("Sync Failed")
+                                        sharedViewModel.toggleLongRunning(false)
+                                        items_swipe_to_refresh.isRefreshing = false
+                                        ErrorHandler.handleError(
+                                            view = this@HomeFragment.requireView(),
+                                            shouldShowSnackBar = true,
+                                            throwable = t,
+                                            refreshAction = { retrySynch() }
+                                        )
                                     }
                                 }
-                            })
-                    }
+                            }
+                        })
+                    val fetched = homeViewModel.fetchAllData(userDTO.userId)
+                    Timber.d("$fetched")
                 } catch (e: ApiException) {
                     sharedViewModel.setMessage(e.message)
                     Timber.e(e, "API Exception")
@@ -230,7 +234,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
     }
 
     fun retrySynch() {
-        Timber.d("Retry here ...")
+        ToastUtils().toastLong(context, "Swipe down to retry sync.")
     }
 
     private val health: HealthCheckResponse? = null

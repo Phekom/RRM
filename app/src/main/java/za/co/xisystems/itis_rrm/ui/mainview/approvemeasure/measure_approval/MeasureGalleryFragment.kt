@@ -78,7 +78,7 @@ class MeasureGalleryFragment : BaseFragment(R.layout.fragment_measure_gallery), 
             is XISuccess -> {
                 val uiState = response.data
                 measurement_description.text = uiState.description
-                val costing = "${uiState.qty} x R ${uiState.lineRate} = R ${uiState.lineAmount}"
+                val costing = "Approved Qty: ${uiState.qty}"
                 measurement_costing.text = costing
                 estimate_image_gallery_view.clearImages()
                 estimate_image_gallery_view.addZoomedImages(
