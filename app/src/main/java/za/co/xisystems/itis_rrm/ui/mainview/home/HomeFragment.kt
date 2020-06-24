@@ -1,6 +1,8 @@
 package za.co.xisystems.itis_rrm.ui.mainview.home
 
+import android.app.AlertDialog
 import android.content.Context
+import android.content.DialogInterface
 import android.graphics.Color
 import android.location.LocationManager
 import android.net.ConnectivityManager
@@ -133,6 +135,12 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
 
         // val dialog = setDataProgressDialog(activity!!, getString(R.string.data_loading_please_wait))
 
+        if (!homeViewModel.bigSyncDone) {
+            promptUserToSync()
+        }
+
+
+
         items_swipe_to_refresh.setProgressBackgroundColorSchemeColor(
             ContextCompat.getColor(
                 requireContext().applicationContext,
@@ -143,56 +151,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
         items_swipe_to_refresh.setColorSchemeColors(Color.WHITE)
 
         items_swipe_to_refresh.setOnRefreshListener {
-            uiScope.launch(uiScope.coroutineContext) {
-                try {
-
-                    sharedViewModel.setMessage("Data Loading")
-                    sharedViewModel.toggleLongRunning(true)
-
-
-                    homeViewModel.dataBaseStatus.observe(
-                        viewLifecycleOwner,
-                        Observer { t ->
-                            t?.let {
-                                when (t) {
-                                    is XISuccess -> {
-                                        sharedViewModel.setMessage("Data Retrieved")
-                                        sharedViewModel.toggleLongRunning(false)
-                                        items_swipe_to_refresh.isRefreshing = false
-                                    }
-                                    is XIStatus -> {
-                                        sharedViewModel.setMessage(t.message)
-                                    }
-                                    is XIError -> {
-                                        sharedViewModel.setMessage("Sync Failed")
-                                        sharedViewModel.toggleLongRunning(false)
-                                        items_swipe_to_refresh.isRefreshing = false
-                                        ErrorHandler.handleError(
-                                            view = this@HomeFragment.requireView(),
-                                            shouldShowSnackBar = true,
-                                            throwable = t,
-                                            refreshAction = { retrySynch() }
-                                        )
-                                    }
-                                }
-                            }
-                        })
-                    val fetched = homeViewModel.fetchAllData(userDTO.userId)
-                    Timber.d("$fetched")
-                } catch (e: ApiException) {
-                    sharedViewModel.setMessage(e.message)
-                    Timber.e(e, "API Exception")
-                } catch (e: NoInternetException) {
-                    sharedViewModel.setMessage(e.message)
-                    Timber.e(e, "No Internet Connection")
-                } catch (e: NoConnectivityException) {
-                    sharedViewModel.setMessage(e.message)
-                    Timber.e(e, "Service Host Unreachable")
-                } finally {
-                    items_swipe_to_refresh.isRefreshing = false
-                    sharedViewModel.toggleLongRunning(false)
-                }
-            }
+            bigSync()
         }
 
 
@@ -234,7 +193,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
     }
 
     fun retrySynch() {
-        ToastUtils().toastLong(context, "Swipe down to retry sync.")
+        bigSync()
     }
 
     private val health: HealthCheckResponse? = null
@@ -257,5 +216,74 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
     override fun onDetach() {
         super.onDetach()
         ping()
+    }
+
+    private fun bigSync() = uiScope.launch(uiScope.coroutineContext) {
+        try {
+
+            sharedViewModel.setMessage("Data Loading")
+            sharedViewModel.toggleLongRunning(true)
+
+
+            homeViewModel.dataBaseStatus.observe(
+                viewLifecycleOwner,
+                Observer { t ->
+                    t?.let {
+                        when (t) {
+                            is XISuccess -> {
+                                sharedViewModel.setMessage("Data Retrieved")
+                                sharedViewModel.toggleLongRunning(false)
+                                items_swipe_to_refresh.isRefreshing = false
+                            }
+                            is XIStatus -> {
+                                sharedViewModel.setMessage(t.message)
+                            }
+                            is XIError -> {
+                                sharedViewModel.setMessage("Sync Failed")
+                                sharedViewModel.toggleLongRunning(false)
+                                items_swipe_to_refresh.isRefreshing = false
+                                ErrorHandler.handleError(
+                                    view = this@HomeFragment.requireView(),
+                                    shouldShowSnackBar = true,
+                                    throwable = t,
+                                    refreshAction = { retrySynch() }
+                                )
+                            }
+                        }
+                    }
+                })
+            val fetched = homeViewModel.fetchAllData(userDTO.userId)
+            Timber.d("$fetched")
+        } catch (e: ApiException) {
+            sharedViewModel.setMessage(e.message)
+            Timber.e(e, "API Exception")
+        } catch (e: NoInternetException) {
+            sharedViewModel.setMessage(e.message)
+            Timber.e(e, "No Internet Connection")
+        } catch (e: NoConnectivityException) {
+            sharedViewModel.setMessage(e.message)
+            Timber.e(e, "Service Host Unreachable")
+        } finally {
+            items_swipe_to_refresh.isRefreshing = false
+            sharedViewModel.toggleLongRunning(false)
+        }
+    }
+
+    private fun promptUserToSync() {
+        val syncDialog: AlertDialog.Builder =
+            AlertDialog.Builder(activity) // android.R.style.Theme_DeviceDefault_Dialog
+                .setTitle(
+                    "Initial Synchronisation"
+                )
+                .setMessage("As a new user, please synchronise the local database.")
+                .setCancelable(false)
+                .setIcon(R.drawable.ic_warning)
+                .setPositiveButton(R.string.ok,
+                    DialogInterface.OnClickListener { dialog, whichButton ->
+                        bigSync()
+                    })
+
+        syncDialog.show()
+
     }
 }

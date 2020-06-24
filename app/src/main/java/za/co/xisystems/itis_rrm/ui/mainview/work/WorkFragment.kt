@@ -178,6 +178,7 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
     ) {
 
         val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
+            clear()
             addAll(workListItems)
         }
         work_listView.apply {

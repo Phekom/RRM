@@ -30,14 +30,14 @@ import java.time.LocalDateTime
 import java.util.regex.Pattern
 
 private val jobDataController: JobDataController? = null
-private var entitiesFetched = false
+
 
 class OfflineDataRepository(
     private val api: BaseConnectionApi,
     private val Db: AppDatabase,
     private val prefs: PreferenceProvider
 ) : SafeApiRequest() {
-
+    var entitiesFetched = false
     private val activity: FragmentActivity? = null
     private val conTracts = MutableLiveData<List<ContractDTO>>()
     private val sectionItems = MutableLiveData<ArrayList<String>>()
@@ -94,6 +94,8 @@ class OfflineDataRepository(
             sendMSg(it)
         }
     }
+
+    var bigSyncDone = false
 
     val databaseStatus: MutableLiveData<XIResult<Boolean>> = MutableLiveData()
 
@@ -1015,6 +1017,7 @@ class OfflineDataRepository(
             // conTracts.postValue(contractsResponse.contracts)
             saveContracts(contractsResponse.contracts)
             databaseStatus.postValue(XISuccess(true))
+            bigSyncDone = true
             true
         }
     }

@@ -72,6 +72,7 @@ class ExpandableHeaderMeasureItem(
             headerLin.apply {
                 setOnClickListener { view ->
                     measureJobItemEstimate(view)
+                    onExpandListener?.invoke(expandableGroup)
                     navController?.invoke(NavController(activity!!))
                 }
             }

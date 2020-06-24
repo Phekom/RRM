@@ -407,7 +407,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                 }
             }
 
-            ExpandableGroup(expandableHeaderItem, false).apply {
+            ExpandableGroup(expandableHeaderItem, true).apply {
                 expandableGroups.add(this)
                 Coroutines.main {
                     val jobForJobItemEstimate = measureViewModel.getJobFromJobId(measure_item.jobId)

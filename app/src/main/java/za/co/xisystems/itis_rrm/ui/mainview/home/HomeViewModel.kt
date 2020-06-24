@@ -43,6 +43,8 @@ class HomeViewModel(
 
     val dataBaseStatus: MutableLiveData<XIResult<Boolean>> = offlineDataRepository.databaseStatus
 
+    var bigSyncDone = offlineDataRepository.bigSyncDone
+
     suspend fun fetchContractsAndProjects(it: XIResult<Boolean>) {
         val contracts = offlineDataRepository.getContracts().value
         val projects = offlineDataRepository.getProjects().value
@@ -54,6 +56,8 @@ class HomeViewModel(
         return withContext(Dispatchers.IO) {
             try {
                 offlineDataRepository.fetchContracts(userId)
+                bigSyncDone = true
+                true
             } catch (ex: Exception) {
                 val fetchFail = XIError(ex, "Failed to fetch data: ${ex.message}")
                 dataBaseStatus.postValue(fetchFail)

@@ -136,10 +136,10 @@ class RegisterPinActivity : AppCompatActivity(), AuthListener, KodeinAware, Runn
         hideKeyboard()
     }
 
-    override fun onSuccess(user: UserDTO) {
+    override fun onSuccess(userDTO: UserDTO) {
         loading.hide()
 
-        toast("You are Logged in as ${user.userName}")
+        toast("You are Logged in as ${userDTO.userName}")
     }
 
     override fun onFailure(message: String) {
@@ -148,7 +148,7 @@ class RegisterPinActivity : AppCompatActivity(), AuthListener, KodeinAware, Runn
         reg_container.snackbar(message)
     }
 
-    override fun onSignOut(user: UserDTO) {
+    override fun onSignOut(userDTO: UserDTO) {
     }
 
     override fun run() {
