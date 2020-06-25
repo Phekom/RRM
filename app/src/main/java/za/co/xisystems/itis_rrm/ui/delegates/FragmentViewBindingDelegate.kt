@@ -8,7 +8,10 @@ package za.co.xisystems.itis_rrm.ui.delegates
 
 import android.view.View
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.*
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.observe
 import androidx.viewbinding.ViewBinding
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
@@ -16,7 +19,6 @@ import kotlin.reflect.KProperty
 /**
  * Created by Shaun McDonald on 03 2020
  */
-
 
 class FragmentViewBindingDelegate<T : ViewBinding>(
     val fragment: Fragment,

@@ -1,10 +1,7 @@
 package za.co.xisystems.itis_rrm.data.localDB.entities
 
-
-import androidx.core.util.Pair
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.gson.annotations.SerializedName
 import java.io.Serializable
 
@@ -13,7 +10,7 @@ const val JOB_ITEM_ESTIMATE_PHOTO = "JOB_ITEM_ESTIMATE_PHOTO"
 @Entity(tableName = JOB_ITEM_ESTIMATE_PHOTO)
 data class JobItemEstimatesPhotoDTO(
     @SerializedName("Descr")
-    val descr: String,
+    var descr: String,
     @SerializedName("EstimateId")
     var estimateId: String,
     @SerializedName("Filename")
@@ -28,13 +25,13 @@ data class JobItemEstimatesPhotoDTO(
     @SerializedName("PhotoEnd")
     val photoEnd: String?,
     @SerializedName("Startkm")
-    val startKm : Double = 0.0,
+    val startKm: Double = 0.0,
     @SerializedName("Endkm")
-    val endKm : Double = 0.0,
+    val endKm: Double = 0.0,
     @SerializedName("PhotoLatitude")
-    var photoLatitude : Double? = 0.0,
+    var photoLatitude: Double? = 0.0,
     @SerializedName("PhotoLongitude")
-    var photoLongitude:  Double? = 0.0,
+    var photoLongitude: Double? = 0.0,
 
     @SerializedName("PhotoLatitudeEnd")
     var photoLatitudeEnd: Double = 0.0,
@@ -60,7 +57,6 @@ data class JobItemEstimatesPhotoDTO(
     fun isPhotoStart(): Boolean {
         return is_PhotoStart
     }
-
 
     fun setPhotoLatitude(photoLatitude: Double) {
         this.photoLatitude = photoLatitude
@@ -98,16 +94,4 @@ data class JobItemEstimatesPhotoDTO(
         result = 31 * result + (image?.contentHashCode() ?: 0)
         return result
     }
-
-
-//    fun getJobItemEstimatePhotoStart(): JobItemEstimatesPhotoDTO {
-//        return getJobItemEstimatePhoto(true).second!!
-//    }
-//    fun getJobItemEstimatePhotoEnd(): JobItemEstimatesPhotoDTO {
-//        return getJobItemEstimatePhoto(false).second!!
-//    }
-
-
-
-
 }

@@ -14,7 +14,8 @@ open class MeasureHeaderItem(
     @DrawableRes private val iconResId: Int? = null,
     measures: JobItemEstimateDTO,
     var measureViewModel: MeasureViewModel,
-    private val onIconClickListener: View.OnClickListener? = null) : Item() {
+    private val onIconClickListener: View.OnClickListener? = null
+) : Item() {
 
     private var projID = measures.projectItemId
     var qty = measures.qty
@@ -36,7 +37,6 @@ open class MeasureHeaderItem(
                 }
                 val desc = measureViewModel.getDescForProjectItemId(projID!!)
                 title.text = "Estimate - $desc "
-
             }
         }
 

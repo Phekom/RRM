@@ -8,12 +8,11 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
  * Created by Francis Mahlava on 2019/11/21.
  */
 
-
 @Dao
 interface ItemDaoTemp {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertItems( item : ItemDTOTemp) : Long
+    suspend fun insertItems(item: ItemDTOTemp): Long
 
     @Query("SELECT * FROM PROJECT_ITEM_TABLE_TEMP WHERE itemId = :itemId")
     fun checkItemExistsItemId(itemId: String): Boolean
@@ -23,9 +22,6 @@ interface ItemDaoTemp {
 
 //    @Query("SELECT * FROM PROJECT_ITEM_TABLE_TEMP WHERE itemId = :itemId")
 //    fun getItemForItemId(itemId: String): LiveData<ItemDTO>
-
-
-
 
 //    @Query("SELECT sectionItemId FROM PROJECT_ITEM_TABLE_TEMP WHERE itemId = :itemId")
 //    fun getSectionItemId(itemId: String): String
@@ -39,7 +35,6 @@ interface ItemDaoTemp {
 //    @Query("SELECT uom FROM PROJECT_ITEM_TABLE_TEMP WHERE itemId = :itemId")
 //    fun getUOMForProjectItemId(itemId: String): String
 //
-
 
 //    @Query("SELECT * FROM PROJECT_ITEM_TABLE_TEMP WHERE itemId LIKE :itemId")
 //    fun getItemForItemId(itemId: String): LiveData<ProjectItemDTO>
@@ -61,16 +56,9 @@ interface ItemDaoTemp {
     @Delete
    fun deleteItem(item: ItemDTOTemp)
 
-
     @Query("DELETE FROM PROJECT_ITEM_TABLE_TEMP WHERE jobId = :jobId")
     fun deleteItemList(jobId: String)
 
     @Query("DELETE FROM PROJECT_ITEM_TABLE_TEMP WHERE itemId = :itemId")
     fun deleteItemfromList(itemId: String)
-
-
-
-
-
-
 }

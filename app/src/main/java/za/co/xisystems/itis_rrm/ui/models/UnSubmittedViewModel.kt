@@ -13,12 +13,11 @@ class UnSubmittedViewModel(
     private val offlineDataRepository: OfflineDataRepository
 ) : ViewModel() {
 
-
     val jobtoEdit_Item = MutableLiveData<JobDTO>()
     suspend fun getJobToEdit(jobId: String) {
-        jobtoEdit_Item.value = offlineDataRepository.getUpdatedJob(jobId)
+        val editJob = offlineDataRepository.getUpdatedJob(jobId)
+        jobtoEdit_Item.postValue(editJob)
     }
-
 
     suspend fun getJobsForActivityId(activityId: Int): LiveData<List<JobDTO>> {
         return withContext(Dispatchers.IO) {
@@ -37,11 +36,13 @@ class UnSubmittedViewModel(
             offlineDataRepository.getProjectSectionIdForJobId(jobId)
         }
     }
+
     suspend fun getRouteForProjectSectionId(sectionId: String): String {
         return withContext(Dispatchers.IO) {
             offlineDataRepository.getRouteForProjectSectionId(sectionId)
         }
     }
+
     suspend fun getSectionForProjectSectionId(sectionId: String): String {
         return withContext(Dispatchers.IO) {
             offlineDataRepository.getSectionForProjectSectionId(sectionId)
@@ -56,11 +57,9 @@ class UnSubmittedViewModel(
         offlineDataRepository.deleteItemList(jobId)
     }
 
-   suspend fun getProjectSection(sectionId: String?): LiveData<ProjectSectionDTO> {
+    suspend fun getProjectSection(sectionId: String?): LiveData<ProjectSectionDTO> {
         return withContext(Dispatchers.IO) {
             offlineDataRepository.getProjectSection(sectionId)
         }
     }
-
-
 }

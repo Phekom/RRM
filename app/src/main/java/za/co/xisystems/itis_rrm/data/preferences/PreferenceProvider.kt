@@ -14,9 +14,8 @@ open class PreferenceProvider(
 
     val appContext: Context = context.applicationContext
 
-    protected val preferences : SharedPreferences
+    protected val preferences: SharedPreferences
         get() = PreferenceManager.getDefaultSharedPreferences(appContext)
-
 
     fun savelastSavedAt(savedAt: String) {
         preferences.edit().putString(
@@ -28,5 +27,4 @@ open class PreferenceProvider(
     fun getLastSavedAt(): String? {
         return preferences.getString(KEY_SAVED_AT, null)
     }
-
 }

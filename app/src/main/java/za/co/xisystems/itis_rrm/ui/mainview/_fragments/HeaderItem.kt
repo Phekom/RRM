@@ -21,7 +21,6 @@ open class HeaderItem(
     var jobId = workItems.JobId
     var sectionId: String? = null
 
-
     override fun getLayout(): Int {
         return R.layout.item_header
     }
@@ -42,16 +41,11 @@ open class HeaderItem(
                         visibility = View.VISIBLE
                         text = "$it $sectionRoute"
                     }
-
                 }
                 val jobNumber = workViewModel.getItemJobNo(jobId)
                 title.text = "JI:$jobNumber"
-
             }
         }
-
-
-
 
         viewHolder.icon.apply {
             visibility = View.GONE

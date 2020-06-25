@@ -47,17 +47,16 @@ import za.co.xisystems.itis_rrm.utils.DateUtil
 import za.co.xisystems.itis_rrm.utils.JobUtils
 import java.util.*
 
-
 /**
  * Created by Francis Mahlava on 2019/12/29.
  */
-
+//
 class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), KodeinAware {
     override val kodein by kodein()
     private lateinit var createViewModel: CreateViewModel
     private lateinit var unsubmittedViewModel: UnSubmittedViewModel
-    private val unsubFactory: UnSubmittedViewModelFactory by instance()
-    private val createFactory: CreateViewModelFactory by instance()
+    private val unsubFactory: UnSubmittedViewModelFactory by instance<UnSubmittedViewModelFactory>()
+    private val createFactory: CreateViewModelFactory by instance<CreateViewModelFactory>()
     private var dueDateDialog: DatePickerDialog? = null
     private var startDateDialog: DatePickerDialog? = null
     private lateinit var jobDataController: JobDataController
@@ -75,18 +74,17 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
     @MyState
     private var items: List<ItemDTOTemp> = ArrayList<ItemDTOTemp>()
 
+    // TODO: Restore to last state saved when user arrives here by clicking the back button.
+
     init {
         lifecycleScope.launch {
             whenCreated {
-
-
             }
 
             whenStarted {
                 createViewModel.newJob.observe(viewLifecycleOwner, Observer { newJ ->
                     job = newJ
                     projectID = newJ.ProjectId
-
                 })
 
                 unsubmittedViewModel.jobtoEdit_Item.observe(
@@ -120,8 +118,6 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
                                             totalCostTextView.text = ""
                                             last_lin.visibility = View.GONE
                                             totalCostTextView.visibility = View.GONE
-
-
                                         }
                                         items = projectItemList
                                         for (item in projectItemList.listIterator()) {
@@ -132,20 +128,16 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
                                                 initRecyclerView(projectItemList.toProjecListItems())
                                                 calculateTotalCost()
                                             }
-
                                         }
                                     })
                             }
-
                         }
-
                     })
 
                 createViewModel.sectionProjectItem.observe(viewLifecycleOwner, Observer { p_Item ->
                     infoTextView.visibility = View.GONE
                     last_lin.visibility = View.VISIBLE
                     totalCostTextView.visibility = View.VISIBLE
-
 
                     Coroutines.main {
                         val projectItems =
@@ -169,7 +161,6 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
                                 } else {
                                     initRecyclerView(items.toProjecListItems())
                                 }
-
                             }
                         })
                         createViewModel.estimateLineRate.observe(
@@ -177,13 +168,11 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
                             Observer { cost ->
                                 calculateTotalCost()
                             })
-
                     }
                 })
             }
         }
     }
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -193,7 +182,6 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
         newJobItemEstimatesList = ArrayList<JobItemEstimateDTO>()
         jobDataController = JobDataController
     }
-
 
     override fun onPrepareOptionsMenu(menu: Menu) {
         val item = menu.findItem(R.id.action_settings)
@@ -208,10 +196,10 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
         super.onAttach(context)
         (activity as MainActivity).supportActionBar?.title = getString(R.string.new_job)
         (activity as MainActivity).supportActionBar?.setDisplayHomeAsUpEnabled(true)
-    }//                        createViewModel.delete(item)
+    } //                        createViewModel.delete(item)
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
     override fun onResume() {
@@ -221,10 +209,10 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
         calculateTotalCost()
     }
 
-
     override fun onCreateView(
         inflater: LayoutInflater,
-        container: ViewGroup?, savedInstanceState: Bundle?
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
     ): View? {
         return inflater.inflate(R.layout.fragment_add_project_items, container, false)
     }
@@ -239,7 +227,6 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
         unsubmittedViewModel = activity?.run {
             ViewModelProvider(this, unsubFactory).get(UnSubmittedViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
-
 
         last_lin.visibility = View.GONE
         totalCostTextView.visibility = View.GONE
@@ -259,7 +246,6 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
         setmyClickListener()
     }
 
-
     private fun initRecyclerView(projecListItems: List<ProjectItem>) {
         groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
             addAll(projecListItems)
@@ -269,8 +255,6 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
             layoutManager = LinearLayoutManager(this.context)
             adapter = groupAdapter
         }
-
-
     }
 
     private fun List<ItemDTOTemp>.toProjecListItems(): List<ProjectItem> {
@@ -279,11 +263,11 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
         }
     }
 
-
     private val touchCallback: SwipeTouchCallback by lazy {
         object : SwipeTouchCallback() {
             override fun onMove(
-                recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder,
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
                 target: RecyclerView.ViewHolder
             ): Boolean {
                 return false
@@ -311,7 +295,6 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
 
                     Navigation.findNavController(view)
                         .navigate(R.id.action_addProjectFragment_to_selectItemFragment)
-
                 }
 
                 R.id.resetButton -> {
@@ -326,20 +309,16 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
 
                 R.id.startDateCardView -> {
                     selectStartDate()
-
                 }
 
                 R.id.dueDateCardView -> {
                     selectDueDate()
-
                 }
 
                 R.id.submitButton -> {
 
                     validateJob()
-
                 }
-
             }
         }
 
@@ -352,7 +331,6 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
     }
 
     private fun validateJob() {
-
 
         if (job != null && validateCalendar()) {
 
@@ -374,7 +352,6 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
 
                         job!!.IssueDate = Date().toString()
                         submitJob(job!!, progressDialog)
-
                     }
                 }
             }
@@ -420,7 +397,6 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
 
         return startResult && dueResult
     }
-
 
     private fun selectDueDate() {
         dueDateCardView.startAnimation(click) // Get Current Date
@@ -468,7 +444,6 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
             val jobTemp = jobDataController.setJobLittleEndianGuids(job)!!
             saveRrmJob(job.UserId, jobTemp, prog)
         }
-
     }
 
     private fun saveRrmJob(
@@ -488,9 +463,7 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
                 toast(R.string.job_submitted)
                 popViewOnJobSubmit()
             }
-
         }
-
     }
 
     private fun popViewOnJobSubmit() {
@@ -499,7 +472,6 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
             startActivity(home)
         }
     }
-
 
     private fun setDueDateTextView(year: Int, month: Int, dayOfMonth: Int) {
         dueDateTextView.text = DateUtil.toStringReadable(year, month, dayOfMonth)
@@ -513,7 +485,7 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
 
     private fun setStartDateTextView(year: Int, month: Int, dayOfMonth: Int) {
         startDateTextView.text = DateUtil.toStringReadable(year, month, dayOfMonth)
-        startDate = DateUtil.CalendarItemsToDate(year, month, dayOfMonth)!!
+//        startDate = DateUtil.CalendarItemsToDate(year, month, dayOfMonth)!!
         startDateCardView.startAnimation(bounce_500)
         val calendar = Calendar.getInstance()
         calendar[year, month] = dayOfMonth
@@ -557,7 +529,3 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
         Timber.d("onDestroyView() has been called.")
     }
 }
-
-
-
-

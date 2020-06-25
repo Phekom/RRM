@@ -1,4 +1,4 @@
-package za.co.xisystems.itis_rrm.ui.models
+package za.co.xisystems.itis_rrm.ui.mainview.work
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -14,12 +14,9 @@ class WorkViewModelFactory(
 
     private val workDataRepository: WorkDataRepository,
     private val offlineDataRepository: OfflineDataRepository
-): ViewModelProvider.NewInstanceFactory() {
+) : ViewModelProvider.NewInstanceFactory() {
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-        return WorkViewModel(
-            workDataRepository,
-            offlineDataRepository
-        ) as T
+        return WorkViewModel(workDataRepository, offlineDataRepository) as T
 //        return MeasureViewModel(repository,offlineDataRepository,Db ,context) as T
     }
 }

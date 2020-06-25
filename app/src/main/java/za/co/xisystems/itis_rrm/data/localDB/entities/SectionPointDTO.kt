@@ -10,12 +10,12 @@ import com.google.gson.annotations.SerializedName
 
 const val SECTION_POINT_TABLE = "SECTION_POINT_TABLE"
 
-//val JOB_ID = UUID.randomUUID().toString()
+// val JOB_ID = UUID.randomUUID().toString()
 
 @Entity(tableName = SECTION_POINT_TABLE)
 data class SectionPointDTO(
     @PrimaryKey(autoGenerate = true)
-    val  id: Int,
+    val id: Int,
     @SerializedName("SectionId")
     val sectionId: Int, // 4
     @SerializedName("Direction")
@@ -30,4 +30,4 @@ data class SectionPointDTO(
     @SerializedName("jobId")
     val jobId: String?
 
-    )
+)

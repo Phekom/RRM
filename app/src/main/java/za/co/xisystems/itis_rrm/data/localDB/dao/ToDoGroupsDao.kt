@@ -1,6 +1,9 @@
 package za.co.xisystems.itis_rrm.data.localDB.dao
 
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
 import za.co.xisystems.itis_rrm.data.localDB.entities.ToDoGroupsDTO
 
 /**
@@ -12,10 +15,8 @@ interface ToDoGroupsDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertToDoGroups(toDoGroup: ToDoGroupsDTO)
 
-
     @Query("SELECT * FROM TODO_GROUPS_TABLE WHERE groupId = :groupId")
     fun checkIfGroupCollectionExist(groupId: String): Boolean
-
 
 //    @Query("SELECT * FROM USER_TABLE WHERE uid = $CURRENT_LOGGEDIN_USER")
 //    fun getuser() : LiveData<UserDTO>

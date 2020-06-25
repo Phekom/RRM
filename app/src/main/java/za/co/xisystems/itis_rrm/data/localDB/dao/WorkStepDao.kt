@@ -11,12 +11,11 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.WF_WorkStepDTO
  * Created by Francis Mahlava on 2019/12/04.
  */
 
-
 @Dao
 interface WorkStepDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertWorkFlowStep( workSteps : WF_WorkStepDTO)
+    suspend fun insertWorkFlowStep(workSteps: WF_WorkStepDTO)
 
     @Query("SELECT * FROM WorkStep_TABLE WHERE Step_Code = :workCode")
     fun checkWorkFlowStepExistsWorkCode(workCode: String): Boolean
@@ -28,7 +27,7 @@ interface WorkStepDao {
     fun insertStepsCode(Step_Code: String, actId: Int)
 
     @Query("UPDATE WorkStep_TABLE SET Descrip =:Descrip WHERE Step_Code = :Step_Code")
-    fun updateStepsDesc(Descrip: String?, Step_Code :String)
+    fun updateStepsDesc(Descrip: String?, Step_Code: String)
 
 //    @Query("INSERT INTO WorkStep_TABLE (Descrip ) VALUES (:Descrip)")
 //    fun insertStepsDesc(Descrip :String)
@@ -41,5 +40,4 @@ interface WorkStepDao {
 
     @Query("DELETE FROM WorkStep_TABLE")
     fun deleteAll()
-
 }

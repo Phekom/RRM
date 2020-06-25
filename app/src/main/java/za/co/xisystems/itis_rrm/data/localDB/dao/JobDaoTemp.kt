@@ -1,7 +1,10 @@
 package za.co.xisystems.itis_rrm.data.localDB.dao
 
 import androidx.lifecycle.LiveData
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTOTemp
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobSectionDTO
@@ -45,13 +48,11 @@ interface JobDaoTemp {
 //    @Query("UPDATE JOB_TABLE_TEMP SET ESTIMATES_ACT_ID =:actId WHERE jobId = :jobId")
 //    fun setEstimateActId(actId: Int?, jobId: String?)
 
-
 //    @Query("UPDATE JOB_TABLE_TEMP SET WORKS_ACT_ID =:actId WHERE jobId = :jobId")AND ProjectId =:projectId
 //    fun setEstimateWorksActId(actId: Int, jobId: String)
 //
 //    @Query("UPDATE JOB_TABLE_TEMP SET MEASURE_ACT_ID =:actId WHERE jobId = :jobId")
 //    fun setMeasureActId(actId: Int, jobId: String)
-
 
     @Query("SELECT descr FROM JOB_TABLE_TEMP WHERE jobId = :jobId")
     fun getItemDescription(jobId: String): String
@@ -95,18 +96,9 @@ interface JobDaoTemp {
     @Query("DELETE FROM JOB_TABLE_TEMP")
     fun deleteAll()
 
-
 //    @Query("SELECT * FROM JOB_TABLE WHERE sectionItemId = :sectionItem AND projectId = :projectId")
 //    fun getAllItemsForSectionItem(sectionItem : String, projectId : String ): LiveData<List<JobDTO>>
-
-
-
-
-
 }
-
-
-
 
 //    updateJob(Job existingJob)
 //    INSERT INTO Customers (CustomerName, City, Country)

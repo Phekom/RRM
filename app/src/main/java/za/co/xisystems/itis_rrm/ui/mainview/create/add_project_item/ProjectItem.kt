@@ -19,7 +19,7 @@ import za.co.xisystems.itis_rrm.utils.JobUtils
  * Created by Francis Mahlava on 2019/12/29.
  */
 
-//open class Project_Item(private val itemDesc: SectionProj_Item) : Item() {
+// open class Project_Item(private val itemDesc: SectionProj_Item) : Item() {
 open class ProjectItem(
     private val itemDesc: ItemDTOTemp,
     private val createViewModel: CreateViewModel,
@@ -31,19 +31,19 @@ open class ProjectItem(
         extras[INSET_TYPE_KEY] = INSET
     }
 
-
     var clickListener: ((ProjectItem) -> Unit)? = null
     override fun getLayout() = R.layout.new_job_item
 
     override fun bind(viewHolder: GroupieViewHolder, position: Int) {
                 viewHolder.apply {
-            textViewItem.text = (itemDesc.itemCode +"  "+ itemDesc.descr)
+                    textViewItem.text = (itemDesc.itemCode + "  " + itemDesc.descr)
                     val jobItemEstimate: JobItemEstimateDTO? = getJobItemEstimate(itemDesc.itemId)
                     if (jobItemEstimate != null && jobItemEstimate.isEstimateComplete()) {
                         val lineRate: Double = jobItemEstimate.lineRate
                         val tenderRate: Double = itemDesc.tenderRate
                         val qty: Double = jobItemEstimate.qty
-                costTextView.text = ( "$qty  *   R $tenderRate = " + JobUtils.formatCost(lineRate))
+                        costTextView.text =
+                            ("$qty  *   R $tenderRate = " + JobUtils.formatCost(lineRate))
                         subTextView.visibility = View.GONE
                     } else {
                         costTextView.text = "Incomplete Estimate..."
@@ -53,7 +53,7 @@ open class ProjectItem(
                     bindItem(viewHolder)
         }
         viewHolder.itemView.setOnClickListener {
-            sendSelectedItem(itemDesc,it,contractID, job)
+            sendSelectedItem(itemDesc, it, contractID, job)
             clickListener?.invoke(this)
         }
 
@@ -62,8 +62,6 @@ open class ProjectItem(
                 createViewModel.deleteItemfromList(itemDesc.itemId)
             }
            it.isLongClickable
-
-
         }
     }
 
@@ -79,13 +77,11 @@ open class ProjectItem(
             createViewModel.jobItem.value = newJob
             createViewModel.contractId.value = contractId
             createViewModel.projectItemTemp.value = item
-
         }
 
         Navigation.findNavController(view)
             .navigate(R.id.action_addProjectFragment_to_estimatePhotoFragment)
     }
-
 
     private fun bindItem(viewHolder: GroupieViewHolder) {
        viewHolder.textViewItem.setOnClickListener {
@@ -96,6 +92,4 @@ open class ProjectItem(
     private fun getJobItemEstimate(itemId: String): JobItemEstimateDTO? {
         return job?.getJobEstimateByItemId(itemId)
     }
-
-
 }

@@ -10,13 +10,13 @@ import java.util.*
  */
 
 @Entity
-class WorkflowJobDTO (
+class WorkflowJobDTO(
 
     @SerializedName("JobId")
     var jobId: String? = null,
 
     @SerializedName("ActId")
-    var actId : Int = 0,
+    var actId: Int = 0,
 
     @SerializedName("TrackRouteId")
     var trackRouteId: String? = null,
@@ -25,12 +25,12 @@ class WorkflowJobDTO (
     var jiNo: String? = null,
 
     @SerializedName("WorkflowItemEstimates")
-     val workflowItemEstimates: ArrayList<WorkflowItemEstimateDTO>? = null,
+    val workflowItemEstimates: ArrayList<WorkflowItemEstimateDTO>? = null,
 
     @SerializedName("WorkflowItemMeasures")
-     val workflowItemMeasures: ArrayList<WorkflowItemMeasureDTO>? = null,
+    val workflowItemMeasures: ArrayList<WorkflowItemMeasureDTO>? = null,
 
     @SerializedName("WorkflowJobSections")
-     val workflowJobSections: ArrayList<JobSectionDTO>? = null
+    val workflowJobSections: ArrayList<JobSectionDTO>? = null
 
-): Serializable
+) : Serializable

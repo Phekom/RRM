@@ -1,6 +1,5 @@
 package za.co.xisystems.itis_rrm.data.localDB.entities
 
-
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
@@ -8,17 +7,14 @@ import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import java.io.Serializable
 
-
 /**
  * Created by Francis Mahlava on 2019/11/21.
  */
 
 const val PROJECT_ITEM_TABLE_TEMP = "PROJECT_ITEM_TABLE_TEMP"
 
-
 @Entity(
-    tableName = PROJECT_ITEM_TABLE_TEMP
-    , foreignKeys = [
+    tableName = PROJECT_ITEM_TABLE_TEMP, foreignKeys = [
         ForeignKey(
             entity = ProjectDTO::class,
             parentColumns = arrayOf("projectId"),
@@ -41,7 +37,6 @@ data class ItemDTOTemp(
     @SerializedName("ItemSections")
     val itemSections: ArrayList<ItemSectionDTO>,
 
-
     @SerializedName("TenderRate")
     val tenderRate: Double = 0.toDouble(),
     @SerializedName("Uom")
@@ -61,5 +56,4 @@ data class ItemDTOTemp(
 
     val jobId: String
 
-
-): Serializable
+) : Serializable

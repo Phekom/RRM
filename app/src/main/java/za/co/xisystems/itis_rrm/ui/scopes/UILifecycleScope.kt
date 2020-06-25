@@ -3,10 +3,7 @@ package za.co.xisystems.itis_rrm.ui.scopes
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
-import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.*
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.BuildConfig
 import kotlin.coroutines.CoroutineContext
@@ -28,22 +25,18 @@ class UiLifecycleScope : CoroutineScope, LifecycleObserver {
         }
         Timber.e(throwable)
         throw Exception(throwable)
-
     }
 
-    lateinit var job: Job
+    private var job = SupervisorJob()
 
     override val coroutineContext: CoroutineContext
         get() = job.plus(Dispatchers.Main).plus(handler)
 
-    val ioContext: CoroutineContext
-        get() = job.plus(Dispatchers.IO).plus(handler)
-
     @OnLifecycleEvent(Lifecycle.Event.ON_START)
     fun onCreate() {
-        job = Job()
+        job = SupervisorJob()
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
-    fun destroy() = job.cancel()
+    fun destroy() = coroutineContext.cancelChildren()
 }

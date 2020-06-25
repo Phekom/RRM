@@ -10,7 +10,6 @@ import java.util.*
  * Created by Francis Mahlava on 2019/11/26.
  */
 
-
 const val JOB_ESTIMATE_WORKS = "JOB_ESTIMATE_WORKS"
 
 @Entity(tableName = JOB_ESTIMATE_WORKS)
@@ -32,4 +31,4 @@ class JobEstimateWorksDTO(
     @SerializedName("WorksId")
     @PrimaryKey
     var worksId: String
-): Serializable
+) : Serializable

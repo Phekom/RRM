@@ -10,7 +10,6 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobSectionDTO
  * Created by Francis Mahlava on 2019/11/21.
  */
 
-
 @Dao
 interface JobSectionDao {
 
@@ -30,9 +29,15 @@ interface JobSectionDao {
     fun getProjectSectionId(jobId: String): String
 
     @Query("UPDATE JOB_SECTION_TABLE SET jobSectionId =:jobSectionId,projectSectionId =:projectSectionId,jobId =:jobId,startKm =:startKm,endKm =:endKm, recordVersion =:recordVersion , recordSynchStateId =:recordSynchStateId  WHERE jobSectionId = :jobSectionId")
-    fun updateExistingJobSectionWorkflow( jobSectionId: String?, projectSectionId: String?, jobId: String?, startKm: Double, endKm: Double, recordVersion: Int,  recordSynchStateId: Int)
-
-
+    fun updateExistingJobSectionWorkflow(
+        jobSectionId: String?,
+        projectSectionId: String?,
+        jobId: String?,
+        startKm: Double,
+        endKm: Double,
+        recordVersion: Int,
+        recordSynchStateId: Int
+    )
 
 //    @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE projectId = :projectId")
 //    fun getAllItemsForProjectId(projectId: String): LiveData<List<ItemDTO>>

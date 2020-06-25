@@ -11,7 +11,7 @@ import za.co.xisystems.itis_rrm.data.repositories.JobCreationDataRepository
 @Suppress("UNCHECKED_CAST")
 class CreateViewModelFactory(
     private val jobCreationDataRepository: JobCreationDataRepository
-): ViewModelProvider.NewInstanceFactory() {
+) : ViewModelProvider.NewInstanceFactory() {
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
         return CreateViewModel(
             jobCreationDataRepository

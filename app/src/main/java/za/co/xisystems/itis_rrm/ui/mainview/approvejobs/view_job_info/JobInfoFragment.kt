@@ -1,6 +1,7 @@
 package za.co.xisystems.itis_rrm.ui.mainview.approvejobs.view_job_info
 
 import android.app.AlertDialog
+import android.app.Dialog
 import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
@@ -27,11 +28,12 @@ import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.ApproveJobsViewModelFact
 import za.co.xisystems.itis_rrm.utils.*
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 
-
 class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
     override val kodein by kodein()
     private lateinit var approveViewModel: ApproveJobsViewModel
-    private val factory: ApproveJobsViewModelFactory by instance()
+    private val factory: ApproveJobsViewModelFactory by instance<ApproveJobsViewModelFactory>()
+
+    lateinit var dialog: Dialog
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -39,7 +41,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,7 +50,8 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
@@ -60,10 +63,12 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
         approveViewModel = activity?.run {
             ViewModelProvider(this, factory).get(ApproveJobsViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
+
+        dialog = setDataProgressDialog(requireActivity(), getString(R.string.data_loading_please_wait))
         Coroutines.main {
             mydata_loading.show()
 
-            approveViewModel.jobapproval_Item6.observe(viewLifecycleOwner, Observer { job ->
+            approveViewModel.jobApprovalItem.observe(viewLifecycleOwner, Observer { job ->
                 Coroutines.main {
                     getEstimateItems(job.jobDTO.JobId)
                     val description = approveViewModel.getDescForProjectId(job.jobDTO.ProjectId!!)
@@ -81,7 +86,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
 
         approve_job_button.setOnClickListener {
             val logoutBuilder = AlertDialog.Builder(
-                activity //,android.R.style.Theme_DeviceDefault_Dialog
+                activity // ,android.R.style.Theme_DeviceDefault_Dialog
             )
             logoutBuilder.setTitle(R.string.confirm)
             logoutBuilder.setIcon(R.drawable.ic_approve)
@@ -94,7 +99,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
                 if (ServiceUtil.isNetworkConnected(context?.applicationContext)) {
                     moveJobToNextWorkflow(WorkflowDirection.NEXT)
                 } else {
-                   toast( R.string.no_connection_detected)
+                    toast(R.string.no_connection_detected)
                 }
             }
             // No button
@@ -112,7 +117,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
         decline_job_button.setOnClickListener {
             val logoutBuilder =
                 AlertDialog.Builder(
-                    activity //, android.R.style.Theme_DeviceDefault_Dialog
+                    activity // , android.R.style.Theme_DeviceDefault_Dialog
                 )
             logoutBuilder.setTitle(R.string.confirm)
             logoutBuilder.setIcon(R.drawable.ic_warning)
@@ -124,7 +129,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
                 if (ServiceUtil.isNetworkConnected(context?.applicationContext)) {
                     moveJobToNextWorkflow(WorkflowDirection.FAIL)
                 } else {
-                    toast( R.string.no_connection_detected)
+                    toast(R.string.no_connection_detected)
                 }
             }
             // No button
@@ -137,15 +142,14 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
             val declineAlert = logoutBuilder.create()
             declineAlert.show()
         }
-
     }
 
-    private fun moveJobToNextWorkflow(workflowDirection : WorkflowDirection) {
+    private fun moveJobToNextWorkflow(workflowDirection: WorkflowDirection) {
         Coroutines.main {
 
             val user = approveViewModel.user.await()
             user.observe(viewLifecycleOwner, Observer { user_ ->
-                approveViewModel.jobapproval_Item6.observe(viewLifecycleOwner, Observer { job ->
+                approveViewModel.jobApprovalItem.observe(viewLifecycleOwner, Observer { job ->
 
                     when {
                         user_.userId == null -> {
@@ -167,11 +171,9 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
                             processWorkFlow(user_.userId, trackRouteId, direction, description)
                         }
                     }
-
                 })
             })
         }
-
     }
 
     private fun processWorkFlow(
@@ -191,15 +193,15 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
 
             val submit =
                 approveViewModel.processWorkflowMove(userId, trackRouteId, description, direction)
-            if (submit != null){
+            if (submit.isNotBlank()) {
                 progressDialog.dismiss()
-                toast(submit) }else {
+                toast(submit)
+            } else {
                 progressDialog.dismiss()
                 toast(R.string.job_submitted)
-                popViewOnJobSubmit(direction)}
-
+                popViewOnJobSubmit(direction)
+            }
     }
-
     }
 
     private fun popViewOnJobSubmit(direction: Int) {
@@ -209,8 +211,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
             toast(R.string.job_declined)
         }
 
-
-        Intent(context?.applicationContext  , MainActivity::class.java).also { home ->
+        Intent(context?.applicationContext, MainActivity::class.java).also { home ->
             home.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
             startActivity(home)
         }
@@ -224,9 +225,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
             estimates.observe(viewLifecycleOwner, Observer { job_s ->
                 mydata_loading.hide()
                 initRecyclerView(job_s.toEstimatesListItem())
-
             })
-
         }
     }
 
@@ -237,18 +236,15 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
         view_estimation_items_listView.apply {
             layoutManager = LinearLayoutManager(this.context)
             adapter = groupAdapter
-
         }
-
     }
 
     private fun List<JobItemEstimateDTO>.toEstimatesListItem(): List<EstimatesItem> {
         return this.map { approvedJobItems ->
 
-            EstimatesItem(approvedJobItems, approveViewModel, activity)
+            EstimatesItem(approvedJobItems, approveViewModel, dialog, activity, viewLifecycleOwner)
         }
     }
-
 
     override fun onDestroyView() {
         view_estimation_items_listView.adapter = null

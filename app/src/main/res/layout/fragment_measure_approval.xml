@@ -59,14 +59,14 @@
             <!--                        android:textColor="@android:color/white" />-->
 
 
-            <Button
-                    android:id="@+id/decline_measure_button"
-                    style="@style/_button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="@dimen/button_size"
-                    android:layout_margin="@dimen/small"
-                    android:layout_weight="1"
-                    android:text="@string/decline" />
+<!--            <Button-->
+<!--                    android:id="@+id/decline_measure_button"-->
+<!--                    style="@style/_button"-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="@dimen/button_size"-->
+<!--                    android:layout_margin="@dimen/small"-->
+<!--                    android:layout_weight="1"-->
+<!--                    android:text="@string/decline" />-->
 
             <Button
                     android:id="@+id/approve_measure_button"

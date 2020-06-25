@@ -1,34 +1,34 @@
-//package za.co.xisystems.itis_rrm.ui.mainview.activities
+// package za.co.xisystems.itis_rrm.ui.mainview.activities
 //
-//import android.app.AlertDialog
-//import android.app.DatePickerDialog
-//import android.content.Context
-//import android.os.Bundle
-//import android.view.Menu
-//import android.view.MenuItem
-//import android.view.View
-//import androidx.lifecycle.ViewModelProviders
-//import com.google.android.gms.common.api.GoogleApiClient
-//import kotlinx.android.synthetic.main.activity_new_job.*
-//import org.kodein.di.KodeinAware
-//import org.kodein.di.android.kodein
-//import org.kodein.di.generic.instance
-//import za.co.xisystems.itis_rrm.R
-//import za.co.xisystems.itis_rrm.data.localDB.entities.*
-//import za.co.xisystems.itis_rrm.data.network.OfflineListener
-//import za.co.xisystems.itis_rrm.ui.models.CreateViewModel
-//import za.co.xisystems.itis_rrm.ui.models.CreateViewModelFactory
-//import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.IJobSubmit
-//import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.MyState
-//import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper
-//import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.contracts.IEstimatesAdapter
-//import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.contracts.IJobOfflineHelper
-//import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.contracts.INewJobActivity
-//import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.intents.INewJobSelectItemIntent
-//import za.co.xisystems.itis_rrm.utils.*
-//import java.util.*
+// import android.app.AlertDialog
+// import android.app.DatePickerDialog
+// import android.content.Context
+// import android.os.Bundle
+// import android.view.Menu
+// import android.view.MenuItem
+// import android.view.View
+// import androidx.lifecycle.ViewModelProviders
+// import com.google.android.gms.common.api.GoogleApiClient
+// import kotlinx.android.synthetic.main.activity_new_job.*
+// import org.kodein.di.KodeinAware
+// import org.kodein.di.android.kodein
+// import org.kodein.di.generic.instance
+// import za.co.xisystems.itis_rrm.R
+// import za.co.xisystems.itis_rrm.data.localDB.entities.*
+// import za.co.xisystems.itis_rrm.data.network.OfflineListener
+// import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModel
+// import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModelFactory
+// import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.IJobSubmit
+// import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.MyState
+// import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper
+// import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.contracts.IEstimatesAdapter
+// import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.contracts.IJobOfflineHelper
+// import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.contracts.INewJobActivity
+// import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.intents.INewJobSelectItemIntent
+// import za.co.xisystems.itis_rrm.utils.*
+// import java.util.*
 //
-//class NewJobActivity : NewJobBase(),
+// class NewJobActivity : NewJobBase(),
 //    INewJobActivity<NewJobActivity>,OfflineListener, KodeinAware, IJobSubmit {
 //
 //    override val kodein by kodein()
@@ -60,7 +60,7 @@
 //    //        internal var selectedProject: String? = null
 //    @MyState
 //    internal var selectedProjectitem: ProjectItemDTO? = null
-////    internal var selectedProjectitem: String? = null
+// //    internal var selectedProjectitem: String? = null
 //
 //    @MyState
 //    internal var job: JobDTO? = null
@@ -120,7 +120,7 @@
 //        setContentView(R.layout.activity_new_job)
 //        createViewModel = ViewModelProviders.of(this, factory).get(CreateViewModel::class.java)
 //
-////        setContentView(R.layout.fragment_createjob)
+// //        setContentView(R.layout.fragment_createjob)
 //        setSupportActionBar(newjob_toolbar)
 //
 //        if (actionBar != null) {
@@ -153,11 +153,11 @@
 //                }
 //
 //                R.id.infoTextView -> {
-////                    selectProjectLayout.visibility = View.GONE
-////                    mid_lin.visibility = View.GONE
-////                    photoLin.visibility = View.GONE
-////                    selectProjectdrop.visibility = View.VISIBLE
-////                    last_lin.visibility = View.GONE
+// //                    selectProjectLayout.visibility = View.GONE
+// //                    mid_lin.visibility = View.GONE
+// //                    photoLin.visibility = View.GONE
+// //                    selectProjectdrop.visibility = View.VISIBLE
+// //                    last_lin.visibility = View.GONE
 //                }
 //
 //                R.id.addItemButton -> {
@@ -169,21 +169,21 @@
 //                            this@NewJobActivity,
 //                            projectId)
 //                        selectProjectItemdrop.visibility = View.VISIBLE
-////                                                    selectProjectLayout.visibility = View.GONE
+// //                                                    selectProjectLayout.visibility = View.GONE
 //                                                    mid_lin.visibility = View.GONE
-////                                                    photoLin.visibility = View.GONE
-////                                                    last_lin.visibility = View.GONE
+// //                                                    photoLin.visibility = View.GONE
+// //                                                    last_lin.visibility = View.GONE
 //
 //                    }
 //
 //                }
 //
 //                R.id.updateButton -> {
-////                    infoTextView.visibility = View.VISIBLE
-////                    selectProjectdrop.visibility = View.GONE
-////                    photoLin.visibility = View.GONE
-////                    mid_lin.visibility = View.VISIBLE
-////                    last_lin.visibility = View.VISIBLE
+// //                    infoTextView.visibility = View.VISIBLE
+// //                    selectProjectdrop.visibility = View.GONE
+// //                    photoLin.visibility = View.GONE
+// //                    mid_lin.visibility = View.VISIBLE
+// //                    last_lin.visibility = View.VISIBLE
 //                }
 //
 //                R.id.resetButton -> {
@@ -196,7 +196,7 @@
 //
 //
 //        selectContractProjectContinueButton.setOnClickListener(myClickListener)
-////        selectContractProjectContinueButton.setOnClickListener(myClickListener)
+// //        selectContractProjectContinueButton.setOnClickListener(myClickListener)
 //        infoTextView.setOnClickListener(myClickListener)
 //        addItemButton.setOnClickListener(myClickListener)
 //        updateButton.setOnClickListener(myClickListener)
@@ -209,7 +209,7 @@
 //    }
 //
 //    private fun setContractAndProjectSelection(animate: Boolean) {
-////        if (selectedContract != null && selectedProject != null && job != null) {
+// //        if (selectedContract != null && selectedProject != null && job != null) {
 //        if (selectedContract != null && selectedProject != null) {
 //            selectProjectLayout.visibility = View.GONE
 //            mid_lin.visibility = View.VISIBLE
@@ -239,7 +239,7 @@
 //            View.VISIBLE
 //    }
 //    private fun calculateTotalCost() {
-////        totalCostTextView.setText(JobUtils.formatTotalCost(job))
+// //        totalCostTextView.setText(JobUtils.formatTotalCost(job))
 //    }
 //    private fun setLayoutsVisibility() {
 //        val hasItems = adapter != null && adapter.itemCount > 0
@@ -264,7 +264,7 @@
 //            data_loading.show()
 //            try {
 //                val contracts = createViewModel.getContracts()
-////                val contracts = authViewModel.offlinedata.await()
+// //                val contracts = authViewModel.offlinedata.await()
 //                contracts.observe(this, androidx.lifecycle.Observer {contrac_t ->
 //                    data_loading.hide()
 //                    val contractId = contrac_t
@@ -284,7 +284,7 @@
 //                                else {
 //                                    selectedContract = item
 //                                    setProjects(item.contractId)
-////                                    selectedContractTextView.setText(selectedContract?.contractNo)
+// //                                    selectedContractTextView.setText(selectedContract?.contractNo)
 //                                }
 //                            }
 //
@@ -304,7 +304,7 @@
 //        Coroutines.main {
 //            try {
 //                val projects = createViewModel.getSomeProjects(contractId!!)
-////                val projects = authViewModel.projects.await()
+// //                val projects = authViewModel.projects.await()
 //                projects.observe(this, androidx.lifecycle.Observer { projec_t ->
 //                    val projects = projec_t
 //                    val projectNmbr = arrayOfNulls<String>(projec_t.size)
@@ -323,7 +323,7 @@
 //                                else {
 //                                    selectedProject = item
 //                                    setItems(item.projectId)
-////                                    selectedProjectTextView.setText(selectedProject?.projectCode)
+// //                                    selectedProjectTextView.setText(selectedProject?.projectCode)
 //                                }
 //                            }
 //                        })
@@ -343,7 +343,7 @@
 //        Coroutines.main {
 //            try {
 //                val projectsItems = createViewModel.getAllItemsForProjectId(projectId)
-////                val projectsItems = authViewModel.projectsItems.await()
+// //                val projectsItems = authViewModel.projectsItems.await()
 //                projectsItems?.observe(this, androidx.lifecycle.Observer { i_tems ->
 //                    val items = i_tems
 //                    val itemNmbr = arrayOfNulls<String>(i_tems.size)
@@ -367,7 +367,7 @@
 //                                    selectedProjectitem = item
 //                                }
 //
-////                                infoTextView.setText(i_tems[1].itemCode)
+// //                                infoTextView.setText(i_tems[1].itemCode)
 //                            }
 //
 //                        })
@@ -382,7 +382,7 @@
 //    }
 //
 //    private fun onResetClicked() {
-////        setJob(null)
+// //        setJob(null)
 //        resetContractAndProjectSelection()
 //    }
 //    fun resetContractAndProjectSelection() {
@@ -451,10 +451,10 @@
 //    }
 //
 //
-////    override fun onDestroyView() {
-////
-////        super.onDestroyView()
-////    }
+// //    override fun onDestroyView() {
+// //
+// //        super.onDestroyView()
+// //    }
 //
 //    override fun onStarted() {
 //        data_loading.show()
@@ -507,4 +507,4 @@
 //
 //
 //
-//}
+// }

@@ -1,5 +1,6 @@
 package za.co.xisystems.itis_rrm.ui.mainview.approvejobs
 
+import android.app.Dialog
 import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -8,73 +9,50 @@ import android.view.View
 import android.view.View.GONE
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.*
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.GroupieViewHolder
 import kotlinx.android.synthetic.main.fragment_approvejob.*
-import kotlinx.coroutines.launch
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
-import za.co.xisystems.itis_rrm.base.BaseFragment
-import za.co.xisystems.itis_rrm.custom.errors.ApiException
-import za.co.xisystems.itis_rrm.custom.errors.NoConnectivityException
-import za.co.xisystems.itis_rrm.custom.errors.NoInternetException
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
+import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.approve_job_item.ApproveJobItem
-import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
-import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
-import za.co.xisystems.itis_rrm.utils.Coroutines
+import za.co.xisystems.itis_rrm.utils.*
 
 /**
  * Created by Francis Mahlava on 03,October,2019
  */
 
 class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAware {
+//
 
     override val kodein by kodein()
     private lateinit var approveViewModel: ApproveJobsViewModel
-    private val factory: ApproveJobsViewModelFactory by instance()
-    private var uiScope = UiLifecycleScope()
+    private val factory: ApproveJobsViewModelFactory by instance<ApproveJobsViewModelFactory>()
+    lateinit var dialog: Dialog
 
     companion object {
         val TAG: String = ApproveJobsFragment::class.java.simpleName
     }
 
-
-    init {
-        lifecycleScope.launch {
-
-            whenCreated {
-                uiScope.onCreate()
-            }
-
-            whenStarted {
-                viewLifecycleOwner.lifecycle.addObserver(uiScope)
-                uiScope.launch {
-
-                }
-            }
-
-
-        }
-    }
-
-
     override fun onCreateView(
         inflater: LayoutInflater,
-        container: ViewGroup?, savedInstanceState: Bundle?
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
     ): View? {
         return inflater.inflate(R.layout.fragment_approvejob, container, false)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -85,10 +63,7 @@ class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAw
         } ?: throw Exception("Invalid Activity")
 
         Coroutines.main {
-            val dialog = setDataProgressDialog(
-                requireActivity(),
-                getString(R.string.data_loading_please_wait)
-            )
+            dialog = setDataProgressDialog(requireActivity(), getString(R.string.data_loading_please_wait))
             val jobs = approveViewModel.getJobsForActivityId(ActivityIdConstants.JOB_APPROVE)
             jobs.observe(viewLifecycleOwner, Observer { job_s ->
                 val jItems = job_s.distinctBy {
@@ -142,14 +117,15 @@ class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAw
         }
     }
 
-    private fun initRecyclerView(approveJobListItems: List<ApproveJobItem>) {
+    private fun initRecyclerView(
+        approveJobListItems: List<ApproveJobItem>
+    ) {
         val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
             addAll(approveJobListItems)
         }
         approve_job_listView.apply {
             layoutManager = LinearLayoutManager(this.context)
             adapter = groupAdapter
-
         }
 
         groupAdapter.setOnItemClickListener { item, view ->
@@ -162,11 +138,11 @@ class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAw
     }
 
     private fun sendJobToApprove(
-        job: ApproveJobItem?,
+        job: ApproveJobItem,
         view: View
     ) {
         Coroutines.main {
-            approveViewModel.jobapproval_Item6.value = job
+            approveViewModel.setJobForApproval(job)
         }
 
         Navigation.findNavController(view)
@@ -184,8 +160,4 @@ class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAw
         approve_job_listView.adapter = null
         super.onDestroyView()
     }
-
 }
-
-
-

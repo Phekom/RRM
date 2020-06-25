@@ -29,22 +29,20 @@ import za.co.xisystems.itis_rrm.data.network.PermissionController
 import za.co.xisystems.itis_rrm.databinding.ActivityRegisterBinding
 import za.co.xisystems.itis_rrm.utils.*
 
-
 private const val PERMISSION_REQUEST = 10
 
-class RegisterActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runnable{
-
+class RegisterActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnable {
 
     override val kodein by kodein()
-    private val factory : AuthViewModelFactory by instance()
+    private val factory: AuthViewModelFactory by instance()
     private lateinit var viewModel: AuthViewModel
     private lateinit var appContext: Context
     private var permissions = arrayOf(
         Manifest.permission.WRITE_EXTERNAL_STORAGE,
         Manifest.permission.CAMERA,
-        Manifest.permission.READ_EXTERNAL_STORAGE ,
+        Manifest.permission.READ_EXTERNAL_STORAGE,
         Manifest.permission.ACCESS_FINE_LOCATION,
-       Manifest.permission.READ_PHONE_STATE ,
+        Manifest.permission.READ_PHONE_STATE,
         Manifest.permission.READ_SMS
 
     )
@@ -52,30 +50,31 @@ class RegisterActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runna
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         appContext = this
-        if ( startPermissionRequest(appContext.applicationContext, permissions)){
+        if (startPermissionRequest(permissions)) {
             toast("Permissions already provided.")
-        }else{
+        } else {
             // The only fallback from Marshmallow is to grant all permissions
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 requestPermissions(permissions, PERMISSION_REQUEST)
             }
         }
 
-
-        val binding :ActivityRegisterBinding = DataBindingUtil.setContentView(this, R.layout.activity_register)
+        val binding: ActivityRegisterBinding =
+            DataBindingUtil.setContentView(this, R.layout.activity_register)
         viewModel = ViewModelProvider(this, factory).get(AuthViewModel::class.java)
         binding.viewmodel = viewModel
         viewModel.authListener = this
 
         Coroutines.main {
             val loggedInUser = viewModel.user.await()
-            loggedInUser.observe(this, Observer {user ->
+            loggedInUser.observe(this, Observer { user ->
                 // Register the user
                 if (user != null) {
 
-                    if (user.PIN.isNullOrEmpty()){
+                    if (user.PIN.isNullOrEmpty()) {
 
-                        val logoutBuilder = AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog)
+                        val logoutBuilder =
+                            AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog)
                         logoutBuilder.setTitle(R.string.set_pin)
                         logoutBuilder.setIcon(R.drawable.ic_baseline_lock_24px)
                         logoutBuilder.setMessage(R.string.set_pin_msg)
@@ -83,8 +82,9 @@ class RegisterActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runna
                         // Yes button
                         logoutBuilder.setPositiveButton(R.string.ok) { dialog, which ->
                             if (ServiceUtil.isNetworkConnected(this.applicationContext)) {
-                                Intent(this, RegisterPinActivity::class.java).also {pin ->
-                                    pin.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                                Intent(this, RegisterPinActivity::class.java).also { pin ->
+                                    pin.flags =
+                                        Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
                                     startActivity(pin)
                                 }
                             } else {
@@ -93,30 +93,23 @@ class RegisterActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runna
                         }
                         val declineAlert = logoutBuilder.create()
                         declineAlert.show()
-
-                    }
-
-
-                    else
-                        Intent(this, MainActivity::class.java).also {home ->
-                            home.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                    } else
+                        Intent(this, MainActivity::class.java).also { home ->
+                            home.flags =
+                                Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
                             startActivity(home)
                         }
-
                 }
             })
             serverTextView.setOnClickListener {
                 ToastUtils().toastServerAddress(appContext)
             }
 
-
-
             buildFlavorTextView.setOnClickListener {
                 ToastUtils().toastVersion(appContext)
             }
         }
         isOnline()
-
     }
 
     override fun onRequestPermissionsResult(
@@ -125,22 +118,22 @@ class RegisterActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runna
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode ==  PERMISSION_REQUEST){
+        if (requestCode == PERMISSION_REQUEST) {
             var allAllowed = true
-            for (i in permissions.indices){
-               if (grantResults[i] == PackageManager.PERMISSION_DENIED){
-                   allAllowed = false
-                   val requestAgain = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                       shouldShowRequestPermissionRationale(permissions[i])
-                   } else {
-                       // Fallback granting all permissions
-                       false
-                   }
-                   if (requestAgain){
-                       toast("Permission Denied")
-                   }else{
-                       toast("Please Enable Permissions from your Device Settings")
-                   }
+            for (i in permissions.indices) {
+                if (grantResults[i] == PackageManager.PERMISSION_DENIED) {
+                    allAllowed = false
+                    val requestAgain = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        shouldShowRequestPermissionRationale(permissions[i])
+                    } else {
+                        // Fallback granting all permissions
+                        false
+                    }
+                    if (requestAgain) {
+                        toast("Permission Denied")
+                    } else {
+                        toast("Please Enable Permissions from your Device Settings")
+                    }
                }
             }
             if (allAllowed)
@@ -148,22 +141,20 @@ class RegisterActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runna
         }
     }
 
-    private fun startPermissionRequest(context: Context, permissions: Array<String>): Boolean {
+    private fun startPermissionRequest(permissions: Array<String>): Boolean {
         var allAccess = true
-        for (i in permissions.indices){
-            if(checkCallingOrSelfPermission(permissions[i]) == PackageManager.PERMISSION_DENIED){
-                allAccess =  false
-
+        for (i in permissions.indices) {
+            if (checkCallingOrSelfPermission(permissions[i]) == PackageManager.PERMISSION_DENIED) {
+                allAccess = false
             }
         }
         return allAccess
-
     }
 
     override fun onStart() {
         super.onStart()
         val resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this)
-        if (resultCode != ConnectionResult.SUCCESS) { //This dialog will help the user update to the latest GooglePlayServices
+        if (resultCode != ConnectionResult.SUCCESS) { // This dialog will help the user update to the latest GooglePlayServices
             val dialog =
                 GooglePlayServicesUtil.getErrorDialog(resultCode, this, 0)
             dialog?.show()
@@ -173,7 +164,6 @@ class RegisterActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runna
         } else {
             PermissionController.startPermissionRequests(this)
         }
-
     }
 
     override fun onStarted() {
@@ -181,9 +171,15 @@ class RegisterActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runna
         hideKeyboard()
     }
 
-    override fun onSuccess(user:UserDTO) {
-            loading.hide()
-        toast("You are logged in as ${user.userName}")
+    override fun onSuccess(userDTO: UserDTO) {
+        loading.hide()
+        toast("You are logged in as ${userDTO.userName}")
+        Coroutines.main {
+            val contractList = viewModel.offlineData.await()
+            contractList.observe(this, Observer { contractItems ->
+                // TODO: What were we going to do with these values?
+            })
+        }
     }
 
     override fun onFailure(message: String) {
@@ -199,7 +195,7 @@ class RegisterActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runna
         return netInfo != null && netInfo.isConnectedOrConnecting
     }
 
-    override fun onSignOut(user: UserDTO) {
+    override fun onSignOut(userDTO: UserDTO) {
         // TODO: Implement sign-out message
     }
 
@@ -210,14 +206,9 @@ class RegisterActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runna
                 // TODO: What were we going to do with these values?
             })
         }
-
     }
 
     companion object {
         val TAG: String = RegisterActivity::class.java.simpleName
     }
-
-
 }
-
-

@@ -8,7 +8,7 @@ import androidx.room.PrimaryKey
  */
 
 @Entity
-data class ChildLookupDTO (
+data class ChildLookupDTO(
     @PrimaryKey
-    val look : String
+    val look: String
 )

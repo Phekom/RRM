@@ -2,9 +2,6 @@ package za.co.xisystems.itis_rrm.data.localDB.entities
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.google.gson.annotations.SerializedName
 import java.io.Serializable
 
@@ -12,7 +9,7 @@ import java.io.Serializable
  * Created by Francis Mahlava on 2019/10/23.
  */
 
-//const val CURRENT_LOGGEDIN_USER = 0
+// const val CURRENT_LOGGEDIN_USER = 0
 const val USER_TABLE = "USER_TABLE"
 
 @Entity(tableName = USER_TABLE)
@@ -35,7 +32,6 @@ data class UserDTO(
     var DEVICE: String?,
     var Password: String?,
     var WEB_SERVICE_URI: String?
-
 
 ) : Serializable {
 

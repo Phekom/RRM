@@ -13,17 +13,18 @@ import java.io.Serializable
 
 const val PROJECT_SECTION_TABLE = "PROJECT_SECTION_TABLE"
 
-@Entity(tableName = PROJECT_SECTION_TABLE , foreignKeys = [
-    ForeignKey(
-        entity = ProjectDTO::class,
-        parentColumns = arrayOf("projectId"),
-        childColumns = arrayOf("projectId"),
-        onDelete = ForeignKey.CASCADE
-    )]
+@Entity(
+    tableName = PROJECT_SECTION_TABLE, foreignKeys = [
+        ForeignKey(
+            entity = ProjectDTO::class,
+            parentColumns = arrayOf("projectId"),
+            childColumns = arrayOf("projectId"),
+            onDelete = ForeignKey.CASCADE
+        )]
 )
-data class ProjectSectionDTO (
+data class ProjectSectionDTO(
     @PrimaryKey
-    val id : Int,
+    val id: Int,
 
     @SerializedName("SectionId")
     val sectionId: String,
@@ -38,7 +39,6 @@ data class ProjectSectionDTO (
     val startKm: Double,
     @SerializedName("EndKm")
     val endKm: Double,
-
 
     @SerializedName("Direction")
     val direction: String?,

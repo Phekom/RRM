@@ -1,6 +1,6 @@
 package za.co.xisystems.itis_rrm.data.repositories
 
-//import sun.security.krb5.Confounder.bytes
+// import sun.security.krb5.Confounder.bytes
 
 import android.os.Looper
 import android.widget.Toast
@@ -31,18 +31,15 @@ import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import java.io.IOException
 import java.util.*
 
-
 /**
  * Created by Francis Mahlava on 2019/11/28.
  */
-
 
 class JobCreationDataRepository(
     private val api: BaseConnectionApi,
     private val appDb: AppDatabase,
     private val prefs: PreferenceProvider
 ) : SafeApiRequest() {
-
 
     private val workflowJobs = MutableLiveData<WorkflowJobDTO>()
     private val jobDataController: JobDataController? = null
@@ -56,7 +53,6 @@ class JobCreationDataRepository(
 
         workflowJobs.observeForever {
             saveWorkflowJob(it)
-
         }
 
         photoUpload.observeForever {
@@ -64,9 +60,7 @@ class JobCreationDataRepository(
         }
 
         routeSectionPoint.observeForever {
-
         }
-
     }
 
     suspend fun getJobSection(jobId: String): JobSectionDTO? {
@@ -102,7 +96,7 @@ class JobCreationDataRepository(
 
     suspend fun saveNewJob(newJob: JobDTO?) {
         Coroutines.io {
-            if (newJob != null) { // && !appDb.getJobDao().checkIfJobExist(newJob.JobId)) {
+            if (newJob != null && !appDb.getJobDao().checkIfJobExist(newJob.JobId)) {
                 appDb.getJobDao().insertOrUpdateJobs(newJob)
             }
         }
@@ -117,6 +111,12 @@ class JobCreationDataRepository(
     suspend fun getContracts(): LiveData<List<ContractDTO>> {
         return withContext(Dispatchers.IO) {
             appDb.getContractDao().getAllContracts()
+        }
+    }
+
+    suspend fun getProjects(): LiveData<List<ProjectDTO>> {
+        return withContext(Dispatchers.IO) {
+            appDb.getProjectDao().getAllProjects()
         }
     }
 
@@ -138,13 +138,13 @@ class JobCreationDataRepository(
         }
     }
 
-    suspend fun getAllItemsForSectionItem(
+    suspend fun getAllItemsForSectionItemByProject(
         sectionItemId: String,
         projectId: String
     ): LiveData<List<ProjectItemDTO>> {
         return withContext(Dispatchers.IO) {
 
-            appDb.getProjectItemDao().getAllItemsForSectionItem(sectionItemId, projectId)
+            appDb.getProjectItemDao().getAllItemsForSectionItemByProject(sectionItemId, projectId)
         }
     }
 
@@ -195,7 +195,7 @@ class JobCreationDataRepository(
         }
     }
 
-    suspend fun getPointSectionData(projectId: String?): LiveData<SectionPointDTO> { //jobId,jobId: String,
+    suspend fun getPointSectionData(projectId: String?): LiveData<SectionPointDTO> { // jobId,jobId: String,
         return withContext(Dispatchers.IO) {
             // Db.getSectionItemDao().getAllSectionItems()
             appDb.getSectionPointDao().getPointSectionData(projectId)
@@ -211,7 +211,6 @@ class JobCreationDataRepository(
             appDb.getProjectSectionDao()
                 .getSectionByRouteSectionProject(sectionId.toString(), linearId!!, projectId!!)
         }
-
     }
 
     suspend fun getSection(sectionId: String): LiveData<ProjectSectionDTO> {
@@ -234,6 +233,8 @@ class JobCreationDataRepository(
             apiRequest { api.getRouteSectionPoint(distance, buffer, latitude, longitude, useR) }
 
 
+        Timber.d("$routeSectionPointResponse")
+
         routeSectionPoint.postValue(
             direction = routeSectionPointResponse.direction,
             linearId = routeSectionPointResponse.linearId,
@@ -249,7 +250,6 @@ class JobCreationDataRepository(
                 routeSectionPointResponse.linearId, projectId
             )
         }
-
     }
 
     suspend fun getAllProjectItems(projectId: String, jobId: String): LiveData<List<ItemDTOTemp>> {
@@ -342,7 +342,6 @@ class JobCreationDataRepository(
             js.jobSectionId = DataConversion.toBigEndian(js.jobSectionId)!!
             js.projectSectionId = DataConversion.toBigEndian(js.projectSectionId)!!
             js.jobId = DataConversion.toBigEndian(js.jobId)
-
         }
 
         return job
@@ -402,9 +401,7 @@ class JobCreationDataRepository(
                         recordVersion = jobSection.recordVersion,
                         recordSynchStateId = jobSection.recordSynchStateId
                     )
-
             }
-
         }
     }
 
@@ -433,7 +430,6 @@ class JobCreationDataRepository(
                     val message = "${estimatePhoto.filename} could not be loaded"
                     Timber.e(IOException(message), message)
                 }
-
             }
             jobCounter++
         }
@@ -462,7 +458,9 @@ class JobCreationDataRepository(
     }
 
     private fun getData(
-        filename: String, photoQuality: PhotoQuality, activity: FragmentActivity
+        filename: String,
+        photoQuality: PhotoQuality,
+        activity: FragmentActivity
     ): ByteArray {
         val uri = getPhotoPathFromExternalDirectory(filename)
         val bitmap =
@@ -473,7 +471,6 @@ class JobCreationDataRepository(
         )
     }
 
-    // Encode image to Base64 string and push to backend
     private fun processImageUpload(
         filename: String,
         extension: String,
@@ -482,7 +479,6 @@ class JobCreationDataRepository(
         imageCounter: Int
     ) {
         Coroutines.api {
-
             val imageData = JsonObject()
             imageData.addProperty("Filename", filename)
             imageData.addProperty("ImageByteArray", PhotoUtil.encode64Pic(photo))
@@ -494,7 +490,6 @@ class JobCreationDataRepository(
             if (totalImages <= imageCounter) {
                 Timber.d("Processed $imageCounter of $totalImages images.")
             }
-
         }
     }
 
@@ -525,7 +520,6 @@ class JobCreationDataRepository(
                 workflowJobs.postValue(workflowMoveResponse.workflowJob)
                 appDb.getItemDaoTemp().deleteItemList(job.JobId)
             }
-
         }
     }
 
@@ -562,14 +556,12 @@ class JobCreationDataRepository(
             if (!appDb.getSectionPointDao().checkSectionExists(sectionId, projectId, jobId)) {
                 appDb.getSectionPointDao()
                     .insertSection(direction, linearId, pointLocation, sectionId, projectId, jobId)
-
             }
             appDb.getProjectSectionDao().updateSectionDirection(direction, projectId)
         }
 
         return appDb.getProjectSectionDao()
             .getSectionByRouteSectionProject(sectionId.toString(), linearId, projectId)
-
     }
 
     private fun <T> MutableLiveData<T>.postValue(photo: String?, fileName: String) {
@@ -583,9 +575,7 @@ class JobCreationDataRepository(
             } else {
                 PhotoUtil.createPhotoFolder()
             }
-
         }
-
     }
 
     suspend fun getContractNoForId(contractVoId: String?): String {
@@ -598,7 +588,6 @@ class JobCreationDataRepository(
         return withContext(Dispatchers.IO) {
             appDb.getProjectDao().getProjectCodeForId(projectId)
         }
-
     }
 
     private fun JobItemMeasureDTO.setSelectedItemUom(selectedItemUom: String?) {
@@ -776,52 +765,4 @@ class JobCreationDataRepository(
     private fun JobItemEstimateDTO.setEstimateId(toBigEndian: String?) {
         this.estimateId = toBigEndian!!
     }
-
-    companion object {
-        val TAG: String = JobCreationDataRepository::class.java.simpleName
-    }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

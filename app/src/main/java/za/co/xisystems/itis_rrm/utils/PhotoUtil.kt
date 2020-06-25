@@ -91,17 +91,17 @@ object PhotoUtil {
     }
 
     private fun exifToDegrees(exifOrientation: Int): Int {
-        when (exifOrientation) {
+        return when (exifOrientation) {
             ExifInterface.ORIENTATION_ROTATE_90 -> {
-                return 90
+                90
             }
             ExifInterface.ORIENTATION_ROTATE_180 -> {
-                return 180
+                180
             }
             ExifInterface.ORIENTATION_ROTATE_270 -> {
-                return 270
+                270
             }
-            else -> return 0
+            else -> 0
         }
     }
 
@@ -145,18 +145,18 @@ object PhotoUtil {
     fun getPhotoPathFromExternalDirectory(
         photoName: String
     ): Uri {
-        var photoName = photoName
-        photoName =
-            if (!photoName.toLowerCase(Locale.ROOT)
+        var pictureName = photoName
+        pictureName =
+            if (!pictureName.toLowerCase(Locale.ROOT)
                     .contains(".jpg")
-            ) "$photoName.jpg" else photoName
+            ) "$pictureName.jpg" else pictureName
         var fileName =
             Environment.getExternalStorageDirectory()
-                .toString() + File.separator + FOLDER + File.separator + photoName
+                .toString() + File.separator + FOLDER + File.separator + pictureName
         var file = File(fileName)
         if (!file.exists()) { //  if not in the folder then go to the PhotosDirectory to check if in their.
             fileName =
-                Environment.getExternalStorageDirectory().toString() + File.separator + photoName
+                Environment.getExternalStorageDirectory().toString() + File.separator + pictureName
             file = File(fileName)
         }
         return Uri.fromFile(file)
@@ -180,7 +180,9 @@ object PhotoUtil {
                     e.printStackTrace()
                 } finally {
                     try {
-                        assert(fileDescriptor != null)
+                        if (BuildConfig.DEBUG && fileDescriptor == null) {
+                            error("Assertion failed")
+                        }
                         bm = BitmapFactory.decodeFileDescriptor(
                             fileDescriptor!!.fileDescriptor,
                             null,
@@ -263,7 +265,7 @@ object PhotoUtil {
         }
         return outputSet1
     }
-    //=============================================================================================================================================================
+    // =============================================================================================================================================================
     /**
      * saveImageToInternalStorage
      * Todo Make Image Quality Better
@@ -274,33 +276,33 @@ object PhotoUtil {
         context: Context,
         imageUri: Uri
     ): Map<String, String?>? {
-        var imageUri = imageUri
+        var scaledUri = imageUri
         return try {
-            var scaledBitmap: Bitmap? = null
+            lateinit var scaledBitmap: Bitmap
             val options = BitmapFactory.Options()
-            var result: String?
-            //if uri is content
-            if (imageUri.scheme != null && imageUri.scheme == "content") {
+            lateinit var result: String
+            // if uri is content
+            if (scaledUri.scheme != null && scaledUri.scheme == "content") {
                 val cursor =
-                    context.contentResolver.query(imageUri, null, null, null, null)
+                    context.contentResolver.query(scaledUri, null, null, null, null)
                 try {
-                    if (cursor != null && cursor.moveToFirst()) { //local filesystem
+                    if (cursor != null && cursor.moveToFirst()) { // local filesystem
                         var index = cursor.getColumnIndex("_data")
-                        if (index == -1) //google drive
+                        if (index == -1) // google drive
                             index = cursor.getColumnIndex("_display_name")
                         result = cursor.getString(index)
-                        imageUri = if (result != null) Uri.parse(result) else return null
+                        scaledUri = if (result != null) Uri.parse(result) else return null
                     }
                 } catch (e: Exception) {
-                    Timber.e(e, "Ërror loading photo $imageUri")
+                    Timber.e(e, "Ërror loading photo $scaledUri")
                 } finally {
                     cursor?.close()
                 }
             }
-            result = imageUri.path
-            //get filename + ext of path
-            val cut = result?.lastIndexOf('/')
-            if (cut != null && cut != -1) result = result?.substring(cut + 1)
+            result = scaledUri.path ?: ""
+            // get filename + ext of path
+            val cut = result.lastIndexOf('/')
+            if (cut != null && cut != -1) result = result.substring(cut + 1)
             val imageFileName = result
             val direct =
                 File(Environment.getExternalStorageDirectory().toString() + File.separator + FOLDER)
@@ -342,7 +344,7 @@ object PhotoUtil {
             val middleY = actualHeight / 2.0f
             val scaleMatrix = Matrix()
             scaleMatrix.setScale(ratioX, ratioY, middleX, middleY)
-            val canvas = Canvas(scaledBitmap!!)
+            val canvas = Canvas(scaledBitmap)
             canvas.setMatrix(scaleMatrix)
             canvas.drawBitmap(
                 bmp,
@@ -352,7 +354,7 @@ object PhotoUtil {
             )
             //      check the rotation of the image and display it properly
             scaledBitmap = applyExifRotation(path, scaledBitmap)
-            var out: FileOutputStream? = null
+            val out: FileOutputStream?
             try {
                 out = FileOutputStream(path)
                 //          write the compressed bitmap at the destination specified by filename.
@@ -360,7 +362,7 @@ object PhotoUtil {
             } catch (e: FileNotFoundException) {
                 e.printStackTrace()
             }
-            val map: MutableMap<String, String?> =
+            val map: MutableMap<String, String> =
                 HashMap()
             map["filename"] = imageFileName
             map["path"] = path
@@ -440,9 +442,9 @@ object PhotoUtil {
                 else -> {
                     actualHeight1 = maxHeight.toInt()
                     actualWidth1 = maxWidth.toInt()
-                }
             }
         }
+    }
         return Pair(actualHeight1, actualWidth1)
     }
 
@@ -540,7 +542,7 @@ object PhotoUtil {
      */
     fun encode64Pic(photo: ByteArray): String {
         return when {
-            Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O ->
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ->
                 Base64.getEncoder().encodeToString(photo)
             else ->
                 // Fallback for pre-Marshmallow
@@ -568,5 +570,14 @@ object PhotoUtil {
         return null
     }
 
-
+    fun getUriFromPath(filePath: String): Uri? {
+        return try {
+            val file = File(filePath)
+            val uri = Uri.fromFile(file)
+            uri
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to extract image Uri: ${e.message}")
+            null
+        }
+    }
 }

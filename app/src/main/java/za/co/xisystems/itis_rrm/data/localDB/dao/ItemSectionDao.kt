@@ -10,13 +10,13 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.ItemSectionDTO
  * Created by Francis Mahlava on 2019/11/21.
  */
 
-
 @Dao
 interface ItemSectionDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertEntities( intities : List<ItemSectionDTO> )
-//
+    suspend fun insertEntities(intities: List<ItemSectionDTO>)
+
+    //
 //    @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE itemId = :itemId")
 //    fun checkItemExistsItemId(itemId: String): LiveData<List<ItemDTO>>
 //

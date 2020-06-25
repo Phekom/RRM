@@ -37,21 +37,20 @@ open class CardItem(
         viewHolder.apply {
             Coroutines.main {
 
-                val works =  workViewModel.getWorkItemsForActID(ActivityIdConstants.EST_WORKS_COMPLETE)
+                val works =
+                    workViewModel.getWorkItemsForActID(ActivityIdConstants.EST_WORKS_COMPLETE)
                 works.observe(activity!!, Observer {
 //                  activity.toast(works.size)
                     expandable_child_textView.text = text
                     qty_textView.text = qty
                     line_amount_textView.text = rate
                 })
-
             }
 
             startWork_Btn.setOnClickListener {
-                sendJobToWork( workViewModel ,itemEsti, it,jobworkItems)
+                sendJobToWork(workViewModel, itemEsti, it, jobworkItems)
             }
         }
-
     }
     private fun sendJobToWork(
         workViewModel: WorkViewModel,
@@ -69,5 +68,4 @@ open class CardItem(
         Navigation.findNavController(view!!)
             .navigate(R.id.action_nav_work_to_captureWorkFragment)
     }
-
 }

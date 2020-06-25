@@ -4,4 +4,3 @@ interface IEstimateCalculator {
     // TODO may needs improvement
     fun onResume()
 }
-

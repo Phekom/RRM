@@ -15,24 +15,21 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
  * Created by Francis Mahlava on 2019/12/22.
  */
 
-
 class UnSubmittedJobItem(
     val jobDTO: JobDTO,
     private val viewModel: UnSubmittedViewModel,
     private val groupAdapter: GroupAdapter<GroupieViewHolder>
-) : Item(){
+) : Item() {
 
     var clickListener: ((UnSubmittedJobItem) -> Unit)? = null
 
-
     override fun bind(viewHolder: GroupieViewHolder, position: Int) {
 
-
-       viewHolder.apply {
-           iTemID.text = getItemId(position + 1).toString()
-           unsubmitted_project_textView.text = "JI:${jobDTO.JiNo} - "
-           Coroutines.main {
-               val descri = viewModel.getDescForProjectId(jobDTO.ProjectId!!)
+        viewHolder.apply {
+            iTemID.text = getItemId(position + 1).toString()
+            unsubmitted_project_textView.text = "JI:${jobDTO.JiNo} - "
+            Coroutines.main {
+                val descri = viewModel.getDescForProjectId(jobDTO.ProjectId!!)
                unsubmitted_project_textView.text = descri
            }
            unsubmitted_description_textView.text = jobDTO.Descr
@@ -50,9 +47,9 @@ class UnSubmittedJobItem(
            updateItem()
        }
 
-        viewHolder.itemView.setOnClickListener {view ->
+        viewHolder.itemView.setOnClickListener { view ->
             clickListener?.invoke(this)
-                sendJobtoEdit((jobDTO), view)
+            sendJobtoEdit((jobDTO), view)
         }
     }
 
@@ -70,14 +67,10 @@ class UnSubmittedJobItem(
     override fun getLayout() = R.layout.unsubmtd_job_list_item
 
     private fun GroupieViewHolder.updateItem() {
-
     }
 
     private fun GroupieViewHolder.updatePojectItem() {
-
     }
-
-
 }
 
 private fun GroupieViewHolder.getItemId(position: Int): Long {

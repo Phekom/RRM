@@ -13,6 +13,7 @@ import androidx.lifecycle.whenCreated
 import androidx.lifecycle.whenStarted
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import kotlinx.android.synthetic.main.fragment_select_item.*
@@ -24,13 +25,13 @@ import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
-import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
+import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
+import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModel
+import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.MyState
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper.setSpinner
-import za.co.xisystems.itis_rrm.ui.models.CreateViewModel
-import za.co.xisystems.itis_rrm.ui.models.CreateViewModelFactory
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import java.util.*
@@ -43,12 +44,13 @@ import java.util.concurrent.CancellationException
 class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAware {
     override val kodein by kodein()
     private lateinit var createViewModel: CreateViewModel
-    private val factory: CreateViewModelFactory by instance()
+    private val factory: CreateViewModelFactory by instance<CreateViewModelFactory>()
     private var items: MutableList<ItemDTOTemp> = ArrayList<ItemDTOTemp>()
     private var animate = false
 
     private lateinit var newJobItemEstimatesList: ArrayList<JobItemEstimateDTO>
-    private lateinit var  itemSections : ArrayList<ItemSectionDTO>
+    private lateinit var itemSections: ArrayList<ItemSectionDTO>
+
     @MyState
     internal var selectedSectionItem: SectionItemDTO? = null
 
@@ -100,12 +102,13 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
     override fun onCreateView(
         inflater: LayoutInflater,
-        container: ViewGroup?, savedInstanceState: Bundle?
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
 
     ): View? {
 
@@ -126,7 +129,6 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
             newJobItemEstimatesList = ArrayList<JobItemEstimateDTO>()
             bindUI()
         }
-
     }
 
     private fun bindUI() {
@@ -167,32 +169,32 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
                                 selectedSectionItem = item
                                 setRecyclerItems(projectId, item.sectionItemId!!)
                             }
-
                         })
 
                     sectionItemSpinner.setOnTouchListener { v, event ->
                         animate = true
                         false
                     }
-
                 }
-
             })
-
         }
     }
 
-
-    //    private fun setRecyclerItems(sectionItemId: String) {
+    /**
+     * Get only the section items relevant for the section, filtered by what is relevant
+     * to the Project
+     * @param projectId String
+     * @param sectionItemId String
+     */
     private fun setRecyclerItems(projectId: String, sectionItemId: String) {
         uiScope.launch(context = uiScope.coroutineContext) {
-            val projectsItems = createViewModel.getAllItemsForSectionItem(sectionItemId, projectId)
+            val projectsItems =
+                createViewModel.getAllItemsForSectionItemByProjectId(sectionItemId, projectId)
             projectsItems.observe(viewLifecycleOwner, Observer { projectItemList ->
                 group_loading.visibility = View.GONE
                 initRecyclerView(projectItemList.toProjectItems())
             })
         }
-
     }
 
     private fun List<ProjectItemDTO>.toProjectItems(): List<SectionProj_Item> {
@@ -210,6 +212,8 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
         item_recyclerView.apply {
             layoutManager = LinearLayoutManager(this.context)
             adapter = groupAdapter
+            adapter!!.stateRestorationPolicy =
+                RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
         }
 
         groupAdapter.setOnItemClickListener { item, view ->
@@ -218,13 +222,9 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
 
                 val tempItem = createItemList(it.itemDTO, itemSections)
                 saveNewItem(tempItem)
-                sendSelectedItem((it) , view,items )
+                sendSelectedItem((it), view)
             }
-
-
         }
-
-
     }
 
     private fun saveNewItem(tempItem: ItemDTOTemp) {
@@ -258,14 +258,11 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
 
     private fun sendSelectedItem(
         item: SectionProj_Item,
-        view: View,
-        jobArrayList: List<SectionProj_Item>
+        view: View
     ) {
-        val myList = jobArrayList
 
         Coroutines.main {
             createViewModel.setSectionProjectItem(item)
-//            createViewModel.project_Rate.value = selectRte
         }
 
         Navigation.findNavController(view)
@@ -275,9 +272,8 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
     override fun onDestroyView() {
         // Prevents RecyclerView Memory leak
         item_recyclerView.adapter = null
-        uiScope.job.cancel(CancellationException("onDestroyView"))
+        uiScope.destroy()
         viewLifecycleOwner.lifecycleScope.cancel(CancellationException("onDestroyView"))
         super.onDestroyView()
     }
-
 }

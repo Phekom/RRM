@@ -1,10 +1,10 @@
-//package za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.intents
+// package za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.intents
 //
-//import android.app.Activity
+// import android.app.Activity
 //
-//object ActivityFactory {
+// object ActivityFactory {
 //    @JvmStatic
 //    fun startNewJobActivity(activity: Activity) {
 //        NewJobIntent(activity).startActivity();
 //    }
-//}
+// }

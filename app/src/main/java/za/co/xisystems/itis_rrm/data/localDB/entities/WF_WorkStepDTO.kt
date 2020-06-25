@@ -8,18 +8,17 @@ import com.google.gson.annotations.SerializedName
  * Created by Francis Mahlava on 2020/02/12.
  */
 
-
 const val WorkStep_TABLE = "WorkStep_TABLE"
 
 @Entity(tableName = WorkStep_TABLE)
 class WF_WorkStepDTO(
     @SerializedName("WorkStep_ID")
     @PrimaryKey
-    val WorkStep_ID : Int,
+    val WorkStep_ID: Int,
     @SerializedName("Step_Code")
-    val Step_Code : String?,
+    val Step_Code: String?,
     @SerializedName("DESCR")
-    val Descrip : String?,
+    val Descrip: String?,
     @SerializedName("ACT_TYPE_ID")
-    val Act_Type_id : Int?
+    val Act_Type_id: Int?
 )

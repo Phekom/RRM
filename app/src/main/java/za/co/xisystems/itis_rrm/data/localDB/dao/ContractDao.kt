@@ -14,15 +14,14 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.ContractDTO
 @Dao
 interface ContractDao {
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun saveAllContracts(contracts: List<ContractDTO>)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun saveAllContracts(contracts : List<ContractDTO> )
+    suspend fun insertContract(contract: ContractDTO)
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertContract(contract : ContractDTO )
-
-    @Query("SELECT * FROM CONTRACTS_TABLE")
-    fun getAllContracts() : LiveData<List<ContractDTO>>
+    @Query("SELECT * FROM CONTRACTS_TABLE ORDER BY contractNo")
+    fun getAllContracts(): LiveData<List<ContractDTO>>
 
     @Query("SELECT * FROM CONTRACTS_TABLE WHERE contractId = :contractId")
     fun checkIfContractExists(contractId: String): Boolean
@@ -41,10 +40,8 @@ interface ContractDao {
 //    fun getAllContracts() : LiveData<List<Contract>>
 //
 
-////    fun checkIfContractExists(contractId: String): LiveData<Boolean>
+// //    fun checkIfContractExists(contractId: String): LiveData<Boolean>
 //
 
 //
-
-
 }

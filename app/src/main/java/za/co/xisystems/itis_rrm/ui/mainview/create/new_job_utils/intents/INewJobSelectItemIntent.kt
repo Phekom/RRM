@@ -7,7 +7,7 @@ import androidx.fragment.app.Fragment
 import io.reactivex.annotations.NonNull
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 
-interface INewJobSelectItemIntent{
+interface INewJobSelectItemIntent {
     fun getIntent(@NonNull context: Context, projectId: String?): Intent
 
     fun startActivityForResult(@NonNull fragment: Fragment, projectId: String?)

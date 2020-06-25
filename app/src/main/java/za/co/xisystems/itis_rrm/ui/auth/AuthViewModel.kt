@@ -20,12 +20,10 @@ import za.co.xisystems.itis_rrm.utils.lazyDeferred
  * Updated by Shaun McDonald 2020/04/15
  */
 
-
 class AuthViewModel(
     private val repository: UserRepository,
     private val offlineDataRepository: OfflineDataRepository
 ) : ViewModel() {
-
 
     var username: String? = null
     var password: String? = null
@@ -43,7 +41,7 @@ class AuthViewModel(
         offlineDataRepository.getContracts()
     }
 
-    suspend  fun getPin(): String {
+    suspend fun getPin(): String {
         return withContext(Dispatchers.IO) {
             repository.getPin()
         }
@@ -77,7 +75,6 @@ class AuthViewModel(
             } else {
                 authListener?.onFailure("Old Pin is incorrect, pLease enter your current Pin")
             }
-
         } catch (e: AuthException) {
             authListener?.onFailure(e.message!!)
         } catch (e: NoInternetException) {
@@ -86,7 +83,6 @@ class AuthViewModel(
             authListener?.onFailure(e.message!!)
         }
     }
-
 }
 
     fun onRegPinButtonClick(view: View) {
@@ -139,7 +135,6 @@ class AuthViewModel(
                 authListener?.onFailure(e.message!!)
             }
         }
-
     }
 
     fun onRegButtonClick(view: View) {
@@ -179,8 +174,5 @@ class AuthViewModel(
                 authListener?.onFailure(e.message!!)
             }
         }
-
-
     }
-
 }

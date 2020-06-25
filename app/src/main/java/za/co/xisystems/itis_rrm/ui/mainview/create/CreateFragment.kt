@@ -8,29 +8,25 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.whenStarted
 import androidx.navigation.Navigation
 import kotlinx.android.synthetic.main.fragment_createjob.*
+import kotlinx.coroutines.launch
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
-import za.co.xisystems.itis_rrm.base.BaseFragment
-import za.co.xisystems.itis_rrm.custom.errors.NoConnectivityException
-import za.co.xisystems.itis_rrm.custom.errors.NoInternetException
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.data.network.OfflineListener
+import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.MyState
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper.setSpinner
-import za.co.xisystems.itis_rrm.ui.models.CreateViewModel
-import za.co.xisystems.itis_rrm.ui.models.CreateViewModelFactory
-import za.co.xisystems.itis_rrm.utils.Coroutines
-import za.co.xisystems.itis_rrm.utils.SqlLitUtils
-import za.co.xisystems.itis_rrm.utils.hide
-import za.co.xisystems.itis_rrm.utils.show
+import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
+import za.co.xisystems.itis_rrm.utils.*
 import java.util.*
-
 
 /**
  * Created by Francis Mahlava on 2019/10/18.
@@ -39,10 +35,10 @@ import java.util.*
 
 class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListener, KodeinAware {
 
-
+    private var uiScope = UiLifecycleScope()
     override val kodein by kodein()
     private lateinit var createViewModel: CreateViewModel
-    private val factory: CreateViewModelFactory by instance()
+    private val factory: CreateViewModelFactory by instance<CreateViewModelFactory>()
     private val estimatesToRemoveFromDb: ArrayList<JobItemEstimateDTO> =
         ArrayList()
 
@@ -81,11 +77,10 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
         newJobItemEstimatesWorksList = ArrayList()
 
         setHasOptionsMenu(true)
-
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
     override fun onPrepareOptionsMenu(menu: Menu) {
@@ -99,7 +94,8 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
 
     override fun onCreateView(
         inflater: LayoutInflater,
-        container: ViewGroup?, savedInstanceState: Bundle?
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
     ): View? {
 
         try {
@@ -115,6 +111,14 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
         return inflater.inflate(R.layout.fragment_createjob, container, false)
     }
 
+    init {
+        // setup for CreateFragment
+
+        lifecycleScope.launch {
+            whenStarted {
+            }
+        }
+    }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
@@ -127,8 +131,7 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
             val user = createViewModel.user.await()
             user.observe(viewLifecycleOwner, Observer { user_ ->
                 useR = user_
-            }
-            )
+            })
         }
 
         val myClickListener = View.OnClickListener { view ->
@@ -145,16 +148,12 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
                         descri = description
                         createViewModel.setDescription(descri!!)
                         setContractAndProjectSelection(view)
-
                     }
-
                 }
-
             }
         }
 
         selectContractProjectContinueButton.setOnClickListener(myClickListener)
-
     }
 
     private fun createNewJob() {
@@ -170,7 +169,6 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
             )
             createViewModel.saveNewJob(createdJob)
         }
-
     }
 
     private fun createNewJob(
@@ -205,7 +203,7 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
             today.toString(),
             today.toString(),
             today.toString(),
-            null,//null,null,null,null,
+            null, // null,null,null,null,
             newJobItemEstimatesList,
             jobItemMeasureArrayList,
             jobItemSectionArrayList,
@@ -275,84 +273,75 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
                 val contractData = createViewModel.getContracts()
 
                 contractData.observe(viewLifecycleOwner, Observer { contractList ->
-                    val contractIndices = arrayOfNulls<String>(contractList.size)
-                    for (contract in contractList.indices) {
-                        contractIndices[contract] = contractList[contract].contractNo
-                    }
-                    Timber.d("Thread completed.")
-                    setSpinner(
-                        requireContext().applicationContext,
-                        contractSpinner,
-                        contractList,
-                        contractIndices, //null)
-                        object : SpinnerHelper.SelectionListener<ContractDTO> {
-                            override fun onItemSelected(position: Int, item: ContractDTO) {
-                                if (item == null)
-                                    Toast.makeText(
-                                        context!!.applicationContext,
-                                        "Error: Contract is NULL",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                else {
+                    val allData = contractList.count()
+                    if (contractList.size == allData) {
+                        val contractIndices = arrayOfNulls<String>(contractList.size)
+                        for (contract in contractList.indices) {
+                            contractIndices[contract] = contractList[contract].contractNo
+                        }
+
+
+                        Timber.d("Thread completed.")
+                        setSpinner(
+                            requireContext().applicationContext,
+                            contractSpinner,
+                            contractList,
+                            contractIndices, // null)
+                            object : SpinnerHelper.SelectionListener<ContractDTO> {
+                                override fun onItemSelected(position: Int, item: ContractDTO) {
                                     selectedContract = item
                                     setProjects(item.contractId)
                                     Coroutines.main {
                                         createViewModel.setContractId(item.contractId)
                                     }
                                 }
-                            }
+                            })
+                    }
+                    data_loading.hide()
 
-                        })
+
                 })
             }
         } catch (e: NoInternetException) {
             Toast.makeText(context, e.message, Toast.LENGTH_SHORT).show()
             Timber.e(e, "No Internet Connection")
-
         } catch (e: NoConnectivityException) {
             Toast.makeText(context, e.message, Toast.LENGTH_SHORT).show()
             Timber.e(e, "Backend Host Unreachable")
         }
-
     }
 
     private fun setProjects(contractId: String?) {
+
         Coroutines.main {
-//            try {
             val projects = createViewModel.getSomeProjects(contractId!!)
-
+            data_loading.show()
             projects.observe(viewLifecycleOwner, Observer { projec_t ->
-                data_loading.hide()
-                val projectNmbr = arrayOfNulls<String>(projec_t.size)
-                for (project in projec_t.indices) {
-                    projectNmbr[project] = projec_t[project].projectCode
-                }
-                setSpinner(requireContext().applicationContext,
-                    projectSpinner,
-                    projec_t,
-                    projectNmbr, //null)
-                    object : SpinnerHelper.SelectionListener<ProjectDTO> {
-                        override fun onItemSelected(position: Int, item: ProjectDTO) {
+                val allData = projec_t.count()
+                if (projec_t.size == allData) {
 
-                            if (item.projectId == null)
-                                Toast.makeText(
-                                    context!!.applicationContext,
-                                    "Error: Project is NULL",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            else {
+                    val projectNmbr = arrayOfNulls<String>(projec_t.size)
+                    for (project in projec_t.indices) {
+                        projectNmbr[project] = projec_t[project].projectCode
+                    }
+                    setSpinner(requireContext().applicationContext,
+                        projectSpinner,
+                        projec_t,
+                        projectNmbr, // null)
+                        object : SpinnerHelper.SelectionListener<ProjectDTO> {
+                            override fun onItemSelected(position: Int, item: ProjectDTO) {
                                 selectedProject = item
                                 Coroutines.main {
                                     createViewModel.setProjectId(item.projectId)
                                 }
                             }
-                        }
-                    })
+                        })
+
+                    data_loading.hide()
+                }
 
             })
-
         }
-
     }
 
     override fun onStarted() {
@@ -369,18 +358,5 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
 
     companion object {
         val TAG: String = CreateFragment::class.java.simpleName
-
     }
-
 }
-
-
-
-
-
-
-
-
-
-
-

@@ -13,7 +13,7 @@ import za.co.xisystems.itis_rrm.utils.lazyDeferred
 /**
  * Created by Francis Mahlava on 03,October,2019
  */
-class SettingsViewModel (
+class SettingsViewModel(
     private val offlineDataRepository: OfflineDataRepository
 ) : ViewModel() {
 
@@ -26,12 +26,10 @@ class SettingsViewModel (
         offlineDataRepository.getUser()
     }
 
-
     val measureapproval_Item = MutableLiveData<ApproveMeasureItem>()
     fun Item5(measureapproval: ApproveMeasureItem) {
         measureapproval_Item.value = measureapproval
     }
-
 
 //    suspend fun getJobApproveMeasureForActivityId(activityId: Int): LiveData<List<JobItemMeasureDTO>> {
 //        return withContext(Dispatchers.IO) {
@@ -66,7 +64,10 @@ class SettingsViewModel (
         }
     }
 
-    suspend fun getJobMeasureItemsForJobId(jobID: String?,actId: Int): LiveData<List<JobItemMeasureDTO>> {
+    suspend fun getJobMeasureItemsForJobId(
+        jobID: String?,
+        actId: Int
+    ): LiveData<List<JobItemMeasureDTO>> {
         return withContext(Dispatchers.IO) {
             offlineDataRepository.getJobMeasureItemsForJobId(jobID, actId)
         }
@@ -78,18 +79,15 @@ class SettingsViewModel (
         }
     }
 
-    suspend fun getJobMeasureItemsPhotoPath(itemMeasureId: String): String {
+    suspend fun getJobMeasureItemsPhotoPath(itemMeasureId: String): List<String> {
         return withContext(Dispatchers.IO) {
             offlineDataRepository.getJobMeasureItemsPhotoPath(itemMeasureId)
         }
     }
 
-    suspend fun deleteAllData() : Void?{
+    suspend fun deleteAllData(): Void? {
         return withContext(Dispatchers.IO) {
             offlineDataRepository.deleteAllData()
         }
     }
-
-
-
 }

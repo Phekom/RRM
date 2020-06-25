@@ -5,6 +5,8 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import za.co.xisystems.itis_rrm.data.localDB.dao.*
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.utils.Converters
@@ -14,18 +16,12 @@ import za.co.xisystems.itis_rrm.utils.Converters
  */
 
 @Database(
-    entities = [JobDTO::class, UserDTO::class , UserRoleDTO::class, ProjectItemDTO::class, ItemDTOTemp::class, JobDTOTemp::class,
-        ContractDTO::class, VoItemDTO::class, ProjectDTO::class , ProjectSectionDTO::class ,PrimaryKeyValueDTO::class
-        , LookupOptionDTO::class ,LookupDTO::class ,ItemSectionDTO::class ,WorkFlowDTO::class, SectionPointDTO::class
-        , WorkFlowRouteDTO::class ,JobSectionDTO::class ,InfoClassDTO::class ,ActivityDTO::class , ToDoGroupsDTO::class
-        , JobItemEstimatesPhotoDTO::class ,JobItemMeasurePhotoDTO::class ,JobItemEstimateDTO::class ,JobItemMeasureDTO::class
-        , ToDoListEntityDTO::class , ChildLookupDTO::class,JobEstimateWorksDTO::class , JobEstimateWorksPhotoDTO::class
-        ,SectionItemDTO::class,WorkFlowsDTO::class, WF_WorkStepDTO::class
-        //JobItemMeasureDTOTemp::class,JobItemMeasurePhotoDTOTemp::class,
-
+    entities = [JobDTO::class, UserDTO::class, UserRoleDTO::class, ProjectItemDTO::class, ItemDTOTemp::class, JobDTOTemp::class,
+        ContractDTO::class, VoItemDTO::class, ProjectDTO::class, ProjectSectionDTO::class, PrimaryKeyValueDTO::class, LookupOptionDTO::class, LookupDTO::class, ItemSectionDTO::class, WorkFlowDTO::class, SectionPointDTO::class, WorkFlowRouteDTO::class, JobSectionDTO::class, InfoClassDTO::class, ActivityDTO::class, ToDoGroupsDTO::class, JobItemEstimatesPhotoDTO::class, JobItemMeasurePhotoDTO::class, JobItemEstimateDTO::class, JobItemMeasureDTO::class, ToDoListEntityDTO::class, ChildLookupDTO::class, JobEstimateWorksDTO::class, JobEstimateWorksPhotoDTO::class, SectionItemDTO::class, WorkFlowsDTO::class, WF_WorkStepDTO::class
+        // JobItemMeasureDTOTemp::class,JobItemMeasurePhotoDTOTemp::class,
 
     ],
-    version = 1
+    version = 2
 )
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
@@ -36,7 +32,6 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun getJobItemMeasureDao(): JobItemMeasureDao
     abstract fun getJobItemEstimatePhotoDao(): JobItemEstimatePhotoDao
     abstract fun getJobItemMeasurePhotoDao(): JobItemMeasurePhotoDao
-
 
     abstract fun getUserDao(): UserDao
     abstract fun getUserRoleDao(): UserRoleDao
@@ -59,7 +54,6 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun getEstimateWorkDao(): EstimateWorkDao
     abstract fun getEstimateWorkPhotoDao(): EstimateWorkPhotoDao
 
-
     abstract fun getSectionItemDao(): SectionItemDao
 //    abstract fun getJobItemMeasureDao_Temp(): JobItemMeasureDao_Temp
 //    abstract fun getJobItemMeasurePhotoDao_Temp(): JobItemMeasurePhotoDao_Temp
@@ -68,13 +62,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun getSectionPointDao(): SectionPointDao
     abstract fun getWorkStepDao(): WorkStepDao
 
-
-
 //    abstract fun getWorkFlowRouteDao(): WorkFlowRouteDao
-
-
-
-
 
     companion object {
 
@@ -88,13 +76,17 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        val MIGRATION_1_2 = object : Migration(1, 2) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE JOB_ITEM_MEASURE ADD COLUMN deleted INT NOT NULL DEFAULT 0")
+            }
+        }
+
         private fun buildDatabase(context: Context) =
             Room.databaseBuilder(
                 context.applicationContext,
                 AppDatabase::class.java,
                 "myRRM_Database.db"
-            ).build()
-
-
+            ).addMigrations(MIGRATION_1_2).build()
     }
 }

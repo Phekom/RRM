@@ -34,20 +34,20 @@
                             android:layout_width="0dp"
                             android:layout_margin="@dimen/small"
                             android:text="@string/contract"
-                            app:layout_constraintLeft_toLeftOf="parent"
-                            tools:ignore="MissingConstraints" />
+                        app:layout_constraintStart_toStartOf="parent"
+                        tools:ignore="MissingConstraints" />
 
                     <TextView
-                            android:id="@+id/selectedContractTextView"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_margin="@dimen/small"
-                            android:ellipsize="end"
-                            android:hint="N.002-036-2017/1 DEMO"
-                            android:textStyle="bold"
-                            app:layout_constraintLeft_toRightOf="@+id/contractLabel"
-                            app:layout_constraintRight_toLeftOf="@+id/resetButton"
-                            tools:ignore="MissingConstraints" />
+                        android:id="@+id/selectedContractTextView"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="@dimen/small"
+                        android:ellipsize="end"
+                        android:hint="N.002-036-2017/1 DEMO"
+                        android:textStyle="bold"
+                        app:layout_constraintEnd_toStartOf="@+id/resetButton"
+                        app:layout_constraintStart_toEndOf="@+id/contractLabel"
+                        tools:ignore="MissingConstraints" />
 
                     <ImageButton
                             android:id="@+id/resetButton"
@@ -56,9 +56,9 @@
                             android:layout_height="44dp"
                             android:src="@drawable/ic_baseline_cancel_24px"
                             android:tint="@color/sanral_orange_red"
-                            app:layout_constraintBottom_toBottomOf="parent"
-                            app:layout_constraintRight_toRightOf="parent"
-                            app:layout_constraintTop_toTopOf="parent" />
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
 
                     <TextView
                             android:id="@+id/projectLabel"
@@ -67,9 +67,9 @@
                             android:layout_height="19dp"
                             android:layout_margin="@dimen/small"
                             android:text="@string/project"
-                            app:layout_constraintEnd_toStartOf="@+id/selectedProjectTextView"
-                            app:layout_constraintLeft_toLeftOf="parent"
-                            app:layout_constraintTop_toBottomOf="@+id/selectedContractTextView" />
+                        app:layout_constraintEnd_toStartOf="@+id/selectedProjectTextView"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/selectedContractTextView" />
 
                     <TextView
                             android:id="@+id/selectedProjectTextView"
@@ -79,9 +79,9 @@
                             android:layout_marginEnd="225dp"
                             android:hint="@string/contract"
                             android:textStyle="bold"
-                            app:layout_constraintEnd_toStartOf="@+id/resetButton"
-                            app:layout_constraintLeft_toRightOf="@+id/contractLabel"
-                            app:layout_constraintTop_toBottomOf="@+id/selectedContractTextView" />
+                        app:layout_constraintEnd_toStartOf="@+id/resetButton"
+                        app:layout_constraintStart_toEndOf="@+id/contractLabel"
+                        app:layout_constraintTop_toBottomOf="@+id/selectedContractTextView" />
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </androidx.cardview.widget.CardView>
 
@@ -96,8 +96,8 @@
                 <TextView
                         style="@style/_orangeTextLabel"
                         android:layout_width="0dp"
-                        android:layout_marginLeft="@dimen/medium"
-                        android:layout_weight="1"
+                    android:layout_marginStart="@dimen/medium"
+                    android:layout_weight="1"
                         android:text="@string/project_items" />
 
                 <ImageButton
@@ -158,16 +158,16 @@
                         android:alpha="0.1" />
 
                 <TextView
-                        android:id="@+id/totalCostTextView"
-                        style="@style/_default"
-                        android:gravity="right|end"
-                        android:hint="Total: R 0"
-                        android:paddingLeft="@dimen/small"
-                        android:paddingTop="@dimen/xsmall"
-                        android:paddingRight="@dimen/small"
-                        android:paddingBottom="@dimen/xsmall"
-                        android:textSize="@dimen/text_medium"
-                        android:textStyle="bold" />
+                    android:id="@+id/totalCostTextView"
+                    style="@style/_default"
+                    android:gravity="end"
+                    android:hint="Total: R 0"
+                    android:paddingLeft="@dimen/small"
+                    android:paddingTop="@dimen/xsmall"
+                    android:paddingRight="@dimen/small"
+                    android:paddingBottom="@dimen/xsmall"
+                    android:textSize="@dimen/text_medium"
+                    android:textStyle="bold" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
@@ -203,27 +203,27 @@
                     android:orientation="horizontal">
 
                 <TextView
-                        style="@style/_orangeTextLabel"
-                        android:layout_width="wrap_content"
-                        android:layout_margin="@dimen/small"
-                        android:gravity="left"
-                        android:paddingLeft="@dimen/xsmall"
-                        android:paddingRight="@dimen/xsmall"
-                        android:text="Estimated Start Date: " />
+                    style="@style/_orangeTextLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_margin="@dimen/small"
+                    android:gravity="start"
+                    android:paddingLeft="@dimen/xsmall"
+                    android:paddingRight="@dimen/xsmall"
+                    android:text="Estimated Start Date: " />
 
                 <TextView
-                        android:id="@+id/startDateTextView"
-                        style="@style/_default"
-                        android:layout_margin="@dimen/small"
-                        android:drawableRight="@drawable/ic_baseline_chevron_right_24px"
-                        android:ellipsize="end"
-                        android:gravity="left"
-                        android:hint="(Click to select date)"
-                        android:maxLines="1"
-                        android:paddingLeft="@dimen/xsmall"
-                        android:paddingRight="@dimen/xsmall"
-                        android:textColor="@color/black"
-                        android:textColorHint="@color/silver" />
+                    android:id="@+id/startDateTextView"
+                    style="@style/_default"
+                    android:layout_margin="@dimen/small"
+                    android:drawableEnd="@drawable/ic_baseline_chevron_right_24px"
+                    android:ellipsize="end"
+                    android:gravity="start"
+                    android:hint="(Click to select date)"
+                    android:maxLines="1"
+                    android:paddingLeft="@dimen/xsmall"
+                    android:paddingRight="@dimen/xsmall"
+                    android:textColor="@color/black"
+                    android:textColorHint="@color/silver" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
@@ -242,27 +242,27 @@
                     android:orientation="horizontal">
 
                 <TextView
-                        style="@style/_orangeTextLabel"
-                        android:layout_width="wrap_content"
-                        android:layout_margin="@dimen/small"
-                        android:gravity="left"
-                        android:paddingLeft="@dimen/xsmall"
-                        android:paddingRight="@dimen/xsmall"
-                        android:text="Estimated Due Date: " />
+                    style="@style/_orangeTextLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_margin="@dimen/small"
+                    android:gravity="start"
+                    android:paddingLeft="@dimen/xsmall"
+                    android:paddingRight="@dimen/xsmall"
+                    android:text="Estimated Due Date: " />
 
                 <TextView
-                        android:id="@+id/dueDateTextView"
-                        style="@style/_default"
-                        android:layout_margin="@dimen/small"
-                        android:drawableRight="@drawable/ic_baseline_chevron_right_24px"
-                        android:ellipsize="end"
-                        android:gravity="left"
-                        android:hint="(Click to select date)"
-                        android:maxLines="1"
-                        android:paddingLeft="@dimen/xsmall"
-                        android:paddingRight="@dimen/xsmall"
-                        android:textColor="@color/black"
-                        android:textColorHint="@color/silver" />
+                    android:id="@+id/dueDateTextView"
+                    style="@style/_default"
+                    android:layout_margin="@dimen/small"
+                    android:drawableEnd="@drawable/ic_baseline_chevron_right_24px"
+                    android:ellipsize="end"
+                    android:gravity="start"
+                    android:hint="(Click to select date)"
+                    android:maxLines="1"
+                    android:paddingLeft="@dimen/xsmall"
+                    android:paddingRight="@dimen/xsmall"
+                    android:textColor="@color/black"
+                    android:textColorHint="@color/silver" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
