@@ -239,6 +239,9 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
         }
     }
 
+    /**
+     * Handler routine for submitting completed work for a job.
+     */
     fun handleJobSubmission(result: XIResult<String>) {
         // handle result of job submission
         when (result) {
@@ -250,13 +253,13 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
             is XIError -> {
                 when (result.exception) {
                     is IOException -> {
-                        handleJobConnectivtyError(result)
+                        handleJobConnectivityError(result)
                     }
                     is NoInternetException -> {
-                        handleJobConnectivtyError(result)
+                        handleJobConnectivityError(result)
                     }
                     is NoConnectivityException -> {
-                        handleJobConnectivtyError(result)
+                        handleJobConnectivityError(result)
                     }
                     else -> {
                         ErrorHandler.handleError(
@@ -277,7 +280,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
 
     var estimateSize = 0
     var estimateCount = 0
-    private fun handleJobConnectivtyError(throwable: XIError) {
+    private fun handleJobConnectivityError(throwable: XIError) {
         ErrorHandler.handleError(
             view = this.requireView(),
             shouldShowSnackBar = true,
@@ -298,13 +301,13 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
             is XIError -> {
                 when (result.exception) {
                     is IOException -> {
-                        handleWorkConnectivtyError(result)
+                        handleWorkConnectivityError(result)
                     }
                     is NoInternetException -> {
-                        handleWorkConnectivtyError(result)
+                        handleWorkConnectivityError(result)
                     }
                     is NoConnectivityException -> {
-                        handleWorkConnectivtyError(result)
+                        handleWorkConnectivityError(result)
                     }
                     else -> {
                         ErrorHandler.handleError(
@@ -321,7 +324,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
 
     }
 
-    private fun handleWorkConnectivtyError(throwable: XIError) {
+    private fun handleWorkConnectivityError(throwable: XIError) {
         ErrorHandler.handleError(
             view = this.requireView(),
             shouldShowSnackBar = true,
