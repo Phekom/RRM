@@ -22,10 +22,10 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.GlideApp
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.Util.nanCheck
+import za.co.xisystems.itis_rrm.utils.Util.round
 import za.co.xisystems.itis_rrm.utils.toast
 import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
 import java.io.File
-import java.text.DecimalFormat
 
 /**
  * Created by Francis Mahlava on 2020/01/02.
@@ -123,7 +123,7 @@ class EstimatesItem(
                             activity.toast("You Have exceeded the amount of Quantity allowed")
                         } else {
                             cost = tenderRate * qty
-                            val new_cost = DecimalFormat("##.##").format(cost) // "R " +
+                            val new_cost = cost.round(2).toString()
                             new_total.text = new_cost
                         }
                     }

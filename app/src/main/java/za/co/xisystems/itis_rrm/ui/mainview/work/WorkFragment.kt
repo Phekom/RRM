@@ -178,6 +178,7 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
     ) {
 
         val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
+            clear()
             addAll(workListItems)
         }
         work_listView.apply {
@@ -230,8 +231,10 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
                     ActivityIdConstants.ESTIMATE_INCOMPLETE
                 )
                 estimates.observe(viewLifecycleOwner, Observer { estimateItems ->
-
-                    for (item in estimateItems) {
+                    val filteredEstimates = estimateItems.distinctBy { element ->
+                        element.estimateId
+                    }
+                    for (item in filteredEstimates) {
 
                         uiScope.launch(uiScope.coroutineContext) {
                             try {

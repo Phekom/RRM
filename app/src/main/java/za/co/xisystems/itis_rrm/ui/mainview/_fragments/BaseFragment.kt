@@ -233,7 +233,7 @@ abstract class BaseFragment(layoutContentId: Int) : Fragment(), IProgressView,
     }
 
     override fun showProgressDialog(vararg messages: String?) {
-        if (null != messages) {
+        if (messages.isNotEmpty()) {
             var message = messages[0]
             if (messages.size > 1) {
                 for (i in 1 until messages.size) {

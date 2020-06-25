@@ -273,25 +273,33 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
                 val contractData = createViewModel.getContracts()
 
                 contractData.observe(viewLifecycleOwner, Observer { contractList ->
-                    val contractIndices = arrayOfNulls<String>(contractList.size)
-                    for (contract in contractList.indices) {
-                        contractIndices[contract] = contractList[contract].contractNo
-                    }
-                    Timber.d("Thread completed.")
-                    setSpinner(
-                        requireContext().applicationContext,
-                        contractSpinner,
-                        contractList,
-                        contractIndices, // null)
-                        object : SpinnerHelper.SelectionListener<ContractDTO> {
-                            override fun onItemSelected(position: Int, item: ContractDTO) {
-                                selectedContract = item
-                                setProjects(item.contractId)
-                                Coroutines.main {
-                                    createViewModel.setContractId(item.contractId)
+                    val allData = contractList.count()
+                    if (contractList.size == allData) {
+                        val contractIndices = arrayOfNulls<String>(contractList.size)
+                        for (contract in contractList.indices) {
+                            contractIndices[contract] = contractList[contract].contractNo
+                        }
+
+
+                        Timber.d("Thread completed.")
+                        setSpinner(
+                            requireContext().applicationContext,
+                            contractSpinner,
+                            contractList,
+                            contractIndices, // null)
+                            object : SpinnerHelper.SelectionListener<ContractDTO> {
+                                override fun onItemSelected(position: Int, item: ContractDTO) {
+                                    selectedContract = item
+                                    setProjects(item.contractId)
+                                    Coroutines.main {
+                                        createViewModel.setContractId(item.contractId)
+                                    }
                                 }
-                            }
-                        })
+                            })
+                    }
+                    data_loading.hide()
+
+
                 })
             }
         } catch (e: NoInternetException) {
@@ -307,25 +315,31 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
 
         Coroutines.main {
             val projects = createViewModel.getSomeProjects(contractId!!)
-
+            data_loading.show()
             projects.observe(viewLifecycleOwner, Observer { projec_t ->
-                data_loading.hide()
-                val projectNmbr = arrayOfNulls<String>(projec_t.size)
-                for (project in projec_t.indices) {
-                    projectNmbr[project] = projec_t[project].projectCode
-                }
-                setSpinner(requireContext().applicationContext,
-                    projectSpinner,
-                    projec_t,
-                    projectNmbr, // null)
-                    object : SpinnerHelper.SelectionListener<ProjectDTO> {
-                        override fun onItemSelected(position: Int, item: ProjectDTO) {
-                            selectedProject = item
-                            Coroutines.main {
-                                createViewModel.setProjectId(item.projectId)
+                val allData = projec_t.count()
+                if (projec_t.size == allData) {
+
+                    val projectNmbr = arrayOfNulls<String>(projec_t.size)
+                    for (project in projec_t.indices) {
+                        projectNmbr[project] = projec_t[project].projectCode
+                    }
+                    setSpinner(requireContext().applicationContext,
+                        projectSpinner,
+                        projec_t,
+                        projectNmbr, // null)
+                        object : SpinnerHelper.SelectionListener<ProjectDTO> {
+                            override fun onItemSelected(position: Int, item: ProjectDTO) {
+                                selectedProject = item
+                                Coroutines.main {
+                                    createViewModel.setProjectId(item.projectId)
+                                }
                             }
-                        }
-                    })
+                        })
+
+                    data_loading.hide()
+                }
+
             })
         }
     }

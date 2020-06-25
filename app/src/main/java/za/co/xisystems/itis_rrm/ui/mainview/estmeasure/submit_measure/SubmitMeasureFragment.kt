@@ -50,6 +50,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
     private lateinit var jobForItemEstimate: JobDTO
     private lateinit var jobItemMeasureList: ArrayList<JobItemMeasureDTO>
     private lateinit var jobItemEstimate: JobItemEstimateDTO
+    private lateinit var expandableGroups: MutableList<ExpandableGroup>
     private var uiScope = UiLifecycleScope()
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -387,6 +388,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
     }
 
     private fun List<JobItemEstimateDTO>.toMeasure_Item(): List<ExpandableGroup> {
+        expandableGroups = mutableListOf<ExpandableGroup>()
         return this.map { measure_item ->
             val expandableHeaderItem = ExpandableHeaderMeasureItem(
                 activity,
@@ -397,8 +399,16 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                 jobItemEstimatesForJob,
                 jobItemMeasuresForJobItemEstimates
             )
-            ExpandableGroup(expandableHeaderItem, true).apply {
+            expandableHeaderItem.onExpandListener = { toggledGroup ->
+                expandableGroups.forEach {
+                    if (it != toggledGroup && it.isExpanded) {
+                        it.onToggleExpanded()
+                    }
+                }
+            }
 
+            ExpandableGroup(expandableHeaderItem, true).apply {
+                expandableGroups.add(this)
                 Coroutines.main {
                     val jobForJobItemEstimate = measureViewModel.getJobFromJobId(measure_item.jobId)
                     jobForJobItemEstimate.observeOnce(
@@ -437,6 +447,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                                 })
                             }
                         })
+
                 }
             }
         }

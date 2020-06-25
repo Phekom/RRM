@@ -7,6 +7,7 @@ import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.math.round
 
 object Util {
 
@@ -50,5 +51,11 @@ object Util {
         } catch (e: Exception) {
             true
         }
+    }
+
+    fun Double.round(decimals: Int): Double {
+        var multiplier = 1.0
+        repeat(decimals) { multiplier *= 10 }
+        return round(this * multiplier) / multiplier
     }
 }

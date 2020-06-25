@@ -30,14 +30,14 @@ import java.time.LocalDateTime
 import java.util.regex.Pattern
 
 private val jobDataController: JobDataController? = null
-private var entitiesFetched = false
+
 
 class OfflineDataRepository(
     private val api: BaseConnectionApi,
     private val Db: AppDatabase,
     private val prefs: PreferenceProvider
 ) : SafeApiRequest() {
-
+    var entitiesFetched = false
     private val activity: FragmentActivity? = null
     private val conTracts = MutableLiveData<List<ContractDTO>>()
     private val sectionItems = MutableLiveData<ArrayList<String>>()
@@ -94,6 +94,8 @@ class OfflineDataRepository(
             sendMSg(it)
         }
     }
+
+    var bigSyncDone = false
 
     val databaseStatus: MutableLiveData<XIResult<Boolean>> = MutableLiveData()
 
@@ -306,6 +308,7 @@ class OfflineDataRepository(
                 .distinctBy { contract -> contract.contractId }
             for (contract in validContracts) {
                 if (!Db.getContractDao().checkIfContractExists(contract.contractId)) {
+                    postStatus("Setting Contract: ${contract.shortDescr}")
                     Db.getContractDao().insertContract(contract)
 
                     val validProjects =
@@ -316,7 +319,7 @@ class OfflineDataRepository(
                     updateProjects(validProjects, contract)
                 }
             }
-            databaseStatus.postValue(XISuccess(true))
+
         }
     }
 
@@ -353,6 +356,7 @@ class OfflineDataRepository(
                         continue
                     } else {
                         try {
+                            postStatus("Setting project: ${project.descr}")
                             Db.getProjectDao().insertProject(
                                 project.projectId,
                                 project.descr,
@@ -370,7 +374,7 @@ class OfflineDataRepository(
                                 ex,
                                 "Contract: ${contract.shortDescr} (${contract.contractId}) ProjectId: ${project.descr} (${project.projectId}) -> ${ex.message}"
                             )
-                            throw ex
+                            // throw ex
                         }
 
                         if (project.items != null) {
@@ -430,7 +434,7 @@ class OfflineDataRepository(
                     }
                 } catch (ex: Exception) {
                     Timber.e(ex, "ItemId: ${item.itemId} -> ${ex.message}")
-                    throw ex
+                    // throw ex
                 }
             }
         }
@@ -459,7 +463,7 @@ class OfflineDataRepository(
                         ex,
                         "ProjectSectionItemId ${section.sectionId} -> ${ex.message}"
                     )
-                    throw ex
+                    // throw ex
                 }
         }
     }
@@ -488,7 +492,7 @@ class OfflineDataRepository(
                         ex,
                         "VoItemProjectVoId: ${voItem.projectVoId} -> ${ex.message}"
                     )
-                    throw ex
+                    // throw ex
                 }
         }
     }
@@ -676,7 +680,7 @@ class OfflineDataRepository(
                 }
             }
             if (jobItemEstimate.jobItemMeasure != null) {
-                saveJobIteamMeasuresForEstimate(jobItemEstimate.jobItemMeasure, job)
+                saveJobItemMeasuresForEstimate(jobItemEstimate.jobItemMeasure, job)
             }
         }
     }
@@ -775,7 +779,7 @@ class OfflineDataRepository(
         }
     }
 
-    private suspend fun saveJobIteamMeasuresForEstimate(
+    private suspend fun saveJobItemMeasuresForEstimate(
         jobItemMeasures: java.util.ArrayList<JobItemMeasureDTO>,
         job: JobDTO
     ) {
@@ -937,7 +941,7 @@ class OfflineDataRepository(
                         fetchJobList(newJobId!!)
                     }
                 }
-                databaseStatus.postValue(XISuccess(true))
+                // databaseStatus.postValue(XISuccess(true))
             }
         }
     }
@@ -990,24 +994,32 @@ class OfflineDataRepository(
     }
 
     suspend fun fetchContracts(userId: String): Boolean {
+        return withContext(Dispatchers.Default) {
+            postStatus("Fetching Activity Sections")
+            val activitySectionsResponse =
+                apiRequest { api.activitySectionsRefresh(userId) }
+            sectionItems.postValue(activitySectionsResponse.activitySections)
 
-        val activitySectionsResponse =
-            apiRequest { api.activitySectionsRefresh(userId) }
-        sectionItems.postValue(activitySectionsResponse.activitySections)
+            postStatus("Updating Workflows")
+            val workFlowResponse = apiRequest { api.workflowsRefresh(userId) }
+            workFlow.postValue(workFlowResponse.workFlows)
 
-        val workFlowResponse = apiRequest { api.workflowsRefresh(userId) }
-        workFlow.postValue(workFlowResponse.workFlows)
+            postStatus("Updating Lookups")
+            val lookupResponse = apiRequest { api.lookupsRefresh(userId) }
+            lookups.postValue(lookupResponse.mobileLookups)
 
-        val lookupResponse = apiRequest { api.lookupsRefresh(userId) }
-        lookups.postValue(lookupResponse.mobileLookups)
+            postStatus("Updating Task List")
+            val toDoListGroupsResponse = apiRequest { api.getUserTaskList(userId) }
+            toDoListGroups.postValue(toDoListGroupsResponse.toDoListGroups)
 
-        val toDoListGroupsResponse = apiRequest { api.getUserTaskList(userId) }
-        toDoListGroups.postValue(toDoListGroupsResponse.toDoListGroups)
-
-        val contractsResponse = apiRequest { api.refreshContractInfo(userId) }
-        conTracts.postValue(contractsResponse.contracts)
-
-        return true
+            postStatus("Updating Contracts")
+            val contractsResponse = apiRequest { api.refreshContractInfo(userId) }
+            // conTracts.postValue(contractsResponse.contracts)
+            saveContracts(contractsResponse.contracts)
+            databaseStatus.postValue(XISuccess(true))
+            bigSyncDone = true
+            true
+        }
     }
 
     suspend fun getUserTaskList(): LiveData<List<ToDoListEntityDTO>> {

@@ -20,17 +20,18 @@ class WorkViewModel(
     val user by lazyDeferred {
         workDataRepository.getUser()
     }
-
     val offlineUserTaskList by lazyDeferred {
         offlineDataRepository.getUserTaskList()
     }
-
     val workItem = MutableLiveData<JobItemEstimateDTO>()
+    val workItemJob = MutableLiveData<JobDTO>()
+    val backupWorkSubmission: MutableLiveData<JobEstimateWorksDTO> = MutableLiveData()
+    val workflowResponse = workDataRepository.workStatus
+    val backupCompletedEstimates: MutableLiveData<List<JobItemEstimateDTO>> = MutableLiveData()
     fun setWorkItem(work: JobItemEstimateDTO) {
         workItem.value = work
     }
 
-    val workItemJob = MutableLiveData<JobDTO>()
     fun setWorkItemJob(workjob: JobDTO) {
         workItemJob.value = workjob
     }
@@ -148,9 +149,6 @@ class WorkViewModel(
         }
     }
 
-    val backupWorkSubmission: MutableLiveData<JobEstimateWorksDTO> = MutableLiveData()
-    val workflowResponse = workDataRepository.workStatus
-
     suspend fun processWorkflowMove(
         userId: String,
         trackRouteId: String,
@@ -181,6 +179,4 @@ class WorkViewModel(
             workDataRepository.getWorkItemsForActID(actId)
         }
     }
-
-    val backupCompletedEstimates: MutableLiveData<List<JobItemEstimateDTO>> = MutableLiveData()
 }
