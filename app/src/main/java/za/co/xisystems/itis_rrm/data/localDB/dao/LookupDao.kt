@@ -14,14 +14,13 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.LookupDTO
 interface LookupDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertLookup( lookups : LookupDTO) : Long
+    suspend fun insertLookup(lookups: LookupDTO): Long
 
     @Query("SELECT * FROM LOOKUP_TABLE WHERE lookupName = :lookupName")
     fun checkIfLookupExist(lookupName: String): Boolean
 
 //    @Query("INSERT INTO LOOKUP_TABLE (lookupName, lookupOptions) VALUES (:lookupName, :lookupOptions)")
 //    fun insertLookup(lookupName: String,lookupOptions: ArrayList<LookupOptionDTO>)
-
 
 //    @Query("SELECT * FROM LOOKUP_TABLE ")
 //    fun getWorkflow() : LiveData<List<LookupDTO>>
@@ -37,7 +36,6 @@ interface LookupDao {
 //
 //    @Query("SELECT * FROM LOOKUP_TABLE WHERE workFlowId = :workFlowId")
 //    fun getWorkFlowRouteForWorkflowId(workFlowId : Long ): LiveData<List<Long>>
-
 
     @Query("DELETE FROM LOOKUP_TABLE")
     fun deleteAll()

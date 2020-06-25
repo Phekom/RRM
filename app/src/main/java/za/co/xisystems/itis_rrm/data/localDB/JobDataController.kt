@@ -25,8 +25,6 @@ object JobDataController {
                     wfe.worksId = DataConversion.toBigEndian(wfe.worksId)!!
 
                     wfe.estimateId = DataConversion.toBigEndian(wfe.estimateId)!!
-
-
                 }
             }
         }
@@ -47,7 +45,6 @@ object JobDataController {
         }
         return job
     }
-
 
     fun setJobLittleEndianGuids(job: JobDTO): JobDTO? {
 
@@ -96,7 +93,6 @@ object JobDataController {
             }
         }
 
-
         job.JobItemMeasures?.forEach { jim ->
 
             jim.setItemMeasureId(DataConversion.toLittleEndian(jim.itemMeasureId))
@@ -111,13 +107,11 @@ object JobDataController {
 
                 jimp.setPhotoId(DataConversion.toLittleEndian(jimp.photoId))
                 jimp.setItemMeasureId(DataConversion.toLittleEndian(jimp.itemMeasureId))
-
             }
         }
 
         return job
     }
-
 
     fun setJobMeasureLittleEndianGuids(jim: JobItemMeasureDTO?): JobItemMeasureDTO {
         if (jim != null) {
@@ -132,20 +126,16 @@ object JobDataController {
                 jmep.setEstimateId(DataConversion.toLittleEndian(jmep.estimateId))
                 jmep.setItemMeasureId(DataConversion.toLittleEndian(jmep.itemMeasureId))
             }
-
-
         }
 
         return jim!!
     }
-
 
     fun setMsg(uplodmsg: String?): String? {
         return uplodmsg
     }
 
     private val offlineDataRepository: OfflineDataRepository? = null
-
 }
 
 private fun JobItemMeasurePhotoDTO.setEstimateId(toLittleEndian: String?) {

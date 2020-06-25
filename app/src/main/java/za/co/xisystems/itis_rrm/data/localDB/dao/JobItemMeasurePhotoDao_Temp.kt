@@ -1,20 +1,20 @@
-//package za.co.xisystems.itis_rrm.data.localDB.dao
+// package za.co.xisystems.itis_rrm.data.localDB.dao
 //
-//import androidx.lifecycle.LiveData
-//import androidx.room.Dao
-//import androidx.room.Insert
-//import androidx.room.OnConflictStrategy
-//import androidx.room.Query
-//import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasurePhotoDTO
-//import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasurePhotoDTOTemp
+// import androidx.lifecycle.LiveData
+// import androidx.room.Dao
+// import androidx.room.Insert
+// import androidx.room.OnConflictStrategy
+// import androidx.room.Query
+// import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasurePhotoDTO
+// import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasurePhotoDTOTemp
 //
-///**
+// /**
 // * Created by Francis Mahlava on 2019/11/21.
 // */
 //
 //
-//@Dao
-//interface JobItemMeasurePhotoDao_Temp {
+// @Dao
+// interface JobItemMeasurePhotoDao_Temp {
 //
 //    @Insert(onConflict = OnConflictStrategy.REPLACE)
 //    suspend fun insertJobItemMeasurePhoto( jobItemMeasurePhoto : JobItemMeasurePhotoDTOTemp)
@@ -42,15 +42,15 @@
 //
 //
 //
-////    @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE projectId = :projectId")
-////    fun getAllItemsForProjectId(projectId: String): LiveData<List<ItemDTO>>
-////
-////
-////    @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE sectionItemId = :sectionItem AND projectId = :projectId")
-////    fun getAllItemsForSectionItem(sectionItem : String, projectId : String ): LiveData<List<ItemDTO>>
+// //    @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE projectId = :projectId")
+// //    fun getAllItemsForProjectId(projectId: String): LiveData<List<ItemDTO>>
+// //
+// //
+// //    @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE sectionItemId = :sectionItem AND projectId = :projectId")
+// //    fun getAllItemsForSectionItem(sectionItem : String, projectId : String ): LiveData<List<ItemDTO>>
 //
 //
 //
 //
 //
-//}
+// }

@@ -14,9 +14,9 @@ class ApproveJobsViewModelFactory(
 //    private val repository: UserRepository,
     private val jobApprovalDataRepository: JobApprovalDataRepository,
     private val offlineDataRepository: OfflineDataRepository
-): ViewModelProvider.NewInstanceFactory() {
+) : ViewModelProvider.NewInstanceFactory() {
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-        return ApproveJobsViewModel(jobApprovalDataRepository,offlineDataRepository) as T
+        return ApproveJobsViewModel(jobApprovalDataRepository, offlineDataRepository) as T
 //        return MeasureViewModel(repository,,Db ,context) as T
     }
 }

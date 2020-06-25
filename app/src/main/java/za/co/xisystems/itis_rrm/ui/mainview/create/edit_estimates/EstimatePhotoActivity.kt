@@ -1,26 +1,26 @@
-//package za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates
+// package za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates
 //
-//import android.graphics.Bitmap
-//import android.location.Location
-//import android.os.Bundle
-//import android.view.View
-//import android.widget.EditText
-//import android.widget.TextView
-//import androidx.appcompat.app.AppCompatActivity
-//import icepick.State
-//import za.co.xisystems.itis_rrm.R
-//import za.co.xisystems.itis_rrm.data._commons.AbstractTextWatcher
-//import za.co.xisystems.itis_rrm.data._commons.Animations
-//import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTO
-//import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
-//import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
-//import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.contracts.IEstimateCalculator
-//import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.models.PhotoType
-//import za.co.xisystems.itis_rrm.utils.toast
-//import java.text.DecimalFormat
-//import java.util.*
+// import android.graphics.Bitmap
+// import android.location.Location
+// import android.os.Bundle
+// import android.view.View
+// import android.widget.EditText
+// import android.widget.TextView
+// import androidx.appcompat.app.AppCompatActivity
+// import icepick.State
+// import za.co.xisystems.itis_rrm.R
+// import za.co.xisystems.itis_rrm.data._commons.AbstractTextWatcher
+// import za.co.xisystems.itis_rrm.data._commons.Animations
+// import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTO
+// import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
+// import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
+// import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.contracts.IEstimateCalculator
+// import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.models.PhotoType
+// import za.co.xisystems.itis_rrm.utils.toast
+// import java.text.DecimalFormat
+// import java.util.*
 //
-//class EstimatePhotoActivity : AppCompatActivity() {
+// class EstimatePhotoActivity : AppCompatActivity() {
 //
 //    var estimateCalculator: IEstimateCalculator? = null
 //
@@ -56,10 +56,10 @@
 //
 //
 //
-//}
+// }
 //
 //
-//internal class EstimateCalculator(activity: EstimatePhotoActivity) :
+// internal class EstimateCalculator(activity: EstimatePhotoActivity) :
 //    IEstimateCalculator {
 //    private val activity: EstimatePhotoActivity
 //    private val labelTextView: TextView
@@ -289,5 +289,5 @@
 //            }
 //        })
 //    }
-//}
+// }
 //

@@ -7,16 +7,14 @@ import androidx.fragment.app.Fragment
 import io.reactivex.annotations.NonNull
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 
-
 class NewJobSelectItemIntent : AbstractIntent(), INewJobSelectItemIntent {
     override fun getIntent(@NonNull context: Context, projectId: String?): Intent {
         return flags(Intent(context, null)
                 .putExtra(PROJECT_ID, projectId))
-
     }
 
     override fun startActivityForResult(fragment: Fragment, projectId: String?) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
     override fun startActivityForResult(@NonNull activity: Activity, projectId: String?) {

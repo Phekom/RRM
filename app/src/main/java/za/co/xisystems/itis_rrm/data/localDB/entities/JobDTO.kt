@@ -11,7 +11,7 @@ import java.util.*
  */
 
 const val JOB_TABLE = "JOB_TABLE"
-//val JOB_ID = UUID.randomUUID().toString()
+// val JOB_ID = UUID.randomUUID().toString()
 
 @Entity(tableName = JOB_TABLE)
 class JobDTO(
@@ -26,7 +26,7 @@ class JobDTO(
     @SerializedName("ProjectId")
     var ProjectId: String?,
 
-    var SectionId : String?,
+    var SectionId: String?,
     @SerializedName("StartKm")
     var StartKm: Double,
     @SerializedName("EndKm")
@@ -53,13 +53,13 @@ class JobDTO(
     val M9100: Int,
 
     @SerializedName("IssueDate")
-    var IssueDate: String? ,
+    var IssueDate: String?,
     @SerializedName("StartDate")
-    var StartDate: String? ,
+    var StartDate: String?,
     @SerializedName("DueDate")
-    var DueDate:  String?,
+    var DueDate: String?,
     @SerializedName("ApprovalDate")
-    var ApprovalDate:String?,
+    var ApprovalDate: String?,
 
 //    var dateissue: String? = Date().toString(),
 //
@@ -102,7 +102,6 @@ class JobDTO(
     @SerializedName("JobStatusId")
     val JobStatusId: Int,
 
-
     @SerializedName("ProjectVoId")
     var ProjectVoId: String?,
     @SerializedName("QtyUpdateAllowed")
@@ -128,10 +127,6 @@ class JobDTO(
     val ActivityId: Int,
 
     val Is_synced: String?
-
-
-
-
 
 //    @SerializedName("JobId")
 //    @PrimaryKey
@@ -229,12 +224,9 @@ class JobDTO(
 //    val WorkStartDate: String?,
 //
 
-
 //    var ESTIMATES_ACT_ID: Int?
 
-
-
-) : Serializable{
+) : Serializable {
 
     fun addOrUpdateJobItemEstimate(newEstimate: JobItemEstimateDTO) {
         val x = getJobEstimateIndexByItemId(newEstimate.projectItemId)
@@ -247,7 +239,6 @@ class JobDTO(
     fun jobEstimateExist(itemId: String?): Boolean {
         return getJobEstimateIndexByItemId(itemId) > -1
     }
-
 
     fun getJobEstimateIndexByItemId(itemId: String?): Int {
         if (itemId != null) for (i in JobItemEstimates!!.indices) {
@@ -273,7 +264,4 @@ class JobDTO(
         val x = getJobEstimateIndexByItemId(itemId)
         return if (x < 0) null else JobItemEstimates?.get(x)
     }
-
-
-
 }

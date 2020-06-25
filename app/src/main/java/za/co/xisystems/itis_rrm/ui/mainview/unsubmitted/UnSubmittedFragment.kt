@@ -23,8 +23,8 @@ import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
 import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.unsubmited_item.UnSubmittedJobItem
 import za.co.xisystems.itis_rrm.utils.*
 
-class UnSubmittedFragment : BaseFragment( R.layout.fragment_unsubmittedjobs), KodeinAware {
-//
+class UnSubmittedFragment : BaseFragment(R.layout.fragment_unsubmittedjobs), KodeinAware {
+    //
     override val kodein by kodein()
     private lateinit var unsubmittedViewModel: UnSubmittedViewModel
     private val factory: UnSubmittedViewModelFactory by instance<UnSubmittedViewModelFactory>()
@@ -36,13 +36,14 @@ class UnSubmittedFragment : BaseFragment( R.layout.fragment_unsubmittedjobs), Ko
 
     override fun onCreateView(
         inflater: LayoutInflater,
-        container: ViewGroup?, savedInstanceState: Bundle?
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
     ): View? {
         return inflater.inflate(R.layout.fragment_unsubmittedjobs, container, false)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -69,7 +70,6 @@ class UnSubmittedFragment : BaseFragment( R.layout.fragment_unsubmittedjobs), Ko
                         toast(job_s.size.toString())
                         group12_loading.visibility = View.GONE
                     }
-
                 })
             } catch (e: ApiException) {
                 ToastUtils().toastLong(activity, e.message)
@@ -83,7 +83,6 @@ class UnSubmittedFragment : BaseFragment( R.layout.fragment_unsubmittedjobs), Ko
             }
         }
     }
-
 
     private fun List<JobDTO>.toApproveListItems(): List<UnSubmittedJobItem> {
         return this.map { jobsToApprove ->
@@ -99,7 +98,6 @@ class UnSubmittedFragment : BaseFragment( R.layout.fragment_unsubmittedjobs), Ko
             layoutManager = LinearLayoutManager(this.context)
             adapter = groupAdapter
         }
-
     }
 
     override fun onDestroyView() {
@@ -107,4 +105,3 @@ class UnSubmittedFragment : BaseFragment( R.layout.fragment_unsubmittedjobs), Ko
         super.onDestroyView()
     }
 }
-

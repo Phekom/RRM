@@ -9,7 +9,6 @@ import androidx.lifecycle.Observer
  * Copyright (c) 2020 XI Systems. All rights reserved.
  **/
 
-
 /***
  * A one shot observer that snags the data we need, and then shuts down.
  *

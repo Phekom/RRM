@@ -8,7 +8,6 @@ import za.co.xisystems.itis_rrm.BuildConfig
  * Created by Francis Mahlava on 2019/10/20.
  */
 
-
 val uncaughtExceptionHandler = CoroutineExceptionHandler { _, exception ->
 
     if (BuildConfig.DEBUG) {

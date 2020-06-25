@@ -16,7 +16,6 @@ import za.co.xisystems.itis_rrm.utils.toast
  * Created by Francis Mahlava on 2019/12/22.
  */
 
-
 class WorkStateItem(
     private val jobItemWorks: JobEstimateWorksDTO?,
     private var activity: FragmentActivity?,
@@ -24,7 +23,6 @@ class WorkStateItem(
     private val jobWorkStep: ArrayList<WF_WorkStepDTO>
 
 ) : Item() {
-
 
     companion object {
         var selected_position = -1
@@ -34,7 +32,7 @@ class WorkStateItem(
 
     override fun bind(viewHolder: GroupieViewHolder, position: Int) {
 
-      val step =    jobWorkStep
+      val step = jobWorkStep
         val workState = arrayOf(
             step[0].Step_Code!!,
             step[1].Step_Code!!,
@@ -43,12 +41,11 @@ class WorkStateItem(
             step[4].Step_Code!!
         )
 
-
        viewHolder.apply {
            state.text = workState[position]
 
            setNewState(position, viewHolder)
-           if (selected_position ==  adapterPosition){
+           if (selected_position == adapterPosition) {
                viewHolder.stateBack.setBackgroundColor(
                    ContextCompat.getColor(
                        activity!!,
@@ -64,9 +61,7 @@ class WorkStateItem(
                activity?.toast(position.toString())
                selected_position = position
                 groupAdapter.notifyDataSetChanged()
-
            }
-
        }
         viewHolder.itemView.setOnClickListener {
             clickListener?.invoke(this)
@@ -95,7 +90,7 @@ class WorkStateItem(
                 selected_position = 4
             }
         }
-        if (selected_position ==  position){
+        if (selected_position == position) {
             viewHolder.stateBack.setBackgroundColor(
                 ContextCompat.getColor(
                     activity!!,
@@ -109,9 +104,5 @@ class WorkStateItem(
         }
     }
 
-
     override fun getLayout() = R.layout.list_selector
-
 }
-
-

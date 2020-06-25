@@ -31,29 +31,28 @@ import za.co.xisystems.itis_rrm.utils.*
  * Created by Francis Mahlava on 03,October,2019
  */
 
-class ApproveJobsFragment : BaseFragment( R.layout.fragment_approvejob), KodeinAware {
+class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAware {
 //
-
 
     override val kodein by kodein()
     private lateinit var approveViewModel: ApproveJobsViewModel
     private val factory: ApproveJobsViewModelFactory by instance<ApproveJobsViewModelFactory>()
-    lateinit var dialog : Dialog
+    lateinit var dialog: Dialog
 
     companion object {
         val TAG: String = ApproveJobsFragment::class.java.simpleName
     }
 
-
     override fun onCreateView(
         inflater: LayoutInflater,
-        container: ViewGroup?, savedInstanceState: Bundle?
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
     ): View? {
         return inflater.inflate(R.layout.fragment_approvejob, container, false)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -127,7 +126,6 @@ class ApproveJobsFragment : BaseFragment( R.layout.fragment_approvejob), KodeinA
         approve_job_listView.apply {
             layoutManager = LinearLayoutManager(this.context)
             adapter = groupAdapter
-
         }
 
         groupAdapter.setOnItemClickListener { item, view ->
@@ -140,11 +138,11 @@ class ApproveJobsFragment : BaseFragment( R.layout.fragment_approvejob), KodeinA
     }
 
     private fun sendJobToApprove(
-        job: ApproveJobItem?,
+        job: ApproveJobItem,
         view: View
     ) {
         Coroutines.main {
-            approveViewModel.jobapproval_Item6.value = job
+            approveViewModel.setJobForApproval(job)
         }
 
         Navigation.findNavController(view)
@@ -162,8 +160,4 @@ class ApproveJobsFragment : BaseFragment( R.layout.fragment_approvejob), KodeinA
         approve_job_listView.adapter = null
         super.onDestroyView()
     }
-
 }
-
-
-

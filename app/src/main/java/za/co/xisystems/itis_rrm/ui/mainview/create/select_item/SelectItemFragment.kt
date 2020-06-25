@@ -49,7 +49,8 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
     private var animate = false
 
     private lateinit var newJobItemEstimatesList: ArrayList<JobItemEstimateDTO>
-    private lateinit var  itemSections : ArrayList<ItemSectionDTO>
+    private lateinit var itemSections: ArrayList<ItemSectionDTO>
+
     @MyState
     internal var selectedSectionItem: SectionItemDTO? = null
 
@@ -101,12 +102,13 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
     override fun onCreateView(
         inflater: LayoutInflater,
-        container: ViewGroup?, savedInstanceState: Bundle?
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
 
     ): View? {
 
@@ -127,7 +129,6 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
             newJobItemEstimatesList = ArrayList<JobItemEstimateDTO>()
             bindUI()
         }
-
     }
 
     private fun bindUI() {
@@ -168,21 +169,16 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
                                 selectedSectionItem = item
                                 setRecyclerItems(projectId, item.sectionItemId!!)
                             }
-
                         })
 
                     sectionItemSpinner.setOnTouchListener { v, event ->
                         animate = true
                         false
                     }
-
                 }
-
             })
-
         }
     }
-
 
     /**
      * Get only the section items relevant for the section, filtered by what is relevant
@@ -199,7 +195,6 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
                 initRecyclerView(projectItemList.toProjectItems())
             })
         }
-
     }
 
     private fun List<ProjectItemDTO>.toProjectItems(): List<SectionProj_Item> {
@@ -229,11 +224,7 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
                 saveNewItem(tempItem)
                 sendSelectedItem((it), view)
             }
-
-
         }
-
-
     }
 
     private fun saveNewItem(tempItem: ItemDTOTemp) {
@@ -270,7 +261,6 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
         view: View
     ) {
 
-
         Coroutines.main {
             createViewModel.setSectionProjectItem(item)
         }
@@ -286,5 +276,4 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
         viewLifecycleOwner.lifecycleScope.cancel(CancellationException("onDestroyView"))
         super.onDestroyView()
     }
-
 }

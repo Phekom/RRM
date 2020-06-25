@@ -33,27 +33,26 @@ import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 
-
 class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval), KodeinAware {
     override val kodein by kodein()
     private lateinit var approveViewModel: ApproveMeasureViewModel
     private val factory: ApproveMeasureViewModelFactory by instance<ApproveMeasureViewModelFactory>()
     private lateinit var measurementsToApprove: ArrayList<JobItemMeasureDTO>
-    lateinit var dialog : Dialog
+    lateinit var dialog: Dialog
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
         (activity as MainActivity).supportActionBar?.title =
             getString(R.string.measure_approval_title)
-
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
@@ -74,7 +73,7 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
 
             approve_measure_button.setOnClickListener {
                 val logoutBuilder = AlertDialog.Builder(
-                    requireActivity() //, android.R.style.Theme_DeviceDefault_Dialog
+                    requireActivity() // , android.R.style.Theme_DeviceDefault_Dialog
                 )
                 logoutBuilder.setTitle(R.string.confirm)
                 logoutBuilder.setIcon(R.drawable.ic_approve)
@@ -115,7 +114,7 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
 //                    R.string.yes
 //                ) { dialog, which ->
 //                    if (ServiceUtil.isNetworkConnected(context?.applicationContext)) {
-////                        moveJobToNextWorkflow(WorkflowDirection.FAIL)
+// //                        moveJobToNextWorkflow(WorkflowDirection.FAIL)
 //                    } else {
 //                        toast(R.string.no_connection_detected)
 //                    }
@@ -130,7 +129,6 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
 //                val declineAlert = logoutBuilder.create()
 //                declineAlert.show()
 //            }
-
         }
     }
 
@@ -140,7 +138,6 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
                 getString(R.string.moving_to_next_step_in_workflow),
                 getString(R.string.please_wait)
             )
-
 
             val user = approveViewModel.user.await()
             user.observe(viewLifecycleOwner, Observer { user_ ->
@@ -168,7 +165,10 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
     }
 
     private fun processWorkFlow(
-        userId: String, trackRouteId: String, direction: Int, description: String?
+        userId: String,
+        trackRouteId: String,
+        direction: Int,
+        description: String?
     ) {
         Coroutines.main {
             val prog = ProgressDialog(activity)
@@ -226,9 +226,7 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
         view_measured_items.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = groupAdapter
-
         }
-
     }
 
     override fun onDestroyView() {
@@ -241,5 +239,4 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
             MeasurementsItem(approvedJobItem, approveViewModel, activity, dialog, viewLifecycleOwner)
         }
     }
-
 }

@@ -8,7 +8,6 @@ import java.io.Serializable
  */
 class WorkflowJobSectionDTO(
 
-
     @SerializedName("JobId")
     var jobId: String? = null,
 
@@ -30,7 +29,4 @@ class WorkflowJobSectionDTO(
     @SerializedName("EndKm")
     val endKm: Double = 0.0
 
-
-) : Serializable {
-
-}
+) : Serializable

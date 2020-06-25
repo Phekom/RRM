@@ -32,7 +32,6 @@ abstract class LocationFragment(layoutContentId: Int) : BaseFragment(0), KodeinA
     private val locationFactory by instance<LocationViewModelFactory>()
     private var gpsEnabled = false
 
-
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         TODO("Not yet implemented")
     }
@@ -132,6 +131,4 @@ abstract class LocationFragment(layoutContentId: Int) : BaseFragment(0), KodeinA
         const val GPS_REQUEST = 100
         const val LOCATION_REQUEST = 101
     }
-
-
 }

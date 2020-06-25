@@ -15,7 +15,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.WorkFlowDTO
 interface WorkFlowDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertWorkFlow(workFlow : WorkFlowDTO)
+    suspend fun insertWorkFlow(workFlow: WorkFlowDTO)
 
     @Query("SELECT * FROM WORKFLOW_TABLE WHERE workflowId = :workflowId")
     fun checkWorkFlowExistsWorkflowID(workflowId: Long): Boolean
@@ -24,10 +24,8 @@ interface WorkFlowDao {
 //    fun insertWorkFlow(dateCreated: String,errorRouteId: Long, revNo: Long, startRouteId: Long, userId: Long, wfHeaderId: Long, workFlowRoute: ArrayList<WorkFlowRouteDTO>?, workflowId: Long)
 
     @Query("SELECT * FROM WORKFLOW_TABLE ")
-    fun getWorkflows() : LiveData<List<WorkFlowDTO>>
+    fun getWorkflows(): LiveData<List<WorkFlowDTO>>
 
     @Query("DELETE FROM WORKFLOW_TABLE")
     fun deleteAll()
-
 }
-

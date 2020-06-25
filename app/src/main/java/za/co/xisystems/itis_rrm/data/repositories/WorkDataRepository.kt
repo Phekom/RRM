@@ -1,6 +1,6 @@
 package za.co.xisystems.itis_rrm.data.repositories
 
-//import sun.security.krb5.Confounder.bytes
+// import sun.security.krb5.Confounder.bytes
 
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LiveData
@@ -20,8 +20,10 @@ import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
 import za.co.xisystems.itis_rrm.utils.*
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
+import za.co.xisystems.itis_rrm.utils.results.XIError
+import za.co.xisystems.itis_rrm.utils.results.XIResult
+import za.co.xisystems.itis_rrm.utils.results.XISuccess
 import java.util.*
-
 
 /**
  * Created by Francis Mahlava on 2019/11/28.
@@ -35,22 +37,21 @@ class WorkDataRepository(
         val TAG: String = WorkDataRepository::class.java.simpleName
     }
 
-
     val workflowJobs = MutableLiveData<WorkflowJobDTO>()
     val works = MutableLiveData<String>()
     val photoUpload = MutableLiveData<String?>()
-
 
     init {
 
         workflowJobs.observeForever {
             saveWorkflowJob(it)
-
         }
 
 
     }
 
+    val workStatus: MutableLiveData<XIResult<String>> = MutableLiveData()
+    val jobStatus: MutableLiveData<XIResult<WorkflowDirection>> = MutableLiveData()
 
     suspend fun getUser(): LiveData<UserDTO> {
         return withContext(Dispatchers.IO) {
@@ -100,7 +101,6 @@ class WorkDataRepository(
         }
     }
 
-
     suspend fun submitWorks(
         estimateWorksItem: JobEstimateWorksDTO,
         activity: FragmentActivity,
@@ -117,18 +117,20 @@ class WorkDataRepository(
 
         try {
             val uploadWorksItemResponse = apiRequest { api.uploadWorksItem(worksData) }
-            postValue(
-                uploadWorksItemResponse.errorMessage,
-                estimateWorksItem,
-                activity,
-                estimateJob.UserId
-            )
 
             val messages = uploadWorksItemResponse.errorMessage ?: ""
 
-            if (messages.isNotBlank()) {
+            if (messages.isBlank()) {
+                postValue(
+                    estimateWorksItem,
+                    activity,
+                    estimateJob.UserId
+                )
+            } else {
                 val uploadException = ApiException(messages)
-                throw uploadException
+                val uploadFail =
+                    XIError(uploadException, "Failed to upload work for Job: ${estimateJob.JiNo}")
+                workStatus.postValue(uploadFail)
             }
 
             return withContext(Dispatchers.IO) {
@@ -139,21 +141,14 @@ class WorkDataRepository(
         }
     }
 
-
     private fun postValue(
-        response: String?,
         jobEstimateWorks: JobEstimateWorksDTO,
         activity: FragmentActivity,
         useR: Int
     ) {
-        if (response != null) {
-            val apiException = ApiException(response)
-            Timber.e(apiException)
-            throw apiException
-        } else {
-            uploadWorksImages(jobEstimateWorks, activity)
-            moveJobToNextWorkflowStep(jobEstimateWorks, useR)
-        }
+        uploadWorksImages(jobEstimateWorks, activity)
+        moveJobToNextWorkflowStep(jobEstimateWorks, useR)
+
     }
 
     private fun uploadWorksImages(
@@ -195,7 +190,6 @@ class WorkDataRepository(
             Timber.e(emptyPhotosException)
             throw emptyPhotosException
         }
-
     }
 
     private fun uploadRrmImage(
@@ -234,12 +228,13 @@ class WorkDataRepository(
             if (totalImages <= imageCounter) {
                 Timber.d("Total Images: $totalImages")
             }
-
         }
     }
 
     private fun getData(
-        filename: String, photoQuality: PhotoQuality, activity: FragmentActivity
+        filename: String,
+        photoQuality: PhotoQuality,
+        activity: FragmentActivity
     ): ByteArray {
         val uri = PhotoUtil.getPhotoPathFromExternalDirectory(filename)
         val bitmap =
@@ -254,57 +249,54 @@ class WorkDataRepository(
         jobEstimateWorks: JobEstimateWorksDTO,
         userId: Int
     ) {
-        if (jobEstimateWorks.trackRouteId.isEmpty()) {
-            // Looper.prepare() // to be able to make toast
-
-            // Toast.makeText(activity, "Error: trackRouteId is null", Toast.LENGTH_LONG).show()
-            val wfEx = ApiException("Error: trackRouteId is null")
-            throw wfEx
-        } else {
-//            jobEstimateWorks.setTrackRouteId(jobEstimateWorks.trackRouteId)
-            val direction: Int = WorkflowDirection.NEXT.value
-            val trackRouteId: String = jobEstimateWorks.trackRouteId
-            val description = "work step done"
+        Coroutines.api {
             try {
-            Coroutines.io {
-                val workflowMoveResponse = apiRequest {
-                    api.getWorkflowMove(
-                        userId.toString(),
-                        trackRouteId,
-                        description,
-                        direction
-                    )
-                }
-                if (workflowMoveResponse.errorMessage != null) {
-                    throw ApiException(workflowMoveResponse.errorMessage)
-                }
-                if (workflowMoveResponse.workflowJob != null) {
-                    workflowJobs.postValue(workflowMoveResponse.workflowJob)
+                if (jobEstimateWorks.trackRouteId.isEmpty()) {
+                    val wfEx = ApiException("Error: trackRouteId is null")
+                    throw wfEx
                 } else {
-                    throw ApiException("Workflow Job is null.")
+
+                    val direction: Int = WorkflowDirection.NEXT.value
+                    val trackRouteId: String = jobEstimateWorks.trackRouteId
+                    val description = "work step done"
+
+                    val workflowMoveResponse = apiRequest {
+                        api.getWorkflowMove(
+                            userId.toString(),
+                            trackRouteId,
+                            description,
+                            direction
+                        )
+                    }
+                    if (workflowMoveResponse.errorMessage != null) {
+                        throw ApiException(workflowMoveResponse.errorMessage)
+                    }
+                    if (workflowMoveResponse.workflowJob != null) {
+                        workflowJobs.postValue(workflowMoveResponse.workflowJob)
+
+                    } else {
+                        throw ApiException("Workflow Job is null.")
+                    }
                 }
 
-//                workflows.postValue(workflowMoveResponse.toDoListGroups)
-            }
             } catch (e: Exception) {
                 Timber.e(e, "Failed to update workflow")
-                throw e
+                val workflowFail = XIError(e, "Failed to update workflow")
+                workStatus.postValue(workflowFail)
             }
-
         }
     }
+
 
     private fun JobEstimateWorksDTO.setTrackRouteId(toBigEndian: String?) {
         this.trackRouteId = toBigEndian!!
     }
-
 
     suspend fun getWorkFlowCodes(eId: Int): LiveData<List<WF_WorkStepDTO>> {
         return withContext(Dispatchers.IO) {
             Db.getWorkStepDao().getWorkflowSteps(eId)
         }
     }
-
 
     suspend fun createEstimateWorksPhoto(
         estimateWorksPhotos: ArrayList<JobEstimateWorksPhotoDTO>,
@@ -320,16 +312,13 @@ class WorkDataRepository(
                     } else {
                         Timber.d("${estimateWorksPhoto.filename} was already in the database")
                     }
-
                 }
                 Db.getEstimateWorkDao().updateJobEstimateWorkForEstimateID(
                     estimateWorksItem.jobEstimateWorksPhotos!!,
                     estimateWorksItem.estimateId
                 )
             }
-
         }
-
     }
 
     suspend fun getJobItemsEstimatesDoneForJobId(
@@ -343,13 +332,11 @@ class WorkDataRepository(
         }
     }
 
-
     suspend fun getJobEstiItemForEstimateId(estimateId: String?): LiveData<List<JobEstimateWorksDTO>> {
         return withContext(Dispatchers.IO) {
             Db.getEstimateWorkDao().getJobMeasureItemsForJobId(estimateId)
         }
     }
-
 
     suspend fun getJobItemEstimateForEstimateId(estimateId: String): LiveData<JobItemEstimateDTO> {
         return withContext(Dispatchers.IO) {
@@ -357,17 +344,24 @@ class WorkDataRepository(
         }
     }
 
-    private fun saveWorkflowJob(workflowj: WorkflowJobDTO?) {
-        if (workflowj != null) {
+    private fun saveWorkflowJob(workflowj: WorkflowJobDTO) {
+        try {
             val job = setWorkflowJobBigEndianGuids(workflowj)
-            insertOrUpdateWorkflowJobInSQLite(job)
-        } else {
-            val noDataException = NoDataException("Workflow Job is null")
-            Timber.e(noDataException)
-            throw noDataException
+            if (job != null) {
+                insertOrUpdateWorkflowJobInSQLite(job)
+                job.jobId?.let {
+                    val workComplete = XISuccess(data = it)
+                    workStatus.postValue(workComplete)
+                }
+            } else {
+                throw NullPointerException("Workflow job is undefined!")
+            }
+        } catch (ex: Exception) {
+            val saveFail = XIError(ex, "Failed to save updated job.")
+            workStatus.postValue(saveFail)
         }
-    }
 
+    }
 
     fun insertOrUpdateWorkflowJobInSQLite(job: WorkflowJobDTO?) {
         job?.let {
@@ -378,7 +372,6 @@ class WorkDataRepository(
     private fun updateWorkflowJobValuesAndInsertWhenNeeded(job: WorkflowJobDTO) {
         Coroutines.io {
             Db.getJobDao().updateJob(job.trackRouteId, job.actId, job.jiNo, job.jobId)
-
 
             job.workflowItemEstimates?.forEach { jobItemEstimate ->
                 Db.getJobItemEstimateDao().updateExistingJobItemEstimateWorkflow(
@@ -392,8 +385,7 @@ class WorkDataRepository(
                             .checkIfJobEstimateWorksExist(jobEstimateWorks.worksId)
                     )
                         Db.getEstimateWorkDao().insertJobEstimateWorks(
-                            // TODO: b0rk3d - Fix this broken casting.
-                            jobEstimateWorks as JobEstimateWorksDTO
+                            TODO("This should never happen!")
                         )
                     else
                         Db.getEstimateWorkDao().updateJobEstimateWorksWorkflow(
@@ -405,9 +397,7 @@ class WorkDataRepository(
                             jobEstimateWorks.trackRouteId
                         )
                 }
-
             }
-
 
             job.workflowItemMeasures?.forEach { jobItemMeasure ->
                 Db.getJobItemMeasureDao().updateWorkflowJobItemMeasure(
@@ -417,7 +407,6 @@ class WorkDataRepository(
                     jobItemMeasure.measureGroupId
                 )
             }
-
 
             //  Place the Job Section, UPDATE OR CREATE
             job.workflowJobSections?.forEach { jobSection ->
@@ -437,12 +426,10 @@ class WorkDataRepository(
         }
     }
 
-
     private fun setWorkflowJobBigEndianGuids(job: WorkflowJobDTO): WorkflowJobDTO? {
 
         job.jobId = DataConversion.toBigEndian(job.jobId)
         job.trackRouteId = DataConversion.toBigEndian(job.trackRouteId)
-
 
         job.workflowItemEstimates?.forEach { jie ->
             jie.estimateId = DataConversion.toBigEndian(jie.estimateId)!!
@@ -455,13 +442,11 @@ class WorkDataRepository(
             }
         }
 
-
         job.workflowItemMeasures?.forEach { jim ->
             jim.itemMeasureId = DataConversion.toBigEndian(jim.itemMeasureId)!!
             jim.measureGroupId = DataConversion.toBigEndian(jim.measureGroupId)!!
             jim.trackRouteId = DataConversion.toBigEndian(jim.trackRouteId)!!
         }
-
 
         job.workflowJobSections?.forEach { js ->
             js.jobSectionId = DataConversion.toBigEndian(js.jobSectionId)!!
@@ -472,18 +457,15 @@ class WorkDataRepository(
         return job
     }
 
-
     private operator fun <T> LiveData<T>.not(): Boolean {
         return true
     }
-
 
     suspend fun getSectionForProjectSectionId(sectionId: String?): String {
         return withContext(Dispatchers.IO) {
             Db.getProjectSectionDao().getSectionForProjectSectionId(sectionId!!)
         }
     }
-
 
     suspend fun getUOMForProjectItemId(projectItemId: String): String {
         return withContext(Dispatchers.IO) {
@@ -502,7 +484,6 @@ class WorkDataRepository(
             Db.getJobSectionDao().getProjectSectionId(jobId!!)
         }
     }
-
 
     suspend fun getJobEstimationItemsForJobId(
         jobID: String?,
@@ -524,21 +505,25 @@ class WorkDataRepository(
         trackRouteId: String,
         description: String?,
         direction: Int
-    ): String? {
+    ): String {
         return withContext(Dispatchers.IO) {
             try {
                 val workflowMoveResponse =
                     apiRequest { api.getWorkflowMove(userId, trackRouteId, description, direction) }
-                val messages = workflowMoveResponse.errorMessage
-                if (messages == null)
+                val messages = workflowMoveResponse.errorMessage ?: ""
+                if (messages.isBlank()) {
                     workflowJobs.postValue(workflowMoveResponse.workflowJob)
+                } else {
+                    throw ApiException(messages)
+                }
                 messages
             } catch (e: Exception) {
                 Timber.e(e, "Failed to process workflow move: ${e.message}")
-                e.message
+                val uploadFail = XIError(e, "Failed to process workflow move: ${e.message}")
+                workStatus.postValue(uploadFail)
+                "Failed to process workflow move: ${e.message}"
             }
         }
-
     }
 
     suspend fun processWorkflowMoveV2(
@@ -562,7 +547,6 @@ class WorkDataRepository(
             Timber.e(e, "Failed to process workflow move: ${e.message}")
             throw e
         }
-
     }
 
     suspend fun getWorkItemsForActID(actId: Int): LiveData<List<JobEstimateWorksDTO>> {
@@ -571,47 +555,3 @@ class WorkDataRepository(
         }
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

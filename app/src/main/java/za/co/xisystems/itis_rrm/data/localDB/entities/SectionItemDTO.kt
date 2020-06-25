@@ -12,11 +12,11 @@ import java.io.Serializable
 
 const val SECTION_ITEM_TABLE = "SECTION_ITEM_TABLE"
 
-@Entity(tableName = SECTION_ITEM_TABLE
-    ,indices = [Index(value = ["itemCode"] ,unique = true)]
+@Entity(
+    tableName = SECTION_ITEM_TABLE, indices = [Index(value = ["itemCode"], unique = true)]
 )
 
-data class SectionItemDTO (
+data class SectionItemDTO(
     @PrimaryKey(autoGenerate = false)
     val id: Int,
 
@@ -27,7 +27,7 @@ data class SectionItemDTO (
 
     @SerializedName("ActivitySections")
     var description: String?
-): Serializable {
+) : Serializable {
 //     fun compareTo(other: SectionItemDTO): Int {
 //        return (description ?: "").compareTo(other.description ?: "")
 //    }
@@ -46,5 +46,3 @@ data class SectionItemDTO (
 //        return description
 //    }
 }
-
-

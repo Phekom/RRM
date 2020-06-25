@@ -50,6 +50,4 @@ object SpinnerHelper {
     interface SelectionListener<T> {
         fun onItemSelected(position: Int, item: T)
     }
-
-
 }

@@ -48,6 +48,10 @@ object ErrorHandler {
         }
     }
 
+    fun showMessage(view: View, message: String) {
+        showLongToast(view.context, message)
+    }
+
     private fun showSnackBar(view: View, message: String, refresh: () -> Unit = {}) {
         IndefiniteSnackbar.show(view, message, refresh)
     }

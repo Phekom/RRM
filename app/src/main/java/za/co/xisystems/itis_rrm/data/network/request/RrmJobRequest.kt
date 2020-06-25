@@ -13,5 +13,4 @@ class RrmJobRequest : Serializable {
     var job: JobDTOTemp? = null
     @JsonProperty("UserId")
     var userId = 0
-
 }

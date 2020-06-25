@@ -180,7 +180,9 @@ object PhotoUtil {
                     e.printStackTrace()
                 } finally {
                     try {
-                        assert(fileDescriptor != null)
+                        if (BuildConfig.DEBUG && fileDescriptor == null) {
+                            error("Assertion failed")
+                        }
                         bm = BitmapFactory.decodeFileDescriptor(
                             fileDescriptor!!.fileDescriptor,
                             null,
@@ -263,7 +265,7 @@ object PhotoUtil {
         }
         return outputSet1
     }
-    //=============================================================================================================================================================
+    // =============================================================================================================================================================
     /**
      * saveImageToInternalStorage
      * Todo Make Image Quality Better
@@ -276,17 +278,17 @@ object PhotoUtil {
     ): Map<String, String?>? {
         var scaledUri = imageUri
         return try {
-            var scaledBitmap: Bitmap? = null
+            lateinit var scaledBitmap: Bitmap
             val options = BitmapFactory.Options()
-            var result: String?
-            //if uri is content
+            lateinit var result: String
+            // if uri is content
             if (scaledUri.scheme != null && scaledUri.scheme == "content") {
                 val cursor =
                     context.contentResolver.query(scaledUri, null, null, null, null)
                 try {
-                    if (cursor != null && cursor.moveToFirst()) { //local filesystem
+                    if (cursor != null && cursor.moveToFirst()) { // local filesystem
                         var index = cursor.getColumnIndex("_data")
-                        if (index == -1) //google drive
+                        if (index == -1) // google drive
                             index = cursor.getColumnIndex("_display_name")
                         result = cursor.getString(index)
                         scaledUri = if (result != null) Uri.parse(result) else return null
@@ -297,10 +299,10 @@ object PhotoUtil {
                     cursor?.close()
                 }
             }
-            result = scaledUri.path
-            //get filename + ext of path
-            val cut = result?.lastIndexOf('/')
-            if (cut != null && cut != -1) result = result?.substring(cut + 1)
+            result = scaledUri.path ?: ""
+            // get filename + ext of path
+            val cut = result.lastIndexOf('/')
+            if (cut != null && cut != -1) result = result.substring(cut + 1)
             val imageFileName = result
             val direct =
                 File(Environment.getExternalStorageDirectory().toString() + File.separator + FOLDER)
@@ -342,7 +344,7 @@ object PhotoUtil {
             val middleY = actualHeight / 2.0f
             val scaleMatrix = Matrix()
             scaleMatrix.setScale(ratioX, ratioY, middleX, middleY)
-            val canvas = Canvas(scaledBitmap!!)
+            val canvas = Canvas(scaledBitmap)
             canvas.setMatrix(scaleMatrix)
             canvas.drawBitmap(
                 bmp,
@@ -360,7 +362,7 @@ object PhotoUtil {
             } catch (e: FileNotFoundException) {
                 e.printStackTrace()
             }
-            val map: MutableMap<String, String?> =
+            val map: MutableMap<String, String> =
                 HashMap()
             map["filename"] = imageFileName
             map["path"] = path
@@ -578,6 +580,4 @@ object PhotoUtil {
             null
         }
     }
-
-
 }

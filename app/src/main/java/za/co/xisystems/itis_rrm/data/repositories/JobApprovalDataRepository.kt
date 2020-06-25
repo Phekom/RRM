@@ -1,6 +1,6 @@
 package za.co.xisystems.itis_rrm.data.repositories
 
-//import sun.security.krb5.Confounder.bytes
+// import sun.security.krb5.Confounder.bytes
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -14,7 +14,6 @@ import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DataConversion
 
-
 /**
  * Created by Francis Mahlava on 2019/11/28.
  */
@@ -27,7 +26,6 @@ class JobApprovalDataRepository(
         val TAG: String = JobApprovalDataRepository::class.java.simpleName
     }
 
-
     private val workflowJ = MutableLiveData<WorkflowJobDTO>()
     private val qtyUpDate = MutableLiveData<String>()
 
@@ -35,27 +33,20 @@ class JobApprovalDataRepository(
 
         workflowJ.observeForever {
             saveWorkflowJob(it)
-
         }
         qtyUpDate.observeForever {
-            saveqtyUpDate(it)
-
+            saveQtyUpDate(it)
         }
-
     }
 
-    private fun saveqtyUpDate( newQty : String?) {
-
+    private fun saveQtyUpDate(newQty: String?) {
     }
-
-
 
     suspend fun getUser(): LiveData<UserDTO> {
         return withContext(Dispatchers.IO) {
             Db.getUserDao().getUser()
         }
     }
-
 
     suspend fun getSectionForProjectSectionId(sectionId: String?): String {
         return withContext(Dispatchers.IO) {
@@ -68,7 +59,6 @@ class JobApprovalDataRepository(
             Db.getProjectItemDao().getTenderRateForProjectItemId(projectItemId)
         }
     }
-
 
     suspend fun getUOMForProjectItemId(projectItemId: String): String {
         return withContext(Dispatchers.IO) {
@@ -88,7 +78,6 @@ class JobApprovalDataRepository(
         }
     }
 
-
     suspend fun getProjectDescription(projectId: String): String {
         return withContext(Dispatchers.IO) {
             Db.getProjectDao().getProjectDescription(projectId)
@@ -103,11 +92,20 @@ class JobApprovalDataRepository(
 
     suspend fun upDateEstimate(newQuantity: String, newTotal: String, estimateId: String): String {
         val new_estimateId = DataConversion.toLittleEndian(estimateId)
-        val new_Quantity = newQuantity
-        val new_Total = newTotal
 
-        val quantityUpdateResponse = apiRequest { api.updateEstimateQty(new_estimateId,new_Quantity.toDouble(), new_Total.toDouble() ) }
-        qtyUpDate.postValue(quantityUpdateResponse.errorMessage , estimateId,new_Quantity.toDouble(), new_Total.toDouble())
+        val quantityUpdateResponse = apiRequest {
+            api.updateEstimateQty(
+                new_estimateId,
+                newQuantity.toDouble(),
+                newTotal.toDouble()
+            )
+        }
+        qtyUpDate.postValue(
+            quantityUpdateResponse.errorMessage,
+            estimateId,
+            newQuantity.toDouble(),
+            newTotal.toDouble()
+        )
         val messages = quantityUpdateResponse.errorMessage ?: ""
         return withContext(Dispatchers.IO) {
             messages
@@ -116,12 +114,12 @@ class JobApprovalDataRepository(
 
     private fun <T> MutableLiveData<T>.postValue(
         errorMessage: String?,
-        newEstimateid: String?,
+        newEstimateId: String?,
         new_Quantity: Double,
         new_Total: Double
     ) {
         if (errorMessage == null) {
-                    Db.getJobItemEstimateDao().upDateLineRate(newEstimateid!!, new_Quantity, new_Total)
+            Db.getJobItemEstimateDao().upDateLineRate(newEstimateId!!, new_Quantity, new_Total)
         } else {
             Timber.e("newQty is null")
         }
@@ -135,22 +133,24 @@ class JobApprovalDataRepository(
     ): String {
         val workflowMoveResponse =
             apiRequest { api.getWorkflowMove(userId, trackRouteId, description, direction) }
-        workflowJ.postValue(workflowMoveResponse.workflowJob)
 
         val messages = workflowMoveResponse.errorMessage ?: ""
+
+        if (messages.isBlank()) {
+            workflowJ.postValue(workflowMoveResponse.workflowJob)
+        }
+
 
         return withContext(Dispatchers.IO) {
             messages
         }
     }
 
-
     suspend fun getQuantityForEstimationItemId(estimateId: String): LiveData<Double> {
         return withContext(Dispatchers.IO) {
             Db.getJobItemEstimateDao().getQuantityForEstimationItemId(estimateId)
         }
     }
-
 
     suspend fun getLineRateForEstimationItemId(estimateId: String): LiveData<Double> {
         return withContext(Dispatchers.IO) {
@@ -170,13 +170,11 @@ class JobApprovalDataRepository(
         }
     }
 
-
     suspend fun getJobEstimationItemsPhotoStartPath(estimateId: String): String {
         return withContext(Dispatchers.IO) {
             Db.getJobItemEstimatePhotoDao().getJobEstimationItemsPhotoStartPath(estimateId)
         }
     }
-
 
     suspend fun getJobEstimationItemsPhotoEndPath(estimateId: String): String {
         return withContext(Dispatchers.IO) {
@@ -184,7 +182,7 @@ class JobApprovalDataRepository(
         }
     }
 
-    private fun saveWorkflowJob( workflowJob: WorkflowJobDTO? ) {
+    private fun saveWorkflowJob(workflowJob: WorkflowJobDTO?) {
         try {
             val job = setWorkflowJobBigEndianGuids(workflowJob!!)
             insertOrUpdateWorkflowJobInSQLite(job!!)
@@ -192,7 +190,6 @@ class JobApprovalDataRepository(
             Timber.e(ex, "Error: WorkFlow Job is null")
         }
     }
-
 
     private fun insertOrUpdateWorkflowJobInSQLite(job: WorkflowJobDTO?) {
         job?.let {
@@ -202,6 +199,7 @@ class JobApprovalDataRepository(
 
     private fun updateWorkflowJobValuesAndInsertWhenNeeded(job: WorkflowJobDTO) {
         Coroutines.io {
+
             Db.getJobDao().updateJob(job.trackRouteId, job.actId, job.jiNo, job.jobId)
 
             job.workflowItemEstimates?.forEach { jobItemEstimate ->
@@ -211,15 +209,25 @@ class JobApprovalDataRepository(
                     jobItemEstimate.estimateId
                 )
 
-
                 jobItemEstimate.workflowEstimateWorks.forEach { jobEstimateWorks ->
                     if (!Db.getEstimateWorkDao()
                             .checkIfJobEstimateWorksExist(jobEstimateWorks.worksId)
-                    )
+                    ) {
+                        // Create Bare Bones
+                        val estimateWorks = JobEstimateWorksDTO(
+                            worksId = jobEstimateWorks.worksId,
+                            estimateId = jobEstimateWorks.estimateId,
+                            recordVersion = jobEstimateWorks.recordVersion,
+                            recordSynchStateId = jobEstimateWorks.recordSynchStateId,
+                            actId = jobEstimateWorks.actId,
+                            trackRouteId = jobEstimateWorks.trackRouteId,
+                            jobEstimateWorksPhotos = ArrayList()
+                        )
+
                         Db.getEstimateWorkDao().insertJobEstimateWorks(
-                            // TODO: b0rk3d! This broken cast needs fixing.
-                            jobEstimateWorks as JobEstimateWorksDTO
-                        ) else
+                            estimateWorks
+                        )
+                    } else {
                         Db.getEstimateWorkDao().updateJobEstimateWorksWorkflow(
                             jobEstimateWorks.worksId,
                             jobEstimateWorks.estimateId,
@@ -228,6 +236,7 @@ class JobApprovalDataRepository(
                             jobEstimateWorks.actId,
                             jobEstimateWorks.trackRouteId
                         )
+                    }
                 }
             }
 
@@ -239,7 +248,6 @@ class JobApprovalDataRepository(
                     jobItemMeasure.measureGroupId
                 )
             }
-
 
             //  Place the Job Section, UPDATE OR CREATE
             job.workflowJobSections?.forEach { jobSection ->
@@ -257,7 +265,6 @@ class JobApprovalDataRepository(
             }
         }
     }
-
 
     private fun setWorkflowJobBigEndianGuids(job: WorkflowJobDTO): WorkflowJobDTO? {
         job.jobId = DataConversion.toBigEndian(job.jobId)
@@ -280,68 +287,15 @@ class JobApprovalDataRepository(
             jim.trackRouteId = DataConversion.toBigEndian(jim.trackRouteId)!!
         }
 
-
         job.workflowJobSections?.forEach { js ->
             js.jobSectionId = DataConversion.toBigEndian(js.jobSectionId)!!
             js.projectSectionId = DataConversion.toBigEndian(js.projectSectionId)!!
             js.jobId = DataConversion.toBigEndian(js.jobId)
-
         }
         return job
     }
 
-
     private operator fun <T> LiveData<T>.not(): Boolean {
         return true
     }
-
-
-
-
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

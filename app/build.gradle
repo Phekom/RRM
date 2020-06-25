@@ -14,13 +14,13 @@ versioning {
     major 1
     minor 5
     // Optional, force custom patch (number)
-    patch 52
+    // patch 54
     // Optional (any string)
-    preRelease ""
+    // preRelease ""
     // Optional, custom task name to trigger the increase of the version
-    incrementOn "app:installDevDebug"
+    incrementOn "RRM_MvvM.app:assembleQaRelease"
     // Optional, custom task name for which you want to save the versioning file
-    saveOn "app:installDevDebug"
+    saveOn "RRM_MvvM.app:assembleQaRelease"
 }
 
 
@@ -70,15 +70,18 @@ android {
     // def localPropsFile = InputFile("$rootDir/local.properties")
 
 
+
     def versionBuild
     def versionBuildDate
     def appId = "za.co.xisystems.itismaintenance"
 
     versionBuild = versioning.patch
 
-    versionBuild = (versionBuild == null) ? 0 : versionBuild + 1
+    versionBuild = (versionBuild == null) ? 55 : versionBuild + 55
 
     versioning.patch = versionBuild
+
+
 
     // local properties
     def propertyFile = file(project.rootProject.file("local.properties").toString())
@@ -88,6 +91,15 @@ android {
     localProps.load(inputStream)
     inputStream.close()
     System.out.println(localProps)
+
+    signingConfigs {
+        release {
+            storeFile file('C:\\Users\\XiCenMcDonaldS\\AndroidStudioProjects\\RRM_MvvM\\release.RRMkey')
+            keyAlias 'rrmkey'
+            storePassword 'thecowmakesmoo'
+            keyPassword 'thecowmakesmoo'
+        }
+    }
 
     def qa_env = localProps['QA_HOST'].toString()
     def dev_env = localProps['DEV_HOST'].toString()
@@ -137,18 +149,21 @@ android {
     }
 
     buildTypes {
+
         release {
-            minifyEnabled true
+            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release
+            debuggable false
         }
+
         debug {
             // Disables PNG crunching for the release build type.
             crunchPngs false
             // testCoverageEnabled false
             minifyEnabled false
             // useProguard false
-
+            debuggable true
             ext.enableCrashlytics = false
             ext.alwaysUpdateBuildId = false
         }
@@ -286,8 +301,10 @@ dependencies {
     implementation 'com.google.android.gms:play-services-maps:17.0.0'
     implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0'
-    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.3'
-    debugImplementation 'com.squareup.leakcanary:leakcanary-object-watcher-android-androidx:2.3'
+
+    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.4'
+    debugImplementation 'com.squareup.leakcanary:leakcanary-object-watcher-android-androidx:2.4'
+    // debugImplementation 'com.squareup.leakcanary:plumber-android:2.4'
 
 
     // Kotlin
@@ -384,7 +401,8 @@ dependencies {
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
     implementation 'com.squareup.retrofit2:adapter-rxjava2:2.9.0'
-    implementation 'com.jakewharton.retrofit:retrofit2-kotlin-coroutines-adapter:0.9.2'
+    // Obsolete since retrofit 2.6.0
+    // implementation 'com.jakewharton.retrofit:retrofit2-kotlin-coroutines-adapter:0.9.2'
     implementation 'com.squareup.retrofit2:converter-jackson:2.9.0'
     implementation 'com.squareup.okhttp3:logging-interceptor:4.7.2'
 
@@ -463,12 +481,12 @@ dependencies {
     implementation 'com.github.AgnaldoNP:PreviewImageCollection:1.2'
 
     // GeoLocator
-    implementation 'com.sprotte:Geolocator:1.2.2'
+    // implementation 'com.sprotte:Geolocator:1.2.2'
 
     // AndroidVeil
     implementation "com.github.skydoves:androidveil:1.0.9"
 
     // DMG Location Utils
-    implementation 'com.github.DMGDesignUK:DmgLocationUtils:v1.0.1'
+    // implementation 'com.github.DMGDesignUK:DmgLocationUtils:v1.0.1'
 
 }
