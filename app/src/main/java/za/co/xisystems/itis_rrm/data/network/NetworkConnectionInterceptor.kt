@@ -6,8 +6,8 @@ import android.net.NetworkCapabilities
 import android.os.Build
 import okhttp3.Interceptor
 import okhttp3.Response
-import za.co.xisystems.itis_rrm.utils.NoConnectivityException
-import za.co.xisystems.itis_rrm.utils.NoInternetException
+import za.co.xisystems.itis_rrm.custom.errors.NoConnectivityException
+import za.co.xisystems.itis_rrm.custom.errors.NoInternetException
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.Socket

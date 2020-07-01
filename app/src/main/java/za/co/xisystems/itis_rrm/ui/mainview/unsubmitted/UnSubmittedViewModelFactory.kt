@@ -1,4 +1,4 @@
-package za.co.xisystems.itis_rrm.ui.models
+package za.co.xisystems.itis_rrm.ui.mainview.unsubmitted
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider

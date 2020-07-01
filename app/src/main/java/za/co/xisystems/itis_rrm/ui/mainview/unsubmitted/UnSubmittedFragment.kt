@@ -10,7 +10,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
-import kotlinx.android.synthetic.main.fragment_approvemeasure.noData
 import kotlinx.android.synthetic.main.fragment_unsubmittedjobs.*
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
@@ -24,8 +23,6 @@ import za.co.xisystems.itis_rrm.custom.errors.NoInternetException
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.unsubmited_item.UnSubmittedJobItem
-import za.co.xisystems.itis_rrm.ui.models.UnSubmittedViewModel
-import za.co.xisystems.itis_rrm.ui.models.UnSubmittedViewModelFactory
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
 

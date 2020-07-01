@@ -5,9 +5,9 @@ import android.view.View
 import android.widget.Toast
 import retrofit2.HttpException
 import timber.log.Timber
+import za.co.xisystems.itis_rrm.custom.errors.NoDataException
+import za.co.xisystems.itis_rrm.custom.errors.NoResponseException
 import za.co.xisystems.itis_rrm.ui.custom.IndefiniteSnackbar
-import za.co.xisystems.itis_rrm.utils.NoDataException
-import za.co.xisystems.itis_rrm.utils.NoResponseException
 import za.co.xisystems.itis_rrm.utils.results.XIError
 import java.io.IOException
 

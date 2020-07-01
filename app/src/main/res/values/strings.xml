@@ -540,7 +540,6 @@
     <string name="warning_estimate_enter_prov_sum">Please enter the Prov Sum</string>
     <string name="capture_workflow_comments">Capture workflow comments</string>
     <string name="title_activity_map">Map</string>
-    <string name="retry">Retry?</string>
 
     <!-- Location Rationale -->
     <string name="alert_location_title">Location Services</string>

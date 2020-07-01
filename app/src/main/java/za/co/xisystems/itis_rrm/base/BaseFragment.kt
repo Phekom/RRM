@@ -1,4 +1,4 @@
-package za.co.xisystems.itis_rrm.ui.mainview._fragments
+package za.co.xisystems.itis_rrm.base
 
 import android.app.Activity
 import android.app.ProgressDialog

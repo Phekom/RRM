@@ -3,7 +3,7 @@ package za.co.xisystems.itis_rrm.data.network
 import org.json.JSONException
 import org.json.JSONObject
 import retrofit2.Response
-import za.co.xisystems.itis_rrm.utils.ApiException
+import za.co.xisystems.itis_rrm.custom.errors.ApiException
 /**
  * Created by Francis Mahlava on 2019/10/18.
  */
