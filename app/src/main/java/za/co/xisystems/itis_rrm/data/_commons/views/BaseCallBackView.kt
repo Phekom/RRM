@@ -1,9 +1,9 @@
-//package za.co.xisystems.itis_rrm.data._commons.views
+// package za.co.xisystems.itis_rrm.data._commons.views
 //
-//import za.co.xisystems.itis_rrm.R
-//import za.co.xisystems.itis_rrm.data._commons.ICallBack
+// import za.co.xisystems.itis_rrm.R
+// import za.co.xisystems.itis_rrm.data._commons.ICallBack
 //
-//abstract class BaseCallBackView<T> : ICallBack<T> {
+// abstract class BaseCallBackView<T> : ICallBack<T> {
 //    var view: IProgressView?
 //
 //    constructor(progressView: IProgressView?) {
@@ -25,4 +25,4 @@
 //        }
 //    }
 //
-//}
+// }

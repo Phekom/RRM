@@ -94,7 +94,7 @@ class JobCreationDataRepository(
         }
     }
 
-    suspend fun saveNewJob(newJob: JobDTO?) {
+    fun saveNewJob(newJob: JobDTO?) {
         Coroutines.io {
             if (newJob != null && !appDb.getJobDao().checkIfJobExist(newJob.JobId)) {
                 appDb.getJobDao().insertOrUpdateJobs(newJob)
@@ -231,7 +231,6 @@ class JobCreationDataRepository(
         val buffer = 0
         val routeSectionPointResponse =
             apiRequest { api.getRouteSectionPoint(distance, buffer, latitude, longitude, useR) }
-
 
         Timber.d("$routeSectionPointResponse")
 

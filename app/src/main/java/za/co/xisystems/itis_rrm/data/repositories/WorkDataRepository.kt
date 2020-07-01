@@ -50,8 +50,6 @@ class WorkDataRepository(
         workflowJobs.observeForever {
             saveWorkflowJob(it)
         }
-
-
     }
 
     val workStatus: MutableLiveData<XIResult<String>> = MutableLiveData()
@@ -152,7 +150,6 @@ class WorkDataRepository(
     ) {
         uploadWorksImages(jobEstimateWorks, activity)
         moveJobToNextWorkflowStep(jobEstimateWorks, useR)
-
     }
 
     private fun uploadWorksImages(
@@ -277,12 +274,10 @@ class WorkDataRepository(
                     }
                     if (workflowMoveResponse.workflowJob != null) {
                         workflowJobs.postValue(workflowMoveResponse.workflowJob)
-
                     } else {
                         throw ApiException("Workflow Job is null.")
                     }
                 }
-
             } catch (e: Exception) {
                 Timber.e(e, "Failed to update workflow")
                 val workflowFail = XIError(e, "Failed to update workflow")
@@ -290,7 +285,6 @@ class WorkDataRepository(
             }
         }
     }
-
 
     private fun JobEstimateWorksDTO.setTrackRouteId(toBigEndian: String?) {
         this.trackRouteId = toBigEndian!!
@@ -364,7 +358,6 @@ class WorkDataRepository(
             val saveFail = XIError(ex, "Failed to save updated job.")
             workStatus.postValue(saveFail)
         }
-
     }
 
     fun insertOrUpdateWorkflowJobInSQLite(job: WorkflowJobDTO?) {

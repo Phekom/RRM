@@ -82,7 +82,6 @@ class MeasureViewModel(
                 }
             }
 
-
             val uiState = GalleryUIState(
                 description = measureDescription,
                 qty = measureItem.qty,
@@ -94,7 +93,6 @@ class MeasureViewModel(
 
             galleryUIState.postValue(XISuccess(uiState))
             // setJobItemMeasure(measureItem)
-
         } catch (e: Exception) {
             Timber.e(e, "Failed to retrieve itemMeasure for Gallery")
             val galleryFail = XIError(e, "Failed to retrieve itemMeasure for Gallery")

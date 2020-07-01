@@ -63,13 +63,13 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
         setHasOptionsMenu(true)
         (activity as MainActivity).supportActionBar?.title =
             getString(R.string.submit_measure_title)
-        jobItemMeasurePhotoDTO = ArrayList<JobItemMeasurePhotoDTO>()
-        jobItemMeasureArrayList = ArrayList<JobItemMeasureDTO>()
-        jobItemEstimatesForJob = ArrayList<JobItemEstimateDTO>()
-        jobItemMeasureList = ArrayList<JobItemMeasureDTO>()
+        jobItemMeasurePhotoDTO = ArrayList()
+        jobItemMeasureArrayList = ArrayList()
+        jobItemEstimatesForJob = ArrayList()
+        jobItemMeasureList = ArrayList()
 
         jobItemMeasuresForJobItemEstimates =
-            HashMap<JobItemEstimateDTO, List<JobItemMeasureDTO>>()
+            HashMap()
     }
 
     override fun onCreateView(
@@ -369,7 +369,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
         Coroutines.main {
             val measurements = measureViewModel.getJobItemsToMeasureForJobId(jobID)
             measurements.observeOnce(viewLifecycleOwner, Observer { job_s ->
-                initRecyclerView(job_s.toMeasure_Item())
+                initRecyclerView(job_s.toMeasureItem())
             })
         }
     }
@@ -391,8 +391,8 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
         super.onDestroyView()
     }
 
-    private fun List<JobItemEstimateDTO>.toMeasure_Item(): List<ExpandableGroup> {
-        expandableGroups = mutableListOf<ExpandableGroup>()
+    private fun List<JobItemEstimateDTO>.toMeasureItem(): List<ExpandableGroup> {
+        expandableGroups = mutableListOf()
         return this.map { measure_item ->
             val expandableHeaderItem = ExpandableHeaderMeasureItem(
                 activity,
@@ -451,7 +451,6 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                                 })
                             }
                         })
-
                 }
             }
         }

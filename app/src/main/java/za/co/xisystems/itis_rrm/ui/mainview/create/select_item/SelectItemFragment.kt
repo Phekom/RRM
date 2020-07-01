@@ -45,7 +45,7 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
     override val kodein by kodein()
     private lateinit var createViewModel: CreateViewModel
     private val factory: CreateViewModelFactory by instance<CreateViewModelFactory>()
-    private var items: MutableList<ItemDTOTemp> = ArrayList<ItemDTOTemp>()
+    private var items: MutableList<ItemDTOTemp> = ArrayList()
     private var animate = false
 
     private lateinit var newJobItemEstimatesList: ArrayList<JobItemEstimateDTO>
@@ -125,8 +125,8 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
 
         uiScope.run {
 
-            itemSections = ArrayList<ItemSectionDTO>()
-            newJobItemEstimatesList = ArrayList<JobItemEstimateDTO>()
+            itemSections = ArrayList()
+            newJobItemEstimatesList = ArrayList()
             bindUI()
         }
     }
