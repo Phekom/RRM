@@ -16,13 +16,14 @@
             tools:ignore="MissingConstraints">
 
         <TextView
-                android:id="@+id/titleTextView"
-                style="@style/_orangeTextLabel"
-                android:layout_width="match_parent"
-                android:layout_margin="@dimen/small"
-                android:layout_weight="1"
-                android:hint="M020.01(A): TYPE 1 (LAR...)"
-                android:textSize="@dimen/text_medium" />
+            android:id="@+id/titleTextView"
+            style="@style/_orangeTextLabel"
+            android:layout_width="match_parent"
+            android:layout_margin="@dimen/small"
+            android:layout_weight="1"
+            android:hint="M020.01(A): TYPE 1 (LAR...)"
+            android:layout_height="0dp"
+            android:textSize="@dimen/text_medium" />
 
         <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
@@ -30,19 +31,20 @@
                 android:layout_margin="@dimen/xsmall">
 
             <LinearLayout
-                    style="@style/_linear_layout_horiz"
-                    android:layout_margin="@dimen/xsmall"
-                    android:gravity="center_vertical">
+                style="@style/_linear_layout_horiz"
+                android:layout_margin="@dimen/xsmall"
+                android:baselineAligned="false"
+                android:gravity="center_vertical">
 
                 <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_margin="@dimen/xsmall"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/xsmall"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
 
                     <Button
-                            android:layout_width="match_parent"
+                        android:layout_width="match_parent"
                             android:layout_height="@dimen/button_size"
                             android:id="@+id/startPhotoButton"
                             style="@style/_button"
