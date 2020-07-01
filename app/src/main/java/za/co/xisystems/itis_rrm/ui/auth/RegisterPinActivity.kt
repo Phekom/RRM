@@ -45,7 +45,7 @@ class RegisterPinActivity : AppCompatActivity(), AuthListener, KodeinAware, Runn
         super.onCreate(savedInstanceState)
         appContext = this
 
-        if (startPermissionRequest(appContext.applicationContext, permissions)) {
+        if (startPermissionRequest(permissions)) {
             toast("Permissions are already provided ")
         } else {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -104,14 +104,14 @@ class RegisterPinActivity : AppCompatActivity(), AuthListener, KodeinAware, Runn
                     } else {
                         toast("Please enable permissions from your Device Settings")
                     }
-               }
+                }
             }
             if (allAllowed)
                 toast("Permissions Granted")
         }
     }
 
-    private fun startPermissionRequest(context: Context, permissions: Array<String>): Boolean {
+    private fun startPermissionRequest(permissions: Array<String>): Boolean {
         var allAccess = true
         for (i in permissions.indices) {
             if (checkCallingOrSelfPermission(permissions[i]) == PackageManager.PERMISSION_DENIED) {
@@ -140,6 +140,7 @@ class RegisterPinActivity : AppCompatActivity(), AuthListener, KodeinAware, Runn
         loading.hide()
 
         toast("You are Logged in as ${userDTO.userName}")
+        this.run()
     }
 
     override fun onFailure(message: String) {
@@ -155,6 +156,7 @@ class RegisterPinActivity : AppCompatActivity(), AuthListener, KodeinAware, Runn
         Coroutines.main {
             val contracts = viewModel.offlineData.await()
             contracts.observe(this, Observer { contrcts ->
+                toast("Loading contract: ${contrcts.size} / ${contrcts.count()}")
             })
         }
     }

@@ -72,7 +72,7 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
     private var job: JobDTO? = null
 
     @MyState
-    private var items: List<ItemDTOTemp> = ArrayList<ItemDTOTemp>()
+    private var items: List<ItemDTOTemp> = ArrayList()
 
     // TODO: Restore to last state saved when user arrives here by clicking the back button.
 

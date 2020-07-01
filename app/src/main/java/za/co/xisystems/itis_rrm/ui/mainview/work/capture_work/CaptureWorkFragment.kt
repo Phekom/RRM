@@ -248,7 +248,6 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
             is XISuccess -> {
                 ErrorHandler.showMessage(this.requireView(), "Job ${result.data} submitted.")
                 popViewOnJobSubmit(WorkflowDirection.NEXT.value)
-
             }
             is XIError -> {
                 when (result.exception) {
@@ -269,7 +268,6 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                             shouldShowSnackBar = false
                         )
                     }
-
                 }
             }
             is XIStatus -> {
@@ -288,7 +286,6 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
             refreshAction = { retryJobSubmission() }
         )
     }
-
 
     fun handleWorkSubmission(result: XIResult<String>) {
         when (result) {
@@ -317,11 +314,9 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                             shouldShowSnackBar = false
                         )
                     }
-
                 }
             }
         }
-
     }
 
     private fun handleWorkConnectivityError(throwable: XIError) {
@@ -654,14 +649,12 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
         errorState = false
         workViewModel.backupCompletedEstimates.postValue(estimates as List<JobItemEstimateDTO>)
 
-
-
         uiScope.launch(uiScope.coroutineContext) {
 
             for (jobEstimate in estimates) {
                 Timber.d("Id: ${jobEstimate.estimateId}")
                 val convertedId = DataConversion.toBigEndian(jobEstimate.estimateId)
-                Timber.d("Converted Id: ${convertedId}")
+                Timber.d("Converted Id: $convertedId")
                 val jobItemEstimate = workViewModel.getJobItemEstimateForEstimateId(
                     DataConversion.toBigEndian(jobEstimate.estimateId)!!
                 )
@@ -672,12 +665,9 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                             WorkflowDirection.NEXT,
                             it
                         )
-
                     }
-
                 })
             }
-
         }
     }
 

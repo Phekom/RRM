@@ -280,7 +280,6 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
                             contractIndices[contract] = contractList[contract].contractNo
                         }
 
-
                         Timber.d("Thread completed.")
                         setSpinner(
                             requireContext().applicationContext,
@@ -298,8 +297,6 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
                             })
                     }
                     data_loading.hide()
-
-
                 })
             }
         } catch (e: NoInternetException) {
@@ -339,7 +336,6 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
 
                     data_loading.hide()
                 }
-
             })
         }
     }

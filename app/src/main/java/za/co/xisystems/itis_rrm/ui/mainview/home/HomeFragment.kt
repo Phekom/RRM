@@ -139,8 +139,6 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
             promptUserToSync()
         }
 
-
-
         items_swipe_to_refresh.setProgressBackgroundColorSchemeColor(
             ContextCompat.getColor(
                 requireContext().applicationContext,
@@ -153,8 +151,6 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
         items_swipe_to_refresh.setOnRefreshListener {
             bigSync()
         }
-
-
 
         Coroutines.io {
             val lm = requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager
@@ -224,7 +220,6 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
             sharedViewModel.setMessage("Data Loading")
             sharedViewModel.toggleLongRunning(true)
 
-
             homeViewModel.dataBaseStatus.observe(
                 viewLifecycleOwner,
                 Observer { t ->
@@ -284,6 +279,5 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                     })
 
         syncDialog.show()
-
     }
 }

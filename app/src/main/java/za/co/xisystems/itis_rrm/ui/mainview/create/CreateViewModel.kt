@@ -111,7 +111,7 @@ class CreateViewModel(
         projectRate.value = inProjectRate
     }
 
-    suspend fun saveNewJob(newjob: JobDTO) {
+    fun saveNewJob(newjob: JobDTO) {
         jobCreationDataRepository.saveNewJob(newjob)
     }
 

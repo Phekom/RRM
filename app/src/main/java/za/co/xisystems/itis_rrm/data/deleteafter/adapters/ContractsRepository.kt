@@ -13,19 +13,18 @@ import java.util.*
  * Created by Francis Mahlava on 2019/11/19.
  */
 
-//const val MINIMUM_INTERVAL = 5
+// const val MINIMUM_INTERVAL = 5
 
 class ContractsRepository : SafeApiRequest() {
 
 //
 //    private val conTracts = MutableLiveData<List<ContractDTO>>()
-////    private val sectionItems = MutableLiveData<SectionItemDTO>()
+// //    private val sectionItems = MutableLiveData<SectionItemDTO>()
 //    private val sectionItems = MutableLiveData<ArrayList<String>>()
 //
 private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
     private val job = MutableLiveData<JobDTO>()
     //    private val new_job = MutableLiveData<JobDTOTemp>()
-
 
     private val activity: Activity? = null
 
@@ -44,13 +43,12 @@ private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
 
     private val workflows = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
 
-
     init {
 //        conTracts.observeForever {
 //            saveContracts(it)
 //        }
 //        sectionItems.observeForever {
-////            saveSectionItems(it)
+// //            saveSectionItems(it)
 //            insertSectionsItems(it)
 //        }
 
@@ -78,9 +76,9 @@ private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
 //        lookups.observeForever {
 //            saveLookups(it)
 //        }
-////        projectItems.observeForever {
-////            //            saveProjectItems(it)
-////        }
+// //        projectItems.observeForever {
+// //            //            saveProjectItems(it)
+// //        }
 //
 //        conTracts.observeForever {
 //            saveContracts(it)
@@ -88,22 +86,7 @@ private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
 //        sectionItems.observeForever {
 //            saveSectionsItems(it)
 //        }
-
-
-
-
     }
-
-
-
-
-
-
-
-
-
-
-
 
 //    private fun insertEntity(entity: ToDoListEntityDTO, jobId: String) {
 //        Coroutines.io {
@@ -152,8 +135,8 @@ private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
 //    private fun saveContracts(contracts: List<ContractDTO>) {
 //        Coroutines.io {
 //            //            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-////                prefs.savelastSavedAt(LocalDateTime.now().toString())
-////            }
+// //                prefs.savelastSavedAt(LocalDateTime.now().toString())
+// //            }
 //            val actId = 3
 //            val workState = arrayOf("TA", "START", "MIDDLE", "END", "RTA")
 //            val workStateDescriptions = arrayOf("Traffic Accomodation", "Work Start", "Work Middle", "Work Completed", "Removal of Traffic Accomodation")
@@ -167,15 +150,15 @@ private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
 //                }
 //            }
 //
-////
+// //
 //            if (contracts != null) {
 //                for (contract in contracts) {
 //                    if (!Db.getContractDao().checkIfContractExists(contract.contractId))
 //                        Db.getContractDao().insertContract(contract)
 //                    if (contract.projects != null) {
-////                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-////                            prefs.savelastSavedAt(LocalDateTime.now().toString())
-////                        }
+// //                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+// //                            prefs.savelastSavedAt(LocalDateTime.now().toString())
+// //                        }
 //                        for (project in contract.projects) {
 //                            if (!Db.getProjectDao().checkProjectExists(project.projectId)) {
 //                                Db.getProjectDao().insertProject(
@@ -192,10 +175,10 @@ private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
 //                                )
 //                            }
 //                            if (project.items != null) {
-////                                val projectId = DataConversion.toLittleEndian(project.projectId)
+// //                                val projectId = DataConversion.toLittleEndian(project.projectId)
 //                                for (item in project.items) {
 //                                    if (!Db.getProjectItemDao().checkItemExistsItemId(item.itemId)) {
-////                                        Db.getItemDao().insertItem(item)
+// //                                        Db.getItemDao().insertItem(item)
 //                                        //  Lets get the ID from Sections Items
 //                                        val pattern = Pattern.compile("(.*?)\\.")
 //                                        val matcher = pattern.matcher(item.itemCode)
@@ -203,7 +186,7 @@ private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
 //                                            val itemCode = matcher.group(1) + "0"
 //                                            //  Lets Get the ID Back on Match
 //                                            val sectionItemId = Db.getSectionItemDao().getSectionItemId(itemCode.replace("\\s+".toRegex(), ""))
-////                                            val sectionItemId = Db.getSectionItemDao().getSectionItemId(item.itemCode!!)
+// //                                            val sectionItemId = Db.getSectionItemDao().getSectionItemId(item.itemCode!!)
 //                                            Db.getProjectItemDao().insertItem(item.itemId, item.itemCode, item.descr, item.itemSections, item.tenderRate, item.uom,
 //                                                item.workflowId, sectionItemId, item.quantity, item.estimateId, project.projectId)
 //                                        }
@@ -218,7 +201,7 @@ private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
 //                                }
 //                                for (section in project.projectSections) { //project.projectSections
 //                                    if (!Db.getProjectSectionDao().checkSectionExists(section.sectionId))
-////                                        Db.getProjectSectionDao().insertSections(section)
+// //                                        Db.getProjectSectionDao().insertSections(section)
 //                                        Db.getProjectSectionDao().insertSection(
 //                                            section.sectionId,
 //                                            section.route,
@@ -234,7 +217,7 @@ private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
 //                            if (project.voItems != null) {
 //                                for (voItem in project.voItems) { //project.voItems
 //                                    if (!Db.getVoItemDao().checkIfVoItemExist(voItem.projectVoId))
-////                                        Db.getVoItemDao().insertVoItem(voItem)
+// //                                        Db.getVoItemDao().insertVoItem(voItem)
 //                                        Db.getVoItemDao().insertVoItem(
 //                                            voItem.projectVoId,
 //                                            voItem.itemCode,
@@ -317,11 +300,6 @@ private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
 //        }
 //    }
 
-
-
-
-
-
 //
 //    suspend fun getUOMForProjectItemId(projectItemId: String): String {
 //        return withContext(Dispatchers.IO) {
@@ -329,13 +307,11 @@ private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
 //        }
 //    }
 
-
 //    suspend fun getJobEstimationItemsForJobId(jobID: String?): LiveData<List<JobItemEstimateDTO>> {
 //        return withContext(Dispatchers.IO) {
 //            Db.getJobItemEstimateDao().getJobEstimationItemsForJobId(jobID!!)
 //        }
 //    }
-
 
 //    suspend fun processWorkflowMove(
 //        userId: String,
@@ -346,13 +322,9 @@ private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
 //        val workflowMoveResponse =
 //            apiRequest { api.getWorkflowMove(userId, trackRouteId, description, direction) }
 //        workflowJ.postValue(workflowMoveResponse.workflowJob)
-////        workflows.postValue(workflowMoveResponse.toDoListGroups)
+// //        workflows.postValue(workflowMoveResponse.toDoListGroups)
 //
 //    }
-
-
-
-
 
 //    suspend fun getProjectDescription(projectId: String): String {
 //        return withContext(Dispatchers.IO) {
@@ -383,7 +355,6 @@ private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
 //        }
 //    }
 
-
 //
 //    suspend fun getUpdatedJob(jobId: String): JobDTO {
 //        return withContext(Dispatchers.IO) {
@@ -401,12 +372,12 @@ private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
 //        if (jobItemMeasures != null) {
 //            for (jobItemMeasure in jobItemMeasures.iterator()) {
 //                if (jobItemMeasure.jobItemMeasurePhotos != null) {
-////                    var filename = jobItemMeasure.jobItemMeasurePhotos.
+// //                    var filename = jobItemMeasure.jobItemMeasurePhotos.
 //                    for (photo in jobItemMeasure.jobItemMeasurePhotos) {
 //                        if (PhotoUtil.photoExist(photo.filename!!)) {
 //                            val data: ByteArray = getData(photo.filename, PhotoQuality.HIGH, activity!!)
 //                            uploadmeasueImage(photo.filename, activity.getString(R.string.jpg),data,imageCounter, totalImages, itemMeasureJob,activity )
-////                                uploadmeasueImage(jobItemEstimatePhoto.filename, PhotoQuality.HIGH, imageCounter, totalImages, packagejob,activity)
+// //                                uploadmeasueImage(jobItemEstimatePhoto.filename, PhotoQuality.HIGH, imageCounter, totalImages, packagejob,activity)
 //                            totalImages++
 //                        }
 //                    }
@@ -426,7 +397,6 @@ private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
 //        return photo
 //    }
 
-
 //    private fun uploadmeasueImage(
 //        filename: String,
 //        extension: String,
@@ -437,19 +407,17 @@ private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
 //        activity: FragmentActivity?
 //    ) {
 //
-////        val bitmap = PhotoUtil.getPhotoBitmapFromFile(activity!!.applicationContext, PhotoUtil.getPhotoPathFromExternalDirectory( activity!!.applicationContext,filename), PhotoQuality.HIGH)
-////        val photo = PhotoUtil.getCompressedPhotoWithExifInfo(activity!!.applicationContext,bitmap!!, filename) //
+// //        val bitmap = PhotoUtil.getPhotoBitmapFromFile(activity!!.applicationContext, PhotoUtil.getPhotoPathFromExternalDirectory( activity!!.applicationContext,filename), PhotoQuality.HIGH)
+// //        val photo = PhotoUtil.getCompressedPhotoWithExifInfo(activity!!.applicationContext,bitmap!!, filename) //
 //
 //        processImageUpload(filename, extension,photo, totalImages, imageCounter,itemMeasureJob,activity!!)
 //
-////        Coroutines.main {
-////            measureViewModel.processImageUpload(filename,extension ,photo)
-////            activity?.hideKeyboard()
-////            popViewOnJobSubmit()
-////        }
+// //        Coroutines.main {
+// //            measureViewModel.processImageUpload(filename,extension ,photo)
+// //            activity?.hideKeyboard()
+// //            popViewOnJobSubmit()
+// //        }
 //    }
-
-
 
 //    private fun processImageUpload(
 //        filename: String,
@@ -496,14 +464,12 @@ private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
 //            Coroutines.io {
 //                val workflowMoveResponse = apiRequest { api.getWorkflowMove(job.UserId.toString(), trackRouteId, description, direction) }
 //                workflowJ.postValue(workflowMoveResponse.workflowJob)
-////                workflows.postValue(workflowMoveResponse.toDoListGroups)
-////                workflows.postValue(workflowMoveResponse.toDoListGroups)
+// //                workflows.postValue(workflowMoveResponse.toDoListGroups)
+// //                workflows.postValue(workflowMoveResponse.toDoListGroups)
 //            }
 //
 //        }
 //    }
-
-
 
 //    private fun JobDTO.setTrackRouteId(toLittleEndian: String?) {
 //        this.TrackRouteId =  toLittleEndian
@@ -514,8 +480,6 @@ private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
 //            Db.getJobItemEstimateDao().getJobItemsToMeasureForJobId(jobID!!)
 //        }
 //    }
-
-
 
 //    suspend fun getSingleJobFromJobId(jobId: String?): LiveData<JobDTO> {
 //        return withContext(Dispatchers.IO) {
@@ -565,7 +529,6 @@ private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
 //
 //    }
 
-
 //    suspend fun saveJobItemMeasureItems(jobItemMeasures: ArrayList<JobItemMeasureDTO>) {
 //        Coroutines.io {
 //            for (jobItemMeasure in jobItemMeasures!!.iterator()){
@@ -585,7 +548,6 @@ private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
 //            Db.getJobItemMeasurePhotoDao().getJobMeasureItemsPhotoPath(itemMeasureId)
 //        }
 //    }
-
 
 //    suspend fun deleteItemMeasurefromList(itemMeasureId: String) {
 //        Coroutines.io {
@@ -642,29 +604,11 @@ private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
 //        this.estimateId = estimateId
 //    }
 
-
-
-
 //    suspend fun getItemJobNo(jobId: String): String {
 //        return withContext(Dispatchers.IO) {
 //            Db.getJobDao().getItemJobNo(jobId)
 //        }
 //    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 //    suspend fun getJobItemMeasurePhotosForItemMeasureID(itemMeasureId: String): LiveData<List<JobItemMeasurePhotoDTO>>  {
 //        return withContext(Dispatchers.IO) {
@@ -696,11 +640,6 @@ private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
 //        }
 //    }
 
-
-
-
-
-
 //    suspend fun getProjectDescription(projectId: String): String {
 //        return withContext(Dispatchers.IO) {
 //            Db.getProjectDao().getProjectDescription(projectId)
@@ -730,10 +669,7 @@ private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
 //        }
 //    }
 
-
-
-//}
-
+// }
 
 //
 //    suspend fun getUOMForProjectItemId(projectItemId: String): String {
@@ -742,13 +678,11 @@ private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
 //        }
 //    }
 
-
 //    suspend fun getJobEstimationItemsForJobId(jobID: String?): LiveData<List<JobItemEstimateDTO>> {
 //        return withContext(Dispatchers.IO) {
 //            Db.getJobItemEstimateDao().getJobEstimationItemsForJobId(jobID!!)
 //        }
 //    }
-
 
 //    suspend fun processWorkflowMove(
 //        userId: String,
@@ -759,7 +693,7 @@ private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
 //        val workflowMoveResponse =
 //            apiRequest { api.getWorkflowMove(userId, trackRouteId, description, direction) }
 //        workflowJ.postValue(workflowMoveResponse.workflowJob)
-////        workflows.postValue(workflowMoveResponse.toDoListGroups)
+// //        workflows.postValue(workflowMoveResponse.toDoListGroups)
 //
 //    }
 
@@ -785,7 +719,7 @@ private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
 //    }
 //    private fun saveSectionItems(sectionItems: SectionItemDTO) {
 //        Coroutines.io {
-////            Db.getSectionItemDao().insertEntities(sectionItems)
+// //            Db.getSectionItemDao().insertEntities(sectionItems)
 //        }
 //    }
 //
@@ -797,8 +731,8 @@ private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
 //        jobId: String,
 //        itemCode: ItemDTOTemp?
 //    ) {
-////        val routeSectionPointResponse = apiRequest { api.getRouteSectionPoint(latitude,longitude,useR) }
-////        routeSectionPoint.postValue(routeSectionPointResponse.direction,routeSectionPointResponse.linearId,routeSectionPointResponse.pointLocation,routeSectionPointResponse.sectionId, projectId, jobId, itemCode)
+// //        val routeSectionPointResponse = apiRequest { api.getRouteSectionPoint(latitude,longitude,useR) }
+// //        routeSectionPoint.postValue(routeSectionPointResponse.direction,routeSectionPointResponse.linearId,routeSectionPointResponse.pointLocation,routeSectionPointResponse.sectionId, projectId, jobId, itemCode)
 //    }
 
 //    suspend fun submitJob(userId: Int, job: JobDTO, activity: FragmentActivity)  : String{
@@ -813,8 +747,8 @@ private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
 //        val array4 = JsonArray()
 //        array4.add(jobestimateimagesdata1)
 //        array4.add(jobestimateimagesdata)
-////        jobItemEstimatePhotoEnd
-////        jobItemEstimatePhotoStart
+// //        jobItemEstimatePhotoEnd
+// //        jobItemEstimatePhotoStart
 //        jobestimatedata.addProperty("selectedItemUOM", job.JobItemEstimates?.get(0)?.SelectedItemUOM )
 //        jobestimatedata.addProperty("estimateComplete",job.JobItemEstimates?.get(0)?.estimateComplete )
 //        jobestimatedata.addProperty("ActId", job.JobItemEstimates?.get(0)?.actId )
@@ -832,9 +766,9 @@ private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
 //        jobestimatedata.addProperty("RecordVersion",  job.JobItemEstimates?.get(0)?.recordVersion )
 //        jobestimatedata.addProperty("TrackRouteId",  job.JobItemEstimates?.get(0)?.trackRouteId )
 //
-////        for (i in  job.JobItemEstimates?.get(0)?.jobItemEstimatePhotos!!.indices){
-////
-////        }
+// //        for (i in  job.JobItemEstimates?.get(0)?.jobItemEstimatePhotos!!.indices){
+// //
+// //        }
 //        jobestimateimagesdata1.addProperty("Descr", job.JobItemEstimates?.get(0)?.jobItemEstimatePhotos?.get(0)?.descr )
 //        jobestimateimagesdata1.addProperty("Endkm",job.JobItemEstimates?.get(0)?.jobItemEstimatePhotos?.get(0)?.endKm )
 //        jobestimateimagesdata1.addProperty("EstimateId", DataConversion.toLittleEndian( job.JobItemEstimates?.get(0)?.jobItemEstimatePhotos?.get(0)?.estimateId ))
@@ -889,7 +823,7 @@ private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
 //        jobesectiondata.addProperty("RecordVersion", job.JobSections?.get(0)?.recordVersion )
 //        jobesectiondata.addProperty("StartKm", job.JobSections?.get(0)?.startKm )
 //
-////        array.add(job.JobItemEstimates.toString())
+// //        array.add(job.JobItemEstimates.toString())
 //        jobdata.addProperty("ActId", job.ActId )
 //        jobdata.addProperty("IssueDate", job.IssueDate.toString() )
 //        jobdata.addProperty("DueDate", job.DueDate.toString() )
@@ -931,10 +865,10 @@ private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
 //        jobdata.addProperty("VoId", job.VoId )
 //        jobdata.addProperty("WorkCompleteDate", job.WorkCompleteDate )
 //        jobdata.addProperty("WorkStartDate", job.WorkStartDate )
-////
+// //
 //        jobhead.add("Job", jobdata)
 //        jobhead.addProperty("UserId", userId)
-////        var jsonk = gson.toJson(json2)
+// //        var jsonk = gson.toJson(json2)
 //        Log.e("JsonObject", "Json string $jobhead")
 //        val jobResponse = apiRequest { api.sendJobsForApproval(jobhead) }
 //        workflowJ2.postValue(jobResponse.workflowJob,job ,activity)
@@ -944,7 +878,6 @@ private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
 //            messages
 //        }
 //    }
-
 
 //    suspend fun submitWorks(
 //        itemEstiWorks: JobEstimateWorksDTO,
@@ -992,7 +925,7 @@ private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
 //            messages
 //        }
 //
-////        DataConversion.toLittleEndian()
+// //        DataConversion.toLittleEndian()
 //    }
 
 //   suspend fun saveMeasurementItems(
@@ -1015,7 +948,7 @@ private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
 //       measuredata.addProperty("JiNo", jimNo)
 //       measuredata.addProperty("JobId", jobId)
 //       measuredata.add("MeasurementItems", array )
-////       array.add(jdata)
+// //       array.add(jdata)
 //       array.add(jdata)
 //       for (i in  mSures.indices){
 //           jdata.addProperty("ActId", mSures.get(i).actId )
@@ -1026,13 +959,13 @@ private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
 //           jdata.addProperty("ItemMeasureId", DataConversion.toLittleEndian(mSures.get(i).itemMeasureId))
 //           jdata.addProperty("JimNo", mSures.get(i).jimNo)
 //           jdata.addProperty("PrjJobDto", mSures.get(i).job.toString())
-////       jdata.add("PrjJobDto", array1 )
-////       array1.add(jmadata)
+// //       jdata.add("PrjJobDto", array1 )
+// //       array1.add(jmadata)
 //           jdata.addProperty("JobDirectionId", mSures.get(i).jobDirectionId)
 //           jdata.addProperty("JobId", DataConversion.toLittleEndian(mSures.get(i).jobId))
 //           jdata.addProperty("PrjJobItemEstimateDto", mSures.get(i).jobItemEstimate.toString())
-////       jdata.add("PrjJobItemEstimateDto", array2 )
-////       array2.add(jmadata)
+// //       jdata.add("PrjJobItemEstimateDto", array2 )
+// //       array2.add(jmadata)
 //           jdata.addProperty("LineAmount", mSures.get(i).lineAmount)
 //           jdata.addProperty("LineRate", mSures.get(i).lineRate)
 //           jdata.addProperty("MeasureDate", mSures.get(i).measureDate)
@@ -1063,7 +996,7 @@ private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
 //
 //
 //       //TODO(finish building the MeasureItems and Location)
-////       measuredata.add("MeasurementItems", mSures)
+// //       measuredata.add("MeasurementItems", mSures)
 //       measuredata.addProperty("UserId", userId)
 //
 //
@@ -1110,37 +1043,37 @@ private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
 //
 //
 //    }
-////    suspend fun saveJobItemMeasureItems(jobItemMeasures: ArrayList<JobItemMeasureDTO>) {
-////        Coroutines.io {
-////            for (jobItemMeasure in jobItemMeasures!!.iterator()){
-////                if (!Db.getJobItemMeasureDao().checkIfJobItemMeasureExists(jobItemMeasure.itemMeasureId!!)){
-////                    Db.getJobItemMeasureDao().insertJobItemMeasure(jobItemMeasure!!)
-////                }
-////
-////            }
-////
-////        }
-////    }
+// //    suspend fun saveJobItemMeasureItems(jobItemMeasures: ArrayList<JobItemMeasureDTO>) {
+// //        Coroutines.io {
+// //            for (jobItemMeasure in jobItemMeasures!!.iterator()){
+// //                if (!Db.getJobItemMeasureDao().checkIfJobItemMeasureExists(jobItemMeasure.itemMeasureId!!)){
+// //                    Db.getJobItemMeasureDao().insertJobItemMeasure(jobItemMeasure!!)
+// //                }
+// //
+// //            }
+// //
+// //        }
+// //    }
 //
-////    suspend fun setJobItemMeasureImages(
-////        jobItemMeasurePhotoList: ArrayList<JobItemMeasureDTO>,
-////        estimateId: String?,
-////        selectedJobItemMeasure: JobItemMeasureDTO
-////    ){
-////        Coroutines.io {
-////            for (jobItemMeasurePhoto in jobItemMeasurePhotoList.iterator()){
-////                Db.getJobItemMeasureDao().insertJobItemMeasure(selectedJobItemMeasure)
-////                if (!Db.getJobItemMeasurePhotoDao().checkIfJobItemMeasurePhotoExists(jobItemMeasurePhoto.filename!!)){
-////
-////                    Db.getJobItemMeasurePhotoDao().insertJobItemMeasurePhoto(jobItemMeasurePhoto!!)
-////                    jobItemMeasurePhoto.setEstimateId(estimateId)
-////                    Db.getJobItemMeasureDao().upDatePhotList(jobItemMeasurePhotoList,selectedJobItemMeasure.itemMeasureId!!)
-////                }
-////
-////            }
-////
-////        }
-////    }
+// //    suspend fun setJobItemMeasureImages(
+// //        jobItemMeasurePhotoList: ArrayList<JobItemMeasureDTO>,
+// //        estimateId: String?,
+// //        selectedJobItemMeasure: JobItemMeasureDTO
+// //    ){
+// //        Coroutines.io {
+// //            for (jobItemMeasurePhoto in jobItemMeasurePhotoList.iterator()){
+// //                Db.getJobItemMeasureDao().insertJobItemMeasure(selectedJobItemMeasure)
+// //                if (!Db.getJobItemMeasurePhotoDao().checkIfJobItemMeasurePhotoExists(jobItemMeasurePhoto.filename!!)){
+// //
+// //                    Db.getJobItemMeasurePhotoDao().insertJobItemMeasurePhoto(jobItemMeasurePhoto!!)
+// //                    jobItemMeasurePhoto.setEstimateId(estimateId)
+// //                    Db.getJobItemMeasureDao().upDatePhotList(jobItemMeasurePhotoList,selectedJobItemMeasure.itemMeasureId!!)
+// //                }
+// //
+// //            }
+// //
+// //        }
+// //    }
 //
     //    suspend fun getJobMeasureForActivityId(activityId: Int): LiveData<List<JobItemEstimateDTO>> {
 //        return withContext(Dispatchers.IO) {
@@ -1204,11 +1137,11 @@ private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
 //                        insertEntity(toDoListEntity, jobId!!)
 //                        val job_Id = DataConversion.toLittleEndian(jobId)
 //                        fetchJobList(job_Id!!)
-////                        for (subEntity in toDoListEntity.entities) {
-////                            insertEntity(subEntity, jobId)
-//////                            val job_Id = DataConversion.toLittleEndian(jobId!!)
-//////                            fetchJobList(job_Id!!)
-////                        }
+// //                        for (subEntity in toDoListEntity.entities) {
+// //                            insertEntity(subEntity, jobId)
+// ////                            val job_Id = DataConversion.toLittleEndian(jobId!!)
+// ////                            fetchJobList(job_Id!!)
+// //                        }
 //
 //                    }
 //
@@ -1244,8 +1177,6 @@ private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
 //
 //
 //    }
-
-
 
 //    private fun isFetchNeeded(savedAt: LocalDateTime): Boolean {
 //        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -1290,13 +1221,13 @@ private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
 //                                   var job : JobDTO? = null
 //                                   job?.setJobId(Util.ByteArrayToStringUUID(primaryKeyValue.p_value))
 //                                   job?.setDescr(entities.description)
-////                                   val job_Id = DataConversion.toLittleEndian(jobId!!)
+// //                                   val job_Id = DataConversion.toLittleEndian(jobId!!)
 //                                   fetchJobList(Util.ByteArrayToStringUUID(primaryKeyValue.p_value)!!)
-////                                   if (!ApproveJobsFragment.jobArrayContains(
-////                                           job.getJobId(),
-////                                           jobList
-////                                       )
-////                                   ) jobList.add(job)
+// //                                   if (!ApproveJobsFragment.jobArrayContains(
+// //                                           job.getJobId(),
+// //                                           jobList
+// //                                       )
+// //                                   ) jobList.add(job)
 //                               }
 //
 //
@@ -1321,14 +1252,14 @@ private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
 //                for (workFlow in workFlows.workflows) {
 //                    if (!Db.getWorkFlowDao().checkWorkFlowExistsWorkflowID(workFlow.workflowId))
 //                        Db.getWorkFlowDao().insertWorkFlow(workFlow)
-////                    Db.getWorkFlowDao().insertWorkFlow(workFlow.dateCreated,workFlow.errorRouteId, workFlow.revNo, workFlow.startRouteId, workFlow.userId,
-////                        workFlow.wfHeaderId, workFlow.workFlowRoute, workFlow.workflowId)
+// //                    Db.getWorkFlowDao().insertWorkFlow(workFlow.dateCreated,workFlow.errorRouteId, workFlow.revNo, workFlow.startRouteId, workFlow.userId,
+// //                        workFlow.wfHeaderId, workFlow.workFlowRoute, workFlow.workflowId)
 //
 //                    if (workFlow.workFlowRoute != null) {
 //                        for (workFlowRoute in workFlow.workFlowRoute!!) {  //ArrayList<WorkFlowRouteDTO>()
 //                            if (!Db.getWorkFlowRouteDao().checkWorkFlowRouteExists(workFlowRoute.routeId))
-////                                Db.getWorkFlowRouteDao().insertWorkFlowRoutes(
-////                                    workFlowRoute )
+// //                                Db.getWorkFlowRouteDao().insertWorkFlowRoutes(
+// //                                    workFlowRoute )
 //                                Db.getWorkFlowRouteDao().insertWorkFlowRoute(
 //                                    workFlowRoute.routeId,
 //                                    workFlowRoute.actId,
@@ -1346,21 +1277,20 @@ private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
 //            if (workFlows.activities != null) {
 //                for (activity in workFlows.activities) {
 //                    Db.getActivityDao().insertActivitys(activity)
-////                    Db.getActivityDao().insertActivity( activity.actId,  activity.actTypeId, activity.approvalId, activity.sContentId,  activity.actName, activity.descr )
+// //                    Db.getActivityDao().insertActivity( activity.actId,  activity.actTypeId, activity.approvalId, activity.sContentId,  activity.actName, activity.descr )
 //                }
 //            }
 //
 //            if (workFlows.infoClasses != null) {
 //                for (infoClass in workFlows.infoClasses) {
 //                    Db.getInfoClassDao().insertInfoClasses(infoClass)
-////                    Db.getInfoClassDao().insertInfoClass(infoClass.sLinkId, infoClass.sInfoClassId,  infoClass.wfId)
+// //                    Db.getInfoClassDao().insertInfoClass(infoClass.sLinkId, infoClass.sInfoClassId,  infoClass.wfId)
 //                }
 //            }
 //        }
 //    }
 //
 //
-
 
 //    private fun saveJobs(job: JobDTO?) {
 //        Coroutines.io {
@@ -1374,21 +1304,21 @@ private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
 //                            setContractVoId(DataConversion.toBigEndian(ContractVoId))
 //                        }
 //                        setTrackRouteId(DataConversion.toBigEndian(TrackRouteId))
-////                        DueDate.toString()
-////                        StartDate.toString()
-////                        IssueDate = DateToString(IssueDate)
-////                        val gsonBuilder = GsonBuilder()
-////                        gsonBuilder.registerTypeAdapter(Date::class.java, DateDeserializer())
-////                        setDuedate(StringToDate(DueDate.toString()))
-////                        setIssueDate(StringToDate(IssueDate.toString()))
-////                        setStartDate(StringToDate(StartDate.toString()))
-////                        setDateApproval(ApprovalDate)
+// //                        DueDate.toString()
+// //                        StartDate.toString()
+// //                        IssueDate = DateToString(IssueDate)
+// //                        val gsonBuilder = GsonBuilder()
+// //                        gsonBuilder.registerTypeAdapter(Date::class.java, DateDeserializer())
+// //                        setDuedate(StringToDate(DueDate.toString()))
+// //                        setIssueDate(StringToDate(IssueDate.toString()))
+// //                        setStartDate(StringToDate(StartDate.toString()))
+// //                        setDateApproval(ApprovalDate)
 //
 //
 //
-////
-////                        ZonedDateTime.parse(DueDate.toString())
-////                        setRoute(route)
+// //
+// //                        ZonedDateTime.parse(DueDate.toString())
+// //                        setRoute(route)
 //                    }
 //                    DataConversion.toBigEndian(job.PerfitemGroupId)
 //                    DataConversion.toBigEndian(job.ProjectVoId)
@@ -1434,7 +1364,7 @@ private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
 //                            )
 //                            Db.getJobItemEstimateDao().insertJobItemEstimate(jobItemEstimate)
 //                            Db.getJobDao().setEstimateActId(jobItemEstimate.actId, job.JobId)
-////                            job.setEstimateActId(jobItemEstimate.actId)
+// //                            job.setEstimateActId(jobItemEstimate.actId)
 //                            if (jobItemEstimate.jobItemEstimatePhotos != null) {
 //                                for (jobItemEstimatePhoto in jobItemEstimate.jobItemEstimatePhotos!!) {
 //                                    if (!Db.getJobItemEstimatePhotoDao().checkIfJobItemEstimatePhotoExistsByPhotoId(
@@ -1493,7 +1423,7 @@ private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
 //                                    )
 //                                    Db.getJobDao()
 //                                        .setEstimateWorksActId(jobEstimateWorks.actId, job.JobId)
-////                                    job.setEstimateWorksActId(jobEstimateWorks.actId)
+// //                                    job.setEstimateWorksActId(jobEstimateWorks.actId)
 //                                    if (jobEstimateWorks.jobEstimateWorksPhotos != null) {
 //                                        for (estimateWorksPhoto in jobEstimateWorks.jobEstimateWorksPhotos!!) {
 //                                            if (!Db.getEstimateWorkPhotoDao().checkIfEstimateWorksPhotoExist(
@@ -1545,7 +1475,7 @@ private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
 //                            jobItemMeasure.setJobNo(job.JiNo)
 //                            Db.getJobItemMeasureDao().insertJobItemMeasure(jobItemMeasure)
 //                            Db.getJobDao().setMeasureActId(jobItemMeasure.actId, job.JobId)
-////                            job.setMeasureActId(jobItemMeasure.actId)
+// //                            job.setMeasureActId(jobItemMeasure.actId)
 //                            if (jobItemMeasure.jobItemMeasurePhotos != null) {
 //                                for (jobItemMeasurePhoto in jobItemMeasure.jobItemMeasurePhotos) {
 //                                    if (!Db.getJobItemMeasurePhotoDao().checkIfJobItemMeasurePhotoExists(
@@ -1570,12 +1500,12 @@ private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
 //                                    )
 //                                    if (!PhotoUtil.photoExist(jobItemMeasurePhoto.filename))
 //                                        getPhotoForJobItemMeasure(jobItemMeasurePhoto.filename)
-////                                    else {
-////                                        populateAppropriateViewForPhotos()
-////                                    }
-////                                    if (!PhotoUtil.photoExist(jobItemEstimatePhoto.filename)) {
-////                                        getPhotoForJobItemEstimate(jobItemEstimatePhoto.filename)
-////                                    }
+// //                                    else {
+// //                                        populateAppropriateViewForPhotos()
+// //                                    }
+// //                                    if (!PhotoUtil.photoExist(jobItemEstimatePhoto.filename)) {
+// //                                        getPhotoForJobItemEstimate(jobItemEstimatePhoto.filename)
+// //                                    }
 //                                }
 //                            }
 //                        }
@@ -1615,48 +1545,6 @@ private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
 //        }
 //    }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 //    suspend fun getJobMeasureItemsPhotoPath(itemMeasureId: String): String {
 //        return withContext(Dispatchers.IO) {
 //            offlineDataRepository.getJobMeasureItemsPhotoPath(itemMeasureId)
@@ -1679,8 +1567,4 @@ private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
 //        return ChronoUnit.MINUTES.between(savedAt, LocalDateTime.now()) > MINIMUM_INTERVAL
 //    }
 //
-
-
-
 }
-

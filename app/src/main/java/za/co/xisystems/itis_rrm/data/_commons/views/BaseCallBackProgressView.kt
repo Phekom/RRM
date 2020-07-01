@@ -1,10 +1,10 @@
-//package za.co.xisystems.itis_rrm.data._commons.views
+// package za.co.xisystems.itis_rrm.data._commons.views
 //
-//import za.co.xisystems.itis_rrm.R
-//import za.co.xisystems.itis_rrm.data._commons.ICallBack
+// import za.co.xisystems.itis_rrm.R
+// import za.co.xisystems.itis_rrm.data._commons.ICallBack
 //
-//// TODO investigate the need for this abstract class?
-//abstract class BaseCallBackProgressView<T> : ICallBack<T>, IProgressView {
+// // TODO investigate the need for this abstract class?
+// abstract class BaseCallBackProgressView<T> : ICallBack<T>, IProgressView {
 //    constructor() {}
 //    constructor(vararg messages: String?) {
 //        showProgressDialog(*messages)
@@ -24,4 +24,4 @@
 //        }
 //        dismissProgressDialog()
 //    }
-//}
+// }

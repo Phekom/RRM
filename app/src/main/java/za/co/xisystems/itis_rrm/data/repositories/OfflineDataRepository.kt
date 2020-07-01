@@ -31,7 +31,6 @@ import java.util.regex.Pattern
 
 private val jobDataController: JobDataController? = null
 
-
 class OfflineDataRepository(
     private val api: BaseConnectionApi,
     private val Db: AppDatabase,
@@ -319,7 +318,6 @@ class OfflineDataRepository(
                     updateProjects(validProjects, contract)
                 }
             }
-
         }
     }
 
@@ -1074,7 +1072,6 @@ class OfflineDataRepository(
         // TODO: Redo as async calls in parallel
         return withContext(Dispatchers.IO) {
 
-
             if (!entitiesFetched) {
                 postStatus("Fetching Entities")
                 getAllEntities()
@@ -1100,7 +1097,7 @@ class OfflineDataRepository(
     }
 
     private fun postStatus(message: String) {
-        var status = XIStatus(message)
+        val status = XIStatus(message)
         databaseStatus.postValue(status)
     }
 
@@ -1189,7 +1186,7 @@ class OfflineDataRepository(
         }
     }
 
-    private suspend fun updateWorkflowEstimateWorks(jobItemEstimate: WorkflowItemEstimateDTO) {
+    private fun updateWorkflowEstimateWorks(jobItemEstimate: WorkflowItemEstimateDTO) {
         for (jobEstimateWorks in jobItemEstimate.workflowEstimateWorks) {
             if (!Db.getEstimateWorkDao().checkIfJobEstimateWorksExist(jobEstimateWorks.worksId)) {
                 TODO("This should never happen.")

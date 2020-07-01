@@ -1,20 +1,20 @@
 package za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.adapters
 
-//import android.R.layout
-//import android.util.Log
-//import android.view.View
-//import android.widget.Filter
-//import android.widget.Filterable
-//import android.widget.TextView
-//import za.co.xisystems.itis_rrm.data._commons.AbstractAdapter
-//import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
-//import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.contracts.IItemsAdapter
-//import java.util.*
+// import android.R.layout
+// import android.util.Log
+// import android.view.View
+// import android.widget.Filter
+// import android.widget.Filterable
+// import android.widget.TextView
+// import za.co.xisystems.itis_rrm.data._commons.AbstractAdapter
+// import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
+// import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.contracts.IItemsAdapter
+// import java.util.*
 //
-//internal class ItemsAdapter(
+// internal class ItemsAdapter(
 //    data: List<ProjectItemDTO?>?,
 //    listener: OnItemClickListener<ProjectItemDTO?>?
-//) : AbstractAdapter<ProjectItemDTO?>(data, layout.simple_list_item_1, listener),
+// ) : AbstractAdapter<ProjectItemDTO?>(data, layout.simple_list_item_1, listener),
 //    Filterable, IItemsAdapter<ProjectItemDTO?> {
 //
 //    override fun createViewHolder(view: View?): AbstractViewHolder {
@@ -69,4 +69,4 @@ package za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.adapters
 //            }
 //        }
 //    }
-//}
+// }
