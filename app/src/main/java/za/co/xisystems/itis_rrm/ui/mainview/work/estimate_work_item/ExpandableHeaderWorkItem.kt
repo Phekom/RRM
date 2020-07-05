@@ -18,17 +18,15 @@ class ExpandableHeaderWorkItem(
     activity: FragmentActivity?,
     workItems: JobDTO,
 //    workItems: JobItemEstimateDTO,
-    workViewModel: WorkViewModel,
-    jobId: String?
-) : HeaderItem(null, workItems ,workViewModel ), ExpandableItem {
+    workViewModel: WorkViewModel
+) : HeaderItem(null, workItems, workViewModel), ExpandableItem {
 
     private var clickListener: ((ExpandableHeaderWorkItem) -> Unit)? = null
 
     private lateinit var expandableGroup: ExpandableGroup
-    private var activity  = activity
+    private var activity = activity
     override fun bind(viewHolder: GroupieViewHolder, position: Int) {
         super.bind(viewHolder, position)
-
 
         viewHolder.apply {
             appListID.text = getItemId(position + 1).toString()
@@ -42,7 +40,6 @@ class ExpandableHeaderWorkItem(
             }
             bindItem(viewHolder)
         }
-
 
         viewHolder.itemView.setOnClickListener {
             clickListener?.invoke(this)
@@ -61,7 +58,10 @@ class ExpandableHeaderWorkItem(
                     "Job Info: Start Km: $startKm - End Km: $endKm"
                 )
             } else if (null == trackRouteId) {
-                ToastUtils().toastLong(activity,"Job not found please click on item to download job.")
+                ToastUtils().toastLong(
+                    activity,
+                    "Job not found please click on item to download job."
+                )
             }
         }
     }

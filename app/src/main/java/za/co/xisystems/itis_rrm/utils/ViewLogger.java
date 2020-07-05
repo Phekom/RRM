@@ -3,7 +3,7 @@ package za.co.xisystems.itis_rrm.utils;
 import android.app.Activity;
 import android.util.Log;
 
-import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment;
+import za.co.xisystems.itis_rrm.base.BaseFragment;
 
 public class ViewLogger {
     public static void logView(Object view) {

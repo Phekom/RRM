@@ -64,8 +64,8 @@ internal object BitmapUtils {
         val imageFileName = "JPEG_" + timeStamp + "_"
         val storageDir = context.externalCacheDir
         return File.createTempFile(
-            imageFileName,  /* prefix */
-            ".jpg",  /* suffix */
+            imageFileName, /* prefix */
+            ".jpg", /* suffix */
             storageDir /* directory */
         )
     }
@@ -73,7 +73,7 @@ internal object BitmapUtils {
     /**
      * Deletes image file for a given path.
      *
-     * @param context   The application context.
+     * @param context The application context.
      * @param imagePath The path of the photo to be deleted.
      */
     fun deleteImageFile(
@@ -111,7 +111,7 @@ internal object BitmapUtils {
      * Helper method for saving the image.
      *
      * @param context The application context.
-     * @param image   The image to be saved.
+     * @param image The image to be saved.
      * @return The path of the saved image.
      */
     fun saveImage(context: Context, image: Bitmap): String? {
@@ -144,7 +144,6 @@ internal object BitmapUtils {
         return savedImagePath
     }
 
-
     @Throws(IOException::class)
     private fun createImageFile(): File {
         val uuid = UUID.randomUUID()
@@ -160,16 +159,10 @@ internal object BitmapUtils {
         return File(storageDir, "$imageFileName.jpg")
     }
 
-
-
-
-
-
-
     /**
      * Helper method for sharing an image.
      *
-     * @param context   The image context.
+     * @param context The image context.
      * @param imagePath The path of the image to be shared.
      */
     fun shareImage(

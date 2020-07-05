@@ -1,18 +1,16 @@
 package za.co.xisystems.itis_rrm.data.repositories
 
-
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import timber.log.Timber
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DataConversion
-
 
 /**
  * Created by Francis Mahlava on 2019/11/28.
@@ -26,19 +24,15 @@ class MeasureApprovalDataRepository(
         val TAG: String = MeasureApprovalDataRepository::class.java.simpleName
     }
 
-
     private val workflowJ = MutableLiveData<WorkflowJobDTO>()
-
+    private val qtyUpDate = MutableLiveData<String>()
 
     init {
 
         workflowJ.observeForever {
             saveWorkflowJob(it)
         }
-
-
     }
-
 
     suspend fun getUser(): LiveData<UserDTO> {
         return withContext(Dispatchers.IO) {
@@ -46,13 +40,17 @@ class MeasureApprovalDataRepository(
         }
     }
 
+    suspend fun getJobItemMeasureByItemMeasureId(itemMeasureId: String): LiveData<JobItemMeasureDTO> {
+        return withContext(Dispatchers.IO) {
+            Db.getJobItemMeasureDao().getJobItemMeasureByItemMeasureId(itemMeasureId)
+        }
+    }
 
     suspend fun getJobApproveMeasureForActivityId(activityId: Int): LiveData<List<JobItemMeasureDTO>> {
         return withContext(Dispatchers.IO) {
             Db.getJobItemMeasureDao().getJobApproveMeasureForActivityId(activityId)
         }
     }
-
 
     suspend fun getJobsMeasureForActivityId(
         estimateComplete: Int,
@@ -69,7 +67,6 @@ class MeasureApprovalDataRepository(
             )
         }
     }
-
 
     suspend fun getEntitiesListForActivityId(activityId: Int): LiveData<List<ToDoListEntityDTO>> {
         return withContext(Dispatchers.IO) {
@@ -102,9 +99,9 @@ class MeasureApprovalDataRepository(
             apiRequest { api.getWorkflowMove(userId, trackRouteId, description, direction) }
         workflowJ.postValue(workflowMoveResponse.workflowJob)
 
-//        workflows.postValue(workflowMoveResponse.toDoListGroups)
-        val messages = workflowMoveResponse.errorMessage
-//          activity.getResources().getString(R.string.please_wait)
+        // Damn you Elvis !!
+        val messages: String = workflowMoveResponse.errorMessage ?: ""
+
         return withContext(Dispatchers.IO) {
             messages
         }
@@ -140,10 +137,9 @@ class MeasureApprovalDataRepository(
         }
     }
 
-
-    suspend fun getJobMeasureItemsPhotoPath(itemMeasureId: String): String {
+    suspend fun getJobMeasureItemPhotoPaths(itemMeasureId: String): List<String> {
         return withContext(Dispatchers.IO) {
-            Db.getJobItemMeasurePhotoDao().getJobMeasureItemsPhotoPath(itemMeasureId)
+            Db.getJobItemMeasurePhotoDao().getJobMeasureItemPhotoPaths(itemMeasureId)
         }
     }
 
@@ -152,8 +148,7 @@ class MeasureApprovalDataRepository(
             val job = setWorkflowJobBigEndianGuids(workflowj)
             insertOrUpdateWorkflowJobInSQLite(job)
         } else {
-
-            Log.e("Error:", " WorkFlow Job is null")
+            Timber.e("WorkFlow Job is null")
         }
     }
 
@@ -167,7 +162,6 @@ class MeasureApprovalDataRepository(
         Coroutines.io {
             Db.getJobDao().updateJob(job.trackRouteId, job.actId, job.jiNo, job.jobId)
 
-
             job.workflowItemEstimates?.forEach { jobItemEstimate ->
                 Db.getJobItemEstimateDao().updateExistingJobItemEstimateWorkflow(
                     jobItemEstimate.trackRouteId,
@@ -175,13 +169,14 @@ class MeasureApprovalDataRepository(
                     jobItemEstimate.estimateId
                 )
 
-
                 jobItemEstimate.workflowEstimateWorks.forEach { jobEstimateWorks ->
                     if (!Db.getEstimateWorkDao()
                             .checkIfJobEstimateWorksExist(jobEstimateWorks.worksId)
                     )
                         Db.getEstimateWorkDao().insertJobEstimateWorks(
-                            jobEstimateWorks as JobEstimateWorksDTO
+                            // TODO: b0rk3d - this broken cast needs fixing.
+                            // jobEstimateWorks as JobEstimateWorksDTO
+                            TODO("This should never happen!")
                         )
                     else
                         Db.getEstimateWorkDao().updateJobEstimateWorksWorkflow(
@@ -206,7 +201,6 @@ class MeasureApprovalDataRepository(
                 }
             }
 
-
             //  Place the Job Section, UPDATE OR CREATE
 
             job.workflowJobSections?.forEach { jobSection ->
@@ -223,10 +217,8 @@ class MeasureApprovalDataRepository(
                         jobSection.recordSynchStateId
                     )
             }
-
         }
     }
-
 
     private fun setWorkflowJobBigEndianGuids(job: WorkflowJobDTO): WorkflowJobDTO? {
         job.jobId = DataConversion.toBigEndian(job.jobId)
@@ -260,8 +252,46 @@ class MeasureApprovalDataRepository(
         return job
     }
 
+    suspend fun upDateMeasure(
+        newQuantity: String,
+        itemMeasureId: String
+    ): String {
+        val newMeasureId = DataConversion.toLittleEndian(itemMeasureId)
+
+        val quantityUpdateResponse =
+            apiRequest { api.upDateMeasureQty(newMeasureId, newQuantity.toDouble()) }
+        qtyUpDate.postValue(
+            quantityUpdateResponse.errorMessage,
+            itemMeasureId,
+            newQuantity.toDouble()
+        )
+        val messages = quantityUpdateResponse.errorMessage ?: ""
+        return withContext(Dispatchers.IO) {
+            messages
+        }
+    }
+
+    private fun <T> MutableLiveData<T>.postValue(
+        errorMessage: String?,
+        itemMeasureId: String?,
+        new_Quantity: Double
+    ) {
+        if (errorMessage.isNullOrBlank()) {
+            Db.getJobItemMeasureDao().upDateQty(itemMeasureId!!, new_Quantity)
+        } else {
+            Timber.e("newQty is null")
+        }
+    }
+
+    suspend fun getQuantityForMeasureItemId(itemMeasureId: String): LiveData<Double> {
+        return withContext(Dispatchers.IO) {
+            Db.getJobItemMeasureDao().getQuantityForMeasureItemId(itemMeasureId)
+        }
+    }
+
+    suspend fun getLineRateForMeasureItemId(itemMeasureId: String): LiveData<Double> {
+        return withContext(Dispatchers.IO) {
+            Db.getJobItemMeasureDao().getLineRateForMeasureItemId(itemMeasureId)
+        }
+    }
 }
-
-
-
-

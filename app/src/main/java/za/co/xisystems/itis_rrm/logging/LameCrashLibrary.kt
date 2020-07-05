@@ -14,17 +14,21 @@ class LameCrashLibrary private constructor() {
 
         fun log(priority: Int, tag: String?, message: String?) {
             // TODO add log entry to circular buffer.
-            Log.println(priority, tag, message)
+            Log.println(priority, tag, lameFix(message))
         }
 
         fun logWarning(t: Throwable?) {
-            Log.w(TAG, t?.message)
+            Log.w(TAG, lameFix(t?.message))
             t?.printStackTrace()
         }
 
         fun logError(t: Throwable?) {
-            Log.e(TAG, t?.message)
+            Log.e(TAG, lameFix(t?.message))
             t?.printStackTrace()
+        }
+
+        private fun lameFix(message: String?): String {
+            return message ?: "No message provided"
         }
     }
 

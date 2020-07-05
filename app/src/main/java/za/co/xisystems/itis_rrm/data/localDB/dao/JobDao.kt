@@ -8,7 +8,7 @@ import androidx.room.Query
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobSectionDTO
-import java.util.ArrayList
+import java.util.*
 
 /**
  * Created by Francis Mahlava on 2019/11/21.
@@ -18,7 +18,7 @@ import java.util.ArrayList
 interface JobDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertOrUpdateJobs(job: JobDTO)
+    fun insertOrUpdateJobs(job: JobDTO)
 
     @Query("SELECT * FROM JOB_TABLE WHERE jobId = :jobId")
     fun checkIfJobExist(jobId: String): Boolean
@@ -30,18 +30,16 @@ interface JobDao {
     fun updateAllJobs(route: String?, section: String?, jobId: String?)
 
     @Query("UPDATE JOB_TABLE SET TrackRouteId =:trackRouteId, ActId =:actId, JiNo =:jiNo WHERE jobId = :jobId")
-    fun updateJob(trackRouteId: String?,actId: Int,  jiNo: String?, jobId: String?)
+    fun updateJob(trackRouteId: String?, actId: Int, jiNo: String?, jobId: String?)
 
     @Query("UPDATE JOB_TABLE SET ESTIMATES_ACT_ID =:actId WHERE jobId = :jobId")
     fun setEstimateActId(actId: Int?, jobId: String?)
-
 
     @Query("UPDATE JOB_TABLE SET WORKS_ACT_ID =:actId WHERE jobId = :jobId")
     fun setEstimateWorksActId(actId: Int, jobId: String)
 
     @Query("UPDATE JOB_TABLE SET MEASURE_ACT_ID =:actId WHERE jobId = :jobId")
     fun setMeasureActId(actId: Int, jobId: String)
-
 
     @Query("SELECT descr FROM JOB_TABLE WHERE jobId = :jobId")
     fun getItemDescription(jobId: String): String
@@ -70,13 +68,14 @@ interface JobDao {
     @Query("SELECT * FROM JOB_TABLE WHERE actId = :actId ORDER BY jiNo ASC")
     fun getJobsForActivityId(actId: Int): LiveData<List<JobDTO>>
 
-    @Query( " SELECT j.*, e.* FROM JOB_TABLE AS j JOIN JOB_ITEM_ESTIMATE AS e ON e.JobId = j.JobId WHERE j.ActId Like :actId and e.ActId Like :actId2 ORDER BY jiNo ASC ")
+    @Query(" SELECT j.*, e.* FROM JOB_TABLE AS j JOIN JOB_ITEM_ESTIMATE AS e ON e.JobId = j.JobId WHERE j.ActId Like :actId and e.ActId Like :actId2 ORDER BY jiNo ASC ")
     fun getJobsForActivityIds(actId: Int, actId2: Int): List<JobDTO>
 
-    @Query( " SELECT j.*, e.* FROM JOB_TABLE AS j JOIN JOB_ITEM_ESTIMATE AS e ON e.JobId = j.JobId WHERE j.ActId Like :actId and e.ActId Like :actId2 ORDER BY jiNo ASC ")
+    @Query(" SELECT j.*, e.* FROM JOB_TABLE AS j JOIN JOB_ITEM_ESTIMATE AS e ON e.JobId = j.JobId WHERE j.ActId Like :actId and e.ActId Like :actId2 ORDER BY jiNo ASC ")
     fun getJobsForActivityIds1(actId: Int, actId2: Int): LiveData<List<JobDTO>>
-//    LiveData<List<JobDTO>>
-//OR e.ActId Like 8
+
+    //    LiveData<List<JobDTO>>
+// OR e.ActId Like 8
     @Query("UPDATE JOB_TABLE SET SectionId =:sectionId ,StartKm =:startKM , EndKm =:endKM ,JobItemEstimates =:newJobItemEstimatesList, JobSections =:jobItemSectionArrayList  WHERE jobId = :newjobId ")
     fun updateJoSecId(
         newjobId: String,
@@ -90,10 +89,8 @@ interface JobDao {
     @Query("SELECT * FROM JOB_TABLE WHERE jobId = :jobId")
     fun getJobForJobId(jobId: String): JobDTO
 
-
     @Query("SELECT jobId FROM JOB_TABLE WHERE activityId = :actId")
     fun getJobIds(actId: Int): LiveData<List<String>>
-
 
     @Query("SELECT * FROM JOB_TABLE WHERE jobId = :jobId")
     fun getJobFromJobId(jobId: String): LiveData<JobDTO>
@@ -108,16 +105,9 @@ interface JobDao {
 //                    + ACT_ID + " = " + workActId + " WHERE A." + JOB_ID + " = '" + jobId + "' AND A." + ACT_ID + " = " + estimateActId
 //    fun getAllItemsForSectionItem(sectionItem : String, projectId : String ): LiveData<List<JobDTO>>
 
-
     @Query("DELETE FROM JOB_TABLE")
     fun deleteAll()
-
-
-
 }
-
-
-
 
 //    updateJob(Job existingJob)
 //    INSERT INTO Customers (CustomerName, City, Country)

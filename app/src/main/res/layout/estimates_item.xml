@@ -74,28 +74,51 @@
                 android:textSize="14dp" />
 
 
+        <ImageButton
+                android:id="@+id/correctButton"
+                android:layout_width="50dp"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/measure_item_description_textView"
+                android:layout_gravity="center"
+                android:layout_marginTop="2dp"
+                android:layout_marginEnd="2dp"
+                android:layout_toStartOf="@+id/twins"
+                android:background="@drawable/buttonshape"
+                app:srcCompat="@drawable/ic_edit" />
+
         <LinearLayout
-                android:layout_width="184dp"
-                android:layout_height="95dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_alignParentRight="true"
                 android:layout_marginRight="2dp"
-                android:orientation="horizontal"
-                android:padding="@dimen/small">
+                android:id="@+id/twins"
+                android:orientation="vertical">
 
-            <ImageView
-                    android:id="@+id/photoPreviewStart"
-                    android:layout_width="@dimen/image_xmedium"
-                    android:layout_height="@dimen/image_xmedium"
-                    android:layout_marginRight="@dimen/xsmall"
-                    tools:src="@drawable/logo_new_medium" />
+            <LinearLayout
+                    android:layout_width="184dp"
+                    android:layout_height="95dp"
 
-            <ImageView
-                    android:id="@+id/photoPreviewEnd"
-                    android:layout_width="@dimen/image_xmedium"
-                    android:layout_height="@dimen/image_xmedium"
-                    android:layout_marginLeft="@dimen/xsmall"
-                    tools:src="@drawable/logo_new_medium" />
+                    android:orientation="horizontal"
+                    android:padding="@dimen/small">
+
+                <ImageView
+                        android:id="@+id/photoPreviewStart"
+                        android:layout_width="@dimen/image_xmedium"
+                        android:layout_height="@dimen/image_xmedium"
+                        android:layout_marginRight="@dimen/xsmall"
+                        tools:src="@drawable/logo_new_medium" />
+
+                <ImageView
+                        android:id="@+id/photoPreviewEnd"
+                        android:layout_width="@dimen/image_xmedium"
+                        android:layout_height="@dimen/image_xmedium"
+                        android:layout_marginLeft="@dimen/xsmall"
+                        tools:src="@drawable/logo_new_medium" />
+            </LinearLayout>
+
+
         </LinearLayout>
+
 
     </RelativeLayout>
 

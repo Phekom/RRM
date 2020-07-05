@@ -12,7 +12,6 @@ import za.co.xisystems.itis_rrm.data.repositories.WorkDataRepository
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
 import za.co.xisystems.itis_rrm.utils.uncaughtExceptionHandler
 
-
 class WorkViewModel(
     private val workDataRepository: WorkDataRepository,
     private val offlineDataRepository: OfflineDataRepository
@@ -21,17 +20,18 @@ class WorkViewModel(
     val user by lazyDeferred {
         workDataRepository.getUser()
     }
-
     val offlineUserTaskList by lazyDeferred {
         offlineDataRepository.getUserTaskList()
     }
-
     val workItem = MutableLiveData<JobItemEstimateDTO>()
+    val workItemJob = MutableLiveData<JobDTO>()
+    val backupWorkSubmission: MutableLiveData<JobEstimateWorksDTO> = MutableLiveData()
+    val workflowResponse = workDataRepository.workStatus
+    val backupCompletedEstimates: MutableLiveData<List<JobItemEstimateDTO>> = MutableLiveData()
     fun setWorkItem(work: JobItemEstimateDTO) {
         workItem.value = work
     }
 
-    val workItemJob = MutableLiveData<JobDTO>()
     fun setWorkItemJob(workjob: JobDTO) {
         workItemJob.value = workjob
     }
@@ -42,13 +42,11 @@ class WorkViewModel(
         }
     }
 
-
     suspend fun getJobsForActivityId1(activityId1: Int): LiveData<List<JobItemEstimateDTO>> {
         return withContext(Dispatchers.IO) {
             workDataRepository.getJobsForActivityId(activityId1)
         }
     }
-
 
     suspend fun getJobEstimationItemsForJobId(
         jobID: String?,
@@ -113,7 +111,6 @@ class WorkViewModel(
         }
     }
 
-
     suspend fun getJobEstiItemForEstimateId(estimateId: String?): LiveData<List<JobEstimateWorksDTO>> {
         return withContext(Dispatchers.IO) {
             workDataRepository.getJobEstiItemForEstimateId(estimateId)
@@ -126,17 +123,14 @@ class WorkViewModel(
         }
     }
 
-
     suspend fun createSaveWorksPhotos(
         estimateWorksPhoto: ArrayList<JobEstimateWorksPhotoDTO>,
-        estimat: JobItemEstimateDTO,
         itemEstiWorks: JobEstimateWorksDTO
     ) {
         return withContext(Dispatchers.IO) {
             workDataRepository.createEstimateWorksPhoto(estimateWorksPhoto, itemEstiWorks)
         }
     }
-
 
     suspend fun submitWorks(
         itemEstiWorks: JobEstimateWorksDTO,
@@ -147,14 +141,12 @@ class WorkViewModel(
         return withContext(Dispatchers.IO) {
             workDataRepository.submitWorks(itemEstiWorks, activity, itemEstiJob)
         }
-
     }
 
     suspend fun getJobItemEstimateForEstimateId(estimateId: String): LiveData<JobItemEstimateDTO> {
         return withContext(Dispatchers.IO) {
             workDataRepository.getJobItemEstimateForEstimateId(estimateId)
         }
-
     }
 
     suspend fun processWorkflowMove(
@@ -162,12 +154,11 @@ class WorkViewModel(
         trackRouteId: String,
         description: String?,
         direction: Int
-    ): String? {
+    ): String {
         return withContext(Dispatchers.IO) {
             workDataRepository.processWorkflowMove(userId, trackRouteId, description, direction)
         }
     }
-
 
     suspend fun getJobItemsEstimatesDoneForJobId(
         jobId: String?,
@@ -188,5 +179,4 @@ class WorkViewModel(
             workDataRepository.getWorkItemsForActID(actId)
         }
     }
-
 }

@@ -70,7 +70,7 @@ object DateUtil {
         return StringToDate(emptyString + year + dash + mMon + dash + mDate + timeZeros)
     }
 
-    fun DateToCalendar(date: Date?): Calendar {
+    fun DateToCalendar(date: Date): Calendar {
         val cal = Calendar.getInstance()
         cal.time = date
         return cal
@@ -82,11 +82,9 @@ object DateUtil {
 //        DateTimeFormatter.ofPattern("dd-MM-yyy", Locale.ENGLISH)
 //    var date: LocalDate = LocalDate.parse("2018-04-10T04:00:00.000Z", inputFormatter)
 //    var formattedDate: String = outputFormatter.format(date)
-
-
 }
 
-//class DateTypeAdapter : JsonDeserializer<Date> {
+// class DateTypeAdapter : JsonDeserializer<Date> {
 //    override fun deserialize(json: JsonElement, typeOfT: Type, context: JsonDeserializationContext): Date {
 //        try {
 //            return DateTime(json.asString).toDate()
@@ -94,4 +92,4 @@ object DateUtil {
 //            throw JsonParseException("'$json' is not a valid Date")
 //        }
 //    }
-//}
+// }

@@ -87,6 +87,8 @@
     <string name="are_you_sure_you_want_to_request_correction">Are you sure you want to Request Correction for this Job?</string>
     <string name="are_you_sure_you_want_to_decline">Are you sure you want to Decline This Job?</string>
     <string name="are_you_sure_you_want_to_decline2">Are you sure you want to Decline These Measurements?</string>
+    <string name="are_you_sure_you_want_to_correct">Are you sure you want to Correct These Measurements?</string>
+    <string name="are_you_sure_you_want_to_correct_esti">Are you sure you want to Correct These Estimates?</string>
     <string name="are_you_sure_you_want_to_approve">Are you sure you want to Approve This Job?</string>
     <string name="are_you_sure_you_want_to_approve2">Are you sure you want to Approve These Measurements?</string>
     <string name="are_you_sure_you_want_to_exit">Are you sure you want to exit?</string>
@@ -98,6 +100,7 @@
     <string name="building_googleapiclient">Building GoogleApiClient</string>
     <string name="c_uppercase">C</string>
     <string name="cancel">Cancel</string>
+    <string name="retry">Retry</string>
     <string name="capture_item_measure_photo">Capture Item Measure Photo</string>
     <string name="capture_job_details">Capture Job Details</string>
     <string name="capture_job_estimates">Capture Job Estimates</string>
@@ -132,11 +135,12 @@
     <string name="decline">Decline</string>
     <string name="approve">Approve</string>
     <string name="correct">Correct</string>
+    <string name="correct_estimate">Correct Estimates</string>
+    <string name="correct_measure">Correct Measurements</string>
+    <!--    <string name="correct">Correct</string>-->
     <string name="decline_measurement_item">Decline Measure Item</string>
     <string name="declining_measurements">Declining measurements</string>
     <string name="delete">Delete</string>
-    <string name="description">Description</string>
-    <string name="description_of_work">Description of work</string>
     <string name="device_cleanup_failed">Device cleanup failed</string>
     <string name="device_info">registerRequest</string>
     <string name="direction">Direction</string>
@@ -271,6 +275,7 @@
     <string name="please_enter_valid_end_point">Please enter valid Endpoint.</string>
     <string name="please_make_sure_start_km_is_smaller_than_end_km">Please make sure start km is smaller than end km</string>
     <string name="please_make_sure_workflow_items_contain_photos">Please make sure workflow Items contain photos</string>
+    <string name="please_provide_a_comment">Please provide a short comment.</string>
     <string name="please_make_sure_you_have_captured_photos">Please make sure you\'ve captured photos for all measurement items.</string>
     <string name="please_refresh_data">Please Refresh Data.</string>
     <string name="please_select_a_future_due_Date">Please select a future due date</string>
@@ -393,6 +398,7 @@
     <string name="title_activity_view_job_info">View Job Info</string>
     <string name="workflow_items_refreshed_successfully">Workflow items refreshed successfully</string>
     <string name="total">Total</string>
+    <string name="total_amount">Total Amount</string>
     <string name="unfortunately_a_connection_could_not_be_established_to_the_remote_server">Unfortunately a connection could not be established to the remote server</string>
     <string name="unsubmitted_jobs">Unsubmitted Jobs</string>
     <string name="update_google_play_services">Google Play services out of date. Please update</string>
@@ -416,6 +422,7 @@
     <string name="role_tester">CEE622559D0640BFAE98E39BA4917AF3RRM</string>
     <string name="run_as_tester">Run as Tester!</string>
     <string name="run_normal">Run as Normal</string>
+    <string name="measurement_gallery">Measurement Gallery</string>
 
     <!-- Errors -->
     <string name="not_authorized">Credential error, please re-install app with your valid credentials.</string>
@@ -528,8 +535,37 @@
     <string name="welcome">Welcome</string>
     <string name="label_amount">Amount: </string>
     <string name="label_length_m">Length(m): </string>
-    <string name="warning_estimate_incomplete">Incomplete estimate ...</string>
+    <string name="warning_estimate_incomplete">Incomplete estimate …</string>
     <string name="warning_estimate_enter_volume">Please enter the volume.</string>
     <string name="warning_estimate_enter_prov_sum">Please enter the Prov Sum</string>
+    <string name="capture_workflow_comments">Capture workflow comments</string>
+    <string name="title_activity_map">Map</string>
+
+    <!-- Location Rationale -->
+    <string name="alert_location_title">Location Services</string>
+    <string name="alert_location_message">RRM Mobile needs location services enabled in order to work</string>
+    <string name="enable_softdelete">Ënable SoftDelete</string>
+    <string name="NoData">Query returned no data</string>
+    <string name="confirm_project_selection">Confirm Project Selection</string>
+    <string name="description">Description</string>
+    <string name="permission_request" />
+
+
+    <!-- ForegroundOnly Location Service -->
+
+    <string name="launch_activity">Launch activity</string>
+    <string name="location_unknown">Location Unknown</string>
+    <string name="location_updates_label">Location Updates</string>
+
+    <string name="permission_rationale">Location permission needed for core functionality</string>
+    <string name="permission_denied_explanation">Permission was denied, but is needed for core functionality.</string>
+
+    <string name="start_location_updates_button_text">Start receiving location updates</string>
+    <string name="stop_location_updates_button_text">Stop receiving location updates</string>
+
+    <string name="location_updated">Location Updated: %1$s</string>
+
+    <string name="preference_file_key">com.example.android.while_in_use_location.PREFERENCE_FILE_KEY</string>
+    <string name="no_location_text">No current location</string>
 
 </resources>

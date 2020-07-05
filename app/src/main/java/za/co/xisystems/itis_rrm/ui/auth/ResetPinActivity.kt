@@ -22,44 +22,49 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.databinding.ActivityResetPinBinding
 import za.co.xisystems.itis_rrm.utils.*
 
-private const val PERMISSION_REQUEST = 10
-
-class ResetPinActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runnable{
-    companion object{
-        val TAG: String = RegisterPinActivity::class.java.simpleName
+class ResetPinActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnable {
+    companion object {
+        val TAG: String = ResetPinActivity::class.java.simpleName
+        private const val PERMISSION_REQUEST = 10
     }
 
     override val kodein by kodein()
-    private val factory : AuthViewModelFactory by instance()
+    private val factory: AuthViewModelFactory by instance<AuthViewModelFactory>()
     private lateinit var viewModel: AuthViewModel
     private lateinit var appContext: Context
-    private var permissions = arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE ,Manifest.permission.ACCESS_FINE_LOCATION )
+    private var permissions = arrayOf(
+        Manifest.permission.WRITE_EXTERNAL_STORAGE,
+        Manifest.permission.CAMERA,
+        Manifest.permission.READ_EXTERNAL_STORAGE,
+        Manifest.permission.ACCESS_FINE_LOCATION
+    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         appContext = this
 
-        if ( startPermissionRequest(appContext.applicationContext, permissions)){
+        if (startPermissionRequest(permissions)) {
             toast("Permissions Are already provided ")
-        }else{
+        } else {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 requestPermissions(permissions, PERMISSION_REQUEST)
             }
         }
 
-        val binding :ActivityResetPinBinding = DataBindingUtil.setContentView(this, R.layout.activity_reset_pin)
+        val binding: ActivityResetPinBinding =
+            DataBindingUtil.setContentView(this, R.layout.activity_reset_pin)
         viewModel = ViewModelProvider(this, factory).get(AuthViewModel::class.java)
         binding.viewmodel = viewModel
         viewModel.authListener = this
 
         Coroutines.main {
             val loggedInUser = viewModel.user.await()
-            loggedInUser.observe(this, Observer {user ->
+            loggedInUser.observe(this, Observer { user ->
                 // Register the user
                 if (user != null) {
                     Coroutines.main {
-                    if (viewModel.enterOldPin == viewModel.confirmNewPin) else
-                        getToLogin()
+                        if (viewModel.enterOldPin != viewModel.confirmNewPin)
+                            getToLogin()
                     }
                 }
             })
@@ -67,13 +72,10 @@ class ResetPinActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runna
                 ToastUtils().toastServerAddress(appContext)
             }
 
-
-
             buildFlavorTextView.setOnClickListener {
                 ToastUtils().toastVersion(appContext)
             }
         }
-
     }
 
     private fun getToLogin() {
@@ -90,45 +92,42 @@ class ResetPinActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runna
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode ==  PERMISSION_REQUEST){
+        if (requestCode == PERMISSION_REQUEST) {
             var allAllowed = true
-            for (i in permissions.indices){
-               if (grantResults[i] == PackageManager.PERMISSION_DENIED){
-                   allAllowed = false
-                   val requestAgain = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                       shouldShowRequestPermissionRationale(permissions[i])
-                   } else {
-                       TODO("VERSION.SDK_INT < M")
-                   }
-                   if (requestAgain){
-                       toast("Permission Denied")
-                   }else{
-                       toast("Please Enable Pemmisions from your Device Settings")
-                   }
+            for (i in permissions.indices) {
+                if (grantResults[i] == PackageManager.PERMISSION_DENIED) {
+                    allAllowed = false
+                    val requestAgain = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        shouldShowRequestPermissionRationale(permissions[i])
+                    } else {
+                        false
+                    }
+                    if (requestAgain) {
+                        toast("Permission Denied")
+                    } else {
+                        toast("Please enable permissions from your Device Settings")
+                    }
                }
             }
             if (allAllowed)
-                toast("Permissons Granted")
+                toast("Permissions Granted")
         }
     }
 
-    private fun startPermissionRequest(context: Context, permissions: Array<String>): Boolean {
+    private fun startPermissionRequest(permissions: Array<String>): Boolean {
         var allAccess = true
-        for (i in permissions.indices){
-            if(checkCallingOrSelfPermission(permissions[i]) == PackageManager.PERMISSION_DENIED){
-                allAccess =  false
-
+        for (i in permissions.indices) {
+            if (checkCallingOrSelfPermission(permissions[i]) == PackageManager.PERMISSION_DENIED) {
+                allAccess = false
             }
         }
         return allAccess
-
     }
-
 
     override fun onStart() {
         super.onStart()
         val resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this)
-        if (resultCode != ConnectionResult.SUCCESS) { //This dialog will help the user update to the latest GooglePlayServices
+        if (resultCode != ConnectionResult.SUCCESS) { // This dialog will help the user update to the latest GooglePlayServices
             val dialog =
                 GooglePlayServicesUtil.getErrorDialog(resultCode, this, 0)
             dialog?.show()
@@ -140,10 +139,10 @@ class ResetPinActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runna
         hideKeyboard()
     }
 
-    override fun onSuccess(user:UserDTO) {
+    override fun onSuccess(userDTO: UserDTO) {
             loading.hide()
 
-        toast("You are Loggedin as ${user.userName}")
+        toast("You are logged in as ${userDTO.userName}")
     }
 
     override fun onFailure(message: String) {
@@ -152,24 +151,14 @@ class ResetPinActivity : AppCompatActivity(), AuthListener  , KodeinAware ,Runna
         reg_container.snackbar(message)
     }
 
-
-
-
-    override fun onSignOut(user: UserDTO) {
-
+    override fun onSignOut(userDTO: UserDTO) {
     }
 
     override fun run() {
         Coroutines.main {
-            val contracts = viewModel.offlinedata.await()
-            contracts.observe(this, Observer { contrcts ->
-
+            val contractData = viewModel.offlineData.await()
+            contractData.observe(this, Observer { contrcts ->
             })
         }
-
     }
-
-
 }
-
-

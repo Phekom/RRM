@@ -1,6 +1,5 @@
 package za.co.xisystems.itis_rrm.data.network.responses
 
-
 import com.google.gson.annotations.SerializedName
 
 /**
@@ -13,5 +12,5 @@ data class ActivitySectionsResponse(
 //    @SerializedName("ActivitySections")
 //    val activitySections: ArrayList<SectionItemDTO>,
     @SerializedName("ErrorMessage")
-    val errorMessage: String // null
+    val errorMessage: String?
 )

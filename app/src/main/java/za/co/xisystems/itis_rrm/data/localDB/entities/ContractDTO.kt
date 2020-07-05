@@ -31,10 +31,9 @@ data class ContractDTO(
     @SerializedName("Projects")
     val projects: ArrayList<ProjectDTO>?
 
-
 ) : Serializable, Parcelable {
     constructor(parcel: Parcel) : this(
-        parcel.readString(),
+        parcel.readString()!!,
         parcel.readString(),
         parcel.readString(),
         parcel.readString(),

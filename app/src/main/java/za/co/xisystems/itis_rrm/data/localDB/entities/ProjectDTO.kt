@@ -14,14 +14,12 @@ import java.io.Serializable
 const val PROJECT_TABLE = "PROJECT_TABLE"
 
 @Entity(
-    tableName = PROJECT_TABLE
-    , foreignKeys = [ForeignKey(
+    tableName = PROJECT_TABLE, foreignKeys = [ForeignKey(
         entity = ContractDTO::class,
         parentColumns = arrayOf("contractId"),
         childColumns = arrayOf("contractId"),
         onDelete = ForeignKey.CASCADE
-    )]
-    , indices = [Index(value = ["projectId"], unique = true)]
+    )], indices = [Index(value = ["projectId"], unique = true)]
 )
 data class ProjectDTO(
     @PrimaryKey
@@ -60,11 +58,10 @@ data class ProjectDTO(
     @ColumnInfo(name = "contractId", index = true)
     val contractId: String?
 
-
-): Serializable, Parcelable {
+) : Serializable, Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.readInt(),
-        parcel.readString(),
+        parcel.readString()!!,
         parcel.readString(),
         parcel.readString(),
         TODO("items"),
@@ -101,4 +98,3 @@ data class ProjectDTO(
         }
     }
 }
-

@@ -13,29 +13,31 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.SectionItemDTO
 @Dao
 interface SectionItemDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertSectionitem(activitySections : SectionItemDTO )
+    suspend fun insertSectionitem(activitySections: SectionItemDTO)
 
     @Query("SELECT * FROM SECTION_ITEM_TABLE WHERE itemCode = :itemCode")
     fun checkIfSectionitemsExist(itemCode: String?): Boolean
 
     @Query("INSERT INTO SECTION_ITEM_TABLE (sectionItemId, itemCode, description)VALUES(:sectionItemId, :itemCode,:description)")
-    fun insertSectionitem(description : String  ,itemCode: String, sectionItemId: String)
+    fun insertSectionitem(description: String, itemCode: String, sectionItemId: String)
 
 //    @Query("SELECT sectionItemId FROM SECTION_ITEM_TABLE WHERE itemCode + :itemId ")
 
     @Query("SELECT sectionItemId FROM SECTION_ITEM_TABLE WHERE itemCode LIKE :itemCode")
     fun getSectionItemId(itemCode: String): String
 
-
     @Query("SELECT * FROM SECTION_ITEM_TABLE WHERE sectionItemId LIKE :sectionItemId")
-    fun getDescriptionFromSectionItemId(sectionItemId: String) : List<SectionItemDTO>
+    fun getDescriptionFromSectionItemId(sectionItemId: String): List<SectionItemDTO>
 
     @Query("SELECT * FROM SECTION_ITEM_TABLE")
     fun getSectionItems(): LiveData<List<SectionItemDTO>>
 
     @Query("SELECT * FROM SECTION_ITEM_TABLE ORDER BY  itemCode  ASC")
-    fun getAllSectionItems() : LiveData<List<SectionItemDTO>>
+    fun getAllSectionItems(): LiveData<List<SectionItemDTO>>
 
     @Query("DELETE FROM SECTION_ITEM_TABLE")
     fun deleteAll()
+
+    @Query("SELECT * FROM SECTION_ITEM_TABLE  WHERE sectionItemId IN (SELECT DISTINCT sectionItemId FROM PROJECT_ITEM_TABLE WHERE projectId = :projectId) ORDER BY itemCode ASC")
+    fun getFilteredSectionItems(projectId: String): LiveData<List<SectionItemDTO>>
 }

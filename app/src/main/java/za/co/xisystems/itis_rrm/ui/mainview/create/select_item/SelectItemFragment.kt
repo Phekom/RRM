@@ -13,6 +13,7 @@ import androidx.lifecycle.whenCreated
 import androidx.lifecycle.whenStarted
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import kotlinx.android.synthetic.main.fragment_select_item.*
@@ -24,8 +25,8 @@ import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
-import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.MyState
@@ -43,15 +44,13 @@ import java.util.concurrent.CancellationException
 class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAware {
     override val kodein by kodein()
     private lateinit var createViewModel: CreateViewModel
-    private val factory: CreateViewModelFactory by instance()
-    private lateinit var iTemArrayList: ArrayList<JobDTO>
-    private var items: MutableList<ItemDTOTemp> = ArrayList<ItemDTOTemp>()
+    private val factory: CreateViewModelFactory by instance<CreateViewModelFactory>()
+    private var items: MutableList<ItemDTOTemp> = ArrayList()
     private var animate = false
-    private val itemsMap: MutableMap<String, MutableList<ProjectItemDTO>?> =
-        LinkedHashMap<String, MutableList<ProjectItemDTO>?>()
 
     private lateinit var newJobItemEstimatesList: ArrayList<JobItemEstimateDTO>
-    private lateinit var  itemSections : ArrayList<ItemSectionDTO>
+    private lateinit var itemSections: ArrayList<ItemSectionDTO>
+
     @MyState
     internal var selectedSectionItem: SectionItemDTO? = null
 
@@ -103,12 +102,13 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
     override fun onCreateView(
         inflater: LayoutInflater,
-        container: ViewGroup?, savedInstanceState: Bundle?
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
 
     ): View? {
 
@@ -125,12 +125,10 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
 
         uiScope.run {
 
-
-            itemSections = ArrayList<ItemSectionDTO>()
-            newJobItemEstimatesList = ArrayList<JobItemEstimateDTO>()
+            itemSections = ArrayList()
+            newJobItemEstimatesList = ArrayList()
             bindUI()
         }
-
     }
 
     private fun bindUI() {
@@ -140,21 +138,27 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
     private fun setItemsBySections(projectId: String) {
         uiScope.launch(context = uiScope.coroutineContext) {
             val dialog =
-                setDataProgressDialog(activity!!, getString(R.string.data_loading_please_wait))
-            val sectionItems = createViewModel.getAllSectionItem()
+                setDataProgressDialog(
+                    requireActivity(),
+                    getString(R.string.data_loading_please_wait)
+                )
+
+            // SectionItems filtered by projectId
+            val sectionItems = createViewModel.getSectionItemsForProject(projectId)
             dialog.show()
 
             sectionItems.observe(viewLifecycleOwner, Observer { sectionData ->
-                val sectionNmbr = arrayOfNulls<String?>(sectionData.size)
+                val sectionSelections = arrayOfNulls<String?>(sectionData.size)
                 dialog.dismiss()
                 for (item in sectionData.indices) {
-                    sectionNmbr[item] = sectionData[item].description
+                    sectionSelections[item] = sectionData[item].description
                 }
                 uiScope.launch(uiScope.coroutineContext) {
-                    setSpinner(context!!.applicationContext,
+                    setSpinner(
+                        requireContext().applicationContext,
                         sectionItemSpinner,
                         sectionData,
-                        sectionNmbr,
+                        sectionSelections,
                         object : SpinnerHelper.SelectionListener<SectionItemDTO> {
 
                             override fun onItemSelected(position: Int, item: SectionItemDTO) {
@@ -165,37 +169,37 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
                                 selectedSectionItem = item
                                 setRecyclerItems(projectId, item.sectionItemId!!)
                             }
-
                         })
 
                     sectionItemSpinner.setOnTouchListener { v, event ->
                         animate = true
                         false
                     }
-
                 }
-
             })
-
         }
     }
 
-
-    //    private fun setRecyclerItems(sectionItemId: String) {
+    /**
+     * Get only the section items relevant for the section, filtered by what is relevant
+     * to the Project
+     * @param projectId String
+     * @param sectionItemId String
+     */
     private fun setRecyclerItems(projectId: String, sectionItemId: String) {
         uiScope.launch(context = uiScope.coroutineContext) {
-            val projectsItems = createViewModel.getAllItemsForSectionItem(sectionItemId, projectId)
-            projectsItems.observe(viewLifecycleOwner, Observer { i_tems ->
+            val projectsItems =
+                createViewModel.getAllItemsForSectionItemByProjectId(sectionItemId, projectId)
+            projectsItems.observe(viewLifecycleOwner, Observer { projectItemList ->
                 group_loading.visibility = View.GONE
-                initRecyclerView(i_tems.toProjectItems())
+                initRecyclerView(projectItemList.toProjectItems())
             })
         }
-
     }
 
     private fun List<ProjectItemDTO>.toProjectItems(): List<SectionProj_Item> {
-        return this.map { proj_items ->
-            SectionProj_Item(proj_items)
+        return this.map { projectItem ->
+            SectionProj_Item(projectItem)
         }
     }
 
@@ -208,26 +212,24 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
         item_recyclerView.apply {
             layoutManager = LinearLayoutManager(this.context)
             adapter = groupAdapter
+            adapter!!.stateRestorationPolicy =
+                RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
         }
 
         groupAdapter.setOnItemClickListener { item, view ->
 
             (item as? SectionProj_Item)?.let {
 
-                val newjItem = createItemList(it.itemDTO, itemSections)
-                saveNewItem(newjItem)
-                sendSelectedItem((it) , view,items )
+                val tempItem = createItemList(it.itemDTO, itemSections)
+                saveNewItem(tempItem)
+                sendSelectedItem((it), view)
             }
-
-
         }
-
-
     }
 
-    private fun saveNewItem(newjItem: ItemDTOTemp) {
+    private fun saveNewItem(tempItem: ItemDTOTemp) {
         uiScope.launch(context = uiScope.coroutineContext) {
-            createViewModel.saveNewItem(newjItem)
+            createViewModel.saveNewItem(tempItem)
         }
     }
 
@@ -256,14 +258,11 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
 
     private fun sendSelectedItem(
         item: SectionProj_Item,
-        view: View,
-        jobArrayList: List<SectionProj_Item>
+        view: View
     ) {
-        val myList = jobArrayList
 
         Coroutines.main {
-            createViewModel.sectionProjectItem.value = item
-//            createViewModel.project_Rate.value = selectRte
+            createViewModel.setSectionProjectItem(item)
         }
 
         Navigation.findNavController(view)
@@ -273,9 +272,8 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
     override fun onDestroyView() {
         // Prevents RecyclerView Memory leak
         item_recyclerView.adapter = null
-        uiScope.job.cancel(CancellationException("onDestroyView"))
+        uiScope.destroy()
         viewLifecycleOwner.lifecycleScope.cancel(CancellationException("onDestroyView"))
         super.onDestroyView()
     }
-
 }

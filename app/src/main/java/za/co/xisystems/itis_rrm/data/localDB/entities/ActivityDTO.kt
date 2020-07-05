@@ -26,4 +26,3 @@ data class ActivityDTO(
     val descr: String?
 
 )
-

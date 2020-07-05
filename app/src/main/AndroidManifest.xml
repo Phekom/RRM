@@ -4,9 +4,9 @@
     package="za.co.xisystems.itis_rrm"
     android:installLocation="auto">
 
-    <uses-feature android:name="android.hardware.camera" android:required="true" />
-
-    <!-- When adding a permission, also add to  "xisystemsms.itismaintenance.controllers.PermissionController"  if necessary. -->
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="true" /> <!-- When adding a permission, also add to  "xisystemsms.itismaintenance.controllers.PermissionController"  if necessary. -->
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
@@ -20,21 +20,26 @@
     <uses-permission android:name="android.permission.CAMERA" />
 
     <application
-        android:name="MainApp"
+        android:name=".MainApp"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:largeHeap="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="@string/google_maps_key" />
+
+        <!--        <activity-->
+        <!--            android:name=".ui.mainview.activities.MapActivity"-->
+        <!--            android:label="@string/title_activity_map"></activity>-->
         <!--
             <activity android:name=".ui.mainview.create.edit_estimates.EstimatePhotoActivity"></activity> android:hardwareAccelerated="false"
             <activity android:name=".ui.mainview.estmeasure.submit_measure.CaptureItemMeasurePhotoActivity" />
         -->
-
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.provider"
@@ -87,8 +92,7 @@
         </activity>
         <activity
             android:name=".ui.auth.ResetPinActivity"
-            android:theme="@style/Theme.AppCompat.NoActionBar" />
-        <!-- <activity -->
+            android:theme="@style/Theme.AppCompat.NoActionBar" /> <!-- <activity -->
         <!-- android:name=".ToDelete.activities.CaptureItemMeasurePhotoActivity" -->
         <!-- android:label="@string/edit_estimate" -->
         <!-- android:screenOrientation="portrait" -->
@@ -106,17 +110,18 @@
             android:exported="false"
             android:permission="android.permission.BIND_JOB_SERVICE"
             android:process=":crashreportingpostservice" />
-
         <service
             android:name="com.raygun.raygun4android.services.RUMPostService"
             android:exported="false"
             android:permission="android.permission.BIND_JOB_SERVICE"
             android:process=":rumpostservice" />
+        <service
+            android:name=".services.LocationTrackerService"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
 
         <meta-data
             android:name="com.raygun.raygun4android.apikey"
-            android:value="ELsXRYNj5MJJPHUiZQxpw" />
-
+            android:value="dbosfZ07DZmgvukZjDbesQ" />
     </application>
 
 </manifest>

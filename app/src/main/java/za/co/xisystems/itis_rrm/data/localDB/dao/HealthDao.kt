@@ -11,15 +11,12 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.HealthDTO
  * Created by Francis Mahlava on 2019/10/23.
  */
 
-
 @Dao
-interface HealthDao{
+interface HealthDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(health: HealthDTO) : Long
+    suspend fun insert(health: HealthDTO): Long
 
     @Query("SELECT * FROM HealthDTO")
-    fun getLife() : LiveData<HealthDTO>
-
-
+    fun getLife(): LiveData<HealthDTO>
 }

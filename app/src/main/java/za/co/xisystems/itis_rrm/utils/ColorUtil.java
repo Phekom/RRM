@@ -1,7 +1,6 @@
 package za.co.xisystems.itis_rrm.utils;
 
 import android.content.Context;
-import android.os.Build;
 
 import androidx.core.content.ContextCompat;
 
@@ -11,16 +10,8 @@ import androidx.core.content.ContextCompat;
  */
 public class ColorUtil {
 
-    // region (Public Static Methods)
-
     public static int getTextColor(Context context, int id) {
-        final int version = Build.VERSION.SDK_INT;
-
-        if (version >= 23) {
-            return ContextCompat.getColor(context, id);
-        } else {
-            return context.getResources().getColor(id);
-        }
+        return ContextCompat.getColor(context, id);
     }
 
     // endregion (Public Static Methods)

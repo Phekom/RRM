@@ -7,7 +7,6 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.ViewCompat
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
-
 class ScrollAwareFABBehavior(context: Context?, attrs: AttributeSet?) :
     FloatingActionButton.Behavior(context, attrs) {
 
@@ -19,15 +18,15 @@ class ScrollAwareFABBehavior(context: Context?, attrs: AttributeSet?) :
         axes: Int,
         nestedScrollAxes: Int
     ): Boolean {
-        return nestedScrollAxes == ViewCompat.SCROLL_AXIS_VERTICAL
-                || super.onStartNestedScroll(
-            coordinatorLayout,
-            child,
-            directTargetChild,
-            target,
-            axes,
-            nestedScrollAxes
-        )
+        return nestedScrollAxes == ViewCompat.SCROLL_AXIS_VERTICAL ||
+                super.onStartNestedScroll(
+                    coordinatorLayout,
+                    child,
+                    directTargetChild,
+                    target,
+                    axes,
+                    nestedScrollAxes
+                )
     }
 
     override fun onNestedScroll(
@@ -61,5 +60,4 @@ class ScrollAwareFABBehavior(context: Context?, attrs: AttributeSet?) :
             child.show()
         }
     }
-
 }

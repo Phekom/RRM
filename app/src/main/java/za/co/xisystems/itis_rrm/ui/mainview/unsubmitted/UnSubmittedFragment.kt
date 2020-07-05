@@ -10,24 +10,27 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
-import kotlinx.android.synthetic.main.fragment_approvemeasure.noData
 import kotlinx.android.synthetic.main.fragment_unsubmittedjobs.*
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.base.BaseFragment
+import za.co.xisystems.itis_rrm.custom.errors.ApiException
+import za.co.xisystems.itis_rrm.custom.errors.NoConnectivityException
+import za.co.xisystems.itis_rrm.custom.errors.NoInternetException
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
-import za.co.xisystems.itis_rrm.ui.mainview._fragments.BaseFragment
 import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.unsubmited_item.UnSubmittedJobItem
-import za.co.xisystems.itis_rrm.utils.*
+import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
+import za.co.xisystems.itis_rrm.utils.Coroutines
 
 class UnSubmittedFragment : BaseFragment(R.layout.fragment_unsubmittedjobs), KodeinAware {
-
+    //
     override val kodein by kodein()
     private lateinit var unsubmittedViewModel: UnSubmittedViewModel
-    private val factory: UnSubmittedViewModelFactory by instance()
+    private val factory: UnSubmittedViewModelFactory by instance<UnSubmittedViewModelFactory>()
     private lateinit var groupAdapter: GroupAdapter<GroupieViewHolder>
 
     companion object {
@@ -36,13 +39,14 @@ class UnSubmittedFragment : BaseFragment(R.layout.fragment_unsubmittedjobs), Kod
 
     override fun onCreateView(
         inflater: LayoutInflater,
-        container: ViewGroup?, savedInstanceState: Bundle?
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
     ): View? {
         return inflater.inflate(R.layout.fragment_unsubmittedjobs, container, false)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -69,7 +73,6 @@ class UnSubmittedFragment : BaseFragment(R.layout.fragment_unsubmittedjobs), Kod
                         toast(job_s.size.toString())
                         group12_loading.visibility = View.GONE
                     }
-
                 })
             } catch (e: ApiException) {
                 ToastUtils().toastLong(activity, e.message)
@@ -83,7 +86,6 @@ class UnSubmittedFragment : BaseFragment(R.layout.fragment_unsubmittedjobs), Kod
             }
         }
     }
-
 
     private fun List<JobDTO>.toApproveListItems(): List<UnSubmittedJobItem> {
         return this.map { jobsToApprove ->
@@ -99,7 +101,6 @@ class UnSubmittedFragment : BaseFragment(R.layout.fragment_unsubmittedjobs), Kod
             layoutManager = LinearLayoutManager(this.context)
             adapter = groupAdapter
         }
-
     }
 
     override fun onDestroyView() {
@@ -107,4 +108,3 @@ class UnSubmittedFragment : BaseFragment(R.layout.fragment_unsubmittedjobs), Kod
         super.onDestroyView()
     }
 }
-

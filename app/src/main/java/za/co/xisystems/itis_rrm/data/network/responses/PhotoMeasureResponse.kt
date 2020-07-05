@@ -1,6 +1,5 @@
 package za.co.xisystems.itis_rrm.data.network.responses
 
-
 import com.google.gson.annotations.SerializedName
 import java.io.Serializable
 
@@ -11,4 +10,4 @@ data class PhotoMeasureResponse(
     @SerializedName("ErrorMessage")
     var errorMessage: String? = null
 
-): Serializable
+) : Serializable

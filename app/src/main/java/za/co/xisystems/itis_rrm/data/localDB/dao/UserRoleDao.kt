@@ -30,5 +30,4 @@ interface UserRoleDao {
 
     @Query("DELETE FROM USER_ROLE_TABLE")
     fun deleteAll()
-
 }

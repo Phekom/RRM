@@ -1,6 +1,5 @@
 package za.co.xisystems.itis_rrm.data.localDB.entities
 
-
 import androidx.core.util.Pair
 import androidx.room.Entity
 import androidx.room.PrimaryKey
@@ -8,7 +7,6 @@ import com.google.gson.annotations.SerializedName
 import za.co.xisystems.itis_rrm.utils.JobUtils
 import java.io.Serializable
 import java.util.*
-
 
 /**
  * Created by Francis Mahlava on 2019/11/21.
@@ -59,9 +57,7 @@ data class JobItemEstimateDTO(
 
     val SelectedItemUOM: String?
 
-
-
-): Serializable {
+) : Serializable {
 
     private fun getJobItemEstimatePhoto(lookForStartPhoto: Boolean): Pair<Int, JobItemEstimatesPhotoDTO> {
         val photos = jobItemEstimatePhotos
@@ -96,7 +92,6 @@ data class JobItemEstimateDTO(
         photoStart.estimateId
         setJobItemEstimatePhoto(photoStart)
     }
-
 
     fun setJobItemEstimatePhotoEnd(photoEnd: JobItemEstimatesPhotoDTO) {
         photoEnd.estimateId

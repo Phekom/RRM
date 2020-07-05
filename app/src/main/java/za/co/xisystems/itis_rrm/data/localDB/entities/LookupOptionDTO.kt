@@ -10,7 +10,6 @@ import com.google.gson.annotations.SerializedName
  * Created by Francis Mahlava on 2019/11/21.
  */
 
-
 const val LOOKUP_OPTION_TABLE = "LOOKUP_OPTION_TABLE"
 @Entity(
     tableName = LOOKUP_OPTION_TABLE, foreignKeys = [ForeignKey(

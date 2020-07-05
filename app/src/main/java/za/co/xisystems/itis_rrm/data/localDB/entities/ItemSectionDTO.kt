@@ -10,7 +10,7 @@ import com.google.gson.annotations.SerializedName
 
 const val ITEM_SECTION_TABLE = "ITEM_SECTION_TABLE"
 
-//val JOB_ID = UUID.randomUUID().toString()
+// val JOB_ID = UUID.randomUUID().toString()
 
 @Entity(tableName = ITEM_SECTION_TABLE)
 data class ItemSectionDTO(

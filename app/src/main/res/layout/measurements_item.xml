@@ -33,7 +33,7 @@
                 android:layout_marginStart="10dp"
                 android:text="@string/some_super_long_item_name_in_case_it_gets_cut_off"
                 android:textColor="@color/sanral_burnt_orange"
-                android:textSize="17dp" />
+            android:textSize="17sp" />
 
         <TextView
                 android:id="@+id/measure_item_quantity_textView"
@@ -83,6 +83,19 @@
                 android:layout_marginRight="15dp"
                 tools:src="@drawable/logo_new_medium" />
 
+        <ImageButton
+                android:id="@+id/correctButton"
+                android:layout_width="50dp"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_gravity="center"
+                android:layout_marginStart="55dp"
+                android:layout_marginTop="54dp"
+                android:layout_marginEnd="2dp"
+                android:layout_toStartOf="@+id/view_captured_item_photo"
+                android:layout_toEndOf="@+id/measure_item_description_textView"
+                android:background="@drawable/buttonshape"
+                app:srcCompat="@drawable/ic_edit" />
 
     </RelativeLayout>
 

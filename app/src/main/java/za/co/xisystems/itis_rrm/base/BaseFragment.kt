@@ -1,4 +1,4 @@
-package za.co.xisystems.itis_rrm.ui.mainview._fragments
+package za.co.xisystems.itis_rrm.base
 
 import android.app.Activity
 import android.app.ProgressDialog
@@ -23,9 +23,9 @@ import za.co.xisystems.itis_rrm.utils.ViewLogger
 /**
  * Created by Francis Mahlava on 03,October,2019
  */
-
-
-abstract class BaseFragment(layoutContentId: Int) : Fragment(layoutContentId), IProgressView,
+// R.layout.fragment_home
+//
+abstract class BaseFragment(layoutContentId: Int) : Fragment(), IProgressView,
     HorizontalProgressBar {
 
     companion object {
@@ -90,29 +90,29 @@ abstract class BaseFragment(layoutContentId: Int) : Fragment(layoutContentId), I
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        animations = Animations(context!!.applicationContext)
+        animations = Animations(requireContext().applicationContext)
         initAnimations()
     }
 
     fun initAnimations() {
-        click = AnimationUtils.loadAnimation(context!!.applicationContext, R.anim.click)
-        bounce = AnimationUtils.loadAnimation(context!!.applicationContext, R.anim.bounce)
+        click = AnimationUtils.loadAnimation(requireContext().applicationContext, R.anim.click)
+        bounce = AnimationUtils.loadAnimation(requireContext().applicationContext, R.anim.bounce)
         bounce_short =
-            AnimationUtils.loadAnimation(context!!.applicationContext, R.anim.bounce_short)
-        bounce_long = AnimationUtils.loadAnimation(context!!.applicationContext, R.anim.bounce_long)
-        bounce_250 = AnimationUtils.loadAnimation(context!!.applicationContext, R.anim.bounce_250)
-        bounce_500 = AnimationUtils.loadAnimation(context!!.applicationContext, R.anim.bounce_500)
-        bounce_750 = AnimationUtils.loadAnimation(context!!.applicationContext, R.anim.bounce_750)
-        bounce_1000 = AnimationUtils.loadAnimation(context!!.applicationContext, R.anim.bounce_1000)
-        bounce_soft = AnimationUtils.loadAnimation(context!!.applicationContext, R.anim.bounce_soft)
+            AnimationUtils.loadAnimation(requireContext().applicationContext, R.anim.bounce_short)
+        bounce_long = AnimationUtils.loadAnimation(requireContext().applicationContext, R.anim.bounce_long)
+        bounce_250 = AnimationUtils.loadAnimation(requireContext().applicationContext, R.anim.bounce_250)
+        bounce_500 = AnimationUtils.loadAnimation(requireContext().applicationContext, R.anim.bounce_500)
+        bounce_750 = AnimationUtils.loadAnimation(requireContext().applicationContext, R.anim.bounce_750)
+        bounce_1000 = AnimationUtils.loadAnimation(requireContext().applicationContext, R.anim.bounce_1000)
+        bounce_soft = AnimationUtils.loadAnimation(requireContext().applicationContext, R.anim.bounce_soft)
         shake_delay =
-            AnimationUtils.loadAnimation(context!!.applicationContext, R.anim.shake_long_delay)
-        shake = AnimationUtils.loadAnimation(context!!.applicationContext, R.anim.shake)
-        shake_long = AnimationUtils.loadAnimation(context!!.applicationContext, R.anim.shake_long)
+            AnimationUtils.loadAnimation(requireContext().applicationContext, R.anim.shake_long_delay)
+        shake = AnimationUtils.loadAnimation(requireContext().applicationContext, R.anim.shake)
+        shake_long = AnimationUtils.loadAnimation(requireContext().applicationContext, R.anim.shake_long)
         shake_longer =
-            AnimationUtils.loadAnimation(context!!.applicationContext, R.anim.shake_longer)
-        scale = AnimationUtils.loadAnimation(context!!.applicationContext, R.anim.scale)
-        scale_light = AnimationUtils.loadAnimation(context!!.applicationContext, R.anim.scale_light)
+            AnimationUtils.loadAnimation(requireContext().applicationContext, R.anim.shake_longer)
+        scale = AnimationUtils.loadAnimation(requireContext().applicationContext, R.anim.scale)
+        scale_light = AnimationUtils.loadAnimation(requireContext().applicationContext, R.anim.scale_light)
     }
 
     override fun onDetach() {
@@ -137,9 +137,8 @@ abstract class BaseFragment(layoutContentId: Int) : Fragment(layoutContentId), I
         coordinator = view.findViewById(R.id.coordinator)
     }
 
-
     fun setDataProgressDialog(context: Context, message: String): ProgressDialog {
-        //Assuming that you are using fragments.//
+        // Assuming that you are using fragments.//
         val progressDialog = ProgressDialog(context)
         progressDialog.setTitle(getString(R.string.please_wait))
         progressDialog.setMessage(message)
@@ -160,7 +159,6 @@ abstract class BaseFragment(layoutContentId: Int) : Fragment(layoutContentId), I
             imm.hideSoftInputFromWindow(view.windowToken, 0)
         }
     }
-
 
     override fun toast(resid: Int) {
         if (!activity?.isFinishing!!) toast(getString(resid))
@@ -235,7 +233,7 @@ abstract class BaseFragment(layoutContentId: Int) : Fragment(layoutContentId), I
     }
 
     override fun showProgressDialog(vararg messages: String?) {
-        if (null != messages) {
+        if (messages.isNotEmpty()) {
             var message = messages[0]
             if (messages.size > 1) {
                 for (i in 1 until messages.size) {
@@ -245,7 +243,6 @@ abstract class BaseFragment(layoutContentId: Int) : Fragment(layoutContentId), I
             showHorizontalProgressDialog(message)
         }
     }
-
 
     abstract fun onCreateOptionsMenu(menu: Menu): Boolean
 }

@@ -12,13 +12,12 @@ import com.google.gson.annotations.SerializedName
 
 const val WORKFLOW_ROUTE_TABLE = "WORKFLOW_ROUTE_TABLE"
 @Entity(
-    tableName = WORKFLOW_ROUTE_TABLE
-    , foreignKeys = arrayOf(
+    tableName = WORKFLOW_ROUTE_TABLE, foreignKeys = arrayOf(
         ForeignKey(
-        entity = WorkFlowDTO::class,
-        parentColumns = arrayOf("workflowId"),
-        childColumns = arrayOf("workflowId"),
-        onDelete = ForeignKey.CASCADE
+            entity = WorkFlowDTO::class,
+            parentColumns = arrayOf("workflowId"),
+            childColumns = arrayOf("workflowId"),
+            onDelete = ForeignKey.CASCADE
         )
     )
 )
@@ -49,4 +48,3 @@ data class WorkFlowRouteDTO(
     @ColumnInfo(name = "workflowId", index = true)
     var workflowId: Long?
 )
-
