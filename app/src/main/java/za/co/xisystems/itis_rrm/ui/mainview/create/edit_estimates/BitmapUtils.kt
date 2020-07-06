@@ -9,9 +9,6 @@ import android.os.Environment
 import android.util.DisplayMetrics
 import android.view.WindowManager
 import androidx.core.content.FileProvider
-import za.co.xisystems.itis_rrm.BuildConfig
-import za.co.xisystems.itis_rrm.R
-import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -19,6 +16,9 @@ import java.io.OutputStream
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.min
+import za.co.xisystems.itis_rrm.BuildConfig
+import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.utils.PhotoUtil
 
 internal object BitmapUtils {
     private const val FILE_PROVIDER_AUTHORITY =

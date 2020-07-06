@@ -16,6 +16,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
+import java.util.*
+import java.util.concurrent.CancellationException
 import kotlinx.android.synthetic.main.fragment_select_item.*
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.cancel
@@ -34,8 +36,6 @@ import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper.setSpinner
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.Coroutines
-import java.util.*
-import java.util.concurrent.CancellationException
 
 /**
  * Created by Francis Mahlava on 2019/12/29.

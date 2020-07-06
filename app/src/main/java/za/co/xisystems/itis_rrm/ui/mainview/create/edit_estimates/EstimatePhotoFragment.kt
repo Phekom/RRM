@@ -26,6 +26,11 @@ import androidx.lifecycle.Observer
 import androidx.navigation.Navigation
 import icepick.Icepick
 import icepick.State
+import java.io.File
+import java.text.DecimalFormat
+import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 import kotlinx.android.synthetic.main.fragment_photo_estimate.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.cancel
@@ -51,11 +56,6 @@ import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.models.PhotoTyp
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.*
 import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
-import java.io.File
-import java.text.DecimalFormat
-import java.util.*
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
 
 /**
  * Created by Francis Mahlava on 2019/12/29.

@@ -2,7 +2,6 @@ package za.co.xisystems.itis_rrm.base
 
 import za.co.xisystems.itis_rrm.custom.errors.ErrorHandler
 
-
 /**
  * Created by Shaun McDonald on 2020/04/14.
  * Copyright (c) 2020 XI Systems. All rights reserved.

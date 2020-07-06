@@ -22,6 +22,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.Section
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
+import java.util.*
 import kotlinx.android.synthetic.main.fragment_add_project_items.*
 import kotlinx.coroutines.launch
 import org.kodein.di.KodeinAware
@@ -45,7 +46,6 @@ import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedViewModelFact
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DateUtil
 import za.co.xisystems.itis_rrm.utils.JobUtils
-import java.util.*
 
 /**
  * Created by Francis Mahlava on 2019/12/29.

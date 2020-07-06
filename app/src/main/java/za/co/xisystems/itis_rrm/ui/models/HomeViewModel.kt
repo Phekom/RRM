@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlin.system.measureTimeMillis
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
@@ -12,7 +13,6 @@ import timber.log.Timber
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
-import kotlin.system.measureTimeMillis
 
 class HomeViewModel(
     private val repository: UserRepository,
@@ -21,7 +21,6 @@ class HomeViewModel(
 ) : ViewModel() {
 
     init {
-
     }
     val offlineData by lazyDeferred {
         offlineDataRepository.getContracts()
@@ -37,7 +36,6 @@ class HomeViewModel(
     val offlineSectionItems by lazyDeferred {
         offlineDataRepository.getSectionItems()
     }
-
 
     val fetchResult = MutableLiveData<Long>()
 
@@ -61,7 +59,6 @@ class HomeViewModel(
 
                     val taskList = async {
                         offlineDataRepository.fetchUserTaskList(userId)
-
                     }
 
                     val contracts = async {
@@ -73,11 +70,8 @@ class HomeViewModel(
                     Timber.d("$result")
                 }
             }
-
         }
         Timber.d("Time taken: $time")
         fetchResult.postValue(time)
-
     }
-
 }

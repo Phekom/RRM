@@ -51,4 +51,3 @@ internal object SharedPreferenceUtil {
             putBoolean(KEY_FOREGROUND_ENABLED, requestingLocationUpdates)
         }
 }
-

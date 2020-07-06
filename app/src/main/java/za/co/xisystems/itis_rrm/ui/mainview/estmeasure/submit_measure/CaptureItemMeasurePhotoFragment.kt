@@ -21,6 +21,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
+import java.util.*
 import kotlinx.android.synthetic.main.activity_capture_item_measure_photo.done_image_button
 import kotlinx.android.synthetic.main.activity_capture_item_measure_photo.photoButtons
 import kotlinx.android.synthetic.main.fragment_capture_item_measure_photo.*
@@ -54,7 +55,6 @@ import za.co.xisystems.itis_rrm.utils.errors.ErrorHandler
 import za.co.xisystems.itis_rrm.utils.results.XIError
 import za.co.xisystems.itis_rrm.utils.results.XIResult
 import za.co.xisystems.itis_rrm.utils.results.XISuccess
-import java.util.*
 
 //
 class CaptureItemMeasurePhotoFragment :

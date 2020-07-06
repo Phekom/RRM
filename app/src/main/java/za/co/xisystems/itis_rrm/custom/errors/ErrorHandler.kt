@@ -64,5 +64,4 @@ object ErrorHandler {
         message,
         Toast.LENGTH_LONG
     ).show()
-
 }

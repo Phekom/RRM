@@ -5,9 +5,9 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import java.util.*
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasurePhotoDTO
-import java.util.*
 
 /**
  * Created by Francis Mahlava on 2019/11/21.

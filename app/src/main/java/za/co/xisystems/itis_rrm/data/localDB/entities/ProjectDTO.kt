@@ -4,8 +4,8 @@ import android.os.Parcel
 import android.os.Parcelable
 import androidx.room.*
 import com.google.gson.annotations.SerializedName
-import org.jetbrains.annotations.NotNull
 import java.io.Serializable
+import org.jetbrains.annotations.NotNull
 
 /**
  * Created by Francis Mahlava on 2019/11/22.

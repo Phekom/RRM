@@ -24,6 +24,9 @@ import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
+import java.io.IOException
+import java.util.*
+import kotlin.collections.ArrayList
 import kotlinx.android.synthetic.main.fragment_capture_work.*
 import kotlinx.coroutines.launch
 import org.kodein.di.KodeinAware
@@ -56,9 +59,6 @@ import za.co.xisystems.itis_rrm.utils.results.XIError
 import za.co.xisystems.itis_rrm.utils.results.XIResult
 import za.co.xisystems.itis_rrm.utils.results.XIStatus
 import za.co.xisystems.itis_rrm.utils.results.XISuccess
-import java.io.IOException
-import java.util.*
-import kotlin.collections.ArrayList
 
 class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), KodeinAware {
 
