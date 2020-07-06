@@ -5,8 +5,8 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
-import org.jetbrains.annotations.NotNull
 import java.io.Serializable
+import org.jetbrains.annotations.NotNull
 
 /**
  * Created by Francis Mahlava on 2019/11/21.

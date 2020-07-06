@@ -27,5 +27,4 @@ object IndefiniteSnackbar {
     fun hide() {
         snackbar?.dismiss()
     }
-
 }

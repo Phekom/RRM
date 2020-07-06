@@ -1,7 +1,7 @@
 package za.co.xisystems.itis_rrm.utils.interfaces
 
-import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import java.util.*
+import za.co.xisystems.itis_rrm.data.localDB.entities.*
 
 /**
  * Created by Francis Mahlava on 2019/11/30.

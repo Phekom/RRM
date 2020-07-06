@@ -1,6 +1,7 @@
 package za.co.xisystems.itis_rrm.data.network
 
 import com.google.gson.JsonObject
+import java.util.concurrent.TimeUnit
 import okhttp3.OkHttpClient
 import okhttp3.Protocol
 import okhttp3.logging.HttpLoggingInterceptor
@@ -13,7 +14,6 @@ import retrofit2.http.FormUrlEncoded
 import retrofit2.http.POST
 import za.co.xisystems.itis_rrm.BuildConfig
 import za.co.xisystems.itis_rrm.data.network.responses.*
-import java.util.concurrent.TimeUnit
 
 /**
  * Created by Francis Mahlava on 2019/10/23.

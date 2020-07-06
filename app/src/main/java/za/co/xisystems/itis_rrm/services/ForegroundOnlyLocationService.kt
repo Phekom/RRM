@@ -32,10 +32,10 @@ import android.os.Looper
 import androidx.core.app.NotificationCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.gms.location.*
+import java.util.concurrent.TimeUnit
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
-import java.util.concurrent.TimeUnit
 
 /**
  * Service tracks location when requested and updates Activity via binding. If Activity is
@@ -82,7 +82,6 @@ class ForegroundOnlyLocationService : Service() {
         // TODO: Step 1.2, Review the FusedLocationProviderClient.
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
 
-
         // TODO: Step 1.3, Create a LocationRequest.
 
         locationRequest = LocationRequest().apply {
@@ -97,7 +96,6 @@ class ForegroundOnlyLocationService : Service() {
             // This is the longest the service will wait for batch updates
             maxWaitTime = TimeUnit.MINUTES.toMillis(2)
         }
-
 
         // TODO: Step 1.4, Initialize the LocationCallback.
         locationCallback = object : LocationCallback() {
@@ -132,7 +130,6 @@ class ForegroundOnlyLocationService : Service() {
                 }
             }
         }
-
     }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
@@ -198,7 +195,6 @@ class ForegroundOnlyLocationService : Service() {
         configurationChange = true
     }
 
-
     fun subscribeToLocationUpdates() {
         Timber.d("subscribeToLocationUpdates()")
 
@@ -216,7 +212,6 @@ class ForegroundOnlyLocationService : Service() {
                 locationCallback,
                 Looper.myLooper()
             )
-
         } catch (unlikely: SecurityException) {
             SharedPreferenceUtil.saveLocationTrackingPref(this, false)
             Timber.e("Lost location permissions. Couldn't remove updates. $unlikely")
@@ -239,11 +234,9 @@ class ForegroundOnlyLocationService : Service() {
             }
 
             SharedPreferenceUtil.saveLocationTrackingPref(this, false)
-
         } catch (unlikely: SecurityException) {
             SharedPreferenceUtil.saveLocationTrackingPref(this, true)
             Timber.e("Lost location permissions. Couldn't remove updates. $unlikely")
-
         }
     }
 
@@ -320,7 +313,6 @@ class ForegroundOnlyLocationService : Service() {
             )
             .build()
     }
-
 
     /**
      * Class used for the client Binder.  Since this service runs in the same process as its
