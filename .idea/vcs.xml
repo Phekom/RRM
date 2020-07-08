@@ -7,5 +7,6 @@
   </component>
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/CICD/jenkins_home/caches/git-1ef33611a26d95324db615e46d28761e" vcs="Git" />
   </component>
 </project>
