@@ -115,7 +115,6 @@ android {
         minSdkVersion 21
         targetSdkVersion 29
         versionCode 1
-        versionName versioning.name
         vectorDrawables.useSupportLibrary = false
         multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -185,7 +184,7 @@ android {
             buildConfigField "String", "HOCKEYAPP_APP_ID", "\"59d2e5d0f7ac4b28a08c30639089d198\""
             buildConfigField("String", "API_HOST", qa_env)
             // The following configuration limits the "dev" flavor to using
-            // English stringresources and xxhdpi screen-density resources.
+            // English string resources and xxhdpi screen-density resources.
             resConfigs "en", "xxhdpi"
             buildConfigField("String", "USERNAME_TEST", '"stubtest"')
             buildConfigField("String", "PASSWORD_TEST", '"1234"')
