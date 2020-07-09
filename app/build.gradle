@@ -61,7 +61,6 @@ subprojects {
 
 android {
 
-
     flavorDimensions "default"
 
     compileSdkVersion compile_version
@@ -94,7 +93,7 @@ android {
 
     signingConfigs {
         release {
-            storeFile file('C:\\Users\\XiCenMcDonaldS\\AndroidStudioProjects\\RRM_MvvM\\release.RRMkey')
+            storeFile file(project.rootProject.file('release.RRMkey'))
             keyAlias 'rrmkey'
             storePassword 'thecowmakesmoo'
             keyPassword 'thecowmakesmoo'
