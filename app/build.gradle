@@ -6,8 +6,22 @@ plugins {
     id "androidx.navigation.safeargs"
     id "deploygate"
     id "org.jlleitschuh.gradle.ktlint"
+    id "org.jlleitschuh.gradle.ktlint-idea"
     id "eu.davidea.grabver"
 }
+
+subprojects {
+    apply plugin: "org.jlleitschuh.gradle.ktlint" // Version should be inherited from parent
+
+    // Optionally configure plugin
+    ktlint {
+        debug = true
+        android = true
+    }
+}
+
+
+
 
 versioning {
     // Required (number)
@@ -40,27 +54,7 @@ static def safePropertyGetter(Properties properties, String key, String defaultV
 }
 
 
-allprojects {
-    tasks.withType(JavaCompile) {
-        options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
-    }
-
-}
-
-
-subprojects {
-    plugins {
-        id "org.jlleitschuh.gradle.ktlint" // Version should be inherited from parent
-    }
-
-    // Optionally configure plugin
-    ktlint {
-        debug = true
-    }
-}
-
 android {
-
 
     flavorDimensions "default"
 
@@ -77,7 +71,6 @@ android {
         buildConfig = true
     }
 
-
     def versionBuild
     def versionBuildDate
     def appId = "za.co.xisystems.itismaintenance"
@@ -87,7 +80,6 @@ android {
     versionBuild = (versionBuild == null) ? 55 : versionBuild + 55
 
     versioning.patch = versionBuild
-
 
 
     // local properties
@@ -101,7 +93,7 @@ android {
 
     signingConfigs {
         release {
-            storeFile file('C:\\Users\\XiCenMcDonaldS\\AndroidStudioProjects\\RRM_MvvM\\release.RRMkey')
+            storeFile file(project.rootProject.file('release.RRMkey'))
             keyAlias 'rrmkey'
             storePassword 'thecowmakesmoo'
             keyPassword 'thecowmakesmoo'
@@ -123,7 +115,6 @@ android {
         minSdkVersion 21
         targetSdkVersion 29
         versionCode 1
-        versionName versioning.name
         vectorDrawables.useSupportLibrary = false
         multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -193,7 +184,7 @@ android {
             buildConfigField "String", "HOCKEYAPP_APP_ID", "\"59d2e5d0f7ac4b28a08c30639089d198\""
             buildConfigField("String", "API_HOST", qa_env)
             // The following configuration limits the "dev" flavor to using
-            // English stringresources and xxhdpi screen-density resources.
+            // English string resources and xxhdpi screen-density resources.
             resConfigs "en", "xxhdpi"
             buildConfigField("String", "USERNAME_TEST", '"stubtest"')
             buildConfigField("String", "PASSWORD_TEST", '"1234"')
