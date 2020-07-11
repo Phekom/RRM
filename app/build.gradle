@@ -6,22 +6,8 @@ plugins {
     id "androidx.navigation.safeargs"
     id "deploygate"
     id "org.jlleitschuh.gradle.ktlint"
-    id "org.jlleitschuh.gradle.ktlint-idea"
     id "eu.davidea.grabver"
 }
-
-subprojects {
-    apply plugin: "org.jlleitschuh.gradle.ktlint" // Version should be inherited from parent
-
-    // Optionally configure plugin
-    ktlint {
-        debug = true
-        android = true
-    }
-}
-
-
-
 
 versioning {
     // Required (number)
@@ -135,14 +121,6 @@ android {
                              "room.expandProjection": "false"]
 
             }
-        }
-
-        dataBinding {
-            enabled = true
-        }
-
-        viewBinding {
-            enabled = true
         }
     }
 
@@ -275,6 +253,10 @@ android {
     }
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_1_8.toString()
+    }
+    dependenciesInfo {
+        includeInBundle false
+        includeInApk false
     }
 }
 
@@ -480,4 +462,9 @@ dependencies {
     // DMG Location Utils
     // implementation 'com.github.DMGDesignUK:DmgLocationUtils:v1.0.1'
 
+}
+
+ktlint {
+    android.set(true)
+    outputColorName.set("RED")
 }

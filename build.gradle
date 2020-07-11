@@ -49,6 +49,12 @@ allprojects {
         gms_library_version = "9.8.0"
         build_tools_version = "28.0.3"
     }
+
+    gradle.projectsEvaluated {
+        tasks.withType(JavaCompile) {
+            options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+        }
+    }
 }
 
 
