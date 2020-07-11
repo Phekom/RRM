@@ -1,7 +1,0 @@
-
-O
-java:S1118":Add a private constructor to hide the implicit public one.(ÓçûY
-l
-java:S2159"VRemove this call to "equals"; comparisons between unrelated types always return false.(«ÉÊÃ
-?
-java:S1125")Remove the literal "false" boolean value.(«ÉÊÃ

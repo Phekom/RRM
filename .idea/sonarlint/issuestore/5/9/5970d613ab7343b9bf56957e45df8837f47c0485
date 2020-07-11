@@ -1,8 +1,0 @@
-
-q	java:S116"RRename this field "LOG_TAG" to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(Úó¿ëüÿÿÿÿ8ÿê„İ¢.
-D
-java:S1481")Remove this unused "urlc" local variable.(éÉâ8ÿê„İ¢.
-S
-java:S1854"8Remove this useless assignment to local variable "urlc".(éÉâ8ÿê„İ¢.
-K
-java:S1068"+Remove this unused "LOG_TAG" private field.(Úó¿ëüÿÿÿÿ8ßŒÇµ£.

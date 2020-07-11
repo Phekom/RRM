@@ -1,46 +1,0 @@
-
-‡kotlin:S100 "cRename function "JobItemEstimateToStoredString" to match the regular expression ^[a-z][a-zA-Z0-9]*$(Å­¥Óûÿÿÿÿ8”èž©.
-=kotlin:S125º"Remove this commented out code.(è»»_8¼Åšº¡.
->kotlin:S125¶"Remove this commented out code.(Â˜Þ“8êî¼•¡.
->kotlin:S125î"Remove this commented out code.(Â˜Þ“8êî¼•¡.
->kotlin:S125Š"Remove this commented out code.(Â˜Þ“8êî¼•¡.
-‚kotlin:S100ñ"^Rename function "SectionDTOToStoredString" to match the regular expression ^[a-z][a-zA-Z0-9]*$(¨È‰ûÿÿÿÿ8¹îòÈ¡.
->kotlin:S125š"Remove this commented out code.(Â˜Þ“8êî¼•¡.
-‡kotlin:S100ª"cRename function "LookupOptionDTOToStoredString" to match the regular expression ^[a-z][a-zA-Z0-9]*$(¸Ù“øÿÿÿÿ8¹îòÈ¡.
->kotlin:S125¾"Remove this commented out code.(Â˜Þ“8êî¼•¡.
-kotlin:S100ˆ"lRename function "JobEstimateWorksPhotoDTOToStoredString" to match the regular expression ^[a-z][a-zA-Z0-9]*$(’Ó±ÿÿÿÿÿ8¹îòÈ¡.
->kotlin:S125ò"Remove this commented out code.(Â˜Þ“8êî¼•¡.
-…kotlin:S100½"fRename function "PrimaryKeyValueDTOToStoredString" to match the regular expression ^[a-z][a-zA-Z0-9]*$(ý©õã8¹îòÈ¡.
->kotlin:S125ú"Remove this commented out code.(Â˜Þ“8êî¼•¡.
->kotlin:S125â"Remove this commented out code.(Â˜Þ“8êî¼•¡.
->kotlin:S125ž"Remove this commented out code.(Â˜Þ“8êî¼•¡.
->kotlin:S125†"Remove this commented out code.(Â˜Þ“8êî¼•¡.
-ykotlin:S100›"ZRename function "JobDTOToStoredString" to match the regular expression ^[a-z][a-zA-Z0-9]*$(Œ¸ó¤8¹îòÈ¡.
-ukotlin:S100"WRename function "JobToStoredString" to match the regular expression ^[a-z][a-zA-Z0-9]*$(ä®ã8¹îòÈ¡.
->kotlin:S125Ò"Remove this commented out code.(Â˜Þ“8êî¼•¡.
->kotlin:S125®"Remove this commented out code.(Â˜Þ“8êî¼•¡.
->kotlin:S125²"Remove this commented out code.(Â˜Þ“8êî¼•¡.
-†kotlin:S100³"bRename function "JobItemMeasureToStoredString" to match the regular expression ^[a-z][a-zA-Z0-9]*$(ŽŒÚ‹ÿÿÿÿÿ8¼Åšº¡.
->kotlin:S125Ž"Remove this commented out code.(Â˜Þ“8êî¼•¡.
->kotlin:S125Â"Remove this commented out code.(Â˜Þ“8êî¼•¡.
->kotlin:S125¢"Remove this commented out code.(Â˜Þ“8êî¼•¡.
->kotlin:S125Ú"Remove this commented out code.(Â˜Þ“8êî¼•¡.
->kotlin:S125ö"Remove this commented out code.(Â˜Þ“8êî¼•¡.
-†kotlin:S100õ"gRename function "JobEstimateWorksDTOToStoredString" to match the regular expression ^[a-z][a-zA-Z0-9]*$(é›Ü8¹îòÈ¡.
->kotlin:S125‚"Remove this commented out code.(Â˜Þ“8êî¼•¡.
-‹kotlin:S100Ð"lRename function "JobItemEstimatesPhotoDTOToStoredString" to match the regular expression ^[a-z][a-zA-Z0-9]*$(°¼…¡8¹îòÈ¡.
-ƒkotlin:S100ç"_Rename function "WorkFlowDTOToStoredString" to match the regular expression ^[a-z][a-zA-Z0-9]*$(“”ø­þÿÿÿÿ8¹îòÈ¡.
-~kotlin:S100Á"_Rename function "ActivityDTOToStoredString" to match the regular expression ^[a-z][a-zA-Z0-9]*$(©¯ý¼8¹îòÈ¡.
->kotlin:S125Æ"Remove this commented out code.(Â˜Þ“8êî¼•¡.
-kotlin:S100—"bRename function "ChildLookupDTOToStoredString" to match the regular expression ^[a-z][a-zA-Z0-9]*$(ŒãÚø8¹îòÈ¡.
->kotlin:S125æ"Remove this commented out code.(Â˜Þ“8êî¼•¡.
-kotlin:S100ã"kRename function "JobItemEstimatesPhotoDOToStoredString" to match the regular expression ^[a-z][a-zA-Z0-9]*$(ÙªØ±ûÿÿÿÿ8¹îòÈ¡.
->kotlin:S125Ê"Remove this commented out code.(Â˜Þ“8êî¼•¡.
-zkotlin:S100Ò"[Rename function "ItemDTOToStoredString" to match the regular expression ^[a-z][a-zA-Z0-9]*$(Ç‹ËÛ8¹îòÈ¡.
->kotlin:S125ª"Remove this commented out code.(Â˜Þ“8êî¼•¡.
-…kotlin:S100ú"aRename function "ToDoGroupsDTOToStoredString" to match the regular expression ^[a-z][a-zA-Z0-9]*$(ËãË’ûÿÿÿÿ8¹îòÈ¡.
-kotlin:S100Ô"`Rename function "InfoClassDTOToStoredString" to match the regular expression ^[a-z][a-zA-Z0-9]*$(±­£©8¹îòÈ¡.
->kotlin:S125Þ"Remove this commented out code.(Â˜Þ“8êî¼•¡.
-Žkotlin:S100®"jRename function "JobItemMeasurePhotoDTOToStoredString" to match the regular expression ^[a-z][a-zA-Z0-9]*$(¿ê¬ßþÿÿÿÿ8¹îòÈ¡.
-|kotlin:S100„"]Rename function "VoItemDTOToStoredString" to match the regular expression ^[a-z][a-zA-Z0-9]*$(¼þÐ¦8¹îòÈ¡.
->kotlin:S125–"Remove this commented out code.(Â˜Þ“8êî¼•¡.

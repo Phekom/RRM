@@ -1,14 +1,0 @@
-
->
-java:S1148$"#Use a logger to log this exception.(€ÉÔ…ıÿÿÿÿ
-U
-java:S1118":Add a private constructor to hide the implicit public one.(ôßüßûÿÿÿÿ
-A
-java:S1172"&Remove these unused method parameters.(ÕÏ³Ëıÿÿÿÿ
-N
-java:S1854"8Remove this useless assignment to local variable "data".(†êÜ
-?
-java:S1481")Remove this unused "data" local variable.(†êÜ
-V	java:S125"<This block of commented-out lines of code should be removed.(Ã‡›¾ıÿÿÿÿ
-Q	java:S125"<This block of commented-out lines of code should be removed.(¹‚Ü™
-V	java:S125"<This block of commented-out lines of code should be removed.(Óò‹ğüÿÿÿÿ
