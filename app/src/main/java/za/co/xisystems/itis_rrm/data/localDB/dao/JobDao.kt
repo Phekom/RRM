@@ -5,10 +5,10 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import java.util.*
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobSectionDTO
+import java.util.ArrayList
 
 /**
  * Created by Francis Mahlava on 2019/11/21.
@@ -63,7 +63,12 @@ interface JobDao {
     fun getUnSyncedJobs(): LiveData<List<JobDTO>>
 
     @Query("SELECT * FROM JOB_TABLE WHERE actId = :jobApproved  AND ESTIMATES_ACT_ID LIKE :estimateComplete AND  WORKS_ACT_ID LIKE :estWorksComplete AND MEASURE_ACT_ID LIKE :measureComplete ORDER BY jiNo ASC")
-    fun getJobsMeasureForActivityIds(estimateComplete: Int, measureComplete: Int, estWorksComplete: Int, jobApproved: Int): LiveData<List<JobDTO>>
+    fun getJobsMeasureForActivityIds(
+        estimateComplete: Int,
+        measureComplete: Int,
+        estWorksComplete: Int,
+        jobApproved: Int
+    ): LiveData<List<JobDTO>>
 
     @Query("SELECT * FROM JOB_TABLE WHERE actId = :actId ORDER BY jiNo ASC")
     fun getJobsForActivityId(actId: Int): LiveData<List<JobDTO>>

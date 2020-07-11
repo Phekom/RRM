@@ -30,22 +30,22 @@ class UnSubmittedJobItem(
             unsubmitted_project_textView.text = "JI:${jobDTO.JiNo} - "
             Coroutines.main {
                 val descri = viewModel.getDescForProjectId(jobDTO.ProjectId!!)
-               unsubmitted_project_textView.text = descri
-           }
-           unsubmitted_description_textView.text = jobDTO.Descr
+                unsubmitted_project_textView.text = descri
+            }
+            unsubmitted_description_textView.text = jobDTO.Descr
 
-           deleteButton.setOnClickListener {
-               Coroutines.main {
-                   viewModel.deleJobfromList(jobDTO.JobId)
-                   viewModel.deleteItemList(jobDTO.JobId)
-                   groupAdapter.clear()
-                   groupAdapter.notifyDataSetChanged()
-                   notifyChanged()
-               }
-           }
+            deleteButton.setOnClickListener {
+                Coroutines.main {
+                    viewModel.deleJobfromList(jobDTO.JobId)
+                    viewModel.deleteItemList(jobDTO.JobId)
+                    groupAdapter.clear()
+                    groupAdapter.notifyDataSetChanged()
+                    notifyChanged()
+                }
+            }
 
-           updateItem()
-       }
+            updateItem()
+        }
 
         viewHolder.itemView.setOnClickListener { view ->
             clickListener?.invoke(this)

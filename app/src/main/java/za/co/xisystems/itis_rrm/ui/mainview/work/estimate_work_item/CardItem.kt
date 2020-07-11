@@ -52,6 +52,7 @@ open class CardItem(
             }
         }
     }
+
     private fun sendJobToWork(
         workViewModel: WorkViewModel,
         estimate: JobItemEstimateDTO,

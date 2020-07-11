@@ -14,7 +14,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import kotlinx.android.synthetic.main.fragment_approvemeasure.noData
-import kotlinx.android.synthetic.main.fragment_estmeasure.*
+import kotlinx.android.synthetic.main.fragment_estmeasure.estimations_swipe_to_refresh
+import kotlinx.android.synthetic.main.fragment_estmeasure.estimations_to_be_measured_listView
+import kotlinx.android.synthetic.main.fragment_estmeasure.group5_loading
+import kotlinx.android.synthetic.main.fragment_estmeasure.no_data_layout
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.kodein.di.KodeinAware

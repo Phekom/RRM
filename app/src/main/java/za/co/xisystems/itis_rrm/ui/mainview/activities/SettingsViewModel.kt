@@ -31,7 +31,7 @@ class SettingsViewModel(
         measureapproval_Item.value = measureapproval
     }
 
-//    suspend fun getJobApproveMeasureForActivityId(activityId: Int): LiveData<List<JobItemMeasureDTO>> {
+    //    suspend fun getJobApproveMeasureForActivityId(activityId: Int): LiveData<List<JobItemMeasureDTO>> {
 //        return withContext(Dispatchers.IO) {
 //            offlineDataRepository.getJobApproveMeasureForActivityId(activityId)
 //        }
@@ -47,6 +47,7 @@ class SettingsViewModel(
             offlineDataRepository.getRouteForProjectSectionId(sectionId)
         }
     }
+
     suspend fun getSectionForProjectSectionId(sectionId: String): String {
         return withContext(Dispatchers.IO) {
             offlineDataRepository.getSectionForProjectSectionId(sectionId)
@@ -58,6 +59,7 @@ class SettingsViewModel(
             offlineDataRepository.getItemDescription(jobId)
         }
     }
+
     suspend fun getDescForProjectId(projectItemId: String): String {
         return withContext(Dispatchers.IO) {
             offlineDataRepository.getProjectItemDescription(projectItemId)

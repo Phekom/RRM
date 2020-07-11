@@ -7,8 +7,32 @@ import androidx.room.TypeConverter
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import java.util.*
-import za.co.xisystems.itis_rrm.data.localDB.entities.*
+import za.co.xisystems.itis_rrm.data.localDB.entities.ActivityDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ChildLookupDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.InfoClassDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ItemSectionDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksPhotoDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimatesPhotoDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasurePhotoDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobSectionDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.LookupOptionDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.PrimaryKeyValueDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectSectionDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ToDoGroupsDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ToDoListEntityDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.UserRoleDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.VoItemDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.WorkFlowDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.WorkFlowRouteDTO
+import java.util.ArrayList
+import java.util.Collections
+import java.util.Date
 
 /**
  * Created by Francis Mahlava on 2019/11/22.
@@ -153,7 +177,7 @@ class Converters {
     @TypeConverter
     fun jobItemEstimateDTOToStoredString(myObjects: ArrayList<JobItemEstimateDTO>?): String {
         val gson = Gson()
-       return gson.toJson(myObjects)
+        return gson.toJson(myObjects)
     }
 
     // ======================================================================================
@@ -348,7 +372,7 @@ class Converters {
         }
         val listType = object : TypeToken<JobItemEstimatesPhotoDTO?>() {
         }.type
-        return gson.fromJson< JobItemEstimatesPhotoDTO? >(data, listType)
+        return gson.fromJson<JobItemEstimatesPhotoDTO?>(data, listType)
     }
 
     @TypeConverter
@@ -537,7 +561,7 @@ class Converters {
         }
         val listType = object : TypeToken<JobItemEstimateDTO?>() {
         }.type
-        return gson.fromJson< JobItemEstimateDTO >(data, listType)
+        return gson.fromJson<JobItemEstimateDTO>(data, listType)
     }
 
     @TypeConverter

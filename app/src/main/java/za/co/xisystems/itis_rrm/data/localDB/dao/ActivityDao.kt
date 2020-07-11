@@ -13,9 +13,9 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.ActivityDTO
 
 @Dao
 interface ActivityDao {
-//
-@Insert(onConflict = OnConflictStrategy.REPLACE)
-suspend fun insertActivitys(activities: ActivityDTO)
+    //
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertActivitys(activities: ActivityDTO)
 
     @Query("INSERT INTO ACTIVITY_TABLE ( actId,  actTypeId, approvalId, sContentId,  actName, descr) VALUES ( :ACT_ID, :ACT_NAME, :ACT_TYPE_ID, :APPROVAL_ID,  :DESCRIPTION,:CONTENT_ID)")
     fun insertActivity(

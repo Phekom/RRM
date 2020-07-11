@@ -20,7 +20,11 @@ package za.co.xisystems.itis_rrm.services
  * Copyright (c) 2020 XI Systems. All rights reserved.
  */
 
-import android.app.*
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
@@ -31,11 +35,15 @@ import android.os.IBinder
 import android.os.Looper
 import androidx.core.app.NotificationCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
-import com.google.android.gms.location.*
-import java.util.concurrent.TimeUnit
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
+import com.google.android.gms.location.LocationServices
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
+import java.util.concurrent.TimeUnit
 
 /**
  * Service tracks location when requested and updates Activity via binding. If Activity is

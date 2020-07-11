@@ -32,7 +32,7 @@ class WorkStateItem(
 
     override fun bind(viewHolder: GroupieViewHolder, position: Int) {
 
-      val step = jobWorkStep
+        val step = jobWorkStep
         val workState = arrayOf(
             step[0].Step_Code!!,
             step[1].Step_Code!!,
@@ -41,28 +41,28 @@ class WorkStateItem(
             step[4].Step_Code!!
         )
 
-       viewHolder.apply {
-           state.text = workState[position]
+        viewHolder.apply {
+            state.text = workState[position]
 
-           setNewState(position, viewHolder)
-           if (selected_position == adapterPosition) {
-               viewHolder.stateBack.setBackgroundColor(
-                   ContextCompat.getColor(
-                       activity!!,
-                       R.color.sanral_burnt_orange
-                   )
-               )
-               viewHolder.state.setTextColor(Color.WHITE)
-           } else {
-               viewHolder.stateBack.setBackgroundColor(Color.TRANSPARENT)
-               viewHolder.state.setTextColor(Color.BLACK)
-           }
-           viewHolder.stateBack.setOnClickListener {
-               activity?.toast(position.toString())
-               selected_position = position
+            setNewState(position, viewHolder)
+            if (selected_position == adapterPosition) {
+                viewHolder.stateBack.setBackgroundColor(
+                    ContextCompat.getColor(
+                        activity!!,
+                        R.color.sanral_burnt_orange
+                    )
+                )
+                viewHolder.state.setTextColor(Color.WHITE)
+            } else {
+                viewHolder.stateBack.setBackgroundColor(Color.TRANSPARENT)
+                viewHolder.state.setTextColor(Color.BLACK)
+            }
+            viewHolder.stateBack.setOnClickListener {
+                activity?.toast(position.toString())
+                selected_position = position
                 groupAdapter.notifyDataSetChanged()
-           }
-       }
+            }
+        }
         viewHolder.itemView.setOnClickListener {
             clickListener?.invoke(this)
         }

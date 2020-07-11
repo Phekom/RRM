@@ -1,7 +1,7 @@
 package za.co.xisystems.itis_rrm.data._commons.utils
 
-import java.util.*
 import za.co.xisystems.itis_rrm.utils.DataConversion
+import java.util.UUID
 
 object SqlLitUtils {
     fun generateUuid(): String {

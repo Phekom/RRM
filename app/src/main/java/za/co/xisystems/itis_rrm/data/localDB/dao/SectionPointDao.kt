@@ -21,7 +21,14 @@ interface SectionPointDao {
     fun checkSectionExists(sectionId: Int, projectId: String?, jobId: String?): Boolean
 
     @Query("INSERT INTO SECTION_POINT_TABLE (direction, linearId ,pointLocation,sectionId ,projectId ,  jobId ) VALUES (:direction ,:linearId ,:pointLocation  ,:sectionId ,:projectId ,:jobId)")
-    fun insertSection(direction: String, linearId: String, pointLocation: Double, sectionId: Int, projectId: String?, jobId: String?)
+    fun insertSection(
+        direction: String,
+        linearId: String,
+        pointLocation: Double,
+        sectionId: Int,
+        projectId: String?,
+        jobId: String?
+    )
 
     @Query("SELECT * FROM SECTION_POINT_TABLE WHERE  projectId LIKE :projectId")
     fun getPointSectionData(projectId: String?): LiveData<SectionPointDTO> // jobId: String jobId LIKE :jobId AND

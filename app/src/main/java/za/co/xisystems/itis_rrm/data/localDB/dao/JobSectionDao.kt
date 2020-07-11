@@ -39,7 +39,7 @@ interface JobSectionDao {
         recordSynchStateId: Int
     )
 
-//    @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE projectId = :projectId")
+    //    @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE projectId = :projectId")
 //    fun getAllItemsForProjectId(projectId: String): LiveData<List<ItemDTO>>
 //
 //

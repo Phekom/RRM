@@ -21,7 +21,12 @@ import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.databinding.ActivityRegisterPinBinding
-import za.co.xisystems.itis_rrm.utils.*
+import za.co.xisystems.itis_rrm.utils.Coroutines
+import za.co.xisystems.itis_rrm.utils.hide
+import za.co.xisystems.itis_rrm.utils.hideKeyboard
+import za.co.xisystems.itis_rrm.utils.show
+import za.co.xisystems.itis_rrm.utils.snackbar
+import za.co.xisystems.itis_rrm.utils.toast
 
 private const val PERMISSION_REQUEST = 10
 

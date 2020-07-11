@@ -12,7 +12,11 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
-import android.view.*
+import android.view.Gravity
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.View
+import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -24,9 +28,6 @@ import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
-import java.io.IOException
-import java.util.*
-import kotlin.collections.ArrayList
 import kotlinx.android.synthetic.main.fragment_capture_work.*
 import kotlinx.coroutines.launch
 import org.kodein.di.KodeinAware
@@ -39,7 +40,12 @@ import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.LocationFragment
 import za.co.xisystems.itis_rrm.custom.errors.NoConnectivityException
 import za.co.xisystems.itis_rrm.custom.errors.NoInternetException
-import za.co.xisystems.itis_rrm.data.localDB.entities.*
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksPhotoDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.WF_WorkStepDTO
 import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.services.LocationModel
 import za.co.xisystems.itis_rrm.ui.extensions.scaleForSize
@@ -51,7 +57,13 @@ import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.work.workstate_item.WorkStateItem
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
-import za.co.xisystems.itis_rrm.utils.*
+import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
+import za.co.xisystems.itis_rrm.utils.Coroutines
+import za.co.xisystems.itis_rrm.utils.DataConversion
+import za.co.xisystems.itis_rrm.utils.DateUtil
+import za.co.xisystems.itis_rrm.utils.PhotoUtil
+import za.co.xisystems.itis_rrm.utils.ServiceUtil
+import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import za.co.xisystems.itis_rrm.utils.errors.ErrorHandler
@@ -59,6 +71,10 @@ import za.co.xisystems.itis_rrm.utils.results.XIError
 import za.co.xisystems.itis_rrm.utils.results.XIResult
 import za.co.xisystems.itis_rrm.utils.results.XIStatus
 import za.co.xisystems.itis_rrm.utils.results.XISuccess
+import za.co.xisystems.itis_rrm.utils.toast
+import java.io.IOException
+import java.util.Date
+import java.util.HashMap
 
 class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), KodeinAware {
 

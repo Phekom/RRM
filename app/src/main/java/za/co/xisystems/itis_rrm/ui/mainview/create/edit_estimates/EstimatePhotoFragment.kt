@@ -15,22 +15,26 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.provider.Settings
-import android.view.*
+import android.view.Gravity
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.View
+import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.*
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.coroutineScope
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.whenResumed
+import androidx.lifecycle.whenStarted
 import androidx.navigation.Navigation
 import icepick.Icepick
 import icepick.State
-import java.io.File
-import java.text.DecimalFormat
-import java.util.*
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
 import kotlinx.android.synthetic.main.fragment_photo_estimate.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.cancel
@@ -45,7 +49,16 @@ import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.LocationFragment
 import za.co.xisystems.itis_rrm.data._commons.AbstractTextWatcher
-import za.co.xisystems.itis_rrm.data.localDB.entities.*
+import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
+import za.co.xisystems.itis_rrm.data.localDB.entities.ItemSectionDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimatesPhotoDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobSectionDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectSectionDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.SectionPointDTO
 import za.co.xisystems.itis_rrm.services.LocationModel
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModelFactory
@@ -54,8 +67,17 @@ import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.intents.AbstractIntent
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.models.PhotoType
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
-import za.co.xisystems.itis_rrm.utils.*
+import za.co.xisystems.itis_rrm.utils.Coroutines
+import za.co.xisystems.itis_rrm.utils.DateUtil
+import za.co.xisystems.itis_rrm.utils.GlideApp
+import za.co.xisystems.itis_rrm.utils.PhotoUtil
+import za.co.xisystems.itis_rrm.utils.ServiceUtil
+import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
+import java.io.File
+import java.text.DecimalFormat
+import java.util.Date
+import kotlin.collections.set
 
 /**
  * Created by Francis Mahlava on 2019/12/29.
@@ -750,7 +772,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
         with(this@EstimatePhotoFragment) {
             toast(
                 "You are not between the start: " + sectionPoint?.pointLocation.toString() +
-                        " and end: " + sectionPoint?.pointLocation.toString() + " co-ordinates for the project."
+                    " and end: " + sectionPoint?.pointLocation.toString() + " co-ordinates for the project."
             )
             costCard.visibility = View.GONE
             updateButton.visibility = View.GONE
@@ -957,7 +979,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
 
             val sectionText =
                 section.route + " " + section.section + " " + section.direction + " " +
-                        if (isStart) section.startKm else section.endKm
+                    if (isStart) section.startKm else section.endKm
 
             textView.text = sectionText
             if (animate) textView.startAnimation(animations?.bounce_long)

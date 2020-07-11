@@ -12,7 +12,6 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import com.xwray.groupie.kotlinandroidextensions.Item
-import java.io.File
 import kotlinx.android.synthetic.main.estimates_item.*
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
@@ -26,6 +25,7 @@ import za.co.xisystems.itis_rrm.utils.Util.nanCheck
 import za.co.xisystems.itis_rrm.utils.Util.round
 import za.co.xisystems.itis_rrm.utils.toast
 import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
+import java.io.File
 
 /**
  * Created by Francis Mahlava on 2020/01/02.
@@ -41,13 +41,16 @@ class EstimatesItem(
 
     override fun bind(viewHolder: GroupieViewHolder, position: Int) {
         viewHolder.apply {
-            Coroutines.main { dialog.show()
-                val quantity = approveViewModel.getQuantityForEstimationItemId(jobItemEstimateDTO.estimateId)
+            Coroutines.main {
+                dialog.show()
+                val quantity =
+                    approveViewModel.getQuantityForEstimationItemId(jobItemEstimateDTO.estimateId)
                 quantity.observe(viewLifecycleOwner, Observer {
 
                     estimation_item_quantity_textView.text = "Qty: $it"
                 })
-                val lineRate = approveViewModel.getLineRateForEstimationItemId(jobItemEstimateDTO.estimateId)
+                val lineRate =
+                    approveViewModel.getLineRateForEstimationItemId(jobItemEstimateDTO.estimateId)
                 lineRate.observe(viewLifecycleOwner, Observer {
                     estimation_item_price_textView.text = "R $it"
                     dialog.dismiss()
@@ -55,8 +58,10 @@ class EstimatesItem(
 //                estimation_item_quantity_textView.text = "Qty: " + quantity //jobItemEstimateDTO.qty.toString()
 //                 estimation_item_price_textView.text = "R " +  lineRate //jobItemEstimateDTO.lineRate.toString()
 
-                val descr = approveViewModel.getDescForProjectItemId(jobItemEstimateDTO.projectItemId!!)
-                val uom = approveViewModel.getUOMForProjectItemId(jobItemEstimateDTO.projectItemId!!)
+                val descr =
+                    approveViewModel.getDescForProjectItemId(jobItemEstimateDTO.projectItemId!!)
+                val uom =
+                    approveViewModel.getUOMForProjectItemId(jobItemEstimateDTO.projectItemId!!)
                 measure_item_description_textView.text = descr
                 // estimation_item_uom_textView.text = "Unit of Measure: $uom"
                 if (uom == "NONE" || uom == "") {
@@ -99,8 +104,9 @@ class EstimatesItem(
         alert.setMessage(R.string.are_you_sure_you_want_to_correct_esti)
 
         Coroutines.main {
-            val tenderRate = approveViewModel.getTenderRateForProjectItemId(jobItemEstimateDTO.projectItemId!!)
-              new_total.text = "R " + jobItemEstimateDTO.lineRate.toString()
+            val tenderRate =
+                approveViewModel.getTenderRateForProjectItemId(jobItemEstimateDTO.projectItemId!!)
+            new_total.text = "R " + jobItemEstimateDTO.lineRate.toString()
 
             rate.text = "R $tenderRate"
             var cost = 0.0
@@ -153,7 +159,7 @@ class EstimatesItem(
                             activity.toast("Data Updated was Unsuccessful")
                         }
                     }
-             }
+                }
             } else {
                 activity.toast("No connection detected.")
             }

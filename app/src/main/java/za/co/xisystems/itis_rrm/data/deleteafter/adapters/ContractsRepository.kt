@@ -2,12 +2,12 @@ package za.co.xisystems.itis_rrm.data.repositories
 
 import android.app.Activity
 import androidx.lifecycle.MutableLiveData
-import java.util.*
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectSectionDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.ToDoGroupsDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.VoItemDTO
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
+import java.util.ArrayList
 
 /**
  * Created by Francis Mahlava on 2019/11/19.
@@ -17,12 +17,12 @@ import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
 
 class ContractsRepository : SafeApiRequest() {
 
-//
+    //
 //    private val conTracts = MutableLiveData<List<ContractDTO>>()
 // //    private val sectionItems = MutableLiveData<SectionItemDTO>()
 //    private val sectionItems = MutableLiveData<ArrayList<String>>()
 //
-private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
+    private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
     private val job = MutableLiveData<JobDTO>()
     //    private val new_job = MutableLiveData<JobDTOTemp>()
 
@@ -52,9 +52,9 @@ private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
 //            insertSectionsItems(it)
 //        }
 
-    toDoListGroups.observeForever {
+        toDoListGroups.observeForever {
 //            saveUserTaskList(it)
-    }
+        }
 
 //        workflows.observeForever {
 //            saveTaskList(it)

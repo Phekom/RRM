@@ -52,20 +52,22 @@ class ExpandableHeaderWorkItem(
             val endKm = workViewModel.getItemEndKm(jobId)
             val trackRouteId = workViewModel.getItemTrackRouteId(jobId)
 
-        viewHolder.headerLin2.setOnClickListener {
-            if (startKm <= endKm) {
-                ToastUtils().toastShort(activity,
-                    "Job Info: Start Km: $startKm - End Km: $endKm"
-                )
-            } else if (null == trackRouteId) {
-                ToastUtils().toastLong(
-                    activity,
-                    "Job not found please click on item to download job."
-                )
+            viewHolder.headerLin2.setOnClickListener {
+                if (startKm <= endKm) {
+                    ToastUtils().toastShort(
+                        activity,
+                        "Job Info: Start Km: $startKm - End Km: $endKm"
+                    )
+                } else if (null == trackRouteId) {
+                    ToastUtils().toastLong(
+                        activity,
+                        "Job not found please click on item to download job."
+                    )
+                }
             }
         }
     }
-}
+
     private fun bindIcon(viewHolder: GroupieViewHolder) {
         viewHolder.icon.apply {
             visibility = View.VISIBLE

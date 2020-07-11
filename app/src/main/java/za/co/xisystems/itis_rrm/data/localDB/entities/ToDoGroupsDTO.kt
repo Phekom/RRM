@@ -5,6 +5,7 @@ import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 
 const val TODO_GROUPS_TABLE = "TODO_GROUPS_TABLE"
+
 @Entity(
     tableName = TODO_GROUPS_TABLE
 //    , foreignKeys = [

@@ -11,6 +11,7 @@ import com.google.gson.annotations.SerializedName
  */
 
 const val WORKFLOW_ROUTE_TABLE = "WORKFLOW_ROUTE_TABLE"
+
 @Entity(
     tableName = WORKFLOW_ROUTE_TABLE, foreignKeys = arrayOf(
         ForeignKey(

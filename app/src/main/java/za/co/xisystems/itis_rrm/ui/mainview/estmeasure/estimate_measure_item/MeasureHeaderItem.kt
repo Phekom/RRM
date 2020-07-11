@@ -27,13 +27,13 @@ open class MeasureHeaderItem(
     override fun bind(viewHolder: GroupieViewHolder, position: Int) {
         viewHolder.apply {
             Coroutines.main {
-            subtitle.apply {
+                subtitle.apply {
                     val subtitleResId = qty
                     visibility = View.GONE
-                subtitleResId.let {
-                    visibility = View.VISIBLE
-                    text = "Quantity : ${it.toString().dropLast(2)}"
-                }
+                    subtitleResId.let {
+                        visibility = View.VISIBLE
+                        text = "Quantity : ${it.toString().dropLast(2)}"
+                    }
                 }
                 val desc = measureViewModel.getDescForProjectItemId(projID!!)
                 title.text = "Estimate - $desc "

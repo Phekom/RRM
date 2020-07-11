@@ -57,7 +57,8 @@ class SettingsActivity : AppCompatActivity(), KodeinAware {
         }
 
         button_reset_app.setOnClickListener {
-            val builder = AlertDialog.Builder(this@SettingsActivity, android.R.style.Theme_DeviceDefault_Dialog
+            val builder = AlertDialog.Builder(
+                this@SettingsActivity, android.R.style.Theme_DeviceDefault_Dialog
             )
             builder.setTitle(R.string.confirm)
             builder.setMessage(R.string.all_data_will_be_deleted_are_you_sure)

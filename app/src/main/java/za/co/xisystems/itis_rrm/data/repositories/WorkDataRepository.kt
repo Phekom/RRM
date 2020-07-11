@@ -9,7 +9,6 @@ import com.google.gson.Gson
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
-import java.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -17,7 +16,13 @@ import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.custom.errors.ApiException
 import za.co.xisystems.itis_rrm.custom.errors.NoDataException
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
-import za.co.xisystems.itis_rrm.data.localDB.entities.*
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksPhotoDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.WF_WorkStepDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.WorkflowJobDTO
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
 import za.co.xisystems.itis_rrm.utils.Coroutines
@@ -28,6 +33,7 @@ import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import za.co.xisystems.itis_rrm.utils.results.XIError
 import za.co.xisystems.itis_rrm.utils.results.XIResult
 import za.co.xisystems.itis_rrm.utils.results.XISuccess
+import java.util.ArrayList
 
 /**
  * Created by Francis Mahlava on 2019/11/28.

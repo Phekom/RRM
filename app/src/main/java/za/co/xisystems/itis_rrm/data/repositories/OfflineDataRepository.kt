@@ -8,15 +8,37 @@ import android.os.Environment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import java.io.File
-import java.time.LocalDateTime
-import java.util.regex.Pattern
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.localDB.JobDataController
-import za.co.xisystems.itis_rrm.data.localDB.entities.*
+import za.co.xisystems.itis_rrm.data.localDB.entities.ContractDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksPhotoDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimatesPhotoDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasurePhotoDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobSectionDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.LookupDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.PrimaryKeyValueDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectSectionDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.SectionItemDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ToDoGroupsDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ToDoListEntityDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.UserRoleDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.VoItemDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.WorkFlowDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.WorkFlowsDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.WorkflowItemEstimateDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.WorkflowItemMeasureDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.WorkflowJobDTO
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
 import za.co.xisystems.itis_rrm.data.network.responses.UploadImageResponse
@@ -28,6 +50,9 @@ import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import za.co.xisystems.itis_rrm.utils.results.XIResult
 import za.co.xisystems.itis_rrm.utils.results.XIStatus
 import za.co.xisystems.itis_rrm.utils.results.XISuccess
+import java.io.File
+import java.time.LocalDateTime
+import java.util.regex.Pattern
 
 private val jobDataController: JobDataController? = null
 
@@ -695,7 +720,7 @@ class OfflineDataRepository(
                 jobItemEstimatePhoto.setPhotoPath(
                     Environment.getExternalStorageDirectory()
                         .toString() + File.separator +
-                            PhotoUtil.FOLDER + File.separator + jobItemEstimatePhoto.filename
+                        PhotoUtil.FOLDER + File.separator + jobItemEstimatePhoto.filename
                 )
             when (jobItemEstimatePhoto.descr) {
                 "photo_start" -> jobItemEstimatePhoto.setIsPhotoStart(true)
@@ -853,7 +878,7 @@ class OfflineDataRepository(
             ) jobItemMeasurePhoto.setPhotoPath(
                 Environment.getExternalStorageDirectory()
                     .toString() + File.separator +
-                        PhotoUtil.FOLDER + File.separator + jobItemMeasurePhoto.filename
+                    PhotoUtil.FOLDER + File.separator + jobItemMeasurePhoto.filename
             )
             jobItemMeasurePhoto.setPhotoId(
                 DataConversion.toBigEndian(
@@ -872,7 +897,7 @@ class OfflineDataRepository(
             jobItemMeasurePhoto.setPhotoPath(
                 Environment.getExternalStorageDirectory()
                     .toString() + File.separator +
-                        PhotoUtil.FOLDER + File.separator + jobItemMeasurePhoto.filename
+                    PhotoUtil.FOLDER + File.separator + jobItemMeasurePhoto.filename
             )
 
             Db.getJobItemMeasurePhotoDao()
@@ -1175,7 +1200,9 @@ class OfflineDataRepository(
         }
     }
 
-    private fun updateWorkflowItemMeasures(workflowItemMeasures: java.util.ArrayList<WorkflowItemMeasureDTO>) {
+    private fun updateWorkflowItemMeasures(
+        workflowItemMeasures: java.util.ArrayList<WorkflowItemMeasureDTO>
+    ) {
         for (jobItemMeasure in workflowItemMeasures) {
             Db.getJobItemMeasureDao().updateWorkflowJobItemMeasure(
                 jobItemMeasure.itemMeasureId,
@@ -1203,7 +1230,9 @@ class OfflineDataRepository(
         }
     }
 
-    private suspend fun saveJobSectionsForWorkflow(workflowJobSections: java.util.ArrayList<JobSectionDTO>) {
+    private suspend fun saveJobSectionsForWorkflow(
+        workflowJobSections: java.util.ArrayList<JobSectionDTO>
+    ) {
         for (jobSection in workflowJobSections) {
             if (!Db.getJobSectionDao().checkIfJobSectionExist(jobSection.jobSectionId))
                 Db.getJobSectionDao().insertJobSection(jobSection) else

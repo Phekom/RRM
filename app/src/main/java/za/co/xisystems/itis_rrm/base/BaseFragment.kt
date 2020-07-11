@@ -99,20 +99,31 @@ abstract class BaseFragment(layoutContentId: Int) : Fragment(), IProgressView,
         bounce = AnimationUtils.loadAnimation(requireContext().applicationContext, R.anim.bounce)
         bounce_short =
             AnimationUtils.loadAnimation(requireContext().applicationContext, R.anim.bounce_short)
-        bounce_long = AnimationUtils.loadAnimation(requireContext().applicationContext, R.anim.bounce_long)
-        bounce_250 = AnimationUtils.loadAnimation(requireContext().applicationContext, R.anim.bounce_250)
-        bounce_500 = AnimationUtils.loadAnimation(requireContext().applicationContext, R.anim.bounce_500)
-        bounce_750 = AnimationUtils.loadAnimation(requireContext().applicationContext, R.anim.bounce_750)
-        bounce_1000 = AnimationUtils.loadAnimation(requireContext().applicationContext, R.anim.bounce_1000)
-        bounce_soft = AnimationUtils.loadAnimation(requireContext().applicationContext, R.anim.bounce_soft)
+        bounce_long =
+            AnimationUtils.loadAnimation(requireContext().applicationContext, R.anim.bounce_long)
+        bounce_250 =
+            AnimationUtils.loadAnimation(requireContext().applicationContext, R.anim.bounce_250)
+        bounce_500 =
+            AnimationUtils.loadAnimation(requireContext().applicationContext, R.anim.bounce_500)
+        bounce_750 =
+            AnimationUtils.loadAnimation(requireContext().applicationContext, R.anim.bounce_750)
+        bounce_1000 =
+            AnimationUtils.loadAnimation(requireContext().applicationContext, R.anim.bounce_1000)
+        bounce_soft =
+            AnimationUtils.loadAnimation(requireContext().applicationContext, R.anim.bounce_soft)
         shake_delay =
-            AnimationUtils.loadAnimation(requireContext().applicationContext, R.anim.shake_long_delay)
+            AnimationUtils.loadAnimation(
+                requireContext().applicationContext,
+                R.anim.shake_long_delay
+            )
         shake = AnimationUtils.loadAnimation(requireContext().applicationContext, R.anim.shake)
-        shake_long = AnimationUtils.loadAnimation(requireContext().applicationContext, R.anim.shake_long)
+        shake_long =
+            AnimationUtils.loadAnimation(requireContext().applicationContext, R.anim.shake_long)
         shake_longer =
             AnimationUtils.loadAnimation(requireContext().applicationContext, R.anim.shake_longer)
         scale = AnimationUtils.loadAnimation(requireContext().applicationContext, R.anim.scale)
-        scale_light = AnimationUtils.loadAnimation(requireContext().applicationContext, R.anim.scale_light)
+        scale_light =
+            AnimationUtils.loadAnimation(requireContext().applicationContext, R.anim.scale_light)
     }
 
     override fun onDetach() {

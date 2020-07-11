@@ -15,10 +15,16 @@ class NewJobEditEstimateIntent : AbstractIntent(), INewJobEditEstimateIntent {
         return intent?.extras?.getSerializable(ITEM) as ProjectItemDTO?
     }
 
-    override fun startActivityForResult(@NonNull activity: Activity?, job: JobDTO?, item: ProjectItemDTO?) {
-        val intent = flags(Intent(activity, null)
+    override fun startActivityForResult(
+        @NonNull activity: Activity?,
+        job: JobDTO?,
+        item: ProjectItemDTO?
+    ) {
+        val intent = flags(
+            Intent(activity, null)
                 .putExtra(JOB, job)
-                .putExtra(ITEM, item))
+                .putExtra(ITEM, item)
+        )
         activity?.startActivityForResult(intent, REQUEST_CODE_EDIT_ESTIMATE)
     }
 }

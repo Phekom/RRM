@@ -4,14 +4,23 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import java.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import za.co.xisystems.itis_rrm.data.localDB.entities.*
+import za.co.xisystems.itis_rrm.data.localDB.entities.ContractDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobSectionDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectSectionDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.SectionItemDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.SectionPointDTO
 import za.co.xisystems.itis_rrm.data.repositories.JobCreationDataRepository
 import za.co.xisystems.itis_rrm.ui.mainview.create.select_item.SectionProj_Item
 import za.co.xisystems.itis_rrm.utils.JobUtils
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
+import java.util.ArrayList
 
 /**
  * Created by Francis Mahlava on 2019/10/18.
@@ -179,15 +188,15 @@ class CreateViewModel(
         jobItemSectionArrayList: ArrayList<JobSectionDTO>
     ) {
         withContext(Dispatchers.IO) {
-        jobCreationDataRepository.updateNewJob(
-            newjobId,
-            startKM,
-            endKM,
-            sectionId,
-            newJobItemEstimatesList,
-            jobItemSectionArrayList
-        )
-    }
+            jobCreationDataRepository.updateNewJob(
+                newjobId,
+                startKM,
+                endKM,
+                sectionId,
+                newJobItemEstimatesList,
+                jobItemSectionArrayList
+            )
+        }
     }
 
     suspend fun getPointSectionData(projectId: String?): LiveData<SectionPointDTO> { // jobId: String,jobId,
@@ -242,7 +251,7 @@ class CreateViewModel(
         }
     }
 
-   suspend fun areEstimatesValid(job: JobDTO?, items: ArrayList<Any?>?): Boolean {
+    suspend fun areEstimatesValid(job: JobDTO?, items: ArrayList<Any?>?): Boolean {
         var isValid = true
         if (!JobUtils.areQuantitiesValid(job)) {
             isValid = false
@@ -261,9 +270,9 @@ class CreateViewModel(
                 false
             }
         }
-       return withContext(Dispatchers.IO) {
-           isValid
-       }
+        return withContext(Dispatchers.IO) {
+            isValid
+        }
     }
 
     suspend fun submitJob(

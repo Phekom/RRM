@@ -11,6 +11,7 @@ import com.google.gson.annotations.SerializedName
  */
 
 const val LOOKUP_OPTION_TABLE = "LOOKUP_OPTION_TABLE"
+
 @Entity(
     tableName = LOOKUP_OPTION_TABLE, foreignKeys = [ForeignKey(
         entity = LookupDTO::class,

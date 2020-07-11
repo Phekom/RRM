@@ -48,10 +48,18 @@ interface JobItemEstimateDao {
     fun getJobEstimateIdForJobId(jobId: String): String
 
     @Query("UPDATE JOB_ITEM_ESTIMATE SET TrackRouteId =:trackRouteId, ActId =:actId  WHERE estimateId = :estimateId")
-    fun updateExistingJobItemEstimateWorkflow(trackRouteId: String?, actId: Int, estimateId: String?)
+    fun updateExistingJobItemEstimateWorkflow(
+        trackRouteId: String?,
+        actId: Int,
+        estimateId: String?
+    )
 
     @Query("UPDATE JOB_ITEM_ESTIMATE SET TrackRouteId =:trackRouteId, ActId =:actId AND MEASURE_ACT_ID =:actId WHERE estimateId = :estimateId")
-    fun updateExistingJobItemEstimateWorkflow2(trackRouteId: String?, actId: Int, estimateId: String?)
+    fun updateExistingJobItemEstimateWorkflow2(
+        trackRouteId: String?,
+        actId: Int,
+        estimateId: String?
+    )
 
     @Query("SELECT * FROM JOB_ITEM_ESTIMATE WHERE jobId = :jobID")
     fun getJobItemsToMeasureForJobId(jobID: String): LiveData<List<JobItemEstimateDTO>>
@@ -69,5 +77,9 @@ interface JobItemEstimateDao {
     fun setMeasureActId(actId: Int, estimateId: String)
 
     @Query("SELECT COUNT(A.estimateId ) AS 'workDone' FROM JOB_ITEM_ESTIMATE AS A JOIN JOB_ESTIMATE_WORKS  AS B ON B.estimateId = A.estimateId AND B.actId = :estWorksComplete WHERE A.jobId LIKE :jobId AND A.actId = :estimateWorkPartComplete ")
-    fun getJobItemsEstimatesDoneForJobId(jobId: String?, estimateWorkPartComplete: Int, estWorksComplete: Int): Int
+    fun getJobItemsEstimatesDoneForJobId(
+        jobId: String?,
+        estimateWorkPartComplete: Int,
+        estWorksComplete: Int
+    ): Int
 }

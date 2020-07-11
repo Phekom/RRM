@@ -1,7 +1,6 @@
 package za.co.xisystems.itis_rrm.data.network
 
 import com.google.gson.JsonObject
-import java.util.concurrent.TimeUnit
 import okhttp3.OkHttpClient
 import okhttp3.Protocol
 import okhttp3.logging.HttpLoggingInterceptor
@@ -13,7 +12,23 @@ import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.POST
 import za.co.xisystems.itis_rrm.BuildConfig
-import za.co.xisystems.itis_rrm.data.network.responses.*
+import za.co.xisystems.itis_rrm.data.network.responses.ActivitySectionsResponse
+import za.co.xisystems.itis_rrm.data.network.responses.AuthResponse
+import za.co.xisystems.itis_rrm.data.network.responses.ContractsResponse
+import za.co.xisystems.itis_rrm.data.network.responses.HealthCheckResponse
+import za.co.xisystems.itis_rrm.data.network.responses.JobResponse
+import za.co.xisystems.itis_rrm.data.network.responses.LookupResponse
+import za.co.xisystems.itis_rrm.data.network.responses.PhotoEstimateResponse
+import za.co.xisystems.itis_rrm.data.network.responses.PhotoMeasureResponse
+import za.co.xisystems.itis_rrm.data.network.responses.QuantityUpdateResponse
+import za.co.xisystems.itis_rrm.data.network.responses.RouteSectionPointResponse
+import za.co.xisystems.itis_rrm.data.network.responses.SaveMeasurementResponse
+import za.co.xisystems.itis_rrm.data.network.responses.ToDoListGroupsResponse
+import za.co.xisystems.itis_rrm.data.network.responses.UploadImageResponse
+import za.co.xisystems.itis_rrm.data.network.responses.UploadWorksItemResponse
+import za.co.xisystems.itis_rrm.data.network.responses.WorkflowMoveResponse
+import za.co.xisystems.itis_rrm.data.network.responses.WorkflowResponse
+import java.util.concurrent.TimeUnit
 
 /**
  * Created by Francis Mahlava on 2019/10/23.
@@ -156,19 +171,19 @@ interface BaseConnectionApi {
             interceptor.level = HttpLoggingInterceptor.Level.BODY
             val okkHttpclient = OkHttpClient
                 .Builder().apply {
-                readTimeout(5, TimeUnit.MINUTES)
-                writeTimeout(5, TimeUnit.MINUTES)
-                connectTimeout(5, TimeUnit.MINUTES)
+                    readTimeout(5, TimeUnit.MINUTES)
+                    writeTimeout(5, TimeUnit.MINUTES)
+                    connectTimeout(5, TimeUnit.MINUTES)
                     protocols(listOf(Protocol.HTTP_1_1))
 
-                addInterceptor(networkConnectionInterceptor)
-                addInterceptor { chain ->
-                    var request = chain.request()
-                    request = request.newBuilder().build()
-                    val response = chain.proceed(request)
-                    response
+                    addInterceptor(networkConnectionInterceptor)
+                    addInterceptor { chain ->
+                        var request = chain.request()
+                        request = request.newBuilder().build()
+                        val response = chain.proceed(request)
+                        response
+                    }
                 }
-            }
 
             /**
              * Add the http logging interceptor.

@@ -8,7 +8,11 @@ import android.graphics.Typeface
 import android.location.LocationManager
 import android.os.Bundle
 import android.provider.Settings
-import android.view.*
+import android.view.Gravity
+import android.view.Menu
+import android.view.MenuItem
+import android.view.View
+import android.view.WindowManager
 import android.widget.ProgressBar
 import android.widget.Switch
 import android.widget.TextView
@@ -32,7 +36,11 @@ import org.kodein.di.generic.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.ui.auth.LoginActivity
-import za.co.xisystems.itis_rrm.ui.mainview.activities.*
+import za.co.xisystems.itis_rrm.ui.mainview.activities.MainActivityViewModel
+import za.co.xisystems.itis_rrm.ui.mainview.activities.MainActivityViewModelFactory
+import za.co.xisystems.itis_rrm.ui.mainview.activities.SettingsActivity
+import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModel
+import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModelFactory
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.hideKeyboard

@@ -5,6 +5,7 @@ import android.content.SharedPreferences
 import androidx.preference.PreferenceManager
 
 private const val KEY_SAVED_AT = "key_saved_at"
+
 /**
  * Created by Francis Mahlava on 2019/10/18.
  */

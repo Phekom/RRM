@@ -5,9 +5,9 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import java.util.*
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasurePhotoDTO
+import java.util.ArrayList
 
 /**
  * Created by Francis Mahlava on 2019/11/21.
@@ -40,7 +40,10 @@ interface JobItemMeasureDao {
     ): Long
 
     @Query("UPDATE JOB_ITEM_MEASURE SET jobItemMeasurePhotos =:jobItemMeasurePhotoList WHERE itemMeasureId = :itemMeasureId")
-    fun upDatePhotList(jobItemMeasurePhotoList: ArrayList<JobItemMeasurePhotoDTO>, itemMeasureId: String)
+    fun upDatePhotList(
+        jobItemMeasurePhotoList: ArrayList<JobItemMeasurePhotoDTO>,
+        itemMeasureId: String
+    )
 
 //    fun insertJobItemMeasure2(projectId: String, descr: String?, endDate: String?,
 //                      items: ArrayList<ItemDTO>?, projectCode: String?, projectMinus: String?, projectPlus: String?,
@@ -56,10 +59,18 @@ interface JobItemMeasureDao {
     fun getJobMeasureItemsForJobId(jobId: String?, actId: Int): LiveData<List<JobItemMeasureDTO>>
 
     @Query("UPDATE JOB_ITEM_MEASURE SET trackRouteId =:trackRouteId, ActId =:actId , measureGroupId =:measureGroupId  WHERE itemMeasureId = :itemMeasureId")
-    fun updateWorkflowJobItemMeasure(itemMeasureId: String?, trackRouteId: String?, actId: Int, measureGroupId: String?)
+    fun updateWorkflowJobItemMeasure(
+        itemMeasureId: String?,
+        trackRouteId: String?,
+        actId: Int,
+        measureGroupId: String?
+    )
 
     @Query("SELECT * FROM JOB_ITEM_MEASURE WHERE estimateId = :estimateId AND jobId LIKE :jobId AND deleted = 0")
-    fun checkIfJobItemMeasureExistsForJobIdAndEstimateId(jobId: String?, estimateId: String): Boolean
+    fun checkIfJobItemMeasureExistsForJobIdAndEstimateId(
+        jobId: String?,
+        estimateId: String
+    ): Boolean
 
     @Query("SELECT * FROM JOB_ITEM_MEASURE WHERE jobId = :jobId AND deleted = 0")
     fun getJobItemMeasuresForJobIdAndEstimateId(jobId: String?): LiveData<List<JobItemMeasureDTO>>
@@ -93,6 +104,7 @@ interface JobItemMeasureDao {
 
     @Query("UPDATE JOB_ITEM_MEASURE SET deleted = 0 WHERE deleted = 1")
     fun undeleteAllMeasurements(): Int
+
     @Query("DELETE FROM JOB_ITEM_MEASURE")
     fun deleteAll()
 

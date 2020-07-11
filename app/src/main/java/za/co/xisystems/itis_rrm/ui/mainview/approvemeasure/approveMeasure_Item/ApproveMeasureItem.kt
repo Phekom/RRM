@@ -27,11 +27,11 @@ class ApproveMeasureItem(
                     approveViewModel.getProjectSectionIdForJobId(jobItemMeasureDTO.jobId!!)
                 val route = approveViewModel.getRouteForProjectSectionId(sectionId)
                 val section = approveViewModel.getSectionForProjectSectionId(sectionId)
-               apv_section.text = "( $route ${"/0$section"} )"
-               val description = approveViewModel.getItemDesc(jobItemMeasureDTO.jobId!!)
-               apv_description.text = description
-           }
-       }
+                apv_section.text = "( $route ${"/0$section"} )"
+                val description = approveViewModel.getItemDesc(jobItemMeasureDTO.jobId!!)
+                apv_description.text = description
+            }
+        }
     }
 
     override fun getLayout() = R.layout.single_listview_item

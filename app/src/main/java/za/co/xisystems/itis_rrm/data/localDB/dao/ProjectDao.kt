@@ -20,20 +20,20 @@ interface ProjectDao {
 //    @Insert(onConflict = OnConflictStrategy.REPLACE)
 //    suspend fun insertProjects(project : List<ProjectDTO>)
 
-//    @Insert(onConflict = OnConflictStrategy.REPLACE)
-@Query("INSERT INTO PROJECT_TABLE (projectId,descr, endDate, items, projectCode, projectMinus, projectPlus,projectSections, voItems, contractId) VALUES (:projectId,:descr, :endDate, :items, :projectCode, :projectMinus, :projectPlus, :projectSections, :voItems, :contractId)")
-fun insertProject(
-    projectId: String,
-    descr: String?,
-    endDate: String?,
-    items: ArrayList<ProjectItemDTO>?,
-    projectCode: String?,
-    projectMinus: String?,
-    projectPlus: String?,
-    projectSections: ArrayList<ProjectSectionDTO>?,
-    voItems: ArrayList<VoItemDTO>?,
-    contractId: String?
-): Long
+    //    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Query("INSERT INTO PROJECT_TABLE (projectId,descr, endDate, items, projectCode, projectMinus, projectPlus,projectSections, voItems, contractId) VALUES (:projectId,:descr, :endDate, :items, :projectCode, :projectMinus, :projectPlus, :projectSections, :voItems, :contractId)")
+    fun insertProject(
+        projectId: String,
+        descr: String?,
+        endDate: String?,
+        items: ArrayList<ProjectItemDTO>?,
+        projectCode: String?,
+        projectMinus: String?,
+        projectPlus: String?,
+        projectSections: ArrayList<ProjectSectionDTO>?,
+        voItems: ArrayList<VoItemDTO>?,
+        contractId: String?
+    ): Long
 
     @Update(onConflict = OnConflictStrategy.REPLACE)
     fun updateProject(project: ProjectDTO)
@@ -56,7 +56,7 @@ fun insertProject(
     @Query("SELECT * FROM PROJECT_TABLE WHERE projectId = :projectId")
     fun getProjectById(projectId: String): ProjectDTO
 
-//    @Query("SELECT * FROM PROJECT_TABLE WHERE projectId = :projectId")
+    //    @Query("SELECT * FROM PROJECT_TABLE WHERE projectId = :projectId")
 //    fun getContractId(projectId: String): String
 //
 //

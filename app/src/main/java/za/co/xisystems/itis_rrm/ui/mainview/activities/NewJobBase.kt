@@ -23,21 +23,50 @@ import za.co.xisystems.itis_rrm.utils.ViewLogger
 abstract class NewJobBase : AppCompatActivity(), OfflineListener, IProgressView,
     HorizontalProgressBar {
 
-    @JvmField var bounce: Animation? = null
-    @JvmField var bounce_short: Animation? = null
-    @JvmField var bounce_long: Animation? = null
-    @JvmField var bounce_soft: Animation? = null
-    @JvmField var bounce_250: Animation? = null
-    @JvmField var bounce_500: Animation? = null
-    @JvmField var bounce_750: Animation? = null
-    @JvmField var bounce_1000: Animation? = null
-    @JvmField var scale: Animation? = null
-    @JvmField var scale_light: Animation? = null
-    @JvmField var click: Animation? = null
-    @JvmField var shake_delay: Animation? = null
-    @JvmField var shake: Animation? = null
-    @JvmField var shake_long: Animation? = null
-    @JvmField var shake_longer: Animation? = null
+    @JvmField
+    var bounce: Animation? = null
+
+    @JvmField
+    var bounce_short: Animation? = null
+
+    @JvmField
+    var bounce_long: Animation? = null
+
+    @JvmField
+    var bounce_soft: Animation? = null
+
+    @JvmField
+    var bounce_250: Animation? = null
+
+    @JvmField
+    var bounce_500: Animation? = null
+
+    @JvmField
+    var bounce_750: Animation? = null
+
+    @JvmField
+    var bounce_1000: Animation? = null
+
+    @JvmField
+    var scale: Animation? = null
+
+    @JvmField
+    var scale_light: Animation? = null
+
+    @JvmField
+    var click: Animation? = null
+
+    @JvmField
+    var shake_delay: Animation? = null
+
+    @JvmField
+    var shake: Animation? = null
+
+    @JvmField
+    var shake_long: Animation? = null
+
+    @JvmField
+    var shake_longer: Animation? = null
 
     private var anims: Animations? = null
 
@@ -154,7 +183,8 @@ abstract class NewJobBase : AppCompatActivity(), OfflineListener, IProgressView,
 
     override fun showHorizontalProgressDialog(message: CharSequence?) {
         if (null == this.progressDialog) {
-            this.progressDialog = ProgressDialog(this, R.style.ThemeOverlay_MaterialComponents_Dialog)
+            this.progressDialog =
+                ProgressDialog(this, R.style.ThemeOverlay_MaterialComponents_Dialog)
             this.progressDialog?.isIndeterminate = true
             this.progressDialog?.setCancelable(false)
             setProgressStyleHorizontal()

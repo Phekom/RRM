@@ -32,7 +32,7 @@ interface JobItemEstimatePhotoDao {
     @Query("SELECT * FROM JOB_ITEM_ESTIMATE_PHOTO WHERE estimateId = :estimateId")
     fun getJobItemEstimatePhotoForEstimateId(estimateId: String): LiveData<List<JobItemEstimatesPhotoDTO>>
 
-//    @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE itemId = :itemId")
+    //    @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE itemId = :itemId")
 //    fun getItemForItemId(itemId: String): LiveData<ItemDTO>
 //
 //

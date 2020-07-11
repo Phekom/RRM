@@ -23,8 +23,11 @@ interface EstimateWorkDao {
     @Query("SELECT * FROM JOB_ESTIMATE_WORKS WHERE estimateId = :estimateId")
     fun getJobMeasureItemsForJobId(estimateId: String?): LiveData<List<JobEstimateWorksDTO>>
 
-        @Query("UPDATE JOB_ESTIMATE_WORKS SET jobEstimateWorksPhotos =:jobEstimateWorksPhotos WHERE estimateId = :estimateId")
-    fun updateJobEstimateWorkForEstimateID(jobEstimateWorksPhotos: ArrayList<JobEstimateWorksPhotoDTO>, estimateId: String?)
+    @Query("UPDATE JOB_ESTIMATE_WORKS SET jobEstimateWorksPhotos =:jobEstimateWorksPhotos WHERE estimateId = :estimateId")
+    fun updateJobEstimateWorkForEstimateID(
+        jobEstimateWorksPhotos: ArrayList<JobEstimateWorksPhotoDTO>,
+        estimateId: String?
+    )
 
     @Query("UPDATE JOB_ESTIMATE_WORKS SET estimateId =:estimateId, recordVersion=:recordVersion,recordSynchStateId =:recordSynchStateId, trackRouteId =:trackRouteId, ActId =:actId WHERE worksId = :worksId")
     fun updateJobEstimateWorksWorkflow(

@@ -21,10 +21,10 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
-import java.util.*
 import kotlinx.android.synthetic.main.activity_capture_item_measure_photo.done_image_button
 import kotlinx.android.synthetic.main.activity_capture_item_measure_photo.photoButtons
-import kotlinx.android.synthetic.main.fragment_capture_item_measure_photo.*
+import kotlinx.android.synthetic.main.fragment_capture_item_measure_photo.capture_another_photo_button
+import kotlinx.android.synthetic.main.fragment_capture_item_measure_photo.estimate_image_collection_view
 import kotlinx.coroutines.launch
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
@@ -55,6 +55,9 @@ import za.co.xisystems.itis_rrm.utils.errors.ErrorHandler
 import za.co.xisystems.itis_rrm.utils.results.XIError
 import za.co.xisystems.itis_rrm.utils.results.XIResult
 import za.co.xisystems.itis_rrm.utils.results.XISuccess
+import java.util.ArrayList
+import java.util.Date
+import java.util.HashMap
 
 //
 class CaptureItemMeasurePhotoFragment :

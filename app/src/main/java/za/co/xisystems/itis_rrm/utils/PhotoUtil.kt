@@ -4,18 +4,17 @@ import android.annotation.SuppressLint
 import android.annotation.TargetApi
 import android.content.Context
 import android.content.res.AssetFileDescriptor
-import android.graphics.*
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.Matrix
+import android.graphics.Paint
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import androidx.core.content.FileProvider
 import androidx.exifinterface.media.ExifInterface
 import androidx.fragment.app.Fragment
-import java.io.*
-import java.text.DateFormat
-import java.text.SimpleDateFormat
-import java.util.*
-import kotlin.math.roundToLong
 import org.apache.sanselan.ImageReadException
 import org.apache.sanselan.ImageWriteException
 import org.apache.sanselan.Sanselan
@@ -27,6 +26,20 @@ import timber.log.Timber
 import za.co.xisystems.itis_rrm.BuildConfig
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.FileNotFoundException
+import java.io.FileOutputStream
+import java.io.IOException
+import java.text.DateFormat
+import java.text.SimpleDateFormat
+import java.util.ArrayList
+import java.util.Base64
+import java.util.Date
+import java.util.HashMap
+import java.util.Locale
+import java.util.UUID
+import kotlin.math.roundToLong
 
 object PhotoUtil {
     const val FOLDER = "ITIS_RRM_Photos"
@@ -442,9 +455,9 @@ object PhotoUtil {
                 else -> {
                     actualHeight1 = maxHeight.toInt()
                     actualWidth1 = maxWidth.toInt()
+                }
             }
         }
-    }
         return Pair(actualHeight1, actualWidth1)
     }
 

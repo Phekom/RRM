@@ -11,15 +11,29 @@ import com.google.gson.Gson
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
-import java.io.IOException
-import java.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.localDB.JobDataController
-import za.co.xisystems.itis_rrm.data.localDB.entities.*
+import za.co.xisystems.itis_rrm.data.localDB.entities.ContractDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksPhotoDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimatesPhotoDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasurePhotoDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobSectionDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectSectionDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.SectionItemDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.SectionPointDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.WorkflowJobDTO
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
 import za.co.xisystems.itis_rrm.data.network.responses.UploadImageResponse
@@ -30,6 +44,9 @@ import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.PhotoUtil.getPhotoPathFromExternalDirectory
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
+import java.io.IOException
+import java.util.ArrayList
+import java.util.Date
 
 /**
  * Created by Francis Mahlava on 2019/11/28.

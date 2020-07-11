@@ -25,8 +25,12 @@ import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.ApproveJobsViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.ApproveJobsViewModelFactory
-import za.co.xisystems.itis_rrm.utils.*
+import za.co.xisystems.itis_rrm.utils.Coroutines
+import za.co.xisystems.itis_rrm.utils.DataConversion
+import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
+import za.co.xisystems.itis_rrm.utils.hide
+import za.co.xisystems.itis_rrm.utils.show
 
 class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
     override val kodein by kodein()
@@ -64,7 +68,8 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
             ViewModelProvider(this, factory).get(ApproveJobsViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
 
-        dialog = setDataProgressDialog(requireActivity(), getString(R.string.data_loading_please_wait))
+        dialog =
+            setDataProgressDialog(requireActivity(), getString(R.string.data_loading_please_wait))
         Coroutines.main {
             mydata_loading.show()
 
@@ -201,7 +206,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
                 toast(R.string.job_submitted)
                 popViewOnJobSubmit(direction)
             }
-    }
+        }
     }
 
     private fun popViewOnJobSubmit(direction: Int) {
@@ -221,7 +226,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
 
     private fun getEstimateItems(jobID: String?) {
         Coroutines.main {
-        val estimates = approveViewModel.getJobEstimationItemsForJobId(jobID)
+            val estimates = approveViewModel.getJobEstimationItemsForJobId(jobID)
             estimates.observe(viewLifecycleOwner, Observer { job_s ->
                 mydata_loading.hide()
                 initRecyclerView(job_s.toEstimatesListItem())

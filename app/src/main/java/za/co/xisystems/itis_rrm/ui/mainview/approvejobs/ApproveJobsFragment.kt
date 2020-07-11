@@ -67,7 +67,10 @@ class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAw
         } ?: throw Exception("Invalid Activity")
 
         Coroutines.main {
-            dialog = setDataProgressDialog(requireActivity(), getString(R.string.data_loading_please_wait))
+            dialog = setDataProgressDialog(
+                requireActivity(),
+                getString(R.string.data_loading_please_wait)
+            )
             val jobs = approveViewModel.getJobsForActivityId(ActivityIdConstants.JOB_APPROVE)
             jobs.observe(viewLifecycleOwner, Observer { job_s ->
                 val jItems = job_s.distinctBy {

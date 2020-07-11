@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlin.system.measureTimeMillis
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
@@ -13,6 +12,7 @@ import timber.log.Timber
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
+import kotlin.system.measureTimeMillis
 
 class HomeViewModel(
     private val repository: UserRepository,
@@ -22,6 +22,7 @@ class HomeViewModel(
 
     init {
     }
+
     val offlineData by lazyDeferred {
         offlineDataRepository.getContracts()
     }

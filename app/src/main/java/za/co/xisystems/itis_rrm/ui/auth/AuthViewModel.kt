@@ -49,41 +49,41 @@ class AuthViewModel(
 
     fun onResetPinButtonClick(view: View) {
 
-    if (enterOldPin.isNullOrEmpty()) {
-        authListener?.onFailure("Please Enter Old pin")
-        return
-    }
+        if (enterOldPin.isNullOrEmpty()) {
+            authListener?.onFailure("Please Enter Old pin")
+            return
+        }
 
-    if (enterNewPin.isNullOrEmpty()) {
-        authListener?.onFailure("Please Enter New pin")
-        return
-    }
+        if (enterNewPin.isNullOrEmpty()) {
+            authListener?.onFailure("Please Enter New pin")
+            return
+        }
 
-    if (confirmNewPin.isNullOrEmpty()) {
-        authListener?.onFailure("Please Confirm New pin")
-        return
-    }
+        if (confirmNewPin.isNullOrEmpty()) {
+            authListener?.onFailure("Please Confirm New pin")
+            return
+        }
 
-    if (enterNewPin != confirmNewPin) {
-        authListener?.onFailure("Pin did not match")
-        return
-    }
-    Coroutines.main {
-        try {
-            if (enterOldPin == repository.getPin()) {
-                repository.upDateUserPin(confirmNewPin!!, enterOldPin!!)
-            } else {
-                authListener?.onFailure("Old Pin is incorrect, pLease enter your current Pin")
+        if (enterNewPin != confirmNewPin) {
+            authListener?.onFailure("Pin did not match")
+            return
+        }
+        Coroutines.main {
+            try {
+                if (enterOldPin == repository.getPin()) {
+                    repository.upDateUserPin(confirmNewPin!!, enterOldPin!!)
+                } else {
+                    authListener?.onFailure("Old Pin is incorrect, pLease enter your current Pin")
+                }
+            } catch (e: AuthException) {
+                authListener?.onFailure(e.message!!)
+            } catch (e: NoInternetException) {
+                authListener?.onFailure(e.message!!)
+            } catch (e: NoConnectivityException) {
+                authListener?.onFailure(e.message!!)
             }
-        } catch (e: AuthException) {
-            authListener?.onFailure(e.message!!)
-        } catch (e: NoInternetException) {
-            authListener?.onFailure(e.message!!)
-        } catch (e: NoConnectivityException) {
-            authListener?.onFailure(e.message!!)
         }
     }
-}
 
     fun onRegPinButtonClick(view: View) {
 

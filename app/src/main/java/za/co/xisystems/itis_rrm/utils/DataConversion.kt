@@ -1,6 +1,6 @@
 package za.co.xisystems.itis_rrm.utils
 
-import java.util.*
+import java.util.Locale
 
 /**
  * Created by Pieter Jacobs on 2016/02/02.

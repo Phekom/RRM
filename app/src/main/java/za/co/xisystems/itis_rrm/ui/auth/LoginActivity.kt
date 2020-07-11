@@ -257,8 +257,8 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
     private fun showMessage() {
 
         Toast.makeText(this, "Pin is incorrect", Toast.LENGTH_SHORT).show()
-            resetAllPinColor()
-            pinInput = ""
+        resetAllPinColor()
+        pinInput = ""
     }
 
     override fun onStarted() {

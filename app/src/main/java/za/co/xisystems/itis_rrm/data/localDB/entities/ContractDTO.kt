@@ -12,6 +12,7 @@ import java.io.Serializable
  */
 
 const val CONTRACTS_TABLE = "CONTRACTS_TABLE"
+
 @Entity(tableName = CONTRACTS_TABLE)
 
 data class ContractDTO(

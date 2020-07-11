@@ -7,7 +7,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import java.util.*
+import java.util.ArrayList
 
 /**
  * Created by Pieter Jacobs on 2016/08/25.

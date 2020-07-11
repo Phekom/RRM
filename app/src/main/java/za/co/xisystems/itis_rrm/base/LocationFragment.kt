@@ -98,10 +98,10 @@ abstract class LocationFragment(layoutContentId: Int) : BaseFragment(0), KodeinA
             this.requireContext(),
             Manifest.permission.ACCESS_FINE_LOCATION
         ) == PackageManager.PERMISSION_GRANTED &&
-                ActivityCompat.checkSelfPermission(
-                    this.requireContext(),
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-                ) == PackageManager.PERMISSION_GRANTED
+            ActivityCompat.checkSelfPermission(
+                this.requireContext(),
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
 
     private fun shouldShowRequestPermissionRationale() =
         ActivityCompat.shouldShowRequestPermissionRationale(

@@ -20,7 +20,12 @@ import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.databinding.ActivityResetPinBinding
-import za.co.xisystems.itis_rrm.utils.*
+import za.co.xisystems.itis_rrm.utils.Coroutines
+import za.co.xisystems.itis_rrm.utils.hide
+import za.co.xisystems.itis_rrm.utils.hideKeyboard
+import za.co.xisystems.itis_rrm.utils.show
+import za.co.xisystems.itis_rrm.utils.snackbar
+import za.co.xisystems.itis_rrm.utils.toast
 
 class ResetPinActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnable {
     companion object {
@@ -107,7 +112,7 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnabl
                     } else {
                         toast("Please enable permissions from your Device Settings")
                     }
-               }
+                }
             }
             if (allAllowed)
                 toast("Permissions Granted")
@@ -140,7 +145,7 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnabl
     }
 
     override fun onSuccess(userDTO: UserDTO) {
-            loading.hide()
+        loading.hide()
 
         toast("You are logged in as ${userDTO.userName}")
     }

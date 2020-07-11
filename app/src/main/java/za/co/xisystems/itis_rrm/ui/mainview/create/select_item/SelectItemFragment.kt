@@ -16,8 +16,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
-import java.util.*
-import java.util.concurrent.CancellationException
 import kotlinx.android.synthetic.main.fragment_select_item.*
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.cancel
@@ -28,7 +26,12 @@ import org.kodein.di.generic.instance
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
-import za.co.xisystems.itis_rrm.data.localDB.entities.*
+import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
+import za.co.xisystems.itis_rrm.data.localDB.entities.ItemSectionDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.SectionItemDTO
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.MyState
@@ -36,6 +39,8 @@ import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper.setSpinner
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.Coroutines
+import java.util.ArrayList
+import java.util.concurrent.CancellationException
 
 /**
  * Created by Francis Mahlava on 2019/12/29.
@@ -96,6 +101,7 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
             }
         }
     }
+
     override fun onAttach(context: Context) {
         super.onAttach(context)
         (activity as MainActivity).supportActionBar?.title = getString(R.string.select_item_title)

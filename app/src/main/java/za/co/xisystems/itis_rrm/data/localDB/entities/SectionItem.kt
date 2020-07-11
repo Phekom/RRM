@@ -13,6 +13,7 @@ class SectionItem : Comparable<SectionItem> {
     override fun compareTo(other: SectionItem): Int {
         return (description ?: "").compareTo(other.description ?: "")
     }
+
     @PrimaryKey
     var sectionItemId: String = null.toString()
     var itemCode: String? = null

@@ -3,7 +3,7 @@ package za.co.xisystems.itis_rrm.data.localDB.entities
 import androidx.room.Entity
 import com.google.gson.annotations.SerializedName
 import java.io.Serializable
-import java.util.*
+import java.util.ArrayList
 
 /**
  * Created by Francis Mahlava on 2020/02/04.

@@ -4,7 +4,8 @@ import android.util.Log
 import java.text.DateFormat
 import java.text.ParseException
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Calendar
+import java.util.Date
 
 /**
  * Created by Mauritz Mollentze on 2014/12/19.
@@ -18,6 +19,7 @@ object DateUtil {
     private const val emptyString = ""
     private const val dash = "-"
     private const val zero = "0"
+
     // endregion (Private Static Final Fields)"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
 // region (Private Static Fields)SimpleDateFormat("yyyy-MM-dd HH:mm:ss") as DateFormat
     private val iso8601Format: DateFormat =
@@ -26,6 +28,7 @@ object DateUtil {
 //    private const val DATE_FORMAT_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
 
     private val readableDateForm: DateFormat = SimpleDateFormat("dd MMMM yyyy")
+
     // endregion (Private Static Fields)
 // region (Public Static Methods)
     private fun StringToDate(stringDate: String?): Date? {

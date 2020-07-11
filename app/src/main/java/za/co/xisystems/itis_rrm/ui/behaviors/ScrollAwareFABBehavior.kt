@@ -19,14 +19,14 @@ class ScrollAwareFABBehavior(context: Context?, attrs: AttributeSet?) :
         nestedScrollAxes: Int
     ): Boolean {
         return nestedScrollAxes == ViewCompat.SCROLL_AXIS_VERTICAL ||
-                super.onStartNestedScroll(
-                    coordinatorLayout,
-                    child,
-                    directTargetChild,
-                    target,
-                    axes,
-                    nestedScrollAxes
-                )
+            super.onStartNestedScroll(
+                coordinatorLayout,
+                child,
+                directTargetChild,
+                target,
+                axes,
+                nestedScrollAxes
+            )
     }
 
     override fun onNestedScroll(

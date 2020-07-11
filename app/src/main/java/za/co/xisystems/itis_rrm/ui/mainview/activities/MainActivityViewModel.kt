@@ -55,6 +55,7 @@ class MainActivityViewModel(
             offlineDataRepository.getJobMeasureForActivityId(activityId, activityId2)
         }
     }
+
     suspend fun getRoles(): LiveData<List<UserRoleDTO>> {
         return withContext(Dispatchers.IO) {
             offlineDataRepository.getRoles()

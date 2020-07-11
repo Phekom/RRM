@@ -45,6 +45,7 @@ class ApproveJobsViewModel(
             jobApprovalDataRepository.getProjectSectionIdForJobId(jobId)
         }
     }
+
     suspend fun getRouteForProjectSectionId(sectionId: String): String {
         return withContext(Dispatchers.IO) {
             jobApprovalDataRepository.getRouteForProjectSectionId(sectionId)
@@ -106,6 +107,7 @@ class ApproveJobsViewModel(
             jobApprovalDataRepository.getJobEstimationItemsPhotoStartPath(estimateId)
         }
     }
+
     suspend fun getJobEstimationItemsPhotoEndPath(estimateId: String): String {
         return withContext(Dispatchers.IO) {
             jobApprovalDataRepository.getJobEstimationItemsPhotoEndPath(estimateId)

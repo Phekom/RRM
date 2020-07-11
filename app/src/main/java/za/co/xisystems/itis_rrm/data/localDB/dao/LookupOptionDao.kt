@@ -36,7 +36,10 @@ interface LookupOptionDao {
 //    fun getNextRouteId(currentActId: Int): LiveData<Long>
 
     @Query("SELECT * FROM LOOKUP_OPTION_TABLE WHERE valueMember = :valueMember AND lookupName =:lookupName")
-    fun getLookupOptionsForLookupNameAndValueMember(valueMember: Int, lookupName: String): LiveData<LookupOptionDTO>
+    fun getLookupOptionsForLookupNameAndValueMember(
+        valueMember: Int,
+        lookupName: String
+    ): LiveData<LookupOptionDTO>
 
     @Query("SELECT * FROM LOOKUP_OPTION_TABLE WHERE lookupName = :lookupName")
     fun getAllLookupOptionsForLookupName(lookupName: String): LiveData<List<LookupOptionDTO>>

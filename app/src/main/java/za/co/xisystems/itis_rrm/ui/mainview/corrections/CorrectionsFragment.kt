@@ -30,6 +30,7 @@ class CorrectionsFragment : BaseFragment(R.layout.fragment_correction), KodeinAw
             parent.removeAllViews()
         }
     }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,

@@ -11,7 +11,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenStarted
 import androidx.navigation.Navigation
-import java.util.*
 import kotlinx.android.synthetic.main.fragment_createjob.*
 import kotlinx.coroutines.launch
 import org.kodein.di.KodeinAware
@@ -22,7 +21,17 @@ import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.custom.errors.NoConnectivityException
 import za.co.xisystems.itis_rrm.custom.errors.NoInternetException
-import za.co.xisystems.itis_rrm.data.localDB.entities.*
+import za.co.xisystems.itis_rrm.data.localDB.entities.ContractDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ItemSectionDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimatesPhotoDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobSectionDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.data.network.OfflineListener
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.MyState
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper
@@ -32,6 +41,8 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import za.co.xisystems.itis_rrm.utils.hide
 import za.co.xisystems.itis_rrm.utils.show
+import java.util.ArrayList
+import java.util.Calendar
 
 /**
  * Created by Francis Mahlava on 2019/10/18.

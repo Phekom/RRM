@@ -4,7 +4,8 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import java.io.Serializable
-import java.util.*
+import java.util.ArrayList
+import java.util.Date
 
 const val JOB_ITEM_MEASURE = "JOB_ITEM_MEASURE"
 

@@ -8,26 +8,48 @@ import za.co.xisystems.itis_rrm.R
 class Animations {
     @JvmField
     val bounce: Animation
-    @JvmField val bounce_short: Animation
-    @JvmField val bounce_long: Animation
-    @JvmField val bounce_soft: Animation
-    @JvmField val bounce_250: Animation
-    @JvmField val bounce_500: Animation
-    @JvmField val bounce_750: Animation
-    @JvmField val bounce_1000: Animation
 
-    @JvmField val scale: Animation
-    @JvmField val scale_light: Animation
+    @JvmField
+    val bounce_short: Animation
+
+    @JvmField
+    val bounce_long: Animation
+
+    @JvmField
+    val bounce_soft: Animation
+
+    @JvmField
+    val bounce_250: Animation
+
+    @JvmField
+    val bounce_500: Animation
+
+    @JvmField
+    val bounce_750: Animation
+
+    @JvmField
+    val bounce_1000: Animation
+
+    @JvmField
+    val scale: Animation
+
+    @JvmField
+    val scale_light: Animation
 
     @JvmField
     val click: Animation
 
-    @JvmField val shake_delay: Animation
-    @JvmField val shake: Animation
+    @JvmField
+    val shake_delay: Animation
 
-    @JvmField val shake_long: Animation
+    @JvmField
+    val shake: Animation
 
-    @JvmField val shake_longer: Animation
+    @JvmField
+    val shake_long: Animation
+
+    @JvmField
+    val shake_longer: Animation
 
     constructor(context: Context) {
         click = AnimationUtils.loadAnimation(context, R.anim.click)

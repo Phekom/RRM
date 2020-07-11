@@ -9,8 +9,10 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 
 class NewJobSelectItemIntent : AbstractIntent(), INewJobSelectItemIntent {
     override fun getIntent(@NonNull context: Context, projectId: String?): Intent {
-        return flags(Intent(context, null)
-                .putExtra(PROJECT_ID, projectId))
+        return flags(
+            Intent(context, null)
+                .putExtra(PROJECT_ID, projectId)
+        )
     }
 
     override fun startActivityForResult(fragment: Fragment, projectId: String?) {

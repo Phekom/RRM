@@ -30,13 +30,13 @@ class ApproveJobItem(
                 route = approveViewModel.getRouteForProjectSectionId(sectionId!!)
                 if (route.isNullOrEmpty()) route = ""
                 section = approveViewModel.getSectionForProjectSectionId(sectionId!!)
-               if (section.isNullOrEmpty()) section = ""
+                if (section.isNullOrEmpty()) section = ""
 
-               apv_section.text = "( $route ${"/0$section"} )"
-           }
-           apv_description.text = jobDTO.Descr
-           updateItem()
-       }
+                apv_section.text = "( $route ${"/0$section"} )"
+            }
+            apv_description.text = jobDTO.Descr
+            updateItem()
+        }
     }
 
     override fun getLayout() = R.layout.single_listview_item

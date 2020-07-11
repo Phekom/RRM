@@ -1,10 +1,13 @@
 package za.co.xisystems.itis_rrm.utils
 
-import java.text.DecimalFormat
-import java.util.*
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimatesPhotoDTO
+import java.text.DecimalFormat
+import java.util.ArrayList
+import java.util.Collections
+import java.util.Comparator
+import java.util.Locale
 
 object JobUtils {
     fun formatCost(value: Double): String {

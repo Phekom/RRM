@@ -35,22 +35,22 @@ open class ProjectItem(
     override fun getLayout() = R.layout.new_job_item
 
     override fun bind(viewHolder: GroupieViewHolder, position: Int) {
-                viewHolder.apply {
-                    textViewItem.text = (itemDesc.itemCode + "  " + itemDesc.descr)
-                    val jobItemEstimate: JobItemEstimateDTO? = getJobItemEstimate(itemDesc.itemId)
-                    if (jobItemEstimate != null && jobItemEstimate.isEstimateComplete()) {
-                        val lineRate: Double = jobItemEstimate.lineRate
-                        val tenderRate: Double = itemDesc.tenderRate
-                        val qty: Double = jobItemEstimate.qty
-                        costTextView.text =
-                            ("$qty  *   R $tenderRate = " + JobUtils.formatCost(lineRate))
-                        subTextView.visibility = View.GONE
-                    } else {
-                        costTextView.text = "Incomplete Estimate..."
-                        subTextView.visibility = View.VISIBLE
-                    }
+        viewHolder.apply {
+            textViewItem.text = (itemDesc.itemCode + "  " + itemDesc.descr)
+            val jobItemEstimate: JobItemEstimateDTO? = getJobItemEstimate(itemDesc.itemId)
+            if (jobItemEstimate != null && jobItemEstimate.isEstimateComplete()) {
+                val lineRate: Double = jobItemEstimate.lineRate
+                val tenderRate: Double = itemDesc.tenderRate
+                val qty: Double = jobItemEstimate.qty
+                costTextView.text =
+                    ("$qty  *   R $tenderRate = " + JobUtils.formatCost(lineRate))
+                subTextView.visibility = View.GONE
+            } else {
+                costTextView.text = "Incomplete Estimate..."
+                subTextView.visibility = View.VISIBLE
+            }
 
-                    bindItem(viewHolder)
+            bindItem(viewHolder)
         }
         viewHolder.itemView.setOnClickListener {
             sendSelectedItem(itemDesc, it, contractID, job)
@@ -61,7 +61,7 @@ open class ProjectItem(
             Coroutines.main {
                 createViewModel.deleteItemfromList(itemDesc.itemId)
             }
-           it.isLongClickable
+            it.isLongClickable
         }
     }
 
@@ -84,9 +84,9 @@ open class ProjectItem(
     }
 
     private fun bindItem(viewHolder: GroupieViewHolder) {
-       viewHolder.textViewItem.setOnClickListener {
-           sendSelectedItem(itemDesc, it, contractID, job)
-       }
+        viewHolder.textViewItem.setOnClickListener {
+            sendSelectedItem(itemDesc, it, contractID, job)
+        }
     }
 
     private fun getJobItemEstimate(itemId: String): JobItemEstimateDTO? {

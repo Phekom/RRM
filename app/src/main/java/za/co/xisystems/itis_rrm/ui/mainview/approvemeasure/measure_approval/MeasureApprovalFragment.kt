@@ -64,7 +64,8 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
         approveViewModel = activity?.run {
             ViewModelProvider(this, factory).get(ApproveMeasureViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
-        dialog = setDataProgressDialog(requireActivity(), getString(R.string.data_loading_please_wait))
+        dialog =
+            setDataProgressDialog(requireActivity(), getString(R.string.data_loading_please_wait))
         Coroutines.main {
 
             approveViewModel.measureapproval_Item.observe(viewLifecycleOwner, Observer { job ->
@@ -236,7 +237,13 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
 
     private fun List<JobItemMeasureDTO>.toMeasureItem(): List<MeasurementsItem> {
         return this.map { approvedJobItem ->
-            MeasurementsItem(approvedJobItem, approveViewModel, activity, dialog, viewLifecycleOwner)
+            MeasurementsItem(
+                approvedJobItem,
+                approveViewModel,
+                activity,
+                dialog,
+                viewLifecycleOwner
+            )
         }
     }
 }

@@ -18,7 +18,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.ExpandableGroup
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
-import java.util.*
 import kotlinx.android.synthetic.main.fragment_submit_measure.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
@@ -30,7 +29,13 @@ import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.custom.errors.NoConnectivityException
 import za.co.xisystems.itis_rrm.custom.errors.NoInternetException
-import za.co.xisystems.itis_rrm.data.localDB.entities.*
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksPhotoDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimatesPhotoDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasurePhotoDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.ui.custom.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModel
@@ -42,6 +47,8 @@ import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.errors.ErrorHandler.handleError
 import za.co.xisystems.itis_rrm.utils.results.XIError
 import za.co.xisystems.itis_rrm.utils.results.XISuccess
+import java.util.ArrayList
+import java.util.HashMap
 
 class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), KodeinAware {
     override val kodein by kodein()

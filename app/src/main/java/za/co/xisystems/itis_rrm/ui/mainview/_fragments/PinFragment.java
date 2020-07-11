@@ -1,20 +1,5 @@
 package za.co.xisystems.itis_rrm.ui.mainview._fragments;
 
-import android.app.Activity;
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.TextView;
-
-import org.jetbrains.annotations.NotNull;
-
-import za.co.xisystems.itis_rrm.R;
-import za.co.xisystems.itis_rrm.base.BaseFragment;
-
 /**
  * Created by Mauritz Mollentze in 2015.
  * Update by Pieter Jacobs during 2016/01, 2016/02, 2016/07, 2016/08.
