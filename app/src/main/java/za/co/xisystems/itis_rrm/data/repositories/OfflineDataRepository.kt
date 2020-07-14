@@ -1258,7 +1258,7 @@ class OfflineDataRepository(
 
     private fun saveEstimatePhoto(estimatePhoto: String?, fileName: String) {
         Coroutines.io {
-            if (estimatePhoto != null) {
+            if (estimatePhoto != null && fileName.isNotBlank()) {
                 PhotoUtil.createPhotoFolder(estimatePhoto, fileName)
             } else {
                 PhotoUtil.createPhotoFolder()

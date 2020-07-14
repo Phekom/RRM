@@ -167,7 +167,11 @@ object PhotoUtil {
             Environment.getExternalStorageDirectory()
                 .toString() + File.separator + FOLDER + File.separator + pictureName
         var file = File(fileName)
-        if (!file.exists()) { //  if not in the folder then go to the PhotosDirectory to check if in their.
+        if (!file.exists()) {
+            /**
+             * if not in the folder then go to the
+             * PhotosDirectory to check if in their.
+             **/
             fileName =
                 Environment.getExternalStorageDirectory().toString() + File.separator + pictureName
             file = File(fileName)

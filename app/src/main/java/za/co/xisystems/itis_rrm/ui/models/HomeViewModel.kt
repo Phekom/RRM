@@ -67,7 +67,8 @@ class HomeViewModel(
                     }
 
                     val result =
-                        actJob.await() + workflows.await() + lookups.await() + taskList.await() + contracts.await()
+                        actJob.await() + workflows.await() + lookups.await() +
+                            taskList.await() + contracts.await()
                     Timber.d("$result")
                 }
             }

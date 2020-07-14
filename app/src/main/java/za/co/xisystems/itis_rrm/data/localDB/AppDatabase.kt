@@ -77,8 +77,17 @@ import za.co.xisystems.itis_rrm.utils.Converters
  */
 
 @Database(
-    entities = [JobDTO::class, UserDTO::class, UserRoleDTO::class, ProjectItemDTO::class, ItemDTOTemp::class, JobDTOTemp::class,
-        ContractDTO::class, VoItemDTO::class, ProjectDTO::class, ProjectSectionDTO::class, PrimaryKeyValueDTO::class, LookupOptionDTO::class, LookupDTO::class, ItemSectionDTO::class, WorkFlowDTO::class, SectionPointDTO::class, WorkFlowRouteDTO::class, JobSectionDTO::class, InfoClassDTO::class, ActivityDTO::class, ToDoGroupsDTO::class, JobItemEstimatesPhotoDTO::class, JobItemMeasurePhotoDTO::class, JobItemEstimateDTO::class, JobItemMeasureDTO::class, ToDoListEntityDTO::class, ChildLookupDTO::class, JobEstimateWorksDTO::class, JobEstimateWorksPhotoDTO::class, SectionItemDTO::class, WorkFlowsDTO::class, WF_WorkStepDTO::class
+    entities = [JobDTO::class, UserDTO::class, UserRoleDTO::class,
+        ProjectItemDTO::class, ItemDTOTemp::class, JobDTOTemp::class,
+        ContractDTO::class, VoItemDTO::class, ProjectDTO::class,
+        ProjectSectionDTO::class, PrimaryKeyValueDTO::class, LookupOptionDTO::class,
+        LookupDTO::class, ItemSectionDTO::class, WorkFlowDTO::class,
+        SectionPointDTO::class, WorkFlowRouteDTO::class, JobSectionDTO::class,
+        InfoClassDTO::class, ActivityDTO::class, ToDoGroupsDTO::class,
+        JobItemEstimatesPhotoDTO::class, JobItemMeasurePhotoDTO::class, JobItemEstimateDTO::class,
+        JobItemMeasureDTO::class, ToDoListEntityDTO::class, ChildLookupDTO::class,
+        JobEstimateWorksDTO::class, JobEstimateWorksPhotoDTO::class, SectionItemDTO::class,
+        WorkFlowsDTO::class, WF_WorkStepDTO::class
         // JobItemMeasureDTOTemp::class,JobItemMeasurePhotoDTOTemp::class,
 
     ],
