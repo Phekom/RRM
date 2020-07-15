@@ -1,5 +1,6 @@
 package za.co.xisystems.itis_rrm.utils.interfaces
 
+import java.util.ArrayList
 import za.co.xisystems.itis_rrm.data.localDB.entities.ContractDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.LookupDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
@@ -7,7 +8,6 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectSectionDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserRoleDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.VoItemDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.WorkFlowDTO
-import java.util.ArrayList
 
 /**
  * Created by Francis Mahlava on 2019/11/30.

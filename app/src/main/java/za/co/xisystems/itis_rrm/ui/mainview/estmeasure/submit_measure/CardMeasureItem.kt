@@ -6,6 +6,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.navigation.Navigation
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import com.xwray.groupie.kotlinandroidextensions.Item
+import java.io.File
 import kotlinx.android.synthetic.main.measure_estimate_list_item.*
 import kotlinx.coroutines.launch
 import za.co.xisystems.itis_rrm.R
@@ -16,7 +17,6 @@ import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.GlideApp
 import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
-import java.io.File
 
 open class CardMeasureItem(
     val activity: FragmentActivity?,

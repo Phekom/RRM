@@ -3,9 +3,9 @@ package za.co.xisystems.itis_rrm.data.network
 import android.os.Handler
 import android.os.Looper
 import androidx.annotation.NonNull
-import za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates.AppExecutor
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
+import za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates.AppExecutor
 
 /**
  * Created by Francis Mahlava on 2020/02/20.
