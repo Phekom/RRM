@@ -5,7 +5,6 @@ plugins {
     id "kotlin-kapt"
     id "androidx.navigation.safeargs"
     id "deploygate"
-    id "org.jlleitschuh.gradle.ktlint"
     id "eu.davidea.grabver"
 }
 
@@ -39,6 +38,11 @@ static def safePropertyGetter(Properties properties, String key, String defaultV
     return defaultValue
 }
 
+gradle.projectsEvaluated {
+    tasks.withType(JavaCompile) {
+        options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+    }
+}
 
 android {
 
