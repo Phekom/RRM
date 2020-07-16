@@ -17,7 +17,10 @@ interface ActivityDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertActivitys(activities: ActivityDTO)
 
-    @Query("INSERT INTO ACTIVITY_TABLE ( actId,  actTypeId, approvalId, sContentId,  actName, descr) VALUES ( :ACT_ID, :ACT_NAME, :ACT_TYPE_ID, :APPROVAL_ID,  :DESCRIPTION,:CONTENT_ID)")
+    @Query(
+        "INSERT INTO ACTIVITY_TABLE ( actId,  actTypeId, approvalId, sContentId,  actName, descr) " +
+            "VALUES ( :ACT_ID, :ACT_NAME, :ACT_TYPE_ID, :APPROVAL_ID,  :DESCRIPTION,:CONTENT_ID)"
+    )
     fun insertActivity(
         ACT_ID: Long,
         ACT_TYPE_ID: Long?,

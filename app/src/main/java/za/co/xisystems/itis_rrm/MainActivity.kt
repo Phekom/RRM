@@ -75,7 +75,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     val PROJECT_ENGINEER_ROLE_IDENTIFIER =
         "RRM Job Mobile - Engineer" // "D9E16C2A31FA4CC28961E20B652B292C"
     val PROJECT_SUB_CONTRACTOR_ROLE_IDENTIFIER =
-        "RRM Job Mobile - Sub Contractor" // "03F493BDD6D68944A94BE038B6C1C3D2" //"F836F6BF14404E749E6748A31A0262AD"
+        "RRM Job Mobile - Sub Contractor" // "03F493BDD6D68944A94BE038B6C1C3D2"
+
+    // "F836F6BF14404E749E6748A31A0262AD"
     val PROJECT_CONTRACTOR_ROLE_IDENTIFIER =
         "RRM Job Mobile - Contractor" // "E398A3EF1C18431DBAEE4A4AC5D6F07D"
 
@@ -564,24 +566,26 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             })
 //        //=====================================================================================================================================================
             // Measurements are completed needs approval for payment
-            val m_approval =
-                mainActivityViewModel.getJobApproveMeasureForActivityId(ActivityIdConstants.MEASURE_COMPLETE)
-            m_approval.observe(this, androidx.lifecycle.Observer { job_s ->
-                qty = job_s.distinctBy { job -> job.jobId }.size
-                if (qty == 0) {
-                    nav_approvMeasure?.text = ""
-                } else {
-                    nav_approvMeasure?.gravity = Gravity.CENTER_VERTICAL
-                    nav_approvMeasure?.setTypeface(null, Typeface.BOLD)
-                    nav_approvMeasure?.setTextColor(
-                        ContextCompat.getColor(
-                            applicationContext,
-                            R.color.red
+            val m_approval = mainActivityViewModel.getJobApproveMeasureForActivityId(
+                ActivityIdConstants.MEASURE_COMPLETE
+            ).also {
+                it.observe(this, androidx.lifecycle.Observer { job_s ->
+                    qty = job_s.distinctBy { job -> job.jobId }.size
+                    if (qty == 0) {
+                        nav_approvMeasure?.text = ""
+                    } else {
+                        nav_approvMeasure?.gravity = Gravity.CENTER_VERTICAL
+                        nav_approvMeasure?.setTypeface(null, Typeface.BOLD)
+                        nav_approvMeasure?.setTextColor(
+                            ContextCompat.getColor(
+                                applicationContext,
+                                R.color.red
+                            )
                         )
-                    )
-                    nav_approvMeasure?.text = "( $qty )"
-                }
-            })
+                        nav_approvMeasure?.text = "( $qty )"
+                    }
+                })
+            }
         }
     }
 

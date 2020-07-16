@@ -5,9 +5,9 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import java.util.ArrayList
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasurePhotoDTO
-import java.util.ArrayList
 
 /**
  * Created by Francis Mahlava on 2019/11/21.
@@ -19,7 +19,11 @@ interface JobItemMeasureDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertJobItemMeasure(jobItemMeasure: JobItemMeasureDTO): Long
 
-    @Query("INSERT INTO JOB_ITEM_MEASURE (itemMeasureId, jobId, projectItemId, qty, lineRate, startKm, endKm, jobDirectionId, recordVersion, recordSynchStateId, estimateId, projectVoId, cpa, lineAmount, measureDate, selectedItemUom ) VALUES ( :itemMeasureId, :jobId, :projectItemId, :qty, :lineRate, :startKm, :endKm, :jobDirectionId, :recordVersion, :recordSynchStateId, :estimateId, :projectVoId, :cpa, :lineAmount, :measureDate, :selectedItemUom )")
+    @Query(
+        "INSERT INTO JOB_ITEM_MEASURE (itemMeasureId, jobId, projectItemId, qty, lineRate, startKm, endKm, jobDirectionId, recordVersion, recordSynchStateId, estimateId, projectVoId, cpa, lineAmount, measureDate, selectedItemUom )" +
+            " VALUES ( :itemMeasureId, :jobId, :projectItemId, :qty, :lineRate, :startKm, :endKm, :jobDirectionId, :recordVersion, :recordSynchStateId, :estimateId, :projectVoId, :cpa, :lineAmount, :measureDate, :selectedItemUom )"
+    )
+
     fun insertJobItemMeasure2(
         itemMeasureId: String,
         jobId: String,

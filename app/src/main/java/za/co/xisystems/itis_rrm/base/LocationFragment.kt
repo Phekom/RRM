@@ -17,7 +17,7 @@ import org.kodein.di.generic.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.services.LocationModel
 import za.co.xisystems.itis_rrm.ui.mainview.activities.LocationViewModelFactory
-import za.co.xisystems.itis_rrm.utils.GpsUtils
+import za.co.xisystems.itis_rrm.utils.GPSUtils
 
 /**
  * Created by Shaun McDonald on 2020/06/06.
@@ -45,7 +45,7 @@ abstract class LocationFragment(layoutContentId: Int) : BaseFragment(0), KodeinA
             ViewModelProvider(this, locationFactory).get(LocationViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
 
-        GpsUtils(this.requireContext()).activateGPS(object : GpsUtils.OnGpsListener {
+        GPSUtils(this.requireContext()).activateGPS(object : GPSUtils.OnGpsListener {
 
             override fun gpsStatus(isGPSEnable: Boolean) {
                 this@LocationFragment.gpsEnabled = isGPSEnable

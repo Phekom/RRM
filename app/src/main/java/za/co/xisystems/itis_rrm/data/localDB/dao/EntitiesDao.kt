@@ -18,7 +18,11 @@ interface EntitiesDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertEntities(intities: ToDoListEntityDTO)
 
-    @Query("INSERT INTO TODO_ENTITY_TABLE (trackRouteIdString, actionable, activityId, currentRouteId, data, description, entities, entityName, location, primaryKeyValues, recordVersion, jobId) VALUES (:trackRouteId, :actionable, :activityId, :currentRouteId, :data , :description, :entities, :entityName, :location, :primaryKeyValues, :recordVersion, :jobId)")
+    @Query(
+        "INSERT INTO TODO_ENTITY_TABLE (trackRouteIdString, actionable, activityId, currentRouteId, data, description, entities, entityName, location, primaryKeyValues, recordVersion, jobId) " +
+            "VALUES (:trackRouteId, :actionable, :activityId, :currentRouteId, :data , :description, :entities, :entityName, :location, " +
+            ":primaryKeyValues, :recordVersion, :jobId)"
+    )
     fun insertEntitie(
         trackRouteId: String?,
         actionable: Int,

@@ -8,6 +8,9 @@ import android.os.Environment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import java.io.File
+import java.time.LocalDateTime
+import java.util.regex.Pattern
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -50,9 +53,6 @@ import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import za.co.xisystems.itis_rrm.utils.results.XIResult
 import za.co.xisystems.itis_rrm.utils.results.XIStatus
 import za.co.xisystems.itis_rrm.utils.results.XISuccess
-import java.io.File
-import java.time.LocalDateTime
-import java.util.regex.Pattern
 
 private val jobDataController: JobDataController? = null
 
@@ -1258,7 +1258,7 @@ class OfflineDataRepository(
 
     private fun saveEstimatePhoto(estimatePhoto: String?, fileName: String) {
         Coroutines.io {
-            if (estimatePhoto != null) {
+            if (estimatePhoto != null && fileName.isNotBlank()) {
                 PhotoUtil.createPhotoFolder(estimatePhoto, fileName)
             } else {
                 PhotoUtil.createPhotoFolder()

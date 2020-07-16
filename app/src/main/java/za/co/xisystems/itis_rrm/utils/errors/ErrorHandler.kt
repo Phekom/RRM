@@ -3,13 +3,13 @@ package za.co.xisystems.itis_rrm.utils.errors
 import android.content.Context
 import android.view.View
 import android.widget.Toast
+import java.io.IOException
 import retrofit2.HttpException
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.custom.errors.NoDataException
 import za.co.xisystems.itis_rrm.custom.errors.NoResponseException
 import za.co.xisystems.itis_rrm.ui.custom.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.utils.results.XIError
-import java.io.IOException
 
 //
 // Created by Shaun McDonald on 2020/05/23.

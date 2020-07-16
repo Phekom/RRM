@@ -4,13 +4,13 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
+import java.net.InetAddress
+import java.net.InetSocketAddress
+import java.net.Socket
 import okhttp3.Interceptor
 import okhttp3.Response
 import za.co.xisystems.itis_rrm.custom.errors.NoConnectivityException
 import za.co.xisystems.itis_rrm.custom.errors.NoInternetException
-import java.net.InetAddress
-import java.net.InetSocketAddress
-import java.net.Socket
 
 /**
  * Created by Francis Mahlava on 2019/10/18.

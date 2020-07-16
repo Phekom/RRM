@@ -40,10 +40,10 @@ import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
+import java.util.concurrent.TimeUnit
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
-import java.util.concurrent.TimeUnit
 
 /**
  * Service tracks location when requested and updates Activity via binding. If Activity is

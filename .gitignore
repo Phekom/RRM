@@ -198,3 +198,4 @@ lint/outputs/
 lint/tmp/
 # lint/reports/
 
+/signing.properties

@@ -29,7 +29,10 @@ interface EstimateWorkDao {
         estimateId: String?
     )
 
-    @Query("UPDATE JOB_ESTIMATE_WORKS SET estimateId =:estimateId, recordVersion=:recordVersion,recordSynchStateId =:recordSynchStateId, trackRouteId =:trackRouteId, ActId =:actId WHERE worksId = :worksId")
+    @Query(
+        "UPDATE JOB_ESTIMATE_WORKS " +
+            "SET estimateId =:estimateId, recordVersion=:recordVersion,recordSynchStateId =:recordSynchStateId, trackRouteId =:trackRouteId, ActId =:actId WHERE worksId = :worksId"
+    )
     fun updateJobEstimateWorksWorkflow(
         worksId: String?,
         estimateId: String?,

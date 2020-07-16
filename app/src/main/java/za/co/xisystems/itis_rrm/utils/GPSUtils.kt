@@ -18,7 +18,7 @@ import za.co.xisystems.itis_rrm.services.LocationLiveData
  * Created by Shaun McDonald on 2020/06/07.
  * Copyright (c) 2020 XI Systems. All rights reserved.
  **/
-class GpsUtils(private val context: Context) {
+class GPSUtils(private val context: Context) {
 
     private val settingsClient: SettingsClient = LocationServices.getSettingsClient(context)
     private val locationSettingsRequest: LocationSettingsRequest?
@@ -62,7 +62,8 @@ class GpsUtils(private val context: Context) {
 
                         LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE -> {
                             val errorMessage =
-                                "Location settings are inadequate, and cannot be " + "fixed here. Fix in Settings."
+                                "Location settings are inadequate, and cannot be " +
+                                    "fixed here. Fix in Settings."
                             Timber.e(errorMessage)
 
                             Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
