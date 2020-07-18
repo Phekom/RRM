@@ -1,9 +1,10 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
-      xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
       tools:context="za.co.xisystems.itismaintenance.old_app.activities.ViewJobEstimatesActivity">
 
     <item android:id="@+id/action_cancel_workflow"
           android:title="@string/cancel"
           android:orderInCategory="100"
-          android:showAsAction="never" />
+        app:showAsAction="never" />
 </menu>

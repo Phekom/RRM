@@ -13,13 +13,13 @@ versioning {
     major 1
     minor 5
     // Optional, force custom patch (number)
-    // patch 54
+    patch 56
     // Optional (any string)
     // preRelease ""
     // Optional, custom task name to trigger the increase of the version
-    incrementOn "RRM_MvvM.app:assembleQaRelease"
+    incrementOn "assembleRelease"
     // Optional, custom task name for which you want to save the versioning file
-    saveOn "RRM_MvvM.app:assembleQaRelease"
+    saveOn "assembleDebug"
 }
 
 
@@ -65,13 +65,6 @@ android {
     def versionBuildDate
     def appId = "za.co.xisystems.itismaintenance"
 
-    versionBuild = versioning.patch
-
-    versionBuild = (versionBuild == null) ? 55 : versionBuild + 55
-
-    versioning.patch = versionBuild
-
-
     // local properties
     def propertyFile = file(project.rootProject.file("local.properties").toString())
     System.out.println(propertyFile)
@@ -115,8 +108,8 @@ android {
         buildConfigField("String", "PASSWORD_STUB", '"pass"')
         buildConfigField("String", "PIN_CODE", '"1234"')
         buildConfigField("boolean", "STUB", "false")
-        buildConfigField("String", "VERSION_BUILD", '"' + versionBuild + '"')
-        buildConfigField("String", "VERSION_BUILD_DATE", '"' + versionBuildDate + '"')
+        buildConfigField("String", "VERSION_BUILD", '"' + versioning.build + '"')
+        buildConfigField("String", "VERSION_BUILD_DATE", '"' + versioning.getDate("yyyy/MM/dd") + '"')
 
         javaCompileOptions {
             annotationProcessorOptions {
