@@ -16,7 +16,7 @@ class NewJobSelectItemIntentFrag : AbstractIntent(), INewJobSelectItemIntent {
     }
 
     override fun startActivityForResult(fragment: Fragment, projectId: String?) {
-        val intent = getIntent(fragment.context!!.applicationContext, projectId)
+        val intent = getIntent(fragment.requireContext().applicationContext, projectId)
         fragment.startActivityForResult(intent, REQUEST_CODE_SELECT_ITEM)
     }
 
