@@ -106,17 +106,15 @@
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
 
-        <service
-            android:name="com.raygun.raygun4android.services.CrashReportingPostService"
+        <service android:name="com.raygun.raygun4android.services.CrashReportingPostService"
             android:exported="false"
             android:permission="android.permission.BIND_JOB_SERVICE"
-            android:process=":crashreportingpostservice" />
-        <service
-            android:name="com.raygun.raygun4android.services.RUMPostService"
+            android:process=":crashreportingpostservice"/>
+
+        <service android:name="com.raygun.raygun4android.services.RUMPostService"
             android:exported="false"
             android:permission="android.permission.BIND_JOB_SERVICE"
             android:process=":rumpostservice" />
-
 
         <meta-data
             android:name="com.raygun.raygun4android.apikey"
