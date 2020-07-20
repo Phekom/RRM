@@ -66,13 +66,13 @@ android {
     def appId = "za.co.xisystems.itismaintenance"
 
     // local properties
-    def propertyFile = file(project.rootProject.file("local.properties").toString())
+    def propertyFile = file(project.rootProject.file("host.properties").toString())
     System.out.println(propertyFile)
-    Properties localProps = new Properties()
+    Properties hostProps = new Properties()
     InputStream inputStream = new FileInputStream(propertyFile)
-    localProps.load(inputStream)
+    hostProps.load(inputStream)
     inputStream.close()
-    System.out.println(localProps)
+    System.out.println(hostProps)
 
     signingConfigs {
         release {
@@ -83,13 +83,13 @@ android {
         }
     }
 
-    def qa_env = localProps['QA_HOST'].toString()
-    def dev_env = localProps['DEV_HOST'].toString()
-    def xi_env = localProps['XI_HOST'].toString()
-    def prod_env = localProps['PROD_HOST'].toString()
-    def sdev_env = localProps['SDEV_HOST'].toString()
+    def qa_env = hostProps['QA_HOST'].toString()
+    def dev_env = hostProps['DEV_HOST'].toString()
+    def xi_env = hostProps['XI_HOST'].toString()
+    def prod_env = hostProps['PROD_HOST'].toString()
+    def sdev_env = hostProps['SDEV_HOST'].toString()
 
-    def registerAutoFillTest = safePropertyGetter(localProps, 'REGISTER_AUTO_FILL_TEST', "false") as Boolean
+    def registerAutoFillTest = safePropertyGetter(hostProps, 'REGISTER_AUTO_FILL_TEST', "false") as Boolean
 
     versionBuildDate = getDate()
 
