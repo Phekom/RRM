@@ -35,13 +35,6 @@ interface ContractDao {
     @Query("SELECT contractNo FROM CONTRACTS_TABLE WHERE contractId LIKE :contractVoId")
     fun getContractNoForId(contractVoId: String?): String
 
-//    //  Get All Contracts for Versio
-//    @Query("SELECT * FROM CONTRACTS_TABLE ")
-//    fun getAllContracts() : LiveData<List<Contract>>
-//
-
-// //    fun checkIfContractExists(contractId: String): LiveData<Boolean>
-//
-
-//
+    @Query("SELECT COUNT(contractNo) FROM CONTRACTS_TABLE")
+    fun countContracts(): Int
 }

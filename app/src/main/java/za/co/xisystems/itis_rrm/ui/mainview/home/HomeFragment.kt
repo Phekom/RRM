@@ -31,6 +31,7 @@ import za.co.xisystems.itis_rrm.custom.errors.NoInternetException
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.data.network.responses.HealthCheckResponse
+import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModelFactory
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
@@ -133,11 +134,19 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
             ViewModelProvider(this, shareFactory).get(SharedViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
 
-        // val dialog = setDataProgressDialog(activity!!, getString(R.string.data_loading_please_wait))
 
-        if (!homeViewModel.bigSyncDone) {
-            promptUserToSync()
+        uiScope.launch(uiScope.coroutineContext) {
+            homeViewModel.bigSyncCheck()
+            homeViewModel.bigSyncDone.observeOnce(viewLifecycleOwner, Observer {
+                it?.let {
+                    Timber.d("Synced: $it")
+                    if (!it) {
+                        promptUserToSync()
+                    }
+                }
+            })
         }
+
 
         items_swipe_to_refresh.setProgressBackgroundColorSchemeColor(
             ContextCompat.getColor(
@@ -188,7 +197,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
         }
     }
 
-    fun retrySynch() {
+    private fun retrySynch() {
         bigSync()
     }
 
@@ -219,7 +228,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
 
             sharedViewModel.setMessage("Data Loading")
             sharedViewModel.toggleLongRunning(true)
-
+            group2_loading.visibility = View.VISIBLE
             homeViewModel.dataBaseStatus.observe(
                 viewLifecycleOwner,
                 Observer { t ->
@@ -261,6 +270,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
         } finally {
             items_swipe_to_refresh.isRefreshing = false
             sharedViewModel.toggleLongRunning(false)
+            group2_loading.visibility = View.GONE
         }
     }
 

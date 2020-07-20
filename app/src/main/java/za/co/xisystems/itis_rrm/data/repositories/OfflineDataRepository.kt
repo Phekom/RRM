@@ -8,9 +8,6 @@ import android.os.Environment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import java.io.File
-import java.time.LocalDateTime
-import java.util.regex.Pattern
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -53,6 +50,9 @@ import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import za.co.xisystems.itis_rrm.utils.results.XIResult
 import za.co.xisystems.itis_rrm.utils.results.XIStatus
 import za.co.xisystems.itis_rrm.utils.results.XISuccess
+import java.io.File
+import java.time.LocalDateTime
+import java.util.regex.Pattern
 
 private val jobDataController: JobDataController? = null
 
@@ -119,7 +119,11 @@ class OfflineDataRepository(
         }
     }
 
-    var bigSyncDone = false
+    suspend fun bigSyncDone(): Boolean {
+        return withContext(Dispatchers.IO) {
+            Db.getContractDao().countContracts() >= 1
+        }
+    }
 
     val databaseStatus: MutableLiveData<XIResult<Boolean>> = MutableLiveData()
 
@@ -379,7 +383,7 @@ class OfflineDataRepository(
                         continue
                     } else {
                         try {
-                            postStatus("Setting project: ${project.descr}")
+                            postStatus("Setting project: ${project.projectCode}")
                             Db.getProjectDao().insertProject(
                                 project.projectId,
                                 project.descr,
@@ -397,7 +401,6 @@ class OfflineDataRepository(
                                 ex,
                                 "Contract: ${contract.shortDescr} (${contract.contractId}) ProjectId: ${project.descr} (${project.projectId}) -> ${ex.message}"
                             )
-                            // throw ex
                         }
 
                         if (project.items != null) {
@@ -457,7 +460,6 @@ class OfflineDataRepository(
                     }
                 } catch (ex: Exception) {
                     Timber.e(ex, "ItemId: ${item.itemId} -> ${ex.message}")
-                    // throw ex
                 }
             }
         }
@@ -515,14 +517,13 @@ class OfflineDataRepository(
                         ex,
                         "VoItemProjectVoId: ${voItem.projectVoId} -> ${ex.message}"
                     )
-                    // throw ex
                 }
         }
     }
 
     private fun saveWorkFlowsInfo(workFlows: WorkFlowsDTO) {
         Coroutines.io {
-            // TODO: Fix isFetchNeeded for Time and Offline Mode
+            // Fix isFetchNeeded for Time and Offline Mode
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 prefs.savelastSavedAt(LocalDateTime.now().toString())
             }
@@ -1040,7 +1041,6 @@ class OfflineDataRepository(
             // conTracts.postValue(contractsResponse.contracts)
             saveContracts(contractsResponse.contracts)
             databaseStatus.postValue(XISuccess(true))
-            bigSyncDone = true
             true
         }
     }
@@ -1094,7 +1094,7 @@ class OfflineDataRepository(
     }
 
     suspend fun fetchAllData(userId: String): Boolean {
-        // TODO: Redo as async calls in parallel
+        // Redo as async calls in parallel
         return withContext(Dispatchers.IO) {
 
             if (!entitiesFetched) {
