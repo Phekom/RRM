@@ -85,9 +85,9 @@ android {
 
     def qa_env = hostProps['QA_HOST'].toString()
     def dev_env = hostProps['DEV_HOST'].toString()
-    def xi_env = hostProps['XI_HOST'].toString()
+//    def xi_env = hostProps['XI_HOST'].toString()
     def prod_env = hostProps['PROD_HOST'].toString()
-    def sdev_env = hostProps['SDEV_HOST'].toString()
+//    def sdev_env = hostProps['SDEV_HOST'].toString()
 
     def registerAutoFillTest = safePropertyGetter(hostProps, 'REGISTER_AUTO_FILL_TEST', "false") as Boolean
 
@@ -149,7 +149,7 @@ android {
     }
 
     productFlavors {
-        stub {
+        /*stub {
             splits.abi.enable = false
             splits.density.enable = false
             buildConfigField("boolean", "STUB", "true")
@@ -164,7 +164,7 @@ android {
             buildConfigField("String", "USERNAME_TEST", '"stubtest"')
             buildConfigField("String", "PASSWORD_TEST", '"1234"')
             buildConfigField("boolean", "REGISTER_AUTO_FILL_TEST", registerAutoFillTest.toString())
-        }
+        }*/
 
         dev {
             splits.abi.enable = false
@@ -180,7 +180,7 @@ android {
             buildConfigField "String", "HOCKEYAPP_APP_ID", "\"\""
         }
 
-        xi {
+        /*xi {
             splits.abi.enable = false
             splits.density.enable = false
             resConfigs "en", "xxhdpi"
@@ -207,7 +207,7 @@ android {
             buildConfigField("String", "API_HOST", sdev_env)
             buildConfigField "String", "HOCKEYAPP_APP_ID", "\"7b77445b888a411b83ae27491a5bd7c9\""
         }
-
+*/
         qa { // Sanral QA
             splits.abi.enable = false
             splits.density.enable = false
