@@ -119,9 +119,11 @@ class OfflineDataRepository(
         }
     }
 
-    suspend fun bigSyncDone(): Boolean {
-        return withContext(Dispatchers.IO) {
-            Db.getContractDao().countContracts() >= 1
+    val bigSyncDone: MutableLiveData<Boolean> = MutableLiveData()
+
+    suspend fun bigSyncCheck() {
+        withContext(Dispatchers.IO) {
+            bigSyncDone.postValue(Db.getContractDao().countContracts() >= 1)
         }
     }
 
@@ -336,7 +338,7 @@ class OfflineDataRepository(
                 .distinctBy { contract -> contract.contractId }
             for (contract in validContracts) {
                 if (!Db.getContractDao().checkIfContractExists(contract.contractId)) {
-                    postStatus("Setting Contract: ${contract.shortDescr}")
+                    postStatus("Setting Contract: ${contract.shortDescr ?: contract.descr}")
                     Db.getContractDao().insertContract(contract)
 
                     val validProjects =

@@ -43,10 +43,10 @@ class HomeViewModel(
 
     val dataBaseStatus: MutableLiveData<XIResult<Boolean>> = offlineDataRepository.databaseStatus
 
-    val bigSyncDone: MutableLiveData<Boolean> = MutableLiveData(false)
+    val bigSyncDone: MutableLiveData<Boolean> = offlineDataRepository.bigSyncDone
 
     suspend fun bigSyncCheck() {
-        bigSyncDone.postValue(offlineDataRepository.bigSyncDone())
+       offlineDataRepository.bigSyncCheck()
     }
 
     suspend fun fetchAllData(userId: String): Boolean {
