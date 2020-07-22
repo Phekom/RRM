@@ -46,5 +46,5 @@ def runUnitTestAndPublishResults() {
 
 def generateAndArchiveAPK() {
     sh './gradlew :app:assembleDevDebug'
-    archiveArtifacts artifacts: 'demo/build/outputs/apk/**/*.apk', excludes: 'demo/build/outputs/apk/**/output.json'
+    archiveArtifacts artifacts: 'app/build/outputs/apk/**/*.apk', excludes: 'app/build/outputs/apk/**/output.json'
 }
