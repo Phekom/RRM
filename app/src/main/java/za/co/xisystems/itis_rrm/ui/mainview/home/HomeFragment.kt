@@ -134,7 +134,6 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
             ViewModelProvider(this, shareFactory).get(SharedViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
 
-
         uiScope.launch(uiScope.coroutineContext) {
             homeViewModel.bigSyncCheck()
             homeViewModel.bigSyncDone.observeOnce(viewLifecycleOwner, Observer {
@@ -146,7 +145,6 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                 }
             })
         }
-
 
         items_swipe_to_refresh.setProgressBackgroundColorSchemeColor(
             ContextCompat.getColor(

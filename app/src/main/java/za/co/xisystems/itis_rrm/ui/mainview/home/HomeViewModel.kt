@@ -46,7 +46,7 @@ class HomeViewModel(
     val bigSyncDone: MutableLiveData<Boolean> = offlineDataRepository.bigSyncDone
 
     suspend fun bigSyncCheck() {
-       offlineDataRepository.bigSyncCheck()
+        offlineDataRepository.bigSyncCheck()
     }
 
     suspend fun fetchAllData(userId: String): Boolean {
