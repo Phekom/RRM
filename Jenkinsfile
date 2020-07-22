@@ -25,7 +25,7 @@ def checkLintAndPublishResults() {
         sh './gradlew :app:lintDevDebug'
     } catch(err) {
     }
-    String file = 'app/build/outputs/lint-results-devDebug.xml'
+    String file = 'app/build/reports/lint-results-devDebug.xml'
     androidLint pattern: file
 }
 
