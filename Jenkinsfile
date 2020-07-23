@@ -25,7 +25,7 @@ def checkLintAndPublishResults() {
         sh './gradlew :app:lintDevDebug'
     } catch(err) {
     }
-    String file = 'app/build/outputs/lint-results-devDebug.xml'
+    String file = 'app/build/reports/lint-results-devDebug.xml'
     androidLint pattern: file
 }
 
@@ -36,7 +36,7 @@ def runUnitTestAndPublishResults() {
     } catch(err) {
         failure = true
     } finally {
-        String results = 'app/build/test-results/testDevDebugUnitTest/*.xml'
+        String results = 'app/build/test-results/**/*.xml'
         step([$class: 'JUnitResultArchiver', testResults: results])
     }
     if (failure) {
@@ -46,5 +46,5 @@ def runUnitTestAndPublishResults() {
 
 def generateAndArchiveAPK() {
     sh './gradlew :app:assembleDevDebug'
-    archiveArtifacts artifacts: 'demo/build/outputs/apk/**/*.apk', excludes: 'demo/build/outputs/apk/**/output.json'
+    archiveArtifacts artifacts: 'app/build/outputs/apk/**/*.apk', excludes: 'app/build/outputs/apk/**/*.json'
 }
