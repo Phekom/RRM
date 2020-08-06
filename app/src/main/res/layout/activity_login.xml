@@ -80,6 +80,7 @@
                     android:orientation="vertical">
 
                     <TextView
+                        android:id="@+id/pinMessage"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="20dp"
@@ -104,8 +105,10 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:src="@drawable/oval_pin_grey"
+                                app:layout_constraintBottom_toBottomOf="parent"
                                 app:layout_constraintLeft_toLeftOf="parent"
-                                app:layout_constraintRight_toLeftOf="@+id/pin_2" />
+                                app:layout_constraintRight_toLeftOf="@+id/pin_2"
+                                app:layout_constraintTop_toTopOf="parent" />
 
                             <ImageView
                                 android:id="@+id/pin_2"
@@ -114,6 +117,7 @@
                                 android:src="@drawable/oval_pin_grey"
                                 app:layout_constraintLeft_toRightOf="@id/pin_1"
                                 app:layout_constraintRight_toLeftOf="@id/pin_3"
+                                app:layout_constraintTop_toTopOf="parent"
                                 tools:ignore="MissingConstraints" />
 
                             <ImageView
@@ -121,8 +125,10 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:src="@drawable/oval_pin_grey"
+                                app:layout_constraintBottom_toBottomOf="parent"
                                 app:layout_constraintLeft_toRightOf="@id/pin_2"
-                                app:layout_constraintRight_toLeftOf="@id/pin_4" />
+                                app:layout_constraintRight_toLeftOf="@id/pin_4"
+                                app:layout_constraintTop_toTopOf="parent" />
 
                             <ImageView
                                 android:id="@+id/pin_4"
@@ -130,7 +136,8 @@
                                 android:layout_height="wrap_content"
                                 android:src="@drawable/oval_pin_grey"
                                 app:layout_constraintLeft_toRightOf="@id/pin_3"
-                                app:layout_constraintRight_toRightOf="parent" />
+                                app:layout_constraintRight_toRightOf="parent"
+                                app:layout_constraintTop_toTopOf="parent" />
 
                         </androidx.constraintlayout.widget.ConstraintLayout>
 
