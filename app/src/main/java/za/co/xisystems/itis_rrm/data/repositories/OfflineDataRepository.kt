@@ -3,7 +3,6 @@ package za.co.xisystems.itis_rrm.data.repositories
 // import sun.security.krb5.Confounder.bytes
 
 // import android.app.Activity
-import android.os.Build
 import android.os.Environment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LiveData
@@ -51,14 +50,13 @@ import za.co.xisystems.itis_rrm.utils.results.XIResult
 import za.co.xisystems.itis_rrm.utils.results.XIStatus
 import za.co.xisystems.itis_rrm.utils.results.XISuccess
 import java.io.File
-import java.time.LocalDateTime
 import java.util.regex.Pattern
 
 private val jobDataController: JobDataController? = null
 
 class OfflineDataRepository(
     private val api: BaseConnectionApi,
-    private val Db: AppDatabase,
+    private val appDb: AppDatabase,
     private val prefs: PreferenceProvider
 ) : SafeApiRequest() {
     var entitiesFetched = false
@@ -123,7 +121,7 @@ class OfflineDataRepository(
 
     suspend fun bigSyncCheck() {
         withContext(Dispatchers.IO) {
-            bigSyncDone.postValue(Db.getContractDao().countContracts() >= 1)
+            bigSyncDone.postValue(appDb.getContractDao().countContracts() >= 1)
         }
     }
 
@@ -131,52 +129,52 @@ class OfflineDataRepository(
 
     suspend fun getContracts(): LiveData<List<ContractDTO>> {
         return withContext(Dispatchers.IO) {
-            Db.getContractDao().getAllContracts()
+            appDb.getContractDao().getAllContracts()
         }
     }
 
     suspend fun getRoles(): LiveData<List<UserRoleDTO>> {
         return withContext(Dispatchers.IO) {
-            Db.getUserRoleDao().getRoles()
+            appDb.getUserRoleDao().getRoles()
         }
     }
 
     suspend fun getWorkFlows(): LiveData<List<WorkFlowDTO>> {
 
         return withContext(Dispatchers.IO) {
-            val userId = Db.getUserDao().getUserID()
+            val userId = appDb.getUserDao().getUserID()
             fetchAllData(userId)
-            Db.getWorkFlowDao().getWorkflows()
+            appDb.getWorkFlowDao().getWorkflows()
         }
     }
 
     suspend fun getSectionItems(): LiveData<List<SectionItemDTO>> {
         return withContext(Dispatchers.IO) {
-            Db.getSectionItemDao().getSectionItems()
+            appDb.getSectionItemDao().getSectionItems()
         }
     }
 
     suspend fun getUser(): LiveData<UserDTO> {
         return withContext(Dispatchers.IO) {
-            Db.getUserDao().getUser()
+            appDb.getUserDao().getUser()
         }
     }
 
     suspend fun getJobsForActivityId(activityId: Int): LiveData<List<JobDTO>> {
         return withContext(Dispatchers.IO) {
-            Db.getJobDao().getJobsForActivityId(activityId)
+            appDb.getJobDao().getJobsForActivityId(activityId)
         }
     }
 
     suspend fun getJobsForActId(activityId: Int): LiveData<List<JobDTO>> {
         return withContext(Dispatchers.IO) {
-            Db.getJobDao().getJobsForActivityId(activityId)
+            appDb.getJobDao().getJobsForActivityId(activityId)
         }
     }
 
     suspend fun getJobsForActivityIds1(activityId1: Int, activityId2: Int): LiveData<List<JobDTO>> {
         return withContext(Dispatchers.IO) {
-            Db.getJobDao().getJobsForActivityIds1(activityId1, activityId2)
+            appDb.getJobDao().getJobsForActivityIds1(activityId1, activityId2)
         }
     }
 
@@ -185,13 +183,13 @@ class OfflineDataRepository(
         activityId2: Int
     ): LiveData<List<JobItemEstimateDTO>> {
         return withContext(Dispatchers.IO) {
-            Db.getJobItemEstimateDao().getJobMeasureForActivityId(activityId, activityId2)
+            appDb.getJobItemEstimateDao().getJobMeasureForActivityId(activityId, activityId2)
         }
     }
 
     suspend fun getAllItemsForProjectId(projectId: String): LiveData<List<ProjectItemDTO>> {
         return withContext(Dispatchers.IO) {
-            Db.getProjectItemDao().getAllItemsForProjectId(projectId)
+            appDb.getProjectItemDao().getAllItemsForProjectId(projectId)
         }
     }
 
@@ -200,49 +198,49 @@ class OfflineDataRepository(
         projectId: String
     ): LiveData<List<ProjectItemDTO>> {
         return withContext(Dispatchers.IO) {
-            Db.getProjectItemDao().getAllItemsForSectionItemByProject(sectionItemId, projectId)
+            appDb.getProjectItemDao().getAllItemsForSectionItemByProject(sectionItemId, projectId)
         }
     }
 
     suspend fun getJobMeasureItemsPhotoPath(itemMeasureId: String): List<String> {
         return withContext(Dispatchers.IO) {
-            Db.getJobItemMeasurePhotoDao().getJobMeasureItemPhotoPaths(itemMeasureId)
+            appDb.getJobItemMeasurePhotoDao().getJobMeasureItemPhotoPaths(itemMeasureId)
         }
     }
 
     suspend fun getProjectSection(sectionId: String?): LiveData<ProjectSectionDTO> {
         return withContext(Dispatchers.IO) {
-            Db.getProjectSectionDao().getSection(sectionId!!)
+            appDb.getProjectSectionDao().getSection(sectionId!!)
         }
     }
 
     suspend fun getItemForItemId(projectItemId: String?): LiveData<ProjectItemDTO> {
         return withContext(Dispatchers.IO) {
-            Db.getProjectItemDao().getItemForItemId(projectItemId!!)
+            appDb.getProjectItemDao().getItemForItemId(projectItemId!!)
         }
     }
 
     suspend fun getProjectSectionIdForJobId(jobId: String?): String {
         return withContext(Dispatchers.IO) {
-            Db.getJobSectionDao().getProjectSectionId(jobId!!)
+            appDb.getJobSectionDao().getProjectSectionId(jobId!!)
         }
     }
 
     suspend fun getProjectDescription(projectId: String): String {
         return withContext(Dispatchers.IO) {
-            Db.getProjectDao().getProjectDescription(projectId)
+            appDb.getProjectDao().getProjectDescription(projectId)
         }
     }
 
     suspend fun getProjectItemDescription(projectItemId: String): String {
         return withContext(Dispatchers.IO) {
-            Db.getProjectItemDao().getProjectItemDescription(projectItemId)
+            appDb.getProjectItemDao().getProjectItemDescription(projectItemId)
         }
     }
 
     suspend fun getUOMForProjectItemId(projectItemId: String): String {
         return withContext(Dispatchers.IO) {
-            Db.getProjectItemDao().getUOMForProjectItemId(projectItemId)
+            appDb.getProjectItemDao().getUOMForProjectItemId(projectItemId)
         }
     }
 
@@ -251,56 +249,56 @@ class OfflineDataRepository(
         actId: Int
     ): LiveData<List<JobItemMeasureDTO>> {
         return withContext(Dispatchers.IO) {
-            Db.getJobItemMeasureDao().getJobMeasureItemsForJobId(jobID!!, actId)
+            appDb.getJobItemMeasureDao().getJobMeasureItemsForJobId(jobID!!, actId)
         }
     }
 
     suspend fun getItemDescription(jobId: String): String {
         return withContext(Dispatchers.IO) {
-            Db.getJobDao().getItemDescription(jobId)
+            appDb.getJobDao().getItemDescription(jobId)
         }
     }
 
     suspend fun getItemJobNo(jobId: String): String {
         return withContext(Dispatchers.IO) {
-            Db.getJobDao().getItemJobNo(jobId)
+            appDb.getJobDao().getItemJobNo(jobId)
         }
     }
 
     suspend fun getRouteForProjectSectionId(sectionId: String?): String {
         return withContext(Dispatchers.IO) {
-            Db.getProjectSectionDao().getRouteForProjectSectionId(sectionId!!)
+            appDb.getProjectSectionDao().getRouteForProjectSectionId(sectionId!!)
         }
     }
 
     suspend fun getSectionForProjectSectionId(sectionId: String?): String {
         return withContext(Dispatchers.IO) {
-            Db.getProjectSectionDao().getSectionForProjectSectionId(sectionId!!)
+            appDb.getProjectSectionDao().getSectionForProjectSectionId(sectionId!!)
         }
     }
 
     fun delete(item: ItemDTOTemp) {
         Coroutines.io {
-            Db.getItemDaoTemp().deleteItem(item)
+            appDb.getItemDaoTemp().deleteItem(item)
         }
     }
 
     fun deleteItemList(jobId: String) {
         Coroutines.io {
-            Db.getItemDaoTemp().deleteItemList(jobId)
+            appDb.getItemDaoTemp().deleteItemList(jobId)
         }
     }
 
     fun deleteJobFromList(jobId: String) {
         Coroutines.io {
-            Db.getJobDao().deleteJobForJobId(jobId)
+            appDb.getJobDao().deleteJobForJobId(jobId)
         }
     }
 
     private fun saveSectionsItems(sections: ArrayList<String>?) {
         Coroutines.io {
 
-            for (section in sections!!) {
+            sections?.forEach { section ->
                 //  Let's get the String
                 val pattern = Pattern.compile("(.*?):")
                 val matcher = pattern.matcher(section)
@@ -308,19 +306,17 @@ class OfflineDataRepository(
                 val sectionItemId = SqlLitUtils.generateUuid()
                 if (matcher.find() && section.isNotEmpty()) {
                     val itemCode = matcher.group(1)?.replace("\\s+".toRegex(), "")
-                    if (itemCode != null) {
+                    itemCode?.let {
                         try {
-                            if (!Db.getSectionItemDao().checkIfSectionitemsExist(itemCode))
-                                Db.getSectionItemDao().insertSectionitem(
+                            if (!appDb.getSectionItemDao().checkIfSectionitemsExist(it))
+                                appDb.getSectionItemDao().insertSectionitem(
                                     section,
-                                    itemCode,
+                                    it,
                                     sectionItemId
                                 )
                         } catch (e: Exception) {
                             Timber.e(e, "Exception creating section item $itemCode")
                         }
-                    } else {
-                        Timber.e("itemCode is null")
                     }
                 }
             }
@@ -337,9 +333,9 @@ class OfflineDataRepository(
             }
                 .distinctBy { contract -> contract.contractId }
             for (contract in validContracts) {
-                if (!Db.getContractDao().checkIfContractExists(contract.contractId)) {
+                if (!appDb.getContractDao().checkIfContractExists(contract.contractId)) {
                     postStatus("Setting Contract: ${contract.shortDescr ?: contract.descr}")
-                    Db.getContractDao().insertContract(contract)
+                    appDb.getContractDao().insertContract(contract)
 
                     val validProjects =
                         contract.projects?.filter { project ->
@@ -363,12 +359,12 @@ class OfflineDataRepository(
             "Removal of Traffic Accommodation"
         )
         for (step_code in workState.iterator()) {
-            if (!Db.getWorkStepDao().checkWorkFlowStepExistsWorkCode(step_code))
-                Db.getWorkStepDao().insertStepsCode(step_code, actId)
+            if (!appDb.getWorkStepDao().checkWorkFlowStepExistsWorkCode(step_code))
+                appDb.getWorkStepDao().insertStepsCode(step_code, actId)
 
             for (description in workStateDescriptions.iterator()) {
-                if (!Db.getWorkStepDao().checkWorkFlowStepExistsDesc(description))
-                    Db.getWorkStepDao().updateStepsDesc(description, step_code)
+                if (!appDb.getWorkStepDao().checkWorkFlowStepExistsDesc(description))
+                    appDb.getWorkStepDao().updateStepsDesc(description, step_code)
             }
         }
     }
@@ -378,47 +374,46 @@ class OfflineDataRepository(
         contract: ContractDTO
     ) {
         Coroutines.api {
-            if (validProjects != null) {
-                for (project in validProjects) {
-                    if (Db.getProjectDao().checkProjectExists(project.projectId)) {
-                        Timber.i("Contract: ${contract.shortDescr} (${contract.contractId}) ProjectId: ${project.descr} (${project.projectId}) -> Duplicated")
-                        continue
-                    } else {
-                        try {
-                            postStatus("Setting project: ${project.projectCode}")
-                            Db.getProjectDao().insertProject(
-                                project.projectId,
-                                project.descr,
-                                project.endDate,
-                                project.items,
-                                project.projectCode,
-                                project.projectMinus,
-                                project.projectPlus,
-                                project.projectSections,
-                                project.voItems,
-                                contract.contractId
-                            )
-                        } catch (ex: Exception) {
-                            Timber.e(
-                                ex,
-                                "Contract: ${contract.shortDescr} (${contract.contractId}) ProjectId: ${project.descr} (${project.projectId}) -> ${ex.message}"
-                            )
-                        }
 
-                        if (project.items != null) {
-                            updateProjectItems(project.items, project)
-                        }
+            validProjects?.forEach { project ->
+                if (appDb.getProjectDao().checkProjectExists(project.projectId)) {
+                    Timber.i("Contract: ${contract.shortDescr} (${contract.contractId}) ProjectId: ${project.descr} (${project.projectId}) -> Duplicated")
+                } else {
+                    try {
+                        postStatus("Setting project: ${project.projectCode}")
+                        appDb.getProjectDao().insertProject(
+                            project.projectId,
+                            project.descr,
+                            project.endDate,
+                            project.items,
+                            project.projectCode,
+                            project.projectMinus,
+                            project.projectPlus,
+                            project.projectSections,
+                            project.voItems,
+                            contract.contractId
+                        )
+                    } catch (ex: Exception) {
+                        Timber.e(
+                            ex,
+                            "Contract: ${contract.shortDescr} (${contract.contractId}) ProjectId: ${project.descr} (${project.projectId}) -> ${ex.message}"
+                        )
+                    }
 
-                        if (project.projectSections != null) {
-                            updateProjectSections(project.projectSections, project)
-                        }
+                    project.items?.let { items ->
+                        updateProjectItems(items, project)
+                    }
 
-                        if (project.voItems != null) {
-                            updateVOItems(project.voItems, project)
-                        }
+                    project.projectSections?.let { projectSections ->
+                        updateProjectSections(projectSections, project)
+                    }
+
+                    project.voItems?.let { voItems ->
+                        updateVOItems(voItems, project)
                     }
                 }
             }
+
         }
     }
 
@@ -427,7 +422,7 @@ class OfflineDataRepository(
         project: ProjectDTO
     ) {
         for (item in distinctItems) {
-            if (Db.getProjectItemDao()
+            if (appDb.getProjectItemDao()
                     .checkItemExistsItemId(item.itemId)
             ) {
                 continue
@@ -438,7 +433,7 @@ class OfflineDataRepository(
                     if (matcher.find()) {
                         val itemCode = "${matcher.group(1)}0"
                         //  Let's Get the ID Back on Match
-                        val sectionItemId = Db.getSectionItemDao()
+                        val sectionItemId = appDb.getSectionItemDao()
                             .getSectionItemId(
                                 itemCode.replace(
                                     "\\s+".toRegex(),
@@ -446,7 +441,7 @@ class OfflineDataRepository(
                                 )
                             )
 
-                        Db.getProjectItemDao().insertItem(
+                        appDb.getProjectItemDao().insertItem(
                             itemId = item.itemId,
                             itemCode = item.itemCode,
                             descr = item.descr,
@@ -472,11 +467,11 @@ class OfflineDataRepository(
         project: ProjectDTO
     ) {
         for (section in projectSections) { // project.projectSections
-            if (!Db.getProjectSectionDao()
+            if (!appDb.getProjectSectionDao()
                     .checkSectionExists(section.sectionId)
             )
                 try {
-                    Db.getProjectSectionDao().insertSection(
+                    appDb.getProjectSectionDao().insertSection(
                         section.sectionId,
                         section.route,
                         section.section,
@@ -490,7 +485,6 @@ class OfflineDataRepository(
                         ex,
                         "ProjectSectionItemId ${section.sectionId} -> ${ex.message}"
                     )
-                    // throw ex
                 }
         }
     }
@@ -500,9 +494,9 @@ class OfflineDataRepository(
         project: ProjectDTO
     ) {
         for (voItem in voItems) { // project.voItems
-            if (!Db.getVoItemDao().checkIfVoItemExist(voItem.projectVoId))
+            if (!appDb.getVoItemDao().checkIfVoItemExist(voItem.projectVoId))
                 try {
-                    Db.getVoItemDao().insertVoItem(
+                    appDb.getVoItemDao().insertVoItem(
                         voItem.projectVoId,
                         voItem.itemCode,
                         voItem.voDescr,
@@ -525,42 +519,34 @@ class OfflineDataRepository(
 
     private fun saveWorkFlowsInfo(workFlows: WorkFlowsDTO) {
         Coroutines.io {
-            // Fix isFetchNeeded for Time and Offline Mode
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                prefs.savelastSavedAt(LocalDateTime.now().toString())
-            }
-            Db.getWorkflowsDao().insertWorkFlows(workFlows)
-            if (workFlows.workflows.isNotEmpty()) {
-                for (workFlow in workFlows.workflows) {
-                    if (!Db.getWorkFlowDao().checkWorkFlowExistsWorkflowID(workFlow.workflowId))
-                        Db.getWorkFlowDao().insertWorkFlow(workFlow)
 
-                    if (workFlow.workFlowRoute != null) {
-                        saveWorkflowRoutes(workFlow)
-                    }
+            appDb.getWorkflowsDao().insertWorkFlows(workFlows)
+            workFlows.workflows.forEach { workFlow ->
+
+                if (!appDb.getWorkFlowDao().checkWorkFlowExistsWorkflowID(workFlow.workflowId))
+                    appDb.getWorkFlowDao().insertWorkFlow(workFlow)
+
+                workFlow.workFlowRoute?.let {
+                    saveWorkflowRoutes(workFlow)
                 }
             }
 
-            if (workFlows.activities.isNotEmpty()) {
-                for (activity in workFlows.activities) {
-                    Db.getActivityDao().insertActivitys(activity)
-                }
+            workFlows.activities.forEach { activity ->
+                appDb.getActivityDao().insertActivitys(activity)
             }
 
-            if (workFlows.infoClasses.isNotEmpty()) {
-                for (infoClass in workFlows.infoClasses) {
-                    Db.getInfoClassDao().insertInfoClasses(infoClass)
-                }
+            workFlows.infoClasses.forEach { infoClass ->
+                appDb.getInfoClassDao().insertInfoClasses(infoClass)
             }
         }
     }
 
     private fun saveWorkflowRoutes(workFlow: WorkFlowDTO) {
         for (workFlowRoute in workFlow.workFlowRoute!!) {
-            if (!Db.getWorkFlowRouteDao()
+            if (!appDb.getWorkFlowRouteDao()
                     .checkWorkFlowRouteExists(workFlowRoute.routeId)
             )
-                Db.getWorkFlowRouteDao().insertWorkFlowRoute(
+                appDb.getWorkFlowRouteDao().insertWorkFlowRoute(
                     workFlowRoute.routeId,
                     workFlowRoute.actId,
                     workFlowRoute.nextRouteId,
@@ -574,9 +560,9 @@ class OfflineDataRepository(
 
     private fun saveJobs(job: JobDTO?) {
         Coroutines.io {
-            if (job != null) {
+            job?.let {
 
-                if (!Db.getJobDao().checkIfJobExist(job.JobId)) {
+                if (!appDb.getJobDao().checkIfJobExist(job.JobId)) {
                     job.run {
                         setJobId(DataConversion.toBigEndian(JobId))
                         setProjectId(DataConversion.toBigEndian(ProjectId))
@@ -587,22 +573,19 @@ class OfflineDataRepository(
                     }
                     DataConversion.toBigEndian(job.PerfitemGroupId)
                     DataConversion.toBigEndian(job.ProjectVoId)
-                    Db.getJobDao().insertOrUpdateJobs(job)
+                    appDb.getJobDao().insertOrUpdateJobs(job)
                 }
 
-                if (job.JobSections != null) {
+                job.JobSections?.let {
                     saveJobSections(job)
                 }
 
-                if (job.JobItemEstimates != null) {
+                job.JobItemEstimates?.let {
                     saveJobItemEstimates(job)
                 }
 
-                if (job.JobItemMeasures != null) {
-//                    if (!Db.getJobItemMeasureDao().checkIfJobItemMeasureExists(jobItemMeasure.itemMeasureId!!)
-//                    ) {
+                job.JobItemMeasures?.let {
                     saveJobItemMeasuresForJob(job)
-//                    }
                 }
             }
         }
@@ -612,7 +595,7 @@ class OfflineDataRepository(
         job: JobDTO
     ) {
         for (jobItemMeasure in job.JobItemMeasures!!) {
-            if (!Db.getJobItemMeasureDao()
+            if (!appDb.getJobItemMeasureDao()
                     .checkIfJobItemMeasureExists(jobItemMeasure.itemMeasureId!!)
             ) {
                 jobItemMeasure.setItemMeasureId(
@@ -637,34 +620,34 @@ class OfflineDataRepository(
                 jobItemMeasure.setJobNo(job.JiNo)
                 jobItemMeasure.setQty(jobItemMeasure.qty)
                 jobItemMeasure.setDeleted(0)
-                if (!Db.getJobItemMeasureDao()
+                if (!appDb.getJobItemMeasureDao()
                         .checkIfJobItemMeasureExists(jobItemMeasure.itemMeasureId!!)
                 ) // {
-                    Db.getJobItemMeasureDao().insertJobItemMeasure(jobItemMeasure)
+                    appDb.getJobItemMeasureDao().insertJobItemMeasure(jobItemMeasure)
 //               }else{
 //                    jobItemMeasure.setQty(jobItemMeasure.qty)
 //                }
 
-                Db.getJobDao().setMeasureActId(jobItemMeasure.actId, job.JobId)
-                Db.getJobItemEstimateDao()
+                appDb.getJobDao().setMeasureActId(jobItemMeasure.actId, job.JobId)
+                appDb.getJobItemEstimateDao()
                     .setMeasureActId(jobItemMeasure.actId, jobItemMeasure.estimateId!!)
 
                 if (jobItemMeasure.jobItemMeasurePhotos.isNotEmpty()) {
                     saveJobItemMeasurePhotos(jobItemMeasure)
                 }
 
-                Db.getJobItemMeasureDao().undeleteMeasurement(jobItemMeasure.itemMeasureId!!)
+                appDb.getJobItemMeasureDao().undeleteMeasurement(jobItemMeasure.itemMeasureId!!)
             }
         }
     }
 
     private suspend fun saveJobSections(job: JobDTO) {
         for (jobSection in job.JobSections!!) {
-            if (!Db.getJobSectionDao().checkIfJobSectionExist(jobSection.jobSectionId))
+            if (!appDb.getJobSectionDao().checkIfJobSectionExist(jobSection.jobSectionId))
                 jobSection.setJobSectionId(DataConversion.toBigEndian(jobSection.jobSectionId))
             jobSection.setProjectSectionId(DataConversion.toBigEndian(jobSection.projectSectionId))
             jobSection.setJobId(DataConversion.toBigEndian(jobSection.jobId))
-            Db.getJobSectionDao().insertJobSection(
+            appDb.getJobSectionDao().insertJobSection(
                 jobSection
             )
         }
@@ -674,7 +657,7 @@ class OfflineDataRepository(
         job: JobDTO
     ) {
         for (jobItemEstimate in job.JobItemEstimates!!) {
-            if (!Db.getJobItemEstimateDao()
+            if (!appDb.getJobItemEstimateDao()
                     .checkIfJobItemEstimateExist(jobItemEstimate.estimateId)
             ) {
                 jobItemEstimate.setEstimateId(DataConversion.toBigEndian(jobItemEstimate.estimateId))
@@ -696,8 +679,8 @@ class OfflineDataRepository(
                     )
                 )
 
-                Db.getJobItemEstimateDao().insertJobItemEstimate(jobItemEstimate)
-                Db.getJobDao().setEstimateActId(jobItemEstimate.actId, job.JobId)
+                appDb.getJobItemEstimateDao().insertJobItemEstimate(jobItemEstimate)
+                appDb.getJobDao().setEstimateActId(jobItemEstimate.actId, job.JobId)
                 if (jobItemEstimate.jobItemEstimatePhotos != null) {
                     saveJobItemEstimatePhotos(jobItemEstimate)
                 }
@@ -715,7 +698,7 @@ class OfflineDataRepository(
         jobItemEstimate: JobItemEstimateDTO
     ) {
         for (jobItemEstimatePhoto in jobItemEstimate.jobItemEstimatePhotos!!) {
-            if (!Db.getJobItemEstimatePhotoDao()
+            if (!appDb.getJobItemEstimatePhotoDao()
                     .checkIfJobItemEstimatePhotoExistsByPhotoId(
                         jobItemEstimatePhoto.photoId
                     )
@@ -739,7 +722,7 @@ class OfflineDataRepository(
                     jobItemEstimatePhoto.estimateId
                 )
             )
-            Db.getJobItemEstimatePhotoDao().insertJobItemEstimatePhoto(
+            appDb.getJobItemEstimatePhotoDao().insertJobItemEstimatePhoto(
                 jobItemEstimatePhoto
             )
             if (!PhotoUtil.photoExist(jobItemEstimatePhoto.filename)) {
@@ -753,7 +736,7 @@ class OfflineDataRepository(
         job: JobDTO
     ) {
         for (jobEstimateWorks in jobItemEstimate.jobEstimateWorks!!) {
-            if (!Db.getEstimateWorkDao().checkIfJobEstimateWorksExist(
+            if (!appDb.getEstimateWorkDao().checkIfJobEstimateWorksExist(
                     jobEstimateWorks.worksId
                 )
             ) jobEstimateWorks.setWorksId(
@@ -771,10 +754,10 @@ class OfflineDataRepository(
                     jobEstimateWorks.trackRouteId
                 )
             )
-            Db.getEstimateWorkDao().insertJobEstimateWorks(
+            appDb.getEstimateWorkDao().insertJobEstimateWorks(
                 jobEstimateWorks
             )
-            Db.getJobDao()
+            appDb.getJobDao()
                 .setEstimateWorksActId(jobEstimateWorks.actId, job.JobId)
 //                                    job.setEstimateWorksActId(jobEstimateWorks.actId)
             if (jobEstimateWorks.jobEstimateWorksPhotos != null) {
@@ -785,7 +768,7 @@ class OfflineDataRepository(
 
     private suspend fun saveJobItemEstimateWorksPhotos(jobEstimateWorks: JobEstimateWorksDTO) {
         for (estimateWorksPhoto in jobEstimateWorks.jobEstimateWorksPhotos!!) {
-            if (!Db.getEstimateWorkPhotoDao()
+            if (!appDb.getEstimateWorkPhotoDao()
                     .checkIfEstimateWorksPhotoExist(
                         estimateWorksPhoto.filename
                     )
@@ -799,7 +782,7 @@ class OfflineDataRepository(
                     estimateWorksPhoto.photoId
                 )
             )
-            Db.getEstimateWorkPhotoDao().insertEstimateWorksPhoto(
+            appDb.getEstimateWorkPhotoDao().insertEstimateWorksPhoto(
                 estimateWorksPhoto
             )
         }
@@ -810,7 +793,7 @@ class OfflineDataRepository(
         job: JobDTO
     ) {
         for (jobItemMeasure in jobItemMeasures) {
-            if (!Db.getJobItemMeasureDao().checkIfJobItemMeasureExists(
+            if (!appDb.getJobItemMeasureDao().checkIfJobItemMeasureExists(
                     jobItemMeasure.itemMeasureId!!
                 )
             ) {
@@ -850,15 +833,15 @@ class OfflineDataRepository(
                     )
                 )
                 jobItemMeasure.setJobNo(job.JiNo)
-                if (!Db.getJobItemMeasureDao().checkIfJobItemMeasureExists(
+                if (!appDb.getJobItemMeasureDao().checkIfJobItemMeasureExists(
                         jobItemMeasure.itemMeasureId!!
                     )
                 )
-                    Db.getJobItemMeasureDao().insertJobItemMeasure(
+                    appDb.getJobItemMeasureDao().insertJobItemMeasure(
                         jobItemMeasure
                     )
-                Db.getJobDao().setMeasureActId(jobItemMeasure.actId, job.JobId)
-                Db.getJobItemEstimateDao().setMeasureActId(
+                appDb.getJobDao().setMeasureActId(jobItemMeasure.actId, job.JobId)
+                appDb.getJobItemEstimateDao().setMeasureActId(
                     jobItemMeasure.actId,
                     jobItemMeasure.estimateId!!
                 )
@@ -874,7 +857,7 @@ class OfflineDataRepository(
         jobItemMeasure: JobItemMeasureDTO
     ) {
         for (jobItemMeasurePhoto in jobItemMeasure.jobItemMeasurePhotos) {
-            if (!Db.getJobItemMeasurePhotoDao()
+            if (!appDb.getJobItemMeasurePhotoDao()
                     .checkIfJobItemMeasurePhotoExists(
                         jobItemMeasurePhoto.filename!!
                     )
@@ -903,7 +886,7 @@ class OfflineDataRepository(
                     PhotoUtil.FOLDER + File.separator + jobItemMeasurePhoto.filename
             )
 
-            Db.getJobItemMeasurePhotoDao()
+            appDb.getJobItemMeasurePhotoDao()
                 .insertJobItemMeasurePhoto(
                     jobItemMeasurePhoto
                 )
@@ -954,8 +937,8 @@ class OfflineDataRepository(
         Coroutines.io {
             if (toDoListGroups != null) {
                 for (toDoListGroup in toDoListGroups) {
-                    if (!Db.getToDoGroupsDao().checkIfGroupCollectionExist(toDoListGroup.groupId)) {
-                        Db.getToDoGroupsDao().insertToDoGroups(toDoListGroup)
+                    if (!appDb.getToDoGroupsDao().checkIfGroupCollectionExist(toDoListGroup.groupId)) {
+                        appDb.getToDoGroupsDao().insertToDoGroups(toDoListGroup)
                     }
 
                     val entitiesArrayList = toDoListGroup.toDoListEntities
@@ -975,10 +958,10 @@ class OfflineDataRepository(
     private fun insertEntity(entity: ToDoListEntityDTO, jobId: String) {
         Coroutines.io {
 
-            if (!Db.getEntitiesDao()
+            if (!appDb.getEntitiesDao()
                     .checkIfEntitiesExist(DataConversion.bigEndianToString(entity.trackRouteId!!))
             ) {
-                Db.getEntitiesDao().insertEntitie(
+                appDb.getEntitiesDao().insertEntitie(
                     DataConversion.bigEndianToString(entity.trackRouteId!!),
                     if (entity.actionable) 1 else 0,
                     entity.activityId,
@@ -994,7 +977,7 @@ class OfflineDataRepository(
                 )
 
                 for (primaryKeyValue in entity.primaryKeyValues) {
-                    Db.getPrimaryKeyValueDao().insertPrimaryKeyValue(
+                    appDb.getPrimaryKeyValueDao().insertPrimaryKeyValue(
                         primaryKeyValue.primary_key,
                         DataConversion.bigEndianToString(primaryKeyValue.p_value!!),
                         DataConversion.bigEndianToString(entity.trackRouteId!!),
@@ -1050,15 +1033,15 @@ class OfflineDataRepository(
     suspend fun getUserTaskList(): LiveData<List<ToDoListEntityDTO>> {
 
         return withContext(Dispatchers.IO) {
-            val userId = Db.getUserDao().getUserID()
+            val userId = appDb.getUserDao().getUserID()
             fetchUserTaskList(userId)
-            Db.getEntitiesDao().getAllEntities()
+            appDb.getEntitiesDao().getAllEntities()
         }
     }
 
     suspend fun getAllEntities(): Int {
         return withContext(Dispatchers.IO) {
-            Db.getEntitiesDao().getAllEntities()
+            appDb.getEntitiesDao().getAllEntities()
             7
         }
     }
@@ -1132,18 +1115,18 @@ class OfflineDataRepository(
         Coroutines.io {
             lookups?.forEach { lookup ->
                 lookup.let {
-                    if (!Db.getLookupDao().checkIfLookupExist(it.lookupName))
-                        Db.getLookupDao().insertLookup(it)
+                    if (!appDb.getLookupDao().checkIfLookupExist(it.lookupName))
+                        appDb.getLookupDao().insertLookup(it)
 
                     if (!lookup.lookupOptions.isNullOrEmpty()) {
                         lookup.lookupOptions.forEach { lookupOption ->
-                            if (!Db.getLookupOptionDao().checkLookupOptionExists(
+                            if (!appDb.getLookupOptionDao().checkLookupOptionExists(
                                     lookupOption.valueMember,
                                     lookup.lookupName
                                 )
                             )
 
-                                Db.getLookupOptionDao().insertLookupOption(
+                                appDb.getLookupOptionDao().insertLookupOption(
                                     lookupOption.valueMember, lookupOption.displayMember,
                                     lookupOption.contextMember, lookup.lookupName
                                 )
@@ -1156,14 +1139,14 @@ class OfflineDataRepository(
 
     fun deleteAllData(): Void? {
 
-        Db.clearAllTables()
+        appDb.clearAllTables()
         entitiesFetched = false
         return null
     }
 
     suspend fun getJobApproveMeasureForActivityId(activityId: Int): LiveData<List<JobItemMeasureDTO>> {
         return withContext(Dispatchers.IO) {
-            Db.getJobItemMeasureDao().getJobApproveMeasureForActivityId(activityId)
+            appDb.getJobItemMeasureDao().getJobApproveMeasureForActivityId(activityId)
         }
     }
 
@@ -1175,11 +1158,11 @@ class OfflineDataRepository(
 
     private fun updateWorkflowJobValuesAndInsertWhenNeeded(job: WorkflowJobDTO) {
         Coroutines.io {
-            Db.getJobDao().updateJob(job.trackRouteId, job.actId, job.jiNo, job.jobId)
+            appDb.getJobDao().updateJob(job.trackRouteId, job.actId, job.jiNo, job.jobId)
 
             if (!job.workflowItemEstimates.isNullOrEmpty()) {
                 for (jobItemEstimate in job.workflowItemEstimates) {
-                    Db.getJobItemEstimateDao().updateExistingJobItemEstimateWorkflow(
+                    appDb.getJobItemEstimateDao().updateExistingJobItemEstimateWorkflow(
                         jobItemEstimate.trackRouteId,
                         jobItemEstimate.actId,
                         jobItemEstimate.estimateId
@@ -1206,7 +1189,7 @@ class OfflineDataRepository(
         workflowItemMeasures: java.util.ArrayList<WorkflowItemMeasureDTO>
     ) {
         for (jobItemMeasure in workflowItemMeasures) {
-            Db.getJobItemMeasureDao().updateWorkflowJobItemMeasure(
+            appDb.getJobItemMeasureDao().updateWorkflowJobItemMeasure(
                 jobItemMeasure.itemMeasureId,
                 jobItemMeasure.trackRouteId,
                 jobItemMeasure.actId,
@@ -1217,10 +1200,10 @@ class OfflineDataRepository(
 
     private fun updateWorkflowEstimateWorks(jobItemEstimate: WorkflowItemEstimateDTO) {
         for (jobEstimateWorks in jobItemEstimate.workflowEstimateWorks) {
-            if (!Db.getEstimateWorkDao().checkIfJobEstimateWorksExist(jobEstimateWorks.worksId)) {
+            if (!appDb.getEstimateWorkDao().checkIfJobEstimateWorksExist(jobEstimateWorks.worksId)) {
                 TODO("This should never happen.")
             } else {
-                Db.getEstimateWorkDao().updateJobEstimateWorksWorkflow(
+                appDb.getEstimateWorkDao().updateJobEstimateWorksWorkflow(
                     jobEstimateWorks.worksId,
                     jobEstimateWorks.estimateId,
                     jobEstimateWorks.recordVersion,
@@ -1236,9 +1219,9 @@ class OfflineDataRepository(
         workflowJobSections: java.util.ArrayList<JobSectionDTO>
     ) {
         for (jobSection in workflowJobSections) {
-            if (!Db.getJobSectionDao().checkIfJobSectionExist(jobSection.jobSectionId))
-                Db.getJobSectionDao().insertJobSection(jobSection) else
-                Db.getJobSectionDao().updateExistingJobSectionWorkflow(
+            if (!appDb.getJobSectionDao().checkIfJobSectionExist(jobSection.jobSectionId))
+                appDb.getJobSectionDao().insertJobSection(jobSection) else
+                appDb.getJobSectionDao().updateExistingJobSectionWorkflow(
                     jobSection.jobSectionId,
                     jobSection.projectSectionId,
                     jobSection.jobId,
@@ -1270,7 +1253,7 @@ class OfflineDataRepository(
 
     suspend fun getUpdatedJob(jobId: String): JobDTO {
         return withContext(Dispatchers.IO) {
-            Db.getJobDao().getJobForJobId(jobId)
+            appDb.getJobDao().getJobForJobId(jobId)
         }
     }
 
@@ -1451,7 +1434,7 @@ class OfflineDataRepository(
 
     suspend fun getProjects(): LiveData<List<ProjectDTO>> {
         return withContext(Dispatchers.IO) {
-            Db.getProjectDao().getAllProjects()
+            appDb.getProjectDao().getAllProjects()
         }
     }
 
