@@ -28,9 +28,6 @@ import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
-import java.io.IOException
-import java.util.Date
-import java.util.HashMap
 import kotlinx.android.synthetic.main.fragment_capture_work.*
 import kotlinx.coroutines.launch
 import org.kodein.di.KodeinAware
@@ -41,8 +38,13 @@ import timber.log.Timber
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.LocationFragment
+import za.co.xisystems.itis_rrm.custom.errors.ErrorHandler
 import za.co.xisystems.itis_rrm.custom.errors.NoConnectivityException
 import za.co.xisystems.itis_rrm.custom.errors.NoInternetException
+import za.co.xisystems.itis_rrm.custom.results.XIError
+import za.co.xisystems.itis_rrm.custom.results.XIResult
+import za.co.xisystems.itis_rrm.custom.results.XIStatus
+import za.co.xisystems.itis_rrm.custom.results.XISuccess
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksPhotoDTO
@@ -69,12 +71,10 @@ import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
-import za.co.xisystems.itis_rrm.utils.errors.ErrorHandler
-import za.co.xisystems.itis_rrm.utils.results.XIError
-import za.co.xisystems.itis_rrm.utils.results.XIResult
-import za.co.xisystems.itis_rrm.utils.results.XIStatus
-import za.co.xisystems.itis_rrm.utils.results.XISuccess
 import za.co.xisystems.itis_rrm.utils.toast
+import java.io.IOException
+import java.util.Date
+import java.util.HashMap
 
 class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), KodeinAware {
 
@@ -146,15 +146,15 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
         uiScope.launch(uiScope.coroutineContext) {
 
             val user = workViewModel.user.await()
-            user.observe(viewLifecycleOwner, Observer { user_ ->
+            user.observe(viewLifecycleOwner, { user_ ->
                 useR = user_
             })
 
-            workViewModel.workItemJob.observe(viewLifecycleOwner, Observer { estimateJob ->
+            workViewModel.workItemJob.observe(viewLifecycleOwner, { estimateJob ->
                 itemEstimateJob = estimateJob
             })
 
-            workViewModel.workItem.observe(viewLifecycleOwner, Observer { estimate ->
+            workViewModel.workItem.observe(viewLifecycleOwner, { estimate ->
                 itemEstimate = estimate
 
                 getWorkItems(itemEstimate, itemEstimateJob)
@@ -209,8 +209,6 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
             )
             networkToast.setGravity(Gravity.CENTER_VERTICAL, 0, 0)
             networkToast.show()
-
-            // persistJobToDevice(itemEstiWorks, prog)
         }
     }
 
@@ -228,7 +226,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
         if (ContextCompat.checkSelfPermission(
                 requireActivity().applicationContext,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE
-            ) !== PackageManager.PERMISSION_GRANTED
+            ) != PackageManager.PERMISSION_GRANTED
         ) {
             ActivityCompat.requestPermissions(
                 Activity(),
@@ -348,7 +346,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
 
     private fun retryWorkSubmission() {
         val backupWorkSubmission = workViewModel.backupWorkSubmission
-        backupWorkSubmission.observeOnce(viewLifecycleOwner, Observer {
+        backupWorkSubmission.observeOnce(viewLifecycleOwner, {
             it?.let {
                 itemEstiWorks = it
                 val progressDialog = setDataProgressDialog(
@@ -360,18 +358,6 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
         })
     }
 
-    /**
-     * If work estimates cannot be sent to the service, they are stored locally
-     * @param itemEstiWorks JobEstimateWorksDTO
-     * @param prog ProgressDialog
-     */
-    private fun persistJobToDevice(
-        itemEstiWorks: JobEstimateWorksDTO,
-        prog: ProgressDialog
-    ) {
-        // TODO: Persist valid estimateWorks data to device,
-        // Trickle upload once connectivity restored.
-    }
 
     /**
      * Prepare EstimateWorks entry for transport to the backend
@@ -411,14 +397,14 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
 
         // Await the updated estimate record
         uiScope.launch(uiScope.coroutineContext) {
-            workViewModel.workItem.observe(viewLifecycleOwner, Observer {
+            workViewModel.workItem.observe(viewLifecycleOwner, {
                 Timber.d("$it")
 
                 val id = ActivityIdConstants.JOB_APPROVED
                 // This part must be Deleted when the Dynamic workflow is complete.
                 uiScope.launch(uiScope.coroutineContext) {
                     val workCodeData = workViewModel.getWorkFlowCodes(id)
-                    workCodeData.observe(viewLifecycleOwner, Observer {
+                    workCodeData.observe(viewLifecycleOwner, {
 
                         groupAdapter.notifyItemChanged(2)
                         Timber.d("IsRefresh -> Yes")
@@ -568,7 +554,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
 
                 val estimateWorksData =
                     workViewModel.getJobEstiItemForEstimateId(estimateItem.estimateId)
-                estimateWorksData.observe(viewLifecycleOwner, Observer { estimateWorksList ->
+                estimateWorksData.observe(viewLifecycleOwner, { estimateWorksList ->
 
                     for (workItem in estimateWorksList) {
                         if (workItem.actId == ActivityIdConstants.EST_WORKS_COMPLETE) {
@@ -608,7 +594,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
             val workflowStepData = workViewModel.getWorkFlowCodes(id)
             workflowStepData.observe(
                 viewLifecycleOwner,
-                Observer { workflowSteps ->
+                { workflowSteps ->
                     jobWorkStep = workflowSteps as ArrayList<WF_WorkStepDTO>
 
                     initRecyclerView(
@@ -654,7 +640,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
 
     private fun retryJobSubmission() {
         val retryJobData = workViewModel.backupCompletedEstimates
-        retryJobData.observeOnce(viewLifecycleOwner, Observer {
+        retryJobData.observeOnce(viewLifecycleOwner, {
             it?.let {
                 pushCompletedEstimates(it as ArrayList<JobItemEstimateDTO>)
             }
@@ -676,7 +662,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                 val jobItemEstimate = workViewModel.getJobItemEstimateForEstimateId(
                     DataConversion.toBigEndian(jobEstimate.estimateId)!!
                 )
-                jobItemEstimate.observe(viewLifecycleOwner, Observer { jobItEstmt ->
+                jobItemEstimate.observe(viewLifecycleOwner, { jobItEstmt ->
                     jobItEstmt?.let {
                         workViewModel.workflowResponse.observe(viewLifecycleOwner, jobObserver)
                         moveJobItemEstimateToNextWorkflow(
@@ -696,7 +682,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
     ) = uiScope.launch(uiScope.coroutineContext) {
 
         val user = workViewModel.user.await()
-        user.observe(viewLifecycleOwner, Observer { user_ ->
+        user.observe(viewLifecycleOwner, { user_ ->
 
             when {
                 user_.userId.isBlank() -> {

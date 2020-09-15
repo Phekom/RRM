@@ -3,7 +3,7 @@ package za.co.xisystems.itis_rrm.data.network
 import org.json.JSONException
 import org.json.JSONObject
 import retrofit2.Response
-import za.co.xisystems.itis_rrm.custom.errors.ApiException
+import za.co.xisystems.itis_rrm.custom.errors.ServiceException
 
 /**
  * Created by Francis Mahlava on 2019/10/18.
@@ -22,11 +22,12 @@ abstract class SafeApiRequest {
                 try {
                     message.append(JSONObject(it).getString("message"))
                 } catch (e: JSONException) {
+                    e.printStackTrace()
                 }
                 message.append("\n")
             }
             message.append("Error Code: ${response.code()}")
-            throw ApiException(message.toString())
+            throw ServiceException(message.toString())
         }
     }
 }

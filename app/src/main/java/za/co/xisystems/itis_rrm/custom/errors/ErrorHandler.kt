@@ -5,7 +5,7 @@ import android.view.View
 import android.widget.Toast
 import retrofit2.HttpException
 import timber.log.Timber
-import za.co.xisystems.itis_rrm.base.Error
+import za.co.xisystems.itis_rrm.custom.results.XIError
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 
 /**
@@ -29,7 +29,7 @@ object ErrorHandler {
 
     fun handleError(
         view: View,
-        throwable: Error,
+        throwable: XIError,
         shouldToast: Boolean = false,
         shouldShowSnackBar: Boolean = false,
         refreshAction: () -> Unit = {}
@@ -45,7 +45,7 @@ object ErrorHandler {
             is NoInternetException -> Timber.e(NO_INTERNET_RESPONSE)
             is NoConnectivityException -> Timber.e(NO_CONNECTIVITY_RESPONSE)
             is ServiceHostUnreachableException -> Timber.e(SERVICE_HOST_UNREACHABLE)
-            is ApiException -> Timber.e(throwable.message)
+            is ServiceException -> Timber.e(throwable.message)
             is HttpException -> Timber.e(
                 "HTTP Exception: ${throwable.exception.code()}"
             )
@@ -53,6 +53,10 @@ object ErrorHandler {
             is NoDataException -> Timber.e(NO_SUCH_DATA)
             else -> Timber.e(throwable.message)
         }
+    }
+
+    fun showMessage(view: View, message: String) {
+        showLongToast(view.context, message)
     }
 
     private fun showSnackBar(view: View, message: String, refresh: () -> Unit = {}) {

@@ -8,7 +8,6 @@ import android.widget.EditText
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.Observer
 import androidx.navigation.Navigation
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import com.xwray.groupie.kotlinandroidextensions.Item
@@ -42,11 +41,11 @@ class MeasurementsItem(
                 dialog.show()
                 activity?.let {
                     val quantity = approveViewModel.getQuantityForMeasureItemId(jobItemMeasureDTO.itemMeasureId!!)
-                    quantity.observe(viewLifecycleOwner, Observer {
+                    quantity.observe(viewLifecycleOwner, {
                         measure_item_quantity_textView.text = activity.getString(R.string.pair, "Qty:", it.toString())
                     })
                     val lineRate = approveViewModel.getLineRateForMeasureItemId(jobItemMeasureDTO.itemMeasureId!!)
-                    lineRate.observe(viewLifecycleOwner, Observer {
+                    lineRate.observe(viewLifecycleOwner, {
                         measure_item_price_textView.text = activity.getString(R.string.pair, "R", it.toString())
                         dialog.dismiss()
                     })
@@ -62,7 +61,6 @@ class MeasurementsItem(
                         measure_item_uom_textView.text = activity.getString(R.string.pair, "Unit of Measure:", uom)
                     }
                 }
-
             }
             correctButton.setOnClickListener {
                 sendItemType(jobItemMeasureDTO)
@@ -166,4 +164,3 @@ class MeasurementsItem(
         }
     }
 }
-

@@ -9,7 +9,6 @@ import android.view.View
 import android.view.View.GONE
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -22,9 +21,9 @@ import org.kodein.di.generic.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
-import za.co.xisystems.itis_rrm.custom.errors.ApiException
 import za.co.xisystems.itis_rrm.custom.errors.NoConnectivityException
 import za.co.xisystems.itis_rrm.custom.errors.NoInternetException
+import za.co.xisystems.itis_rrm.custom.errors.ServiceException
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.approveMeasure_Item.ApproveMeasureItem
@@ -81,7 +80,7 @@ class ApproveMeasureFragment : BaseFragment(R.layout.fragment_approvemeasure), K
                 val measurementsSubscription =
                     approveViewModel.getJobApproveMeasureForActivityId(ActivityIdConstants.MEASURE_COMPLETE)
 
-                measurementsSubscription.observe(viewLifecycleOwner, Observer { measurementData ->
+                measurementsSubscription.observe(viewLifecycleOwner, { measurementData ->
                     noData.visibility = GONE
                     if (measurementData.isEmpty()) {
                         noData.visibility = View.VISIBLE
@@ -94,7 +93,7 @@ class ApproveMeasureFragment : BaseFragment(R.layout.fragment_approvemeasure), K
                     group4_loading.visibility = GONE
                 })
             }
-        } catch (e: ApiException) {
+        } catch (e: ServiceException) {
             ToastUtils().toastLong(activity, e.message)
             Timber.e(e, "API exception")
         } catch (e: NoInternetException) {
@@ -123,12 +122,12 @@ class ApproveMeasureFragment : BaseFragment(R.layout.fragment_approvemeasure), K
             Coroutines.main {
                 try {
                     val freshJobs = approveViewModel.offlineUserTaskList.await()
-                    freshJobs.observe(viewLifecycleOwner, Observer {
+                    freshJobs.observe(viewLifecycleOwner, {
                         if (it.isEmpty()) {
                             noData.visibility = View.VISIBLE
                         }
                     })
-                } catch (e: ApiException) {
+                } catch (e: ServiceException) {
                     ToastUtils().toastLong(activity, e.message)
                     Timber.e(e, "API Exception")
                 } catch (e: NoInternetException) {

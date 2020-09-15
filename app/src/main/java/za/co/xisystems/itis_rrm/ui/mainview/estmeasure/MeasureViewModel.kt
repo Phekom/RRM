@@ -13,6 +13,9 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import za.co.xisystems.itis_rrm.custom.results.XIError
+import za.co.xisystems.itis_rrm.custom.results.XIResult
+import za.co.xisystems.itis_rrm.custom.results.XISuccess
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
@@ -27,9 +30,6 @@ import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.estimate_measure_item.Est
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
-import za.co.xisystems.itis_rrm.utils.results.XIError
-import za.co.xisystems.itis_rrm.utils.results.XIResult
-import za.co.xisystems.itis_rrm.utils.results.XISuccess
 import za.co.xisystems.itis_rrm.utils.uncaughtExceptionHandler
 
 class MeasureViewModel(
@@ -39,7 +39,7 @@ class MeasureViewModel(
 
 ) : AndroidViewModel(application) {
 
-    var galleryMeasure: MutableLiveData<JobItemMeasureDTO> = MutableLiveData()
+    private var galleryMeasure: MutableLiveData<JobItemMeasureDTO> = MutableLiveData()
     var galleryUIState: MutableLiveData<XIResult<GalleryUIState>> = MutableLiveData()
     private var job: Job = SupervisorJob()
     private var viewModelContext = job + Dispatchers.Main + uncaughtExceptionHandler
@@ -47,11 +47,16 @@ class MeasureViewModel(
     init {
         viewModelScope.launch(viewModelContext) {
 
-            val galleryJob = launch {
+            launch {
                 galleryMeasure.observeForever {
                     viewModelScope.launch(job + Dispatchers.Main + uncaughtExceptionHandler) {
                         generateGallery(it)
                     }
+                }
+
+                toDoListStatus.observeForever {
+                    toDoListResult.postValue(it)
+
                 }
             }
         }
@@ -59,7 +64,7 @@ class MeasureViewModel(
 
     val galleryBackup: MutableLiveData<String> = MutableLiveData()
 
-    suspend fun generateGallery(measureItem: JobItemMeasureDTO) {
+    private suspend fun generateGallery(measureItem: JobItemMeasureDTO) {
         try {
             galleryBackup.postValue(measureItem.itemMeasureId)
             val measureDescription =
@@ -67,7 +72,7 @@ class MeasureViewModel(
                     getDescForProjectId(it)
                 }
 
-            val photoQuality = when (measureItem.jobItemMeasurePhotos.size) {
+            val photoQuality = when (measureItem.jobItemMeasurePhotos.count()) {
                 in 1..4 -> PhotoQuality.HIGH
                 in 5..16 -> PhotoQuality.MEDIUM
                 else -> PhotoQuality.THUMB
@@ -79,10 +84,10 @@ class MeasureViewModel(
                     val uri = photo.filename?.let { fileName ->
                         PhotoUtil.getPhotoPathFromExternalDirectory(fileName)
                     }
-                    val bitmap = uri?.let { uri ->
+                    val bitmap = uri?.let { it ->
                         PhotoUtil.getPhotoBitMapFromFile(
                             this@MeasureViewModel.getApplication(),
-                            uri,
+                            it,
                             photoQuality
                         )
                     }
@@ -97,21 +102,21 @@ class MeasureViewModel(
                 description = measureDescription,
                 qty = measureItem.qty,
                 lineRate = measureItem.lineRate,
-                photoPairs = bitmaps
+                photoPairs = bitmaps,
+                measureItem = measureItem
             )
 
             uiState.lineAmount = uiState.qty * uiState.lineRate
 
             galleryUIState.postValue(XISuccess(uiState))
-            // setJobItemMeasure(measureItem)
         } catch (e: Exception) {
-            Timber.e(e, "Failed to retrieve itemMeasure for Gallery")
-            val galleryFail = XIError(e, "Failed to retrieve itemMeasure for Gallery")
+            Timber.e(e, galleryErrorMsg)
+            val galleryFail = XIError(e, galleryErrorMsg)
             galleryUIState.postValue(galleryFail)
         }
     }
 
-    suspend fun getDescForProjectId(projectItemId: String): String {
+    private suspend fun getDescForProjectId(projectItemId: String): String {
         return withContext(Dispatchers.IO) {
             measureCreationDataRepository.getProjectItemDescription(projectItemId)
         }
@@ -125,17 +130,17 @@ class MeasureViewModel(
         measureCreationDataRepository.getUser()
     }
 
-    val measureJob: MutableLiveData<JobDTO> = MutableLiveData<JobDTO>()
+    private val measureJob: MutableLiveData<JobDTO> = MutableLiveData<JobDTO>()
     fun setMeasureJob(value: JobDTO) {
         measureJob.postValue(value)
     }
 
     val jobItemMeasure = MutableLiveData<JobItemMeasureDTO>()
-    fun setJobItemMeasure(measurea1: JobItemMeasureDTO) {
-        jobItemMeasure.postValue(measurea1)
+    fun setJobItemMeasure(measureItem: JobItemMeasureDTO) {
+        jobItemMeasure.postValue(measureItem)
     }
 
-    val measureItemPhotos: MutableLiveData<List<JobItemMeasurePhotoDTO>> =
+    private val measureItemPhotos: MutableLiveData<List<JobItemMeasurePhotoDTO>> =
         MutableLiveData<List<JobItemMeasurePhotoDTO>>()
 
     fun setMeasureItemPhotos(measurePhotoList: List<JobItemMeasurePhotoDTO>) {
@@ -151,8 +156,8 @@ class MeasureViewModel(
     val estimateMeasureItem: MutableLiveData<EstimateMeasureItem> =
         MutableLiveData<EstimateMeasureItem>()
 
-    fun setMeasureItem(measurea: EstimateMeasureItem) {
-        estimateMeasureItem.postValue(measurea)
+    fun setMeasureItem(measureItem: EstimateMeasureItem) {
+        estimateMeasureItem.postValue(measureItem)
     }
 
     suspend fun getJobMeasureForActivityId(
@@ -206,11 +211,11 @@ class MeasureViewModel(
         }
     }
 
-    fun deleteItemMeasurefromList(itemMeasureId: String) {
+    fun deleteItemMeasureFromList(itemMeasureId: String) {
         measureCreationDataRepository.deleteItemMeasurefromList(itemMeasureId)
     }
 
-    fun deleteItemMeasurephotofromList(itemMeasureId: String) {
+    fun deleteItemMeasurePhotofromList(itemMeasureId: String) {
         measureCreationDataRepository.deleteItemMeasurephotofromList(itemMeasureId)
     }
 
@@ -326,14 +331,14 @@ class MeasureViewModel(
         viewModelScope.launch(viewModelContext) {
             try {
                 galleryBackup.postValue(itemMeasureId)
-                val measureQuery = getJobItemMeasureByItemMeasureId(itemMeasureId).observeForever {
+                getJobItemMeasureByItemMeasureId(itemMeasureId).observeForever {
                     it?.let {
                         galleryMeasure.postValue(it)
                     }
                 }
             } catch (e: Exception) {
-                Timber.e(e, "Failed to retrieve itemMeasure for Gallery")
-                val galleryFail = XIError(e, "Failed to retrieve itemMeasure for Gallery")
+                Timber.e(e, galleryErrorMsg)
+                val galleryFail = XIError(e, galleryErrorMsg)
                 galleryUIState.postValue(galleryFail)
             }
         }
@@ -342,5 +347,12 @@ class MeasureViewModel(
         return withContext(Dispatchers.IO) {
             measureCreationDataRepository.getJobItemMeasureByItemMeasureId(itemMeasureId)
         }
+    }
+
+    val toDoListResult: MutableLiveData<XIResult<Boolean>> = MutableLiveData()
+    private val toDoListStatus = measureCreationDataRepository.toDoListStatus
+
+    companion object {
+        const val galleryErrorMsg = "Failed to retrieve itemMeasure for Gallery"
     }
 }

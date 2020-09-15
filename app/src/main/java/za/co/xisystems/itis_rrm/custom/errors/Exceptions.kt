@@ -5,7 +5,7 @@ import java.io.IOException
 /**
  * Created by Francis Mahlava on 2019/10/18.
  */
-class ApiException(message: String) : IOException(message)
+class ServiceException(message: String) : IOException(message)
 
 /**
  * No Internet connection fires this exception.

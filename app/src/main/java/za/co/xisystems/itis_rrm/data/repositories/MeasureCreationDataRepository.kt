@@ -9,13 +9,15 @@ import com.google.gson.Gson
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
-import java.util.ArrayList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
-import za.co.xisystems.itis_rrm.custom.errors.ApiException
 import za.co.xisystems.itis_rrm.custom.errors.NoDataException
+import za.co.xisystems.itis_rrm.custom.errors.ServiceException
+import za.co.xisystems.itis_rrm.custom.results.XIError
+import za.co.xisystems.itis_rrm.custom.results.XIResult
+import za.co.xisystems.itis_rrm.custom.results.XISuccess
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
@@ -32,9 +34,7 @@ import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.PhotoUtil.getPhotoPathFromExternalDirectory
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
-import za.co.xisystems.itis_rrm.utils.results.XIError
-import za.co.xisystems.itis_rrm.utils.results.XIResult
-import za.co.xisystems.itis_rrm.utils.results.XISuccess
+import java.util.ArrayList
 
 /**
  * Created by Francis Mahlava on 2019/11/28.
@@ -48,6 +48,7 @@ class MeasureCreationDataRepository(
         val TAG: String = MeasureCreationDataRepository::class.java.simpleName
     }
 
+    val toDoListStatus: MutableLiveData<XIResult<Boolean>> = MutableLiveData()
     private val workflowJ = MutableLiveData<WorkflowJobDTO>()
     private val photoUpload = MutableLiveData<String>()
 
@@ -120,7 +121,7 @@ class MeasureCreationDataRepository(
             } else {
                 workflowStatus.postValue(
                     XIError(
-                        ApiException(messages),
+                        ServiceException(messages),
                         "Failed to save measurements: $messages"
                     )
                 )
@@ -285,7 +286,7 @@ class MeasureCreationDataRepository(
                             Timber.e(workflowMoveResponse.errorMessage)
                             workflowStatus.postValue(
                                 XIError(
-                                    ApiException(workflowMoveResponse.errorMessage),
+                                    ServiceException(workflowMoveResponse.errorMessage),
                                     workflowMoveResponse.errorMessage
                                 )
                             )

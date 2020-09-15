@@ -1,6 +1,9 @@
-package za.co.xisystems.itis_rrm.utils.results
+package za.co.xisystems.itis_rrm.custom.results
 
-import za.co.xisystems.itis_rrm.utils.errors.ErrorHandler
+import za.co.xisystems.itis_rrm.custom.errors.ErrorHandler
+import za.co.xisystems.itis_rrm.custom.errors.NoConnectivityException
+import za.co.xisystems.itis_rrm.custom.errors.NoInternetException
+import java.io.IOException
 
 // Created by Shaun McDonald on 2020/05/23.
 // Copyright (c) 2020 XI Systems. All rights reserved.
@@ -22,3 +25,12 @@ class XIError(
 class XIProgress(val isLoading: Boolean) : XIResult<Nothing>()
 
 class XIStatus(val message: String) : XIResult<Nothing>()
+
+fun XIError.isConnectivityException(): Boolean {
+    return when (exception) {
+        is NoInternetException -> true
+        is NoConnectivityException -> true
+        is IOException -> true
+        else -> false
+    }
+}

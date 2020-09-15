@@ -6,10 +6,10 @@ import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.R
-import za.co.xisystems.itis_rrm.custom.errors.ApiException
 import za.co.xisystems.itis_rrm.custom.errors.AuthException
 import za.co.xisystems.itis_rrm.custom.errors.NoConnectivityException
 import za.co.xisystems.itis_rrm.custom.errors.NoInternetException
+import za.co.xisystems.itis_rrm.custom.errors.ServiceException
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
 import za.co.xisystems.itis_rrm.utils.Coroutines
@@ -127,7 +127,7 @@ class AuthViewModel(
                 )
             } catch (e: AuthException) {
                 authListener?.onFailure(e.message!!)
-            } catch (e: ApiException) {
+            } catch (e: ServiceException) {
                 authListener?.onFailure(e.message!!)
             } catch (e: NoInternetException) {
                 authListener?.onFailure(e.message!!)
@@ -166,7 +166,7 @@ class AuthViewModel(
                 )
             } catch (e: AuthException) {
                 authListener?.onFailure(e.message!!)
-            } catch (e: ApiException) {
+            } catch (e: ServiceException) {
                 authListener?.onFailure(e.message!!)
             } catch (e: NoInternetException) {
                 authListener?.onFailure(e.message!!)

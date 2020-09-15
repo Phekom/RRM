@@ -9,13 +9,15 @@ import com.google.gson.Gson
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
-import java.util.ArrayList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
-import za.co.xisystems.itis_rrm.custom.errors.ApiException
 import za.co.xisystems.itis_rrm.custom.errors.NoDataException
+import za.co.xisystems.itis_rrm.custom.errors.ServiceException
+import za.co.xisystems.itis_rrm.custom.results.XIError
+import za.co.xisystems.itis_rrm.custom.results.XIResult
+import za.co.xisystems.itis_rrm.custom.results.XISuccess
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksDTO
@@ -31,9 +33,7 @@ import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
-import za.co.xisystems.itis_rrm.utils.results.XIError
-import za.co.xisystems.itis_rrm.utils.results.XIResult
-import za.co.xisystems.itis_rrm.utils.results.XISuccess
+import java.util.ArrayList
 
 /**
  * Created by Francis Mahlava on 2019/11/28.
@@ -135,7 +135,7 @@ class WorkDataRepository(
                     estimateJob.UserId
                 )
             } else {
-                val uploadException = ApiException(messages)
+                val uploadException = ServiceException(messages)
                 val uploadFail =
                     XIError(uploadException, "Failed to upload work for Job: ${estimateJob.JiNo}")
                 workStatus.postValue(uploadFail)
@@ -259,7 +259,7 @@ class WorkDataRepository(
         Coroutines.api {
             try {
                 if (jobEstimateWorks.trackRouteId.isEmpty()) {
-                    val wfEx = ApiException("Error: trackRouteId is null")
+                    val wfEx = ServiceException("Error: trackRouteId is null")
                     throw wfEx
                 } else {
 
@@ -276,12 +276,12 @@ class WorkDataRepository(
                         )
                     }
                     if (workflowMoveResponse.errorMessage != null) {
-                        throw ApiException(workflowMoveResponse.errorMessage)
+                        throw ServiceException(workflowMoveResponse.errorMessage)
                     }
                     if (workflowMoveResponse.workflowJob != null) {
                         workflowJobs.postValue(workflowMoveResponse.workflowJob)
                     } else {
-                        throw ApiException("Workflow Job is null.")
+                        throw ServiceException("Workflow Job is null.")
                     }
                 }
             } catch (e: Exception) {
@@ -386,11 +386,11 @@ class WorkDataRepository(
                 jobItemEstimate.workflowEstimateWorks.forEach { jobEstimateWorks ->
                     if (!Db.getEstimateWorkDao()
                             .checkIfJobEstimateWorksExist(jobEstimateWorks.worksId)
-                    )
+                    ) {
                         Db.getEstimateWorkDao().insertJobEstimateWorks(
                             TODO("This should never happen!")
                         )
-                    else
+                    } else {
                         Db.getEstimateWorkDao().updateJobEstimateWorksWorkflow(
                             jobEstimateWorks.worksId,
                             jobEstimateWorks.estimateId,
@@ -399,6 +399,7 @@ class WorkDataRepository(
                             jobEstimateWorks.actId,
                             jobEstimateWorks.trackRouteId
                         )
+                    }
                 }
             }
 
@@ -517,7 +518,7 @@ class WorkDataRepository(
                 if (messages.isBlank()) {
                     workflowJobs.postValue(workflowMoveResponse.workflowJob)
                 } else {
-                    throw ApiException(messages)
+                    throw ServiceException(messages)
                 }
                 messages
             } catch (e: Exception) {
@@ -542,7 +543,7 @@ class WorkDataRepository(
             when (messages == null) {
                 true -> workflowJobs.postValue(workflowMoveResponse.workflowJob)
                 else -> {
-                    val apEx = ApiException(messages)
+                    val apEx = ServiceException(messages)
                     throw apEx
                 }
             }
