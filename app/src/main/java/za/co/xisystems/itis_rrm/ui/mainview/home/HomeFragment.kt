@@ -2,7 +2,6 @@ package za.co.xisystems.itis_rrm.ui.mainview.home
 
 import android.app.AlertDialog
 import android.content.Context
-import android.content.DialogInterface
 import android.graphics.Color
 import android.location.LocationManager
 import android.net.ConnectivityManager
@@ -12,12 +11,14 @@ import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.whenResumed
 import androidx.lifecycle.whenStarted
 import kotlinx.android.synthetic.main.fragment_home.*
+import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
@@ -25,38 +26,37 @@ import timber.log.Timber
 import za.co.xisystems.itis_rrm.BuildConfig
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
-import za.co.xisystems.itis_rrm.custom.errors.ApiException
 import za.co.xisystems.itis_rrm.custom.errors.NoConnectivityException
 import za.co.xisystems.itis_rrm.custom.errors.NoInternetException
+import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
+import za.co.xisystems.itis_rrm.custom.results.XIError
+import za.co.xisystems.itis_rrm.custom.results.XIStatus
+import za.co.xisystems.itis_rrm.custom.results.XISuccess
+import za.co.xisystems.itis_rrm.custom.results.isConnectivityError
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
-import za.co.xisystems.itis_rrm.data.network.responses.HealthCheckResponse
 import za.co.xisystems.itis_rrm.extensions.observeOnce
+import za.co.xisystems.itis_rrm.ui.custom.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModelFactory
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.Coroutines
-import za.co.xisystems.itis_rrm.utils.errors.ErrorHandler
-import za.co.xisystems.itis_rrm.utils.results.XIError
-import za.co.xisystems.itis_rrm.utils.results.XIStatus
-import za.co.xisystems.itis_rrm.utils.results.XISuccess
 
 class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
 
     override val kodein by kodein()
     private lateinit var homeViewModel: HomeViewModel
-    private val factory: HomeViewModelFactory by instance<HomeViewModelFactory>()
+    private val factory: HomeViewModelFactory by instance()
     private lateinit var sharedViewModel: SharedViewModel
-    private val shareFactory: SharedViewModelFactory by instance<SharedViewModelFactory>()
-
+    private val shareFactory: SharedViewModelFactory by instance()
     private var gpsEnabled: Boolean = false
     private var networkEnabled: Boolean = false
     private lateinit var userDTO: UserDTO
     private var uiScope = UiLifecycleScope()
-
-    companion object {
-        val TAG: String = HomeFragment::class.java.simpleName
-    }
+    private val colorConnected: Int
+        get() = Color.parseColor("#55A359")
+    private val colorNotConnected: Int
+        get() = Color.RED
 
     init {
 
@@ -68,21 +68,18 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
 
                         group2_loading.visibility = View.VISIBLE
 
-                        val user = homeViewModel.user.await()
-                        user.observe(viewLifecycleOwner, Observer { user_ ->
-                            userDTO = user_
-                            username?.text = user_.userName
-                        })
+                        acquireUser()
 
                         val contracts = homeViewModel.offlineSectionItems.await()
-                        contracts.observe(viewLifecycleOwner, Observer { mSectionItem ->
+                        contracts.observe(viewLifecycleOwner, { mSectionItem ->
                             val allData = mSectionItem.count()
                             if (mSectionItem.size == allData)
                                 group2_loading.visibility = View.GONE
                         })
-                    } catch (e: ApiException) {
-                        ToastUtils().toastLong(activity, e.message)
-                        Timber.e(e, "API Exception")
+                    } catch (t: Throwable) {
+                        Timber.e(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
+                        val xiErr = XIError(t, "Failed to load SectionItem")
+                        handleBigSyncError(xiErr)
                     } catch (e: NoInternetException) {
                         ToastUtils().toastLong(activity, e.message)
                         Timber.e(e, "No Internet Connection")
@@ -94,11 +91,32 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                     }
                 }
             }
+            whenResumed {
+                uiScope.launch(uiScope.coroutineContext) {
+                    acquireUser()
+                }
+            }
         }
+    }
+
+    private suspend fun acquireUser() = withContext(uiScope.coroutineContext) {
+
+        val user = homeViewModel.user.await()
+        user.observeOnce(this@HomeFragment, { userInstance ->
+            userDTO = userInstance
+            username?.text = userInstance.userName
+        })
+    }
+
+    override fun onStop() {
+        uiScope.coroutineContext.cancelChildren()
+        viewLifecycleOwner.lifecycleScope.coroutineContext.cancelChildren()
+        super.onStop()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        uiScope.onCreate()
         lifecycle.addObserver(uiScope)
         setHasOptionsMenu(true)
     }
@@ -134,9 +152,11 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
             ViewModelProvider(this, shareFactory).get(SharedViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
 
+        ping()
+
         uiScope.launch(uiScope.coroutineContext) {
             homeViewModel.bigSyncCheck()
-            homeViewModel.bigSyncDone.observeOnce(viewLifecycleOwner, Observer {
+            homeViewModel.bigSyncDone.observeOnce(viewLifecycleOwner, {
                 it?.let {
                     Timber.d("Synced: $it")
                     if (!it) {
@@ -146,6 +166,18 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
             })
         }
 
+        initSwipeToRefresh()
+
+        serverTextView.setOnClickListener {
+            ToastUtils().toastServerAddress(requireContext())
+        }
+
+        imageView7.setOnClickListener {
+            ToastUtils().toastVersion(requireContext())
+        }
+    }
+
+    private fun initSwipeToRefresh() {
         items_swipe_to_refresh.setProgressBackgroundColorSchemeColor(
             ContextCompat.getColor(
                 requireContext().applicationContext,
@@ -158,78 +190,63 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
         items_swipe_to_refresh.setOnRefreshListener {
             bigSync()
         }
+    }
 
-        Coroutines.io {
-            val lm = requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager
-            val cm =
-                requireActivity().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-            gpsEnabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
-            networkEnabled = cm.isDefaultNetworkActive
-            //  Check if Network Enabled
-            if (!networkEnabled) {
-                dataEnabled.setText(R.string.mobile_data_not_connected)
-                dataEnabled.setTextColor(colorNotConnected)
-            } else {
-                dataEnabled.setText(R.string.mobile_data_connected)
-                dataEnabled.setTextColor(colorConnected)
-            }
-
-            // Check if GPS connected
-            if (!gpsEnabled) {
-                locationEnabled.text = requireActivity().getString(R.string.gps_not_connected)
-                locationEnabled.setTextColor(colorNotConnected)
-            } else {
-                locationEnabled.text = requireActivity().getString(R.string.gps_connected)
-                locationEnabled.setTextColor(colorConnected)
-            }
+    private fun checkConnectivity() {
+        val lm = requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        val cm =
+            requireActivity().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        gpsEnabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
+        networkEnabled = cm.isDefaultNetworkActive
+        //  Check if Network Enabled
+        if (!networkEnabled) {
+            dataEnabled.setText(R.string.mobile_data_not_connected)
+            dataEnabled.setTextColor(colorNotConnected)
+        } else {
+            dataEnabled.setText(R.string.mobile_data_connected)
+            dataEnabled.setTextColor(colorConnected)
         }
 
-        connectedTo.text = "Version " + BuildConfig.VERSION_NAME
-
-        serverTextView.setOnClickListener {
-            ToastUtils().toastServerAddress(context)
-        }
-
-        imageView7.setOnClickListener {
-            ToastUtils().toastVersion(context)
+        // Check if GPS connected
+        if (!gpsEnabled) {
+            locationEnabled.text = requireActivity().getString(R.string.gps_not_connected)
+            locationEnabled.setTextColor(colorNotConnected)
+        } else {
+            locationEnabled.text = requireActivity().getString(R.string.gps_connected)
+            locationEnabled.setTextColor(colorConnected)
         }
     }
 
-    private fun retrySynch() {
+    private fun retrySync() {
+        IndefiniteSnackbar.hide()
         bigSync()
     }
 
-    private val health: HealthCheckResponse? = null
     private fun ping() {
         Coroutines.main {
+            checkConnectivity()
+            servicesHealthCheck()
+
         }
     }
-
-    private val colorConnected: Int
-        get() = Color.parseColor("#55A359")
-
-    private val colorNotConnected: Int
-        get() = Color.RED
 
     override fun onResume() {
         super.onResume()
         ping()
     }
 
-    override fun onDetach() {
-        super.onDetach()
-        ping()
-    }
 
     private fun bigSync() = uiScope.launch(uiScope.coroutineContext) {
         try {
+            if (!items_swipe_to_refresh.isRefreshing)
+                items_swipe_to_refresh.isRefreshing = true
 
             sharedViewModel.setMessage("Data Loading")
             sharedViewModel.toggleLongRunning(true)
-            group2_loading.visibility = View.VISIBLE
+
             homeViewModel.dataBaseStatus.observe(
                 viewLifecycleOwner,
-                Observer { t ->
+                { t ->
                     t?.let {
                         when (t) {
                             is XISuccess -> {
@@ -242,33 +259,48 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                             }
                             is XIError -> {
                                 sharedViewModel.setMessage("Sync Failed")
-                                sharedViewModel.toggleLongRunning(false)
-                                items_swipe_to_refresh.isRefreshing = false
-                                ErrorHandler.handleError(
-                                    view = this@HomeFragment.requireView(),
-                                    shouldShowSnackBar = true,
-                                    throwable = t,
-                                    refreshAction = { retrySynch() }
-                                )
+                                handleBigSyncError(t)
                             }
                         }
                     }
                 })
             val fetched = homeViewModel.fetchAllData(userDTO.userId)
             Timber.d("$fetched")
-        } catch (e: ApiException) {
-            sharedViewModel.setMessage(e.message)
-            Timber.e(e, "API Exception")
-        } catch (e: NoInternetException) {
-            sharedViewModel.setMessage(e.message)
-            Timber.e(e, "No Internet Connection")
-        } catch (e: NoConnectivityException) {
-            sharedViewModel.setMessage(e.message)
-            Timber.e(e, "Service Host Unreachable")
+        } catch (t: Throwable) {
+            sharedViewModel.setMessage("Sync Failed")
+            Timber.e(t, "Failed BigSync")
+            val xiErr = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
+            handleBigSyncError(xiErr)
         } finally {
             items_swipe_to_refresh.isRefreshing = false
             sharedViewModel.toggleLongRunning(false)
-            group2_loading.visibility = View.GONE
+        }
+    }
+
+    private fun handleBigSyncError(xiErr: XIError) {
+
+        items_swipe_to_refresh.isRefreshing = false
+        sharedViewModel.toggleLongRunning(false)
+        group2_loading.visibility = View.GONE
+
+        when {
+
+            xiErr.isConnectivityError() -> {
+
+                XIErrorHandler.handleError(
+                    view = this@HomeFragment.requireView(),
+                    throwable = xiErr,
+                    shouldShowSnackBar = true,
+                    refreshAction = { retrySync() }
+                )
+            }
+            else -> {
+                XIErrorHandler.handleError(
+                    view = this@HomeFragment.requireView(),
+                    throwable = xiErr,
+                    shouldToast = true
+                )
+            }
         }
     }
 
@@ -280,12 +312,34 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                 )
                 .setMessage("As a new user, please synchronise the local database.")
                 .setCancelable(false)
-                .setIcon(R.drawable.ic_warning)
-                .setPositiveButton(R.string.ok,
-                    DialogInterface.OnClickListener { dialog, whichButton ->
-                        bigSync()
-                    })
+                .setIcon(R.drawable.ic_baseline_cloud_download_24)
+                .setPositiveButton(R.string.ok) { dialog, whichButton ->
+                    bigSync()
+                }
 
         syncDialog.show()
+    }
+
+    companion object {
+        val TAG: String = HomeFragment::class.java.simpleName
+    }
+
+    private fun servicesHealthCheck() = uiScope.launch(uiScope.coroutineContext) {
+        try {
+            if (homeViewModel.healthCheck()) {
+                connectedTo.text = getString(R.string.services_up, BuildConfig.VERSION_NAME)
+                connectedTo.setTextColor(colorConnected)
+            } else {
+                connectedTo.text = getString(R.string.services_down, BuildConfig.VERSION_NAME)
+                connectedTo.setTextColor(colorNotConnected)
+            }
+        } catch (t: Throwable) {
+            val ziError = XIError(t, t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR)
+            XIErrorHandler.handleError(
+                this@HomeFragment.requireView(),
+                ziError,
+                shouldToast = true
+            )
+        }
     }
 }

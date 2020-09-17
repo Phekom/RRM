@@ -6,10 +6,10 @@ import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.R
-import za.co.xisystems.itis_rrm.custom.errors.ApiException
 import za.co.xisystems.itis_rrm.custom.errors.AuthException
 import za.co.xisystems.itis_rrm.custom.errors.NoConnectivityException
 import za.co.xisystems.itis_rrm.custom.errors.NoInternetException
+import za.co.xisystems.itis_rrm.custom.errors.ServiceException
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
 import za.co.xisystems.itis_rrm.utils.Coroutines
@@ -115,19 +115,19 @@ class AuthViewModel(
             try {
                 // TODO: Get these metrics for the device
                 val phoneNumber = "12345457"
-                val IMEI = "45678"
+                val imei = "45678"
                 val androidDevice =
                     " " + R.string.android_sdk + Build.VERSION.SDK_INT + R.string.space + Build.BRAND + R.string.space + Build.MODEL + R.string.space + Build.DEVICE + ""
                 repository.upDateUser(
 //                    userId ,
                     phoneNumber,
-                    IMEI,
+                    imei,
                     androidDevice,
                     confirmPin!!
                 )
             } catch (e: AuthException) {
                 authListener?.onFailure(e.message!!)
-            } catch (e: ApiException) {
+            } catch (e: ServiceException) {
                 authListener?.onFailure(e.message!!)
             } catch (e: NoInternetException) {
                 authListener?.onFailure(e.message!!)
@@ -154,19 +154,19 @@ class AuthViewModel(
             try {
                 // TODO: Read these metrics from the device.
                 val phoneNumber = "12345457"
-                val IMEI = "45678"
+                val imei = "45678"
                 val androidDevice =
                     " " + R.string.android_sdk + Build.VERSION.SDK_INT + R.string.space + Build.BRAND + R.string.space + Build.MODEL + R.string.space + Build.DEVICE + ""
                 repository.userRegister(
                     username!!,
                     password!!,
                     phoneNumber,
-                    IMEI,
+                    imei,
                     androidDevice
                 )
             } catch (e: AuthException) {
                 authListener?.onFailure(e.message!!)
-            } catch (e: ApiException) {
+            } catch (e: ServiceException) {
                 authListener?.onFailure(e.message!!)
             } catch (e: NoInternetException) {
                 authListener?.onFailure(e.message!!)

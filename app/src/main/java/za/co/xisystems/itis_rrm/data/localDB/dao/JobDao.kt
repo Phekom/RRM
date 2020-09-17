@@ -5,10 +5,10 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import java.util.ArrayList
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobSectionDTO
+import java.util.ArrayList
 
 /**
  * Created by Francis Mahlava on 2019/11/21.
@@ -45,7 +45,7 @@ interface JobDao {
     fun getItemDescription(jobId: String): String
 
     @Query("SELECT jiNo FROM JOB_TABLE WHERE jobId = :jobId")
-    fun getItemJobNo(jobId: String): String
+    suspend fun getItemJobNo(jobId: String): String
 
     @Query("SELECT StartKm FROM JOB_TABLE WHERE jobId = :jobId")
     fun getItemStartKm(jobId: String): Double
@@ -103,19 +103,6 @@ interface JobDao {
     @Query("DELETE FROM JOB_TABLE WHERE jobId = :jobId")
     fun deleteJobForJobId(jobId: String)
 
-//    @Query("SELECT * FROM JOB_TABLE WHERE actId = :actId  AND SELECT * FROM JOB_ITEM_ESTIMATE WHERE actId = :actId2 ORDER BY jiNo ASC")
-//    @Query("SELECT * FROM JOB_TABLE WHERE sectionItemId = :sectionItem AND projectId = :projectId")
-//    "SELECT COUNT(A." + ESTIMATE_ID + ") AS 'WorkDone' FROM " + TABLE_JOB_ITEM_ESTIMATE + " A "
-//                    + "JOIN " + TABLE_JOB_ESTIMATE_WORKS + " B ON B." + ESTIMATE_ID + " = A." + ESTIMATE_ID + " AND B."
-//                    + ACT_ID + " = " + workActId + " WHERE A." + JOB_ID + " = '" + jobId + "' AND A." + ACT_ID + " = " + estimateActId
-//    fun getAllItemsForSectionItem(sectionItem : String, projectId : String ): LiveData<List<JobDTO>>
-
     @Query("DELETE FROM JOB_TABLE")
     fun deleteAll()
 }
-
-//    updateJob(Job existingJob)
-//    INSERT INTO Customers (CustomerName, City, Country)
-//    SELECT SupplierName, City, Country FROM Suppliers
-//    WHERE Country='Germany';
-//    setJobToSynced(Job job)

@@ -3,7 +3,10 @@
  */
 package za.co.xisystems.itis_rrm
 
+import android.app.Activity
 import android.app.Application
+import android.content.pm.ActivityInfo
+import android.os.Bundle
 import android.util.Log
 import androidx.annotation.NonNull
 import org.kodein.di.Kodein
@@ -41,7 +44,6 @@ import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.home.HomeViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModelFactory
-
 /**
  * Created by Francis Mahlava on 2019/10/23.
  */
@@ -98,6 +100,35 @@ open class MainApp : Application(), KodeinAware {
 
     override fun onCreate() {
         super.onCreate()
+        registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {
+            override fun onActivityCreated(p0: Activity, p1: Bundle?) {
+                p0.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+            }
+
+            override fun onActivityStarted(p0: Activity) {
+                // Not interested in this
+            }
+
+            override fun onActivityResumed(p0: Activity) {
+                // Not interested in this
+            }
+
+            override fun onActivityPaused(p0: Activity) {
+                // Not interested in this
+            }
+
+            override fun onActivityStopped(p0: Activity) {
+                // Not interested in this
+            }
+
+            override fun onActivitySaveInstanceState(p0: Activity, p1: Bundle) {
+                // Not interested in this
+            }
+
+            override fun onActivityDestroyed(p0: Activity) {
+                // Not interested in this
+            }
+        })
         Timber.plant(CrashReportingTree())
     }
 

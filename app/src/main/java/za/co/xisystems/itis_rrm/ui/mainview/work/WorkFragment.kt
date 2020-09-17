@@ -8,7 +8,6 @@ import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenStarted
@@ -25,9 +24,9 @@ import org.kodein.di.generic.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
-import za.co.xisystems.itis_rrm.custom.errors.ApiException
 import za.co.xisystems.itis_rrm.custom.errors.NoConnectivityException
 import za.co.xisystems.itis_rrm.custom.errors.NoInternetException
+import za.co.xisystems.itis_rrm.custom.errors.ServiceException
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.extensions.observeOnce
@@ -43,7 +42,7 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
 
     override val kodein by kodein()
     private lateinit var workViewModel: WorkViewModel
-    private val factory: WorkViewModelFactory by instance<WorkViewModelFactory>()
+    private val factory: WorkViewModelFactory by instance()
     private var uiScope = UiLifecycleScope()
     private var dialog: ProgressDialog? = null
 
@@ -65,7 +64,7 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
                 uiScope.launch(uiScope.coroutineContext) {
                     try {
                         refreshEstimateJobsFromLocal()
-                    } catch (e: ApiException) {
+                    } catch (e: ServiceException) {
                         ToastUtils().toastLong(activity, e.message)
                         Timber.e(e, "API Exception")
                     } catch (e: NoInternetException) {
@@ -87,7 +86,7 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
             workViewModel.getJobsForActivityId(
                 ActivityIdConstants.JOB_APPROVED,
                 ActivityIdConstants.ESTIMATE_INCOMPLETE
-            ).observeOnce(viewLifecycleOwner, Observer { jobsList ->
+            ).observeOnce(viewLifecycleOwner, { jobsList ->
                 group7_loading.visibility = View.GONE
                 if (jobsList.isNullOrEmpty()) {
                     no_data_layout.visibility = View.VISIBLE
@@ -146,7 +145,7 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
                         refreshUserTaskListFromApi()
                         refreshEstimateJobsFromLocal()
                     }
-                } catch (e: ApiException) {
+                } catch (e: ServiceException) {
                     ToastUtils().toastLong(activity, e.message)
                     Timber.e(e, "API Exception")
                 } catch (e: NoInternetException) {
@@ -167,7 +166,7 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
         // This definitely needs to be a one-shot operation
         withContext(uiScope.coroutineContext) {
             val jobs = workViewModel.offlineUserTaskList.await()
-            jobs.observeOnce(viewLifecycleOwner, Observer { works ->
+            jobs.observeOnce(viewLifecycleOwner, { works ->
                 toast("${works.size} / ${works.count()} loaded.")
             })
         }
@@ -218,19 +217,19 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
     private suspend fun List<JobDTO>.toWorkListItems(): List<ExpandableGroup> {
         // Initialize Expandable group with expandable item and specify whether it should be expanded by default or not
 
-        return this.map { work_items ->
+        return this.map { jobDTO ->
 
             val expandableHeaderItem =
-                ExpandableHeaderWorkItem(activity, work_items, workViewModel)
+                ExpandableHeaderWorkItem(activity, jobDTO, workViewModel)
             ExpandableGroup(expandableHeaderItem, false).apply {
 
                 // ESTIMATE_WORK_PART_COMPLETE
 
                 val estimates = workViewModel.getJobEstimationItemsForJobId(
-                    work_items.JobId,
+                    jobDTO.JobId,
                     ActivityIdConstants.ESTIMATE_INCOMPLETE
                 )
-                estimates.observe(viewLifecycleOwner, Observer { estimateItems ->
+                estimates.observe(viewLifecycleOwner, { estimateItems ->
                     val filteredEstimates = estimateItems.distinctBy { element ->
                         element.estimateId
                     }
@@ -248,7 +247,7 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
                                     CardItem(
                                         activity, desc, qty,
                                         rate,
-                                        estimateId, workViewModel, item, work_items
+                                        estimateId, workViewModel, item, jobDTO
                                     )
                                 )
                             } catch (exception: Exception) {

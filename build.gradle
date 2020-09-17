@@ -3,7 +3,7 @@
 buildscript {
 
     ext {
-        kotlin_version = '1.4.0'
+        kotlin_version = '1.4.10'
         ktlint_gradle_version = "9.2.1"
         dependency_evaluation_version = '0.52.0'
     }

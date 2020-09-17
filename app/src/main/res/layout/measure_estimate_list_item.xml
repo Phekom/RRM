@@ -115,13 +115,13 @@
             android:textColor="@color/itis_gray"
             android:textSize="16sp"/>
 
-        <za.co.xisystems.itis_rrm.utils.controls.ITISTextViewItalic
+        <TextView
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:text="@string/r5400"
             android:id="@+id/measure_estimation_line_amount"
             android:layout_weight="1"
             android:textColor="@color/itis_gray"
-            android:textSize="16sp"/>
+            android:textSize="16sp" />
     </LinearLayout>
 </LinearLayout>

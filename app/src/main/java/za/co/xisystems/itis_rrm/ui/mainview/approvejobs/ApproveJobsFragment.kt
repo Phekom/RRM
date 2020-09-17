@@ -1,3 +1,8 @@
+@file:Suppress(
+    "RemoveExplicitTypeArguments", "RemoveExplicitTypeArguments", "RemoveExplicitTypeArguments", "RemoveExplicitTypeArguments", "RemoveExplicitTypeArguments", "RemoveExplicitTypeArguments", "RemoveExplicitTypeArguments", "RemoveExplicitTypeArguments", "RemoveExplicitTypeArguments",
+    "RemoveExplicitTypeArguments", "RemoveExplicitTypeArguments", "RemoveExplicitTypeArguments", "RemoveExplicitTypeArguments"
+)
+
 package za.co.xisystems.itis_rrm.ui.mainview.approvejobs
 
 import android.app.Dialog
@@ -9,7 +14,6 @@ import android.view.View
 import android.view.View.GONE
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -22,9 +26,9 @@ import org.kodein.di.generic.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
-import za.co.xisystems.itis_rrm.custom.errors.ApiException
 import za.co.xisystems.itis_rrm.custom.errors.NoConnectivityException
 import za.co.xisystems.itis_rrm.custom.errors.NoInternetException
+import za.co.xisystems.itis_rrm.custom.errors.ServiceException
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.approve_job_item.ApproveJobItem
@@ -71,54 +75,64 @@ class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAw
                 requireActivity(),
                 getString(R.string.data_loading_please_wait)
             )
-            val jobs = approveViewModel.getJobsForActivityId(ActivityIdConstants.JOB_APPROVE)
-            jobs.observe(viewLifecycleOwner, Observer { job_s ->
-                val jItems = job_s.distinctBy {
-                    it.JobId
-                }
-                noData.visibility = GONE
-                if (job_s.isEmpty()) {
-                    noData.visibility = View.VISIBLE
-                }
-                toast(job_s.size.toString())
+
+            fetchLocalJobs()
+
+            swipeToRefreshInit()
+        }
+    }
+
+    private suspend fun fetchLocalJobs() {
+        val jobs = approveViewModel.getJobsForActivityId(ActivityIdConstants.JOB_APPROVE)
+        jobs.observe(viewLifecycleOwner, { jobList ->
+            val jItems = jobList.distinctBy {
+                it.JobId
+            }
+            noData.visibility = GONE
+            if (jobList.isEmpty()) {
+                noData.visibility = View.VISIBLE
+            } else {
+                toast(jobList.size.toString())
                 initRecyclerView(jItems.toApproveListItems())
-                group3_loading.visibility = GONE
-            })
+            }
+            group3_loading.visibility = GONE
+        })
+    }
 
-            jobs_swipe_to_refresh.setProgressBackgroundColorSchemeColor(
-                ContextCompat.getColor(
-                    requireContext().applicationContext,
-                    R.color.colorPrimary
-                )
+    private fun swipeToRefreshInit() {
+        jobs_swipe_to_refresh.setProgressBackgroundColorSchemeColor(
+            ContextCompat.getColor(
+                requireContext().applicationContext,
+                R.color.colorPrimary
             )
+        )
 
-            jobs_swipe_to_refresh.setColorSchemeColors(Color.WHITE)
+        jobs_swipe_to_refresh.setColorSchemeColors(Color.WHITE)
 
-            jobs_swipe_to_refresh.setOnRefreshListener {
-                dialog.show()
-                Coroutines.main {
-                    try {
-                        val freshJobs = approveViewModel.offlineUserTaskList.await()
-                        freshJobs.observe(viewLifecycleOwner, Observer {
-                            jobs_swipe_to_refresh.isRefreshing = false
-                            if (it.isEmpty()) {
-                                noData.visibility = View.VISIBLE
-                            }
-                            dialog.dismiss()
-                        })
-                    } catch (e: ApiException) {
-                        ToastUtils().toastLong(activity, e.message)
-                        Timber.e(e, "API Exception")
-                    } catch (e: NoInternetException) {
-                        ToastUtils().toastLong(activity, e.message)
-                        Timber.e(e, "No Internet Connection")
-                    } catch (e: NoConnectivityException) {
-                        ToastUtils().toastLong(activity, e.message)
-                        Timber.e(e, "Service Host Unreachable")
-                    } finally {
-                        dialog.dismiss()
+        jobs_swipe_to_refresh.setOnRefreshListener {
+            dialog.show()
+            Coroutines.main {
+                try {
+                    val freshJobs = approveViewModel.offlineUserTaskList.await()
+                    freshJobs.observe(viewLifecycleOwner, {
                         jobs_swipe_to_refresh.isRefreshing = false
-                    }
+                        if (it.isEmpty()) {
+                            noData.visibility = View.VISIBLE
+                        }
+                        dialog.dismiss()
+                    })
+                } catch (e: ServiceException) {
+                    ToastUtils().toastLong(activity, e.message)
+                    Timber.e(e, "API Exception")
+                } catch (e: NoInternetException) {
+                    ToastUtils().toastLong(activity, e.message)
+                    Timber.e(e, "No Internet Connection")
+                } catch (e: NoConnectivityException) {
+                    ToastUtils().toastLong(activity, e.message)
+                    Timber.e(e, "Service Host Unreachable")
+                } finally {
+                    dialog.dismiss()
+                    jobs_swipe_to_refresh.isRefreshing = false
                 }
             }
         }

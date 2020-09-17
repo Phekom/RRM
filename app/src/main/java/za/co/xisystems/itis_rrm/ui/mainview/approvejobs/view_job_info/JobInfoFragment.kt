@@ -10,7 +10,6 @@ import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
@@ -35,7 +34,7 @@ import za.co.xisystems.itis_rrm.utils.show
 class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
     override val kodein by kodein()
     private lateinit var approveViewModel: ApproveJobsViewModel
-    private val factory: ApproveJobsViewModelFactory by instance<ApproveJobsViewModelFactory>()
+    private val factory: ApproveJobsViewModelFactory by instance()
 
     lateinit var dialog: Dialog
 
@@ -73,7 +72,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
         Coroutines.main {
             mydata_loading.show()
 
-            approveViewModel.jobApprovalItem.observe(viewLifecycleOwner, Observer { job ->
+            approveViewModel.jobApprovalItem.observe(viewLifecycleOwner, { job ->
                 Coroutines.main {
                     getEstimateItems(job.jobDTO.JobId)
                     val description = approveViewModel.getDescForProjectId(job.jobDTO.ProjectId!!)
@@ -101,7 +100,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
             logoutBuilder.setPositiveButton(
                 R.string.yes
             ) { dialog, which ->
-                if (ServiceUtil.isNetworkConnected(context?.applicationContext)) {
+                if (ServiceUtil.isNetworkConnected(requireContext().applicationContext)) {
                     moveJobToNextWorkflow(WorkflowDirection.NEXT)
                 } else {
                     toast(R.string.no_connection_detected)
@@ -131,7 +130,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
             logoutBuilder.setPositiveButton(
                 R.string.yes
             ) { dialog, which ->
-                if (ServiceUtil.isNetworkConnected(context?.applicationContext)) {
+                if (ServiceUtil.isNetworkConnected(requireContext().applicationContext)) {
                     moveJobToNextWorkflow(WorkflowDirection.FAIL)
                 } else {
                     toast(R.string.no_connection_detected)
@@ -153,14 +152,14 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
         Coroutines.main {
 
             val user = approveViewModel.user.await()
-            user.observe(viewLifecycleOwner, Observer { user_ ->
-                approveViewModel.jobApprovalItem.observe(viewLifecycleOwner, Observer { job ->
+            user.observe(viewLifecycleOwner, { userDTO ->
+                approveViewModel.jobApprovalItem.observe(viewLifecycleOwner, { job ->
 
                     when {
-                        user_.userId == null -> {
+                        userDTO.userId.isBlank() -> {
                             toast("Error: userId is null")
                         }
-                        getEstimateItems(job.jobDTO.JobId) == null -> {
+                        job.jobDTO.JobId.isBlank() -> {
                             toast("Error: selectedJob is null")
                         }
                         else -> {
@@ -173,7 +172,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
                             var description: String? = ""
                             if (workflow_comments_editText.text != null)
                                 description = workflow_comments_editText.text.toString()
-                            processWorkFlow(user_.userId, trackRouteId, direction, description)
+                            processWorkFlow(userDTO.userId, trackRouteId, direction, description)
                         }
                     }
                 })
@@ -227,9 +226,9 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
     private fun getEstimateItems(jobID: String?) {
         Coroutines.main {
             val estimates = approveViewModel.getJobEstimationItemsForJobId(jobID)
-            estimates.observe(viewLifecycleOwner, Observer { job_s ->
+            estimates.observe(viewLifecycleOwner, { estimateList ->
                 mydata_loading.hide()
-                initRecyclerView(job_s.toEstimatesListItem())
+                initRecyclerView(estimateList.toEstimatesListItem())
             })
         }
     }

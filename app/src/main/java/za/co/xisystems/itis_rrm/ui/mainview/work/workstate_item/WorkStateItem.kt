@@ -10,6 +10,8 @@ import kotlinx.android.synthetic.main.list_selector.*
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.WF_WorkStepDTO
+import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModel
+import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.toast
 
 /**
@@ -20,8 +22,8 @@ class WorkStateItem(
     private val jobItemWorks: JobEstimateWorksDTO?,
     private var activity: FragmentActivity?,
     private var groupAdapter: GroupAdapter<GroupieViewHolder>,
-    private val jobWorkStep: ArrayList<WF_WorkStepDTO>
-
+    private val jobWorkStep: ArrayList<WF_WorkStepDTO>,
+    private val viewModel: WorkViewModel
 ) : Item() {
 
     companion object {
@@ -60,6 +62,12 @@ class WorkStateItem(
             viewHolder.stateBack.setOnClickListener {
                 activity?.toast(position.toString())
                 selected_position = position
+                Coroutines.main {
+                    jobItemWorks?.estimateId?.let {
+                        viewModel.populateWorkTab(it, position + 15)
+                    }
+
+                }
                 groupAdapter.notifyDataSetChanged()
             }
         }

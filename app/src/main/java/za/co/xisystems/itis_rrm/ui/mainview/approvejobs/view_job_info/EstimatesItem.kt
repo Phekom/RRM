@@ -9,10 +9,8 @@ import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.Observer
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import com.xwray.groupie.kotlinandroidextensions.Item
-import java.io.File
 import kotlinx.android.synthetic.main.estimates_item.*
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
@@ -26,6 +24,7 @@ import za.co.xisystems.itis_rrm.utils.Util.nanCheck
 import za.co.xisystems.itis_rrm.utils.Util.round
 import za.co.xisystems.itis_rrm.utils.toast
 import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
+import java.io.File
 
 /**
  * Created by Francis Mahlava on 2020/01/02.
@@ -45,14 +44,14 @@ class EstimatesItem(
                 dialog.show()
                 val quantity =
                     approveViewModel.getQuantityForEstimationItemId(jobItemEstimateDTO.estimateId)
-                quantity.observe(viewLifecycleOwner, Observer {
+                quantity.observe(viewLifecycleOwner, { qty ->
 
-                    estimation_item_quantity_textView.text = "Qty: $it"
+                    estimation_item_quantity_textView.text = activity?.getString(R.string.pair, "Qty:", qty.toString())
                 })
                 val lineRate =
                     approveViewModel.getLineRateForEstimationItemId(jobItemEstimateDTO.estimateId)
-                lineRate.observe(viewLifecycleOwner, Observer {
-                    estimation_item_price_textView.text = "R $it"
+                lineRate.observe(viewLifecycleOwner, {
+                    estimation_item_price_textView.text = activity?.getString(R.string.pair, "R", it.toString())
                     dialog.dismiss()
                 })
 //                estimation_item_quantity_textView.text = "Qty: " + quantity //jobItemEstimateDTO.qty.toString()
@@ -67,10 +66,10 @@ class EstimatesItem(
                 if (uom == "NONE" || uom == "") {
                     estimation_item_uom_textView.text = ""
                 } else {
-                    estimation_item_uom_textView.text = "Unit of Measure: $uom"
+                    estimation_item_uom_textView.text = activity?.getString(R.string.pair, "Unit of Measure:", uom)
                 }
                 correctButton.setOnClickListener {
-                    sendItemType((it), jobItemEstimateDTO)
+                    sendItemType(jobItemEstimateDTO)
                 }
             }
             updateStartImage()
@@ -79,7 +78,6 @@ class EstimatesItem(
     }
 
     private fun sendItemType(
-        it: View?,
         jobItemEstimateDTO: JobItemEstimateDTO
     ) {
         Coroutines.main {
@@ -90,11 +88,11 @@ class EstimatesItem(
     private fun alertdialog(
         jobItemEstimateDTO: JobItemEstimateDTO
     ) {
-        val text = arrayOfNulls<String>(2)
+
         val textEntryView: View =
             activity!!.layoutInflater.inflate(R.layout.estimate_dialog, null)
-        val new_quantity = textEntryView.findViewById<View>(R.id.new_qty) as EditText
-        val new_total = textEntryView.findViewById<View>(R.id.new_total) as TextView
+        val quantityEntry = textEntryView.findViewById<View>(R.id.new_qty) as EditText
+        val totalEntry = textEntryView.findViewById<View>(R.id.new_total) as TextView
         val rate = textEntryView.findViewById<View>(R.id.current_rate) as TextView
 
         val alert = AlertDialog.Builder(activity) // ,android.R.style.Theme_DeviceDefault_Dialog
@@ -106,31 +104,31 @@ class EstimatesItem(
         Coroutines.main {
             val tenderRate =
                 approveViewModel.getTenderRateForProjectItemId(jobItemEstimateDTO.projectItemId!!)
-            new_total.text = "R " + jobItemEstimateDTO.lineRate.toString()
+            totalEntry.text = activity.getString(R.string.pair, "R", jobItemEstimateDTO.lineRate.toString())
 
-            rate.text = "R $tenderRate"
-            var cost = 0.0
+            rate.text = activity.getString(R.string.pair, "R", tenderRate.toString())
+            var cost: Double
             val newQuantity = jobItemEstimateDTO.qty
             val defaultQty = 0.0
 
-            new_quantity.text = Editable.Factory.getInstance().newEditable("$newQuantity")
+            quantityEntry.text = Editable.Factory.getInstance().newEditable("$newQuantity")
 
-            new_quantity.addTextChangedListener(object : AbstractTextWatcher() {
+            quantityEntry.addTextChangedListener(object : AbstractTextWatcher() {
                 override fun onTextChanged(text: String) {
                     if (text == "" || nanCheck(text) || text.toDouble() == 0.0) {
                         cost = 0.0
-                        new_total.text = "R $cost"
+                        totalEntry.text = activity.getString(R.string.pair, "R", cost.toString())
                     } else {
 
                         val qty = text.toDouble()
                         if (text.length > 9) {
-                            new_quantity.text =
+                            quantityEntry.text =
                                 Editable.Factory.getInstance().newEditable("$defaultQty")
                             activity.toast("You Have exceeded the amount of Quantity allowed")
                         } else {
                             cost = tenderRate * qty
                             val new_cost = cost.round(2).toString()
-                            new_total.text = new_cost
+                            totalEntry.text = new_cost
                         }
                     }
                 }
@@ -143,14 +141,14 @@ class EstimatesItem(
         ) { dialog, which ->
             if (ServiceUtil.isNetworkConnected(activity.applicationContext)) {
                 Coroutines.main {
-                    if (new_quantity.text.toString() == "" || nanCheck(new_quantity.text.toString()) || new_quantity.text.toString()
+                    if (quantityEntry.text.toString() == "" || nanCheck(quantityEntry.text.toString()) || quantityEntry.text.toString()
                             .toDouble() == 0.0
                     ) {
                         activity.toast("Please Enter a valid Quantity")
                     } else {
                         val updated = approveViewModel.upDateEstimate(
-                            new_quantity.text.toString(),
-                            new_total.text.toString(),
+                            quantityEntry.text.toString(),
+                            totalEntry.text.toString(),
                             jobItemEstimateDTO.estimateId
                         )
                         if (updated.isBlank()) {

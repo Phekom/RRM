@@ -8,7 +8,6 @@ import android.widget.EditText
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.Observer
 import androidx.navigation.Navigation
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import com.xwray.groupie.kotlinandroidextensions.Item
@@ -41,28 +40,27 @@ class MeasurementsItem(
             Coroutines.main {
                 dialog.show()
                 val quantity = approveViewModel.getQuantityForMeasureItemId(jobItemMeasureDTO.itemMeasureId!!)
-                quantity.observe(viewLifecycleOwner, Observer {
-                    measure_item_quantity_textView.text = "Qty: $it"
+                quantity.observe(viewLifecycleOwner, {
+                    measure_item_quantity_textView.text = activity?.getString(R.string.pair, "Qty:", it.toString())
                 })
                 val lineRate = approveViewModel.getLineRateForMeasureItemId(jobItemMeasureDTO.itemMeasureId!!)
-                lineRate.observe(viewLifecycleOwner, Observer {
-                    measure_item_price_textView.text = "R $it"
+                lineRate.observe(viewLifecycleOwner, {
+                    measure_item_price_textView.text = activity?.getString(R.string.pair, "R", it.toString())
                     dialog.dismiss()
                 })
 
                 val descri = approveViewModel.getDescForProjectId(jobItemMeasureDTO.projectItemId!!)
                 val uom =
                     approveViewModel.getUOMForProjectItemId(jobItemMeasureDTO.projectItemId!!)
-                measure_item_description_textView.text = "Estimate - $descri"
-                measure_item_uom_textView.text = "Unit of Measure: $uom"
+                measure_item_description_textView.text = activity?.getString(R.string.pair, "Estimate -", descri)
                 if (uom == "NONE") {
                     measure_item_uom_textView.text = ""
                 } else {
-                    measure_item_uom_textView.text = "Unit of Measure: $uom"
+                    measure_item_uom_textView.text = activity?.getString(R.string.pair, "Unit of Measure:", uom)
                 }
             }
             correctButton.setOnClickListener {
-                sendItemType((it), jobItemMeasureDTO, approveViewModel)
+                sendItemType(jobItemMeasureDTO)
             }
             view_captured_item_photo.setOnClickListener {
                 Coroutines.main {
@@ -76,9 +74,7 @@ class MeasurementsItem(
     }
 
     private fun sendItemType(
-        it: View?,
-        jobItemMeasureDTO: JobItemMeasureDTO,
-        approveViewModel: ApproveMeasureViewModel
+        jobItemMeasureDTO: JobItemMeasureDTO
     ) {
         Coroutines.main {
             alertdialog(jobItemMeasureDTO)
@@ -86,9 +82,8 @@ class MeasurementsItem(
     }
 
     private fun alertdialog(jobItemMeasureDTO: JobItemMeasureDTO) {
-        val text = arrayOfNulls<String>(2)
         val textEntryView: View = activity!!.layoutInflater.inflate(R.layout.measure_dialog, null)
-        val new_quantity = textEntryView.findViewById<View>(R.id.new_qty) as EditText
+        val editQuantity = textEntryView.findViewById<View>(R.id.new_qty) as EditText
 
         val alert = AlertDialog.Builder(activity) // ,android.R.style.Theme_DeviceDefault_Dialog
         alert.setView(textEntryView)
@@ -96,7 +91,7 @@ class MeasurementsItem(
         alert.setIcon(R.drawable.ic_edit)
         alert.setMessage(R.string.are_you_sure_you_want_to_correct)
 
-        new_quantity.text = Editable.Factory.getInstance().newEditable(jobItemMeasureDTO.qty.toString())
+        editQuantity.text = Editable.Factory.getInstance().newEditable(jobItemMeasureDTO.qty.toString())
 
         // Yes button
         alert.setPositiveButton(
@@ -104,11 +99,11 @@ class MeasurementsItem(
         ) { dialog, which ->
             if (ServiceUtil.isNetworkConnected(activity.applicationContext)) {
                 Coroutines.main {
-                    if (new_quantity.text.toString() == "" || nanCheck(new_quantity.text.toString())) {
+                    if (editQuantity.text.toString() == "" || nanCheck(editQuantity.text.toString())) {
                         activity.toast("Please Enter a valid Quantity")
                     } else {
                         val updated = approveViewModel.upDateMeasure(
-                            new_quantity.text.toString(),
+                            editQuantity.text.toString(),
                             jobItemMeasureDTO.itemMeasureId
                         )
                         if (updated.isBlank()) {

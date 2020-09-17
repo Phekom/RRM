@@ -53,4 +53,7 @@ interface EstimateWorkDao {
 
     @Query("SELECT * FROM JOB_ESTIMATE_WORKS WHERE actId < :actId")
     fun getWorkItemsForActID(actId: Int): LiveData<List<JobEstimateWorksDTO>>
+
+    @Query("SELECT * FROM JOB_ESTIMATE_WORKS WHERE actId = :actId AND estimateId = :estimateId")
+    suspend fun getWorkItemsForEstimateIDAndActID(estimateId: String?, actId: Int): JobEstimateWorksDTO
 }

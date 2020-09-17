@@ -1,6 +1,5 @@
 package za.co.xisystems.itis_rrm.data.localDB.dao
 
-import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
@@ -21,7 +20,7 @@ interface EstimateWorkPhotoDao {
     fun checkIfEstimateWorksPhotoExist(filename: String): Boolean
 
     @Query("SELECT * FROM JOB_ESTIMATE_WORKS_PHOTO WHERE worksId = :worksId")
-    fun getEstimateWorksPhotoForWorksId(worksId: String): LiveData<List<JobEstimateWorksPhotoDTO>>?
+    suspend fun getEstimateWorksPhotoForWorksId(worksId: String): List<JobEstimateWorksPhotoDTO>
 
     @Query("DELETE FROM JOB_ESTIMATE_WORKS_PHOTO")
     fun deleteAll()

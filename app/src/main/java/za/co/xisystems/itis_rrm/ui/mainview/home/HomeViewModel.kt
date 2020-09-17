@@ -7,11 +7,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.base.BaseViewModel
+import za.co.xisystems.itis_rrm.custom.results.XIError
+import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
-import za.co.xisystems.itis_rrm.utils.results.XIError
-import za.co.xisystems.itis_rrm.utils.results.XIResult
 
 class HomeViewModel(
     private val repository: UserRepository,
@@ -77,4 +77,6 @@ class HomeViewModel(
     override fun getLifecycle(): Lifecycle {
         TODO("Not yet implemented")
     }
+
+    suspend fun healthCheck(): Boolean = offlineDataRepository.getServiceHealth()
 }

@@ -11,6 +11,9 @@ import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import za.co.xisystems.itis_rrm.custom.results.XIError
+import za.co.xisystems.itis_rrm.custom.results.XIResult
+import za.co.xisystems.itis_rrm.custom.results.XISuccess
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.ToDoListEntityDTO
@@ -21,9 +24,6 @@ import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.approveMeasure_Item.A
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
-import za.co.xisystems.itis_rrm.utils.results.XIError
-import za.co.xisystems.itis_rrm.utils.results.XIResult
-import za.co.xisystems.itis_rrm.utils.results.XISuccess
 import za.co.xisystems.itis_rrm.utils.uncaughtExceptionHandler
 
 /**
@@ -38,11 +38,15 @@ class ApproveMeasureViewModel(
     val offlineUserTaskList by lazyDeferred {
         offlineDataRepository.getUserTaskList()
     }
+
     val user by lazyDeferred {
         measureApprovalDataRepository.getUser()
     }
-    val measureapproval_Item = MutableLiveData<ApproveMeasureItem>()
+
+    val measureApprovalItem = MutableLiveData<ApproveMeasureItem>()
+
     var galleryUIState: MutableLiveData<XIResult<GalleryUIState>> = MutableLiveData()
+
     val job = SupervisorJob()
 
     var galleryMeasure: MutableLiveData<JobItemMeasureDTO> = MutableLiveData()
@@ -56,7 +60,7 @@ class ApproveMeasureViewModel(
     }
 
     fun setApproveMeasureItem(measureapproval: ApproveMeasureItem) {
-        measureapproval_Item.postValue(measureapproval)
+        measureApprovalItem.postValue(measureapproval)
     }
 
     suspend fun getJobApproveMeasureForActivityId(activityId: Int): LiveData<List<JobItemMeasureDTO>> {
@@ -155,11 +159,11 @@ class ApproveMeasureViewModel(
     }
 
     suspend fun upDateMeasure(
-        new_quantity: String,
+        editQuantity: String,
         itemMeasureId: String?
     ): String {
         return withContext(Dispatchers.IO) {
-            measureApprovalDataRepository.upDateMeasure(new_quantity, itemMeasureId!!)
+            measureApprovalDataRepository.upDateMeasure(editQuantity, itemMeasureId!!)
         }
     }
 
@@ -172,14 +176,14 @@ class ApproveMeasureViewModel(
     suspend fun generateGalleryUI(itemMeasureId: String) =
         viewModelScope.launch(job + Dispatchers.Main + uncaughtExceptionHandler) {
             try {
-                val measureQuery = getJobItemMeasureByItemMeasureId(itemMeasureId).observeForever {
+                getJobItemMeasureByItemMeasureId(itemMeasureId).observeForever {
                     it?.let {
                         galleryMeasure.postValue(it)
                     }
                 }
             } catch (e: Exception) {
-                Timber.e(e, "Failed to retrieve itemMeasure for Gallery")
-                val galleryFail = XIError(e, "Failed to retrieve itemMeasure for Gallery")
+                Timber.e(e, galleryError)
+                val galleryFail = XIError(e, galleryError)
                 galleryUIState.postValue(galleryFail)
             }
         }
@@ -224,18 +228,24 @@ class ApproveMeasureViewModel(
                     description = measureDescription,
                     qty = measureItem.qty,
                     lineRate = measureItem.lineRate,
-                    photoPairs = bitmaps
-                )
+                    photoPairs = bitmaps,
+                    lineAmount = measureItem.qty * measureItem.lineRate,
+                    jobItemMeasureDTO = measureItem
 
-                uiState.lineAmount = uiState.qty * uiState.lineRate
+                )
 
                 galleryUIState.postValue(XISuccess(uiState))
             } catch (e: Exception) {
-                Timber.e(e, "Failed to retrieve itemMeasure for Gallery")
-                val galleryFail = XIError(e, "Failed to retrieve itemMeasure for Gallery")
+
+                Timber.e(e, galleryError)
+                val galleryFail = XIError(e, galleryError)
                 galleryUIState.postValue(galleryFail)
             }
         }
+
+    companion object {
+        const val galleryError = "Failed to retrieve itemMeasure for Gallery"
+    }
 
     suspend fun getJobItemMeasureByItemMeasureId(itemMeasureId: String): LiveData<JobItemMeasureDTO> {
         return withContext(Dispatchers.IO) {

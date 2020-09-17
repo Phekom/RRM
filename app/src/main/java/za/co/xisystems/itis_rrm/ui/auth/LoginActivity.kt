@@ -6,11 +6,11 @@ package za.co.xisystems.itis_rrm.ui.auth
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import kotlinx.android.synthetic.main.activity_login.*
 import org.kodein.di.KodeinAware
@@ -19,11 +19,15 @@ import org.kodein.di.generic.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
+import za.co.xisystems.itis_rrm.custom.results.XIError
+import za.co.xisystems.itis_rrm.custom.results.isConnectivityError
+import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
-import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.databinding.ActivityLoginBinding
 import za.co.xisystems.itis_rrm.utils.Coroutines
+import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.toast
 
@@ -33,7 +37,6 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
     private var pin = String()
     private var pinInput = ""
     private var index = 0
-    private val Db: AppDatabase? = null
 
     override val kodein by kodein()
     private val factory: AuthViewModelFactory by instance()
@@ -47,7 +50,7 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
 
         Coroutines.main {
             val loggedInUser = viewModel.user.await()
-            loggedInUser.observe(this, Observer { user ->
+            loggedInUser.observe(this, { user ->
                 // Register the user
                 if (user != null) {
                     usernameTextView.text = user.userName
@@ -76,7 +79,7 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
     private fun initPin() {
         Coroutines.main {
             val loggedInUser = viewModel.user.await()
-            loggedInUser.observe(this, Observer { user ->
+            loggedInUser.observe(this, { user ->
                 if (user.PIN != null) {
                     Coroutines.main {
                         pin = viewModel.getPin()
@@ -87,14 +90,19 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
     }
 
     private fun checkPinColor() {
-        if (index == 1) {
-            activityPinLockBinding!!.pin1.setImageResource(R.drawable.oval_pin_green)
-        } else if (index == 2) {
-            activityPinLockBinding!!.pin2.setImageResource(R.drawable.oval_pin_green)
-        } else if (index == 3) {
-            activityPinLockBinding!!.pin3.setImageResource(R.drawable.oval_pin_green)
-        } else if (index == 4) {
-            activityPinLockBinding!!.pin4.setImageResource(R.drawable.oval_pin_green)
+        when (index) {
+            1 -> {
+                activityPinLockBinding!!.pin1.setImageResource(R.drawable.oval_pin_green)
+            }
+            2 -> {
+                activityPinLockBinding!!.pin2.setImageResource(R.drawable.oval_pin_green)
+            }
+            3 -> {
+                activityPinLockBinding!!.pin3.setImageResource(R.drawable.oval_pin_green)
+            }
+            4 -> {
+                activityPinLockBinding!!.pin4.setImageResource(R.drawable.oval_pin_green)
+            }
         }
     }
 
@@ -114,51 +122,11 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
     }
 
     override fun onClick(v: View) {
-        when {
-            v === activityPinLockBinding!!.btn0 -> {
-                pinInput += "0"
-                index++
-            }
-            v === activityPinLockBinding!!.btn1 -> {
-                pinInput += "1"
-                index++
-            }
-            v === activityPinLockBinding!!.btn2 -> {
-                pinInput += "2"
-                index++
-            }
-            v === activityPinLockBinding!!.btn3 -> {
-                pinInput += "3"
-                index++
-            }
-            v === activityPinLockBinding!!.btn4 -> {
-                pinInput += "4"
-                index++
-            }
-            v === activityPinLockBinding!!.btn5 -> {
-                pinInput += "5"
-                index++
-            }
-            v === activityPinLockBinding!!.btn6 -> {
-                pinInput += "6"
-                index++
-            }
-            v === activityPinLockBinding!!.btn7 -> {
-                pinInput += "7"
-                index++
-            }
-            v === activityPinLockBinding!!.btn8 -> {
-                pinInput += "8"
-                index++
-            }
-            v === activityPinLockBinding!!.btn9 -> {
-                pinInput += "9"
-                index++
-            }
-            v === activityPinLockBinding!!.btnCancel -> {
+        when (v) {
+            activityPinLockBinding!!.btnCancel -> {
                 reset()
             }
-            v === activityPinLockBinding!!.btnDelete -> {
+            activityPinLockBinding!!.btnDelete -> {
                 when (index) {
                     1 -> {
                         activityPinLockBinding!!.pin1.setImageResource(R.drawable.oval_pin_grey)
@@ -178,6 +146,15 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
                     index--
                 }
             }
+            else -> {
+                if (v is Button) {
+                    val pinValue = v.text.toString().toIntOrNull()
+                    pinValue?.let {
+                        pinInput += it
+                        index++
+                    }
+                }
+            }
         }
         Timber.d("<TEST> -> Masuk$index")
         checkPin()
@@ -187,17 +164,17 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
     private fun checkPin() {
         Coroutines.main {
             val loggedInUser = viewModel.user.await()
-            loggedInUser.observe(this, Observer { user ->
+            loggedInUser.observe(this, { user ->
                 if (user.PIN.isNullOrEmpty()) {
 
-                    val logoutBuilder =
+                    val builder =
                         AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog)
-                    logoutBuilder.setTitle(R.string.set_pin)
-                    logoutBuilder.setIcon(R.drawable.ic_baseline_lock_24px)
-                    logoutBuilder.setMessage(R.string.set_pin_msg)
-                    logoutBuilder.setCancelable(false)
+                    builder.setTitle(R.string.set_pin)
+                    builder.setIcon(R.drawable.ic_baseline_lock_24px)
+                    builder.setMessage(R.string.set_pin_msg)
+                    builder.setCancelable(false)
                     // Yes button
-                    logoutBuilder.setPositiveButton(R.string.ok) { dialog, which ->
+                    builder.setPositiveButton(R.string.ok) { dialog, which ->
                         if (ServiceUtil.isNetworkConnected(this.applicationContext)) {
                             Intent(this, RegisterPinActivity::class.java).also { pin ->
                                 pin.flags =
@@ -208,7 +185,7 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
                             toast(R.string.no_connection_detected.toString())
                         }
                     }
-                    val declineAlert = logoutBuilder.create()
+                    val declineAlert = builder.create()
                     declineAlert.show()
                 } else {
 
@@ -226,14 +203,40 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
     }
 
     private fun gotoMainActivity() {
-        finish()
-        val intent = Intent(this, MainActivity::class.java)
-        startActivity(intent)
-        reset()
+        try {
+            finish()
+            val intent = Intent(this, MainActivity::class.java)
+            startActivity(intent)
+            reset()
+        } catch (t: Throwable) {
+            val xiErr = XIError(t, "Failed to login")
+            if (xiErr.isConnectivityError()) {
+                XIErrorHandler.handleError(
+                    this.findViewById(R.id.reg_container),
+                    xiErr,
+                    shouldShowSnackBar = true,
+                    refreshAction = { retryGotoMain() }
+                )
+            } else {
+                XIErrorHandler.handleError(
+                    this.findViewById(R.id.reg_container),
+                    xiErr,
+                    shouldToast = true
+                )
+            }
+        }
+    }
+
+    private fun retryGotoMain() {
+        IndefiniteSnackbar.hide()
+        gotoMainActivity()
     }
 
     private fun validatePin() {
         if (pin == pinInput) {
+            Coroutines.io {
+                PhotoUtil.cleanupDevice()
+            }
             gotoMainActivity()
         } else {
             reset()
@@ -270,10 +273,10 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
     }
 
     override fun onSignOut(userDTO: UserDTO) {
-        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
+        finishAffinity()
     }
 
     override fun onFailure(message: String) {
-        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
+        // To change body of created functions use File | Settings | File Templates.
     }
 }
