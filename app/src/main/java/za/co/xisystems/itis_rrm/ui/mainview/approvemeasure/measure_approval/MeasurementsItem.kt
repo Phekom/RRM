@@ -12,6 +12,7 @@ import androidx.lifecycle.Observer
 import androidx.navigation.Navigation
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import com.xwray.groupie.kotlinandroidextensions.Item
+import java.io.File
 import kotlinx.android.synthetic.main.estimates_item.measure_item_description_textView
 import kotlinx.android.synthetic.main.measurements_item.*
 import kotlinx.android.synthetic.main.measurements_item.correctButton
@@ -22,7 +23,6 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.GlideApp
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.toast
-import java.io.File
 
 /**
  * Created by Francis Mahlava on 2020/01/02.
