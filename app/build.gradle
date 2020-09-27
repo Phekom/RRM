@@ -82,14 +82,14 @@ android {
 
     def qa_env = hostProps['QA_HOST'].toString()
     def dev_env = hostProps['DEV_HOST'].toString()
-//    def xi_env = hostProps['XI_HOST'].toString()
+    def xi_env = hostProps['XI_HOST'].toString()
     def prod_env = hostProps['PROD_HOST'].toString()
-//    def sdev_env = hostProps['SDEV_HOST'].toString()
+    def sdev_env = hostProps['SDEV_HOST'].toString()
 
     def registerAutoFillTest = safePropertyGetter(hostProps, 'REGISTER_AUTO_FILL_TEST', "false") as Boolean
 
 
-    archivesBaseName="RRM-${versioning.name}.${versioning.build}-"
+    archivesBaseName="RRM-${versioning.name}-(Build ${versioning.build})"
 
     versionBuildDate = getDate()
 
@@ -253,10 +253,6 @@ android {
         jvmTarget = JavaVersion.VERSION_1_8.toString()
     }
 
-    dependenciesInfo {
-        includeInBundle true
-        includeInApk true
-    }
 }
 
 
@@ -389,7 +385,7 @@ dependencies {
     implementation 'com.github.takusemba:cropme:1.0.6'
 
     //Location
-    implementation 'com.google.android.gms:play-services-location:17.0.0'
+    implementation 'com.google.android.gms:play-services-location:17.1.0'
 
 
     // Icepick
@@ -397,8 +393,8 @@ dependencies {
     annotationProcessor 'frankiesardo:icepick-processor:3.2.0'
 
     //Kotlin Coroutines
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.5"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.5"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.9"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.9"
 
     // Better Date-time
     implementation 'com.jakewharton.threetenabp:threetenabp:1.2.4'
