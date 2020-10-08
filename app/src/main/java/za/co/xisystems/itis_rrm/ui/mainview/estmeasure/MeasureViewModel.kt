@@ -205,11 +205,11 @@ class MeasureViewModel(
         }
     }
 
-    fun deleteItemMeasurefromList(itemMeasureId: String) {
+    fun deleteItemMeasureFromList(itemMeasureId: String) {
         measureCreationDataRepository.deleteItemMeasurefromList(itemMeasureId)
     }
 
-    fun deleteItemMeasurephotofromList(itemMeasureId: String) {
+    fun deleteItemMeasurePhotoFromList(itemMeasureId: String) {
         measureCreationDataRepository.deleteItemMeasurephotofromList(itemMeasureId)
     }
 

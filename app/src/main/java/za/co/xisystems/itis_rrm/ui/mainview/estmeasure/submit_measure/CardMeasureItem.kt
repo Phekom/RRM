@@ -56,7 +56,7 @@ open class CardMeasureItem(
         viewHolder.itemView.setOnLongClickListener {
             Coroutines.main {
                 measureViewModel.deleteItemMeasureFromList(itemMeasureId)
-                measureViewModel.deleteItemMeasurePhotofromList(itemMeasureId)
+                measureViewModel.deleteItemMeasurePhotoFromList(itemMeasureId)
             }
             it.isLongClickable
         }

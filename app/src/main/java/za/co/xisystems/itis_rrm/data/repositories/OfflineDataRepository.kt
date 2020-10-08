@@ -1024,7 +1024,7 @@ class OfflineDataRepository(
             toDoListGroups.postValue(toDoListGroupsResponse.toDoListGroups)
 
             postStatus("Updating Contracts")
-            val contractsResponse = apiRequest { api.refreshContractInfo(userId) }
+            val contractsResponse = apiRequest { api.getAllContractsByUserId(userId) }
             // conTracts.postValue(contractsResponse.contracts)
             saveContracts(contractsResponse.contracts)
             databaseStatus.postValue(XISuccess(true))
@@ -1075,7 +1075,7 @@ class OfflineDataRepository(
     }
 
     suspend fun refreshContractInfo(userId: String): Int {
-        val contractsResponse = apiRequest { api.refreshContractInfo(userId) }
+        val contractsResponse = apiRequest { api.getAllContractsByUserId(userId) }
         conTracts.postValue(contractsResponse.contracts)
         return 4
     }
