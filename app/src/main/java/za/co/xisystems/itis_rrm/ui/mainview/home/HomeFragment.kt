@@ -11,12 +11,12 @@ import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenResumed
 import androidx.lifecycle.whenStarted
 import kotlinx.android.synthetic.main.fragment_home.*
+import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.kodein.di.KodeinAware
@@ -26,16 +26,13 @@ import timber.log.Timber
 import za.co.xisystems.itis_rrm.BuildConfig
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
-import za.co.xisystems.itis_rrm.custom.errors.ErrorHandler
 import za.co.xisystems.itis_rrm.custom.errors.NoConnectivityException
 import za.co.xisystems.itis_rrm.custom.errors.NoInternetException
-import za.co.xisystems.itis_rrm.custom.errors.ServiceException
+import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.results.XIError
-import za.co.xisystems.itis_rrm.custom.results.XIProgress
-import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.results.XIStatus
 import za.co.xisystems.itis_rrm.custom.results.XISuccess
-import za.co.xisystems.itis_rrm.custom.results.isConnectivityException
+import za.co.xisystems.itis_rrm.custom.results.isConnectivityError
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.extensions.observeOnce
@@ -49,9 +46,9 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
 
     override val kodein by kodein()
     private lateinit var homeViewModel: HomeViewModel
-    private val factory: HomeViewModelFactory by instance<HomeViewModelFactory>()
+    private val factory: HomeViewModelFactory by instance()
     private lateinit var sharedViewModel: SharedViewModel
-    private val shareFactory: SharedViewModelFactory by instance<SharedViewModelFactory>()
+    private val shareFactory: SharedViewModelFactory by instance()
     private var gpsEnabled: Boolean = false
     private var networkEnabled: Boolean = false
     private lateinit var userDTO: UserDTO
@@ -60,8 +57,6 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
         get() = Color.parseColor("#55A359")
     private val colorNotConnected: Int
         get() = Color.RED
-
-    private val bigSyncObserver = Observer<XIResult<Boolean>> { handleBigSync(it) }
 
     init {
 
@@ -81,9 +76,10 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                             if (mSectionItem.size == allData)
                                 group2_loading.visibility = View.GONE
                         })
-                    } catch (e: ServiceException) {
-                        ToastUtils().toastLong(activity, e.message)
-                        Timber.e(e, "API Exception")
+                    } catch (t: Throwable) {
+                        Timber.e(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
+                        val xiErr = XIError(t, "Failed to load SectionItem")
+                        handleBigSyncError(xiErr)
                     } catch (e: NoInternetException) {
                         ToastUtils().toastLong(activity, e.message)
                         Timber.e(e, "No Internet Connection")
@@ -106,16 +102,15 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
     private suspend fun acquireUser() = withContext(uiScope.coroutineContext) {
 
         val user = homeViewModel.user.await()
-        user.observe(this@HomeFragment, { userInstance ->
+        user.observeOnce(this@HomeFragment, { userInstance ->
             userDTO = userInstance
             username?.text = userInstance.userName
-            servicesHealthCheck()
-            checkConnectivity()
         })
     }
 
     override fun onStop() {
-        uiScope.destroy()
+        uiScope.coroutineContext.cancelChildren()
+        viewLifecycleOwner.lifecycleScope.coroutineContext.cancelChildren()
         super.onStop()
     }
 
@@ -157,9 +152,8 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
             ViewModelProvider(this, shareFactory).get(SharedViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
 
-        checkConnectivity()
+        ping()
 
-        // Check if database is synched and prompt user if necessary
         uiScope.launch(uiScope.coroutineContext) {
             homeViewModel.bigSyncCheck()
             homeViewModel.bigSyncDone.observeOnce(viewLifecycleOwner, {
@@ -223,10 +217,6 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
         }
     }
 
-    private suspend fun healthChecksOut(userId: String): Boolean {
-        return homeViewModel.healthCheck(userId)
-    }
-
     private fun retrySync() {
         IndefiniteSnackbar.hide()
         bigSync()
@@ -234,7 +224,9 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
 
     private fun ping() {
         Coroutines.main {
-            acquireUser()
+            checkConnectivity()
+            servicesHealthCheck()
+
         }
     }
 
@@ -243,50 +235,73 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
         ping()
     }
 
-    override fun onDetach() {
-        super.onDetach()
-        ping()
-    }
 
-    private fun handleBigSync(result: XIResult<Boolean>) {
-        when (result) {
-            is XISuccess -> {
-                sharedViewModel.setMessage("Data Retrieved")
-            }
-            is XIStatus -> {
-                sharedViewModel.setMessage(result.message)
-            }
-            is XIError -> {
-                sharedViewModel.setMessage("Sync Failed")
-                sharedViewModel.toggleLongRunning(false)
-                items_swipe_to_refresh.isRefreshing = false
-                if (result.isConnectivityException()) {
-                    ErrorHandler.handleError(
-                        view = this@HomeFragment.requireView(),
-                        shouldShowSnackBar = true,
-                        throwable = result,
-                        refreshAction = { retrySync() }
-                    )
-                } else {
-                    ErrorHandler.handleError(
-                        view = this@HomeFragment.requireView(),
-                        shouldToast = true,
-                        throwable = result
-                    )
-                }
-            }
-            is XIProgress -> {
-                sharedViewModel.toggleLongRunning(result.isLoading)
-                items_swipe_to_refresh.isRefreshing = result.isLoading
-            }
+    private fun bigSync() = uiScope.launch(uiScope.coroutineContext) {
+        try {
+            if (!items_swipe_to_refresh.isRefreshing)
+                items_swipe_to_refresh.isRefreshing = true
+
+            sharedViewModel.setMessage("Data Loading")
+            sharedViewModel.toggleLongRunning(true)
+
+            homeViewModel.dataBaseStatus.observe(
+                viewLifecycleOwner,
+                { t ->
+                    t?.let {
+                        when (t) {
+                            is XISuccess -> {
+                                sharedViewModel.setMessage("Data Retrieved")
+                                sharedViewModel.toggleLongRunning(false)
+                                items_swipe_to_refresh.isRefreshing = false
+                            }
+                            is XIStatus -> {
+                                sharedViewModel.setMessage(t.message)
+                            }
+                            is XIError -> {
+                                sharedViewModel.setMessage("Sync Failed")
+                                handleBigSyncError(t)
+                            }
+                        }
+                    }
+                })
+            val fetched = homeViewModel.fetchAllData(userDTO.userId)
+            Timber.d("$fetched")
+        } catch (t: Throwable) {
+            sharedViewModel.setMessage("Sync Failed")
+            Timber.e(t, "Failed BigSync")
+            val xiErr = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
+            handleBigSyncError(xiErr)
+        } finally {
+            items_swipe_to_refresh.isRefreshing = false
+            sharedViewModel.toggleLongRunning(false)
         }
     }
 
-    private fun bigSync() = uiScope.launch(uiScope.coroutineContext) {
-        sharedViewModel.setMessage("Data Loading")
-        sharedViewModel.toggleLongRunning(true)
-        homeViewModel.databaseResult.observe(viewLifecycleOwner, bigSyncObserver)
-        homeViewModel.fetchAllData(userDTO.userId)
+    private fun handleBigSyncError(xiErr: XIError) {
+
+        items_swipe_to_refresh.isRefreshing = false
+        sharedViewModel.toggleLongRunning(false)
+        group2_loading.visibility = View.GONE
+
+        when {
+
+            xiErr.isConnectivityError() -> {
+
+                XIErrorHandler.handleError(
+                    view = this@HomeFragment.requireView(),
+                    throwable = xiErr,
+                    shouldShowSnackBar = true,
+                    refreshAction = { retrySync() }
+                )
+            }
+            else -> {
+                XIErrorHandler.handleError(
+                    view = this@HomeFragment.requireView(),
+                    throwable = xiErr,
+                    shouldToast = true
+                )
+            }
+        }
     }
 
     private fun promptUserToSync() {
@@ -298,9 +313,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                 .setMessage("As a new user, please synchronise the local database.")
                 .setCancelable(false)
                 .setIcon(R.drawable.ic_baseline_cloud_download_24)
-                .setPositiveButton(
-                    R.string.ok
-                ) { dialog, whichButton ->
+                .setPositiveButton(R.string.ok) { dialog, whichButton ->
                     bigSync()
                 }
 
@@ -312,12 +325,21 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
     }
 
     private fun servicesHealthCheck() = uiScope.launch(uiScope.coroutineContext) {
-        if (healthChecksOut(userDTO.userId)) {
-            connectedTo.text = getString(R.string.services_up, BuildConfig.VERSION_NAME)
-            connectedTo.setTextColor(colorConnected)
-        } else {
-            connectedTo.text = getString(R.string.services_down, BuildConfig.VERSION_NAME)
-            connectedTo.setTextColor(colorNotConnected)
+        try {
+            if (homeViewModel.healthCheck()) {
+                connectedTo.text = getString(R.string.services_up, BuildConfig.VERSION_NAME)
+                connectedTo.setTextColor(colorConnected)
+            } else {
+                connectedTo.text = getString(R.string.services_down, BuildConfig.VERSION_NAME)
+                connectedTo.setTextColor(colorNotConnected)
+            }
+        } catch (t: Throwable) {
+            val ziError = XIError(t, t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR)
+            XIErrorHandler.handleError(
+                this@HomeFragment.requireView(),
+                ziError,
+                shouldToast = true
+            )
         }
     }
 }

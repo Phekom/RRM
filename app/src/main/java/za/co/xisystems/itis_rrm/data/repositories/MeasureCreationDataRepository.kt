@@ -42,7 +42,7 @@ import java.util.ArrayList
 
 class MeasureCreationDataRepository(
     private val api: BaseConnectionApi,
-    private val Db: AppDatabase
+    private val appDb: AppDatabase
 ) : SafeApiRequest() {
     companion object {
         val TAG: String = MeasureCreationDataRepository::class.java.simpleName
@@ -70,7 +70,7 @@ class MeasureCreationDataRepository(
 
     suspend fun getUser(): LiveData<UserDTO> {
         return withContext(Dispatchers.IO) {
-            Db.getUserDao().getUser()
+            appDb.getUserDao().getUser()
         }
     }
 
@@ -79,7 +79,7 @@ class MeasureCreationDataRepository(
         activityId2: Int
     ): LiveData<List<JobItemEstimateDTO>> {
         return withContext(Dispatchers.IO) {
-            Db.getJobItemEstimateDao().getJobMeasureForActivityId(activityId, activityId2)
+            appDb.getJobItemEstimateDao().getJobMeasureForActivityId(activityId, activityId2)
         }
     }
 
@@ -153,25 +153,25 @@ class MeasureCreationDataRepository(
 
     private suspend fun softdeleteMeasurement(itemMeasureId: String): Int {
         return withContext(Dispatchers.IO) {
-            Db.getJobItemMeasureDao().deleteMeasurement(itemMeasureId)
+            appDb.getJobItemMeasureDao().deleteMeasurement(itemMeasureId)
         }
     }
 
     private suspend fun undeleteMeasurement(itemMeasureId: String): Int {
         return withContext(Dispatchers.IO) {
-            Db.getJobItemMeasureDao().undeleteMeasurement(itemMeasureId)
+            appDb.getJobItemMeasureDao().undeleteMeasurement(itemMeasureId)
         }
     }
 
     private suspend fun undeleteAllMeasurements(): Int {
         return withContext(Dispatchers.IO) {
-            Db.getJobItemMeasureDao().undeleteAllMeasurements()
+            appDb.getJobItemMeasureDao().undeleteAllMeasurements()
         }
     }
 
     private suspend fun getUpdatedJob(jobId: String): JobDTO {
         return withContext(Dispatchers.IO) {
-            Db.getJobDao().getJobForJobId(jobId)
+            appDb.getJobDao().getJobForJobId(jobId)
         }
     }
 
@@ -347,7 +347,7 @@ class MeasureCreationDataRepository(
     ):
         LiveData<List<JobItemEstimateDTO>> {
         return withContext(Dispatchers.IO) {
-            Db.getJobItemEstimateDao().getJobItemsToMeasureForJobId(jobID!!)
+            appDb.getJobItemEstimateDao().getJobItemsToMeasureForJobId(jobID!!)
         }
     }
 
@@ -356,7 +356,7 @@ class MeasureCreationDataRepository(
     ):
         LiveData<JobDTO> {
         return withContext(Dispatchers.IO) {
-            Db.getJobDao().getJobFromJobId(jobId!!)
+            appDb.getJobDao().getJobFromJobId(jobId!!)
         }
     }
 
@@ -366,7 +366,7 @@ class MeasureCreationDataRepository(
     ):
         LiveData<List<JobItemMeasureDTO>> {
         return withContext(Dispatchers.IO) {
-            Db.getJobItemMeasureDao()
+            appDb.getJobItemMeasureDao()
                 .getJobItemMeasuresForJobIdAndEstimateId2(jobId, estimateId)
         }
     }
@@ -376,17 +376,17 @@ class MeasureCreationDataRepository(
     ):
         LiveData<ProjectItemDTO> {
         return withContext(Dispatchers.IO) {
-            Db.getProjectItemDao().getItemForItemId(projectItemId!!)
+            appDb.getProjectItemDao().getItemForItemId(projectItemId!!)
         }
     }
 
     fun saveJobItemMeasureItems(jobItemMeasures: ArrayList<JobItemMeasureDTO>) {
         Coroutines.io {
             for (jobItemMeasure in jobItemMeasures.iterator()) {
-                if (!Db.getJobItemMeasureDao()
+                if (!appDb.getJobItemMeasureDao()
                         .checkIfJobItemMeasureExists(jobItemMeasure.itemMeasureId!!)
                 ) {
-                    Db.getJobItemMeasureDao().insertJobItemMeasure(jobItemMeasure)
+                    appDb.getJobItemMeasureDao().insertJobItemMeasure(jobItemMeasure)
                 }
             }
         }
@@ -394,34 +394,34 @@ class MeasureCreationDataRepository(
 
     suspend fun getJobMeasureItemsPhotoPath(itemMeasureId: String): List<String> {
         return withContext(Dispatchers.IO) {
-            Db.getJobItemMeasurePhotoDao()
+            appDb.getJobItemMeasurePhotoDao()
                 .getJobMeasureItemPhotoPaths(itemMeasureId)
         }
     }
 
     suspend fun getJobMeasureItemsPhotoPath2(itemMeasureId: String): List<String> {
         return withContext(Dispatchers.IO) {
-            Db.getJobItemMeasurePhotoDao()
+            appDb.getJobItemMeasurePhotoDao()
                 .getJobMeasureItemPhotoPaths(itemMeasureId)
         }
     }
 
     fun deleteItemMeasurefromList(itemMeasureId: String) {
         Coroutines.io {
-            Db.getJobItemMeasureDao().deleteItemMeasurefromList(itemMeasureId)
+            appDb.getJobItemMeasureDao().deleteItemMeasurefromList(itemMeasureId)
         }
     }
 
     fun deleteItemMeasurephotofromList(itemMeasureId: String) {
         Coroutines.io {
-            Db.getJobItemMeasurePhotoDao()
+            appDb.getJobItemMeasurePhotoDao()
                 .deleteItemMeasurephotofromList(itemMeasureId)
         }
     }
 
     suspend fun deleteJobItemMeasurePhoto(photoId: String): Int {
         return withContext(Dispatchers.IO) {
-            Db.getJobItemMeasurePhotoDao()
+            appDb.getJobItemMeasurePhotoDao()
                 .deleteItemMeasurePhoto(photoId)
         }
     }
@@ -433,23 +433,23 @@ class MeasureCreationDataRepository(
     ) {
         Coroutines.io {
             for (jobItemMeasurePhoto in jobItemMeasurePhotoList.iterator()) {
-                if (!Db.getJobItemMeasureDao()
+                if (!appDb.getJobItemMeasureDao()
                         .checkIfJobItemMeasureExists(selectedJobItemMeasure.itemMeasureId!!)
                 )
-                    Db.getJobItemMeasureDao()
+                    appDb.getJobItemMeasureDao()
                         .insertJobItemMeasure(selectedJobItemMeasure)
 
-                Db.getJobItemEstimateDao()
+                appDb.getJobItemEstimateDao()
                     .setMeasureActId(selectedJobItemMeasure.actId, estimateId!!)
 
-                if (!Db.getJobItemMeasurePhotoDao()
+                if (!appDb.getJobItemMeasurePhotoDao()
                         .checkIfJobItemMeasurePhotoExists(jobItemMeasurePhoto.filename!!)
                 ) {
 
-                    Db.getJobItemMeasurePhotoDao()
+                    appDb.getJobItemMeasurePhotoDao()
                         .insertJobItemMeasurePhoto(jobItemMeasurePhoto)
                     jobItemMeasurePhoto.setEstimateId(estimateId)
-                    Db.getJobItemMeasureDao().upDatePhotList(
+                    appDb.getJobItemMeasureDao().upDatePhotList(
                         jobItemMeasurePhotoList,
                         selectedJobItemMeasure.itemMeasureId!!
                     )
@@ -462,13 +462,13 @@ class MeasureCreationDataRepository(
         jobId: String?
     ): LiveData<List<JobItemMeasureDTO>> {
         return withContext(Dispatchers.IO) {
-            Db.getJobItemMeasureDao().getJobItemMeasuresForJobIdAndEstimateId(jobId)
+            appDb.getJobItemMeasureDao().getJobItemMeasuresForJobIdAndEstimateId(jobId)
         }
     }
 
     suspend fun getJobItemMeasurePhotosForItemEstimateID(estimateId: String): LiveData<List<JobItemMeasurePhotoDTO>> {
         return withContext(Dispatchers.IO) {
-            Db.getJobItemMeasurePhotoDao()
+            appDb.getJobItemMeasurePhotoDao()
                 .getJobItemMeasurePhotosForItemEstimateID(estimateId)
         }
     }
@@ -479,15 +479,11 @@ class MeasureCreationDataRepository(
 
     suspend fun getItemDescription(jobId: String): String {
         return withContext(Dispatchers.IO) {
-            Db.getJobDao().getItemDescription(jobId)
+            appDb.getJobDao().getItemDescription(jobId)
         }
     }
 
-    suspend fun getItemJobNo(jobId: String): String {
-        return withContext(Dispatchers.IO) {
-            Db.getJobDao().getItemJobNo(jobId)
-        }
-    }
+    suspend fun getItemJobNo(jobId: String): String = appDb.getJobDao().getItemJobNo(jobId)
 
     private fun insertOrUpdateWorkflowJobInSQLite(job: WorkflowJobDTO?) {
         job?.let {
@@ -500,26 +496,27 @@ class MeasureCreationDataRepository(
     ) {
         Coroutines.io {
             try {
-                Db.getJobDao()
+                appDb.getJobDao()
                     .updateJob(job.trackRouteId, job.actId, job.jiNo, job.jobId)
 
                 job.workflowItemEstimates?.forEach { jobItemEstimate ->
-                    Db.getJobItemEstimateDao().updateExistingJobItemEstimateWorkflow(
+                    appDb.getJobItemEstimateDao().updateExistingJobItemEstimateWorkflow(
                         jobItemEstimate.trackRouteId,
                         jobItemEstimate.actId,
                         jobItemEstimate.estimateId
                     )
 
                     jobItemEstimate.workflowEstimateWorks.forEach { jobEstimateWorks ->
-                        if (!Db.getEstimateWorkDao()
+                        if (!appDb.getEstimateWorkDao()
                                 .checkIfJobEstimateWorksExist(jobEstimateWorks.worksId)
                         )
-                            Db.getEstimateWorkDao().insertJobEstimateWorks(
+
+                            appDb.getEstimateWorkDao().insertJobEstimateWorks(
                                 // jobEstimateWorks as JobEstimateWorksDTO
                                 TODO("This should never happen!")
                             )
                         else
-                            Db.getEstimateWorkDao().updateJobEstimateWorksWorkflow(
+                            appDb.getEstimateWorkDao().updateJobEstimateWorksWorkflow(
                                 jobEstimateWorks.worksId,
                                 jobEstimateWorks.estimateId,
                                 jobEstimateWorks.recordVersion,
@@ -531,7 +528,7 @@ class MeasureCreationDataRepository(
 
                     if (job.workflowItemMeasures != null) {
                         job.workflowItemMeasures.forEach { jobItemMeasure ->
-                            Db.getJobItemMeasureDao().updateWorkflowJobItemMeasure(
+                            appDb.getJobItemMeasureDao().updateWorkflowJobItemMeasure(
                                 jobItemMeasure.itemMeasureId,
                                 jobItemMeasure.trackRouteId,
                                 jobItemMeasure.actId,
@@ -544,12 +541,12 @@ class MeasureCreationDataRepository(
                 //  Place the Job Section, UPDATE OR CREATE
 
                 job.workflowJobSections?.forEach { jobSection ->
-                    if (!Db.getJobSectionDao()
+                    if (!appDb.getJobSectionDao()
                             .checkIfJobSectionExist(jobSection.jobSectionId)
                     )
-                        Db.getJobSectionDao().insertJobSection(jobSection)
+                        appDb.getJobSectionDao().insertJobSection(jobSection)
                     else
-                        Db.getJobSectionDao().updateExistingJobSectionWorkflow(
+                        appDb.getJobSectionDao().updateExistingJobSectionWorkflow(
                             jobSection.jobSectionId,
                             jobSection.projectSectionId,
                             jobSection.jobId,
@@ -608,37 +605,37 @@ class MeasureCreationDataRepository(
 
     suspend fun getSectionForProjectSectionId(sectionId: String?): String {
         return withContext(Dispatchers.IO) {
-            Db.getProjectSectionDao().getSectionForProjectSectionId(sectionId!!)
+            appDb.getProjectSectionDao().getSectionForProjectSectionId(sectionId!!)
         }
     }
 
     suspend fun getRouteForProjectSectionId(sectionId: String?): String {
         return withContext(Dispatchers.IO) {
-            Db.getProjectSectionDao().getRouteForProjectSectionId(sectionId!!)
+            appDb.getProjectSectionDao().getRouteForProjectSectionId(sectionId!!)
         }
     }
 
     suspend fun getProjectSectionIdForJobId(jobId: String?): String {
         return withContext(Dispatchers.IO) {
-            Db.getJobSectionDao().getProjectSectionId(jobId!!)
+            appDb.getJobSectionDao().getProjectSectionId(jobId!!)
         }
     }
 
     suspend fun getProjectItemDescription(projectItemId: String): String {
         return withContext(Dispatchers.IO) {
-            Db.getProjectItemDao().getProjectItemDescription(projectItemId)
+            appDb.getProjectItemDao().getProjectItemDescription(projectItemId)
         }
     }
 
     suspend fun getJobItemMeasureByItemMeasureId(itemMeasureId: String): LiveData<JobItemMeasureDTO> {
         return withContext(Dispatchers.IO) {
-            Db.getJobItemMeasureDao().getJobItemMeasureByItemMeasureId(itemMeasureId)
+            appDb.getJobItemMeasureDao().getJobItemMeasureByItemMeasureId(itemMeasureId)
         }
     }
 
     suspend fun getJobItemMeasurePhotosForItemMeasureID(itemMeasureId: String): LiveData<List<JobItemMeasurePhotoDTO>> {
         return withContext(Dispatchers.IO) {
-            Db.getJobItemMeasurePhotoDao().getJobItemMeasurePhotosForItemMeasureID(itemMeasureId)
+            appDb.getJobItemMeasurePhotoDao().getJobItemMeasurePhotosForItemMeasureID(itemMeasureId)
         }
     }
 }

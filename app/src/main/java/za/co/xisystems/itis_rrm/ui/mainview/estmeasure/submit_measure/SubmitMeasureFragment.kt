@@ -26,9 +26,9 @@ import org.kodein.di.generic.instance
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
-import za.co.xisystems.itis_rrm.custom.errors.ErrorHandler.handleError
 import za.co.xisystems.itis_rrm.custom.errors.NoConnectivityException
 import za.co.xisystems.itis_rrm.custom.errors.NoInternetException
+import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler.handleError
 import za.co.xisystems.itis_rrm.custom.results.XIError
 import za.co.xisystems.itis_rrm.custom.results.XISuccess
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
@@ -52,7 +52,7 @@ import java.util.HashMap
 class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), KodeinAware {
     override val kodein by kodein()
     private lateinit var measureViewModel: MeasureViewModel
-    private val factory: MeasureViewModelFactory by instance<MeasureViewModelFactory>()
+    private val factory: MeasureViewModelFactory by instance()
     private lateinit var jobItemMeasurePhotoDTO: ArrayList<JobItemMeasurePhotoDTO>
     private lateinit var jobItemMeasureArrayList: ArrayList<JobItemMeasureDTO>
     private lateinit var jobItemEstimatesForJob: ArrayList<JobItemEstimateDTO>
@@ -137,11 +137,11 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
             measureViewModel.setBackupJobId(jobId!!)
             val jobItemMeasure =
                 measureViewModel.getJobItemMeasuresForJobIdAndEstimateId(jobId) // estimateId
-            jobItemMeasure.observeOnce(viewLifecycleOwner, { m_sures ->
-                val validMeasures = m_sures.filter { msure ->
+            jobItemMeasure.observeOnce(viewLifecycleOwner, { measureList ->
+                val validMeasures = measureList.filter { msure ->
                     msure.qty > 0 && msure.jobItemMeasurePhotos.isNotEmpty()
                 }
-                if (validMeasures.isNullOrEmpty() || validMeasures.isEmpty()) {
+                if (validMeasures.isNullOrEmpty()) {
                     toast(R.string.please_make_sure_you_have_captured_photos)
                 } else {
                     toast("You have Done " + validMeasures.size.toString() + " Measurements on this Estimate")
@@ -183,7 +183,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
             setMessage(R.string.are_you_sure_you_want_to_submit_measurements)
             // Yes button
             setPositiveButton(R.string.yes) { dialog, which ->
-                if (ServiceUtil.isNetworkConnected(context?.applicationContext)) {
+                if (ServiceUtil.isNetworkConnected(requireContext().applicationContext)) {
                     submitMeasures(itemMeasureJob, mSures)
                 } else {
                     toast(R.string.no_connection_detected)
@@ -207,9 +207,9 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
     ) {
         Coroutines.main {
             val user = measureViewModel.user.await()
-            user.observe(viewLifecycleOwner, { user_ ->
+            user.observe(viewLifecycleOwner, { userDTO ->
                 when {
-                    user_.userId.isBlank() -> {
+                    userDTO.userId.isBlank() -> {
                         toast("Error: userId is null")
                     }
                     itemMeasureJob.JobId.isBlank() -> {
@@ -232,7 +232,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
 
                                 processMeasurementWorkflow(
                                     prog,
-                                    user_,
+                                    userDTO,
                                     jobId,
                                     itemMeasureJob,
                                     contractVoId,
@@ -249,7 +249,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
 
     private fun processMeasurementWorkflow(
         prog: ProgressDialog,
-        user_: UserDTO,
+        userDTO: UserDTO,
         jobId: String,
         itemMeasureJob: JobDTO,
         contractVoId: String,
@@ -259,7 +259,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
         uiScope.launch(uiScope.coroutineContext) {
             prog.show()
             val result = measureViewModel.processWorkflowMove(
-                user_.userId,
+                userDTO.userId,
                 jobId,
                 itemMeasureJob.JiNo,
                 contractVoId,
@@ -340,6 +340,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
     }
 
     private fun popViewOnJobSubmit() {
+        // TODO: Delete data from database after successful upload
         Intent(context?.applicationContext, MainActivity::class.java).also { home ->
             startActivity(home)
         }
@@ -373,8 +374,8 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
     private fun getWorkItems(jobID: String?) {
         Coroutines.main {
             val measurements = measureViewModel.getJobItemsToMeasureForJobId(jobID)
-            measurements.observeOnce(viewLifecycleOwner, { job_s ->
-                initRecyclerView(job_s.toMeasureItem())
+            measurements.observeOnce(viewLifecycleOwner, { estimateList ->
+                initRecyclerView(estimateList.toMeasureItem())
             })
         }
     }
@@ -398,10 +399,10 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
 
     private fun List<JobItemEstimateDTO>.toMeasureItem(): List<ExpandableGroup> {
         expandableGroups = mutableListOf()
-        return this.map { measure_item ->
+        return this.map { jobItemEstimateDTO ->
             val expandableHeaderItem = ExpandableHeaderMeasureItem(
                 activity,
-                measure_item,
+                jobItemEstimateDTO,
                 measureViewModel,
                 jobItemMeasurePhotoDTO,
                 jobItemMeasureArrayList,
@@ -419,7 +420,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
             ExpandableGroup(expandableHeaderItem, true).apply {
                 expandableGroups.add(this)
                 Coroutines.main {
-                    val jobForJobItemEstimate = measureViewModel.getJobFromJobId(measure_item.jobId)
+                    val jobForJobItemEstimate = measureViewModel.getJobFromJobId(jobItemEstimateDTO.jobId)
                     jobForJobItemEstimate.observeOnce(
                         requireActivity(),
                         { job ->
@@ -429,11 +430,11 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                                 val jobItemMeasure =
                                     measureViewModel.getJobItemMeasuresForJobIdAndEstimateId2(
                                         job.JobId,
-                                        measure_item.estimateId
+                                        jobItemEstimateDTO.estimateId
                                     )
-                                jobItemMeasure.observeOnce(requireActivity(), { m_sures ->
+                                jobItemMeasure.observeOnce(requireActivity(), { measureList ->
                                     Coroutines.main {
-                                        for (jobItemM in m_sures) {
+                                        for (jobItemM in measureList) {
                                             Coroutines.main {
                                                 val itemMeasureId = jobItemM.itemMeasureId!!
                                                 val qty = jobItemM.qty.toString()
@@ -455,7 +456,8 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                                     }
                                 })
                             }
-                        })
+                        }
+                    )
                 }
             }
         }

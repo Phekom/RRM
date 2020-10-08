@@ -1,5 +1,3 @@
-@file:Suppress("RemoveExplicitTypeArguments")
-
 package za.co.xisystems.itis_rrm.ui.mainview.estmeasure
 
 import android.app.ProgressDialog
@@ -21,7 +19,6 @@ import kotlinx.android.synthetic.main.fragment_estmeasure.estimations_to_be_meas
 import kotlinx.android.synthetic.main.fragment_estmeasure.group5_loading
 import kotlinx.android.synthetic.main.fragment_estmeasure.no_data_layout
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
@@ -29,14 +26,13 @@ import org.kodein.di.generic.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
-import za.co.xisystems.itis_rrm.custom.errors.ErrorHandler
-import za.co.xisystems.itis_rrm.custom.results.XIError
-import za.co.xisystems.itis_rrm.custom.results.isConnectivityException
-import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
+import za.co.xisystems.itis_rrm.custom.errors.NoConnectivityException
+import za.co.xisystems.itis_rrm.custom.errors.NoInternetException
+import za.co.xisystems.itis_rrm.custom.errors.ServiceException
+import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.estimate_measure_item.EstimateMeasureItem
-import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
 
@@ -44,9 +40,7 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
 
     override val kodein by kodein()
     private lateinit var measureViewModel: MeasureViewModel
-    private val factory: MeasureViewModelFactory by instance<MeasureViewModelFactory>()
-    private val uiScope = UiLifecycleScope()
-
+    private val factory: MeasureViewModelFactory by instance()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
@@ -91,8 +85,28 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
         }
     }
 
-    private fun retryToDoList() {
-        IndefiniteSnackbar.hide()
+    private suspend fun fetchEstimateMeasures() {
+        val itemEstimateData = measureViewModel.getJobMeasureForActivityId(
+            ActivityIdConstants.ESTIMATE_MEASURE,
+            ActivityIdConstants.MEASURE_PART_COMPLETE
+        )
+
+        itemEstimateData.observeOnce(viewLifecycleOwner, { itemEstimateList ->
+            itemEstimateList?.let {
+                if (it.isEmpty()) {
+                    fetchJobMeasures()
+                } else {
+                    noData.visibility = View.GONE
+                    val jobHeaders = it.distinctBy { item ->
+                        item.jobId
+                    }
+                    Timber.d("Estimate measures detected: ${jobHeaders.size}")
+                    initRecyclerView(jobHeaders.toMeasureListItems())
+                    toast(jobHeaders.size.toString())
+                    group5_loading.visibility = View.GONE
+                }
+            }
+        })
     }
 
     private fun swipeToRefreshInit(dialog: ProgressDialog) {
@@ -110,86 +124,60 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
                 try {
                     withContext(Dispatchers.Main) {
                         val jobs = measureViewModel.offlineUserTaskList.await()
-                        jobs.observe(viewLifecycleOwner, {
-                            it?.let {
-                                uiScope.launch { fetchEstimateMeasures() }
+                        jobs.observeOnce(viewLifecycleOwner, { works ->
+                            if (works.isEmpty()) {
+                                noData.visibility = View.VISIBLE
+                            } else {
+                                noData.visibility = View.GONE
                             }
                         })
                     }
-                } catch (exc: Exception) {
-                    Timber.e(exc, "Failed to fetch user todo list.")
-                    val ex = XIError(exc, exc.message ?: ErrorHandler.UNKNOWN_ERROR)
-                    when (ex.isConnectivityException()) {
-                        true -> {
-                            ErrorHandler.handleError(
-                                view = this@MeasureFragment.requireView(),
-                                throwable = ex,
-                                shouldShowSnackBar = true,
-                                refreshAction = { retryToDoList() }
-                            )
-                        }
-                        else -> {
-                            ErrorHandler.handleError(
-                                view = this@MeasureFragment.requireView(),
-                                throwable = ex,
-                                shouldToast = true
-                            )
-                        }
-                    }
+                } catch (e: ServiceException) {
+                    ToastUtils().toastLong(activity, e.message)
+                    Timber.e(e, "API Exception")
+                } catch (e: NoInternetException) {
+                    ToastUtils().toastLong(activity, e.message)
+                    Timber.e(e, "No Internet Connection")
+                } catch (e: NoConnectivityException) {
+                    ToastUtils().toastLong(activity, e.message)
+                    Timber.e(e, "Service Host Unreachable")
                 } finally {
+                    dialog.dismiss()
                     estimations_swipe_to_refresh.isRefreshing = false
                 }
             }
         }
     }
 
-    private suspend fun fetchEstimateMeasures() {
-        val itemEstimateData = measureViewModel.getJobMeasureForActivityId(
-            ActivityIdConstants.ESTIMATE_MEASURE,
-            ActivityIdConstants.MEASURE_PART_COMPLETE
-        )
-
-        itemEstimateData.observeOnce(viewLifecycleOwner, { estimateList ->
-            if (estimateList.isEmpty()) {
-                fetchJobEstimates()
-            } else {
-                val jobHeaders = estimateList.distinctBy {
-                    it.jobId
-                }
-                noData.visibility = View.GONE
-                initRecyclerView(jobHeaders.toMeasureListItems())
-                toast(estimateList.size.toString())
-                group5_loading.visibility = View.GONE
-            }
-        })
-    }
-
-    private fun fetchJobEstimates() {
+    private fun fetchJobMeasures() {
         Coroutines.main {
             val jobEstimateData = measureViewModel.getJobMeasureForActivityId(
                 ActivityIdConstants.ESTIMATE_MEASURE,
                 ActivityIdConstants.JOB_ESTIMATE
             )
 
-            jobEstimateData.observeOnce(viewLifecycleOwner, { estimateList ->
-                if (estimateList.isEmpty()) {
-                    no_data_layout.visibility = View.VISIBLE
-                } else {
-                    val measureItems = estimateList.distinctBy { it.jobId }
-                    if (measureItems.isNotEmpty()) {
+            jobEstimateData.observeOnce(viewLifecycleOwner, { jos ->
+                jos?.let {
+                    if (jos.isEmpty()) {
+                        no_data_layout.visibility = View.VISIBLE
+                    } else {
                         no_data_layout.visibility = View.GONE
+                        val measureItems = jos.distinctBy {
+                            it.jobId
+                        }
+                        Timber.d("Job measures detected: ${measureItems.size}")
                         initRecyclerView(measureItems.toMeasureListItems())
+                        toast(measureItems.size.toString())
                         group5_loading.visibility = View.GONE
-                        toast("Found ${measureItems.size} jobs")
                     }
                 }
             })
         }
     }
 
-    private fun initRecyclerView(measureListItems: List<EstimateMeasureItem>) {
+    private fun initRecyclerView(measureList: List<EstimateMeasureItem>) {
         val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
-            addAll(measureListItems)
+            update(measureList)
         }
         estimations_to_be_measured_listView.apply {
             layoutManager = LinearLayoutManager(this.context)
@@ -219,8 +207,8 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
     }
 
     private fun List<JobItemEstimateDTO>.toMeasureListItems(): List<EstimateMeasureItem> {
-        return this.map { measure_items ->
-            EstimateMeasureItem(measure_items, measureViewModel)
+        return this.map { estimateDTO ->
+            EstimateMeasureItem(estimateDTO, measureViewModel)
         }
     }
 

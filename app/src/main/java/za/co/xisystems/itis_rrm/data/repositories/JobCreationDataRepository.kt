@@ -11,9 +11,6 @@ import com.google.gson.Gson
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
-import java.io.IOException
-import java.util.ArrayList
-import java.util.Date
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -47,6 +44,9 @@ import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.PhotoUtil.getPhotoPathFromExternalDirectory
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
+import java.io.IOException
+import java.util.ArrayList
+import java.util.Date
 
 /**
  * Created by Francis Mahlava on 2019/11/28.
@@ -302,7 +302,7 @@ class JobCreationDataRepository(
         val messages = jobResponse.errorMessage
 
         return withContext(Dispatchers.IO) {
-            messages
+            messages ?: ""
         }
     }
 

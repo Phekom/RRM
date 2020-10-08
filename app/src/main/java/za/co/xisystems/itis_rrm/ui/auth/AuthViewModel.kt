@@ -115,13 +115,13 @@ class AuthViewModel(
             try {
                 // TODO: Get these metrics for the device
                 val phoneNumber = "12345457"
-                val IMEI = "45678"
+                val imei = "45678"
                 val androidDevice =
                     " " + R.string.android_sdk + Build.VERSION.SDK_INT + R.string.space + Build.BRAND + R.string.space + Build.MODEL + R.string.space + Build.DEVICE + ""
                 repository.upDateUser(
 //                    userId ,
                     phoneNumber,
-                    IMEI,
+                    imei,
                     androidDevice,
                     confirmPin!!
                 )
@@ -154,14 +154,14 @@ class AuthViewModel(
             try {
                 // TODO: Read these metrics from the device.
                 val phoneNumber = "12345457"
-                val IMEI = "45678"
+                val imei = "45678"
                 val androidDevice =
                     " " + R.string.android_sdk + Build.VERSION.SDK_INT + R.string.space + Build.BRAND + R.string.space + Build.MODEL + R.string.space + Build.DEVICE + ""
                 repository.userRegister(
                     username!!,
                     password!!,
                     phoneNumber,
-                    IMEI,
+                    imei,
                     androidDevice
                 )
             } catch (e: AuthException) {

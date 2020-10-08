@@ -15,9 +15,6 @@ import androidx.navigation.Navigation
 import com.xwray.groupie.ExpandableGroup
 import com.xwray.groupie.ExpandableItem
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
-import java.util.ArrayList
-import java.util.Date
-import java.util.HashMap
 import kotlinx.android.synthetic.main.item_header.appListID
 import kotlinx.android.synthetic.main.item_header.icon
 import kotlinx.android.synthetic.main.item_measure_header.headerLin
@@ -33,6 +30,9 @@ import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.estimate_measure_item.Mea
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
+import java.util.ArrayList
+import java.util.Date
+import java.util.HashMap
 
 class ExpandableHeaderMeasureItem(
     activity: FragmentActivity?,
@@ -100,7 +100,6 @@ class ExpandableHeaderMeasureItem(
                         measureItem,
                         job,
                         jobItemMeasurePhotoDTOArrayList,
-                        jobItemMeasureArrayList,
                         view
                     )
             })
@@ -111,7 +110,6 @@ class ExpandableHeaderMeasureItem(
         measureItem: JobItemEstimateDTO,
         jobForJobItemEstimate: JobDTO,
         jobItemMeasurePhotoDTO: ArrayList<JobItemMeasurePhotoDTO>,
-        jobItemMeasureArrayList: ArrayList<JobItemMeasureDTO>,
         view: View
     ) {
 
@@ -203,6 +201,7 @@ class ExpandableHeaderMeasureItem(
                         measureItem,
                         jobItemMeasurePhotoDTO
                     )
+                    jobItemMeasureArrayList.add(jobItemMeasure)
                     captureItemMeasureImages(jobItemMeasure, view)
                 }
             }
@@ -247,8 +246,6 @@ class ExpandableHeaderMeasureItem(
             selectedItemUom = (selectedItemToMeasure?.uom).toString()
         )
 
-        jobItemMeasureArrayList.add(itemMeasure)
-
         return itemMeasure
     }
 
@@ -259,12 +256,6 @@ class ExpandableHeaderMeasureItem(
         when {
             jobItemMeasure != null -> {
                 measureViewModel.setJobItemMeasure(jobItemMeasure)
-                when {
-                    jobItemMeasure.jobItemMeasurePhotos.size > 0 -> {
-                        jobItemMeasure.itemMeasureId?.let { measureViewModel.generateGalleryUI(it) }
-                    }
-                }
-
                 Navigation.findNavController(view)
                     .navigate(R.id.action_submitMeasureFragment_to_captureItemMeasurePhotoFragment)
             }
@@ -291,8 +282,6 @@ private fun setJobItemMeasures(
     Coroutines.main {
         measureViewModel.saveJobItemMeasureItems(jobItemMeasures)
     }
-
-//    this.JobItemMeasures = jobItemMeasures
 }
 
 private fun GroupieViewHolder.getItemId(position: Int): Long {

@@ -6,6 +6,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import za.co.xisystems.itis_rrm.custom.results.XIResult
+import za.co.xisystems.itis_rrm.custom.results.XIStatus
+import za.co.xisystems.itis_rrm.custom.results.XISuccess
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksPhotoDTO
@@ -181,6 +184,23 @@ class WorkViewModel(
     suspend fun getWorkItemsForActID(actId: Int): LiveData<List<JobEstimateWorksDTO>> {
         return withContext(Dispatchers.IO) {
             workDataRepository.getWorkItemsForActID(actId)
+        }
+    }
+
+    val historicalWorks: MutableLiveData<XIResult<JobEstimateWorksDTO>> = MutableLiveData()
+
+    suspend fun populateWorkTab(estimateId: String, actId: Int) {
+        val worksDTO = workDataRepository.getWorkItemsForEstimateIDAndActID(estimateId, actId)
+        if (!worksDTO.worksId.isBlank()) {
+            val worksPhotos = workDataRepository.getEstimateWorksPhotosForWorksId(worksDTO.worksId)
+            if (!worksPhotos.isNullOrEmpty()) {
+                worksDTO.jobEstimateWorksPhotos = worksPhotos as java.util.ArrayList<JobEstimateWorksPhotoDTO>
+                historicalWorks.postValue(XISuccess(worksDTO))
+            } else {
+                historicalWorks.postValue(XIStatus("Photos failed to load"))
+            }
+        } else {
+            historicalWorks.postValue(XIStatus("Works failed to load"))
         }
     }
 }

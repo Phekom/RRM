@@ -38,9 +38,9 @@ import timber.log.Timber
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.LocationFragment
-import za.co.xisystems.itis_rrm.custom.errors.ErrorHandler
 import za.co.xisystems.itis_rrm.custom.errors.NoConnectivityException
 import za.co.xisystems.itis_rrm.custom.errors.NoInternetException
+import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.results.XIError
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.results.XIStatus
@@ -80,9 +80,9 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
 
     override val kodein by kodein()
     private lateinit var workViewModel: WorkViewModel
-    private val factory: WorkViewModelFactory by instance<WorkViewModelFactory>()
+    private val factory: WorkViewModelFactory by instance()
     private lateinit var sharedViewModel: SharedViewModel
-    private val shareFactory: SharedViewModelFactory by instance<SharedViewModelFactory>()
+    private val shareFactory: SharedViewModelFactory by instance()
     private var imageUri: Uri? = null
     private lateinit var workFlowMenuTitles: ArrayList<String>
     private lateinit var groupAdapter: GroupAdapter<GroupieViewHolder>
@@ -146,8 +146,8 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
         uiScope.launch(uiScope.coroutineContext) {
 
             val user = workViewModel.user.await()
-            user.observe(viewLifecycleOwner, { user_ ->
-                useR = user_
+            user.observe(viewLifecycleOwner, { userDTO ->
+                useR = userDTO
             })
 
             workViewModel.workItemJob.observe(viewLifecycleOwner, { estimateJob ->
@@ -226,7 +226,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
         if (ContextCompat.checkSelfPermission(
                 requireActivity().applicationContext,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE
-            ) != PackageManager.PERMISSION_GRANTED
+            ) !== PackageManager.PERMISSION_GRANTED
         ) {
             ActivityCompat.requestPermissions(
                 Activity(),
@@ -262,7 +262,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
         // handle result of job submission
         when (result) {
             is XISuccess -> {
-                ErrorHandler.showMessage(this.requireView(), "Job ${result.data} submitted.")
+                XIErrorHandler.showMessage(this.requireView(), "Job ${result.data} submitted.")
                 popViewOnJobSubmit(WorkflowDirection.NEXT.value)
             }
             is XIError -> {
@@ -277,7 +277,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                         handleJobConnectivityError(result)
                     }
                     else -> {
-                        ErrorHandler.handleError(
+                        XIErrorHandler.handleError(
                             this.requireView(),
                             result,
                             shouldToast = true,
@@ -287,7 +287,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                 }
             }
             is XIStatus -> {
-                ErrorHandler.showMessage(this.requireView(), result.message)
+                XIErrorHandler.showMessage(this.requireView(), result.message)
             }
         }
     }
@@ -295,7 +295,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
     var estimateSize = 0
     var estimateCount = 0
     private fun handleJobConnectivityError(throwable: XIError) {
-        ErrorHandler.handleError(
+        XIErrorHandler.handleError(
             view = this.requireView(),
             shouldShowSnackBar = true,
             throwable = throwable,
@@ -306,7 +306,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
     fun handleWorkSubmission(result: XIResult<String>) {
         when (result) {
             is XISuccess -> {
-                ErrorHandler.showMessage(
+                XIErrorHandler.showMessage(
                     this.requireView(),
                     "Work recorded for Job ${result.data}."
                 )
@@ -323,7 +323,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                         handleWorkConnectivityError(result)
                     }
                     else -> {
-                        ErrorHandler.handleError(
+                        XIErrorHandler.handleError(
                             this.requireView(),
                             result,
                             shouldToast = true,
@@ -336,7 +336,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
     }
 
     private fun handleWorkConnectivityError(throwable: XIError) {
-        ErrorHandler.handleError(
+        XIErrorHandler.handleError(
             view = this.requireView(),
             shouldShowSnackBar = true,
             throwable = throwable,
@@ -357,7 +357,6 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
             }
         })
     }
-
 
     /**
      * Prepare EstimateWorks entry for transport to the backend
@@ -682,10 +681,10 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
     ) = uiScope.launch(uiScope.coroutineContext) {
 
         val user = workViewModel.user.await()
-        user.observe(viewLifecycleOwner, { user_ ->
+        user.observe(viewLifecycleOwner, { userDTO ->
 
             when {
-                user_.userId.isBlank() -> {
+                userDTO.userId.isBlank() -> {
                     toast("Error: userId is null")
                 }
                 jobItEstimate?.jobId == null -> {
@@ -706,7 +705,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                     uiScope.launch(uiScope.coroutineContext) {
                         workViewModel.workflowResponse.observe(viewLifecycleOwner, workObserver)
                         val submit = workViewModel.processWorkflowMove(
-                            user_.userId,
+                            userDTO.userId,
                             trackRouteId,
                             null,
                             direction
@@ -755,7 +754,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
     private fun List<JobEstimateWorksDTO>.toWorkStateItems(): List<WorkStateItem> {
 
         return this.map { approveJobItems ->
-            WorkStateItem(approveJobItems, activity, groupAdapter, jobWorkStep)
+            WorkStateItem(approveJobItems, activity, groupAdapter, jobWorkStep, workViewModel)
         }
     }
 

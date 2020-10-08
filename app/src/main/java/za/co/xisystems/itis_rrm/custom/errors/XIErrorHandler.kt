@@ -16,7 +16,7 @@ import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 /**
  * Singleton error handler for RRM
  */
-object ErrorHandler {
+object XIErrorHandler {
     private const val NO_INTERNET_RESPONSE =
         "Make sure you have an active data / wifi connection"
     private const val NO_CONNECTIVITY_RESPONSE =
@@ -61,6 +61,10 @@ object ErrorHandler {
 
     private fun showSnackBar(view: View, message: String, refresh: () -> Unit = {}) {
         IndefiniteSnackbar.show(view, message, refresh)
+    }
+
+    fun showMessage(view: View, message: String) {
+        showLongToast(view.context, message)
     }
 
     private fun showLongToast(context: Context, message: String) = Toast.makeText(

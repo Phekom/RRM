@@ -23,7 +23,6 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.SearchView
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
@@ -128,18 +127,18 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             navigationView.menu.findItem(R.id.nav_estMeasure).actionView as TextView
         progressBar = findViewById(R.id.progressbar)
 
-        sharedViewModel.longRunning.observe(this, Observer {
+        sharedViewModel.longRunning.observe(this, {
             when (it) {
                 true -> this.startLongRunningTask()
                 false -> this.endLongRunningTask()
             }
         })
 
-        sharedViewModel.message.observe(this, Observer {
+        sharedViewModel.message.observe(this, {
             toastMessage(it.toString())
         })
 
-        sharedViewModel.actionCaption.observe(this@MainActivity, Observer {
+        sharedViewModel.actionCaption.observe(this@MainActivity, {
             setCaption(it)
         })
     }
@@ -161,7 +160,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         if (!gpsEnabled && !networkEnabled) { // notify user
 
-            val builder = AlertDialog.Builder(activity)
+            val builder: AlertDialog.Builder = AlertDialog.Builder(activity)
             val action = Settings.ACTION_LOCATION_SOURCE_SETTINGS
             val message = ("Your GPS seems to be disabled, Please enable it to continue")
             builder.setMessage(message)
@@ -311,36 +310,33 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     // Control Menu drawer View Access Based on who is logged in
     private fun getUserRoles() {
         Coroutines.main {
-            // Initially disable all menu options
-            val menuNav = navigationView.menu
-
-            val navCreate = menuNav.findItem(R.id.nav_create)
-            navCreate.isEnabled = false
-
-            val navUnsubmitted = menuNav.findItem(R.id.nav_unSubmitted)
-            navUnsubmitted.isEnabled = false
-
-            // NB: Corrections are for phase 2
-
-            val navWork = menuNav.findItem(R.id.nav_work)
-            navWork.isEnabled = false
-
-            val navApproveJobs = menuNav.findItem(R.id.nav_approveJbs)
-            navApproveJobs.isEnabled = false
-
-            val navEstMeasures = menuNav.findItem(R.id.nav_estMeasure)
-            navEstMeasures.isEnabled = false
-
-            val navApproveMeasures = menuNav.findItem(R.id.nav_approvMeasure)
-            navApproveMeasures.isEnabled = false
-
             val userRoles = mainActivityViewModel.getRoles()
-            userRoles.observe(this, Observer { roleList ->
+            userRoles.observe(this, { roleList ->
+                val menuNav = navigationView.menu
+
+                val navCreate = menuNav.findItem(R.id.nav_create)
+                navCreate.isEnabled = false
+
+                val navUnsubmitted = menuNav.findItem(R.id.nav_unSubmitted)
+                navUnsubmitted.isEnabled = false
+
+                // NB: Corrections are for phase 2
+
+                val navWork = menuNav.findItem(R.id.nav_work)
+                navWork.isEnabled = false
+
+                val navApproveJobs = menuNav.findItem(R.id.nav_approveJbs)
+                navApproveJobs.isEnabled = false
+
+                val navEstMeasures = menuNav.findItem(R.id.nav_estMeasure)
+                navEstMeasures.isEnabled = false
+
+                val navApproveMeasures = menuNav.findItem(R.id.nav_approvMeasure)
+                navApproveMeasures.isEnabled = false
 
                 for (role in roleList) {
                     val roleID = role.roleDescription
-                    // Only enable what is needed for each role description.
-                    // Users with multiple roles get 'best permissions'
+
                     when {
                         roleID.equals(PROJECT_USER_ROLE_IDENTIFIER, ignoreCase = true) -> {
                             navCreate.isEnabled = true
@@ -385,10 +381,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         // Estimates are completed needs to be submitted currently saved in the local DB
 
         Coroutines.main {
-
             mainActivityViewModel.getJobsForActivityId(
                 ActivityIdConstants.JOB_ESTIMATE
-            ).observe(this, Observer { newJobData ->
+            ).observe(this, { newJobData ->
                 val tasks = newJobData.distinctBy { job -> job.JiNo }.count()
                 writeBadge(badgeUnSubmitted, tasks)
             })
@@ -399,7 +394,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             mainActivityViewModel.getJobsForActivityId2(
                 ActivityIdConstants.JOB_APPROVED,
                 ActivityIdConstants.ESTIMATE_INCOMPLETE
-            ).observe(this, Observer { workList ->
+            ).observe(this, { workList ->
                 val tasks = workList.distinctBy { job -> job.JobId }.count()
                 writeBadge(badgeWork, tasks)
             })
@@ -408,7 +403,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 ActivityIdConstants.ESTIMATE_MEASURE,
                 ActivityIdConstants.JOB_ESTIMATE,
                 ActivityIdConstants.MEASURE_PART_COMPLETE
-            ).observe(this, Observer { measurementJobs ->
+            ).observe(this, { measurementJobs ->
                 val tasks = measurementJobs.distinctBy { job -> job.jobId }.count()
                 writeBadge(badgeEstMeasure, tasks)
             })
@@ -416,7 +411,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
             mainActivityViewModel.getJobsForActivityId(
                 ActivityIdConstants.JOB_APPROVE
-            ).observe(this, androidx.lifecycle.Observer { jobApprovalData ->
+            ).observe(this, { jobApprovalData ->
                 val tasks = jobApprovalData.count()
                 writeBadge(badgeApproveJobs, tasks)
             })
@@ -424,7 +419,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             // Measurements are completed needs approval for payment
             mainActivityViewModel.getJobApproveMeasureForActivityId(
                 ActivityIdConstants.MEASURE_COMPLETE
-            ).observe(this, Observer {
+            ).observe(this, {
                 val tasks = it.distinctBy { job -> job.jobId }.count()
                 writeBadge(badgeApprovMeasure, tasks)
             })

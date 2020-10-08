@@ -5,7 +5,11 @@ import java.io.IOException
 /**
  * Created by Francis Mahlava on 2019/10/18.
  */
-class ServiceException(message: String) : IOException(message)
+
+/**
+ * An errorMessage from the mobile services fires this exception
+ */
+class ServiceException(message: String) : Exception(message)
 
 /**
  * No Internet connection fires this exception.
@@ -20,11 +24,22 @@ class NoInternetException(message: String) : IOException(message)
 class NoConnectivityException(message: String) : IOException(message)
 
 /**
- *
+ * Returning an empty result set fires this error
  * @constructor
  */
 class NoDataException(message: String) : NullPointerException(message)
+
+/**
+ * Incorrect credentials / pin entries fire this exception
+ */
 class AuthException(message: String) : SecurityException(message)
+
+/**
+ * Returning an empty response fires this error
+ */
 class NoResponseException(message: String) : Exception(message)
-class DataException(message: String) : Exception(message)
+
+/**
+ * Being unable to contact the mobile services platform fires this error
+ */
 class ServiceHostUnreachableException(message: String) : IOException(message)

@@ -42,7 +42,7 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
 
     override val kodein by kodein()
     private lateinit var workViewModel: WorkViewModel
-    private val factory: WorkViewModelFactory by instance<WorkViewModelFactory>()
+    private val factory: WorkViewModelFactory by instance()
     private var uiScope = UiLifecycleScope()
     private var dialog: ProgressDialog? = null
 
@@ -217,16 +217,16 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
     private suspend fun List<JobDTO>.toWorkListItems(): List<ExpandableGroup> {
         // Initialize Expandable group with expandable item and specify whether it should be expanded by default or not
 
-        return this.map { work_items ->
+        return this.map { jobDTO ->
 
             val expandableHeaderItem =
-                ExpandableHeaderWorkItem(activity, work_items, workViewModel)
+                ExpandableHeaderWorkItem(activity, jobDTO, workViewModel)
             ExpandableGroup(expandableHeaderItem, false).apply {
 
                 // ESTIMATE_WORK_PART_COMPLETE
 
                 val estimates = workViewModel.getJobEstimationItemsForJobId(
-                    work_items.JobId,
+                    jobDTO.JobId,
                     ActivityIdConstants.ESTIMATE_INCOMPLETE
                 )
                 estimates.observe(viewLifecycleOwner, { estimateItems ->
@@ -247,7 +247,7 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
                                     CardItem(
                                         activity, desc, qty,
                                         rate,
-                                        estimateId, workViewModel, item, work_items
+                                        estimateId, workViewModel, item, jobDTO
                                     )
                                 )
                             } catch (exception: Exception) {

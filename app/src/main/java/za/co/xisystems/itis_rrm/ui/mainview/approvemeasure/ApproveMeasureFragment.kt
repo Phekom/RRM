@@ -1,3 +1,8 @@
+@file:Suppress(
+    "RemoveExplicitTypeArguments", "RemoveExplicitTypeArguments", "RemoveExplicitTypeArguments", "RemoveExplicitTypeArguments", "RemoveExplicitTypeArguments", "RemoveExplicitTypeArguments", "RemoveExplicitTypeArguments", "RemoveExplicitTypeArguments", "RemoveExplicitTypeArguments",
+    "RemoveExplicitTypeArguments", "RemoveExplicitTypeArguments", "RemoveExplicitTypeArguments", "RemoveExplicitTypeArguments", "RemoveExplicitTypeArguments"
+)
+
 package za.co.xisystems.itis_rrm.ui.mainview.approvemeasure
 
 import android.app.ProgressDialog
@@ -181,8 +186,8 @@ class ApproveMeasureFragment : BaseFragment(R.layout.fragment_approvemeasure), K
     }
 
     private fun List<JobItemMeasureDTO>.toApproveListItems(): List<ApproveMeasureItem> {
-        return this.map { approvej_items ->
-            ApproveMeasureItem(approvej_items, approveViewModel)
+        return this.map { approvejItems ->
+            ApproveMeasureItem(approvejItems, approveViewModel)
         }
     }
 }

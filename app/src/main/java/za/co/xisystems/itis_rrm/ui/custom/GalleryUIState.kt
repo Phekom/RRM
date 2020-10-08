@@ -9,10 +9,10 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
  * Copyright (c) 2020 XI Systems. All rights reserved.
  **/
 data class GalleryUIState(
-    var description: String?,
-    var qty: Double,
-    var lineRate: Double,
-    var lineAmount: Double = 0.0,
-    var photoPairs: List<Pair<Uri, Bitmap?>>,
-    var measureItem: JobItemMeasureDTO
+    val description: String?,
+    val qty: Double,
+    val lineRate: Double,
+    val lineAmount: Double = 0.0,
+    val photoPairs: List<Pair<Uri, Bitmap?>>,
+    val jobItemMeasureDTO: JobItemMeasureDTO? = null
 )

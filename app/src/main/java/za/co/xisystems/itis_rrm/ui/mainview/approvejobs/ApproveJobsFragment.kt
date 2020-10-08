@@ -1,3 +1,8 @@
+@file:Suppress(
+    "RemoveExplicitTypeArguments", "RemoveExplicitTypeArguments", "RemoveExplicitTypeArguments", "RemoveExplicitTypeArguments", "RemoveExplicitTypeArguments", "RemoveExplicitTypeArguments", "RemoveExplicitTypeArguments", "RemoveExplicitTypeArguments", "RemoveExplicitTypeArguments",
+    "RemoveExplicitTypeArguments", "RemoveExplicitTypeArguments", "RemoveExplicitTypeArguments", "RemoveExplicitTypeArguments"
+)
+
 package za.co.xisystems.itis_rrm.ui.mainview.approvejobs
 
 import android.app.Dialog
@@ -7,7 +12,6 @@ import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
 import android.view.View.GONE
-import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
@@ -71,29 +75,31 @@ class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAw
                 requireActivity(),
                 getString(R.string.data_loading_please_wait)
             )
-            val jobsForApproval = approveViewModel.getJobsForActivityId(ActivityIdConstants.JOB_APPROVE)
-            jobsForApproval.observe(viewLifecycleOwner, { jobList ->
-                jobList?.let {
-                    val jItems = jobList.distinctBy {
-                        it.JobId
-                    }
 
-                    if (jItems.isEmpty()) {
-                        noData.visibility = VISIBLE
-                    } else {
-                        noData.visibility = GONE
-                        toast(jItems.size.toString())
-                        initRecyclerView(jItems.toApproveListItems())
-                    }
-                    group3_loading.visibility = GONE
-                }
-            })
+            fetchLocalJobs()
 
-            initSwipeToRefresh()
+            swipeToRefreshInit()
         }
     }
 
-    private fun initSwipeToRefresh() {
+    private suspend fun fetchLocalJobs() {
+        val jobs = approveViewModel.getJobsForActivityId(ActivityIdConstants.JOB_APPROVE)
+        jobs.observe(viewLifecycleOwner, { jobList ->
+            val jItems = jobList.distinctBy {
+                it.JobId
+            }
+            noData.visibility = GONE
+            if (jobList.isEmpty()) {
+                noData.visibility = View.VISIBLE
+            } else {
+                toast(jobList.size.toString())
+                initRecyclerView(jItems.toApproveListItems())
+            }
+            group3_loading.visibility = GONE
+        })
+    }
+
+    private fun swipeToRefreshInit() {
         jobs_swipe_to_refresh.setProgressBackgroundColorSchemeColor(
             ContextCompat.getColor(
                 requireContext().applicationContext,

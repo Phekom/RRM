@@ -43,8 +43,10 @@ class ApproveMeasureViewModel(
         measureApprovalDataRepository.getUser()
     }
 
-    val measureapproval_Item = MutableLiveData<ApproveMeasureItem>()
+    val measureApprovalItem = MutableLiveData<ApproveMeasureItem>()
+
     var galleryUIState: MutableLiveData<XIResult<GalleryUIState>> = MutableLiveData()
+
     val job = SupervisorJob()
 
     var galleryMeasure: MutableLiveData<JobItemMeasureDTO> = MutableLiveData()
@@ -58,7 +60,7 @@ class ApproveMeasureViewModel(
     }
 
     fun setApproveMeasureItem(measureapproval: ApproveMeasureItem) {
-        measureapproval_Item.postValue(measureapproval)
+        measureApprovalItem.postValue(measureapproval)
     }
 
     suspend fun getJobApproveMeasureForActivityId(activityId: Int): LiveData<List<JobItemMeasureDTO>> {
@@ -157,11 +159,11 @@ class ApproveMeasureViewModel(
     }
 
     suspend fun upDateMeasure(
-        new_quantity: String,
+        editQuantity: String,
         itemMeasureId: String?
     ): String {
         return withContext(Dispatchers.IO) {
-            measureApprovalDataRepository.upDateMeasure(new_quantity, itemMeasureId!!)
+            measureApprovalDataRepository.upDateMeasure(editQuantity, itemMeasureId!!)
         }
     }
 
@@ -227,18 +229,23 @@ class ApproveMeasureViewModel(
                     qty = measureItem.qty,
                     lineRate = measureItem.lineRate,
                     photoPairs = bitmaps,
-                    measureItem = measureItem
-                )
+                    lineAmount = measureItem.qty * measureItem.lineRate,
+                    jobItemMeasureDTO = measureItem
 
-                uiState.lineAmount = uiState.qty * uiState.lineRate
+                )
 
                 galleryUIState.postValue(XISuccess(uiState))
             } catch (e: Exception) {
+
                 Timber.e(e, galleryError)
                 val galleryFail = XIError(e, galleryError)
                 galleryUIState.postValue(galleryFail)
             }
         }
+
+    companion object {
+        const val galleryError = "Failed to retrieve itemMeasure for Gallery"
+    }
 
     suspend fun getJobItemMeasureByItemMeasureId(itemMeasureId: String): LiveData<JobItemMeasureDTO> {
         return withContext(Dispatchers.IO) {
@@ -249,9 +256,5 @@ class ApproveMeasureViewModel(
     override fun onCleared() {
         super.onCleared()
         job.cancelChildren()
-    }
-
-    companion object {
-        const val galleryError = "Failed to retrieve itemMeasure for Gallery"
     }
 }

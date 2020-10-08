@@ -26,9 +26,10 @@ import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
 
 class UnSubmittedFragment : BaseFragment(R.layout.fragment_unsubmittedjobs), KodeinAware {
+    //
     override val kodein by kodein()
     private lateinit var unsubmittedViewModel: UnSubmittedViewModel
-    private val factory: UnSubmittedViewModelFactory by instance<UnSubmittedViewModelFactory>()
+    private val factory: UnSubmittedViewModelFactory by instance()
     private lateinit var groupAdapter: GroupAdapter<GroupieViewHolder>
 
     companion object {
@@ -60,15 +61,15 @@ class UnSubmittedFragment : BaseFragment(R.layout.fragment_unsubmittedjobs), Kod
                 val measurements =
                     unsubmittedViewModel.getJobsForActivityId(ActivityIdConstants.JOB_ESTIMATE)
 
-                measurements.observe(viewLifecycleOwner, { job_s ->
-                    if (job_s.isEmpty()) {
+                measurements.observe(viewLifecycleOwner, { jobList ->
+                    if (jobList.isEmpty()) {
                         groupAdapter.clear()
                         noData.visibility = View.VISIBLE
                         group12_loading.visibility = View.GONE
                     } else {
                         noData.visibility = View.GONE
-                        initRecyclerView(job_s.toApproveListItems())
-                        toast(job_s.size.toString())
+                        initRecyclerView(jobList.toApproveListItems())
+                        toast(jobList.size.toString())
                         group12_loading.visibility = View.GONE
                     }
                 })

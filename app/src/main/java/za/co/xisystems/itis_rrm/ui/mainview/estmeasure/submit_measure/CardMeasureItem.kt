@@ -78,7 +78,6 @@ open class CardMeasureItem(
 
                 measurements_photo_image.setOnClickListener { view ->
                     uiScope.launch(uiScope.coroutineContext) {
-
                         measureViewModel.generateGalleryUI(itemMeasureId)
                     }
 

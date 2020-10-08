@@ -1,7 +1,8 @@
+@file:Suppress("RemoveExplicitTypeArguments")
+
 package za.co.xisystems.itis_rrm.ui.mainview.create.add_project_item
 
 import android.app.DatePickerDialog
-import android.app.DatePickerDialog.OnDateSetListener
 import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
@@ -10,7 +11,6 @@ import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenCreated
@@ -22,9 +22,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.Section
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
-import java.util.ArrayList
-import java.util.Calendar
-import java.util.Date
 import kotlinx.android.synthetic.main.fragment_add_project_items.*
 import kotlinx.coroutines.launch
 import org.kodein.di.KodeinAware
@@ -48,6 +45,9 @@ import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedViewModelFact
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DateUtil
 import za.co.xisystems.itis_rrm.utils.JobUtils
+import java.util.ArrayList
+import java.util.Calendar
+import java.util.Date
 
 /**
  * Created by Francis Mahlava on 2019/12/29.
@@ -84,14 +84,14 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
             }
 
             whenStarted {
-                createViewModel.newJob.observe(viewLifecycleOwner, Observer { newJ ->
+                createViewModel.newJob.observe(viewLifecycleOwner, { newJ ->
                     job = newJ
                     projectID = newJ.ProjectId
                 })
 
                 unsubmittedViewModel.jobtoEdit_Item.observe(
                     viewLifecycleOwner,
-                    Observer { jobToEdit ->
+                    { jobToEdit ->
                         toast(jobToEdit.Descr)
                         Coroutines.main {
                             projectID = jobToEdit.ProjectId
@@ -114,7 +114,7 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
                                     createViewModel.getAllProjectItems(projectID!!, job!!.JobId)
                                 projectItemData.observe(
                                     viewLifecycleOwner,
-                                    Observer { projectItemList ->
+                                    { projectItemList ->
                                         if (projectItemList.isEmpty()) {
                                             groupAdapter.clear()
                                             totalCostTextView.text = ""
@@ -136,7 +136,7 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
                         }
                     })
 
-                createViewModel.sectionProjectItem.observe(viewLifecycleOwner, Observer { p_Item ->
+                createViewModel.sectionProjectItem.observe(viewLifecycleOwner, { p_Item ->
                     infoTextView.visibility = View.GONE
                     last_lin.visibility = View.VISIBLE
                     totalCostTextView.visibility = View.VISIBLE
@@ -144,7 +144,7 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
                     Coroutines.main {
                         val projectItems =
                             createViewModel.getAllProjectItems(projectID!!, job!!.JobId)
-                        projectItems.observe(viewLifecycleOwner, Observer { pro_Items ->
+                        projectItems.observe(viewLifecycleOwner, { pro_Items ->
                             if (pro_Items.isEmpty()) {
                                 groupAdapter.clear()
                                 totalCostTextView.text = ""
@@ -167,7 +167,7 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
                         })
                         createViewModel.estimateLineRate.observe(
                             viewLifecycleOwner,
-                            Observer { cost ->
+                            { cost ->
                                 calculateTotalCost()
                             })
                     }
@@ -289,7 +289,7 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
         val myClickListener = View.OnClickListener { view ->
             when (view?.id) {
                 R.id.addItemButton -> {
-                    createViewModel.newJob.observe(viewLifecycleOwner, Observer { newJ ->
+                    createViewModel.newJob.observe(viewLifecycleOwner, { newJ ->
 
                         projectID = newJ.ProjectId
                         job = newJ
@@ -409,7 +409,7 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
         dueDateDialog = activity?.let {
             DatePickerDialog(
                 it,
-                OnDateSetListener { view, year, month, dayOfMonth ->
+                { view, year, month, dayOfMonth ->
                     setDueDateTextView(year, month, dayOfMonth)
                     dueDate = Date(year, month, dayOfMonth)
                 }, year, month, day
@@ -429,7 +429,7 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
         startDateDialog = activity?.let {
             DatePickerDialog(
                 it,
-                OnDateSetListener { view, year, month, dayOfMonth ->
+                { view, year, month, dayOfMonth ->
                     setStartDateTextView(year, month, dayOfMonth)
                 }, startYear, startMonth, startDay
             )
@@ -442,10 +442,8 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
         job: JobDTO,
         prog: ProgressDialog
     ) {
-        if (job != null) {
-            val jobTemp = jobDataController.setJobLittleEndianGuids(job)!!
-            saveRrmJob(job.UserId, jobTemp, prog)
-        }
+        val jobTemp = jobDataController.setJobLittleEndianGuids(job)!!
+        saveRrmJob(job.UserId, jobTemp, prog)
     }
 
     private fun saveRrmJob(
@@ -457,7 +455,7 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
             val submit =
                 createViewModel.submitJob(userId, job, requireActivity())
 
-            if (submit != null) {
+            if (!submit.isNullOrBlank()) {
                 prog.dismiss()
                 toast(submit)
             } else {

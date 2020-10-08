@@ -15,20 +15,6 @@ import android.os.Environment
 import androidx.core.content.FileProvider
 import androidx.exifinterface.media.ExifInterface
 import androidx.fragment.app.Fragment
-import java.io.ByteArrayOutputStream
-import java.io.File
-import java.io.FileNotFoundException
-import java.io.FileOutputStream
-import java.io.IOException
-import java.text.DateFormat
-import java.text.SimpleDateFormat
-import java.util.ArrayList
-import java.util.Base64
-import java.util.Date
-import java.util.HashMap
-import java.util.Locale
-import java.util.UUID
-import kotlin.math.roundToLong
 import org.apache.sanselan.ImageReadException
 import org.apache.sanselan.ImageWriteException
 import org.apache.sanselan.Sanselan
@@ -38,8 +24,20 @@ import org.apache.sanselan.formats.jpeg.exifRewrite.ExifRewriter
 import org.apache.sanselan.formats.tiff.write.TiffOutputSet
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.BuildConfig
-import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.FileNotFoundException
+import java.io.FileOutputStream
+import java.io.IOException
+import java.text.DateFormat
+import java.text.SimpleDateFormat
+import java.util.Base64
+import java.util.Date
+import java.util.HashMap
+import java.util.Locale
+import java.util.UUID
+import kotlin.math.roundToLong
 
 object PhotoUtil {
     const val FOLDER = "ITIS_RRM_Photos"
@@ -140,14 +138,24 @@ object PhotoUtil {
         }
     }
 
-    fun cleanupDevice(fileNames: ArrayList<String?>) {
-        for (fileName in fileNames) {
-            val file = File(fileName)
-            if (file.exists()) {
+    fun cleanupDevice() {
+
+        val presentTime: Long = (Date().time)
+        File(
+            Environment.getExternalStorageDirectory().toString() +
+                File.separator + FOLDER
+        ).walkTopDown().forEach { file ->
+            val diff = presentTime - file.lastModified()
+            if (diff >= ninetyDays && file.isFile) {
+                Timber.d("${file.name} was deleted, it was $diff old.")
                 file.delete()
+            } else {
+                Timber.d("${file.name} was spared")
             }
         }
     }
+
+    private const val ninetyDays: Long = 7_776_000_000
 
     fun photoExist(fileName: String): Boolean {
         val image =
@@ -299,27 +307,31 @@ object PhotoUtil {
             val options = BitmapFactory.Options()
             lateinit var result: String
             // if uri is content
-            if (scaledUri.scheme != null && scaledUri.scheme == "content") {
+            if (scaledUri.scheme == "content") {
                 val cursor =
                     context.contentResolver.query(scaledUri, null, null, null, null)
-                try {
-                    if (cursor != null && cursor.moveToFirst()) { // local filesystem
-                        var index = cursor.getColumnIndex("_data")
-                        if (index == -1) // google drive
-                            index = cursor.getColumnIndex("_display_name")
-                        result = cursor.getString(index)
-                        scaledUri = if (result != null) Uri.parse(result) else return null
+
+                cursor?.let {
+                    try {
+                        if (cursor.moveToFirst()) { // local filesystem
+                            var index = cursor.getColumnIndex("_data")
+                            if (index == -1) // google drive
+                                index = cursor.getColumnIndex("_display_name")
+                            result = cursor.getString(index)
+                            scaledUri = if (result != null) Uri.parse(result) else return null
+                        }
+                    } catch (e: Exception) {
+                        Timber.e(e, "Ërror loading photo $scaledUri")
+                    } finally {
+                        cursor.close()
                     }
-                } catch (e: Exception) {
-                    Timber.e(e, "Ërror loading photo $scaledUri")
-                } finally {
-                    cursor?.close()
+
                 }
             }
             result = scaledUri.path ?: ""
             // get filename + ext of path
             val cut = result.lastIndexOf('/')
-            if (cut != null && cut != -1) result = result.substring(cut + 1)
+            if (cut != -1) result = result.substring(cut + 1)
             val imageFileName = result
             val direct =
                 File(Environment.getExternalStorageDirectory().toString() + File.separator + FOLDER)
@@ -346,15 +358,12 @@ object PhotoUtil {
             options.inTempStorage = ByteArray(16 * 1024)
             try { //          load the bitmap from its path
                 bmp = BitmapFactory.decodeFile(path, options)
-            } catch (exception: OutOfMemoryError) {
-                exception.printStackTrace()
-            }
-            try {
                 scaledBitmap =
                     Bitmap.createBitmap(actualWidth, actualHeight, Bitmap.Config.ARGB_8888)
             } catch (exception: OutOfMemoryError) {
                 exception.printStackTrace()
             }
+
             val ratioX = actualWidth / options.outWidth.toFloat()
             val ratioY = actualHeight / options.outHeight.toFloat()
             val middleX = actualWidth / 2.0f
@@ -511,7 +520,7 @@ object PhotoUtil {
             val deleted = imageFile.delete()
             // If there is an error deleting the file, show a Toast
             if (!deleted) {
-                val errorMessage = context.getString(R.string.error)
+                Timber.e("$imagePath was not deleted")
             }
             deleted
         } else {
@@ -583,8 +592,8 @@ object PhotoUtil {
             )
         } catch (e: IOException) {
             e.printStackTrace()
+            return null
         }
-        return null
     }
 
     fun getUriFromPath(filePath: String): Uri? {

@@ -39,10 +39,32 @@ class MeasureViewModel(
 
 ) : AndroidViewModel(application) {
 
-    private var galleryMeasure: MutableLiveData<JobItemMeasureDTO> = MutableLiveData()
+    var galleryMeasure: MutableLiveData<JobItemMeasureDTO> = MutableLiveData()
     var galleryUIState: MutableLiveData<XIResult<GalleryUIState>> = MutableLiveData()
+
     private var job: Job = SupervisorJob()
+
     private var viewModelContext = job + Dispatchers.Main + uncaughtExceptionHandler
+
+    val galleryBackup: MutableLiveData<String> = MutableLiveData()
+
+    val offlineUserTaskList: Deferred<LiveData<List<ToDoListEntityDTO>>> by lazyDeferred {
+        offlineDataRepository.getUserTaskList()
+    }
+    val user: Deferred<LiveData<UserDTO>> by lazyDeferred {
+        measureCreationDataRepository.getUser()
+    }
+
+    val measureJob: MutableLiveData<JobDTO> = MutableLiveData()
+    val jobItemMeasure: MutableLiveData<JobItemMeasureDTO> = MutableLiveData()
+    val measureItemPhotos: MutableLiveData<List<JobItemMeasurePhotoDTO>> = MutableLiveData()
+
+    val estimateMeasureItem: MutableLiveData<EstimateMeasureItem> = MutableLiveData()
+
+    val workflowMoveResponse: MutableLiveData<XIResult<String>> =
+        measureCreationDataRepository.workflowStatus
+
+    val backupJobId: MutableLiveData<String> = MutableLiveData()
 
     init {
         viewModelScope.launch(viewModelContext) {
@@ -53,16 +75,13 @@ class MeasureViewModel(
                         generateGallery(it)
                     }
                 }
-
-                toDoListStatus.observeForever {
-                    toDoListResult.postValue(it)
-
-                }
             }
         }
     }
 
-    val galleryBackup: MutableLiveData<String> = MutableLiveData()
+    fun setGalleryMeasure(value: JobItemMeasureDTO) {
+        galleryMeasure.postValue(value)
+    }
 
     private suspend fun generateGallery(measureItem: JobItemMeasureDTO) {
         try {
@@ -72,7 +91,7 @@ class MeasureViewModel(
                     getDescForProjectId(it)
                 }
 
-            val photoQuality = when (measureItem.jobItemMeasurePhotos.count()) {
+            val photoQuality = when (measureItem.jobItemMeasurePhotos.size) {
                 in 1..4 -> PhotoQuality.HIGH
                 in 5..16 -> PhotoQuality.MEDIUM
                 else -> PhotoQuality.THUMB
@@ -84,10 +103,10 @@ class MeasureViewModel(
                     val uri = photo.filename?.let { fileName ->
                         PhotoUtil.getPhotoPathFromExternalDirectory(fileName)
                     }
-                    val bitmap = uri?.let { it ->
+                    val bitmap = uri?.let { qualifiedUri ->
                         PhotoUtil.getPhotoBitMapFromFile(
                             this@MeasureViewModel.getApplication(),
-                            it,
+                            qualifiedUri,
                             photoQuality
                         )
                     }
@@ -103,45 +122,31 @@ class MeasureViewModel(
                 qty = measureItem.qty,
                 lineRate = measureItem.lineRate,
                 photoPairs = bitmaps,
-                measureItem = measureItem
+                lineAmount = measureItem.qty * measureItem.lineRate,
+                jobItemMeasureDTO = measureItem
             )
-
-            uiState.lineAmount = uiState.qty * uiState.lineRate
 
             galleryUIState.postValue(XISuccess(uiState))
         } catch (e: Exception) {
-            Timber.e(e, galleryErrorMsg)
-            val galleryFail = XIError(e, galleryErrorMsg)
+            Timber.e(e, galleryError)
+            val galleryFail = XIError(e, galleryError)
             galleryUIState.postValue(galleryFail)
         }
     }
 
-    private suspend fun getDescForProjectId(projectItemId: String): String {
+    suspend fun getDescForProjectId(projectItemId: String): String {
         return withContext(Dispatchers.IO) {
             measureCreationDataRepository.getProjectItemDescription(projectItemId)
         }
     }
 
-    val offlineUserTaskList: Deferred<LiveData<List<ToDoListEntityDTO>>> by lazyDeferred {
-        offlineDataRepository.getUserTaskList()
-    }
-
-    val user: Deferred<LiveData<UserDTO>> by lazyDeferred {
-        measureCreationDataRepository.getUser()
-    }
-
-    private val measureJob: MutableLiveData<JobDTO> = MutableLiveData<JobDTO>()
     fun setMeasureJob(value: JobDTO) {
         measureJob.postValue(value)
     }
 
-    val jobItemMeasure = MutableLiveData<JobItemMeasureDTO>()
-    fun setJobItemMeasure(measureItem: JobItemMeasureDTO) {
-        jobItemMeasure.postValue(measureItem)
+    fun setJobItemMeasure(measurea1: JobItemMeasureDTO) {
+        jobItemMeasure.postValue(measurea1)
     }
-
-    private val measureItemPhotos: MutableLiveData<List<JobItemMeasurePhotoDTO>> =
-        MutableLiveData<List<JobItemMeasurePhotoDTO>>()
 
     fun setMeasureItemPhotos(measurePhotoList: List<JobItemMeasurePhotoDTO>) {
         measureItemPhotos.postValue(measurePhotoList)
@@ -153,11 +158,8 @@ class MeasureViewModel(
         }
     }
 
-    val estimateMeasureItem: MutableLiveData<EstimateMeasureItem> =
-        MutableLiveData<EstimateMeasureItem>()
-
-    fun setMeasureItem(measureItem: EstimateMeasureItem) {
-        estimateMeasureItem.postValue(measureItem)
+    fun setMeasureItem(measurea: EstimateMeasureItem) {
+        estimateMeasureItem.postValue(measurea)
     }
 
     suspend fun getJobMeasureForActivityId(
@@ -187,11 +189,7 @@ class MeasureViewModel(
         }
     }
 
-    suspend fun getItemDescription(jobId: String): String {
-        return withContext(Dispatchers.IO) {
-            measureCreationDataRepository.getItemDescription(jobId)
-        }
-    }
+    suspend fun getItemDescription(jobId: String): String = measureCreationDataRepository.getItemDescription(jobId)
 
     suspend fun getDescForProjectItemId(projectItemId: String): String {
         return withContext(Dispatchers.IO) {
@@ -199,11 +197,7 @@ class MeasureViewModel(
         }
     }
 
-    suspend fun getItemJobNo(jobId: String): String {
-        return withContext(Dispatchers.IO) {
-            measureCreationDataRepository.getItemJobNo(jobId)
-        }
-    }
+    suspend fun getItemJobNo(jobId: String): String = measureCreationDataRepository.getItemJobNo(jobId)
 
     suspend fun getJobMeasureItemsPhotoPath(itemMeasureId: String): List<String> {
         return withContext(Dispatchers.IO) {
@@ -211,16 +205,13 @@ class MeasureViewModel(
         }
     }
 
-    fun deleteItemMeasureFromList(itemMeasureId: String) {
+    fun deleteItemMeasurefromList(itemMeasureId: String) {
         measureCreationDataRepository.deleteItemMeasurefromList(itemMeasureId)
     }
 
-    fun deleteItemMeasurePhotofromList(itemMeasureId: String) {
+    fun deleteItemMeasurephotofromList(itemMeasureId: String) {
         measureCreationDataRepository.deleteItemMeasurephotofromList(itemMeasureId)
     }
-
-    val workflowMoveResponse: MutableLiveData<XIResult<String>> =
-        measureCreationDataRepository.workflowStatus
 
     suspend fun processWorkflowMove(
         userId: String,
@@ -321,8 +312,6 @@ class MeasureViewModel(
         }
     }
 
-    val backupJobId: MutableLiveData<String> = MutableLiveData()
-
     fun setBackupJobId(jobId: String) {
         backupJobId.postValue(jobId)
     }
@@ -331,14 +320,15 @@ class MeasureViewModel(
         viewModelScope.launch(viewModelContext) {
             try {
                 galleryBackup.postValue(itemMeasureId)
-                getJobItemMeasureByItemMeasureId(itemMeasureId).observeForever {
+                val itemMeasureDTO = getJobItemMeasureByItemMeasureId(itemMeasureId)
+                itemMeasureDTO.observeForever {
                     it?.let {
-                        galleryMeasure.postValue(it)
+                        setGalleryMeasure(it)
                     }
                 }
             } catch (e: Exception) {
-                Timber.e(e, galleryErrorMsg)
-                val galleryFail = XIError(e, galleryErrorMsg)
+                Timber.e(e, galleryError)
+                val galleryFail = XIError(e, galleryError)
                 galleryUIState.postValue(galleryFail)
             }
         }
@@ -349,10 +339,7 @@ class MeasureViewModel(
         }
     }
 
-    val toDoListResult: MutableLiveData<XIResult<Boolean>> = MutableLiveData()
-    private val toDoListStatus = measureCreationDataRepository.toDoListStatus
-
     companion object {
-        const val galleryErrorMsg = "Failed to retrieve itemMeasure for Gallery"
+        const val galleryError = "Failed to retrieve itemMeasure for Gallery"
     }
 }

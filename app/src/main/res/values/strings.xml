@@ -477,8 +477,7 @@
     <string name="notificationv_title">Notification tone</string>
     <string name="notification_title">Turn Notification On</string>
     <string name="att_title">Use High Priority notifications</string>
-    <string name="att_summary_on">Switch off notifications previews
-    </string>
+    <string name="att_summary_on">Switch off notifications previews</string>
     <string name="att_summary_off">Show previews of notifications at the top of the screen</string>
 
 
@@ -515,7 +514,7 @@
     <string name="set_pin">Please Set your App Pin</string>
     <string name="set_pin_msg">Enter a Unique Pin That you will Use to unlock RRM</string>
     <string name="please_enter_user_info">Please Enter your User Information that you received with your Registration on ITIS</string>
-    <string name="start_taking_photo">Start Capturing Measurents Photos</string>
+    <string name="start_taking_photo">Start Capturing Measurement Photos</string>
     <string name="capture_measure_photo">Capture Measurements</string>
     <string name="are_you_sure_you_want_to_submit_measurements">Are you Sure you want to submit Measurements</string>
     <string name="action_search">Search</string>
