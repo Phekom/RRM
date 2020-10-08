@@ -2,6 +2,9 @@
 <project version="4">
   <component name="SonarLintProjectSettings">
     <option name="analysisLogsEnabled" value="true" />
+    <option name="bindingEnabled" value="true" />
+    <option name="projectKey" value="RRM_MVVM" />
+    <option name="serverId" value="LocalQube" />
     <option name="verboseEnabled" value="true" />
   </component>
 </project>
