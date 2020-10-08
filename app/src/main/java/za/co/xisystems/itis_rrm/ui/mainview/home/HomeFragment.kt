@@ -226,7 +226,6 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
         Coroutines.main {
             checkConnectivity()
             servicesHealthCheck()
-
         }
     }
 
@@ -234,7 +233,6 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
         super.onResume()
         ping()
     }
-
 
     private fun bigSync() = uiScope.launch(uiScope.coroutineContext) {
         try {

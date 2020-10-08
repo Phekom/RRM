@@ -66,7 +66,6 @@ class WorkStateItem(
                     jobItemWorks?.estimateId?.let {
                         viewModel.populateWorkTab(it, position + 15)
                     }
-
                 }
                 groupAdapter.notifyDataSetChanged()
             }

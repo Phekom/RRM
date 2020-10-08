@@ -325,7 +325,6 @@ object PhotoUtil {
                     } finally {
                         cursor.close()
                     }
-
                 }
             }
             result = scaledUri.path ?: ""

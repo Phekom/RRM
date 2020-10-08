@@ -124,14 +124,11 @@ class CaptureItemMeasurePhotoFragment :
                         toast(it.jimNo)
                         selectedJobItemMeasure = it
                         checkForPhotos(selectedJobItemMeasure)
-
                     }
                 })
 
             measureViewModel.galleryUIState.observe(viewLifecycleOwner, galleryObserver)
         }
-
-
 
         capture_another_photo_button.setOnClickListener {
             launchCamera()
@@ -173,7 +170,6 @@ class CaptureItemMeasurePhotoFragment :
                     } else {
                         jobItemMeasurePhotoArrayList = it as ArrayList<JobItemMeasurePhotoDTO>
                     }
-
                 }
             })
         }
@@ -327,7 +323,6 @@ class CaptureItemMeasurePhotoFragment :
                 estimateId,
                 selectedJobItemMeasure
             )
-
         }
     }
 
