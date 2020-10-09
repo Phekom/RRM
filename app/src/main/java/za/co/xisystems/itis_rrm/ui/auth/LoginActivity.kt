@@ -21,7 +21,7 @@ import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.results.XIError
-import za.co.xisystems.itis_rrm.custom.results.isConnectivityError
+import za.co.xisystems.itis_rrm.custom.results.isConnectivityException
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
@@ -210,7 +210,7 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
             reset()
         } catch (t: Throwable) {
             val xiErr = XIError(t, "Failed to login")
-            if (xiErr.isConnectivityError()) {
+            if (xiErr.isConnectivityException()) {
                 XIErrorHandler.handleError(
                     this.findViewById(R.id.reg_container),
                     xiErr,

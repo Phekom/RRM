@@ -27,7 +27,7 @@ class XIProgress(val isLoading: Boolean) : XIResult<Nothing>()
 
 class XIStatus(val message: String) : XIResult<Nothing>()
 
-fun XIError.isConnectivityError(): Boolean {
+fun XIError.isConnectivityException(): Boolean {
     return when (exception) {
         is IOException -> true
         is NoInternetException -> true

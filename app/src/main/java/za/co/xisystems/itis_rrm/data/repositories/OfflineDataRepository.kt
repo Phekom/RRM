@@ -10,6 +10,7 @@ import androidx.lifecycle.MutableLiveData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import za.co.xisystems.itis_rrm.custom.results.XIProgress
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.results.XIStatus
 import za.co.xisystems.itis_rrm.custom.results.XISuccess
@@ -121,6 +122,7 @@ class OfflineDataRepository(
     }
 
     val bigSyncDone: MutableLiveData<Boolean> = MutableLiveData()
+    val toDoListStatus: MutableLiveData<XIResult<Boolean>> = MutableLiveData()
 
     suspend fun bigSyncCheck() {
         withContext(Dispatchers.IO) {
@@ -318,7 +320,7 @@ class OfflineDataRepository(
                                     sectionItemId
                                 )
                         } catch (e: Exception) {
-                            Timber.e(e, "Exception creating section item $it")
+                            Timber.e(e, "Exception creating section item $itemCode")
                         }
                     }
                 }
@@ -335,10 +337,12 @@ class OfflineDataRepository(
                 contract.projects != null && !contract.contractId.isBlank()
             }
                 .distinctBy { contract -> contract.contractId }
+            contractMax += validContracts.count()
             validContracts.forEach { contract ->
                 if (!appDb.getContractDao().checkIfContractExists(contract.contractId)) {
-                    postStatus("Setting Contract: ${contract.shortDescr ?: contract.descr}")
                     appDb.getContractDao().insertContract(contract)
+                    contractCount++
+                    postStatus("Posting Contract $contractCount of $contractMax")
 
                     val validProjects =
                         contract.projects?.filter { project ->
@@ -375,16 +379,18 @@ class OfflineDataRepository(
     }
 
     private fun updateProjects(
-        validProjects: List<ProjectDTO>,
+        validProjects: List<ProjectDTO>?,
         contract: ContractDTO
     ) {
         Coroutines.api {
-            validProjects.forEach { project ->
+            projectMax += validProjects?.count() ?: 0
+
+            validProjects?.forEach { project ->
                 if (appDb.getProjectDao().checkProjectExists(project.projectId)) {
                     Timber.i("Contract: ${contract.shortDescr} (${contract.contractId}) ProjectId: ${project.descr} (${project.projectId}) -> Duplicated")
                 } else {
                     try {
-                        postStatus("Setting project: ${project.projectCode}")
+
                         appDb.getProjectDao().insertProject(
                             project.projectId,
                             project.descr,
@@ -397,23 +403,32 @@ class OfflineDataRepository(
                             project.voItems,
                             contract.contractId
                         )
+
+                        project.items?.let { items ->
+                            updateProjectItems(items, project)
+                        }
+
+                        project.projectSections?.let { projectSections ->
+                            updateProjectSections(projectSections, project)
+                        }
+
+                        project.voItems?.let { voItems ->
+                            updateVOItems(voItems, project)
+                        }
+
+                        projectCount++
+                        postStatus("Setting project $projectCount of $projectMax")
+
+                        if (contractCount >= contractMax && projectCount >= projectMax) {
+                            databaseStatus.postValue(XIStatus(message = "All projects retrieved."))
+                            databaseStatus.postValue(XISuccess(data = true))
+                            databaseStatus.postValue(XIProgress(false))
+                        }
                     } catch (ex: Exception) {
                         Timber.e(
                             ex,
                             "Contract: ${contract.shortDescr} (${contract.contractId}) ProjectId: ${project.descr} (${project.projectId}) -> ${ex.message}"
                         )
-                    }
-
-                    project.items?.let { items ->
-                        updateProjectItems(items, project)
-                    }
-
-                    project.projectSections?.let { sections ->
-                        updateProjectSections(sections, project)
-                    }
-
-                    project.voItems?.let { voItems ->
-                        updateVOItems(voItems, project)
                     }
                 }
             }
@@ -425,11 +440,9 @@ class OfflineDataRepository(
         project: ProjectDTO
     ) {
         for (item in distinctItems) {
-            if (appDb.getProjectItemDao()
+            if (!appDb.getProjectItemDao()
                     .checkItemExistsItemId(item.itemId)
             ) {
-                continue
-            } else {
                 try {
                     val pattern = Pattern.compile("(.*?)\\.")
                     val matcher = pattern.matcher(item.itemCode!!)
@@ -469,7 +482,7 @@ class OfflineDataRepository(
         projectSections: ArrayList<ProjectSectionDTO>,
         project: ProjectDTO
     ) {
-        for (section in projectSections) { // project.projectSections
+        projectSections.forEach { section ->
             if (!appDb.getProjectSectionDao()
                     .checkSectionExists(section.sectionId)
             )
@@ -493,10 +506,10 @@ class OfflineDataRepository(
     }
 
     private fun updateVOItems(
-        voItems: ArrayList<VoItemDTO>,
+        voItems: ArrayList<VoItemDTO>?,
         project: ProjectDTO
     ) {
-        for (voItem in voItems) { // project.voItems
+        voItems?.forEach { voItem ->
             if (!appDb.getVoItemDao().checkIfVoItemExist(voItem.projectVoId))
                 try {
                     appDb.getVoItemDao().insertVoItem(
@@ -1004,7 +1017,16 @@ class OfflineDataRepository(
         job.postValue(jobResponse.job)
     }
 
+    var contractCount: Int = 0
+    var contractMax: Int = 0
+    var projectCount: Int = 0
+    var projectMax: Int = 0
+
     suspend fun fetchContracts(userId: String): Boolean {
+        contractCount = 0
+        contractMax = 0
+        projectCount = 0
+        projectMax = 0
         return withContext(Dispatchers.Default) {
             postStatus("Fetching Activity Sections")
             val activitySectionsResponse =
@@ -1027,7 +1049,6 @@ class OfflineDataRepository(
             val contractsResponse = apiRequest { api.getAllContractsByUserId(userId) }
             // conTracts.postValue(contractsResponse.contracts)
             saveContracts(contractsResponse.contracts)
-            databaseStatus.postValue(XISuccess(true))
             true
         }
     }
@@ -1205,7 +1226,7 @@ class OfflineDataRepository(
     private fun updateWorkflowEstimateWorks(jobItemEstimate: WorkflowItemEstimateDTO) {
         for (jobEstimateWorks in jobItemEstimate.workflowEstimateWorks) {
             if (!appDb.getEstimateWorkDao().checkIfJobEstimateWorksExist(jobEstimateWorks.worksId)) {
-                TODO("This should never happen.")
+                // This part should be unreachable
             } else {
                 appDb.getEstimateWorkDao().updateJobEstimateWorksWorkflow(
                     jobEstimateWorks.worksId,
@@ -1426,9 +1447,14 @@ class OfflineDataRepository(
         this.estimateId = toBigEndian!!
     }
 
-    suspend fun getServiceHealth(): Boolean {
-        val healthCheck = apiRequest { api.healthCheck("userLogon") }
-        return healthCheck.errorMessage.isNullOrBlank() && healthCheck.isAlive == 1
+    private operator fun <T> LiveData<T>.not(): Boolean {
+        return true
+    }
+
+    suspend fun getServiceHealth(userId: String): Boolean {
+
+        val healthCheck = apiRequest { api.healthCheck(userId) }
+        return healthCheck.errorMessage.isNullOrBlank() || healthCheck.isAlive == 1
     }
 
     suspend fun getProjects(): LiveData<List<ProjectDTO>> {

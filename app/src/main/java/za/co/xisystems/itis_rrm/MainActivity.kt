@@ -43,6 +43,7 @@ import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModelFactory
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
+import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.hideKeyboard
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener,
@@ -70,6 +71,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
+        // finally us mortals get to see coroutines from the inside
         System.setProperty("kotlinx.coroutines.debug", if (BuildConfig.DEBUG) "on" else "off")
 
         super.onCreate(savedInstanceState)
@@ -153,25 +155,29 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
 
         try {
-            networkEnabled = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+            networkEnabled = ServiceUtil.isNetworkConnected(applicationContext)
         } catch (e: Exception) {
             e.printStackTrace()
         }
 
-        if (!gpsEnabled && !networkEnabled) { // notify user
+        if (!gpsEnabled) { // notify user
 
-            val builder: AlertDialog.Builder = AlertDialog.Builder(activity)
-            val action = Settings.ACTION_LOCATION_SOURCE_SETTINGS
-            val message = ("Your GPS seems to be disabled, Please enable it to continue")
-            builder.setMessage(message)
-                .setPositiveButton(
-                    "OK"
-                ) { d, _ ->
-                    activity.startActivity(Intent(action))
-                    d.dismiss()
-                }
-            builder.create().show()
+            promptGpsActivation(activity)
         }
+    }
+
+    private fun promptGpsActivation(activity: Activity) {
+        val builder = AlertDialog.Builder(this)
+        val action = Settings.ACTION_LOCATION_SOURCE_SETTINGS
+        val message = ("Your GPS seems to be disabled, Please enable it to continue")
+        builder.setMessage(message)
+            .setPositiveButton(
+                "OK"
+            ) { d, _ ->
+                activity.startActivity(Intent(action))
+                d.dismiss()
+            }
+        builder.create().show()
     }
 
     override fun onBackPressed() {
@@ -310,33 +316,36 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     // Control Menu drawer View Access Based on who is logged in
     private fun getUserRoles() {
         Coroutines.main {
-            val userRoles = mainActivityViewModel.getRoles()
-            userRoles.observe(this, { roleList ->
+            // Initially disable all menu options
                 val menuNav = navigationView.menu
 
                 val navCreate = menuNav.findItem(R.id.nav_create)
-                navCreate.isEnabled = false
+            navCreate.isEnabled = false
 
-                val navUnsubmitted = menuNav.findItem(R.id.nav_unSubmitted)
-                navUnsubmitted.isEnabled = false
+            val navUnsubmitted = menuNav.findItem(R.id.nav_unSubmitted)
+            navUnsubmitted.isEnabled = false
 
-                // NB: Corrections are for phase 2
+            // NB: Corrections are for phase 2
 
-                val navWork = menuNav.findItem(R.id.nav_work)
-                navWork.isEnabled = false
+            val navWork = menuNav.findItem(R.id.nav_work)
+            navWork.isEnabled = false
 
-                val navApproveJobs = menuNav.findItem(R.id.nav_approveJbs)
-                navApproveJobs.isEnabled = false
+            val navApproveJobs = menuNav.findItem(R.id.nav_approveJbs)
+            navApproveJobs.isEnabled = false
 
-                val navEstMeasures = menuNav.findItem(R.id.nav_estMeasure)
-                navEstMeasures.isEnabled = false
+            val navEstMeasures = menuNav.findItem(R.id.nav_estMeasure)
+            navEstMeasures.isEnabled = false
 
-                val navApproveMeasures = menuNav.findItem(R.id.nav_approvMeasure)
-                navApproveMeasures.isEnabled = false
+            val navApproveMeasures = menuNav.findItem(R.id.nav_approvMeasure)
+            navApproveMeasures.isEnabled = false
+
+            val userRoles = mainActivityViewModel.getRoles()
+            userRoles.observe(this, { roleList ->
 
                 for (role in roleList) {
                     val roleID = role.roleDescription
-
+                    // Only enable what is needed for each role description.
+                    // Users with multiple roles get 'best permissions'
                     when {
                         roleID.equals(PROJECT_USER_ROLE_IDENTIFIER, ignoreCase = true) -> {
                             navCreate.isEnabled = true
@@ -443,7 +452,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onResume() {
         super.onResume()
         if (this.delegate.localNightMode == AppCompatDelegate.MODE_NIGHT_YES) {
-            // TODO: Restore the theme? Implement dark material theme
+            // Restore the theme? Implement dark material theme
             // HOME.equals(true)
             // initializeCountDrawer()
             // refreshData()
