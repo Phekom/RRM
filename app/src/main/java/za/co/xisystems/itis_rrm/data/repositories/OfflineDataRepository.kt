@@ -1095,7 +1095,7 @@ class OfflineDataRepository(
         return 3
     }
 
-    suspend fun refreshContractInfo(userId: String): Int {
+    suspend fun getAllContractsByUserId(userId: String): Int {
         val contractsResponse = apiRequest { api.getAllContractsByUserId(userId) }
         conTracts.postValue(contractsResponse.contracts)
         return 4
@@ -1111,7 +1111,7 @@ class OfflineDataRepository(
                 entitiesFetched = true
             }
             postStatus("Refreshing Contracts")
-            refreshContractInfo(userId)
+            getAllContractsByUserId(userId)
 
             postStatus("Refreshing Activity Sessions")
             refreshActivitySections(userId)
@@ -1287,35 +1287,31 @@ class OfflineDataRepository(
         job.jobId = DataConversion.toBigEndian(job.jobId)
         job.trackRouteId = DataConversion.toBigEndian(job.trackRouteId)
 
-        if (job.workflowItemEstimates != null) {
-            for (jie in job.workflowItemEstimates) {
+        job.workflowItemEstimates?.forEach { jie ->
 
-                jie.estimateId = DataConversion.toBigEndian(jie.estimateId)!!
-                jie.trackRouteId = DataConversion.toBigEndian(jie.trackRouteId)!!
-                //  Let's go through the WorkFlowEstimateWorks
-                for (wfe in jie.workflowEstimateWorks) {
-                    wfe.trackRouteId = DataConversion.toBigEndian(wfe.trackRouteId)!!
-                    wfe.worksId = DataConversion.toBigEndian(wfe.worksId)!!
+            jie.estimateId = DataConversion.toBigEndian(jie.estimateId)!!
+            jie.trackRouteId = DataConversion.toBigEndian(jie.trackRouteId)!!
+            //  Let's go through the WorkFlowEstimateWorks
+            jie.workflowEstimateWorks.forEach { wfe ->
+                wfe.trackRouteId = DataConversion.toBigEndian(wfe.trackRouteId)!!
+                wfe.worksId = DataConversion.toBigEndian(wfe.worksId)!!
 
-                    wfe.estimateId = DataConversion.toBigEndian(wfe.estimateId)!!
-                }
+                wfe.estimateId = DataConversion.toBigEndian(wfe.estimateId)!!
             }
         }
-        if (job.workflowItemMeasures != null) {
-            for (jim in job.workflowItemMeasures) {
 
-                jim.itemMeasureId = DataConversion.toBigEndian(jim.itemMeasureId)!!
-                jim.measureGroupId = DataConversion.toBigEndian(jim.measureGroupId)!!
-                jim.trackRouteId = DataConversion.toBigEndian(jim.trackRouteId)!!
-            }
+        job.workflowItemMeasures?.forEach { jim ->
+            jim.itemMeasureId = DataConversion.toBigEndian(jim.itemMeasureId)!!
+            jim.measureGroupId = DataConversion.toBigEndian(jim.measureGroupId)!!
+            jim.trackRouteId = DataConversion.toBigEndian(jim.trackRouteId)!!
         }
-        if (job.workflowJobSections != null) {
-            for (js in job.workflowJobSections) {
-                js.jobSectionId = DataConversion.toBigEndian(js.jobSectionId)!!
-                js.projectSectionId = DataConversion.toBigEndian(js.projectSectionId)!!
-                js.jobId = DataConversion.toBigEndian(js.jobId)
-            }
+
+        job.workflowJobSections?.forEach { js ->
+            js.jobSectionId = DataConversion.toBigEndian(js.jobSectionId)!!
+            js.projectSectionId = DataConversion.toBigEndian(js.projectSectionId)!!
+            js.jobId = DataConversion.toBigEndian(js.jobId)
         }
+
         return job
     }
 
