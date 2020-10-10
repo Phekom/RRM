@@ -30,7 +30,6 @@ import za.co.xisystems.itis_rrm.custom.results.XIProgress
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.results.XIStatus
 import za.co.xisystems.itis_rrm.custom.results.XISuccess
-import za.co.xisystems.itis_rrm.custom.results.isConnectivityException
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.extensions.observeOnce
@@ -68,31 +67,12 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                     try {
 
                         group2_loading.visibility = View.VISIBLE
-
                         acquireUser()
                         getOfflineSectionItems()
                     } catch (t: Throwable) {
                         Timber.e(t, "Failed to fetch Section Items.")
                         val xiErr = XIError(t, t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR)
-                        when (xiErr.isConnectivityException()) {
-
-                            true -> {
-                                XIErrorHandler.handleError(
-                                    this@HomeFragment.requireView(),
-                                    xiErr,
-                                    shouldShowSnackBar = true,
-                                    refreshAction = { retrySections() }
-                                )
-                            }
-                            else -> {
-                                XIErrorHandler.handleError(
-                                    this@HomeFragment.requireView(),
-                                    xiErr,
-                                    shouldToast = true,
-                                    shouldShowSnackBar = false
-                                )
-                            }
-                        }
+                        XIErrorHandler.crashGuard(this@HomeFragment.requireView(), xiErr, { retrySections() })
                     } finally {
                         group2_loading.visibility = View.GONE
                     }
@@ -101,10 +81,12 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
         }
     }
 
-    private fun retrySections() = uiScope.launch(uiScope.coroutineContext) {
-        IndefiniteSnackbar.hide()
-        acquireUser()
-        getOfflineSectionItems()
+    private fun retrySections() {
+        uiScope.launch(uiScope.coroutineContext) {
+            IndefiniteSnackbar.hide()
+            acquireUser()
+            getOfflineSectionItems()
+        }
     }
 
     private suspend fun getOfflineSectionItems() = withContext(uiScope.coroutineContext) {
@@ -174,6 +156,21 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
         } ?: throw Exception("Invalid Activity")
 
         // Check if database is synched and prompt user if necessary
+        isAppDbSynched()
+
+        // Configure SwipeToRefresh
+        initSwipeToRefresh()
+
+        serverTextView.setOnClickListener {
+            ToastUtils().toastServerAddress(requireContext())
+        }
+
+        imageView7.setOnClickListener {
+            ToastUtils().toastVersion(requireContext())
+        }
+    }
+
+    private fun isAppDbSynched() {
         uiScope.launch(uiScope.coroutineContext) {
             homeViewModel.bigSyncCheck()
             homeViewModel.bigSyncDone.observeOnce(viewLifecycleOwner, {
@@ -184,16 +181,6 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                     }
                 }
             })
-        }
-
-        initSwipeToRefresh()
-
-        serverTextView.setOnClickListener {
-            ToastUtils().toastServerAddress(requireContext())
-        }
-
-        imageView7.setOnClickListener {
-            ToastUtils().toastVersion(requireContext())
         }
     }
 
@@ -246,15 +233,6 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-        ping()
-    }
-
-    override fun onDetach() {
-        super.onDetach()
-        ping()
-    }
 
     private fun handleBigSync(result: XIResult<Boolean>) {
         when (result) {
@@ -268,20 +246,11 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                 sharedViewModel.setMessage("Sync Failed")
                 sharedViewModel.toggleLongRunning(false)
                 items_swipe_to_refresh.isRefreshing = false
-                if (result.isConnectivityException()) {
-                    XIErrorHandler.handleError(
-                        view = this@HomeFragment.requireView(),
-                        shouldShowSnackBar = true,
-                        throwable = result,
-                        refreshAction = { retrySync() }
-                    )
-                } else {
-                    XIErrorHandler.handleError(
-                        view = this@HomeFragment.requireView(),
-                        shouldToast = true,
-                        throwable = result
-                    )
-                }
+                XIErrorHandler.crashGuard(
+                    view = this@HomeFragment.requireView(),
+                    throwable = result,
+                    refreshAction = { retrySync() }
+                )
             }
             is XIProgress -> {
                 sharedViewModel.toggleLongRunning(result.isLoading)
@@ -295,6 +264,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
         sharedViewModel.toggleLongRunning(true)
         homeViewModel.databaseResult.observe(viewLifecycleOwner, bigSyncObserver)
         homeViewModel.fetchAllData(userDTO.userId)
+        ping()
     }
 
     private fun promptUserToSync() {

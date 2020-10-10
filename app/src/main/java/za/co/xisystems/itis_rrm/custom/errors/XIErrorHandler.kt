@@ -6,6 +6,7 @@ import android.widget.Toast
 import retrofit2.HttpException
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.custom.results.XIError
+import za.co.xisystems.itis_rrm.custom.results.isConnectivityException
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 
 /**
@@ -68,4 +69,26 @@ object XIErrorHandler {
         message,
         Toast.LENGTH_LONG
     ).show()
+
+    fun crashGuard(view: View, throwable: XIError, refreshAction: () -> Unit) {
+        when (throwable.isConnectivityException()) {
+
+            true -> {
+                handleError(
+                    view,
+                    throwable,
+                    shouldShowSnackBar = true,
+                    refreshAction = refreshAction
+                )
+            }
+            else -> {
+                handleError(
+                    view,
+                    throwable,
+                    shouldToast = true,
+                    shouldShowSnackBar = false
+                )
+            }
+        }
+    }
 }
