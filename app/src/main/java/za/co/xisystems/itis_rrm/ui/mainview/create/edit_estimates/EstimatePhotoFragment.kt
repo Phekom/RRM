@@ -33,12 +33,9 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenResumed
 import androidx.lifecycle.whenStarted
 import androidx.navigation.Navigation
+import com.airbnb.lottie.LottieAnimationView
 import icepick.Icepick
 import icepick.State
-import java.io.File
-import java.text.DecimalFormat
-import java.util.Date
-import kotlin.collections.set
 import kotlinx.android.synthetic.main.fragment_photo_estimate.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.cancel
@@ -78,6 +75,10 @@ import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
+import java.io.File
+import java.text.DecimalFormat
+import java.util.Date
+import kotlin.collections.set
 
 /**
  * Created by Francis Mahlava on 2019/12/29.
@@ -332,9 +333,13 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
             when (view?.id) {
 
                 R.id.startPhotoButton -> {
+                    startImageView.visibility = View.GONE
+                    startAnimationView.visibility = View.VISIBLE
                     takePhoto(PhotoType.START)
                 }
                 R.id.endPhotoButton -> {
+                    endImageView.visibility = View.GONE
+                    endAnimationView.visibility = View.VISIBLE
                     takePhoto(PhotoType.END)
                 }
 
@@ -607,7 +612,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
             newJob?.JobItemEstimates!!.add(newJobItemEstimate!!)
         }
 
-        if (ServiceUtil.isNetworkConnected(requireActivity().applicationContext)) {
+        if (ServiceUtil.isInternetAvailable(requireActivity().applicationContext)) {
 
             // isRouteSectionPoint = newJob?.SectionId != null
 
@@ -629,6 +634,10 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
                         )
                     }
 
+                    startAnimationView.visibility = View.GONE
+                    endAnimationView.visibility = View.GONE
+                    startImageView.visibility = View.VISIBLE
+                    endImageView.visibility = View.VISIBLE
                     this@EstimatePhotoFragment.disableGlide = false
                 }
             }
@@ -732,7 +741,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
         val sectionPointData = createViewModel.getPointSectionData(newJob?.ProjectId)
         withContext(uiScope.coroutineContext) {
             sectionPointData.observe(viewLifecycleOwner, Observer {
-                it.let {
+                it?.let {
                     if (it.sectionId.toString().isNotBlank()) {
                         Timber.d("SectionPointDto: $it")
                         photo = this@EstimatePhotoFragment.createItemEstimatePhoto(
@@ -741,7 +750,6 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
                             currentLocation = currentLocation,
                             itemIdPhotoType = itemId_photoType,
                             pointLocation = it.pointLocation
-
                         )
                         this@EstimatePhotoFragment.newJobItemEstimate!!.setJobItemEstimatePhoto(
                             photo!!
@@ -754,13 +762,19 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
                             else -> endImageView
                         }
 
+                        val targetAnimation: LottieAnimationView = when (photo!!.is_PhotoStart) {
+                            true -> startAnimationView
+                            else -> endAnimationView
+                        }
+
+                        targetAnimation.visibility = View.GONE
+
                         loadEstimateItemPhoto(
                             targetUri,
                             targetView,
                             true
                         )
                     } else {
-
                         this@EstimatePhotoFragment.toast("This photograph falls outside the project range.")
                     }
                 }

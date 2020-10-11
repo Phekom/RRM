@@ -53,7 +53,6 @@ class HomeViewModel(
             } catch (ex: Exception) {
                 val fetchFail = XIError(ex, "Failed to fetch data: ${ex.message}")
                 databaseResult.postValue(fetchFail)
-                false
             } finally {
                 databaseResult.postValue(XIProgress(false))
             }
@@ -61,6 +60,7 @@ class HomeViewModel(
     }
 
     override fun onCleared() {
+
         super.onCleared()
         scope.cancel()
     }

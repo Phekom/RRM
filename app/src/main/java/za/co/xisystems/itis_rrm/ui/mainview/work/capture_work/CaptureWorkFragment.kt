@@ -12,12 +12,14 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
+import android.text.method.KeyListener
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
@@ -38,8 +40,6 @@ import timber.log.Timber
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.LocationFragment
-import za.co.xisystems.itis_rrm.custom.errors.NoConnectivityException
-import za.co.xisystems.itis_rrm.custom.errors.NoInternetException
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.results.XIError
 import za.co.xisystems.itis_rrm.custom.results.XIResult
@@ -53,6 +53,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.WF_WorkStepDTO
 import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.services.LocationModel
+import za.co.xisystems.itis_rrm.ui.extensions.addZoomedImages
 import za.co.xisystems.itis_rrm.ui.extensions.scaleForSize
 import za.co.xisystems.itis_rrm.ui.extensions.showZoomedImage
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModel
@@ -72,7 +73,6 @@ import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import za.co.xisystems.itis_rrm.utils.toast
-import java.io.IOException
 import java.util.Date
 import java.util.HashMap
 
@@ -94,6 +94,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
     private var jobitemEsti: JobItemEstimateDTO? = null
     private lateinit var itemEstiWorks: JobEstimateWorksDTO
     private lateinit var jobWorkStep: ArrayList<WF_WorkStepDTO>
+    private lateinit var keyListener: KeyListener
     private var uiScope = UiLifecycleScope()
     private var workObserver = Observer<XIResult<String>> { handleWorkSubmission(it) }
     private var jobObserver = Observer<XIResult<String>> { handleJobSubmission(it) }
@@ -159,6 +160,9 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
 
                 getWorkItems(itemEstimate, itemEstimateJob)
             })
+            workViewModel.historicalWorks.observe(viewLifecycleOwner, {
+                it?.let { populateHistoricalWorkEstimate(it) }
+            })
         }
 
         image_collection_view.visibility = View.GONE
@@ -167,6 +171,35 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
         }
         move_workflow_button.setOnClickListener {
             validateUploadWorks()
+        }
+    }
+
+    private fun populateHistoricalWorkEstimate(result: XIResult<JobEstimateWorksDTO>) {
+        when (result) {
+            is XISuccess -> {
+                val worksData = result.data
+                val filenames = worksData.jobEstimateWorksPhotos?.map { photo ->
+                    photo.filename
+                }
+                val photoPairs = filenames?.let { PhotoUtil.prepareGalleryPairs(it, requireActivity().applicationContext) }
+                photoPairs?.let {
+                    image_collection_view.clearImages()
+                    image_collection_view.scaleForSize(photoPairs.size)
+                    image_collection_view.addZoomedImages(photoPairs, requireActivity())
+                    keyListener = comments_editText.keyListener
+                    comments_editText.keyListener = null
+                    comments_editText.setText("Placeholder Comment", TextView.BufferType.NORMAL)
+                    take_photo_button.isClickable = false
+                    take_photo_button.background =
+                        ContextCompat.getDrawable(requireContext(), R.drawable.round_corner_gray)
+                    move_workflow_button.isClickable = false
+                    move_workflow_button.background =
+                        ContextCompat.getDrawable(requireContext(), R.drawable.round_corner_gray)
+                }
+            }
+            is XIStatus -> {
+                XIErrorHandler.showMessage(this.requireView(), result.message)
+            }
         }
     }
 
@@ -195,7 +228,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
     }
 
     private fun uploadEstimateWorksItem(prog: ProgressDialog) {
-        if (ServiceUtil.isNetworkConnected(requireActivity().applicationContext)) { //  Lets Send to Service
+        if (ServiceUtil.isInternetAvailable(requireActivity().applicationContext)) { //  Lets Send to Service
 
             itemEstiWorks.jobEstimateWorksPhotos = estimateWorksPhotoArrayList
             itemEstiWorks.jobItemEstimate = jobitemEsti
@@ -266,25 +299,10 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                 popViewOnJobSubmit(WorkflowDirection.NEXT.value)
             }
             is XIError -> {
-                when (result.exception) {
-                    is IOException -> {
-                        handleJobConnectivityError(result)
-                    }
-                    is NoInternetException -> {
-                        handleJobConnectivityError(result)
-                    }
-                    is NoConnectivityException -> {
-                        handleJobConnectivityError(result)
-                    }
-                    else -> {
-                        XIErrorHandler.handleError(
-                            this.requireView(),
-                            result,
-                            shouldToast = true,
-                            shouldShowSnackBar = false
-                        )
-                    }
-                }
+                XIErrorHandler.crashGuard(
+                    view = this.requireView(),
+                    throwable = result,
+                    refreshAction = { this.retryJobSubmission() })
             }
             is XIStatus -> {
                 XIErrorHandler.showMessage(this.requireView(), result.message)
@@ -294,14 +312,6 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
 
     var estimateSize = 0
     var estimateCount = 0
-    private fun handleJobConnectivityError(throwable: XIError) {
-        XIErrorHandler.handleError(
-            view = this.requireView(),
-            shouldShowSnackBar = true,
-            throwable = throwable,
-            refreshAction = { retryJobSubmission() }
-        )
-    }
 
     fun handleWorkSubmission(result: XIResult<String>) {
         when (result) {
@@ -312,36 +322,13 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                 )
             }
             is XIError -> {
-                when (result.exception) {
-                    is IOException -> {
-                        handleWorkConnectivityError(result)
-                    }
-                    is NoInternetException -> {
-                        handleWorkConnectivityError(result)
-                    }
-                    is NoConnectivityException -> {
-                        handleWorkConnectivityError(result)
-                    }
-                    else -> {
-                        XIErrorHandler.handleError(
-                            this.requireView(),
-                            result,
-                            shouldToast = true,
-                            shouldShowSnackBar = false
-                        )
-                    }
-                }
+                XIErrorHandler.crashGuard(
+                    view = this@CaptureWorkFragment.requireView(),
+                    throwable = result,
+                    refreshAction = { this@CaptureWorkFragment.retryWorkSubmission() }
+                )
             }
         }
-    }
-
-    private fun handleWorkConnectivityError(throwable: XIError) {
-        XIErrorHandler.handleError(
-            view = this.requireView(),
-            shouldShowSnackBar = true,
-            throwable = throwable,
-            refreshAction = { retryWorkSubmission() }
-        )
     }
 
     private fun retryWorkSubmission() {

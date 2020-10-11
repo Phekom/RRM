@@ -98,17 +98,20 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
         })
     }
 
-    private suspend fun acquireUser() = uiScope.launch {
+    private suspend fun acquireUser() {
+        val userJob = uiScope.launch {
 
-        val user = homeViewModel.user.await()
-        user.observe(this@HomeFragment, { userInstance ->
-            userInstance?.let {
-                userDTO = it
-                username?.text = it.userName
-                servicesHealthCheck()
-                checkConnectivity()
-            }
-        })
+            val user = homeViewModel.user.await()
+            user.observe(this@HomeFragment, { userInstance ->
+                userInstance?.let {
+                    userDTO = it
+                    username?.text = it.userName
+                    servicesHealthCheck()
+                    checkConnectivity()
+                }
+            })
+        }
+        userJob.join()
     }
 
     override fun onStop() {
@@ -202,7 +205,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
     private fun checkConnectivity() {
         val lm = requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager
         gpsEnabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
-        networkEnabled = ServiceUtil.isNetworkConnected(requireActivity().applicationContext)
+        networkEnabled = ServiceUtil.isInternetAvailable(requireActivity().applicationContext)
         //  Check if Network Enabled
         if (!networkEnabled) {
             dataEnabled.setText(R.string.mobile_data_not_connected)
@@ -237,7 +240,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
     private fun handleBigSync(result: XIResult<Boolean>) {
         when (result) {
             is XISuccess -> {
-                sharedViewModel.setMessage("Data Retrieved")
+                sharedViewModel.setMessage("Sync Complete")
             }
             is XIStatus -> {
                 sharedViewModel.setMessage(result.message)
@@ -261,7 +264,6 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
 
     private fun bigSync() = uiScope.launch(uiScope.coroutineContext) {
         sharedViewModel.setMessage("Data Loading")
-        sharedViewModel.toggleLongRunning(true)
         homeViewModel.databaseResult.observe(viewLifecycleOwner, bigSyncObserver)
         homeViewModel.fetchAllData(userDTO.userId)
         ping()

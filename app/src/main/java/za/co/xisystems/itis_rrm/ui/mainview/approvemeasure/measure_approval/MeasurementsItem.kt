@@ -97,7 +97,7 @@ class MeasurementsItem(
         alert.setPositiveButton(
             R.string.save
         ) { dialog, which ->
-            if (ServiceUtil.isNetworkConnected(activity.applicationContext)) {
+            if (ServiceUtil.isInternetAvailable(activity.applicationContext)) {
                 Coroutines.main {
                     if (editQuantity.text.toString() == "" || nanCheck(editQuantity.text.toString())) {
                         activity.toast("Please Enter a valid Quantity")

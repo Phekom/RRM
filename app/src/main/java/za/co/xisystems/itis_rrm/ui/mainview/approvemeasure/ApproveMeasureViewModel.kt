@@ -19,7 +19,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.ToDoListEntityDTO
 import za.co.xisystems.itis_rrm.data.repositories.MeasureApprovalDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
-import za.co.xisystems.itis_rrm.ui.custom.GalleryUIState
+import za.co.xisystems.itis_rrm.ui.custom.MeasureGalleryUIState
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.approveMeasure_Item.ApproveMeasureItem
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
@@ -45,7 +45,7 @@ class ApproveMeasureViewModel(
 
     val measureApprovalItem = MutableLiveData<ApproveMeasureItem>()
 
-    var galleryUIState: MutableLiveData<XIResult<GalleryUIState>> = MutableLiveData()
+    var measureGalleryUIState: MutableLiveData<XIResult<MeasureGalleryUIState>> = MutableLiveData()
 
     val job = SupervisorJob()
 
@@ -184,7 +184,7 @@ class ApproveMeasureViewModel(
             } catch (e: Exception) {
                 Timber.e(e, galleryError)
                 val galleryFail = XIError(e, galleryError)
-                galleryUIState.postValue(galleryFail)
+                measureGalleryUIState.postValue(galleryFail)
             }
         }
 
@@ -224,7 +224,7 @@ class ApproveMeasureViewModel(
                     Pair(uri!!, bmap!!)
                 }
 
-                val uiState = GalleryUIState(
+                val uiState = MeasureGalleryUIState(
                     description = measureDescription,
                     qty = measureItem.qty,
                     lineRate = measureItem.lineRate,
@@ -234,12 +234,12 @@ class ApproveMeasureViewModel(
 
                 )
 
-                galleryUIState.postValue(XISuccess(uiState))
+                measureGalleryUIState.postValue(XISuccess(uiState))
             } catch (e: Exception) {
 
                 Timber.e(e, galleryError)
                 val galleryFail = XIError(e, galleryError)
-                galleryUIState.postValue(galleryFail)
+                measureGalleryUIState.postValue(galleryFail)
             }
         }
 

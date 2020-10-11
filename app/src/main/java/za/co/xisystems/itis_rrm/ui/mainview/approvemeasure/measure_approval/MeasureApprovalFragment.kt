@@ -83,7 +83,7 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
                 logoutBuilder.setPositiveButton(
                     R.string.yes
                 ) { dialog, which ->
-                    if (ServiceUtil.isNetworkConnected(this.requireContext().applicationContext)) {
+                    if (ServiceUtil.isInternetAvailable(this.requireContext().applicationContext)) {
                         moveJobToNextWorkflow(WorkflowDirection.NEXT)
                     } else {
                         toast(R.string.no_connection_detected)
@@ -113,7 +113,7 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
 //                logoutBuilder.setPositiveButton(
 //                    R.string.yes
 //                ) { dialog, which ->
-//                    if (ServiceUtil.isNetworkConnected(context?.applicationContext)) {
+//                    if (ServiceUtil.isInternetAvailable(context?.applicationContext)) {
 // //                        moveJobToNextWorkflow(WorkflowDirection.FAIL)
 //                    } else {
 //                        toast(R.string.no_connection_detected)

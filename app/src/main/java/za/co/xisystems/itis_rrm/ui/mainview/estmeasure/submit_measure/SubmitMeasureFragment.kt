@@ -183,7 +183,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
             setMessage(R.string.are_you_sure_you_want_to_submit_measurements)
             // Yes button
             setPositiveButton(R.string.yes) { dialog, which ->
-                if (ServiceUtil.isNetworkConnected(requireContext().applicationContext)) {
+                if (ServiceUtil.isInternetAvailable(requireContext().applicationContext)) {
                     submitMeasures(itemMeasureJob, mSures)
                 } else {
                     toast(R.string.no_connection_detected)

@@ -46,7 +46,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasurePhotoDTO
 import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.services.LocationModel
-import za.co.xisystems.itis_rrm.ui.custom.GalleryUIState
+import za.co.xisystems.itis_rrm.ui.custom.MeasureGalleryUIState
 import za.co.xisystems.itis_rrm.ui.extensions.addZoomedImages
 import za.co.xisystems.itis_rrm.ui.extensions.scaleForSize
 import za.co.xisystems.itis_rrm.ui.extensions.showZoomedImage
@@ -70,7 +70,7 @@ class CaptureItemMeasurePhotoFragment :
     override val kodein by kodein()
     private lateinit var measureViewModel: MeasureViewModel
     private val factory: MeasureViewModelFactory by instance()
-    private val galleryObserver = Observer<XIResult<GalleryUIState>> { handleResponse(it) }
+    private val galleryObserver = Observer<XIResult<MeasureGalleryUIState>> { handleResponse(it) }
     private lateinit var jobItemMeasurePhotoArrayList: ArrayList<JobItemMeasurePhotoDTO>
     private var mTempPhotoPath: String? = null
     private lateinit var selectedJobItemMeasure: JobItemMeasureDTO
@@ -127,7 +127,7 @@ class CaptureItemMeasurePhotoFragment :
                     }
                 })
 
-            measureViewModel.galleryUIState.observe(viewLifecycleOwner, galleryObserver)
+            measureViewModel.measureGalleryUIState.observe(viewLifecycleOwner, galleryObserver)
         }
 
         capture_another_photo_button.setOnClickListener {
@@ -330,7 +330,7 @@ class CaptureItemMeasurePhotoFragment :
         return super.getLocation()
     }
 
-    private fun handleResponse(response: XIResult<GalleryUIState>) {
+    private fun handleResponse(response: XIResult<MeasureGalleryUIState>) {
         when (response) {
             is XISuccess -> {
                 val uiState = response.data
