@@ -139,7 +139,7 @@ class EstimatesItem(
         alert.setPositiveButton(
             R.string.save
         ) { dialog, which ->
-            if (ServiceUtil.isNetworkConnected(activity.applicationContext)) {
+            if (ServiceUtil.isInternetAvailable(activity.applicationContext)) {
                 Coroutines.main {
                     if (quantityEntry.text.toString() == "" || nanCheck(quantityEntry.text.toString()) || quantityEntry.text.toString()
                             .toDouble() == 0.0

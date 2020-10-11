@@ -100,7 +100,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
             logoutBuilder.setPositiveButton(
                 R.string.yes
             ) { dialog, which ->
-                if (ServiceUtil.isNetworkConnected(requireContext().applicationContext)) {
+                if (ServiceUtil.isInternetAvailable(requireContext().applicationContext)) {
                     moveJobToNextWorkflow(WorkflowDirection.NEXT)
                 } else {
                     toast(R.string.no_connection_detected)
@@ -130,7 +130,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
             logoutBuilder.setPositiveButton(
                 R.string.yes
             ) { dialog, which ->
-                if (ServiceUtil.isNetworkConnected(requireContext().applicationContext)) {
+                if (ServiceUtil.isInternetAvailable(requireContext().applicationContext)) {
                     moveJobToNextWorkflow(WorkflowDirection.FAIL)
                 } else {
                     toast(R.string.no_connection_detected)
