@@ -49,7 +49,7 @@
                 android:layout_gravity="center"
                 android:layout_margin="5dp"
                 android:layout_weight="1"
-                android:background="@drawable/orange_round_corner"
+                android:background="@drawable/round_corner_orange"
                 android:text="@string/add_photo"
                 android:textColor="@android:color/white"
                 android:visibility="visible" />
@@ -61,7 +61,7 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="5dp"
                 android:layout_weight="1"
-                android:background="@drawable/orange_round_corner"
+                android:background="@drawable/round_corner_orange"
                 android:text="@string/back"
                 android:textColor="@android:color/white"
                 android:visibility="visible" />

@@ -253,7 +253,7 @@
                 <!--                        android:layout_height="match_parent"-->
                 <!--                        android:layout_margin="2dp"-->
                 <!--                        android:layout_weight="1"-->
-                <!--                        android:background="@drawable/orange_round_corner"-->
+                <!--                        android:background="@drawable/round_corner_orange"-->
                 <!--                        android:padding="8dp"-->
                 <!--                        android:text="@string/correct_job"-->
                 <!--                        android:textColor="@android:color/white" />-->
