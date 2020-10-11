@@ -17,7 +17,6 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
 class ExpandableHeaderWorkItem(
     activity: FragmentActivity?,
     workItems: JobDTO,
-//    workItems: JobItemEstimateDTO,
     workViewModel: WorkViewModel
 ) : HeaderItem(null, workItems, workViewModel), ExpandableItem {
 

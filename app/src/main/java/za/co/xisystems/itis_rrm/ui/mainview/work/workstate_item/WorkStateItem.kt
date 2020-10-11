@@ -11,7 +11,6 @@ import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.WF_WorkStepDTO
 import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModel
-import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.toast
 
 /**
@@ -47,7 +46,7 @@ class WorkStateItem(
             state.text = workState[position]
 
             setNewState(position, viewHolder)
-            if (selected_position == adapterPosition) {
+            if (selected_position == position) {
                 viewHolder.stateBack.setBackgroundColor(
                     ContextCompat.getColor(
                         activity!!,
@@ -61,13 +60,23 @@ class WorkStateItem(
             }
             viewHolder.stateBack.setOnClickListener {
                 activity?.toast(position.toString())
-                selected_position = position
+                /*
                 Coroutines.main {
-                    jobItemWorks?.estimateId?.let {
-                        viewModel.populateWorkTab(it, position + 15)
+                    jobItemWorks?.let {
+                        // We can only review captured work until the estimates are posted
+                        if(position + 15 < it.actId) {
+                            jobItemWorks.estimateId?.let {
+                                viewModel.populateWorkTab(it, position + 15)
+                            }
+
+                            groupAdapter.notifyDataSetChanged()
+                        } else {
+                            Timber.d("Only past work can be reviewed")
+                        }
                     }
+
                 }
-                groupAdapter.notifyDataSetChanged()
+                */
             }
         }
         viewHolder.itemView.setOnClickListener {

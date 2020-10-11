@@ -177,11 +177,11 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
     private fun initRecyclerView(
         workListItems: List<ExpandableGroup>
     ) {
-
         val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
             clear()
-            addAll(workListItems)
+            update(workListItems)
         }
+
         work_listView.apply {
             layoutManager = LinearLayoutManager(this.context)
             adapter = groupAdapter
@@ -202,9 +202,14 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
         if (item1 != null) item1.isVisible = false
     }
 
-    override fun onStop() {
+    /**
+     * Called when the Fragment is no longer resumed.  This is generally
+     * tied to [Activity.onPause] of the containing
+     * Activity's lifecycle.
+     */
+    override fun onPause() {
         uiScope.destroy()
-        super.onStop()
+        super.onPause()
     }
 
     override fun onDestroyView() {
@@ -232,34 +237,38 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
                     ActivityIdConstants.ESTIMATE_INCOMPLETE
                 )
                 estimates.observe(viewLifecycleOwner, { estimateItems ->
-                    val filteredEstimates = estimateItems.distinctBy { element ->
-                        element.estimateId
-                    }
-                    for (item in filteredEstimates) {
+                    estimateItems?.let {
+                        it.forEach { item ->
 
-                        uiScope.launch(uiScope.coroutineContext) {
-                            try {
-                                val desc =
-                                    workViewModel.getDescForProjectItemId(item.projectItemId!!)
-                                val qty = item.qty.toString()
-                                val rate = item.lineRate.toString()
-                                val estimateId = item.estimateId
+                            uiScope.launch(uiScope.coroutineContext) {
+                                try {
+                                    val desc =
+                                        workViewModel.getDescForProjectItemId(item.projectItemId!!)
+                                    val qty = item.qty.toString()
+                                    val rate = item.lineRate.toString()
+                                    val estimateId = item.estimateId
 
-                                add(
-                                    CardItem(
-                                        activity, desc, qty,
-                                        rate,
-                                        estimateId, workViewModel, item, jobDTO
+                                    add(
+                                        CardItem(
+                                            activity = activity,
+                                            text = desc,
+                                            qty = qty,
+                                            rate = rate,
+                                            estimateId = estimateId,
+                                            workViewModel = workViewModel,
+                                            itemEsti = item,
+                                            jobworkItems = jobDTO
+                                        )
                                     )
-                                )
-                            } catch (t: Throwable) {
-                                Timber.e(t, "Failed to create work-item")
-                                val workError = XIError(t, t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR)
-                                XIErrorHandler.handleError(
-                                    view = this@WorkFragment.requireView(),
-                                    throwable = workError,
-                                    shouldToast = true
-                                )
+                                } catch (t: Throwable) {
+                                    Timber.e(t, "Failed to create work-item")
+                                    val workError = XIError(t, t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR)
+                                    XIErrorHandler.handleError(
+                                        view = this@WorkFragment.requireView(),
+                                        throwable = workError,
+                                        shouldToast = true
+                                    )
+                                }
                             }
                         }
                     }

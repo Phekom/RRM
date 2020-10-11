@@ -16,6 +16,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.WF_WorkStepDTO
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.WorkDataRepository
+import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
 import za.co.xisystems.itis_rrm.utils.uncaughtExceptionHandler
 
@@ -190,8 +191,9 @@ class WorkViewModel(
     val historicalWorks: MutableLiveData<XIResult<JobEstimateWorksDTO>> = MutableLiveData()
 
     suspend fun populateWorkTab(estimateId: String, actId: Int) {
-        val worksDTO = workDataRepository.getWorkItemsForEstimateIDAndActID(estimateId, actId)
-        if (!worksDTO.worksId.isBlank()) {
+        val newEstimateId = DataConversion.toBigEndian(estimateId)
+        val worksDTO: JobEstimateWorksDTO? = workDataRepository.getWorkItemsForEstimateIDAndActID(newEstimateId!!, actId)
+        if (worksDTO != null) {
             val worksPhotos = workDataRepository.getEstimateWorksPhotosForWorksId(worksDTO.worksId)
             if (!worksPhotos.isNullOrEmpty()) {
                 worksDTO.jobEstimateWorksPhotos = worksPhotos as java.util.ArrayList<JobEstimateWorksPhotoDTO>
