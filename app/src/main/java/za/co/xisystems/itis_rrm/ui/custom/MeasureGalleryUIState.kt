@@ -8,7 +8,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
  * Created by Shaun McDonald on 2020/06/14.
  * Copyright (c) 2020 XI Systems. All rights reserved.
  **/
-data class GalleryUIState(
+data class MeasureGalleryUIState(
     val description: String?,
     val qty: Double,
     val lineRate: Double,
