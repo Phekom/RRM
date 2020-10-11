@@ -420,8 +420,8 @@ class OfflineDataRepository(
                         postStatus("Setting project $projectCount of $projectMax")
 
                         if (contractCount >= contractMax && projectCount >= projectMax) {
-                            databaseStatus.postValue(XIStatus(message = "All projects retrieved."))
-                            databaseStatus.postValue(XISuccess(data = true))
+                            databaseStatus.postValue(XIStatus("All projects retrieved."))
+                            databaseStatus.postValue(XISuccess(true))
                             databaseStatus.postValue(XIProgress(false))
                         }
                     } catch (ex: Exception) {
@@ -439,7 +439,7 @@ class OfflineDataRepository(
         distinctItems: List<ProjectItemDTO>,
         project: ProjectDTO
     ) {
-        for (item in distinctItems) {
+        distinctItems.forEach { item ->
             if (!appDb.getProjectItemDao()
                     .checkItemExistsItemId(item.itemId)
             ) {
@@ -965,7 +965,6 @@ class OfflineDataRepository(
                         fetchJobList(newJobId!!)
                     }
                 }
-                // databaseStatus.postValue(XISuccess(true))
             }
         }
     }

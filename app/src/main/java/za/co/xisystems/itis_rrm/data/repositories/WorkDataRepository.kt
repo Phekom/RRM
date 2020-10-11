@@ -262,7 +262,6 @@ class WorkDataRepository(
                     val wfEx = ServiceException("Error: trackRouteId is null")
                     throw wfEx
                 } else {
-
                     val direction: Int = WorkflowDirection.NEXT.value
                     val trackRouteId: String = jobEstimateWorks.trackRouteId
                     val description = "work step done"
@@ -284,9 +283,9 @@ class WorkDataRepository(
                         throw ServiceException("Workflow Job is null.")
                     }
                 }
-            } catch (e: Exception) {
-                Timber.e(e, "Failed to update workflow")
-                val workflowFail = XIError(e, "Failed to update workflow")
+            } catch (t: Throwable) {
+                Timber.e(t, "Failed to update workflow")
+                val workflowFail = XIError(t, "Failed to update workflow")
                 workStatus.postValue(workflowFail)
             }
         }
@@ -386,11 +385,11 @@ class WorkDataRepository(
                 jobItemEstimate.workflowEstimateWorks.forEach { jobEstimateWorks ->
                     if (!appDb.getEstimateWorkDao()
                             .checkIfJobEstimateWorksExist(jobEstimateWorks.worksId)
-                    )
+                    ) {
                         appDb.getEstimateWorkDao().insertJobEstimateWorks(
-                            TODO("This should never happen!")
+                            TODO("Impossible casting")
                         )
-                    else
+                    } else
                         appDb.getEstimateWorkDao().updateJobEstimateWorksWorkflow(
                             jobEstimateWorks.worksId,
                             jobEstimateWorks.estimateId,
