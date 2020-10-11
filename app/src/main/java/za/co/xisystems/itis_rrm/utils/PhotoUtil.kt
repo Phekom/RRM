@@ -584,14 +584,14 @@ object PhotoUtil {
     }
 
     fun getUri3(context: Context): Uri? {
-        try {
-            return FileProvider.getUriForFile(
+        return try {
+            FileProvider.getUriForFile(
                 context, BuildConfig.APPLICATION_ID + ".provider",
                 createImageFile()
             )
         } catch (e: IOException) {
             e.printStackTrace()
-            return null
+            null
         }
     }
 
@@ -603,6 +603,30 @@ object PhotoUtil {
         } catch (e: Exception) {
             Timber.e(e, "Failed to extract image Uri: ${e.message}")
             null
+        }
+    }
+
+    fun prepareGalleryPairs(filenames: List<String>, context: Context): List<Pair<Uri, Bitmap>> {
+        val photoQuality = when (filenames.size) {
+            in 1..4 -> PhotoQuality.HIGH
+            in 5..16 -> PhotoQuality.MEDIUM
+            else -> PhotoQuality.THUMB
+        }
+        return filenames.mapNotNull { path ->
+            try {
+                val uri = getUriFromPath(path)
+
+                val bmp = uri?.let {
+                    getPhotoBitMapFromFile(
+                        context,
+                        it,
+                        photoQuality
+                    )
+                }
+                Pair(uri!!, bmp!!)
+            } catch (t: Throwable) {
+                null
+            }
         }
     }
 }
