@@ -7,7 +7,6 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.ConnectivityManager
 import android.os.Build
 import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
@@ -40,7 +39,7 @@ private const val PERMISSION_REQUEST = 10
 class RegisterActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnable {
 
     override val kodein by kodein()
-    private val factory: AuthViewModelFactory by instance()
+    private val factory: AuthViewModelFactory by instance<AuthViewModelFactory>()
     private lateinit var viewModel: AuthViewModel
     private lateinit var appContext: Context
     private var permissions = arrayOf(
@@ -78,27 +77,7 @@ class RegisterActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnabl
                 if (user != null) {
 
                     if (user.PIN.isNullOrEmpty()) {
-
-                        val logoutBuilder =
-                            AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog)
-                        logoutBuilder.setTitle(R.string.set_pin)
-                        logoutBuilder.setIcon(R.drawable.ic_baseline_lock_24px)
-                        logoutBuilder.setMessage(R.string.set_pin_msg)
-                        logoutBuilder.setCancelable(false)
-                        // Yes button
-                        logoutBuilder.setPositiveButton(R.string.ok) { dialog, which ->
-                            if (ServiceUtil.isNetworkConnected(this.applicationContext)) {
-                                Intent(this, RegisterPinActivity::class.java).also { pin ->
-                                    pin.flags =
-                                        Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-                                    startActivity(pin)
-                                }
-                            } else {
-                                toast(R.string.no_connection_detected.toString())
-                            }
-                        }
-                        val declineAlert = logoutBuilder.create()
-                        declineAlert.show()
+                        registerPinOrNot()
                     } else
                         Intent(this, MainActivity::class.java).also { home ->
                             home.flags =
@@ -118,6 +97,29 @@ class RegisterActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnabl
         isOnline()
     }
 
+    private fun registerPinOrNot() {
+        val builder =
+            AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog)
+        builder.setTitle(R.string.set_pin)
+        builder.setIcon(R.drawable.ic_baseline_lock_24px)
+        builder.setMessage(R.string.set_pin_msg)
+        builder.setCancelable(false)
+        // Yes button
+        builder.setPositiveButton(R.string.ok) { dialog, which ->
+            if (ServiceUtil.isInternetAvailable(this.applicationContext)) {
+                Intent(this, RegisterPinActivity::class.java).also { pin ->
+                    pin.flags =
+                        Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                    startActivity(pin)
+                }
+            } else {
+                toast(R.string.no_connection_detected.toString())
+            }
+        }
+        val pinAlert = builder.create()
+        pinAlert.show()
+    }
+
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -125,26 +127,34 @@ class RegisterActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnabl
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == PERMISSION_REQUEST) {
-            var allAllowed = true
-            for (i in permissions.indices) {
-                if (grantResults[i] == PackageManager.PERMISSION_DENIED) {
-                    allAllowed = false
-                    val requestAgain = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        shouldShowRequestPermissionRationale(permissions[i])
-                    } else {
-                        // Fallback granting all permissions
-                        false
-                    }
-                    if (requestAgain) {
-                        toast("Permission Denied")
-                    } else {
-                        toast("Please Enable Permissions from your Device Settings")
-                    }
-                }
-            }
+            val allAllowed = requestAgain(permissions, grantResults)
             if (allAllowed)
                 toast("Permissions Granted")
         }
+    }
+
+    private fun requestAgain(
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ): Boolean {
+        var allAllowed = true
+        for (i in permissions.indices) {
+            if (grantResults[i] == PackageManager.PERMISSION_DENIED) {
+                allAllowed = false
+                val requestAgain = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    shouldShowRequestPermissionRationale(permissions[i])
+                } else {
+                    // Fallback granting all permissions
+                    false
+                }
+                if (requestAgain) {
+                    toast("Permission Denied")
+                } else {
+                    toast("Please Enable Permissions from your Device Settings")
+                }
+            }
+        }
+        return allAllowed
     }
 
     private fun startPermissionRequest(permissions: Array<String>): Boolean {
@@ -180,12 +190,7 @@ class RegisterActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnabl
     override fun onSuccess(userDTO: UserDTO) {
         loading.hide()
         toast("You are logged in as ${userDTO.userName}")
-        Coroutines.main {
-            val contractList = viewModel.offlineData.await()
-            contractList.observe(this, Observer { contractItems ->
-                // TODO: What were we going to do with these values?
-            })
-        }
+        this.run()
     }
 
     override fun onFailure(message: String) {
@@ -195,21 +200,18 @@ class RegisterActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnabl
     }
 
     private fun isOnline(): Boolean {
-        val cm =
-            getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val netInfo = cm.activeNetworkInfo
-        return netInfo != null && netInfo.isConnectedOrConnecting
+        return ServiceUtil.isInternetAvailable(this.applicationContext)
     }
 
     override fun onSignOut(userDTO: UserDTO) {
-        // TODO: Implement sign-out message
+        finishAffinity()
     }
 
     override fun run() {
         Coroutines.main {
             val contractList = viewModel.offlineData.await()
             contractList.observe(this, Observer { contractItems ->
-                // TODO: What were we going to do with these values?
+                toast("Loading contract: ${contractItems.size} / ${contractItems.count()}")
             })
         }
     }

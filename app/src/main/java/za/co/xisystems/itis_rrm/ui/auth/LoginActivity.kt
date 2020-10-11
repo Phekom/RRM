@@ -175,7 +175,7 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
                     builder.setCancelable(false)
                     // Yes button
                     builder.setPositiveButton(R.string.ok) { dialog, which ->
-                        if (ServiceUtil.isNetworkConnected(this.applicationContext)) {
+                        if (ServiceUtil.isInternetAvailable(this.applicationContext)) {
                             Intent(this, RegisterPinActivity::class.java).also { pin ->
                                 pin.flags =
                                     Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
