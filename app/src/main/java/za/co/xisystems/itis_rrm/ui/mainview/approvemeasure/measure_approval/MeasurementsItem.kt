@@ -12,6 +12,7 @@ import androidx.lifecycle.Observer
 import androidx.navigation.Navigation
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import com.xwray.groupie.kotlinandroidextensions.Item
+import java.io.File
 import kotlinx.android.synthetic.main.estimates_item.measure_item_description_textView
 import kotlinx.android.synthetic.main.measurements_item.*
 import kotlinx.android.synthetic.main.measurements_item.correctButton
@@ -22,7 +23,6 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.GlideApp
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.toast
-import java.io.File
 
 /**
  * Created by Francis Mahlava on 2020/01/02.
@@ -62,7 +62,7 @@ class MeasurementsItem(
                 }
             }
             correctButton.setOnClickListener {
-                sendItemType((it), jobItemMeasureDTO, approveViewModel)
+                sendItemType(jobItemMeasureDTO)
             }
             view_captured_item_photo.setOnClickListener {
                 Coroutines.main {
@@ -76,9 +76,7 @@ class MeasurementsItem(
     }
 
     private fun sendItemType(
-        it: View?,
-        jobItemMeasureDTO: JobItemMeasureDTO,
-        approveViewModel: ApproveMeasureViewModel
+        jobItemMeasureDTO: JobItemMeasureDTO
     ) {
         Coroutines.main {
             alertdialog(jobItemMeasureDTO)
@@ -88,7 +86,7 @@ class MeasurementsItem(
     private fun alertdialog(jobItemMeasureDTO: JobItemMeasureDTO) {
         val text = arrayOfNulls<String>(2)
         val textEntryView: View = activity!!.layoutInflater.inflate(R.layout.measure_dialog, null)
-        val new_quantity = textEntryView.findViewById<View>(R.id.new_qty) as EditText
+        val editQuantity = textEntryView.findViewById<View>(R.id.new_qty) as EditText
 
         val alert = AlertDialog.Builder(activity) // ,android.R.style.Theme_DeviceDefault_Dialog
         alert.setView(textEntryView)
@@ -96,7 +94,7 @@ class MeasurementsItem(
         alert.setIcon(R.drawable.ic_edit)
         alert.setMessage(R.string.are_you_sure_you_want_to_correct)
 
-        new_quantity.text = Editable.Factory.getInstance().newEditable(jobItemMeasureDTO.qty.toString())
+        editQuantity.text = Editable.Factory.getInstance().newEditable(jobItemMeasureDTO.qty.toString())
 
         // Yes button
         alert.setPositiveButton(
@@ -104,11 +102,11 @@ class MeasurementsItem(
         ) { dialog, which ->
             if (ServiceUtil.isNetworkConnected(activity.applicationContext)) {
                 Coroutines.main {
-                    if (new_quantity.text.toString() == "" || nanCheck(new_quantity.text.toString())) {
+                    if (editQuantity.text.toString() == "" || nanCheck(editQuantity.text.toString())) {
                         activity.toast("Please Enter a valid Quantity")
                     } else {
                         val updated = approveViewModel.upDateMeasure(
-                            new_quantity.text.toString(),
+                            editQuantity.text.toString(),
                             jobItemMeasureDTO.itemMeasureId
                         )
                         if (updated.isBlank()) {

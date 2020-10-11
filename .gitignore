@@ -199,3 +199,4 @@ lint/tmp/
 # lint/reports/
 
 /signing.properties
+.idea
