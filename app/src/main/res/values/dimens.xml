@@ -7,7 +7,6 @@
     <dimen name="margin">10dp</dimen>
     <dimen name="linear_margin">15dp</dimen>
     <dimen name="image_size">200dp</dimen>
-
     <dimen name="xsmall">4dp</dimen>
     <dimen name="small">8dp</dimen>
     <dimen name="xmedium">12dp</dimen>
@@ -95,6 +94,7 @@
     <dimen name="dimen_15sp">15sp</dimen>
     <dimen name="dimen_10sp">10sp</dimen>
 
-
-
+    <dimen name="progressMargin">10dp</dimen>
+    <dimen name="smallRadius">7.5dp</dimen>
+    <dimen name="stroke3">2.5dp</dimen>
 </resources>
