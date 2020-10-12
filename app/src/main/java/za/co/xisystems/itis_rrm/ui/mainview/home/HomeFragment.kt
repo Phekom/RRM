@@ -236,7 +236,6 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
         }
     }
 
-
     private fun handleBigSync(result: XIResult<Boolean>) {
         when (result) {
             is XISuccess -> {

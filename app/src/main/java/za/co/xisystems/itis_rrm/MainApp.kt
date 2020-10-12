@@ -101,7 +101,6 @@ open class MainApp : Application(), KodeinAware {
     override fun onCreate() {
         super.onCreate()
 
-
         registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {
             override fun onActivityCreated(p0: Activity, p1: Bundle?) {
                 p0.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT

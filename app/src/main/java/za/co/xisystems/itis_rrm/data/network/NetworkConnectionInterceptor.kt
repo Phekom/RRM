@@ -34,5 +34,4 @@ class NetworkConnectionInterceptor(
 
         return chain.proceed(chain.request())
     }
-
 }
