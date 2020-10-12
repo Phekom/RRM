@@ -21,8 +21,8 @@ open class CardItem(
     val rate: String,
     val estimateId: String,
     private val workViewModel: WorkViewModel,
-    private val itemEsti: JobItemEstimateDTO,
-    private val jobworkItems: JobDTO
+    private val jobItemEstimate: JobItemEstimateDTO,
+    private val job: JobDTO
 ) : Item() {
 
     init {
@@ -40,7 +40,7 @@ open class CardItem(
             }
 
             startWork_Btn.setOnClickListener {
-                sendJobToWork(workViewModel, itemEsti, it, jobworkItems)
+                sendJobToWork(workViewModel, jobItemEstimate, it, job)
             }
         }
     }
@@ -49,14 +49,11 @@ open class CardItem(
         workViewModel: WorkViewModel,
         estimate: JobItemEstimateDTO,
         view: View?,
-        jobworkItems: JobDTO
+        job: JobDTO
     ) {
-        val estimate = estimate
-        val jobworkItems = jobworkItems
         Coroutines.main {
-
-            workViewModel.workItemJob.value = jobworkItems
-            workViewModel.workItem.value = estimate
+            workViewModel.setWorkItemJob(job)
+            workViewModel.setWorkItem(estimate)
         }
         Navigation.findNavController(view!!)
             .navigate(R.id.action_nav_work_to_captureWorkFragment)
