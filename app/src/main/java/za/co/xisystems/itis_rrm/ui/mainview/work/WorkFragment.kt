@@ -1,3 +1,5 @@
+@file:Suppress("KDocUnresolvedReference")
+
 package za.co.xisystems.itis_rrm.ui.mainview.work
 
 import android.app.ProgressDialog
@@ -8,7 +10,6 @@ import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenStarted
@@ -25,10 +26,9 @@ import org.kodein.di.generic.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
-import za.co.xisystems.itis_rrm.custom.errors.ApiException
-import za.co.xisystems.itis_rrm.custom.errors.NoConnectivityException
-import za.co.xisystems.itis_rrm.custom.errors.NoInternetException
-import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
+import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
+import za.co.xisystems.itis_rrm.custom.results.XIError
+import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.ui.mainview.work.estimate_work_item.CardItem
@@ -43,7 +43,7 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
 
     override val kodein by kodein()
     private lateinit var workViewModel: WorkViewModel
-    private val factory: WorkViewModelFactory by instance<WorkViewModelFactory>()
+    private val factory: WorkViewModelFactory by instance()
     private var uiScope = UiLifecycleScope()
     private var dialog: ProgressDialog? = null
 
@@ -65,15 +65,13 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
                 uiScope.launch(uiScope.coroutineContext) {
                     try {
                         refreshEstimateJobsFromLocal()
-                    } catch (e: ApiException) {
-                        ToastUtils().toastLong(activity, e.message)
-                        Timber.e(e, "API Exception")
-                    } catch (e: NoInternetException) {
-                        ToastUtils().toastLong(activity, e.message)
-                        Timber.e(e, "No Internet Connection")
-                    } catch (e: NoConnectivityException) {
-                        ToastUtils().toastLong(activity, e.message)
-                        Timber.e(e, "Service Host Unreachable")
+                    } catch (t: Throwable) {
+                        Timber.e(t, "Failed to fetch local jobs")
+                        val xiFail = XIError(t, t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR)
+                        XIErrorHandler.crashGuard(
+                            view = this@WorkFragment.requireView(),
+                            throwable = xiFail,
+                            refreshAction = { retryFetchingJobs() })
                     }
                 }
             }
@@ -87,7 +85,7 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
             workViewModel.getJobsForActivityId(
                 ActivityIdConstants.JOB_APPROVED,
                 ActivityIdConstants.ESTIMATE_INCOMPLETE
-            ).observeOnce(viewLifecycleOwner, Observer { jobsList ->
+            ).observeOnce(viewLifecycleOwner, { jobsList ->
                 group7_loading.visibility = View.GONE
                 if (jobsList.isNullOrEmpty()) {
                     no_data_layout.visibility = View.VISIBLE
@@ -138,36 +136,41 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
         works_swipe_to_refresh.setColorSchemeColors(Color.WHITE)
 
         works_swipe_to_refresh.setOnRefreshListener {
+            fetchJobsFromService()
+        }
+    }
 
-            dialog!!.show()
-            uiScope.launch(uiScope.coroutineContext) {
-                try {
-                    withContext(uiScope.coroutineContext) {
-                        refreshUserTaskListFromApi()
-                        refreshEstimateJobsFromLocal()
-                    }
-                } catch (e: ApiException) {
-                    ToastUtils().toastLong(activity, e.message)
-                    Timber.e(e, "API Exception")
-                } catch (e: NoInternetException) {
-                    ToastUtils().toastLong(activity, e.message)
-                    Timber.e(e, "No Internet Connection")
-                } catch (e: NoConnectivityException) {
-                    ToastUtils().toastLong(activity, e.message)
-                    Timber.e(e, "Service Host Unreachable")
-                } finally {
-                    works_swipe_to_refresh.isRefreshing = false
-                    dialog!!.dismiss()
+    private fun fetchJobsFromService() {
+        uiScope.launch(uiScope.coroutineContext) {
+            try {
+                withContext(uiScope.coroutineContext) {
+                    refreshUserTaskListFromApi()
+                    refreshEstimateJobsFromLocal()
                 }
+            } catch (t: Throwable) {
+                Timber.e(t, t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR)
+                val jobErr = XIError(t, "Failed to fetch jobs from service")
+                XIErrorHandler.crashGuard(
+                    view = this@WorkFragment.requireView(),
+                    throwable = jobErr,
+                    refreshAction = { retryFetchingJobs() }
+                )
+            } finally {
+                works_swipe_to_refresh.isRefreshing = false
             }
         }
+    }
+
+    private fun retryFetchingJobs() {
+        IndefiniteSnackbar.hide()
+        fetchJobsFromService()
     }
 
     private suspend fun refreshUserTaskListFromApi() = uiScope.launch(uiScope.coroutineContext) {
         // This definitely needs to be a one-shot operation
         withContext(uiScope.coroutineContext) {
             val jobs = workViewModel.offlineUserTaskList.await()
-            jobs.observeOnce(viewLifecycleOwner, Observer { works ->
+            jobs.observeOnce(viewLifecycleOwner, { works ->
                 toast("${works.size} / ${works.count()} loaded.")
             })
         }
@@ -176,11 +179,11 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
     private fun initRecyclerView(
         workListItems: List<ExpandableGroup>
     ) {
-
         val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
             clear()
-            addAll(workListItems)
+            update(workListItems)
         }
+
         work_listView.apply {
             layoutManager = LinearLayoutManager(this.context)
             adapter = groupAdapter
@@ -201,9 +204,14 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
         if (item1 != null) item1.isVisible = false
     }
 
-    override fun onStop() {
+    /**
+     * Called when the Fragment is no longer resumed.  This is generally
+     * tied to [Activity.onPause()] of the containing
+     * Activity's lifecycle.
+     */
+    override fun onPause() {
         uiScope.destroy()
-        super.onStop()
+        super.onPause()
     }
 
     override fun onDestroyView() {
@@ -218,41 +226,51 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
     private suspend fun List<JobDTO>.toWorkListItems(): List<ExpandableGroup> {
         // Initialize Expandable group with expandable item and specify whether it should be expanded by default or not
 
-        return this.map { work_items ->
+        return this.map { jobDTO ->
 
             val expandableHeaderItem =
-                ExpandableHeaderWorkItem(activity, work_items, workViewModel)
+                ExpandableHeaderWorkItem(activity, jobDTO, workViewModel)
             ExpandableGroup(expandableHeaderItem, false).apply {
 
                 // ESTIMATE_WORK_PART_COMPLETE
 
                 val estimates = workViewModel.getJobEstimationItemsForJobId(
-                    work_items.JobId,
+                    jobDTO.JobId,
                     ActivityIdConstants.ESTIMATE_INCOMPLETE
                 )
-                estimates.observe(viewLifecycleOwner, Observer { estimateItems ->
-                    val filteredEstimates = estimateItems.distinctBy { element ->
-                        element.estimateId
-                    }
-                    for (item in filteredEstimates) {
+                estimates.observe(viewLifecycleOwner, { estimateItems ->
+                    estimateItems?.let {
+                        it.forEach { item ->
 
-                        uiScope.launch(uiScope.coroutineContext) {
-                            try {
-                                val desc =
-                                    workViewModel.getDescForProjectItemId(item.projectItemId!!)
-                                val qty = item.qty.toString()
-                                val rate = item.lineRate.toString()
-                                val estimateId = item.estimateId
+                            uiScope.launch(uiScope.coroutineContext) {
+                                try {
+                                    val desc =
+                                        workViewModel.getDescForProjectItemId(item.projectItemId!!)
+                                    val qty = item.qty.toString()
+                                    val rate = item.lineRate.toString()
+                                    val estimateId = item.estimateId
 
-                                add(
-                                    CardItem(
-                                        activity, desc, qty,
-                                        rate,
-                                        estimateId, workViewModel, item, work_items
+                                    add(
+                                        CardItem(
+                                            activity = activity,
+                                            text = desc,
+                                            qty = qty,
+                                            rate = rate,
+                                            estimateId = estimateId,
+                                            workViewModel = workViewModel,
+                                            jobItemEstimate = item,
+                                            job = jobDTO
+                                        )
                                     )
-                                )
-                            } catch (exception: Exception) {
-                                Timber.e(exception)
+                                } catch (t: Throwable) {
+                                    Timber.e(t, "Failed to create work-item")
+                                    val workError = XIError(t, t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR)
+                                    XIErrorHandler.handleError(
+                                        view = this@WorkFragment.requireView(),
+                                        throwable = workError,
+                                        shouldToast = true
+                                    )
+                                }
                             }
                         }
                     }

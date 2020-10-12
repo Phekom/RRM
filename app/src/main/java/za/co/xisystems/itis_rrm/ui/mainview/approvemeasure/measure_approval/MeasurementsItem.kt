@@ -8,7 +8,6 @@ import android.widget.EditText
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.Observer
 import androidx.navigation.Navigation
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import com.xwray.groupie.kotlinandroidextensions.Item
@@ -41,24 +40,23 @@ class MeasurementsItem(
             Coroutines.main {
                 dialog.show()
                 val quantity = approveViewModel.getQuantityForMeasureItemId(jobItemMeasureDTO.itemMeasureId!!)
-                quantity.observe(viewLifecycleOwner, Observer {
-                    measure_item_quantity_textView.text = "Qty: $it"
+                quantity.observe(viewLifecycleOwner, {
+                    measure_item_quantity_textView.text = activity?.getString(R.string.pair, "Qty:", it.toString())
                 })
                 val lineRate = approveViewModel.getLineRateForMeasureItemId(jobItemMeasureDTO.itemMeasureId!!)
-                lineRate.observe(viewLifecycleOwner, Observer {
-                    measure_item_price_textView.text = "R $it"
+                lineRate.observe(viewLifecycleOwner, {
+                    measure_item_price_textView.text = activity?.getString(R.string.pair, "R", it.toString())
                     dialog.dismiss()
                 })
 
                 val descri = approveViewModel.getDescForProjectId(jobItemMeasureDTO.projectItemId!!)
                 val uom =
                     approveViewModel.getUOMForProjectItemId(jobItemMeasureDTO.projectItemId!!)
-                measure_item_description_textView.text = "Estimate - $descri"
-                measure_item_uom_textView.text = "Unit of Measure: $uom"
+                measure_item_description_textView.text = activity?.getString(R.string.pair, "Estimate -", descri)
                 if (uom == "NONE") {
                     measure_item_uom_textView.text = ""
                 } else {
-                    measure_item_uom_textView.text = "Unit of Measure: $uom"
+                    measure_item_uom_textView.text = activity?.getString(R.string.pair, "Unit of Measure:", uom)
                 }
             }
             correctButton.setOnClickListener {
@@ -84,7 +82,6 @@ class MeasurementsItem(
     }
 
     private fun alertdialog(jobItemMeasureDTO: JobItemMeasureDTO) {
-        val text = arrayOfNulls<String>(2)
         val textEntryView: View = activity!!.layoutInflater.inflate(R.layout.measure_dialog, null)
         val editQuantity = textEntryView.findViewById<View>(R.id.new_qty) as EditText
 
@@ -100,7 +97,7 @@ class MeasurementsItem(
         alert.setPositiveButton(
             R.string.save
         ) { dialog, which ->
-            if (ServiceUtil.isNetworkConnected(activity.applicationContext)) {
+            if (ServiceUtil.isInternetAvailable(activity.applicationContext)) {
                 Coroutines.main {
                     if (editQuantity.text.toString() == "" || nanCheck(editQuantity.text.toString())) {
                         activity.toast("Please Enter a valid Quantity")

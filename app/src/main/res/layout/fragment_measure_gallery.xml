@@ -81,7 +81,7 @@
                 android:layout_height="0dp"
                 android:layout_margin="5dp"
                 android:layout_weight="1"
-                android:background="@drawable/orange_round_corner"
+                android:background="@drawable/round_corner_orange"
                 android:text="@string/back"
                 android:textColor="@android:color/white"
                 android:visibility="visible" />

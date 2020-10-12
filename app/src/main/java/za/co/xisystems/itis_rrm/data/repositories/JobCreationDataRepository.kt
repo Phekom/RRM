@@ -302,7 +302,7 @@ class JobCreationDataRepository(
         val messages = jobResponse.errorMessage
 
         return withContext(Dispatchers.IO) {
-            messages
+            messages ?: ""
         }
     }
 

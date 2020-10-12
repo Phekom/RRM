@@ -1,7 +1,6 @@
 package za.co.xisystems.itis_rrm.data.network
 
 import com.google.gson.JsonObject
-import java.util.concurrent.TimeUnit
 import okhttp3.OkHttpClient
 import okhttp3.Protocol
 import okhttp3.logging.HttpLoggingInterceptor
@@ -29,6 +28,7 @@ import za.co.xisystems.itis_rrm.data.network.responses.UploadImageResponse
 import za.co.xisystems.itis_rrm.data.network.responses.UploadWorksItemResponse
 import za.co.xisystems.itis_rrm.data.network.responses.WorkflowMoveResponse
 import za.co.xisystems.itis_rrm.data.network.responses.WorkflowResponse
+import java.util.concurrent.TimeUnit
 
 /**
  * Created by Francis Mahlava on 2019/10/23.
@@ -77,8 +77,8 @@ interface BaseConnectionApi {
     ): Response<ActivitySectionsResponse>
 
     @FormUrlEncoded
-    @POST("ContractInfoRefresh")
-    suspend fun refreshContractInfo(
+    @POST("GetAllContractsByUserId")
+    suspend fun getAllContractsByUserId(
         @Field("UserId") UserId: String
     ): Response<ContractsResponse>
 

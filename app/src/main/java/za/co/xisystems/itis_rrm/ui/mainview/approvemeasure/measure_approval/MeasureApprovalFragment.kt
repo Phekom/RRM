@@ -10,7 +10,6 @@ import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
@@ -36,7 +35,7 @@ import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval), KodeinAware {
     override val kodein by kodein()
     private lateinit var approveViewModel: ApproveMeasureViewModel
-    private val factory: ApproveMeasureViewModelFactory by instance<ApproveMeasureViewModelFactory>()
+    private val factory: ApproveMeasureViewModelFactory by instance()
     private lateinit var measurementsToApprove: ArrayList<JobItemMeasureDTO>
     lateinit var dialog: Dialog
 
@@ -68,7 +67,7 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
             setDataProgressDialog(requireActivity(), getString(R.string.data_loading_please_wait))
         Coroutines.main {
 
-            approveViewModel.measureapproval_Item.observe(viewLifecycleOwner, Observer { job ->
+            approveViewModel.measureApprovalItem.observe(viewLifecycleOwner, { job ->
                 getMeasureItems(job)
             })
 
@@ -84,7 +83,7 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
                 logoutBuilder.setPositiveButton(
                     R.string.yes
                 ) { dialog, which ->
-                    if (ServiceUtil.isNetworkConnected(context?.applicationContext)) {
+                    if (ServiceUtil.isInternetAvailable(this.requireContext().applicationContext)) {
                         moveJobToNextWorkflow(WorkflowDirection.NEXT)
                     } else {
                         toast(R.string.no_connection_detected)
@@ -114,7 +113,7 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
 //                logoutBuilder.setPositiveButton(
 //                    R.string.yes
 //                ) { dialog, which ->
-//                    if (ServiceUtil.isNetworkConnected(context?.applicationContext)) {
+//                    if (ServiceUtil.isInternetAvailable(context?.applicationContext)) {
 // //                        moveJobToNextWorkflow(WorkflowDirection.FAIL)
 //                    } else {
 //                        toast(R.string.no_connection_detected)
@@ -141,10 +140,10 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
             )
 
             val user = approveViewModel.user.await()
-            user.observe(viewLifecycleOwner, Observer { user_ ->
+            user.observe(viewLifecycleOwner, { userDTO ->
                 try {
                     measurementsToApprove.forEach { measureItem ->
-                        if (user_.userId.isBlank()) {
+                        if (userDTO.userId.isBlank()) {
                             toast("Error: userId is null")
                         } else {
                             // littleEndian conversion for transport to the backend
@@ -152,7 +151,7 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
                                 DataConversion.toLittleEndian(measureItem.trackRouteId)!!
                             val direction: Int = workflowDirection.value
                             val description = ""
-                            processWorkFlow(user_.userId, trackRouteId, direction, description)
+                            processWorkFlow(userDTO.userId, trackRouteId, direction, description)
                         }
                     }
                     measurementsToApprove.clear()
@@ -208,7 +207,7 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
                 job.jobItemMeasureDTO.jobId,
                 ActivityIdConstants.MEASURE_COMPLETE
             )
-            measurements.observe(viewLifecycleOwner, Observer { measureItems ->
+            measurements.observe(viewLifecycleOwner, { measureItems ->
                 val allData = measureItems.count()
 
                 if (allData == measureItems.size) {

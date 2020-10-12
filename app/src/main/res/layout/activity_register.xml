@@ -62,8 +62,8 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
-                            android:background="@drawable/orange_round_corner"
-                            android:hint="@string/enter_username"
+                        android:background="@drawable/round_corner_orange"
+                        android:hint="@string/enter_username"
                             app:hintTextAppearance="@style/TextAppearance.AppCompat">
 
                         <EditText
@@ -89,9 +89,9 @@
                             android:id="@+id/passwordWrapper"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:background="@drawable/orange_round_corner"
-                            android:hint="@string/enter_password"
+                        android:layout_marginTop="4dp"
+                        android:background="@drawable/round_corner_orange"
+                        android:hint="@string/enter_password"
                             app:hintTextAppearance="@style/TextAppearance.AppCompat">
 
                         <EditText
@@ -117,7 +117,7 @@
                     <!--                        android:layout_marginLeft="52dp"-->
                     <!--                        android:layout_marginTop="4dp"-->
                     <!--                        android:layout_marginRight="52dp"-->
-                    <!--                        android:background="@drawable/orange_round_corner"-->
+                    <!--                        android:background="@drawable/round_corner_orange"-->
                     <!--                        android:hint="Create Pin Code"-->
                     <!--                        app:hintTextAppearance="@style/TextAppearance.AppCompat">-->
 
@@ -143,7 +143,7 @@
                     <!--                        android:layout_marginLeft="52dp"-->
                     <!--                        android:layout_marginTop="4dp"-->
                     <!--                        android:layout_marginRight="52dp"-->
-                    <!--                        android:background="@drawable/orange_round_corner"-->
+                    <!--                        android:background="@drawable/round_corner_orange"-->
                     <!--                        android:hint="Confirm Pin Code"-->
                     <!--                        android:imeOptions="actionDone"-->
                     <!--                        app:hintTextAppearance="@style/TextAppearance.AppCompat">-->
@@ -170,9 +170,9 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_gravity="center_horizontal"
-                            android:layout_marginTop="4dp"
-                            android:background="@drawable/orange_round_corner"
-                            android:onClick="@{viewmodel::onRegButtonClick}"
+                        android:layout_marginTop="4dp"
+                        android:background="@drawable/round_corner_orange"
+                        android:onClick="@{viewmodel::onRegButtonClick}"
                             android:text="@string/login"
                             android:textColor="@android:color/white" />
                 </LinearLayout>

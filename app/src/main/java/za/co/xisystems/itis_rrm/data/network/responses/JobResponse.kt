@@ -6,7 +6,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.WorkflowJobDTO
 
 data class JobResponse(
     @SerializedName("ErrorMessage")
-    val errorMessage: String,
+    val errorMessage: String?,
     @SerializedName("Job")
     val job: JobDTO,
 //    val job: ArrayList<JobDTO>

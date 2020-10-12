@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
@@ -17,9 +16,9 @@ import org.kodein.di.generic.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
-import za.co.xisystems.itis_rrm.custom.errors.ApiException
 import za.co.xisystems.itis_rrm.custom.errors.NoConnectivityException
 import za.co.xisystems.itis_rrm.custom.errors.NoInternetException
+import za.co.xisystems.itis_rrm.custom.errors.ServiceException
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.unsubmited_item.UnSubmittedJobItem
@@ -30,7 +29,7 @@ class UnSubmittedFragment : BaseFragment(R.layout.fragment_unsubmittedjobs), Kod
     //
     override val kodein by kodein()
     private lateinit var unsubmittedViewModel: UnSubmittedViewModel
-    private val factory: UnSubmittedViewModelFactory by instance<UnSubmittedViewModelFactory>()
+    private val factory: UnSubmittedViewModelFactory by instance()
     private lateinit var groupAdapter: GroupAdapter<GroupieViewHolder>
 
     companion object {
@@ -62,19 +61,19 @@ class UnSubmittedFragment : BaseFragment(R.layout.fragment_unsubmittedjobs), Kod
                 val measurements =
                     unsubmittedViewModel.getJobsForActivityId(ActivityIdConstants.JOB_ESTIMATE)
 
-                measurements.observe(viewLifecycleOwner, Observer { job_s ->
-                    if (job_s.isEmpty()) {
+                measurements.observe(viewLifecycleOwner, { jobList ->
+                    if (jobList.isEmpty()) {
                         groupAdapter.clear()
                         noData.visibility = View.VISIBLE
                         group12_loading.visibility = View.GONE
                     } else {
                         noData.visibility = View.GONE
-                        initRecyclerView(job_s.toApproveListItems())
-                        toast(job_s.size.toString())
+                        initRecyclerView(jobList.toApproveListItems())
+                        toast(jobList.size.toString())
                         group12_loading.visibility = View.GONE
                     }
                 })
-            } catch (e: ApiException) {
+            } catch (e: ServiceException) {
                 ToastUtils().toastLong(activity, e.message)
                 Timber.e(e, "API Exception")
             } catch (e: NoInternetException) {

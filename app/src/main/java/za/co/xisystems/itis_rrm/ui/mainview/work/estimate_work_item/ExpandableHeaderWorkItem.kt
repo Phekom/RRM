@@ -17,7 +17,6 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
 class ExpandableHeaderWorkItem(
     activity: FragmentActivity?,
     workItems: JobDTO,
-//    workItems: JobItemEstimateDTO,
     workViewModel: WorkViewModel
 ) : HeaderItem(null, workItems, workViewModel), ExpandableItem {
 
@@ -58,7 +57,7 @@ class ExpandableHeaderWorkItem(
                         activity,
                         "Job Info: Start Km: $startKm - End Km: $endKm"
                     )
-                } else if (null == trackRouteId) {
+                } else if (trackRouteId.isBlank()) {
                     ToastUtils().toastLong(
                         activity,
                         "Job not found please click on item to download job."

@@ -17,9 +17,6 @@ interface WorkflowsDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertWorkFlows(workFlows: WorkFlowsDTO)
 
-//    @Query("SELECT * FROM WORKFLOWs_TABLE WHERE workflowId = :workflowId")
-//    fun checkWorkFlowExistsWorkflowID(workflowId: Long): Boolean
-
     @Query("SELECT * FROM WORKFLOWs_TABLE ")
     fun getWorkflows(): LiveData<List<WorkFlowsDTO>>
 

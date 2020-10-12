@@ -16,23 +16,23 @@ import org.kodein.di.generic.instance
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
-import za.co.xisystems.itis_rrm.ui.custom.GalleryUIState
+import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler.handleError
+import za.co.xisystems.itis_rrm.custom.results.XIError
+import za.co.xisystems.itis_rrm.custom.results.XIResult
+import za.co.xisystems.itis_rrm.custom.results.XISuccess
+import za.co.xisystems.itis_rrm.ui.custom.MeasureGalleryUIState
 import za.co.xisystems.itis_rrm.ui.extensions.addZoomedImages
 import za.co.xisystems.itis_rrm.ui.extensions.scaleForSize
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureViewModelFactory
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
-import za.co.xisystems.itis_rrm.utils.errors.ErrorHandler.handleError
-import za.co.xisystems.itis_rrm.utils.results.XIError
-import za.co.xisystems.itis_rrm.utils.results.XIResult
-import za.co.xisystems.itis_rrm.utils.results.XISuccess
 
 class MeasureGalleryFragment : BaseFragment(R.layout.fragment_measure_gallery), KodeinAware {
     override val kodein by kodein()
     private lateinit var approveViewModel: ApproveMeasureViewModel
-    private val factory: ApproveMeasureViewModelFactory by instance<ApproveMeasureViewModelFactory>()
+    private val factory: ApproveMeasureViewModelFactory by instance()
     private val galleryObserver =
-        Observer<XIResult<GalleryUIState>> { handleResponse(it) }
+        Observer<XIResult<MeasureGalleryUIState>> { handleResponse(it) }
     private var uiScope = UiLifecycleScope()
 
     companion object {
@@ -64,7 +64,7 @@ class MeasureGalleryFragment : BaseFragment(R.layout.fragment_measure_gallery), 
         } ?: throw Exception("Invalid Activity")
 
         uiScope.launch(uiScope.coroutineContext) {
-            approveViewModel.galleryUIState.observe(viewLifecycleOwner, galleryObserver)
+            approveViewModel.measureGalleryUIState.observe(viewLifecycleOwner, galleryObserver)
         }
 
         done_image_button.setOnClickListener { view ->
@@ -73,7 +73,7 @@ class MeasureGalleryFragment : BaseFragment(R.layout.fragment_measure_gallery), 
         }
     }
 
-    fun handleResponse(response: XIResult<GalleryUIState>) {
+    fun handleResponse(response: XIResult<MeasureGalleryUIState>) {
         when (response) {
             is XISuccess -> {
                 val uiState = response.data

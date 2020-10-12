@@ -1,12 +1,12 @@
 /**
  * Copyright 2016 Jeffrey Sibbold
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -49,7 +49,7 @@ public class ZoomageView extends AppCompatImageView implements OnScaleGestureLis
 
     private static final float MIN_SCALE = 0.6f;
     private static final float MAX_SCALE = 8f;
-    private final int RESET_DURATION = 200;
+    private static final int RESET_DURATION = 200;
 
     private ScaleType startScaleType;
 
@@ -76,14 +76,14 @@ public class ZoomageView extends AppCompatImageView implements OnScaleGestureLis
     private boolean animateOnReset;
     private boolean autoCenter;
     private float doubleTapToZoomScaleFactor;
-    @AutoResetMode private int autoResetMode;
+    @AutoResetMode
+    private int autoResetMode;
 
     private PointF last = new PointF(0, 0);
     private float startScale = 1f;
     private float scaleBy = 1f;
     private float currentScaleFactor = 1f;
     private int previousPointerCount = 1;
-    private int currentPointerCount = 0;
 
     private ScaleGestureDetector scaleDetector;
 
@@ -458,7 +458,7 @@ public class ZoomageView extends AppCompatImageView implements OnScaleGestureLis
                 setStartValues();
             }
 
-            currentPointerCount = event.getPointerCount();
+            int currentPointerCount = event.getPointerCount();
 
             //get the current state of the image matrix, its values, and the bounds of the drawn bitmap
             matrix.set(getImageMatrix());
@@ -551,6 +551,9 @@ public class ZoomageView extends AppCompatImageView implements OnScaleGestureLis
                 break;
             case AutoResetMode.NEVER:
                 center();
+                break;
+            default:
+                break;
         }
     }
 
@@ -880,18 +883,23 @@ public class ZoomageView extends AppCompatImageView implements OnScaleGestureLis
     private class SimpleAnimatorListener implements Animator.AnimatorListener {
         @Override
         public void onAnimationStart(Animator animation) {
+            // Not interested
         }
+
 
         @Override
         public void onAnimationEnd(Animator animation) {
+            // not interested
         }
 
         @Override
         public void onAnimationCancel(Animator animation) {
+            // not interested
         }
 
         @Override
         public void onAnimationRepeat(Animator animation) {
+            // not interested
         }
     }
 }

@@ -47,8 +47,8 @@
                             android:layout_marginLeft="52dp"
                             android:layout_marginTop="4dp"
                             android:layout_marginRight="52dp"
-                            android:background="@drawable/orange_round_corner"
-                            android:hint="Enter Old Pin Code"
+                        android:background="@drawable/round_corner_orange"
+                        android:hint="Enter Old Pin Code"
                             app:hintTextAppearance="@style/TextAppearance.AppCompat">
 
                         <EditText
@@ -72,9 +72,9 @@
                             android:layout_height="wrap_content"
                             android:layout_marginLeft="52dp"
                             android:layout_marginTop="4dp"
-                            android:layout_marginRight="52dp"
-                            android:background="@drawable/orange_round_corner"
-                            android:hint="Enter New Pin Code"
+                        android:layout_marginRight="52dp"
+                        android:background="@drawable/round_corner_orange"
+                        android:hint="Enter New Pin Code"
                             app:hintTextAppearance="@style/TextAppearance.AppCompat">
 
                         <EditText
@@ -98,9 +98,9 @@
                             android:layout_height="wrap_content"
                             android:layout_marginLeft="52dp"
                             android:layout_marginTop="4dp"
-                            android:layout_marginRight="52dp"
-                            android:background="@drawable/orange_round_corner"
-                            android:hint="Confirm New Pin Code"
+                        android:layout_marginRight="52dp"
+                        android:background="@drawable/round_corner_orange"
+                        android:hint="Confirm New Pin Code"
                             android:imeOptions="actionDone"
                             app:hintTextAppearance="@style/TextAppearance.AppCompat">
 
@@ -140,9 +140,9 @@
                             android:layout_gravity="center_horizontal"
                             android:layout_marginLeft="52dp"
                             android:layout_marginTop="4dp"
-                            android:layout_marginRight="52dp"
-                            android:background="@drawable/orange_round_corner"
-                            android:onClick="@{viewmodel::onResetPinButtonClick}"
+                        android:layout_marginRight="52dp"
+                        android:background="@drawable/round_corner_orange"
+                        android:onClick="@{viewmodel::onResetPinButtonClick}"
                             android:text="@string/register"
                             android:textColor="@android:color/white" />
                 </LinearLayout>
