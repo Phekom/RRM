@@ -32,7 +32,6 @@ import java.io.File
 class EstimatesItem(
     private val jobItemEstimateDTO: JobItemEstimateDTO,
     private val approveViewModel: ApproveJobsViewModel,
-    private val dialog: Dialog,
     private val activity: FragmentActivity?,
     private val viewLifecycleOwner: LifecycleOwner
 
@@ -41,7 +40,7 @@ class EstimatesItem(
     override fun bind(viewHolder: GroupieViewHolder, position: Int) {
         viewHolder.apply {
             Coroutines.main {
-                dialog.show()
+                // dialog.show()
                 val quantity =
                     approveViewModel.getQuantityForEstimationItemId(jobItemEstimateDTO.estimateId)
                 quantity.observe(viewLifecycleOwner, { qty ->
@@ -52,7 +51,7 @@ class EstimatesItem(
                     approveViewModel.getLineRateForEstimationItemId(jobItemEstimateDTO.estimateId)
                 lineRate.observe(viewLifecycleOwner, {
                     estimation_item_price_textView.text = activity?.getString(R.string.pair, "R", it.toString())
-                    dialog.dismiss()
+                    // dialog.dismiss()
                 })
 //                estimation_item_quantity_textView.text = "Qty: " + quantity //jobItemEstimateDTO.qty.toString()
 //                 estimation_item_price_textView.text = "R " +  lineRate //jobItemEstimateDTO.lineRate.toString()
@@ -115,20 +114,21 @@ class EstimatesItem(
 
             quantityEntry.addTextChangedListener(object : AbstractTextWatcher() {
                 override fun onTextChanged(text: String) {
-                    if (text == "" || nanCheck(text) || text.toDouble() == 0.0) {
-                        cost = 0.0
-                        totalEntry.text = activity.getString(R.string.pair, "R", cost.toString())
-                    } else {
-
-                        val qty = text.toDouble()
-                        if (text.length > 9) {
+                    when {
+                        nanCheck(text) || text.toDouble() == 0.0 -> {
+                            cost = 0.0
+                            totalEntry.text = activity.getString(R.string.pair, "R", cost.toString())
+                        }
+                        text.length > 9 -> {
                             quantityEntry.text =
                                 Editable.Factory.getInstance().newEditable("$defaultQty")
                             activity.toast("You Have exceeded the amount of Quantity allowed")
-                        } else {
+                        }
+                        else -> {
+                            val qty = text.toDouble()
                             cost = tenderRate * qty
-                            val new_cost = cost.round(2).toString()
-                            totalEntry.text = new_cost
+                            val updatedCost = cost.round(2).toString()
+                            totalEntry.text = updatedCost
                         }
                     }
                 }
@@ -139,28 +139,7 @@ class EstimatesItem(
         alert.setPositiveButton(
             R.string.save
         ) { dialog, which ->
-            if (ServiceUtil.isInternetAvailable(activity.applicationContext)) {
-                Coroutines.main {
-                    if (quantityEntry.text.toString() == "" || nanCheck(quantityEntry.text.toString()) || quantityEntry.text.toString()
-                            .toDouble() == 0.0
-                    ) {
-                        activity.toast("Please Enter a valid Quantity")
-                    } else {
-                        val updated = approveViewModel.upDateEstimate(
-                            quantityEntry.text.toString(),
-                            totalEntry.text.toString(),
-                            jobItemEstimateDTO.estimateId
-                        )
-                        if (updated.isBlank()) {
-                            activity.toast("Data Updated was Successful")
-                        } else {
-                            activity.toast("Data Updated was Unsuccessful")
-                        }
-                    }
-                }
-            } else {
-                activity.toast("No connection detected.")
-            }
+            validateUpdateQty(activity, quantityEntry, totalEntry, jobItemEstimateDTO)
         }
         // No button
         alert.setNegativeButton(
@@ -171,6 +150,36 @@ class EstimatesItem(
         }
         val declineAlert = alert.create()
         declineAlert.show()
+    }
+
+    private fun validateUpdateQty(
+        activity: FragmentActivity,
+        quantityEntry: EditText,
+        totalEntry: TextView,
+        jobItemEstimateDTO: JobItemEstimateDTO
+    ) {
+        if (ServiceUtil.isInternetAvailable(activity.applicationContext)) {
+            Coroutines.main {
+                if (quantityEntry.text.toString() == "" || nanCheck(quantityEntry.text.toString()) || quantityEntry.text.toString()
+                        .toDouble() == 0.0
+                ) {
+                    activity.toast("Please Enter a valid Quantity")
+                } else {
+                    val updated = approveViewModel.upDateEstimate(
+                        quantityEntry.text.toString(),
+                        totalEntry.text.toString(),
+                        jobItemEstimateDTO.estimateId
+                    )
+                    if (updated.isBlank()) {
+                        activity.toast("Data Updated was Successful")
+                    } else {
+                        activity.toast("Data Updated was Unsuccessful")
+                    }
+                }
+            }
+        } else {
+            activity.toast("No connection detected.")
+        }
     }
 
     private fun showZoomedImage(imageUrl: String?) {
