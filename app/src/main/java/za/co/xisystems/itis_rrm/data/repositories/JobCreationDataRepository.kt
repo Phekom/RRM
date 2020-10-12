@@ -244,8 +244,8 @@ class JobCreationDataRepository(
         jobId: String
     ): LiveData<String?> {
 
-        val distance = 1
-        val buffer = 0
+        val distance = 50
+        val buffer = 1
         val routeSectionPointResponse =
             apiRequest { api.getRouteSectionPoint(distance, buffer, latitude, longitude, useR) }
 

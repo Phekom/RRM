@@ -1,5 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_8" project-jdk-name="11" project-jdk-type="JavaSDK" />
+  <component name="StickyNotes">
+    <option name="stickyNotes">
+      <list>
+        <SerializedStickyNote>
+          <option name="archived" value="true" />
+          <option name="boundBranchName" value="feature/MOBILEXI-1009-Works-Measurement-Gallery" />
+          <option name="description" value="Update Fragment to use ImageCollectionPreview" />
+        </SerializedStickyNote>
+        <SerializedStickyNote>
+          <option name="archived" value="true" />
+          <option name="boundBranchName" value="feature/MOBILEXI-1009-Works-Measurement-Gallery" />
+          <option name="description" value="Convert Image to Bitmap for ImageCollectionPreview" />
+        </SerializedStickyNote>
+      </list>
+    </option>
+  </component>
   <component name="TaskProjectConfiguration">
     <server type="JIRA" url="https://jira.nra.co.za:8443" />
   </component>
