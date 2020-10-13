@@ -5,14 +5,10 @@ import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenStarted
 import androidx.navigation.Navigation
-import java.util.ArrayList
-import java.util.Calendar
 import kotlinx.android.synthetic.main.fragment_createjob.*
 import kotlinx.coroutines.launch
 import org.kodein.di.KodeinAware
@@ -21,8 +17,9 @@ import org.kodein.di.generic.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
-import za.co.xisystems.itis_rrm.custom.errors.NoConnectivityException
-import za.co.xisystems.itis_rrm.custom.errors.NoInternetException
+import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
+import za.co.xisystems.itis_rrm.custom.results.XIError
+import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.ContractDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.ItemSectionDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
@@ -40,9 +37,12 @@ import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper.setSpinner
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.Coroutines
+import za.co.xisystems.itis_rrm.utils.DateUtil
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import za.co.xisystems.itis_rrm.utils.hide
 import za.co.xisystems.itis_rrm.utils.show
+import java.util.ArrayList
+import java.util.Calendar
 
 /**
  * Created by Francis Mahlava on 2019/10/18.
@@ -113,25 +113,14 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-
-        try {
-            setContract()
-        } catch (e: NoInternetException) {
-            snackError(e.message)
-            Timber.e(e, "No Internet Connection")
-        } catch (e: NoConnectivityException) {
-            snackError(e.message)
-            Timber.e(e, "Backend Host Unreachable")
-        }
-
         return inflater.inflate(R.layout.fragment_createjob, container, false)
     }
 
     init {
         // setup for CreateFragment
-
         lifecycleScope.launch {
             whenStarted {
+
             }
         }
     }
@@ -145,7 +134,7 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
 
         Coroutines.main {
             val user = createViewModel.user.await()
-            user.observe(viewLifecycleOwner, Observer { user_ ->
+            user.observe(viewLifecycleOwner, { user_ ->
                 useR = user_
             })
         }
@@ -170,6 +159,13 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
         }
 
         selectContractProjectContinueButton.setOnClickListener(myClickListener)
+
+        try {
+            setContract()
+        } catch (t: Throwable) {
+            val contractErr = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
+            XIErrorHandler.crashGuard(this.requireView(), contractErr, refreshAction = { retryContracts() })
+        }
     }
 
     private fun createNewJob() {
@@ -216,9 +212,9 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
             0,
             0,
             0,
-            today.toString(),
-            today.toString(),
-            today.toString(),
+            DateUtil.DateToString(today),
+            DateUtil.DateToString(today),
+            DateUtil.DateToString(today),
             null, // null,null,null,null,
             newJobItemEstimatesList,
             jobItemMeasureArrayList,
@@ -288,7 +284,7 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
 
                 val contractData = createViewModel.getContracts()
 
-                contractData.observe(viewLifecycleOwner, Observer { contractList ->
+                contractData.observe(viewLifecycleOwner, { contractList ->
                     val allData = contractList.count()
                     if (contractList.size == allData) {
                         val contractIndices = arrayOfNulls<String>(contractList.size)
@@ -315,13 +311,17 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
                     data_loading.hide()
                 })
             }
-        } catch (e: NoInternetException) {
-            Toast.makeText(context, e.message, Toast.LENGTH_SHORT).show()
-            Timber.e(e, "No Internet Connection")
-        } catch (e: NoConnectivityException) {
-            Toast.makeText(context, e.message, Toast.LENGTH_SHORT).show()
-            Timber.e(e, "Backend Host Unreachable")
+        } catch (t: Throwable) {
+            val contractErr = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
+            XIErrorHandler.crashGuard(this.requireView(), contractErr, refreshAction = { retryContracts() })
+        } finally {
+            data_loading.hide()
         }
+    }
+
+    private fun retryContracts() {
+        IndefiniteSnackbar.hide()
+        setContract()
     }
 
     private fun setProjects(contractId: String?) {
@@ -329,7 +329,7 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
         Coroutines.main {
             val projects = createViewModel.getSomeProjects(contractId!!)
             data_loading.show()
-            projects.observe(viewLifecycleOwner, Observer { projec_t ->
+            projects.observe(viewLifecycleOwner, { projec_t ->
                 val allData = projec_t.count()
                 if (projec_t.size == allData) {
 
@@ -337,7 +337,8 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
                     for (project in projec_t.indices) {
                         projectNmbr[project] = projec_t[project].projectCode
                     }
-                    setSpinner(requireContext().applicationContext,
+                    setSpinner(
+                        requireContext().applicationContext,
                         projectSpinner,
                         projec_t,
                         projectNmbr, // null)
