@@ -219,8 +219,6 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
             home.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
             startActivity(home)
         }
-        // Navigation.findNavController(view!!)
-//                .navigate(R.id.action_jobInfoFragment_to_nav_home)
     }
 
     private fun getEstimateItems(jobID: String?) {
