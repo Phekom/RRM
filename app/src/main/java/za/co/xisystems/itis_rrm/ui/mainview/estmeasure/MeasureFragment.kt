@@ -26,10 +26,9 @@ import org.kodein.di.generic.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
-import za.co.xisystems.itis_rrm.custom.errors.NoConnectivityException
-import za.co.xisystems.itis_rrm.custom.errors.NoInternetException
-import za.co.xisystems.itis_rrm.custom.errors.ServiceException
-import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
+import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
+import za.co.xisystems.itis_rrm.custom.results.XIError
+import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.estimate_measure_item.EstimateMeasureItem
@@ -96,14 +95,15 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
                 if (it.isEmpty()) {
                     fetchJobMeasures()
                 } else {
-                    noData.visibility = View.GONE
+
                     val jobHeaders = it.distinctBy { item ->
                         item.jobId
                     }
                     Timber.d("Estimate measures detected: ${jobHeaders.size}")
                     initRecyclerView(jobHeaders.toMeasureListItems())
-                    toast(jobHeaders.size.toString())
+                    noData.visibility = View.GONE
                     group5_loading.visibility = View.GONE
+                    toast(jobHeaders.size.toString())
                 }
             }
         })
@@ -119,34 +119,44 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
         estimations_swipe_to_refresh.setColorSchemeColors(Color.WHITE)
 
         estimations_swipe_to_refresh.setOnRefreshListener {
-            dialog.show()
-            Coroutines.main {
-                try {
-                    withContext(Dispatchers.Main) {
-                        val jobs = measureViewModel.offlineUserTaskList.await()
-                        jobs.observeOnce(viewLifecycleOwner, { works ->
-                            if (works.isEmpty()) {
-                                noData.visibility = View.VISIBLE
-                            } else {
-                                noData.visibility = View.GONE
-                            }
-                        })
-                    }
-                } catch (e: ServiceException) {
-                    ToastUtils().toastLong(activity, e.message)
-                    Timber.e(e, "API Exception")
-                } catch (e: NoInternetException) {
-                    ToastUtils().toastLong(activity, e.message)
-                    Timber.e(e, "No Internet Connection")
-                } catch (e: NoConnectivityException) {
-                    ToastUtils().toastLong(activity, e.message)
-                    Timber.e(e, "Service Host Unreachable")
-                } finally {
-                    dialog.dismiss()
-                    estimations_swipe_to_refresh.isRefreshing = false
+            fetchRemoteJobs(dialog)
+        }
+    }
+
+    private fun fetchRemoteJobs(dialog: ProgressDialog) {
+        Coroutines.main {
+            try {
+                dialog.show()
+                withContext(Dispatchers.Main) {
+                    val jobs = measureViewModel.offlineUserTaskList.await()
+                    jobs.observeOnce(viewLifecycleOwner, { works ->
+                        if (works.isEmpty()) {
+                            noData.visibility = View.VISIBLE
+                        } else {
+                            noData.visibility = View.GONE
+                        }
+                    })
                 }
+            } catch (t: Throwable) {
+                val fetchError = XIError(t, t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR)
+                XIErrorHandler.crashGuard(this@MeasureFragment.requireView(), fetchError, refreshAction =
+                { retryFetchingJobs() }
+                )
+            } finally {
+                dialog.dismiss()
+                estimations_swipe_to_refresh.isRefreshing = false
             }
         }
+    }
+
+    private fun retryFetchingJobs() {
+        IndefiniteSnackbar.hide()
+        val dialog =
+            setDataProgressDialog(
+                requireActivity(),
+                getString(R.string.data_loading_please_wait)
+            )
+        fetchRemoteJobs(dialog)
     }
 
     private fun fetchJobMeasures() {
@@ -160,6 +170,7 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
                 jos?.let {
                     if (jos.isEmpty()) {
                         no_data_layout.visibility = View.VISIBLE
+                        group5_loading.visibility = View.GONE
                     } else {
                         no_data_layout.visibility = View.GONE
                         val measureItems = jos.distinctBy {
