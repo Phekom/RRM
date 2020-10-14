@@ -1,6 +1,7 @@
 package za.co.xisystems.itis_rrm.ui.mainview.home
 
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
@@ -31,9 +32,12 @@ class HomeViewModel(
     private val dataBaseStatus: MutableLiveData<XIResult<Boolean>> = offlineDataRepository.databaseStatus
 
     init {
-        dataBaseStatus.observeForever {
-            it?.let {
-                databaseResult.postValue(it)
+
+        viewModelScope.launch {
+            dataBaseStatus.observeForever {
+                it?.let {
+                    databaseResult.postValue(it)
+                }
             }
         }
     }

@@ -238,39 +238,37 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
                     jobDTO.JobId,
                     ActivityIdConstants.ESTIMATE_INCOMPLETE
                 )
-                estimates.observe(viewLifecycleOwner, { estimateItems ->
-                    estimateItems?.let {
-                        it.forEach { item ->
+                estimates.observeOnce(viewLifecycleOwner, { estimateItems ->
+                    estimateItems.forEach { item ->
 
-                            uiScope.launch(uiScope.coroutineContext) {
-                                try {
-                                    val desc =
-                                        workViewModel.getDescForProjectItemId(item.projectItemId!!)
-                                    val qty = item.qty.toString()
-                                    val rate = item.lineRate.toString()
-                                    val estimateId = item.estimateId
+                        uiScope.launch(uiScope.coroutineContext) {
+                            try {
+                                val desc =
+                                    workViewModel.getDescForProjectItemId(item.projectItemId!!)
+                                val qty = item.qty.toString()
+                                val rate = item.lineRate.toString()
+                                val estimateId = item.estimateId
 
-                                    add(
-                                        CardItem(
-                                            activity = activity,
-                                            text = desc,
-                                            qty = qty,
-                                            rate = rate,
-                                            estimateId = estimateId,
-                                            workViewModel = workViewModel,
-                                            jobItemEstimate = item,
-                                            job = jobDTO
-                                        )
+                                add(
+                                    CardItem(
+                                        activity = activity,
+                                        text = desc,
+                                        qty = qty,
+                                        rate = rate,
+                                        estimateId = estimateId,
+                                        workViewModel = workViewModel,
+                                        jobItemEstimate = item,
+                                        job = jobDTO
                                     )
-                                } catch (t: Throwable) {
-                                    Timber.e(t, "Failed to create work-item")
-                                    val workError = XIError(t, t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR)
-                                    XIErrorHandler.handleError(
-                                        view = this@WorkFragment.requireView(),
-                                        throwable = workError,
-                                        shouldToast = true
-                                    )
-                                }
+                                )
+                            } catch (t: Throwable) {
+                                Timber.e(t, "Failed to create work-item")
+                                val workError = XIError(t, t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR)
+                                XIErrorHandler.handleError(
+                                    view = this@WorkFragment.requireView(),
+                                    throwable = workError,
+                                    shouldToast = true
+                                )
                             }
                         }
                     }
@@ -279,3 +277,4 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
         }
     }
 }
+

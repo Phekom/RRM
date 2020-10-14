@@ -175,11 +175,11 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
 
                     when {
                         userDTO.userId.isBlank() -> {
-                            toast("Error: userId is null")
+                            this@JobInfoFragment.requireActivity().motionToast("The user lacks permissions.", MotionToast.TOAST_ERROR)
                             progressButton.failProgress("Invalid User")
                         }
                         job.jobDTO.JobId.isBlank() -> {
-                            toast("Error: selectedJob is null")
+                            this@JobInfoFragment.requireActivity().motionToast("The selected job is invalid.", MotionToast.TOAST_ERROR)
                             progressButton.failProgress("Invalid Job")
                         }
                         else -> {
@@ -205,7 +205,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
         description: String?
     ) {
         Coroutines.main {
-            approve_job_button.startProgress("Submitting Data ...")
+            progressButton.startProgress("Submitting Data ...")
 
             val response =
                 approveViewModel.processWorkflowMove(userId, trackRouteId, description, direction)
