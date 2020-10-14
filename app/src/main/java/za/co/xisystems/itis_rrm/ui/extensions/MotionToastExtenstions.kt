@@ -8,23 +8,23 @@ import za.co.xisystems.itis_rrm.R
 
 fun Activity.motionToast(message: String, motionType: String) {
 
-    MotionToast.createToast(
+    MotionToast.createColorToast(
         context = this,
         message = message,
         style = motionType,
-        position = MotionToast.GRAVITY_CENTER,
+        position = MotionToast.GRAVITY_BOTTOM,
         duration = MotionToast.LONG_DURATION,
-        font = ResourcesCompat.getFont(this, R.font.myriadproit)
+        font = ResourcesCompat.getFont(this, R.font.helvetica_regular)
     )
 }
 
 fun FragmentActivity.motionToast(message: String, motionType: String) {
-    MotionToast.createToast(
+    MotionToast.createColorToast(
         context = this,
         message = message,
         style = motionType,
-        position = MotionToast.GRAVITY_CENTER,
+        position = MotionToast.GRAVITY_BOTTOM,
         duration = MotionToast.LONG_DURATION,
-        font = ResourcesCompat.getFont(this, R.font.myriadproit)
+        font = ResourcesCompat.getFont(this, R.font.helvetica_regular)
     )
 }
