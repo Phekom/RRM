@@ -342,7 +342,6 @@ class OfflineDataRepository(
                 if (!appDb.getContractDao().checkIfContractExists(contract.contractId)) {
                     appDb.getContractDao().insertContract(contract)
                     contractCount++
-                    postStatus("Posting Contract $contractCount of $contractMax")
 
                     val validProjects =
                         contract.projects?.filter { project ->
@@ -417,7 +416,6 @@ class OfflineDataRepository(
                         }
 
                         projectCount++
-                        postStatus("Setting project $projectCount of $projectMax")
 
                         if (contractCount >= contractMax && projectCount >= projectMax) {
                             databaseStatus.postValue(XIStatus("All projects retrieved."))
