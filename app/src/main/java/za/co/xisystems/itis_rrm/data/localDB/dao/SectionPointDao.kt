@@ -30,8 +30,8 @@ interface SectionPointDao {
         jobId: String?
     )
 
-    @Query("SELECT * FROM SECTION_POINT_TABLE WHERE  projectId LIKE :projectId")
-    fun getPointSectionData(projectId: String?): LiveData<SectionPointDTO> // jobId: String jobId LIKE :jobId AND
+    @Query("SELECT * FROM SECTION_POINT_TABLE WHERE  projectId = :projectId")
+    suspend fun getPointSectionData(projectId: String): SectionPointDTO
 
     @Query("SELECT * FROM SECTION_POINT_TABLE WHERE sectionId = :sectionId AND projectId LIKE :projectId AND jobId LIKE :jobId")
     fun getExistingSection(
@@ -39,27 +39,7 @@ interface SectionPointDao {
         projectId: String?,
         jobId: String?
     ): LiveData<SectionPointDTO>
-//
-//    @Query("SELECT route FROM SECTION_POINT_TABLE WHERE sectionId = :sectionId")
-//    fun getRouteForProjectSectionId(sectionId: String): String
-//
-//    @Query("SELECT section FROM SECTION_POINT_TABLE WHERE sectionId = :sectionId")
-//    fun getSectionForProjectSectionId(sectionId: String): String
-//
-//    @Query("SELECT sectionId FROM PROJECT_SECTION_TABLE WHERE section = :sectionId  AND route = :linearId AND projectId = :projectId")
-//    fun getSectionByRouteSectionProject(linearId: String, sectionId: Int, projectId: String?) : String
-// //    fun getSectionByRouteSectionProject(linearId: String, sectionId: Int, direction: String, projectId: String?)
-//
-//
 
-    //    @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE projectId = :projectId")
-//    fun getAllItemsForProjectId(projectId: String): LiveData<List<ItemDTO>>
-//
-//
-//    @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE sectionItemId = :sectionItem AND projectId = :projectId")
-//    fun getAllItemsForSectionItem(sectionItem : String, projectId : String ): LiveData<List<ItemDTO>>
-//
-//
     @Query("DELETE FROM SECTION_POINT_TABLE")
     fun deleteAll()
 }
