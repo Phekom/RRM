@@ -18,12 +18,12 @@ fun Activity.motionToast(message: String, motionType: String) {
     )
 }
 
-fun FragmentActivity.motionToast(message: String, motionType: String) {
+fun FragmentActivity.motionToast(message: String, motionType: String, position: Int = MotionToast.GRAVITY_BOTTOM) {
     MotionToast.createColorToast(
         context = this,
         message = message,
         style = motionType,
-        position = MotionToast.GRAVITY_BOTTOM,
+        position = position,
         duration = MotionToast.LONG_DURATION,
         font = ResourcesCompat.getFont(this, R.font.helvetica_regular)
     )

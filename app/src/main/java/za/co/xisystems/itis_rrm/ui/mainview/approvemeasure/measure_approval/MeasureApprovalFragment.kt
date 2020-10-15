@@ -1,7 +1,6 @@
 package za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.measure_approval
 
 import android.app.Dialog
-import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -19,10 +18,12 @@ import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
 import timber.log.Timber
+import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
+import za.co.xisystems.itis_rrm.ui.extensions.motionToast
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.approveMeasure_Item.ApproveMeasureItem
@@ -72,33 +73,36 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
             })
 
             approve_measure_button.setOnClickListener {
-                val logoutBuilder = AlertDialog.Builder(
+                val flowBuilder = AlertDialog.Builder(
                     requireActivity() // , android.R.style.Theme_DeviceDefault_Dialog
                 )
-                logoutBuilder.setTitle(R.string.confirm)
-                logoutBuilder.setIcon(R.drawable.ic_approve)
-                logoutBuilder.setMessage(R.string.are_you_sure_you_want_to_approve2)
+                flowBuilder.setTitle(R.string.confirm)
+                flowBuilder.setIcon(R.drawable.ic_approve)
+                flowBuilder.setMessage(R.string.are_you_sure_you_want_to_approve2)
 
                 // Yes button
-                logoutBuilder.setPositiveButton(
+                flowBuilder.setPositiveButton(
                     R.string.yes
                 ) { dialog, which ->
                     if (ServiceUtil.isInternetAvailable(this.requireContext().applicationContext)) {
                         moveJobToNextWorkflow(WorkflowDirection.NEXT)
                     } else {
-                        toast(R.string.no_connection_detected)
+                        this.requireActivity().motionToast(
+                            getString(R.string.no_connection_detected),
+                            MotionToast.TOAST_NO_INTERNET
+                        )
                     }
                 }
+
                 // No button
-                // No button
-                logoutBuilder.setNegativeButton(
+                flowBuilder.setNegativeButton(
                     R.string.no
                 ) { dialog, which ->
                     // Do nothing but close dialog
                     dialog.dismiss()
                 }
-                val declineAlert = logoutBuilder.create()
-                declineAlert.show()
+                val approveAlert = flowBuilder.create()
+                approveAlert.show()
             }
 
 //            decline_measure_button.setOnClickListener {
@@ -171,29 +175,19 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
         description: String?
     ) {
         Coroutines.main {
-            val prog = ProgressDialog(activity)
-            prog.setTitle(getString(R.string.please_wait))
-            prog.setMessage(getString(R.string.loading_job_wait))
-            prog.setCancelable(false)
-            prog.isIndeterminate = true
-            prog.setProgressStyle(ProgressDialog.STYLE_SPINNER)
-            prog.show()
             val submit =
                 approveViewModel.processWorkflowMove(userId, trackRouteId, description, direction)
             if (submit.isNotEmpty()) {
-                prog.dismiss()
-                toast(submit)
-            } else {
-                prog.dismiss()
+                this.requireActivity().motionToast(submit, MotionToast.TOAST_ERROR, MotionToast.GRAVITY_CENTER)
             }
         }
     }
 
     private fun popViewOnJobSubmit(direction: Int) {
         if (direction == WorkflowDirection.NEXT.value) {
-            toast(R.string.job_approved)
+            this.requireActivity().motionToast(getString(R.string.job_approved), MotionToast.TOAST_SUCCESS)
         } else if (direction == WorkflowDirection.FAIL.value) {
-            toast(R.string.job_declined)
+            this.requireActivity().motionToast(getString(R.string.job_declined), MotionToast.TOAST_INFO)
         }
 
         Intent(context?.applicationContext, MainActivity::class.java).also { home ->
@@ -221,7 +215,7 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
 
     private fun initRecyclerView(measureListItems: List<MeasurementsItem>) {
         val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
-            addAll(measureListItems)
+            update(measureListItems)
         }
         view_measured_items.apply {
             layoutManager = LinearLayoutManager(context)

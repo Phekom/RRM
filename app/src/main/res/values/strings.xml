@@ -570,5 +570,6 @@
     <string name="no_location_text">No current location</string>
     <string name="badge">(%1$d)</string>
     <string name="pair">%1$s %2$s</string>
+    <string name="comment_placeholder">No comment</string>
 
 </resources>

@@ -1,6 +1,5 @@
 package za.co.xisystems.itis_rrm.ui.mainview.estmeasure
 
-import android.app.ProgressDialog
 import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -14,10 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import kotlinx.android.synthetic.main.fragment_approvemeasure.noData
-import kotlinx.android.synthetic.main.fragment_estmeasure.estimations_swipe_to_refresh
-import kotlinx.android.synthetic.main.fragment_estmeasure.estimations_to_be_measured_listView
-import kotlinx.android.synthetic.main.fragment_estmeasure.group5_loading
-import kotlinx.android.synthetic.main.fragment_estmeasure.no_data_layout
+import kotlinx.android.synthetic.main.fragment_estmeasure.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.kodein.di.KodeinAware
@@ -80,7 +76,7 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
 
             fetchEstimateMeasures()
 
-            swipeToRefreshInit(dialog)
+            swipeToRefreshInit()
         }
     }
 
@@ -109,7 +105,7 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
         })
     }
 
-    private fun swipeToRefreshInit(dialog: ProgressDialog) {
+    private fun swipeToRefreshInit() {
         estimations_swipe_to_refresh.setProgressBackgroundColorSchemeColor(
             ContextCompat.getColor(
                 requireContext().applicationContext,
@@ -119,14 +115,15 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
         estimations_swipe_to_refresh.setColorSchemeColors(Color.WHITE)
 
         estimations_swipe_to_refresh.setOnRefreshListener {
-            fetchRemoteJobs(dialog)
+            Coroutines.main {
+                fetchRemoteJobs()
+            }
         }
     }
 
-    private fun fetchRemoteJobs(dialog: ProgressDialog) {
+    private suspend fun fetchRemoteJobs() {
         Coroutines.main {
             try {
-                dialog.show()
                 withContext(Dispatchers.Main) {
                     val jobs = measureViewModel.offlineUserTaskList.await()
                     jobs.observeOnce(viewLifecycleOwner, { works ->
@@ -139,11 +136,13 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
                 }
             } catch (t: Throwable) {
                 val fetchError = XIError(t, t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR)
-                XIErrorHandler.crashGuard(this@MeasureFragment.requireView(), fetchError, refreshAction =
-                { retryFetchingJobs() }
+                XIErrorHandler.crashGuard(
+                    this@MeasureFragment.requireView(),
+                    fetchError,
+                    refreshAction =
+                    { retryFetchingJobs() }
                 )
             } finally {
-                dialog.dismiss()
                 estimations_swipe_to_refresh.isRefreshing = false
             }
         }
@@ -151,12 +150,9 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
 
     private fun retryFetchingJobs() {
         IndefiniteSnackbar.hide()
-        val dialog =
-            setDataProgressDialog(
-                requireActivity(),
-                getString(R.string.data_loading_please_wait)
-            )
-        fetchRemoteJobs(dialog)
+        Coroutines.main {
+            fetchRemoteJobs()
+        }
     }
 
     private fun fetchJobMeasures() {

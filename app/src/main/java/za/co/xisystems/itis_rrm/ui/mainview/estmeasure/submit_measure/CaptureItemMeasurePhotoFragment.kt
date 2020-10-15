@@ -22,10 +22,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.coroutineScope
 import androidx.navigation.Navigation
-import kotlinx.android.synthetic.main.activity_capture_item_measure_photo.done_image_button
-import kotlinx.android.synthetic.main.activity_capture_item_measure_photo.photoButtons
-import kotlinx.android.synthetic.main.fragment_capture_item_measure_photo.capture_another_photo_button
-import kotlinx.android.synthetic.main.fragment_capture_item_measure_photo.estimate_image_collection_view
+import kotlinx.android.synthetic.main.fragment_capture_item_measure_photo.*
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import org.kodein.di.KodeinAware
@@ -246,7 +243,7 @@ class CaptureItemMeasurePhotoFragment :
             if (ContextCompat.checkSelfPermission(
                     requireActivity(),
                     Manifest.permission.WRITE_EXTERNAL_STORAGE
-                ) !== PackageManager.PERMISSION_GRANTED
+                ) != PackageManager.PERMISSION_GRANTED
             ) {
                 ActivityCompat.requestPermissions(
                     requireActivity(),
@@ -326,7 +323,7 @@ class CaptureItemMeasurePhotoFragment :
         }
     }
 
-    fun getCurrentLocation(): LocationModel? {
+    private fun getCurrentLocation(): LocationModel? {
         return super.getLocation()
     }
 
@@ -383,7 +380,7 @@ class CaptureItemMeasurePhotoFragment :
         private const val LOCATION_KEY = "location-key"
 
         // region (Public Static Final Fields)
-        const val UPDATE_INTERVAL_IN_MILLISECONDS: Long = 10000
+        private const val UPDATE_INTERVAL_IN_MILLISECONDS: Long = 10000
         const val FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS = UPDATE_INTERVAL_IN_MILLISECONDS / 2
     }
 }

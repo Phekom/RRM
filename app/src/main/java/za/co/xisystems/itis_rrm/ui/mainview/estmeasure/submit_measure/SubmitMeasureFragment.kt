@@ -1,7 +1,6 @@
 package za.co.xisystems.itis_rrm.ui.mainview.estmeasure.submit_measure
 
 import android.app.AlertDialog
-import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
@@ -26,9 +25,7 @@ import org.kodein.di.generic.instance
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
-import za.co.xisystems.itis_rrm.custom.errors.NoConnectivityException
-import za.co.xisystems.itis_rrm.custom.errors.NoInternetException
-import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler.handleError
+import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.results.XIError
 import za.co.xisystems.itis_rrm.custom.results.XISuccess
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
@@ -231,7 +228,6 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                             activity?.let {
 
                                 processMeasurementWorkflow(
-                                    prog,
                                     userDTO,
                                     jobId,
                                     itemMeasureJob,
@@ -248,7 +244,6 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
     }
 
     private fun processMeasurementWorkflow(
-        prog: ProgressDialog,
         userDTO: UserDTO,
         jobId: String,
         itemMeasureJob: JobDTO,
@@ -257,7 +252,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
         it: FragmentActivity
     ) {
         uiScope.launch(uiScope.coroutineContext) {
-            prog.show()
+
             val result = measureViewModel.processWorkflowMove(
                 userDTO.userId,
                 jobId,
@@ -274,30 +269,14 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                     response?.let { outcome ->
                         when (outcome) {
                             is XISuccess -> {
-                                prog.dismiss()
                                 toast(R.string.measure_submitted)
                                 popViewOnJobSubmit()
                             }
                             is XIError -> {
                                 result.cancel(CancellationException(outcome.message))
-                                prog.dismiss()
-                                when (outcome.exception) {
-                                    is NoInternetException -> {
-                                        handleConnectivityError(outcome)
-                                    }
-                                    is NoConnectivityException -> {
-                                        handleConnectivityError(outcome)
-                                    }
-
-                                    else -> {
-                                        handleError(
-                                            view = this@SubmitMeasureFragment.requireView(),
-                                            throwable = outcome,
-                                            shouldToast = true,
-                                            shouldShowSnackBar = false
-                                        )
-                                    }
-                                }
+                                XIErrorHandler.crashGuard(this@SubmitMeasureFragment.requireView(),
+                                    outcome,
+                                    refreshAction = { retryMeasurements() })
                             }
                         }
                     }
@@ -305,30 +284,22 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
         }
     }
 
-    private fun handleConnectivityError(outcome: XIError) {
-        handleError(this@SubmitMeasureFragment.requireView(),
-            throwable = outcome,
-            shouldToast = false,
-            shouldShowSnackBar = true,
-            refreshAction = { retryMeasurements() })
-    }
-
     fun setJobMeasureLittleEndianGuids(jim: JobItemMeasureDTO?): JobItemMeasureDTO? {
-        if (jim != null) {
-            jim.setEstimateId(DataConversion.toLittleEndian(jim.estimateId))
-            jim.setJobId(DataConversion.toLittleEndian(jim.jobId))
-            jim.setProjectItemId(DataConversion.toLittleEndian(jim.projectItemId))
-            jim.setItemMeasureId(DataConversion.toLittleEndian(jim.itemMeasureId))
+        jim?.let { jobMeasure ->
+            jobMeasure.setEstimateId(DataConversion.toLittleEndian(jobMeasure.estimateId))
+            jobMeasure.setJobId(DataConversion.toLittleEndian(jobMeasure.jobId))
+            jobMeasure.setProjectItemId(DataConversion.toLittleEndian(jobMeasure.projectItemId))
+            jobMeasure.setItemMeasureId(DataConversion.toLittleEndian(jobMeasure.itemMeasureId))
 
-            if (jim.trackRouteId != null)
-                jim.setTrackRouteId(DataConversion.toLittleEndian(jim.trackRouteId))
-            else jim.trackRouteId = null
+            if (jobMeasure.trackRouteId != null)
+                jobMeasure.setTrackRouteId(DataConversion.toLittleEndian(jobMeasure.trackRouteId))
+            else jobMeasure.trackRouteId = null
 
-            if (jim.measureGroupId != null)
-                jim.setMeasureGroupId(DataConversion.toLittleEndian(jim.measureGroupId))
+            if (jobMeasure.measureGroupId != null)
+                jobMeasure.setMeasureGroupId(DataConversion.toLittleEndian(jobMeasure.measureGroupId))
 
-            if (jim.jobItemMeasurePhotos.isNotEmpty()) {
-                for (jmep in jim.jobItemMeasurePhotos) {
+            if (jobMeasure.jobItemMeasurePhotos.isNotEmpty()) {
+                for (jmep in jobMeasure.jobItemMeasurePhotos) {
                     jmep.setPhotoId(DataConversion.toLittleEndian(jmep.photoId))
                     jmep.setEstimateId(DataConversion.toLittleEndian(jmep.estimateId))
                     jmep.setItemMeasureId(DataConversion.toLittleEndian(jmep.itemMeasureId))

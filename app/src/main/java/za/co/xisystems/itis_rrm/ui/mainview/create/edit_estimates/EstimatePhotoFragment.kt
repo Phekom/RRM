@@ -538,6 +538,8 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
         } else { // Otherwise, delete the temporary image file
             PhotoUtil.deleteImageFile(requireContext(), filenamePath.toString())
             haltAnimation()
+            startImageView.visibility = View.VISIBLE
+            endImageView.visibility = View.VISIBLE
         }
     }
 

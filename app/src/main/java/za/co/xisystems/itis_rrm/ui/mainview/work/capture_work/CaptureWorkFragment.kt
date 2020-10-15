@@ -2,7 +2,6 @@ package za.co.xisystems.itis_rrm.ui.mainview.work.capture_work
 
 import android.Manifest
 import android.app.Activity
-import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
@@ -13,14 +12,12 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
 import android.text.method.KeyListener
-import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -37,11 +34,13 @@ import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
 import pereira.agnaldo.previewimgcol.ImageCollectionView
 import timber.log.Timber
+import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.LocationFragment
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.results.XIError
+import za.co.xisystems.itis_rrm.custom.results.XIProgress
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.results.XIStatus
 import za.co.xisystems.itis_rrm.custom.results.XISuccess
@@ -54,8 +53,13 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.WF_WorkStepDTO
 import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.services.LocationModel
 import za.co.xisystems.itis_rrm.ui.extensions.addZoomedImages
+import za.co.xisystems.itis_rrm.ui.extensions.doneProgress
+import za.co.xisystems.itis_rrm.ui.extensions.failProgress
+import za.co.xisystems.itis_rrm.ui.extensions.initProgress
+import za.co.xisystems.itis_rrm.ui.extensions.motionToast
 import za.co.xisystems.itis_rrm.ui.extensions.scaleForSize
 import za.co.xisystems.itis_rrm.ui.extensions.showZoomedImage
+import za.co.xisystems.itis_rrm.ui.extensions.startProgress
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.intents.AbstractIntent
@@ -99,7 +103,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
     private var workObserver = Observer<XIResult<String>> { handleWorkSubmission(it) }
     private var jobObserver = Observer<XIResult<String>> { handleJobSubmission(it) }
 
-    var filenamePath = HashMap<String, String>()
+    private var filenamePath = HashMap<String, String>()
     private var workLocation: LocationModel? = null
     private lateinit var useR: UserDTO
 
@@ -172,6 +176,8 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
         move_workflow_button.setOnClickListener {
             validateUploadWorks()
         }
+
+        move_workflow_button.initProgress(viewLifecycleOwner)
     }
 
     private fun populateHistoricalWorkEstimate(result: XIResult<JobEstimateWorksDTO>) {
@@ -188,7 +194,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                     image_collection_view.addZoomedImages(photoPairs, requireActivity())
                     keyListener = comments_editText.keyListener
                     comments_editText.keyListener = null
-                    comments_editText.setText("Placeholder Comment", TextView.BufferType.NORMAL)
+                    comments_editText.setText(getString(R.string.comment_placeholder), TextView.BufferType.NORMAL)
                     take_photo_button.isClickable = false
                     take_photo_button.background =
                         ContextCompat.getDrawable(requireContext(), R.drawable.round_corner_gray)
@@ -197,9 +203,16 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                         ContextCompat.getDrawable(requireContext(), R.drawable.round_corner_gray)
                 }
             }
-            is XIStatus -> {
-                XIErrorHandler.showMessage(this.requireView(), result.message)
+            is XIError -> {
+                this.requireActivity().motionToast(result.message, MotionToast.TOAST_ERROR)
             }
+            is XIStatus -> {
+                this.requireActivity().motionToast(result.message, MotionToast.TOAST_INFO)
+            }
+            is XIProgress -> {
+                this.requireActivity().motionToast("Progress: ${result.isLoading}", MotionToast.TOAST_INFO)
+            }
+
         }
     }
 
@@ -214,52 +227,45 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                     validationNotice(R.string.please_provide_a_comment)
                 }
                 else -> {
-                    val prog =
-                        setDataProgressDialog(
-                            requireActivity(),
-                            getString(R.string.data_loading_please_wait)
-                        )
                     move_workflow_button.isClickable = false
-                    uploadEstimateWorksItem(prog)
+                    move_workflow_button.startProgress("Uploading ...")
+                    uploadEstimateWorksItem()
                     move_workflow_button.isClickable = true
                 }
             }
         }
     }
 
-    private fun uploadEstimateWorksItem(prog: ProgressDialog) {
+    private fun uploadEstimateWorksItem() {
         if (ServiceUtil.isInternetAvailable(requireActivity().applicationContext)) { //  Lets Send to Service
 
             itemEstiWorks.jobEstimateWorksPhotos = estimateWorksPhotoArrayList
             itemEstiWorks.jobItemEstimate = jobitemEsti
-            prog.show()
-            sendJobToService(itemEstiWorks, prog)
+
+            sendJobToService(itemEstiWorks)
         } else {
-            val networkToast = Toast.makeText(
-                activity?.applicationContext,
-                R.string.no_connection_detected,
-                Toast.LENGTH_LONG
+            this.requireActivity().motionToast(
+                message = getString(R.string.no_connection_detected),
+                motionType = MotionToast.TOAST_NO_INTERNET,
+                position = MotionToast.GRAVITY_CENTER
             )
-            networkToast.setGravity(Gravity.CENTER_VERTICAL, 0, 0)
-            networkToast.show()
+            move_workflow_button.failProgress("Network down ...")
         }
     }
 
     private fun validationNotice(stringId: Int) {
-        val validation = Toast.makeText(
-            activity?.applicationContext,
-            getString(stringId),
-            Toast.LENGTH_LONG
+        this.requireActivity().motionToast(
+            message = getString(stringId),
+            motionType = MotionToast.TOAST_WARNING,
+            position = MotionToast.GRAVITY_CENTER
         )
-        validation.setGravity(Gravity.CENTER_VERTICAL, 0, 0)
-        validation.show()
     }
 
     private fun initCameraLaunch() {
         if (ContextCompat.checkSelfPermission(
                 requireActivity().applicationContext,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE
-            ) !== PackageManager.PERMISSION_GRANTED
+            ) != PackageManager.PERMISSION_GRANTED
         ) {
             ActivityCompat.requestPermissions(
                 Activity(),
@@ -273,29 +279,35 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
 
     private fun sendJobToService(
         itemEstiWorks: JobEstimateWorksDTO,
-        prog: ProgressDialog
     ) {
         uiScope.launch(uiScope.coroutineContext) {
             workViewModel.backupWorkSubmission.postValue(itemEstiWorks)
-            workViewModel.workflowResponse.observeOnce(viewLifecycleOwner, workObserver)
+            workViewModel.workflowResponse.observe(viewLifecycleOwner, workObserver)
             val newItemEstimateWorks = setJobWorksLittleEndianGuids(itemEstiWorks)
             val response =
                 workViewModel.submitWorks(newItemEstimateWorks, requireActivity(), itemEstimateJob)
             if (response.isBlank()) {
-                refreshView(prog)
-            } else
-                activity?.toast(response)
+                move_workflow_button.doneProgress("Workflow complete")
+                refreshView()
+            } else {
+                activity?.motionToast(
+                    message = response,
+                    motionType = MotionToast.TOAST_ERROR,
+                    position = MotionToast.GRAVITY_CENTER
+                )
+                move_workflow_button.failProgress("Workflow Failed")
+            }
         }
     }
 
     /**
      * Handler routine for submitting completed work for a job.
      */
-    fun handleJobSubmission(result: XIResult<String>) {
+    private fun handleJobSubmission(result: XIResult<String>) {
         // handle result of job submission
         when (result) {
             is XISuccess -> {
-                XIErrorHandler.showMessage(this.requireView(), "Job ${result.data} submitted.")
+                this.requireActivity().motionToast("Job ${result.data} submitted.", MotionToast.TOAST_SUCCESS)
                 popViewOnJobSubmit(WorkflowDirection.NEXT.value)
             }
             is XIError -> {
@@ -305,15 +317,19 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                     refreshAction = { this.retryJobSubmission() })
             }
             is XIStatus -> {
-                XIErrorHandler.showMessage(this.requireView(), result.message)
+                this.requireActivity().motionToast(result.message, MotionToast.TOAST_INFO)
             }
+            is XIProgress -> {
+                // find and animation
+            }
+
         }
     }
 
-    var estimateSize = 0
-    var estimateCount = 0
+    private var estimateSize = 0
+    private var estimateCount = 0
 
-    fun handleWorkSubmission(result: XIResult<String>) {
+    private fun handleWorkSubmission(result: XIResult<String>) {
         when (result) {
             is XISuccess -> {
                 XIErrorHandler.showMessage(
@@ -328,6 +344,12 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                     refreshAction = { this@CaptureWorkFragment.retryWorkSubmission() }
                 )
             }
+            is XIStatus -> {
+                this.requireActivity().motionToast(result.message, MotionToast.TOAST_INFO)
+            }
+            is XIProgress -> {
+                // add animation
+            }
         }
     }
 
@@ -336,11 +358,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
         backupWorkSubmission.observeOnce(viewLifecycleOwner, {
             it?.let {
                 itemEstiWorks = it
-                val progressDialog = setDataProgressDialog(
-                    requireActivity(),
-                    getString(R.string.data_loading_please_wait)
-                )
-                sendJobToService(itemEstiWorks, progressDialog)
+                sendJobToService(itemEstiWorks)
             }
         })
     }
@@ -364,7 +382,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
         return works
     }
 
-    private fun refreshView(prog: ProgressDialog) {
+    private fun refreshView() {
 
         groupAdapter.clear()
         image_collection_view.clearImages()
@@ -373,10 +391,8 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
 
             parentFragmentManager.beginTransaction().detach(this).commitNow()
-            prog.dismiss()
             parentFragmentManager.beginTransaction().attach(this).commitNow()
         } else {
-            prog.dismiss()
             parentFragmentManager.beginTransaction().detach(this)
                 .attach(this).commit()
         }
@@ -661,7 +677,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
         }
     }
 
-    var errorState = false
+    private var errorState = false
     private fun moveJobItemEstimateToNextWorkflow(
         workflowDirection: WorkflowDirection,
         jobItEstimate: JobItemEstimateDTO?
@@ -672,23 +688,16 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
 
             when {
                 userDTO.userId.isBlank() -> {
-                    toast("Error: userId is null")
+                    this@CaptureWorkFragment.requireActivity().motionToast("Error: current user lacks permissions", MotionToast.TOAST_ERROR)
                 }
                 jobItEstimate?.jobId == null -> {
-                    toast("Error: selectedJob is null")
+                    this@CaptureWorkFragment.requireActivity().motionToast("Error: selected job is invalid", MotionToast.TOAST_ERROR)
                 }
                 else -> {
-                    toast(jobItEstimate.jobId)
-                    // beware littleEndian conversion
                     val trackRouteId: String =
                         DataConversion.toLittleEndian(jobItEstimate.trackRouteId)!!
                     val direction: Int = workflowDirection.value
 
-                    val progressDialog = setDataProgressDialog(
-                        requireActivity(),
-                        getString(R.string.data_loading_please_wait)
-                    )
-                    progressDialog.show()
                     uiScope.launch(uiScope.coroutineContext) {
                         workViewModel.workflowResponse.observe(viewLifecycleOwner, workObserver)
                         val submit = workViewModel.processWorkflowMove(
@@ -697,7 +706,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                             null,
                             direction
                         )
-                        progressDialog.dismiss()
+                        // progressDialog.dismiss()
                         if (!submit.isBlank()) {
                             toast("Problem with work submission: $submit")
                             errorState = true
@@ -754,7 +763,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
         TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
-    fun getCurrentLocation(): LocationModel? {
+    private fun getCurrentLocation(): LocationModel? {
         return super.getLocation()
     }
 

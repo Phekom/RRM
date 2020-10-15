@@ -15,6 +15,7 @@ import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.custom.errors.NoDataException
 import za.co.xisystems.itis_rrm.custom.errors.ServiceException
+import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.results.XIError
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.results.XISuccess
@@ -168,8 +169,8 @@ class WorkDataRepository(
             if (jobEstimateWorks.jobEstimateWorksPhotos!!.isEmpty()) {
                 val noPhotosException =
                     NoDataException("WorkEstimate ${jobEstimateWorks.estimateId} has no photos.")
-                Timber.e(noPhotosException)
-                throw noPhotosException
+                val uploadFail = XIError(noPhotosException, noPhotosException.message ?: XIErrorHandler.UNKNOWN_ERROR)
+                workStatus.postValue(uploadFail)
             } else {
                 val totalImages = jobEstimateWorks.jobEstimateWorksPhotos!!.size
                 for (jobItemPhotos in jobEstimateWorks.jobEstimateWorksPhotos!!) {
@@ -187,7 +188,8 @@ class WorkDataRepository(
                         val noDataException =
                             NoDataException("Photo ${jobItemPhotos.filename} could not be loaded.")
                         Timber.e(noDataException)
-                        throw noDataException
+                        val photoError = XIError(noDataException, noDataException.message ?: XIErrorHandler.UNKNOWN_ERROR)
+                        workStatus.postValue(photoError)
                     }
                 }
             }

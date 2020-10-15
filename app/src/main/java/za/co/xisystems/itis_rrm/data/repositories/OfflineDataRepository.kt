@@ -63,7 +63,7 @@ class OfflineDataRepository(
     private val appDb: AppDatabase,
     private val prefs: PreferenceProvider
 ) : SafeApiRequest() {
-    var entitiesFetched = false
+    private var entitiesFetched = false
     private val activity: FragmentActivity? = null
     private val conTracts = MutableLiveData<List<ContractDTO>>()
     private val sectionItems = MutableLiveData<ArrayList<String>>()
@@ -1014,10 +1014,10 @@ class OfflineDataRepository(
         job.postValue(jobResponse.job)
     }
 
-    var contractCount: Int = 0
-    var contractMax: Int = 0
-    var projectCount: Int = 0
-    var projectMax: Int = 0
+    private var contractCount: Int = 0
+    private var contractMax: Int = 0
+    private var projectCount: Int = 0
+    private var projectMax: Int = 0
 
     suspend fun fetchContracts(userId: String): Boolean {
         contractCount = 0
@@ -1059,46 +1059,46 @@ class OfflineDataRepository(
         }
     }
 
-    suspend fun getAllEntities(): Int {
+    private suspend fun getAllEntities(): Int {
         return withContext(Dispatchers.IO) {
             appDb.getEntitiesDao().getAllEntities()
             7
         }
     }
 
-    suspend fun fetchUserTaskList(userId: String): Int {
+    private suspend fun fetchUserTaskList(userId: String): Int {
         val toDoListGroupsResponse = apiRequest { api.getUserTaskList(userId) }
         toDoListGroups.postValue(toDoListGroupsResponse.toDoListGroups)
 
         return 5
     }
 
-    suspend fun refreshActivitySections(userId: String): Int {
+    private suspend fun refreshActivitySections(userId: String): Int {
         val activitySectionsResponse =
             apiRequest { api.activitySectionsRefresh(userId) }
         sectionItems.postValue(activitySectionsResponse.activitySections)
         return 1
     }
 
-    suspend fun refreshWorkflows(userId: String): Int {
+    private suspend fun refreshWorkflows(userId: String): Int {
         val workFlowResponse = apiRequest { api.workflowsRefresh(userId) }
         workFlow.postValue(workFlowResponse.workFlows)
         return 2
     }
 
-    suspend fun refreshLookups(userId: String): Int {
+    private suspend fun refreshLookups(userId: String): Int {
         val lookupResponse = apiRequest { api.lookupsRefresh(userId) }
         lookups.postValue(lookupResponse.mobileLookups)
         return 3
     }
 
-    suspend fun getAllContractsByUserId(userId: String): Int {
+    private suspend fun getAllContractsByUserId(userId: String): Int {
         val contractsResponse = apiRequest { api.getAllContractsByUserId(userId) }
         conTracts.postValue(contractsResponse.contracts)
         return 4
     }
 
-    suspend fun fetchAllData(userId: String): Boolean {
+    private suspend fun fetchAllData(userId: String): Boolean {
         // Redo as async calls in parallel
         return withContext(Dispatchers.IO) {
 
