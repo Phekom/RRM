@@ -13,9 +13,11 @@ import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import com.xwray.groupie.kotlinandroidextensions.Item
 import kotlinx.android.synthetic.main.estimates_item.*
 import timber.log.Timber
+import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data._commons.AbstractTextWatcher
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
+import za.co.xisystems.itis_rrm.ui.extensions.motionToast
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.ApproveJobsViewModel
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.GlideApp
@@ -158,12 +160,12 @@ class EstimatesItem(
         totalEntry: TextView,
         jobItemEstimateDTO: JobItemEstimateDTO
     ) {
-        if (ServiceUtil.isInternetAvailable(activity.applicationContext)) {
+        if (ServiceUtil.isNetworkAvailable(activity.applicationContext)) {
             Coroutines.main {
                 if (quantityEntry.text.toString() == "" || nanCheck(quantityEntry.text.toString()) || quantityEntry.text.toString()
                         .toDouble() == 0.0
                 ) {
-                    activity.toast("Please Enter a valid Quantity")
+                    activity.motionToast("Please Enter a valid Quantity", MotionToast.TOAST_WARNING)
                 } else {
                     val updated = approveViewModel.upDateEstimate(
                         quantityEntry.text.toString(),
@@ -171,9 +173,9 @@ class EstimatesItem(
                         jobItemEstimateDTO.estimateId
                     )
                     if (updated.isBlank()) {
-                        activity.toast("Data Updated was Successful")
+                        activity.motionToast("Data Updated was Successful", MotionToast.TOAST_SUCCESS)
                     } else {
-                        activity.toast("Data Updated was Unsuccessful")
+                        activity.motionToast("Data Updated was Unsuccessful", MotionToast.TOAST_ERROR)
                     }
                 }
             }

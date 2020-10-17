@@ -351,8 +351,8 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
                     Coroutines.main {
                         createViewModel.deleteJobFromList(newJob!!.JobId)
                         createViewModel.deleteItemList(newJob!!.JobId)
-                        parentFragmentManager.beginTransaction().remove(this).commit()
-                        parentFragmentManager.beginTransaction().detach(this).commit()
+                        fragmentManager?.beginTransaction()?.remove(this)?.commit()
+                        fragmentManager?.beginTransaction()?.detach(this)?.commit()
                     }
                     // TODO(clear temp database Tables for Job And Items)
                 }
@@ -618,7 +618,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
             newJob?.JobItemEstimates!!.add(newJobItemEstimate!!)
         }
 
-        if (ServiceUtil.isInternetAvailable(requireActivity().applicationContext)) {
+        if (ServiceUtil.isNetworkAvailable(requireActivity().applicationContext)) {
 
             uiScope.launch(context = uiScope.coroutineContext) {
 

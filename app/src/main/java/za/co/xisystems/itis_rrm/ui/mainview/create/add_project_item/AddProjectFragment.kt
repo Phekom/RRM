@@ -136,7 +136,7 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
                         }
                     })
 
-                createViewModel.sectionProjectItem.observe(viewLifecycleOwner, { p_Item ->
+                createViewModel.sectionProjectItem.observe(viewLifecycleOwner, { pItem ->
                     infoTextView.visibility = View.GONE
                     last_lin.visibility = View.VISIBLE
                     totalCostTextView.visibility = View.VISIBLE
@@ -144,14 +144,14 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
                     Coroutines.main {
                         val projectItems =
                             createViewModel.getAllProjectItems(projectID!!, job!!.JobId)
-                        projectItems.observe(viewLifecycleOwner, { pro_Items ->
-                            if (pro_Items.isEmpty()) {
+                        projectItems.observe(viewLifecycleOwner, { projItemList ->
+                            if (projItemList.isEmpty()) {
                                 groupAdapter.clear()
                                 totalCostTextView.text = ""
                                 last_lin.visibility = View.GONE
                                 totalCostTextView.visibility = View.GONE
                             } else {
-                                items = pro_Items
+                                items = projItemList
                             }
 
                             for (item in items.listIterator()) {
@@ -359,7 +359,6 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
                     } else {
                         submitButton.initProgress(viewLifecycleOwner)
                         submitButton.startProgress("Submitting data ...")
-
 
                         job!!.IssueDate = Date().toString()
                         submitJob(job!!)

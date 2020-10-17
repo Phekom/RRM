@@ -114,7 +114,7 @@ class CaptureItemMeasurePhotoFragment :
         uiScope.launch(uiScope.coroutineContext) {
             measureViewModel.jobItemMeasure.observe(
                 viewLifecycleOwner,
-                Observer { selectedJobItemM ->
+                { selectedJobItemM ->
                     selectedJobItemM?.let { it ->
                         estimate_image_collection_view.clearImages()
                         viewPhotosOnly = false

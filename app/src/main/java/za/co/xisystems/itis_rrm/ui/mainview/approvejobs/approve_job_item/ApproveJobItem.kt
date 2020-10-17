@@ -1,5 +1,6 @@
 package za.co.xisystems.itis_rrm.ui.mainview.approvejobs.approve_job_item
 
+import android.content.Context
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import com.xwray.groupie.kotlinandroidextensions.Item
 import kotlinx.android.synthetic.main.single_listview_item.*
@@ -14,7 +15,8 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
 
 class ApproveJobItem(
     val jobDTO: JobDTO,
-    private val approveViewModel: ApproveJobsViewModel
+    private val approveViewModel: ApproveJobsViewModel,
+    private val context: Context
 ) : Item() {
     var route: String? = null
     var section: String? = null
@@ -22,9 +24,8 @@ class ApproveJobItem(
     override fun bind(viewHolder: GroupieViewHolder, position: Int) {
         viewHolder.apply {
             appListID.text = getItemId(position + 1).toString()
-            listview_item_textView.text = "JI:${jobDTO.JiNo} - "
+            listview_item_textView.text = context.getString(R.string.pair, "JI:", jobDTO.JiNo.toString())
             Coroutines.main {
-
                 sectionId = approveViewModel.getProjectSectionIdForJobId(jobDTO.JobId)
                 if (sectionId.isNullOrEmpty()) sectionId = ""
                 route = approveViewModel.getRouteForProjectSectionId(sectionId!!)
@@ -32,7 +33,7 @@ class ApproveJobItem(
                 section = approveViewModel.getSectionForProjectSectionId(sectionId!!)
                 if (section.isNullOrEmpty()) section = ""
 
-                apv_section.text = "( $route /0$section )"
+                apv_section.text = context.getString(R.string.route_section_badge, route, section)
             }
             apv_description.text = jobDTO.Descr
         }

@@ -193,7 +193,7 @@ class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAw
 
     private fun List<JobDTO>.toApproveListItems(): List<ApproveJobItem> {
         return this.map { approveJobItems ->
-            ApproveJobItem(approveJobItems, approveViewModel)
+            ApproveJobItem(approveJobItems, approveViewModel, this@ApproveJobsFragment.requireContext())
         }
     }
 

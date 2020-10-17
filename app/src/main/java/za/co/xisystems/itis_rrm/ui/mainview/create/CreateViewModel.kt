@@ -120,8 +120,8 @@ class CreateViewModel(
         projectRate.value = inProjectRate
     }
 
-    fun saveNewJob(newjob: JobDTO) {
-        jobCreationDataRepository.saveNewJob(newjob)
+    fun saveNewJob(newJob: JobDTO) {
+        jobCreationDataRepository.saveNewJob(newJob)
     }
 
     suspend fun getContracts(): LiveData<List<ContractDTO>> {
@@ -159,9 +159,9 @@ class CreateViewModel(
     }
 
     // TODO: Should return some sort of status
-    suspend fun saveNewItem(newjItem: ItemDTOTemp) {
+    suspend fun saveNewItem(tempItem: ItemDTOTemp) {
         return withContext(Dispatchers.IO) {
-            jobCreationDataRepository.saveNewItem(newjItem)
+            jobCreationDataRepository.saveNewItem(tempItem)
         }
     }
 
@@ -180,7 +180,7 @@ class CreateViewModel(
     }
 
     suspend fun updateNewJob(
-        newjobId: String,
+        newJobId: String,
         startKM: Double,
         endKM: Double,
         sectionId: String,
@@ -189,7 +189,7 @@ class CreateViewModel(
     ) {
         withContext(Dispatchers.IO) {
             jobCreationDataRepository.updateNewJob(
-                newjobId,
+                newJobId,
                 startKM,
                 endKM,
                 sectionId,
@@ -284,7 +284,7 @@ class CreateViewModel(
         jobCreationDataRepository.deleteItemList(jobId)
     }
 
-    fun deleteItemfromList(itemId: String) {
+    fun deleteItemFromList(itemId: String) {
         jobCreationDataRepository.deleteItemFromList(itemId)
     }
 

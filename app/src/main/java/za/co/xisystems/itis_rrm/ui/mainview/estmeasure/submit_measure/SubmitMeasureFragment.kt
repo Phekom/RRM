@@ -59,6 +59,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
     private lateinit var jobItemEstimate: JobItemEstimateDTO
     private lateinit var expandableGroups: MutableList<ExpandableGroup>
     private var uiScope = UiLifecycleScope()
+
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
@@ -180,7 +181,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
             setMessage(R.string.are_you_sure_you_want_to_submit_measurements)
             // Yes button
             setPositiveButton(R.string.yes) { dialog, which ->
-                if (ServiceUtil.isInternetAvailable(requireContext().applicationContext)) {
+                if (ServiceUtil.isNetworkAvailable(requireContext().applicationContext)) {
                     submitMeasures(itemMeasureJob, mSures)
                 } else {
                     toast(R.string.no_connection_detected)
@@ -219,11 +220,10 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                         val jobId: String = DataConversion.toLittleEndian(itemMeasureJob.JobId)!!
 
                         Coroutines.main {
-                            val prog =
-                                setDataProgressDialog(
-                                    requireActivity(),
-                                    getString(R.string.loading_job_wait)
-                                )
+                            setDataProgressDialog(
+                                requireActivity(),
+                                getString(R.string.loading_job_wait)
+                            )
 
                             activity?.let {
 

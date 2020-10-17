@@ -120,7 +120,6 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
         // setup for CreateFragment
         lifecycleScope.launch {
             whenStarted {
-
             }
         }
     }

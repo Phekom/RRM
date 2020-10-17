@@ -84,7 +84,7 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
                 flowBuilder.setPositiveButton(
                     R.string.yes
                 ) { dialog, which ->
-                    if (ServiceUtil.isInternetAvailable(this.requireContext().applicationContext)) {
+                    if (ServiceUtil.isNetworkAvailable(this.requireContext().applicationContext)) {
                         moveJobToNextWorkflow(WorkflowDirection.NEXT)
                     } else {
                         this.requireActivity().motionToast(

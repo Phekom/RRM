@@ -76,7 +76,6 @@ import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
-import za.co.xisystems.itis_rrm.utils.toast
 import java.util.Date
 import java.util.HashMap
 
@@ -212,7 +211,6 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
             is XIProgress -> {
                 this.requireActivity().motionToast("Progress: ${result.isLoading}", MotionToast.TOAST_INFO)
             }
-
         }
     }
 
@@ -237,7 +235,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
     }
 
     private fun uploadEstimateWorksItem() {
-        if (ServiceUtil.isInternetAvailable(requireActivity().applicationContext)) { //  Lets Send to Service
+        if (ServiceUtil.isNetworkAvailable(requireActivity().applicationContext)) { //  Lets Send to Service
 
             itemEstiWorks.jobEstimateWorksPhotos = estimateWorksPhotoArrayList
             itemEstiWorks.jobItemEstimate = jobitemEsti
@@ -278,7 +276,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
     }
 
     private fun sendJobToService(
-        itemEstiWorks: JobEstimateWorksDTO,
+        itemEstiWorks: JobEstimateWorksDTO
     ) {
         uiScope.launch(uiScope.coroutineContext) {
             workViewModel.backupWorkSubmission.postValue(itemEstiWorks)
@@ -322,7 +320,6 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
             is XIProgress -> {
                 // find and animation
             }
-
         }
     }
 
@@ -390,11 +387,10 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
         comments_editText.setText("")
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
 
-            parentFragmentManager.beginTransaction().detach(this).commitNow()
-            parentFragmentManager.beginTransaction().attach(this).commitNow()
+            fragmentManager?.beginTransaction()?.detach(this)?.commitNow()
+            fragmentManager?.beginTransaction()?.attach(this)?.commitNow()
         } else {
-            parentFragmentManager.beginTransaction().detach(this)
-                .attach(this).commit()
+            fragmentManager?.beginTransaction()?.detach(this)?.attach(this)?.commit()
         }
 
         // Await the updated estimate record
@@ -471,7 +467,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
 
         if (currentLocation == null) {
             // Check network availability / connectivity
-            requireActivity().toast("Please enable location services.")
+            requireActivity().motionToast("Please enable location services.", MotionToast.TOAST_WARNING)
             // Launch Dialog
         } else {
             // requireMutex

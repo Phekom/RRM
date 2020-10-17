@@ -46,13 +46,13 @@ class ExpandableHeaderMeasureItem(
 
     var clickListener: ((ExpandableHeaderMeasureItem) -> Unit)? = null
     var navController: ((NavController) -> Unit)? = null
-    var projIDz: String? = measureItem.projectItemId
+    var projectItemIdz: String? = measureItem.projectItemId
 
     private var jobItemEst: JobDTO? = null
     private var itemEs: JobItemEstimateDTO? = null
 
     companion object {
-        const val JOB_IMEASURE: String = "JobItemMeasure"
+        const val JOB_ITEM_MEASURE: String = "JobItemMeasure"
         const val PHOTO_RESULT = 9000
     }
 
@@ -130,7 +130,7 @@ class ExpandableHeaderMeasureItem(
                         )
                     }
                     Coroutines.main {
-                        val desc = measureViewModel.getDescForProjectItemId(projIDz!!)
+                        val desc = measureViewModel.getDescForProjectItemId(projectItemIdz!!)
 
                         val enterQuantityDialog: AlertDialog =
                             AlertDialog.Builder(activity) // android.R.style.Theme_DeviceDefault_Dialog
@@ -215,7 +215,8 @@ class ExpandableHeaderMeasureItem(
         jobItemMeasurePhotoDTO: ArrayList<JobItemMeasurePhotoDTO>
     ): JobItemMeasureDTO {
         val newItemMeasureId: String = SqlLitUtils.generateUuid()
-        val itemMeasure = JobItemMeasureDTO(
+
+        return JobItemMeasureDTO(
             ID = 0,
             actId = 0,
             approvalDate = null,
@@ -244,8 +245,6 @@ class ExpandableHeaderMeasureItem(
             entityDescription = null,
             selectedItemUom = (selectedItemToMeasure?.uom).toString()
         )
-
-        return itemMeasure
     }
 
     private fun captureItemMeasureImages(

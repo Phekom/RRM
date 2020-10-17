@@ -13,6 +13,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
+import kotlinx.android.synthetic.main.fragment_approvejob.mydata_loading
 import kotlinx.android.synthetic.main.fragment_job_info.*
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
@@ -104,7 +105,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
             approvalBuilder.setPositiveButton(
                 R.string.yes
             ) { dialog, which ->
-                if (ServiceUtil.isInternetAvailable(requireContext().applicationContext)) {
+                if (ServiceUtil.isNetworkAvailable(requireContext().applicationContext)) {
                     progressButton = approve_job_button
                     progressButton.initProgress(viewLifecycleOwner)
                     moveJobToNextWorkflow(WorkflowDirection.NEXT)
@@ -139,7 +140,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
             declineBuilder.setPositiveButton(
                 R.string.yes
             ) { dialog, which ->
-                if (ServiceUtil.isInternetAvailable(requireContext().applicationContext)) {
+                if (ServiceUtil.isNetworkAvailable(requireContext().applicationContext)) {
                     progressButton = decline_job_button
                     progressButton.initProgress(viewLifecycleOwner)
                     moveJobToNextWorkflow(WorkflowDirection.FAIL)

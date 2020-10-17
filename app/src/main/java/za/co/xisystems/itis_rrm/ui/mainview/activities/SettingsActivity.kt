@@ -30,7 +30,7 @@ class SettingsActivity : AppCompatActivity(), KodeinAware {
         const val HOME = "general_switch"
 
         var switch: SwitchMaterial? = null
-        const val PREFS_NAME = "DarkeModeSwitch"
+        const val PREFS_NAME = "DarkModeSwitch"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -89,7 +89,6 @@ class SettingsActivity : AppCompatActivity(), KodeinAware {
             startActivity(resetPinIntent)
             finish()
         }
-
     }
 
     var isChecked = false

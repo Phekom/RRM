@@ -58,7 +58,7 @@ class HomeViewModel(
                 val fetchFail = XIError(ex, "Failed to fetch data: ${ex.message}")
                 databaseResult.postValue(fetchFail)
             } finally {
-                databaseResult.postValue(XIProgress(false))
+                // databaseResult.postValue(XIProgress(false))
             }
         }
     }

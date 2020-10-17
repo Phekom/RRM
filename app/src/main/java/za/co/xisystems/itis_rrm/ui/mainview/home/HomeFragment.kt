@@ -21,6 +21,7 @@ import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
 import timber.log.Timber
+import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.BuildConfig
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
@@ -34,6 +35,7 @@ import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.extensions.observeOnce
+import za.co.xisystems.itis_rrm.ui.extensions.motionToast
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModelFactory
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
@@ -62,20 +64,28 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
 
         lifecycleScope.launch {
             whenStarted {
+                checkConnectivity()
+                if (networkEnabled) {
+                    uiScope.launch(uiScope.coroutineContext) {
+                        try {
 
-                uiScope.launch(uiScope.coroutineContext) {
-                    try {
-
-                        group2_loading.visibility = View.VISIBLE
-                        acquireUser()
-                        getOfflineSectionItems()
-                    } catch (t: Throwable) {
-                        Timber.e(t, "Failed to fetch Section Items.")
-                        val xiErr = XIError(t, t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR)
-                        XIErrorHandler.crashGuard(this@HomeFragment.requireView(), xiErr, { retrySections() })
-                    } finally {
-                        group2_loading.visibility = View.GONE
+                            group2_loading.visibility = View.VISIBLE
+                            acquireUser()
+                            getOfflineSectionItems()
+                        } catch (t: Throwable) {
+                            Timber.e(t, "Failed to fetch Section Items.")
+                            val xiErr = XIError(t, t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR)
+                            XIErrorHandler.crashGuard(this@HomeFragment.requireView(), xiErr, refreshAction = { retrySections() })
+                        } finally {
+                            group2_loading.visibility = View.GONE
+                        }
                     }
+                } else {
+                    this@HomeFragment.requireActivity().motionToast(
+                        getString(R.string.please_connect_to_internet_to_up_sync_offline_workflows),
+                        MotionToast.TOAST_NO_INTERNET,
+                        MotionToast.GRAVITY_TOP
+                    )
                 }
             }
         }
@@ -106,12 +116,28 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                 userInstance?.let {
                     userDTO = it
                     username?.text = it.userName
-                    servicesHealthCheck()
-                    checkConnectivity()
+                    try {
+                        checkConnectivity()
+                        if (networkEnabled)
+                            servicesHealthCheck()
+                    } catch (t: Throwable) {
+                        val connectErr = XIError(t, t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR)
+                        XIErrorHandler.crashGuard(this@HomeFragment.requireView(), connectErr,
+                            refreshAction = { retryAcquireUser() })
+                    }
                 }
             })
         }
         userJob.join()
+    }
+
+    private fun retryAcquireUser() {
+        IndefiniteSnackbar.hide()
+        uiScope.launch(uiScope.coroutineContext) {
+            checkConnectivity()
+            if (networkEnabled)
+                acquireUser()
+        }
     }
 
     override fun onStop() {
@@ -177,11 +203,9 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
         uiScope.launch(uiScope.coroutineContext) {
             homeViewModel.bigSyncCheck()
             homeViewModel.bigSyncDone.observeOnce(viewLifecycleOwner, {
-                it?.let {
-                    Timber.d("Synced: $it")
-                    if (!it) {
-                        promptUserToSync()
-                    }
+                Timber.d("Synced: $it")
+                if (!it) {
+                    promptUserToSync()
                 }
             })
         }
@@ -205,7 +229,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
     private fun checkConnectivity() {
         val lm = requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager
         gpsEnabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
-        networkEnabled = ServiceUtil.isInternetAvailable(requireActivity().applicationContext)
+        networkEnabled = ServiceUtil.isNetworkAvailable(requireActivity().applicationContext)
         //  Check if Network Enabled
         if (!networkEnabled) {
             dataEnabled.setText(R.string.mobile_data_not_connected)
@@ -232,7 +256,8 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
 
     private fun ping() {
         Coroutines.main {
-            acquireUser()
+            if (networkEnabled)
+                acquireUser()
         }
     }
 
@@ -274,7 +299,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                 .setTitle(
                     "Initial Synchronisation"
                 )
-                .setMessage("As a new user, please synchronise the local database.")
+                .setMessage("No RRM saved data detected. Please synchronise the local database for contract and project information.")
                 .setCancelable(false)
                 .setIcon(R.drawable.ic_baseline_cloud_download_24)
                 .setPositiveButton(R.string.ok) { dialog, whichButton ->
@@ -289,7 +314,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
     }
 
     private fun servicesHealthCheck() = uiScope.launch(uiScope.coroutineContext) {
-        if (homeViewModel.healthCheck(userDTO.userId)) {
+        if (networkEnabled && homeViewModel.healthCheck(userDTO.userId)) {
             connectedTo.text = getString(R.string.services_up, BuildConfig.VERSION_NAME)
             connectedTo.setTextColor(colorConnected)
         } else {

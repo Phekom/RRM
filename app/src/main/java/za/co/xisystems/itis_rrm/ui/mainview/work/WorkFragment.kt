@@ -277,4 +277,3 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
         }
     }
 }
-
