@@ -9,7 +9,7 @@ import java.net.InetSocketAddress
 import java.net.Socket
 
 object ServiceUtil {
-    fun isInternetAvailable(context: Context): Boolean {
+    fun isNetworkAvailable(context: Context): Boolean {
         var result = false
         val connectivityManager =
             context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager?
@@ -20,6 +20,8 @@ object ServiceUtil {
                     result = when {
                         hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
                         hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> true
+                        hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH) -> true
+                        hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> true
                         else -> false
                     }
                 }

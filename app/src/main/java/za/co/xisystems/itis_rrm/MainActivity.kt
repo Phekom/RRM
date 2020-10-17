@@ -155,7 +155,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
 
         try {
-            networkEnabled = ServiceUtil.isInternetAvailable(applicationContext)
+            networkEnabled = ServiceUtil.isNetworkAvailable(applicationContext)
         } catch (e: Exception) {
             e.printStackTrace()
         }
