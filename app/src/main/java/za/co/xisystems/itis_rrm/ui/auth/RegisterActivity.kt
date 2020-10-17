@@ -12,7 +12,6 @@ import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GooglePlayServicesUtil
@@ -72,7 +71,7 @@ class RegisterActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnabl
 
         Coroutines.main {
             val loggedInUser = viewModel.user.await()
-            loggedInUser.observe(this, Observer { user ->
+            loggedInUser.observe(this, { user ->
                 // Register the user
                 if (user != null) {
 
@@ -106,7 +105,7 @@ class RegisterActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnabl
         builder.setCancelable(false)
         // Yes button
         builder.setPositiveButton(R.string.ok) { dialog, which ->
-            if (ServiceUtil.isInternetAvailable(this.applicationContext)) {
+            if (ServiceUtil.isNetworkAvailable(this.applicationContext)) {
                 Intent(this, RegisterPinActivity::class.java).also { pin ->
                     pin.flags =
                         Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
@@ -200,23 +199,18 @@ class RegisterActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnabl
     }
 
     private fun isOnline(): Boolean {
-        return ServiceUtil.isInternetAvailable(this.applicationContext)
+        return ServiceUtil.isNetworkAvailable(this.applicationContext)
     }
 
     override fun onSignOut(userDTO: UserDTO) {
         finishAffinity()
     }
 
-    override fun run() {
-        Coroutines.main {
-            val contractList = viewModel.offlineData.await()
-            contractList.observe(this, Observer { contractItems ->
-                toast("Loading contract: ${contractItems.size} / ${contractItems.count()}")
-            })
-        }
-    }
-
     companion object {
         val TAG: String = RegisterActivity::class.java.simpleName
+    }
+
+    override fun run() {
+        TODO("Not yet implemented")
     }
 }

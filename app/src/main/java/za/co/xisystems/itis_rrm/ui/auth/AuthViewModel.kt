@@ -10,6 +10,7 @@ import za.co.xisystems.itis_rrm.custom.errors.AuthException
 import za.co.xisystems.itis_rrm.custom.errors.NoConnectivityException
 import za.co.xisystems.itis_rrm.custom.errors.NoInternetException
 import za.co.xisystems.itis_rrm.custom.errors.ServiceException
+import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
 import za.co.xisystems.itis_rrm.utils.Coroutines
@@ -164,14 +165,8 @@ class AuthViewModel(
                     imei,
                     androidDevice
                 )
-            } catch (e: AuthException) {
-                authListener?.onFailure(e.message!!)
-            } catch (e: ServiceException) {
-                authListener?.onFailure(e.message!!)
-            } catch (e: NoInternetException) {
-                authListener?.onFailure(e.message!!)
-            } catch (e: NoConnectivityException) {
-                authListener?.onFailure(e.message!!)
+            } catch (t: Throwable) {
+                authListener?.onFailure(t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR)
             }
         }
     }

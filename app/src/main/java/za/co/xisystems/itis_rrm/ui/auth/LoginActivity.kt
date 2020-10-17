@@ -7,7 +7,6 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
-import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
@@ -17,6 +16,7 @@ import org.kodein.di.KodeinAware
 import org.kodein.di.android.kodein
 import org.kodein.di.generic.instance
 import timber.log.Timber
+import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
@@ -26,10 +26,10 @@ import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.databinding.ActivityLoginBinding
+import za.co.xisystems.itis_rrm.ui.extensions.motionToast
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
-import za.co.xisystems.itis_rrm.utils.toast
 
 class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, KodeinAware {
     private var activityPinLockBinding: ActivityLoginBinding? = null
@@ -175,14 +175,14 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
                     builder.setCancelable(false)
                     // Yes button
                     builder.setPositiveButton(R.string.ok) { dialog, which ->
-                        if (ServiceUtil.isInternetAvailable(this.applicationContext)) {
+                        if (ServiceUtil.isNetworkAvailable(this.applicationContext)) {
                             Intent(this, RegisterPinActivity::class.java).also { pin ->
                                 pin.flags =
                                     Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
                                 startActivity(pin)
                             }
                         } else {
-                            toast(R.string.no_connection_detected.toString())
+                            this.motionToast(getString(R.string.no_connection_detected), MotionToast.TOAST_NO_INTERNET)
                         }
                     }
                     val declineAlert = builder.create()
@@ -259,7 +259,7 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
 
     private fun showMessage() {
 
-        Toast.makeText(this, "Pin is incorrect", Toast.LENGTH_SHORT).show()
+        this.motionToast("Pin is incorrect", MotionToast.TOAST_ERROR)
         resetAllPinColor()
         pinInput = ""
     }
@@ -269,7 +269,7 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
     }
 
     override fun onSuccess(userDTO: UserDTO) {
-        toast("You are Logged in as ${userDTO.userName}")
+        this.motionToast("You are Logged in as ${userDTO.userName}", MotionToast.TOAST_INFO)
     }
 
     override fun onSignOut(userDTO: UserDTO) {
