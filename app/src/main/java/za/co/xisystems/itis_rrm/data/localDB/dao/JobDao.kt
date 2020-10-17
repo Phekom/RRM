@@ -81,9 +81,9 @@ interface JobDao {
 
     //    LiveData<List<JobDTO>>
 // OR e.ActId Like 8
-    @Query("UPDATE JOB_TABLE SET SectionId =:sectionId ,StartKm =:startKM , EndKm =:endKM ,JobItemEstimates =:newJobItemEstimatesList, JobSections =:jobItemSectionArrayList  WHERE jobId = :newjobId ")
+    @Query("UPDATE JOB_TABLE SET SectionId =:sectionId ,StartKm =:startKM , EndKm =:endKM ,JobItemEstimates =:newJobItemEstimatesList, JobSections =:jobItemSectionArrayList  WHERE jobId = :newJobId ")
     fun updateJoSecId(
-        newjobId: String,
+        newJobId: String,
         startKM: Double,
         endKM: Double,
         sectionId: String,
