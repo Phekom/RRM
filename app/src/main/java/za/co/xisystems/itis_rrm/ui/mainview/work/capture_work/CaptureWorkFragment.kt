@@ -288,7 +288,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                 move_workflow_button.doneProgress("Workflow complete")
                 refreshView()
             } else {
-                super.motionToast(
+                this@CaptureWorkFragment.motionToast(
                     message = response,
                     motionType = MotionToast.TOAST_ERROR,
                     position = MotionToast.GRAVITY_CENTER
@@ -305,7 +305,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
         // handle result of job submission
         when (result) {
             is XISuccess -> {
-                this.motionToast("Job ${result.data} submitted.", MotionToast.TOAST_INFO)
+                this.motionToast("Job submitted.", MotionToast.TOAST_INFO)
                 popViewOnJobSubmit(WorkflowDirection.NEXT.value)
             }
             is XIError -> {
@@ -329,10 +329,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
     private fun handleWorkSubmission(result: XIResult<String>) {
         when (result) {
             is XISuccess -> {
-                this.motionToast(
-                    "Work recorded for \n Job ${result.data}.",
-                    position = MotionToast.GRAVITY_CENTER
-                )
+                move_workflow_button.doneProgress("Workflow complete")
             }
             is XIError -> {
                 XIErrorHandler.crashGuard(

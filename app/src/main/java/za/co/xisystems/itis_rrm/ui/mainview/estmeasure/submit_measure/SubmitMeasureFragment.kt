@@ -22,6 +22,7 @@ import kotlinx.coroutines.launch
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
+import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
@@ -208,10 +209,18 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
             user.observe(viewLifecycleOwner, { userDTO ->
                 when {
                     userDTO.userId.isBlank() -> {
-                        toast("Error: userId is null")
+                        this@SubmitMeasureFragment.motionToast(
+                            "Error: current user lacks permissions",
+                            MotionToast.TOAST_ERROR,
+                            MotionToast.GRAVITY_CENTER
+                        )
                     }
                     itemMeasureJob.JobId.isBlank() -> {
-                        toast("Error: selectedJob is null")
+                        this@SubmitMeasureFragment.motionToast(
+                            "Error: selected job is invalid",
+                            MotionToast.TOAST_ERROR,
+                            MotionToast.GRAVITY_CENTER
+                        )
                     }
                     else -> {
                         // beware littleEndian conversion for transport to backend
@@ -269,7 +278,10 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                     response?.let { outcome ->
                         when (outcome) {
                             is XISuccess -> {
-                                toast(R.string.measure_submitted)
+                                this@SubmitMeasureFragment.motionToast(
+                                    "Measurements submitted",
+                                    MotionToast.TOAST_INFO
+                                )
                                 popViewOnJobSubmit()
                             }
                             is XIError -> {
