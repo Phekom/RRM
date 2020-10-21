@@ -16,17 +16,16 @@ import org.kodein.di.generic.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
-import za.co.xisystems.itis_rrm.custom.errors.NoConnectivityException
-import za.co.xisystems.itis_rrm.custom.errors.NoInternetException
-import za.co.xisystems.itis_rrm.custom.errors.ServiceException
-import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
+import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
+import za.co.xisystems.itis_rrm.custom.results.XIError
+import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.unsubmited_item.UnSubmittedJobItem
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
 
 class UnSubmittedFragment : BaseFragment(R.layout.fragment_unsubmittedjobs), KodeinAware {
-    //
+
     override val kodein by kodein()
     private lateinit var unsubmittedViewModel: UnSubmittedViewModel
     private val factory: UnSubmittedViewModelFactory by instance()
@@ -54,6 +53,10 @@ class UnSubmittedFragment : BaseFragment(R.layout.fragment_unsubmittedjobs), Kod
             ViewModelProvider(this, factory).get(UnSubmittedViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
 
+        fetchUnsubmitted()
+    }
+
+    private fun fetchUnsubmitted() {
         Coroutines.main {
             try {
                 groupAdapter = GroupAdapter()
@@ -73,17 +76,19 @@ class UnSubmittedFragment : BaseFragment(R.layout.fragment_unsubmittedjobs), Kod
                         group12_loading.visibility = View.GONE
                     }
                 })
-            } catch (e: ServiceException) {
-                ToastUtils().toastLong(activity, e.message)
-                Timber.e(e, "API Exception")
-            } catch (e: NoInternetException) {
-                ToastUtils().toastLong(activity, e.message)
-                Timber.e(e, "No Internet Connection")
-            } catch (e: NoConnectivityException) {
-                ToastUtils().toastLong(activity, e.message)
-                Timber.e(e, "Service Host Unreachable")
+            } catch (t: Throwable) {
+                Timber.e(t, "Failed to fetch unsubmitted jobs!")
+                val unsubError = XIError(t, t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR)
+                XIErrorHandler.crashGuard(this@UnSubmittedFragment.requireView(), unsubError, refreshAction = { retryUnsubmitted() })
+            } finally {
+                group12_loading.visibility = View.GONE
             }
         }
+    }
+
+    private fun retryUnsubmitted() {
+        IndefiniteSnackbar.hide()
+        fetchUnsubmitted()
     }
 
     private fun List<JobDTO>.toApproveListItems(): List<UnSubmittedJobItem> {

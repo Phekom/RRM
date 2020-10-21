@@ -11,9 +11,11 @@ import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
+import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
 import com.google.android.material.snackbar.Snackbar
 import timber.log.Timber
+import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data._commons.Animations
 import za.co.xisystems.itis_rrm.data._commons.views.IProgressView
@@ -181,6 +183,17 @@ abstract class BaseFragment(layoutContentId: Int) : Fragment(), IProgressView,
             resid,
             Toast.LENGTH_LONG
         ).show()
+    }
+
+    fun motionToast(message: String, motionType: String, position: Int = MotionToast.GRAVITY_BOTTOM) {
+        MotionToast.createColorToast(
+            context = this.requireActivity(),
+            message = message,
+            style = motionType,
+            position = position,
+            duration = MotionToast.LONG_DURATION,
+            font = ResourcesCompat.getFont(this.requireContext(), R.font.helvetica_regular)
+        )
     }
 
     fun snackError(coordinator: View?, string: String?) {

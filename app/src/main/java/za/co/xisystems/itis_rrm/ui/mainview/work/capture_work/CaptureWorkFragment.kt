@@ -242,7 +242,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
 
             sendJobToService(itemEstiWorks)
         } else {
-            this.requireActivity().motionToast(
+            this.motionToast(
                 message = getString(R.string.no_connection_detected),
                 motionType = MotionToast.TOAST_NO_INTERNET,
                 position = MotionToast.GRAVITY_CENTER
@@ -252,7 +252,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
     }
 
     private fun validationNotice(stringId: Int) {
-        this.requireActivity().motionToast(
+        this.motionToast(
             message = getString(stringId),
             motionType = MotionToast.TOAST_WARNING,
             position = MotionToast.GRAVITY_CENTER
@@ -288,7 +288,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                 move_workflow_button.doneProgress("Workflow complete")
                 refreshView()
             } else {
-                activity?.motionToast(
+                super.motionToast(
                     message = response,
                     motionType = MotionToast.TOAST_ERROR,
                     position = MotionToast.GRAVITY_CENTER
@@ -305,7 +305,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
         // handle result of job submission
         when (result) {
             is XISuccess -> {
-                this.requireActivity().motionToast("Job ${result.data} submitted.", MotionToast.TOAST_SUCCESS)
+                this.motionToast("Job ${result.data} submitted.", MotionToast.TOAST_INFO)
                 popViewOnJobSubmit(WorkflowDirection.NEXT.value)
             }
             is XIError -> {
@@ -315,10 +315,10 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                     refreshAction = { this.retryJobSubmission() })
             }
             is XIStatus -> {
-                this.requireActivity().motionToast(result.message, MotionToast.TOAST_INFO)
+                this.motionToast(result.message, MotionToast.TOAST_INFO)
             }
             is XIProgress -> {
-                // find and animation
+                // find an animation
             }
         }
     }
@@ -329,9 +329,9 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
     private fun handleWorkSubmission(result: XIResult<String>) {
         when (result) {
             is XISuccess -> {
-                XIErrorHandler.showMessage(
-                    this.requireView(),
-                    "Work recorded for Job ${result.data}."
+                this.motionToast(
+                    "Work recorded for \n Job ${result.data}.",
+                    position = MotionToast.GRAVITY_CENTER
                 )
             }
             is XIError -> {
@@ -342,7 +342,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                 )
             }
             is XIStatus -> {
-                this.requireActivity().motionToast(result.message, MotionToast.TOAST_INFO)
+                this.motionToast(result.message, MotionToast.TOAST_INFO, position = MotionToast.GRAVITY_CENTER)
             }
             is XIProgress -> {
                 // add animation
@@ -454,7 +454,12 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                 else -> toast("Error: Current location is null!")
             }
         } catch (e: Exception) {
-            toast(R.string.error_getting_image)
+            this.motionToast(
+                getString(R.string.error_getting_image),
+                MotionToast.TOAST_ERROR,
+                MotionToast.GRAVITY_CENTER
+            )
+
             e.printStackTrace()
         }
     }
@@ -467,7 +472,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
 
         if (currentLocation == null) {
             // Check network availability / connectivity
-            requireActivity().motionToast("Please enable location services.", MotionToast.TOAST_WARNING)
+            this.motionToast("Please enable location services.", MotionToast.TOAST_WARNING)
             // Launch Dialog
         } else {
             // requireMutex
@@ -684,10 +689,18 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
 
             when {
                 userDTO.userId.isBlank() -> {
-                    this@CaptureWorkFragment.requireActivity().motionToast("Error: current user lacks permissions", MotionToast.TOAST_ERROR)
+                    this@CaptureWorkFragment.motionToast(
+                        "Error: current user lacks permissions",
+                        MotionToast.TOAST_ERROR,
+                        MotionToast.GRAVITY_CENTER
+                    )
                 }
                 jobItEstimate?.jobId == null -> {
-                    this@CaptureWorkFragment.requireActivity().motionToast("Error: selected job is invalid", MotionToast.TOAST_ERROR)
+                    this@CaptureWorkFragment.motionToast(
+                        "Error: selected job is invalid",
+                        MotionToast.TOAST_ERROR,
+                        MotionToast.GRAVITY_CENTER
+                    )
                 }
                 else -> {
                     val trackRouteId: String =
@@ -704,7 +717,11 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                         )
                         // progressDialog.dismiss()
                         if (!submit.isBlank()) {
-                            toast("Problem with work submission: $submit")
+                            this@CaptureWorkFragment.motionToast(
+                                "Problem with work submission: $submit",
+                                MotionToast.TOAST_ERROR,
+                                MotionToast.GRAVITY_CENTER
+                            )
                             errorState = true
                         }
                     }
@@ -715,9 +732,9 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
 
     private fun popViewOnJobSubmit(direction: Int) {
         if (direction == WorkflowDirection.NEXT.value) {
-            toast(R.string.job_approved)
+            this.motionToast(getString(R.string.job_approved), MotionToast.TOAST_SUCCESS)
         } else if (direction == WorkflowDirection.FAIL.value) {
-            toast(R.string.job_declined)
+            this.motionToast(getString(R.string.job_declined), MotionToast.TOAST_INFO)
         }
         Intent(activity, MainActivity::class.java).also { home ->
             startActivity(home)

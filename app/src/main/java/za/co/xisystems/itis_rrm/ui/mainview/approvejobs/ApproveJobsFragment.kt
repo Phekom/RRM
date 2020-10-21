@@ -90,7 +90,7 @@ class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAw
     private fun retryFetchLocalJobs() {
         IndefiniteSnackbar.hide()
         Coroutines.main {
-            fetchLocalJobs()
+            fetchRemoteJobs()
         }
     }
 

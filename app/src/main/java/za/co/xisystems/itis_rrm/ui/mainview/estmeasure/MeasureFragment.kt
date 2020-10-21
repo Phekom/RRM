@@ -68,14 +68,7 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
         } ?: throw Exception("Invalid Activity")
 
         Coroutines.main {
-            val dialog =
-                setDataProgressDialog(
-                    requireActivity(),
-                    getString(R.string.data_loading_please_wait)
-                )
-
             fetchEstimateMeasures()
-
             swipeToRefreshInit()
         }
     }
@@ -99,7 +92,6 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
                     initRecyclerView(jobHeaders.toMeasureListItems())
                     noData.visibility = View.GONE
                     group5_loading.visibility = View.GONE
-                    toast(jobHeaders.size.toString())
                 }
             }
         })

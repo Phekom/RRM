@@ -176,11 +176,11 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
 
                     when {
                         userDTO.userId.isBlank() -> {
-                            this@JobInfoFragment.requireActivity().motionToast("The user lacks permissions.", MotionToast.TOAST_ERROR)
+                            this@JobInfoFragment.motionToast("The user lacks permissions.", MotionToast.TOAST_ERROR)
                             progressButton.failProgress("Invalid User")
                         }
                         job.jobDTO.JobId.isBlank() -> {
-                            this@JobInfoFragment.requireActivity().motionToast("The selected job is invalid.", MotionToast.TOAST_ERROR)
+                            this@JobInfoFragment.motionToast("The selected job is invalid.", MotionToast.TOAST_ERROR)
                             progressButton.failProgress("Invalid Job")
                         }
                         else -> {
@@ -211,7 +211,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
             val response =
                 approveViewModel.processWorkflowMove(userId, trackRouteId, description, direction)
             if (response.isNotBlank()) {
-                this@JobInfoFragment.requireActivity().motionToast(response, MotionToast.TOAST_ERROR)
+                this@JobInfoFragment.motionToast(response, MotionToast.TOAST_ERROR)
                 progressButton.failProgress("Workflow Failed")
             } else {
                 progressButton.doneProgress("Workflow Complete")
@@ -222,9 +222,9 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
 
     private fun popViewOnJobSubmit(direction: Int) {
         if (direction == WorkflowDirection.NEXT.value) {
-            this.requireActivity().motionToast(getString(R.string.job_approved), MotionToast.TOAST_SUCCESS)
+            this.motionToast(getString(R.string.job_approved), MotionToast.TOAST_SUCCESS)
         } else if (direction == WorkflowDirection.FAIL.value) {
-            this.requireActivity().motionToast(getString(R.string.job_declined), MotionToast.TOAST_INFO)
+            this.motionToast(getString(R.string.job_declined), MotionToast.TOAST_INFO)
         }
 
         Intent(context?.applicationContext, MainActivity::class.java).also { home ->

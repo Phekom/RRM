@@ -29,12 +29,12 @@ class HomeViewModel(
 
     val databaseResult: MutableLiveData<XIResult<Boolean>> = MutableLiveData()
 
-    private val dataBaseStatus: MutableLiveData<XIResult<Boolean>> = offlineDataRepository.databaseStatus
+    val databaseStatus: MutableLiveData<XIResult<Boolean>> = offlineDataRepository.databaseStatus
 
     init {
 
         viewModelScope.launch {
-            dataBaseStatus.observeForever {
+            databaseStatus.observeForever {
                 it?.let {
                     databaseResult.postValue(it)
                 }
@@ -58,7 +58,7 @@ class HomeViewModel(
                 val fetchFail = XIError(ex, "Failed to fetch data: ${ex.message}")
                 databaseResult.postValue(fetchFail)
             } finally {
-                // databaseResult.postValue(XIProgress(false))
+                databaseResult.postValue(XIProgress(false))
             }
         }
     }

@@ -159,7 +159,6 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
                         }
                     }
                     measurementsToApprove.clear()
-                    toast(R.string.job_submitted)
                     popViewOnJobSubmit(workflowDirection.value)
                 } catch (e: Exception) {
                     Timber.e(e, "Failed to Approve Measurments!")
@@ -178,16 +177,18 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
             val submit =
                 approveViewModel.processWorkflowMove(userId, trackRouteId, description, direction)
             if (submit.isNotEmpty()) {
-                this.requireActivity().motionToast(submit, MotionToast.TOAST_ERROR, MotionToast.GRAVITY_CENTER)
+                this.motionToast(submit, MotionToast.TOAST_ERROR, MotionToast.GRAVITY_CENTER)
+            } else {
+                popViewOnJobSubmit(direction)
             }
         }
     }
 
     private fun popViewOnJobSubmit(direction: Int) {
         if (direction == WorkflowDirection.NEXT.value) {
-            this.requireActivity().motionToast(getString(R.string.job_approved), MotionToast.TOAST_SUCCESS)
+            this.motionToast(getString(R.string.job_approved), MotionToast.TOAST_SUCCESS)
         } else if (direction == WorkflowDirection.FAIL.value) {
-            this.requireActivity().motionToast(getString(R.string.job_declined), MotionToast.TOAST_INFO)
+            this.motionToast(getString(R.string.job_declined), MotionToast.TOAST_INFO)
         }
 
         Intent(context?.applicationContext, MainActivity::class.java).also { home ->
@@ -202,12 +203,13 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
                 ActivityIdConstants.MEASURE_COMPLETE
             )
             measurements.observe(viewLifecycleOwner, { measureItems ->
-                val allData = measureItems.count()
 
+                val allData = measureItems.count()
+                val uniqueItems = measureItems.distinctBy { item -> item.itemMeasureId }
                 if (allData == measureItems.size) {
                     measurementsToApprove = ArrayList()
-                    measurementsToApprove.addAll(measureItems)
-                    initRecyclerView(measureItems.toMeasureItem())
+                    measurementsToApprove.addAll(uniqueItems)
+                    initRecyclerView(uniqueItems.toMeasureItem())
                 }
             })
         }

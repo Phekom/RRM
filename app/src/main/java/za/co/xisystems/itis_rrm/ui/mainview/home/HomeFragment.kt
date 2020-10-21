@@ -1,3 +1,5 @@
+@file:Suppress("KDocUnresolvedReference")
+
 package za.co.xisystems.itis_rrm.ui.mainview.home
 
 import android.app.AlertDialog
@@ -35,7 +37,6 @@ import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.extensions.observeOnce
-import za.co.xisystems.itis_rrm.ui.extensions.motionToast
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModelFactory
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
@@ -81,7 +82,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                         }
                     }
                 } else {
-                    this@HomeFragment.requireActivity().motionToast(
+                    this@HomeFragment.motionToast(
                         getString(R.string.please_connect_to_internet_to_up_sync_offline_workflows),
                         MotionToast.TOAST_NO_INTERNET,
                         MotionToast.GRAVITY_TOP
@@ -140,10 +141,15 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
         }
     }
 
-    override fun onStop() {
-        homeViewModel.databaseResult.removeObservers(viewLifecycleOwner)
+    /**
+     * Called when the Fragment is no longer resumed.  This is generally
+     * tied to [Activity.onPause] of the containing
+     * Activity's lifecycle.
+     */
+    override fun onPause() {
+        homeViewModel.databaseStatus.removeObservers(viewLifecycleOwner)
         uiScope.destroy()
-        super.onStop()
+        super.onPause()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -299,7 +305,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                 .setTitle(
                     "Initial Synchronisation"
                 )
-                .setMessage("No RRM saved data detected. Please synchronise the local database for contract and project information.")
+                .setMessage("No RRM data detected. Please synchronise the local database for contract and project information.")
                 .setCancelable(false)
                 .setIcon(R.drawable.ic_baseline_cloud_download_24)
                 .setPositiveButton(R.string.ok) { dialog, whichButton ->
