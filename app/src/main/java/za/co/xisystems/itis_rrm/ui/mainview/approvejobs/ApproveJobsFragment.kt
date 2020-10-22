@@ -37,7 +37,6 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
  */
 
 class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAware {
-//
 
     override val kodein by kodein()
     private lateinit var approveViewModel: ApproveJobsViewModel
@@ -73,6 +72,7 @@ class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAw
                 getString(R.string.data_loading_please_wait)
             )
             try {
+                group3_loading.visibility = View.VISIBLE
                 fetchLocalJobs()
             } catch (t: Throwable) {
                 val xiFail = XIError(t, t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR)
@@ -81,6 +81,8 @@ class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAw
                     throwable = xiFail,
                     refreshAction = { retryFetchLocalJobs() }
                 )
+            } finally {
+                group3_loading.visibility = View.GONE
             }
 
             swipeToRefreshInit()
@@ -99,13 +101,15 @@ class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAw
         val jobs = approveViewModel.getJobsForActivityId(ActivityIdConstants.JOB_APPROVE)
         jobs.observe(viewLifecycleOwner, { jobList ->
 
-            if (jobList.isEmpty()) {
-                noData.visibility = View.VISIBLE
+            if (jobList.isNullOrEmpty()) {
+                job_data_layout.visibility = View.GONE
+                no_data_layout.visibility = View.VISIBLE
             } else {
                 val jItems = jobList.distinctBy {
                     it.JobId
                 }
-                noData.visibility = GONE
+                no_data_layout.visibility = View.GONE
+                job_data_layout.visibility = View.VISIBLE
                 toast(jobList.size.toString())
                 initRecyclerView(jItems.toApproveListItems())
             }
@@ -131,11 +135,13 @@ class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAw
     private fun fetchRemoteJobs() {
         Coroutines.main {
             try {
+                group3_loading.visibility = View.VISIBLE
                 val freshJobs = approveViewModel.offlineUserTaskList.await()
                 freshJobs.observeOnce(viewLifecycleOwner, {
                     jobs_swipe_to_refresh.isRefreshing = false
-                    if (it.isEmpty()) {
-                        noData.visibility = View.VISIBLE
+                    if (it.isNullOrEmpty()) {
+                        job_data_layout.visibility = View.GONE
+                        no_data_layout.visibility = View.VISIBLE
                     }
                 })
                 fetchLocalJobs()
@@ -150,6 +156,7 @@ class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAw
                 )
             } finally {
                 jobs_swipe_to_refresh.isRefreshing = false
+                group3_loading.visibility = View.GONE
             }
         }
     }

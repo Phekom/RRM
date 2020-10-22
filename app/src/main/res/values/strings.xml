@@ -572,5 +572,6 @@
     <string name="pair">%1$s %2$s</string>
     <string name="comment_placeholder">No comment</string>
     <string name="route_section_badge">( %1$s/0%2$s )</string>
+    <string name="no_data">no data returned</string>
 
 </resources>

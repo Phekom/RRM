@@ -60,20 +60,20 @@ class UnSubmittedFragment : BaseFragment(R.layout.fragment_unsubmittedjobs), Kod
         Coroutines.main {
             try {
                 groupAdapter = GroupAdapter()
-
+                group12_loading.visibility = View.VISIBLE
                 val measurements =
                     unsubmittedViewModel.getJobsForActivityId(ActivityIdConstants.JOB_ESTIMATE)
 
                 measurements.observe(viewLifecycleOwner, { jobList ->
-                    if (jobList.isEmpty()) {
+                    if (jobList.isNullOrEmpty()) {
                         groupAdapter.clear()
-                        noData.visibility = View.VISIBLE
-                        group12_loading.visibility = View.GONE
+                        no_data_layout.visibility = View.VISIBLE
+                        unsubmitted_job_layout.visibility = View.GONE
                     } else {
-                        noData.visibility = View.GONE
+                        no_data_layout.visibility = View.GONE
+                        unsubmitted_job_layout.visibility = View.VISIBLE
                         initRecyclerView(jobList.toApproveListItems())
                         toast(jobList.size.toString())
-                        group12_loading.visibility = View.GONE
                     }
                 })
             } catch (t: Throwable) {

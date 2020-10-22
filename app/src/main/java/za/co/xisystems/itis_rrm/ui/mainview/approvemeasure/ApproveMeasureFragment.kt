@@ -10,7 +10,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
-import android.view.View.GONE
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
@@ -32,7 +31,6 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.approveMeasure_Item.ApproveMeasureItem
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
-import za.co.xisystems.itis_rrm.utils.hide
 
 /**
  * Created by Francis Mahlava on 03,October,2019
@@ -66,12 +64,6 @@ class ApproveMeasureFragment : BaseFragment(R.layout.fragment_approvemeasure), K
             ViewModelProvider(this, factory).get(ApproveMeasureViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
 
-        val dialog =
-            setDataProgressDialog(
-                this.requireActivity(),
-                getString(R.string.data_loading_please_wait)
-            )
-
         loadJobHeaders()
 
         swipeToRefreshInit()
@@ -92,8 +84,8 @@ class ApproveMeasureFragment : BaseFragment(R.layout.fragment_approvemeasure), K
                     approveViewModel.getJobApproveMeasureForActivityId(ActivityIdConstants.MEASURE_COMPLETE)
 
                 measurementsSubscription.observe(viewLifecycleOwner, { measurementData ->
-                    noData.visibility = GONE
-                    if (measurementData.isEmpty()) {
+
+                    if (measurementData.isNullOrEmpty()) {
                         no_data_layout.visibility = View.VISIBLE
                         datagrid.visibility = View.GONE
                     } else {
@@ -111,7 +103,7 @@ class ApproveMeasureFragment : BaseFragment(R.layout.fragment_approvemeasure), K
                 val measureErr = XIError(t, t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR)
                 XIErrorHandler.crashGuard(this@ApproveMeasureFragment.requireView(), measureErr, refreshAction = { retryFetchMeasurements() })
             } finally {
-                mydata_loading.hide()
+                group4_loading.visibility = View.GONE
             }
         }
     }
@@ -138,7 +130,7 @@ class ApproveMeasureFragment : BaseFragment(R.layout.fragment_approvemeasure), K
                 group4_loading.visibility = View.VISIBLE
                 val freshJobs = approveViewModel.offlineUserTaskList.await()
                 freshJobs.observe(viewLifecycleOwner, {
-                    if (it.isEmpty()) {
+                    if (it.isNullOrEmpty()) {
                         no_data_layout.visibility = View.VISIBLE
                         datagrid.visibility = View.GONE
                     } else {

@@ -270,7 +270,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
     private fun handleBigSync(result: XIResult<Boolean>) {
         when (result) {
             is XISuccess -> {
-                sharedViewModel.setMessage("Sync Complete")
+                this.motionToast("Sync Complete", MotionToast.TOAST_SUCCESS)
             }
             is XIStatus -> {
                 sharedViewModel.setMessage(result.message)

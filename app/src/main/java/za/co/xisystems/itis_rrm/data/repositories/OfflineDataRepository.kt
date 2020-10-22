@@ -349,7 +349,7 @@ class OfflineDataRepository(
                         }?.distinctBy { project -> project.projectId }
 
                     validProjects?.let {
-                        updateProjects(validProjects, contract)
+                        saveProjects(validProjects, contract)
                     }
                 }
             }
@@ -377,7 +377,7 @@ class OfflineDataRepository(
         }
     }
 
-    private fun updateProjects(
+    private fun saveProjects(
         validProjects: List<ProjectDTO>?,
         contract: ContractDTO
     ) {
