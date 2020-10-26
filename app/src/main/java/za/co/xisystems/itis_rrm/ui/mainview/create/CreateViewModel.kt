@@ -4,7 +4,6 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import java.util.ArrayList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.data.localDB.entities.ContractDTO
@@ -21,6 +20,7 @@ import za.co.xisystems.itis_rrm.data.repositories.JobCreationDataRepository
 import za.co.xisystems.itis_rrm.ui.mainview.create.select_item.SectionProj_Item
 import za.co.xisystems.itis_rrm.utils.JobUtils
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
+import java.util.ArrayList
 
 /**
  * Created by Francis Mahlava on 2019/10/18.
@@ -120,8 +120,8 @@ class CreateViewModel(
         projectRate.value = inProjectRate
     }
 
-    fun saveNewJob(newjob: JobDTO) {
-        jobCreationDataRepository.saveNewJob(newjob)
+    fun saveNewJob(newJob: JobDTO) {
+        jobCreationDataRepository.saveNewJob(newJob)
     }
 
     suspend fun getContracts(): LiveData<List<ContractDTO>> {
@@ -159,9 +159,9 @@ class CreateViewModel(
     }
 
     // TODO: Should return some sort of status
-    suspend fun saveNewItem(newjItem: ItemDTOTemp) {
+    suspend fun saveNewItem(tempItem: ItemDTOTemp) {
         return withContext(Dispatchers.IO) {
-            jobCreationDataRepository.saveNewItem(newjItem)
+            jobCreationDataRepository.saveNewItem(tempItem)
         }
     }
 
@@ -180,7 +180,7 @@ class CreateViewModel(
     }
 
     suspend fun updateNewJob(
-        newjobId: String,
+        newJobId: String,
         startKM: Double,
         endKM: Double,
         sectionId: String,
@@ -189,7 +189,7 @@ class CreateViewModel(
     ) {
         withContext(Dispatchers.IO) {
             jobCreationDataRepository.updateNewJob(
-                newjobId,
+                newJobId,
                 startKM,
                 endKM,
                 sectionId,
@@ -199,12 +199,7 @@ class CreateViewModel(
         }
     }
 
-    suspend fun getPointSectionData(projectId: String?): LiveData<SectionPointDTO> { // jobId: String,jobId,
-
-        return withContext(Dispatchers.IO) {
-            jobCreationDataRepository.getPointSectionData(projectId)
-        }
-    }
+    suspend fun getPointSectionData(projectId: String): SectionPointDTO = jobCreationDataRepository.getPointSectionData(projectId)
 
     suspend fun getSectionByRouteSectionProject(
         sectionId: Int,
@@ -289,7 +284,7 @@ class CreateViewModel(
         jobCreationDataRepository.deleteItemList(jobId)
     }
 
-    fun deleteItemfromList(itemId: String) {
+    fun deleteItemFromList(itemId: String) {
         jobCreationDataRepository.deleteItemFromList(itemId)
     }
 

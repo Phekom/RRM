@@ -5,13 +5,11 @@
 
 package za.co.xisystems.itis_rrm.ui.mainview.approvemeasure
 
-import android.app.ProgressDialog
 import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
-import android.view.View.GONE
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
@@ -26,10 +24,9 @@ import org.kodein.di.generic.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
-import za.co.xisystems.itis_rrm.custom.errors.NoConnectivityException
-import za.co.xisystems.itis_rrm.custom.errors.NoInternetException
-import za.co.xisystems.itis_rrm.custom.errors.ServiceException
-import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
+import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
+import za.co.xisystems.itis_rrm.custom.results.XIError
+import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.approveMeasure_Item.ApproveMeasureItem
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
@@ -67,52 +64,51 @@ class ApproveMeasureFragment : BaseFragment(R.layout.fragment_approvemeasure), K
             ViewModelProvider(this, factory).get(ApproveMeasureViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
 
-        val dialog =
-            setDataProgressDialog(
-                this.requireActivity(),
-                getString(R.string.data_loading_please_wait)
-            )
+        loadJobHeaders()
 
-        loadJobHeaders(dialog)
-
-        swipeToRefreshInit(dialog)
+        swipeToRefreshInit()
     }
 
-    private fun loadJobHeaders(dialog: ProgressDialog) {
-        try {
-            dialog.show()
-            Coroutines.main {
+    private fun retryFetchMeasurements() {
+        IndefiniteSnackbar.hide()
+        fetchJobsFromService()
+        loadJobHeaders()
+    }
+
+    private fun loadJobHeaders() {
+
+        Coroutines.main {
+            try {
+                group4_loading.visibility = View.VISIBLE
                 val measurementsSubscription =
                     approveViewModel.getJobApproveMeasureForActivityId(ActivityIdConstants.MEASURE_COMPLETE)
 
                 measurementsSubscription.observe(viewLifecycleOwner, { measurementData ->
-                    noData.visibility = GONE
-                    if (measurementData.isEmpty()) {
-                        noData.visibility = View.VISIBLE
+
+                    if (measurementData.isNullOrEmpty()) {
+                        no_data_layout.visibility = View.VISIBLE
+                        datagrid.visibility = View.GONE
+                    } else {
+                        no_data_layout.visibility = View.GONE
+                        datagrid.visibility = View.VISIBLE
+                        val jobHeaders = measurementData.distinctBy {
+                            it.jobId
+                        }
+                        initRecyclerView(jobHeaders.toApproveListItems())
+                        group4_loading.visibility = View.GONE
                     }
-                    val jobHeaders = measurementData.distinctBy {
-                        it.jobId
-                    }
-                    initRecyclerView(jobHeaders.toApproveListItems())
-                    toast(jobHeaders.size.toString())
-                    group4_loading.visibility = GONE
                 })
+            } catch (t: Throwable) {
+                Timber.e(t, "Unable to fetch Measurements")
+                val measureErr = XIError(t, t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR)
+                XIErrorHandler.crashGuard(this@ApproveMeasureFragment.requireView(), measureErr, refreshAction = { retryFetchMeasurements() })
+            } finally {
+                group4_loading.visibility = View.GONE
             }
-        } catch (e: ServiceException) {
-            ToastUtils().toastLong(activity, e.message)
-            Timber.e(e, "API exception")
-        } catch (e: NoInternetException) {
-            ToastUtils().toastLong(activity, e.message)
-            Timber.e(e, "No active internet connection")
-        } catch (e: NoConnectivityException) {
-            ToastUtils().toastLong(activity, e.message)
-            Timber.e(e, "No route to service host")
-        } finally {
-            dialog.dismiss()
         }
     }
 
-    private fun swipeToRefreshInit(dialog: ProgressDialog) {
+    private fun swipeToRefreshInit() {
         approvem_swipe_to_refresh.setProgressBackgroundColorSchemeColor(
             ContextCompat.getColor(
                 requireContext().applicationContext,
@@ -123,28 +119,32 @@ class ApproveMeasureFragment : BaseFragment(R.layout.fragment_approvemeasure), K
         approvem_swipe_to_refresh.setColorSchemeColors(Color.WHITE)
 
         approvem_swipe_to_refresh.setOnRefreshListener {
-            dialog.show()
-            Coroutines.main {
-                try {
-                    val freshJobs = approveViewModel.offlineUserTaskList.await()
-                    freshJobs.observe(viewLifecycleOwner, {
-                        if (it.isEmpty()) {
-                            noData.visibility = View.VISIBLE
-                        }
-                    })
-                } catch (e: ServiceException) {
-                    ToastUtils().toastLong(activity, e.message)
-                    Timber.e(e, "API Exception")
-                } catch (e: NoInternetException) {
-                    ToastUtils().toastLong(activity, e.message)
-                    Timber.e(e, "No Internet Connection")
-                } catch (e: NoConnectivityException) {
-                    ToastUtils().toastLong(activity, e.message)
-                    Timber.e(e, "Service Host Unreachable")
-                } finally {
-                    dialog.dismiss()
-                    approvem_swipe_to_refresh.isRefreshing = false
-                }
+            fetchJobsFromService()
+            loadJobHeaders()
+        }
+    }
+
+    private fun fetchJobsFromService() {
+        Coroutines.main {
+            try {
+                group4_loading.visibility = View.VISIBLE
+                val freshJobs = approveViewModel.offlineUserTaskList.await()
+                freshJobs.observe(viewLifecycleOwner, {
+                    if (it.isNullOrEmpty()) {
+                        no_data_layout.visibility = View.VISIBLE
+                        datagrid.visibility = View.GONE
+                    } else {
+                        no_data_layout.visibility = View.GONE
+                        datagrid.visibility = View.VISIBLE
+                    }
+                })
+            } catch (t: Throwable) {
+                Timber.e(t, "Unable to fetch remote jobs")
+                val measureErr = XIError(t, t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR)
+                XIErrorHandler.crashGuard(this@ApproveMeasureFragment.requireView(), measureErr, refreshAction = { retryFetchMeasurements() })
+            } finally {
+                group4_loading.visibility = View.GONE
+                approvem_swipe_to_refresh.isRefreshing = false
             }
         }
     }

@@ -1,5 +1,6 @@
 package za.co.xisystems.itis_rrm.custom.results
 
+import za.co.xisystems.itis_rrm.custom.errors.NoConnectivityException
 import za.co.xisystems.itis_rrm.custom.errors.NoInternetException
 import za.co.xisystems.itis_rrm.custom.errors.ServiceHostUnreachableException
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
@@ -31,6 +32,7 @@ fun XIError.isConnectivityException(): Boolean {
     return when (exception) {
         is IOException -> true
         is NoInternetException -> true
+        is NoConnectivityException -> true
         is ServiceHostUnreachableException -> true
         is SocketException -> true
         else -> false

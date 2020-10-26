@@ -1,6 +1,5 @@
 package za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.measure_approval
 
-import android.app.Dialog
 import android.net.Uri
 import android.text.Editable
 import android.view.View
@@ -11,17 +10,16 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.Navigation
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import com.xwray.groupie.kotlinandroidextensions.Item
-import java.io.File
-import kotlinx.android.synthetic.main.estimates_item.measure_item_description_textView
 import kotlinx.android.synthetic.main.measurements_item.*
-import kotlinx.android.synthetic.main.measurements_item.correctButton
+import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
+import za.co.xisystems.itis_rrm.ui.extensions.motionToast
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureViewModel
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.GlideApp
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
-import za.co.xisystems.itis_rrm.utils.toast
+import java.io.File
 
 /**
  * Created by Francis Mahlava on 2020/01/02.
@@ -30,7 +28,6 @@ class MeasurementsItem(
     private val jobItemMeasureDTO: JobItemMeasureDTO,
     private val approveViewModel: ApproveMeasureViewModel,
     private val activity: FragmentActivity?,
-    private val dialog: Dialog,
     private val viewLifecycleOwner: LifecycleOwner
 ) : Item() {
 
@@ -38,15 +35,15 @@ class MeasurementsItem(
         viewHolder.apply {
 
             Coroutines.main {
-                dialog.show()
-                val quantity = approveViewModel.getQuantityForMeasureItemId(jobItemMeasureDTO.itemMeasureId!!)
+
+            val quantity = approveViewModel.getQuantityForMeasureItemId(jobItemMeasureDTO.itemMeasureId!!)
                 quantity.observe(viewLifecycleOwner, {
                     measure_item_quantity_textView.text = activity?.getString(R.string.pair, "Qty:", it.toString())
                 })
+
                 val lineRate = approveViewModel.getLineRateForMeasureItemId(jobItemMeasureDTO.itemMeasureId!!)
                 lineRate.observe(viewLifecycleOwner, {
                     measure_item_price_textView.text = activity?.getString(R.string.pair, "R", it.toString())
-                    dialog.dismiss()
                 })
 
                 val descri = approveViewModel.getDescForProjectId(jobItemMeasureDTO.projectItemId!!)
@@ -97,24 +94,24 @@ class MeasurementsItem(
         alert.setPositiveButton(
             R.string.save
         ) { dialog, which ->
-            if (ServiceUtil.isInternetAvailable(activity.applicationContext)) {
+            if (ServiceUtil.isNetworkAvailable(activity.applicationContext)) {
                 Coroutines.main {
                     if (editQuantity.text.toString() == "" || nanCheck(editQuantity.text.toString())) {
-                        activity.toast("Please Enter a valid Quantity")
+                        activity.motionToast("Please Enter a valid Quantity", MotionToast.TOAST_WARNING)
                     } else {
                         val updated = approveViewModel.upDateMeasure(
                             editQuantity.text.toString(),
                             jobItemMeasureDTO.itemMeasureId
                         )
                         if (updated.isBlank()) {
-                            activity.toast("Data Updated was Successful")
+                            activity.motionToast("Data Updated was Successful", MotionToast.TOAST_SUCCESS)
                         } else {
-                            activity.toast("Data Updated Error!!  Server Not Reachable")
+                            activity.motionToast("Data Updated Error!!  Server Not Reachable", MotionToast.TOAST_ERROR)
                         }
                     }
                 }
             } else {
-                activity.toast("No connection detected.")
+                activity.motionToast("No connection detected.", MotionToast.TOAST_NO_INTERNET)
             }
         }
         // No button
@@ -159,8 +156,4 @@ class MeasurementsItem(
             }
         }
     }
-}
-
-private fun getItemId(position: Int): Long {
-    return position.toLong()
 }

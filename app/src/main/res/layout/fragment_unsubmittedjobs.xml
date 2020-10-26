@@ -7,6 +7,7 @@
 
 
     <LinearLayout
+        android:id="@+id/unsubmitted_job_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:animateLayoutChanges="true"
@@ -17,11 +18,25 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/incomplete_job_listView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                tools:listitem="@layout/unsubmtd_job_list_item" />
+            android:id="@+id/incomplete_job_listView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            tools:listitem="@layout/unsubmtd_job_list_item" />
 
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/no_data_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:animateLayoutChanges="true"
+        android:orientation="vertical"
+        android:gravity="center"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:visibility="visible">
 
         <ImageView
             android:id="@+id/noData"
@@ -31,7 +46,8 @@
             android:layout_marginTop="@dimen/xlarge"
             android:src="@drawable/no_data"
             android:visibility="visible"
-            tools:visibility="visible" />
+            tools:visibility="visible"
+            android:contentDescription="@string/no_data" />
     </LinearLayout>
 
 

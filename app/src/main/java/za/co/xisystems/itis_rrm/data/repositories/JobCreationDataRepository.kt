@@ -212,12 +212,7 @@ class JobCreationDataRepository(
         }
     }
 
-    suspend fun getPointSectionData(projectId: String?): LiveData<SectionPointDTO> { // jobId,jobId: String,
-        return withContext(Dispatchers.IO) {
-            // Db.getSectionItemDao().getAllSectionItems()
-            appDb.getSectionPointDao().getPointSectionData(projectId)
-        }
-    }
+    suspend fun getPointSectionData(projectId: String): SectionPointDTO = appDb.getSectionPointDao().getPointSectionData(projectId)
 
     suspend fun getSectionByRouteSectionProject(
         sectionId: Int,

@@ -1,7 +1,4 @@
-@file:Suppress(
-    "RemoveExplicitTypeArguments", "RemoveExplicitTypeArguments", "RemoveExplicitTypeArguments", "RemoveExplicitTypeArguments", "RemoveExplicitTypeArguments", "RemoveExplicitTypeArguments", "RemoveExplicitTypeArguments", "RemoveExplicitTypeArguments", "RemoveExplicitTypeArguments",
-    "RemoveExplicitTypeArguments", "RemoveExplicitTypeArguments", "RemoveExplicitTypeArguments", "RemoveExplicitTypeArguments"
-)
+@file:Suppress("RemoveExplicitTypeArguments")
 
 package za.co.xisystems.itis_rrm.ui.mainview.approvejobs
 
@@ -26,11 +23,11 @@ import org.kodein.di.generic.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
-import za.co.xisystems.itis_rrm.custom.errors.NoConnectivityException
-import za.co.xisystems.itis_rrm.custom.errors.NoInternetException
-import za.co.xisystems.itis_rrm.custom.errors.ServiceException
-import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
+import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
+import za.co.xisystems.itis_rrm.custom.results.XIError
+import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
+import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.approve_job_item.ApproveJobItem
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
@@ -40,7 +37,6 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
  */
 
 class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAware {
-//
 
     override val kodein by kodein()
     private lateinit var approveViewModel: ApproveJobsViewModel
@@ -75,23 +71,45 @@ class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAw
                 requireActivity(),
                 getString(R.string.data_loading_please_wait)
             )
-
-            fetchLocalJobs()
+            try {
+                group3_loading.visibility = View.VISIBLE
+                fetchLocalJobs()
+            } catch (t: Throwable) {
+                val xiFail = XIError(t, t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR)
+                XIErrorHandler.crashGuard(
+                    view = this@ApproveJobsFragment.requireView(),
+                    throwable = xiFail,
+                    refreshAction = { retryFetchLocalJobs() }
+                )
+            } finally {
+                group3_loading.visibility = View.GONE
+            }
 
             swipeToRefreshInit()
         }
     }
 
+    private fun retryFetchLocalJobs() {
+        IndefiniteSnackbar.hide()
+        Coroutines.main {
+            fetchRemoteJobs()
+        }
+    }
+
     private suspend fun fetchLocalJobs() {
+
         val jobs = approveViewModel.getJobsForActivityId(ActivityIdConstants.JOB_APPROVE)
         jobs.observe(viewLifecycleOwner, { jobList ->
-            val jItems = jobList.distinctBy {
-                it.JobId
-            }
-            noData.visibility = GONE
-            if (jobList.isEmpty()) {
-                noData.visibility = View.VISIBLE
+
+            if (jobList.isNullOrEmpty()) {
+                job_data_layout.visibility = View.GONE
+                no_data_layout.visibility = View.VISIBLE
             } else {
+                val jItems = jobList.distinctBy {
+                    it.JobId
+                }
+                no_data_layout.visibility = View.GONE
+                job_data_layout.visibility = View.VISIBLE
                 toast(jobList.size.toString())
                 initRecyclerView(jItems.toApproveListItems())
             }
@@ -110,32 +128,42 @@ class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAw
         jobs_swipe_to_refresh.setColorSchemeColors(Color.WHITE)
 
         jobs_swipe_to_refresh.setOnRefreshListener {
-            dialog.show()
-            Coroutines.main {
-                try {
-                    val freshJobs = approveViewModel.offlineUserTaskList.await()
-                    freshJobs.observe(viewLifecycleOwner, {
-                        jobs_swipe_to_refresh.isRefreshing = false
-                        if (it.isEmpty()) {
-                            noData.visibility = View.VISIBLE
-                        }
-                        dialog.dismiss()
-                    })
-                } catch (e: ServiceException) {
-                    ToastUtils().toastLong(activity, e.message)
-                    Timber.e(e, "API Exception")
-                } catch (e: NoInternetException) {
-                    ToastUtils().toastLong(activity, e.message)
-                    Timber.e(e, "No Internet Connection")
-                } catch (e: NoConnectivityException) {
-                    ToastUtils().toastLong(activity, e.message)
-                    Timber.e(e, "Service Host Unreachable")
-                } finally {
-                    dialog.dismiss()
+            fetchRemoteJobs()
+        }
+    }
+
+    private fun fetchRemoteJobs() {
+        Coroutines.main {
+            try {
+                group3_loading.visibility = View.VISIBLE
+                val freshJobs = approveViewModel.offlineUserTaskList.await()
+                freshJobs.observeOnce(viewLifecycleOwner, {
                     jobs_swipe_to_refresh.isRefreshing = false
-                }
+                    if (it.isNullOrEmpty()) {
+                        job_data_layout.visibility = View.GONE
+                        no_data_layout.visibility = View.VISIBLE
+                    }
+                })
+                fetchLocalJobs()
+            } catch (t: Throwable) {
+                val message = t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR
+                Timber.e(t)
+                val xiFail = XIError(t, message)
+                XIErrorHandler.crashGuard(
+                    view = this@ApproveJobsFragment.requireView(),
+                    throwable = xiFail,
+                    refreshAction = { retryFetchRemoteJobs() }
+                )
+            } finally {
+                jobs_swipe_to_refresh.isRefreshing = false
+                group3_loading.visibility = View.GONE
             }
         }
+    }
+
+    private fun retryFetchRemoteJobs() {
+        IndefiniteSnackbar.hide()
+        fetchRemoteJobs()
     }
 
     private fun initRecyclerView(
@@ -172,12 +200,11 @@ class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAw
 
     private fun List<JobDTO>.toApproveListItems(): List<ApproveJobItem> {
         return this.map { approveJobItems ->
-            ApproveJobItem(approveJobItems, approveViewModel)
+            ApproveJobItem(approveJobItems, approveViewModel, this@ApproveJobsFragment.requireContext())
         }
     }
 
     override fun onDestroyView() {
-        // jobs_swipe_to_refresh.setOnRefreshListener { null }
         approve_job_listView.adapter = null
         super.onDestroyView()
     }

@@ -13,9 +13,11 @@ import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import com.xwray.groupie.kotlinandroidextensions.Item
 import kotlinx.android.synthetic.main.estimates_item.*
 import timber.log.Timber
+import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data._commons.AbstractTextWatcher
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
+import za.co.xisystems.itis_rrm.ui.extensions.motionToast
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.ApproveJobsViewModel
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.GlideApp
@@ -32,7 +34,6 @@ import java.io.File
 class EstimatesItem(
     private val jobItemEstimateDTO: JobItemEstimateDTO,
     private val approveViewModel: ApproveJobsViewModel,
-    private val dialog: Dialog,
     private val activity: FragmentActivity?,
     private val viewLifecycleOwner: LifecycleOwner
 
@@ -41,7 +42,7 @@ class EstimatesItem(
     override fun bind(viewHolder: GroupieViewHolder, position: Int) {
         viewHolder.apply {
             Coroutines.main {
-                dialog.show()
+                // dialog.show()
                 val quantity =
                     approveViewModel.getQuantityForEstimationItemId(jobItemEstimateDTO.estimateId)
                 quantity.observe(viewLifecycleOwner, { qty ->
@@ -52,7 +53,7 @@ class EstimatesItem(
                     approveViewModel.getLineRateForEstimationItemId(jobItemEstimateDTO.estimateId)
                 lineRate.observe(viewLifecycleOwner, {
                     estimation_item_price_textView.text = activity?.getString(R.string.pair, "R", it.toString())
-                    dialog.dismiss()
+                    // dialog.dismiss()
                 })
 //                estimation_item_quantity_textView.text = "Qty: " + quantity //jobItemEstimateDTO.qty.toString()
 //                 estimation_item_price_textView.text = "R " +  lineRate //jobItemEstimateDTO.lineRate.toString()
@@ -115,20 +116,21 @@ class EstimatesItem(
 
             quantityEntry.addTextChangedListener(object : AbstractTextWatcher() {
                 override fun onTextChanged(text: String) {
-                    if (text == "" || nanCheck(text) || text.toDouble() == 0.0) {
-                        cost = 0.0
-                        totalEntry.text = activity.getString(R.string.pair, "R", cost.toString())
-                    } else {
-
-                        val qty = text.toDouble()
-                        if (text.length > 9) {
+                    when {
+                        nanCheck(text) || text.toDouble() == 0.0 -> {
+                            cost = 0.0
+                            totalEntry.text = activity.getString(R.string.pair, "R", cost.toString())
+                        }
+                        text.length > 9 -> {
                             quantityEntry.text =
                                 Editable.Factory.getInstance().newEditable("$defaultQty")
                             activity.toast("You Have exceeded the amount of Quantity allowed")
-                        } else {
+                        }
+                        else -> {
+                            val qty = text.toDouble()
                             cost = tenderRate * qty
-                            val new_cost = cost.round(2).toString()
-                            totalEntry.text = new_cost
+                            val updatedCost = cost.round(2).toString()
+                            totalEntry.text = updatedCost
                         }
                     }
                 }
@@ -139,28 +141,7 @@ class EstimatesItem(
         alert.setPositiveButton(
             R.string.save
         ) { dialog, which ->
-            if (ServiceUtil.isInternetAvailable(activity.applicationContext)) {
-                Coroutines.main {
-                    if (quantityEntry.text.toString() == "" || nanCheck(quantityEntry.text.toString()) || quantityEntry.text.toString()
-                            .toDouble() == 0.0
-                    ) {
-                        activity.toast("Please Enter a valid Quantity")
-                    } else {
-                        val updated = approveViewModel.upDateEstimate(
-                            quantityEntry.text.toString(),
-                            totalEntry.text.toString(),
-                            jobItemEstimateDTO.estimateId
-                        )
-                        if (updated.isBlank()) {
-                            activity.toast("Data Updated was Successful")
-                        } else {
-                            activity.toast("Data Updated was Unsuccessful")
-                        }
-                    }
-                }
-            } else {
-                activity.toast("No connection detected.")
-            }
+            validateUpdateQty(activity, quantityEntry, totalEntry, jobItemEstimateDTO)
         }
         // No button
         alert.setNegativeButton(
@@ -171,6 +152,36 @@ class EstimatesItem(
         }
         val declineAlert = alert.create()
         declineAlert.show()
+    }
+
+    private fun validateUpdateQty(
+        activity: FragmentActivity,
+        quantityEntry: EditText,
+        totalEntry: TextView,
+        jobItemEstimateDTO: JobItemEstimateDTO
+    ) {
+        if (ServiceUtil.isNetworkAvailable(activity.applicationContext)) {
+            Coroutines.main {
+                if (quantityEntry.text.toString() == "" || nanCheck(quantityEntry.text.toString()) || quantityEntry.text.toString()
+                        .toDouble() == 0.0
+                ) {
+                    activity.motionToast("Please Enter a valid Quantity", MotionToast.TOAST_WARNING)
+                } else {
+                    val updated = approveViewModel.upDateEstimate(
+                        quantityEntry.text.toString(),
+                        totalEntry.text.toString(),
+                        jobItemEstimateDTO.estimateId
+                    )
+                    if (updated.isBlank()) {
+                        activity.motionToast("Data Updated was Successful", MotionToast.TOAST_SUCCESS)
+                    } else {
+                        activity.motionToast("Data Updated was Unsuccessful", MotionToast.TOAST_ERROR)
+                    }
+                }
+            }
+        } else {
+            activity.toast("No connection detected.")
+        }
     }
 
     private fun showZoomedImage(imageUrl: String?) {

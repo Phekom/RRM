@@ -1,7 +1,6 @@
 package za.co.xisystems.itis_rrm.ui.mainview.estmeasure.submit_measure
 
 import android.app.AlertDialog
-import android.content.DialogInterface
 import android.graphics.drawable.Animatable
 import android.text.InputType
 import android.view.View
@@ -35,8 +34,8 @@ import java.util.Date
 import java.util.HashMap
 
 class ExpandableHeaderMeasureItem(
-    activity: FragmentActivity?,
-    measureItem: JobItemEstimateDTO,
+    private var activity: FragmentActivity?,
+    val measureItem: JobItemEstimateDTO,
     measureViewModel: MeasureViewModel,
     private val jobItemMeasurePhotoDTOArrayList: ArrayList<JobItemMeasurePhotoDTO>,
     private val jobItemMeasureArrayList: ArrayList<JobItemMeasureDTO>,
@@ -47,20 +46,18 @@ class ExpandableHeaderMeasureItem(
 
     var clickListener: ((ExpandableHeaderMeasureItem) -> Unit)? = null
     var navController: ((NavController) -> Unit)? = null
-    val measureItem: JobItemEstimateDTO = measureItem
-    var projIDz: String? = measureItem.projectItemId
+    var projectItemIdz: String? = measureItem.projectItemId
 
     private var jobItemEst: JobDTO? = null
     private var itemEs: JobItemEstimateDTO? = null
 
     companion object {
-        const val JOB_IMEASURE: String = "JobItemMeasure"
+        const val JOB_ITEM_MEASURE: String = "JobItemMeasure"
         const val PHOTO_RESULT = 9000
     }
 
     var onExpandListener: ((ExpandableGroup) -> Unit)? = null
     private lateinit var expandableGroup: ExpandableGroup
-    private var activity = activity
     override fun bind(viewHolder: GroupieViewHolder, position: Int) {
         super.bind(viewHolder, position)
 
@@ -94,8 +91,8 @@ class ExpandableHeaderMeasureItem(
     ) {
         Coroutines.main {
             val jobForJobItemEstimate = measureViewModel.getJobFromJobId(measureItem.jobId)
-            jobForJobItemEstimate.observeOnce(activity!!, androidx.lifecycle.Observer { job ->
-                if (measureItem != null && jobForJobItemEstimate != null)
+            jobForJobItemEstimate.observeOnce(activity!!, { job ->
+                if (measureItem.jobId != null && job.JobId == measureItem.jobId!!)
                     showAddMeasurementQuantityDialog(
                         measureItem,
                         job,
@@ -121,7 +118,7 @@ class ExpandableHeaderMeasureItem(
             quantityInputEditText.setSingleLine()
 
             val selectedItemMeasure = measureViewModel.getItemForItemId(measureItem.projectItemId)
-            selectedItemMeasure.observeOnce(activity!!, androidx.lifecycle.Observer { selected ->
+            selectedItemMeasure.observeOnce(activity!!, { selected ->
 
                 if (selected != null) {
                     var message: String = activity!!.getString(R.string.enter_quantity_measured)
@@ -133,7 +130,7 @@ class ExpandableHeaderMeasureItem(
                         )
                     }
                     Coroutines.main {
-                        val desc = measureViewModel.getDescForProjectItemId(projIDz!!)
+                        val desc = measureViewModel.getDescForProjectItemId(projectItemIdz!!)
 
                         val enterQuantityDialog: AlertDialog =
                             AlertDialog.Builder(activity) // android.R.style.Theme_DeviceDefault_Dialog
@@ -147,20 +144,22 @@ class ExpandableHeaderMeasureItem(
                                 .setCancelable(false)
                                 .setIcon(R.drawable.ic_border_)
                                 .setView(quantityInputEditText)
-                                .setPositiveButton(R.string.ok,
-                                    DialogInterface.OnClickListener { dialog, whichButton ->
-                                        updateMeasureQuantity(
-                                            quantityInputEditText,
-                                            selected,
-                                            jobForJobItemEstimate,
-                                            measureItem,
-                                            jobItemMeasurePhotoDTO,
-                                            view
-                                        )
-                                    })
+                                .setPositiveButton(
+                                    R.string.ok
+                                ) { dialog, whichButton ->
+                                    updateMeasureQuantity(
+                                        quantityInputEditText,
+                                        selected,
+                                        jobForJobItemEstimate,
+                                        measureItem,
+                                        jobItemMeasurePhotoDTO,
+                                        view
+                                    )
+                                }
 
-                                .setNegativeButton(R.string.cancel,
-                                    DialogInterface.OnClickListener { dialog, which -> }).show()
+                                .setNegativeButton(
+                                    R.string.cancel
+                                ) { dialog, which -> }.show()
                         quantityInputEditText.onFocusChangeListener =
                             OnFocusChangeListener { v, hasFocus ->
                                 if (hasFocus) enterQuantityDialog.window?.setSoftInputMode(
@@ -216,7 +215,8 @@ class ExpandableHeaderMeasureItem(
         jobItemMeasurePhotoDTO: ArrayList<JobItemMeasurePhotoDTO>
     ): JobItemMeasureDTO {
         val newItemMeasureId: String = SqlLitUtils.generateUuid()
-        val itemMeasure = JobItemMeasureDTO(
+
+        return JobItemMeasureDTO(
             ID = 0,
             actId = 0,
             approvalDate = null,
@@ -245,8 +245,6 @@ class ExpandableHeaderMeasureItem(
             entityDescription = null,
             selectedItemUom = (selectedItemToMeasure?.uom).toString()
         )
-
-        return itemMeasure
     }
 
     private fun captureItemMeasureImages(

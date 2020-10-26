@@ -3,11 +3,10 @@ package za.co.xisystems.itis_rrm.ui.mainview.activities
 import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Switch
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import com.google.android.material.switchmaterial.SwitchMaterial
 import kotlinx.android.synthetic.main.settings_activity.*
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.kodein
@@ -30,8 +29,8 @@ class SettingsActivity : AppCompatActivity(), KodeinAware {
         private val TAG = SettingsActivity::class.java.simpleName
         const val HOME = "general_switch"
 
-        var switch: Switch? = null
-        const val PREFS_NAME = "DarkeModeSwitch"
+        var switch: SwitchMaterial? = null
+        const val PREFS_NAME = "DarkModeSwitch"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,7 +47,7 @@ class SettingsActivity : AppCompatActivity(), KodeinAware {
 
         Coroutines.main {
             val loggedInUser = settingsViewModel.user.await()
-            loggedInUser.observe(this, Observer { user ->
+            loggedInUser.observe(this, { user ->
                 // Register the user
                 if (user != null) {
                     username1.text = user.userName
@@ -63,7 +62,7 @@ class SettingsActivity : AppCompatActivity(), KodeinAware {
             builder.setTitle(R.string.confirm)
             builder.setMessage(R.string.all_data_will_be_deleted_are_you_sure)
             // Yes button
-            builder.setPositiveButton(R.string.yes) { dialog, which ->
+            builder.setPositiveButton(R.string.yes) { _, _ ->
                 // Clear out all the photos on the device
 //                        deletePhotosInDirectory();
                 Coroutines.main {
@@ -77,7 +76,7 @@ class SettingsActivity : AppCompatActivity(), KodeinAware {
                 }
             }
             // No button
-            builder.setNegativeButton(R.string.no) { dialog, which ->
+            builder.setNegativeButton(R.string.no) { dialog, _ ->
                 // Do nothing but close dialog
                 dialog.dismiss()
             }
@@ -90,15 +89,6 @@ class SettingsActivity : AppCompatActivity(), KodeinAware {
             startActivity(resetPinIntent)
             finish()
         }
-
-//        serviceVersionTextView = findViewById(R.id.serviceVersionTextView)
-//
-//
-//        val serverTextView = findViewById<TextView>(R.id.serverUrlTextView)
-        //        serverTextView.setText("\nServer: " + ServiceUriUtil.getWebServiceRootUri());
-// Run device cleanup
-//        cleanupDevice();
-//        initRegisterInfo();
     }
 
     var isChecked = false

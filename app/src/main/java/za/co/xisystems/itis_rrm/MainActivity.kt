@@ -22,6 +22,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.SearchView
 import androidx.core.content.ContextCompat
+import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.GravityCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
@@ -34,6 +35,8 @@ import org.kodein.di.KodeinAware
 import org.kodein.di.android.kodein
 import org.kodein.di.generic.instance
 import timber.log.Timber
+import www.sanju.motiontoast.MotionToast
+import za.co.xisystems.itis_rrm.custom.notifications.ColorToast
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.ui.auth.LoginActivity
 import za.co.xisystems.itis_rrm.ui.mainview.activities.MainActivityViewModel
@@ -140,6 +143,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             toastMessage(it.toString())
         })
 
+        sharedViewModel.colorMessage.observe(this, {
+            it?.let {
+                toastMessage(it)
+            }
+        })
+
         sharedViewModel.actionCaption.observe(this@MainActivity, {
             setCaption(it)
         })
@@ -155,7 +164,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
 
         try {
-            networkEnabled = ServiceUtil.isInternetAvailable(applicationContext)
+            networkEnabled = ServiceUtil.isNetworkAvailable(applicationContext)
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -305,7 +314,20 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     private fun toastMessage(message: String) {
-        ToastUtils().toastLong(this.applicationContext, message)
+        ToastUtils().toastLong(applicationContext, message)
+    }
+
+    private fun toastMessage(
+        colorToast: ColorToast
+    ) {
+        MotionToast.createColorToast(
+            context = this,
+            message = colorToast.message,
+            style = colorToast.style.getValue(),
+            position = colorToast.gravity.getValue(),
+            duration = colorToast.duration.getValue(),
+            font = ResourcesCompat.getFont(this, R.font.helvetica_regular)
+        )
     }
 
     private fun setCaption(caption: String) {

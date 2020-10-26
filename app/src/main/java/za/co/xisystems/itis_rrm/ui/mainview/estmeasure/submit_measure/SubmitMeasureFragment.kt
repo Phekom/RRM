@@ -1,7 +1,6 @@
 package za.co.xisystems.itis_rrm.ui.mainview.estmeasure.submit_measure
 
 import android.app.AlertDialog
-import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
@@ -10,6 +9,7 @@ import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModelProvider
@@ -23,14 +23,14 @@ import kotlinx.coroutines.launch
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
+import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
-import za.co.xisystems.itis_rrm.custom.errors.NoConnectivityException
-import za.co.xisystems.itis_rrm.custom.errors.NoInternetException
-import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler.handleError
+import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.results.XIError
 import za.co.xisystems.itis_rrm.custom.results.XISuccess
+import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksPhotoDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
@@ -39,7 +39,10 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasurePhotoDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.extensions.observeOnce
-import za.co.xisystems.itis_rrm.ui.custom.IndefiniteSnackbar
+import za.co.xisystems.itis_rrm.ui.extensions.doneProgress
+import za.co.xisystems.itis_rrm.ui.extensions.failProgress
+import za.co.xisystems.itis_rrm.ui.extensions.initProgress
+import za.co.xisystems.itis_rrm.ui.extensions.startProgress
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModelFactory
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
@@ -62,6 +65,9 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
     private lateinit var jobItemEstimate: JobItemEstimateDTO
     private lateinit var expandableGroups: MutableList<ExpandableGroup>
     private var uiScope = UiLifecycleScope()
+    private lateinit var progressButton: Button
+    private lateinit var originalCaption: String
+
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
@@ -105,6 +111,9 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
             })
 
             submit_measurements_button.setOnClickListener {
+                progressButton = submit_measurements_button
+                originalCaption = submit_measurements_button.text.toString()
+                progressButton.initProgress(viewLifecycleOwner)
                 submitMeasurements(
                     jobItemEstimate.jobId
                 )
@@ -134,6 +143,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
 
     private fun submitMeasurements(jobId: String?) {
         Coroutines.main {
+            progressButton.startProgress("Submitting ...")
             measureViewModel.setBackupJobId(jobId!!)
             val jobItemMeasure =
                 measureViewModel.getJobItemMeasuresForJobIdAndEstimateId(jobId) // estimateId
@@ -143,6 +153,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                 }
                 if (validMeasures.isNullOrEmpty()) {
                     toast(R.string.please_make_sure_you_have_captured_photos)
+                    progressButton.failProgress(originalCaption)
                 } else {
                     toast("You have Done " + validMeasures.size.toString() + " Measurements on this Estimate")
 
@@ -183,10 +194,11 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
             setMessage(R.string.are_you_sure_you_want_to_submit_measurements)
             // Yes button
             setPositiveButton(R.string.yes) { dialog, which ->
-                if (ServiceUtil.isInternetAvailable(requireContext().applicationContext)) {
+                if (ServiceUtil.isNetworkAvailable(requireContext().applicationContext)) {
                     submitMeasures(itemMeasureJob, mSures)
                 } else {
-                    toast(R.string.no_connection_detected)
+                    this@SubmitMeasureFragment.motionToast(getString(R.string.no_connection_detected), MotionToast.TOAST_NO_INTERNET, MotionToast.GRAVITY_CENTER)
+                    progressButton.failProgress(originalCaption)
                 }
             }
             // No button
@@ -194,7 +206,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                 R.string.no
             ) { dialog, which ->
                 // Do nothing but close dialog
-                dialog.dismiss()
+                progressButton.doneProgress(originalCaption)
             }
             create()
             show()
@@ -210,10 +222,20 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
             user.observe(viewLifecycleOwner, { userDTO ->
                 when {
                     userDTO.userId.isBlank() -> {
-                        toast("Error: userId is null")
+                        this@SubmitMeasureFragment.motionToast(
+                            "Error: current user lacks permissions",
+                            MotionToast.TOAST_ERROR,
+                            MotionToast.GRAVITY_CENTER
+                        )
+                        progressButton.failProgress(originalCaption)
                     }
                     itemMeasureJob.JobId.isBlank() -> {
-                        toast("Error: selectedJob is null")
+                        this@SubmitMeasureFragment.motionToast(
+                            "Error: selected job is invalid",
+                            MotionToast.TOAST_ERROR,
+                            MotionToast.GRAVITY_CENTER
+                        )
+                        progressButton.failProgress(originalCaption)
                     }
                     else -> {
                         // beware littleEndian conversion for transport to backend
@@ -222,16 +244,10 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                         val jobId: String = DataConversion.toLittleEndian(itemMeasureJob.JobId)!!
 
                         Coroutines.main {
-                            val prog =
-                                setDataProgressDialog(
-                                    requireActivity(),
-                                    getString(R.string.loading_job_wait)
-                                )
 
                             activity?.let {
 
                                 processMeasurementWorkflow(
-                                    prog,
                                     userDTO,
                                     jobId,
                                     itemMeasureJob,
@@ -248,7 +264,6 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
     }
 
     private fun processMeasurementWorkflow(
-        prog: ProgressDialog,
         userDTO: UserDTO,
         jobId: String,
         itemMeasureJob: JobDTO,
@@ -257,7 +272,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
         it: FragmentActivity
     ) {
         uiScope.launch(uiScope.coroutineContext) {
-            prog.show()
+
             val result = measureViewModel.processWorkflowMove(
                 userDTO.userId,
                 jobId,
@@ -274,30 +289,18 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                     response?.let { outcome ->
                         when (outcome) {
                             is XISuccess -> {
-                                prog.dismiss()
-                                toast(R.string.measure_submitted)
+                                this@SubmitMeasureFragment.motionToast(
+                                    "Measurements submitted",
+                                    MotionToast.TOAST_INFO
+                                )
+                                progressButton.doneProgress(originalCaption)
                                 popViewOnJobSubmit()
                             }
                             is XIError -> {
                                 result.cancel(CancellationException(outcome.message))
-                                prog.dismiss()
-                                when (outcome.exception) {
-                                    is NoInternetException -> {
-                                        handleConnectivityError(outcome)
-                                    }
-                                    is NoConnectivityException -> {
-                                        handleConnectivityError(outcome)
-                                    }
-
-                                    else -> {
-                                        handleError(
-                                            view = this@SubmitMeasureFragment.requireView(),
-                                            throwable = outcome,
-                                            shouldToast = true,
-                                            shouldShowSnackBar = false
-                                        )
-                                    }
-                                }
+                                XIErrorHandler.crashGuard(this@SubmitMeasureFragment.requireView(),
+                                    outcome,
+                                    refreshAction = { retryMeasurements() })
                             }
                         }
                     }
@@ -305,30 +308,22 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
         }
     }
 
-    private fun handleConnectivityError(outcome: XIError) {
-        handleError(this@SubmitMeasureFragment.requireView(),
-            throwable = outcome,
-            shouldToast = false,
-            shouldShowSnackBar = true,
-            refreshAction = { retryMeasurements() })
-    }
-
     fun setJobMeasureLittleEndianGuids(jim: JobItemMeasureDTO?): JobItemMeasureDTO? {
-        if (jim != null) {
-            jim.setEstimateId(DataConversion.toLittleEndian(jim.estimateId))
-            jim.setJobId(DataConversion.toLittleEndian(jim.jobId))
-            jim.setProjectItemId(DataConversion.toLittleEndian(jim.projectItemId))
-            jim.setItemMeasureId(DataConversion.toLittleEndian(jim.itemMeasureId))
+        jim?.let { jobMeasure ->
+            jobMeasure.setEstimateId(DataConversion.toLittleEndian(jobMeasure.estimateId))
+            jobMeasure.setJobId(DataConversion.toLittleEndian(jobMeasure.jobId))
+            jobMeasure.setProjectItemId(DataConversion.toLittleEndian(jobMeasure.projectItemId))
+            jobMeasure.setItemMeasureId(DataConversion.toLittleEndian(jobMeasure.itemMeasureId))
 
-            if (jim.trackRouteId != null)
-                jim.setTrackRouteId(DataConversion.toLittleEndian(jim.trackRouteId))
-            else jim.trackRouteId = null
+            if (jobMeasure.trackRouteId != null)
+                jobMeasure.setTrackRouteId(DataConversion.toLittleEndian(jobMeasure.trackRouteId))
+            else jobMeasure.trackRouteId = null
 
-            if (jim.measureGroupId != null)
-                jim.setMeasureGroupId(DataConversion.toLittleEndian(jim.measureGroupId))
+            if (jobMeasure.measureGroupId != null)
+                jobMeasure.setMeasureGroupId(DataConversion.toLittleEndian(jobMeasure.measureGroupId))
 
-            if (jim.jobItemMeasurePhotos.isNotEmpty()) {
-                for (jmep in jim.jobItemMeasurePhotos) {
+            if (jobMeasure.jobItemMeasurePhotos.isNotEmpty()) {
+                for (jmep in jobMeasure.jobItemMeasurePhotos) {
                     jmep.setPhotoId(DataConversion.toLittleEndian(jmep.photoId))
                     jmep.setEstimateId(DataConversion.toLittleEndian(jmep.estimateId))
                     jmep.setItemMeasureId(DataConversion.toLittleEndian(jmep.itemMeasureId))

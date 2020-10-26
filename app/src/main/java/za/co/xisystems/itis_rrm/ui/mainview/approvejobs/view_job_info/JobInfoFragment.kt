@@ -1,8 +1,6 @@
 package za.co.xisystems.itis_rrm.ui.mainview.approvejobs.view_job_info
 
 import android.app.AlertDialog
-import android.app.Dialog
-import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -10,18 +8,26 @@ import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
+import kotlinx.android.synthetic.main.fragment_approvejob.mydata_loading
 import kotlinx.android.synthetic.main.fragment_job_info.*
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
+import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
+import za.co.xisystems.itis_rrm.ui.extensions.doneProgress
+import za.co.xisystems.itis_rrm.ui.extensions.failProgress
+import za.co.xisystems.itis_rrm.ui.extensions.initProgress
+import za.co.xisystems.itis_rrm.ui.extensions.motionToast
+import za.co.xisystems.itis_rrm.ui.extensions.startProgress
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.ApproveJobsViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.ApproveJobsViewModelFactory
 import za.co.xisystems.itis_rrm.utils.Coroutines
@@ -35,8 +41,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
     override val kodein by kodein()
     private lateinit var approveViewModel: ApproveJobsViewModel
     private val factory: ApproveJobsViewModelFactory by instance()
-
-    lateinit var dialog: Dialog
+    private lateinit var progressButton: Button
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -67,8 +72,8 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
             ViewModelProvider(this, factory).get(ApproveJobsViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
 
-        dialog =
-            setDataProgressDialog(requireActivity(), getString(R.string.data_loading_please_wait))
+        // dialog =
+        //     setDataProgressDialog(requireActivity(), getString(R.string.data_loading_please_wait))
         Coroutines.main {
             mydata_loading.show()
 
@@ -89,82 +94,96 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
         }
 
         approve_job_button.setOnClickListener {
-            val logoutBuilder = AlertDialog.Builder(
+            val approvalBuilder = AlertDialog.Builder(
                 activity // ,android.R.style.Theme_DeviceDefault_Dialog
             )
-            logoutBuilder.setTitle(R.string.confirm)
-            logoutBuilder.setIcon(R.drawable.ic_approve)
-            logoutBuilder.setMessage(R.string.are_you_sure_you_want_to_approve)
+            approvalBuilder.setTitle(R.string.confirm)
+            approvalBuilder.setIcon(R.drawable.ic_approve)
+            approvalBuilder.setMessage(R.string.are_you_sure_you_want_to_approve)
 
             // Yes button
-            logoutBuilder.setPositiveButton(
+            approvalBuilder.setPositiveButton(
                 R.string.yes
             ) { dialog, which ->
-                if (ServiceUtil.isInternetAvailable(requireContext().applicationContext)) {
+                if (ServiceUtil.isNetworkAvailable(requireContext().applicationContext)) {
+                    progressButton = approve_job_button
+                    progressButton.initProgress(viewLifecycleOwner)
                     moveJobToNextWorkflow(WorkflowDirection.NEXT)
                 } else {
-                    toast(R.string.no_connection_detected)
+                    this.requireActivity().motionToast(
+                        message = getString(R.string.no_connection_detected),
+                        motionType = MotionToast.TOAST_ERROR
+                    )
                 }
             }
+
             // No button
-            // No button
-            logoutBuilder.setNegativeButton(
+            approvalBuilder.setNegativeButton(
                 R.string.no
             ) { dialog, which ->
                 // Do nothing but close dialog
                 dialog.dismiss()
             }
-            val declineAlert = logoutBuilder.create()
-            declineAlert.show()
+            val approvalDialog = approvalBuilder.create()
+            approvalDialog.show()
         }
 
         decline_job_button.setOnClickListener {
-            val logoutBuilder =
+            val declineBuilder =
                 AlertDialog.Builder(
                     activity // , android.R.style.Theme_DeviceDefault_Dialog
                 )
-            logoutBuilder.setTitle(R.string.confirm)
-            logoutBuilder.setIcon(R.drawable.ic_warning)
-            logoutBuilder.setMessage(R.string.are_you_sure_you_want_to_decline)
+            declineBuilder.setTitle(R.string.confirm)
+            declineBuilder.setIcon(R.drawable.ic_warning)
+            declineBuilder.setMessage(R.string.are_you_sure_you_want_to_decline)
             // Yes button
-            logoutBuilder.setPositiveButton(
+            declineBuilder.setPositiveButton(
                 R.string.yes
             ) { dialog, which ->
-                if (ServiceUtil.isInternetAvailable(requireContext().applicationContext)) {
+                if (ServiceUtil.isNetworkAvailable(requireContext().applicationContext)) {
+                    progressButton = decline_job_button
+                    progressButton.initProgress(viewLifecycleOwner)
                     moveJobToNextWorkflow(WorkflowDirection.FAIL)
                 } else {
-                    toast(R.string.no_connection_detected)
+                    this.requireActivity().motionToast(
+                        message = getString(R.string.no_connection_detected),
+                        motionType = MotionToast.TOAST_ERROR
+                    )
                 }
             }
             // No button
-            logoutBuilder.setNegativeButton(
+            declineBuilder.setNegativeButton(
                 R.string.no
             ) { dialog, which ->
                 // Do nothing but close dialog
                 dialog.dismiss()
             }
-            val declineAlert = logoutBuilder.create()
+            val declineAlert = declineBuilder.create()
             declineAlert.show()
         }
     }
 
     private fun moveJobToNextWorkflow(workflowDirection: WorkflowDirection) {
         Coroutines.main {
-
+            val caption = when (progressButton == approve_job_button) {
+                true -> "Approving Job ..."
+                else -> "Declining Job ..."
+            }
+            progressButton.startProgress(caption)
             val user = approveViewModel.user.await()
             user.observe(viewLifecycleOwner, { userDTO ->
                 approveViewModel.jobApprovalItem.observe(viewLifecycleOwner, { job ->
 
                     when {
                         userDTO.userId.isBlank() -> {
-                            toast("Error: userId is null")
+                            this@JobInfoFragment.motionToast("The user lacks permissions.", MotionToast.TOAST_ERROR)
+                            progressButton.failProgress("Invalid User")
                         }
                         job.jobDTO.JobId.isBlank() -> {
-                            toast("Error: selectedJob is null")
+                            this@JobInfoFragment.motionToast("The selected job is invalid.", MotionToast.TOAST_ERROR)
+                            progressButton.failProgress("Invalid Job")
                         }
                         else -> {
-                            toast(job.jobDTO.JobId)
-                            // beware littleEndian conversion
                             val trackRouteId: String =
                                 DataConversion.toLittleEndian(job.jobDTO.TrackRouteId)!!
                             val direction: Int = workflowDirection.value
@@ -187,22 +206,15 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
         description: String?
     ) {
         Coroutines.main {
-            val progressDialog = ProgressDialog(activity)
-            progressDialog.setTitle(getString(R.string.please_wait))
-            progressDialog.setMessage(getString(R.string.loading_job_wait))
-            progressDialog.setCancelable(false)
-            progressDialog.isIndeterminate = true
-            progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER)
-            progressDialog.show()
+            progressButton.startProgress("Submitting Data ...")
 
-            val submit =
+            val response =
                 approveViewModel.processWorkflowMove(userId, trackRouteId, description, direction)
-            if (submit.isNotBlank()) {
-                progressDialog.dismiss()
-                toast(submit)
+            if (response.isNotBlank()) {
+                this@JobInfoFragment.motionToast(response, MotionToast.TOAST_ERROR)
+                progressButton.failProgress("Workflow Failed")
             } else {
-                progressDialog.dismiss()
-                toast(R.string.job_submitted)
+                progressButton.doneProgress("Workflow Complete")
                 popViewOnJobSubmit(direction)
             }
         }
@@ -210,9 +222,9 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
 
     private fun popViewOnJobSubmit(direction: Int) {
         if (direction == WorkflowDirection.NEXT.value) {
-            toast(R.string.job_approved)
+            this.motionToast(getString(R.string.job_approved), MotionToast.TOAST_SUCCESS)
         } else if (direction == WorkflowDirection.FAIL.value) {
-            toast(R.string.job_declined)
+            this.motionToast(getString(R.string.job_declined), MotionToast.TOAST_INFO)
         }
 
         Intent(context?.applicationContext, MainActivity::class.java).also { home ->
@@ -244,7 +256,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
     private fun List<JobItemEstimateDTO>.toEstimatesListItem(): List<EstimatesItem> {
         return this.map { approvedJobItems ->
 
-            EstimatesItem(approvedJobItems, approveViewModel, dialog, activity, viewLifecycleOwner)
+            EstimatesItem(approvedJobItems, approveViewModel, activity, viewLifecycleOwner)
         }
     }
 

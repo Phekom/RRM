@@ -3,7 +3,6 @@
 package za.co.xisystems.itis_rrm.ui.mainview.create.add_project_item
 
 import android.app.DatePickerDialog
-import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -13,7 +12,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.whenCreated
 import androidx.lifecycle.whenStarted
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -28,6 +26,7 @@ import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
 import timber.log.Timber
+import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
@@ -36,6 +35,9 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
+import za.co.xisystems.itis_rrm.ui.extensions.initProgress
+import za.co.xisystems.itis_rrm.ui.extensions.motionToast
+import za.co.xisystems.itis_rrm.ui.extensions.startProgress
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.MyState
@@ -80,8 +82,6 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
 
     init {
         lifecycleScope.launch {
-            whenCreated {
-            }
 
             whenStarted {
                 createViewModel.newJob.observe(viewLifecycleOwner, { newJ ->
@@ -136,7 +136,7 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
                         }
                     })
 
-                createViewModel.sectionProjectItem.observe(viewLifecycleOwner, { p_Item ->
+                createViewModel.sectionProjectItem.observe(viewLifecycleOwner, { pItem ->
                     infoTextView.visibility = View.GONE
                     last_lin.visibility = View.VISIBLE
                     totalCostTextView.visibility = View.VISIBLE
@@ -144,14 +144,14 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
                     Coroutines.main {
                         val projectItems =
                             createViewModel.getAllProjectItems(projectID!!, job!!.JobId)
-                        projectItems.observe(viewLifecycleOwner, { pro_Items ->
-                            if (pro_Items.isEmpty()) {
+                        projectItems.observe(viewLifecycleOwner, { projItemList ->
+                            if (projItemList.isEmpty()) {
                                 groupAdapter.clear()
                                 totalCostTextView.text = ""
                                 last_lin.visibility = View.GONE
                                 totalCostTextView.visibility = View.GONE
                             } else {
-                                items = pro_Items
+                                items = projItemList
                             }
 
                             for (item in items.listIterator()) {
@@ -198,7 +198,7 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
         super.onAttach(context)
         (activity as MainActivity).supportActionBar?.title = getString(R.string.new_job)
         (activity as MainActivity).supportActionBar?.setDisplayHomeAsUpEnabled(true)
-    } //                        createViewModel.delete(item)
+    }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
@@ -221,7 +221,9 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-
+        if (savedInstanceState != null) {
+            onRestoreInstanceState(savedInstanceState)
+        }
         createViewModel = activity?.run {
             ViewModelProvider(this, createFactory).get(CreateViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
@@ -246,6 +248,15 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
 
         ItemTouchHelper(touchCallback).attachToRecyclerView(project_recyclerView)
         setmyClickListener()
+    }
+
+    private fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        savedInstanceState.run {
+            val job = getSerializable("job") as JobDTO
+            val items = getSerializable("items") as List<ItemDTOTemp>
+            createViewModel.setJobToEditItem(job)
+            initRecyclerView(items.toProjecListItems())
+        }
     }
 
     private fun initRecyclerView(projecListItems: List<ProjectItem>) {
@@ -338,7 +349,7 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
 
             Coroutines.main {
                 if (!JobUtils.areQuantitiesValid(job)) {
-                    toast("Error: incomplete estimates.\n Quantity can't be zero!")
+                    this@AddProjectFragment.requireActivity().motionToast("Error: incomplete estimates.\n Quantity can't be zero!", MotionToast.TOAST_ERROR)
                     itemsCardView.startAnimation(shake_long)
                 } else {
                     val valid =
@@ -346,14 +357,11 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
                     if (!valid) {
                         onInvalidJob()
                     } else {
-                        val progressDialog = setDataProgressDialog(
-                            requireActivity(),
-                            getString(R.string.loading_job_wait)
-                        )
-                        progressDialog.show()
+                        submitButton.initProgress(viewLifecycleOwner)
+                        submitButton.startProgress("Submitting data ...")
 
                         job!!.IssueDate = Date().toString()
-                        submitJob(job!!, progressDialog)
+                        submitJob(job!!)
                     }
                 }
             }
@@ -439,28 +447,24 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
     }
 
     private fun submitJob(
-        job: JobDTO,
-        prog: ProgressDialog
+        job: JobDTO
     ) {
         val jobTemp = jobDataController.setJobLittleEndianGuids(job)!!
-        saveRrmJob(job.UserId, jobTemp, prog)
+        saveRrmJob(job.UserId, jobTemp)
     }
 
     private fun saveRrmJob(
         userId: Int,
-        job: JobDTO,
-        prog: ProgressDialog
+        job: JobDTO
     ) {
         Coroutines.main {
             val submit =
                 createViewModel.submitJob(userId, job, requireActivity())
 
-            if (!submit.isNullOrBlank()) {
-                prog.dismiss()
-                toast(submit)
+            if (!submit.isBlank()) {
+                this@AddProjectFragment.requireActivity().motionToast(submit, MotionToast.TOAST_ERROR)
             } else {
-                prog.dismiss()
-                toast(R.string.job_submitted)
+                this@AddProjectFragment.requireActivity().motionToast(getString(R.string.job_submitted), MotionToast.TOAST_SUCCESS)
                 popViewOnJobSubmit()
             }
         }
@@ -481,6 +485,7 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
         val calendar = Calendar.getInstance()
         calendar[year, month] = dayOfMonth
         job?.DueDate = calendar.time.toString()
+        createViewModel.setJobToEditItem(job!!)
     }
 
     private fun setStartDateTextView(year: Int, month: Int, dayOfMonth: Int) {
@@ -490,6 +495,7 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
         val calendar = Calendar.getInstance()
         calendar[year, month] = dayOfMonth
         job?.StartDate = calendar.time.toString()
+        createViewModel.setJobToEditItem(job!!)
     }
 
     private fun onResetClicked(view: View) {
@@ -505,6 +511,7 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
+        outState.putSerializable("job", job as JobDTO)
         outState.putSerializable("items", items as ArrayList<ProjectItemDTO>)
         super.onSaveInstanceState(outState)
     }
@@ -515,7 +522,7 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
     }
 
     private fun onInvalidJob() {
-        toast("Incomplete estimates!")
+        this.requireActivity().motionToast("Incomplete estimates!", MotionToast.TOAST_WARNING)
         itemsCardView.startAnimation(shake_long)
     }
 

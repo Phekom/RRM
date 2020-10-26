@@ -95,7 +95,7 @@ android {
     defaultConfig {
         applicationId appId
         minSdkVersion 21
-        targetSdkVersion 30
+        targetSdkVersion 29
         versionName "$versionLabel"
         versionCode 1
         vectorDrawables.useSupportLibrary = false
@@ -178,7 +178,7 @@ android {
             applicationId appId + ".dev"
 
             buildConfigField("boolean", "REGISTER_AUTO_FILL_TEST", registerAutoFillTest.toString())
-            manifestPlaceholders = [app_name: "RRM-Dev", app_icon: "@mipmap/ic_launcher_dev", HOCKEYAPP_APP_ID: ""]
+            manifestPlaceholders = [app_name: "RRM-Dev", app_icon: "@mipmap/ic_launcher", HOCKEYAPP_APP_ID: ""]
             buildConfigField("boolean", "REGISTER_AUTO_FILL_TEST", "true")
             buildConfigField("String", "API_HOST", dev_env)
             buildConfigField "String", "HOCKEYAPP_APP_ID", "\"\""
@@ -220,7 +220,7 @@ android {
             applicationId appId + ".qa"
 
             buildConfigField("boolean", "REGISTER_AUTO_FILL_TEST", registerAutoFillTest.toString())
-            manifestPlaceholders = [app_name: "RRM-Qa", app_icon: "@mipmap/ic_launcher_qa", HOCKEYAPP_APP_ID: "7b77445b888a411b83ae27491a5bd7c9"]
+            manifestPlaceholders = [app_name: "RRM-Qa", app_icon: "@drawable/ic_launcher", HOCKEYAPP_APP_ID: "7b77445b888a411b83ae27491a5bd7c9"]
             buildConfigField("boolean", "REGISTER_AUTO_FILL_TEST", "false")
             buildConfigField("String", "API_HOST", qa_env)
             buildConfigField "String", "HOCKEYAPP_APP_ID", "\"7b77445b888a411b83ae27491a5bd7c9\""
@@ -229,7 +229,7 @@ android {
         prod {
             appId = "za.co.nra.itisrrm"
             applicationId appId
-            manifestPlaceholders = [app_name: "RRM", app_icon: "@mipmap/ic_launcher", HOCKEYAPP_APP_ID: "722fd7502681497f96d51c26284bc056"]
+            manifestPlaceholders = [app_name: "RRM", app_icon: "@drawable/ic_launcher", HOCKEYAPP_APP_ID: "722fd7502681497f96d51c26284bc056"]
             buildConfigField("String", "API_HOST", prod_env)
             buildConfigField "String", "HOCKEYAPP_APP_ID", "\"722fd7502681497f96d51c26284bc056\""
         }
@@ -321,7 +321,7 @@ dependencies {
     implementation "androidx.vectordrawable:vectordrawable-animated:$vectorVersion"
 
     // Layouts
-    implementation 'androidx.constraintlayout:constraintlayout:2.0.1'
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.2'
     implementation "androidx.coordinatorlayout:coordinatorlayout:1.1.0"
 
     // Navigation
@@ -329,7 +329,7 @@ dependencies {
     implementation 'androidx.navigation:navigation-ui:2.3.0'
 
     // secure exif from androidx
-    implementation 'androidx.exifinterface:exifinterface:1.3.0'
+    implementation 'androidx.exifinterface:exifinterface:1.3.1'
 
     // sanselan
     implementation 'org.apache.sanselan:sanselan:0.97-incubator'
@@ -489,7 +489,9 @@ dependencies {
     def lottieVersion = "3.4.4"
     implementation "com.airbnb.android:lottie:$lottieVersion"
 
-
+    // Motion Toast
+    def motionToastVersion = "1.3.3.1"
+    implementation "com.github.Spikeysanju:MotionToast:$motionToastVersion"
 }
 
 ktlint {

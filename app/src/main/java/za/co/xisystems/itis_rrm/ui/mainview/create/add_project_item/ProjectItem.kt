@@ -59,7 +59,7 @@ open class ProjectItem(
 
         viewHolder.itemView.setOnLongClickListener {
             Coroutines.main {
-                createViewModel.deleteItemfromList(itemDesc.itemId)
+                createViewModel.deleteItemFromList(itemDesc.itemId)
             }
             it.isLongClickable
         }
