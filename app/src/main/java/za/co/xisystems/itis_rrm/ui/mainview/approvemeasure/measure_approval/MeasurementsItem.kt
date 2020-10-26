@@ -1,6 +1,5 @@
 package za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.measure_approval
 
-import android.app.Dialog
 import android.net.Uri
 import android.text.Editable
 import android.view.View
@@ -29,7 +28,6 @@ class MeasurementsItem(
     private val jobItemMeasureDTO: JobItemMeasureDTO,
     private val approveViewModel: ApproveMeasureViewModel,
     private val activity: FragmentActivity?,
-    private val dialog: Dialog,
     private val viewLifecycleOwner: LifecycleOwner
 ) : Item() {
 
@@ -37,8 +35,8 @@ class MeasurementsItem(
         viewHolder.apply {
 
             Coroutines.main {
-                dialog.show()
-                val quantity = approveViewModel.getQuantityForMeasureItemId(jobItemMeasureDTO.itemMeasureId!!)
+
+            val quantity = approveViewModel.getQuantityForMeasureItemId(jobItemMeasureDTO.itemMeasureId!!)
                 quantity.observe(viewLifecycleOwner, {
                     measure_item_quantity_textView.text = activity?.getString(R.string.pair, "Qty:", it.toString())
                 })
@@ -46,7 +44,6 @@ class MeasurementsItem(
                 val lineRate = approveViewModel.getLineRateForMeasureItemId(jobItemMeasureDTO.itemMeasureId!!)
                 lineRate.observe(viewLifecycleOwner, {
                     measure_item_price_textView.text = activity?.getString(R.string.pair, "R", it.toString())
-                    dialog.dismiss()
                 })
 
                 val descri = approveViewModel.getDescForProjectId(jobItemMeasureDTO.projectItemId!!)

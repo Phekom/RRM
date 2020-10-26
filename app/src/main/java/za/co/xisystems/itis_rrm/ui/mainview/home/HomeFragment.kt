@@ -228,7 +228,9 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
         items_swipe_to_refresh.setColorSchemeColors(Color.WHITE)
 
         items_swipe_to_refresh.setOnRefreshListener {
-            bigSync()
+            Coroutines.main {
+                bigSync()
+            }
         }
     }
 
@@ -257,7 +259,9 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
 
     private fun retrySync() {
         IndefiniteSnackbar.hide()
-        bigSync()
+        Coroutines.main {
+            bigSync()
+        }
     }
 
     private fun ping() {
@@ -292,11 +296,14 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
         }
     }
 
-    private fun bigSync() = uiScope.launch(uiScope.coroutineContext) {
+    private suspend fun bigSync() = uiScope.launch(uiScope.coroutineContext) {
         sharedViewModel.setMessage("Data Loading")
-        homeViewModel.databaseResult.observe(viewLifecycleOwner, bigSyncObserver)
-        homeViewModel.fetchAllData(userDTO.userId)
+        handleBigSync(XIProgress(true))
+        homeViewModel.databaseStatus.observe(viewLifecycleOwner, bigSyncObserver)
+        val job = homeViewModel.fetchAllData(userDTO.userId)
+        job.join()
         ping()
+        handleBigSync(XIProgress(false))
     }
 
     private fun promptUserToSync() {
@@ -309,7 +316,9 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                 .setCancelable(false)
                 .setIcon(R.drawable.ic_baseline_cloud_download_24)
                 .setPositiveButton(R.string.ok) { dialog, whichButton ->
-                    bigSync()
+                    Coroutines.main {
+                        bigSync()
+                    }
                 }
 
         syncDialog.show()

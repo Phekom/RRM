@@ -1,7 +1,6 @@
 package za.co.xisystems.itis_rrm.ui.mainview.home
 
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
@@ -27,20 +26,7 @@ class HomeViewModel(
         offlineDataRepository.getSectionItems()
     }
 
-    val databaseResult: MutableLiveData<XIResult<Boolean>> = MutableLiveData()
-
     val databaseStatus: MutableLiveData<XIResult<Boolean>> = offlineDataRepository.databaseStatus
-
-    init {
-
-        viewModelScope.launch {
-            databaseStatus.observeForever {
-                it?.let {
-                    databaseResult.postValue(it)
-                }
-            }
-        }
-    }
 
     val bigSyncDone: MutableLiveData<Boolean> = offlineDataRepository.bigSyncDone
 
@@ -48,18 +34,14 @@ class HomeViewModel(
         offlineDataRepository.bigSyncCheck()
     }
 
-    fun fetchAllData(userId: String) = scope.launch(scope.coroutineContext) {
-
-        withContext(Dispatchers.IO) {
-            try {
-                databaseResult.postValue(XIProgress(true))
-                offlineDataRepository.fetchContracts(userId)
-            } catch (ex: Exception) {
-                val fetchFail = XIError(ex, "Failed to fetch data: ${ex.message}")
-                databaseResult.postValue(fetchFail)
-            } finally {
-                // databaseResult.postValue(XIProgress(false))
-            }
+    suspend fun fetchAllData(userId: String) = scope.launch(scope.coroutineContext) {
+        try {
+            offlineDataRepository.fetchContracts(userId)
+        } catch (ex: Exception) {
+            val fetchFail = XIError(ex, "Failed to fetch data: ${ex.message}")
+            databaseStatus.postValue(fetchFail)
+        } finally {
+            databaseStatus.postValue(XIProgress(false))
         }
     }
 

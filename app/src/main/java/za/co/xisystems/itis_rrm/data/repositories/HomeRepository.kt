@@ -26,7 +26,6 @@ class HomeRepository(
 
     private fun saveHealth(health: HealthDTO?) {
         Coroutines.io {
-
         }
     }
 

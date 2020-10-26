@@ -9,6 +9,7 @@ import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModelProvider
@@ -38,6 +39,10 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasurePhotoDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.extensions.observeOnce
+import za.co.xisystems.itis_rrm.ui.extensions.doneProgress
+import za.co.xisystems.itis_rrm.ui.extensions.failProgress
+import za.co.xisystems.itis_rrm.ui.extensions.initProgress
+import za.co.xisystems.itis_rrm.ui.extensions.startProgress
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModelFactory
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
@@ -60,6 +65,8 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
     private lateinit var jobItemEstimate: JobItemEstimateDTO
     private lateinit var expandableGroups: MutableList<ExpandableGroup>
     private var uiScope = UiLifecycleScope()
+    private lateinit var progressButton: Button
+    private lateinit var originalCaption: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -104,6 +111,9 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
             })
 
             submit_measurements_button.setOnClickListener {
+                progressButton = submit_measurements_button
+                originalCaption = submit_measurements_button.text.toString()
+                progressButton.initProgress(viewLifecycleOwner)
                 submitMeasurements(
                     jobItemEstimate.jobId
                 )
@@ -133,6 +143,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
 
     private fun submitMeasurements(jobId: String?) {
         Coroutines.main {
+            progressButton.startProgress("Submitting ...")
             measureViewModel.setBackupJobId(jobId!!)
             val jobItemMeasure =
                 measureViewModel.getJobItemMeasuresForJobIdAndEstimateId(jobId) // estimateId
@@ -142,6 +153,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                 }
                 if (validMeasures.isNullOrEmpty()) {
                     toast(R.string.please_make_sure_you_have_captured_photos)
+                    progressButton.failProgress(originalCaption)
                 } else {
                     toast("You have Done " + validMeasures.size.toString() + " Measurements on this Estimate")
 
@@ -185,7 +197,8 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                 if (ServiceUtil.isNetworkAvailable(requireContext().applicationContext)) {
                     submitMeasures(itemMeasureJob, mSures)
                 } else {
-                    toast(R.string.no_connection_detected)
+                    this@SubmitMeasureFragment.motionToast(getString(R.string.no_connection_detected), MotionToast.TOAST_NO_INTERNET, MotionToast.GRAVITY_CENTER)
+                    progressButton.failProgress(originalCaption)
                 }
             }
             // No button
@@ -193,7 +206,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                 R.string.no
             ) { dialog, which ->
                 // Do nothing but close dialog
-                dialog.dismiss()
+                progressButton.doneProgress(originalCaption)
             }
             create()
             show()
@@ -214,6 +227,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                             MotionToast.TOAST_ERROR,
                             MotionToast.GRAVITY_CENTER
                         )
+                        progressButton.failProgress(originalCaption)
                     }
                     itemMeasureJob.JobId.isBlank() -> {
                         this@SubmitMeasureFragment.motionToast(
@@ -221,6 +235,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                             MotionToast.TOAST_ERROR,
                             MotionToast.GRAVITY_CENTER
                         )
+                        progressButton.failProgress(originalCaption)
                     }
                     else -> {
                         // beware littleEndian conversion for transport to backend
@@ -229,10 +244,6 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                         val jobId: String = DataConversion.toLittleEndian(itemMeasureJob.JobId)!!
 
                         Coroutines.main {
-                            setDataProgressDialog(
-                                requireActivity(),
-                                getString(R.string.loading_job_wait)
-                            )
 
                             activity?.let {
 
@@ -282,6 +293,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                                     "Measurements submitted",
                                     MotionToast.TOAST_INFO
                                 )
+                                progressButton.doneProgress(originalCaption)
                                 popViewOnJobSubmit()
                             }
                             is XIError -> {

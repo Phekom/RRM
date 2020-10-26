@@ -6,6 +6,10 @@ package za.co.xisystems.itis_rrm.ui.mainview.activities
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import za.co.xisystems.itis_rrm.custom.notifications.ColorToast
+import za.co.xisystems.itis_rrm.utils.enums.ToastDuration
+import za.co.xisystems.itis_rrm.utils.enums.ToastGravity
+import za.co.xisystems.itis_rrm.utils.enums.ToastStyle
 
 class SharedViewModel : ViewModel() {
     val message: MutableLiveData<*> = MutableLiveData<Any?>()
@@ -13,9 +17,14 @@ class SharedViewModel : ViewModel() {
     var longRunning: MutableLiveData<Boolean> = MutableLiveData(false)
     val actionCaption: MutableLiveData<String> = MutableLiveData()
     var originalCaption: String = ""
-
+    val colorMessage: MutableLiveData<ColorToast> = MutableLiveData()
     fun setMessage(msg: String?) {
         message.value = msg
+    }
+
+    fun setColorMessage(msg: String, style: ToastStyle, position: ToastGravity, duration: ToastDuration) {
+        val colorToast = ColorToast(msg, style, position, duration)
+        colorMessage.postValue(colorToast)
     }
 
     fun toggleLongRunning(toggle: Boolean) {

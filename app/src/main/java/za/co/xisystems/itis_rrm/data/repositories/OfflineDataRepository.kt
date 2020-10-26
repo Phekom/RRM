@@ -130,7 +130,7 @@ class OfflineDataRepository(
         }
     }
 
-    val databaseStatus: MutableLiveData<XIResult<Boolean>> = MutableLiveData()
+    var databaseStatus: MutableLiveData<XIResult<Boolean>> = MutableLiveData()
 
     suspend fun getContracts(): LiveData<List<ContractDTO>> {
         return withContext(Dispatchers.IO) {
@@ -377,7 +377,7 @@ class OfflineDataRepository(
         }
     }
 
-    private fun saveProjects(
+    private suspend fun saveProjects(
         validProjects: List<ProjectDTO>?,
         contract: ContractDTO
     ) {
@@ -421,6 +421,8 @@ class OfflineDataRepository(
                             databaseStatus.postValue(XIStatus("All projects retrieved."))
                             databaseStatus.postValue(XISuccess(true))
                             databaseStatus.postValue(XIProgress(false))
+                        } else {
+                            postStatus("Loading Project $projectCount of $projectMax")
                         }
                     } catch (ex: Exception) {
                         Timber.e(
@@ -1020,6 +1022,9 @@ class OfflineDataRepository(
     private var projectMax: Int = 0
 
     suspend fun fetchContracts(userId: String): Boolean {
+        // start of jobs
+        databaseStatus.postValue(XIProgress(true))
+
         contractCount = 0
         contractMax = 0
         projectCount = 0
@@ -1195,14 +1200,14 @@ class OfflineDataRepository(
                     }
                 }
 
-                if (!job.workflowItemMeasures.isNullOrEmpty()) {
-                    updateWorkflowItemMeasures(job.workflowItemMeasures)
+                job.workflowItemMeasures?.let {
+                    updateWorkflowItemMeasures(it)
                 }
             }
 
             //  Place the Job Section, UPDATE OR CREATE
-            if (!job.workflowJobSections.isNullOrEmpty()) {
-                saveJobSectionsForWorkflow(job.workflowJobSections)
+            job.workflowJobSections?.let {
+                saveJobSectionsForWorkflow(it)
             }
         }
     }
@@ -1210,7 +1215,7 @@ class OfflineDataRepository(
     private fun updateWorkflowItemMeasures(
         workflowItemMeasures: java.util.ArrayList<WorkflowItemMeasureDTO>
     ) {
-        for (jobItemMeasure in workflowItemMeasures) {
+        workflowItemMeasures.forEach { jobItemMeasure ->
             appDb.getJobItemMeasureDao().updateWorkflowJobItemMeasure(
                 jobItemMeasure.itemMeasureId,
                 jobItemMeasure.trackRouteId,
@@ -1240,7 +1245,7 @@ class OfflineDataRepository(
     private suspend fun saveJobSectionsForWorkflow(
         workflowJobSections: java.util.ArrayList<JobSectionDTO>
     ) {
-        for (jobSection in workflowJobSections) {
+        workflowJobSections.forEach { jobSection ->
             if (!appDb.getJobSectionDao().checkIfJobSectionExist(jobSection.jobSectionId))
                 appDb.getJobSectionDao().insertJobSection(jobSection) else
                 appDb.getJobSectionDao().updateExistingJobSectionWorkflow(

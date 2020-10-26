@@ -68,7 +68,6 @@ class UnSubmittedJobItem(
 
     private fun GroupieViewHolder.updateItem() {
     }
-
 }
 
 private fun GroupieViewHolder.getItemId(position: Int): Long {
