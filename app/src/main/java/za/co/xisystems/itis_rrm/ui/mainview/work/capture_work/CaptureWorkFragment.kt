@@ -80,7 +80,6 @@ import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.ERROR
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.INFO
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.NO_INTERNET
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.SUCCESS
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.WARNING
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import java.util.Date
 import java.util.HashMap
@@ -268,7 +267,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
     private fun validationNotice(stringId: Int) {
         sharedViewModel.setColorMessage(
             msg = getString(stringId),
-            style = WARNING,
+            style = ERROR,
             position = CENTER,
             duration = LONG
         )
@@ -493,7 +492,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
 
         if (currentLocation == null) {
             // Check network availability / connectivity
-            sharedViewModel.setColorMessage("Please enable location services.", WARNING, CENTER, LONG)
+            sharedViewModel.setColorMessage("Please enable location services.", ERROR, CENTER, LONG)
             // Launch Dialog
         } else {
             // requireMutex

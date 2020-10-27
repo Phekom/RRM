@@ -165,7 +165,7 @@ class EstimatesItem(
                 if (quantityEntry.text.toString() == "" || nanCheck(quantityEntry.text.toString()) || quantityEntry.text.toString()
                         .toDouble() == 0.0
                 ) {
-                    activity.motionToast("Please Enter a valid Quantity", MotionToast.TOAST_WARNING)
+                    activity.motionToast("Please Enter a valid Quantity", MotionToast.TOAST_ERROR)
                 } else {
                     val updated = approveViewModel.upDateEstimate(
                         quantityEntry.text.toString(),

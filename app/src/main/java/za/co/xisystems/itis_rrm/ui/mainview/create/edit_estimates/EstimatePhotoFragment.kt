@@ -694,7 +694,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
         Timber.d("ProjectSectionId: $projectSectionId")
         if (projectSectionId == null) {
             this@EstimatePhotoFragment.requireActivity()
-                .motionToast(getString(R.string.no_section_for_project), MotionToast.TOAST_WARNING)
+                .motionToast(getString(R.string.no_section_for_project), MotionToast.TOAST_ERROR)
             this.disableGlide = true
             hideCostCard()
         } else {

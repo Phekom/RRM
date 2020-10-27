@@ -97,7 +97,7 @@ class MeasurementsItem(
             if (ServiceUtil.isNetworkAvailable(activity.applicationContext)) {
                 Coroutines.main {
                     if (editQuantity.text.toString() == "" || nanCheck(editQuantity.text.toString())) {
-                        activity.motionToast("Please Enter a valid Quantity", MotionToast.TOAST_WARNING)
+                        activity.motionToast("Please Enter a valid Quantity", MotionToast.TOAST_ERROR)
                     } else {
                         val updated = approveViewModel.upDateMeasure(
                             editQuantity.text.toString(),
