@@ -32,8 +32,8 @@ class CreateViewModel(
 
     // TODO: Create Call to create a new job item
 
-    val jobToEditItem = MutableLiveData<JobDTO>()
-    fun setJobToEditItem(inJobItemToEdit: JobDTO) {
+    val jobToEditItem: MutableLiveData<JobDTO?> = MutableLiveData()
+    fun setJobToEditItem(inJobItemToEdit: JobDTO?) {
         jobToEditItem.value = inJobItemToEdit
     }
 
