@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenCreated
@@ -16,8 +15,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
-import java.util.ArrayList
-import java.util.concurrent.CancellationException
 import kotlinx.android.synthetic.main.fragment_select_item.*
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.cancel
@@ -41,6 +38,8 @@ import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper.setSpinner
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.Coroutines
+import java.util.ArrayList
+import java.util.concurrent.CancellationException
 
 /**
  * Created by Francis Mahlava on 2019/12/29.
@@ -79,23 +78,25 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
                 viewLifecycleOwner.lifecycle.addObserver(uiScope)
 
                 uiScope.launch(context = uiScope.coroutineContext, start = CoroutineStart.DEFAULT) {
-                    createViewModel.loggedUser.observe(viewLifecycleOwner, Observer { user ->
+                    createViewModel.loggedUser.observe(viewLifecycleOwner, { user ->
                         useR = user
                     })
 
-                    createViewModel.projectId.observe(viewLifecycleOwner, Observer { projectId ->
+                    createViewModel.projectId.observe(viewLifecycleOwner, { projectId ->
                         setItemsBySections(projectId)
                     })
 
-                    createViewModel.newJob.observe(viewLifecycleOwner, Observer { newJ ->
+                    createViewModel.newJob.observe(viewLifecycleOwner, { newJ ->
                         newJob = newJ
                     })
 
                     createViewModel.jobToEditItem.observe(
                         viewLifecycleOwner,
-                        Observer { newJ_Edit ->
-                            setItemsBySections(newJ_Edit.ProjectId!!)
-                            editJob = newJ_Edit
+                        { incompleteJob ->
+                            incompleteJob?.let {
+                                setItemsBySections(incompleteJob.ProjectId!!)
+                                editJob = incompleteJob
+                            }
                         })
                 }
             }
@@ -153,7 +154,7 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
             val sectionItems = createViewModel.getSectionItemsForProject(projectId)
             dialog.show()
 
-            sectionItems.observe(viewLifecycleOwner, Observer { sectionData ->
+            sectionItems.observe(viewLifecycleOwner, { sectionData ->
                 val sectionSelections = arrayOfNulls<String?>(sectionData.size)
                 dialog.dismiss()
                 for (item in sectionData.indices) {
@@ -196,7 +197,7 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
         uiScope.launch(context = uiScope.coroutineContext) {
             val projectsItems =
                 createViewModel.getAllItemsForSectionItemByProjectId(sectionItemId, projectId)
-            projectsItems.observe(viewLifecycleOwner, Observer { projectItemList ->
+            projectsItems.observe(viewLifecycleOwner, { projectItemList ->
                 group_loading.visibility = View.GONE
                 initRecyclerView(projectItemList.toProjectItems())
             })

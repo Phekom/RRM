@@ -102,6 +102,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
     private var startKm: Double? = null
     private var endKm: Double? = null
     private var disableGlide: Boolean = false
+    private var locationWarning: Boolean = false
 
     @State
     var photoType: PhotoType = PhotoType.START
@@ -194,8 +195,8 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
                             { itemDTOTemp ->
 
                                 itemDTO = itemDTOTemp
-                                if (itemDTO != null) {
-                                    onItemFound(itemDTO)
+                                itemDTO?.let {
+                                    onItemFound(it)
                                 }
                             })
                     }
@@ -335,11 +336,13 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
             when (view?.id) {
 
                 R.id.startPhotoButton -> {
+                    locationWarning = false
                     startImageView.visibility = View.GONE
                     startAnimationView.visibility = View.VISIBLE
                     takePhoto(PhotoType.START)
                 }
                 R.id.endPhotoButton -> {
+                    locationWarning = false
                     endImageView.visibility = View.GONE
                     endAnimationView.visibility = View.VISIBLE
                     takePhoto(PhotoType.END)
@@ -351,6 +354,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
                     Coroutines.main {
                         createViewModel.deleteJobFromList(newJob!!.JobId)
                         createViewModel.deleteItemList(newJob!!.JobId)
+                        createViewModel.setJobToEditItem(null)
                         fragmentManager?.beginTransaction()?.remove(this)?.commit()
                         fragmentManager?.beginTransaction()?.detach(this)?.commit()
                     }
@@ -362,28 +366,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
                         toast("Please Make Sure you have Captured Both Images To Continue")
                         labelTextView.startAnimation(animations!!.shake_long)
                     } else {
-                        viewLifecycleOwner.lifecycle.coroutineScope.launch {
-
-                            newJobItemEstimate?.qty = valueEditText.text.toString().toDouble()
-                            val qty = newJobItemEstimate?.qty
-                            if (qty != null && item?.tenderRate != null) {
-                                createViewModel.setEstimateQuantity(qty)
-                                newJobItemEstimate?.lineRate = (qty * item!!.tenderRate)
-                            }
-
-                            createViewModel.saveNewJob(newJob!!)
-
-                            createViewModel.updateNewJob(
-                                newJob!!.JobId,
-                                startKm!!,
-                                endKm!!,
-                                newJob?.SectionId!!,
-                                newJob?.JobItemEstimates!!,
-                                newJob?.JobSections!!
-                            )
-                        }
-
-                        updateData(view)
+                        saveValidEstimate(view)
                     }
                 }
             }
@@ -393,6 +376,31 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
         endPhotoButton.setOnClickListener(myClickListener)
         cancelButton.setOnClickListener(myClickListener)
         updateButton.setOnClickListener(myClickListener)
+    }
+
+    private fun saveValidEstimate(view: View) {
+        viewLifecycleOwner.lifecycle.coroutineScope.launch {
+
+            newJobItemEstimate?.qty = valueEditText.text.toString().toDouble()
+            val qty = newJobItemEstimate?.qty
+            if (qty != null && item?.tenderRate != null) {
+                createViewModel.setEstimateQuantity(qty)
+                newJobItemEstimate?.lineRate = (qty * item!!.tenderRate)
+            }
+
+            createViewModel.saveNewJob(newJob!!)
+
+            createViewModel.updateNewJob(
+                newJob!!.JobId,
+                startKm!!,
+                endKm!!,
+                newJob?.SectionId!!,
+                newJob?.JobItemEstimates!!,
+                newJob?.JobSections!!
+            )
+
+            updateData(view)
+        }
     }
 
     private fun updateData(view: View) {
@@ -642,7 +650,9 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
                     startImageView.visibility = View.VISIBLE
                     endImageView.visibility = View.VISIBLE
                     disableGlide = false
+
                 }
+
             }
         } else {
             val networkToast = Toast.makeText(
@@ -693,8 +703,11 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
     private suspend fun onProjectSectionIdFound(projectSectionId: String?) {
         Timber.d("ProjectSectionId: $projectSectionId")
         if (projectSectionId == null) {
-            this@EstimatePhotoFragment.requireActivity()
-                .motionToast(getString(R.string.no_section_for_project), MotionToast.TOAST_WARNING)
+            if (!locationWarning) {
+                this@EstimatePhotoFragment.requireActivity()
+                    .motionToast(getString(R.string.no_section_for_project), MotionToast.TOAST_WARNING)
+                locationWarning = true
+            }
             this.disableGlide = true
             hideCostCard()
         } else {
