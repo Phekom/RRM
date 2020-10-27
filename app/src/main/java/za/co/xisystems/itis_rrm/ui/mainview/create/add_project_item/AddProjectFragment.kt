@@ -522,7 +522,7 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
     }
 
     private fun onInvalidJob() {
-        this.requireActivity().motionToast("Incomplete estimates!", MotionToast.TOAST_WARNING)
+        this.requireActivity().motionToast("Incomplete estimates!", MotionToast.TOAST_ERROR)
         itemsCardView.startAnimation(shake_long)
     }
 

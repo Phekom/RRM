@@ -705,7 +705,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
         if (projectSectionId == null) {
             if (!locationWarning) {
                 this@EstimatePhotoFragment.requireActivity()
-                    .motionToast(getString(R.string.no_section_for_project), MotionToast.TOAST_WARNING)
+                    .motionToast(getString(R.string.no_section_for_project), MotionToast.TOAST_ERROR)
                 locationWarning = true
             }
             this.disableGlide = true
