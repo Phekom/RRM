@@ -25,7 +25,6 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.coroutineScope
 import androidx.lifecycle.lifecycleScope
@@ -48,6 +47,7 @@ import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.BuildConfig
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.R.string
 import za.co.xisystems.itis_rrm.base.LocationFragment
 import za.co.xisystems.itis_rrm.data._commons.AbstractTextWatcher
 import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
@@ -233,7 +233,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
         item = itemDTO
 
         if (item != null) titleTextView.text =
-            getString(R.string.pair, item!!.itemCode, item!!.descr)
+            getString(string.pair, item!!.itemCode, item!!.descr)
         else
             toast(
                 "item is null in " + javaClass.simpleName
@@ -258,7 +258,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        (activity as MainActivity).supportActionBar?.title = getString(R.string.edit_estimate)
+        (activity as MainActivity).supportActionBar?.title = getString(string.edit_estimate)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -278,7 +278,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
         super.onCreate(savedInstanceState)
         lifecycle.addObserver(uiScope)
         setHasOptionsMenu(true)
-        (activity as MainActivity).supportActionBar?.title = getString(R.string.edit_estimate)
+        (activity as MainActivity).supportActionBar?.title = getString(string.edit_estimate)
 
         itemSections = ArrayList()
         jobArrayList = ArrayList()
@@ -355,6 +355,8 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
                         createViewModel.deleteJobFromList(newJob!!.JobId)
                         createViewModel.deleteItemList(newJob!!.JobId)
                         createViewModel.setJobToEditItem(null)
+                        createViewModel.jobItem.value = null
+                        createViewModel.newJob.value = null
                         fragmentManager?.beginTransaction()?.remove(this)?.commit()
                         fragmentManager?.beginTransaction()?.detach(this)?.commit()
                     }
@@ -593,7 +595,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
                 toast("Error: Current location is null!")
             }
         } catch (e: Exception) {
-            toast(R.string.error_getting_image)
+            toast(string.error_getting_image)
             Timber.e(e)
             throw e
         }
@@ -631,11 +633,20 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
             uiScope.launch(context = uiScope.coroutineContext) {
 
                 withContext(uiScope.coroutineContext) {
-                    getRouteSectionPoint(
+                    val result = getRouteSectionPoint(
                         estimateLocation
                     )
+                    // TODO: Tighten up location security
+                    if (result.isNullOrBlank() || result.contains(other = "xxxxxxxxx" as CharSequence, ignoreCase = true)) {
+                        this@EstimatePhotoFragment.disableGlide = true
+                        showLocationWarning()
+
+                    }
                 }
-                withContext(uiScope.coroutineContext) { validateRouteSection(newJob?.ProjectId!!) }
+                withContext(uiScope.coroutineContext) {
+                    if(!this@EstimatePhotoFragment.disableGlide)
+                        validateRouteSection(newJob?.ProjectId!!)
+                }
 
                 withContext(uiScope.coroutineContext) {
                     if (!this@EstimatePhotoFragment.disableGlide) {
@@ -645,24 +656,26 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
                             itemidPhototype
                         )
                     }
-
-                    haltAnimation()
-                    startImageView.visibility = View.VISIBLE
-                    endImageView.visibility = View.VISIBLE
-                    disableGlide = false
-
+                    resetPhotos()
                 }
 
             }
         } else {
             val networkToast = Toast.makeText(
                 activity?.applicationContext,
-                R.string.no_connection_detected,
+                string.no_connection_detected,
                 Toast.LENGTH_LONG
             )
             networkToast.setGravity(Gravity.CENTER_VERTICAL, 0, 0)
             networkToast.show()
         }
+    }
+
+    private fun resetPhotos() {
+        haltAnimation()
+        startImageView.visibility = View.VISIBLE
+        endImageView.visibility = View.VISIBLE
+        disableGlide = false
     }
 
     private suspend fun validateRouteSection(projectId: String) {
@@ -687,27 +700,19 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
         sectionPoint: SectionPointDTO
     ) {
 
-        val projectSection = createViewModel.getSectionByRouteSectionProject(
+        val projectSectionId = createViewModel.getSectionByRouteSectionProject(
             sectionPoint.sectionId,
             sectionPoint.linearId,
             newJob?.ProjectId
         )
 
-        projectSection.observe(viewLifecycleOwner, { projectSectionId ->
-            Coroutines.main {
-                onProjectSectionIdFound(projectSectionId)
-            }
-        })
+        onProjectSectionIdFound(projectSectionId)
     }
 
     private suspend fun onProjectSectionIdFound(projectSectionId: String?) {
         Timber.d("ProjectSectionId: $projectSectionId")
         if (projectSectionId == null) {
-            if (!locationWarning) {
-                this@EstimatePhotoFragment.requireActivity()
-                    .motionToast(getString(R.string.no_section_for_project), MotionToast.TOAST_ERROR)
-                locationWarning = true
-            }
+            showLocationWarning()
             this.disableGlide = true
             hideCostCard()
         } else {
@@ -737,6 +742,14 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
                     }
                 }
             })
+        }
+    }
+
+    private fun showLocationWarning() {
+        if (!locationWarning) {
+            this@EstimatePhotoFragment.requireActivity()
+                .motionToast(getString(string.no_section_for_project), MotionToast.TOAST_ERROR)
+            locationWarning = true
         }
     }
 
@@ -782,7 +795,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
                 true
             )
         } else {
-            toast("This photograph falls outside the project range.")
+            showLocationWarning()
         }
     }
 
@@ -796,7 +809,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
 
     private suspend fun getRouteSectionPoint(
         currentLocation: LocationModel
-    ): LiveData<String?> =
+    ): String? =
         createViewModel.getRouteSectionPoint(
             currentLocation.latitude,
             currentLocation.longitude,
@@ -1020,7 +1033,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
             costTextView!!.visibility = View.VISIBLE
             costTextView.startAnimation(animations!!.bounce_soft)
         } else {
-            labelTextView!!.text = getString(R.string.warning_estimate_incomplete)
+            labelTextView!!.text = getString(string.warning_estimate_incomplete)
             labelTextView.startAnimation(animations!!.shake_long)
             valueEditText!!.visibility = View.GONE
             costTextView!!.visibility = View.GONE
@@ -1075,7 +1088,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
                     validateLengthCosting(currentEndKm, currentStartKm, lineRate, tenderRate)
             }
             else -> {
-                labelTextView!!.text = getString(R.string.label_quantity)
+                labelTextView!!.text = getString(string.label_quantity)
                 try { //  Default Calculation
                     lineRate = qty * tenderRate!!
                 } catch (e: NumberFormatException) {
@@ -1104,7 +1117,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
     ): Double? {
         var inlineRate = lineRate
         when (labelTextView!!.text) {
-            getString(R.string.label_length_m) ->
+            getString(string.label_length_m) ->
                 try { //  Set the Area to the QTY
                     val length = (currentEndKm - currentStartKm) * 1000
                     inlineRate = length * tenderRate!!
@@ -1123,13 +1136,13 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
         tenderRate: Double?
     ): Double? {
         var inlineRate = lineRate
-        labelTextView!!.text = getString(R.string.label_amount)
+        labelTextView!!.text = getString(string.label_amount)
         try {
             inlineRate = qty * tenderRate!!
         } catch (e: NumberFormatException) {
             requireActivity().hideKeyboard()
             e.printStackTrace()
-            toast(getString(R.string.warning_estimate_enter_prov_sum))
+            toast(getString(string.warning_estimate_enter_prov_sum))
         }
         return inlineRate
     }
@@ -1139,14 +1152,14 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
         tenderRate: Double?
     ): Double? {
         var inlineRate: Double?
-        labelTextView!!.text = getString(R.string.label_volume_m3)
+        labelTextView!!.text = getString(string.label_volume_m3)
         try {
             inlineRate = qty * tenderRate!!
         } catch (e: NumberFormatException) {
             requireActivity().hideKeyboard()
             e.printStackTrace()
             inlineRate = null
-            toast(getString(R.string.warning_estimate_enter_volume))
+            toast(getString(string.warning_estimate_enter_volume))
         }
         return inlineRate
     }
@@ -1157,7 +1170,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
         tenderRate: Double?
     ): Double? {
         var inlineRate = lineRate
-        labelTextView!!.text = getString(R.string.label_area_m2)
+        labelTextView!!.text = getString(string.label_area_m2)
         try {
             inlineRate = qty * tenderRate!!
         } catch (e: NumberFormatException) {
@@ -1174,7 +1187,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
         tenderRate: Double?
     ): Double? {
         var inlineRate = lineRate
-        labelTextView!!.text = getString(R.string.label_quantity)
+        labelTextView!!.text = getString(string.label_quantity)
         try { //  make the change in the array and update view
             inlineRate = qty * tenderRate!!
         } catch (e: NumberFormatException) {

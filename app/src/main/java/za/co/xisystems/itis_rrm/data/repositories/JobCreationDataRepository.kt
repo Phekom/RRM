@@ -218,7 +218,7 @@ class JobCreationDataRepository(
         sectionId: Int,
         linearId: String?,
         projectId: String?
-    ): LiveData<String?> {
+    ): String? {
         return withContext(Dispatchers.IO) {
             appDb.getProjectSectionDao()
                 .getSectionByRouteSectionProject(sectionId.toString(), linearId!!, projectId!!)
@@ -237,7 +237,7 @@ class JobCreationDataRepository(
         useR: String,
         projectId: String?,
         jobId: String
-    ): LiveData<String?> {
+    ): String? {
 
         val distance = 50
         val buffer = 1
@@ -246,16 +246,20 @@ class JobCreationDataRepository(
 
         Timber.d("$routeSectionPointResponse")
 
-        routeSectionPoint.postValue(
-            direction = routeSectionPointResponse.direction,
-            linearId = routeSectionPointResponse.linearId,
-            pointLocation = routeSectionPointResponse.pointLocation,
-            sectionId = routeSectionPointResponse.sectionId,
-            projectId = projectId,
-            jobId = jobId
-        )
+        return if (routeSectionPointResponse.bufferLocation.contains("xxxxxxxxx" as CharSequence, ignoreCase = true) ||
+            routeSectionPointResponse.bufferLocation.isBlank()
+        ) {
+            routeSectionPointResponse.bufferLocation
+        } else {
+            routeSectionPoint.postValue(
+                direction = routeSectionPointResponse.direction,
+                linearId = routeSectionPointResponse.linearId,
+                pointLocation = routeSectionPointResponse.pointLocation,
+                sectionId = routeSectionPointResponse.sectionId,
+                projectId = projectId,
+                jobId = jobId
+            )
 
-        return withContext(Dispatchers.IO) {
             appDb.getProjectSectionDao().getSectionByRouteSectionProject(
                 routeSectionPointResponse.sectionId.toString(),
                 routeSectionPointResponse.linearId, projectId
@@ -534,14 +538,14 @@ class JobCreationDataRepository(
         }
     }
 
-    private fun <T> MutableLiveData<T>.postValue(
+    private suspend fun <T> MutableLiveData<T>.postValue(
         direction: String,
         linearId: String?,
         pointLocation: Double,
         sectionId: Int,
         projectId: String?,
         jobId: String?
-    ): LiveData<String?> {
+    ): String? {
         return saveRouteSectionPoint(
             direction,
             linearId,
@@ -552,14 +556,14 @@ class JobCreationDataRepository(
         )
     }
 
-    private fun saveRouteSectionPoint(
+    private suspend fun saveRouteSectionPoint(
         direction: String,
         linearId: String?,
         pointLocation: Double,
         sectionId: Int,
         projectId: String?,
         jobId: String?
-    ): LiveData<String?> {
+    ): String? {
         val name = object {}.javaClass.enclosingMethod?.name
         Timber.d("x -> $name")
         if (linearId != null) {

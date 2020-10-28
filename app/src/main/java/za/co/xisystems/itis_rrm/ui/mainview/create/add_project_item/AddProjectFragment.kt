@@ -85,8 +85,10 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
 
             whenStarted {
                 createViewModel.newJob.observe(viewLifecycleOwner, { newJ ->
-                    job = newJ
-                    projectID = newJ.ProjectId
+                    newJ?.let {
+                        job = it
+                        projectID = it.ProjectId
+                    }
                 })
 
                 unsubmittedViewModel.jobtoEdit_Item.observe(
@@ -301,9 +303,10 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
             when (view?.id) {
                 R.id.addItemButton -> {
                     createViewModel.newJob.observe(viewLifecycleOwner, { newJ ->
-
-                        projectID = newJ.ProjectId
-                        job = newJ
+                        newJ?.let {
+                            projectID = it.ProjectId
+                            job = it
+                        }
                     })
 
                     Navigation.findNavController(view)

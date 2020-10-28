@@ -65,12 +65,12 @@ class CreateViewModel(
         loggedUser.value = inLoggedUser
     }
 
-    val description = MutableLiveData<String>()
+    val description: MutableLiveData<String> = MutableLiveData()
     fun setDescription(desc: String) {
         description.value = desc
     }
 
-    val newJob = MutableLiveData<JobDTO>()
+    val newJob: MutableLiveData<JobDTO?> = MutableLiveData()
     fun createNewJob(job: JobDTO) {
         newJob.value = job
     }
@@ -105,7 +105,7 @@ class CreateViewModel(
         sectionProjectItem.value = inSectionProjectItem
     }
 
-    val jobItem = MutableLiveData<JobDTO>()
+    val jobItem = MutableLiveData<JobDTO?>()
     suspend fun getJob(inJobId: String) {
         jobItem.value = jobCreationDataRepository.getUpdatedJob(jobId = inJobId)
     }
@@ -205,7 +205,7 @@ class CreateViewModel(
         sectionId: Int,
         linearId: String?,
         projectId: String?
-    ): LiveData<String?> {
+    ): String? {
         return withContext(Dispatchers.IO) {
             jobCreationDataRepository.getSectionByRouteSectionProject(
                 sectionId,
@@ -227,8 +227,7 @@ class CreateViewModel(
         useR: String,
         projectId: String?,
         jobId: String
-    ): LiveData<String?> {
-
+    ): String? {
         return withContext(Dispatchers.IO) {
             jobCreationDataRepository.getRouteSectionPoint(
                 latitude,
