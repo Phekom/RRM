@@ -611,8 +611,9 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
 
         val itemId = item?.itemId ?: itemidPhototype["itemId"]
 
-        if (newJobItemEstimate == null)
+        if (newJobItemEstimate == null) {
             newJobItemEstimate = newJob?.getJobEstimateByItemId(itemId)
+        }
 
         if (newJobItemEstimate == null) {
             newJobItemEstimate = createItemEstimate(
@@ -632,32 +633,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
 
             uiScope.launch(context = uiScope.coroutineContext) {
 
-                withContext(uiScope.coroutineContext) {
-                    val result = getRouteSectionPoint(
-                        estimateLocation
-                    )
-                    // TODO: Tighten up location security
-                    if (result.isNullOrBlank() || result.contains(other = "xxxxxxxxx" as CharSequence, ignoreCase = true)) {
-                        this@EstimatePhotoFragment.disableGlide = true
-                        showLocationWarning()
-
-                    }
-                }
-                withContext(uiScope.coroutineContext) {
-                    if(!this@EstimatePhotoFragment.disableGlide)
-                        validateRouteSection(newJob?.ProjectId!!)
-                }
-
-                withContext(uiScope.coroutineContext) {
-                    if (!this@EstimatePhotoFragment.disableGlide) {
-                        placeEstimatePhotoInRouteSection(
-                            filePath,
-                            estimateLocation,
-                            itemidPhototype
-                        )
-                    }
-                    resetPhotos()
-                }
+                processPhotoLocation(estimateLocation, filePath, itemidPhototype)
 
             }
         } else {
@@ -668,6 +644,38 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
             )
             networkToast.setGravity(Gravity.CENTER_VERTICAL, 0, 0)
             networkToast.show()
+        }
+    }
+
+    private suspend fun processPhotoLocation(
+        estimateLocation: LocationModel,
+        filePath: Map<String, String>,
+        itemidPhototype: Map<String, String>
+    ) {
+        withContext(uiScope.coroutineContext) {
+            val result = getRouteSectionPoint(
+                estimateLocation
+            )
+            // TODO: Tighten up location security
+            if (result.isNullOrBlank() || result.contains(other = "xxxxxxxxx" as CharSequence, ignoreCase = true)) {
+                this@EstimatePhotoFragment.disableGlide = true
+                showLocationWarning()
+            }
+        }
+        withContext(uiScope.coroutineContext) {
+            if (!this@EstimatePhotoFragment.disableGlide)
+                validateRouteSection(newJob?.ProjectId!!)
+        }
+
+        withContext(uiScope.coroutineContext) {
+            if (!this@EstimatePhotoFragment.disableGlide) {
+                placeEstimatePhotoInRouteSection(
+                    filePath,
+                    estimateLocation,
+                    itemidPhototype
+                )
+            }
+            resetPhotos()
         }
     }
 
