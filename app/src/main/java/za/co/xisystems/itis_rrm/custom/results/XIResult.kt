@@ -1,11 +1,11 @@
 package za.co.xisystems.itis_rrm.custom.results
 
+import java.io.IOException
+import java.net.SocketException
 import za.co.xisystems.itis_rrm.custom.errors.NoConnectivityException
 import za.co.xisystems.itis_rrm.custom.errors.NoInternetException
 import za.co.xisystems.itis_rrm.custom.errors.ServiceHostUnreachableException
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
-import java.io.IOException
-import java.net.SocketException
 
 // Created by Shaun McDonald on 2020/05/23.
 // Copyright (c) 2020 XI Systems. All rights reserved.

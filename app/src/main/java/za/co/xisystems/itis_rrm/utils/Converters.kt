@@ -9,6 +9,9 @@ import androidx.room.TypeConverter
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import java.util.ArrayList
+import java.util.Collections
+import java.util.Date
 import za.co.xisystems.itis_rrm.data.localDB.entities.ActivityDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.ChildLookupDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.InfoClassDTO
@@ -32,9 +35,6 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.UserRoleDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.VoItemDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.WorkFlowDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.WorkFlowRouteDTO
-import java.util.ArrayList
-import java.util.Collections
-import java.util.Date
 
 /**
  * Created by Francis Mahlava on 2019/11/22.

@@ -34,6 +34,10 @@ import androidx.navigation.Navigation
 import com.airbnb.lottie.LottieAnimationView
 import icepick.Icepick
 import icepick.State
+import java.io.File
+import java.text.DecimalFormat
+import java.util.Date
+import kotlin.collections.set
 import kotlinx.android.synthetic.main.fragment_photo_estimate.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.cancel
@@ -77,10 +81,6 @@ import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
-import java.io.File
-import java.text.DecimalFormat
-import java.util.Date
-import kotlin.collections.set
 
 /**
  * Created by Francis Mahlava on 2019/12/29.
@@ -634,7 +634,6 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
             uiScope.launch(context = uiScope.coroutineContext) {
 
                 processPhotoLocation(estimateLocation, filePath, itemidPhototype)
-
             }
         } else {
             val networkToast = Toast.makeText(
