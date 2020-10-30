@@ -33,7 +33,7 @@
                 android:layout_marginStart="10dp"
                 android:text="@string/some_super_long_item_name_in_case_it_gets_cut_off"
                 android:textColor="@color/sanral_burnt_orange"
-                android:textSize="17dp" />
+                android:textSize="17sp" />
 
         <TextView
                 android:id="@+id/estimation_item_quantity_textView"
@@ -46,7 +46,7 @@
                 android:layout_marginStart="10dp"
                 android:text="@string/qty_123"
                 android:textColor="@android:color/black"
-                android:textSize="14dp" />
+                android:textSize="14sp" />
 
         <TextView
                 android:id="@+id/estimation_item_uom_textView"
@@ -59,7 +59,7 @@
                 android:layout_marginStart="10dp"
                 android:hint="UOM"
                 android:textColor="@android:color/black"
-                android:textSize="14dp" />
+                android:textSize="14sp" />
 
         <TextView
                 android:id="@+id/estimation_item_price_textView"
@@ -71,7 +71,7 @@
             android:hint="R 0.00"
                 android:layout_marginStart="10dp"
                 android:textColor="@android:color/black"
-                android:textSize="14dp" />
+                android:textSize="14sp" />
 
 
         <ImageButton

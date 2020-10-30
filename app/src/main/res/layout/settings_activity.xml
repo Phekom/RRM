@@ -27,7 +27,7 @@
             android:layout_height="wrap_content"
 
             tools:text="Welcome "
-            android:textSize="16dp"
+            android:textSize="16sp"
             android:textStyle="bold" />
 
     </LinearLayout>
