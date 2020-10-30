@@ -56,14 +56,14 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Welcome "
-                        android:textSize="16dp"
+                        android:textSize="16sp"
                         android:textStyle="bold" />
                     <TextView
                         android:id="@+id/username"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="UserName"
-                        android:textSize="16dp"
+                        android:textSize="16sp"
                         android:textStyle="bold" />
 
                 </LinearLayout>
@@ -90,7 +90,7 @@
                         android:layout_marginTop="18dp"
                         android:gravity="center"
                         android:text="No information."
-                        android:textSize="14dp"
+                        android:textSize="14sp"
                         android:textStyle="bold" />
 
                 </RelativeLayout>

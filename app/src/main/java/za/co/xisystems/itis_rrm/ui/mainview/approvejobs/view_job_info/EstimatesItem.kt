@@ -11,6 +11,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LifecycleOwner
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import com.xwray.groupie.kotlinandroidextensions.Item
+import java.io.File
 import kotlinx.android.synthetic.main.estimates_item.*
 import timber.log.Timber
 import www.sanju.motiontoast.MotionToast
@@ -26,7 +27,6 @@ import za.co.xisystems.itis_rrm.utils.Util.nanCheck
 import za.co.xisystems.itis_rrm.utils.Util.round
 import za.co.xisystems.itis_rrm.utils.toast
 import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
-import java.io.File
 
 /**
  * Created by Francis Mahlava on 2020/01/02.
@@ -112,7 +112,6 @@ class EstimatesItem(
             val newQuantity = jobItemEstimateDTO.qty
             val defaultQty = 0.0
 
-
             quantityEntry.text = Editable.Factory.getInstance().newEditable("$newQuantity")
 
             quantityEntry.addTextChangedListener(object : AbstractTextWatcher() {
@@ -131,7 +130,7 @@ class EstimatesItem(
                         else -> {
                             val qty = text.toDouble()
                             cost = (tenderRate * qty).round(2)
-                            totalEntry.text = activity.getString(R.string.pair,"R",cost.toString())
+                            totalEntry.text = activity.getString(R.string.pair, "R", cost.toString())
                         }
                     }
                 }
@@ -142,9 +141,9 @@ class EstimatesItem(
         alert.setPositiveButton(
             R.string.save
         ) { dialog, which ->
-            if(updated) {
+            if (updated) {
                 validateUpdateQty(activity, quantityEntry, totalEntry, jobItemEstimateDTO)
-            } else{
+            } else {
                 dialog.dismiss()
             }
         }
@@ -174,7 +173,7 @@ class EstimatesItem(
                 } else {
                     val updated = approveViewModel.upDateEstimate(
                         quantityEntry.text.toString(),
-                        totalEntry.text.split(" ",ignoreCase = true)[1],
+                        totalEntry.text.split(" ", ignoreCase = true)[1],
                         jobItemEstimateDTO.estimateId
                     )
                     if (updated.isBlank()) {
