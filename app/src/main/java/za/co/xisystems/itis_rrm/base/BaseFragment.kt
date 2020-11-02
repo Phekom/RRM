@@ -13,6 +13,7 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
 import com.google.android.material.snackbar.Snackbar
 import timber.log.Timber
 import www.sanju.motiontoast.MotionToast
@@ -185,14 +186,14 @@ abstract class BaseFragment(layoutContentId: Int) : Fragment(), IProgressView,
         ).show()
     }
 
-    fun motionToast(message: String, motionType: String, position: Int = MotionToast.GRAVITY_BOTTOM) {
+    protected fun motionToast(activity: FragmentActivity, message: String, motionType: String, position: Int = MotionToast.GRAVITY_BOTTOM) {
         MotionToast.createColorToast(
-            context = this.requireActivity(),
+            context = activity,
             message = message,
             style = motionType,
             position = position,
             duration = MotionToast.LONG_DURATION,
-            font = ResourcesCompat.getFont(this.requireContext(), R.font.helvetica_regular)
+            font = ResourcesCompat.getFont(activity.applicationContext, R.font.helvetica_regular)
         )
     }
 
