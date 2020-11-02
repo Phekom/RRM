@@ -17,6 +17,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.ExpandableGroup
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
+import java.util.ArrayList
+import java.util.HashMap
 import kotlinx.android.synthetic.main.fragment_submit_measure.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
@@ -49,8 +51,6 @@ import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
-import java.util.ArrayList
-import java.util.HashMap
 
 class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), KodeinAware {
     override val kodein by kodein()
@@ -197,7 +197,11 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                 if (ServiceUtil.isNetworkAvailable(requireContext().applicationContext)) {
                     submitMeasures(itemMeasureJob, mSures)
                 } else {
-                    this@SubmitMeasureFragment.motionToast(getString(R.string.no_connection_detected), MotionToast.TOAST_NO_INTERNET, MotionToast.GRAVITY_CENTER)
+                    this@SubmitMeasureFragment.motionToast(
+                        this@SubmitMeasureFragment.requireActivity(),
+                        getString(R.string.no_connection_detected),
+                        MotionToast.TOAST_NO_INTERNET,
+                        MotionToast.GRAVITY_CENTER)
                     progressButton.failProgress(originalCaption)
                 }
             }
@@ -223,6 +227,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                 when {
                     userDTO.userId.isBlank() -> {
                         this@SubmitMeasureFragment.motionToast(
+                            this@SubmitMeasureFragment.requireActivity(),
                             "Error: current user lacks permissions",
                             MotionToast.TOAST_ERROR,
                             MotionToast.GRAVITY_CENTER
@@ -231,6 +236,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                     }
                     itemMeasureJob.JobId.isBlank() -> {
                         this@SubmitMeasureFragment.motionToast(
+                            this@SubmitMeasureFragment.requireActivity(),
                             "Error: selected job is invalid",
                             MotionToast.TOAST_ERROR,
                             MotionToast.GRAVITY_CENTER
@@ -290,6 +296,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                         when (outcome) {
                             is XISuccess -> {
                                 this@SubmitMeasureFragment.motionToast(
+                                    this@SubmitMeasureFragment.requireActivity(),
                                     "Measurements submitted",
                                     MotionToast.TOAST_INFO
                                 )
