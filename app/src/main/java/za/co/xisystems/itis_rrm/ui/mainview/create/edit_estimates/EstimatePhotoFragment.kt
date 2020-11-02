@@ -584,6 +584,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
                         textView = startSectionTextView,
                         isStart = true
                     )
+
                     PhotoType.END -> updatePhotos(
                         imageUri = imageUri.also { endImageUri = it },
                         animate = true,
@@ -682,7 +683,6 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
             resetPhotos()
         }
 
-        resetPhotos()
     }
 
     private fun resetPhotos() {
