@@ -546,7 +546,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
 
             processAndSetImage()
         } else { // Otherwise, delete the temporary image file
-            PhotoUtil.deleteImageFile(requireContext(), filenamePath.toString())
+            PhotoUtil.deleteImageFile(filenamePath.toString())
             haltAnimation()
             startImageView.visibility = View.VISIBLE
             endImageView.visibility = View.VISIBLE
@@ -681,7 +681,6 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
 
             resetPhotos()
         }
-
     }
 
     private fun resetPhotos() {
@@ -764,7 +763,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
                 this.requireActivity(),
                 getString(string.no_section_for_project),
                 MotionToast.TOAST_ERROR,
-                MotionToast.GRAVITY_CENTER,
+                MotionToast.GRAVITY_BOTTOM,
                 MotionToast.LONG_DURATION,
                 ResourcesCompat.getFont(this.requireContext(), R.font.helvetica_regular)
             )

@@ -63,7 +63,8 @@ object PhotoUtil {
         try {
             fileDescriptor =
                 selectedImage?.let { context.contentResolver.openAssetFileDescriptor(it, "r") }
-            if (fileDescriptor != null) bm = BitmapFactory.decodeFileDescriptor(
+            if (fileDescriptor != null)
+                bm = BitmapFactory.decodeFileDescriptor(
                 fileDescriptor.fileDescriptor,
                 null,
                 options
@@ -300,7 +301,7 @@ object PhotoUtil {
     fun saveImageToInternalStorage(
         context: Context,
         imageUri: Uri
-    ): Map<String, String?>? {
+    ): Map<String, String>? {
         var scaledUri = imageUri
         return try {
             lateinit var scaledBitmap: Bitmap
@@ -510,7 +511,6 @@ object PhotoUtil {
     }
 
     fun deleteImageFile(
-        context: Context,
         imagePath: String?
     ): Boolean { // Get the file
         return if (imagePath != null) {

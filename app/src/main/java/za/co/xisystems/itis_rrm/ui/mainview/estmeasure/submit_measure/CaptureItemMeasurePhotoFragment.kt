@@ -281,7 +281,7 @@ class CaptureItemMeasurePhotoFragment :
                 processAndSetImage()
             }
         } else { // Otherwise, delete the temporary image file
-            PhotoUtil.deleteImageFile(requireContext().applicationContext, mTempPhotoPath)
+            PhotoUtil.deleteImageFile(mTempPhotoPath)
         }
     }
 
