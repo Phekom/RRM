@@ -73,7 +73,6 @@ class UnSubmittedFragment : BaseFragment(R.layout.fragment_unsubmittedjobs), Kod
                         no_data_layout.visibility = View.GONE
                         unsubmitted_job_layout.visibility = View.VISIBLE
                         initRecyclerView(jobList.toApproveListItems())
-                        toast(jobList.size.toString())
                     }
                 })
             } catch (t: Throwable) {

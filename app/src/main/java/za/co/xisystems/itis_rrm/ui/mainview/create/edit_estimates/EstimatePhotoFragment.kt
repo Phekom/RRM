@@ -25,7 +25,6 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.coroutineScope
 import androidx.lifecycle.lifecycleScope
@@ -54,6 +53,8 @@ import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.R.string
 import za.co.xisystems.itis_rrm.base.LocationFragment
+import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
+import za.co.xisystems.itis_rrm.custom.results.XIError
 import za.co.xisystems.itis_rrm.data._commons.AbstractTextWatcher
 import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
 import za.co.xisystems.itis_rrm.data.localDB.entities.ItemSectionDTO
@@ -656,7 +657,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
             val result = getRouteSectionPoint(
                 estimateLocation
             )
-            if (result.isNullOrBlank() || result.contains(other = "xxx" as CharSequence, ignoreCase = true)) {
+            if (result.isNullOrBlank() || result.contains(other = "xxxxxxxxx" as CharSequence, ignoreCase = true)) {
                 this@EstimatePhotoFragment.disableGlide = true
                 showLocationWarning()
                 resetPhotos()
@@ -759,13 +760,11 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
 
     private fun showLocationWarning() {
         if (!locationWarning) {
-            MotionToast.createColorToast(
-                this.requireActivity(),
+            this.motionToast(
                 getString(string.no_section_for_project),
                 MotionToast.TOAST_ERROR,
                 MotionToast.GRAVITY_BOTTOM,
-                MotionToast.LONG_DURATION,
-                ResourcesCompat.getFont(this.requireContext(), R.font.helvetica_regular)
+                MotionToast.LONG_DURATION
             )
             locationWarning = true
         }
@@ -1301,9 +1300,13 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
                         // newJobItemEstimate!!.qty = createViewModel.estimateQty.value!!
                         setValueEditText(quantity)
                     }
-                } catch (e: Exception) {
-                    Timber.e(e)
-                    throw e
+                } catch (t: Throwable) {
+                    Timber.e(t, "Failed to restore estimate view-state.")
+                    val estError = XIError(t, t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR)
+                    XIErrorHandler.crashGuard(
+                        this@EstimatePhotoFragment.requireView(),
+                        estError,
+                        refreshAction = { restoreEstimateViewState() })
                 }
             }
         }

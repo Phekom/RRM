@@ -25,7 +25,6 @@ import za.co.xisystems.itis_rrm.utils.GlideApp
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.Util.nanCheck
 import za.co.xisystems.itis_rrm.utils.Util.round
-import za.co.xisystems.itis_rrm.utils.toast
 import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
 
 /**
@@ -125,7 +124,7 @@ class EstimatesItem(
                         text.length > 9 -> {
                             quantityEntry.text =
                                 Editable.Factory.getInstance().newEditable("$defaultQty")
-                            activity.toast("You Have exceeded the amount of Quantity allowed")
+                            activity.motionToast("You Have exceeded the amount of Quantity allowed", MotionToast.TOAST_ERROR)
                         }
                         else -> {
                             val qty = text.toDouble()

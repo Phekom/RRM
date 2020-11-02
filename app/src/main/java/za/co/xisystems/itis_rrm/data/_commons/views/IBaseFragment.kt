@@ -4,6 +4,4 @@ import androidx.fragment.app.Fragment
 
 interface IBaseFragment<T : Fragment> {
     val activity: T
-    fun showProgressDialog()
-    fun dismissProgressDialog()
 }

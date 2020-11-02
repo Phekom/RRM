@@ -282,7 +282,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                     this.requireActivity(),
                     "Sync Complete",
                     MotionToast.TOAST_SUCCESS,
-                    MotionToast.GRAVITY_CENTER,
+                    MotionToast.GRAVITY_BOTTOM,
                     MotionToast.LONG_DURATION,
                     ResourcesCompat.getFont(this.requireContext(), R.font.helvetica_regular)
                 )

@@ -2,7 +2,6 @@
 
 package za.co.xisystems.itis_rrm.ui.mainview.work
 
-import android.app.ProgressDialog
 import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -45,19 +44,12 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
     private lateinit var workViewModel: WorkViewModel
     private val factory: WorkViewModelFactory by instance()
     private var uiScope = UiLifecycleScope()
-    private var dialog: ProgressDialog? = null
 
     init {
 
         lifecycleScope.launch {
 
             whenStarted {
-
-                dialog =
-                    setDataProgressDialog(
-                        requireActivity(),
-                        getString(R.string.data_loading_please_wait)
-                    )
 
                 uiScope.onCreate()
                 viewLifecycleOwner.lifecycle.addObserver(uiScope)
@@ -171,7 +163,7 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
         withContext(uiScope.coroutineContext) {
             val jobs = workViewModel.offlineUserTaskList.await()
             jobs.observeOnce(viewLifecycleOwner, { works ->
-                toast("${works.size} / ${works.count()} loaded.")
+                Timber.d("${works.size} / ${works.count()} loaded.")
             })
         }
     }

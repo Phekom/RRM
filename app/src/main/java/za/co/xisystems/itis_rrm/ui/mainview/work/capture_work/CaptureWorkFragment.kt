@@ -36,6 +36,7 @@ import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
 import pereira.agnaldo.previewimgcol.ImageCollectionView
 import timber.log.Timber
+import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.LocationFragment
@@ -470,7 +471,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
 
                     groupAdapter.notifyItemChanged(0)
                 }
-                else -> toast("Error: Current location is null!")
+                else -> this.motionToast("Error: Current location is null!", MotionToast.TOAST_ERROR)
             }
         } catch (e: Exception) {
             sharedViewModel.setColorMessage(

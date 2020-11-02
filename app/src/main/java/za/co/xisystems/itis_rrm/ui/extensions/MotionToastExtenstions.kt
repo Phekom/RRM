@@ -25,6 +25,6 @@ fun Fragment.motionToast(message: String, motionType: String = MotionToast.TOAST
         style = motionType,
         position = position,
         duration = MotionToast.LONG_DURATION,
-        font = ResourcesCompat.getFont(this.requireContext(), R.font.helvetica_regular)
+        font = ResourcesCompat.getFont(this.requireActivity(), R.font.helvetica_regular)
     )
 }

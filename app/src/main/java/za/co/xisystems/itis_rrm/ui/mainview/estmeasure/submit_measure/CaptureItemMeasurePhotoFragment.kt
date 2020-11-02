@@ -118,7 +118,7 @@ class CaptureItemMeasurePhotoFragment :
                     selectedJobItemM?.let { it ->
                         estimate_image_collection_view.clearImages()
                         viewPhotosOnly = false
-                        toast(it.jimNo)
+                        toast("Job: ${it.jimNo}")
                         selectedJobItemMeasure = it
                         checkForPhotos(selectedJobItemMeasure)
                     }

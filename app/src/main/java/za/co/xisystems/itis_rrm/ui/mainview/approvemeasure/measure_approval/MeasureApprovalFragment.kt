@@ -158,7 +158,7 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
                             this.motionToast(
                                 "Error: userId is null",
                                 MotionToast.TOAST_ERROR,
-                                MotionToast.GRAVITY_CENTER
+                                MotionToast.GRAVITY_BOTTOM
                             )
                             progressButton.failProgress("Invalid User")
                         } else {
@@ -193,7 +193,7 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
             val submit =
                 approveViewModel.processWorkflowMove(userId, trackRouteId, description, direction)
             if (submit.isNotEmpty()) {
-                this.motionToast(submit, MotionToast.TOAST_ERROR, MotionToast.GRAVITY_CENTER)
+                this.motionToast(submit, MotionToast.TOAST_ERROR, MotionToast.GRAVITY_BOTTOM)
             }
         }
     }

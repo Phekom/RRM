@@ -4,6 +4,4 @@ import android.app.Activity
 
 interface IBaseActivity<T : Activity> {
     val activity: T
-    fun showProgressDialog()
-    fun dismissProgressDialog()
 }

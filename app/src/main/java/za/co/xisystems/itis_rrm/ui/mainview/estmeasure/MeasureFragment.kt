@@ -166,7 +166,6 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
                         }
                         Timber.d("Job measures detected: ${measureItems.size}")
                         initRecyclerView(measureItems.toMeasureListItems())
-                        toast(measureItems.size.toString())
                         group5_loading.visibility = View.GONE
                     }
                 }

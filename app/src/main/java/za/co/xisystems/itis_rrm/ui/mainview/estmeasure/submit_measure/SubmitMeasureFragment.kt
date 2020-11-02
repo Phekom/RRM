@@ -198,10 +198,10 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                     submitMeasures(itemMeasureJob, mSures)
                 } else {
                     this@SubmitMeasureFragment.motionToast(
-                        this@SubmitMeasureFragment.requireActivity(),
                         getString(R.string.no_connection_detected),
                         MotionToast.TOAST_NO_INTERNET,
-                        MotionToast.GRAVITY_CENTER)
+                        MotionToast.GRAVITY_BOTTOM
+                    )
                     progressButton.failProgress(originalCaption)
                 }
             }
@@ -227,19 +227,17 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                 when {
                     userDTO.userId.isBlank() -> {
                         this@SubmitMeasureFragment.motionToast(
-                            this@SubmitMeasureFragment.requireActivity(),
                             "Error: current user lacks permissions",
                             MotionToast.TOAST_ERROR,
-                            MotionToast.GRAVITY_CENTER
+                            MotionToast.GRAVITY_BOTTOM
                         )
                         progressButton.failProgress(originalCaption)
                     }
                     itemMeasureJob.JobId.isBlank() -> {
                         this@SubmitMeasureFragment.motionToast(
-                            this@SubmitMeasureFragment.requireActivity(),
                             "Error: selected job is invalid",
                             MotionToast.TOAST_ERROR,
-                            MotionToast.GRAVITY_CENTER
+                            MotionToast.GRAVITY_BOTTOM
                         )
                         progressButton.failProgress(originalCaption)
                     }
@@ -296,11 +294,11 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                         when (outcome) {
                             is XISuccess -> {
                                 this@SubmitMeasureFragment.motionToast(
-                                    this@SubmitMeasureFragment.requireActivity(),
                                     "Measurements submitted",
-                                    MotionToast.TOAST_INFO
+                                    MotionToast.TOAST_SUCCESS
                                 )
                                 progressButton.doneProgress(originalCaption)
+                                jobItemMeasureList.clear()
                                 popViewOnJobSubmit()
                             }
                             is XIError -> {
@@ -315,7 +313,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
         }
     }
 
-    fun setJobMeasureLittleEndianGuids(jim: JobItemMeasureDTO?): JobItemMeasureDTO? {
+    private fun setJobMeasureLittleEndianGuids(jim: JobItemMeasureDTO?): JobItemMeasureDTO? {
         jim?.let { jobMeasure ->
             jobMeasure.setEstimateId(DataConversion.toLittleEndian(jobMeasure.estimateId))
             jobMeasure.setJobId(DataConversion.toLittleEndian(jobMeasure.jobId))
@@ -343,6 +341,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
 
     private fun popViewOnJobSubmit() {
         // TODO: Delete data from database after successful upload
+
         Intent(context?.applicationContext, MainActivity::class.java).also { home ->
             startActivity(home)
         }
