@@ -1,115 +1,59 @@
 package za.co.xisystems.itis_rrm.ui.mainview.home
 
-import android.content.Context
-import androidx.lifecycle.ViewModel
-import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
-import za.co.xisystems.itis_rrm.data.network.ResponseListener
+import androidx.lifecycle.MutableLiveData
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import za.co.xisystems.itis_rrm.base.BaseViewModel
+import za.co.xisystems.itis_rrm.custom.results.XIError
+import za.co.xisystems.itis_rrm.custom.results.XIProgress
+import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
 
 class HomeViewModel(
-    repository: UserRepository,
-    offlineDataRepository: OfflineDataRepository,
-    Db: AppDatabase,
-    val context: Context
-) : ViewModel() {
-
-    var rListener: ResponseListener? = null
+    private val repository: UserRepository,
+    private val offlineDataRepository: OfflineDataRepository
+) : BaseViewModel() {
 
     val user by lazyDeferred {
         repository.getUser()
-
     }
 
-    val offlinedata by lazyDeferred {
-
+    val offlineSectionItems by lazyDeferred {
         offlineDataRepository.getSectionItems()
-        offlineDataRepository.getContracts()
     }
 
+    val databaseStatus: MutableLiveData<XIResult<Boolean>> = offlineDataRepository.databaseStatus
 
-    val user_roles by lazyDeferred {
-        repository.getUserRoles()
+    val bigSyncDone: MutableLiveData<Boolean> = offlineDataRepository.bigSyncDone
+
+    suspend fun bigSyncCheck() {
+        offlineDataRepository.bigSyncCheck()
     }
-    val user_n by lazyDeferred {
-//        homeRepository.getHealth()
+
+    suspend fun fetchAllData(userId: String) = scope.launch(scope.coroutineContext) {
+        try {
+            offlineDataRepository.fetchContracts(userId)
+        } catch (ex: Exception) {
+            val fetchFail = XIError(ex, "Failed to fetch data: ${ex.message}")
+            databaseStatus.postValue(fetchFail)
+        } finally {
+            databaseStatus.postValue(XIProgress(false))
+        }
     }
 
-//    var mText : MutableLiveData<String>
-//
-//    val text: LiveData<String>
-//        get() = mText
-//
-//    init {
-//        mText = MutableLiveData()
-//
-//    }
+    override fun onCleared() {
 
+        super.onCleared()
+        scope.cancel()
+    }
 
-
-
-
-
-
-
-////    if (context?.applicationContext != null) {
-//        //  Check every 2 secs if Mobile data or Location is off/on
-//        val t = object : CountDownTimer(java.lang.Long.MAX_VALUE, 2000) {
-//
-//            // This is called every interval. (Every 2 seconds)
-//            override fun onTick(millisUntilFinished: Long) {
-//
-//                val lm =
-//                    context?.applicationContext!!.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-//                val cm =
-//                    context?.applicationContext!!.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-//
-//                var gps_enabled = false
-//                var network_enabled = false
-//
-//                val gps = binding.root.findViewById<View>(R.id.locationEnabled) as TextView
-//                val data =  binding.root.findViewById<View>(R.id.dataEnabled) as TextView
-//
-//                try {
-//                    gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
-//                } catch (ex: Exception) {
-//                }
-//
-//                try {
-//                    val cmClass = Class.forName(cm.javaClass.name)
-//                    val method = cmClass.getDeclaredMethod("getMobileDataEnabled")
-//                    // Make the method callable =====
-//                    method.isAccessible = true
-//                    // get the setting for "mobile data"=========
-//                    network_enabled = method.invoke(cm) as Boolean
-//
-//                } catch (ex: Exception) {
-//                }
-//
-////                      Check if GPS connected
-//                if (!gps_enabled) {
-//                    gps.setText(R.string.gps_not_connected)
-//                    gps.setTextColor(colorNotConnected)
-//                } else {
-//                    gps.setText(R.string.gps_connected)
-//                    gps.setTextColor(colorConnected)
-//                }
-//
-//                //  Check if Network Enabled
-//                if (!network_enabled) {
-//                    data.setText(R.string.mobile_data_not_connected)
-//                    data.setTextColor(colorNotConnected)
-//                } else {
-//                    data.setText(R.string.mobile_data_connected)
-//                    data.setTextColor(colorConnected)
-//                }
-//            }
-//
-//            override fun onFinish() {
-//                start()
-//            }
-//        }.start()
-//    }
-
+    suspend fun healthCheck(userId: String): Boolean {
+        return withContext(Dispatchers.IO) {
+            offlineDataRepository.getServiceHealth(userId)
+        }
+    }
 }

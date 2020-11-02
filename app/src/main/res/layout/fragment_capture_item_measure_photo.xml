@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_margin="16dp"
+    android:orientation="vertical">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <pereira.agnaldo.previewimgcol.ImageCollectionView
+            android:id="@+id/estimate_image_collection_view"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_margin="@dimen/dimen_5dp"
+            app:backgroundColor="#00000000"
+            app:baseRowHeight="100dp"
+            app:imageMargin="2dp"
+            app:layout_constraintBottom_toTopOf="@id/photoButtons"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.50"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:maxImagePerRow="3"
+            app:maxRows="4"
+            app:pinchToZoom="true"
+            app:showExternalBorderMargins="true" />
+
+        <LinearLayout
+            android:id="@+id/photoButtons"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/dimen_8dp"
+            android:gravity="center"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:visibility="gone">
+
+            <Button
+                android:id="@+id/capture_another_photo_button"
+                style="@style/_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_margin="5dp"
+                android:layout_weight="1"
+                android:background="@drawable/round_corner_orange"
+                android:text="@string/add_photo"
+                android:textColor="@android:color/white"
+                android:visibility="visible" />
+
+            <Button
+                android:id="@+id/done_image_button"
+                style="@style/_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:layout_weight="1"
+                android:background="@drawable/round_corner_orange"
+                android:text="@string/back"
+                android:textColor="@android:color/white"
+                android:visibility="visible" />
+        </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+</LinearLayout>

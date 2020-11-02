@@ -16,8 +16,8 @@
 <!--    </style>-->
 
     <style name="ActionBarTheme"  parent="ThemeOverlay.MaterialComponents.ActionBar">
-        <item name="android:textColorPrimary">@android:color/white</item>
-        <item name="android:textColorSecondary">@color/itis_silver</item>
+<!--        <item name="android:textColorPrimary">@android:color/white</item>-->
+<!--        <item name="android:textColorSecondary">@color/itis_silver</item>-->
     </style>
 
 
@@ -59,7 +59,7 @@
     </style>
 
     <style name="_button" parent="_default">
-        <item name="android:background">@drawable/orange_round_corner</item>
+        <item name="android:background">@drawable/round_corner_orange</item>
         <item name="android:textColor">@color/white</item>
     </style>
 

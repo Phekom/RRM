@@ -5,8 +5,71 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import za.co.xisystems.itis_rrm.data.localDB.dao.*
-import za.co.xisystems.itis_rrm.data.localDB.entities.*
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
+import za.co.xisystems.itis_rrm.data.localDB.dao.ActivityDao
+import za.co.xisystems.itis_rrm.data.localDB.dao.ContractDao
+import za.co.xisystems.itis_rrm.data.localDB.dao.EntitiesDao
+import za.co.xisystems.itis_rrm.data.localDB.dao.EstimateWorkDao
+import za.co.xisystems.itis_rrm.data.localDB.dao.EstimateWorkPhotoDao
+import za.co.xisystems.itis_rrm.data.localDB.dao.InfoClassDao
+import za.co.xisystems.itis_rrm.data.localDB.dao.ItemDaoTemp
+import za.co.xisystems.itis_rrm.data.localDB.dao.ItemSectionDao
+import za.co.xisystems.itis_rrm.data.localDB.dao.JobDao
+import za.co.xisystems.itis_rrm.data.localDB.dao.JobDaoTemp
+import za.co.xisystems.itis_rrm.data.localDB.dao.JobItemEstimateDao
+import za.co.xisystems.itis_rrm.data.localDB.dao.JobItemEstimatePhotoDao
+import za.co.xisystems.itis_rrm.data.localDB.dao.JobItemMeasureDao
+import za.co.xisystems.itis_rrm.data.localDB.dao.JobItemMeasurePhotoDao
+import za.co.xisystems.itis_rrm.data.localDB.dao.JobSectionDao
+import za.co.xisystems.itis_rrm.data.localDB.dao.LookupDao
+import za.co.xisystems.itis_rrm.data.localDB.dao.LookupOptionDao
+import za.co.xisystems.itis_rrm.data.localDB.dao.PrimaryKeyValueDao
+import za.co.xisystems.itis_rrm.data.localDB.dao.ProjectDao
+import za.co.xisystems.itis_rrm.data.localDB.dao.ProjectItemDao
+import za.co.xisystems.itis_rrm.data.localDB.dao.ProjectSectionDao
+import za.co.xisystems.itis_rrm.data.localDB.dao.SectionItemDao
+import za.co.xisystems.itis_rrm.data.localDB.dao.SectionPointDao
+import za.co.xisystems.itis_rrm.data.localDB.dao.ToDoGroupsDao
+import za.co.xisystems.itis_rrm.data.localDB.dao.UserDao
+import za.co.xisystems.itis_rrm.data.localDB.dao.UserRoleDao
+import za.co.xisystems.itis_rrm.data.localDB.dao.VoItemDao
+import za.co.xisystems.itis_rrm.data.localDB.dao.WorkFlowDao
+import za.co.xisystems.itis_rrm.data.localDB.dao.WorkFlowRouteDao
+import za.co.xisystems.itis_rrm.data.localDB.dao.WorkStepDao
+import za.co.xisystems.itis_rrm.data.localDB.dao.WorkflowsDao
+import za.co.xisystems.itis_rrm.data.localDB.entities.ActivityDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ChildLookupDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ContractDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.InfoClassDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
+import za.co.xisystems.itis_rrm.data.localDB.entities.ItemSectionDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTOTemp
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksPhotoDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimatesPhotoDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasurePhotoDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobSectionDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.LookupDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.LookupOptionDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.PrimaryKeyValueDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectSectionDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.SectionItemDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.SectionPointDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ToDoGroupsDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ToDoListEntityDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.UserRoleDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.VoItemDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.WF_WorkStepDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.WorkFlowDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.WorkFlowRouteDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.WorkFlowsDTO
 import za.co.xisystems.itis_rrm.utils.Converters
 
 /**
@@ -14,28 +77,32 @@ import za.co.xisystems.itis_rrm.utils.Converters
  */
 
 @Database(
-    entities = [JobDTO::class, UserDTO::class , UserRoleDTO::class, ItemDTO::class,
-        ContractDTO::class, VoItemDTO::class, ProjectDTO::class , SectionDTO::class ,PrimaryKeyValueDTO::class
-        , LookupOptionDTO::class ,LookupDTO::class ,EntitiesDTO::class ,ItemSectionDTO::class ,WorkFlowDTO::class
-        , WorkFlowRouteDTO::class ,JobSectionDTO::class ,InfoClassDTO::class ,ActivityDTO::class , ToDoGroupsDTO::class
-        , JobItemEstimatesPhotoDTO::class ,JobItemMeasurePhotoDTO::class ,JobItemEstimateDTO::class ,JobItemMeasureDTO::class
-        , ToDoListEntityDTO::class , ChildLookupDTO::class,JobEstimateWorksDTO::class , JobEstimateWorksPhotoDTO::class
-        ,SectionItemDTO::class
-
-
-// ,SectionItem::class
-
-
-
-
+    entities = [JobDTO::class, UserDTO::class, UserRoleDTO::class,
+        ProjectItemDTO::class, ItemDTOTemp::class, JobDTOTemp::class,
+        ContractDTO::class, VoItemDTO::class, ProjectDTO::class,
+        ProjectSectionDTO::class, PrimaryKeyValueDTO::class, LookupOptionDTO::class,
+        LookupDTO::class, ItemSectionDTO::class, WorkFlowDTO::class,
+        SectionPointDTO::class, WorkFlowRouteDTO::class, JobSectionDTO::class,
+        InfoClassDTO::class, ActivityDTO::class, ToDoGroupsDTO::class,
+        JobItemEstimatesPhotoDTO::class, JobItemMeasurePhotoDTO::class, JobItemEstimateDTO::class,
+        JobItemMeasureDTO::class, ToDoListEntityDTO::class, ChildLookupDTO::class,
+        JobEstimateWorksDTO::class, JobEstimateWorksPhotoDTO::class, SectionItemDTO::class,
+        WorkFlowsDTO::class, WF_WorkStepDTO::class
+        // JobItemMeasureDTOTemp::class,JobItemMeasurePhotoDTOTemp::class,
 
     ],
-    version = 1
+    version = 2
 )
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun getJobDao(): JobDao
+    abstract fun getJobSectionDao(): JobSectionDao
+    abstract fun getJobItemEstimateDao(): JobItemEstimateDao
+    abstract fun getJobItemMeasureDao(): JobItemMeasureDao
+    abstract fun getJobItemEstimatePhotoDao(): JobItemEstimatePhotoDao
+    abstract fun getJobItemMeasurePhotoDao(): JobItemMeasurePhotoDao
+
     abstract fun getUserDao(): UserDao
     abstract fun getUserRoleDao(): UserRoleDao
     abstract fun getContractDao(): ContractDao
@@ -45,31 +112,28 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun getLookupOptionDao(): LookupOptionDao
     abstract fun getLookupDao(): LookupDao
     abstract fun getEntitiesDao(): EntitiesDao
-    abstract fun getItemDao(): ItemDao
+    abstract fun getProjectItemDao(): ProjectItemDao
     abstract fun getItemSectionDao(): ItemSectionDao
-    abstract fun getSectionDao(): SectionDao
+    abstract fun getProjectSectionDao(): ProjectSectionDao
     abstract fun getWorkFlowDao(): WorkFlowDao
     abstract fun getWorkFlowRouteDao(): WorkFlowRouteDao
-    abstract fun getJobSectionDao(): JobSectionDao
+    abstract fun getWorkflowsDao(): WorkflowsDao
     abstract fun getInfoClassDao(): InfoClassDao
     abstract fun getActivityDao(): ActivityDao
     abstract fun getToDoGroupsDao(): ToDoGroupsDao
     abstract fun getEstimateWorkDao(): EstimateWorkDao
+    abstract fun getEstimateWorkPhotoDao(): EstimateWorkPhotoDao
+
     abstract fun getSectionItemDao(): SectionItemDao
 
+    //    abstract fun getJobItemMeasureDao_Temp(): JobItemMeasureDao_Temp
+//    abstract fun getJobItemMeasurePhotoDao_Temp(): JobItemMeasurePhotoDao_Temp
+    abstract fun getJobDaoTemp(): JobDaoTemp
+    abstract fun getItemDaoTemp(): ItemDaoTemp
+    abstract fun getSectionPointDao(): SectionPointDao
+    abstract fun getWorkStepDao(): WorkStepDao
 
-
-
-
-
-//    abstract fun getItemSectionDao(): ItemSectionDao
-//    abstract fun getSectionDao(): SectionDao
-//    abstract fun getWorkFlowDao(): WorkFlowDao
 //    abstract fun getWorkFlowRouteDao(): WorkFlowRouteDao
-
-
-
-
 
     companion object {
 
@@ -83,14 +147,17 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        val MIGRATION_1_2 = object : Migration(1, 2) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE JOB_ITEM_MEASURE ADD COLUMN deleted INT NOT NULL DEFAULT 0")
+            }
+        }
+
         private fun buildDatabase(context: Context) =
             Room.databaseBuilder(
                 context.applicationContext,
                 AppDatabase::class.java,
                 "myRRM_Database.db"
-
-            ).build()
-
-
+            ).addMigrations(MIGRATION_1_2).build()
     }
 }

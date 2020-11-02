@@ -28,5 +28,6 @@ interface UserRoleDao {
     @Query("SELECT * FROM USER_ROLE_TABLE WHERE roleIdentifier = :roleIdentifier")
     fun checkRole(roleIdentifier: String): LiveData<List<UserRoleDTO>>
 
-
+    @Query("DELETE FROM USER_ROLE_TABLE")
+    fun deleteAll()
 }

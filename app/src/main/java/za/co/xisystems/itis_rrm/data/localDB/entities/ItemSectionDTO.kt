@@ -8,10 +8,15 @@ import com.google.gson.annotations.SerializedName
  * Created by Francis Mahlava on 2019/11/26.
  */
 
-@Entity
+const val ITEM_SECTION_TABLE = "ITEM_SECTION_TABLE"
+
+// val JOB_ID = UUID.randomUUID().toString()
+
+@Entity(tableName = ITEM_SECTION_TABLE)
 data class ItemSectionDTO(
-    @PrimaryKey
+
     @SerializedName("SectionId")
+    @PrimaryKey
     val sectionId: String,
     @SerializedName("Direction")
     val direction: String,

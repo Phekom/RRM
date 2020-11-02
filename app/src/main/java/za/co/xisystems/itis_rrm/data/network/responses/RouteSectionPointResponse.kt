@@ -1,6 +1,5 @@
 package za.co.xisystems.itis_rrm.data.network.responses
 
-
 import com.google.gson.annotations.SerializedName
 
 data class RouteSectionPointResponse(
@@ -13,5 +12,8 @@ data class RouteSectionPointResponse(
     @SerializedName("PointLocation")
     val pointLocation: Double,
     @SerializedName("SectionId")
-    val sectionId: Int
+    val sectionId: Int,
+    @SerializedName("BufferLocation")
+    val bufferLocation: String
+
 )

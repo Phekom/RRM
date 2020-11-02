@@ -15,13 +15,27 @@
         android:id="@+id/nav_create"
         android:name="za.co.xisystems.itis_rrm.ui.mainview.create.CreateFragment"
         android:label="@string/menu_create"
-        tools:layout="@layout/fragment_createjob" />
+        tools:layout="@layout/fragment_createjob">
+        <action
+            android:id="@+id/action_nav_create_to_addProjectFragment"
+            app:destination="@+id/addProjectFragment"
+            app:enterAnim="@anim/bounce_250"
+            app:launchSingleTop="false"
+            app:popEnterAnim="@anim/bounce_500"
+            app:popUpTo="@+id/nav_create"
+            app:popUpToInclusive="true" />
+    </fragment>
 
     <fragment
         android:id="@+id/nav_unSubmitted"
         android:name="za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedFragment"
         android:label="@string/menu_unSubmitted"
-        tools:layout="@layout/fragment_unsubmittedjobs" />
+        tools:layout="@layout/fragment_unsubmittedjobs">
+        <action
+            android:id="@+id/action_nav_unSubmitted_to_addProjectFragment"
+            app:destination="@id/addProjectFragment"
+            app:enterAnim="@anim/click" />
+    </fragment>
 
     <fragment
         android:id="@+id/nav_correction"
@@ -33,23 +47,152 @@
         android:id="@+id/nav_work"
         android:name="za.co.xisystems.itis_rrm.ui.mainview.work.WorkFragment"
         android:label="@string/menu_work"
-        tools:layout="@layout/fragment_work" />
+        tools:layout="@layout/fragment_work">
+        <action
+            android:id="@+id/action_nav_work_to_captureWorkFragment"
+            app:destination="@id/captureWorkFragment"
+            app:popUpTo="@+id/nav_work" />
+    </fragment>
 
     <fragment
         android:id="@+id/nav_estMeasure"
         android:name="za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureFragment"
         android:label="@string/menu_estMeasure"
-        tools:layout="@layout/fragment_estmeasure" />
+        tools:layout="@layout/fragment_estmeasure">
+        <action
+            android:id="@+id/action_nav_estMeasure_to_submitMeasureFragment"
+            app:destination="@id/submitMeasureFragment"
+            app:popUpTo="@+id/nav_estMeasure" />
+    </fragment>
 
     <fragment
         android:id="@+id/nav_approveJbs"
         android:name="za.co.xisystems.itis_rrm.ui.mainview.approvejobs.ApproveJobsFragment"
         android:label="@string/menu_approveJbs"
-        tools:layout="@layout/fragment_approvejob" />
+        tools:layout="@layout/fragment_approvejob">
+        <action
+            android:id="@+id/action_nav_approveJbs_to_jobInfoFragment"
+            app:destination="@id/jobInfoFragment"
+            app:popUpTo="@+id/nav_approveJbs" />
+    </fragment>
 
     <fragment
         android:id="@+id/nav_approvMeasure"
         android:name="za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureFragment"
         android:label="@string/menu_approvMeasure"
-        tools:layout="@layout/fragment_approvemeasure" />
+        tools:layout="@layout/fragment_approvemeasure">
+        <action
+            android:id="@+id/action_nav_approvMeasure_to_measureApprovalFragment"
+            app:destination="@id/measureApprovalFragment"
+            app:popUpTo="@+id/nav_approvMeasure" />
+    </fragment>
+    <fragment
+        android:id="@+id/selectItemFragment"
+        android:name="za.co.xisystems.itis_rrm.ui.mainview.create.select_item.SelectItemFragment"
+        android:label="SelectItemFragment">
+        <action
+            android:id="@+id/action_selectItemFragment_to_addProjectFragment"
+            app:destination="@id/addProjectFragment"
+            app:enterAnim="@anim/bounce_250"
+            app:popEnterAnim="@anim/bounce" />
+    </fragment>
+    <fragment
+        android:id="@+id/estimatePhotoFragment"
+        android:name="za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates.EstimatePhotoFragment"
+        android:label="EstimatePhotoFragment">
+        <action
+            android:id="@+id/action_estimatePhotoFragment_to_addProjectFragment"
+            app:destination="@id/addProjectFragment"
+            app:enterAnim="@anim/bounce" />
+        <action
+            android:id="@+id/action_estimatePhotoFragment_to_nav_create"
+            app:destination="@id/nav_create"
+            app:enterAnim="@animator/rotation_collapse_to_expand"
+            app:popUpTo="@+id/nav_create" />
+    </fragment>
+    <fragment
+        android:id="@+id/addProjectFragment"
+        android:name="za.co.xisystems.itis_rrm.ui.mainview.create.add_project_item.AddProjectFragment"
+        android:label="AddProjectFragment">
+        <action
+            android:id="@+id/action_addProjectFragment_to_selectItemFragment"
+            app:destination="@id/selectItemFragment"
+            app:popUpTo="@+id/addProjectFragment" />
+        <action
+            android:id="@+id/action_addProjectFragment_to_nav_create"
+            app:destination="@id/nav_create" />
+        <argument
+            android:name="selecteD"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_addProjectFragment_to_estimatePhotoFragment"
+            app:destination="@id/estimatePhotoFragment"
+            app:enterAnim="@anim/bounce_short"
+            app:launchSingleTop="false"
+            app:popUpTo="@+id/addProjectFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/jobInfoFragment"
+        android:name="za.co.xisystems.itis_rrm.ui.mainview.approvejobs.view_job_info.JobInfoFragment"
+        android:label="fragment_job_info">
+        <action
+            android:id="@+id/action_jobInfoFragment_to_nav_home"
+            app:destination="@id/nav_home"
+            app:popEnterAnim="@animator/opacity_pulse" />
+    </fragment>
+    <fragment
+        android:id="@+id/measureApprovalFragment"
+        android:name="za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.measure_approval.MeasureApprovalFragment"
+        android:label="fragment_measure_approval"
+        tools:layout="@layout/fragment_measure_approval">
+        <action
+            android:id="@+id/action_measureApprovalFragment_to_measureGalleryFragment"
+            app:destination="@id/measureGalleryFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/submitMeasureFragment"
+        android:name="za.co.xisystems.itis_rrm.ui.mainview.estmeasure.submit_measure.SubmitMeasureFragment"
+        android:label="fragment_submit_measure"
+        tools:layout="@layout/fragment_submit_measure">
+        <!--        <action-->
+        <!--                android:id="@+id/action_submitMeasureFragment_to_captureItemMeasurePhotoFragment"-->
+        <!--                app:destination="@id/captureItemMeasurePhotoFragment"-->
+        <!--                app:popUpTo="@+id/submitMeasureFragment" />-->
+        <action
+            android:id="@+id/action_submitMeasureFragment_to_captureItemMeasurePhotoFragment"
+            app:destination="@id/captureItemMeasurePhotoFragment"
+            app:enterAnim="@anim/scale_light"
+            app:popUpTo="@+id/submitMeasureFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/captureWorkFragment"
+        android:name="za.co.xisystems.itis_rrm.ui.mainview.work.capture_work.CaptureWorkFragment"
+        android:label="fragment_capture_work"
+        tools:layout="@layout/fragment_capture_work">
+        <action
+            android:id="@+id/action_captureWorkFragment_to_nav_work"
+            app:destination="@id/nav_work" />
+    </fragment>
+    <fragment
+        android:id="@+id/captureItemMeasurePhotoFragment"
+        android:name="za.co.xisystems.itis_rrm.ui.mainview.estmeasure.submit_measure.CaptureItemMeasurePhotoFragment"
+        android:label="CaptureItemMeasurePhotoFragment">
+        <action
+            android:id="@+id/action_captureItemMeasurePhotoFragment_to_submitMeasureFragment"
+            app:destination="@id/submitMeasureFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/measureGalleryFragment"
+        android:name="za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.measure_approval.MeasureGalleryFragment"
+        android:label="MeasureGalleryFragment">
+        <action
+            android:id="@+id/action_measureGalleryFragment_to_measureApprovalFragment"
+            app:destination="@id/measureApprovalFragment" />
+    </fragment>
+    <!--    <fragment-->
+    <!--            android:id="@+id/captureItemMeasurePhotoFragment"-->
+    <!--            android:name="za.co.xisystems.itis_rrm.ui.mainview.estmeasure.submit_measure.CaptureItemMeasurePhotoFragment"-->
+    <!--            android:label="fragment_capture_item_measure_photo"-->
+    <!--            tools:layout="@layout/fragment_capture_item_measure_photo" />-->
 </navigation>

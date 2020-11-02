@@ -15,22 +15,28 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.PrimaryKeyValueDTO
 interface PrimaryKeyValueDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertPrimaryKeyValue( primaryKeyValue : List<PrimaryKeyValueDTO> )
+    suspend fun insertPrimaryKeyValues(primaryKeyValue: PrimaryKeyValueDTO)
+
+    @Query("INSERT INTO PRIMARY_KEY_VALUE_TABLE (primary_key, valueString, trackRouteId, activityId) VALUES (:primary_key, :value, :trackRouteId, :activityId)")
+    fun insertPrimaryKeyValue(
+        primary_key: String?,
+        value: String?,
+        trackRouteId: String?,
+        activityId: Int
+    )
 
     @Query("SELECT * FROM PRIMARY_KEY_VALUE_TABLE ")
-    fun getAllPrimaryKeyValue() : LiveData<List<PrimaryKeyValueDTO>>
+    fun getAllPrimaryKeyValue(): LiveData<List<PrimaryKeyValueDTO>>
 
     @Query("SELECT * FROM PRIMARY_KEY_VALUE_TABLE WHERE trackRouteId = :trackRouteId")
     fun checkPrimaryKeyValuesExistTrackRouteId(trackRouteId: String): Boolean
 
     @Query("SELECT * FROM PRIMARY_KEY_VALUE_TABLE WHERE trackRouteId = :trackRouteId")
-    fun getPrimaryKeyValuesFromTrackRouteId(trackRouteId: String): LiveData<PrimaryKeyValueDTO>
+    fun getPrimaryKeyValuesFromTrackRouteId(trackRouteId: String): PrimaryKeyValueDTO
 
-    @Query("SELECT * FROM PRIMARY_KEY_VALUE_TABLE WHERE value = :jobId")
+    @Query("SELECT * FROM PRIMARY_KEY_VALUE_TABLE WHERE valueString = :jobId")
     fun getPrimaryKeyValueForJobId(jobId: String): LiveData<PrimaryKeyValueDTO>
-
 
     @Query("DELETE FROM PRIMARY_KEY_VALUE_TABLE")
     fun deleteAll()
-
 }

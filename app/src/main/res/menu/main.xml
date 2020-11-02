@@ -1,15 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
+
     <item
+        android:icon="@drawable/ic_search_white_24dp"
+            android:id="@+id/action_search"
+        android:title="@string/action_search"
+            app:showAsAction="always"
+            app:actionViewClass="androidx.appcompat.widget.SearchView"/>
+
+    <item
+        android:icon="@drawable/ic_settings_black"
         android:id="@+id/action_settings"
         android:orderInCategory="200"
         android:title="@string/action_settings"
-        app:showAsAction="collapseActionView" />
+        app:showAsAction="ifRoom" />
 
     <item
-        android:id="@+id/logout"
+        android:icon="@drawable/ic_exit_to_app_black"
+        android:id="@+id/action_logout"
         android:orderInCategory="300"
         android:title="@string/logout"
-        app:showAsAction="collapseActionView" />
+        app:showAsAction="ifRoom" />
 </menu>

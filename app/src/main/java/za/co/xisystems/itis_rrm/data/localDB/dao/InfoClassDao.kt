@@ -3,6 +3,7 @@ package za.co.xisystems.itis_rrm.data.localDB.dao
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
+import androidx.room.Query
 import za.co.xisystems.itis_rrm.data.localDB.entities.InfoClassDTO
 
 /**
@@ -11,29 +12,13 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.InfoClassDTO
 
 @Dao
 interface InfoClassDao {
-
+    //
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertEntities( intities : List<InfoClassDTO> )
+    suspend fun insertInfoClasses(intities: InfoClassDTO)
 
-//    @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE itemId = :itemId")
-//    fun checkItemExistsItemId(itemId: String): LiveData<List<ItemDTO>>
-//
-//    @Query("SELECT * FROM PROJECT_ITEM_TABLE ")
-//    fun getAllItemsForAllProjects() : LiveData<List<ItemDTO>>
-//
-//
-//    @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE itemId = :itemId")
-//    fun getItemForItemId(itemId: String): LiveData<ItemDTO>
-//
-//
-//    @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE projectId = :projectId")
-//    fun getAllItemsForProjectId(projectId: String): LiveData<List<ItemDTO>>
-//
-//
-//    @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE sectionItemId = :sectionItem AND projectId = :projectId")
-//    fun getAllItemsForSectionItem(sectionItem : String, projectId : String ): LiveData<ArrayList<ItemDTO>>
-//
-//
-//    @Query("DELETE FROM PROJECT_ITEM_TABLE")
-//    fun deleteAll()
+    @Query("INSERT INTO INFO_CLASS_TABLE (sLinkId, sInfoClassId,  wfId) VALUES ( :sLinkId, :sInfoClassId,  :wfId)")
+    fun insertInfoClass(sLinkId: String, sInfoClassId: String?, wfId: Int?)
+
+    @Query("DELETE FROM INFO_CLASS_TABLE")
+    fun deleteAll()
 }

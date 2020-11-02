@@ -5,28 +5,27 @@ import android.content.SharedPreferences
 import androidx.preference.PreferenceManager
 
 private const val KEY_SAVED_AT = "key_saved_at"
+
 /**
  * Created by Francis Mahlava on 2019/10/18.
  */
-class PreferenceProvider(
+open class PreferenceProvider(
     context: Context
 ) {
 
-    private val appContext = context.applicationContext
+    val appContext: Context = context.applicationContext
 
-    private val preference: SharedPreferences
+    protected val preferences: SharedPreferences
         get() = PreferenceManager.getDefaultSharedPreferences(appContext)
 
-
     fun savelastSavedAt(savedAt: String) {
-        preference.edit().putString(
+        preferences.edit().putString(
             KEY_SAVED_AT,
             savedAt
         ).apply()
     }
 
     fun getLastSavedAt(): String? {
-        return preference.getString(KEY_SAVED_AT, null)
+        return preferences.getString(KEY_SAVED_AT, null)
     }
-
 }

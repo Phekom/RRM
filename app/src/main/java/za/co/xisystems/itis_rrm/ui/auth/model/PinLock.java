@@ -3,7 +3,6 @@ package za.co.xisystems.itis_rrm.ui.auth.model;
 
 import androidx.databinding.BaseObservable;
 import androidx.databinding.Bindable;
-import za.co.xisystems.itis_rrm.BR;
 
 public class PinLock extends BaseObservable {
 
@@ -17,7 +16,7 @@ public class PinLock extends BaseObservable {
     }
 
     public PinLock setLockNumber(String lockNumber) {
-        this.lockNumber = lockNumber;
+        PinLock.lockNumber = lockNumber;
         notifyPropertyChanged(za.co.xisystems.itis_rrm.BR.lockNumber);
         return this;
     }
@@ -29,7 +28,7 @@ public class PinLock extends BaseObservable {
 
     public PinLock setValid(Boolean valid) {
         isValid = valid;
-        notifyPropertyChanged(BR.valid);
+//        notifyPropertyChanged(BR.valid);
         return this;
     }
 
@@ -40,7 +39,7 @@ public class PinLock extends BaseObservable {
 
     public PinLock setRegistered(Boolean registered) {
         isRegistered = registered;
-        notifyPropertyChanged(BR.registered);
+//        notifyPropertyChanged(BR.registered);
         return this;
     }
 }

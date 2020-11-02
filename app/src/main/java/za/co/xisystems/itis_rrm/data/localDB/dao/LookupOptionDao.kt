@@ -2,8 +2,6 @@ package za.co.xisystems.itis_rrm.data.localDB.dao
 
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import za.co.xisystems.itis_rrm.data.localDB.entities.LookupOptionDTO
 
@@ -13,27 +11,38 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.LookupOptionDTO
 
 @Dao
 interface LookupOptionDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertLookupOptions( lookupOptions : List<LookupOptionDTO>)
+//    @Insert(onConflict = OnConflictStrategy.REPLACE)
+//    suspend fun insertLookupOptions( lookupOptions : List<LookupOptionDTO>)
 
     @Query("SELECT * FROM LOOKUP_OPTION_TABLE WHERE valueMember = :valueMember AND lookupName =:lookupName")
-    fun checkLookupOptionExists(valueMember: String, lookupName: String): Boolean
+    fun checkLookupOptionExists(valueMember: String?, lookupName: String): Boolean
+
+    @Query("INSERT INTO LOOKUP_OPTION_TABLE (valueMember,displayMember,contextMember,lookupName) VALUES (:valueMember,:displayMember,:contextMember,:lookupName)")
+    fun insertLookupOption(
+        valueMember: String?,
+        displayMember: String?,
+        contextMember: String?,
+        lookupName: String
+    )
+
+//    @Query("INSERT INTO LOOKUP_OPTION_TABLE (lId,valueMember,displayMember,contextMember,lookupName) VALUES (:lId,:valueMember,:displayMember,:contextMember,:lookupName)")
+//    fun insertLookupOption(lId: Int, valueMember: String?, displayMember: String?,contextMember: String?,  lookupName: String)
 
 //    @Query("SELECT * FROM LOOKUP_OPTION_TABLE ")
-//    fun getWorkflow() : LiveData<ArrayList<LookupOptionDTO>>
+//    fun getWorkflow() : LiveData<List<LookupOptionDTO>>
 //
 //
 //    @Query("SELECT * FROM LOOKUP_OPTION_TABLE WHERE actId = :currentActId")
 //    fun getNextRouteId(currentActId: Int): LiveData<Long>
 
-
     @Query("SELECT * FROM LOOKUP_OPTION_TABLE WHERE valueMember = :valueMember AND lookupName =:lookupName")
-    fun getLookupOptionsForLookupNameAndValueMember(valueMember: Int, lookupName: String): LiveData<LookupOptionDTO>
-
+    fun getLookupOptionsForLookupNameAndValueMember(
+        valueMember: Int,
+        lookupName: String
+    ): LiveData<LookupOptionDTO>
 
     @Query("SELECT * FROM LOOKUP_OPTION_TABLE WHERE lookupName = :lookupName")
     fun getAllLookupOptionsForLookupName(lookupName: String): LiveData<List<LookupOptionDTO>>
-
 
     @Query("DELETE FROM LOOKUP_OPTION_TABLE")
     fun deleteAll()

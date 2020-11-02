@@ -3,6 +3,7 @@ package za.co.xisystems.itis_rrm.data.localDB.entities
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
+import java.io.Serializable
 
 /**
  * Created by Francis Mahlava on 2019/11/26.
@@ -12,21 +13,22 @@ const val JOB_SECTION_TABLE = "JOB_SECTION_TABLE"
 
 @Entity(tableName = JOB_SECTION_TABLE)
 class JobSectionDTO(
-    @SerializedName("EndKm")
-    val endKm: Double,
-    @SerializedName("JobId")
-    val jobId: String,
     @SerializedName("JobSectionId")
     @PrimaryKey
-    val jobSectionId: String,
-    @SerializedName("PrjJobDto")
-    val prjJobDto: List<JobDTO>?,
+    var jobSectionId: String,
     @SerializedName("ProjectSectionId")
-    val projectSectionId: String,
+    var projectSectionId: String?,
+    @SerializedName("JobId")
+    var jobId: String?,
+    @SerializedName("StartKm")
+    val startKm: Double,
+    @SerializedName("EndKm")
+    val endKm: Double,
+    @SerializedName("PrjJobDto")
+    val job: JobDTO? = null,
     @SerializedName("RecordSynchStateId")
     val recordSynchStateId: Int,
     @SerializedName("RecordVersion")
-    val recordVersion: Int,
-    @SerializedName("StartKm")
-    val startKm: Double
-)
+    val recordVersion: Int
+
+) : Serializable

@@ -1,18 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<!--<layout-->
-<!--    xmlns:android="http://schemas.android.com/apk/res/android"-->
-<!--    xmlns:app="http://schemas.android.com/apk/res-auto"-->
-<!--    xmlns:tools="http://schemas.android.com/tools">-->
-
-<!--    <data>-->
-
-<!--        <variable-->
-<!--            name="viewmodel"-->
-<!--            type="za.co.xisystems.itis_rrm.ui.mainview.home.HomeViewModel" />-->
-
-<!--    </data>-->
-
     <androidx.constraintlayout.widget.ConstraintLayout
             xmlns:android="http://schemas.android.com/apk/res/android"
             xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -62,20 +49,21 @@
                         android:layout_height="32dp"
                         android:layout_gravity="center"
                         android:layout_margin="@dimen/xsmall"
+                        android:contentDescription="TODO"
                         android:src="@drawable/user" />
                     <TextView
                             android:id="@+id/welcome"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Welcome "
-                        android:textSize="16dp"
+                        android:textSize="16sp"
                         android:textStyle="bold" />
                     <TextView
                         android:id="@+id/username"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="UserName"
-                        android:textSize="16dp"
+                        android:textSize="16sp"
                         android:textStyle="bold" />
 
                 </LinearLayout>
@@ -102,7 +90,7 @@
                         android:layout_marginTop="18dp"
                         android:gravity="center"
                         android:text="No information."
-                        android:textSize="14dp"
+                        android:textSize="14sp"
                         android:textStyle="bold" />
 
                 </RelativeLayout>
@@ -113,13 +101,13 @@
                     android:background="#fff"
                     android:orientation="vertical">
 
-                    <ImageView
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:layout_margin="10dp"
-                        android:background="#F5F5F5"
-                        android:gravity="left"
-                        android:src="@drawable/database" />
+<!--                    <ImageView-->
+<!--                        android:layout_width="32dp"-->
+<!--                        android:layout_height="32dp"-->
+<!--                        android:layout_margin="10dp"-->
+<!--                        android:background="#F5F5F5"-->
+<!--                        android:gravity="left"-->
+<!--                        android:src="@drawable/database" />-->
 
                     <TextView
                         android:id="@+id/connectedTo"
@@ -128,7 +116,7 @@
                         android:layout_marginTop="18dp"
                         android:gravity="center"
                         android:text="No information."
-                        android:textSize="14dp"
+                        android:textSize="14sp"
                         android:textStyle="bold" />
 
                 </RelativeLayout>
@@ -166,7 +154,7 @@
                 android:id="@+id/serverTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
                 android:layout_alignParentBottom="true"
                 android:layout_margin="@dimen/small"
                 android:alpha="0.5"
@@ -178,7 +166,7 @@
                 android:id="@+id/imageView7"
                 android:layout_width="100dp"
                 android:layout_height="92dp"
-                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true"
                 android:layout_alignParentBottom="true"
                 android:layout_margin="@dimen/small"
                 android:alpha="0.3"
@@ -197,13 +185,61 @@
             <!--            android:textSize="20sp" />-->
         </RelativeLayout>
 
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            android:id="@+id/items_swipe_to_refresh"
+            android:layout_width="wrap_content"
+            android:layout_height="0px"
+            android:layout_weight="1"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
+        <androidx.recyclerview.widget.RecyclerView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+    <androidx.constraintlayout.widget.Group
+        android:id="@+id/group2_loading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:constraint_referenced_ids="data2_loading,textView_loading"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ProgressBar
+            android:id="@+id/data2_loading"
+            android:layout_width="46dp"
+            android:layout_height="51dp"
+            android:layout_marginTop="350dp"
+            android:layout_marginBottom="100dp"
+            android:visibility="visible"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.3" />
+    <TextView
+            android:id="@+id/textView_loading"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
+            android:text="@string/data_loading_please_wait"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/data2_loading"
+            app:layout_constraintVertical_bias="0.0" />
     </androidx.constraintlayout.widget.ConstraintLayout>
-
-
-<!--</layout>-->
-
-
 
 
 

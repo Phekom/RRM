@@ -3,115 +3,265 @@ package za.co.xisystems.itis_rrm.data.localDB.entities
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
-import java.util.*
+import java.io.Serializable
+import java.util.ArrayList
 
 /**
  * Created by Francis Mahlava on 2019/11/21.
  */
 
 const val JOB_TABLE = "JOB_TABLE"
-//val JOB_ID = UUID.randomUUID().toString()
+// val JOB_ID = UUID.randomUUID().toString()
 
 @Entity(tableName = JOB_TABLE)
 class JobDTO(
-    @SerializedName("JobId")
-    @PrimaryKey(autoGenerate = false)
-    val jobId: String = UUID.randomUUID().toString(),
 
     @SerializedName("ActId")
-    val actId: Int,
-    @SerializedName("ApprovalDate")
-    val approvalDate:String = Date().toString(),
+    val ActId: Int,
+    @SerializedName("JobId")
+    @PrimaryKey
+    var JobId: String,
     @SerializedName("ContractVoId")
-    val contractVoId: String,
-    @SerializedName("ContractorId")
-    val contractorId: Int,
-    @SerializedName("Cpa")
-    val cpa: Int,
-    @SerializedName("DayWork")
-    val dayWork: Int,
-    @SerializedName("Descr")
-    val descr: String,
-    @SerializedName("DueDate")
-    val dueDate:  String = Date().toString(),
+    var ContractVoId: String?,
+    @SerializedName("ProjectId")
+    var ProjectId: String?,
+
+    var SectionId: String?,
+    @SerializedName("StartKm")
+    var StartKm: Double,
     @SerializedName("EndKm")
-    val endKm: Double,
-    @SerializedName("EngineerId")
-    val engineerId: Int,
-    @SerializedName("EntireRoute")
-    val entireRoute: Int,
-    @SerializedName("IsExtraWork")
-    val isExtraWork: Int,
-    @SerializedName("IssueDate")
-    val issueDate: String = Date().toString(),
+    var EndKm: Double,
+    @SerializedName("Descr")
+    var Descr: String?,
     @SerializedName("JiNo")
-    val jiNo: String,
+    val JiNo: String?,
+    @SerializedName("UserId")
+    val UserId: Int,
+    @SerializedName("TrackRouteId")
+    var TrackRouteId: String?,
+    @SerializedName("Section")
+    val Section: String?,
+
+    @SerializedName("Cpa")
+    val Cpa: Int,
+    @SerializedName("DayWork")
+    val DayWork: Int,
+
+    @SerializedName("ContractorId")
+    val ContractorId: Int,
+    @SerializedName("M9100")
+    val M9100: Int,
+
+    @SerializedName("IssueDate")
+    var IssueDate: String?,
+    @SerializedName("StartDate")
+    var StartDate: String?,
+    @SerializedName("DueDate")
+    var DueDate: String?,
+    @SerializedName("ApprovalDate")
+    var ApprovalDate: String?,
+
+//    var dateissue: String? = Date().toString(),
+//
+//    var datestart: String? = Date().toString(),
+//
+//    var datedue:  String? = Date().toString(),
+//    var dateApproval:String? = Date().toString(),
+
+    @SerializedName("MobileJobItemEstimates")
+    var JobItemEstimates: ArrayList<JobItemEstimateDTO>?,
+    @SerializedName("MobileJobItemMeasures")
+    var JobItemMeasures: ArrayList<JobItemMeasureDTO>?,
+    @SerializedName("MobileJobSections")
+    var JobSections: ArrayList<JobSectionDTO>?,
+    @SerializedName("PerfitemGroupId")
+    var PerfitemGroupId: String?,
+    @SerializedName("RecordVersion")
+    val RecordVersion: Int,
+    @SerializedName("Remarks")
+    val Remarks: String?,
+    @SerializedName("Route")
+    var Route: String?,
+    @SerializedName("RrmJiNo")
+    val RrmJiNo: String?,
+
+    @SerializedName("EngineerId")
+    val EngineerId: Int,
+    @SerializedName("EntireRoute")
+    val EntireRoute: Int,
+    @SerializedName("IsExtraWork")
+    val IsExtraWork: Int,
+
     @SerializedName("JobCategoryId")
-    val jobCategoryId: Int,
+    val JobCategoryId: Int,
     @SerializedName("JobDirectionId")
-    val jobDirectionId: Int,
+    val JobDirectionId: Int,
 
     @SerializedName("JobPositionId")
-    val jobPositionId: Int,
+    val JobPositionId: Int,
     @SerializedName("JobStatusId")
-    val jobStatusId: Int,
-    @SerializedName("M9100")
-    val m9100: Int,
-    @SerializedName("MobileJobItemEstimates")
-    val jobItemEstimates: List<JobItemEstimateDTO>,
-    @SerializedName("MobileJobItemMeasures")
-    val jobItemMeasures: List<JobItemMeasureDTO>,
-    @SerializedName("MobileJobSections")
-    val jobSections: List<JobSectionDTO>,
-    @SerializedName("PerfitemGroupId")
-    val perfitemGroupId: String,
-    @SerializedName("ProjectId")
-    val projectId: String,
+    val JobStatusId: Int,
+
     @SerializedName("ProjectVoId")
-    val projectVoId: String,
+    var ProjectVoId: String?,
     @SerializedName("QtyUpdateAllowed")
-    val qtyUpdateAllowed: Int,
+    val QtyUpdateAllowed: Int,
     @SerializedName("RecordSynchStateId")
-    val recordSynchStateId: Int,
-    @SerializedName("RecordVersion")
-    val recordVersion: Int,
-    @SerializedName("Remarks")
-    val remarks: String,
-    @SerializedName("Route")
-    val route: String,
-    @SerializedName("RrmJiNo")
-    val rrmJiNo: String,
-    @SerializedName("Section")
-    val section: String,
-    @SerializedName("StartDate")
-    val startDate: String = Date().toString(),
-    @SerializedName("StartKm")
-    val startKm: Double,
-    @SerializedName("TrackRouteId")
-    val trackRouteId: String,
-    @SerializedName("UserId")
-    val userId: Int,
+    val RecordSynchStateId: Int,
+
     @SerializedName("VoId")
-    val voId: String,
+    var VoId: String?,
     @SerializedName("WorkCompleteDate")
-    val workCompleteDate: String,
+    val WorkCompleteDate: String?,
     @SerializedName("WorkStartDate")
-    val workStartDate: String,
+    val WorkStartDate: String?,
 
+    var ESTIMATES_ACT_ID: Int?,
 
-    val activityId: Int,
+    var MEASURE_ACT_ID: Int?,
 
-    val is_synced: String?,
+    var WORKS_ACT_ID: Int,
 
-    var ROWID: String?
+    val sortString: String?,
 
+    val ActivityId: Int,
 
-) {
-//    constructor(
-//        StartDate = Date()
-//                IssueDate = Date ())
+    val Is_synced: String?
 
+//    @SerializedName("JobId")
+//    @PrimaryKey
+//    var JobId: String,
+//    @SerializedName("ProjectId")
+//    var ProjectId: String?,
+//    @SerializedName("JiNo")
+//    val JiNo: String?,
+//    @SerializedName("UserId")
+//    val UserId: Int,
+//    @SerializedName("ActId")
+//    val ActId: Int,
+//    @SerializedName("Descr")
+//    var Descr: String?,
+//    @SerializedName("IssueDate")
+//    var IssueDate: String? = Date().toString(),
+//    @SerializedName("StartDate")
+//    var StartDate: String? = Date().toString(),
+//    @SerializedName("DueDate")
+//    var DueDate:  String? = Date().toString(),
+//    @SerializedName("TrackRouteId")
+//    var TrackRouteId: String?,
+//    @SerializedName("StartKm")
+//    val StartKm: Double,
+//    @SerializedName("EndKm")
+//    val EndKm: Double,
+//    @SerializedName("ContractVoId")
+//    var ContractVoId: String?,
+//
+//    @SerializedName("ApprovalDate")
+//    val ApprovalDate:String? = Date().toString(),
+//    @SerializedName("ContractorId")
+//    val ContractorId: Int,
+//    @SerializedName("M9100")
+//    val M9100: Int,
+//    var ESTIMATES_ACT_ID: Int?,
+//
+//    var MEASURE_ACT_ID: Int?,
+//
+//    var WORKS_ACT_ID: Int?,
+//    @SerializedName("MobileJobItemEstimates")
+//    var JobItemEstimates: ArrayList<JobItemEstimateDTO>,
+//    @SerializedName("MobileJobItemMeasures")
+//    var JobItemMeasures: ArrayList<JobItemMeasureDTO>,
+//    @SerializedName("MobileJobSections")
+//    var JobSections: ArrayList<JobSectionDTO>,
+//    @SerializedName("PerfitemGroupId")
+//    val PerfitemGroupId: String?,
+//    @SerializedName("RecordVersion")
+//    val RecordVersion: Int,
+//    @SerializedName("Remarks")
+//    val Remarks: String?,
+//    @SerializedName("Route")
+//    var Route: String?,
+//    @SerializedName("RrmJiNo")
+//    val RrmJiNo: String?,
+//    @SerializedName("Section")
+//    val Section: String?,
+//
+//    @SerializedName("Cpa")
+//    val Cpa: Int,
+//    @SerializedName("DayWork")
+//    val DayWork: Int?,
+//
+//    @SerializedName("EngineerId")
+//    val EngineerId: Int,
+//    @SerializedName("EntireRoute")
+//    val EntireRoute: Int,
+//    @SerializedName("IsExtraWork")
+//    val IsExtraWork: Int,
+//
+//    @SerializedName("JobCategoryId")
+//    val JobCategoryId: Int,
+//    @SerializedName("JobDirectionId")
+//    val JobDirectionId: Int,
+//
+//    @SerializedName("JobPositionId")
+//    val JobPositionId: Int,
+//    @SerializedName("JobStatusId")
+//    val JobStatusId: Int,
+//
+//
+//    @SerializedName("ProjectVoId")
+//    val ProjectVoId: String?,
+//    @SerializedName("QtyUpdateAllowed")
+//    val QtyUpdateAllowed: Int,
+//    @SerializedName("RecordSynchStateId")
+//    val RecordSynchStateId: Int,
+//
+//    @SerializedName("VoId")
+//    val VoId: String?,
+//    @SerializedName("WorkCompleteDate")
+//    val WorkCompleteDate: String?,
+//    @SerializedName("WorkStartDate")
+//    val WorkStartDate: String?,
+//
 
-//    val jobId : String? =
+//    var ESTIMATES_ACT_ID: Int?
 
+) : Serializable {
+
+    fun addOrUpdateJobItemEstimate(newEstimate: JobItemEstimateDTO) {
+        val x = getJobEstimateIndexByItemId(newEstimate.projectItemId)
+        if (x < 0) JobItemEstimates?.add(newEstimate) else JobItemEstimates?.set(
+            x,
+            newEstimate
+        )
+    }
+
+    fun jobEstimateExist(itemId: String?): Boolean {
+        return getJobEstimateIndexByItemId(itemId) > -1
+    }
+
+    fun getJobEstimateIndexByItemId(itemId: String?): Int {
+        if (itemId != null) for (i in JobItemEstimates!!.indices) {
+            val currEstimate: JobItemEstimateDTO = JobItemEstimates?.get(i)!!
+            if (currEstimate.projectItemId != null) if (currEstimate.projectItemId.equals(
+                    itemId
+                )
+            ) {
+                return i
+            }
+        }
+        return -1
+    }
+
+    fun removeJobEstimateByItemId(itemId: String?): JobItemEstimateDTO? {
+        val x = getJobEstimateIndexByItemId(itemId)
+        return if (x > -1) {
+            JobItemEstimates?.removeAt(x)
+        } else null
+    }
+
+    fun getJobEstimateByItemId(itemId: String?): JobItemEstimateDTO? {
+        val x = getJobEstimateIndexByItemId(itemId)
+        return if (x < 0) null else JobItemEstimates?.get(x)
+    }
 }

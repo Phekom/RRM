@@ -2,274 +2,298 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "2509f56b6747da406eac5527afc2996e",
+    "identityHash": "39e728d7014488f70b6cf3912444ae4c",
     "entities": [
       {
         "tableName": "JOB_TABLE",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`jobId` TEXT NOT NULL, `actId` INTEGER NOT NULL, `approvalDate` TEXT NOT NULL, `contractVoId` TEXT NOT NULL, `contractorId` INTEGER NOT NULL, `cpa` INTEGER NOT NULL, `dayWork` INTEGER NOT NULL, `descr` TEXT NOT NULL, `dueDate` TEXT NOT NULL, `endKm` REAL NOT NULL, `engineerId` INTEGER NOT NULL, `entireRoute` INTEGER NOT NULL, `isExtraWork` INTEGER NOT NULL, `issueDate` TEXT NOT NULL, `jiNo` TEXT NOT NULL, `jobCategoryId` INTEGER NOT NULL, `jobDirectionId` INTEGER NOT NULL, `jobPositionId` INTEGER NOT NULL, `jobStatusId` INTEGER NOT NULL, `m9100` INTEGER NOT NULL, `jobItemEstimates` TEXT NOT NULL, `jobItemMeasures` TEXT NOT NULL, `jobSections` TEXT NOT NULL, `perfitemGroupId` TEXT NOT NULL, `projectId` TEXT NOT NULL, `projectVoId` TEXT NOT NULL, `qtyUpdateAllowed` INTEGER NOT NULL, `recordSynchStateId` INTEGER NOT NULL, `recordVersion` INTEGER NOT NULL, `remarks` TEXT NOT NULL, `route` TEXT NOT NULL, `rrmJiNo` TEXT NOT NULL, `section` TEXT NOT NULL, `startDate` TEXT NOT NULL, `startKm` REAL NOT NULL, `trackRouteId` TEXT NOT NULL, `userId` INTEGER NOT NULL, `voId` TEXT NOT NULL, `workCompleteDate` TEXT NOT NULL, `workStartDate` TEXT NOT NULL, `activityId` INTEGER NOT NULL, `is_synced` TEXT, `ROWID` TEXT, PRIMARY KEY(`jobId`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`ActId` INTEGER NOT NULL, `JobId` TEXT NOT NULL, `ContractVoId` TEXT, `ProjectId` TEXT, `SectionId` TEXT, `StartKm` REAL NOT NULL, `EndKm` REAL NOT NULL, `Descr` TEXT, `JiNo` TEXT, `UserId` INTEGER NOT NULL, `TrackRouteId` TEXT, `Section` TEXT, `Cpa` INTEGER NOT NULL, `DayWork` INTEGER NOT NULL, `ContractorId` INTEGER NOT NULL, `M9100` INTEGER NOT NULL, `IssueDate` TEXT, `StartDate` TEXT, `DueDate` TEXT, `ApprovalDate` TEXT, `JobItemEstimates` TEXT, `JobItemMeasures` TEXT, `JobSections` TEXT, `PerfitemGroupId` TEXT, `RecordVersion` INTEGER NOT NULL, `Remarks` TEXT, `Route` TEXT, `RrmJiNo` TEXT, `EngineerId` INTEGER NOT NULL, `EntireRoute` INTEGER NOT NULL, `IsExtraWork` INTEGER NOT NULL, `JobCategoryId` INTEGER NOT NULL, `JobDirectionId` INTEGER NOT NULL, `JobPositionId` INTEGER NOT NULL, `JobStatusId` INTEGER NOT NULL, `ProjectVoId` TEXT, `QtyUpdateAllowed` INTEGER NOT NULL, `RecordSynchStateId` INTEGER NOT NULL, `VoId` TEXT, `WorkCompleteDate` TEXT, `WorkStartDate` TEXT, `ESTIMATES_ACT_ID` INTEGER, `MEASURE_ACT_ID` INTEGER, `WORKS_ACT_ID` INTEGER NOT NULL, `sortString` TEXT, `ActivityId` INTEGER NOT NULL, `Is_synced` TEXT, PRIMARY KEY(`JobId`))",
         "fields": [
           {
-            "fieldPath": "jobId",
-            "columnName": "jobId",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "actId",
-            "columnName": "actId",
+            "fieldPath": "ActId",
+            "columnName": "ActId",
             "affinity": "INTEGER",
             "notNull": true
           },
           {
-            "fieldPath": "approvalDate",
-            "columnName": "approvalDate",
+            "fieldPath": "JobId",
+            "columnName": "JobId",
             "affinity": "TEXT",
             "notNull": true
           },
           {
-            "fieldPath": "contractVoId",
-            "columnName": "contractVoId",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "contractorId",
-            "columnName": "contractorId",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "cpa",
-            "columnName": "cpa",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "dayWork",
-            "columnName": "dayWork",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "descr",
-            "columnName": "descr",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "dueDate",
-            "columnName": "dueDate",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "endKm",
-            "columnName": "endKm",
-            "affinity": "REAL",
-            "notNull": true
-          },
-          {
-            "fieldPath": "engineerId",
-            "columnName": "engineerId",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "entireRoute",
-            "columnName": "entireRoute",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "isExtraWork",
-            "columnName": "isExtraWork",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "issueDate",
-            "columnName": "issueDate",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "jiNo",
-            "columnName": "jiNo",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "jobCategoryId",
-            "columnName": "jobCategoryId",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "jobDirectionId",
-            "columnName": "jobDirectionId",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "jobPositionId",
-            "columnName": "jobPositionId",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "jobStatusId",
-            "columnName": "jobStatusId",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "m9100",
-            "columnName": "m9100",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "jobItemEstimates",
-            "columnName": "jobItemEstimates",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "jobItemMeasures",
-            "columnName": "jobItemMeasures",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "jobSections",
-            "columnName": "jobSections",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "perfitemGroupId",
-            "columnName": "perfitemGroupId",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "projectId",
-            "columnName": "projectId",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "projectVoId",
-            "columnName": "projectVoId",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "qtyUpdateAllowed",
-            "columnName": "qtyUpdateAllowed",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "recordSynchStateId",
-            "columnName": "recordSynchStateId",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "recordVersion",
-            "columnName": "recordVersion",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "remarks",
-            "columnName": "remarks",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "route",
-            "columnName": "route",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "rrmJiNo",
-            "columnName": "rrmJiNo",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "section",
-            "columnName": "section",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "startDate",
-            "columnName": "startDate",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "startKm",
-            "columnName": "startKm",
-            "affinity": "REAL",
-            "notNull": true
-          },
-          {
-            "fieldPath": "trackRouteId",
-            "columnName": "trackRouteId",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "userId",
-            "columnName": "userId",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "voId",
-            "columnName": "voId",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "workCompleteDate",
-            "columnName": "workCompleteDate",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "workStartDate",
-            "columnName": "workStartDate",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "activityId",
-            "columnName": "activityId",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "is_synced",
-            "columnName": "is_synced",
+            "fieldPath": "ContractVoId",
+            "columnName": "ContractVoId",
             "affinity": "TEXT",
             "notNull": false
           },
           {
-            "fieldPath": "ROWID",
-            "columnName": "ROWID",
+            "fieldPath": "ProjectId",
+            "columnName": "ProjectId",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "SectionId",
+            "columnName": "SectionId",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "StartKm",
+            "columnName": "StartKm",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "EndKm",
+            "columnName": "EndKm",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "Descr",
+            "columnName": "Descr",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "JiNo",
+            "columnName": "JiNo",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "UserId",
+            "columnName": "UserId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "TrackRouteId",
+            "columnName": "TrackRouteId",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "Section",
+            "columnName": "Section",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "Cpa",
+            "columnName": "Cpa",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "DayWork",
+            "columnName": "DayWork",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ContractorId",
+            "columnName": "ContractorId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "M9100",
+            "columnName": "M9100",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "IssueDate",
+            "columnName": "IssueDate",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "StartDate",
+            "columnName": "StartDate",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "DueDate",
+            "columnName": "DueDate",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "ApprovalDate",
+            "columnName": "ApprovalDate",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "JobItemEstimates",
+            "columnName": "JobItemEstimates",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "JobItemMeasures",
+            "columnName": "JobItemMeasures",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "JobSections",
+            "columnName": "JobSections",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "PerfitemGroupId",
+            "columnName": "PerfitemGroupId",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "RecordVersion",
+            "columnName": "RecordVersion",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "Remarks",
+            "columnName": "Remarks",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "Route",
+            "columnName": "Route",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "RrmJiNo",
+            "columnName": "RrmJiNo",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "EngineerId",
+            "columnName": "EngineerId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "EntireRoute",
+            "columnName": "EntireRoute",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "IsExtraWork",
+            "columnName": "IsExtraWork",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "JobCategoryId",
+            "columnName": "JobCategoryId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "JobDirectionId",
+            "columnName": "JobDirectionId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "JobPositionId",
+            "columnName": "JobPositionId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "JobStatusId",
+            "columnName": "JobStatusId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ProjectVoId",
+            "columnName": "ProjectVoId",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "QtyUpdateAllowed",
+            "columnName": "QtyUpdateAllowed",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "RecordSynchStateId",
+            "columnName": "RecordSynchStateId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "VoId",
+            "columnName": "VoId",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "WorkCompleteDate",
+            "columnName": "WorkCompleteDate",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "WorkStartDate",
+            "columnName": "WorkStartDate",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "ESTIMATES_ACT_ID",
+            "columnName": "ESTIMATES_ACT_ID",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "MEASURE_ACT_ID",
+            "columnName": "MEASURE_ACT_ID",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "WORKS_ACT_ID",
+            "columnName": "WORKS_ACT_ID",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sortString",
+            "columnName": "sortString",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "ActivityId",
+            "columnName": "ActivityId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "Is_synced",
+            "columnName": "Is_synced",
             "affinity": "TEXT",
             "notNull": false
           }
         ],
         "primaryKey": {
           "columnNames": [
-            "jobId"
+            "JobId"
           ],
           "autoGenerate": false
         },
@@ -278,14 +302,8 @@
       },
       {
         "tableName": "USER_TABLE",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`uid` INTEGER NOT NULL, `registrationId` TEXT NOT NULL, `userId` TEXT NOT NULL, `userName` TEXT NOT NULL, `userRoles` TEXT NOT NULL, `userStatus` TEXT NOT NULL, `PIN` TEXT, `PHONE_NUMBER` TEXT, `IMEI` TEXT, `DEVICE` TEXT, `WEB_SERVICE_URI` TEXT, PRIMARY KEY(`uid`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`registrationId` TEXT NOT NULL, `userId` TEXT NOT NULL, `userName` TEXT NOT NULL, `userRoles` TEXT NOT NULL, `userStatus` TEXT NOT NULL, `PIN` TEXT, `PHONE_NUMBER` TEXT, `IMEI` TEXT, `DEVICE` TEXT, `Password` TEXT, `WEB_SERVICE_URI` TEXT, PRIMARY KEY(`userId`))",
         "fields": [
-          {
-            "fieldPath": "uid",
-            "columnName": "uid",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
           {
             "fieldPath": "registrationId",
             "columnName": "registrationId",
@@ -341,6 +359,12 @@
             "notNull": false
           },
           {
+            "fieldPath": "Password",
+            "columnName": "Password",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
             "fieldPath": "WEB_SERVICE_URI",
             "columnName": "WEB_SERVICE_URI",
             "affinity": "TEXT",
@@ -349,7 +373,7 @@
         ],
         "primaryKey": {
           "columnNames": [
-            "uid"
+            "userId"
           ],
           "autoGenerate": false
         },
@@ -384,8 +408,14 @@
       },
       {
         "tableName": "PROJECT_ITEM_TABLE",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`itemId` TEXT NOT NULL, `descr` TEXT NOT NULL, `itemCode` TEXT NOT NULL, `itemSections` TEXT NOT NULL, `projectId` TEXT NOT NULL, `tenderRate` REAL NOT NULL, `uom` TEXT NOT NULL, `workflowId` INTEGER NOT NULL, `sectionItemId` TEXT NOT NULL, `quantity` REAL NOT NULL, `estimateId` TEXT NOT NULL, PRIMARY KEY(`itemId`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `itemId` TEXT NOT NULL, `descr` TEXT, `itemCode` TEXT, `itemSections` TEXT NOT NULL, `tenderRate` REAL NOT NULL, `uom` TEXT, `workflowId` INTEGER, `sectionItemId` TEXT, `quantity` REAL NOT NULL, `estimateId` TEXT, `projectId` TEXT, PRIMARY KEY(`id`), FOREIGN KEY(`projectId`) REFERENCES `PROJECT_TABLE`(`projectId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
           {
             "fieldPath": "itemId",
             "columnName": "itemId",
@@ -396,23 +426,17 @@
             "fieldPath": "descr",
             "columnName": "descr",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "itemCode",
             "columnName": "itemCode",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "itemSections",
             "columnName": "itemSections",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "projectId",
-            "columnName": "projectId",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -426,19 +450,19 @@
             "fieldPath": "uom",
             "columnName": "uom",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "workflowId",
             "columnName": "workflowId",
             "affinity": "INTEGER",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "sectionItemId",
             "columnName": "sectionItemId",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "quantity",
@@ -450,12 +474,412 @@
             "fieldPath": "estimateId",
             "columnName": "estimateId",
             "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "projectId",
+            "columnName": "projectId",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "id"
+          ],
+          "autoGenerate": false
+        },
+        "indices": [
+          {
+            "name": "index_PROJECT_ITEM_TABLE_projectId",
+            "unique": false,
+            "columnNames": [
+              "projectId"
+            ],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_PROJECT_ITEM_TABLE_projectId` ON `${TABLE_NAME}` (`projectId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "PROJECT_TABLE",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "projectId"
+            ],
+            "referencedColumns": [
+              "projectId"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "PROJECT_ITEM_TABLE_TEMP",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `itemId` TEXT NOT NULL, `descr` TEXT, `itemCode` TEXT, `itemSections` TEXT NOT NULL, `tenderRate` REAL NOT NULL, `uom` TEXT, `workflowId` INTEGER, `sectionItemId` TEXT, `quantity` REAL NOT NULL, `estimateId` TEXT, `projectId` TEXT NOT NULL, `jobId` TEXT NOT NULL, FOREIGN KEY(`projectId`) REFERENCES `PROJECT_TABLE`(`projectId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "itemId",
+            "columnName": "itemId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "descr",
+            "columnName": "descr",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "itemCode",
+            "columnName": "itemCode",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "itemSections",
+            "columnName": "itemSections",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tenderRate",
+            "columnName": "tenderRate",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "uom",
+            "columnName": "uom",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "workflowId",
+            "columnName": "workflowId",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "sectionItemId",
+            "columnName": "sectionItemId",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "quantity",
+            "columnName": "quantity",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "estimateId",
+            "columnName": "estimateId",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "projectId",
+            "columnName": "projectId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "jobId",
+            "columnName": "jobId",
+            "affinity": "TEXT",
             "notNull": true
           }
         ],
         "primaryKey": {
           "columnNames": [
-            "itemId"
+            "id"
+          ],
+          "autoGenerate": true
+        },
+        "indices": [
+          {
+            "name": "index_PROJECT_ITEM_TABLE_TEMP_projectId",
+            "unique": false,
+            "columnNames": [
+              "projectId"
+            ],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_PROJECT_ITEM_TABLE_TEMP_projectId` ON `${TABLE_NAME}` (`projectId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "PROJECT_TABLE",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "projectId"
+            ],
+            "referencedColumns": [
+              "projectId"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "JOB_TABLE_TEMP",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`ActId` INTEGER NOT NULL, `JobId` TEXT NOT NULL, `ContractVoId` TEXT, `ProjectId` TEXT, `SectionId` TEXT, `StartKm` REAL NOT NULL, `EndKm` REAL NOT NULL, `Descr` TEXT, `JiNo` TEXT, `UserId` INTEGER NOT NULL, `TrackRouteId` TEXT, `Section` TEXT, `Cpa` INTEGER NOT NULL, `DayWork` INTEGER NOT NULL, `ContractorId` INTEGER NOT NULL, `M9100` INTEGER NOT NULL, `IssueDate` INTEGER, `StartDate` INTEGER, `DueDate` INTEGER, `ApprovalDate` INTEGER, `JobItemEstimates` TEXT, `JobItemMeasures` TEXT, `JobSections` TEXT, `PerfitemGroupId` TEXT, `RecordVersion` INTEGER NOT NULL, `Remarks` TEXT, `Route` TEXT, `RrmJiNo` TEXT, `EngineerId` INTEGER NOT NULL, `EntireRoute` INTEGER NOT NULL, `IsExtraWork` INTEGER NOT NULL, `JobCategoryId` INTEGER NOT NULL, `JobDirectionId` INTEGER NOT NULL, `JobPositionId` INTEGER NOT NULL, `JobStatusId` INTEGER NOT NULL, `ProjectVoId` TEXT, `QtyUpdateAllowed` INTEGER NOT NULL, `RecordSynchStateId` INTEGER NOT NULL, `VoId` TEXT, `WorkCompleteDate` TEXT, `WorkStartDate` TEXT, PRIMARY KEY(`JobId`))",
+        "fields": [
+          {
+            "fieldPath": "ActId",
+            "columnName": "ActId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "JobId",
+            "columnName": "JobId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ContractVoId",
+            "columnName": "ContractVoId",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "ProjectId",
+            "columnName": "ProjectId",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "SectionId",
+            "columnName": "SectionId",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "StartKm",
+            "columnName": "StartKm",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "EndKm",
+            "columnName": "EndKm",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "Descr",
+            "columnName": "Descr",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "JiNo",
+            "columnName": "JiNo",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "UserId",
+            "columnName": "UserId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "TrackRouteId",
+            "columnName": "TrackRouteId",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "Section",
+            "columnName": "Section",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "Cpa",
+            "columnName": "Cpa",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "DayWork",
+            "columnName": "DayWork",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ContractorId",
+            "columnName": "ContractorId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "M9100",
+            "columnName": "M9100",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "IssueDate",
+            "columnName": "IssueDate",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "StartDate",
+            "columnName": "StartDate",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "DueDate",
+            "columnName": "DueDate",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "ApprovalDate",
+            "columnName": "ApprovalDate",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "JobItemEstimates",
+            "columnName": "JobItemEstimates",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "JobItemMeasures",
+            "columnName": "JobItemMeasures",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "JobSections",
+            "columnName": "JobSections",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "PerfitemGroupId",
+            "columnName": "PerfitemGroupId",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "RecordVersion",
+            "columnName": "RecordVersion",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "Remarks",
+            "columnName": "Remarks",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "Route",
+            "columnName": "Route",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "RrmJiNo",
+            "columnName": "RrmJiNo",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "EngineerId",
+            "columnName": "EngineerId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "EntireRoute",
+            "columnName": "EntireRoute",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "IsExtraWork",
+            "columnName": "IsExtraWork",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "JobCategoryId",
+            "columnName": "JobCategoryId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "JobDirectionId",
+            "columnName": "JobDirectionId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "JobPositionId",
+            "columnName": "JobPositionId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "JobStatusId",
+            "columnName": "JobStatusId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ProjectVoId",
+            "columnName": "ProjectVoId",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "QtyUpdateAllowed",
+            "columnName": "QtyUpdateAllowed",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "RecordSynchStateId",
+            "columnName": "RecordSynchStateId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "VoId",
+            "columnName": "VoId",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "WorkCompleteDate",
+            "columnName": "WorkCompleteDate",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "WorkStartDate",
+            "columnName": "WorkStartDate",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "JobId"
           ],
           "autoGenerate": false
         },
@@ -464,7 +888,7 @@
       },
       {
         "tableName": "CONTRACTS_TABLE",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`contractId` TEXT NOT NULL, `contractNo` TEXT NOT NULL, `descr` TEXT NOT NULL, `projects` TEXT NOT NULL, `shortDescr` TEXT NOT NULL, PRIMARY KEY(`contractId`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`contractId` TEXT NOT NULL, `descr` TEXT, `shortDescr` TEXT, `contractNo` TEXT, `projects` TEXT, PRIMARY KEY(`contractId`))",
         "fields": [
           {
             "fieldPath": "contractId",
@@ -473,28 +897,28 @@
             "notNull": true
           },
           {
-            "fieldPath": "contractNo",
-            "columnName": "contractNo",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
             "fieldPath": "descr",
             "columnName": "descr",
             "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "projects",
-            "columnName": "projects",
-            "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "shortDescr",
             "columnName": "shortDescr",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
+          },
+          {
+            "fieldPath": "contractNo",
+            "columnName": "contractNo",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "projects",
+            "columnName": "projects",
+            "affinity": "TEXT",
+            "notNull": false
           }
         ],
         "primaryKey": {
@@ -507,49 +931,13 @@
         "foreignKeys": []
       },
       {
-        "tableName": "JOB_VO_ITEM",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`voItemId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `contractVoId` TEXT NOT NULL, `contractVoItemId` TEXT NOT NULL, `descr` TEXT NOT NULL, `itemCode` TEXT NOT NULL, `projectId` TEXT NOT NULL, `projectItemId` TEXT NOT NULL, `projectVoId` TEXT NOT NULL, `rate` REAL NOT NULL, `uom` TEXT NOT NULL, `voDescr` TEXT NOT NULL)",
+        "tableName": "TABLE_JOB_VO_ITEM",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `projectVoId` TEXT NOT NULL, `itemCode` TEXT, `voDescr` TEXT, `descr` TEXT, `uom` TEXT, `rate` REAL, `projectItemId` TEXT, `contractVoId` TEXT, `contractVoItemId` TEXT, `projectId` TEXT NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`projectId`) REFERENCES `PROJECT_TABLE`(`projectId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
-            "fieldPath": "voItemId",
-            "columnName": "voItemId",
+            "fieldPath": "id",
+            "columnName": "id",
             "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "contractVoId",
-            "columnName": "contractVoId",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "contractVoItemId",
-            "columnName": "contractVoItemId",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "descr",
-            "columnName": "descr",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "itemCode",
-            "columnName": "itemCode",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "projectId",
-            "columnName": "projectId",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "projectItemId",
-            "columnName": "projectItemId",
-            "affinity": "TEXT",
             "notNull": true
           },
           {
@@ -559,37 +947,100 @@
             "notNull": true
           },
           {
-            "fieldPath": "rate",
-            "columnName": "rate",
-            "affinity": "REAL",
-            "notNull": true
+            "fieldPath": "itemCode",
+            "columnName": "itemCode",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "voDescr",
+            "columnName": "voDescr",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "descr",
+            "columnName": "descr",
+            "affinity": "TEXT",
+            "notNull": false
           },
           {
             "fieldPath": "uom",
             "columnName": "uom",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
-            "fieldPath": "voDescr",
-            "columnName": "voDescr",
+            "fieldPath": "rate",
+            "columnName": "rate",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "projectItemId",
+            "columnName": "projectItemId",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "contractVoId",
+            "columnName": "contractVoId",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "contractVoItemId",
+            "columnName": "contractVoItemId",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "projectId",
+            "columnName": "projectId",
             "affinity": "TEXT",
             "notNull": true
           }
         ],
         "primaryKey": {
           "columnNames": [
-            "voItemId"
+            "id"
           ],
-          "autoGenerate": true
+          "autoGenerate": false
         },
-        "indices": [],
-        "foreignKeys": []
+        "indices": [
+          {
+            "name": "index_TABLE_JOB_VO_ITEM_projectId",
+            "unique": false,
+            "columnNames": [
+              "projectId"
+            ],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_TABLE_JOB_VO_ITEM_projectId` ON `${TABLE_NAME}` (`projectId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "PROJECT_TABLE",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "projectId"
+            ],
+            "referencedColumns": [
+              "projectId"
+            ]
+          }
+        ]
       },
       {
         "tableName": "PROJECT_TABLE",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`projectId` TEXT NOT NULL, `descr` TEXT, `endDate` TEXT, `items` TEXT, `projectCode` TEXT, `projectMinus` TEXT, `projectPlus` TEXT, `sections` TEXT, `voItems` TEXT, `contractId` TEXT, PRIMARY KEY(`projectId`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `projectId` TEXT NOT NULL, `descr` TEXT, `endDate` TEXT, `items` TEXT, `projectCode` TEXT, `projectMinus` TEXT, `projectPlus` TEXT, `projectSections` TEXT, `voItems` TEXT, `contractId` TEXT, PRIMARY KEY(`id`), FOREIGN KEY(`contractId`) REFERENCES `CONTRACTS_TABLE`(`contractId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
           {
             "fieldPath": "projectId",
             "columnName": "projectId",
@@ -633,8 +1084,8 @@
             "notNull": false
           },
           {
-            "fieldPath": "sections",
-            "columnName": "sections",
+            "fieldPath": "projectSections",
+            "columnName": "projectSections",
             "affinity": "TEXT",
             "notNull": false
           },
@@ -653,38 +1104,55 @@
         ],
         "primaryKey": {
           "columnNames": [
-            "projectId"
+            "id"
           ],
           "autoGenerate": false
         },
-        "indices": [],
-        "foreignKeys": []
+        "indices": [
+          {
+            "name": "index_PROJECT_TABLE_projectId",
+            "unique": true,
+            "columnNames": [
+              "projectId"
+            ],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_PROJECT_TABLE_projectId` ON `${TABLE_NAME}` (`projectId`)"
+          },
+          {
+            "name": "index_PROJECT_TABLE_contractId",
+            "unique": false,
+            "columnNames": [
+              "contractId"
+            ],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_PROJECT_TABLE_contractId` ON `${TABLE_NAME}` (`contractId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "CONTRACTS_TABLE",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "contractId"
+            ],
+            "referencedColumns": [
+              "contractId"
+            ]
+          }
+        ]
       },
       {
         "tableName": "PROJECT_SECTION_TABLE",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`sectionId` TEXT NOT NULL, `direction` TEXT NOT NULL, `endKm` REAL NOT NULL, `projectId` TEXT NOT NULL, `route` TEXT NOT NULL, `section` TEXT NOT NULL, `startKm` REAL NOT NULL, PRIMARY KEY(`sectionId`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `sectionId` TEXT NOT NULL, `route` TEXT NOT NULL, `section` TEXT NOT NULL, `startKm` REAL NOT NULL, `endKm` REAL NOT NULL, `direction` TEXT, `projectId` TEXT, PRIMARY KEY(`id`), FOREIGN KEY(`projectId`) REFERENCES `PROJECT_TABLE`(`projectId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
           {
             "fieldPath": "sectionId",
             "columnName": "sectionId",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "direction",
-            "columnName": "direction",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "endKm",
-            "columnName": "endKm",
-            "affinity": "REAL",
-            "notNull": true
-          },
-          {
-            "fieldPath": "projectId",
-            "columnName": "projectId",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -705,20 +1173,59 @@
             "columnName": "startKm",
             "affinity": "REAL",
             "notNull": true
+          },
+          {
+            "fieldPath": "endKm",
+            "columnName": "endKm",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "direction",
+            "columnName": "direction",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "projectId",
+            "columnName": "projectId",
+            "affinity": "TEXT",
+            "notNull": false
           }
         ],
         "primaryKey": {
           "columnNames": [
-            "sectionId"
+            "id"
           ],
           "autoGenerate": false
         },
-        "indices": [],
-        "foreignKeys": []
+        "indices": [
+          {
+            "name": "index_PROJECT_SECTION_TABLE_projectId",
+            "unique": false,
+            "columnNames": [
+              "projectId"
+            ],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_PROJECT_SECTION_TABLE_projectId` ON `${TABLE_NAME}` (`projectId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "PROJECT_TABLE",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "projectId"
+            ],
+            "referencedColumns": [
+              "projectId"
+            ]
+          }
+        ]
       },
       {
         "tableName": "PRIMARY_KEY_VALUE_TABLE",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `key` TEXT, `value` TEXT, `valueType` TEXT, `trackRouteId` TEXT, `valueBytes` BLOB, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `primary_key` TEXT, `valueString` TEXT, `trackRouteId` TEXT, `activityId` INTEGER NOT NULL, `valueBytes` BLOB, `valueType` TEXT, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -727,20 +1234,14 @@
             "notNull": true
           },
           {
-            "fieldPath": "key",
-            "columnName": "key",
+            "fieldPath": "primary_key",
+            "columnName": "primary_key",
             "affinity": "TEXT",
             "notNull": false
           },
           {
-            "fieldPath": "value",
-            "columnName": "value",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "valueType",
-            "columnName": "valueType",
+            "fieldPath": "valueString",
+            "columnName": "valueString",
             "affinity": "TEXT",
             "notNull": false
           },
@@ -751,9 +1252,21 @@
             "notNull": false
           },
           {
+            "fieldPath": "activityId",
+            "columnName": "activityId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
             "fieldPath": "valueBytes",
             "columnName": "valueBytes",
             "affinity": "BLOB",
+            "notNull": false
+          },
+          {
+            "fieldPath": "valueType",
+            "columnName": "valueType",
+            "affinity": "TEXT",
             "notNull": false
           }
         ],
@@ -768,7 +1281,7 @@
       },
       {
         "tableName": "LOOKUP_OPTION_TABLE",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `contextMember` TEXT, `displayMember` TEXT, `valueMember` TEXT, `LookupName` TEXT, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `valueMember` TEXT, `displayMember` TEXT, `contextMember` TEXT, `lookupName` TEXT NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`lookupName`) REFERENCES `LOOKUP_TABLE`(`lookupName`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -777,8 +1290,8 @@
             "notNull": true
           },
           {
-            "fieldPath": "contextMember",
-            "columnName": "contextMember",
+            "fieldPath": "valueMember",
+            "columnName": "valueMember",
             "affinity": "TEXT",
             "notNull": false
           },
@@ -789,16 +1302,16 @@
             "notNull": false
           },
           {
-            "fieldPath": "valueMember",
-            "columnName": "valueMember",
+            "fieldPath": "contextMember",
+            "columnName": "contextMember",
             "affinity": "TEXT",
             "notNull": false
           },
           {
-            "fieldPath": "LookupName",
-            "columnName": "LookupName",
+            "fieldPath": "lookupName",
+            "columnName": "lookupName",
             "affinity": "TEXT",
-            "notNull": false
+            "notNull": true
           }
         ],
         "primaryKey": {
@@ -807,19 +1320,34 @@
           ],
           "autoGenerate": false
         },
-        "indices": [],
-        "foreignKeys": []
+        "indices": [
+          {
+            "name": "index_LOOKUP_OPTION_TABLE_lookupName",
+            "unique": false,
+            "columnNames": [
+              "lookupName"
+            ],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_LOOKUP_OPTION_TABLE_lookupName` ON `${TABLE_NAME}` (`lookupName`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "LOOKUP_TABLE",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "lookupName"
+            ],
+            "referencedColumns": [
+              "lookupName"
+            ]
+          }
+        ]
       },
       {
         "tableName": "LOOKUP_TABLE",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`childLookups` TEXT, `lookupName` TEXT NOT NULL, `lookupOptions` TEXT, PRIMARY KEY(`lookupName`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`lookupName` TEXT NOT NULL, `lookupOptions` TEXT NOT NULL, PRIMARY KEY(`lookupName`))",
         "fields": [
-          {
-            "fieldPath": "childLookups",
-            "columnName": "childLookups",
-            "affinity": "TEXT",
-            "notNull": false
-          },
           {
             "fieldPath": "lookupName",
             "columnName": "lookupName",
@@ -830,7 +1358,7 @@
             "fieldPath": "lookupOptions",
             "columnName": "lookupOptions",
             "affinity": "TEXT",
-            "notNull": false
+            "notNull": true
           }
         ],
         "primaryKey": {
@@ -843,93 +1371,7 @@
         "foreignKeys": []
       },
       {
-        "tableName": "TABLE_ENTITY",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`actionable` INTEGER NOT NULL, `activityId` INTEGER NOT NULL, `currentRouteId` INTEGER NOT NULL, `data` TEXT NOT NULL, `description` TEXT NOT NULL, `entities` TEXT NOT NULL, `entityName` TEXT NOT NULL, `location` TEXT NOT NULL, `primaryKeyValues` TEXT NOT NULL, `recordVersion` INTEGER NOT NULL, `trackRouteId` TEXT NOT NULL, `jobId` TEXT, PRIMARY KEY(`activityId`))",
-        "fields": [
-          {
-            "fieldPath": "actionable",
-            "columnName": "actionable",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "activityId",
-            "columnName": "activityId",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "currentRouteId",
-            "columnName": "currentRouteId",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "data",
-            "columnName": "data",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "description",
-            "columnName": "description",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "entities",
-            "columnName": "entities",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "entityName",
-            "columnName": "entityName",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "location",
-            "columnName": "location",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "primaryKeyValues",
-            "columnName": "primaryKeyValues",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "recordVersion",
-            "columnName": "recordVersion",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "trackRouteId",
-            "columnName": "trackRouteId",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "jobId",
-            "columnName": "jobId",
-            "affinity": "TEXT",
-            "notNull": false
-          }
-        ],
-        "primaryKey": {
-          "columnNames": [
-            "activityId"
-          ],
-          "autoGenerate": false
-        },
-        "indices": [],
-        "foreignKeys": []
-      },
-      {
-        "tableName": "ItemSectionDTO",
+        "tableName": "ITEM_SECTION_TABLE",
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`sectionId` TEXT NOT NULL, `direction` TEXT NOT NULL, `endKm` REAL NOT NULL, `projectId` TEXT NOT NULL, `route` TEXT NOT NULL, `section` TEXT NOT NULL, `startKm` REAL NOT NULL, PRIMARY KEY(`sectionId`))",
         "fields": [
           {
@@ -986,11 +1428,17 @@
       },
       {
         "tableName": "WORKFLOW_TABLE",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`workflowId` INTEGER NOT NULL, `revNo` INTEGER NOT NULL, `startRouteId` INTEGER NOT NULL, `errorRouteId` INTEGER NOT NULL, `userId` INTEGER NOT NULL, `wfHeaderId` INTEGER NOT NULL, `dateCreated` TEXT NOT NULL, `workFlowRoute` TEXT, PRIMARY KEY(`workflowId`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`dateCreated` TEXT NOT NULL, `errorRouteId` INTEGER NOT NULL, `revNo` INTEGER NOT NULL, `startRouteId` INTEGER NOT NULL, `userId` INTEGER NOT NULL, `wfHeaderId` INTEGER NOT NULL, `workFlowRoute` TEXT, `workflowId` INTEGER NOT NULL, PRIMARY KEY(`workflowId`))",
         "fields": [
           {
-            "fieldPath": "workflowId",
-            "columnName": "workflowId",
+            "fieldPath": "dateCreated",
+            "columnName": "dateCreated",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "errorRouteId",
+            "columnName": "errorRouteId",
             "affinity": "INTEGER",
             "notNull": true
           },
@@ -1007,12 +1455,6 @@
             "notNull": true
           },
           {
-            "fieldPath": "errorRouteId",
-            "columnName": "errorRouteId",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
             "fieldPath": "userId",
             "columnName": "userId",
             "affinity": "INTEGER",
@@ -1025,16 +1467,16 @@
             "notNull": true
           },
           {
-            "fieldPath": "dateCreated",
-            "columnName": "dateCreated",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
             "fieldPath": "workFlowRoute",
             "columnName": "workFlowRoute",
             "affinity": "TEXT",
             "notNull": false
+          },
+          {
+            "fieldPath": "workflowId",
+            "columnName": "workflowId",
+            "affinity": "INTEGER",
+            "notNull": true
           }
         ],
         "primaryKey": {
@@ -1047,36 +1489,68 @@
         "foreignKeys": []
       },
       {
-        "tableName": "WORKFLOW_ROUTE_TABLE",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`actId` INTEGER NOT NULL, `canStart` INTEGER NOT NULL, `errorRouteId` INTEGER NOT NULL, `failRouteId` INTEGER NOT NULL, `nextRouteId` INTEGER NOT NULL, `routeId` INTEGER NOT NULL, `workflowId` INTEGER NOT NULL, PRIMARY KEY(`actId`))",
+        "tableName": "SECTION_POINT_TABLE",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `sectionId` INTEGER NOT NULL, `direction` TEXT, `linearId` TEXT, `pointLocation` REAL NOT NULL, `projectId` TEXT, `jobId` TEXT)",
         "fields": [
           {
-            "fieldPath": "actId",
-            "columnName": "actId",
+            "fieldPath": "id",
+            "columnName": "id",
             "affinity": "INTEGER",
             "notNull": true
           },
           {
-            "fieldPath": "canStart",
-            "columnName": "canStart",
+            "fieldPath": "sectionId",
+            "columnName": "sectionId",
             "affinity": "INTEGER",
             "notNull": true
           },
           {
-            "fieldPath": "errorRouteId",
-            "columnName": "errorRouteId",
-            "affinity": "INTEGER",
+            "fieldPath": "direction",
+            "columnName": "direction",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "linearId",
+            "columnName": "linearId",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "pointLocation",
+            "columnName": "pointLocation",
+            "affinity": "REAL",
             "notNull": true
           },
           {
-            "fieldPath": "failRouteId",
-            "columnName": "failRouteId",
-            "affinity": "INTEGER",
-            "notNull": true
+            "fieldPath": "projectId",
+            "columnName": "projectId",
+            "affinity": "TEXT",
+            "notNull": false
           },
           {
-            "fieldPath": "nextRouteId",
-            "columnName": "nextRouteId",
+            "fieldPath": "jobId",
+            "columnName": "jobId",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "id"
+          ],
+          "autoGenerate": true
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "WORKFLOW_ROUTE_TABLE",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `routeId` INTEGER NOT NULL, `actId` INTEGER NOT NULL, `nextRouteId` INTEGER NOT NULL, `failRouteId` INTEGER NOT NULL, `errorRouteId` INTEGER NOT NULL, `canStart` INTEGER NOT NULL, `workflowId` INTEGER, PRIMARY KEY(`id`), FOREIGN KEY(`workflowId`) REFERENCES `WORKFLOW_TABLE`(`workflowId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
             "affinity": "INTEGER",
             "notNull": true
           },
@@ -1087,37 +1561,76 @@
             "notNull": true
           },
           {
+            "fieldPath": "actId",
+            "columnName": "actId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nextRouteId",
+            "columnName": "nextRouteId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "failRouteId",
+            "columnName": "failRouteId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "errorRouteId",
+            "columnName": "errorRouteId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "canStart",
+            "columnName": "canStart",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
             "fieldPath": "workflowId",
             "columnName": "workflowId",
             "affinity": "INTEGER",
-            "notNull": true
+            "notNull": false
           }
         ],
         "primaryKey": {
           "columnNames": [
-            "actId"
+            "id"
           ],
           "autoGenerate": false
         },
-        "indices": [],
-        "foreignKeys": []
+        "indices": [
+          {
+            "name": "index_WORKFLOW_ROUTE_TABLE_workflowId",
+            "unique": false,
+            "columnNames": [
+              "workflowId"
+            ],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_WORKFLOW_ROUTE_TABLE_workflowId` ON `${TABLE_NAME}` (`workflowId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "WORKFLOW_TABLE",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "workflowId"
+            ],
+            "referencedColumns": [
+              "workflowId"
+            ]
+          }
+        ]
       },
       {
         "tableName": "JOB_SECTION_TABLE",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`endKm` REAL NOT NULL, `jobId` TEXT NOT NULL, `jobSectionId` TEXT NOT NULL, `prjJobDto` TEXT, `projectSectionId` TEXT NOT NULL, `recordSynchStateId` INTEGER NOT NULL, `recordVersion` INTEGER NOT NULL, `startKm` REAL NOT NULL, PRIMARY KEY(`jobSectionId`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`jobSectionId` TEXT NOT NULL, `projectSectionId` TEXT, `jobId` TEXT, `startKm` REAL NOT NULL, `endKm` REAL NOT NULL, `job` TEXT, `recordSynchStateId` INTEGER NOT NULL, `recordVersion` INTEGER NOT NULL, PRIMARY KEY(`jobSectionId`))",
         "fields": [
-          {
-            "fieldPath": "endKm",
-            "columnName": "endKm",
-            "affinity": "REAL",
-            "notNull": true
-          },
-          {
-            "fieldPath": "jobId",
-            "columnName": "jobId",
-            "affinity": "TEXT",
-            "notNull": true
-          },
           {
             "fieldPath": "jobSectionId",
             "columnName": "jobSectionId",
@@ -1125,16 +1638,34 @@
             "notNull": true
           },
           {
-            "fieldPath": "prjJobDto",
-            "columnName": "prjJobDto",
+            "fieldPath": "projectSectionId",
+            "columnName": "projectSectionId",
             "affinity": "TEXT",
             "notNull": false
           },
           {
-            "fieldPath": "projectSectionId",
-            "columnName": "projectSectionId",
+            "fieldPath": "jobId",
+            "columnName": "jobId",
             "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "startKm",
+            "columnName": "startKm",
+            "affinity": "REAL",
             "notNull": true
+          },
+          {
+            "fieldPath": "endKm",
+            "columnName": "endKm",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "job",
+            "columnName": "job",
+            "affinity": "TEXT",
+            "notNull": false
           },
           {
             "fieldPath": "recordSynchStateId",
@@ -1146,12 +1677,6 @@
             "fieldPath": "recordVersion",
             "columnName": "recordVersion",
             "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "startKm",
-            "columnName": "startKm",
-            "affinity": "REAL",
             "notNull": true
           }
         ],
@@ -1165,15 +1690,9 @@
         "foreignKeys": []
       },
       {
-        "tableName": "InfoClassDTO",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`sInfoClassId` TEXT NOT NULL, `sLinkId` TEXT NOT NULL, `wfId` INTEGER NOT NULL, PRIMARY KEY(`sInfoClassId`))",
+        "tableName": "INFO_CLASS_TABLE",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`sLinkId` TEXT NOT NULL, `sInfoClassId` TEXT, `wfId` INTEGER, PRIMARY KEY(`sLinkId`))",
         "fields": [
-          {
-            "fieldPath": "sInfoClassId",
-            "columnName": "sInfoClassId",
-            "affinity": "TEXT",
-            "notNull": true
-          },
           {
             "fieldPath": "sLinkId",
             "columnName": "sLinkId",
@@ -1181,15 +1700,21 @@
             "notNull": true
           },
           {
+            "fieldPath": "sInfoClassId",
+            "columnName": "sInfoClassId",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
             "fieldPath": "wfId",
             "columnName": "wfId",
             "affinity": "INTEGER",
-            "notNull": true
+            "notNull": false
           }
         ],
         "primaryKey": {
           "columnNames": [
-            "sInfoClassId"
+            "sLinkId"
           ],
           "autoGenerate": false
         },
@@ -1198,48 +1723,48 @@
       },
       {
         "tableName": "ACTIVITY_TABLE",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`ACT_ID` INTEGER NOT NULL, `ACT_NAME` TEXT NOT NULL, `ACT_TYPE_ID` INTEGER NOT NULL, `APPROVAL_ID` INTEGER NOT NULL, `DESCRIPTION` TEXT NOT NULL, `CONTENT_ID` INTEGER NOT NULL, PRIMARY KEY(`ACT_ID`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`actId` INTEGER NOT NULL, `actTypeId` INTEGER, `approvalId` INTEGER NOT NULL, `sContentId` INTEGER NOT NULL, `actName` TEXT, `descr` TEXT, PRIMARY KEY(`actId`))",
         "fields": [
           {
-            "fieldPath": "ACT_ID",
-            "columnName": "ACT_ID",
+            "fieldPath": "actId",
+            "columnName": "actId",
             "affinity": "INTEGER",
             "notNull": true
           },
           {
-            "fieldPath": "ACT_NAME",
-            "columnName": "ACT_NAME",
+            "fieldPath": "actTypeId",
+            "columnName": "actTypeId",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "approvalId",
+            "columnName": "approvalId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sContentId",
+            "columnName": "sContentId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "actName",
+            "columnName": "actName",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
-            "fieldPath": "ACT_TYPE_ID",
-            "columnName": "ACT_TYPE_ID",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "APPROVAL_ID",
-            "columnName": "APPROVAL_ID",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "DESCRIPTION",
-            "columnName": "DESCRIPTION",
+            "fieldPath": "descr",
+            "columnName": "descr",
             "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "CONTENT_ID",
-            "columnName": "CONTENT_ID",
-            "affinity": "INTEGER",
-            "notNull": true
+            "notNull": false
           }
         ],
         "primaryKey": {
           "columnNames": [
-            "ACT_ID"
+            "actId"
           ],
           "autoGenerate": false
         },
@@ -1247,12 +1772,18 @@
         "foreignKeys": []
       },
       {
-        "tableName": "ToDoGroupsDTO",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`toDoListEntityDTOS` TEXT NOT NULL, `groupDescription` TEXT NOT NULL, `groupId` TEXT NOT NULL, `groupName` TEXT NOT NULL, `sortOrder` INTEGER NOT NULL, PRIMARY KEY(`groupId`))",
+        "tableName": "TODO_GROUPS_TABLE",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`groupId` TEXT NOT NULL, `groupName` TEXT NOT NULL, `groupDescription` TEXT NOT NULL, `toDoListEntities` TEXT NOT NULL, `sortOrder` INTEGER NOT NULL, PRIMARY KEY(`groupId`))",
         "fields": [
           {
-            "fieldPath": "toDoListEntityDTOS",
-            "columnName": "toDoListEntityDTOS",
+            "fieldPath": "groupId",
+            "columnName": "groupId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "groupName",
+            "columnName": "groupName",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -1263,14 +1794,8 @@
             "notNull": true
           },
           {
-            "fieldPath": "groupId",
-            "columnName": "groupId",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "groupName",
-            "columnName": "groupName",
+            "fieldPath": "toDoListEntities",
+            "columnName": "toDoListEntities",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -1291,8 +1816,8 @@
         "foreignKeys": []
       },
       {
-        "tableName": "JobItemEstimatesPhotoDTO",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`descr` TEXT NOT NULL, `estimateId` TEXT NOT NULL, `filename` TEXT NOT NULL, `photoDate` TEXT NOT NULL, `photoId` TEXT NOT NULL, `photoLatitude` REAL NOT NULL, `photoLongitude` REAL NOT NULL, `photoPath` TEXT NOT NULL, `jobItemEstimate` TEXT NOT NULL, `recordSynchStateId` INTEGER NOT NULL, `recordVersion` INTEGER NOT NULL, PRIMARY KEY(`photoId`))",
+        "tableName": "JOB_ITEM_ESTIMATE_PHOTO",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`descr` TEXT NOT NULL, `estimateId` TEXT NOT NULL, `filename` TEXT NOT NULL, `photoDate` TEXT NOT NULL, `photoId` TEXT NOT NULL, `photoStart` TEXT, `photoEnd` TEXT, `startKm` REAL NOT NULL, `endKm` REAL NOT NULL, `photoLatitude` REAL, `photoLongitude` REAL, `photoLatitudeEnd` REAL NOT NULL, `photoLongitudeEnd` REAL NOT NULL, `photoPath` TEXT NOT NULL, `jobItemEstimate` TEXT, `recordSynchStateId` INTEGER NOT NULL, `recordVersion` INTEGER NOT NULL, `is_PhotoStart` INTEGER NOT NULL, `image` BLOB, PRIMARY KEY(`photoId`))",
         "fields": [
           {
             "fieldPath": "descr",
@@ -1325,14 +1850,50 @@
             "notNull": true
           },
           {
-            "fieldPath": "photoLatitude",
-            "columnName": "photoLatitude",
+            "fieldPath": "photoStart",
+            "columnName": "photoStart",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "photoEnd",
+            "columnName": "photoEnd",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "startKm",
+            "columnName": "startKm",
             "affinity": "REAL",
             "notNull": true
           },
           {
+            "fieldPath": "endKm",
+            "columnName": "endKm",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "photoLatitude",
+            "columnName": "photoLatitude",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
             "fieldPath": "photoLongitude",
             "columnName": "photoLongitude",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "photoLatitudeEnd",
+            "columnName": "photoLatitudeEnd",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "photoLongitudeEnd",
+            "columnName": "photoLongitudeEnd",
             "affinity": "REAL",
             "notNull": true
           },
@@ -1346,7 +1907,7 @@
             "fieldPath": "jobItemEstimate",
             "columnName": "jobItemEstimate",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "recordSynchStateId",
@@ -1359,6 +1920,18 @@
             "columnName": "recordVersion",
             "affinity": "INTEGER",
             "notNull": true
+          },
+          {
+            "fieldPath": "is_PhotoStart",
+            "columnName": "is_PhotoStart",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "image",
+            "columnName": "image",
+            "affinity": "BLOB",
+            "notNull": false
           }
         ],
         "primaryKey": {
@@ -1371,32 +1944,44 @@
         "foreignKeys": []
       },
       {
-        "tableName": "JobItemMeasurePhotoDTO",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`descr` TEXT NOT NULL, `filename` TEXT NOT NULL, `itemMeasureId` TEXT NOT NULL, `photoDate` TEXT NOT NULL, `photoId` TEXT NOT NULL, `photoLatitude` REAL NOT NULL, `photoLongitude` REAL NOT NULL, `photoPath` TEXT NOT NULL, `jobItemMeasureDto` TEXT NOT NULL, `recordSynchStateId` INTEGER NOT NULL, `recordVersion` INTEGER NOT NULL, PRIMARY KEY(`photoId`))",
+        "tableName": "JOB_ITEM_MEASURE_PHOTO",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`ID` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `descr` TEXT, `filename` TEXT, `estimateId` TEXT, `itemMeasureId` TEXT, `photoDate` TEXT, `photoId` TEXT NOT NULL, `photoLatitude` REAL NOT NULL, `photoLongitude` REAL NOT NULL, `photoPath` TEXT, `jobItemMeasure` TEXT, `recordSynchStateId` INTEGER NOT NULL, `recordVersion` INTEGER NOT NULL)",
         "fields": [
+          {
+            "fieldPath": "ID",
+            "columnName": "ID",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
           {
             "fieldPath": "descr",
             "columnName": "descr",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "filename",
             "columnName": "filename",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
+          },
+          {
+            "fieldPath": "estimateId",
+            "columnName": "estimateId",
+            "affinity": "TEXT",
+            "notNull": false
           },
           {
             "fieldPath": "itemMeasureId",
             "columnName": "itemMeasureId",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "photoDate",
             "columnName": "photoDate",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "photoId",
@@ -1420,13 +2005,13 @@
             "fieldPath": "photoPath",
             "columnName": "photoPath",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
-            "fieldPath": "jobItemMeasureDto",
-            "columnName": "jobItemMeasureDto",
+            "fieldPath": "jobItemMeasure",
+            "columnName": "jobItemMeasure",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "recordSynchStateId",
@@ -1443,16 +2028,16 @@
         ],
         "primaryKey": {
           "columnNames": [
-            "photoId"
+            "ID"
           ],
-          "autoGenerate": false
+          "autoGenerate": true
         },
         "indices": [],
         "foreignKeys": []
       },
       {
-        "tableName": "JobItemEstimateDTO",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`actId` INTEGER NOT NULL, `estimateId` TEXT NOT NULL, `jobId` TEXT NOT NULL, `lineRate` REAL NOT NULL, `mobileEstimateWorks` TEXT NOT NULL, `jobItemEstimatesPhotos` TEXT NOT NULL, `mobileJobItemMeasures` TEXT NOT NULL, `prjJobDto` TEXT NOT NULL, `projectItemId` TEXT NOT NULL, `projectVoId` TEXT NOT NULL, `qty` REAL NOT NULL, `recordSynchStateId` INTEGER NOT NULL, `recordVersion` INTEGER NOT NULL, `trackRouteId` TEXT NOT NULL, PRIMARY KEY(`estimateId`))",
+        "tableName": "JOB_ITEM_ESTIMATE",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`actId` INTEGER NOT NULL, `estimateId` TEXT NOT NULL, `jobId` TEXT, `lineRate` REAL NOT NULL, `jobEstimateWorks` TEXT, `jobItemEstimatePhotos` TEXT, `jobItemMeasure` TEXT, `job` TEXT, `projectItemId` TEXT, `projectVoId` TEXT, `qty` REAL NOT NULL, `recordSynchStateId` INTEGER NOT NULL, `recordVersion` INTEGER NOT NULL, `trackRouteId` TEXT, `jobItemEstimatePhotoStart` TEXT, `jobItemEstimatePhotoEnd` TEXT, `estimateComplete` TEXT, `MEASURE_ACT_ID` INTEGER NOT NULL, `SelectedItemUOM` TEXT, PRIMARY KEY(`estimateId`))",
         "fields": [
           {
             "fieldPath": "actId",
@@ -1470,7 +2055,7 @@
             "fieldPath": "jobId",
             "columnName": "jobId",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "lineRate",
@@ -1479,40 +2064,40 @@
             "notNull": true
           },
           {
-            "fieldPath": "mobileEstimateWorks",
-            "columnName": "mobileEstimateWorks",
+            "fieldPath": "jobEstimateWorks",
+            "columnName": "jobEstimateWorks",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
-            "fieldPath": "jobItemEstimatesPhotos",
-            "columnName": "jobItemEstimatesPhotos",
+            "fieldPath": "jobItemEstimatePhotos",
+            "columnName": "jobItemEstimatePhotos",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
-            "fieldPath": "mobileJobItemMeasures",
-            "columnName": "mobileJobItemMeasures",
+            "fieldPath": "jobItemMeasure",
+            "columnName": "jobItemMeasure",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
-            "fieldPath": "prjJobDto",
-            "columnName": "prjJobDto",
+            "fieldPath": "job",
+            "columnName": "job",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "projectItemId",
             "columnName": "projectItemId",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "projectVoId",
             "columnName": "projectVoId",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "qty",
@@ -1536,7 +2121,37 @@
             "fieldPath": "trackRouteId",
             "columnName": "trackRouteId",
             "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "jobItemEstimatePhotoStart",
+            "columnName": "jobItemEstimatePhotoStart",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "jobItemEstimatePhotoEnd",
+            "columnName": "jobItemEstimatePhotoEnd",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "estimateComplete",
+            "columnName": "estimateComplete",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "MEASURE_ACT_ID",
+            "columnName": "MEASURE_ACT_ID",
+            "affinity": "INTEGER",
             "notNull": true
+          },
+          {
+            "fieldPath": "SelectedItemUOM",
+            "columnName": "SelectedItemUOM",
+            "affinity": "TEXT",
+            "notNull": false
           }
         ],
         "primaryKey": {
@@ -1549,9 +2164,15 @@
         "foreignKeys": []
       },
       {
-        "tableName": "JobItemMeasureDTO",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`actId` INTEGER NOT NULL, `approvalDate` TEXT NOT NULL, `cpa` INTEGER NOT NULL, `endKm` REAL NOT NULL, `estimateId` TEXT NOT NULL, `itemMeasureId` TEXT NOT NULL, `jimNo` TEXT NOT NULL, `jobDirectionId` INTEGER NOT NULL, `jobId` TEXT NOT NULL, `lineAmount` REAL NOT NULL, `lineRate` REAL NOT NULL, `measureDate` TEXT NOT NULL, `measureGroupId` TEXT NOT NULL, `prjItemMeasurePhotoDtos` TEXT NOT NULL, `prjJobDto` TEXT NOT NULL, `prjJobItemEstimateDto` TEXT NOT NULL, `projectItemId` TEXT NOT NULL, `projectVoId` TEXT NOT NULL, `qty` REAL NOT NULL, `recordSynchStateId` INTEGER NOT NULL, `recordVersion` INTEGER NOT NULL, `startKm` REAL NOT NULL, `trackRouteId` TEXT NOT NULL, `entityDescription` TEXT, `selectedItemUom` TEXT, PRIMARY KEY(`actId`))",
+        "tableName": "JOB_ITEM_MEASURE",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`ID` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `actId` INTEGER NOT NULL, `approvalDate` TEXT, `cpa` INTEGER NOT NULL, `endKm` REAL NOT NULL, `estimateId` TEXT, `itemMeasureId` TEXT, `jimNo` TEXT, `jobDirectionId` INTEGER NOT NULL, `jobId` TEXT, `lineAmount` REAL NOT NULL, `lineRate` REAL NOT NULL, `measureDate` TEXT, `measureGroupId` TEXT, `jobItemMeasurePhotos` TEXT NOT NULL, `job` TEXT, `jobItemEstimate` TEXT, `projectItemId` TEXT, `projectVoId` TEXT, `qty` REAL NOT NULL, `recordSynchStateId` INTEGER NOT NULL, `recordVersion` INTEGER NOT NULL, `startKm` REAL NOT NULL, `trackRouteId` TEXT, `entityDescription` TEXT, `selectedItemUom` TEXT)",
         "fields": [
+          {
+            "fieldPath": "ID",
+            "columnName": "ID",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
           {
             "fieldPath": "actId",
             "columnName": "actId",
@@ -1562,7 +2183,7 @@
             "fieldPath": "approvalDate",
             "columnName": "approvalDate",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "cpa",
@@ -1580,19 +2201,19 @@
             "fieldPath": "estimateId",
             "columnName": "estimateId",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "itemMeasureId",
             "columnName": "itemMeasureId",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "jimNo",
             "columnName": "jimNo",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "jobDirectionId",
@@ -1604,7 +2225,7 @@
             "fieldPath": "jobId",
             "columnName": "jobId",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "lineAmount",
@@ -1622,43 +2243,43 @@
             "fieldPath": "measureDate",
             "columnName": "measureDate",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "measureGroupId",
             "columnName": "measureGroupId",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
-            "fieldPath": "prjItemMeasurePhotoDtos",
-            "columnName": "prjItemMeasurePhotoDtos",
+            "fieldPath": "jobItemMeasurePhotos",
+            "columnName": "jobItemMeasurePhotos",
             "affinity": "TEXT",
             "notNull": true
           },
           {
-            "fieldPath": "prjJobDto",
-            "columnName": "prjJobDto",
+            "fieldPath": "job",
+            "columnName": "job",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
-            "fieldPath": "prjJobItemEstimateDto",
-            "columnName": "prjJobItemEstimateDto",
+            "fieldPath": "jobItemEstimate",
+            "columnName": "jobItemEstimate",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "projectItemId",
             "columnName": "projectItemId",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "projectVoId",
             "columnName": "projectVoId",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "qty",
@@ -1688,7 +2309,7 @@
             "fieldPath": "trackRouteId",
             "columnName": "trackRouteId",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "entityDescription",
@@ -1705,17 +2326,35 @@
         ],
         "primaryKey": {
           "columnNames": [
-            "actId"
+            "ID"
           ],
-          "autoGenerate": false
+          "autoGenerate": true
         },
         "indices": [],
         "foreignKeys": []
       },
       {
-        "tableName": "ToDoListEntityDTO",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`actionable` INTEGER NOT NULL, `activityId` INTEGER NOT NULL, `currentRouteId` INTEGER NOT NULL, `data` TEXT NOT NULL, `description` TEXT NOT NULL, `entityDTOS` TEXT NOT NULL, `entityName` TEXT NOT NULL, `location` TEXT NOT NULL, `primaryKeyValues` TEXT NOT NULL, `recordVersion` INTEGER NOT NULL, `trackRouteId` TEXT NOT NULL, PRIMARY KEY(`activityId`))",
+        "tableName": "TODO_ENTITY_TABLE",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `trackRouteIdString` TEXT, `trackRouteIdBytes` BLOB, `actionable` INTEGER NOT NULL, `activityId` INTEGER NOT NULL, `currentRouteId` INTEGER NOT NULL, `data` TEXT, `description` TEXT, `entities` TEXT NOT NULL, `entityName` TEXT, `location` TEXT, `primaryKeyValues` TEXT NOT NULL, `recordVersion` INTEGER, `jobId` TEXT, PRIMARY KEY(`id`))",
         "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "trackRouteIdString",
+            "columnName": "trackRouteIdString",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "trackRouteIdBytes",
+            "columnName": "trackRouteIdBytes",
+            "affinity": "BLOB",
+            "notNull": false
+          },
           {
             "fieldPath": "actionable",
             "columnName": "actionable",
@@ -1738,17 +2377,17 @@
             "fieldPath": "data",
             "columnName": "data",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "description",
             "columnName": "description",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
-            "fieldPath": "entityDTOS",
-            "columnName": "entityDTOS",
+            "fieldPath": "entities",
+            "columnName": "entities",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -1756,13 +2395,13 @@
             "fieldPath": "entityName",
             "columnName": "entityName",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "location",
             "columnName": "location",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "primaryKeyValues",
@@ -1774,18 +2413,18 @@
             "fieldPath": "recordVersion",
             "columnName": "recordVersion",
             "affinity": "INTEGER",
-            "notNull": true
+            "notNull": false
           },
           {
-            "fieldPath": "trackRouteId",
-            "columnName": "trackRouteId",
+            "fieldPath": "jobId",
+            "columnName": "jobId",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           }
         ],
         "primaryKey": {
           "columnNames": [
-            "activityId"
+            "id"
           ],
           "autoGenerate": false
         },
@@ -1813,8 +2452,8 @@
         "foreignKeys": []
       },
       {
-        "tableName": "JobEstimateWorksDTO",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`actId` INTEGER NOT NULL, `estimateId` TEXT NOT NULL, `estWorksPhotos` TEXT, `jobItemEstimate` TEXT NOT NULL, `recordSynchStateId` INTEGER NOT NULL, `recordVersion` INTEGER NOT NULL, `trackRouteId` TEXT NOT NULL, `worksId` TEXT NOT NULL, PRIMARY KEY(`worksId`))",
+        "tableName": "JOB_ESTIMATE_WORKS",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`actId` INTEGER NOT NULL, `estimateId` TEXT, `jobEstimateWorksPhotos` TEXT, `jobItemEstimate` TEXT, `recordSynchStateId` INTEGER NOT NULL, `recordVersion` INTEGER NOT NULL, `trackRouteId` TEXT NOT NULL, `worksId` TEXT NOT NULL, PRIMARY KEY(`worksId`))",
         "fields": [
           {
             "fieldPath": "actId",
@@ -1826,11 +2465,11 @@
             "fieldPath": "estimateId",
             "columnName": "estimateId",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
-            "fieldPath": "estWorksPhotos",
-            "columnName": "estWorksPhotos",
+            "fieldPath": "jobEstimateWorksPhotos",
+            "columnName": "jobEstimateWorksPhotos",
             "affinity": "TEXT",
             "notNull": false
           },
@@ -1838,7 +2477,7 @@
             "fieldPath": "jobItemEstimate",
             "columnName": "jobItemEstimate",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "recordSynchStateId",
@@ -1875,9 +2514,15 @@
         "foreignKeys": []
       },
       {
-        "tableName": "JobEstimateWorksPhotoDTO",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`descr` TEXT NOT NULL, `filename` TEXT NOT NULL, `photoActivityId` INTEGER NOT NULL, `photoDate` TEXT NOT NULL, `photoId` TEXT NOT NULL, `photoLatitude` REAL NOT NULL, `photoLongitude` REAL NOT NULL, `photoPath` TEXT NOT NULL, `estimateWorks` TEXT NOT NULL, `recordSynchStateId` INTEGER NOT NULL, `recordVersion` INTEGER NOT NULL, `worksId` TEXT NOT NULL, PRIMARY KEY(`worksId`))",
+        "tableName": "JOB_ESTIMATE_WORKS_PHOTO",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`Id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `descr` TEXT NOT NULL, `filename` TEXT NOT NULL, `photoActivityId` INTEGER NOT NULL, `photoDate` TEXT NOT NULL, `photoId` TEXT NOT NULL, `photoLatitude` REAL NOT NULL, `photoLongitude` REAL NOT NULL, `photoPath` TEXT NOT NULL, `estimateWorks` TEXT NOT NULL, `recordSynchStateId` INTEGER NOT NULL, `recordVersion` INTEGER NOT NULL, `worksId` TEXT NOT NULL)",
         "fields": [
+          {
+            "fieldPath": "Id",
+            "columnName": "Id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
           {
             "fieldPath": "descr",
             "columnName": "descr",
@@ -1953,7 +2598,86 @@
         ],
         "primaryKey": {
           "columnNames": [
-            "worksId"
+            "Id"
+          ],
+          "autoGenerate": true
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "SECTION_ITEM_TABLE",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `sectionItemId` TEXT, `itemCode` TEXT NOT NULL, `description` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sectionItemId",
+            "columnName": "sectionItemId",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "itemCode",
+            "columnName": "itemCode",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "description",
+            "columnName": "description",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "id"
+          ],
+          "autoGenerate": false
+        },
+        "indices": [
+          {
+            "name": "index_SECTION_ITEM_TABLE_itemCode",
+            "unique": true,
+            "columnNames": [
+              "itemCode"
+            ],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_SECTION_ITEM_TABLE_itemCode` ON `${TABLE_NAME}` (`itemCode`)"
+          }
+        ],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "WORKFLOWs_TABLE",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`activities` TEXT NOT NULL, `infoClasses` TEXT NOT NULL, `workflows` TEXT NOT NULL, PRIMARY KEY(`activities`))",
+        "fields": [
+          {
+            "fieldPath": "activities",
+            "columnName": "activities",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "infoClasses",
+            "columnName": "infoClasses",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "workflows",
+            "columnName": "workflows",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "activities"
           ],
           "autoGenerate": false
         },
@@ -1961,31 +2685,37 @@
         "foreignKeys": []
       },
       {
-        "tableName": "SECTION_ITEM_TABLE",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`sectionItemId` TEXT NOT NULL, `itemCode` TEXT, `description` TEXT NOT NULL, PRIMARY KEY(`sectionItemId`))",
+        "tableName": "WorkStep_TABLE",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`WorkStep_ID` INTEGER NOT NULL, `Step_Code` TEXT, `Descrip` TEXT, `Act_Type_id` INTEGER, PRIMARY KEY(`WorkStep_ID`))",
         "fields": [
           {
-            "fieldPath": "sectionItemId",
-            "columnName": "sectionItemId",
-            "affinity": "TEXT",
+            "fieldPath": "WorkStep_ID",
+            "columnName": "WorkStep_ID",
+            "affinity": "INTEGER",
             "notNull": true
           },
           {
-            "fieldPath": "itemCode",
-            "columnName": "itemCode",
+            "fieldPath": "Step_Code",
+            "columnName": "Step_Code",
             "affinity": "TEXT",
             "notNull": false
           },
           {
-            "fieldPath": "description",
-            "columnName": "description",
+            "fieldPath": "Descrip",
+            "columnName": "Descrip",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
+          },
+          {
+            "fieldPath": "Act_Type_id",
+            "columnName": "Act_Type_id",
+            "affinity": "INTEGER",
+            "notNull": false
           }
         ],
         "primaryKey": {
           "columnNames": [
-            "sectionItemId"
+            "WorkStep_ID"
           ],
           "autoGenerate": false
         },
@@ -1996,7 +2726,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '2509f56b6747da406eac5527afc2996e')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '39e728d7014488f70b6cf3912444ae4c')"
     ]
   }
 }

@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+    <LinearLayout
+            android:layout_marginTop="@dimen/dimen_10dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingStart="@dimen/dimen_30dp">
+
+        <TextView
+                android:id="@+id/rate_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="@dimen/dimen_20dp"
+                android:layout_gravity="center"
+                android:text="Tender Rate"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:textColor="@android:color/black" />
+
+        <TextView
+                android:id="@+id/current_rate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:hint="@string/total"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:textColor="@android:color/black" />
+
+
+    </LinearLayout>
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingStart="@dimen/dimen_30dp">
+
+        <TextView
+                android:id="@+id/new_qty_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginEnd="@dimen/dimen_20dp"
+                android:text="@string/quantity"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:textColor="@android:color/black" />
+        <EditText
+                android:id="@+id/new_qty"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:digits="-.0123456789"
+                android:paddingStart="@dimen/dimen_20dp"
+                android:backgroundTint="@color/itis_burnt_orange"
+                android:inputType="numberDecimal"
+                android:minWidth="@dimen/dimen_50dp"
+                android:text="1"
+                android:visibility="visible" />
+<!--        <EditText-->
+<!--                android:id="@+id/new_qy"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_gravity="center"-->
+<!--                android:inputType="numberDecimal"-->
+<!--                android:paddingStart="@dimen/dimen_30dp"-->
+<!--                android:hint="@string/qty_123"-->
+<!--                android:textAppearance="?android:attr/textAppearanceSmall"-->
+<!--                android:textColor="@android:color/black" />-->
+
+
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_marginTop="@dimen/dimen_10dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingStart="@dimen/dimen_30dp">
+
+        <TextView
+                android:id="@+id/totsl_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="@dimen/dimen_20dp"
+                android:text="@string/total_amount"
+                android:layout_gravity="center"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:textColor="@android:color/black" />
+
+        <TextView
+                android:id="@+id/new_total"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:hint="@string/total"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:textColor="@android:color/black" />
+
+
+    </LinearLayout>
+
+</LinearLayout>

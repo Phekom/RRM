@@ -1,10 +1,10 @@
 package za.co.xisystems.itis_rrm.data.localDB.dao
 
-import androidx.lifecycle.LiveData
-import androidx.room.*
-import za.co.xisystems.itis_rrm.data.localDB.entities.CURRENT_LOGGEDIN_USER
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
 import za.co.xisystems.itis_rrm.data.localDB.entities.ToDoGroupsDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 
 /**
  * Created by Francis Mahlava on 2019/11/26.
@@ -13,8 +13,10 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 @Dao
 interface ToDoGroupsDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertToDoGroups(toDoGroups : List<ToDoGroupsDTO> )
+    fun insertToDoGroups(toDoGroup: ToDoGroupsDTO)
 
+    @Query("SELECT * FROM TODO_GROUPS_TABLE WHERE groupId = :groupId")
+    fun checkIfGroupCollectionExist(groupId: String): Boolean
 
 //    @Query("SELECT * FROM USER_TABLE WHERE uid = $CURRENT_LOGGEDIN_USER")
 //    fun getuser() : LiveData<UserDTO>
@@ -28,12 +30,12 @@ interface ToDoGroupsDao {
 //    @Query("SELECT userRoles FROM USER_TABLE WHERE uid = $CURRENT_LOGGEDIN_USER")
 //    fun getUserRole() : LiveData<List<UserDTO>>
 
-    @Delete
-    suspend fun removeUser(userDTO: UserDTO)
-
-    @Query("DELETE FROM USER_TABLE WHERE uid = $CURRENT_LOGGEDIN_USER")
-    fun deleteUser()
-
-    @Query("SELECT * FROM USER_TABLE WHERE uid = $CURRENT_LOGGEDIN_USER LIMIT 1" )
-    fun getPin() : LiveData<UserDTO>
+    //    @Delete
+//    suspend fun removeUser(userDTO: UserDTO)
+//
+//    @Query("DELETE FROM USER_TABLE WHERE uid = $CURRENT_LOGGEDIN_USER")
+//    fun deleteUser()
+//
+    @Query("DELETE FROM TODO_GROUPS_TABLE")
+    fun deleteAll()
 }

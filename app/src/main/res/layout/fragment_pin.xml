@@ -2,7 +2,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:tag="fragment_Pin"
     tools:context="za.co.xisystems.itismaintenance.old_app.fragments.PinFragment">
@@ -14,7 +13,7 @@
         android:layout_marginBottom="5dp"
         android:layout_marginLeft="37dp"
         android:layout_marginRight="37dp"
-        android:background="@drawable/orange_round_corner"
+        android:background="@drawable/round_corner_orange"
         android:gravity="center"
         android:orientation="horizontal"
         android:visibility="gone">
@@ -68,7 +67,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="2dp"
             android:layout_weight="1"
-            android:background="@drawable/gray_round_corner"
+            android:background="@drawable/round_corner_gray"
             android:text="@string/no_1"
             android:textColor="@android:color/white" />
 
@@ -78,7 +77,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="2dp"
             android:layout_weight="1"
-            android:background="@drawable/gray_round_corner"
+            android:background="@drawable/round_corner_gray"
             android:text="@string/no_2"
             android:textColor="@android:color/white" />
 
@@ -88,7 +87,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="2dp"
             android:layout_weight="1"
-            android:background="@drawable/gray_round_corner"
+            android:background="@drawable/round_corner_gray"
             android:text="@string/no_3"
             android:textColor="@android:color/white" />
     </LinearLayout>
@@ -107,7 +106,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="2dp"
             android:layout_weight="1"
-            android:background="@drawable/gray_round_corner"
+            android:background="@drawable/round_corner_gray"
             android:text="@string/no_4"
             android:textColor="@android:color/white" />
 
@@ -117,7 +116,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="2dp"
             android:layout_weight="1"
-            android:background="@drawable/gray_round_corner"
+            android:background="@drawable/round_corner_gray"
             android:text="@string/no_5"
             android:textColor="@android:color/white" />
 
@@ -127,7 +126,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="2dp"
             android:layout_weight="1"
-            android:background="@drawable/gray_round_corner"
+            android:background="@drawable/round_corner_gray"
             android:text="@string/no_6"
             android:textColor="@android:color/white" />
     </LinearLayout>
@@ -146,7 +145,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="2dp"
             android:layout_weight="1"
-            android:background="@drawable/gray_round_corner"
+            android:background="@drawable/round_corner_gray"
             android:text="@string/no_7"
             android:textColor="@android:color/white" />
 
@@ -156,7 +155,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="2dp"
             android:layout_weight="1"
-            android:background="@drawable/gray_round_corner"
+            android:background="@drawable/round_corner_gray"
             android:text="@string/no_8"
             android:textColor="@android:color/white" />
 
@@ -166,7 +165,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="2dp"
             android:layout_weight="1"
-            android:background="@drawable/gray_round_corner"
+            android:background="@drawable/round_corner_gray"
             android:text="@string/no_9"
             android:textColor="@android:color/white" />
     </LinearLayout>
@@ -186,7 +185,7 @@
             android:layout_height="match_parent"
             android:layout_margin="2dp"
             android:layout_weight="1"
-            android:background="@drawable/gray_round_corner"
+            android:background="@drawable/round_corner_gray"
             android:text="@string/b_uppercase"
             android:textColor="@android:color/white" />
 
@@ -196,7 +195,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="2dp"
             android:layout_weight="1"
-            android:background="@drawable/gray_round_corner"
+            android:background="@drawable/round_corner_gray"
             android:text="@string/no_0"
             android:textColor="@android:color/white" />
 
@@ -206,7 +205,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="2dp"
             android:layout_weight="1"
-            android:background="@drawable/gray_round_corner"
+            android:background="@drawable/round_corner_gray"
             android:text="@string/c_uppercase"
             android:textColor="@android:color/white" />
 

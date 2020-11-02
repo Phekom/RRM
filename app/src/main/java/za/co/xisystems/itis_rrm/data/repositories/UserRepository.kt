@@ -4,98 +4,105 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import za.co.xisystems.itis_rrm.custom.errors.AuthException
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.UserRoleDTO
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
-import za.co.xisystems.itis_rrm.data.network.RoleResponseListener
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
-import za.co.xisystems.itis_rrm.data.network.responses.AuthResponse
-import za.co.xisystems.itis_rrm.utils.ApiException
+import za.co.xisystems.itis_rrm.ui.auth.AuthListener
 import za.co.xisystems.itis_rrm.utils.Coroutines
-import za.co.xisystems.itis_rrm.utils.NoInternetException
 
 /**
  * Created by Francis Mahlava on 2019/10/23.
  */
 class UserRepository(
-    private val api : BaseConnectionApi,
-    private val Db : AppDatabase
-) : SafeApiRequest(){
+    private val api: BaseConnectionApi,
+    private val Db: AppDatabase
+) : SafeApiRequest() {
 
-    private val userRoles = MutableLiveData<List<UserRoleDTO>>()
-    var roleResponseListener: RoleResponseListener? = null
+    private val users = MutableLiveData<UserDTO>()
+    private val userError = MutableLiveData<String>()
+
+    private var authListener: AuthListener? = null
+
     init {
-        userRoles.observeForever {
-            roleResponseListener?.onRoleSuccess(it)
-            saveRoles(it)
-//            saveCont(it)
-
+        users.observeForever { user ->
+            Coroutines.main {
+                saveUser(user)
+                return@main
+            }
+        }
+        userError.observeForever { error_msg ->
+            Coroutines.main {
+                val authEx =
+                    AuthException(
+                        error_msg
+                    )
+                throw authEx
+            }
         }
     }
 
-    private fun saveRoles(userRoles: List<UserRoleDTO>) {
+    suspend fun getPin(): String {
+        return withContext(Dispatchers.IO) {
+            Db.getUserDao().getPin()
+        }
+    }
+
+    suspend fun getUser(): LiveData<UserDTO> {
+        return withContext(Dispatchers.IO) {
+            Db.getUserDao().getUser()
+        }
+    }
+
+    suspend fun userRegister(
+        username: String,
+        password: String,
+        phoneNumber: String,
+        IMEI: String,
+        androidDevice: String
+    ) {
+        val authResponse =
+            apiRequest { api.userRegister(androidDevice, IMEI, phoneNumber, username, password) }
+
+        if (authResponse.errorMessage != null) {
+            val authException =
+                AuthException(authResponse.errorMessage)
+            throw authException
+        } else {
+            users.postValue(authResponse.user)
+        }
+    }
+
+    fun upDateUser(
+        phoneNumber: String,
+        IMEI: String,
+        androidDevice: String,
+        confirmPin: String
+    ) {
         Coroutines.io {
-//            if (userRoles != null) {
-//                for (role in userRoles) {
-//
-//                    Db.getUserRoleDao().saveRole(role)
-//                }
-//            }
-            Db.getUserRoleDao().saveAllRoles(userRoles)
-
+            Db.getUserDao().updateUser(confirmPin, phoneNumber, IMEI, androidDevice) // userId,
         }
     }
 
-    suspend fun getUserRoles() : LiveData<List<UserRoleDTO>> {
-        return withContext(Dispatchers.IO){
-            val userId = Db.getUserDao().getuserID()
-
-            fetchUserRoles(userId)
-            Db.getUserRoleDao().getRoles()
+    fun upDateUserPin(confirmNewPin: String, enterOldPin: String) {
+        Coroutines.io {
+            Db.getUserDao().upDateUserPin(confirmNewPin, enterOldPin) // userId,
         }
     }
 
-    suspend fun userRegister(username: String, password: String ): AuthResponse {
+    private suspend fun saveUser(user: UserDTO) {
+        Coroutines.io {
 
-        val IMEI = "7436738"
-        val phoneNumber = ""
-        val androidDevice = "svcc"
-        return apiRequest { api.userRegister(androidDevice, IMEI, phoneNumber, username, password) }
-//        return apiRequest { BaseConnectionApi().userRegister(androidDevice, IMEI, phoneNumber, username, password) }
-    }
-
-    private suspend fun fetchUserRoles(userId : String){
-//            val myResponse = apiRequest { api.userRoles(userId) }
-//        userRoles.postValue(myResponse.userRoles)
-
-
-        try {
-            val userRoleResponse = apiRequest { api.userRoles(userId) }
-           userRoleResponse.userRoles.let {
-                roleResponseListener?.onRoleSuccess(it)
-                saveRoles(it)
+            if (!Db.getUserDao().checkUserExists(user.userId)) {
+                Db.getUserDao().insert(user)
             }
 
-
-           roleResponseListener?.onFailure(userRoleResponse.errorMessage)
-        }catch(e: ApiException){
-            roleResponseListener?.onFailure(e.message!!)
-        }catch (e: NoInternetException){
-            roleResponseListener?.onFailure(e.message!!)
+            if (user.userRoles.isNotEmpty()) {
+                for (userRole in user.userRoles) {
+                    Db.getUserRoleDao().saveRole(userRole)
+                }
+            }
         }
-
-
     }
-
-
-
-
-    suspend fun saveUser(userDTO: UserDTO) = Db.getUserDao().insert(userDTO)
-
-    fun getUser() = Db.getUserDao().getuser()
-
-    suspend fun removeUser(userDTO: UserDTO) = Db.getUserDao().removeUser(userDTO)
-    fun clearUser() = Db.getUserDao().deleteUser()
-
 }

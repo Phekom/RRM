@@ -11,10 +11,10 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
  * Created by Francis Mahlava on 2019/11/26.
  */
 
-class HomeRepository (
-    private val api : BaseConnectionApi,
-    private val Db : AppDatabase
-): SafeApiRequest() {
+class HomeRepository(
+    private val api: BaseConnectionApi,
+    private val appDb: AppDatabase
+) : SafeApiRequest() {
 
     private val health = MutableLiveData<HealthDTO>()
 
@@ -26,32 +26,19 @@ class HomeRepository (
 
     private fun saveHealth(health: HealthDTO?) {
         Coroutines.io {
-//            prefs.savelastSavedAt(LocalDateTime.now().toString())
-//            Db.getVoItemDao().insertVoItem(voItems)
         }
     }
 
-//    suspend fun getHealth() : LiveData<HealthDTO>{
-//        return withContext(Dispatchers.IO){
-//            val userName = Db.getUserDao().getUserName()
-//                fetchHealthCheck(userName)
-////            Db.getHealthDao().getLife()
-//        }
-//    }
-
-    suspend fun fetchHealthCheck(userId : String){
-        if (isFetchNeeded()){
-
-            val myResponse = apiRequest { api.HealthCheck(userId) }
+    suspend fun fetchHealthCheck(userId: String) {
+        if (isFetchNeeded()) {
+            val myResponse = apiRequest { api.healthCheck(userId) }
             health.postValue(myResponse.isAlive)
         }
-
     }
 
     private fun isFetchNeeded(): Boolean {
         return true
     }
-
 }
 
 private fun <T> MutableLiveData<T>.postValue(alive: Int) {

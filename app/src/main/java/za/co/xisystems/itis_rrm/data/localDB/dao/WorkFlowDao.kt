@@ -1,5 +1,6 @@
 package za.co.xisystems.itis_rrm.data.localDB.dao
 
+import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
@@ -14,28 +15,17 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.WorkFlowDTO
 interface WorkFlowDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertWorkFlows( workFlows : List<WorkFlowDTO> )
+    suspend fun insertWorkFlow(workFlow: WorkFlowDTO)
 
-//    @Query("SELECT * FROM WORKFLOW_TABLE WHERE workflowId = :workflowId")
-//    fun checkWorkFlowExistsWorkflowID(workflowId: Long): LiveData<WorkFlowDTO>
-//
-//    @Query("SELECT * FROM WORKFLOW_TABLE ")
-//    fun getWorkflow() : LiveData<List<WorkFlowDTO>>
+    @Query("SELECT * FROM WORKFLOW_TABLE WHERE workflowId = :workflowId")
+    fun checkWorkFlowExistsWorkflowID(workflowId: Long): Boolean
 
+//    @Query("INSERT INTO WORKFLOW_TABLE (dateCreated,errorRouteId, revNo, startRouteId, userId, wfHeaderId, workFlowRoute, workflowId) VALUES (:dateCreated,:errorRouteId, :revNo, :startRouteId, :userId, :wfHeaderId, :workFlowRoute, :workflowId)")
+//    fun insertWorkFlow(dateCreated: String,errorRouteId: Long, revNo: Long, startRouteId: Long, userId: Long, wfHeaderId: Long, workFlowRoute: ArrayList<WorkFlowRouteDTO>?, workflowId: Long)
 
-//    @Query("SELECT * FROM WORKFLOW_TABLE WHERE trackRouteId = :trackRouteId")
-//    fun getEntitiesForTrackRouteId(trackRouteId: String): LiveData<WorkFlowDTO>
-//
-//
-//    @Query("SELECT * FROM WORKFLOW_TABLE WHERE activityId = :actId")
-//    fun getEntitiesListForActivityId(actId: String): LiveData<List<WorkFlowDTO>>
-//
-//
-//    @Query("SELECT * FROM WORKFLOW_TABLE WHERE activityId = :actId AND jobId = :jobId")
-//    fun getEntitiesForJobId(jobId : String, actId : Int ): LiveData<ArrayList<WorkFlowDTO>>
-
+    @Query("SELECT * FROM WORKFLOW_TABLE ")
+    fun getWorkflows(): LiveData<List<WorkFlowDTO>>
 
     @Query("DELETE FROM WORKFLOW_TABLE")
     fun deleteAll()
-
 }

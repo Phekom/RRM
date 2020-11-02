@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <androidx.core.widget.NestedScrollView
+        style="@style/_default"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:animateLayoutChanges="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:animateLayoutChanges="true"
+            android:orientation="vertical"
+            android:padding="@dimen/small">
+
+            <LinearLayout
+                android:id="@+id/selectProjectLayout"
+                style="@style/_linear_layout">
+
+                <TextView
+                    style="@style/_orangeTextLabel"
+                    android:layout_marginStart="@dimen/xsmall"
+                    android:layout_marginTop="@dimen/small"
+                    android:text="@string/select_contract" />
+
+                <Spinner
+                    android:id="@+id/contractSpinner"
+                    style="@style/_default"
+                    android:layout_marginTop="@dimen/xsmall" />
+
+                <View style="@style/_hline" />
+
+                <TextView
+                    android:id="@+id/TextLabel"
+                    style="@style/_orangeTextLabel"
+                    android:layout_marginStart="@dimen/xsmall"
+                    android:layout_marginTop="@dimen/medium"
+                    android:text="@string/select_project" />
+
+                <Spinner
+                    android:id="@+id/projectSpinner"
+                    style="@style/_default"
+                    android:layout_marginTop="@dimen/xsmall" />
+
+                <View style="@style/_hline" />
+
+                <androidx.appcompat.widget.AppCompatEditText
+                    android:id="@+id/descriptionEditText"
+                    style="@style/_default"
+                    android:layout_marginStart="@dimen/xsmall"
+                    android:layout_marginTop="@dimen/medium"
+                    android:layout_marginBottom="@dimen/xsmall"
+                    android:backgroundTint="@color/itis_burnt_orange"
+                    android:hint="@string/description"
+                    android:outlineAmbientShadowColor="@color/red"
+                    android:outlineSpotShadowColor="@color/red"
+                    android:shadowColor="@color/red"
+                    android:textColorHighlight="@color/red" />
+
+                <Button
+                    android:id="@+id/selectContractProjectContinueButton"
+                    style="@style/_button"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/button_size"
+                    android:layout_margin="@dimen/small"
+                    android:text="@string/confirm_project_selection" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+    <ProgressBar
+        android:id="@+id/data_loading"
+        android:layout_width="46dp"
+        android:layout_height="51dp"
+        android:layout_marginTop="150dp"
+        android:layout_marginBottom="100dp"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.3" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
