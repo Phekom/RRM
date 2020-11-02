@@ -656,7 +656,6 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
             val result = getRouteSectionPoint(
                 estimateLocation
             )
-            // TODO: Tighten up location security
             if (result.isNullOrBlank() || result.contains(other = "xxx" as CharSequence, ignoreCase = true)) {
                 this@EstimatePhotoFragment.disableGlide = true
                 showLocationWarning()
