@@ -190,7 +190,6 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
                                 MotionToast.LONG_DURATION,
                                 ResourcesCompat.getFont(this.applicationContext, R.font.helvetica_regular)
                             )
-
                         }
                     }
                     val declineAlert = builder.create()

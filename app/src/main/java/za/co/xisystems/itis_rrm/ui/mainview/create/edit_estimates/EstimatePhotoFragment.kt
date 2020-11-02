@@ -681,7 +681,6 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
 
             resetPhotos()
         }
-
     }
 
     private fun resetPhotos() {
