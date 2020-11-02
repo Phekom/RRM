@@ -25,6 +25,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.coroutineScope
 import androidx.lifecycle.lifecycleScope
@@ -66,7 +67,6 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectSectionDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.SectionPointDTO
 import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.services.LocationModel
-import za.co.xisystems.itis_rrm.ui.extensions.motionToast
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModel
@@ -584,6 +584,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
                         textView = startSectionTextView,
                         isStart = true
                     )
+
                     PhotoType.END -> updatePhotos(
                         imageUri = imageUri.also { endImageUri = it },
                         animate = true,
@@ -655,15 +656,18 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
             val result = getRouteSectionPoint(
                 estimateLocation
             )
-            // TODO: Tighten up location security
-            if (result.isNullOrBlank() || result.contains(other = "xxxxxxxxx" as CharSequence, ignoreCase = true)) {
+            if (result.isNullOrBlank() || result.contains(other = "xxx" as CharSequence, ignoreCase = true)) {
                 this@EstimatePhotoFragment.disableGlide = true
                 showLocationWarning()
+                resetPhotos()
             }
         }
         withContext(uiScope.coroutineContext) {
-            if (!this@EstimatePhotoFragment.disableGlide)
+            if (!this@EstimatePhotoFragment.disableGlide) {
                 validateRouteSection(newJob?.ProjectId!!)
+            } else {
+                resetPhotos()
+            }
         }
 
         withContext(uiScope.coroutineContext) {
@@ -674,8 +678,10 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
                     itemidPhototype
                 )
             }
+
             resetPhotos()
         }
+
     }
 
     private fun resetPhotos() {
@@ -754,8 +760,14 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
 
     private fun showLocationWarning() {
         if (!locationWarning) {
-            this@EstimatePhotoFragment.requireActivity()
-                .motionToast(getString(string.no_section_for_project), MotionToast.TOAST_ERROR)
+            MotionToast.createColorToast(
+                this.requireActivity(),
+                getString(string.no_section_for_project),
+                MotionToast.TOAST_ERROR,
+                MotionToast.GRAVITY_CENTER,
+                MotionToast.LONG_DURATION,
+                ResourcesCompat.getFont(this.requireContext(), R.font.helvetica_regular)
+            )
             locationWarning = true
         }
     }

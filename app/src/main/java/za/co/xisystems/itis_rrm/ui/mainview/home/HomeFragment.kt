@@ -12,6 +12,7 @@ import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
+import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -82,10 +83,13 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                         }
                     }
                 } else {
-                    this@HomeFragment.motionToast(
+                    MotionToast.createColorToast(
+                        this@HomeFragment.requireActivity(),
                         getString(R.string.please_connect_to_internet_to_up_sync_offline_workflows),
                         MotionToast.TOAST_NO_INTERNET,
-                        MotionToast.GRAVITY_TOP
+                        MotionToast.GRAVITY_TOP,
+                        MotionToast.LONG_DURATION,
+                        ResourcesCompat.getFont(this@HomeFragment.requireContext(), R.font.helvetica_regular)
                     )
                 }
             }
@@ -274,7 +278,14 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
     private fun handleBigSync(result: XIResult<Boolean>) {
         when (result) {
             is XISuccess -> {
-                this.motionToast("Sync Complete", MotionToast.TOAST_SUCCESS)
+                MotionToast.createColorToast(
+                    this.requireActivity(),
+                    "Sync Complete",
+                    MotionToast.TOAST_SUCCESS,
+                    MotionToast.GRAVITY_CENTER,
+                    MotionToast.LONG_DURATION,
+                    ResourcesCompat.getFont(this.requireContext(), R.font.helvetica_regular)
+                )
             }
             is XIStatus -> {
                 sharedViewModel.setMessage(result.message)
