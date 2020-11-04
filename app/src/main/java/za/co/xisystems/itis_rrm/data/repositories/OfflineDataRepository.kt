@@ -943,12 +943,12 @@ class OfflineDataRepository(
 
     private fun saveTaskList(toDoListGroups: ArrayList<ToDoGroupsDTO>?) {
 
-        if (toDoListGroups != null) {
-            saveUserTaskList(toDoListGroups)
+        toDoListGroups?.let{
+            saveUserTaskList(it)
         }
     }
 
-    private fun saveUserTaskList(toDoListGroups: ArrayList<ToDoGroupsDTO>?) {
+    private fun saveUserTaskList(toDoListGroups: ArrayList<ToDoGroupsDTO>) {
         Coroutines.io {
             if (toDoListGroups != null) {
                 for (toDoListGroup in toDoListGroups) {

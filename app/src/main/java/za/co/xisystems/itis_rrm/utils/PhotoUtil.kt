@@ -139,7 +139,7 @@ object PhotoUtil {
         }
     }
 
-    fun cleanupDevice() {
+    fun cleanupDevice() = Coroutines.io {
 
         val presentTime: Long = (Date().time)
         File(

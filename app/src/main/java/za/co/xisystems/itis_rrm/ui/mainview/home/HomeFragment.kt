@@ -12,12 +12,12 @@ import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
-import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenStarted
 import kotlinx.android.synthetic.main.fragment_home.*
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.kodein.di.KodeinAware
@@ -43,7 +43,9 @@ import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModelFactory
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
+import kotlin.coroutines.cancellation.CancellationException
 
+@ExperimentalStdlibApi
 class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
 
     override val kodein by kodein()
@@ -55,12 +57,18 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
     private var networkEnabled: Boolean = false
     private lateinit var userDTO: UserDTO
     private var uiScope = UiLifecycleScope()
+    private lateinit var synchJob: Job
     private val colorConnected: Int
         get() = Color.parseColor("#55A359")
     private val colorNotConnected: Int
         get() = Color.RED
 
-    private val bigSyncObserver = Observer<XIResult<Boolean>> { handleBigSync(it) }
+    @OptIn(ExperimentalStdlibApi::class)
+    private val bigSyncObserver = Observer<XIResult<Boolean>> {
+        Coroutines.main {
+            handleBigSync(it)
+        }
+    }
 
     init {
 
@@ -83,13 +91,11 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                         }
                     }
                 } else {
-                    MotionToast.createColorToast(
-                        this@HomeFragment.requireActivity(),
+                    motionToast(
                         getString(R.string.please_connect_to_internet_to_up_sync_offline_workflows),
                         MotionToast.TOAST_NO_INTERNET,
-                        MotionToast.GRAVITY_TOP,
+                        MotionToast.GRAVITY_BOTTOM,
                         MotionToast.LONG_DURATION,
-                        ResourcesCompat.getFont(this@HomeFragment.requireContext(), R.font.helvetica_regular)
                     )
                 }
             }
@@ -151,7 +157,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
      * Activity's lifecycle.
      */
     override fun onPause() {
-        homeViewModel.databaseStatus.removeObservers(viewLifecycleOwner)
+        homeViewModel.databaseState.removeObservers(viewLifecycleOwner)
         uiScope.destroy()
         super.onPause()
     }
@@ -183,6 +189,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
         return inflater.inflate(R.layout.fragment_home, container, false)
     }
 
+    @ExperimentalStdlibApi
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
@@ -221,6 +228,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
         }
     }
 
+    @ExperimentalStdlibApi
     private fun initSwipeToRefresh() {
         items_swipe_to_refresh.setProgressBackgroundColorSchemeColor(
             ContextCompat.getColor(
@@ -238,7 +246,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
         }
     }
 
-    private fun checkConnectivity() {
+    private fun checkConnectivity(): Boolean {
         val lm = requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager
         gpsEnabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
         networkEnabled = ServiceUtil.isNetworkAvailable(requireActivity().applicationContext)
@@ -246,6 +254,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
         if (!networkEnabled) {
             dataEnabled.setText(R.string.mobile_data_not_connected)
             dataEnabled.setTextColor(colorNotConnected)
+            return false
         } else {
             dataEnabled.setText(R.string.mobile_data_connected)
             dataEnabled.setTextColor(colorConnected)
@@ -255,12 +264,15 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
         if (!gpsEnabled) {
             locationEnabled.text = requireActivity().getString(R.string.gps_not_connected)
             locationEnabled.setTextColor(colorNotConnected)
+            return false
         } else {
             locationEnabled.text = requireActivity().getString(R.string.gps_connected)
             locationEnabled.setTextColor(colorConnected)
+            return true
         }
     }
 
+    @OptIn(ExperimentalStdlibApi::class)
     private fun retrySync() {
         IndefiniteSnackbar.hide()
         Coroutines.main {
@@ -270,28 +282,32 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
 
     private fun ping() {
         Coroutines.main {
-            if (networkEnabled)
+            if (networkEnabled) {
                 acquireUser()
+            } else {
+                synchJob.cancel(CancellationException("Connectivity lost ... please try again later"))
+            }
         }
     }
 
-    private fun handleBigSync(result: XIResult<Boolean>) {
+    @ExperimentalStdlibApi
+    private suspend fun handleBigSync(result: XIResult<Boolean>) {
         when (result) {
             is XISuccess -> {
-                MotionToast.createColorToast(
-                    this.requireActivity(),
+                motionToast(
                     "Sync Complete",
                     MotionToast.TOAST_SUCCESS,
                     MotionToast.GRAVITY_BOTTOM,
                     MotionToast.LONG_DURATION,
-                    ResourcesCompat.getFont(this.requireContext(), R.font.helvetica_regular)
                 )
+                synchJob.join()
             }
             is XIStatus -> {
                 sharedViewModel.setMessage(result.message)
             }
             is XIError -> {
                 sharedViewModel.setMessage("Sync Failed")
+                synchJob.cancel(CancellationException(result.message, result.exception))
                 sharedViewModel.toggleLongRunning(false)
                 items_swipe_to_refresh.isRefreshing = false
                 XIErrorHandler.crashGuard(
@@ -307,16 +323,15 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
         }
     }
 
+    @ExperimentalStdlibApi
     private suspend fun bigSync() = uiScope.launch(uiScope.coroutineContext) {
         sharedViewModel.setMessage("Data Loading")
-        handleBigSync(XIProgress(true))
-        homeViewModel.databaseStatus.observe(viewLifecycleOwner, bigSyncObserver)
-        val job = homeViewModel.fetchAllData(userDTO.userId)
-        job.join()
+        homeViewModel.databaseState.observe(viewLifecycleOwner, bigSyncObserver)
+        synchJob = homeViewModel.fetchAllData(userDTO.userId)
         ping()
-        handleBigSync(XIProgress(false))
     }
 
+    @ExperimentalStdlibApi
     private fun promptUserToSync() {
         val syncDialog: AlertDialog.Builder =
             AlertDialog.Builder(activity) // android.R.style.Theme_DeviceDefault_Dialog
@@ -326,7 +341,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                 .setMessage("No RRM data detected. Please synchronise the local database for contract and project information.")
                 .setCancelable(false)
                 .setIcon(R.drawable.ic_baseline_cloud_download_24)
-                .setPositiveButton(R.string.ok) { dialog, whichButton ->
+                .setPositiveButton(R.string.ok) { _, _ ->
                     Coroutines.main {
                         bigSync()
                     }

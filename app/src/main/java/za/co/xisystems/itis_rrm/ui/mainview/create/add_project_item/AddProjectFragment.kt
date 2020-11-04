@@ -92,7 +92,7 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
                 unsubmittedViewModel.jobtoEdit_Item.observe(
                     viewLifecycleOwner,
                     { jobToEdit ->
-                        toast(jobToEdit.Descr)
+                        toast("Editing ${jobToEdit.Descr}")
                         Coroutines.main {
                             projectID = jobToEdit.ProjectId
                             job = jobToEdit
@@ -108,6 +108,9 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
                             totalCostTextView.visibility = View.VISIBLE
 
                             createViewModel.setJobToEditItem(jobToEdit)
+
+                            // Set job description init actionBar
+                            (activity as MainActivity).supportActionBar?.title = jobToEdit.Descr
 
                             Coroutines.main {
                                 val projectItemData =

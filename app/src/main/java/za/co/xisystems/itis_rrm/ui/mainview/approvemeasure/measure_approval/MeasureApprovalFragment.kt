@@ -10,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import androidx.appcompat.app.AlertDialog
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
@@ -25,7 +26,16 @@ import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
+import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
+import za.co.xisystems.itis_rrm.custom.results.XIError
+import za.co.xisystems.itis_rrm.custom.results.XIProgress
+import za.co.xisystems.itis_rrm.custom.results.XIResult
+import za.co.xisystems.itis_rrm.custom.results.XIStatus
+import za.co.xisystems.itis_rrm.custom.results.XISuccess
+import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.WorkflowJobDTO
+import za.co.xisystems.itis_rrm.ui.extensions.doneProgress
 import za.co.xisystems.itis_rrm.ui.extensions.failProgress
 import za.co.xisystems.itis_rrm.ui.extensions.initProgress
 import za.co.xisystems.itis_rrm.ui.extensions.motionToast
@@ -46,6 +56,45 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
     private lateinit var measurementsToApprove: ArrayList<JobItemMeasureDTO>
     lateinit var dialog: Dialog
     lateinit var progressButton: Button
+    private var workObserver = Observer<XIResult<WorkflowJobDTO>> { handleWorkSubmission(it) }
+    private var flowDirection: Int = 0
+    private var measuresProcessed: Int = 0
+
+    private fun handleWorkSubmission(result: XIResult<WorkflowJobDTO>){
+        when (result) {
+            is XISuccess -> {
+                measuresProcessed += 1
+                val job = result.data
+                Timber.d("$measuresProcessed vs ${job.workflowItemMeasures?.size}")
+                this.motionToast("Measurements approved",MotionToast.TOAST_SUCCESS)
+                measurementsToApprove.clear()
+                initRecyclerView(measurementsToApprove.toMeasureItem())
+                progressButton.doneProgress(progressButton.text.toString())
+                popViewOnJobSubmit(flowDirection)
+            }
+            is XIError -> {
+                progressButton.failProgress(result.message)
+                XIErrorHandler.crashGuard(this.requireView(), result, refreshAction = { retryMeasurements() })
+            }
+            is XIStatus -> {
+                this.motionToast(result.message, MotionToast.TOAST_INFO)
+            }
+            is XIProgress -> {
+                when (result.isLoading){
+                    true -> progressButton.startProgress("Submitting ...")
+                    else -> progressButton.doneProgress(progressButton.text.toString())
+                }
+            }
+        }
+    }
+
+    private fun retryMeasurements(){
+        IndefiniteSnackbar.hide()
+        Coroutines.main {
+            moveJobToNextWorkflow(WorkflowDirection.NEXT)
+            approveViewModel.workflowState.observe(viewLifecycleOwner, workObserver)
+        }
+    }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -92,9 +141,9 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
                     R.string.yes
                 ) { dialog, which ->
                     if (ServiceUtil.isNetworkAvailable(this.requireContext().applicationContext)) {
-                        progressButton.startProgress("Submitting ...")
                         Coroutines.main {
                             moveJobToNextWorkflow(WorkflowDirection.NEXT)
+                            approveViewModel.workflowState.observe(viewLifecycleOwner,workObserver)
                         }
                     } else {
                         this.requireActivity().motionToast(
@@ -149,10 +198,13 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
 
     private suspend fun moveJobToNextWorkflow(workflowDirection: WorkflowDirection) {
         Coroutines.main {
-
+            progressButton.startProgress("Submitting ...")
             val user = approveViewModel.user.await()
             user.observe(viewLifecycleOwner, { userDTO ->
                 try {
+                    measuresProcessed = 0
+                    flowDirection = workflowDirection.value
+
                     measurementsToApprove.forEach { measureItem ->
                         if (userDTO.userId.isBlank()) {
                             this.motionToast(
@@ -174,10 +226,12 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
                             }
                         }
                     }
-                    measurementsToApprove.clear()
-                    popViewOnJobSubmit(workflowDirection.value)
+
                 } catch (t: Throwable) {
-                    Timber.e(t, "Failed to Approve Measurments!")
+                    val message = "Failed to process workflow: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
+                    Timber.e(t, message)
+                    val measureErr = XIError(t, message)
+                    handleWorkSubmission(measureErr)
                 }
             })
         }
@@ -192,6 +246,7 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
         Coroutines.main {
             val submit =
                 approveViewModel.processWorkflowMove(userId, trackRouteId, description, direction)
+                flowDirection = direction
             if (submit.isNotEmpty()) {
                 this.motionToast(submit, MotionToast.TOAST_ERROR, MotionToast.GRAVITY_BOTTOM)
             }
@@ -219,7 +274,7 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
             measurements.observe(viewLifecycleOwner, { measureItems ->
 
                 val allData = measureItems.count()
-                val uniqueItems = measureItems.distinctBy { item -> item.itemMeasureId }
+                val uniqueItems = measureItems.distinctBy { item -> item.itemMeasureId }.sortedBy { item -> item.estimateId }
                 if (allData == measureItems.size) {
                     measurementsToApprove = ArrayList()
                     measurementsToApprove.addAll(uniqueItems)
@@ -237,6 +292,17 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
             layoutManager = LinearLayoutManager(context)
             adapter = groupAdapter
         }
+    }
+
+    /**
+     * Called when the Fragment is no longer resumed.  This is generally
+     * tied to [Activity.onPause] of the containing
+     * Activity's lifecycle.
+     */
+    override fun onPause() {
+
+        approveViewModel.workflowState.removeObservers(viewLifecycleOwner)
+        super.onPause()
     }
 
     override fun onDestroyView() {
