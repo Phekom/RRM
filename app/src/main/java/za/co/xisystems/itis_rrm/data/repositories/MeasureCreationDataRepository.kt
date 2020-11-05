@@ -392,17 +392,15 @@ class MeasureCreationDataRepository(
         }
     }
 
-    suspend fun getJobMeasureItemsPhotoPath(itemMeasureId: String): List<String> {
+    suspend fun getJobMeasureItemsPhotoPath(itemMeasureId: String):List<String> {
         return withContext(Dispatchers.IO) {
-            appDb.getJobItemMeasurePhotoDao()
-                .getJobMeasureItemPhotoPaths(itemMeasureId)
+            appDb.getJobItemMeasurePhotoDao().getJobMeasureItemPhotoPaths(itemMeasureId)
         }
     }
 
     suspend fun getJobMeasureItemsPhotoPath2(itemMeasureId: String): List<String> {
         return withContext(Dispatchers.IO) {
-            appDb.getJobItemMeasurePhotoDao()
-                .getJobMeasureItemPhotoPaths(itemMeasureId)
+            appDb.getJobItemMeasurePhotoDao().getJobMeasureItemPhotoPaths(itemMeasureId)
         }
     }
 

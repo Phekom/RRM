@@ -67,10 +67,7 @@ class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAw
         } ?: throw Exception("Invalid Activity")
 
         Coroutines.main {
-            dialog = setDataProgressDialog(
-                requireActivity(),
-                getString(R.string.data_loading_please_wait)
-            )
+
             try {
                 group3_loading.visibility = View.VISIBLE
                 fetchLocalJobs()
@@ -110,7 +107,6 @@ class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAw
                 }
                 no_data_layout.visibility = View.GONE
                 job_data_layout.visibility = View.VISIBLE
-                toast(jobList.size.toString())
                 initRecyclerView(jItems.toApproveListItems())
             }
             group3_loading.visibility = GONE

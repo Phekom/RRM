@@ -144,19 +144,14 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
 
     private fun setItemsBySections(projectId: String) {
         uiScope.launch(context = uiScope.coroutineContext) {
-            val dialog =
-                setDataProgressDialog(
-                    requireActivity(),
-                    getString(R.string.data_loading_please_wait)
-                )
 
             // SectionItems filtered by projectId
             val sectionItems = createViewModel.getSectionItemsForProject(projectId)
-            dialog.show()
+            data_loading2.visibility = View.VISIBLE
 
             sectionItems.observe(viewLifecycleOwner, { sectionData ->
                 val sectionSelections = arrayOfNulls<String?>(sectionData.size)
-                dialog.dismiss()
+                data_loading2.visibility = View.GONE
                 for (item in sectionData.indices) {
                     sectionSelections[item] = sectionData[item].description
                 }

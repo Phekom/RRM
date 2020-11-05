@@ -160,10 +160,6 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnabl
     }
 
     override fun run() {
-        Coroutines.main {
-            val contractData = viewModel.offlineData.await()
-            contractData.observe(this, Observer { contrcts ->
-            })
-        }
+
     }
 }

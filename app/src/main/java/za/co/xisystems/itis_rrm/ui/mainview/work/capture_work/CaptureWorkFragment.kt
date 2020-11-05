@@ -36,6 +36,7 @@ import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
 import pereira.agnaldo.previewimgcol.ImageCollectionView
 import timber.log.Timber
+import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.LocationFragment
@@ -470,7 +471,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
 
                     groupAdapter.notifyItemChanged(0)
                 }
-                else -> toast("Error: Current location is null!")
+                else -> this.motionToast("Error: Current location is null!", MotionToast.TOAST_ERROR)
             }
         } catch (e: Exception) {
             sharedViewModel.setColorMessage(
@@ -755,9 +756,9 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
 
     private fun popViewOnJobSubmit(direction: Int) {
         if (direction == WorkflowDirection.NEXT.value) {
-            sharedViewModel.setColorMessage(getString(R.string.job_approved), SUCCESS, BOTTOM, LONG)
+            sharedViewModel.setColorMessage(getString(R.string.work_complete), SUCCESS, BOTTOM, LONG)
         } else if (direction == WorkflowDirection.FAIL.value) {
-            sharedViewModel.setColorMessage(getString(R.string.job_declined), INFO, BOTTOM, LONG)
+            sharedViewModel.setColorMessage(getString(R.string.work_declined), INFO, BOTTOM, LONG)
         }
         Intent(activity, MainActivity::class.java).also { home ->
             startActivity(home)

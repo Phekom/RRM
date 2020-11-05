@@ -174,7 +174,7 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
                     builder.setMessage(R.string.set_pin_msg)
                     builder.setCancelable(false)
                     // Yes button
-                    builder.setPositiveButton(R.string.ok) { dialog, which ->
+                    builder.setPositiveButton(R.string.ok) { _, _ ->
                         if (ServiceUtil.isNetworkAvailable(this.applicationContext)) {
                             Intent(this, RegisterPinActivity::class.java).also { pin ->
                                 pin.flags =
@@ -186,14 +186,14 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
                                 this,
                                 getString(R.string.no_connection_detected),
                                 MotionToast.TOAST_NO_INTERNET,
-                                MotionToast.GRAVITY_CENTER,
+                                MotionToast.GRAVITY_BOTTOM,
                                 MotionToast.LONG_DURATION,
                                 ResourcesCompat.getFont(this.applicationContext, R.font.helvetica_regular)
                             )
                         }
                     }
-                    val declineAlert = builder.create()
-                    declineAlert.show()
+                    val setPinDialog = builder.create()
+                    setPinDialog.show()
                 } else {
 
                     if (index == 4) {
@@ -270,9 +270,9 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
             this,
             "Pin is incorrect",
             MotionToast.TOAST_ERROR,
-            MotionToast.GRAVITY_CENTER,
+            MotionToast.GRAVITY_BOTTOM,
             MotionToast.LONG_DURATION,
-            ResourcesCompat.getFont(applicationContext, R.font.helvetica_regular)
+            ResourcesCompat.getFont(this, R.font.helvetica_regular)
         )
 
         resetAllPinColor()
@@ -288,9 +288,9 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
             this,
             "You are Logged in as ${userDTO.userName}",
             MotionToast.TOAST_SUCCESS,
-            MotionToast.GRAVITY_CENTER,
+            MotionToast.GRAVITY_BOTTOM,
             MotionToast.LONG_DURATION,
-            ResourcesCompat.getFont(applicationContext, R.font.helvetica_regular)
+            ResourcesCompat.getFont(this, R.font.helvetica_regular)
         )
     }
 

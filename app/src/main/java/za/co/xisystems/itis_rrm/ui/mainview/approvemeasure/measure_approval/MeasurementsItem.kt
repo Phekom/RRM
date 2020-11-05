@@ -66,7 +66,9 @@ class MeasurementsItem(
                         .navigate(R.id.action_measureApprovalFragment_to_measureGalleryFragment)
                 }
             }
-            updateMeasureImage()
+            Coroutines.main {
+                updateMeasureImage()
+            }
         }
     }
 
@@ -136,7 +138,7 @@ class MeasurementsItem(
 
     override fun getLayout() = R.layout.measurements_item
 
-    private fun GroupieViewHolder.updateMeasureImage() {
+    private suspend fun GroupieViewHolder.updateMeasureImage() {
         Coroutines.main {
 
             val photoPaths = approveViewModel.getJobMeasureItemsPhotoPath(jobItemMeasureDTO.itemMeasureId!!)

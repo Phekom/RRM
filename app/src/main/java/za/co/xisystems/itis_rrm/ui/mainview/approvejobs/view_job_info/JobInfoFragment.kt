@@ -26,7 +26,6 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.ui.extensions.doneProgress
 import za.co.xisystems.itis_rrm.ui.extensions.failProgress
 import za.co.xisystems.itis_rrm.ui.extensions.initProgress
-import za.co.xisystems.itis_rrm.ui.extensions.motionToast
 import za.co.xisystems.itis_rrm.ui.extensions.startProgress
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.ApproveJobsViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.ApproveJobsViewModelFactory
@@ -110,7 +109,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
                     progressButton.initProgress(viewLifecycleOwner)
                     moveJobToNextWorkflow(WorkflowDirection.NEXT)
                 } else {
-                    this.requireActivity().motionToast(
+                    this.motionToast(
                         message = getString(R.string.no_connection_detected),
                         motionType = MotionToast.TOAST_ERROR
                     )
@@ -145,7 +144,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
                     progressButton.initProgress(viewLifecycleOwner)
                     moveJobToNextWorkflow(WorkflowDirection.FAIL)
                 } else {
-                    this.requireActivity().motionToast(
+                    this.motionToast(
                         message = getString(R.string.no_connection_detected),
                         motionType = MotionToast.TOAST_ERROR
                     )
@@ -211,7 +210,10 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
             val response =
                 approveViewModel.processWorkflowMove(userId, trackRouteId, description, direction)
             if (response.isNotBlank()) {
-                this@JobInfoFragment.motionToast(response, MotionToast.TOAST_ERROR)
+                this@JobInfoFragment.motionToast(
+                    response,
+                    MotionToast.TOAST_ERROR
+                )
                 progressButton.failProgress("Workflow Failed")
             } else {
                 progressButton.doneProgress("Workflow Complete")
@@ -222,9 +224,15 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
 
     private fun popViewOnJobSubmit(direction: Int) {
         if (direction == WorkflowDirection.NEXT.value) {
-            this.motionToast(getString(R.string.job_approved), MotionToast.TOAST_SUCCESS)
+            this.motionToast(
+                getString(R.string.job_approved),
+                MotionToast.TOAST_SUCCESS
+            )
         } else if (direction == WorkflowDirection.FAIL.value) {
-            this.motionToast(getString(R.string.job_declined), MotionToast.TOAST_INFO)
+            this.motionToast(
+                getString(R.string.job_declined),
+                MotionToast.TOAST_INFO
+            )
         }
 
         Intent(context?.applicationContext, MainActivity::class.java).also { home ->
