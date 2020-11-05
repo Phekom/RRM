@@ -174,7 +174,7 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
                     builder.setMessage(R.string.set_pin_msg)
                     builder.setCancelable(false)
                     // Yes button
-                    builder.setPositiveButton(R.string.ok) { dialog, which ->
+                    builder.setPositiveButton(R.string.ok) { _, _ ->
                         if (ServiceUtil.isNetworkAvailable(this.applicationContext)) {
                             Intent(this, RegisterPinActivity::class.java).also { pin ->
                                 pin.flags =
@@ -192,8 +192,8 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
                             )
                         }
                     }
-                    val declineAlert = builder.create()
-                    declineAlert.show()
+                    val setPinDialog = builder.create()
+                    setPinDialog.show()
                 } else {
 
                     if (index == 4) {

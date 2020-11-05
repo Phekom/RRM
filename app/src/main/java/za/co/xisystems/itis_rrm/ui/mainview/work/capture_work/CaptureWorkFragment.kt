@@ -756,9 +756,9 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
 
     private fun popViewOnJobSubmit(direction: Int) {
         if (direction == WorkflowDirection.NEXT.value) {
-            sharedViewModel.setColorMessage(getString(R.string.job_approved), SUCCESS, BOTTOM, LONG)
+            sharedViewModel.setColorMessage(getString(R.string.work_complete), SUCCESS, BOTTOM, LONG)
         } else if (direction == WorkflowDirection.FAIL.value) {
-            sharedViewModel.setColorMessage(getString(R.string.job_declined), INFO, BOTTOM, LONG)
+            sharedViewModel.setColorMessage(getString(R.string.work_declined), INFO, BOTTOM, LONG)
         }
         Intent(activity, MainActivity::class.java).also { home ->
             startActivity(home)

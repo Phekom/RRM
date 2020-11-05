@@ -16,6 +16,7 @@ import android.os.Bundle
 import android.provider.MediaStore
 import android.provider.Settings
 import android.view.Gravity
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
@@ -34,10 +35,6 @@ import androidx.navigation.Navigation
 import com.airbnb.lottie.LottieAnimationView
 import icepick.Icepick
 import icepick.State
-import java.io.File
-import java.text.DecimalFormat
-import java.util.Date
-import kotlin.collections.set
 import kotlinx.android.synthetic.main.fragment_photo_estimate.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.cancel
@@ -55,6 +52,7 @@ import za.co.xisystems.itis_rrm.R.string
 import za.co.xisystems.itis_rrm.base.LocationFragment
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.results.XIError
+import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data._commons.AbstractTextWatcher
 import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
 import za.co.xisystems.itis_rrm.data.localDB.entities.ItemSectionDTO
@@ -82,6 +80,10 @@ import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
+import java.io.File
+import java.text.DecimalFormat
+import java.util.Date
+import kotlin.collections.set
 
 /**
  * Created by Francis Mahlava on 2019/12/29.
@@ -277,6 +279,9 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (savedInstanceState != null) {
+            onRestoreInstanceState(savedInstanceState)
+        }
         lifecycle.addObserver(uiScope)
         setHasOptionsMenu(true)
         (activity as MainActivity).supportActionBar?.title = getString(string.edit_estimate)
@@ -301,9 +306,6 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
         super.onActivityCreated(savedInstanceState)
         Icepick.restoreInstanceState(this, savedInstanceState)
         viewLifecycleOwner.lifecycle.addObserver(uiScope)
-        if (savedInstanceState != null) {
-            onRestoreInstanceState(savedInstanceState)
-        }
 
         group13_loading.visibility = View.GONE
         mAppExecutor = AppExecutor()
@@ -379,6 +381,18 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
         endPhotoButton.setOnClickListener(myClickListener)
         cancelButton.setOnClickListener(myClickListener)
         updateButton.setOnClickListener(myClickListener)
+
+        // If the user hits the enter key on the costing field,
+        // hide the keypad.
+        
+        valueEditText.setOnEditorActionListener { v, _, event ->
+            if (event.action == KeyEvent.ACTION_DOWN && event.keyCode == KeyEvent.KEYCODE_ENTER) {
+                requireActivity().hideKeyboard()
+                true
+            } else {
+                false
+            }
+        }
     }
 
     private fun saveValidEstimate(view: View) {
@@ -1004,11 +1018,21 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
                         })
                     }
                 })
-            } catch (throwable: KotlinNullPointerException) {
-                Timber.e(throwable)
-                throw throwable
+            } catch (t: Throwable) {
+                val secErr = XIError(t, "Failed to caption photo: ${t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR}")
+                Timber.e(t,secErr.message)
+                XIErrorHandler.crashGuard(this.requireView(),secErr, refreshAction = {retryRouteSectionData(isStart, textView, animate)})
             }
         }
+    }
+
+    private fun retryRouteSectionData(
+        isStart: Boolean,
+        textView: TextView,
+        animate: Boolean
+    ) {
+        IndefiniteSnackbar.hide()
+        establishRouteSectionData(isStart, textView, animate)
     }
 
     private fun captionEstimateItemPhoto(

@@ -16,8 +16,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import kotlinx.android.synthetic.main.fragment_measure_approval.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
@@ -43,6 +43,7 @@ import za.co.xisystems.itis_rrm.ui.extensions.startProgress
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.approveMeasure_Item.ApproveMeasureItem
+import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DataConversion
@@ -59,18 +60,22 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
     private var workObserver = Observer<XIResult<WorkflowJobDTO>> { handleWorkSubmission(it) }
     private var flowDirection: Int = 0
     private var measuresProcessed: Int = 0
+    private var uiScope = UiLifecycleScope()
+    private var measureJob: Job = Job()
 
-    private fun handleWorkSubmission(result: XIResult<WorkflowJobDTO>){
+    private fun handleWorkSubmission(result: XIResult<WorkflowJobDTO>) {
         when (result) {
             is XISuccess -> {
                 measuresProcessed += 1
                 val job = result.data
                 Timber.d("$measuresProcessed vs ${job.workflowItemMeasures?.size}")
-                this.motionToast("Measurements approved",MotionToast.TOAST_SUCCESS)
+                this.motionToast(R.string.measurement_approved, MotionToast.TOAST_SUCCESS)
                 measurementsToApprove.clear()
                 initRecyclerView(measurementsToApprove.toMeasureItem())
                 progressButton.doneProgress(progressButton.text.toString())
-                popViewOnJobSubmit(flowDirection)
+                uiScope.launch(uiScope.coroutineContext) {
+                    popViewOnJobSubmit(flowDirection)
+                }
             }
             is XIError -> {
                 progressButton.failProgress(result.message)
@@ -80,7 +85,7 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
                 this.motionToast(result.message, MotionToast.TOAST_INFO)
             }
             is XIProgress -> {
-                when (result.isLoading){
+                when (result.isLoading) {
                     true -> progressButton.startProgress("Submitting ...")
                     else -> progressButton.doneProgress(progressButton.text.toString())
                 }
@@ -88,7 +93,7 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
         }
     }
 
-    private fun retryMeasurements(){
+    private fun retryMeasurements() {
         IndefiniteSnackbar.hide()
         Coroutines.main {
             moveJobToNextWorkflow(WorkflowDirection.NEXT)
@@ -143,7 +148,7 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
                     if (ServiceUtil.isNetworkAvailable(this.requireContext().applicationContext)) {
                         Coroutines.main {
                             moveJobToNextWorkflow(WorkflowDirection.NEXT)
-                            approveViewModel.workflowState.observe(viewLifecycleOwner,workObserver)
+                            approveViewModel.workflowState.observe(viewLifecycleOwner, workObserver)
                         }
                     } else {
                         this.requireActivity().motionToast(
@@ -197,41 +202,45 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
     }
 
     private suspend fun moveJobToNextWorkflow(workflowDirection: WorkflowDirection) {
-        Coroutines.main {
+        uiScope.launch(uiScope.coroutineContext) {
             progressButton.startProgress("Submitting ...")
+
             val user = approveViewModel.user.await()
             user.observe(viewLifecycleOwner, { userDTO ->
-                try {
-                    measuresProcessed = 0
-                    flowDirection = workflowDirection.value
 
-                    measurementsToApprove.forEach { measureItem ->
-                        if (userDTO.userId.isBlank()) {
-                            this.motionToast(
-                                "Error: userId is null",
-                                MotionToast.TOAST_ERROR,
-                                MotionToast.GRAVITY_BOTTOM
-                            )
-                            progressButton.failProgress("Invalid User")
-                        } else {
-                            // littleEndian conversion for transport to the backend
-                            Coroutines.main {
+                measuresProcessed = 0
+                flowDirection = workflowDirection.value
+
+
+                if (userDTO.userId.isBlank()) {
+                    this@MeasureApprovalFragment.motionToast(
+                        "Error: userId is null",
+                        MotionToast.TOAST_ERROR,
+                        MotionToast.GRAVITY_BOTTOM
+                    )
+                    progressButton.failProgress("Invalid User")
+                } else {
+
+                    measureJob = uiScope.launch(uiScope.coroutineContext) {
+                        try {
+                            measurementsToApprove.forEach { measureItem ->
+                                // littleEndian conversion for transport to the backend
                                 val trackRouteId: String =
                                     DataConversion.toLittleEndian(measureItem.trackRouteId)!!
                                 val direction: Int = workflowDirection.value
                                 val description = ""
-                                withContext(Dispatchers.Main) {
+                                val innerJob = uiScope.launch {
                                     processWorkFlow(userDTO.userId, trackRouteId, direction, description)
                                 }
+                                innerJob.join()
                             }
+                        } catch (t: Throwable) {
+                            val message = "Failed to process workflow: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
+                            Timber.e(t, message)
+                            val measureErr = XIError(t, message)
+                            handleWorkSubmission(measureErr)
                         }
                     }
-
-                } catch (t: Throwable) {
-                    val message = "Failed to process workflow: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
-                    Timber.e(t, message)
-                    val measureErr = XIError(t, message)
-                    handleWorkSubmission(measureErr)
                 }
             })
         }
@@ -246,18 +255,19 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
         Coroutines.main {
             val submit =
                 approveViewModel.processWorkflowMove(userId, trackRouteId, description, direction)
-                flowDirection = direction
+            flowDirection = direction
             if (submit.isNotEmpty()) {
                 this.motionToast(submit, MotionToast.TOAST_ERROR, MotionToast.GRAVITY_BOTTOM)
             }
         }
     }
 
-    private fun popViewOnJobSubmit(direction: Int) {
+    private suspend fun popViewOnJobSubmit(direction: Int) {
+        measureJob.join()
         if (direction == WorkflowDirection.NEXT.value) {
-            this.motionToast("Measurements Approved", MotionToast.TOAST_SUCCESS)
+            this.motionToast(R.string.measurement_approved, MotionToast.TOAST_SUCCESS)
         } else if (direction == WorkflowDirection.FAIL.value) {
-            this.motionToast("Measurements Declined", MotionToast.TOAST_INFO)
+            this.motionToast(R.string.measurement_declined, MotionToast.TOAST_INFO)
         }
 
         Intent(context?.applicationContext, MainActivity::class.java).also { home ->

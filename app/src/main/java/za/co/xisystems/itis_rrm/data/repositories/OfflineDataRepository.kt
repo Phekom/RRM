@@ -950,19 +950,21 @@ class OfflineDataRepository(
 
     private fun saveUserTaskList(toDoListGroups: ArrayList<ToDoGroupsDTO>) {
         Coroutines.io {
-            if (toDoListGroups != null) {
-                for (toDoListGroup in toDoListGroups) {
-                    if (!appDb.getToDoGroupsDao().checkIfGroupCollectionExist(toDoListGroup.groupId)) {
-                        appDb.getToDoGroupsDao().insertToDoGroups(toDoListGroup)
-                    }
+            toDoListGroups.forEach { toDoListGroup ->
+                if (!appDb.getToDoGroupsDao().checkIfGroupCollectionExist(toDoListGroup.groupId)) {
+                    appDb.getToDoGroupsDao().insertToDoGroups(toDoListGroup)
+                }
 
-                    val entitiesArrayList = toDoListGroup.toDoListEntities
+                val entitiesArrayList = toDoListGroup.toDoListEntities
 
-                    for (toDoListEntity in entitiesArrayList) {
-                        val jobId = getJobIdFromPrimaryKeyValues(toDoListEntity.primaryKeyValues)
-                        insertEntity(toDoListEntity, jobId!!)
-                        val newJobId = DataConversion.toLittleEndian(jobId)
-                        fetchJobList(newJobId!!)
+                entitiesArrayList.forEach {toDoListEntity ->
+                    val jobId = getJobIdFromPrimaryKeyValues(toDoListEntity.primaryKeyValues)
+                    jobId?.let { id ->
+                        insertEntity(toDoListEntity, id)
+                        val newJobId = DataConversion.toLittleEndian(id)
+                        newJobId?.let { newId ->
+                            fetchJobList(newId)
+                        }
                     }
                 }
             }

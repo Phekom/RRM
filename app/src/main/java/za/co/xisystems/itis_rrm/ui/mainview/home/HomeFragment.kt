@@ -272,12 +272,9 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
         }
     }
 
-    @OptIn(ExperimentalStdlibApi::class)
     private fun retrySync() {
         IndefiniteSnackbar.hide()
-        Coroutines.main {
-            bigSync()
-        }
+        bigSync()
     }
 
     private fun ping() {
@@ -290,7 +287,6 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
         }
     }
 
-    @ExperimentalStdlibApi
     private suspend fun handleBigSync(result: XIResult<Boolean>) {
         when (result) {
             is XISuccess -> {
@@ -323,15 +319,13 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
         }
     }
 
-    @ExperimentalStdlibApi
-    private suspend fun bigSync() = uiScope.launch(uiScope.coroutineContext) {
+    private fun bigSync() = uiScope.launch(uiScope.coroutineContext) {
         sharedViewModel.setMessage("Data Loading")
         homeViewModel.databaseState.observe(viewLifecycleOwner, bigSyncObserver)
         synchJob = homeViewModel.fetchAllData(userDTO.userId)
         ping()
     }
 
-    @ExperimentalStdlibApi
     private fun promptUserToSync() {
         val syncDialog: AlertDialog.Builder =
             AlertDialog.Builder(activity) // android.R.style.Theme_DeviceDefault_Dialog

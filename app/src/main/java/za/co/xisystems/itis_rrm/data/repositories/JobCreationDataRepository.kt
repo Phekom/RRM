@@ -246,10 +246,10 @@ class JobCreationDataRepository(
 
         Timber.d("$routeSectionPointResponse")
 
-        return if (routeSectionPointResponse.bufferLocation.contains("xxxxxxxxx" as CharSequence, ignoreCase = true) ||
-            routeSectionPointResponse.bufferLocation.isBlank()
+        return if (routeSectionPointResponse.linearId.contains("xxx" as CharSequence, ignoreCase = true) ||
+            routeSectionPointResponse.linearId.isBlank()
         ) {
-            routeSectionPointResponse.bufferLocation
+            routeSectionPointResponse.linearId
         } else {
             routeSectionPoint.postValue(
                 direction = routeSectionPointResponse.direction,
