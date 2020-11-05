@@ -108,7 +108,7 @@ class CaptureItemMeasurePhotoFragment :
         } ?: throw Exception("Invalid Activity")
 
         jobItemMeasurePhotoArrayList = ArrayList<JobItemMeasurePhotoDTO>()
-
+        gallery_layout.visibility = View.INVISIBLE
         photoButtons.visibility = View.GONE
 
         uiScope.launch(uiScope.coroutineContext) {
@@ -118,7 +118,7 @@ class CaptureItemMeasurePhotoFragment :
                     selectedJobItemM?.let { it ->
                         estimate_image_collection_view.clearImages()
                         viewPhotosOnly = false
-                        toast("Job: ${it.jimNo}")
+                        toast("Measuring job: ${it.jimNo}")
                         selectedJobItemMeasure = it
                         checkForPhotos(selectedJobItemMeasure)
                     }
@@ -173,6 +173,7 @@ class CaptureItemMeasurePhotoFragment :
     }
 
     private fun setupControls() {
+        gallery_layout.visibility = View.VISIBLE
         when (viewPhotosOnly) {
             true -> {
                 photoButtons.visibility = View.VISIBLE
@@ -372,15 +373,8 @@ class CaptureItemMeasurePhotoFragment :
         const val PHOTO_RESULT = 9000
         private const val REQUEST_IMAGE_CAPTURE = 1
         private const val REQUEST_STORAGE_PERMISSION = 1
-        private const val FILE_PROVIDER_AUTHORITY = BuildConfig.APPLICATION_ID + ".provider"
 
         const val URI_LIST_DATA = "URI_LIST_DATA"
         const val IMAGE_FULL_SCREEN_CURRENT_POS = "IMAGE_FULL_SCREEN_CURRENT_POS"
-
-        private const val LOCATION_KEY = "location-key"
-
-        // region (Public Static Final Fields)
-        private const val UPDATE_INTERVAL_IN_MILLISECONDS: Long = 10000
-        const val FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS = UPDATE_INTERVAL_IN_MILLISECONDS / 2
     }
 }

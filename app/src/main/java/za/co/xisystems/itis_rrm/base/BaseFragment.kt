@@ -92,7 +92,7 @@ abstract class BaseFragment(layoutContentId: Int) : Fragment(), IProgressView {
         initAnimations()
     }
 
-    fun initAnimations() {
+    private fun initAnimations() {
         click = AnimationUtils.loadAnimation(requireContext().applicationContext, R.anim.click)
         bounce = AnimationUtils.loadAnimation(requireContext().applicationContext, R.anim.bounce)
         bounce_short =
@@ -162,7 +162,7 @@ abstract class BaseFragment(layoutContentId: Int) : Fragment(), IProgressView {
 
     protected fun motionToast(resId: Int, motionType: String = MotionToast.TOAST_INFO, position: Int = MotionToast.GRAVITY_BOTTOM, duration: Int = MotionToast.LONG_DURATION) {
         val message = getString(resId)
-        motionToast(message,motionType, position, duration)
+        motionToast(message, motionType, position, duration)
     }
 
     protected fun motionToast(message: String, motionType: String = MotionToast.TOAST_INFO, position: Int = MotionToast.GRAVITY_BOTTOM, duration: Int = MotionToast.LONG_DURATION) {
@@ -177,7 +177,7 @@ abstract class BaseFragment(layoutContentId: Int) : Fragment(), IProgressView {
             )
     }
 
-    fun snackError(coordinator: View?, string: String?) {
+    private fun snackError(coordinator: View?, string: String?) {
         if (coordinator != null) {
             val snackBar = Snackbar.make(coordinator, string!!, 3000)
             snackBar.view.setBackgroundColor(Color.RED)

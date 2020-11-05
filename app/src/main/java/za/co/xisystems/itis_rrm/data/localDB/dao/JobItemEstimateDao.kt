@@ -26,7 +26,7 @@ interface JobItemEstimateDao {
     @Query("SELECT * FROM JOB_ITEM_ESTIMATE WHERE jobId = :jobId")
     fun getJobEstimationItemsForJobId2(jobId: String): LiveData<List<JobItemEstimateDTO>>
 
-    @Query("SELECT * FROM JOB_ITEM_ESTIMATE WHERE actId = :actId AND MEASURE_ACT_ID =:activityId2 ORDER BY MEASURE_ACT_ID DESC ")
+    @Query("SELECT * FROM JOB_ITEM_ESTIMATE WHERE MEASURE_ACT_ID = :actId OR MEASURE_ACT_ID =:activityId2 ORDER BY MEASURE_ACT_ID DESC ")
     fun getJobMeasureForActivityId(actId: Int, activityId2: Int): LiveData<List<JobItemEstimateDTO>>
 
     @Query("SELECT * FROM JOB_ITEM_ESTIMATE WHERE actId = :actId AND MEASURE_ACT_ID =:activityId ORDER BY MEASURE_ACT_ID ASC ")
@@ -63,9 +63,6 @@ interface JobItemEstimateDao {
 
     @Query("SELECT * FROM JOB_ITEM_ESTIMATE WHERE jobId = :jobID")
     fun getJobItemsToMeasureForJobId(jobID: String): LiveData<List<JobItemEstimateDTO>>
-
-//    @Query("SELECT * FROM JOB_ITEM_ESTIMATE WHERE  actId = :estWorksComplete  AND jobId = :jobId ")
-//    fun getJobItemsEstimatesDoneForJobId(jobId: String?,estWorksComplete : Int  ):  LiveData<List<JobItemEstimateDTO>>
 
     @Query("DELETE FROM JOB_ITEM_ESTIMATE")
     fun deleteAll()

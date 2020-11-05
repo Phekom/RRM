@@ -2,12 +2,16 @@ package za.co.xisystems.itis_rrm.ui.mainview.home
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.base.BaseViewModel
+import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.results.XIError
 import za.co.xisystems.itis_rrm.custom.results.XIProgress
 import za.co.xisystems.itis_rrm.custom.results.XIResult
@@ -31,7 +35,6 @@ class HomeViewModel(
                 it?.let {
                     databaseState.postValue(it)
                 }
-
             }
         }
     }
@@ -44,8 +47,6 @@ class HomeViewModel(
         offlineDataRepository.getSectionItems()
     }
 
-
-
     val bigSyncDone: MutableLiveData<Boolean> = offlineDataRepository.bigSyncDone
 
     suspend fun bigSyncCheck() {
@@ -53,21 +54,38 @@ class HomeViewModel(
     }
 
     suspend fun fetchAllData(userId: String) = viewModelScope.launch(job + Dispatchers.Main + uncaughtExceptionHandler) {
+
+        val fetchJob = Job()
+        databaseState.postValue(XIProgress(true))
+
+        val jobContext = fetchJob + Dispatchers.Default + uncaughtExceptionHandler
+
         try {
-            databaseState.postValue(XIProgress(true))
-            offlineDataRepository.fetchContracts(userId)
-        } catch (ex: Exception) {
-            val fetchFail = XIError(ex, "Failed to fetch data: ${ex.message}")
+            viewModelScope.launch {
+                val fetcher = async(jobContext) {
+                    offlineDataRepository.loadActivitySections(userId)
+                    offlineDataRepository.loadLookups(userId)
+                    offlineDataRepository.loadTaskList(userId)
+                    offlineDataRepository.loadWorkflows(userId)
+                    offlineDataRepository.loadContracts(userId)
+                }
+
+                fetcher.join()
+
+            }
+        } catch (t: Throwable) {
+            jobContext.cancelChildren(CancellationException(t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR))
+            val fetchFail = XIError(t, "Failed to fetch data: ${t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR}")
             databaseState.postValue(fetchFail)
         } finally {
             databaseState.postValue(XIProgress(false))
-
         }
     }
 
     override fun onCleared() {
-        super.onCleared()
         scope.cancel()
+        job.cancelChildren()
+        super.onCleared()
     }
 
     suspend fun healthCheck(userId: String): Boolean {

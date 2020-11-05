@@ -11,8 +11,6 @@ import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
-import za.co.xisystems.itis_rrm.R
-import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler.UNKNOWN_ERROR
 import za.co.xisystems.itis_rrm.custom.results.XIError
 import za.co.xisystems.itis_rrm.custom.results.XIResult
@@ -48,13 +46,13 @@ class ApproveMeasureViewModel(
         measureApprovalDataRepository.getUser()
     }
 
-    val measureApprovalItem = MutableLiveData<ApproveMeasureItem>()
+    val measureApprovalItem : MutableLiveData<ApproveMeasureItem> = MutableLiveData()
 
     var measureGalleryUIState: MutableLiveData<XIResult<MeasureGalleryUIState>> = MutableLiveData()
 
     val job = SupervisorJob()
 
-    var galleryMeasure: MutableLiveData<JobItemMeasureDTO> = MutableLiveData()
+    private var galleryMeasure: MutableLiveData<JobItemMeasureDTO> = MutableLiveData()
 
     private var workflowStatus: LiveData<XIResult<WorkflowJobDTO>> = measureApprovalDataRepository.workflowStatus.getDistinct()
 
@@ -80,28 +78,6 @@ class ApproveMeasureViewModel(
     suspend fun getJobApproveMeasureForActivityId(activityId: Int): LiveData<List<JobItemMeasureDTO>> {
         return withContext(Dispatchers.IO) {
             measureApprovalDataRepository.getJobApproveMeasureForActivityId(activityId).getDistinct()
-        }
-    }
-
-    suspend fun getJobsMeasureForActivityId(
-        estimateComplete: Int,
-        measureComplete: Int,
-        estWorksComplete: Int,
-        jobApproved: Int
-    ): LiveData<List<JobDTO>> {
-        return withContext(Dispatchers.IO) {
-            measureApprovalDataRepository.getJobsMeasureForActivityId(
-                estimateComplete,
-                measureComplete,
-                estWorksComplete,
-                jobApproved
-            ).getDistinct()
-        }
-    }
-
-    suspend fun getEntitiesListForActivityId(activityId: Int): LiveData<List<ToDoListEntityDTO>> {
-        return withContext(Dispatchers.IO) {
-            measureApprovalDataRepository.getEntitiesListForActivityId(activityId)
         }
     }
 
@@ -150,7 +126,7 @@ class ApproveMeasureViewModel(
         }
     }
 
-    suspend fun getJobMeasureItemsPhotoPath(itemMeasureId: String):List<String> {
+    suspend fun getJobMeasureItemsPhotoPath(itemMeasureId: String): List<String> {
         return withContext(Dispatchers.IO) {
             measureApprovalDataRepository.getJobMeasureItemPhotoPaths(itemMeasureId)
         }
@@ -250,8 +226,8 @@ class ApproveMeasureViewModel(
 
                 measureGalleryUIState.postValue(XISuccess(uiState))
             } catch (t: Throwable) {
-                val message = "$galleryError: ${t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR}"
-                Timber.e(t,message)
+                val message = "$galleryError: ${t.localizedMessage ?: UNKNOWN_ERROR}"
+                Timber.e(t, message)
                 val galleryFail = XIError(t, message)
                 measureGalleryUIState.postValue(galleryFail)
             }

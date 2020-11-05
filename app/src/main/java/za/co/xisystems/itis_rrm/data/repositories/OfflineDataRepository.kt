@@ -7,8 +7,6 @@ import android.os.Environment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import java.io.File
-import java.util.regex.Pattern
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -47,11 +45,13 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.WorkflowJobDTO
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
 import za.co.xisystems.itis_rrm.data.network.responses.UploadImageResponse
-import za.co.xisystems.itis_rrm.data.preferences.PreferenceProvider
+import za.co.xisystems.itis_rrm.extensions.getDistinct
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
+import java.io.File
+import java.util.regex.Pattern
 
 private val jobDataController: JobDataController? = null
 
@@ -60,16 +60,12 @@ private val jobDataController: JobDataController? = null
  */
 class OfflineDataRepository(
     private val api: BaseConnectionApi,
-    private val appDb: AppDatabase,
-    private val prefs: PreferenceProvider
+    private val appDb: AppDatabase
 ) : SafeApiRequest() {
     private var entitiesFetched = false
-    private val activity: FragmentActivity? = null
     private val conTracts = MutableLiveData<List<ContractDTO>>()
     private val sectionItems = MutableLiveData<ArrayList<String>>()
     private val job = MutableLiveData<JobDTO>()
-    private val estimatePhoto = MutableLiveData<String>()
-    private val measurePhoto = MutableLiveData<String>()
     private val workFlow = MutableLiveData<WorkFlowsDTO>()
     private val lookups = MutableLiveData<ArrayList<LookupDTO>>()
     private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
@@ -122,7 +118,6 @@ class OfflineDataRepository(
     }
 
     val bigSyncDone: MutableLiveData<Boolean> = MutableLiveData()
-    val toDoListStatus: MutableLiveData<XIResult<Boolean>> = MutableLiveData()
 
     suspend fun bigSyncCheck() {
         withContext(Dispatchers.IO) {
@@ -144,18 +139,9 @@ class OfflineDataRepository(
         }
     }
 
-    suspend fun getWorkFlows(): LiveData<List<WorkFlowDTO>> {
-
-        return withContext(Dispatchers.IO) {
-            val userId = appDb.getUserDao().getUserID()
-            fetchAllData(userId)
-            appDb.getWorkFlowDao().getWorkflows()
-        }
-    }
-
     suspend fun getSectionItems(): LiveData<List<SectionItemDTO>> {
-        return withContext(Dispatchers.IO) {
-            appDb.getSectionItemDao().getSectionItems()
+        return withContext(Dispatchers.Default) {
+            appDb.getSectionItemDao().getSectionItems().getDistinct()
         }
     }
 
@@ -195,15 +181,6 @@ class OfflineDataRepository(
     suspend fun getAllItemsForProjectId(projectId: String): LiveData<List<ProjectItemDTO>> {
         return withContext(Dispatchers.IO) {
             appDb.getProjectItemDao().getAllItemsForProjectId(projectId)
-        }
-    }
-
-    suspend fun getAllItemsForSectionItem(
-        sectionItemId: String,
-        projectId: String
-    ): LiveData<List<ProjectItemDTO>> {
-        return withContext(Dispatchers.IO) {
-            appDb.getProjectItemDao().getAllItemsForSectionItemByProject(sectionItemId, projectId)
         }
     }
 
@@ -332,6 +309,11 @@ class OfflineDataRepository(
 
         createWorkflowSteps()
 
+        contractCount = 0
+        contractMax = 0
+        projectCount = 0
+        projectMax = 0
+
         if (contracts.isNotEmpty()) {
             val validContracts = contracts.filter { contract ->
                 contract.projects != null && !contract.contractId.isBlank()
@@ -377,7 +359,7 @@ class OfflineDataRepository(
         }
     }
 
-    private suspend fun saveProjects(
+    private fun saveProjects(
         validProjects: List<ProjectDTO>?,
         contract: ContractDTO
     ) {
@@ -943,7 +925,7 @@ class OfflineDataRepository(
 
     private fun saveTaskList(toDoListGroups: ArrayList<ToDoGroupsDTO>?) {
 
-        toDoListGroups?.let{
+        toDoListGroups?.let {
             saveUserTaskList(it)
         }
     }
@@ -957,7 +939,7 @@ class OfflineDataRepository(
 
                 val entitiesArrayList = toDoListGroup.toDoListEntities
 
-                entitiesArrayList.forEach {toDoListEntity ->
+                entitiesArrayList.forEach { toDoListEntity ->
                     val jobId = getJobIdFromPrimaryKeyValues(toDoListEntity.primaryKeyValues)
                     jobId?.let { id ->
                         insertEntity(toDoListEntity, id)
@@ -1023,38 +1005,36 @@ class OfflineDataRepository(
     private var projectCount: Int = 0
     private var projectMax: Int = 0
 
-    suspend fun fetchContracts(userId: String): Boolean {
-        // start of jobs
-        databaseStatus.postValue(XIProgress(true))
+    suspend fun loadActivitySections(userId: String) {
+        postStatus("Fetching Activity Sections")
+        val activitySectionsResponse =
+            apiRequest { api.activitySectionsRefresh(userId) }
+        sectionItems.postValue(activitySectionsResponse.activitySections)
+    }
 
-        contractCount = 0
-        contractMax = 0
-        projectCount = 0
-        projectMax = 0
-        return withContext(Dispatchers.Default) {
-            postStatus("Fetching Activity Sections")
-            val activitySectionsResponse =
-                apiRequest { api.activitySectionsRefresh(userId) }
-            sectionItems.postValue(activitySectionsResponse.activitySections)
+    suspend fun loadWorkflows(userId: String) {
+        postStatus("Updating Workflows")
+        val workFlowResponse = apiRequest { api.workflowsRefresh(userId) }
+        workFlow.postValue(workFlowResponse.workFlows)
+    }
 
-            postStatus("Updating Workflows")
-            val workFlowResponse = apiRequest { api.workflowsRefresh(userId) }
-            workFlow.postValue(workFlowResponse.workFlows)
+    suspend fun loadLookups(userId: String) {
+        postStatus("Updating Lookups")
+        val lookupResponse = apiRequest { api.lookupsRefresh(userId) }
+        lookups.postValue(lookupResponse.mobileLookups)
+    }
 
-            postStatus("Updating Lookups")
-            val lookupResponse = apiRequest { api.lookupsRefresh(userId) }
-            lookups.postValue(lookupResponse.mobileLookups)
+    suspend fun loadTaskList(userId: String) {
+        postStatus("Updating Task List")
+        val toDoListGroupsResponse = apiRequest { api.getUserTaskList(userId) }
+        toDoListGroups.postValue(toDoListGroupsResponse.toDoListGroups)
+    }
 
-            postStatus("Updating Task List")
-            val toDoListGroupsResponse = apiRequest { api.getUserTaskList(userId) }
-            toDoListGroups.postValue(toDoListGroupsResponse.toDoListGroups)
-
-            postStatus("Updating Contracts")
-            val contractsResponse = apiRequest { api.getAllContractsByUserId(userId) }
-            // conTracts.postValue(contractsResponse.contracts)
-            saveContracts(contractsResponse.contracts)
-            true
-        }
+   suspend fun loadContracts(userId: String) {
+        postStatus("Updating Contracts")
+        val contractsResponse = apiRequest { api.getAllContractsByUserId(userId) }
+        // conTracts.postValue(contractsResponse.contracts)
+        saveContracts(contractsResponse.contracts)
     }
 
     suspend fun getUserTaskList(): LiveData<List<ToDoListEntityDTO>> {
@@ -1455,12 +1435,6 @@ class OfflineDataRepository(
 
         val healthCheck = apiRequest { api.healthCheck(userId) }
         return healthCheck.errorMessage.isNullOrBlank() || healthCheck.isAlive == 1
-    }
-
-    suspend fun getProjects(): LiveData<List<ProjectDTO>> {
-        return withContext(Dispatchers.IO) {
-            appDb.getProjectDao().getAllProjects()
-        }
     }
 
     companion object {

@@ -35,7 +35,6 @@ class MeasureApprovalDataRepository(
     }
 
     private val workflowJ = MutableLiveData<WorkflowJobDTO>()
-    private val qtyUpDate = MutableLiveData<String>()
 
     init {
 
@@ -242,9 +241,9 @@ class MeasureApprovalDataRepository(
             }
             val jobSuccess = XISuccess(data = job)
             workflowStatus.postValue(jobSuccess)
-        } catch(t: Throwable){
+        } catch (t: Throwable) {
             val message = "Could not save updated workflow: ${ t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR}"
-            Timber.e(t,message)
+            Timber.e(t, message)
             val dbError = XIError(t, message)
             workflowStatus.postValue(dbError)
         }
@@ -264,13 +263,11 @@ class MeasureApprovalDataRepository(
             }
         }
 
-
         job.workflowItemMeasures?.forEach { jim ->
             jim.itemMeasureId = DataConversion.toBigEndian(jim.itemMeasureId)!!
             jim.measureGroupId = DataConversion.toBigEndian(jim.measureGroupId)!!
             jim.trackRouteId = DataConversion.toBigEndian(jim.trackRouteId)!!
         }
-
 
         job.workflowJobSections?.forEach { js ->
             js.jobSectionId = DataConversion.toBigEndian(js.jobSectionId)!!
@@ -289,7 +286,7 @@ class MeasureApprovalDataRepository(
 
         val quantityUpdateResponse =
             apiRequest { api.upDateMeasureQty(newMeasureId, newQuantity.toDouble()) }
-        qtyUpDate.postValue(
+        postValue(
             quantityUpdateResponse.errorMessage,
             itemMeasureId,
             newQuantity.toDouble()
@@ -300,7 +297,7 @@ class MeasureApprovalDataRepository(
         }
     }
 
-    private fun <T> MutableLiveData<T>.postValue(
+    private fun postValue(
         errorMessage: String?,
         itemMeasureId: String?,
         new_Quantity: Double

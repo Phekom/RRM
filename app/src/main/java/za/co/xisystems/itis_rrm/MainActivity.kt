@@ -201,7 +201,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.main, menu)
+        val item = menu.findItem(R.id.action_settings)
+
+        item.isVisible = true
+
         val searchItem = menu.findItem(R.id.action_search)
+        searchItem.isVisible = false
         val searchView = searchItem.actionView as SearchView
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
 

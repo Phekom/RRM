@@ -40,5 +40,4 @@ interface JobItemMeasurePhotoDao {
 
     @Query("DELETE FROM JOB_ITEM_MEASURE_PHOTO WHERE PhotoId =:photoId")
     suspend fun deleteItemMeasurePhoto(photoId: String): Int
-
 }

@@ -303,6 +303,11 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                             }
                             is XIError -> {
                                 result.cancel(CancellationException(outcome.message))
+                                this@SubmitMeasureFragment.motionToast(
+                                    "Submission failed",
+                                    MotionToast.TOAST_ERROR
+                                )
+
                                 XIErrorHandler.crashGuard(this@SubmitMeasureFragment.requireView(),
                                     outcome,
                                     refreshAction = { retryMeasurements() })
@@ -476,10 +481,6 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
         this.estimateId = toLittleEndian
     }
 
-    private fun JobItemMeasureDTO.setProjectVoId(toLittleEndian: String?) {
-        this.projectVoId = toLittleEndian
-    }
-
     private fun JobItemMeasureDTO.setTrackRouteId(toLittleEndian: String?) {
         this.trackRouteId = toLittleEndian
     }
@@ -494,14 +495,6 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
 
     private fun JobItemMeasurePhotoDTO.setPhotoId(toLittleEndian: String?) {
         this.photoId = toLittleEndian!!
-    }
-
-    private fun JobItemEstimatesPhotoDTO.setPhotoId(toLittleEndian: String?) {
-        this.photoId = toLittleEndian!!
-    }
-
-    private fun JobEstimateWorksPhotoDTO.setWorksId(toLittleEndian: String?) {
-        this.worksId = toLittleEndian!!
     }
 
     private fun JobItemMeasurePhotoDTO.setEstimateId(toLittleEndian: String?) {

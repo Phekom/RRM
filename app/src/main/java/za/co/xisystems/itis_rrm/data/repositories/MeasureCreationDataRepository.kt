@@ -48,7 +48,6 @@ class MeasureCreationDataRepository(
         val TAG: String = MeasureCreationDataRepository::class.java.simpleName
     }
 
-    val toDoListStatus: MutableLiveData<XIResult<Boolean>> = MutableLiveData()
     private val workflowJ = MutableLiveData<WorkflowJobDTO>()
     private val photoUpload = MutableLiveData<String>()
 
@@ -112,7 +111,7 @@ class MeasureCreationDataRepository(
 
             // You're only okay to perform the next step if this succeeded.
             if (messages.isBlank()) {
-                workflowJ.postValue(
+                postValue(
                     measurementItemResponse.workflowJob,
                     mSures,
                     activity,
@@ -129,7 +128,7 @@ class MeasureCreationDataRepository(
         }
     }
 
-    private fun <T> MutableLiveData<T>.postValue(
+    private fun postValue(
         workflowJobDTO: WorkflowJobDTO,
         jobItemMeasure: ArrayList<JobItemMeasureDTO>,
         activity: FragmentActivity,
@@ -148,24 +147,6 @@ class MeasureCreationDataRepository(
                 Timber.e(e, "Failed to process workflow move: ${e.message}")
                 workflowStatus.postValue(XIError(e, e.message!!))
             }
-        }
-    }
-
-    private suspend fun softdeleteMeasurement(itemMeasureId: String): Int {
-        return withContext(Dispatchers.IO) {
-            appDb.getJobItemMeasureDao().deleteMeasurement(itemMeasureId)
-        }
-    }
-
-    private suspend fun undeleteMeasurement(itemMeasureId: String): Int {
-        return withContext(Dispatchers.IO) {
-            appDb.getJobItemMeasureDao().undeleteMeasurement(itemMeasureId)
-        }
-    }
-
-    private suspend fun undeleteAllMeasurements(): Int {
-        return withContext(Dispatchers.IO) {
-            appDb.getJobItemMeasureDao().undeleteAllMeasurements()
         }
     }
 
@@ -303,8 +284,6 @@ class MeasureCreationDataRepository(
                         else -> {
                             Timber.d("${workflowMoveResponse.workflowJob}")
                             workflowJ.postValue(workflowMoveResponse.workflowJob)
-                            val rows = softdeleteMeasurement(jobItemMeasure.itemMeasureId)
-                            Timber.d("Deleted $rows rows.")
                         }
                     }
                 }
@@ -392,13 +371,7 @@ class MeasureCreationDataRepository(
         }
     }
 
-    suspend fun getJobMeasureItemsPhotoPath(itemMeasureId: String):List<String> {
-        return withContext(Dispatchers.IO) {
-            appDb.getJobItemMeasurePhotoDao().getJobMeasureItemPhotoPaths(itemMeasureId)
-        }
-    }
-
-    suspend fun getJobMeasureItemsPhotoPath2(itemMeasureId: String): List<String> {
+    suspend fun getJobMeasureItemsPhotoPath(itemMeasureId: String): List<String> {
         return withContext(Dispatchers.IO) {
             appDb.getJobItemMeasurePhotoDao().getJobMeasureItemPhotoPaths(itemMeasureId)
         }
@@ -414,13 +387,6 @@ class MeasureCreationDataRepository(
         Coroutines.io {
             appDb.getJobItemMeasurePhotoDao()
                 .deleteItemMeasurephotofromList(itemMeasureId)
-        }
-    }
-
-    suspend fun deleteJobItemMeasurePhoto(photoId: String): Int {
-        return withContext(Dispatchers.IO) {
-            appDb.getJobItemMeasurePhotoDao()
-                .deleteItemMeasurePhoto(photoId)
         }
     }
 
@@ -501,7 +467,12 @@ class MeasureCreationDataRepository(
                     appDb.getJobItemEstimateDao().updateExistingJobItemEstimateWorkflow(
                         jobItemEstimate.trackRouteId,
                         jobItemEstimate.actId,
-                        jobItemEstimate.estimateId
+                        jobItemEstimate.estimateId,
+                    )
+
+                    appDb.getJobItemEstimateDao().setMeasureActId(
+                        jobItemEstimate.actId,
+                        jobItemEstimate.estimateId,
                     )
 
                     jobItemEstimate.workflowEstimateWorks.forEach { jobEstimateWorks ->
@@ -524,16 +495,16 @@ class MeasureCreationDataRepository(
                             )
                     }
 
-                    if (job.workflowItemMeasures != null) {
-                        job.workflowItemMeasures.forEach { jobItemMeasure ->
-                            appDb.getJobItemMeasureDao().updateWorkflowJobItemMeasure(
-                                jobItemMeasure.itemMeasureId,
-                                jobItemMeasure.trackRouteId,
-                                jobItemMeasure.actId,
-                                jobItemMeasure.measureGroupId
-                            )
-                        }
+
+                    job.workflowItemMeasures?.forEach { jobItemMeasure ->
+                        appDb.getJobItemMeasureDao().updateWorkflowJobItemMeasure(
+                            jobItemMeasure.itemMeasureId,
+                            jobItemMeasure.trackRouteId,
+                            jobItemMeasure.actId,
+                            jobItemMeasure.measureGroupId
+                        )
                     }
+
                 }
 
                 //  Place the Job Section, UPDATE OR CREATE

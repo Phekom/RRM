@@ -16,6 +16,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenStarted
+import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.android.synthetic.main.fragment_home.*
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -43,7 +44,6 @@ import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModelFactory
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
-import kotlin.coroutines.cancellation.CancellationException
 
 @ExperimentalStdlibApi
 class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
@@ -95,7 +95,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                         getString(R.string.please_connect_to_internet_to_up_sync_offline_workflows),
                         MotionToast.TOAST_NO_INTERNET,
                         MotionToast.GRAVITY_BOTTOM,
-                        MotionToast.LONG_DURATION,
+                        MotionToast.LONG_DURATION
                     )
                 }
             }
@@ -261,14 +261,14 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
         }
 
         // Check if GPS connected
-        if (!gpsEnabled) {
+        return if (!gpsEnabled) {
             locationEnabled.text = requireActivity().getString(R.string.gps_not_connected)
             locationEnabled.setTextColor(colorNotConnected)
-            return false
+            false
         } else {
             locationEnabled.text = requireActivity().getString(R.string.gps_connected)
             locationEnabled.setTextColor(colorConnected)
-            return true
+            true
         }
     }
 
@@ -294,7 +294,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                     "Sync Complete",
                     MotionToast.TOAST_SUCCESS,
                     MotionToast.GRAVITY_BOTTOM,
-                    MotionToast.LONG_DURATION,
+                    MotionToast.LONG_DURATION
                 )
                 synchJob.join()
             }

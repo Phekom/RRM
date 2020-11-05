@@ -46,10 +46,6 @@ object PhotoUtil {
     private val ISO_8601_FORMAT: DateFormat =
         SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
 
-    fun dateToString(date: Date): String {
-        return ISO_8601_FORMAT.format(date)
-    }
-
     fun getPhotoBitMapFromFile(
         context: Context,
         selectedImage: Uri?,
@@ -81,27 +77,6 @@ object PhotoUtil {
         return bm
     }
 
-    @TargetApi(Build.VERSION_CODES.KITKAT)
-    fun getBitmapSize(bitmap: Bitmap): Int {
-        return bitmap.allocationByteCount / 1024
-    }
-
-    fun getRotationForImage(path: Uri): Int {
-        var rotation = 0
-        try {
-            val exif = ExifInterface(path.path!!)
-            rotation = exifToDegrees(
-                exif.getAttributeInt(
-                    ExifInterface.TAG_ORIENTATION,
-                    ExifInterface.ORIENTATION_NORMAL
-                )
-            )
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
-        return rotation
-    }
-
     private fun exifToDegrees(exifOrientation: Int): Int {
         return when (exifOrientation) {
             ExifInterface.ORIENTATION_ROTATE_90 -> {
@@ -114,28 +89,6 @@ object PhotoUtil {
                 270
             }
             else -> 0
-        }
-    }
-
-    fun createPhoto(fileName: String, photoByteArray: ByteArray?) {
-        val imagesFolder =
-            File(Environment.getExternalStorageDirectory(), FOLDER)
-        imagesFolder.mkdirs()
-        var out: FileOutputStream? = null
-        try {
-            out = FileOutputStream(imagesFolder.path + "/" + fileName)
-        } catch (e: FileNotFoundException) {
-            e.printStackTrace()
-        }
-        try {
-            if (out != null) {
-                out.write(photoByteArray)
-                out.close()
-            }
-        } catch (e: IOException) {
-            e.printStackTrace()
-        } catch (e: NullPointerException) {
-            e.printStackTrace()
         }
     }
 
@@ -319,7 +272,7 @@ object PhotoUtil {
                             if (index == -1) // google drive
                                 index = cursor.getColumnIndex("_display_name")
                             result = cursor.getString(index)
-                            scaledUri = if (result != null) Uri.parse(result) else return null
+                            scaledUri = if (!result.isBlank()) Uri.parse(result) else return null
                         }
                     } catch (e: Exception) {
                         Timber.e(e, "Ërror loading photo $scaledUri")
@@ -353,8 +306,11 @@ object PhotoUtil {
             //      inJustDecodeBounds set to false to load the actual bitmap
             options.inJustDecodeBounds = false
             //      this options allow android to claim the bitmap memory if it runs low on memory
-            options.inPurgeable = true
-            options.inInputShareable = true
+
+            // these aren't much use for decodeFile operations
+            //  options.inPurgeable = true
+            //  options.inInputShareable = true
+
             options.inTempStorage = ByteArray(16 * 1024)
             try { //          load the bitmap from its path
                 bmp = BitmapFactory.decodeFile(path, options)
@@ -595,7 +551,7 @@ object PhotoUtil {
         }
     }
 
-    fun getUriFromPath(filePath: String): Uri? {
+    private fun getUriFromPath(filePath: String): Uri? {
         return try {
             val file = File(filePath)
             val uri = Uri.fromFile(file)

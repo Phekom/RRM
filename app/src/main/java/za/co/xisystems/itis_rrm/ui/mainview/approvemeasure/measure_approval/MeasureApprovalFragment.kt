@@ -1,3 +1,5 @@
+@file:Suppress("KDocUnresolvedReference")
+
 package za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.measure_approval
 
 import android.app.Dialog
@@ -50,13 +52,14 @@ import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 
+@Suppress("KDocUnresolvedReference")
 class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval), KodeinAware {
     override val kodein by kodein()
     private lateinit var approveViewModel: ApproveMeasureViewModel
     private val factory: ApproveMeasureViewModelFactory by instance()
     private lateinit var measurementsToApprove: ArrayList<JobItemMeasureDTO>
     lateinit var dialog: Dialog
-    lateinit var progressButton: Button
+    private lateinit var progressButton: Button
     private var workObserver = Observer<XIResult<WorkflowJobDTO>> { handleWorkSubmission(it) }
     private var flowDirection: Int = 0
     private var measuresProcessed: Int = 0
@@ -210,7 +213,6 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
 
                 measuresProcessed = 0
                 flowDirection = workflowDirection.value
-
 
                 if (userDTO.userId.isBlank()) {
                     this@MeasureApprovalFragment.motionToast(

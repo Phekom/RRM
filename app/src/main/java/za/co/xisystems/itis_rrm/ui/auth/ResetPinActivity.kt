@@ -8,7 +8,6 @@ import android.os.Build
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GooglePlayServicesUtil
@@ -34,7 +33,7 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnabl
     }
 
     override val kodein by kodein()
-    private val factory: AuthViewModelFactory by instance<AuthViewModelFactory>()
+    private val factory: AuthViewModelFactory by instance()
     private lateinit var viewModel: AuthViewModel
     private lateinit var appContext: Context
     private var permissions = arrayOf(
@@ -64,7 +63,7 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnabl
 
         Coroutines.main {
             val loggedInUser = viewModel.user.await()
-            loggedInUser.observe(this, Observer { user ->
+            loggedInUser.observe(this, { user ->
                 // Register the user
                 if (user != null) {
                     Coroutines.main {
@@ -156,10 +155,11 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnabl
         reg_container.snackbar(message)
     }
 
-    override fun onSignOut(userDTO: UserDTO) {
+    override fun onSignOut(userDTO: UserDTO){
+        // Not interested in this
     }
 
     override fun run() {
-
+        // Nothing to do
     }
 }
