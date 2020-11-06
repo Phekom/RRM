@@ -60,7 +60,7 @@ open class MainApp : Application(), KodeinAware {
 
         bind() from singleton { UserRepository(instance(), instance()) }
 
-        bind() from singleton { OfflineDataRepository(instance(), instance(), instance()) }
+        bind() from singleton { OfflineDataRepository(instance(), instance()) }
 
         bind() from singleton { JobCreationDataRepository(instance(), instance()) }
         bind() from singleton { JobApprovalDataRepository(instance(), instance()) }

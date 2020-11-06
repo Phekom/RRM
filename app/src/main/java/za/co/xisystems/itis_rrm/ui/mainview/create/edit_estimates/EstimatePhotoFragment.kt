@@ -385,7 +385,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
         // If the user hits the enter key on the costing field,
         // hide the keypad.
 
-        valueEditText.setOnEditorActionListener { v, _, event ->
+        valueEditText.setOnEditorActionListener { _, _, event ->
             if (event.action == KeyEvent.ACTION_DOWN && event.keyCode == KeyEvent.KEYCODE_ENTER) {
                 requireActivity().hideKeyboard()
                 true

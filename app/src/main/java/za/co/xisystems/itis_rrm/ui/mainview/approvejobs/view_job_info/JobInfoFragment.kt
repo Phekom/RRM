@@ -103,7 +103,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
             // Yes button
             approvalBuilder.setPositiveButton(
                 R.string.yes
-            ) { dialog, which ->
+            ) { _, _ ->
                 if (ServiceUtil.isNetworkAvailable(requireContext().applicationContext)) {
                     progressButton = approve_job_button
                     progressButton.initProgress(viewLifecycleOwner)
@@ -119,7 +119,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
             // No button
             approvalBuilder.setNegativeButton(
                 R.string.no
-            ) { dialog, which ->
+            ) { dialog, _ ->
                 // Do nothing but close dialog
                 dialog.dismiss()
             }
@@ -138,7 +138,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
             // Yes button
             declineBuilder.setPositiveButton(
                 R.string.yes
-            ) { dialog, which ->
+            ) { _, _ ->
                 if (ServiceUtil.isNetworkAvailable(requireContext().applicationContext)) {
                     progressButton = decline_job_button
                     progressButton.initProgress(viewLifecycleOwner)
@@ -153,7 +153,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
             // No button
             declineBuilder.setNegativeButton(
                 R.string.no
-            ) { dialog, which ->
+            ) { dialog, _ ->
                 // Do nothing but close dialog
                 dialog.dismiss()
             }

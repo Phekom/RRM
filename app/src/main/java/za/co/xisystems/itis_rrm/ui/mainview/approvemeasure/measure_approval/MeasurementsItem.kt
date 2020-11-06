@@ -106,9 +106,9 @@ class MeasurementsItem(
                             jobItemMeasureDTO.itemMeasureId
                         )
                         if (updated.isBlank()) {
-                            activity.motionToast("Data Updated was Successful", MotionToast.TOAST_SUCCESS)
+                            activity.motionToast("Data Updated", MotionToast.TOAST_SUCCESS)
                         } else {
-                            activity.motionToast("Data Updated Error!!  Server Not Reachable", MotionToast.TOAST_ERROR)
+                            activity.motionToast("Error on update: $updated.", MotionToast.TOAST_ERROR)
                         }
                     }
                 }
