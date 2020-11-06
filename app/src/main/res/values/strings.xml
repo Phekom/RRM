@@ -574,5 +574,12 @@
     <string name="work_complete">Work completed</string>
     <string name="work_declined">Work declined</string>
     <string name="measurement_declined">Measurement declined</string>
+    <string name="hint_confirm_new_pin_code">Confirm New Pin Code</string>
+    <string name="server">Server</string>
+    <string name="demo">Demo</string>
+    <string name="sanral_logo">sanral logo</string>
+    <string name="enter_new_pin_code">Enter New Pin Code</string>
+    <string name="enter_old_pin_code">Enter Old Pin Code</string>
+    <string name="version">Version</string>
 
 </resources>

@@ -7,6 +7,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.res.ResourcesCompat
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -16,10 +17,12 @@ import kotlinx.android.synthetic.main.activity_register.*
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.kodein
 import org.kodein.di.generic.instance
+import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.databinding.ActivityResetPinBinding
+import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.hide
 import za.co.xisystems.itis_rrm.utils.hideKeyboard
@@ -64,102 +67,125 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnabl
 
         Coroutines.main {
             val loggedInUser = viewModel.user.await()
-            loggedInUser.observe(this, Observer { user ->
+            loggedInUser.observe(this, { user ->
                 // Register the user
                 if (user != null) {
                     Coroutines.main {
-                        if (viewModel.enterOldPin != viewModel.confirmNewPin)
+
+                        if (viewModel.enterOldPin != viewModel.confirmNewPin) {
                             getToLogin()
+                        }
+
+                    }
+
+                    viewModel.newPinRegistered.observeOnce(this, {
+                        it?.let {
+                            when (it) {
+                                true -> {
+                                    MotionToast.createColorToast(
+                                        this@ResetPinActivity,
+                                        "PIN updated successfully",
+                                        MotionToast.TOAST_SUCCESS,
+                                        MotionToast.GRAVITY_BOTTOM,
+                                        MotionToast.LONG_DURATION,
+                                        ResourcesCompat.getFont(this@ResetPinActivity, R.font.helvetica_regular)
+                                    )
+                                    viewModel.newPinRegistered.value = false
+                                    getToLogin()
+                                }
+                                else -> {
+                                    getToLogin()
+                                }
+                            }
+
+                        }
+                    })
+                    serverTextView.setOnClickListener {
+                        ToastUtils().toastServerAddress(appContext)
+                    }
+
+                    buildFlavorTextView.setOnClickListener {
+                        ToastUtils().toastVersion(appContext)
                     }
                 }
             })
-            serverTextView.setOnClickListener {
-                ToastUtils().toastServerAddress(appContext)
-            }
-
-            buildFlavorTextView.setOnClickListener {
-                ToastUtils().toastVersion(appContext)
-            }
         }
     }
-
-    private fun getToLogin() {
-        Intent(this, LoginActivity::class.java).also { home ->
-            home.flags =
-                Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-            startActivity(home)
-        }
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == PERMISSION_REQUEST) {
-            var allAllowed = true
-            for (i in permissions.indices) {
-                if (grantResults[i] == PackageManager.PERMISSION_DENIED) {
-                    allAllowed = false
-                    val requestAgain = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        shouldShowRequestPermissionRationale(permissions[i])
-                    } else {
-                        false
-                    }
-                    if (requestAgain) {
-                        toast("Permission Denied")
-                    } else {
-                        toast("Please enable permissions from your Device Settings")
-                    }
+                private fun getToLogin() {
+                Intent(this, LoginActivity::class.java).also { home ->
+                    home.flags =
+                        Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                    startActivity(home)
                 }
             }
-            if (allAllowed)
-                toast("Permissions Granted")
-        }
-    }
 
-    private fun startPermissionRequest(permissions: Array<String>): Boolean {
-        var allAccess = true
-        for (i in permissions.indices) {
-            if (checkCallingOrSelfPermission(permissions[i]) == PackageManager.PERMISSION_DENIED) {
-                allAccess = false
+                override fun onRequestPermissionsResult(
+                requestCode: Int,
+                permissions: Array<out String>,
+                grantResults: IntArray
+            ) {
+                super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+                if (requestCode == PERMISSION_REQUEST) {
+                    var allAllowed = true
+                    for (i in permissions.indices) {
+                        if (grantResults[i] == PackageManager.PERMISSION_DENIED) {
+                            allAllowed = false
+                            val requestAgain = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                                shouldShowRequestPermissionRationale(permissions[i])
+                            } else {
+                                false
+                            }
+                            if (requestAgain) {
+                                toast("Permission Denied")
+                            } else {
+                                toast("Please enable permissions from your Device Settings")
+                            }
+                        }
+                    }
+                    if (allAllowed)
+                        toast("Permissions Granted")
+                }
+            }
+
+                private fun startPermissionRequest(permissions: Array<String>): Boolean {
+                var allAccess = true
+                for (i in permissions.indices) {
+                    if (checkCallingOrSelfPermission(permissions[i]) == PackageManager.PERMISSION_DENIED) {
+                        allAccess = false
+                    }
+                }
+                return allAccess
+            }
+
+                override fun onStart() {
+                super.onStart()
+                val resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this)
+                if (resultCode != ConnectionResult.SUCCESS) { // This dialog will help the user update to the latest GooglePlayServices
+                    val dialog =
+                        GooglePlayServicesUtil.getErrorDialog(resultCode, this, 0)
+                    dialog?.show()
+                }
+            }
+
+                override fun onStarted() {
+                loading.show()
+                hideKeyboard()
+            }
+
+                override fun onSuccess(userDTO: UserDTO) {
+                loading.hide()
+                toast("You are logged in as ${userDTO.userName}")
+            }
+
+                override fun onFailure(message: String) {
+                loading.hide()
+                hideKeyboard()
+                reg_container.snackbar(message)
+            }
+
+                override fun onSignOut(userDTO: UserDTO) {
+            }
+
+                override fun run() {
             }
         }
-        return allAccess
-    }
-
-    override fun onStart() {
-        super.onStart()
-        val resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this)
-        if (resultCode != ConnectionResult.SUCCESS) { // This dialog will help the user update to the latest GooglePlayServices
-            val dialog =
-                GooglePlayServicesUtil.getErrorDialog(resultCode, this, 0)
-            dialog?.show()
-        }
-    }
-
-    override fun onStarted() {
-        loading.show()
-        hideKeyboard()
-    }
-
-    override fun onSuccess(userDTO: UserDTO) {
-        loading.hide()
-
-        toast("You are logged in as ${userDTO.userName}")
-    }
-
-    override fun onFailure(message: String) {
-        loading.hide()
-        hideKeyboard()
-        reg_container.snackbar(message)
-    }
-
-    override fun onSignOut(userDTO: UserDTO) {
-    }
-
-    override fun run() {
-
-    }
-}
