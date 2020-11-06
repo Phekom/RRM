@@ -355,7 +355,7 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
                 if (!JobUtils.areQuantitiesValid(job)) {
                     this@AddProjectFragment.motionToast(
                         "Error: incomplete estimates.\n Quantity can't be zero!",
-                        MotionToast.TOAST_ERROR
+                        MotionToast.TOAST_WARNING
                     )
                     itemsCardView.startAnimation(shake_long)
                 } else {
@@ -535,7 +535,7 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
     }
 
     private fun onInvalidJob() {
-        this.motionToast("Incomplete estimates!", MotionToast.TOAST_ERROR)
+        this.motionToast("Incomplete estimates!", MotionToast.TOAST_WARNING)
         itemsCardView.startAnimation(shake_long)
     }
 

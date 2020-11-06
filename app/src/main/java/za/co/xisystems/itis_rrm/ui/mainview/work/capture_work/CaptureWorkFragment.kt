@@ -83,6 +83,7 @@ import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.ERROR
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.INFO
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.NO_INTERNET
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.SUCCESS
+import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.WARNING
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 
 class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), KodeinAware {
@@ -268,7 +269,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
     private fun validationNotice(stringId: Int) {
         sharedViewModel.setColorMessage(
             msg = getString(stringId),
-            style = ERROR,
+            style = WARNING,
             position = CENTER,
             duration = LONG
         )

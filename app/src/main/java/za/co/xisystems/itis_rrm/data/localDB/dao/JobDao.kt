@@ -15,6 +15,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobSectionDTO
  */
 
 @Dao
+
 interface JobDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

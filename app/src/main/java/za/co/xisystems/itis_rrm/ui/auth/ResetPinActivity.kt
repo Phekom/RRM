@@ -9,7 +9,6 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.res.ResourcesCompat
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GooglePlayServicesUtil
@@ -27,7 +26,6 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.hide
 import za.co.xisystems.itis_rrm.utils.hideKeyboard
 import za.co.xisystems.itis_rrm.utils.show
-import za.co.xisystems.itis_rrm.utils.snackbar
 import za.co.xisystems.itis_rrm.utils.toast
 
 class ResetPinActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnable {
@@ -75,7 +73,6 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnabl
                         if (viewModel.enterOldPin != viewModel.confirmNewPin) {
                             getToLogin()
                         }
-
                     }
 
                     viewModel.newPinRegistered.observeOnce(this, {
@@ -88,7 +85,7 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnabl
                                         MotionToast.TOAST_SUCCESS,
                                         MotionToast.GRAVITY_BOTTOM,
                                         MotionToast.LONG_DURATION,
-                                        ResourcesCompat.getFont(this@ResetPinActivity, R.font.helvetica_regular)
+                                        ResourcesCompat.getFont(applicationContext, R.font.helvetica_regular)
                                     )
                                     viewModel.newPinRegistered.value = false
                                     getToLogin()
@@ -97,7 +94,6 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnabl
                                     getToLogin()
                                 }
                             }
-
                         }
                     })
                     serverTextView.setOnClickListener {
@@ -111,81 +107,90 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnabl
             })
         }
     }
-                private fun getToLogin() {
-                Intent(this, LoginActivity::class.java).also { home ->
-                    home.flags =
-                        Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-                    startActivity(home)
-                }
-            }
 
-                override fun onRequestPermissionsResult(
-                requestCode: Int,
-                permissions: Array<out String>,
-                grantResults: IntArray
-            ) {
-                super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-                if (requestCode == PERMISSION_REQUEST) {
-                    var allAllowed = true
-                    for (i in permissions.indices) {
-                        if (grantResults[i] == PackageManager.PERMISSION_DENIED) {
-                            allAllowed = false
-                            val requestAgain = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                                shouldShowRequestPermissionRationale(permissions[i])
-                            } else {
-                                false
-                            }
-                            if (requestAgain) {
-                                toast("Permission Denied")
-                            } else {
-                                toast("Please enable permissions from your Device Settings")
-                            }
-                        }
+    private fun getToLogin() {
+        Intent(this, LoginActivity::class.java).also { home ->
+            home.flags =
+                Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+            startActivity(home)
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == PERMISSION_REQUEST) {
+            var allAllowed = true
+            for (i in permissions.indices) {
+                if (grantResults[i] == PackageManager.PERMISSION_DENIED) {
+                    allAllowed = false
+                    val requestAgain = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        shouldShowRequestPermissionRationale(permissions[i])
+                    } else {
+                        false
                     }
-                    if (allAllowed)
-                        toast("Permissions Granted")
-                }
-            }
-
-                private fun startPermissionRequest(permissions: Array<String>): Boolean {
-                var allAccess = true
-                for (i in permissions.indices) {
-                    if (checkCallingOrSelfPermission(permissions[i]) == PackageManager.PERMISSION_DENIED) {
-                        allAccess = false
+                    if (requestAgain) {
+                        toast("Permission Denied")
+                    } else {
+                        toast("Please enable permissions from your Device Settings")
                     }
                 }
-                return allAccess
             }
+            if (allAllowed)
+                toast("Permissions Granted")
+        }
+    }
 
-                override fun onStart() {
-                super.onStart()
-                val resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this)
-                if (resultCode != ConnectionResult.SUCCESS) { // This dialog will help the user update to the latest GooglePlayServices
-                    val dialog =
-                        GooglePlayServicesUtil.getErrorDialog(resultCode, this, 0)
-                    dialog?.show()
-                }
-            }
-
-                override fun onStarted() {
-                loading.show()
-                hideKeyboard()
-            }
-
-                override fun onSuccess(userDTO: UserDTO) {
-                loading.hide()
-                toast("You are logged in as ${userDTO.userName}")
-            }
-
-                override fun onFailure(message: String) {
-                loading.hide()
-                hideKeyboard()
-                reg_container.snackbar(message)
-            }
-
-                override fun onSignOut(userDTO: UserDTO) {
-            }
-
-                override fun run() {
+    private fun startPermissionRequest(permissions: Array<String>): Boolean {
+        var allAccess = true
+        for (i in permissions.indices) {
+            if (checkCallingOrSelfPermission(permissions[i]) == PackageManager.PERMISSION_DENIED) {
+                allAccess = false
             }
         }
+        return allAccess
+    }
+
+    override fun onStart() {
+        super.onStart()
+        val resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this)
+        if (resultCode != ConnectionResult.SUCCESS) { // This dialog will help the user update to the latest GooglePlayServices
+            val dialog =
+                GooglePlayServicesUtil.getErrorDialog(resultCode, this, 0)
+            dialog?.show()
+        }
+    }
+
+    override fun onStarted() {
+        loading.show()
+        hideKeyboard()
+    }
+
+    override fun onSuccess(userDTO: UserDTO) {
+        loading.hide()
+        toast("You are logged in as ${userDTO.userName}")
+    }
+
+    override fun onFailure(message: String) {
+        loading.hide()
+        hideKeyboard()
+        MotionToast.createColorToast(
+            this,
+            message,
+            MotionToast.TOAST_WARNING,
+            MotionToast.GRAVITY_BOTTOM,
+            MotionToast.LONG_DURATION,
+            ResourcesCompat.getFont(applicationContext, R.font.helvetica_regular)
+        )
+        // reg_container.snackbar(message)
+    }
+
+    override fun onSignOut(userDTO: UserDTO) {
+    }
+
+    override fun run() {
+    }
+}

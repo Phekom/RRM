@@ -581,5 +581,15 @@
     <string name="enter_new_pin_code">Enter New Pin Code</string>
     <string name="enter_old_pin_code">Enter Old Pin Code</string>
     <string name="version">Version</string>
+    <string name="contract_hint">Contract Hint</string>
+    <string name="plus_to_add_project_items">Press + to add project items</string>
+    <string name="pricing_hint">Pricing Hint</string>
+    <string name="estimated_start_date">Estimated Start Date:</string>
+    <string name="click_to_select_date">(Click to select date)</string>
+    <string name="estimated_due_date">Estimated Due Date:</string>
+    <string name="add_item">add item</string>
+    <string name="pin_light">pin light</string>
+    <string name="delete_button">delete button</string>
+    <string name="user_name">USER NAME</string>
 
 </resources>

@@ -162,7 +162,7 @@ abstract class BaseFragment(layoutContentId: Int) : Fragment(), IProgressView {
 
     protected fun motionToast(resId: Int, motionType: String = MotionToast.TOAST_INFO, position: Int = MotionToast.GRAVITY_BOTTOM, duration: Int = MotionToast.LONG_DURATION) {
         val message = getString(resId)
-        motionToast(message,motionType, position, duration)
+        motionToast(message, motionType, position, duration)
     }
 
     protected fun motionToast(message: String, motionType: String = MotionToast.TOAST_INFO, position: Int = MotionToast.GRAVITY_BOTTOM, duration: Int = MotionToast.LONG_DURATION) {

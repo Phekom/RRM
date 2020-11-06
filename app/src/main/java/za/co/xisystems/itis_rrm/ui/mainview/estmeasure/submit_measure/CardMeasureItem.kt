@@ -49,7 +49,6 @@ open class CardMeasureItem(
                     measurePhoto.let {
                         showZoomedImage(measurePhoto[0])
                     }
-
                 }
             }
 

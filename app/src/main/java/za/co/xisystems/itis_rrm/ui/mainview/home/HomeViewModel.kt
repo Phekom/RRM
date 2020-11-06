@@ -1,6 +1,8 @@
 package za.co.xisystems.itis_rrm.ui.mainview.home
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Transformations
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -21,20 +23,13 @@ class HomeViewModel(
     private val offlineDataRepository: OfflineDataRepository
 ) : BaseViewModel() {
 
-    private var databaseStatus: MutableLiveData<XIResult<Boolean>> = offlineDataRepository.databaseStatus
-    var databaseState: MutableLiveData<XIResult<Boolean>> = MutableLiveData()
+    private val databaseStatus: LiveData<XIResult<Boolean>> = offlineDataRepository.databaseStatus
+
+    val databaseState: MutableLiveData<XIResult<Boolean>> = Transformations.map(databaseStatus) { status ->
+        status
+    } as MutableLiveData<XIResult<Boolean>>
+
     private var job: Job = Job()
-
-    init {
-        databaseStatus.observeForever {
-            viewModelScope.launch(job + Dispatchers.Main + uncaughtExceptionHandler) {
-                it?.let {
-                    databaseState.postValue(it)
-                }
-
-            }
-        }
-    }
 
     val user by lazyDeferred {
         repository.getUser()
@@ -43,8 +38,6 @@ class HomeViewModel(
     val offlineSectionItems by lazyDeferred {
         offlineDataRepository.getSectionItems()
     }
-
-
 
     val bigSyncDone: MutableLiveData<Boolean> = offlineDataRepository.bigSyncDone
 
@@ -61,11 +54,11 @@ class HomeViewModel(
             databaseState.postValue(fetchFail)
         } finally {
             databaseState.postValue(XIProgress(false))
-
         }
     }
 
     override fun onCleared() {
+
         super.onCleared()
         scope.cancel()
     }

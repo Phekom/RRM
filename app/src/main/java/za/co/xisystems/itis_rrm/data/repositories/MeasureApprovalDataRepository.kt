@@ -242,9 +242,9 @@ class MeasureApprovalDataRepository(
             }
             val jobSuccess = XISuccess(data = job)
             workflowStatus.postValue(jobSuccess)
-        } catch(t: Throwable){
+        } catch (t: Throwable) {
             val message = "Could not save updated workflow: ${ t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR}"
-            Timber.e(t,message)
+            Timber.e(t, message)
             val dbError = XIError(t, message)
             workflowStatus.postValue(dbError)
         }
@@ -264,13 +264,11 @@ class MeasureApprovalDataRepository(
             }
         }
 
-
         job.workflowItemMeasures?.forEach { jim ->
             jim.itemMeasureId = DataConversion.toBigEndian(jim.itemMeasureId)!!
             jim.measureGroupId = DataConversion.toBigEndian(jim.measureGroupId)!!
             jim.trackRouteId = DataConversion.toBigEndian(jim.trackRouteId)!!
         }
-
 
         job.workflowJobSections?.forEach { js ->
             js.jobSectionId = DataConversion.toBigEndian(js.jobSectionId)!!

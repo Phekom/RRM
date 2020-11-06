@@ -92,6 +92,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         // Set MotionToast to use Sanral colours
         MotionToast.setErrorColor(R.color.sanral_dark_red)
         MotionToast.setSuccessColor(R.color.sanral_dark_green)
+        MotionToast.setWarningColor(R.color.colorPrimaryYellow)
 
         this.mainActivityViewModel = this.run {
             ViewModelProvider(this, factory).get(MainActivityViewModel::class.java)

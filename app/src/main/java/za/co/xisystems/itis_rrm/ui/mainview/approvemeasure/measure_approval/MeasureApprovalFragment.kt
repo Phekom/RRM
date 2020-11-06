@@ -211,7 +211,6 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
                 measuresProcessed = 0
                 flowDirection = workflowDirection.value
 
-
                 if (userDTO.userId.isBlank()) {
                     this@MeasureApprovalFragment.motionToast(
                         "Error: userId is null",
