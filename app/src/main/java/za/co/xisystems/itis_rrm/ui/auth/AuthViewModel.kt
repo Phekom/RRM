@@ -2,9 +2,12 @@ package za.co.xisystems.itis_rrm.ui.auth
 
 import android.os.Build
 import android.view.View
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.custom.errors.AuthException
 import za.co.xisystems.itis_rrm.custom.errors.NoConnectivityException
@@ -48,33 +51,46 @@ class AuthViewModel(
         }
     }
 
+    val newPinRegistered: MutableLiveData<Boolean> = MutableLiveData()
+
+
     fun onResetPinButtonClick(view: View) {
 
-        if (enterOldPin.isNullOrEmpty()) {
-            authListener?.onFailure("Please Enter Old pin")
+        if (enterOldPin.isNullOrBlank()) {
+            authListener?.onFailure("Please enter old PIN")
             return
         }
 
+
+
+
+
         if (enterNewPin.isNullOrEmpty()) {
-            authListener?.onFailure("Please Enter New pin")
+            authListener?.onFailure("Please enter new PIN")
             return
         }
 
         if (confirmNewPin.isNullOrEmpty()) {
-            authListener?.onFailure("Please Confirm New pin")
+            authListener?.onFailure("Please confirm new Pin")
             return
         }
 
         if (enterNewPin != confirmNewPin) {
-            authListener?.onFailure("Pin did not match")
+            authListener?.onFailure("PINs did not match")
             return
         }
         Coroutines.main {
             try {
                 if (enterOldPin == repository.getPin()) {
-                    repository.upDateUserPin(confirmNewPin!!, enterOldPin!!)
+                    if (enterOldPin.equals(enterNewPin)) {
+                        authListener?.onFailure("New PIN cannot be the same as the old PIN. Please enter a new PIN")
+                    } else {
+                        repository.upDateUserPin(confirmNewPin!!, enterOldPin!!)
+                        newPinRegistered.value = true
+                    }
+
                 } else {
-                    authListener?.onFailure("Old Pin is incorrect, pLease enter your current Pin")
+                    authListener?.onFailure("Old PIN is incorrect, pLease enter your current PIN")
                 }
             } catch (e: AuthException) {
                 authListener?.onFailure(e.message!!)
@@ -89,17 +105,17 @@ class AuthViewModel(
     fun onRegPinButtonClick(view: View) {
 
         if (enterPin.isNullOrEmpty()) {
-            authListener?.onFailure("Please Enter pin")
+            authListener?.onFailure("Please Enter PIN")
             return
         }
 
         if (confirmPin.isNullOrEmpty()) {
-            authListener?.onFailure("Please Confirm pin")
+            authListener?.onFailure("Please confirm PIN")
             return
         }
 
         if (enterPin != confirmPin) {
-            authListener?.onFailure("Pin did not match")
+            authListener?.onFailure("PIN did not match")
             return
         }
 
@@ -107,7 +123,7 @@ class AuthViewModel(
         if (!enterPin.isNullOrBlank()) {
             val pin = enterPin
             if (pin!!.length < 4 || pin.length > 4) {
-                authListener?.onFailure("Pin needs to be four digits long.")
+                authListener?.onFailure("PIN needs to be four digits long.")
                 return
             }
         }

@@ -183,12 +183,12 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
                             }
                         } else {
                             MotionToast.createColorToast(
-                                this,
+                                this@LoginActivity,
                                 getString(R.string.no_connection_detected),
                                 MotionToast.TOAST_NO_INTERNET,
                                 MotionToast.GRAVITY_BOTTOM,
                                 MotionToast.LONG_DURATION,
-                                ResourcesCompat.getFont(this.applicationContext, R.font.helvetica_regular)
+                                ResourcesCompat.getFont(this@LoginActivity, R.font.helvetica_regular)
                             )
                         }
                     }
@@ -267,12 +267,12 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
     private fun showMessage() {
 
         MotionToast.createColorToast(
-            this,
+            this@LoginActivity,
             "Pin is incorrect",
             MotionToast.TOAST_ERROR,
             MotionToast.GRAVITY_BOTTOM,
             MotionToast.LONG_DURATION,
-            ResourcesCompat.getFont(this, R.font.helvetica_regular)
+            ResourcesCompat.getFont(this@LoginActivity, R.font.helvetica_regular)
         )
 
         resetAllPinColor()
@@ -285,12 +285,12 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
 
     override fun onSuccess(userDTO: UserDTO) {
         MotionToast.createColorToast(
-            this,
+            this@LoginActivity,
             "You are Logged in as ${userDTO.userName}",
             MotionToast.TOAST_SUCCESS,
             MotionToast.GRAVITY_BOTTOM,
             MotionToast.LONG_DURATION,
-            ResourcesCompat.getFont(this, R.font.helvetica_regular)
+            ResourcesCompat.getFont(this@LoginActivity, R.font.helvetica_regular)
         )
     }
 
