@@ -43,7 +43,7 @@
                     android:layout_height="wrap_content"
                     android:layout_margin="@dimen/small"
                     android:ellipsize="end"
-                    android:hint="N.002-036-2017/1 DEMO"
+                    android:hint="@string/contract_hint"
                     android:textStyle="bold"
                     app:layout_constraintEnd_toStartOf="@+id/resetButton"
                     app:layout_constraintStart_toEndOf="@+id/contractLabel"
@@ -58,7 +58,8 @@
                     android:tint="@color/sanral_orange_red"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:contentDescription="@string/cancel" />
 
                 <TextView
                     android:id="@+id/projectLabel"
@@ -107,7 +108,8 @@
                 android:layout_width="56dp"
                 android:layout_height="44dp"
                 android:src="@drawable/ic_baseline_add_box_24px"
-                android:tint="@color/sanral_orange_red" />
+                android:tint="@color/sanral_orange_red"
+                android:contentDescription="@string/add_item" />
         </LinearLayout>
     </LinearLayout>
 
@@ -142,7 +144,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_margin="16dp"
-                    android:text="Press + to add project items"
+                    android:text="@string/plus_to_add_project_items"
                     android:textAlignment="center" />
 
                 <androidx.recyclerview.widget.RecyclerView
@@ -151,6 +153,7 @@
                     android:layout_height="280dp"
                     android:visibility="visible"
                     android:paddingStart="@dimen/dimen_8dp"
+                    android:paddingEnd="@dimen/dimen_8dp"
                     tools:listitem="new_job_item"
                     tools:visibility="visible" />
 
@@ -163,7 +166,7 @@
                     android:id="@+id/totalCostTextView"
                     style="@style/_default"
                     android:gravity="end"
-                    android:hint="Total: R 0"
+                    android:hint="@string/pricing_hint"
                     android:paddingLeft="@dimen/small"
                     android:paddingTop="@dimen/xsmall"
                     android:paddingRight="@dimen/small"
@@ -211,21 +214,21 @@
                     android:gravity="start"
                     android:paddingLeft="@dimen/xsmall"
                     android:paddingRight="@dimen/xsmall"
-                    android:text="Estimated Start Date: " />
+                    android:text="@string/estimated_start_date" />
 
                 <TextView
                     android:id="@+id/startDateTextView"
                     style="@style/_default"
                     android:layout_margin="@dimen/small"
-                    android:drawableEnd="@drawable/ic_baseline_chevron_right_24px"
                     android:ellipsize="end"
                     android:gravity="start"
-                    android:hint="(Click to select date)"
+                    android:hint="@string/click_to_select_date"
                     android:maxLines="1"
                     android:paddingLeft="@dimen/xsmall"
                     android:paddingRight="@dimen/xsmall"
                     android:textColor="@color/black"
-                    android:textColorHint="@color/silver" />
+                    android:textColorHint="@color/silver"
+                    app:drawableEndCompat="@drawable/ic_baseline_chevron_right_24px" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
@@ -250,21 +253,21 @@
                     android:gravity="start"
                     android:paddingLeft="@dimen/xsmall"
                     android:paddingRight="@dimen/xsmall"
-                    android:text="Estimated Due Date: " />
+                    android:text="@string/estimated_due_date" />
 
                 <TextView
                     android:id="@+id/dueDateTextView"
                     style="@style/_default"
                     android:layout_margin="@dimen/small"
-                    android:drawableEnd="@drawable/ic_baseline_chevron_right_24px"
                     android:ellipsize="end"
                     android:gravity="start"
-                    android:hint="(Click to select date)"
+                    android:hint="@string/click_to_select_date"
                     android:maxLines="1"
                     android:paddingLeft="@dimen/xsmall"
                     android:paddingRight="@dimen/xsmall"
                     android:textColor="@color/black"
-                    android:textColorHint="@color/silver" />
+                    android:textColorHint="@color/silver"
+                    app:drawableEndCompat="@drawable/ic_baseline_chevron_right_24px" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
@@ -275,7 +278,7 @@
             android:layout_marginLeft="@dimen/xsmall"
             android:layout_marginTop="@dimen/medium"
             android:layout_marginRight="@dimen/xsmall"
-            android:text="submit" />
+            android:text="@string/submit" />
 
     </LinearLayout>
 

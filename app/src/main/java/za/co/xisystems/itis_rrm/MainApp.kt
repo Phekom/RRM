@@ -21,7 +21,6 @@ import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.NetworkConnectionInterceptor
 import za.co.xisystems.itis_rrm.data.preferences.PreferenceProvider
-import za.co.xisystems.itis_rrm.data.repositories.HomeRepository
 import za.co.xisystems.itis_rrm.data.repositories.JobApprovalDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.JobCreationDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.MeasureApprovalDataRepository
@@ -61,7 +60,6 @@ open class MainApp : Application(), KodeinAware {
 
         bind() from singleton { UserRepository(instance(), instance()) }
 
-        bind() from singleton { HomeRepository(instance(), instance()) }
         bind() from singleton { OfflineDataRepository(instance(), instance(), instance()) }
 
         bind() from singleton { JobCreationDataRepository(instance(), instance(), instance()) }

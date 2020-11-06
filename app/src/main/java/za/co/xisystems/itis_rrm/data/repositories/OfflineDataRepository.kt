@@ -943,7 +943,7 @@ class OfflineDataRepository(
 
     private fun saveTaskList(toDoListGroups: ArrayList<ToDoGroupsDTO>?) {
 
-        toDoListGroups?.let{
+        toDoListGroups?.let {
             saveUserTaskList(it)
         }
     }
@@ -957,7 +957,7 @@ class OfflineDataRepository(
 
                 val entitiesArrayList = toDoListGroup.toDoListEntities
 
-                entitiesArrayList.forEach {toDoListEntity ->
+                entitiesArrayList.forEach { toDoListEntity ->
                     val jobId = getJobIdFromPrimaryKeyValues(toDoListEntity.primaryKeyValues)
                     jobId?.let { id ->
                         insertEntity(toDoListEntity, id)

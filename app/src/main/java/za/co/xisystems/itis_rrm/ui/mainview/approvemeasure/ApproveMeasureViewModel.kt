@@ -11,7 +11,6 @@ import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
-import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler.UNKNOWN_ERROR
 import za.co.xisystems.itis_rrm.custom.results.XIError
@@ -150,7 +149,7 @@ class ApproveMeasureViewModel(
         }
     }
 
-    suspend fun getJobMeasureItemsPhotoPath(itemMeasureId: String):List<String> {
+    suspend fun getJobMeasureItemsPhotoPath(itemMeasureId: String): List<String> {
         return withContext(Dispatchers.IO) {
             measureApprovalDataRepository.getJobMeasureItemPhotoPaths(itemMeasureId)
         }
@@ -251,7 +250,7 @@ class ApproveMeasureViewModel(
                 measureGalleryUIState.postValue(XISuccess(uiState))
             } catch (t: Throwable) {
                 val message = "$galleryError: ${t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR}"
-                Timber.e(t,message)
+                Timber.e(t, message)
                 val galleryFail = XIError(t, message)
                 measureGalleryUIState.postValue(galleryFail)
             }

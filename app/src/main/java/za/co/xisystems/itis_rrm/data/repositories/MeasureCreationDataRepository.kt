@@ -392,7 +392,7 @@ class MeasureCreationDataRepository(
         }
     }
 
-    suspend fun getJobMeasureItemsPhotoPath(itemMeasureId: String):List<String> {
+    suspend fun getJobMeasureItemsPhotoPath(itemMeasureId: String): List<String> {
         return withContext(Dispatchers.IO) {
             appDb.getJobItemMeasurePhotoDao().getJobMeasureItemPhotoPaths(itemMeasureId)
         }

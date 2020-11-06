@@ -2,12 +2,10 @@ package za.co.xisystems.itis_rrm.ui.auth
 
 import android.os.Build
 import android.view.View
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.custom.errors.AuthException
 import za.co.xisystems.itis_rrm.custom.errors.NoConnectivityException
@@ -53,17 +51,12 @@ class AuthViewModel(
 
     val newPinRegistered: MutableLiveData<Boolean> = MutableLiveData()
 
-
     fun onResetPinButtonClick(view: View) {
 
         if (enterOldPin.isNullOrBlank()) {
             authListener?.onFailure("Please enter old PIN")
             return
         }
-
-
-
-
 
         if (enterNewPin.isNullOrEmpty()) {
             authListener?.onFailure("Please enter new PIN")
@@ -88,7 +81,6 @@ class AuthViewModel(
                         repository.upDateUserPin(confirmNewPin!!, enterOldPin!!)
                         newPinRegistered.value = true
                     }
-
                 } else {
                     authListener?.onFailure("Old PIN is incorrect, pLease enter your current PIN")
                 }

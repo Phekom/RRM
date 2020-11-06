@@ -153,7 +153,5 @@ class RegisterPinActivity : AppCompatActivity(), AuthListener, KodeinAware {
     }
 
     override fun onSignOut(userDTO: UserDTO) {
-
     }
-
 }
