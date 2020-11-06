@@ -1,6 +1,8 @@
 package za.co.xisystems.itis_rrm.ui.mainview.home
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Transformations
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -25,19 +27,13 @@ class HomeViewModel(
     private val offlineDataRepository: OfflineDataRepository
 ) : BaseViewModel() {
 
-    private var databaseStatus: MutableLiveData<XIResult<Boolean>> = offlineDataRepository.databaseStatus
-    var databaseState: MutableLiveData<XIResult<Boolean>> = MutableLiveData()
-    private var job: Job = Job()
+    private val databaseStatus: LiveData<XIResult<Boolean>> = offlineDataRepository.databaseStatus
 
-    init {
-        databaseStatus.observeForever {
-            viewModelScope.launch(job + Dispatchers.Main + uncaughtExceptionHandler) {
-                it?.let {
-                    databaseState.postValue(it)
-                }
-            }
-        }
-    }
+    val databaseState: MutableLiveData<XIResult<Boolean>> = Transformations.map(databaseStatus) { status ->
+        status
+    } as MutableLiveData<XIResult<Boolean>>
+
+    private var job: Job = Job()
 
     val user by lazyDeferred {
         repository.getUser()

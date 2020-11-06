@@ -430,7 +430,7 @@ dependencies {
     implementation 'com.github.tntkhang:full-screen-image-view-library:1.1.0'
 
     //Android  Room
-    def room_version = '2.3.0-alpha03' // alpha06 has bugs
+    def room_version = '2.2.5' // alpha06 has bugs
 
     implementation "androidx.room:room-runtime:$room_version"
     implementation "androidx.room:room-ktx:$room_version"

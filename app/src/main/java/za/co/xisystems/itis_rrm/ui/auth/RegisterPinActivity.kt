@@ -30,7 +30,7 @@ import za.co.xisystems.itis_rrm.utils.toast
 
 private const val PERMISSION_REQUEST = 10
 
-class RegisterPinActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnable {
+class RegisterPinActivity : AppCompatActivity(), AuthListener, KodeinAware {
     companion object {
         val TAG: String = RegisterPinActivity::class.java.simpleName
     }
@@ -143,9 +143,7 @@ class RegisterPinActivity : AppCompatActivity(), AuthListener, KodeinAware, Runn
 
     override fun onSuccess(userDTO: UserDTO) {
         loading.hide()
-
         toast("You are Logged in as ${userDTO.userName}")
-        this.run()
     }
 
     override fun onFailure(message: String) {
@@ -155,14 +153,5 @@ class RegisterPinActivity : AppCompatActivity(), AuthListener, KodeinAware, Runn
     }
 
     override fun onSignOut(userDTO: UserDTO) {
-    }
-
-    override fun run() {
-        Coroutines.main {
-            val contracts = viewModel.offlineData.await()
-            contracts.observe(this, Observer { contrcts ->
-                toast("Loading contract: ${contrcts.size} / ${contrcts.count()}")
-            })
-        }
     }
 }

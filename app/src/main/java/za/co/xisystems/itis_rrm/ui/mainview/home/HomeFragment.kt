@@ -63,7 +63,6 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
     private val colorNotConnected: Int
         get() = Color.RED
 
-    @OptIn(ExperimentalStdlibApi::class)
     private val bigSyncObserver = Observer<XIResult<Boolean>> {
         Coroutines.main {
             handleBigSync(it)

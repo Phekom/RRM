@@ -46,7 +46,9 @@ open class CardMeasureItem(
                 Coroutines.main {
                     val measurePhoto =
                         measureViewModel.getJobMeasureItemsPhotoPath(itemMeasureId)
-                    showZoomedImage(measurePhoto[0])
+                    measurePhoto.let {
+                        showZoomedImage(measurePhoto[0])
+                    }
                 }
             }
 
