@@ -8,15 +8,16 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
-import android.view.View.GONE
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.GroupieViewHolder
 import kotlinx.android.synthetic.main.fragment_approvejob.*
+import kotlinx.coroutines.launch
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
@@ -29,6 +30,7 @@ import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.approve_job_item.ApproveJobItem
+import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
 
@@ -42,9 +44,16 @@ class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAw
     private lateinit var approveViewModel: ApproveJobsViewModel
     private val factory: ApproveJobsViewModelFactory by instance<ApproveJobsViewModelFactory>()
     lateinit var dialog: Dialog
+    private var uiScope = UiLifecycleScope()
 
     companion object {
         val TAG: String = ApproveJobsFragment::class.java.simpleName
+    }
+
+    init {
+        lifecycleScope.launch {
+
+        }
     }
 
     override fun onCreateView(
@@ -74,6 +83,7 @@ class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAw
             } catch (t: Throwable) {
                 val xiFail = XIError(t, t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR)
                 XIErrorHandler.crashGuard(
+                    fragment = this@ApproveJobsFragment,
                     view = this@ApproveJobsFragment.requireView(),
                     throwable = xiFail,
                     refreshAction = { retryFetchLocalJobs() }
@@ -109,7 +119,7 @@ class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAw
                 job_data_layout.visibility = View.VISIBLE
                 initRecyclerView(jItems.toApproveListItems())
             }
-            group3_loading.visibility = GONE
+            group3_loading.visibility = View.GONE
         })
     }
 
@@ -138,14 +148,18 @@ class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAw
                     if (it.isNullOrEmpty()) {
                         job_data_layout.visibility = View.GONE
                         no_data_layout.visibility = View.VISIBLE
+                    } else {
+                        uiScope.launch(uiScope.coroutineContext) {
+                            fetchLocalJobs()
+                        }
                     }
                 })
-                fetchLocalJobs()
             } catch (t: Throwable) {
                 val message = t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR
                 Timber.e(t)
                 val xiFail = XIError(t, message)
                 XIErrorHandler.crashGuard(
+                    fragment = this@ApproveJobsFragment,
                     view = this@ApproveJobsFragment.requireView(),
                     throwable = xiFail,
                     refreshAction = { retryFetchRemoteJobs() }
@@ -160,6 +174,16 @@ class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAw
     private fun retryFetchRemoteJobs() {
         IndefiniteSnackbar.hide()
         fetchRemoteJobs()
+    }
+
+    /**
+     * Called when the Fragment is no longer resumed.  This is generally
+     * tied to [MainActivity.onPause()] of the containing
+     * Activity's lifecycle.
+     */
+    override fun onPause() {
+        approveViewModel.workflowState.removeObservers(viewLifecycleOwner)
+        super.onPause()
     }
 
     private fun initRecyclerView(

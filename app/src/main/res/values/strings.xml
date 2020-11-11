@@ -192,7 +192,9 @@
     <string name="item_description">Item Description</string>
     <string name="itis_in_capitals">ITIS</string>
     <string name="job_approved">Job Approved</string>
+    <string name="job_no_approved">Job %1$s Approved</string>
     <string name="job_declined">Job Declined</string>
+    <string name="job_no_declined">Job %1$s Declined</string>
     <string name="job_description">Job Description</string>
     <string name="job_item_estimate">"Job Item Estimate"</string>
     <string name="job_item_measurements_submitted">Job Item Measurement/s submitted</string>
@@ -531,7 +533,6 @@
     <string name="label_area_m2">Area(m²): </string>
     <string name="label_volume_m3">Volume(m³): </string>
     <string name="todo">TODO</string>
-    <string name="welcome">Welcome</string>
     <string name="label_amount">Amount: </string>
     <string name="label_length_m">Length(m): </string>
     <string name="warning_estimate_incomplete">Incomplete estimate …</string>
@@ -591,5 +592,10 @@
     <string name="pin_light">pin light</string>
     <string name="delete_button">delete button</string>
     <string name="user_name">USER NAME</string>
+    <string name="no_information">No information.</string>
+    <string name="user_icon">user icon</string>
+    <string name="welcome">Welcome </string>
+    <string name="location_service_indicator">Location Service Indicator</string>
+    <string name="needs_dbsynch">No RRM data detected. Please synchronise the local database for contract and project information.</string>
 
 </resources>

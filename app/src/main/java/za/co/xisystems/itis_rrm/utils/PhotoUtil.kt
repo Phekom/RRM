@@ -1,7 +1,6 @@
 package za.co.xisystems.itis_rrm.utils
 
 import android.annotation.SuppressLint
-import android.annotation.TargetApi
 import android.content.Context
 import android.content.res.AssetFileDescriptor
 import android.graphics.Bitmap
@@ -15,6 +14,16 @@ import android.os.Environment
 import androidx.core.content.FileProvider
 import androidx.exifinterface.media.ExifInterface
 import androidx.fragment.app.Fragment
+import org.apache.sanselan.ImageReadException
+import org.apache.sanselan.ImageWriteException
+import org.apache.sanselan.Sanselan
+import org.apache.sanselan.common.IImageMetadata
+import org.apache.sanselan.formats.jpeg.JpegImageMetadata
+import org.apache.sanselan.formats.jpeg.exifRewrite.ExifRewriter
+import org.apache.sanselan.formats.tiff.write.TiffOutputSet
+import timber.log.Timber
+import za.co.xisystems.itis_rrm.BuildConfig
+import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileNotFoundException
@@ -28,16 +37,6 @@ import java.util.HashMap
 import java.util.Locale
 import java.util.UUID
 import kotlin.math.roundToLong
-import org.apache.sanselan.ImageReadException
-import org.apache.sanselan.ImageWriteException
-import org.apache.sanselan.Sanselan
-import org.apache.sanselan.common.IImageMetadata
-import org.apache.sanselan.formats.jpeg.JpegImageMetadata
-import org.apache.sanselan.formats.jpeg.exifRewrite.ExifRewriter
-import org.apache.sanselan.formats.tiff.write.TiffOutputSet
-import timber.log.Timber
-import za.co.xisystems.itis_rrm.BuildConfig
-import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 
 object PhotoUtil {
     const val FOLDER = "ITIS_RRM_Photos"
@@ -61,10 +60,10 @@ object PhotoUtil {
                 selectedImage?.let { context.contentResolver.openAssetFileDescriptor(it, "r") }
             if (fileDescriptor != null)
                 bm = BitmapFactory.decodeFileDescriptor(
-                fileDescriptor.fileDescriptor,
-                null,
-                options
-            )
+                    fileDescriptor.fileDescriptor,
+                    null,
+                    options
+                )
         } catch (e: FileNotFoundException) {
             e.printStackTrace()
         } finally {
@@ -100,7 +99,7 @@ object PhotoUtil {
                 File.separator + FOLDER
         ).walkTopDown().forEach { file ->
             val diff = presentTime - file.lastModified()
-            if (diff >= ninetyDays && file.isFile) {
+            if (diff >= thirtyDays && file.isFile) {
                 Timber.d("${file.name} was deleted, it was $diff old.")
                 file.delete()
             } else {
@@ -109,7 +108,7 @@ object PhotoUtil {
         }
     }
 
-    private const val ninetyDays: Long = 7_776_000_000
+    private const val thirtyDays:Long = 2592000000
 
     fun photoExist(fileName: String): Boolean {
         val image =
@@ -308,8 +307,8 @@ object PhotoUtil {
             //      this options allow android to claim the bitmap memory if it runs low on memory
 
             // these aren't much use for decodeFile operations
-            //  options.inPurgeable = true
-            //  options.inInputShareable = true
+            options.inPurgeable = true
+            options.inInputShareable = true
 
             options.inTempStorage = ByteArray(16 * 1024)
             try { //          load the bitmap from its path

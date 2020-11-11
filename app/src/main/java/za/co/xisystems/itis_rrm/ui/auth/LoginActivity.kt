@@ -219,15 +219,15 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
             val xiErr = XIError(t, "Failed to login")
             if (xiErr.isConnectivityException()) {
                 XIErrorHandler.handleError(
-                    this.findViewById(R.id.reg_container),
-                    xiErr,
+                    view = findViewById(R.id.reg_container),
+                    throwable = xiErr,
                     shouldShowSnackBar = true,
                     refreshAction = { retryGotoMain() }
                 )
             } else {
                 XIErrorHandler.handleError(
-                    this.findViewById(R.id.reg_container),
-                    xiErr,
+                    view = findViewById(R.id.reg_container),
+                    throwable = xiErr,
                     shouldToast = true
                 )
             }

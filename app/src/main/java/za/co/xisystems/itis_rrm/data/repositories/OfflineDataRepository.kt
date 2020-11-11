@@ -4,12 +4,13 @@ package za.co.xisystems.itis_rrm.data.repositories
 
 // import android.app.Activity
 import android.os.Environment
-import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.room.Transaction
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.custom.results.XIProgress
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.results.XIStatus
@@ -125,7 +126,7 @@ class OfflineDataRepository(
         }
     }
 
-    var databaseStatus: MutableLiveData<XIResult<Boolean>> = MutableLiveData()
+    var databaseStatus: MutableLiveData<XIEvent<XIResult<Boolean>>> = MutableLiveData()
 
     suspend fun getContracts(): LiveData<List<ContractDTO>> {
         return withContext(Dispatchers.IO) {
@@ -171,10 +172,11 @@ class OfflineDataRepository(
 
     suspend fun getJobMeasureForActivityId(
         activityId: Int,
-        activityId2: Int
+        activityId2: Int,
+        activityId3: Int
     ): LiveData<List<JobItemEstimateDTO>> {
         return withContext(Dispatchers.IO) {
-            appDb.getJobItemEstimateDao().getJobMeasureForActivityId(activityId, activityId2)
+            appDb.getJobItemEstimateDao().getJobMeasureForActivityId(activityId, activityId2, activityId3)
         }
     }
 
@@ -305,6 +307,7 @@ class OfflineDataRepository(
         }
     }
 
+    @Transaction
     private suspend fun saveContracts(contracts: List<ContractDTO>) {
 
         createWorkflowSteps()
@@ -359,6 +362,7 @@ class OfflineDataRepository(
         }
     }
 
+    @Transaction
     private fun saveProjects(
         validProjects: List<ProjectDTO>?,
         contract: ContractDTO
@@ -399,10 +403,10 @@ class OfflineDataRepository(
 
                         projectCount++
 
-                        if (contractCount >= contractMax && projectCount >= projectMax) {
-                            databaseStatus.postValue(XIStatus("All projects retrieved."))
-                            databaseStatus.postValue(XISuccess(true))
-                            databaseStatus.postValue(XIProgress(false))
+                        if (projectCount >= projectMax) {
+                            postEvent(XIStatus("All contract data acquired."))
+                            postEvent(XISuccess(true))
+                            postEvent(XIProgress(false))
                         } else {
                             postStatus("Loading Project $projectCount of $projectMax")
                         }
@@ -556,6 +560,7 @@ class OfflineDataRepository(
         }
     }
 
+    @Transaction
     private fun saveJobs(job: JobDTO?) {
         Coroutines.io {
             job?.let {
@@ -662,17 +667,20 @@ class OfflineDataRepository(
                         jobItemEstimate.projectItemId
                     )
                 )
-                if (jobItemEstimate.trackRouteId != null)
+                if (jobItemEstimate.trackRouteId != null) {
                     jobItemEstimate.setTrackRouteId(
                         DataConversion.toBigEndian(
                             jobItemEstimate.trackRouteId
                         )
-                    ) else jobItemEstimate.trackRouteId = null
-                jobItemEstimate.setProjectVoId(
-                    DataConversion.toBigEndian(
-                        jobItemEstimate.projectVoId
                     )
-                )
+                } else {
+                    jobItemEstimate.trackRouteId = null
+                    jobItemEstimate.setProjectVoId(
+                        DataConversion.toBigEndian(
+                            jobItemEstimate.projectVoId
+                        )
+                    )
+                }
 
                 appDb.getJobItemEstimateDao().insertJobItemEstimate(jobItemEstimate)
                 appDb.getJobDao().setEstimateActId(jobItemEstimate.actId, job.JobId)
@@ -1030,7 +1038,7 @@ class OfflineDataRepository(
         toDoListGroups.postValue(toDoListGroupsResponse.toDoListGroups)
     }
 
-   suspend fun loadContracts(userId: String) {
+    suspend fun loadContracts(userId: String) {
         postStatus("Updating Contracts")
         val contractsResponse = apiRequest { api.getAllContractsByUserId(userId) }
         // conTracts.postValue(contractsResponse.contracts)
@@ -1038,12 +1046,9 @@ class OfflineDataRepository(
     }
 
     suspend fun getUserTaskList(): LiveData<List<ToDoListEntityDTO>> {
-
-        return withContext(Dispatchers.IO) {
-            val userId = appDb.getUserDao().getUserID()
-            fetchUserTaskList(userId)
-            appDb.getEntitiesDao().getAllEntities()
-        }
+        val userId = appDb.getUserDao().getUserID()
+        fetchUserTaskList(userId)
+        return appDb.getEntitiesDao().getAllEntities()
     }
 
     private suspend fun getAllEntities(): Int {
@@ -1113,9 +1118,13 @@ class OfflineDataRepository(
         }
     }
 
+    private fun postEvent(result: XIResult<Boolean>){
+        databaseStatus.postValue(XIEvent(result))
+    }
+
     private fun postStatus(message: String) {
         val status = XIStatus(message)
-        databaseStatus.postValue(status)
+        postEvent(status)
     }
 
     private fun saveLookups(lookups: ArrayList<LookupDTO>?) {
@@ -1144,6 +1153,7 @@ class OfflineDataRepository(
         }
     }
 
+    @Transaction
     fun deleteAllData(): Void? {
 
         appDb.clearAllTables()

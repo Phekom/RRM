@@ -24,13 +24,13 @@ class ApproveJobItem(
     override fun bind(viewHolder: GroupieViewHolder, position: Int) {
         viewHolder.apply {
             appListID.text = getItemId(position + 1).toString()
-            listview_item_textView.text = context.getString(R.string.pair, "JI:", jobDTO.JiNo.toString())
+            listview_item_textView.text = context.getString(R.string.pair, "JI: ", jobDTO.JiNo.toString())
             Coroutines.main {
-                sectionId = approveViewModel.getProjectSectionIdForJobId(jobDTO.JobId)
+                sectionId = approveViewModel.getProjectSectionIdForJobId(jobDTO.JobId).value
                 if (sectionId.isNullOrEmpty()) sectionId = ""
-                route = approveViewModel.getRouteForProjectSectionId(sectionId!!)
+                route = approveViewModel.getRouteForProjectSectionId(sectionId!!).value
                 if (route.isNullOrEmpty()) route = ""
-                section = approveViewModel.getSectionForProjectSectionId(sectionId!!)
+                section = approveViewModel.getSectionForProjectSectionId(sectionId!!).value
                 if (section.isNullOrEmpty()) section = ""
 
                 apv_section.text = context.getString(R.string.route_section_badge, route, section)

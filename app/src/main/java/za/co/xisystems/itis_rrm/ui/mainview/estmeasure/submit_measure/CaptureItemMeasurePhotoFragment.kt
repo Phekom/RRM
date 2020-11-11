@@ -22,9 +22,6 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.coroutineScope
 import androidx.navigation.Navigation
-import java.util.ArrayList
-import java.util.Date
-import java.util.HashMap
 import kotlinx.android.synthetic.main.fragment_capture_item_measure_photo.*
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
@@ -33,7 +30,7 @@ import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
 import pereira.agnaldo.previewimgcol.ImageCollectionView
 import timber.log.Timber
-import za.co.xisystems.itis_rrm.BuildConfig
+import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.LocationFragment
@@ -58,6 +55,9 @@ import za.co.xisystems.itis_rrm.utils.DateUtil
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
+import java.util.ArrayList
+import java.util.Date
+import java.util.HashMap
 
 //
 class CaptureItemMeasurePhotoFragment :
@@ -118,7 +118,13 @@ class CaptureItemMeasurePhotoFragment :
                     selectedJobItemM?.let { it ->
                         estimate_image_collection_view.clearImages()
                         viewPhotosOnly = false
-                        toast("Measuring job: ${it.jimNo}")
+
+                        this@CaptureItemMeasurePhotoFragment.motionToast(
+                            message = "Measuring job: ${it.jimNo}",
+                            motionType = MotionToast.TOAST_INFO,
+                            position = MotionToast.GRAVITY_TOP
+                        )
+
                         selectedJobItemMeasure = it
                         checkForPhotos(selectedJobItemMeasure)
                     }
@@ -351,6 +357,7 @@ class CaptureItemMeasurePhotoFragment :
 
             is XIError ->
                 XIErrorHandler.handleError(
+                    fragment = this@CaptureItemMeasurePhotoFragment,
                     view = this@CaptureItemMeasurePhotoFragment.requireView(),
                     throwable = response,
                     shouldToast = false,

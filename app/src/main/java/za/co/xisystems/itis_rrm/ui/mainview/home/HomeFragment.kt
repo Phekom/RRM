@@ -16,7 +16,6 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenStarted
-import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.android.synthetic.main.fragment_home.*
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -44,6 +43,7 @@ import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModelFactory
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
+import kotlin.coroutines.cancellation.CancellationException
 
 @ExperimentalStdlibApi
 class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
@@ -73,7 +73,9 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
 
         lifecycleScope.launch {
             whenStarted {
+                lifecycle.addObserver(uiScope)
                 checkConnectivity()
+
                 if (networkEnabled) {
                     uiScope.launch(uiScope.coroutineContext) {
                         try {
@@ -84,7 +86,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                         } catch (t: Throwable) {
                             Timber.e(t, "Failed to fetch Section Items.")
                             val xiErr = XIError(t, t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR)
-                            XIErrorHandler.crashGuard(this@HomeFragment.requireView(), xiErr, refreshAction = { retrySections() })
+                            XIErrorHandler.crashGuard(this@HomeFragment, this@HomeFragment.requireView(), xiErr, refreshAction = { retrySections() })
                         } finally {
                             group2_loading.visibility = View.GONE
                         }
@@ -119,26 +121,27 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
     }
 
     private suspend fun acquireUser() {
-        val userJob = uiScope.launch {
+        try {
+            val userJob = uiScope.launch(uiScope.coroutineContext) {
 
-            val user = homeViewModel.user.await()
-            user.observe(this@HomeFragment, { userInstance ->
-                userInstance?.let {
-                    userDTO = it
-                    username?.text = it.userName
-                    try {
+                val user = homeViewModel.user.await()
+                user.observe(this@HomeFragment, { userInstance ->
+                    userInstance?.let {
+                        userDTO = it
+                        username?.text = it.userName
+
                         checkConnectivity()
                         if (networkEnabled)
                             servicesHealthCheck()
-                    } catch (t: Throwable) {
-                        val connectErr = XIError(t, t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR)
-                        XIErrorHandler.crashGuard(this@HomeFragment.requireView(), connectErr,
-                            refreshAction = { retryAcquireUser() })
                     }
-                }
-            })
+                })
+            }
+            userJob.join()
+        } catch (t: Throwable) {
+            val connectErr = XIError(t, t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR)
+            XIErrorHandler.crashGuard(this@HomeFragment, this@HomeFragment.requireView(), connectErr,
+                refreshAction = { retryAcquireUser() })
         }
-        userJob.join()
     }
 
     private fun retryAcquireUser() {
@@ -277,16 +280,26 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
     }
 
     private fun ping() {
-        Coroutines.main {
-            if (networkEnabled) {
-                acquireUser()
-            } else {
-                synchJob.cancel(CancellationException("Connectivity lost ... please try again later"))
+        uiScope.launch(uiScope.coroutineContext) {
+            try {
+                if (networkEnabled) {
+                    acquireUser()
+                } else {
+                    synchJob.cancel(CancellationException("Connectivity lost ... please try again later"))
+                }
+            } catch (t: Throwable) {
+                val pingEx = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
+                XIErrorHandler.crashGuard(
+                    this@HomeFragment,
+                    pingEx,
+                    refreshAction = { retrySync() }
+                )
             }
         }
     }
 
     private suspend fun handleBigSync(result: XIResult<Boolean>) {
+        Timber.d("$result")
         when (result) {
             is XISuccess -> {
                 motionToast(
@@ -295,6 +308,8 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                     MotionToast.GRAVITY_BOTTOM,
                     MotionToast.LONG_DURATION
                 )
+                sharedViewModel.toggleLongRunning(false)
+                items_swipe_to_refresh.isRefreshing = false
                 synchJob.join()
             }
             is XIStatus -> {
@@ -319,10 +334,20 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
     }
 
     private fun bigSync() = uiScope.launch(uiScope.coroutineContext) {
-        sharedViewModel.setMessage("Data Loading")
-        homeViewModel.databaseState.observe(viewLifecycleOwner, bigSyncObserver)
-        synchJob = homeViewModel.fetchAllData(userDTO.userId)
-        ping()
+        try {
+            sharedViewModel.setMessage("Data Loading")
+            homeViewModel.databaseState.observe(viewLifecycleOwner, bigSyncObserver)
+            synchJob = homeViewModel.fetchAllData(userDTO.userId)
+            synchJob.join()
+            ping()
+        } catch (t: Throwable) {
+            XIErrorHandler.crashGuard(
+                this@HomeFragment,
+                this@HomeFragment.requireView(),
+                XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR),
+                refreshAction = { retrySync() }
+            )
+        }
     }
 
     private fun promptUserToSync() {
@@ -331,7 +356,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                 .setTitle(
                     "Initial Synchronisation"
                 )
-                .setMessage("No RRM data detected. Please synchronise the local database for contract and project information.")
+                .setMessage(getString(R.string.needs_dbsynch))
                 .setCancelable(false)
                 .setIcon(R.drawable.ic_baseline_cloud_download_24)
                 .setPositiveButton(R.string.ok) { _, _ ->

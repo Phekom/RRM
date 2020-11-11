@@ -27,8 +27,6 @@ import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
-import java.util.Date
-import java.util.HashMap
 import kotlinx.android.synthetic.main.fragment_capture_work.*
 import kotlinx.coroutines.launch
 import org.kodein.di.KodeinAware
@@ -85,6 +83,8 @@ import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.NO_INTERNET
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.SUCCESS
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.WARNING
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
+import java.util.Date
+import java.util.HashMap
 
 class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), KodeinAware {
 
@@ -327,6 +327,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
             }
             is XIError -> {
                 XIErrorHandler.crashGuard(
+                    fragment = this,
                     view = this.requireView(),
                     throwable = result,
                     refreshAction = { this.retryJobSubmission() })
@@ -353,6 +354,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
             }
             is XIError -> {
                 XIErrorHandler.crashGuard(
+                    fragment = this@CaptureWorkFragment,
                     view = this@CaptureWorkFragment.requireView(),
                     throwable = result,
                     refreshAction = { this@CaptureWorkFragment.retryWorkSubmission() }
@@ -424,7 +426,6 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                 uiScope.launch(uiScope.coroutineContext) {
                     val workCodeData = workViewModel.getWorkFlowCodes(id)
                     workCodeData.observe(viewLifecycleOwner, {
-
                         groupAdapter.notifyItemChanged(2)
                         Timber.d("IsRefresh -> Yes")
                     })

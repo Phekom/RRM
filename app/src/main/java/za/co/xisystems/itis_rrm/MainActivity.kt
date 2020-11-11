@@ -93,6 +93,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         MotionToast.setErrorColor(R.color.sanral_dark_red)
         MotionToast.setSuccessColor(R.color.sanral_dark_green)
         MotionToast.setWarningColor(R.color.colorPrimaryYellow)
+        MotionToast.setInfoColor(R.color.dark_bg_color)
 
         this.mainActivityViewModel = this.run {
             ViewModelProvider(this, factory).get(MainActivityViewModel::class.java)
@@ -324,7 +325,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     private fun toastMessage(message: String) {
-        ToastUtils().toastLong(applicationContext, message)
+        ToastUtils().toastShort(applicationContext, message)
     }
 
     private fun toastMessage(
@@ -336,7 +337,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             style = colorToast.style.getValue(),
             position = colorToast.gravity.getValue(),
             duration = colorToast.duration.getValue(),
-            font = ResourcesCompat.getFont(this, R.font.helvetica_regular)
+            font = ResourcesCompat.getFont(applicationContext, R.font.helvetica_regular)
         )
     }
 
@@ -349,9 +350,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private fun getUserRoles() {
         Coroutines.main {
             // Initially disable all menu options
-                val menuNav = navigationView.menu
+            val menuNav = navigationView.menu
 
-                val navCreate = menuNav.findItem(R.id.nav_create)
+            val navCreate = menuNav.findItem(R.id.nav_create)
             navCreate.isEnabled = false
 
             val navUnsubmitted = menuNav.findItem(R.id.nav_unSubmitted)

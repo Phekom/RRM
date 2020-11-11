@@ -21,7 +21,7 @@ class ExpandableHeaderWorkItem(
 ) : HeaderItem(null, workItems, workViewModel), ExpandableItem {
 
     private var clickListener: ((ExpandableHeaderWorkItem) -> Unit)? = null
-
+    var onExpandListener: ((ExpandableGroup) -> Unit)? = null
     private lateinit var expandableGroup: ExpandableGroup
     override fun bind(viewHolder: GroupieViewHolder, position: Int) {
         super.bind(viewHolder, position)

@@ -26,8 +26,8 @@ interface JobItemEstimateDao {
     @Query("SELECT * FROM JOB_ITEM_ESTIMATE WHERE jobId = :jobId")
     fun getJobEstimationItemsForJobId2(jobId: String): LiveData<List<JobItemEstimateDTO>>
 
-    @Query("SELECT * FROM JOB_ITEM_ESTIMATE WHERE MEASURE_ACT_ID = :actId OR MEASURE_ACT_ID =:activityId2 ORDER BY MEASURE_ACT_ID DESC ")
-    fun getJobMeasureForActivityId(actId: Int, activityId2: Int): LiveData<List<JobItemEstimateDTO>>
+    @Query("SELECT * FROM JOB_ITEM_ESTIMATE WHERE actId = :actId and MEASURE_ACT_ID IN (:activityId2,:activityId3) ORDER BY MEASURE_ACT_ID DESC ")
+    fun getJobMeasureForActivityId(actId: Int, activityId2: Int, activityId3: Int): LiveData<List<JobItemEstimateDTO>>
 
     @Query("SELECT * FROM JOB_ITEM_ESTIMATE WHERE actId = :actId AND MEASURE_ACT_ID =:activityId ORDER BY MEASURE_ACT_ID ASC ")
     fun getJobMeasureForActivityId2(actId: Int, activityId: Int): LiveData<List<JobItemEstimateDTO>>
@@ -79,4 +79,7 @@ interface JobItemEstimateDao {
         estimateWorkPartComplete: Int,
         estWorksComplete: Int
     ): Int
+
+    @Query("UPDATE JOB_ITEM_ESTIMATE set actId = :actId WHERE estimateId = :estimateId")
+    suspend fun updateActIdForJobItemEstimate(actId: Int, estimateId: String): Int
 }

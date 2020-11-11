@@ -164,7 +164,12 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
             setContract()
         } catch (t: Throwable) {
             val contractErr = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
-            XIErrorHandler.crashGuard(this.requireView(), contractErr, refreshAction = { retryContracts() })
+            XIErrorHandler.crashGuard(
+                fragment = this,
+                view = this.requireView(),
+                throwable = contractErr,
+                refreshAction = { retryContracts() }
+            )
         }
     }
 
@@ -313,7 +318,7 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
             }
         } catch (t: Throwable) {
             val contractErr = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
-            XIErrorHandler.crashGuard(this.requireView(), contractErr, refreshAction = { retryContracts() })
+            XIErrorHandler.crashGuard(this, this.requireView(), contractErr, refreshAction = { retryContracts() })
         } finally {
             data_loading.hide()
         }

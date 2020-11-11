@@ -188,7 +188,7 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnabl
         // reg_container.snackbar(message)
     }
 
-    override fun onSignOut(userDTO: UserDTO){
+    override fun onSignOut(userDTO: UserDTO) {
         // Not interested in this
     }
 
