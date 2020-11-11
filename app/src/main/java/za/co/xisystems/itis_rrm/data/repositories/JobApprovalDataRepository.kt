@@ -7,6 +7,13 @@ import androidx.lifecycle.MutableLiveData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import za.co.xisystems.itis_rrm.custom.errors.LocalDataException
+import za.co.xisystems.itis_rrm.custom.errors.ServiceException
+import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
+import za.co.xisystems.itis_rrm.custom.events.XIEvent
+import za.co.xisystems.itis_rrm.custom.results.XIError
+import za.co.xisystems.itis_rrm.custom.results.XIResult
+import za.co.xisystems.itis_rrm.custom.results.XISuccess
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksDTO
@@ -15,8 +22,8 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.WorkflowJobDTO
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
-import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DataConversion
+import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 
 /**
  * Created by Francis Mahlava on 2019/11/28.
@@ -24,73 +31,61 @@ import za.co.xisystems.itis_rrm.utils.DataConversion
 
 class JobApprovalDataRepository(
     private val api: BaseConnectionApi,
-    private val Db: AppDatabase
+    private val appDb: AppDatabase
 ) : SafeApiRequest() {
     companion object {
         val TAG: String = JobApprovalDataRepository::class.java.simpleName
     }
 
-    private val workflowJ = MutableLiveData<WorkflowJobDTO>()
     private val qtyUpDate = MutableLiveData<String>()
 
-    init {
-
-        workflowJ.observeForever {
-            saveWorkflowJob(it)
-        }
-        qtyUpDate.observeForever {
-            saveQtyUpDate(it)
-        }
-    }
-
-    private fun saveQtyUpDate(newQty: String?) {
-    }
+    var workflowStatus: MutableLiveData<XIEvent<XIResult<String>>> = MutableLiveData()
 
     suspend fun getUser(): LiveData<UserDTO> {
         return withContext(Dispatchers.IO) {
-            Db.getUserDao().getUser()
+            appDb.getUserDao().getUser()
         }
     }
 
     suspend fun getSectionForProjectSectionId(sectionId: String?): String {
         return withContext(Dispatchers.IO) {
-            Db.getProjectSectionDao().getSectionForProjectSectionId(sectionId!!)
+            appDb.getProjectSectionDao().getSectionForProjectSectionId(sectionId!!)
         }
     }
 
     suspend fun getTenderRateForProjectItemId(projectItemId: String): Double {
         return withContext(Dispatchers.IO) {
-            Db.getProjectItemDao().getTenderRateForProjectItemId(projectItemId)
+            appDb.getProjectItemDao().getTenderRateForProjectItemId(projectItemId)
         }
     }
 
     suspend fun getUOMForProjectItemId(projectItemId: String): String {
         return withContext(Dispatchers.IO) {
-            Db.getProjectItemDao().getUOMForProjectItemId(projectItemId)
+            appDb.getProjectItemDao().getUOMForProjectItemId(projectItemId)
         }
     }
 
     suspend fun getRouteForProjectSectionId(sectionId: String?): String {
         return withContext(Dispatchers.IO) {
-            Db.getProjectSectionDao().getRouteForProjectSectionId(sectionId!!)
+            appDb.getProjectSectionDao().getRouteForProjectSectionId(sectionId!!)
         }
     }
 
     suspend fun getProjectSectionIdForJobId(jobId: String?): String {
         return withContext(Dispatchers.IO) {
-            Db.getJobSectionDao().getProjectSectionId(jobId!!)
+            appDb.getJobSectionDao().getProjectSectionId(jobId!!)
         }
     }
 
     suspend fun getProjectDescription(projectId: String): String {
         return withContext(Dispatchers.IO) {
-            Db.getProjectDao().getProjectDescription(projectId)
+            appDb.getProjectDao().getProjectDescription(projectId)
         }
     }
 
     suspend fun getJobsForActivityId(activityId: Int): LiveData<List<JobDTO>> {
         return withContext(Dispatchers.IO) {
-            Db.getJobDao().getJobsForActivityId(activityId)
+            appDb.getJobDao().getJobsForActivityId(activityId)
         }
     }
 
@@ -123,7 +118,7 @@ class JobApprovalDataRepository(
         new_Total: Double
     ) {
         if (errorMessage == null) {
-            Db.getJobItemEstimateDao().upDateLineRate(newEstimateId!!, new_Quantity, new_Total)
+            appDb.getJobItemEstimateDao().upDateLineRate(newEstimateId!!, new_Quantity, new_Total)
         } else {
             Timber.e("newQty is null")
         }
@@ -131,89 +126,97 @@ class JobApprovalDataRepository(
 
     suspend fun processWorkflowMove(
         userId: String,
+        jobId: String,
         trackRouteId: String,
         description: String?,
         direction: Int
-    ): String {
+    ) {
+
         val workflowMoveResponse =
             apiRequest { api.getWorkflowMove(userId, trackRouteId, description, direction) }
+        val messages: String = workflowMoveResponse.errorMessage ?: ""
+        if (workflowMoveResponse.workflowJob != null) {
 
-        val messages = workflowMoveResponse.errorMessage ?: ""
+            if (messages.isBlank()) {
+                workflowMoveResponse.workflowJob?.let { saveWorkflowJob(it) }
+            } else {
+                postServiceException(messages)
+            }
+        } else {
+            when (messages == "No Job found." && direction == WorkflowDirection.FAIL.value) {
+                true -> {
+                    appDb.getJobDao().softDeleteJobForJobId(jobId)
 
-        if (messages.isBlank()) {
-            workflowJ.postValue(workflowMoveResponse.workflowJob)
+                    workflowStatus.postValue(XIEvent(XISuccess("DECLINED")))
+                }
+                else -> {
+                    postServiceException(messages)
+                }
+            }
         }
+    }
 
-        return withContext(Dispatchers.IO) {
-            messages
-        }
+    fun postServiceException(message: String) {
+        val info = "Job Workflow Service Exception: $message"
+        workflowStatus.postValue(XIEvent(XIError(ServiceException(info), info)))
     }
 
     suspend fun getQuantityForEstimationItemId(estimateId: String): LiveData<Double> {
         return withContext(Dispatchers.IO) {
-            Db.getJobItemEstimateDao().getQuantityForEstimationItemId(estimateId)
+            appDb.getJobItemEstimateDao().getQuantityForEstimationItemId(estimateId)
         }
     }
 
     suspend fun getLineRateForEstimationItemId(estimateId: String): LiveData<Double> {
         return withContext(Dispatchers.IO) {
-            Db.getJobItemEstimateDao().getLineRateForEstimationItemId(estimateId)
+            appDb.getJobItemEstimateDao().getLineRateForEstimationItemId(estimateId)
         }
     }
 
     suspend fun getJobEstimationItemsForJobId(jobID: String?): LiveData<List<JobItemEstimateDTO>> {
         return withContext(Dispatchers.IO) {
-            Db.getJobItemEstimateDao().getJobEstimationItemsForJobId2(jobID!!)
+            appDb.getJobItemEstimateDao().getJobEstimationItemsForJobId2(jobID!!)
         }
     }
 
     suspend fun getProjectItemDescription(projectItemId: String): String {
         return withContext(Dispatchers.IO) {
-            Db.getProjectItemDao().getProjectItemDescription(projectItemId)
+            appDb.getProjectItemDao().getProjectItemDescription(projectItemId)
         }
     }
 
     suspend fun getJobEstimationItemsPhotoStartPath(estimateId: String): String {
         return withContext(Dispatchers.IO) {
-            Db.getJobItemEstimatePhotoDao().getJobEstimationItemsPhotoStartPath(estimateId)
+            appDb.getJobItemEstimatePhotoDao().getJobEstimationItemsPhotoStartPath(estimateId)
         }
     }
 
     suspend fun getJobEstimationItemsPhotoEndPath(estimateId: String): String {
         return withContext(Dispatchers.IO) {
-            Db.getJobItemEstimatePhotoDao().getJobEstimationItemsPhotoEndPath(estimateId)
+            appDb.getJobItemEstimatePhotoDao().getJobEstimationItemsPhotoEndPath(estimateId)
         }
     }
 
-    private fun saveWorkflowJob(workflowJob: WorkflowJobDTO?) {
-        try {
-            val job = setWorkflowJobBigEndianGuids(workflowJob!!)
-            insertOrUpdateWorkflowJobInSQLite(job!!)
-        } catch (ex: NullPointerException) {
-            Timber.e(ex, "Error: WorkFlow Job is null")
-        }
-    }
-
-    private fun insertOrUpdateWorkflowJobInSQLite(job: WorkflowJobDTO?) {
+    private suspend fun saveWorkflowJob(workflowJob: WorkflowJobDTO) {
+        val job = setWorkflowJobBigEndianGuids(workflowJob)
         job?.let {
-            updateWorkflowJobValuesAndInsertWhenNeeded(it)
+            updateWorkflowJobValuesAndInsertWhenNeeded(job)
         }
     }
 
-    private fun updateWorkflowJobValuesAndInsertWhenNeeded(job: WorkflowJobDTO) {
-        Coroutines.io {
-
-            Db.getJobDao().updateJob(job.trackRouteId, job.actId, job.jiNo, job.jobId)
+    private suspend fun updateWorkflowJobValuesAndInsertWhenNeeded(job: WorkflowJobDTO) {
+        try {
+            appDb.getJobDao().updateJob(job.trackRouteId, job.actId, job.jiNo, job.jobId)
 
             job.workflowItemEstimates?.forEach { jobItemEstimate ->
-                Db.getJobItemEstimateDao().updateExistingJobItemEstimateWorkflow(
+                appDb.getJobItemEstimateDao().updateExistingJobItemEstimateWorkflow(
                     jobItemEstimate.trackRouteId,
                     jobItemEstimate.actId,
                     jobItemEstimate.estimateId
                 )
 
                 jobItemEstimate.workflowEstimateWorks.forEach { jobEstimateWorks ->
-                    if (!Db.getEstimateWorkDao()
+                    if (!appDb.getEstimateWorkDao()
                             .checkIfJobEstimateWorksExist(jobEstimateWorks.worksId)
                     ) {
                         // Create Bare Bones
@@ -227,11 +230,11 @@ class JobApprovalDataRepository(
                             jobEstimateWorksPhotos = ArrayList()
                         )
 
-                        Db.getEstimateWorkDao().insertJobEstimateWorks(
+                        appDb.getEstimateWorkDao().insertJobEstimateWorks(
                             estimateWorks
                         )
                     } else {
-                        Db.getEstimateWorkDao().updateJobEstimateWorksWorkflow(
+                        appDb.getEstimateWorkDao().updateJobEstimateWorksWorkflow(
                             jobEstimateWorks.worksId,
                             jobEstimateWorks.estimateId,
                             jobEstimateWorks.recordVersion,
@@ -244,7 +247,7 @@ class JobApprovalDataRepository(
             }
 
             job.workflowItemMeasures?.forEach { jobItemMeasure ->
-                Db.getJobItemMeasureDao().updateWorkflowJobItemMeasure(
+                appDb.getJobItemMeasureDao().updateWorkflowJobItemMeasure(
                     jobItemMeasure.itemMeasureId,
                     jobItemMeasure.trackRouteId,
                     jobItemMeasure.actId,
@@ -254,9 +257,10 @@ class JobApprovalDataRepository(
 
             //  Place the Job Section, UPDATE OR CREATE
             job.workflowJobSections?.forEach { jobSection ->
-                if (!Db.getJobSectionDao().checkIfJobSectionExist(jobSection.jobSectionId))
-                    Db.getJobSectionDao().insertJobSection(jobSection) else
-                    Db.getJobSectionDao().updateExistingJobSectionWorkflow(
+                if (!appDb.getJobSectionDao().checkIfJobSectionExist(jobSection.jobSectionId)) {
+                    appDb.getJobSectionDao().insertJobSection(jobSection)
+                } else {
+                    appDb.getJobSectionDao().updateExistingJobSectionWorkflow(
                         jobSection.jobSectionId,
                         jobSection.projectSectionId,
                         jobSection.jobId,
@@ -265,40 +269,53 @@ class JobApprovalDataRepository(
                         jobSection.recordVersion,
                         jobSection.recordSynchStateId
                     )
+                }
             }
+            Timber.d("Updated Workflow: $job")
+            job.jiNo?.let {
+                val jobSuccess = XISuccess(data = it)
+                workflowStatus.postValue(XIEvent(jobSuccess))
+            }
+
+        } catch (t: Throwable) {
+            val message = "Could not save updated workflow: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
+            Timber.e(t, message)
+            workflowStatus.postValue(XIEvent(XIError(LocalDataException(message), message)))
         }
     }
 
     private fun setWorkflowJobBigEndianGuids(job: WorkflowJobDTO): WorkflowJobDTO? {
-        job.jobId = DataConversion.toBigEndian(job.jobId)
-        job.trackRouteId = DataConversion.toBigEndian(job.trackRouteId)
+        try {
+            job.jobId = DataConversion.toBigEndian(job.jobId)
+            job.trackRouteId = DataConversion.toBigEndian(job.trackRouteId)
 
-        job.workflowItemEstimates?.forEach { jie ->
-            jie.estimateId = DataConversion.toBigEndian(jie.estimateId)!!
-            jie.trackRouteId = DataConversion.toBigEndian(jie.trackRouteId)!!
-            //  Let's go through the WorkFlowEstimateWorks
-            jie.workflowEstimateWorks.forEach { wfe ->
-                wfe.trackRouteId = DataConversion.toBigEndian(wfe.trackRouteId)!!
-                wfe.worksId = DataConversion.toBigEndian(wfe.worksId)!!
-                wfe.estimateId = DataConversion.toBigEndian(wfe.estimateId)!!
+            job.workflowItemEstimates?.forEach { jie ->
+                jie.estimateId = DataConversion.toBigEndian(jie.estimateId)!!
+                jie.trackRouteId = DataConversion.toBigEndian(jie.trackRouteId)!!
+                //  Let's go through the WorkFlowEstimateWorks
+                jie.workflowEstimateWorks.forEach { wfe ->
+                    wfe.trackRouteId = DataConversion.toBigEndian(wfe.trackRouteId)!!
+                    wfe.worksId = DataConversion.toBigEndian(wfe.worksId)!!
+                    wfe.estimateId = DataConversion.toBigEndian(wfe.estimateId)!!
+                }
             }
-        }
 
-        job.workflowItemMeasures?.forEach { jim ->
-            jim.itemMeasureId = DataConversion.toBigEndian(jim.itemMeasureId)!!
-            jim.measureGroupId = DataConversion.toBigEndian(jim.measureGroupId)!!
-            jim.trackRouteId = DataConversion.toBigEndian(jim.trackRouteId)!!
-        }
+            job.workflowItemMeasures?.forEach { jim ->
+                jim.itemMeasureId = DataConversion.toBigEndian(jim.itemMeasureId)!!
+                jim.measureGroupId = DataConversion.toBigEndian(jim.measureGroupId)!!
+                jim.trackRouteId = DataConversion.toBigEndian(jim.trackRouteId)!!
+            }
 
-        job.workflowJobSections?.forEach { js ->
-            js.jobSectionId = DataConversion.toBigEndian(js.jobSectionId)!!
-            js.projectSectionId = DataConversion.toBigEndian(js.projectSectionId)!!
-            js.jobId = DataConversion.toBigEndian(js.jobId)
+            job.workflowJobSections?.forEach { js ->
+                js.jobSectionId = DataConversion.toBigEndian(js.jobSectionId)!!
+                js.projectSectionId = DataConversion.toBigEndian(js.projectSectionId)!!
+                js.jobId = DataConversion.toBigEndian(js.jobId)
+            }
+            return job
+        } catch (t: Throwable) {
+            val message = "Unable to set BigEndian GUIDS: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
+            workflowStatus.postValue(XIEvent(XIError(LocalDataException(message), message)))
+            return null
         }
-        return job
-    }
-
-    private operator fun <T> LiveData<T>.not(): Boolean {
-        return true
     }
 }

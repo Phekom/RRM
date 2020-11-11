@@ -78,7 +78,7 @@ class UnSubmittedFragment : BaseFragment(R.layout.fragment_unsubmittedjobs), Kod
             } catch (t: Throwable) {
                 Timber.e(t, "Failed to fetch unsubmitted jobs!")
                 val unsubError = XIError(t, t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR)
-                XIErrorHandler.crashGuard(this@UnSubmittedFragment.requireView(), unsubError, refreshAction = { retryUnsubmitted() })
+                XIErrorHandler.crashGuard(this@UnSubmittedFragment, this@UnSubmittedFragment.requireView(), unsubError, refreshAction = { retryUnsubmitted() })
             } finally {
                 group12_loading.visibility = View.GONE
             }

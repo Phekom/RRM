@@ -11,6 +11,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.common.ConnectionResult
+import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.common.GooglePlayServicesUtil
 import kotlinx.android.synthetic.main.activity_register.*
 import org.kodein.di.KodeinAware
@@ -128,10 +129,10 @@ class RegisterPinActivity : AppCompatActivity(), AuthListener, KodeinAware {
 
     override fun onStart() {
         super.onStart()
-        val resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this)
+        val resultCode = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(this)
         if (resultCode != ConnectionResult.SUCCESS) { // This dialog will help the user update to the latest GooglePlayServices
             val dialog =
-                GooglePlayServicesUtil.getErrorDialog(resultCode, this, 0)
+                GooglePlayServicesUtil.getErrorDialog(resultCode, this, 1)
             dialog?.show()
         }
     }

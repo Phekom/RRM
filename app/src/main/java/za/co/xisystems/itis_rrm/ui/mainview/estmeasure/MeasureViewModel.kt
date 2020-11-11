@@ -13,6 +13,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.custom.results.XIError
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.results.XISuccess
@@ -61,8 +62,10 @@ class MeasureViewModel(
 
     val estimateMeasureItem: MutableLiveData<EstimateMeasureItem> = MutableLiveData()
 
-    val workflowMoveResponse: MutableLiveData<XIResult<String>> =
+    private val workflowStatus: MutableLiveData<XIEvent<XIResult<String>>> =
         measureCreationDataRepository.workflowStatus
+
+    val workflowState: MutableLiveData<XIResult<String>> = MutableLiveData()
 
     val backupJobId: MutableLiveData<String> = MutableLiveData()
 
@@ -74,6 +77,9 @@ class MeasureViewModel(
                     viewModelScope.launch(job + Dispatchers.Main + uncaughtExceptionHandler) {
                         generateGallery(it)
                     }
+                }
+                workflowStatus.observeForever{
+                    workflowState.postValue(it.getContentIfNotHandled())
                 }
             }
         }
@@ -164,10 +170,11 @@ class MeasureViewModel(
 
     suspend fun getJobMeasureForActivityId(
         activityId: Int,
-        activityId2: Int
+        activityId2: Int,
+        activityId3: Int
     ): LiveData<List<JobItemEstimateDTO>> {
         return withContext(Dispatchers.IO + uncaughtExceptionHandler) {
-            measureCreationDataRepository.getJobMeasureForActivityId(activityId, activityId2)
+            measureCreationDataRepository.getJobMeasureForActivityId(activityId, activityId2, activityId3)
         }
     }
 
@@ -234,7 +241,7 @@ class MeasureViewModel(
                 itemMeasureJob
             )
         } catch (e: Exception) {
-            workflowMoveResponse.postValue(XIError(e, e.message!!))
+            workflowState.postValue(XIError(e, e.message!!))
         }
     }
 

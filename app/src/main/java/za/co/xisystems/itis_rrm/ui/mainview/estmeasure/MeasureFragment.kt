@@ -76,7 +76,8 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
     private suspend fun fetchEstimateMeasures() {
         val itemEstimateData = measureViewModel.getJobMeasureForActivityId(
             ActivityIdConstants.ESTIMATE_MEASURE,
-            ActivityIdConstants.MEASURE_PART_COMPLETE
+            ActivityIdConstants.MEASURE_PART_COMPLETE,
+            ActivityIdConstants.JOB_ESTIMATE
         )
 
         itemEstimateData.observeOnce(viewLifecycleOwner, { itemEstimateList ->
@@ -129,8 +130,9 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
             } catch (t: Throwable) {
                 val fetchError = XIError(t, t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR)
                 XIErrorHandler.crashGuard(
-                    this@MeasureFragment.requireView(),
-                    fetchError,
+                    fragment = this@MeasureFragment,
+                    view = this@MeasureFragment.requireView(),
+                    throwable = fetchError,
                     refreshAction =
                     { retryFetchingJobs() }
                 )
@@ -151,7 +153,8 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
         Coroutines.main {
             val jobEstimateData = measureViewModel.getJobMeasureForActivityId(
                 ActivityIdConstants.ESTIMATE_MEASURE,
-                ActivityIdConstants.JOB_ESTIMATE
+                ActivityIdConstants.JOB_ESTIMATE,
+                ActivityIdConstants.MEASURE_PART_COMPLETE
             )
 
             jobEstimateData.observeOnce(viewLifecycleOwner, { jos ->

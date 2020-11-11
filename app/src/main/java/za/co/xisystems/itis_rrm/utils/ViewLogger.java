@@ -3,6 +3,7 @@ package za.co.xisystems.itis_rrm.utils;
 import android.app.Activity;
 import android.util.Log;
 
+import timber.log.Timber;
 import za.co.xisystems.itis_rrm.base.BaseFragment;
 
 public class ViewLogger {
@@ -12,11 +13,11 @@ public class ViewLogger {
                 BaseFragment baseFragment = (BaseFragment) view;
                 Activity activity = baseFragment.getActivity();
                 if (activity != null)
-                    Log.d("x-class", activity.getClass().getSimpleName() + " > " + view.getClass().getSimpleName());
+                    Timber.tag("x-class").d(activity.getClass().getSimpleName() + " > " + view.getClass().getSimpleName());
                 else
-                    Log.d("x-class", view.getClass().getSimpleName());
+                    Timber.tag("x-class").d(view.getClass().getSimpleName());
             } else {
-                Log.d("x-class", view.getClass().getSimpleName());
+                Timber.tag("x-class").d(view.getClass().getSimpleName());
             }
         }
     }

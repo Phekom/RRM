@@ -139,7 +139,7 @@ class EstimatesItem(
         // Yes button
         alert.setPositiveButton(
             R.string.save
-        ) { dialog, which ->
+        ) { dialog, _ ->
             if (updated) {
                 validateUpdateQty(activity, quantityEntry, totalEntry, jobItemEstimateDTO)
             } else {
@@ -149,7 +149,7 @@ class EstimatesItem(
         // No button
         alert.setNegativeButton(
             R.string.cancel
-        ) { dialog, which ->
+        ) { dialog, _ ->
             // Do nothing but close dialog
             dialog.dismiss()
         }

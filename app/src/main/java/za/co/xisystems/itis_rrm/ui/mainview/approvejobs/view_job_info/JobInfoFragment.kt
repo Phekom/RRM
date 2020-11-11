@@ -9,6 +9,7 @@ import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
@@ -18,17 +19,27 @@ import kotlinx.android.synthetic.main.fragment_job_info.*
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
+import timber.log.Timber
 import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
+import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
+import za.co.xisystems.itis_rrm.custom.results.XIError
+import za.co.xisystems.itis_rrm.custom.results.XIProgress
+import za.co.xisystems.itis_rrm.custom.results.XIResult
+import za.co.xisystems.itis_rrm.custom.results.XIStatus
+import za.co.xisystems.itis_rrm.custom.results.XISuccess
+import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.ui.extensions.doneProgress
 import za.co.xisystems.itis_rrm.ui.extensions.failProgress
 import za.co.xisystems.itis_rrm.ui.extensions.initProgress
 import za.co.xisystems.itis_rrm.ui.extensions.startProgress
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.ApproveJobsViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.ApproveJobsViewModelFactory
+import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.approve_job_item.ApproveJobItem
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
@@ -40,7 +51,45 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
     override val kodein by kodein()
     private lateinit var approveViewModel: ApproveJobsViewModel
     private val factory: ApproveJobsViewModelFactory by instance()
+    private var workObserver = Observer<XIResult<String>> { handleWorkSubmission(it) }
     private lateinit var progressButton: Button
+    private lateinit var flowDirection: WorkflowDirection
+
+    private fun handleWorkSubmission(result: XIResult<String>) {
+        when (result) {
+            is XISuccess<String> -> {
+                val jiNo = result.data
+                // this.motionToast("Job Processing ...", MotionToast.TOAST_INFO)
+
+                progressButton.doneProgress(progressButton.text.toString())
+                popViewOnJobSubmit(flowDirection.value, jiNo)
+            }
+            is XIError -> {
+                progressButton.failProgress("Failed")
+                XIErrorHandler.crashGuard(
+                    fragment = this,
+                    view = this.requireView(),
+                    throwable = result,
+                    refreshAction = { retryWork() }
+                )
+            }
+            is XIStatus -> {
+                this.motionToast(result.message, MotionToast.TOAST_INFO)
+            }
+            is XIProgress -> {
+                when (result.isLoading) {
+                    true -> progressButton.startProgress(progressButton.text.toString())
+                    else -> progressButton.doneProgress(progressButton.text.toString())
+                }
+                Timber.d("Loading ${result.isLoading}")
+            }
+        }
+    }
+
+    private fun retryWork() {
+        IndefiniteSnackbar.hide()
+        moveJobToNextWorkflow(flowDirection)
+    }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -65,6 +114,16 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
         return inflater.inflate(R.layout.fragment_job_info, container, false)
     }
 
+    /**
+     * Called when the Fragment is no longer resumed.  This is generally
+     * tied to [Activity.onPause] of the containing
+     * Activity's lifecycle.
+     */
+    override fun onPause() {
+        approveViewModel.workflowState.removeObservers(viewLifecycleOwner)
+        super.onPause()
+    }
+
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         approveViewModel = activity?.run {
@@ -80,9 +139,9 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
                 Coroutines.main {
                     getEstimateItems(job.jobDTO.JobId)
                     val description = approveViewModel.getDescForProjectId(job.jobDTO.ProjectId!!)
-                    val sectionId = approveViewModel.getProjectSectionIdForJobId(job.jobDTO.JobId)
-                    val route = approveViewModel.getRouteForProjectSectionId(sectionId)
-                    val section = approveViewModel.getSectionForProjectSectionId(sectionId)
+                    val sectionId = approveViewModel.getProjectSectionIdForJobId(job.jobDTO.JobId).value
+                    val route = sectionId?.let{ approveViewModel.getRouteForProjectSectionId(it) }
+                    val section = sectionId?.let{ approveViewModel.getSectionForProjectSectionId(it)}
 
                     project_description_textView.text = description
                     section_description_textView.text = ("$route/ $section")
@@ -103,7 +162,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
             // Yes button
             approvalBuilder.setPositiveButton(
                 R.string.yes
-            ) { dialog, which ->
+            ) { _, _ ->
                 if (ServiceUtil.isNetworkAvailable(requireContext().applicationContext)) {
                     progressButton = approve_job_button
                     progressButton.initProgress(viewLifecycleOwner)
@@ -119,7 +178,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
             // No button
             approvalBuilder.setNegativeButton(
                 R.string.no
-            ) { dialog, which ->
+            ) { dialog, _ ->
                 // Do nothing but close dialog
                 dialog.dismiss()
             }
@@ -138,7 +197,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
             // Yes button
             declineBuilder.setPositiveButton(
                 R.string.yes
-            ) { dialog, which ->
+            ) { _, _ ->
                 if (ServiceUtil.isNetworkAvailable(requireContext().applicationContext)) {
                     progressButton = decline_job_button
                     progressButton.initProgress(viewLifecycleOwner)
@@ -153,7 +212,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
             // No button
             declineBuilder.setNegativeButton(
                 R.string.no
-            ) { dialog, which ->
+            ) { dialog, _ ->
                 // Do nothing but close dialog
                 dialog.dismiss()
             }
@@ -164,6 +223,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
 
     private fun moveJobToNextWorkflow(workflowDirection: WorkflowDirection) {
         Coroutines.main {
+            flowDirection = workflowDirection
             val caption = when (progressButton == approve_job_button) {
                 true -> "Approving Job ..."
                 else -> "Declining Job ..."
@@ -174,6 +234,9 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
                 approveViewModel.jobApprovalItem.observe(viewLifecycleOwner, { job ->
 
                     when {
+                        job == null -> {
+                            Timber.d("ApproveItem was null")
+                        }
                         userDTO.userId.isBlank() -> {
                             this@JobInfoFragment.motionToast("The user lacks permissions.", MotionToast.TOAST_ERROR)
                             progressButton.failProgress("Invalid User")
@@ -182,15 +245,18 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
                             this@JobInfoFragment.motionToast("The selected job is invalid.", MotionToast.TOAST_ERROR)
                             progressButton.failProgress("Invalid Job")
                         }
-                        else -> {
-                            val trackRouteId: String =
-                                DataConversion.toLittleEndian(job.jobDTO.TrackRouteId)!!
-                            val direction: Int = workflowDirection.value
+                        workflowDirection == WorkflowDirection.FAIL &&
+                            workflow_comments_editText.text.isNullOrBlank() -> {
+                            this@JobInfoFragment.motionToast(
+                                "Please provide a comment / reason for declining this job",
+                                MotionToast.TOAST_WARNING
+                            )
 
-                            var description: String? = ""
-                            if (workflow_comments_editText.text != null)
-                                description = workflow_comments_editText.text.toString()
-                            processWorkFlow(userDTO.userId, trackRouteId, direction, description)
+                            progressButton.failProgress(getString(R.string.decline_job))
+
+                        }
+                        else -> {
+                            initJobWorkflow(job, workflowDirection, userDTO)
                         }
                     }
                 })
@@ -198,37 +264,43 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
         }
     }
 
-    private fun processWorkFlow(
-        userId: String,
-        trackRouteId: String,
-        direction: Int,
-        description: String?
+    private fun initJobWorkflow(
+        job: ApproveJobItem,
+        workflowDirection: WorkflowDirection,
+        userDTO: UserDTO
     ) {
-        Coroutines.main {
-            progressButton.startProgress("Submitting Data ...")
+        val trackRouteId: String =
+            DataConversion.toLittleEndian(job.jobDTO.TrackRouteId)!!
+        val direction: Int = workflowDirection.value
 
-            val response =
-                approveViewModel.processWorkflowMove(userId, trackRouteId, description, direction)
-            if (response.isNotBlank()) {
-                this@JobInfoFragment.motionToast(
-                    response,
-                    MotionToast.TOAST_ERROR
+        var description: String? = ""
+        if (workflow_comments_editText.text != null) {
+            description = workflow_comments_editText.text.toString()
+        }
+        Coroutines.main {
+            try {
+                approveViewModel.workflowState.observe(viewLifecycleOwner, workObserver)
+                val task = approveViewModel.processWorkflowMove(
+                    userDTO.userId, trackRouteId, description, direction, job.jobDTO.JobId
                 )
-                progressButton.failProgress("Workflow Failed")
-            } else {
-                progressButton.doneProgress("Workflow Complete")
-                popViewOnJobSubmit(direction)
+                task.join()
+            } catch (t: Throwable) {
+                val message = t.message ?: XIErrorHandler.UNKNOWN_ERROR
+                val xiErr = XIError(t, "Failed to complete workflow: $message")
+                handleWorkSubmission(xiErr)
             }
         }
     }
 
-    private fun popViewOnJobSubmit(direction: Int) {
+    private fun popViewOnJobSubmit(direction: Int, jiNo: String?) {
         if (direction == WorkflowDirection.NEXT.value) {
+            progressButton.text = getString(R.string.approve_job)
             this.motionToast(
-                getString(R.string.job_approved),
+                getString(R.string.job_no_approved, jiNo!!),
                 MotionToast.TOAST_SUCCESS
             )
         } else if (direction == WorkflowDirection.FAIL.value) {
+            progressButton.text = getString(R.string.decline_job)
             this.motionToast(
                 getString(R.string.job_declined),
                 MotionToast.TOAST_INFO
@@ -263,7 +335,6 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
 
     private fun List<JobItemEstimateDTO>.toEstimatesListItem(): List<EstimatesItem> {
         return this.map { approvedJobItems ->
-
             EstimatesItem(approvedJobItems, approveViewModel, activity, viewLifecycleOwner)
         }
     }

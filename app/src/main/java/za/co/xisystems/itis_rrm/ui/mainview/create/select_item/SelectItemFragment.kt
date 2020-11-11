@@ -173,7 +173,7 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
                             }
                         })
 
-                    sectionItemSpinner.setOnTouchListener { v, event ->
+                    sectionItemSpinner.setOnTouchListener { _, _ ->
                         animate = true
                         false
                     }

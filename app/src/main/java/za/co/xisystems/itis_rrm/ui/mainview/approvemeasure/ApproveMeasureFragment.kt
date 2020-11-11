@@ -101,7 +101,12 @@ class ApproveMeasureFragment : BaseFragment(R.layout.fragment_approvemeasure), K
             } catch (t: Throwable) {
                 Timber.e(t, "Unable to fetch Measurements")
                 val measureErr = XIError(t, t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR)
-                XIErrorHandler.crashGuard(this@ApproveMeasureFragment.requireView(), measureErr, refreshAction = { retryFetchMeasurements() })
+                XIErrorHandler.crashGuard(
+                    fragment = this@ApproveMeasureFragment,
+                    view = this@ApproveMeasureFragment.requireView(),
+                    throwable = measureErr,
+                    refreshAction = { retryFetchMeasurements() }
+                )
             } finally {
                 group4_loading.visibility = View.GONE
             }
@@ -141,7 +146,12 @@ class ApproveMeasureFragment : BaseFragment(R.layout.fragment_approvemeasure), K
             } catch (t: Throwable) {
                 Timber.e(t, "Unable to fetch remote jobs")
                 val measureErr = XIError(t, t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR)
-                XIErrorHandler.crashGuard(this@ApproveMeasureFragment.requireView(), measureErr, refreshAction = { retryFetchMeasurements() })
+                XIErrorHandler.crashGuard(
+                    fragment = this@ApproveMeasureFragment,
+                    view = this@ApproveMeasureFragment.requireView(),
+                    throwable = measureErr,
+                    refreshAction = { retryFetchMeasurements() }
+                )
             } finally {
                 group4_loading.visibility = View.GONE
                 approvem_swipe_to_refresh.isRefreshing = false

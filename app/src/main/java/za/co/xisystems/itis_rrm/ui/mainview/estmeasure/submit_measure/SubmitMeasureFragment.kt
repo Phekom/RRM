@@ -17,8 +17,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.ExpandableGroup
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
-import java.util.ArrayList
-import java.util.HashMap
 import kotlinx.android.synthetic.main.fragment_submit_measure.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
@@ -34,9 +32,7 @@ import za.co.xisystems.itis_rrm.custom.results.XIError
 import za.co.xisystems.itis_rrm.custom.results.XISuccess
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksPhotoDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimatesPhotoDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasurePhotoDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
@@ -51,6 +47,8 @@ import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
+import java.util.ArrayList
+import java.util.HashMap
 
 class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), KodeinAware {
     override val kodein by kodein()
@@ -152,10 +150,13 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                     msure.qty > 0 && msure.jobItemMeasurePhotos.isNotEmpty()
                 }
                 if (validMeasures.isNullOrEmpty()) {
-                    toast(R.string.please_make_sure_you_have_captured_photos)
+                    this.motionToast(R.string.please_make_sure_you_have_captured_photos, MotionToast.TOAST_WARNING)
                     progressButton.failProgress(originalCaption)
                 } else {
-                    toast("You have Done " + validMeasures.size.toString() + " Measurements on this Estimate")
+                    this.motionToast(
+                        "You have Done " + validMeasures.size.toString() + " Measurements on this Estimate",
+                        MotionToast.TOAST_INFO
+                    )
 
                     val itemMeasures = validMeasures as ArrayList
                     for (jim in itemMeasures) {
@@ -199,7 +200,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                 } else {
                     this@SubmitMeasureFragment.motionToast(
                         getString(R.string.no_connection_detected),
-                        MotionToast.TOAST_NO_INTERNET,
+                        MotionToast.TOAST_ERROR,
                         MotionToast.GRAVITY_BOTTOM
                     )
                     progressButton.failProgress(originalCaption)
@@ -210,6 +211,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                 R.string.no
             ) { dialog, which ->
                 // Do nothing but close dialog
+                dialog.dismiss()
                 progressButton.doneProgress(originalCaption)
             }
             create()
@@ -232,6 +234,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                             MotionToast.GRAVITY_BOTTOM
                         )
                         progressButton.failProgress(originalCaption)
+
                     }
                     itemMeasureJob.JobId.isBlank() -> {
                         this@SubmitMeasureFragment.motionToast(
@@ -277,6 +280,8 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
     ) {
         uiScope.launch(uiScope.coroutineContext) {
 
+            val workflowOutcome = measureViewModel.workflowState
+
             val result = measureViewModel.processWorkflowMove(
                 userDTO.userId,
                 jobId,
@@ -286,7 +291,8 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                 it,
                 itemMeasureJob
             )
-            val workflowOutcome = measureViewModel.workflowMoveResponse
+
+
             workflowOutcome.observe(
                 viewLifecycleOwner,
                 { response ->
@@ -294,7 +300,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                         when (outcome) {
                             is XISuccess -> {
                                 this@SubmitMeasureFragment.motionToast(
-                                    "Measurements submitted",
+                                    "Measurements submitted for Job ${outcome.data}",
                                     MotionToast.TOAST_SUCCESS
                                 )
                                 progressButton.doneProgress(originalCaption)
@@ -303,13 +309,21 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                             }
                             is XIError -> {
                                 result.cancel(CancellationException(outcome.message))
-                                XIErrorHandler.crashGuard(this@SubmitMeasureFragment.requireView(),
+                                this@SubmitMeasureFragment.motionToast(
+                                    "Submission failed",
+                                    MotionToast.TOAST_ERROR
+                                )
+
+                                XIErrorHandler.crashGuard(
+                                    this@SubmitMeasureFragment,
+                                    this@SubmitMeasureFragment.requireView(),
                                     outcome,
                                     refreshAction = { retryMeasurements() })
                             }
                         }
                     }
                 })
+
         }
     }
 
@@ -464,6 +478,16 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
         }
     }
 
+    /**
+     * Called when the Fragment is no longer resumed.  This is generally
+     * tied to [Activity.onPause] of the containing
+     * Activity's lifecycle.
+     */
+    override fun onPause() {
+        measureViewModel.workflowState.removeObservers(viewLifecycleOwner)
+        super.onPause()
+    }
+
     private fun JobItemMeasureDTO.setProjectItemId(toLittleEndian: String?) {
         this.projectItemId = toLittleEndian
     }
@@ -474,10 +498,6 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
 
     private fun JobItemMeasureDTO.setEstimateId(toLittleEndian: String?) {
         this.estimateId = toLittleEndian
-    }
-
-    private fun JobItemMeasureDTO.setProjectVoId(toLittleEndian: String?) {
-        this.projectVoId = toLittleEndian
     }
 
     private fun JobItemMeasureDTO.setTrackRouteId(toLittleEndian: String?) {
@@ -494,14 +514,6 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
 
     private fun JobItemMeasurePhotoDTO.setPhotoId(toLittleEndian: String?) {
         this.photoId = toLittleEndian!!
-    }
-
-    private fun JobItemEstimatesPhotoDTO.setPhotoId(toLittleEndian: String?) {
-        this.photoId = toLittleEndian!!
-    }
-
-    private fun JobEstimateWorksPhotoDTO.setWorksId(toLittleEndian: String?) {
-        this.worksId = toLittleEndian!!
     }
 
     private fun JobItemMeasurePhotoDTO.setEstimateId(toLittleEndian: String?) {

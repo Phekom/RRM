@@ -4,29 +4,31 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler.UNKNOWN_ERROR
+import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.custom.results.XIError
+import za.co.xisystems.itis_rrm.custom.results.XIProgress
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.results.XISuccess
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.ToDoListEntityDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.WorkflowJobDTO
 import za.co.xisystems.itis_rrm.data.repositories.MeasureApprovalDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.extensions.getDistinct
 import za.co.xisystems.itis_rrm.ui.custom.MeasureGalleryUIState
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.approveMeasure_Item.ApproveMeasureItem
+import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
+import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
 import za.co.xisystems.itis_rrm.utils.uncaughtExceptionHandler
 
@@ -47,27 +49,30 @@ class ApproveMeasureViewModel(
         measureApprovalDataRepository.getUser()
     }
 
-    val measureApprovalItem = MutableLiveData<ApproveMeasureItem>()
+    val measureApprovalItem: MutableLiveData<ApproveMeasureItem> = MutableLiveData()
 
     var measureGalleryUIState: MutableLiveData<XIResult<MeasureGalleryUIState>> = MutableLiveData()
 
     val job = SupervisorJob()
 
-    var galleryMeasure: MutableLiveData<JobItemMeasureDTO> = MutableLiveData()
+    private var galleryMeasure: MutableLiveData<JobItemMeasureDTO> = MutableLiveData()
 
-    private var workflowStatus: LiveData<XIResult<WorkflowJobDTO>> = measureApprovalDataRepository.workflowStatus.getDistinct()
+    private var workflowStatus: LiveData<XIEvent<XIResult<String>>> =
+        measureApprovalDataRepository.workflowStatus.distinctUntilChanged()
 
-    var workflowState: MutableLiveData<XIResult<WorkflowJobDTO>> = MutableLiveData()
+    var workflowState: MutableLiveData<XIResult<String>> = MutableLiveData()
 
     init {
-        galleryMeasure.observeForever {
-            viewModelScope.launch(job + Dispatchers.Main + uncaughtExceptionHandler) {
-                generateGallery(it)
+        viewModelScope.launch(job + Dispatchers.Main + uncaughtExceptionHandler) {
+            workflowStatus.observeForever {
+                it?.let {
+                    workflowState.postValue(it.getContentIfNotHandled())
+                }
             }
-        }
-        workflowStatus.observeForever {
-            viewModelScope.launch(job + Dispatchers.Main + uncaughtExceptionHandler) {
-                workflowState.postValue(it)
+            galleryMeasure.observeForever {
+                viewModelScope.launch(job + Dispatchers.Main + uncaughtExceptionHandler) {
+                    generateGallery(it)
+                }
             }
         }
     }
@@ -79,28 +84,6 @@ class ApproveMeasureViewModel(
     suspend fun getJobApproveMeasureForActivityId(activityId: Int): LiveData<List<JobItemMeasureDTO>> {
         return withContext(Dispatchers.IO) {
             measureApprovalDataRepository.getJobApproveMeasureForActivityId(activityId).getDistinct()
-        }
-    }
-
-    suspend fun getJobsMeasureForActivityId(
-        estimateComplete: Int,
-        measureComplete: Int,
-        estWorksComplete: Int,
-        jobApproved: Int
-    ): LiveData<List<JobDTO>> {
-        return withContext(Dispatchers.IO) {
-            measureApprovalDataRepository.getJobsMeasureForActivityId(
-                estimateComplete,
-                measureComplete,
-                estWorksComplete,
-                jobApproved
-            ).getDistinct()
-        }
-    }
-
-    suspend fun getEntitiesListForActivityId(activityId: Int): LiveData<List<ToDoListEntityDTO>> {
-        return withContext(Dispatchers.IO) {
-            measureApprovalDataRepository.getEntitiesListForActivityId(activityId)
         }
     }
 
@@ -155,13 +138,60 @@ class ApproveMeasureViewModel(
         }
     }
 
-    suspend fun processWorkflowMove(
+    fun approveMeasurements(
+        userId: String,
+        workflowDirection: WorkflowDirection,
+        measurements: List<JobItemMeasureDTO>
+    ) = viewModelScope.launch {
+        workflowState.postValue(XIProgress(true))
+        val measureJobs = mutableListOf<Job>()
+        var workDone = false
+        var jiNo= ""
+        try {
+            measurements.forEach { jobItemMeasureDTO ->
+                if (!workDone) {
+                    jiNo = jobItemMeasureDTO.jimNo!!
+                    val description = ""
+                    jobItemMeasureDTO.trackRouteId?.let {
+                        val trackRouteId = DataConversion.toLittleEndian(it)
+
+                        trackRouteId?.let { serviceTrackRouteId ->
+                            val measureJob = this.launch(viewModelScope.coroutineContext) {
+                                withContext(Dispatchers.IO) {
+                                    measureApprovalDataRepository.processWorkflowMove(
+                                        userId,
+                                        serviceTrackRouteId,
+                                        description,
+                                        workflowDirection.value
+                                    )
+                                }
+                            }
+                            measureJobs.add(measureJob)
+                        }
+                    }
+                    val data = measureApprovalDataRepository.workflowStatus
+                    data.value?.let {
+                        workDone = when (it.peekContent() is XISuccess<String>) {
+                            true -> true
+                            else -> false
+                        }
+                    }
+                }
+            }
+            measureJobs.forEach { measureJob -> measureJob.join() }
+            measureApprovalDataRepository.workflowStatus.postValue(XIEvent(XISuccess(jiNo)))
+        } catch (t: Throwable) {
+            workflowState.postValue(XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR))
+        }
+    }
+
+    fun processWorkflowMove(
         userId: String,
         trackRouteId: String,
         description: String?,
         direction: Int
-    ): String {
-        return withContext(Dispatchers.IO) {
+    ) = viewModelScope.launch {
+        withContext(Dispatchers.IO) {
             measureApprovalDataRepository.processWorkflowMove(
                 userId,
                 trackRouteId,
@@ -249,7 +279,7 @@ class ApproveMeasureViewModel(
 
                 measureGalleryUIState.postValue(XISuccess(uiState))
             } catch (t: Throwable) {
-                val message = "$galleryError: ${t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR}"
+                val message = "$galleryError: ${t.localizedMessage ?: UNKNOWN_ERROR}"
                 Timber.e(t, message)
                 val galleryFail = XIError(t, message)
                 measureGalleryUIState.postValue(galleryFail)
@@ -264,10 +294,5 @@ class ApproveMeasureViewModel(
         return withContext(Dispatchers.IO) {
             measureApprovalDataRepository.getJobItemMeasureByItemMeasureId(itemMeasureId).getDistinct()
         }
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        job.cancelChildren()
     }
 }
