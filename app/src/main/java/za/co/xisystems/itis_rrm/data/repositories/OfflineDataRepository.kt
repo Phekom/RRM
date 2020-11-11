@@ -47,6 +47,7 @@ import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
 import za.co.xisystems.itis_rrm.data.network.responses.UploadImageResponse
 import za.co.xisystems.itis_rrm.extensions.getDistinct
+import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
@@ -342,7 +343,7 @@ class OfflineDataRepository(
     }
 
     private fun createWorkflowSteps() {
-        val actId = 3
+        val actId = ActivityIdConstants.JOB_APPROVED
         val workState = arrayOf("TA", "START", "MIDDLE", "END", "RTA")
         val workStateDescriptions = arrayOf(
             "Traffic Accommodation",
@@ -403,12 +404,14 @@ class OfflineDataRepository(
 
                         projectCount++
 
-                        if (projectCount >= projectMax) {
-                            postEvent(XIStatus("All contract data acquired."))
-                            postEvent(XISuccess(true))
-                            postEvent(XIProgress(false))
-                        } else {
-                            postStatus("Loading Project $projectCount of $projectMax")
+                        withContext(Dispatchers.Main) {
+                            if (projectCount >= projectMax) {
+                                postEvent(XIStatus("All contract data acquired."))
+                                postEvent(XISuccess(true))
+                                postEvent(XIProgress(false))
+                            } else {
+                                postStatus("Loading Project $projectCount of $projectMax")
+                            }
                         }
                     } catch (ex: Exception) {
                         Timber.e(

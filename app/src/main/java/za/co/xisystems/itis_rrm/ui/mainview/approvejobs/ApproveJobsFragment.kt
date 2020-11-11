@@ -176,15 +176,6 @@ class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAw
         fetchRemoteJobs()
     }
 
-    /**
-     * Called when the Fragment is no longer resumed.  This is generally
-     * tied to [MainActivity.onPause()] of the containing
-     * Activity's lifecycle.
-     */
-    override fun onPause() {
-        approveViewModel.workflowState.removeObservers(viewLifecycleOwner)
-        super.onPause()
-    }
 
     private fun initRecyclerView(
         approveJobListItems: List<ApproveJobItem>
@@ -225,6 +216,7 @@ class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAw
     }
 
     override fun onDestroyView() {
+        // approveViewModel.workflowState.removeObservers(viewLifecycleOwner)
         approve_job_listView.adapter = null
         super.onDestroyView()
     }

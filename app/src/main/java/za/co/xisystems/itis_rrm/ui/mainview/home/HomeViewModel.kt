@@ -22,7 +22,6 @@ import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.results.XIStatus
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
-import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
 import za.co.xisystems.itis_rrm.utils.uncaughtExceptionHandler
 
@@ -69,7 +68,7 @@ class HomeViewModel(
 
             try {
                 this.launch {
-                    Coroutines.main {
+                    withContext(Dispatchers.Main) {
                         databaseState.postValue(XIProgress(true))
                     }
                     val loadContracts = async(jobContext) {
@@ -84,7 +83,10 @@ class HomeViewModel(
                     loadContracts.await()
                     loadLookups.await()
                     loadActivities.await()
-                    databaseState.postValue(XIStatus("Download complete"))
+                    withContext(Dispatchers.Main) {
+                        databaseState.postValue(XIStatus("Download complete"))
+                    }
+
                     fetchJob.complete()
                 }
             } catch (t: Throwable) {
@@ -92,10 +94,13 @@ class HomeViewModel(
                 jobContext.cancelChildren(CancellationException(t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR))
                 val fetchFail =
                     XIError(t, "Failed to fetch contracts: ${t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR}")
-
-                databaseState.postValue(fetchFail)
+                withContext(Dispatchers.Main) {
+                    databaseState.postValue(fetchFail)
+                }
             } finally {
-                databaseState.postValue(XIProgress(false))
+                withContext(Dispatchers.Main) {
+                    databaseState.postValue(XIProgress(false))
+                }
             }
 
         }

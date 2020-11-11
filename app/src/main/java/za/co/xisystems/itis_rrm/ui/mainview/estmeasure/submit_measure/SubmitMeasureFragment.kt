@@ -408,6 +408,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
 
     override fun onDestroyView() {
         uiScope.destroy()
+       // measureViewModel.workflowState.removeObservers(viewLifecycleOwner)
         measure_listView.adapter = null
         super.onDestroyView()
     }
@@ -478,15 +479,6 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
         }
     }
 
-    /**
-     * Called when the Fragment is no longer resumed.  This is generally
-     * tied to [Activity.onPause] of the containing
-     * Activity's lifecycle.
-     */
-    override fun onPause() {
-        measureViewModel.workflowState.removeObservers(viewLifecycleOwner)
-        super.onPause()
-    }
 
     private fun JobItemMeasureDTO.setProjectItemId(toLittleEndian: String?) {
         this.projectItemId = toLittleEndian

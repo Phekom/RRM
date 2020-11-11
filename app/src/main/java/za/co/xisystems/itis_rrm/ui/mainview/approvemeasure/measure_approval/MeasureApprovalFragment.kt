@@ -259,18 +259,9 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
         }
     }
 
-    /**
-     * Called when the Fragment is no longer resumed.  This is generally
-     * tied to [Activity.onPause] of the containing
-     * Activity's lifecycle.
-     */
-    override fun onPause() {
-
-        approveViewModel.workflowState.removeObservers(viewLifecycleOwner)
-        super.onPause()
-    }
 
     override fun onDestroyView() {
+        // approveViewModel.workflowState.removeObservers(viewLifecycleOwner)
         view_measured_items.adapter = null
         super.onDestroyView()
     }

@@ -153,16 +153,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
         }
     }
 
-    /**
-     * Called when the Fragment is no longer resumed.  This is generally
-     * tied to [Activity.onPause] of the containing
-     * Activity's lifecycle.
-     */
-    override fun onPause() {
-        homeViewModel.databaseState.removeObservers(viewLifecycleOwner)
-        uiScope.destroy()
-        super.onPause()
-    }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -189,6 +180,21 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
     ): View? {
         activity?.hideKeyboard()
         return inflater.inflate(R.layout.fragment_home, container, false)
+    }
+
+    /**
+     * Called when the view previously created by [.onCreateView] has
+     * been detached from the fragment.  The next time the fragment needs
+     * to be displayed, a new view will be created.  This is called
+     * after [.onStop] and before [.onDestroy].  It is called
+     * *regardless* of whether [.onCreateView] returned a
+     * non-null view.  Internally it is called after the view's state has
+     * been saved but before it has been removed from its parent.
+     */
+    override fun onDestroyView() {
+        // homeViewModel.databaseState.removeObservers(viewLifecycleOwner)
+        uiScope.destroy()
+        super.onDestroyView()
     }
 
     @ExperimentalStdlibApi

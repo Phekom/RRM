@@ -5,7 +5,6 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.distinctUntilChanged
-import androidx.lifecycle.liveData
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -17,6 +16,7 @@ import za.co.xisystems.itis_rrm.custom.results.XIError
 import za.co.xisystems.itis_rrm.custom.results.XIProgress
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.data.repositories.JobApprovalDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.approve_job_item.ApproveJobItem
@@ -67,23 +67,25 @@ class ApproveJobsViewModel(
         }
     }
 
-    suspend fun getProjectSectionIdForJobId(jobId: String) = liveData {
-        val projectSectionId = jobApprovalDataRepository.getProjectSectionIdForJobId(jobId)
-        emit(projectSectionId)
+    suspend fun getProjectSectionIdForJobId(jobId: String): String {
+        return withContext(Dispatchers.IO) {
+            jobApprovalDataRepository.getProjectSectionIdForJobId(jobId)
+        }
     }
 
-    suspend fun getRouteForProjectSectionId(sectionId: String) = liveData {
-        val route = jobApprovalDataRepository.getRouteForProjectSectionId(sectionId)
-        emit(route)
+    suspend fun getRouteForProjectSectionId(sectionId: String): String {
+        return withContext(Dispatchers.IO) {
+            jobApprovalDataRepository.getRouteForProjectSectionId(sectionId)
+        }
     }
 
-    suspend fun getSectionForProjectSectionId(sectionId: String) = liveData {
-           val section = jobApprovalDataRepository.getSectionForProjectSectionId(sectionId)
-        emit(section)
+    suspend fun getSectionForProjectSectionId(sectionId: String): String {
+        return withContext(Dispatchers.IO) {
+            jobApprovalDataRepository.getSectionForProjectSectionId(sectionId)
+        }
     }
 
-    val jobApprovalItem: MutableLiveData<ApproveJobItem> = MutableLiveData()
-
+    val jobApprovalItem : MutableLiveData<ApproveJobItem> = MutableLiveData()
     fun setJobForApproval(jobapproval6: ApproveJobItem) {
         jobApprovalItem.value = jobapproval6
     }
@@ -132,26 +134,38 @@ class ApproveJobsViewModel(
         }
     }
 
-    suspend fun getJobEstimationItemsForJobId(jobID: String?) = liveData {
-        val jobEstimates = jobApprovalDataRepository.getJobEstimationItemsForJobId(jobID)
-        emitSource(jobEstimates)
+    suspend fun getJobEstimationItemsForJobId(jobID: String?): LiveData<List<JobItemEstimateDTO>> {
+        return withContext(Dispatchers.IO) {
+            jobApprovalDataRepository.getJobEstimationItemsForJobId(jobID)
+        }
     }
 
-    suspend fun getJobEstimationItemsPhotoStartPath(estimateId: String) =
+    suspend fun getJobEstimationItemsPhotoStartPath(estimateId: String): String {
+        return withContext(Dispatchers.IO) {
         jobApprovalDataRepository.getJobEstimationItemsPhotoStartPath(estimateId)
+        }
+    }
 
-    suspend fun getJobEstimationItemsPhotoEndPath(estimateId: String) =
+    suspend fun getJobEstimationItemsPhotoEndPath(estimateId: String): String {
+        return withContext(Dispatchers.IO) {
         jobApprovalDataRepository.getJobEstimationItemsPhotoEndPath(estimateId)
+        }
+    }
 
-    suspend fun getDescForProjectItemId(projectItemId: String) =
+    suspend fun getDescForProjectItemId(projectItemId: String): String {
+        return withContext(Dispatchers.IO) {
         jobApprovalDataRepository.getProjectItemDescription(projectItemId)
+        }
+    }
 
     suspend fun upDateEstimate(
         new_quantity: String,
         new_total: String,
         estimateId: String
     ): String {
-        return jobApprovalDataRepository.upDateEstimate(new_quantity, new_total, estimateId)
+        return withContext(Dispatchers.IO){
+            jobApprovalDataRepository.upDateEstimate(new_quantity, new_total, estimateId)
+        }
     }
 
     suspend fun getQuantityForEstimationItemId(estimateId: String): LiveData<Double> {

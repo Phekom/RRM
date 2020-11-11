@@ -114,15 +114,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
         return inflater.inflate(R.layout.fragment_job_info, container, false)
     }
 
-    /**
-     * Called when the Fragment is no longer resumed.  This is generally
-     * tied to [Activity.onPause] of the containing
-     * Activity's lifecycle.
-     */
-    override fun onPause() {
-        approveViewModel.workflowState.removeObservers(viewLifecycleOwner)
-        super.onPause()
-    }
+
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
@@ -139,9 +131,9 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
                 Coroutines.main {
                     getEstimateItems(job.jobDTO.JobId)
                     val description = approveViewModel.getDescForProjectId(job.jobDTO.ProjectId!!)
-                    val sectionId = approveViewModel.getProjectSectionIdForJobId(job.jobDTO.JobId).value
-                    val route = sectionId?.let{ approveViewModel.getRouteForProjectSectionId(it) }
-                    val section = sectionId?.let{ approveViewModel.getSectionForProjectSectionId(it)}
+                    val sectionId = approveViewModel.getProjectSectionIdForJobId(job.jobDTO.JobId)
+                    val route = approveViewModel.getRouteForProjectSectionId(sectionId)
+                    val section = approveViewModel.getSectionForProjectSectionId(sectionId)
 
                     project_description_textView.text = description
                     section_description_textView.text = ("$route/ $section")
@@ -341,6 +333,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
 
     override fun onDestroyView() {
         view_estimation_items_listView.adapter = null
+        // approveViewModel.workflowState.removeObservers(viewLifecycleOwner)
         super.onDestroyView()
     }
 }

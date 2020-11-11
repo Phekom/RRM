@@ -200,17 +200,8 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
         if (item1 != null) item1.isVisible = false
     }
 
-    /**
-     * Called when the Fragment is no longer resumed.  This is generally
-     * tied to [Activity.onPause()] of the containing
-     * Activity's lifecycle.
-     */
-    override fun onPause() {
-        uiScope.destroy()
-        super.onPause()
-    }
-
     override fun onDestroyView() {
+        uiScope.destroy()
         work_listView?.adapter = null
         super.onDestroyView()
     }
