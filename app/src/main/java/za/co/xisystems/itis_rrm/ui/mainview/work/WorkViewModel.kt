@@ -3,9 +3,16 @@ package za.co.xisystems.itis_rrm.ui.mainview.work
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.distinctUntilChanged
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.results.XIStatus
 import za.co.xisystems.itis_rrm.custom.results.XISuccess
@@ -34,7 +41,21 @@ class WorkViewModel(
     val workItem = MutableLiveData<JobItemEstimateDTO>()
     val workItemJob = MutableLiveData<JobDTO>()
     val backupWorkSubmission: MutableLiveData<JobEstimateWorksDTO> = MutableLiveData()
-    val workflowResponse = workDataRepository.workStatus
+    private var workflowStatus: LiveData<XIEvent<XIResult<String>>> = MutableLiveData()
+    var workflowState: MutableLiveData<XIResult<String>>? = MutableLiveData()
+    val superJob = SupervisorJob()
+    init {
+        viewModelScope.launch(Job(superJob) + Dispatchers.Main + uncaughtExceptionHandler) {
+            workflowStatus = workDataRepository.workStatus.distinctUntilChanged()
+
+            workflowState = Transformations.map(workflowStatus) { it ->
+                it?.getContentIfNotHandled()?.let {
+                    it
+                }
+            } as? MutableLiveData<XIResult<String>>
+        }
+    }
+
     val backupCompletedEstimates: MutableLiveData<List<JobItemEstimateDTO>> = MutableLiveData()
     fun setWorkItem(work: JobItemEstimateDTO) {
         workItem.value = work
@@ -145,10 +166,8 @@ class WorkViewModel(
         activity: FragmentActivity,
         itemEstiJob: JobDTO
 
-    ): String {
-        return withContext(Dispatchers.IO) {
-            workDataRepository.submitWorks(itemEstiWorks, activity, itemEstiJob)
-        }
+    ): Job = viewModelScope.launch( Job(superJob) + Dispatchers.Main + uncaughtExceptionHandler) {
+        workDataRepository.submitWorks(itemEstiWorks, activity, itemEstiJob)
     }
 
     suspend fun getJobItemEstimateForEstimateId(estimateId: String): LiveData<JobItemEstimateDTO> {
@@ -162,10 +181,10 @@ class WorkViewModel(
         trackRouteId: String,
         description: String?,
         direction: Int
-    ): String {
-        return withContext(Dispatchers.IO) {
+    ) {
+
             workDataRepository.processWorkflowMove(userId, trackRouteId, description, direction)
-        }
+
     }
 
     suspend fun getJobItemsEstimatesDoneForJobId(
@@ -204,5 +223,18 @@ class WorkViewModel(
         } else {
             historicalWorks.postValue(XIStatus("Works failed to load"))
         }
+    }
+
+    /**
+     * This method will be called when this ViewModel is no longer used and will be destroyed.
+     *
+     *
+     * It is useful when ViewModel observes some data and you need to clear this subscription to
+     * prevent a leak of this ViewModel.
+     */
+    override fun onCleared() {
+        workflowState = MutableLiveData()
+        workflowStatus = MutableLiveData()
+        super.onCleared()
     }
 }

@@ -81,7 +81,7 @@ class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAw
                 group3_loading.visibility = View.VISIBLE
                 fetchLocalJobs()
             } catch (t: Throwable) {
-                val xiFail = XIError(t, t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR)
+                val xiFail = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
                 XIErrorHandler.crashGuard(
                     fragment = this@ApproveJobsFragment,
                     view = this@ApproveJobsFragment.requireView(),
@@ -155,7 +155,7 @@ class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAw
                     }
                 })
             } catch (t: Throwable) {
-                val message = t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR
+                val message = t.message ?: XIErrorHandler.UNKNOWN_ERROR
                 Timber.e(t)
                 val xiFail = XIError(t, message)
                 XIErrorHandler.crashGuard(

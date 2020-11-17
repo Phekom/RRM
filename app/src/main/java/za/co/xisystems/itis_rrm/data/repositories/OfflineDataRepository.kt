@@ -404,14 +404,13 @@ class OfflineDataRepository(
 
                         projectCount++
 
-                        withContext(Dispatchers.Main) {
-                            if (projectCount >= projectMax) {
-                                postEvent(XIStatus("All contract data acquired."))
-                                postEvent(XISuccess(true))
-                                postEvent(XIProgress(false))
-                            } else {
-                                postStatus("Loading Project $projectCount of $projectMax")
-                            }
+
+                        if (projectCount >= projectMax) {
+                            postEvent(XIStatus("All contract data acquired."))
+                            postEvent(XISuccess(true))
+                            postEvent(XIProgress(false))
+                        } else {
+                            postStatus("Loading Project $projectCount of $projectMax")
                         }
                     } catch (ex: Exception) {
                         Timber.e(
@@ -1121,7 +1120,7 @@ class OfflineDataRepository(
         }
     }
 
-    private fun postEvent(result: XIResult<Boolean>){
+    private fun postEvent(result: XIResult<Boolean>) {
         databaseStatus.postValue(XIEvent(result))
     }
 

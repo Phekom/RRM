@@ -131,26 +131,27 @@ class JobApprovalDataRepository(
         description: String?,
         direction: Int
     ) {
+        withContext(Dispatchers.IO) {
+            val workflowMoveResponse =
+                apiRequest { api.getWorkflowMove(userId, trackRouteId, description, direction) }
+            val messages: String = workflowMoveResponse.errorMessage ?: ""
+            if (workflowMoveResponse.workflowJob != null) {
 
-        val workflowMoveResponse =
-            apiRequest { api.getWorkflowMove(userId, trackRouteId, description, direction) }
-        val messages: String = workflowMoveResponse.errorMessage ?: ""
-        if (workflowMoveResponse.workflowJob != null) {
-
-            if (messages.isBlank()) {
-                workflowMoveResponse.workflowJob?.let { saveWorkflowJob(it) }
-            } else {
-                postServiceException(messages)
-            }
-        } else {
-            when (messages == "No Job found." && direction == WorkflowDirection.FAIL.value) {
-                true -> {
-                    appDb.getJobDao().softDeleteJobForJobId(jobId)
-
-                    workflowStatus.postValue(XIEvent(XISuccess("DECLINED")))
-                }
-                else -> {
+                if (messages.isBlank()) {
+                    workflowMoveResponse.workflowJob?.let { saveWorkflowJob(it) }
+                } else {
                     postServiceException(messages)
+                }
+            } else {
+                when (messages == "No Job found." && direction == WorkflowDirection.FAIL.value) {
+                    true -> {
+                        appDb.getJobDao().softDeleteJobForJobId(jobId)
+
+                        workflowStatus.postValue(XIEvent(XISuccess("DECLINED")))
+                    }
+                    else -> {
+                        postServiceException(messages)
+                    }
                 }
             }
         }
@@ -198,9 +199,11 @@ class JobApprovalDataRepository(
     }
 
     private suspend fun saveWorkflowJob(workflowJob: WorkflowJobDTO) {
-        val job = setWorkflowJobBigEndianGuids(workflowJob)
-        job?.let {
-            updateWorkflowJobValuesAndInsertWhenNeeded(job)
+        withContext(Dispatchers.IO) {
+            val job = setWorkflowJobBigEndianGuids(workflowJob)
+            job?.let {
+                updateWorkflowJobValuesAndInsertWhenNeeded(job)
+            }
         }
     }
 

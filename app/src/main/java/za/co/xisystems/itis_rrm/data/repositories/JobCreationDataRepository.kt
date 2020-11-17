@@ -11,8 +11,6 @@ import com.google.gson.Gson
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
-import java.io.IOException
-import java.util.ArrayList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -40,6 +38,8 @@ import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.PhotoUtil.getPhotoPathFromExternalDirectory
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
+import java.io.IOException
+import java.util.ArrayList
 
 /**
  * Created by Francis Mahlava on 2019/11/28.
@@ -221,16 +221,16 @@ class JobCreationDataRepository(
     ): String? {
 
         val distance = 50
-        val buffer = 1
+        val buffer = -1
         val routeSectionPointResponse =
             apiRequest { api.getRouteSectionPoint(distance, buffer, latitude, longitude, useR) }
 
         Timber.d("$routeSectionPointResponse")
 
-        return if (routeSectionPointResponse.linearId.contains("xxx" as CharSequence, ignoreCase = true) ||
-            routeSectionPointResponse.linearId.isBlank()
+        return if (routeSectionPointResponse.bufferLocation.contains("xxx" as CharSequence, ignoreCase = true) ||
+            routeSectionPointResponse.bufferLocation.isBlank()
         ) {
-            routeSectionPointResponse.linearId
+            routeSectionPointResponse.bufferLocation
         } else {
             postValue(
                 direction = routeSectionPointResponse.direction,

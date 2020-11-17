@@ -10,7 +10,9 @@ import za.co.xisystems.itis_rrm.custom.errors.ServiceException
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.custom.results.XIError
+import za.co.xisystems.itis_rrm.custom.results.XIProgress
 import za.co.xisystems.itis_rrm.custom.results.XIResult
+import za.co.xisystems.itis_rrm.custom.results.XISuccess
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
@@ -222,7 +224,8 @@ class MeasureApprovalDataRepository(
                 }
             }
             Timber.d("Updated Workflow: $job")
-
+            workflowStatus.postValue(XIEvent(XIProgress(false)))
+            workflowStatus.postValue(XIEvent(XISuccess(job.jiNo!!)))
         } catch (t: Throwable) {
             val message = "Could not save updated workflow: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
             Timber.e(t, message)

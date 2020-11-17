@@ -289,7 +289,7 @@ class MeasureCreationDataRepository(
                 workComplete = true
             } catch (t: Throwable) {
                 val prefix = "Workflow failed:"
-                val errorMessage = "$prefix ${t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR}"
+                val errorMessage = "$prefix ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
                 Timber.e(t)
                 postWorkflowStatus(XIError(t, errorMessage))
             }

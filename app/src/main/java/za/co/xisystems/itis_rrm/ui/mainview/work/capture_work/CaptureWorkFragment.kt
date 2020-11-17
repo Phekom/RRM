@@ -28,7 +28,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import kotlinx.android.synthetic.main.fragment_capture_work.*
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
@@ -112,7 +114,8 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
     private var filenamePath = HashMap<String, String>()
     private var workLocation: LocationModel? = null
     private lateinit var useR: UserDTO
-
+    private lateinit var workSubmission: Job
+    private lateinit var jobSubmission: Job
     override fun onStop() {
         uiScope.destroy()
         super.onStop()
@@ -254,7 +257,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
             itemEstiWorks.jobEstimateWorksPhotos = estimateWorksPhotoArrayList
             itemEstiWorks.jobItemEstimate = jobitemEsti
 
-            sendJobToService(itemEstiWorks)
+            sendWorkToService(itemEstiWorks)
         } else {
             sharedViewModel.setColorMessage(
                 msg = getString(R.string.no_connection_detected),
@@ -291,27 +294,15 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
         }
     }
 
-    private fun sendJobToService(
+    private fun sendWorkToService(
         itemEstiWorks: JobEstimateWorksDTO
     ) {
         uiScope.launch(uiScope.coroutineContext) {
             workViewModel.backupWorkSubmission.postValue(itemEstiWorks)
-            workViewModel.workflowResponse.observe(viewLifecycleOwner, workObserver)
+            workViewModel.workflowState?.observe(viewLifecycleOwner, workObserver)
             val newItemEstimateWorks = setJobWorksLittleEndianGuids(itemEstiWorks)
-            val response =
-                workViewModel.submitWorks(newItemEstimateWorks, requireActivity(), itemEstimateJob)
-            if (response.isBlank()) {
-                move_workflow_button.doneProgress("Workflow complete")
-                refreshView()
-            } else {
-                sharedViewModel.setColorMessage(
-                    msg = response,
-                    style = ERROR,
-                    position = CENTER,
-                    duration = LONG
-                )
-                move_workflow_button.failProgress("Workflow Failed")
-            }
+            workSubmission = workViewModel.submitWorks(newItemEstimateWorks, requireActivity(), itemEstimateJob)
+            workSubmission.join()
         }
     }
 
@@ -322,7 +313,6 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
         // handle result of job submission
         when (result) {
             is XISuccess -> {
-                move_workflow_button.doneProgress("Submission complete")
                 popViewOnJobSubmit(WorkflowDirection.NEXT.value)
             }
             is XIError -> {
@@ -347,10 +337,14 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
     private var estimateSize = 0
     private var estimateCount = 0
 
+    /**
+     * Handler for submitting a completed work step
+     */
     private fun handleWorkSubmission(result: XIResult<String>) {
         when (result) {
             is XISuccess -> {
                 move_workflow_button.doneProgress("Workflow complete")
+                refreshView()
             }
             is XIError -> {
                 XIErrorHandler.crashGuard(
@@ -378,7 +372,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
         backupWorkSubmission.observeOnce(viewLifecycleOwner, {
             it?.let {
                 itemEstiWorks = it
-                sendJobToService(itemEstiWorks)
+                sendWorkToService(itemEstiWorks)
             }
         })
     }
@@ -421,7 +415,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
             workViewModel.workItem.observe(viewLifecycleOwner, {
                 Timber.d("$it")
 
-                val id = ActivityIdConstants.JOB_APPROVED
+                val id = 3
                 // This part must be Deleted when the Dynamic workflow is complete.
                 uiScope.launch(uiScope.coroutineContext) {
                     val workCodeData = workViewModel.getWorkFlowCodes(id)
@@ -452,7 +446,8 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == Activity.RESULT_OK) { // Process the image and set it to the TextView
+        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == Activity.RESULT_OK) {
+            // Process the image and set it to the TextView
             processAndSetImage(itemEstiWorks)
             image_collection_view.visibility = View.VISIBLE
         }
@@ -656,7 +651,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
             dialogBuilder.setPositiveButton(
                 R.string.yes
             ) { dialog, which ->
-                workViewModel.workflowResponse.postValue(XIProgress(true))
+                workViewModel.workflowState?.postValue(XIProgress(true))
                 pushCompletedEstimates(estimates)
             }
 
@@ -678,34 +673,42 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
         estimateCount = 0
         errorState = false
         workViewModel.backupCompletedEstimates.postValue(estimates as List<JobItemEstimateDTO>)
+        Coroutines.main {
+            jobSubmission = uiScope.launch(uiScope.coroutineContext) {
+                withContext(uiScope.coroutineContext) {
+                    for (jobEstimate in estimates) {
+                        Timber.d("Id: ${jobEstimate.estimateId}")
+                        val convertedId = DataConversion.toBigEndian(jobEstimate.estimateId)
+                        Timber.d("Converted Id: $convertedId")
+                        val jobItemEstimate = workViewModel.getJobItemEstimateForEstimateId(jobEstimate.estimateId)
+                        jobItemEstimate.observe(viewLifecycleOwner, { jobItEstmt ->
+                            jobItEstmt?.let {
+                                workViewModel.workflowState?.observe(viewLifecycleOwner, jobObserver)
 
-        uiScope.launch(uiScope.coroutineContext) {
-
-            for (jobEstimate in estimates) {
-                Timber.d("Id: ${jobEstimate.estimateId}")
-                val convertedId = DataConversion.toBigEndian(jobEstimate.estimateId)
-                Timber.d("Converted Id: $convertedId")
-                val jobItemEstimate = workViewModel.getJobItemEstimateForEstimateId(
-                    DataConversion.toBigEndian(jobEstimate.estimateId)!!
-                )
-                jobItemEstimate.observe(viewLifecycleOwner, { jobItEstmt ->
-                    jobItEstmt?.let {
-                        workViewModel.workflowResponse.observe(viewLifecycleOwner, jobObserver)
-                        moveJobItemEstimateToNextWorkflow(
-                            WorkflowDirection.NEXT,
-                            it
-                        )
+                                Coroutines.main {
+                                    withContext(uiScope.coroutineContext) {
+                                        moveJobItemEstimateToNextWorkflow(
+                                            WorkflowDirection.NEXT,
+                                            it
+                                        )
+                                    }
+                                }
+                            }
+                        })
                     }
-                })
+
+                }
             }
+            jobSubmission.join()
+            // handleJobSubmission(XISuccess("Work Complete"))
         }
     }
 
     private var errorState = false
-    private fun moveJobItemEstimateToNextWorkflow(
+    private suspend fun moveJobItemEstimateToNextWorkflow(
         workflowDirection: WorkflowDirection,
         jobItEstimate: JobItemEstimateDTO?
-    ) = uiScope.launch(uiScope.coroutineContext) {
+    ) {
 
         val user = workViewModel.user.await()
         user.observe(viewLifecycleOwner, { userDTO ->
@@ -734,22 +737,17 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                         DataConversion.toLittleEndian(jobItEstimate.trackRouteId)!!
                     val direction: Int = workflowDirection.value
 
-                    uiScope.launch(uiScope.coroutineContext) {
-                        workViewModel.workflowResponse.observe(viewLifecycleOwner, workObserver)
-                        val submit = workViewModel.processWorkflowMove(
-                            userDTO.userId,
-                            trackRouteId,
-                            null,
-                            direction
-                        )
-                        // progressDialog.dismiss()
-                        if (!submit.isBlank()) {
-                            sharedViewModel.setColorMessage(
-                                "Problem with work submission: $submit",
-                                ERROR, CENTER, LONG
+                    Coroutines.main {
+                        val estimateJob = uiScope.launch(uiScope.coroutineContext) {
+                            workViewModel.workflowState?.observe(viewLifecycleOwner, workObserver)
+                            workViewModel.processWorkflowMove(
+                                userDTO.userId,
+                                trackRouteId,
+                                null,
+                                direction
                             )
-                            errorState = true
                         }
+                        estimateJob.join()
                     }
                 }
             }

@@ -45,7 +45,7 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import kotlin.coroutines.cancellation.CancellationException
 
-@ExperimentalStdlibApi
+
 class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
 
     override val kodein by kodein()
@@ -85,7 +85,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                             getOfflineSectionItems()
                         } catch (t: Throwable) {
                             Timber.e(t, "Failed to fetch Section Items.")
-                            val xiErr = XIError(t, t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR)
+                            val xiErr = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
                             XIErrorHandler.crashGuard(this@HomeFragment, this@HomeFragment.requireView(), xiErr, refreshAction = { retrySections() })
                         } finally {
                             group2_loading.visibility = View.GONE
@@ -138,7 +138,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
             }
             userJob.join()
         } catch (t: Throwable) {
-            val connectErr = XIError(t, t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR)
+            val connectErr = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
             XIErrorHandler.crashGuard(this@HomeFragment, this@HomeFragment.requireView(), connectErr,
                 refreshAction = { retryAcquireUser() })
         }
@@ -152,8 +152,6 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                 acquireUser()
         }
     }
-
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -304,45 +302,48 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
         }
     }
 
-    private suspend fun handleBigSync(result: XIResult<Boolean>) {
-        Timber.d("$result")
-        when (result) {
-            is XISuccess -> {
-                motionToast(
-                    "Sync Complete",
-                    MotionToast.TOAST_SUCCESS,
-                    MotionToast.GRAVITY_BOTTOM,
-                    MotionToast.LONG_DURATION
-                )
-                sharedViewModel.toggleLongRunning(false)
-                items_swipe_to_refresh.isRefreshing = false
-                synchJob.join()
-            }
-            is XIStatus -> {
-                sharedViewModel.setMessage(result.message)
-            }
-            is XIError -> {
-                sharedViewModel.setMessage("Sync Failed")
-                synchJob.cancel(CancellationException(result.message, result.exception))
-                sharedViewModel.toggleLongRunning(false)
-                items_swipe_to_refresh.isRefreshing = false
-                XIErrorHandler.crashGuard(
-                    view = this@HomeFragment.requireView(),
-                    throwable = result,
-                    refreshAction = { retrySync() }
-                )
-            }
-            is XIProgress -> {
-                sharedViewModel.toggleLongRunning(result.isLoading)
-                items_swipe_to_refresh.isRefreshing = result.isLoading
+    private suspend fun handleBigSync(signal: XIResult<Boolean>?) {
+        Timber.d("$signal")
+        signal?.let{result ->
+            when (result) {
+                is XISuccess -> {
+                    motionToast(
+                        "Sync Complete",
+                        MotionToast.TOAST_SUCCESS,
+                        MotionToast.GRAVITY_BOTTOM,
+                        MotionToast.LONG_DURATION
+                    )
+                    sharedViewModel.toggleLongRunning(false)
+                    items_swipe_to_refresh.isRefreshing = false
+                    synchJob.join()
+                }
+                is XIStatus -> {
+                    sharedViewModel.setMessage(result.message)
+                }
+                is XIError -> {
+                    sharedViewModel.setMessage("Sync Failed")
+                    synchJob.cancel()
+                    sharedViewModel.toggleLongRunning(false)
+                    items_swipe_to_refresh.isRefreshing = false
+                    XIErrorHandler.crashGuard(
+                        view = this@HomeFragment.requireView(),
+                        throwable = result,
+                        refreshAction = { retrySync() }
+                    )
+                }
+                is XIProgress -> {
+                    sharedViewModel.toggleLongRunning(result.isLoading)
+                    items_swipe_to_refresh.isRefreshing = result.isLoading
+                }
             }
         }
+
     }
 
     private fun bigSync() = uiScope.launch(uiScope.coroutineContext) {
         try {
             sharedViewModel.setMessage("Data Loading")
-            homeViewModel.databaseState.observe(viewLifecycleOwner, bigSyncObserver)
+            homeViewModel.databaseState?.observe(viewLifecycleOwner, bigSyncObserver)
             synchJob = homeViewModel.fetchAllData(userDTO.userId)
             synchJob.join()
             ping()

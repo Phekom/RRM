@@ -114,8 +114,6 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
         return inflater.inflate(R.layout.fragment_job_info, container, false)
     }
 
-
-
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         approveViewModel = activity?.run {
@@ -271,7 +269,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
         }
         Coroutines.main {
             try {
-                approveViewModel.workflowState.observe(viewLifecycleOwner, workObserver)
+                approveViewModel.workflowState?.observe(viewLifecycleOwner, workObserver)
                 val task = approveViewModel.processWorkflowMove(
                     userDTO.userId, trackRouteId, description, direction, job.jobDTO.JobId
                 )

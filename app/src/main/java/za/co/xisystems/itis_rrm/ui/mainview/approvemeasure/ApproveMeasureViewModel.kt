@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -53,24 +54,24 @@ class ApproveMeasureViewModel(
 
     var measureGalleryUIState: MutableLiveData<XIResult<MeasureGalleryUIState>> = MutableLiveData()
 
-    val job = SupervisorJob()
+    val superJob = SupervisorJob()
 
     private var galleryMeasure: MutableLiveData<JobItemMeasureDTO> = MutableLiveData()
 
-    private var workflowStatus: LiveData<XIEvent<XIResult<String>>> =
-        measureApprovalDataRepository.workflowStatus.distinctUntilChanged()
+    private lateinit var workflowStatus: LiveData<XIEvent<XIResult<String>>>
 
     var workflowState: MutableLiveData<XIResult<String>> = MutableLiveData()
 
     init {
-        viewModelScope.launch(job + Dispatchers.Main + uncaughtExceptionHandler) {
+        viewModelScope.launch(Job(superJob) + Dispatchers.Main + uncaughtExceptionHandler) {
+            workflowStatus = measureApprovalDataRepository.workflowStatus.distinctUntilChanged()
             workflowStatus.observeForever {
                 it?.let {
                     workflowState.postValue(it.getContentIfNotHandled())
                 }
             }
             galleryMeasure.observeForever {
-                viewModelScope.launch(job + Dispatchers.Main + uncaughtExceptionHandler) {
+                viewModelScope.launch(Job(superJob) + Dispatchers.Main + uncaughtExceptionHandler){
                     generateGallery(it)
                 }
             }
@@ -178,8 +179,6 @@ class ApproveMeasureViewModel(
                     }
                 }
             }
-            measureJobs.forEach { measureJob -> measureJob.join() }
-            measureApprovalDataRepository.workflowStatus.postValue(XIEvent(XISuccess(jiNo)))
         } catch (t: Throwable) {
             workflowState.postValue(XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR))
         }
@@ -217,7 +216,7 @@ class ApproveMeasureViewModel(
     }
 
     suspend fun generateGalleryUI(itemMeasureId: String) =
-        viewModelScope.launch(job + Dispatchers.Main + uncaughtExceptionHandler) {
+        viewModelScope.launch(Job(superJob) + Dispatchers.Main + uncaughtExceptionHandler) {
             try {
                 getJobItemMeasureByItemMeasureId(itemMeasureId).observeForever {
                     it?.let {
@@ -279,7 +278,7 @@ class ApproveMeasureViewModel(
 
                 measureGalleryUIState.postValue(XISuccess(uiState))
             } catch (t: Throwable) {
-                val message = "$galleryError: ${t.localizedMessage ?: UNKNOWN_ERROR}"
+                val message = "$galleryError: ${t.message ?: UNKNOWN_ERROR}"
                 Timber.e(t, message)
                 val galleryFail = XIError(t, message)
                 measureGalleryUIState.postValue(galleryFail)
@@ -294,5 +293,18 @@ class ApproveMeasureViewModel(
         return withContext(Dispatchers.IO) {
             measureApprovalDataRepository.getJobItemMeasureByItemMeasureId(itemMeasureId).getDistinct()
         }
+    }
+
+    /**
+     * This method will be called when this ViewModel is no longer used and will be destroyed.
+     *
+     *
+     * It is useful when ViewModel observes some data and you need to clear this subscription to
+     * prevent a leak of this ViewModel.
+     */
+    override fun onCleared() {
+        superJob.cancelChildren()
+        workflowState = MutableLiveData()
+        super.onCleared()
     }
 }

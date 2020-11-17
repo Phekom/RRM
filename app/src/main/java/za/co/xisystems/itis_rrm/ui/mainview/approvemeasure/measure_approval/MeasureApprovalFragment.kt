@@ -76,8 +76,8 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
                 initRecyclerView(measurementsToApprove.toMeasureItems())
                 progressButton.doneProgress(progressButton.text.toString())
                 uiScope.launch(uiScope.coroutineContext) {
-                    measureJob.join()
-                    popViewOnJobSubmit(flowDirection)
+                    // measureJob.join()
+                    popViewOnJobSubmit(flowDirection, result.data)
                 }
             }
             is XIError -> {
@@ -221,7 +221,7 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
         }
     }
 
-    private fun popViewOnJobSubmit(direction: Int) {
+    private fun popViewOnJobSubmit(direction: Int, jiNo: String) {
         if (direction == NEXT.value) {
             this.motionToast(string.measurement_approved, MotionToast.TOAST_SUCCESS)
         } else if (direction == WorkflowDirection.FAIL.value) {

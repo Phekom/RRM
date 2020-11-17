@@ -122,7 +122,7 @@
         app:layout_constraintHorizontal_bias="0.50"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/mid_lin">
-
+        app:layout_constraintBottom_toTopOf="@+id/last_lin">
 
         <androidx.cardview.widget.CardView
             android:id="@+id/itemsCardView"
@@ -150,7 +150,7 @@
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/project_recyclerView"
                     android:layout_width="match_parent"
-                    android:layout_height="280dp"
+                    android:layout_height="250dp"
                     android:visibility="visible"
                     android:paddingStart="@dimen/dimen_8dp"
                     android:paddingEnd="@dimen/dimen_8dp"
@@ -183,14 +183,14 @@
     <LinearLayout
         android:id="@+id/last_lin"
         android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginBottom="8dp"
+        android:layout_height="wrap_content"
         android:gravity="bottom"
         android:orientation="vertical"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/submitButton"
+        android:layout_marginBottom="8dp"
         app:layout_constraintTop_toBottomOf="@+id/linearLayout3">
 
         <androidx.cardview.widget.CardView
@@ -271,16 +271,19 @@
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <Button
-            android:id="@+id/submitButton"
-            style="@style/_button"
-            android:layout_height="@dimen/button_size"
-            android:layout_marginLeft="@dimen/xsmall"
-            android:layout_marginTop="@dimen/medium"
-            android:layout_marginRight="@dimen/xsmall"
-            android:text="@string/submit" />
 
     </LinearLayout>
 
+    <Button
+        android:id="@+id/submitButton"
+        style="@style/_button"
+        android:layout_height="@dimen/button_size"
+        android:text="@string/submit"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="16dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

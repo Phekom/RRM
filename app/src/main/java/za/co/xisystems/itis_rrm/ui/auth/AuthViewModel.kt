@@ -174,7 +174,7 @@ class AuthViewModel(
                     androidDevice
                 )
             } catch (t: Throwable) {
-                authListener?.onFailure(t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR)
+                authListener?.onFailure(t.message ?: XIErrorHandler.UNKNOWN_ERROR)
             }
         }
     }
