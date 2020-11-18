@@ -186,7 +186,8 @@ class WorkDataRepository(
                         val noDataException =
                             NoDataException("Photo ${jobItemPhotos.filename} could not be loaded.")
                         Timber.e(noDataException)
-                        val photoError = XIError(noDataException, noDataException.message ?: XIErrorHandler.UNKNOWN_ERROR)
+                        val photoError = XIError(noDataException,
+                            noDataException.message ?: XIErrorHandler.UNKNOWN_ERROR)
                         postWorkStatus(photoError)
                     }
                 }
@@ -256,7 +257,7 @@ class WorkDataRepository(
         jobEstimateWorks: JobEstimateWorksDTO,
         userId: Int
     ) {
-
+        withContext(Dispatchers.IO) {
             try {
                 if (jobEstimateWorks.trackRouteId.isEmpty()) {
                     val wfEx = ServiceException("Error: trackRouteId is null")
@@ -278,11 +279,12 @@ class WorkDataRepository(
                         throw ServiceException(workflowMoveResponse.errorMessage)
                     }
                     if (workflowMoveResponse.workflowJob != null) {
-                        saveWorkflowJob(workflowMoveResponse.workflowJob!!)
+                        saveWorkflowJob(workflowMoveResponse.workflowJob!!, true)
                     } else {
                         throw ServiceException("Workflow Job is null.")
                     }
                 }
+
                 postWorkStatus(XISuccess(jobEstimateWorks.worksId))
             } catch (t: Throwable) {
                 val message = "Failed to update workflow: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
@@ -290,7 +292,7 @@ class WorkDataRepository(
                 val workflowFail = XIError(t, message)
                 postWorkStatus(workflowFail)
             }
-
+        }
     }
 
     suspend fun getWorkFlowCodes(eId: Int): LiveData<List<WF_WorkStepDTO>> {
@@ -345,11 +347,11 @@ class WorkDataRepository(
         }
     }
 
-    private suspend fun saveWorkflowJob(workflowj: WorkflowJobDTO) {
+    private suspend fun saveWorkflowJob(workflowj: WorkflowJobDTO, inWorkflow: Boolean = false) {
         try {
             val job = setWorkflowJobBigEndianGuids(workflowj)
             if (job != null) {
-                updateWorkflowJobValuesAndInsertWhenNeeded(job)
+                updateWorkflowJobValuesAndInsertWhenNeeded(job, inWorkflow)
             } else {
                 throw NullPointerException("Workflow job is undefined!")
             }
@@ -361,7 +363,7 @@ class WorkDataRepository(
         }
     }
 
-    private suspend fun updateWorkflowJobValuesAndInsertWhenNeeded(job: WorkflowJobDTO) {
+    private suspend fun updateWorkflowJobValuesAndInsertWhenNeeded(job: WorkflowJobDTO, inWorkflow: Boolean = false) {
         try {
             appDb.getJobDao().updateJob(job.trackRouteId, job.actId, job.jiNo, job.jobId)
 
@@ -409,7 +411,9 @@ class WorkDataRepository(
                     )
                 }
             }
-            postWorkStatus(XISuccess(job.jiNo!!))
+            if(!inWorkflow) {
+                postWorkStatus(XISuccess(job.jiNo!!))
+            }
         } catch (t: Throwable) {
             val message = "Unable to update workflow job: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
             Timber.e(t, message)
@@ -419,33 +423,39 @@ class WorkDataRepository(
 
     private fun setWorkflowJobBigEndianGuids(job: WorkflowJobDTO): WorkflowJobDTO? {
 
-        job.jobId = DataConversion.toBigEndian(job.jobId)
-        job.trackRouteId = DataConversion.toBigEndian(job.trackRouteId)
+        try{
+            job.jobId = DataConversion.toBigEndian(job.jobId)
+            job.trackRouteId = DataConversion.toBigEndian(job.trackRouteId)
 
-        job.workflowItemEstimates?.forEach { jie ->
-            jie.estimateId = DataConversion.toBigEndian(jie.estimateId)!!
-            jie.trackRouteId = DataConversion.toBigEndian(jie.trackRouteId)!!
-            //  Lets go through the WorkFlowEstimateWorks
-            jie.workflowEstimateWorks.forEach { wfe ->
-                wfe.trackRouteId = DataConversion.toBigEndian(wfe.trackRouteId)!!
-                wfe.worksId = DataConversion.toBigEndian(wfe.worksId)!!
-                wfe.estimateId = DataConversion.toBigEndian(wfe.estimateId)!!
+            job.workflowItemEstimates?.forEach { jie ->
+                jie.estimateId = DataConversion.toBigEndian(jie.estimateId)!!
+                jie.trackRouteId = DataConversion.toBigEndian(jie.trackRouteId)!!
+                //  Lets go through the WorkFlowEstimateWorks
+                jie.workflowEstimateWorks.forEach { wfe ->
+                    wfe.trackRouteId = DataConversion.toBigEndian(wfe.trackRouteId)!!
+                    wfe.worksId = DataConversion.toBigEndian(wfe.worksId)!!
+                    wfe.estimateId = DataConversion.toBigEndian(wfe.estimateId)!!
+                }
             }
-        }
 
-        job.workflowItemMeasures?.forEach { jim ->
-            jim.itemMeasureId = DataConversion.toBigEndian(jim.itemMeasureId)!!
-            jim.measureGroupId = DataConversion.toBigEndian(jim.measureGroupId)!!
-            jim.trackRouteId = DataConversion.toBigEndian(jim.trackRouteId)!!
-        }
+            job.workflowItemMeasures?.forEach { jim ->
+                jim.itemMeasureId = DataConversion.toBigEndian(jim.itemMeasureId)!!
+                jim.measureGroupId = DataConversion.toBigEndian(jim.measureGroupId)!!
+                jim.trackRouteId = DataConversion.toBigEndian(jim.trackRouteId)!!
+            }
 
-        job.workflowJobSections?.forEach { js ->
-            js.jobSectionId = DataConversion.toBigEndian(js.jobSectionId)!!
-            js.projectSectionId = DataConversion.toBigEndian(js.projectSectionId)!!
-            js.jobId = DataConversion.toBigEndian(js.jobId)
-        }
+            job.workflowJobSections?.forEach { js ->
+                js.jobSectionId = DataConversion.toBigEndian(js.jobSectionId)!!
+                js.projectSectionId = DataConversion.toBigEndian(js.projectSectionId)!!
+                js.jobId = DataConversion.toBigEndian(js.jobId)
+            }
 
-        return job
+            return job
+        } catch (t: Throwable) {
+            val message = "Failed to set BigEndian Guids: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
+            postWorkStatus(XIError(t, message))
+            return null
+        }
     }
 
     suspend fun getSectionForProjectSectionId(sectionId: String?): String {
@@ -503,8 +513,10 @@ class WorkDataRepository(
                 throw ServiceException(messages)
             }
         } catch (e: Exception) {
-            Timber.e(e, "Failed to process workflow move: ${e.message}")
-            val uploadFail = XIError(e, "Failed to process workflow move: ${e.message}")
+            val prefix = "Failed to process workflow move"
+            val message = "$prefix: ${e.message ?: XIErrorHandler.UNKNOWN_ERROR}"
+            Timber.e(e, message)
+            val uploadFail = XIError(e, message)
             postWorkStatus(uploadFail)
         }
     }

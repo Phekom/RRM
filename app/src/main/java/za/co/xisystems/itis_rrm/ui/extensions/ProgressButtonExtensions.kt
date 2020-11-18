@@ -34,7 +34,7 @@ fun Button.startProgress(caption: String) {
 
 fun Button.warnProgress(caption: String) {
     this.background = ContextCompat.getDrawable(this.context, R.drawable.round_corner_yellow)
-    this.hideProgress(caption)
+    this.stopProgress(caption)
 }
 
 fun Button.doneProgress(caption: String) {

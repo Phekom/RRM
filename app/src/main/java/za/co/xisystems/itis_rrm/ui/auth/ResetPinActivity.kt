@@ -85,7 +85,7 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnabl
                                         MotionToast.TOAST_SUCCESS,
                                         MotionToast.GRAVITY_BOTTOM,
                                         MotionToast.LONG_DURATION,
-                                        ResourcesCompat.getFont(applicationContext, R.font.helvetica_regular)
+                                        ResourcesCompat.getFont(this@ResetPinActivity, R.font.helvetica_regular)
                                     )
                                     viewModel.newPinRegistered.value = false
                                     getToLogin()
@@ -183,7 +183,7 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnabl
             MotionToast.TOAST_WARNING,
             MotionToast.GRAVITY_BOTTOM,
             MotionToast.LONG_DURATION,
-            ResourcesCompat.getFont(applicationContext, R.font.helvetica_regular)
+            ResourcesCompat.getFont(this, R.font.helvetica_regular)
         )
         // reg_container.snackbar(message)
     }

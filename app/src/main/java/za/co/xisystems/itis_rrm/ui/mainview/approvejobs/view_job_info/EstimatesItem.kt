@@ -11,7 +11,6 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LifecycleOwner
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import com.xwray.groupie.kotlinandroidextensions.Item
-import java.io.File
 import kotlinx.android.synthetic.main.estimates_item.*
 import timber.log.Timber
 import www.sanju.motiontoast.MotionToast
@@ -26,6 +25,7 @@ import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.Util.nanCheck
 import za.co.xisystems.itis_rrm.utils.Util.round
 import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
+import java.io.File
 
 /**
  * Created by Francis Mahlava on 2020/01/02.
@@ -176,9 +176,9 @@ class EstimatesItem(
                         jobItemEstimateDTO.estimateId
                     )
                     if (updated.isBlank()) {
-                        activity.motionToast("Data Updated was Successful", MotionToast.TOAST_SUCCESS)
+                        activity.motionToast("Data updated", MotionToast.TOAST_SUCCESS)
                     } else {
-                        activity.motionToast("Data Updated was Unsuccessful", MotionToast.TOAST_ERROR)
+                        activity.motionToast("Update failed", MotionToast.TOAST_ERROR)
                     }
                 }
             }

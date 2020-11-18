@@ -6,6 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.distinctUntilChanged
+import androidx.lifecycle.liveData
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -43,15 +44,13 @@ class WorkViewModel(
     val backupWorkSubmission: MutableLiveData<JobEstimateWorksDTO> = MutableLiveData()
     private var workflowStatus: LiveData<XIEvent<XIResult<String>>> = MutableLiveData()
     var workflowState: MutableLiveData<XIResult<String>>? = MutableLiveData()
-    val superJob = SupervisorJob()
+    private val superJob = SupervisorJob()
     init {
         viewModelScope.launch(Job(superJob) + Dispatchers.Main + uncaughtExceptionHandler) {
             workflowStatus = workDataRepository.workStatus.distinctUntilChanged()
 
             workflowState = Transformations.map(workflowStatus) { it ->
-                it?.getContentIfNotHandled()?.let {
-                    it
-                }
+                it?.getContentIfNotHandled()
             } as? MutableLiveData<XIResult<String>>
         }
     }
@@ -80,9 +79,10 @@ class WorkViewModel(
     suspend fun getJobEstimationItemsForJobId(
         jobID: String?,
         actID: Int
-    ): LiveData<List<JobItemEstimateDTO>> {
-        return withContext(Dispatchers.IO + uncaughtExceptionHandler) {
-            workDataRepository.getJobEstimationItemsForJobId(jobID, actID)
+    )= liveData<List<JobItemEstimateDTO>> {
+        withContext(Dispatchers.IO + uncaughtExceptionHandler) {
+            val data = workDataRepository.getJobEstimationItemsForJobId(jobID, actID).distinctUntilChanged()
+            emitSource(data)
         }
     }
 
@@ -182,8 +182,9 @@ class WorkViewModel(
         description: String?,
         direction: Int
     ) {
-
+        withContext(Dispatchers.IO) {
             workDataRepository.processWorkflowMove(userId, trackRouteId, description, direction)
+        }
 
     }
 

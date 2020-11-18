@@ -188,7 +188,7 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
                                 MotionToast.TOAST_NO_INTERNET,
                                 MotionToast.GRAVITY_BOTTOM,
                                 MotionToast.LONG_DURATION,
-                                ResourcesCompat.getFont(applicationContext, R.font.helvetica_regular)
+                                ResourcesCompat.getFont(this, R.font.helvetica_regular)
                             )
                         }
                     }
@@ -272,7 +272,7 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
             MotionToast.TOAST_ERROR,
             MotionToast.GRAVITY_BOTTOM,
             MotionToast.LONG_DURATION,
-            ResourcesCompat.getFont(applicationContext, R.font.helvetica_regular)
+            ResourcesCompat.getFont(this, R.font.helvetica_regular)
         )
 
         resetAllPinColor()
@@ -290,7 +290,7 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
             MotionToast.TOAST_SUCCESS,
             MotionToast.GRAVITY_BOTTOM,
             MotionToast.LONG_DURATION,
-            ResourcesCompat.getFont(applicationContext, R.font.helvetica_regular)
+            ResourcesCompat.getFont(this, R.font.helvetica_regular)
         )
     }
 

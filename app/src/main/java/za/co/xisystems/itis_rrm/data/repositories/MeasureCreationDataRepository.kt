@@ -132,7 +132,7 @@ class MeasureCreationDataRepository(
         Coroutines.io {
             try {
 
-                itemMeasureJob.JobItemMeasures = jobItemMeasure
+                // itemMeasureJob.JobItemMeasures = jobItemMeasure
                 val measureJob = setWorkflowJobBigEndianGuids(workflowJobDTO)
                 insertOrUpdateWorkflowJobInSQLite(measureJob, estimatesPush = false)
                 uploadMeasurementImages(jobItemMeasure, activity)

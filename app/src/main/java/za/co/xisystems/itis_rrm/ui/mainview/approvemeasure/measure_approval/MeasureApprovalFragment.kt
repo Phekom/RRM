@@ -20,6 +20,7 @@ import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import kotlinx.android.synthetic.main.fragment_measure_approval.*
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
@@ -60,42 +61,40 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
     private lateinit var measurementsToApprove: ArrayList<JobItemMeasureDTO>
     lateinit var dialog: Dialog
     private lateinit var progressButton: Button
-    private var workObserver = Observer<XIResult<String>> { handleWorkSubmission(it) }
+    private var workObserver = Observer<XIResult<String>?> { handleWorkSubmission(it) }
     private var flowDirection: Int = 0
     private var measuresProcessed: Int = 0
     private var uiScope = UiLifecycleScope()
     private var measureJob: Job = Job()
 
-    private fun handleWorkSubmission(result: XIResult<String>) {
-        when (result) {
-            is XISuccess -> {
-                measuresProcessed += 1
-
-                Timber.d("Job ${result.data} processed.")
-                measurementsToApprove.clear()
-                initRecyclerView(measurementsToApprove.toMeasureItems())
-                progressButton.doneProgress(progressButton.text.toString())
-                uiScope.launch(uiScope.coroutineContext) {
-                    // measureJob.join()
-                    popViewOnJobSubmit(flowDirection, result.data)
+    private fun handleWorkSubmission(outcome: XIResult<String>?) {
+        outcome?.let { result ->
+            when (result) {
+                is XISuccess -> {
+                    if (result.data == "WORK_COMPLETE") {
+                        measurementsToApprove.clear()
+                        initRecyclerView(measurementsToApprove.toMeasureItems())
+                        progressButton.doneProgress(progressButton.text.toString())
+                        popViewOnJobSubmit(flowDirection)
+                    }
                 }
-            }
-            is XIError -> {
-                progressButton.failProgress("Failed")
-                XIErrorHandler.crashGuard(
-                    fragment = this,
-                    view = this.requireView(),
-                    throwable = result,
-                    refreshAction = { retryMeasurements() }
-                )
-            }
-            is XIStatus -> {
-                this.motionToast(result.message, MotionToast.TOAST_INFO)
-            }
-            is XIProgress -> {
-                when (result.isLoading) {
-                    true -> progressButton.startProgress("Submitting ...")
-                    else -> progressButton.doneProgress(progressButton.text.toString())
+                is XIError -> {
+                    progressButton.failProgress("Failed")
+                    XIErrorHandler.crashGuard(
+                        fragment = this,
+                        view = this.requireView(),
+                        throwable = result,
+                        refreshAction = { retryMeasurements() }
+                    )
+                }
+                is XIStatus -> {
+                    this.motionToast(result.message, MotionToast.TOAST_INFO)
+                }
+                is XIProgress -> {
+                    when (result.isLoading) {
+                        true -> progressButton.startProgress("Submitting ...")
+                        else -> progressButton.doneProgress(progressButton.text.toString())
+                    }
                 }
             }
         }
@@ -172,8 +171,9 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
     private fun processMeasurementWorkflow(workflowDirection: WorkflowDirection) {
         if (ServiceUtil.isNetworkAvailable(this.requireContext().applicationContext)) {
             Coroutines.main {
-                moveJobToNextWorkflow(workflowDirection)
                 approveViewModel.workflowState.observe(viewLifecycleOwner, workObserver)
+                moveJobToNextWorkflow(workflowDirection)
+
             }
         } else {
             this.requireActivity().motionToast(
@@ -185,7 +185,7 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
     }
 
     private suspend fun moveJobToNextWorkflow(workflowDirection: WorkflowDirection) {
-        uiScope.launch(uiScope.coroutineContext) {
+        val approvalJob = uiScope.launch(uiScope.coroutineContext) {
             progressButton.startProgress("Submitting ...")
 
             val user = approveViewModel.user.await()
@@ -202,26 +202,30 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
                     )
                     progressButton.failProgress("Invalid User")
                 } else {
-                    measureJob = uiScope.launch(uiScope.coroutineContext) {
-                        try {
-                            approveViewModel.approveMeasurements(
-                                userDTO.userId,
-                                workflowDirection,
-                                measurementsToApprove
-                            )
-                        } catch (t: Throwable) {
-                            val message = "Measurement Approval Exception: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
-                            Timber.e(t, message)
-                            val measureErr = XIError(t, message)
-                            handleWorkSubmission(measureErr)
+                    Coroutines.main {
+                        withContext(uiScope.coroutineContext) {
+                            try {
+                                approveViewModel.approveMeasurements(
+                                    userDTO.userId,
+                                    workflowDirection,
+                                    measurementsToApprove
+                                )
+                            } catch (t: Throwable) {
+                                val message = "Measurement Approval Exception: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
+                                Timber.e(t, message)
+                                val measureErr = XIError(t, message)
+                                handleWorkSubmission(measureErr)
+                            }
                         }
                     }
                 }
             })
         }
+        approvalJob.join()
+
     }
 
-    private fun popViewOnJobSubmit(direction: Int, jiNo: String) {
+    private fun popViewOnJobSubmit(direction: Int) {
         if (direction == NEXT.value) {
             this.motionToast(string.measurement_approved, MotionToast.TOAST_SUCCESS)
         } else if (direction == WorkflowDirection.FAIL.value) {
@@ -258,7 +262,6 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
             adapter = groupAdapter
         }
     }
-
 
     override fun onDestroyView() {
         // approveViewModel.workflowState.removeObservers(viewLifecycleOwner)

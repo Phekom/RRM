@@ -60,7 +60,7 @@ class ApproveMeasureViewModel(
 
     private lateinit var workflowStatus: LiveData<XIEvent<XIResult<String>>>
 
-    var workflowState: MutableLiveData<XIResult<String>> = MutableLiveData()
+    var workflowState: MutableLiveData<XIResult<String>?> = MutableLiveData()
 
     init {
         viewModelScope.launch(Job(superJob) + Dispatchers.Main + uncaughtExceptionHandler) {
@@ -71,7 +71,7 @@ class ApproveMeasureViewModel(
                 }
             }
             galleryMeasure.observeForever {
-                viewModelScope.launch(Job(superJob) + Dispatchers.Main + uncaughtExceptionHandler){
+                viewModelScope.launch(Job(superJob) + Dispatchers.Main + uncaughtExceptionHandler) {
                     generateGallery(it)
                 }
             }
@@ -139,7 +139,7 @@ class ApproveMeasureViewModel(
         }
     }
 
-    fun approveMeasurements(
+    suspend fun approveMeasurements(
         userId: String,
         workflowDirection: WorkflowDirection,
         measurements: List<JobItemMeasureDTO>
@@ -147,40 +147,52 @@ class ApproveMeasureViewModel(
         workflowState.postValue(XIProgress(true))
         val measureJobs = mutableListOf<Job>()
         var workDone = false
-        var jiNo= ""
-        try {
-            measurements.forEach { jobItemMeasureDTO ->
-                if (!workDone) {
-                    jiNo = jobItemMeasureDTO.jimNo!!
+        var jiNo = ""
+
+        val jobIds: List<String> =
+            measurements.distinctBy { measurements -> measurements.jobId }
+            .map { measurements -> measurements.jobId!! }
+        withContext(Dispatchers.IO + uncaughtExceptionHandler) {
+            try {
+
+                jobIds.forEach { jobId ->
+                    var job = offlineDataRepository.getUpdatedJob(jobId)
+                    jiNo = job.JiNo!!
                     val description = ""
-                    jobItemMeasureDTO.trackRouteId?.let {
+                    job.TrackRouteId?.let {
                         val trackRouteId = DataConversion.toLittleEndian(it)
 
                         trackRouteId?.let { serviceTrackRouteId ->
-                            val measureJob = this.launch(viewModelScope.coroutineContext) {
-                                withContext(Dispatchers.IO) {
-                                    measureApprovalDataRepository.processWorkflowMove(
-                                        userId,
-                                        serviceTrackRouteId,
-                                        description,
-                                        workflowDirection.value
-                                    )
-                                }
+                            withContext(Dispatchers.IO) {
+
+                                measureApprovalDataRepository.processWorkflowMove(
+                                    userId,
+                                    serviceTrackRouteId,
+                                    description,
+                                    workflowDirection.value
+                                )
                             }
-                            measureJobs.add(measureJob)
                         }
                     }
-                    val data = measureApprovalDataRepository.workflowStatus
-                    data.value?.let {
-                        workDone = when (it.peekContent() is XISuccess<String>) {
-                            true -> true
-                            else -> false
+                    job = offlineDataRepository.getUpdatedJob(jobId)
+                    job.JobItemMeasures?.forEach{ measure->
+                        val measureTrackId = DataConversion.toLittleEndian(measure.trackRouteId)
+                        measureTrackId?.let {
+                            withContext(Dispatchers.IO){
+                                measureApprovalDataRepository.processWorkflowMove(
+                                    userId,
+                                    measureTrackId,
+                                    description,
+                                    workflowDirection.value
+                                )
+                            }
                         }
                     }
                 }
+                workflowState.postValue(XISuccess("WORK_COMPLETE"))
+            } catch (t: Throwable) {
+                workflowState.postValue(XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR))
             }
-        } catch (t: Throwable) {
-            workflowState.postValue(XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR))
         }
     }
 
