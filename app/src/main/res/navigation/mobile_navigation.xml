@@ -18,7 +18,7 @@
         tools:layout="@layout/fragment_createjob">
         <action
             android:id="@+id/action_nav_create_to_addProjectFragment"
-            app:destination="@+id/addProjectFragment"
+            app:destination="@id/addProjectFragment"
             app:enterAnim="@anim/bounce_250"
             app:launchSingleTop="false"
             app:popEnterAnim="@anim/bounce_500"
@@ -147,7 +147,11 @@
         tools:layout="@layout/fragment_measure_approval">
         <action
             android:id="@+id/action_measureApprovalFragment_to_measureGalleryFragment"
-            app:destination="@id/measureGalleryFragment" />
+            app:destination="@id/measureGalleryFragment"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:exitAnim="@anim/nav_default_exit_anim"
+            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
+            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
     </fragment>
     <fragment
         android:id="@+id/submitMeasureFragment"

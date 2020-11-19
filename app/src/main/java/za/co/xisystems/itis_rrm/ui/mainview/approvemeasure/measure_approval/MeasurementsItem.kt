@@ -10,6 +10,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.Navigation
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import com.xwray.groupie.kotlinandroidextensions.Item
+import java.io.File
 import kotlinx.android.synthetic.main.measurements_item.*
 import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.R
@@ -19,7 +20,6 @@ import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureViewMod
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.GlideApp
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
-import java.io.File
 
 /**
  * Created by Francis Mahlava on 2020/01/02.
@@ -66,7 +66,9 @@ class MeasurementsItem(
                         .navigate(R.id.action_measureApprovalFragment_to_measureGalleryFragment)
                 }
             }
-            updateMeasureImage()
+            Coroutines.main {
+                updateMeasureImage()
+            }
         }
     }
 
@@ -104,9 +106,9 @@ class MeasurementsItem(
                             jobItemMeasureDTO.itemMeasureId
                         )
                         if (updated.isBlank()) {
-                            activity.motionToast("Data Updated was Successful", MotionToast.TOAST_SUCCESS)
+                            activity.motionToast("Data Updated", MotionToast.TOAST_SUCCESS)
                         } else {
-                            activity.motionToast("Data Updated Error!!  Server Not Reachable", MotionToast.TOAST_ERROR)
+                            activity.motionToast("Error on update: $updated.", MotionToast.TOAST_ERROR)
                         }
                     }
                 }
@@ -136,7 +138,7 @@ class MeasurementsItem(
 
     override fun getLayout() = R.layout.measurements_item
 
-    private fun GroupieViewHolder.updateMeasureImage() {
+    private suspend fun GroupieViewHolder.updateMeasureImage() {
         Coroutines.main {
 
             val photoPaths = approveViewModel.getJobMeasureItemsPhotoPath(jobItemMeasureDTO.itemMeasureId!!)

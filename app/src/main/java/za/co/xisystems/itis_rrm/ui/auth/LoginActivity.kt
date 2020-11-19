@@ -9,6 +9,7 @@ import android.view.View
 import android.widget.Button
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.res.ResourcesCompat
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import kotlinx.android.synthetic.main.activity_login.*
@@ -26,7 +27,6 @@ import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.databinding.ActivityLoginBinding
-import za.co.xisystems.itis_rrm.ui.extensions.motionToast
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
@@ -174,7 +174,7 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
                     builder.setMessage(R.string.set_pin_msg)
                     builder.setCancelable(false)
                     // Yes button
-                    builder.setPositiveButton(R.string.ok) { dialog, which ->
+                    builder.setPositiveButton(R.string.ok) { _, _ ->
                         if (ServiceUtil.isNetworkAvailable(this.applicationContext)) {
                             Intent(this, RegisterPinActivity::class.java).also { pin ->
                                 pin.flags =
@@ -182,11 +182,18 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
                                 startActivity(pin)
                             }
                         } else {
-                            this.motionToast(getString(R.string.no_connection_detected), MotionToast.TOAST_NO_INTERNET)
+                            MotionToast.createColorToast(
+                                this,
+                                getString(R.string.no_connection_detected),
+                                MotionToast.TOAST_NO_INTERNET,
+                                MotionToast.GRAVITY_BOTTOM,
+                                MotionToast.LONG_DURATION,
+                                ResourcesCompat.getFont(this, R.font.helvetica_regular)
+                            )
                         }
                     }
-                    val declineAlert = builder.create()
-                    declineAlert.show()
+                    val setPinDialog = builder.create()
+                    setPinDialog.show()
                 } else {
 
                     if (index == 4) {
@@ -212,15 +219,15 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
             val xiErr = XIError(t, "Failed to login")
             if (xiErr.isConnectivityException()) {
                 XIErrorHandler.handleError(
-                    this.findViewById(R.id.reg_container),
-                    xiErr,
+                    view = findViewById(R.id.reg_container),
+                    throwable = xiErr,
                     shouldShowSnackBar = true,
                     refreshAction = { retryGotoMain() }
                 )
             } else {
                 XIErrorHandler.handleError(
-                    this.findViewById(R.id.reg_container),
-                    xiErr,
+                    view = findViewById(R.id.reg_container),
+                    throwable = xiErr,
                     shouldToast = true
                 )
             }
@@ -259,7 +266,15 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
 
     private fun showMessage() {
 
-        this.motionToast("Pin is incorrect", MotionToast.TOAST_ERROR)
+        MotionToast.createColorToast(
+            this,
+            "Pin is incorrect",
+            MotionToast.TOAST_ERROR,
+            MotionToast.GRAVITY_BOTTOM,
+            MotionToast.LONG_DURATION,
+            ResourcesCompat.getFont(this, R.font.helvetica_regular)
+        )
+
         resetAllPinColor()
         pinInput = ""
     }
@@ -269,7 +284,14 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
     }
 
     override fun onSuccess(userDTO: UserDTO) {
-        this.motionToast("You are Logged in as ${userDTO.userName}", MotionToast.TOAST_INFO)
+        MotionToast.createColorToast(
+            this,
+            "You are Logged in as ${userDTO.userName}",
+            MotionToast.TOAST_SUCCESS,
+            MotionToast.GRAVITY_BOTTOM,
+            MotionToast.LONG_DURATION,
+            ResourcesCompat.getFont(this, R.font.helvetica_regular)
+        )
     }
 
     override fun onSignOut(userDTO: UserDTO) {

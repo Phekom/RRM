@@ -1,3 +1,5 @@
+@file:Suppress("KDocUnresolvedReference")
+
 package za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.measure_approval
 
 import android.app.Dialog
@@ -10,12 +12,14 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import androidx.appcompat.app.AlertDialog
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import kotlinx.android.synthetic.main.fragment_measure_approval.*
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
@@ -24,8 +28,18 @@ import timber.log.Timber
 import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.R.string
 import za.co.xisystems.itis_rrm.base.BaseFragment
+import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
+import za.co.xisystems.itis_rrm.custom.results.XIError
+import za.co.xisystems.itis_rrm.custom.results.XIProgress
+import za.co.xisystems.itis_rrm.custom.results.XIResult
+import za.co.xisystems.itis_rrm.custom.results.XIStatus
+import za.co.xisystems.itis_rrm.custom.results.XISuccess
+import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
+import za.co.xisystems.itis_rrm.ui.extensions.doneProgress
 import za.co.xisystems.itis_rrm.ui.extensions.failProgress
 import za.co.xisystems.itis_rrm.ui.extensions.initProgress
 import za.co.xisystems.itis_rrm.ui.extensions.motionToast
@@ -33,24 +47,78 @@ import za.co.xisystems.itis_rrm.ui.extensions.startProgress
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.approveMeasure_Item.ApproveMeasureItem
+import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
-import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
+import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection.NEXT
 
+@Suppress("KDocUnresolvedReference")
 class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval), KodeinAware {
     override val kodein by kodein()
     private lateinit var approveViewModel: ApproveMeasureViewModel
     private val factory: ApproveMeasureViewModelFactory by instance()
     private lateinit var measurementsToApprove: ArrayList<JobItemMeasureDTO>
+    private var mJob : JobDTO? = null
     lateinit var dialog: Dialog
-    lateinit var progressButton: Button
+    private lateinit var progressButton: Button
+    private var workObserver = Observer<XIResult<String>?> { handleWorkSubmission(it) }
+    private var flowDirection: Int = 0
+    private var measuresProcessed: Int = 0
+    private var uiScope = UiLifecycleScope()
+    private var measureJob: Job = Job()
+
+    private fun handleWorkSubmission(outcome: XIResult<String>?) {
+        outcome?.let { result ->
+            when (result) {
+                is XISuccess -> {
+                    if (result.data == "WORK_COMPLETE") {
+                        measurementsToApprove.clear()
+                        initRecyclerView(measurementsToApprove.toMeasureItems())
+                        progressButton.doneProgress(progressButton.text.toString())
+                        popViewOnJobSubmit(flowDirection)
+                    }
+                }
+                is XIError -> {
+                    progressButton.failProgress("Failed")
+                    XIErrorHandler.crashGuard(
+                        fragment = this,
+                        view = this.requireView(),
+                        throwable = result,
+                        refreshAction = { retryMeasurements() }
+                    )
+                }
+                is XIStatus -> {
+                    this.motionToast(
+                        result.message,
+                        MotionToast.TOAST_INFO,
+                        MotionToast.GRAVITY_TOP,
+                        MotionToast.SHORT_DURATION
+                    )
+                }
+                is XIProgress -> {
+                    when (result.isLoading) {
+                        true -> progressButton.startProgress("Submitting ...")
+                        else -> progressButton.doneProgress(progressButton.text.toString())
+                    }
+                }
+            }
+        }
+    }
+
+    private fun retryMeasurements() {
+        IndefiniteSnackbar.hide()
+        Coroutines.main {
+            processMeasurementWorkflow(NEXT)
+            approveViewModel.workflowState.observe(viewLifecycleOwner, workObserver)
+        }
+    }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
         (activity as MainActivity).supportActionBar?.title =
-            getString(R.string.measure_approval_title)
+            getString(string.measure_approval_title)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -79,130 +147,92 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
             })
 
             approve_measure_button.setOnClickListener {
-                val flowBuilder = AlertDialog.Builder(
-                    requireActivity() // , android.R.style.Theme_DeviceDefault_Dialog
+                val approveBuilder = AlertDialog.Builder(
+                    requireActivity()
                 )
-                flowBuilder.setTitle(R.string.confirm)
-                flowBuilder.setIcon(R.drawable.ic_approve)
-                flowBuilder.setMessage(R.string.are_you_sure_you_want_to_approve2)
+                approveBuilder.setTitle(string.confirm)
+                approveBuilder.setIcon(R.drawable.ic_approve)
+                approveBuilder.setMessage(string.are_you_sure_you_want_to_approve2)
                 progressButton = approve_measure_button
                 progressButton.initProgress(viewLifecycleOwner)
                 // Yes button
-                flowBuilder.setPositiveButton(
-                    R.string.yes
-                ) { dialog, which ->
-                    if (ServiceUtil.isNetworkAvailable(this.requireContext().applicationContext)) {
-                        progressButton.startProgress("Submitting ...")
-                        Coroutines.main {
-                            moveJobToNextWorkflow(WorkflowDirection.NEXT)
-                        }
-                    } else {
-                        this.requireActivity().motionToast(
-                            getString(R.string.no_connection_detected),
-                            MotionToast.TOAST_NO_INTERNET
-                        )
-                        progressButton.failProgress("No internet")
-                    }
+                approveBuilder.setPositiveButton(
+                    string.yes
+                ) { _, _ ->
+                    processMeasurementWorkflow(NEXT)
                 }
 
                 // No button
-                flowBuilder.setNegativeButton(
-                    R.string.no
-                ) { dialog, which ->
+                approveBuilder.setNegativeButton(
+                    string.no
+                ) { dialog, _ ->
                     // Do nothing but close dialog
                     dialog.dismiss()
                 }
-                val approveAlert = flowBuilder.create()
+                val approveAlert = approveBuilder.create()
                 approveAlert.show()
             }
-
-//            decline_measure_button.setOnClickListener {
-//                val logoutBuilder =
-//                    AlertDialog.Builder(
-//                        requireActivity() //, android.R.style.Theme_DeviceDefault_Dialog
-//                    )
-//                logoutBuilder.setTitle(R.string.confirm)
-//                logoutBuilder.setIcon(R.drawable.ic_warning)
-//                logoutBuilder.setMessage(R.string.are_you_sure_you_want_to_decline2)
-//                // Yes button
-//                logoutBuilder.setPositiveButton(
-//                    R.string.yes
-//                ) { dialog, which ->
-//                    if (ServiceUtil.isInternetAvailable(context?.applicationContext)) {
-// //                        moveJobToNextWorkflow(WorkflowDirection.FAIL)
-//                    } else {
-//                        toast(R.string.no_connection_detected)
-//                    }
-//                }
-//                // No button
-//                logoutBuilder.setNegativeButton(
-//                    R.string.no
-//                ) { dialog, which ->
-//                    // Do nothing but close dialog
-//                    dialog.dismiss()
-//                }
-//                val declineAlert = logoutBuilder.create()
-//                declineAlert.show()
-//            }
         }
     }
 
-    private suspend fun moveJobToNextWorkflow(workflowDirection: WorkflowDirection) {
-        Coroutines.main {
+    private fun processMeasurementWorkflow(workflowDirection: WorkflowDirection) {
+        if (ServiceUtil.isNetworkAvailable(this.requireContext().applicationContext)) {
+            Coroutines.main {
+                approveViewModel.workflowState.observe(viewLifecycleOwner, workObserver)
 
-            val user = approveViewModel.user.await()
-            user.observe(viewLifecycleOwner, { userDTO ->
-                try {
-                    measurementsToApprove.forEach { measureItem ->
+                val approvalJob = uiScope.launch(uiScope.coroutineContext) {
+                    progressButton.startProgress("Submitting ...")
+
+                    val user = approveViewModel.user.await()
+                    user.observe(viewLifecycleOwner, { userDTO ->
+
+                        measuresProcessed = 0
+                        flowDirection = workflowDirection.value
+
                         if (userDTO.userId.isBlank()) {
-                            this.motionToast(
-                                "Error: userId is null",
+                            this@MeasureApprovalFragment.motionToast(
+                                "User lacks permissions",
                                 MotionToast.TOAST_ERROR,
-                                MotionToast.GRAVITY_CENTER
+                                MotionToast.GRAVITY_BOTTOM
                             )
                             progressButton.failProgress("Invalid User")
                         } else {
-                            // littleEndian conversion for transport to the backend
                             Coroutines.main {
-                                val trackRouteId: String =
-                                    DataConversion.toLittleEndian(measureItem.trackRouteId)!!
-                                val direction: Int = workflowDirection.value
-                                val description = ""
-                                withContext(Dispatchers.Main) {
-                                    processWorkFlow(userDTO.userId, trackRouteId, direction, description)
+                                withContext(uiScope.coroutineContext) {
+                                    try {
+                                        approveViewModel.approveMeasurements(
+                                            userDTO.userId,
+                                            workflowDirection,
+                                            measurementsToApprove
+                                        )
+
+                                    } catch (t: Throwable) {
+                                        val message = "Measurement Approval Exception: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
+                                        Timber.e(t, message)
+                                        val measureErr = XIError(t, message)
+                                        handleWorkSubmission(measureErr)
+                                    }
                                 }
                             }
                         }
-                    }
-                    measurementsToApprove.clear()
-                    popViewOnJobSubmit(workflowDirection.value)
-                } catch (t: Throwable) {
-                    Timber.e(t, "Failed to Approve Measurments!")
+                    })
                 }
-            })
-        }
-    }
-
-    private suspend fun processWorkFlow(
-        userId: String,
-        trackRouteId: String,
-        direction: Int,
-        description: String?
-    ) {
-        Coroutines.main {
-            val submit =
-                approveViewModel.processWorkflowMove(userId, trackRouteId, description, direction)
-            if (submit.isNotEmpty()) {
-                this.motionToast(submit, MotionToast.TOAST_ERROR, MotionToast.GRAVITY_CENTER)
+                approvalJob.join()
             }
+        } else {
+            this.requireActivity().motionToast(
+                getString(string.no_connection_detected),
+                MotionToast.TOAST_ERROR
+            )
+            progressButton.failProgress("No internet")
         }
     }
 
     private fun popViewOnJobSubmit(direction: Int) {
-        if (direction == WorkflowDirection.NEXT.value) {
-            this.motionToast("Measurements Approved", MotionToast.TOAST_SUCCESS)
+        if (direction == NEXT.value) {
+            this.motionToast(string.measurement_approved, MotionToast.TOAST_SUCCESS)
         } else if (direction == WorkflowDirection.FAIL.value) {
-            this.motionToast("Measurements Declined", MotionToast.TOAST_INFO)
+            this.motionToast(string.measurement_declined, MotionToast.TOAST_INFO)
         }
 
         Intent(context?.applicationContext, MainActivity::class.java).also { home ->
@@ -213,17 +243,14 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
     private fun getMeasureItems(job: ApproveMeasureItem) {
         Coroutines.main {
             val measurements = approveViewModel.getJobMeasureItemsForJobId(
-                job.jobItemMeasureDTO.jobId,
+                job.jobId,
                 ActivityIdConstants.MEASURE_COMPLETE
             )
-            measurements.observe(viewLifecycleOwner, { measureItems ->
-
-                val allData = measureItems.count()
-                val uniqueItems = measureItems.distinctBy { item -> item.itemMeasureId }
-                if (allData == measureItems.size) {
+            measurements.observe(viewLifecycleOwner, { jobItemMeasures ->
+                jobItemMeasures?.let {
                     measurementsToApprove = ArrayList()
-                    measurementsToApprove.addAll(uniqueItems)
-                    initRecyclerView(uniqueItems.toMeasureItem())
+                    measurementsToApprove.addAll(it)
+                    initRecyclerView(it.toMeasureItems())
                 }
             })
         }
@@ -240,14 +267,15 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
     }
 
     override fun onDestroyView() {
+        // approveViewModel.workflowState.removeObservers(viewLifecycleOwner)
         view_measured_items.adapter = null
         super.onDestroyView()
     }
 
-    private fun List<JobItemMeasureDTO>.toMeasureItem(): List<MeasurementsItem> {
-        return this.map { approvedJobItem ->
+    private fun List<JobItemMeasureDTO>.toMeasureItems(): List<MeasurementsItem> {
+        return this.map {
             MeasurementsItem(
-                approvedJobItem,
+                it,
                 approveViewModel,
                 activity,
                 viewLifecycleOwner

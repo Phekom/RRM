@@ -21,14 +21,14 @@ interface SectionPointDao {
     fun checkSectionExists(sectionId: Int, projectId: String?, jobId: String?): Boolean
 
     @Query("INSERT INTO SECTION_POINT_TABLE (direction, linearId ,pointLocation,sectionId ,projectId ,  jobId ) VALUES (:direction ,:linearId ,:pointLocation  ,:sectionId ,:projectId ,:jobId)")
-    fun insertSection(
+    suspend fun insertSection(
         direction: String,
         linearId: String,
         pointLocation: Double,
         sectionId: Int,
         projectId: String?,
         jobId: String?
-    )
+    ): Long
 
     @Query("SELECT * FROM SECTION_POINT_TABLE WHERE  projectId = :projectId")
     suspend fun getPointSectionData(projectId: String): SectionPointDTO

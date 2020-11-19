@@ -10,9 +10,11 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.custom.results.XIError
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.results.XISuccess
@@ -61,18 +63,31 @@ class MeasureViewModel(
 
     val estimateMeasureItem: MutableLiveData<EstimateMeasureItem> = MutableLiveData()
 
-    val workflowMoveResponse: MutableLiveData<XIResult<String>> =
-        measureCreationDataRepository.workflowStatus
+    private lateinit var workflowStatus: MutableLiveData<XIEvent<XIResult<String>>>
+
+    val workflowState: MutableLiveData<XIResult<String>> = MutableLiveData()
 
     val backupJobId: MutableLiveData<String> = MutableLiveData()
 
+    val superJob = SupervisorJob()
+
+    val mainContext = (Job(superJob) + Dispatchers.Main + uncaughtExceptionHandler)
+    val ioContext = (Job(superJob) + Dispatchers.IO + uncaughtExceptionHandler)
+
     init {
         viewModelScope.launch(viewModelContext) {
-
-            launch {
+            workflowStatus = measureCreationDataRepository.workflowStatus
+            launch(mainContext) {
                 galleryMeasure.observeForever {
                     viewModelScope.launch(job + Dispatchers.Main + uncaughtExceptionHandler) {
                         generateGallery(it)
+                    }
+                }
+            }
+            launch(mainContext) {
+                workflowStatus.observeForever{event ->
+                    event?.getContentIfNotHandled()?.let {
+                        workflowState.postValue(it)
                     }
                 }
             }
@@ -164,10 +179,11 @@ class MeasureViewModel(
 
     suspend fun getJobMeasureForActivityId(
         activityId: Int,
-        activityId2: Int
+        activityId2: Int,
+        activityId3: Int
     ): LiveData<List<JobItemEstimateDTO>> {
         return withContext(Dispatchers.IO + uncaughtExceptionHandler) {
-            measureCreationDataRepository.getJobMeasureForActivityId(activityId, activityId2)
+            measureCreationDataRepository.getJobMeasureForActivityId(activityId, activityId2, activityId3)
         }
     }
 
@@ -234,7 +250,7 @@ class MeasureViewModel(
                 itemMeasureJob
             )
         } catch (e: Exception) {
-            workflowMoveResponse.postValue(XIError(e, e.message!!))
+            workflowState.postValue(XIError(e, e.message!!))
         }
     }
 
@@ -341,5 +357,18 @@ class MeasureViewModel(
 
     companion object {
         const val galleryError = "Failed to retrieve itemMeasure for Gallery"
+    }
+
+    /**
+     * This method will be called when this ViewModel is no longer used and will be destroyed.
+     *
+     *
+     * It is useful when ViewModel observes some data and you need to clear this subscription to
+     * prevent a leak of this ViewModel.
+     */
+    override fun onCleared() {
+        workflowStatus = MutableLiveData()
+        superJob.cancelChildren()
+        super.onCleared()
     }
 }

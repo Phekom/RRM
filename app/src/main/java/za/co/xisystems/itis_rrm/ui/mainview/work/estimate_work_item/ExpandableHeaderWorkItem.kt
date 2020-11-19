@@ -15,15 +15,14 @@ import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModel
 import za.co.xisystems.itis_rrm.utils.Coroutines
 
 class ExpandableHeaderWorkItem(
-    activity: FragmentActivity?,
+    private var activity: FragmentActivity?,
     workItems: JobDTO,
     workViewModel: WorkViewModel
 ) : HeaderItem(null, workItems, workViewModel), ExpandableItem {
 
     private var clickListener: ((ExpandableHeaderWorkItem) -> Unit)? = null
-
+    var onExpandListener: ((ExpandableGroup) -> Unit)? = null
     private lateinit var expandableGroup: ExpandableGroup
-    private var activity = activity
     override fun bind(viewHolder: GroupieViewHolder, position: Int) {
         super.bind(viewHolder, position)
 

@@ -67,7 +67,7 @@ open class CardMeasureItem(
 
             val photoPaths = measureViewModel.getJobMeasureItemsPhotoPath(itemMeasureId)
 
-            if (photoPaths.isNotEmpty()) {
+            if (!photoPaths.isNullOrEmpty()) {
                 val measurePhoto = photoPaths[0]
 
                 GlideApp.with(this.containerView)

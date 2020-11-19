@@ -9,12 +9,15 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenStarted
 import androidx.navigation.Navigation
+import java.util.ArrayList
+import java.util.Calendar
 import kotlinx.android.synthetic.main.fragment_createjob.*
 import kotlinx.coroutines.launch
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
 import timber.log.Timber
+import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
@@ -41,8 +44,6 @@ import za.co.xisystems.itis_rrm.utils.DateUtil
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import za.co.xisystems.itis_rrm.utils.hide
 import za.co.xisystems.itis_rrm.utils.show
-import java.util.ArrayList
-import java.util.Calendar
 
 /**
  * Created by Francis Mahlava on 2019/10/18.
@@ -143,7 +144,7 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
                 R.id.selectContractProjectContinueButton -> {
                     val description = descriptionEditText.text!!.toString().trim { it <= ' ' }
                     if (description.isEmpty()) {
-                        toast("Please Enter Description")
+                        motionToast("Please Enter Description", MotionToast.TOAST_WARNING)
                         descriptionEditText.startAnimation(shake)
                         //                            return
                     } else {
@@ -163,7 +164,12 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
             setContract()
         } catch (t: Throwable) {
             val contractErr = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
-            XIErrorHandler.crashGuard(this.requireView(), contractErr, refreshAction = { retryContracts() })
+            XIErrorHandler.crashGuard(
+                fragment = this,
+                view = this.requireView(),
+                throwable = contractErr,
+                refreshAction = { retryContracts() }
+            )
         }
     }
 
@@ -247,7 +253,7 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
 
         newJob = createdJob
 
-        toast(createdJob.JobId)
+        motionToast("New job created", MotionToast.TOAST_SUCCESS)
         return createdJob
     }
 
@@ -312,7 +318,7 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
             }
         } catch (t: Throwable) {
             val contractErr = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
-            XIErrorHandler.crashGuard(this.requireView(), contractErr, refreshAction = { retryContracts() })
+            XIErrorHandler.crashGuard(this, this.requireView(), contractErr, refreshAction = { retryContracts() })
         } finally {
             data_loading.hide()
         }

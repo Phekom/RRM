@@ -1,11 +1,10 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="nav_header_title">Android Studio</string>
     <string name="nav_header_subtitle">android.studio@android.com</string>
     <string name="nav_header_desc">Navigation header</string>
     <string name="action_settings">Settings</string>
-    <!--    <string name="next">Next</string>-->
     <string name="prev">Prev</string>
 
     <!-- Note that the DATABASE_NAME and DATABASE_VERSION have been set within:
@@ -42,9 +41,9 @@
     <string name="rrm_activity_sections_refresh">RrmActivitySectionsRefresh</string>
     <string name="get_route_section_point">GetRouteSectionPoint</string>
     <string name="working_offline">Note: You are currently working Offline. Co-Ordinates saved.</string>
-    <string name="no_section_for_project">The picture falls outside the range of the project section.</string>
+    <string name="no_section_for_project">Picture falls outside of the project section.</string>
     <string name="no_section_for_project_item">We could not find the SECTION for the ITEM:</string>
-    <string name="photo_from_other_section">Please ensure that the Photo you are taking of the item is from the same section.</string>
+    <string name="photo_from_other_section">Ensure that the Photo you are taking of the item is from the same section.</string>
     <string name="photo_from_other_section_item">seems to be from a different section.</string>
     <string name="effective_roles_refresh_end_point">EffectiveRolesRefresh</string>
     <string name="get_rrm_job_end_point">GetRRMJob</string>
@@ -82,19 +81,19 @@
     <string name="app_label">Maintenance</string>
 
     <string name="approve_measurement_item">Approve Measurement Item</string>
-    <string name="approve_submitted_measurement">"Approve Submitted Measurement "</string>
+    <string name="approve_submitted_measurement">Approve Submitted Measurement</string>
     <string name="approving_measurements">Approving measurements</string>
-    <string name="are_you_sure_you_want_to_request_correction">Are you sure you want to Request Correction for this Job?</string>
-    <string name="are_you_sure_you_want_to_decline">Are you sure you want to Decline This Job?</string>
-    <string name="are_you_sure_you_want_to_decline2">Are you sure you want to Decline These Measurements?</string>
-    <string name="are_you_sure_you_want_to_correct">Are you sure you want to Correct These Measurements?</string>
-    <string name="are_you_sure_you_want_to_correct_esti">Are you sure you want to Correct These Estimates?</string>
-    <string name="are_you_sure_you_want_to_approve">Are you sure you want to Approve This Job?</string>
-    <string name="are_you_sure_you_want_to_approve2">Are you sure you want to Approve These Measurements?</string>
-    <string name="are_you_sure_you_want_to_exit">Are you sure you want to exit?</string>
-    <string name="are_you_sure_you_want_to_save">Are you sure you want to save this Job?</string>
-    <string name="are_you_sure_you_want_to_logout">Are you sure you want to logout?</string>
-    <string name="are_you_sure_you_want_to_mark_this_as_done">Are you sure you want to mark this as Done?</string>
+    <string name="are_you_sure_you_want_to_request_correction">Request Correction for this Job?</string>
+    <string name="are_you_sure_you_want_to_decline">Decline this job?</string>
+    <string name="are_you_sure_you_want_to_decline2">Decline these measurements?</string>
+    <string name="are_you_sure_you_want_to_correct">Correct these Measurements?</string>
+    <string name="are_you_sure_you_want_to_correct_esti">Correct these estimates?</string>
+    <string name="are_you_sure_you_want_to_approve">Approve this job?</string>
+    <string name="are_you_sure_you_want_to_approve2">Approve these measurements?</string>
+    <string name="are_you_sure_you_want_to_exit">Exit?</string>
+    <string name="are_you_sure_you_want_to_save">Save this Job?</string>
+    <string name="are_you_sure_you_want_to_logout">Logout?</string>
+    <string name="are_you_sure_you_want_to_mark_this_as_done">Mark this as done?</string>
     <string name="b_uppercase" />
     <string name="back">Done</string>
     <string name="building_googleapiclient">Building GoogleApiClient</string>
@@ -137,7 +136,6 @@
     <string name="correct">Correct</string>
     <string name="correct_estimate">Correct Estimates</string>
     <string name="correct_measure">Correct Measurements</string>
-    <!--    <string name="correct">Correct</string>-->
     <string name="decline_measurement_item">Decline Measure Item</string>
     <string name="declining_measurements">Declining measurements</string>
     <string name="delete">Delete</string>
@@ -194,7 +192,9 @@
     <string name="item_description">Item Description</string>
     <string name="itis_in_capitals">ITIS</string>
     <string name="job_approved">Job Approved</string>
+    <string name="job_no_approved">Job %1$s Approved</string>
     <string name="job_declined">Job Declined</string>
+    <string name="job_no_declined">Job %1$s Declined</string>
     <string name="job_description">Job Description</string>
     <string name="job_item_estimate">"Job Item Estimate"</string>
     <string name="job_item_measurements_submitted">Job Item Measurement/s submitted</string>
@@ -223,7 +223,7 @@
     <string name="maintenance">Maintenance</string>
     <string name="measurement">Measurement</string>
     <string name="measurement_approval">Measurement Approval</string>
-    <string name="measurement_approved">Measurement approved</string>
+    <string name="measurement_approved">Measurement(s) approved</string>
     <string name="middle">Middle</string>
     <string name="move_through_workflow">Move Through Workflow</string>
     <string name="moved_through_workflow_successfully">Moved through Workflow successfully</string>
@@ -431,7 +431,7 @@
     <string name="mobile_data_not_connected">MOBILE DATA NOT CONNECTED.</string>
     <string name="mobile_data_connected">MOBILE DATA CONNECTED.</string>
     <string name="sync_now">SYNC NOW</string>
-    <string name="cancel_upper_case">CANCEL</string>
+    <string name="cancel_upper_case" tools:ignore="ButtonCase">CANCEL</string>
     <string name="unauthorized">Unauthorized</string>
     <string name="update_server">Update Server</string>
     <string name="retrieving_job">Retrieving job.</string>
@@ -533,7 +533,6 @@
     <string name="label_area_m2">Area(m²): </string>
     <string name="label_volume_m3">Volume(m³): </string>
     <string name="todo">TODO</string>
-    <string name="welcome">Welcome</string>
     <string name="label_amount">Amount: </string>
     <string name="label_length_m">Length(m): </string>
     <string name="warning_estimate_incomplete">Incomplete estimate …</string>
@@ -573,5 +572,30 @@
     <string name="comment_placeholder">No comment</string>
     <string name="route_section_badge">( %1$s/0%2$s )</string>
     <string name="no_data">no data returned</string>
+    <string name="work_complete">Work completed</string>
+    <string name="work_declined">Work declined</string>
+    <string name="measurement_declined">Measurement declined</string>
+    <string name="hint_confirm_new_pin_code">Confirm New Pin Code</string>
+    <string name="server">Server</string>
+    <string name="demo">Demo</string>
+    <string name="sanral_logo">sanral logo</string>
+    <string name="enter_new_pin_code">Enter New Pin Code</string>
+    <string name="enter_old_pin_code">Enter Old Pin Code</string>
+    <string name="version">Version</string>
+    <string name="contract_hint">Contract Hint</string>
+    <string name="plus_to_add_project_items">Press + to add project items</string>
+    <string name="pricing_hint">Pricing Hint</string>
+    <string name="estimated_start_date">Estimated Start Date:</string>
+    <string name="click_to_select_date">(Click to select date)</string>
+    <string name="estimated_due_date">Estimated Due Date:</string>
+    <string name="add_item">add item</string>
+    <string name="pin_light">pin light</string>
+    <string name="delete_button">delete button</string>
+    <string name="user_name">USER NAME</string>
+    <string name="no_information">No information.</string>
+    <string name="user_icon">user icon</string>
+    <string name="welcome">Welcome </string>
+    <string name="location_service_indicator">Location Service Indicator</string>
+    <string name="needs_dbsynch">No RRM data detected. Please synchronise the local database for contract and project information.</string>
 
 </resources>

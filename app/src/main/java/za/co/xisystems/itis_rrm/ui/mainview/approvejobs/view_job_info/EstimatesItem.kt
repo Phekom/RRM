@@ -24,7 +24,6 @@ import za.co.xisystems.itis_rrm.utils.GlideApp
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.Util.nanCheck
 import za.co.xisystems.itis_rrm.utils.Util.round
-import za.co.xisystems.itis_rrm.utils.toast
 import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
 import java.io.File
 
@@ -95,7 +94,7 @@ class EstimatesItem(
         val quantityEntry = textEntryView.findViewById<View>(R.id.new_qty) as EditText
         val totalEntry = textEntryView.findViewById<View>(R.id.new_total) as TextView
         val rate = textEntryView.findViewById<View>(R.id.current_rate) as TextView
-
+        var updated = false
         val alert = AlertDialog.Builder(activity) // ,android.R.style.Theme_DeviceDefault_Dialog
         alert.setView(textEntryView)
         alert.setTitle(R.string.correct_estimate)
@@ -116,6 +115,7 @@ class EstimatesItem(
 
             quantityEntry.addTextChangedListener(object : AbstractTextWatcher() {
                 override fun onTextChanged(text: String) {
+                    updated = true
                     when {
                         nanCheck(text) || text.toDouble() == 0.0 -> {
                             cost = 0.0
@@ -124,13 +124,12 @@ class EstimatesItem(
                         text.length > 9 -> {
                             quantityEntry.text =
                                 Editable.Factory.getInstance().newEditable("$defaultQty")
-                            activity.toast("You Have exceeded the amount of Quantity allowed")
+                            activity.motionToast("You Have exceeded the amount of Quantity allowed", MotionToast.TOAST_WARNING)
                         }
                         else -> {
                             val qty = text.toDouble()
-                            cost = tenderRate * qty
-                            val updatedCost = cost.round(2).toString()
-                            totalEntry.text = updatedCost
+                            cost = (tenderRate * qty).round(2)
+                            totalEntry.text = activity.getString(R.string.pair, "R", cost.toString())
                         }
                     }
                 }
@@ -140,13 +139,17 @@ class EstimatesItem(
         // Yes button
         alert.setPositiveButton(
             R.string.save
-        ) { dialog, which ->
-            validateUpdateQty(activity, quantityEntry, totalEntry, jobItemEstimateDTO)
+        ) { dialog, _ ->
+            if (updated) {
+                validateUpdateQty(activity, quantityEntry, totalEntry, jobItemEstimateDTO)
+            } else {
+                dialog.dismiss()
+            }
         }
         // No button
         alert.setNegativeButton(
             R.string.cancel
-        ) { dialog, which ->
+        ) { dialog, _ ->
             // Do nothing but close dialog
             dialog.dismiss()
         }
@@ -169,18 +172,18 @@ class EstimatesItem(
                 } else {
                     val updated = approveViewModel.upDateEstimate(
                         quantityEntry.text.toString(),
-                        totalEntry.text.toString(),
+                        totalEntry.text.split(" ", ignoreCase = true)[1],
                         jobItemEstimateDTO.estimateId
                     )
                     if (updated.isBlank()) {
-                        activity.motionToast("Data Updated was Successful", MotionToast.TOAST_SUCCESS)
+                        activity.motionToast("Data updated", MotionToast.TOAST_SUCCESS)
                     } else {
-                        activity.motionToast("Data Updated was Unsuccessful", MotionToast.TOAST_ERROR)
+                        activity.motionToast("Update failed", MotionToast.TOAST_ERROR)
                     }
                 }
             }
         } else {
-            activity.toast("No connection detected.")
+            activity.motionToast("No connection detected.", MotionToast.TOAST_ERROR)
         }
     }
 

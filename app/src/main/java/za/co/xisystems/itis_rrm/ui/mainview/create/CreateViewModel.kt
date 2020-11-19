@@ -4,6 +4,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import java.util.ArrayList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.data.localDB.entities.ContractDTO
@@ -20,7 +21,6 @@ import za.co.xisystems.itis_rrm.data.repositories.JobCreationDataRepository
 import za.co.xisystems.itis_rrm.ui.mainview.create.select_item.SectionProj_Item
 import za.co.xisystems.itis_rrm.utils.JobUtils
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
-import java.util.ArrayList
 
 /**
  * Created by Francis Mahlava on 2019/10/18.
@@ -65,12 +65,12 @@ class CreateViewModel(
         loggedUser.value = inLoggedUser
     }
 
-    val description = MutableLiveData<String>()
+    val description: MutableLiveData<String> = MutableLiveData()
     fun setDescription(desc: String) {
         description.value = desc
     }
 
-    val newJob = MutableLiveData<JobDTO>()
+    val newJob: MutableLiveData<JobDTO?> = MutableLiveData()
     fun createNewJob(job: JobDTO) {
         newJob.value = job
     }
@@ -105,7 +105,7 @@ class CreateViewModel(
         sectionProjectItem.value = inSectionProjectItem
     }
 
-    val jobItem = MutableLiveData<JobDTO>()
+    val jobItem = MutableLiveData<JobDTO?>()
     suspend fun getJob(inJobId: String) {
         jobItem.value = jobCreationDataRepository.getUpdatedJob(jobId = inJobId)
     }
@@ -205,7 +205,7 @@ class CreateViewModel(
         sectionId: Int,
         linearId: String?,
         projectId: String?
-    ): LiveData<String?> {
+    ): String? {
         return withContext(Dispatchers.IO) {
             jobCreationDataRepository.getSectionByRouteSectionProject(
                 sectionId,
@@ -227,8 +227,7 @@ class CreateViewModel(
         useR: String,
         projectId: String?,
         jobId: String
-    ): LiveData<String?> {
-
+    ): String? {
         return withContext(Dispatchers.IO) {
             jobCreationDataRepository.getRouteSectionPoint(
                 latitude,

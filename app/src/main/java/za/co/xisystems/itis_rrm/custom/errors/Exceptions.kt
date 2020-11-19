@@ -43,3 +43,13 @@ class NoResponseException(message: String) : Exception(message)
  * Being unable to contact the mobile services platform fires this error
  */
 class ServiceHostUnreachableException(message: String) : IOException(message)
+
+/**
+ * Being unable to read or write to the local datastore fires this exception
+ */
+class LocalDataException(message: String) : Exception(message)
+
+/**
+ * Mostly harmless, but still annoying
+ */
+class RecoverableException(message: String): Throwable(message)

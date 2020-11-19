@@ -15,6 +15,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
+import java.util.ArrayList
+import java.util.concurrent.CancellationException
 import kotlinx.android.synthetic.main.fragment_select_item.*
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.cancel
@@ -38,8 +40,6 @@ import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper.setSpinner
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.Coroutines
-import java.util.ArrayList
-import java.util.concurrent.CancellationException
 
 /**
  * Created by Francis Mahlava on 2019/12/29.
@@ -144,19 +144,14 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
 
     private fun setItemsBySections(projectId: String) {
         uiScope.launch(context = uiScope.coroutineContext) {
-            val dialog =
-                setDataProgressDialog(
-                    requireActivity(),
-                    getString(R.string.data_loading_please_wait)
-                )
 
             // SectionItems filtered by projectId
             val sectionItems = createViewModel.getSectionItemsForProject(projectId)
-            dialog.show()
+            data_loading2.visibility = View.VISIBLE
 
             sectionItems.observe(viewLifecycleOwner, { sectionData ->
                 val sectionSelections = arrayOfNulls<String?>(sectionData.size)
-                dialog.dismiss()
+                data_loading2.visibility = View.GONE
                 for (item in sectionData.indices) {
                     sectionSelections[item] = sectionData[item].description
                 }
@@ -178,7 +173,7 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
                             }
                         })
 
-                    sectionItemSpinner.setOnTouchListener { v, event ->
+                    sectionItemSpinner.setOnTouchListener { _, _ ->
                         animate = true
                         false
                     }

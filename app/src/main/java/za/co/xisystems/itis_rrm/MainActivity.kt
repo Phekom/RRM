@@ -89,6 +89,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         RaygunClient.init(application)
         RaygunClient.enableCrashReporting()
 
+        // Set MotionToast to use Sanral colours
+        MotionToast.setErrorColor(R.color.sanral_dark_red)
+        MotionToast.setSuccessColor(R.color.sanral_dark_green)
+        MotionToast.setWarningColor(R.color.colorPrimaryYellow)
+        MotionToast.setInfoColor(R.color.dark_bg_color)
+
         this.mainActivityViewModel = this.run {
             ViewModelProvider(this, factory).get(MainActivityViewModel::class.java)
         }
@@ -201,7 +207,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.main, menu)
+        val item = menu.findItem(R.id.action_settings)
+
+        item.isVisible = true
+
         val searchItem = menu.findItem(R.id.action_search)
+        searchItem.isVisible = false
         val searchView = searchItem.actionView as SearchView
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
 
@@ -314,7 +325,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     private fun toastMessage(message: String) {
-        ToastUtils().toastLong(applicationContext, message)
+        ToastUtils().toastShort(applicationContext, message)
     }
 
     private fun toastMessage(
@@ -339,9 +350,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private fun getUserRoles() {
         Coroutines.main {
             // Initially disable all menu options
-                val menuNav = navigationView.menu
+            val menuNav = navigationView.menu
 
-                val navCreate = menuNav.findItem(R.id.nav_create)
+            val navCreate = menuNav.findItem(R.id.nav_create)
             navCreate.isEnabled = false
 
             val navUnsubmitted = menuNav.findItem(R.id.nav_unSubmitted)

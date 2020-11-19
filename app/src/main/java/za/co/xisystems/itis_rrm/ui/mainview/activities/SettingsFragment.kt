@@ -18,7 +18,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         val myTheme =
             findPreference<SwitchPreferenceCompat>(SettingsActivity.HOME)
         myTheme!!.onPreferenceChangeListener =
-            Preference.OnPreferenceChangeListener { preference, newValue ->
+            Preference.OnPreferenceChangeListener { _, newValue ->
                 if (newValue == !isChecked) {
 
                     (activity as SettingsActivity?)?.delegate?.localNightMode =

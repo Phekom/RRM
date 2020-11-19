@@ -19,7 +19,7 @@ val uncaughtExceptionHandler = CoroutineExceptionHandler { _, exception ->
         println("$exception caught!")
     }
 
-    Timber.e(exception, exception.localizedMessage)
+    Timber.e(exception, exception.message)
     throw exception
 }
 

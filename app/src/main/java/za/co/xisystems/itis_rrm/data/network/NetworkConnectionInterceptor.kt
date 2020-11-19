@@ -14,7 +14,7 @@ import za.co.xisystems.itis_rrm.utils.ServiceUtil
 class NetworkConnectionInterceptor(
     context: Context
 ) : Interceptor {
-    private val testConnection = "8.8.8.8"
+    private val testConnection = "dns.google.com"
     private val serviceURL = "itisqa.nra.co.za"
     private val applicationContext = context.applicationContext
 

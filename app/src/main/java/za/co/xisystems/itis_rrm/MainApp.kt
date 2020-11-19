@@ -21,7 +21,6 @@ import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.NetworkConnectionInterceptor
 import za.co.xisystems.itis_rrm.data.preferences.PreferenceProvider
-import za.co.xisystems.itis_rrm.data.repositories.HomeRepository
 import za.co.xisystems.itis_rrm.data.repositories.JobApprovalDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.JobCreationDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.MeasureApprovalDataRepository
@@ -44,6 +43,7 @@ import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.home.HomeViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModelFactory
+
 /**
  * Created by Francis Mahlava on 2019/10/23.
  */
@@ -61,10 +61,9 @@ open class MainApp : Application(), KodeinAware {
 
         bind() from singleton { UserRepository(instance(), instance()) }
 
-        bind() from singleton { HomeRepository(instance(), instance()) }
-        bind() from singleton { OfflineDataRepository(instance(), instance(), instance()) }
+        bind() from singleton { OfflineDataRepository(instance(), instance()) }
 
-        bind() from singleton { JobCreationDataRepository(instance(), instance(), instance()) }
+        bind() from singleton { JobCreationDataRepository(instance(), instance()) }
         bind() from singleton { JobApprovalDataRepository(instance(), instance()) }
         bind() from singleton { WorkDataRepository(instance(), instance()) }
         bind() from singleton { MeasureCreationDataRepository(instance(), instance()) }
@@ -85,7 +84,14 @@ open class MainApp : Application(), KodeinAware {
                 instance()
             )
         }
-        bind() from provider { ApproveJobsViewModelFactory(instance(), instance()) }
+        bind() from provider {
+            ApproveJobsViewModelFactory(
+                this@MainApp,
+                instance(),
+                instance()
+            )
+        }
+
         bind() from provider { MeasureViewModelFactory(this@MainApp, instance(), instance()) }
         bind() from provider { UnSubmittedViewModelFactory(instance()) }
         bind() from provider { WorkViewModelFactory(instance(), instance()) }

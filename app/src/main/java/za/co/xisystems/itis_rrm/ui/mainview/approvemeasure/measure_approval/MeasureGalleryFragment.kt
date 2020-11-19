@@ -73,7 +73,7 @@ class MeasureGalleryFragment : BaseFragment(R.layout.fragment_measure_gallery), 
         }
     }
 
-    fun handleResponse(response: XIResult<MeasureGalleryUIState>) {
+    private fun handleResponse(response: XIResult<MeasureGalleryUIState>) {
         when (response) {
             is XISuccess -> {
                 val uiState = response.data
@@ -91,6 +91,7 @@ class MeasureGalleryFragment : BaseFragment(R.layout.fragment_measure_gallery), 
             }
             is XIError ->
                 handleError(
+                    fragment = this@MeasureGalleryFragment,
                     view = this@MeasureGalleryFragment.requireView(),
                     throwable = response,
                     shouldToast = false,

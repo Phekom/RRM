@@ -51,7 +51,7 @@ interface ProjectSectionDao {
         section: String,
         linearId: String?,
         projectId: String?
-    ): LiveData<String?>
+    ): String?
 //    fun getSectionByRouteSectionProject(linearId: String, sectionId: Int, direction: String, projectId: String?)
 
     @Query("SELECT * FROM PROJECT_SECTION_TABLE WHERE sectionId LIKE :sectionId")

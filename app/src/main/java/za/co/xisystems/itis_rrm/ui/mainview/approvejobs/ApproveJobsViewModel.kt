@@ -1,24 +1,59 @@
 package za.co.xisystems.itis_rrm.ui.mainview.approvejobs
 
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.Transformations
+import androidx.lifecycle.distinctUntilChanged
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancelChildren
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
+import za.co.xisystems.itis_rrm.custom.events.XIEvent
+import za.co.xisystems.itis_rrm.custom.results.XIError
+import za.co.xisystems.itis_rrm.custom.results.XIProgress
+import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.data.repositories.JobApprovalDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.approve_job_item.ApproveJobItem
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
+import za.co.xisystems.itis_rrm.utils.uncaughtExceptionHandler
 
 /**
  * Created by Francis Mahlava on 03,October,2019
  */
 class ApproveJobsViewModel(
+    application: Application,
     private val jobApprovalDataRepository: JobApprovalDataRepository,
     private val offlineDataRepository: OfflineDataRepository
-) : ViewModel() {
+) : AndroidViewModel(application) {
+
+    private val superJob = SupervisorJob()
+    private lateinit var workflowStatus: LiveData<XIEvent<XIResult<String>>>
+
+    val mainContext = Job(superJob) + Dispatchers.Main + uncaughtExceptionHandler
+    val ioContext = Job(superJob) + Dispatchers.Main + uncaughtExceptionHandler
+    var workflowState: MutableLiveData<XIResult<String>>? = MutableLiveData()
+
+    init {
+        viewModelScope.launch(Job(superJob) + uncaughtExceptionHandler + Dispatchers.Main.immediate) {
+
+            workflowStatus = jobApprovalDataRepository.workflowStatus.distinctUntilChanged()
+
+            workflowState = Transformations.map(workflowStatus){ it ->
+                it?.getContentIfNotHandled()?.let {
+                    it
+                }
+            } as? MutableLiveData<XIResult<String>>
+        }
+    }
 
     val user by lazyDeferred {
         jobApprovalDataRepository.getUser()
@@ -58,24 +93,35 @@ class ApproveJobsViewModel(
         }
     }
 
-    val jobApprovalItem = MutableLiveData<ApproveJobItem>()
+    val jobApprovalItem : MutableLiveData<ApproveJobItem> = MutableLiveData()
     fun setJobForApproval(jobapproval6: ApproveJobItem) {
-        jobApprovalItem.postValue(jobapproval6)
+        jobApprovalItem.value = jobapproval6
     }
 
     suspend fun processWorkflowMove(
         userId: String,
         trackRouteId: String,
         description: String?,
-        direction: Int
-    ): String {
-        return withContext(Dispatchers.IO) {
-            jobApprovalDataRepository.processWorkflowMove(
-                userId,
-                trackRouteId,
-                description,
-                direction
-            )
+        direction: Int,
+        jobId: String
+    ) = viewModelScope.launch(viewModelScope.coroutineContext) {
+        withContext(Dispatchers.IO) {
+            try {
+                workflowState?.postValue(XIProgress(true))
+
+                jobApprovalDataRepository.processWorkflowMove(
+                    userId,
+                    jobId,
+                    trackRouteId,
+                    description,
+                    direction
+                )
+            } catch (t: Throwable) {
+                val message = "Failed to process workflow: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
+                workflowState?.postValue(XIError(t, message))
+            } finally {
+                workflowState?.postValue(XIProgress(false))
+            }
         }
     }
 
@@ -86,7 +132,7 @@ class ApproveJobsViewModel(
 //                , measureComplete,
 //                estWorksComplete,
 //                jobApproved
-            )
+            ).distinctUntilChanged()
         }
     }
 
@@ -104,19 +150,19 @@ class ApproveJobsViewModel(
 
     suspend fun getJobEstimationItemsPhotoStartPath(estimateId: String): String {
         return withContext(Dispatchers.IO) {
-            jobApprovalDataRepository.getJobEstimationItemsPhotoStartPath(estimateId)
+        jobApprovalDataRepository.getJobEstimationItemsPhotoStartPath(estimateId)
         }
     }
 
     suspend fun getJobEstimationItemsPhotoEndPath(estimateId: String): String {
         return withContext(Dispatchers.IO) {
-            jobApprovalDataRepository.getJobEstimationItemsPhotoEndPath(estimateId)
+        jobApprovalDataRepository.getJobEstimationItemsPhotoEndPath(estimateId)
         }
     }
 
     suspend fun getDescForProjectItemId(projectItemId: String): String {
         return withContext(Dispatchers.IO) {
-            jobApprovalDataRepository.getProjectItemDescription(projectItemId)
+        jobApprovalDataRepository.getProjectItemDescription(projectItemId)
         }
     }
 
@@ -125,7 +171,7 @@ class ApproveJobsViewModel(
         new_total: String,
         estimateId: String
     ): String {
-        return withContext(Dispatchers.IO) {
+        return withContext(Dispatchers.IO){
             jobApprovalDataRepository.upDateEstimate(new_quantity, new_total, estimateId)
         }
     }
@@ -140,5 +186,19 @@ class ApproveJobsViewModel(
         return withContext(Dispatchers.IO) {
             jobApprovalDataRepository.getLineRateForEstimationItemId(estimateId)
         }
+    }
+
+    /**
+     * This method will be called when this ViewModel is no longer used and will be destroyed.
+     *
+     *
+     * It is useful when ViewModel observes some data and you need to clear this subscription to
+     * prevent a leak of this ViewModel.
+     */
+    override fun onCleared() {
+        superJob.cancelChildren()
+        workflowState = MutableLiveData()
+        workflowStatus = MutableLiveData()
+        super.onCleared()
     }
 }
