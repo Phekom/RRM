@@ -66,7 +66,9 @@ class MeasurementsItem(
                         .navigate(R.id.action_measureApprovalFragment_to_measureGalleryFragment)
                 }
             }
-            updateMeasureImage()
+            Coroutines.main {
+                updateMeasureImage()
+            }
         }
     }
 
@@ -97,16 +99,16 @@ class MeasurementsItem(
             if (ServiceUtil.isNetworkAvailable(activity.applicationContext)) {
                 Coroutines.main {
                     if (editQuantity.text.toString() == "" || nanCheck(editQuantity.text.toString())) {
-                        activity.motionToast("Please Enter a valid Quantity", MotionToast.TOAST_ERROR)
+                        activity.motionToast("Please Enter a valid Quantity", MotionToast.TOAST_WARNING)
                     } else {
                         val updated = approveViewModel.upDateMeasure(
                             editQuantity.text.toString(),
                             jobItemMeasureDTO.itemMeasureId
                         )
                         if (updated.isBlank()) {
-                            activity.motionToast("Data Updated was Successful", MotionToast.TOAST_SUCCESS)
+                            activity.motionToast("Data Updated", MotionToast.TOAST_SUCCESS)
                         } else {
-                            activity.motionToast("Data Updated Error!!  Server Not Reachable", MotionToast.TOAST_ERROR)
+                            activity.motionToast("Error on update: $updated.", MotionToast.TOAST_ERROR)
                         }
                     }
                 }
@@ -136,7 +138,7 @@ class MeasurementsItem(
 
     override fun getLayout() = R.layout.measurements_item
 
-    private fun GroupieViewHolder.updateMeasureImage() {
+    private suspend fun GroupieViewHolder.updateMeasureImage() {
         Coroutines.main {
 
             val photoPaths = approveViewModel.getJobMeasureItemsPhotoPath(jobItemMeasureDTO.itemMeasureId!!)

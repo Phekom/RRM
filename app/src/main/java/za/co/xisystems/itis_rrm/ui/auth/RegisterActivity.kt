@@ -4,6 +4,7 @@ package za.co.xisystems.itis_rrm.ui.auth
  * Updated by Shaun McDonald - 2020/04/15
  */
 import android.Manifest
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -14,7 +15,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.common.ConnectionResult
-import com.google.android.gms.common.GooglePlayServicesUtil
+import com.google.android.gms.common.GoogleApiAvailability
 import kotlinx.android.synthetic.main.activity_register.*
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.kodein
@@ -104,7 +105,7 @@ class RegisterActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnabl
         builder.setMessage(R.string.set_pin_msg)
         builder.setCancelable(false)
         // Yes button
-        builder.setPositiveButton(R.string.ok) { dialog, which ->
+        builder.setPositiveButton(R.string.ok) { _, _ ->
             if (ServiceUtil.isNetworkAvailable(this.applicationContext)) {
                 Intent(this, RegisterPinActivity::class.java).also { pin ->
                     pin.flags =
@@ -168,16 +169,20 @@ class RegisterActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnabl
 
     override fun onStart() {
         super.onStart()
-        val resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this)
+        googlePlayServicesCheck(this)
+    }
+
+    fun googlePlayServicesCheck(activity: Activity) {
+        val resultCode = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(activity.applicationContext)
         if (resultCode != ConnectionResult.SUCCESS) { // This dialog will help the user update to the latest GooglePlayServices
             val dialog =
-                GooglePlayServicesUtil.getErrorDialog(resultCode, this, 0)
+                GoogleApiAvailability.getInstance().getErrorDialog(activity, resultCode, 0)
             dialog?.show()
         }
         if (PermissionController.checkPermissionsEnabled(applicationContext)) {
-//            googleApiClient!!.connect()
+            // googleApiClient!!.connect()
         } else {
-            PermissionController.startPermissionRequests(this)
+            PermissionController.startPermissionRequests(activity)
         }
     }
 

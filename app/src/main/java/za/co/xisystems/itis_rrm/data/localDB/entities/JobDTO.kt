@@ -126,7 +126,10 @@ class JobDTO(
 
     val ActivityId: Int,
 
-    val Is_synced: String?
+    val Is_synced: String?,
+
+    @SerializedName("Deleted")
+    var deleted: Int = 0
 
 //    @SerializedName("JobId")
 //    @PrimaryKey
@@ -243,7 +246,7 @@ class JobDTO(
     fun getJobEstimateIndexByItemId(itemId: String?): Int {
         if (itemId != null) for (i in JobItemEstimates!!.indices) {
             val currEstimate: JobItemEstimateDTO = JobItemEstimates?.get(i)!!
-            if (currEstimate.projectItemId != null) if (currEstimate.projectItemId.equals(
+            if (currEstimate.projectItemId != null && currEstimate.projectItemId.equals(
                     itemId
                 )
             ) {

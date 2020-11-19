@@ -1,7 +1,6 @@
 package za.co.xisystems.itis_rrm.utils
 
 import android.annotation.SuppressLint
-import android.annotation.TargetApi
 import android.content.Context
 import android.content.res.AssetFileDescriptor
 import android.graphics.Bitmap
@@ -15,6 +14,16 @@ import android.os.Environment
 import androidx.core.content.FileProvider
 import androidx.exifinterface.media.ExifInterface
 import androidx.fragment.app.Fragment
+import org.apache.sanselan.ImageReadException
+import org.apache.sanselan.ImageWriteException
+import org.apache.sanselan.Sanselan
+import org.apache.sanselan.common.IImageMetadata
+import org.apache.sanselan.formats.jpeg.JpegImageMetadata
+import org.apache.sanselan.formats.jpeg.exifRewrite.ExifRewriter
+import org.apache.sanselan.formats.tiff.write.TiffOutputSet
+import timber.log.Timber
+import za.co.xisystems.itis_rrm.BuildConfig
+import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileNotFoundException
@@ -28,16 +37,6 @@ import java.util.HashMap
 import java.util.Locale
 import java.util.UUID
 import kotlin.math.roundToLong
-import org.apache.sanselan.ImageReadException
-import org.apache.sanselan.ImageWriteException
-import org.apache.sanselan.Sanselan
-import org.apache.sanselan.common.IImageMetadata
-import org.apache.sanselan.formats.jpeg.JpegImageMetadata
-import org.apache.sanselan.formats.jpeg.exifRewrite.ExifRewriter
-import org.apache.sanselan.formats.tiff.write.TiffOutputSet
-import timber.log.Timber
-import za.co.xisystems.itis_rrm.BuildConfig
-import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 
 object PhotoUtil {
     const val FOLDER = "ITIS_RRM_Photos"
@@ -45,10 +44,6 @@ object PhotoUtil {
     @SuppressLint("SimpleDateFormat")
     private val ISO_8601_FORMAT: DateFormat =
         SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-
-    fun dateToString(date: Date): String {
-        return ISO_8601_FORMAT.format(date)
-    }
 
     fun getPhotoBitMapFromFile(
         context: Context,
@@ -63,11 +58,12 @@ object PhotoUtil {
         try {
             fileDescriptor =
                 selectedImage?.let { context.contentResolver.openAssetFileDescriptor(it, "r") }
-            if (fileDescriptor != null) bm = BitmapFactory.decodeFileDescriptor(
-                fileDescriptor.fileDescriptor,
-                null,
-                options
-            )
+            if (fileDescriptor != null)
+                bm = BitmapFactory.decodeFileDescriptor(
+                    fileDescriptor.fileDescriptor,
+                    null,
+                    options
+                )
         } catch (e: FileNotFoundException) {
             e.printStackTrace()
         } finally {
@@ -78,27 +74,6 @@ object PhotoUtil {
             }
         }
         return bm
-    }
-
-    @TargetApi(Build.VERSION_CODES.KITKAT)
-    fun getBitmapSize(bitmap: Bitmap): Int {
-        return bitmap.allocationByteCount / 1024
-    }
-
-    fun getRotationForImage(path: Uri): Int {
-        var rotation = 0
-        try {
-            val exif = ExifInterface(path.path!!)
-            rotation = exifToDegrees(
-                exif.getAttributeInt(
-                    ExifInterface.TAG_ORIENTATION,
-                    ExifInterface.ORIENTATION_NORMAL
-                )
-            )
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
-        return rotation
     }
 
     private fun exifToDegrees(exifOrientation: Int): Int {
@@ -116,29 +91,7 @@ object PhotoUtil {
         }
     }
 
-    fun createPhoto(fileName: String, photoByteArray: ByteArray?) {
-        val imagesFolder =
-            File(Environment.getExternalStorageDirectory(), FOLDER)
-        imagesFolder.mkdirs()
-        var out: FileOutputStream? = null
-        try {
-            out = FileOutputStream(imagesFolder.path + "/" + fileName)
-        } catch (e: FileNotFoundException) {
-            e.printStackTrace()
-        }
-        try {
-            if (out != null) {
-                out.write(photoByteArray)
-                out.close()
-            }
-        } catch (e: IOException) {
-            e.printStackTrace()
-        } catch (e: NullPointerException) {
-            e.printStackTrace()
-        }
-    }
-
-    fun cleanupDevice() {
+    fun cleanupDevice() = Coroutines.io {
 
         val presentTime: Long = (Date().time)
         File(
@@ -146,7 +99,7 @@ object PhotoUtil {
                 File.separator + FOLDER
         ).walkTopDown().forEach { file ->
             val diff = presentTime - file.lastModified()
-            if (diff >= ninetyDays && file.isFile) {
+            if (diff >= thirtyDays && file.isFile) {
                 Timber.d("${file.name} was deleted, it was $diff old.")
                 file.delete()
             } else {
@@ -155,7 +108,7 @@ object PhotoUtil {
         }
     }
 
-    private const val ninetyDays: Long = 7_776_000_000
+    private const val thirtyDays:Long = 2592000000
 
     fun photoExist(fileName: String): Boolean {
         val image =
@@ -300,7 +253,7 @@ object PhotoUtil {
     fun saveImageToInternalStorage(
         context: Context,
         imageUri: Uri
-    ): Map<String, String?>? {
+    ): Map<String, String>? {
         var scaledUri = imageUri
         return try {
             lateinit var scaledBitmap: Bitmap
@@ -318,7 +271,7 @@ object PhotoUtil {
                             if (index == -1) // google drive
                                 index = cursor.getColumnIndex("_display_name")
                             result = cursor.getString(index)
-                            scaledUri = if (result != null) Uri.parse(result) else return null
+                            scaledUri = if (!result.isBlank()) Uri.parse(result) else return null
                         }
                     } catch (e: Exception) {
                         Timber.e(e, "Ërror loading photo $scaledUri")
@@ -352,8 +305,11 @@ object PhotoUtil {
             //      inJustDecodeBounds set to false to load the actual bitmap
             options.inJustDecodeBounds = false
             //      this options allow android to claim the bitmap memory if it runs low on memory
+
+            // these aren't much use for decodeFile operations
             options.inPurgeable = true
             options.inInputShareable = true
+
             options.inTempStorage = ByteArray(16 * 1024)
             try { //          load the bitmap from its path
                 bmp = BitmapFactory.decodeFile(path, options)
@@ -510,7 +466,6 @@ object PhotoUtil {
     }
 
     fun deleteImageFile(
-        context: Context,
         imagePath: String?
     ): Boolean { // Get the file
         return if (imagePath != null) {
@@ -595,7 +550,7 @@ object PhotoUtil {
         }
     }
 
-    fun getUriFromPath(filePath: String): Uri? {
+    private fun getUriFromPath(filePath: String): Uri? {
         return try {
             val file = File(filePath)
             val uri = Uri.fromFile(file)

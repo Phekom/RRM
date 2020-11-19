@@ -52,7 +52,7 @@ class MainActivityViewModel(
         activityId3: Int
     ): LiveData<List<JobItemEstimateDTO>> {
         return withContext(Dispatchers.IO) {
-            offlineDataRepository.getJobMeasureForActivityId(activityId, activityId2)
+            offlineDataRepository.getJobMeasureForActivityId(activityId, activityId2, activityId3)
         }
     }
 

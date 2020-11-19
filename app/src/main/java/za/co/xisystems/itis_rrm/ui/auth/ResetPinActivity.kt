@@ -7,8 +7,8 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.res.ResourcesCompat
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GooglePlayServicesUtil
@@ -16,15 +16,16 @@ import kotlinx.android.synthetic.main.activity_register.*
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.kodein
 import org.kodein.di.generic.instance
+import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.databinding.ActivityResetPinBinding
+import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.hide
 import za.co.xisystems.itis_rrm.utils.hideKeyboard
 import za.co.xisystems.itis_rrm.utils.show
-import za.co.xisystems.itis_rrm.utils.snackbar
 import za.co.xisystems.itis_rrm.utils.toast
 
 class ResetPinActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnable {
@@ -34,7 +35,7 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnabl
     }
 
     override val kodein by kodein()
-    private val factory: AuthViewModelFactory by instance<AuthViewModelFactory>()
+    private val factory: AuthViewModelFactory by instance()
     private lateinit var viewModel: AuthViewModel
     private lateinit var appContext: Context
     private var permissions = arrayOf(
@@ -64,22 +65,46 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnabl
 
         Coroutines.main {
             val loggedInUser = viewModel.user.await()
-            loggedInUser.observe(this, Observer { user ->
+            loggedInUser.observe(this, { user ->
                 // Register the user
                 if (user != null) {
                     Coroutines.main {
-                        if (viewModel.enterOldPin != viewModel.confirmNewPin)
+
+                        if (viewModel.enterOldPin != viewModel.confirmNewPin) {
                             getToLogin()
+                        }
+                    }
+
+                    viewModel.newPinRegistered.observeOnce(this, {
+                        it?.let {
+                            when (it) {
+                                true -> {
+                                    MotionToast.createColorToast(
+                                        this@ResetPinActivity,
+                                        "PIN updated successfully",
+                                        MotionToast.TOAST_SUCCESS,
+                                        MotionToast.GRAVITY_BOTTOM,
+                                        MotionToast.LONG_DURATION,
+                                        ResourcesCompat.getFont(this@ResetPinActivity, R.font.helvetica_regular)
+                                    )
+                                    viewModel.newPinRegistered.value = false
+                                    getToLogin()
+                                }
+                                else -> {
+                                    getToLogin()
+                                }
+                            }
+                        }
+                    })
+                    serverTextView.setOnClickListener {
+                        ToastUtils().toastServerAddress(appContext)
+                    }
+
+                    buildFlavorTextView.setOnClickListener {
+                        ToastUtils().toastVersion(appContext)
                     }
                 }
             })
-            serverTextView.setOnClickListener {
-                ToastUtils().toastServerAddress(appContext)
-            }
-
-            buildFlavorTextView.setOnClickListener {
-                ToastUtils().toastVersion(appContext)
-            }
         }
     }
 
@@ -146,24 +171,28 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnabl
 
     override fun onSuccess(userDTO: UserDTO) {
         loading.hide()
-
         toast("You are logged in as ${userDTO.userName}")
     }
 
     override fun onFailure(message: String) {
         loading.hide()
         hideKeyboard()
-        reg_container.snackbar(message)
+        MotionToast.createColorToast(
+            this,
+            message,
+            MotionToast.TOAST_WARNING,
+            MotionToast.GRAVITY_BOTTOM,
+            MotionToast.LONG_DURATION,
+            ResourcesCompat.getFont(this, R.font.helvetica_regular)
+        )
+        // reg_container.snackbar(message)
     }
 
     override fun onSignOut(userDTO: UserDTO) {
+        // Not interested in this
     }
 
     override fun run() {
-        Coroutines.main {
-            val contractData = viewModel.offlineData.await()
-            contractData.observe(this, Observer { contrcts ->
-            })
-        }
+        // Nothing to do
     }
 }

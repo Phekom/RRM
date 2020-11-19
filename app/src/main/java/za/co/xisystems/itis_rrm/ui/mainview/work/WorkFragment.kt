@@ -2,7 +2,6 @@
 
 package za.co.xisystems.itis_rrm.ui.mainview.work
 
-import android.app.ProgressDialog
 import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -43,21 +42,16 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
 
     override val kodein by kodein()
     private lateinit var workViewModel: WorkViewModel
+    private lateinit var expandableGroups: MutableList<ExpandableGroup>
     private val factory: WorkViewModelFactory by instance()
     private var uiScope = UiLifecycleScope()
-    private var dialog: ProgressDialog? = null
+    private lateinit var layoutManager: LinearLayoutManager
 
     init {
 
         lifecycleScope.launch {
 
             whenStarted {
-
-                dialog =
-                    setDataProgressDialog(
-                        requireActivity(),
-                        getString(R.string.data_loading_please_wait)
-                    )
 
                 uiScope.onCreate()
                 viewLifecycleOwner.lifecycle.addObserver(uiScope)
@@ -69,6 +63,7 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
                         Timber.e(t, "Failed to fetch local jobs")
                         val xiFail = XIError(t, t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR)
                         XIErrorHandler.crashGuard(
+                            fragment = this@WorkFragment,
                             view = this@WorkFragment.requireView(),
                             throwable = xiFail,
                             refreshAction = { retryFetchingJobs() })
@@ -151,6 +146,7 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
                 Timber.e(t, t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR)
                 val jobErr = XIError(t, "Failed to fetch jobs from service")
                 XIErrorHandler.crashGuard(
+                    fragment = this@WorkFragment,
                     view = this@WorkFragment.requireView(),
                     throwable = jobErr,
                     refreshAction = { retryFetchingJobs() }
@@ -171,7 +167,7 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
         withContext(uiScope.coroutineContext) {
             val jobs = workViewModel.offlineUserTaskList.await()
             jobs.observeOnce(viewLifecycleOwner, { works ->
-                toast("${works.size} / ${works.count()} loaded.")
+                Timber.d("${works.size} / ${works.count()} loaded.")
             })
         }
     }
@@ -204,17 +200,8 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
         if (item1 != null) item1.isVisible = false
     }
 
-    /**
-     * Called when the Fragment is no longer resumed.  This is generally
-     * tied to [Activity.onPause()] of the containing
-     * Activity's lifecycle.
-     */
-    override fun onPause() {
-        uiScope.destroy()
-        super.onPause()
-    }
-
     override fun onDestroyView() {
+        uiScope.destroy()
         work_listView?.adapter = null
         super.onDestroyView()
     }
@@ -225,14 +212,23 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
 
     private suspend fun List<JobDTO>.toWorkListItems(): List<ExpandableGroup> {
         // Initialize Expandable group with expandable item and specify whether it should be expanded by default or not
-
+        expandableGroups = mutableListOf()
         return this.map { jobDTO ->
 
             val expandableHeaderItem =
                 ExpandableHeaderWorkItem(activity, jobDTO, workViewModel)
             ExpandableGroup(expandableHeaderItem, false).apply {
-
-                // ESTIMATE_WORK_PART_COMPLETE
+                expandableGroups.add(this)
+                // When expanding a work item, collapse the others
+                // and scrollToPositionWithOffset it to the top
+                expandableHeaderItem.onExpandListener = { toggledGroup ->
+                    expandableGroups.forEach {
+                        if (it != toggledGroup && it.isExpanded) {
+                            it.onToggleExpanded()
+                        }
+                    }
+                   layoutManager.scrollToPositionWithOffset(2, 20)
+                }
 
                 val estimates = workViewModel.getJobEstimationItemsForJobId(
                     jobDTO.JobId,
@@ -265,6 +261,7 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
                                 Timber.e(t, "Failed to create work-item")
                                 val workError = XIError(t, t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR)
                                 XIErrorHandler.handleError(
+                                    fragment = this@WorkFragment,
                                     view = this@WorkFragment.requireView(),
                                     throwable = workError,
                                     shouldToast = true
@@ -273,7 +270,9 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
                         }
                     }
                 })
+
             }
+
         }
     }
 }

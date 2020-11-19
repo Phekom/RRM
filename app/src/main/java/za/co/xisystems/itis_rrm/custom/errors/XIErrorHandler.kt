@@ -3,11 +3,14 @@ package za.co.xisystems.itis_rrm.custom.errors
 import android.content.Context
 import android.view.View
 import android.widget.Toast
+import androidx.fragment.app.Fragment
 import retrofit2.HttpException
 import timber.log.Timber
+import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.custom.results.XIError
 import za.co.xisystems.itis_rrm.custom.results.isConnectivityException
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
+import za.co.xisystems.itis_rrm.ui.extensions.motionToast
 
 /**
  * Created by Shaun McDonald on 2020/04/14.
@@ -29,6 +32,7 @@ object XIErrorHandler {
     const val UNKNOWN_ERROR = "An unknown error occurred!"
 
     fun handleError(
+        fragment: Fragment? = null,
         view: View,
         throwable: XIError,
         shouldToast: Boolean = false,
@@ -39,7 +43,11 @@ object XIErrorHandler {
             showSnackBar(view, message = throwable.message, refresh = refreshAction)
         } else {
             if (shouldToast) {
-                showLongToast(view.context, throwable.message)
+                // If we don't have a fragment, fallback to dry toast'
+                if (fragment != null)
+                    fragment.motionToast(throwable.message, MotionToast.TOAST_ERROR)
+                else
+                    showMessage(view, throwable.message)
             }
         }
         when (throwable.exception) {
@@ -56,11 +64,14 @@ object XIErrorHandler {
         }
     }
 
+    /**
+     * Pop up a snackbar with an option to retry a recoverable operation
+     */
     private fun showSnackBar(view: View, message: String, refresh: () -> Unit = {}) {
         IndefiniteSnackbar.show(view, message, refresh)
     }
 
-    fun showMessage(view: View, message: String) {
+    private fun showMessage(view: View, message: String) {
         showLongToast(view.context, message)
     }
 
@@ -70,21 +81,30 @@ object XIErrorHandler {
         Toast.LENGTH_LONG
     ).show()
 
-    fun crashGuard(view: View, throwable: XIError, refreshAction: () -> Unit) {
+    fun crashGuard(fragment: Fragment, throwable: XIError, refreshAction: () -> Unit ){
+        crashGuard(fragment, fragment.requireView(), throwable, refreshAction)
+    }
+    /**
+     * if the exception is connectivity-related, give the user the option to retry.
+     * Shaun McDonald - 2020/06/01
+     */
+    fun crashGuard(fragment: Fragment? = null, view: View, throwable: XIError, refreshAction: () -> Unit) {
         when (throwable.isConnectivityException()) {
 
             true -> {
                 handleError(
-                    view,
-                    throwable,
+                    fragment = fragment,
+                    view = view,
+                    throwable = throwable,
                     shouldShowSnackBar = true,
                     refreshAction = refreshAction
                 )
             }
             else -> {
                 handleError(
-                    view,
-                    throwable,
+                    fragment = fragment,
+                    view = view,
+                    throwable = throwable,
                     shouldToast = true,
                     shouldShowSnackBar = false
                 )

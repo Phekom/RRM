@@ -20,9 +20,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.Section
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
-import java.util.ArrayList
-import java.util.Calendar
-import java.util.Date
 import kotlinx.android.synthetic.main.fragment_add_project_items.*
 import kotlinx.coroutines.launch
 import org.kodein.di.KodeinAware
@@ -37,9 +34,7 @@ import za.co.xisystems.itis_rrm.data.localDB.JobDataController
 import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
 import za.co.xisystems.itis_rrm.ui.extensions.initProgress
-import za.co.xisystems.itis_rrm.ui.extensions.motionToast
 import za.co.xisystems.itis_rrm.ui.extensions.startProgress
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModelFactory
@@ -50,6 +45,9 @@ import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedViewModelFact
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DateUtil
 import za.co.xisystems.itis_rrm.utils.JobUtils
+import java.util.ArrayList
+import java.util.Calendar
+import java.util.Date
 
 /**
  * Created by Francis Mahlava on 2019/12/29.
@@ -94,7 +92,7 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
                 unsubmittedViewModel.jobtoEdit_Item.observe(
                     viewLifecycleOwner,
                     { jobToEdit ->
-                        toast(jobToEdit.Descr)
+                        toast("Editing ${jobToEdit.Descr}")
                         Coroutines.main {
                             projectID = jobToEdit.ProjectId
                             job = jobToEdit
@@ -110,6 +108,9 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
                             totalCostTextView.visibility = View.VISIBLE
 
                             createViewModel.setJobToEditItem(jobToEdit)
+
+                            // Set job description init actionBar
+                            (activity as MainActivity).supportActionBar?.title = jobToEdit.Descr
 
                             Coroutines.main {
                                 val projectItemData =
@@ -138,7 +139,7 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
                         }
                     })
 
-                createViewModel.sectionProjectItem.observe(viewLifecycleOwner, { pItem ->
+                createViewModel.sectionProjectItem.observe(viewLifecycleOwner, {
                     infoTextView.visibility = View.GONE
                     last_lin.visibility = View.VISIBLE
                     totalCostTextView.visibility = View.VISIBLE
@@ -169,7 +170,7 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
                         })
                         createViewModel.estimateLineRate.observe(
                             viewLifecycleOwner,
-                            { cost ->
+                            {
                                 calculateTotalCost()
                             })
                     }
@@ -256,6 +257,7 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
         savedInstanceState.run {
             val job = getSerializable("job") as JobDTO
             val items = getSerializable("items") as List<ItemDTOTemp>
+            newJobItemEstimatesList = ArrayList<JobItemEstimateDTO>()
             createViewModel.setJobToEditItem(job)
             initRecyclerView(items.toProjecListItems())
         }
@@ -273,8 +275,8 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
     }
 
     private fun List<ItemDTOTemp>.toProjecListItems(): List<ProjectItem> {
-        return this.map { approvej_items ->
-            ProjectItem(approvej_items, createViewModel, contractID, job)
+        return this.map {
+            ProjectItem(it, createViewModel, contractID, job)
         }
     }
 
@@ -352,7 +354,10 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
 
             Coroutines.main {
                 if (!JobUtils.areQuantitiesValid(job)) {
-                    this@AddProjectFragment.requireActivity().motionToast("Error: incomplete estimates.\n Quantity can't be zero!", MotionToast.TOAST_ERROR)
+                    this@AddProjectFragment.motionToast(
+                        "Error: incomplete estimates.\n Quantity can't be zero!",
+                        MotionToast.TOAST_WARNING
+                    )
                     itemsCardView.startAnimation(shake_long)
                 } else {
                     val valid =
@@ -465,9 +470,15 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
                 createViewModel.submitJob(userId, job, requireActivity())
 
             if (!submit.isBlank()) {
-                this@AddProjectFragment.requireActivity().motionToast(submit, MotionToast.TOAST_ERROR)
+                this@AddProjectFragment.motionToast(
+                    submit,
+                    MotionToast.TOAST_ERROR
+                )
             } else {
-                this@AddProjectFragment.requireActivity().motionToast(getString(R.string.job_submitted), MotionToast.TOAST_SUCCESS)
+                this@AddProjectFragment.motionToast(
+                    getString(R.string.job_submitted),
+                    MotionToast.TOAST_SUCCESS
+                )
                 popViewOnJobSubmit()
             }
         }
@@ -515,7 +526,7 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
 
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putSerializable("job", job as JobDTO)
-        outState.putSerializable("items", items as ArrayList<ProjectItemDTO>)
+        outState.putSerializable("items", items as ArrayList<ItemDTOTemp>)
         super.onSaveInstanceState(outState)
     }
 
@@ -525,7 +536,7 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
     }
 
     private fun onInvalidJob() {
-        this.requireActivity().motionToast("Incomplete estimates!", MotionToast.TOAST_ERROR)
+        this.motionToast("Incomplete estimates!", MotionToast.TOAST_WARNING)
         itemsCardView.startAnimation(shake_long)
     }
 

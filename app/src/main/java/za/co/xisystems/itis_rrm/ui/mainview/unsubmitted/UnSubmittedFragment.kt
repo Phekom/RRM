@@ -73,13 +73,12 @@ class UnSubmittedFragment : BaseFragment(R.layout.fragment_unsubmittedjobs), Kod
                         no_data_layout.visibility = View.GONE
                         unsubmitted_job_layout.visibility = View.VISIBLE
                         initRecyclerView(jobList.toApproveListItems())
-                        toast(jobList.size.toString())
                     }
                 })
             } catch (t: Throwable) {
                 Timber.e(t, "Failed to fetch unsubmitted jobs!")
-                val unsubError = XIError(t, t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR)
-                XIErrorHandler.crashGuard(this@UnSubmittedFragment.requireView(), unsubError, refreshAction = { retryUnsubmitted() })
+                val unsubError = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
+                XIErrorHandler.crashGuard(this@UnSubmittedFragment, this@UnSubmittedFragment.requireView(), unsubError, refreshAction = { retryUnsubmitted() })
             } finally {
                 group12_loading.visibility = View.GONE
             }

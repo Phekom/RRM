@@ -22,9 +22,6 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.coroutineScope
 import androidx.navigation.Navigation
-import java.util.ArrayList
-import java.util.Date
-import java.util.HashMap
 import kotlinx.android.synthetic.main.fragment_capture_item_measure_photo.*
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
@@ -33,7 +30,7 @@ import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
 import pereira.agnaldo.previewimgcol.ImageCollectionView
 import timber.log.Timber
-import za.co.xisystems.itis_rrm.BuildConfig
+import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.LocationFragment
@@ -58,6 +55,9 @@ import za.co.xisystems.itis_rrm.utils.DateUtil
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
+import java.util.ArrayList
+import java.util.Date
+import java.util.HashMap
 
 //
 class CaptureItemMeasurePhotoFragment :
@@ -108,7 +108,7 @@ class CaptureItemMeasurePhotoFragment :
         } ?: throw Exception("Invalid Activity")
 
         jobItemMeasurePhotoArrayList = ArrayList<JobItemMeasurePhotoDTO>()
-
+        gallery_layout.visibility = View.INVISIBLE
         photoButtons.visibility = View.GONE
 
         uiScope.launch(uiScope.coroutineContext) {
@@ -118,7 +118,13 @@ class CaptureItemMeasurePhotoFragment :
                     selectedJobItemM?.let { it ->
                         estimate_image_collection_view.clearImages()
                         viewPhotosOnly = false
-                        toast(it.jimNo)
+
+                        this@CaptureItemMeasurePhotoFragment.motionToast(
+                            message = "Measuring job: ${it.jimNo}",
+                            motionType = MotionToast.TOAST_INFO,
+                            position = MotionToast.GRAVITY_TOP
+                        )
+
                         selectedJobItemMeasure = it
                         checkForPhotos(selectedJobItemMeasure)
                     }
@@ -173,6 +179,7 @@ class CaptureItemMeasurePhotoFragment :
     }
 
     private fun setupControls() {
+        gallery_layout.visibility = View.VISIBLE
         when (viewPhotosOnly) {
             true -> {
                 photoButtons.visibility = View.VISIBLE
@@ -281,7 +288,7 @@ class CaptureItemMeasurePhotoFragment :
                 processAndSetImage()
             }
         } else { // Otherwise, delete the temporary image file
-            PhotoUtil.deleteImageFile(requireContext().applicationContext, mTempPhotoPath)
+            PhotoUtil.deleteImageFile(mTempPhotoPath)
         }
     }
 
@@ -350,6 +357,7 @@ class CaptureItemMeasurePhotoFragment :
 
             is XIError ->
                 XIErrorHandler.handleError(
+                    fragment = this@CaptureItemMeasurePhotoFragment,
                     view = this@CaptureItemMeasurePhotoFragment.requireView(),
                     throwable = response,
                     shouldToast = false,
@@ -372,15 +380,8 @@ class CaptureItemMeasurePhotoFragment :
         const val PHOTO_RESULT = 9000
         private const val REQUEST_IMAGE_CAPTURE = 1
         private const val REQUEST_STORAGE_PERMISSION = 1
-        private const val FILE_PROVIDER_AUTHORITY = BuildConfig.APPLICATION_ID + ".provider"
 
         const val URI_LIST_DATA = "URI_LIST_DATA"
         const val IMAGE_FULL_SCREEN_CURRENT_POS = "IMAGE_FULL_SCREEN_CURRENT_POS"
-
-        private const val LOCATION_KEY = "location-key"
-
-        // region (Public Static Final Fields)
-        private const val UPDATE_INTERVAL_IN_MILLISECONDS: Long = 10000
-        const val FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS = UPDATE_INTERVAL_IN_MILLISECONDS / 2
     }
 }

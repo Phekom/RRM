@@ -11,7 +11,6 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LifecycleOwner
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import com.xwray.groupie.kotlinandroidextensions.Item
-import java.io.File
 import kotlinx.android.synthetic.main.estimates_item.*
 import timber.log.Timber
 import www.sanju.motiontoast.MotionToast
@@ -25,8 +24,8 @@ import za.co.xisystems.itis_rrm.utils.GlideApp
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.Util.nanCheck
 import za.co.xisystems.itis_rrm.utils.Util.round
-import za.co.xisystems.itis_rrm.utils.toast
 import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
+import java.io.File
 
 /**
  * Created by Francis Mahlava on 2020/01/02.
@@ -125,7 +124,7 @@ class EstimatesItem(
                         text.length > 9 -> {
                             quantityEntry.text =
                                 Editable.Factory.getInstance().newEditable("$defaultQty")
-                            activity.toast("You Have exceeded the amount of Quantity allowed")
+                            activity.motionToast("You Have exceeded the amount of Quantity allowed", MotionToast.TOAST_WARNING)
                         }
                         else -> {
                             val qty = text.toDouble()
@@ -140,7 +139,7 @@ class EstimatesItem(
         // Yes button
         alert.setPositiveButton(
             R.string.save
-        ) { dialog, which ->
+        ) { dialog, _ ->
             if (updated) {
                 validateUpdateQty(activity, quantityEntry, totalEntry, jobItemEstimateDTO)
             } else {
@@ -150,7 +149,7 @@ class EstimatesItem(
         // No button
         alert.setNegativeButton(
             R.string.cancel
-        ) { dialog, which ->
+        ) { dialog, _ ->
             // Do nothing but close dialog
             dialog.dismiss()
         }
@@ -169,7 +168,7 @@ class EstimatesItem(
                 if (quantityEntry.text.toString() == "" || nanCheck(quantityEntry.text.toString()) || quantityEntry.text.toString()
                         .toDouble() == 0.0
                 ) {
-                    activity.motionToast("Please Enter a valid Quantity", MotionToast.TOAST_ERROR)
+                    activity.motionToast("Please Enter a valid Quantity", MotionToast.TOAST_WARNING)
                 } else {
                     val updated = approveViewModel.upDateEstimate(
                         quantityEntry.text.toString(),
@@ -177,9 +176,9 @@ class EstimatesItem(
                         jobItemEstimateDTO.estimateId
                     )
                     if (updated.isBlank()) {
-                        activity.motionToast("Data Updated was Successful", MotionToast.TOAST_SUCCESS)
+                        activity.motionToast("Data updated", MotionToast.TOAST_SUCCESS)
                     } else {
-                        activity.motionToast("Data Updated was Unsuccessful", MotionToast.TOAST_ERROR)
+                        activity.motionToast("Update failed", MotionToast.TOAST_ERROR)
                     }
                 }
             }
