@@ -148,14 +148,13 @@ class ApproveMeasureViewModel(
 
         withContext(Dispatchers.IO + uncaughtExceptionHandler) {
             try {
-                measureApprovalDataRepository.processWorkflowMove(userId,measurements,workflowDirection.value)
+                measureApprovalDataRepository.processWorkflowMove(userId, measurements, workflowDirection.value)
                 workflowState.postValue(XISuccess("WORK_COMPLETE"))
             } catch (t: Throwable) {
                 workflowState.postValue(XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR))
             }
         }
     }
-
 
     suspend fun upDateMeasure(
         editQuantity: String,

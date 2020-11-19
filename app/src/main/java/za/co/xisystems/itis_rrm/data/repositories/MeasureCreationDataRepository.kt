@@ -22,6 +22,7 @@ import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.custom.results.XIError
 import za.co.xisystems.itis_rrm.custom.results.XIProgress
 import za.co.xisystems.itis_rrm.custom.results.XIResult
+import za.co.xisystems.itis_rrm.custom.results.XIStatus
 import za.co.xisystems.itis_rrm.custom.results.XISuccess
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
@@ -248,7 +249,8 @@ class MeasureCreationDataRepository(
             workComplete = false
             try {
 
-                loop@ for (jobItemMeasure in myJob.workflowItemMeasures.iterator()) {
+                myJob.workflowItemMeasures.forEachIndexed{ index, jobItemMeasure ->
+                    postWorkflowStatus(XIStatus("Processing ${index + 1} of ${myJob.workflowItemMeasures.size} measurements"))
                     if (!workComplete) {
                         val direction: Int = WorkflowDirection.NEXT.value
                         val trackRouteId: String =

@@ -37,7 +37,6 @@ import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.results.XIStatus
 import za.co.xisystems.itis_rrm.custom.results.XISuccess
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
-import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.ui.extensions.doneProgress
@@ -91,7 +90,12 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
                     )
                 }
                 is XIStatus -> {
-                    this.motionToast(result.message, MotionToast.TOAST_INFO)
+                    this.motionToast(
+                        result.message,
+                        MotionToast.TOAST_INFO,
+                        MotionToast.GRAVITY_TOP,
+                        MotionToast.SHORT_DURATION
+                    )
                 }
                 is XIProgress -> {
                     when (result.isLoading) {
