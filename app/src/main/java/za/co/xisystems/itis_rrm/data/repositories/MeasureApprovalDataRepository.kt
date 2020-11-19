@@ -108,6 +108,7 @@ class MeasureApprovalDataRepository(
     ) {
         try {
             val description = ""
+
             var flowJob : WorkflowJobDTO? = null
             measurements.forEach { measure ->
                     val measureTrackId = DataConversion.toLittleEndian(measure.trackRouteId)
