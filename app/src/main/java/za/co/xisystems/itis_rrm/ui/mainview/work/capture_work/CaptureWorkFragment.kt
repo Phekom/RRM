@@ -241,7 +241,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
             0 -> {
                 validationNotice(R.string.please_make_sure_workflow_items_contain_photos)
             }
-            else -> when (comments_editText.text.isNullOrEmpty()) {
+            else -> when (comments_editText.text.trim().isEmpty()) {
                 true -> {
                     validationNotice(R.string.please_provide_a_comment)
                 }
