@@ -2,14 +2,13 @@ package za.co.xisystems.itis_rrm.ui.mainview.home
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Transformations
 import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.async
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -19,7 +18,6 @@ import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.custom.results.XIError
 import za.co.xisystems.itis_rrm.custom.results.XIProgress
 import za.co.xisystems.itis_rrm.custom.results.XIResult
-import za.co.xisystems.itis_rrm.custom.results.XIStatus
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
@@ -29,19 +27,23 @@ class HomeViewModel(
     private val repository: UserRepository,
     private val offlineDataRepository: OfflineDataRepository
 ) : BaseViewModel() {
-    private val sJob = SupervisorJob()
-    private var databaseStatus: LiveData<XIEvent<XIResult<Boolean>>> =
-        offlineDataRepository.databaseStatus.distinctUntilChanged()
 
-    var databaseState: MutableLiveData<XIResult<Boolean>> = MutableLiveData()
+    private var databaseStatus: LiveData<XIEvent<XIResult<Boolean>>> = MutableLiveData()
+
+    val superJob = SupervisorJob()
+
+    var databaseState: MutableLiveData<XIResult<Boolean>>? = MutableLiveData()
 
     init {
-        viewModelScope.launch(Job(sJob) + uncaughtExceptionHandler + Dispatchers.Main) {
-            databaseStatus.observeForever { it ->
+        viewModelScope.launch(Job(superJob) + uncaughtExceptionHandler + Dispatchers.Main.immediate) {
+
+            databaseStatus = offlineDataRepository.databaseStatus.distinctUntilChanged()
+
+            databaseState = Transformations.map(databaseStatus){ it ->
                 it?.getContentIfNotHandled()?.let {
-                    databaseState.postValue(it)
+                    it
                 }
-            }
+            } as? MutableLiveData<XIResult<Boolean>>
         }
     }
 
@@ -60,60 +62,43 @@ class HomeViewModel(
     }
 
     suspend fun fetchAllData(userId: String) =
-        viewModelScope.launch(Job(sJob) + uncaughtExceptionHandler + Dispatchers.Main) {
+        viewModelScope.launch(Job(superJob) + uncaughtExceptionHandler + Dispatchers.Main.immediate) {
 
             val fetchJob = Job()
 
             val jobContext = fetchJob + Dispatchers.IO + uncaughtExceptionHandler
 
             try {
-                this.launch {
-                    withContext(Dispatchers.Main) {
-                        databaseState.postValue(XIProgress(true))
-                    }
-                    val loadContracts = async(jobContext) {
-                        offlineDataRepository.loadActivitySections(userId)
-                        offlineDataRepository.loadContracts(userId)
-                    }
-                    val loadLookups = async(jobContext) { offlineDataRepository.loadLookups(userId) }
-                    val loadActivities = async(jobContext) {
-                        offlineDataRepository.loadTaskList(userId)
-                        offlineDataRepository.loadWorkflows(userId)
-                    }
-                    loadContracts.await()
-                    loadLookups.await()
-                    loadActivities.await()
-                    withContext(Dispatchers.Main) {
-                        databaseState.postValue(XIStatus("Download complete"))
-                    }
-
-                    fetchJob.complete()
+                databaseState?.postValue(XIProgress(true))
+                viewModelScope.launch(jobContext) {
+                    offlineDataRepository.loadActivitySections(userId)
+                    offlineDataRepository.loadContracts(userId)
+                    offlineDataRepository.loadLookups(userId)
+                    offlineDataRepository.loadTaskList(userId)
+                    offlineDataRepository.loadWorkflows(userId)
                 }
+                fetchJob.complete()
             } catch (t: Throwable) {
                 fetchJob.completeExceptionally(t)
-                jobContext.cancelChildren(CancellationException(t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR))
+                databaseState?.postValue(XIProgress(false))
+                jobContext.cancelChildren(CancellationException(t.message ?: XIErrorHandler.UNKNOWN_ERROR))
                 val fetchFail =
-                    XIError(t, "Failed to fetch contracts: ${t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR}")
-                withContext(Dispatchers.Main) {
-                    databaseState.postValue(fetchFail)
-                }
-            } finally {
-                withContext(Dispatchers.Main) {
-                    databaseState.postValue(XIProgress(false))
-                }
+                    XIError(t, "Failed to fetch contracts: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}")
+                databaseState?.postValue(fetchFail)
+
             }
-
         }
-
-    override fun onCleared() {
-        scope.cancel()
-        sJob.cancelChildren()
-        super.onCleared()
-    }
 
     suspend fun healthCheck(userId: String): Boolean {
         return withContext(Dispatchers.IO) {
             offlineDataRepository.getServiceHealth(userId)
         }
+    }
+
+    override fun onCleared() {
+        superJob.cancelChildren()
+        databaseState = MutableLiveData()
+
+        super.onCleared()
     }
 }

@@ -128,7 +128,7 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
                     })
                 }
             } catch (t: Throwable) {
-                val fetchError = XIError(t, t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR)
+                val fetchError = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
                 XIErrorHandler.crashGuard(
                     fragment = this@MeasureFragment,
                     view = this@MeasureFragment.requireView(),

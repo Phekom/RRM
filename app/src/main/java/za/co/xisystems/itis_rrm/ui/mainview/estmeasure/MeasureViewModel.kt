@@ -10,6 +10,7 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -62,24 +63,32 @@ class MeasureViewModel(
 
     val estimateMeasureItem: MutableLiveData<EstimateMeasureItem> = MutableLiveData()
 
-    private val workflowStatus: MutableLiveData<XIEvent<XIResult<String>>> =
-        measureCreationDataRepository.workflowStatus
+    private lateinit var workflowStatus: MutableLiveData<XIEvent<XIResult<String>>>
 
     val workflowState: MutableLiveData<XIResult<String>> = MutableLiveData()
 
     val backupJobId: MutableLiveData<String> = MutableLiveData()
 
+    val superJob = SupervisorJob()
+
+    val mainContext = (Job(superJob) + Dispatchers.Main + uncaughtExceptionHandler)
+    val ioContext = (Job(superJob) + Dispatchers.IO + uncaughtExceptionHandler)
+
     init {
         viewModelScope.launch(viewModelContext) {
-
-            launch {
+            workflowStatus = measureCreationDataRepository.workflowStatus
+            launch(mainContext) {
                 galleryMeasure.observeForever {
                     viewModelScope.launch(job + Dispatchers.Main + uncaughtExceptionHandler) {
                         generateGallery(it)
                     }
                 }
-                workflowStatus.observeForever{
-                    workflowState.postValue(it.getContentIfNotHandled())
+            }
+            launch(mainContext) {
+                workflowStatus.observeForever{event ->
+                    event?.getContentIfNotHandled()?.let {
+                        workflowState.postValue(it)
+                    }
                 }
             }
         }
@@ -348,5 +357,18 @@ class MeasureViewModel(
 
     companion object {
         const val galleryError = "Failed to retrieve itemMeasure for Gallery"
+    }
+
+    /**
+     * This method will be called when this ViewModel is no longer used and will be destroyed.
+     *
+     *
+     * It is useful when ViewModel observes some data and you need to clear this subscription to
+     * prevent a leak of this ViewModel.
+     */
+    override fun onCleared() {
+        workflowStatus = MutableLiveData()
+        superJob.cancelChildren()
+        super.onCleared()
     }
 }

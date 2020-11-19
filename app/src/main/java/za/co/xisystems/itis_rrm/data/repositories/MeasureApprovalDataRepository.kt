@@ -11,6 +11,8 @@ import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.custom.results.XIError
 import za.co.xisystems.itis_rrm.custom.results.XIResult
+import za.co.xisystems.itis_rrm.custom.results.XIStatus
+import za.co.xisystems.itis_rrm.custom.results.XISuccess
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
@@ -32,17 +34,6 @@ class MeasureApprovalDataRepository(
 ) : SafeApiRequest() {
     companion object {
         val TAG: String = MeasureApprovalDataRepository::class.java.simpleName
-    }
-
-    private val workflowJ = MutableLiveData<WorkflowJobDTO>()
-
-    init {
-
-        workflowJ.observeForever {
-            Coroutines.io {
-                saveWorkflowJob(it)
-            }
-        }
     }
 
     val workflowStatus: MutableLiveData<XIEvent<XIResult<String>>> = MutableLiveData()
@@ -104,28 +95,48 @@ class MeasureApprovalDataRepository(
 
     suspend fun processWorkflowMove(
         userId: String,
-        trackRouteId: String,
-        description: String?,
+        measurements: List<JobItemMeasureDTO>,
         direction: Int
     ) {
-        val workflowMoveResponse =
-            apiRequest { api.getWorkflowMove(userId, trackRouteId, description, direction) }
+        try {
+            val description = ""
 
-        if (workflowMoveResponse.workflowJob != null) {
-            val messages: String = workflowMoveResponse.errorMessage ?: ""
-
-            if (messages.isBlank()) {
-                workflowMoveResponse.workflowJob?.let { saveWorkflowJob(it) }
-            } else {
-                val message = "Measurement Approval Service Exception: $messages"
-                workflowStatus.postValue(XIEvent(XIError(ServiceException(message), message)))
+            var flowJob: WorkflowJobDTO? = null
+            measurements.forEachIndexed{ index, measure ->
+                val measureTrackId = DataConversion.toLittleEndian(measure.trackRouteId)
+                measureTrackId?.let {
+                    withContext(Dispatchers.IO) {
+                        postWorkflowStatus(XIStatus("Processing ${index + 1} of ${measurements.size} measurements"))
+                        val workflowMoveResponse =
+                            apiRequest { api.getWorkflowMove(userId, measureTrackId, description, direction) }
+                        workflowMoveResponse.workflowJob?.let { job ->
+                            job.workflowItemMeasures?.forEach { jobItemMeasure ->
+                                if (jobItemMeasure.actId.equals(12)) {
+                                    val itemMeasureId = DataConversion.toBigEndian(jobItemMeasure.itemMeasureId)
+                                    val trackRouteId = DataConversion.toBigEndian(jobItemMeasure.trackRouteId)
+                                    val measureGroupId = DataConversion.toBigEndian(jobItemMeasure.measureGroupId)
+                                    appDb.getJobItemMeasureDao().updateWorkflowJobItemMeasure(
+                                        itemMeasureId,
+                                        trackRouteId,
+                                        jobItemMeasure.actId,
+                                        measureGroupId,
+                                    )
+                                }
+                            }
+                            flowJob = job
+                        }
+                    }
+                }
             }
-        } else {
-            workflowMoveResponse.errorMessage?.let {
-                val message = "Measurement Approval Service Exception: $it"
-                workflowStatus.postValue(XIEvent(XIError(ServiceException(message), message)))
-            }
+            saveWorkflowJob(flowJob!!)
+        } catch (t: Throwable) {
+            val message = "Failed to Approve Measurement: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
+            postWorkflowStatus(XIError(t, message))
         }
+    }
+
+    private fun postWorkflowStatus(status: XIResult<String>) {
+        workflowStatus.postValue(XIEvent(status))
     }
 
     suspend fun getSectionForProjectSectionId(sectionId: String?): String {
@@ -172,61 +183,67 @@ class MeasureApprovalDataRepository(
     }
 
     private suspend fun updateWorkflowJobValuesAndInsertWhenNeeded(job: WorkflowJobDTO) {
+        Coroutines.io {
+            try {
 
-        try {
-            appDb.getJobDao().updateJob(job.trackRouteId, job.actId, job.jiNo, job.jobId)
-
-            job.workflowItemEstimates?.forEach { jobItemEstimate ->
-                appDb.getJobItemEstimateDao().updateExistingJobItemEstimateWorkflow(
-                    jobItemEstimate.trackRouteId,
-                    jobItemEstimate.actId,
-                    jobItemEstimate.estimateId
-                )
-
-                jobItemEstimate.workflowEstimateWorks.forEach { jobEstimateWorks ->
-                    appDb.getEstimateWorkDao().updateJobEstimateWorksWorkflow(
-                        jobEstimateWorks.worksId,
-                        jobEstimateWorks.estimateId,
-                        jobEstimateWorks.recordVersion,
-                        jobEstimateWorks.recordSynchStateId,
-                        jobEstimateWorks.actId,
-                        jobEstimateWorks.trackRouteId
+                job.workflowItemEstimates?.forEach { jobItemEstimate ->
+                    appDb.getJobItemEstimateDao().updateExistingJobItemEstimateWorkflow(
+                        jobItemEstimate.trackRouteId,
+                        jobItemEstimate.actId,
+                        jobItemEstimate.estimateId
                     )
+
+                    jobItemEstimate.workflowEstimateWorks.forEach { jobEstimateWorks ->
+                        appDb.getEstimateWorkDao().updateJobEstimateWorksWorkflow(
+                            jobEstimateWorks.worksId,
+                            jobEstimateWorks.estimateId,
+                            jobEstimateWorks.recordVersion,
+                            jobEstimateWorks.recordSynchStateId,
+                            jobEstimateWorks.actId,
+                            jobEstimateWorks.trackRouteId
+                        )
+                    }
                 }
-            }
 
-            job.workflowItemMeasures?.forEach { jobItemMeasure ->
-                appDb.getJobItemMeasureDao().updateWorkflowJobItemMeasure(
-                    jobItemMeasure.itemMeasureId,
-                    jobItemMeasure.trackRouteId,
-                    jobItemMeasure.actId,
-                    jobItemMeasure.measureGroupId
-                )
-            }
-
-            //  Place the Job Section, UPDATE OR CREATE
-
-            job.workflowJobSections?.forEach { jobSection ->
-                if (!appDb.getJobSectionDao().checkIfJobSectionExist(jobSection.jobSectionId)) {
-                    appDb.getJobSectionDao().insertJobSection(jobSection)
-                } else {
-                    appDb.getJobSectionDao().updateExistingJobSectionWorkflow(
-                        jobSection.jobSectionId,
-                        jobSection.projectSectionId,
-                        jobSection.jobId,
-                        jobSection.startKm,
-                        jobSection.endKm,
-                        jobSection.recordVersion,
-                        jobSection.recordSynchStateId
+                job.workflowItemMeasures?.forEach { jobItemMeasure ->
+                    appDb.getJobItemMeasureDao().updateWorkflowJobItemMeasure(
+                        jobItemMeasure.itemMeasureId,
+                        jobItemMeasure.trackRouteId,
+                        jobItemMeasure.actId,
+                        jobItemMeasure.measureGroupId
                     )
-                }
-            }
-            Timber.d("Updated Workflow: $job")
 
-        } catch (t: Throwable) {
-            val message = "Could not save updated workflow: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
-            Timber.e(t, message)
-            workflowStatus.postValue(XIEvent(XIError(LocalDataException(message), message)))
+                }
+
+                //  Place the Job Section, UPDATE OR CREATE
+
+                job.workflowJobSections?.forEach { jobSection ->
+                    if (!appDb.getJobSectionDao().checkIfJobSectionExist(jobSection.jobSectionId)) {
+                        appDb.getJobSectionDao().insertJobSection(jobSection)
+                    } else {
+                        appDb.getJobSectionDao().updateExistingJobSectionWorkflow(
+                            jobSection.jobSectionId,
+                            jobSection.projectSectionId,
+                            jobSection.jobId,
+                            jobSection.startKm,
+                            jobSection.endKm,
+                            jobSection.recordVersion,
+                            jobSection.recordSynchStateId
+                        )
+                    }
+                }
+
+                appDb.getJobDao().updateJob(job.trackRouteId, job.actId, job.jiNo, job.jobId)
+
+
+
+                Timber.d("Updated Workflow: $job")
+                postWorkflowStatus(XISuccess("WORK_COMPLETE"))
+            } catch (t: Throwable) {
+                val message = "Could not save updated workflow: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
+                Timber.e(t, message)
+                postWorkflowStatus(XIError(LocalDataException(message), message))
+            }
         }
     }
 
@@ -259,12 +276,10 @@ class MeasureApprovalDataRepository(
 
             return job
         } catch (t: Throwable) {
-            workflowStatus.postValue(
-                XIEvent(
-                    XIError(
-                        LocalDataException(t.message ?: XIErrorHandler.UNKNOWN_ERROR),
-                        t.message ?: XIErrorHandler.UNKNOWN_ERROR
-                    )
+            postWorkflowStatus(
+                XIError(
+                    LocalDataException(t.message ?: XIErrorHandler.UNKNOWN_ERROR),
+                    t.message ?: XIErrorHandler.UNKNOWN_ERROR
                 )
             )
             return null
@@ -279,7 +294,7 @@ class MeasureApprovalDataRepository(
 
         val quantityUpdateResponse =
             apiRequest { api.upDateMeasureQty(newMeasureId, newQuantity.toDouble()) }
-        postValue(
+        postQuantity(
             quantityUpdateResponse.errorMessage,
             itemMeasureId,
             newQuantity.toDouble()
@@ -290,7 +305,7 @@ class MeasureApprovalDataRepository(
         }
     }
 
-    private fun postValue(
+    private fun postQuantity(
         errorMessage: String?,
         itemMeasureId: String?,
         newQuantity: Double
@@ -301,7 +316,7 @@ class MeasureApprovalDataRepository(
             val message = "Failed to update Quantity: $errorMessage"
             val serviceException = ServiceException(message)
             Timber.e(serviceException)
-            workflowStatus.postValue(XIEvent(XIError(serviceException, message)))
+            postWorkflowStatus(XIError(serviceException, message))
         }
     }
 
@@ -317,3 +332,5 @@ class MeasureApprovalDataRepository(
         }
     }
 }
+
+

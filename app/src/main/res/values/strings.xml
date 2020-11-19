@@ -223,7 +223,7 @@
     <string name="maintenance">Maintenance</string>
     <string name="measurement">Measurement</string>
     <string name="measurement_approval">Measurement Approval</string>
-    <string name="measurement_approved">Measurement approved</string>
+    <string name="measurement_approved">Measurement(s) approved</string>
     <string name="middle">Middle</string>
     <string name="move_through_workflow">Move Through Workflow</string>
     <string name="moved_through_workflow_successfully">Moved through Workflow successfully</string>

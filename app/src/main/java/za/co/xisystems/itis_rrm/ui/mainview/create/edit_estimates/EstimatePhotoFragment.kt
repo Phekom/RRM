@@ -352,8 +352,6 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
                 }
 
                 R.id.cancelButton -> {
-                    Navigation.findNavController(view)
-                        .navigate(R.id.action_estimatePhotoFragment_to_nav_create)
                     Coroutines.main {
                         createViewModel.deleteJobFromList(newJob!!.JobId)
                         createViewModel.deleteItemList(newJob!!.JobId)
@@ -362,6 +360,9 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
                         createViewModel.newJob.value = null
                         fragmentManager?.beginTransaction()?.remove(this)?.commit()
                         fragmentManager?.beginTransaction()?.detach(this)?.commit()
+
+                        Navigation.findNavController(view)
+                            .navigate(R.id.action_estimatePhotoFragment_to_nav_create)
                     }
                     // TODO(clear temp database Tables for Job And Items)
                 }
@@ -667,34 +668,61 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
         filePath: Map<String, String>,
         itemidPhototype: Map<String, String>
     ) {
-        withContext(uiScope.coroutineContext) {
-            val result = getRouteSectionPoint(
-                estimateLocation
-            )
-            if (result.isNullOrBlank() || result.contains(other = "xxx" as CharSequence, ignoreCase = true)) {
-                this@EstimatePhotoFragment.disableGlide = true
-                showLocationWarning()
-                resetPhotos()
-            }
-        }
-        withContext(uiScope.coroutineContext) {
-            if (!this@EstimatePhotoFragment.disableGlide) {
-                validateRouteSection(newJob?.ProjectId!!)
-            } else {
-                resetPhotos()
-            }
-        }
-
-        withContext(uiScope.coroutineContext) {
-            if (!this@EstimatePhotoFragment.disableGlide) {
-                placeEstimatePhotoInRouteSection(
-                    filePath,
-                    estimateLocation,
-                    itemidPhototype
+        try {
+            withContext(uiScope.coroutineContext) {
+                val result = getRouteSectionPoint(
+                    estimateLocation
                 )
+                if (result.isNullOrBlank() || result.contains(other = "xxx" as CharSequence, ignoreCase = true)) {
+                    this@EstimatePhotoFragment.disableGlide = true
+                    showLocationWarning()
+                    resetPhotos()
+                }
+            }
+            withContext(uiScope.coroutineContext) {
+                if (!this@EstimatePhotoFragment.disableGlide) {
+                    validateRouteSection(newJob?.ProjectId!!)
+                } else {
+                    resetPhotos()
+                }
             }
 
-            resetPhotos()
+            withContext(uiScope.coroutineContext) {
+                if (!this@EstimatePhotoFragment.disableGlide) {
+                    placeEstimatePhotoInRouteSection(
+                        filePath,
+                        estimateLocation,
+                        itemidPhototype
+                    )
+                }
+
+                resetPhotos()
+            }
+        } catch (t: Throwable) {
+            val message = "Failed to verify photo location: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
+            Timber.e(t, message)
+            val xiErr = XIError(t, message)
+            XIErrorHandler.crashGuard(
+                fragment = this,
+                throwable = xiErr,
+                refreshAction = {
+                    retryProcessPhotoLocation(
+                        estimateLocation,
+                        filePath,
+                        itemidPhototype
+                    )
+                })
+        }
+    }
+
+    private fun retryProcessPhotoLocation(
+        estimateLocation: LocationModel,
+        filePath: Map<String, String>,
+        itemidPhototype: Map<String, String>
+    ) {
+        IndefiniteSnackbar.hide()
+        Coroutines.main {
+            processPhotoLocation(estimateLocation, filePath, itemidPhototype)
         }
     }
 
@@ -712,14 +740,12 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
 
     private suspend fun onSectionPointFound(sectionPoint: SectionPointDTO?) {
         Timber.d("SectionPoint: $sectionPoint")
-        if (sectionPoint?.sectionId == 0) {
-            showSectionOutOfBoundError(sectionPoint)
+        if (sectionPoint == null) {
+            showLocationWarning()
         } else {
-            if (sectionPoint != null) {
-                validateRouteSectionByProject(
-                    sectionPoint = sectionPoint
-                )
-            }
+            validateRouteSectionByProject(
+                sectionPoint = sectionPoint
+            )
         }
     }
 
@@ -792,7 +818,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
         val photo: JobItemEstimatesPhotoDTO?
         val sectionPointData = createViewModel.getPointSectionData(newJob?.ProjectId!!)
 
-        if (sectionPointData.sectionId.toString().isNotBlank()) {
+        if (sectionPointData != null && sectionPointData.sectionId.toString().isNotBlank()) {
             Timber.d("SectionPointDto: $sectionPointData")
             photo = createItemEstimatePhoto(
                 itemEst = newJobItemEstimate!!,
@@ -1019,7 +1045,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
                     }
                 })
             } catch (t: Throwable) {
-                val secErr = XIError(t, "Failed to caption photo: ${t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR}")
+                val secErr = XIError(t, "Failed to caption photo: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}")
                 Timber.e(t, secErr.message)
                 XIErrorHandler.crashGuard(this, this.requireView(), secErr, refreshAction = { retryRouteSectionData(isStart, textView, animate) })
             }
@@ -1273,7 +1299,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
     override fun onSaveInstanceState(outState: Bundle) {
         outState.run {
             outState.putString("jobId", newJob?.JobId)
-            newJobItemEstimate?.estimateId?.let{
+            newJobItemEstimate?.estimateId?.let {
                 outState.putString("estimateId", it)
             }
         }
@@ -1328,7 +1354,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
                     }
                 } catch (t: Throwable) {
                     Timber.e(t, "Failed to restore estimate view-state.")
-                    val estError = XIError(t, t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR)
+                    val estError = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
                     XIErrorHandler.crashGuard(
                         this@EstimatePhotoFragment,
                         this@EstimatePhotoFragment.requireView(),

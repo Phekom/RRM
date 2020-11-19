@@ -337,7 +337,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             style = colorToast.style.getValue(),
             position = colorToast.gravity.getValue(),
             duration = colorToast.duration.getValue(),
-            font = ResourcesCompat.getFont(applicationContext, R.font.helvetica_regular)
+            font = ResourcesCompat.getFont(this, R.font.helvetica_regular)
         )
     }
 

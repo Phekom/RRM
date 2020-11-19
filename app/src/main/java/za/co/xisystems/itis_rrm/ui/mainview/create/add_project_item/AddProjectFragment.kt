@@ -257,6 +257,7 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
         savedInstanceState.run {
             val job = getSerializable("job") as JobDTO
             val items = getSerializable("items") as List<ItemDTOTemp>
+            newJobItemEstimatesList = ArrayList<JobItemEstimateDTO>()
             createViewModel.setJobToEditItem(job)
             initRecyclerView(items.toProjecListItems())
         }
