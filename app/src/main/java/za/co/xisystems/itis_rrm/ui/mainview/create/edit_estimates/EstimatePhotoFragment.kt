@@ -668,34 +668,61 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
         filePath: Map<String, String>,
         itemidPhototype: Map<String, String>
     ) {
-        withContext(uiScope.coroutineContext) {
-            val result = getRouteSectionPoint(
-                estimateLocation
-            )
-            if (result.isNullOrBlank() || result.contains(other = "xxx" as CharSequence, ignoreCase = true)) {
-                this@EstimatePhotoFragment.disableGlide = true
-                showLocationWarning()
-                resetPhotos()
-            }
-        }
-        withContext(uiScope.coroutineContext) {
-            if (!this@EstimatePhotoFragment.disableGlide) {
-                validateRouteSection(newJob?.ProjectId!!)
-            } else {
-                resetPhotos()
-            }
-        }
-
-        withContext(uiScope.coroutineContext) {
-            if (!this@EstimatePhotoFragment.disableGlide) {
-                placeEstimatePhotoInRouteSection(
-                    filePath,
-                    estimateLocation,
-                    itemidPhototype
+        try {
+            withContext(uiScope.coroutineContext) {
+                val result = getRouteSectionPoint(
+                    estimateLocation
                 )
+                if (result.isNullOrBlank() || result.contains(other = "xxx" as CharSequence, ignoreCase = true)) {
+                    this@EstimatePhotoFragment.disableGlide = true
+                    showLocationWarning()
+                    resetPhotos()
+                }
+            }
+            withContext(uiScope.coroutineContext) {
+                if (!this@EstimatePhotoFragment.disableGlide) {
+                    validateRouteSection(newJob?.ProjectId!!)
+                } else {
+                    resetPhotos()
+                }
             }
 
-            resetPhotos()
+            withContext(uiScope.coroutineContext) {
+                if (!this@EstimatePhotoFragment.disableGlide) {
+                    placeEstimatePhotoInRouteSection(
+                        filePath,
+                        estimateLocation,
+                        itemidPhototype
+                    )
+                }
+
+                resetPhotos()
+            }
+        } catch (t: Throwable) {
+            val message = "Failed to verify photo location: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
+            Timber.e(t, message)
+            val xiErr = XIError(t, message)
+            XIErrorHandler.crashGuard(
+                fragment = this,
+                throwable = xiErr,
+                refreshAction = {
+                    retryProcessPhotoLocation(
+                        estimateLocation,
+                        filePath,
+                        itemidPhototype
+                    )
+                })
+        }
+    }
+
+    private fun retryProcessPhotoLocation(
+        estimateLocation: LocationModel,
+        filePath: Map<String, String>,
+        itemidPhototype: Map<String, String>
+    ) {
+        IndefiniteSnackbar.hide()
+        Coroutines.main {
+            processPhotoLocation(estimateLocation, filePath, itemidPhototype)
         }
     }
 
