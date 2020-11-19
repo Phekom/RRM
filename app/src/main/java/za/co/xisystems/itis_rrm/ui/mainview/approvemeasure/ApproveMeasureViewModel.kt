@@ -26,7 +26,6 @@ import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.extensions.getDistinct
 import za.co.xisystems.itis_rrm.ui.custom.MeasureGalleryUIState
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.approveMeasure_Item.ApproveMeasureItem
-import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
@@ -146,49 +145,10 @@ class ApproveMeasureViewModel(
     ) = viewModelScope.launch {
         workflowState.postValue(XIProgress(true))
         val measureJobs = mutableListOf<Job>()
-        var workDone = false
-        var jiNo = ""
 
-        val jobIds: List<String> =
-            measurements.distinctBy { measurements -> measurements.jobId }
-            .map { measurements -> measurements.jobId!! }
         withContext(Dispatchers.IO + uncaughtExceptionHandler) {
             try {
-
-                jobIds.forEach { jobId ->
-                    var job = offlineDataRepository.getUpdatedJob(jobId)
-                    jiNo = job.JiNo!!
-                    val description = ""
-                    job.TrackRouteId?.let {
-                        val trackRouteId = DataConversion.toLittleEndian(it)
-
-                        trackRouteId?.let { serviceTrackRouteId ->
-                            withContext(Dispatchers.IO) {
-
-                                measureApprovalDataRepository.processWorkflowMove(
-                                    userId,
-                                    serviceTrackRouteId,
-                                    description,
-                                    workflowDirection.value
-                                )
-                            }
-                        }
-                    }
-                    job = offlineDataRepository.getUpdatedJob(jobId)
-                    job.JobItemMeasures?.forEach{ measure->
-                        val measureTrackId = DataConversion.toLittleEndian(measure.trackRouteId)
-                        measureTrackId?.let {
-                            withContext(Dispatchers.IO){
-                                measureApprovalDataRepository.processWorkflowMove(
-                                    userId,
-                                    measureTrackId,
-                                    description,
-                                    workflowDirection.value
-                                )
-                            }
-                        }
-                    }
-                }
+                measureApprovalDataRepository.processWorkflowMove(userId,measurements,workflowDirection.value)
                 workflowState.postValue(XISuccess("WORK_COMPLETE"))
             } catch (t: Throwable) {
                 workflowState.postValue(XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR))
@@ -196,21 +156,6 @@ class ApproveMeasureViewModel(
         }
     }
 
-    fun processWorkflowMove(
-        userId: String,
-        trackRouteId: String,
-        description: String?,
-        direction: Int
-    ) = viewModelScope.launch {
-        withContext(Dispatchers.IO) {
-            measureApprovalDataRepository.processWorkflowMove(
-                userId,
-                trackRouteId,
-                description,
-                direction
-            )
-        }
-    }
 
     suspend fun upDateMeasure(
         editQuantity: String,

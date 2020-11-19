@@ -37,6 +37,8 @@ import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.results.XIStatus
 import za.co.xisystems.itis_rrm.custom.results.XISuccess
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
+import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.ui.extensions.doneProgress
 import za.co.xisystems.itis_rrm.ui.extensions.failProgress
@@ -59,6 +61,7 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
     private lateinit var approveViewModel: ApproveMeasureViewModel
     private val factory: ApproveMeasureViewModelFactory by instance()
     private lateinit var measurementsToApprove: ArrayList<JobItemMeasureDTO>
+    private var mJob : JobDTO? = null
     lateinit var dialog: Dialog
     private lateinit var progressButton: Button
     private var workObserver = Observer<XIResult<String>?> { handleWorkSubmission(it) }
@@ -103,7 +106,7 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
     private fun retryMeasurements() {
         IndefiniteSnackbar.hide()
         Coroutines.main {
-            moveJobToNextWorkflow(NEXT)
+            processMeasurementWorkflow(NEXT)
             approveViewModel.workflowState.observe(viewLifecycleOwner, workObserver)
         }
     }
@@ -172,8 +175,45 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
         if (ServiceUtil.isNetworkAvailable(this.requireContext().applicationContext)) {
             Coroutines.main {
                 approveViewModel.workflowState.observe(viewLifecycleOwner, workObserver)
-                moveJobToNextWorkflow(workflowDirection)
 
+                val approvalJob = uiScope.launch(uiScope.coroutineContext) {
+                    progressButton.startProgress("Submitting ...")
+
+                    val user = approveViewModel.user.await()
+                    user.observe(viewLifecycleOwner, { userDTO ->
+
+                        measuresProcessed = 0
+                        flowDirection = workflowDirection.value
+
+                        if (userDTO.userId.isBlank()) {
+                            this@MeasureApprovalFragment.motionToast(
+                                "User lacks permissions",
+                                MotionToast.TOAST_ERROR,
+                                MotionToast.GRAVITY_BOTTOM
+                            )
+                            progressButton.failProgress("Invalid User")
+                        } else {
+                            Coroutines.main {
+                                withContext(uiScope.coroutineContext) {
+                                    try {
+                                        approveViewModel.approveMeasurements(
+                                            userDTO.userId,
+                                            workflowDirection,
+                                            measurementsToApprove
+                                        )
+
+                                    } catch (t: Throwable) {
+                                        val message = "Measurement Approval Exception: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
+                                        Timber.e(t, message)
+                                        val measureErr = XIError(t, message)
+                                        handleWorkSubmission(measureErr)
+                                    }
+                                }
+                            }
+                        }
+                    })
+                }
+                approvalJob.join()
             }
         } else {
             this.requireActivity().motionToast(
@@ -182,47 +222,6 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
             )
             progressButton.failProgress("No internet")
         }
-    }
-
-    private suspend fun moveJobToNextWorkflow(workflowDirection: WorkflowDirection) {
-        val approvalJob = uiScope.launch(uiScope.coroutineContext) {
-            progressButton.startProgress("Submitting ...")
-
-            val user = approveViewModel.user.await()
-            user.observe(viewLifecycleOwner, { userDTO ->
-
-                measuresProcessed = 0
-                flowDirection = workflowDirection.value
-
-                if (userDTO.userId.isBlank()) {
-                    this@MeasureApprovalFragment.motionToast(
-                        "User lacks permissions",
-                        MotionToast.TOAST_ERROR,
-                        MotionToast.GRAVITY_BOTTOM
-                    )
-                    progressButton.failProgress("Invalid User")
-                } else {
-                    Coroutines.main {
-                        withContext(uiScope.coroutineContext) {
-                            try {
-                                approveViewModel.approveMeasurements(
-                                    userDTO.userId,
-                                    workflowDirection,
-                                    measurementsToApprove
-                                )
-                            } catch (t: Throwable) {
-                                val message = "Measurement Approval Exception: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
-                                Timber.e(t, message)
-                                val measureErr = XIError(t, message)
-                                handleWorkSubmission(measureErr)
-                            }
-                        }
-                    }
-                }
-            })
-        }
-        approvalJob.join()
-
     }
 
     private fun popViewOnJobSubmit(direction: Int) {

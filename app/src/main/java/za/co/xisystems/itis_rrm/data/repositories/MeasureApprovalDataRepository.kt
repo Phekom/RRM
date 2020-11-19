@@ -13,13 +13,10 @@ import za.co.xisystems.itis_rrm.custom.results.XIError
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.results.XISuccess
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.ToDoListEntityDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.WorkflowJobDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
+import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DataConversion
 
@@ -77,6 +74,16 @@ class MeasureApprovalDataRepository(
         }
     }
 
+    suspend fun getJobMeasuresForJobId(
+        jobID: String?,
+        actId: Int
+    ): List<JobItemMeasureDTO> {
+        return withContext(Dispatchers.IO) {
+            appDb.getJobItemMeasureDao().getJobMeasuresForJobId(jobID!!, actId)
+        }
+    }
+
+
     suspend fun getJobMeasureItemsForJobId(
         jobID: String?,
         actId: Int
@@ -92,36 +99,52 @@ class MeasureApprovalDataRepository(
         }
     }
 
+
+
     suspend fun processWorkflowMove(
         userId: String,
-        trackRouteId: String,
-        description: String?,
+        measurements: List<JobItemMeasureDTO>,
         direction: Int
     ) {
         try {
-            val workflowMoveResponse =
-                apiRequest { api.getWorkflowMove(userId, trackRouteId, description, direction) }
-
-            if (workflowMoveResponse.workflowJob != null) {
-                val messages: String = workflowMoveResponse.errorMessage ?: ""
-
-                if (messages.isBlank()) {
-                    workflowMoveResponse.workflowJob?.let { saveWorkflowJob(it) }
-                } else {
-                    val message = "Measurement Approval Service Exception: $messages"
-                    throw ServiceException(message)
-                }
-            } else {
-                workflowMoveResponse.errorMessage?.let {
-                    val message = "Measurement Approval Service Exception: $it"
-                    throw ServiceException(message)
+            val description = ""
+            var flowJob : WorkflowJobDTO? = null
+            measurements.forEach { measure ->
+                    val measureTrackId = DataConversion.toLittleEndian(measure.trackRouteId)
+                    measureTrackId?.let {
+                        withContext(Dispatchers.IO) {
+                            val workflowMoveResponse =
+                                apiRequest { api.getWorkflowMove(userId, measureTrackId, description, direction) }
+                            workflowMoveResponse.workflowJob?.let { job ->
+                                job.workflowItemMeasures?.forEach { jobItemMeasure ->
+                                    if (jobItemMeasure.actId.equals(12)) {
+                                        val itemMeasureId = DataConversion.toBigEndian(jobItemMeasure.itemMeasureId)
+                                        val trackRouteId = DataConversion.toBigEndian(jobItemMeasure.trackRouteId)
+                                        val measureGroupId = DataConversion.toBigEndian(jobItemMeasure.measureGroupId)
+                                        appDb.getJobItemMeasureDao().updateWorkflowJobItemMeasure(
+                                            itemMeasureId,
+                                            trackRouteId,
+                                            jobItemMeasure.actId,
+                                            measureGroupId,
+                                        )
+                                    }
+                                }
+                                flowJob = job
+                            }
+                        }
                 }
             }
+            saveWorkflowJob(flowJob!!)
+
+
         } catch (t: Throwable) {
             val message = "Failed to Approve Measurement: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
             postWorkflowStatus(XIError(t, message))
         }
     }
+
+
+
 
     private fun postWorkflowStatus(status: XIResult<String>) {
         workflowStatus.postValue(XIEvent(status))
@@ -166,60 +189,65 @@ class MeasureApprovalDataRepository(
     private suspend fun saveWorkflowJob(workflowJob: WorkflowJobDTO) {
         val job = setWorkflowJobBigEndianGuids(workflowJob)
         job?.let {
-            updateWorkflowJobValuesAndInsertWhenNeeded(job)
+                 updateWorkflowJobValuesAndInsertWhenNeeded(job)
         }
     }
 
     private suspend fun updateWorkflowJobValuesAndInsertWhenNeeded(job: WorkflowJobDTO) {
         Coroutines.io {
             try {
-                appDb.getJobDao().updateJob(job.trackRouteId, job.actId, job.jiNo, job.jobId)
 
-                job.workflowItemEstimates?.forEach { jobItemEstimate ->
-                    appDb.getJobItemEstimateDao().updateExistingJobItemEstimateWorkflow(
-                        jobItemEstimate.trackRouteId,
-                        jobItemEstimate.actId,
-                        jobItemEstimate.estimateId
-                    )
+                        job.workflowItemEstimates?.forEach { jobItemEstimate ->
+                            appDb.getJobItemEstimateDao().updateExistingJobItemEstimateWorkflow(
+                                jobItemEstimate.trackRouteId,
+                                jobItemEstimate.actId,
+                                jobItemEstimate.estimateId
+                            )
 
-                    jobItemEstimate.workflowEstimateWorks.forEach { jobEstimateWorks ->
-                        appDb.getEstimateWorkDao().updateJobEstimateWorksWorkflow(
-                            jobEstimateWorks.worksId,
-                            jobEstimateWorks.estimateId,
-                            jobEstimateWorks.recordVersion,
-                            jobEstimateWorks.recordSynchStateId,
-                            jobEstimateWorks.actId,
-                            jobEstimateWorks.trackRouteId
-                        )
-                    }
-                }
+                            jobItemEstimate.workflowEstimateWorks.forEach { jobEstimateWorks ->
+                                appDb.getEstimateWorkDao().updateJobEstimateWorksWorkflow(
+                                    jobEstimateWorks.worksId,
+                                    jobEstimateWorks.estimateId,
+                                    jobEstimateWorks.recordVersion,
+                                    jobEstimateWorks.recordSynchStateId,
+                                    jobEstimateWorks.actId,
+                                    jobEstimateWorks.trackRouteId
+                                )
+                            }
+                        }
 
-                job.workflowItemMeasures?.forEach { jobItemMeasure ->
-                    appDb.getJobItemMeasureDao().updateWorkflowJobItemMeasure(
-                        jobItemMeasure.itemMeasureId,
-                        jobItemMeasure.trackRouteId,
-                        jobItemMeasure.actId,
-                        jobItemMeasure.measureGroupId
-                    )
-                }
+                        job.workflowItemMeasures?.forEach { jobItemMeasure ->
+                            appDb.getJobItemMeasureDao().updateWorkflowJobItemMeasure(
+                                jobItemMeasure.itemMeasureId,
+                                jobItemMeasure.trackRouteId,
+                                jobItemMeasure.actId,
+                                jobItemMeasure.measureGroupId
+                            )
 
-                //  Place the Job Section, UPDATE OR CREATE
+                        }
 
-                job.workflowJobSections?.forEach { jobSection ->
-                    if (!appDb.getJobSectionDao().checkIfJobSectionExist(jobSection.jobSectionId)) {
-                        appDb.getJobSectionDao().insertJobSection(jobSection)
-                    } else {
-                        appDb.getJobSectionDao().updateExistingJobSectionWorkflow(
-                            jobSection.jobSectionId,
-                            jobSection.projectSectionId,
-                            jobSection.jobId,
-                            jobSection.startKm,
-                            jobSection.endKm,
-                            jobSection.recordVersion,
-                            jobSection.recordSynchStateId
-                        )
-                    }
-                }
+                        //  Place the Job Section, UPDATE OR CREATE
+
+                        job.workflowJobSections?.forEach { jobSection ->
+                            if (!appDb.getJobSectionDao().checkIfJobSectionExist(jobSection.jobSectionId)) {
+                                appDb.getJobSectionDao().insertJobSection(jobSection)
+                            } else {
+                                appDb.getJobSectionDao().updateExistingJobSectionWorkflow(
+                                    jobSection.jobSectionId,
+                                    jobSection.projectSectionId,
+                                    jobSection.jobId,
+                                    jobSection.startKm,
+                                    jobSection.endKm,
+                                    jobSection.recordVersion,
+                                    jobSection.recordSynchStateId
+                                )
+                            }
+                        }
+
+                        appDb.getJobDao().updateJob(job.trackRouteId, job.actId, job.jiNo, job.jobId)
+
+
+
                 Timber.d("Updated Workflow: $job")
                 postWorkflowStatus(XISuccess("WORK_COMPLETE"))
             } catch (t: Throwable) {
@@ -315,3 +343,5 @@ class MeasureApprovalDataRepository(
         }
     }
 }
+
+
