@@ -83,7 +83,6 @@ import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.CENTER
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.ERROR
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.INFO
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.NO_INTERNET
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.SUCCESS
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.WARNING
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import java.util.Date
@@ -477,7 +476,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
 
                     groupAdapter.notifyItemChanged(0)
                 }
-                else -> this.motionToast("Error: Current location is null!", MotionToast.TOAST_ERROR)
+                else -> this.sharpToast("Error: Current location is null!", MotionToast.TOAST_ERROR)
             }
         } catch (e: Exception) {
             sharedViewModel.setColorMessage(
@@ -776,9 +775,19 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
 
     private fun popViewOnJobSubmit(direction: Int) {
         if (direction == WorkflowDirection.NEXT.value) {
-            sharedViewModel.setColorMessage(getString(R.string.work_complete), SUCCESS, BOTTOM, LONG)
+            this.sharpToast(
+                R.string.work_complete,
+                MotionToast.TOAST_SUCCESS,
+                MotionToast.GRAVITY_BOTTOM,
+                MotionToast.LONG_DURATION
+            )
         } else if (direction == WorkflowDirection.FAIL.value) {
-            sharedViewModel.setColorMessage(getString(R.string.work_declined), INFO, BOTTOM, LONG)
+            this.sharpToast(
+                getString(R.string.work_declined),
+                MotionToast.TOAST_INFO,
+                MotionToast.GRAVITY_BOTTOM,
+                MotionToast.LONG_DURATION
+            )
         }
         Intent(activity, MainActivity::class.java).also { home ->
             startActivity(home)

@@ -90,7 +90,7 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
                     )
                 }
                 is XIStatus -> {
-                    this.motionToast(
+                    this.sharpToast(
                         result.message,
                         MotionToast.TOAST_INFO,
                         MotionToast.GRAVITY_TOP,
@@ -190,7 +190,7 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
                         flowDirection = workflowDirection.value
 
                         if (userDTO.userId.isBlank()) {
-                            this@MeasureApprovalFragment.motionToast(
+                            this@MeasureApprovalFragment.sharpToast(
                                 "User lacks permissions",
                                 MotionToast.TOAST_ERROR,
                                 MotionToast.GRAVITY_BOTTOM
@@ -229,9 +229,9 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
 
     private fun popViewOnJobSubmit(direction: Int) {
         if (direction == NEXT.value) {
-            this.motionToast(string.measurement_approved, MotionToast.TOAST_SUCCESS)
+            this.sharpToast(string.measurement_approved, MotionToast.TOAST_SUCCESS)
         } else if (direction == WorkflowDirection.FAIL.value) {
-            this.motionToast(string.measurement_declined, MotionToast.TOAST_INFO)
+            this.sharpToast(string.measurement_declined, MotionToast.TOAST_INFO)
         }
 
         Intent(context?.applicationContext, MainActivity::class.java).also { home ->

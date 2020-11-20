@@ -150,10 +150,10 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                     msure.qty > 0 && msure.jobItemMeasurePhotos.isNotEmpty()
                 }
                 if (validMeasures.isNullOrEmpty()) {
-                    this.motionToast(R.string.please_make_sure_you_have_captured_photos, MotionToast.TOAST_WARNING)
+                    this.sharpToast(R.string.please_make_sure_you_have_captured_photos, MotionToast.TOAST_WARNING)
                     progressButton.failProgress(originalCaption)
                 } else {
-                    this.motionToast(
+                    this.sharpToast(
                         "You have Done " + validMeasures.size.toString() + " Measurements on this Estimate",
                         MotionToast.TOAST_INFO
                     )
@@ -198,7 +198,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                 if (ServiceUtil.isNetworkAvailable(requireContext().applicationContext)) {
                     submitMeasures(itemMeasureJob, mSures)
                 } else {
-                    this@SubmitMeasureFragment.motionToast(
+                    this@SubmitMeasureFragment.sharpToast(
                         getString(R.string.no_connection_detected),
                         MotionToast.TOAST_ERROR,
                         MotionToast.GRAVITY_BOTTOM
@@ -228,7 +228,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
             user.observe(viewLifecycleOwner, { userDTO ->
                 when {
                     userDTO.userId.isBlank() -> {
-                        this@SubmitMeasureFragment.motionToast(
+                        this@SubmitMeasureFragment.sharpToast(
                             "Error: current user lacks permissions",
                             MotionToast.TOAST_ERROR,
                             MotionToast.GRAVITY_BOTTOM
@@ -237,7 +237,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
 
                     }
                     itemMeasureJob.JobId.isBlank() -> {
-                        this@SubmitMeasureFragment.motionToast(
+                        this@SubmitMeasureFragment.sharpToast(
                             "Error: selected job is invalid",
                             MotionToast.TOAST_ERROR,
                             MotionToast.GRAVITY_BOTTOM
@@ -299,7 +299,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                     response?.let { outcome ->
                         when (outcome) {
                             is XISuccess -> {
-                                this@SubmitMeasureFragment.motionToast(
+                                this@SubmitMeasureFragment.sharpToast(
                                     "Measurements submitted for Job ${outcome.data}",
                                     MotionToast.TOAST_SUCCESS
                                 )
@@ -309,7 +309,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                             }
                             is XIError -> {
                                 result.cancel(CancellationException(outcome.message))
-                                this@SubmitMeasureFragment.motionToast(
+                                this@SubmitMeasureFragment.sharpToast(
                                     "Submission failed",
                                     MotionToast.TOAST_ERROR
                                 )

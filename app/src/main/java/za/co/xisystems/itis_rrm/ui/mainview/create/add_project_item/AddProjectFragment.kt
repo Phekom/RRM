@@ -357,7 +357,7 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
 
             Coroutines.main {
                 if (!JobUtils.areQuantitiesValid(job)) {
-                    this@AddProjectFragment.motionToast(
+                    this@AddProjectFragment.sharpToast(
                         "Error: incomplete estimates.\n Quantity can't be zero!",
                         MotionToast.TOAST_WARNING
                     )
@@ -473,12 +473,12 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
                 createViewModel.submitJob(userId, job, requireActivity())
 
             if (!submit.isBlank()) {
-                this@AddProjectFragment.motionToast(
+                this@AddProjectFragment.sharpToast(
                     submit,
                     MotionToast.TOAST_ERROR
                 )
             } else {
-                this@AddProjectFragment.motionToast(
+                this@AddProjectFragment.sharpToast(
                     getString(R.string.job_submitted),
                     MotionToast.TOAST_SUCCESS
                 )
@@ -545,7 +545,7 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
     }
 
     private fun onInvalidJob() {
-        this.motionToast("Incomplete estimates!", MotionToast.TOAST_WARNING)
+        this.sharpToast("Incomplete estimates!", MotionToast.TOAST_WARNING)
         itemsCardView.startAnimation(shake_long)
     }
 

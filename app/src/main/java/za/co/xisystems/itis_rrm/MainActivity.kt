@@ -151,7 +151,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         sharedViewModel.colorMessage.observe(this, {
             it?.let {
-                toastMessage(this@MainActivity, it)
+                toastMessage(it)
             }
         })
 
@@ -469,6 +469,19 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
+    private fun toastMessage(
+        colorToast: ColorToast
+    ) {
+        MotionToast.createColorToast(
+            context = this,
+            message = colorToast.message,
+            style = colorToast.style.getValue(),
+            position = colorToast.gravity.getValue(),
+            duration = colorToast.duration.getValue(),
+            font = ResourcesCompat.getFont(baseContext, R.font.helvetica_regular)
+        )
+    }
+
     override fun onResume() {
         super.onResume()
         if (this.delegate.localNightMode == AppCompatDelegate.MODE_NIGHT_YES) {
@@ -492,18 +505,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         const val PROJECT_CONTRACTOR_ROLE_IDENTIFIER =
             "RRM Job Mobile - Contractor" // "E398A3EF1C18431DBAEE4A4AC5D6F07D"
 
-        private fun toastMessage(
-            activity: AppCompatActivity,
-            colorToast: ColorToast
-        ) {
-            MotionToast.createColorToast(
-                context = activity,
-                message = colorToast.message,
-                style = colorToast.style.getValue(),
-                position = colorToast.gravity.getValue(),
-                duration = colorToast.duration.getValue(),
-                font = ResourcesCompat.getFont(activity, R.font.helvetica_regular)
-            )
-        }
+
     }
 }

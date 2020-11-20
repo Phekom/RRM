@@ -800,7 +800,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
 
     private fun showLocationWarning() {
         if (!locationWarning) {
-            this.motionToast(
+            this.sharpToast(
                 getString(string.no_section_for_project),
                 MotionToast.TOAST_ERROR,
                 MotionToast.GRAVITY_BOTTOM,

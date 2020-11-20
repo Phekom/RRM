@@ -119,7 +119,7 @@ class CaptureItemMeasurePhotoFragment :
                         estimate_image_collection_view.clearImages()
                         viewPhotosOnly = false
 
-                        this@CaptureItemMeasurePhotoFragment.motionToast(
+                        this@CaptureItemMeasurePhotoFragment.sharpToast(
                             message = "Measuring job: ${it.jimNo}",
                             motionType = MotionToast.TOAST_INFO,
                             position = MotionToast.GRAVITY_TOP

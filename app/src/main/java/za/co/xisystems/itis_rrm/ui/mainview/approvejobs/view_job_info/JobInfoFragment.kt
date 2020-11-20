@@ -75,7 +75,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
                     )
                 }
                 is XIStatus -> {
-                    this.motionToast(result.message, MotionToast.TOAST_INFO)
+                    this.sharpToast(result.message, MotionToast.TOAST_INFO)
                 }
                 is XIProgress -> {
                     when (result.isLoading) {
@@ -161,7 +161,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
                     progressButton.initProgress(viewLifecycleOwner)
                     moveJobToNextWorkflow(WorkflowDirection.NEXT)
                 } else {
-                    this.motionToast(
+                    this.sharpToast(
                         message = getString(R.string.no_connection_detected),
                         motionType = MotionToast.TOAST_ERROR
                     )
@@ -196,7 +196,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
                     progressButton.initProgress(viewLifecycleOwner)
                     moveJobToNextWorkflow(WorkflowDirection.FAIL)
                 } else {
-                    this.motionToast(
+                    this.sharpToast(
                         message = getString(R.string.no_connection_detected),
                         motionType = MotionToast.TOAST_ERROR
                     )
@@ -231,16 +231,16 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
                             Timber.d("ApproveItem was null")
                         }
                         userDTO.userId.isBlank() -> {
-                            this@JobInfoFragment.motionToast("The user lacks permissions.", MotionToast.TOAST_ERROR)
+                            this@JobInfoFragment.sharpToast("The user lacks permissions.", MotionToast.TOAST_ERROR)
                             progressButton.failProgress("Invalid User")
                         }
                         job.jobDTO.JobId.isBlank() -> {
-                            this@JobInfoFragment.motionToast("The selected job is invalid.", MotionToast.TOAST_ERROR)
+                            this@JobInfoFragment.sharpToast("The selected job is invalid.", MotionToast.TOAST_ERROR)
                             progressButton.failProgress("Invalid Job")
                         }
                         workflowDirection == WorkflowDirection.FAIL &&
                             workflow_comments_editText.text.isNullOrBlank() -> {
-                            this@JobInfoFragment.motionToast(
+                            this@JobInfoFragment.sharpToast(
                                 "Please provide a comment / reason for declining this job",
                                 MotionToast.TOAST_WARNING
                             )
@@ -288,13 +288,13 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
     private fun popViewOnJobSubmit(direction: Int, jiNo: String?) {
         if (direction == WorkflowDirection.NEXT.value) {
             progressButton.text = getString(R.string.approve_job)
-            this.motionToast(
+            this.sharpToast(
                 getString(R.string.job_no_approved, jiNo!!),
                 MotionToast.TOAST_SUCCESS
             )
         } else if (direction == WorkflowDirection.FAIL.value) {
             progressButton.text = getString(R.string.decline_job)
-            this.motionToast(
+            this.sharpToast(
                 getString(R.string.job_declined),
                 MotionToast.TOAST_INFO
             )
