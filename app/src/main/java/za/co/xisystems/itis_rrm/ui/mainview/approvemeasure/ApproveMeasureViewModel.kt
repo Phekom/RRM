@@ -13,7 +13,6 @@ import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
-import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler.UNKNOWN_ERROR
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.custom.results.XIError
@@ -53,7 +52,7 @@ class ApproveMeasureViewModel(
 
     var measureGalleryUIState: MutableLiveData<XIResult<MeasureGalleryUIState>> = MutableLiveData()
 
-    val superJob = SupervisorJob()
+    private val superJob = SupervisorJob()
 
     private var galleryMeasure: MutableLiveData<JobItemMeasureDTO> = MutableLiveData()
 
@@ -144,14 +143,16 @@ class ApproveMeasureViewModel(
         measurements: List<JobItemMeasureDTO>
     ) = viewModelScope.launch {
         workflowState.postValue(XIProgress(true))
-        val measureJobs = mutableListOf<Job>()
+
 
         withContext(Dispatchers.IO + uncaughtExceptionHandler) {
             try {
                 measureApprovalDataRepository.processWorkflowMove(userId, measurements, workflowDirection.value)
+
                 workflowState.postValue(XISuccess("WORK_COMPLETE"))
+
             } catch (t: Throwable) {
-                workflowState.postValue(XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR))
+                workflowState.postValue(XIError(t, t.message ?: UNKNOWN_ERROR))
             }
         }
     }

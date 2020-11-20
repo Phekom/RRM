@@ -54,7 +54,6 @@ import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection.NEXT
 
-@Suppress("KDocUnresolvedReference")
 class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval), KodeinAware {
     override val kodein by kodein()
     private lateinit var approveViewModel: ApproveMeasureViewModel
@@ -78,6 +77,7 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
                         initRecyclerView(measurementsToApprove.toMeasureItems())
                         progressButton.doneProgress(progressButton.text.toString())
                         popViewOnJobSubmit(flowDirection)
+                        progressButton.initProgress(viewLifecycleOwner)
                     }
                 }
                 is XIError -> {
@@ -153,12 +153,12 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
                 approveBuilder.setTitle(string.confirm)
                 approveBuilder.setIcon(R.drawable.ic_approve)
                 approveBuilder.setMessage(string.are_you_sure_you_want_to_approve2)
-                progressButton = approve_measure_button
-                progressButton.initProgress(viewLifecycleOwner)
                 // Yes button
                 approveBuilder.setPositiveButton(
                     string.yes
                 ) { _, _ ->
+                    progressButton = approve_measure_button
+                    progressButton.initProgress(viewLifecycleOwner)
                     processMeasurementWorkflow(NEXT)
                 }
 
@@ -205,7 +205,6 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
                                             workflowDirection,
                                             measurementsToApprove
                                         )
-
                                     } catch (t: Throwable) {
                                         val message = "Measurement Approval Exception: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
                                         Timber.e(t, message)
@@ -267,7 +266,7 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
     }
 
     override fun onDestroyView() {
-        // approveViewModel.workflowState.removeObservers(viewLifecycleOwner)
+        approveViewModel.workflowState.removeObservers(viewLifecycleOwner)
         view_measured_items.adapter = null
         super.onDestroyView()
     }
