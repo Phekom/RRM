@@ -417,13 +417,11 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
         expandableGroups = mutableListOf()
         return this.map { jobItemEstimateDTO ->
             val expandableHeaderItem = ExpandableHeaderMeasureItem(
-                activity,
+                this@SubmitMeasureFragment,
                 jobItemEstimateDTO,
                 measureViewModel,
                 jobItemMeasurePhotoDTO,
-                jobItemMeasureArrayList,
-                jobItemEstimatesForJob,
-                jobItemMeasuresForJobItemEstimates
+                jobItemMeasureArrayList
             )
             expandableHeaderItem.onExpandListener = { toggledGroup ->
                 expandableGroups.forEach {
