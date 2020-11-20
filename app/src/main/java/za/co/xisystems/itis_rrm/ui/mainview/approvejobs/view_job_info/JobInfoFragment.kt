@@ -86,7 +86,6 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
                 }
             }
         }
-
     }
 
     private fun retryWork() {
@@ -193,7 +192,6 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
             ) { _, _ ->
                 if (ServiceUtil.isNetworkAvailable(requireContext().applicationContext)) {
                     progressButton = decline_job_button
-                    progressButton.initProgress(viewLifecycleOwner)
                     moveJobToNextWorkflow(WorkflowDirection.FAIL)
                 } else {
                     this.sharpToast(
@@ -217,11 +215,19 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
     private fun moveJobToNextWorkflow(workflowDirection: WorkflowDirection) {
         Coroutines.main {
             flowDirection = workflowDirection
-            val caption = when (progressButton == approve_job_button) {
-                true -> "Approving Job ..."
-                else -> "Declining Job ..."
+            val caption = ""
+            when (progressButton == approve_job_button) {
+                true -> {
+                    progressButton.text = "Approving Job ..."
+                    decline_job_button.visibility = View.GONE
+                }
+                else -> {
+                    progressButton.text = "Declining Job ..."
+                    approve_job_button.visibility = View.GONE
+                }
             }
-            progressButton.startProgress(caption)
+            progressButton.initProgress(viewLifecycleOwner)
+            progressButton.startProgress(progressButton.text.toString())
             val user = approveViewModel.user.await()
             user.observe(viewLifecycleOwner, { userDTO ->
                 approveViewModel.jobApprovalItem.observe(viewLifecycleOwner, { job ->
@@ -239,14 +245,12 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
                             progressButton.failProgress("Invalid Job")
                         }
                         workflowDirection == WorkflowDirection.FAIL &&
-                            workflow_comments_editText.text.isNullOrBlank() -> {
+                            workflow_comments_editText.text.trim().isBlank() -> {
                             this@JobInfoFragment.sharpToast(
                                 "Please provide a comment / reason for declining this job",
                                 MotionToast.TOAST_WARNING
                             )
-
                             progressButton.failProgress(getString(R.string.decline_job))
-
                         }
                         else -> {
                             initJobWorkflow(job, workflowDirection, userDTO)
@@ -334,7 +338,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
 
     override fun onDestroyView() {
         view_estimation_items_listView.adapter = null
-        // approveViewModel.workflowState.removeObservers(viewLifecycleOwner)
+        approveViewModel.workflowState?.removeObservers(viewLifecycleOwner)
         super.onDestroyView()
     }
 }
