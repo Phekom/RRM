@@ -144,7 +144,7 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
                 R.id.selectContractProjectContinueButton -> {
                     val description = descriptionEditText.text!!.toString().trim { it <= ' ' }
                     if (description.isEmpty()) {
-                        motionToast("Please Enter Description", MotionToast.TOAST_WARNING)
+                        sharpToast("Please Enter Description", MotionToast.TOAST_WARNING)
                         descriptionEditText.startAnimation(shake)
                         //                            return
                     } else {
@@ -253,7 +253,7 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
 
         newJob = createdJob
 
-        motionToast("New job created", MotionToast.TOAST_SUCCESS)
+        sharpToast("New job created", MotionToast.TOAST_SUCCESS)
         return createdJob
     }
 

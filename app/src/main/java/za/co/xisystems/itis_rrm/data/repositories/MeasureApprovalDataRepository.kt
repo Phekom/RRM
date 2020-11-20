@@ -21,6 +21,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.WorkflowJobDTO
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
+import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DataConversion
 
@@ -111,7 +112,7 @@ class MeasureApprovalDataRepository(
                             apiRequest { api.getWorkflowMove(userId, measureTrackId, description, direction) }
                         workflowMoveResponse.workflowJob?.let { job ->
                             job.workflowItemMeasures?.forEach { jobItemMeasure ->
-                                if (jobItemMeasure.actId.equals(12)) {
+                                if (jobItemMeasure.actId == ActivityIdConstants.MEASURE_APPROVED) {
                                     val itemMeasureId = DataConversion.toBigEndian(jobItemMeasure.itemMeasureId)
                                     val trackRouteId = DataConversion.toBigEndian(jobItemMeasure.trackRouteId)
                                     val measureGroupId = DataConversion.toBigEndian(jobItemMeasure.measureGroupId)

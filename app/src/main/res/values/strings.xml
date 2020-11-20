@@ -567,7 +567,7 @@
 
     <string name="preference_file_key">com.example.android.while_in_use_location.PREFERENCE_FILE_KEY</string>
     <string name="no_location_text">No current location</string>
-    <string name="badge">(%1$d)</string>
+    <string name="badge">(%1$s)</string>
     <string name="pair">%1$s %2$s</string>
     <string name="comment_placeholder">No comment</string>
     <string name="route_section_badge">( %1$s/0%2$s )</string>

@@ -581,4 +581,8 @@ class JobCreationDataRepository(
             appDb.getProjectDao().getProjectCodeForId(projectId)
         }
     }
+
+    suspend fun backupJob(job: JobDTO)= appDb.getJobDao().insertOrUpdateJobs(job)
+
+
 }

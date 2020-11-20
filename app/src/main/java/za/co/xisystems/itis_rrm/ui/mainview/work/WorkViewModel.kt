@@ -50,7 +50,7 @@ class WorkViewModel(
             workflowStatus = workDataRepository.workStatus.distinctUntilChanged()
 
             workflowState = Transformations.map(workflowStatus) { it ->
-                it?.getContentIfNotHandled()
+                it?.peekContent()
             } as? MutableLiveData<XIResult<String>>
         }
     }

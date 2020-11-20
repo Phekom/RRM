@@ -89,54 +89,57 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
                     }
                 })
 
-                unsubmittedViewModel.jobtoEdit_Item.observe(
+                createViewModel.currentJob.observe(
                     viewLifecycleOwner,
-                    { jobToEdit ->
-                        toast("Editing ${jobToEdit.Descr}")
-                        Coroutines.main {
-                            projectID = jobToEdit.ProjectId
-                            job = jobToEdit
-                            val contractNo =
-                                createViewModel.getContractNoForId(jobToEdit.ContractVoId)
-                            val projectCode =
-                                createViewModel.getProjectCodeForId(jobToEdit.ProjectId)
-                            selectedContractTextView.text = contractNo
-                            selectedProjectTextView.text = projectCode
-
-                            infoTextView.visibility = View.GONE
-                            last_lin.visibility = View.VISIBLE
-                            totalCostTextView.visibility = View.VISIBLE
-
-                            createViewModel.setJobToEditItem(jobToEdit)
-
-                            // Set job description init actionBar
-                            (activity as MainActivity).supportActionBar?.title = jobToEdit.Descr
-
+                    { currentJob ->
+                        currentJob?.let { jobToEdit ->
+                            toast("Editing ${jobToEdit.Descr}")
                             Coroutines.main {
-                                val projectItemData =
-                                    createViewModel.getAllProjectItems(projectID!!, job!!.JobId)
-                                projectItemData.observe(
-                                    viewLifecycleOwner,
-                                    { projectItemList ->
-                                        if (projectItemList.isEmpty()) {
-                                            groupAdapter.clear()
-                                            totalCostTextView.text = ""
-                                            last_lin.visibility = View.GONE
-                                            totalCostTextView.visibility = View.GONE
-                                        }
-                                        items = projectItemList
-                                        for (item in projectItemList.listIterator()) {
-                                            if (job?.JobId != item.jobId) {
+                                projectID = jobToEdit.ProjectId
+                                job = jobToEdit
+                                val contractNo =
+                                    createViewModel.getContractNoForId(jobToEdit.ContractVoId)
+                                val projectCode =
+                                    createViewModel.getProjectCodeForId(jobToEdit.ProjectId)
+                                selectedContractTextView.text = contractNo
+                                selectedProjectTextView.text = projectCode
+
+                                infoTextView.visibility = View.GONE
+                                last_lin.visibility = View.VISIBLE
+                                totalCostTextView.visibility = View.VISIBLE
+
+                                // createViewModel.setJobToEdit(currentJob.JobId)
+
+                                // Set job description init actionBar
+                                (activity as MainActivity).supportActionBar?.title = jobToEdit.Descr
+
+                                Coroutines.main {
+                                    val projectItemData =
+                                        createViewModel.getAllProjectItems(projectID!!, job!!.JobId)
+                                    projectItemData.observe(
+                                        viewLifecycleOwner,
+                                        { projectItemList ->
+                                            if (projectItemList.isEmpty()) {
                                                 groupAdapter.clear()
-                                                totalCostTextView.clearComposingText()
-                                            } else {
-                                                initRecyclerView(projectItemList.toProjecListItems())
-                                                calculateTotalCost()
+                                                totalCostTextView.text = ""
+                                                last_lin.visibility = View.GONE
+                                                totalCostTextView.visibility = View.GONE
                                             }
-                                        }
-                                    })
+                                            items = projectItemList
+                                            for (item in projectItemList.listIterator()) {
+                                                if (job?.JobId != item.jobId) {
+                                                    groupAdapter.clear()
+                                                    totalCostTextView.clearComposingText()
+                                                } else {
+                                                    initRecyclerView(projectItemList.toProjecListItems())
+                                                    calculateTotalCost()
+                                                }
+                                            }
+                                        })
+                                }
                             }
                         }
+
                     })
 
                 createViewModel.sectionProjectItem.observe(viewLifecycleOwner, {
@@ -147,14 +150,14 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
                     Coroutines.main {
                         val projectItems =
                             createViewModel.getAllProjectItems(projectID!!, job!!.JobId)
-                        projectItems.observe(viewLifecycleOwner, { projItemList ->
-                            if (projItemList.isEmpty()) {
+                        projectItems.observe(viewLifecycleOwner, { itemList ->
+                            if (itemList.isEmpty()) {
                                 groupAdapter.clear()
                                 totalCostTextView.text = ""
                                 last_lin.visibility = View.GONE
                                 totalCostTextView.visibility = View.GONE
                             } else {
-                                items = projItemList
+                                items = itemList
                             }
 
                             for (item in items.listIterator()) {
@@ -258,7 +261,7 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
             val job = getSerializable("job") as JobDTO
             val items = getSerializable("items") as List<ItemDTOTemp>
             newJobItemEstimatesList = ArrayList<JobItemEstimateDTO>()
-            createViewModel.setJobToEditItem(job)
+            createViewModel.setCurrentJob(job)
             initRecyclerView(items.toProjecListItems())
         }
     }
@@ -354,7 +357,7 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
 
             Coroutines.main {
                 if (!JobUtils.areQuantitiesValid(job)) {
-                    this@AddProjectFragment.motionToast(
+                    this@AddProjectFragment.sharpToast(
                         "Error: incomplete estimates.\n Quantity can't be zero!",
                         MotionToast.TOAST_WARNING
                     )
@@ -470,12 +473,12 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
                 createViewModel.submitJob(userId, job, requireActivity())
 
             if (!submit.isBlank()) {
-                this@AddProjectFragment.motionToast(
+                this@AddProjectFragment.sharpToast(
                     submit,
                     MotionToast.TOAST_ERROR
                 )
             } else {
-                this@AddProjectFragment.motionToast(
+                this@AddProjectFragment.sharpToast(
                     getString(R.string.job_submitted),
                     MotionToast.TOAST_SUCCESS
                 )
@@ -499,7 +502,7 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
         val calendar = Calendar.getInstance()
         calendar[year, month] = dayOfMonth
         job?.DueDate = calendar.time.toString()
-        createViewModel.setJobToEditItem(job!!)
+        backupJobInProgress(job)
     }
 
     private fun setStartDateTextView(year: Int, month: Int, dayOfMonth: Int) {
@@ -509,7 +512,13 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
         val calendar = Calendar.getInstance()
         calendar[year, month] = dayOfMonth
         job?.StartDate = calendar.time.toString()
-        createViewModel.setJobToEditItem(job!!)
+        backupJobInProgress(job)
+    }
+
+    private fun backupJobInProgress(jobDTO: JobDTO?) {
+        Coroutines.main {
+            createViewModel.backupJob(jobDTO!!)
+        }
     }
 
     private fun onResetClicked(view: View) {
@@ -536,7 +545,7 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
     }
 
     private fun onInvalidJob() {
-        this.motionToast("Incomplete estimates!", MotionToast.TOAST_WARNING)
+        this.sharpToast("Incomplete estimates!", MotionToast.TOAST_WARNING)
         itemsCardView.startAnimation(shake_long)
     }
 

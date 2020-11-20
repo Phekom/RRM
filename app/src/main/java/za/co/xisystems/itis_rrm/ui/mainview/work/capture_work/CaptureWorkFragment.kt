@@ -83,7 +83,6 @@ import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.CENTER
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.ERROR
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.INFO
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.NO_INTERNET
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.SUCCESS
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.WARNING
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import java.util.Date
@@ -145,7 +144,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
 
     override fun onDestroyView() {
         // Remember to flush the RecyclerView's adaptor
-
+        workViewModel.workflowState?.removeObservers(viewLifecycleOwner)
         work_actions_listView.adapter = null
         image_collection_view.clearImages()
         super.onDestroyView()
@@ -191,7 +190,6 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
             validateUploadWorks()
         }
 
-        move_workflow_button.initProgress(viewLifecycleOwner)
     }
 
     private fun populateHistoricalWorkEstimate(result: XIResult<JobEstimateWorksDTO>) {
@@ -247,7 +245,6 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                 }
                 else -> {
                     move_workflow_button.isClickable = false
-                    move_workflow_button.startProgress("Uploading ...")
                     uploadEstimateWorksItem()
                     move_workflow_button.isClickable = true
                 }
@@ -302,8 +299,8 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
         itemEstiWorks: JobEstimateWorksDTO
     ) {
         uiScope.launch(uiScope.coroutineContext) {
-            workViewModel.backupWorkSubmission.postValue(itemEstiWorks)
             workViewModel.workflowState?.observe(viewLifecycleOwner, workObserver)
+            workViewModel.backupWorkSubmission.postValue(itemEstiWorks)
             val newItemEstimateWorks = setJobWorksLittleEndianGuids(itemEstiWorks)
             workSubmission = workViewModel.submitWorks(newItemEstimateWorks, requireActivity(), itemEstimateJob)
             workSubmission.join()
@@ -351,6 +348,9 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
         outcome?.let { result ->
             when (result) {
                 is XISuccess -> {
+                    this.sharpToast("Work captured",
+                        motionType = MotionToast.TOAST_SUCCESS,
+                        duration = MotionToast.SHORT_DURATION)
                     move_workflow_button.doneProgress("Workflow complete")
                     refreshView()
                 }
@@ -367,7 +367,11 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                 }
                 is XIProgress -> {
                     when (result.isLoading) {
-                        true -> move_workflow_button.startProgress(move_workflow_button.text.toString())
+
+                        true -> {
+                            move_workflow_button.initProgress(viewLifecycleOwner)
+                            move_workflow_button.startProgress(move_workflow_button.text.toString())
+                        }
                         else -> move_workflow_button.doneProgress(move_workflow_button.text.toString())
                     }
                 }
@@ -406,7 +410,6 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
     }
 
     private fun refreshView() {
-
         groupAdapter.clear()
         image_collection_view.clearImages()
         estimateWorksPhotoArrayList.clear()
@@ -477,7 +480,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
 
                     groupAdapter.notifyItemChanged(0)
                 }
-                else -> this.motionToast("Error: Current location is null!", MotionToast.TOAST_ERROR)
+                else -> this.sharpToast("Error: Current location is null!", MotionToast.TOAST_ERROR)
             }
         } catch (e: Exception) {
             sharedViewModel.setColorMessage(
@@ -671,8 +674,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
             dialogBuilder.setPositiveButton(
                 R.string.yes
             ) { dialog, which ->
-                workViewModel.workflowState?.observe(viewLifecycleOwner, jobObserver)
-                workViewModel.workflowState?.postValue(XIProgress(true))
+
                 pushCompletedEstimates(estimates)
             }
 
@@ -697,6 +699,8 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
 
         workViewModel.backupCompletedEstimates.postValue(estimates as List<JobItemEstimateDTO>)
         Coroutines.main {
+            workViewModel.workflowState?.observe(viewLifecycleOwner, jobObserver)
+            workViewModel.workflowState?.postValue(XIProgress(true))
             jobSubmission = uiScope.launch(uiScope.coroutineContext) {
                 withContext(uiScope.coroutineContext) {
 
@@ -776,9 +780,19 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
 
     private fun popViewOnJobSubmit(direction: Int) {
         if (direction == WorkflowDirection.NEXT.value) {
-            sharedViewModel.setColorMessage(getString(R.string.work_complete), SUCCESS, BOTTOM, LONG)
+            this.sharpToast(
+                R.string.work_complete,
+                MotionToast.TOAST_SUCCESS,
+                MotionToast.GRAVITY_BOTTOM,
+                MotionToast.LONG_DURATION
+            )
         } else if (direction == WorkflowDirection.FAIL.value) {
-            sharedViewModel.setColorMessage(getString(R.string.work_declined), INFO, BOTTOM, LONG)
+            this.sharpToast(
+                getString(R.string.work_declined),
+                MotionToast.TOAST_INFO,
+                MotionToast.GRAVITY_BOTTOM,
+                MotionToast.LONG_DURATION
+            )
         }
         Intent(activity, MainActivity::class.java).also { home ->
             startActivity(home)

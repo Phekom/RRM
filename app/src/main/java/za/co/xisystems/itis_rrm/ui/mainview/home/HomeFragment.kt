@@ -92,7 +92,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                         }
                     }
                 } else {
-                    motionToast(
+                    sharpToast(
                         getString(R.string.please_connect_to_internet_to_up_sync_offline_workflows),
                         MotionToast.TOAST_NO_INTERNET,
                         MotionToast.GRAVITY_BOTTOM,
@@ -307,7 +307,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
         signal?.let{result ->
             when (result) {
                 is XISuccess -> {
-                    motionToast(
+                    sharpToast(
                         "Sync Complete",
                         MotionToast.TOAST_SUCCESS,
                         MotionToast.GRAVITY_BOTTOM,

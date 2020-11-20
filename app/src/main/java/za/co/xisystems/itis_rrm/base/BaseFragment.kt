@@ -156,16 +156,16 @@ abstract class BaseFragment(layoutContentId: Int) : Fragment(), IProgressView {
 
     override fun toast(resid: String?) {
         resid?.let {
-            if (!activity?.isFinishing!!) motionToast(resid)
+            if (!activity?.isFinishing!!) sharpToast(resid)
         }
     }
 
-    protected fun motionToast(resId: Int, motionType: String = MotionToast.TOAST_INFO, position: Int = MotionToast.GRAVITY_BOTTOM, duration: Int = MotionToast.LONG_DURATION) {
+    protected fun sharpToast(resId: Int, motionType: String = MotionToast.TOAST_INFO, position: Int = MotionToast.GRAVITY_BOTTOM, duration: Int = MotionToast.LONG_DURATION) {
         val message = getString(resId)
-        motionToast(message, motionType, position, duration)
+        sharpToast(message, motionType, position, duration)
     }
 
-    protected fun motionToast(message: String, motionType: String = MotionToast.TOAST_INFO, position: Int = MotionToast.GRAVITY_BOTTOM, duration: Int = MotionToast.LONG_DURATION) {
+    protected fun sharpToast(message: String, motionType: String = MotionToast.TOAST_INFO, position: Int = MotionToast.GRAVITY_BOTTOM, duration: Int = MotionToast.LONG_DURATION) {
         if (!activity?.isFinishing!!)
             MotionToast.createColorToast(
                 context = requireActivity(),

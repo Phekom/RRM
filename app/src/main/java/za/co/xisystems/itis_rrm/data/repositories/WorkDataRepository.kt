@@ -19,6 +19,7 @@ import za.co.xisystems.itis_rrm.custom.errors.ServiceException
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.custom.results.XIError
+import za.co.xisystems.itis_rrm.custom.results.XIProgress
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.results.XISuccess
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
@@ -111,7 +112,7 @@ class WorkDataRepository(
         activity: FragmentActivity,
         estimateJob: JobDTO
     ) {
-
+        postWorkStatus(XIProgress(true))
         val worksData = JsonObject()
         val gson = Gson()
         val newMeasure = gson.toJson(estimateWorksItem)
@@ -152,7 +153,9 @@ class WorkDataRepository(
         useR: Int
     ) {
         withContext(Dispatchers.IO) {
+            // postWorkStatus(XIStatus("Uploading images ..."))
             uploadWorksImages(jobEstimateWorks, activity)
+            // postWorkStatus(XIStatus("Performing workflow ..."))
             moveJobToNextWorkflowStep(jobEstimateWorks, useR)
         }
     }
@@ -285,7 +288,9 @@ class WorkDataRepository(
                     }
                 }
 
+                postWorkStatus(XIProgress(false))
                 postWorkStatus(XISuccess(jobEstimateWorks.worksId))
+
             } catch (t: Throwable) {
                 val message = "Failed to update workflow: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
                 Timber.e(t, message)
