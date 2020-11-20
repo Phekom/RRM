@@ -17,6 +17,7 @@ object ActivityIdConstants {
     const val ESTIMATE_MEASURE = 9
     const val MEASURE_PART_COMPLETE = 10
     const val MEASURE_COMPLETE = 11
+    const val MEASURE_APPROVED = 12
     const val ESTIMATE_CANCELLED = 14
     const val EST_WORKS_CANCELLED = 20
     const val EST_WORKS_COMPLETE = 21 // endregion (Public Static Final Fields)

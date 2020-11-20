@@ -8,15 +8,12 @@ import android.view.View.OnFocusChangeListener
 import android.view.WindowManager
 import android.widget.EditText
 import android.widget.Toast
-import androidx.fragment.app.FragmentActivity
+import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
-import androidx.navigation.Navigation
+import androidx.navigation.fragment.findNavController
 import com.xwray.groupie.ExpandableGroup
 import com.xwray.groupie.ExpandableItem
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
-import java.util.ArrayList
-import java.util.Date
-import java.util.HashMap
 import kotlinx.android.synthetic.main.item_header.appListID
 import kotlinx.android.synthetic.main.item_header.icon
 import kotlinx.android.synthetic.main.item_measure_header.headerLin
@@ -32,28 +29,27 @@ import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.estimate_measure_item.Mea
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
+import java.util.ArrayList
+import java.util.Date
 
 class ExpandableHeaderMeasureItem(
-    private var activity: FragmentActivity?,
-    val measureItem: JobItemEstimateDTO,
+    private var fragment: Fragment,
+    private val measureItem: JobItemEstimateDTO,
     measureViewModel: MeasureViewModel,
     private val jobItemMeasurePhotoDTOArrayList: ArrayList<JobItemMeasurePhotoDTO>,
-    private val jobItemMeasureArrayList: ArrayList<JobItemMeasureDTO>,
-    private var jobItemEstimatesForJob: ArrayList<JobItemEstimateDTO>,
-    private var listDataChild: HashMap<JobItemEstimateDTO, List<JobItemMeasureDTO>>
+    private val jobItemMeasureArrayList: ArrayList<JobItemMeasureDTO>
 
 ) : MeasureHeaderItem(null, measureItem, measureViewModel), ExpandableItem {
 
-    var clickListener: ((ExpandableHeaderMeasureItem) -> Unit)? = null
-    var navController: ((NavController) -> Unit)? = null
-    var projectItemIdz: String? = measureItem.projectItemId
+    private var clickListener: ((ExpandableHeaderMeasureItem) -> Unit)? = null
+    private var navController: ((NavController) -> Unit)? = null
+    private var projectItemIdz: String? = measureItem.projectItemId
 
     private var jobItemEst: JobDTO? = null
     private var itemEs: JobItemEstimateDTO? = null
 
     companion object {
         const val JOB_ITEM_MEASURE: String = "JobItemMeasure"
-        const val PHOTO_RESULT = 9000
     }
 
     var onExpandListener: ((ExpandableGroup) -> Unit)? = null
@@ -76,7 +72,7 @@ class ExpandableHeaderMeasureItem(
                 setOnClickListener { view ->
                     measureJobItemEstimate(view)
                     onExpandListener?.invoke(expandableGroup)
-                    navController?.invoke(NavController(activity!!))
+                    navController?.invoke(NavController(fragment.requireActivity()))
                 }
             }
         }
@@ -91,7 +87,7 @@ class ExpandableHeaderMeasureItem(
     ) {
         Coroutines.main {
             val jobForJobItemEstimate = measureViewModel.getJobFromJobId(measureItem.jobId)
-            jobForJobItemEstimate.observeOnce(activity!!, { job ->
+            jobForJobItemEstimate.observeOnce(fragment.requireActivity(), { job ->
                 if (measureItem.jobId != null && job.JobId == measureItem.jobId!!)
                     showAddMeasurementQuantityDialog(
                         measureItem,
@@ -111,29 +107,27 @@ class ExpandableHeaderMeasureItem(
     ) {
 
         Coroutines.main {
-            val quantityInputEditText = EditText(activity)
+            val quantityInputEditText = EditText(fragment.requireActivity())
             quantityInputEditText.inputType =
                 InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
 
             quantityInputEditText.setSingleLine()
 
             val selectedItemMeasure = measureViewModel.getItemForItemId(measureItem.projectItemId)
-            selectedItemMeasure.observeOnce(activity!!, { selected ->
+            selectedItemMeasure.observeOnce(fragment.requireActivity(), { selected ->
 
                 if (selected != null) {
-                    var message: String = activity!!.getString(R.string.enter_quantity_measured)
+                    var message: String = fragment.requireActivity().getString(R.string.enter_quantity_measured)
                     quantityInputEditText.textAlignment = View.TEXT_ALIGNMENT_CENTER
-                    if (!selected.uom.equals(activity?.getString(R.string.none))) {
+                    if (!selected.uom.equals(fragment.requireActivity().getString(R.string.none))) {
                         quantityInputEditText.hint = selected.uom
-                        message += activity?.getString(R.string.parenthesis_open) + selected.uom + activity?.getString(
-                            R.string.parenthesis_close
-                        )
+                        message += fragment.requireActivity().getString(R.string.badge, selected.uom )
                     }
                     Coroutines.main {
                         val desc = measureViewModel.getDescForProjectItemId(projectItemIdz!!)
 
                         val enterQuantityDialog: AlertDialog =
-                            AlertDialog.Builder(activity) // android.R.style.Theme_DeviceDefault_Dialog
+                            AlertDialog.Builder(fragment.requireActivity()) // android.R.style.Theme_DeviceDefault_Dialog
                                 .setTitle(
                                     "Estimate - " + desc + System.lineSeparator() + "Quantity : " + measureItem.qty.toString()
                                         .dropLast(
@@ -183,8 +177,8 @@ class ExpandableHeaderMeasureItem(
     ) {
         if (quantityInputEditText.text.toString() == "") {
             Toast.makeText(
-                activity?.applicationContext,
-                activity?.getString(R.string.place_quantity),
+                fragment.requireActivity().applicationContext,
+                fragment.requireActivity().getString(R.string.place_quantity),
                 Toast.LENGTH_LONG
             ).show()
         } else {
@@ -254,7 +248,7 @@ class ExpandableHeaderMeasureItem(
         when {
             jobItemMeasure != null -> {
                 measureViewModel.setJobItemMeasure(jobItemMeasure)
-                Navigation.findNavController(view)
+                fragment.findNavController()
                     .navigate(R.id.action_submitMeasureFragment_to_captureItemMeasurePhotoFragment)
             }
         }
@@ -273,15 +267,6 @@ class ExpandableHeaderMeasureItem(
     }
 }
 
-private fun setJobItemMeasures(
-    jobItemMeasures: ArrayList<JobItemMeasureDTO>,
-    measureViewModel: MeasureViewModel
-) {
-    Coroutines.main {
-        measureViewModel.saveJobItemMeasureItems(jobItemMeasures)
-    }
-}
-
-private fun GroupieViewHolder.getItemId(position: Int): Long {
+private fun getItemId(position: Int): Long {
     return position.toLong()
 }

@@ -32,8 +32,6 @@ open class CardMeasureItem(
         extras[INSET_TYPE_KEY] = INSET
     }
 
-    var clickListener: ((CardMeasureItem) -> Unit)? = null
-
     override fun getLayout() = R.layout.measure_estimate_list_item
 
     override fun bind(viewHolder: GroupieViewHolder, position: Int) {
@@ -80,9 +78,7 @@ open class CardMeasureItem(
                     uiScope.launch(uiScope.coroutineContext) {
                         measureViewModel.generateGalleryUI(itemMeasureId)
                     }
-
-                    Navigation.findNavController(view)
-                        .navigate(R.id.action_submitMeasureFragment_to_captureItemMeasurePhotoFragment)
+                    Navigation.createNavigateOnClickListener(R.id.estimatePhotoFragment,null)
                 }
             } else {
                 GlideApp.with(this.containerView)

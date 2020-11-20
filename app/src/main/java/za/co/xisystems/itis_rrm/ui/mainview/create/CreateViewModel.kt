@@ -4,8 +4,12 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import java.util.ArrayList
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancelChildren
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.data.localDB.entities.ContractDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
@@ -21,6 +25,9 @@ import za.co.xisystems.itis_rrm.data.repositories.JobCreationDataRepository
 import za.co.xisystems.itis_rrm.ui.mainview.create.select_item.SectionProj_Item
 import za.co.xisystems.itis_rrm.utils.JobUtils
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
+import za.co.xisystems.itis_rrm.utils.uncaughtExceptionHandler
+import java.util.ArrayList
+import kotlin.coroutines.CoroutineContext
 
 /**
  * Created by Francis Mahlava on 2019/10/18.
@@ -31,13 +38,17 @@ class CreateViewModel(
 ) : ViewModel() {
 
     // TODO: Create Call to create a new job item
-
-    val jobToEditItem: MutableLiveData<JobDTO?> = MutableLiveData()
-    fun setJobToEditItem(inJobItemToEdit: JobDTO?) {
-        jobToEditItem.value = inJobItemToEdit
+    private val superJob = SupervisorJob()
+    val currentJob: MutableLiveData<JobDTO?> = MutableLiveData()
+    fun setCurrentJob(inJobItemToEdit: JobDTO?) {
+        currentJob.value = inJobItemToEdit
     }
+    private lateinit var ioContext : CoroutineContext
 
-    val estimateQty = MutableLiveData<Double>()
+    init {
+        ioContext = Job(superJob) + Dispatchers.IO + uncaughtExceptionHandler
+    }
+    private val estimateQty = MutableLiveData<Double>()
     fun setEstimateQuantity(inQty: Double) {
         estimateQty.value = inQty
     }
@@ -71,7 +82,7 @@ class CreateViewModel(
     }
 
     val newJob: MutableLiveData<JobDTO?> = MutableLiveData()
-    fun createNewJob(job: JobDTO) {
+    fun createNewJob(job: JobDTO?) {
         newJob.value = job
     }
 
@@ -95,7 +106,7 @@ class CreateViewModel(
         projectCode.value = inProjectCode
     }
 
-    val projectItem = MutableLiveData<ProjectItemDTO>()
+    private val projectItem = MutableLiveData<ProjectItemDTO>()
     fun setProjectItem(inProjectItem: ProjectItemDTO) {
         projectItem.value = inProjectItem
     }
@@ -297,5 +308,26 @@ class CreateViewModel(
         return withContext(Dispatchers.IO) {
             jobCreationDataRepository.getProjectCodeForId(projectId)
         }
+    }
+
+    suspend fun backupJob(job: JobDTO) = viewModelScope.launch(ioContext) {
+        jobCreationDataRepository.backupJob(job)
+    }
+
+    /**
+     * This method will be called when this ViewModel is no longer used and will be destroyed.
+     *
+     *
+     * It is useful when ViewModel observes some data and you need to clear this subscription to
+     * prevent a leak of this ViewModel.
+     */
+    override fun onCleared() {
+        super.onCleared()
+        superJob.cancelChildren()
+    }
+
+    suspend fun setJobToEdit(jobId: String) {
+        val fetchedJob = jobCreationDataRepository.getUpdatedJob(jobId)
+        currentJob.value = fetchedJob
     }
 }

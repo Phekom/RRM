@@ -54,7 +54,6 @@ import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection.NEXT
 
-@Suppress("KDocUnresolvedReference")
 class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval), KodeinAware {
     override val kodein by kodein()
     private lateinit var approveViewModel: ApproveMeasureViewModel
@@ -78,6 +77,7 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
                         initRecyclerView(measurementsToApprove.toMeasureItems())
                         progressButton.doneProgress(progressButton.text.toString())
                         popViewOnJobSubmit(flowDirection)
+                        progressButton.initProgress(viewLifecycleOwner)
                     }
                 }
                 is XIError -> {
@@ -90,7 +90,7 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
                     )
                 }
                 is XIStatus -> {
-                    this.motionToast(
+                    this.sharpToast(
                         result.message,
                         MotionToast.TOAST_INFO,
                         MotionToast.GRAVITY_TOP,
@@ -153,12 +153,12 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
                 approveBuilder.setTitle(string.confirm)
                 approveBuilder.setIcon(R.drawable.ic_approve)
                 approveBuilder.setMessage(string.are_you_sure_you_want_to_approve2)
-                progressButton = approve_measure_button
-                progressButton.initProgress(viewLifecycleOwner)
                 // Yes button
                 approveBuilder.setPositiveButton(
                     string.yes
                 ) { _, _ ->
+                    progressButton = approve_measure_button
+                    progressButton.initProgress(viewLifecycleOwner)
                     processMeasurementWorkflow(NEXT)
                 }
 
@@ -190,7 +190,7 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
                         flowDirection = workflowDirection.value
 
                         if (userDTO.userId.isBlank()) {
-                            this@MeasureApprovalFragment.motionToast(
+                            this@MeasureApprovalFragment.sharpToast(
                                 "User lacks permissions",
                                 MotionToast.TOAST_ERROR,
                                 MotionToast.GRAVITY_BOTTOM
@@ -205,7 +205,6 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
                                             workflowDirection,
                                             measurementsToApprove
                                         )
-
                                     } catch (t: Throwable) {
                                         val message = "Measurement Approval Exception: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
                                         Timber.e(t, message)
@@ -230,9 +229,9 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
 
     private fun popViewOnJobSubmit(direction: Int) {
         if (direction == NEXT.value) {
-            this.motionToast(string.measurement_approved, MotionToast.TOAST_SUCCESS)
+            this.sharpToast(string.measurement_approved, MotionToast.TOAST_SUCCESS)
         } else if (direction == WorkflowDirection.FAIL.value) {
-            this.motionToast(string.measurement_declined, MotionToast.TOAST_INFO)
+            this.sharpToast(string.measurement_declined, MotionToast.TOAST_INFO)
         }
 
         Intent(context?.applicationContext, MainActivity::class.java).also { home ->
@@ -267,7 +266,7 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
     }
 
     override fun onDestroyView() {
-        // approveViewModel.workflowState.removeObservers(viewLifecycleOwner)
+        approveViewModel.workflowState.removeObservers(viewLifecycleOwner)
         view_measured_items.adapter = null
         super.onDestroyView()
     }
