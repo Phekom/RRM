@@ -55,35 +55,38 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
     private lateinit var progressButton: Button
     private lateinit var flowDirection: WorkflowDirection
 
-    private fun handleWorkSubmission(result: XIResult<String>) {
-        when (result) {
-            is XISuccess<String> -> {
-                val jiNo = result.data
-                // this.motionToast("Job Processing ...", MotionToast.TOAST_INFO)
+    private fun handleWorkSubmission(outcome: XIResult<String>?) {
+        outcome?.let { result ->
+            when (result) {
+                is XISuccess<String> -> {
+                    val jiNo = result.data
+                    // this.motionToast("Job Processing ...", MotionToast.TOAST_INFO)
 
-                progressButton.doneProgress(progressButton.text.toString())
-                popViewOnJobSubmit(flowDirection.value, jiNo)
-            }
-            is XIError -> {
-                progressButton.failProgress("Failed")
-                XIErrorHandler.crashGuard(
-                    fragment = this,
-                    view = this.requireView(),
-                    throwable = result,
-                    refreshAction = { retryWork() }
-                )
-            }
-            is XIStatus -> {
-                this.motionToast(result.message, MotionToast.TOAST_INFO)
-            }
-            is XIProgress -> {
-                when (result.isLoading) {
-                    true -> progressButton.startProgress(progressButton.text.toString())
-                    else -> progressButton.doneProgress(progressButton.text.toString())
+                    progressButton.doneProgress(progressButton.text.toString())
+                    popViewOnJobSubmit(flowDirection.value, jiNo)
                 }
-                Timber.d("Loading ${result.isLoading}")
+                is XIError -> {
+                    progressButton.failProgress("Failed")
+                    XIErrorHandler.crashGuard(
+                        fragment = this,
+                        view = this.requireView(),
+                        throwable = result,
+                        refreshAction = { retryWork() }
+                    )
+                }
+                is XIStatus -> {
+                    this.motionToast(result.message, MotionToast.TOAST_INFO)
+                }
+                is XIProgress -> {
+                    when (result.isLoading) {
+                        true -> progressButton.startProgress(progressButton.text.toString())
+                        else -> progressButton.doneProgress(progressButton.text.toString())
+                    }
+                    Timber.d("Loading ${result.isLoading}")
+                }
             }
         }
+
     }
 
     private fun retryWork() {
