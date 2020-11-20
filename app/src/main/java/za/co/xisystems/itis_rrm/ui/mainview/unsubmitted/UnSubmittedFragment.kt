@@ -20,6 +20,8 @@ import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.results.XIError
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
+import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModel
+import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.unsubmited_item.UnSubmittedJobItem
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
@@ -27,9 +29,11 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
 class UnSubmittedFragment : BaseFragment(R.layout.fragment_unsubmittedjobs), KodeinAware {
 
     override val kodein by kodein()
-    private lateinit var unsubmittedViewModel: UnSubmittedViewModel
-    private val factory: UnSubmittedViewModelFactory by instance()
+    private lateinit var createViewModel: CreateViewModel
+    private val createFactory: CreateViewModelFactory by instance()
     private lateinit var groupAdapter: GroupAdapter<GroupieViewHolder>
+    private lateinit var unSubmittedViewModel: UnSubmittedViewModel
+    private val factory: UnSubmittedViewModelFactory by instance()
 
     companion object {
         val TAG: String = UnSubmittedFragment::class.java.simpleName
@@ -49,8 +53,13 @@ class UnSubmittedFragment : BaseFragment(R.layout.fragment_unsubmittedjobs), Kod
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        unsubmittedViewModel = activity?.run {
+
+        unSubmittedViewModel = activity?.run {
             ViewModelProvider(this, factory).get(UnSubmittedViewModel::class.java)
+        } ?: throw Exception("Invalid Activity")
+
+        createViewModel = activity?.run {
+            ViewModelProvider(this, createFactory).get(CreateViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
 
         fetchUnsubmitted()
@@ -62,7 +71,7 @@ class UnSubmittedFragment : BaseFragment(R.layout.fragment_unsubmittedjobs), Kod
                 groupAdapter = GroupAdapter()
                 group12_loading.visibility = View.VISIBLE
                 val measurements =
-                    unsubmittedViewModel.getJobsForActivityId(ActivityIdConstants.JOB_ESTIMATE)
+                    unSubmittedViewModel.getJobsForActivityId(ActivityIdConstants.JOB_ESTIMATE)
 
                 measurements.observe(viewLifecycleOwner, { jobList ->
                     if (jobList.isNullOrEmpty()) {
@@ -92,7 +101,7 @@ class UnSubmittedFragment : BaseFragment(R.layout.fragment_unsubmittedjobs), Kod
 
     private fun List<JobDTO>.toApproveListItems(): List<UnSubmittedJobItem> {
         return this.map { jobsToApprove ->
-            UnSubmittedJobItem(jobsToApprove, unsubmittedViewModel, groupAdapter)
+            UnSubmittedJobItem(jobsToApprove, unSubmittedViewModel, createViewModel, groupAdapter)
         }
     }
 

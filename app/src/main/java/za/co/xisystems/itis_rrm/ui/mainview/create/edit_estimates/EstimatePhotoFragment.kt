@@ -355,7 +355,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
                     Coroutines.main {
                         createViewModel.deleteJobFromList(newJob!!.JobId)
                         createViewModel.deleteItemList(newJob!!.JobId)
-                        createViewModel.setJobToEditItem(null)
+                        createViewModel.setCurrentJob(null)
                         createViewModel.jobItem.value = null
                         createViewModel.newJob.value = null
                         fragmentManager?.beginTransaction()?.remove(this)?.commit()

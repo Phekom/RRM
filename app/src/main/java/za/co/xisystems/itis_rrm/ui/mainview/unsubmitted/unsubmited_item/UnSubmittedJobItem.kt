@@ -8,6 +8,7 @@ import com.xwray.groupie.kotlinandroidextensions.Item
 import kotlinx.android.synthetic.main.unsubmtd_job_list_item.*
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
+import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedViewModel
 import za.co.xisystems.itis_rrm.utils.Coroutines
 
@@ -16,12 +17,13 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
  */
 
 class UnSubmittedJobItem(
-    val jobDTO: JobDTO,
+    private val jobDTO: JobDTO,
     private val viewModel: UnSubmittedViewModel,
+    private val createModel: CreateViewModel,
     private val groupAdapter: GroupAdapter<GroupieViewHolder>
 ) : Item() {
 
-    var clickListener: ((UnSubmittedJobItem) -> Unit)? = null
+    private var clickListener: ((UnSubmittedJobItem) -> Unit)? = null
 
     override fun bind(viewHolder: GroupieViewHolder, position: Int) {
 
@@ -57,7 +59,7 @@ class UnSubmittedJobItem(
 
         val job = jobDTO
         Coroutines.main {
-            viewModel.getJobToEdit(job.JobId)
+            createModel.setJobToEdit(job.JobId)
         }
 
         Navigation.findNavController(view)
@@ -66,10 +68,10 @@ class UnSubmittedJobItem(
 
     override fun getLayout() = R.layout.unsubmtd_job_list_item
 
-    private fun GroupieViewHolder.updateItem() {
+    private fun updateItem() {
     }
 }
 
-private fun GroupieViewHolder.getItemId(position: Int): Long {
+private fun getItemId(position: Int): Long {
     return position.toLong()
 }
