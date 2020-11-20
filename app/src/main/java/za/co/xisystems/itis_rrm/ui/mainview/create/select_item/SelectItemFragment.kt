@@ -48,7 +48,7 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
 class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAware {
     override val kodein by kodein()
     private lateinit var createViewModel: CreateViewModel
-    private val factory: CreateViewModelFactory by instance<CreateViewModelFactory>()
+    private val factory: CreateViewModelFactory by instance()
     private var items: MutableList<ItemDTOTemp> = ArrayList()
     private var animate = false
 
@@ -90,7 +90,7 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
                         newJob = newJ
                     })
 
-                    createViewModel.jobToEditItem.observe(
+                    createViewModel.currentJob.observe(
                         viewLifecycleOwner,
                         { incompleteJob ->
                             incompleteJob?.let {

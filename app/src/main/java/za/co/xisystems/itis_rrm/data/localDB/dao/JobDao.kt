@@ -20,7 +20,7 @@ import java.util.ArrayList
 interface JobDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertOrUpdateJobs(job: JobDTO)
+    suspend fun insertOrUpdateJobs(job: JobDTO)
 
     @Delete
     fun deleteJob(job: JobDTO)
