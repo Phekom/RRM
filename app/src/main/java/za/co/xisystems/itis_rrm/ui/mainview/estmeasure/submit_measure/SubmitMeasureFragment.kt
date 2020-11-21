@@ -17,6 +17,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.ExpandableGroup
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
+import java.util.ArrayList
+import java.util.HashMap
 import kotlinx.android.synthetic.main.fragment_submit_measure.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
@@ -47,8 +49,6 @@ import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
-import java.util.ArrayList
-import java.util.HashMap
 
 class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), KodeinAware {
     override val kodein by kodein()
@@ -234,7 +234,6 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                             MotionToast.GRAVITY_BOTTOM
                         )
                         progressButton.failProgress(originalCaption)
-
                     }
                     itemMeasureJob.JobId.isBlank() -> {
                         this@SubmitMeasureFragment.sharpToast(
@@ -292,7 +291,6 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                 itemMeasureJob
             )
 
-
             workflowOutcome.observe(
                 viewLifecycleOwner,
                 { response ->
@@ -323,7 +321,6 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                         }
                     }
                 })
-
         }
     }
 
@@ -408,7 +405,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
 
     override fun onDestroyView() {
         uiScope.destroy()
-       // measureViewModel.workflowState.removeObservers(viewLifecycleOwner)
+        // measureViewModel.workflowState.removeObservers(viewLifecycleOwner)
         measure_listView.adapter = null
         super.onDestroyView()
     }
@@ -476,7 +473,6 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
             }
         }
     }
-
 
     private fun JobItemMeasureDTO.setProjectItemId(toLittleEndian: String?) {
         this.projectItemId = toLittleEndian

@@ -9,6 +9,7 @@ import com.google.gson.Gson
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
+import java.util.ArrayList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -37,7 +38,6 @@ import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
-import java.util.ArrayList
 
 /**
  * Created by Francis Mahlava on 2019/11/28.
@@ -153,9 +153,7 @@ class WorkDataRepository(
         useR: Int
     ) {
         withContext(Dispatchers.IO) {
-            // postWorkStatus(XIStatus("Uploading images ..."))
             uploadWorksImages(jobEstimateWorks, activity)
-            // postWorkStatus(XIStatus("Performing workflow ..."))
             moveJobToNextWorkflowStep(jobEstimateWorks, useR)
         }
     }
@@ -199,7 +197,7 @@ class WorkDataRepository(
             val emptyPhotosException =
                 NoDataException("WorkEstimate ${jobEstimateWorks.estimateId} photos are null.")
             Timber.e(emptyPhotosException)
-            postWorkStatus(XIError(emptyPhotosException,emptyPhotosException.message ?: XIErrorHandler.UNKNOWN_ERROR))
+            postWorkStatus(XIError(emptyPhotosException, emptyPhotosException.message ?: XIErrorHandler.UNKNOWN_ERROR))
         }
     }
 
@@ -290,7 +288,6 @@ class WorkDataRepository(
 
                 postWorkStatus(XIProgress(false))
                 postWorkStatus(XISuccess(jobEstimateWorks.worksId))
-
             } catch (t: Throwable) {
                 val message = "Failed to update workflow: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
                 Timber.e(t, message)
@@ -416,7 +413,7 @@ class WorkDataRepository(
                     )
                 }
             }
-            if(!inWorkflow) {
+            if (!inWorkflow) {
                 postWorkStatus(XISuccess(job.jiNo!!))
             }
         } catch (t: Throwable) {
@@ -428,7 +425,7 @@ class WorkDataRepository(
 
     private fun setWorkflowJobBigEndianGuids(job: WorkflowJobDTO): WorkflowJobDTO? {
 
-        try{
+        try {
             job.jobId = DataConversion.toBigEndian(job.jobId)
             job.trackRouteId = DataConversion.toBigEndian(job.trackRouteId)
 

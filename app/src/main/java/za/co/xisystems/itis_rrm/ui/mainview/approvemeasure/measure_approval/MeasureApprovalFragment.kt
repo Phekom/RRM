@@ -59,7 +59,7 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
     private lateinit var approveViewModel: ApproveMeasureViewModel
     private val factory: ApproveMeasureViewModelFactory by instance()
     private lateinit var measurementsToApprove: ArrayList<JobItemMeasureDTO>
-    private var mJob : JobDTO? = null
+    private var mJob: JobDTO? = null
     lateinit var dialog: Dialog
     private lateinit var progressButton: Button
     private var workObserver = Observer<XIResult<String>?> { handleWorkSubmission(it) }

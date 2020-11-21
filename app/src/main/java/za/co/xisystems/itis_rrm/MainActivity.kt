@@ -504,7 +504,5 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         // "F836F6BF14404E749E6748A31A0262AD"
         const val PROJECT_CONTRACTOR_ROLE_IDENTIFIER =
             "RRM Job Mobile - Contractor" // "E398A3EF1C18431DBAEE4A4AC5D6F07D"
-
-
     }
 }

@@ -52,7 +52,6 @@ class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAw
 
     init {
         lifecycleScope.launch {
-
         }
     }
 
@@ -175,7 +174,6 @@ class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAw
         IndefiniteSnackbar.hide()
         fetchRemoteJobs()
     }
-
 
     private fun initRecyclerView(
         approveJobListItems: List<ApproveJobItem>

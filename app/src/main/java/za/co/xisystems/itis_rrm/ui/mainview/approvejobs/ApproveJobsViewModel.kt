@@ -47,7 +47,7 @@ class ApproveJobsViewModel(
 
             workflowStatus = jobApprovalDataRepository.workflowStatus.distinctUntilChanged()
 
-            workflowState = Transformations.map(workflowStatus){ it ->
+            workflowState = Transformations.map(workflowStatus) { it ->
                 it?.getContentIfNotHandled()?.let {
                     it
                 }
@@ -93,7 +93,7 @@ class ApproveJobsViewModel(
         }
     }
 
-    val jobApprovalItem : MutableLiveData<ApproveJobItem> = MutableLiveData()
+    val jobApprovalItem: MutableLiveData<ApproveJobItem> = MutableLiveData()
     fun setJobForApproval(jobapproval6: ApproveJobItem) {
         jobApprovalItem.value = jobapproval6
     }
@@ -167,12 +167,12 @@ class ApproveJobsViewModel(
     }
 
     suspend fun upDateEstimate(
-        new_quantity: String,
-        new_total: String,
+        updatedQty: String,
+        updatedTotal: String,
         estimateId: String
     ): String {
-        return withContext(Dispatchers.IO){
-            jobApprovalDataRepository.upDateEstimate(new_quantity, new_total, estimateId)
+        return withContext(Dispatchers.IO) {
+            jobApprovalDataRepository.upDateEstimate(updatedQty, updatedTotal, estimateId)
         }
     }
 

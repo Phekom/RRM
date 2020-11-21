@@ -856,14 +856,6 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
         }
     }
 
-    private fun showSectionOutOfBoundError(sectionPoint: SectionPointDTO?) {
-        toast(
-            "You are not between the start: " + sectionPoint?.pointLocation.toString() +
-                " and end: " + sectionPoint?.pointLocation.toString() + " co-ordinates for the project."
-        )
-        hideCostCard()
-    }
-
     private suspend fun getRouteSectionPoint(
         currentLocation: LocationModel
     ): String? =

@@ -9,6 +9,7 @@ import com.google.gson.Gson
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
+import java.util.ArrayList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -40,7 +41,6 @@ import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.PhotoUtil.getPhotoPathFromExternalDirectory
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
-import java.util.ArrayList
 
 /**
  * Created by Francis Mahlava on 2019/11/28.
@@ -249,7 +249,7 @@ class MeasureCreationDataRepository(
             workComplete = false
             try {
 
-                myJob.workflowItemMeasures.forEachIndexed{ index, jobItemMeasure ->
+                myJob.workflowItemMeasures.forEachIndexed { index, jobItemMeasure ->
                     postWorkflowStatus(XIStatus("Processing ${index + 1} of ${myJob.workflowItemMeasures.size} measurements"))
                     if (!workComplete) {
                         val direction: Int = WorkflowDirection.NEXT.value
@@ -527,7 +527,6 @@ class MeasureCreationDataRepository(
                         }
                         measuresFlag = false
                     }
-
                 }
             }
 

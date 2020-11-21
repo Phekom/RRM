@@ -43,7 +43,7 @@ class CreateViewModel(
     fun setCurrentJob(inJobItemToEdit: JobDTO?) {
         currentJob.value = inJobItemToEdit
     }
-    private lateinit var ioContext : CoroutineContext
+    private lateinit var ioContext: CoroutineContext
 
     init {
         ioContext = Job(superJob) + Dispatchers.IO + uncaughtExceptionHandler

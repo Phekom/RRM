@@ -103,7 +103,7 @@ class MeasureApprovalDataRepository(
             val description = ""
 
             var flowJob: WorkflowJobDTO? = null
-            measurements.forEachIndexed{ index, measure ->
+            measurements.forEachIndexed { index, measure ->
                 val measureTrackId = DataConversion.toLittleEndian(measure.trackRouteId)
                 measureTrackId?.let {
                     withContext(Dispatchers.IO) {
@@ -120,7 +120,7 @@ class MeasureApprovalDataRepository(
                                         itemMeasureId,
                                         trackRouteId,
                                         jobItemMeasure.actId,
-                                        measureGroupId,
+                                        measureGroupId
                                     )
                                 }
                             }
@@ -213,7 +213,6 @@ class MeasureApprovalDataRepository(
                         jobItemMeasure.actId,
                         jobItemMeasure.measureGroupId
                     )
-
                 }
 
                 //  Place the Job Section, UPDATE OR CREATE
@@ -235,8 +234,6 @@ class MeasureApprovalDataRepository(
                 }
 
                 appDb.getJobDao().updateJob(job.trackRouteId, job.actId, job.jiNo, job.jobId)
-
-
 
                 Timber.d("Updated Workflow: $job")
                 postWorkflowStatus(XISuccess("WORK_COMPLETE"))
@@ -333,5 +330,3 @@ class MeasureApprovalDataRepository(
         }
     }
 }
-
-

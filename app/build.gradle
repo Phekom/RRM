@@ -8,10 +8,6 @@ plugins {
     id "eu.davidea.grabver"
 }
 
-configurations.all {
-    resolutionStrategy.force "org.antlr:antlr4-runtime:4.7.1"
-    resolutionStrategy.force "org.antlr:antlr4-tool:4.7.1"
-}
 
 versioning {
     // Required (number)
@@ -46,16 +42,17 @@ gradle.projectsEvaluated {
     }
 }
 
+configurations.all {
+    resolutionStrategy.force "org.antlr:antlr4-runtime:4.7.1"
+    resolutionStrategy.force "org.antlr:antlr4-tool:4.7.1"
+}
+
 android {
 
     flavorDimensions "default"
 
     compileSdkVersion compile_version
 
-    configurations.all {
-        resolutionStrategy.force "org.antlr:antlr4-runtime:4.7.1"
-        resolutionStrategy.force "org.antlr:antlr4-tool:4.7.1"
-    }
 
     // def versionPropsFile =  InputFile("$rootDir/app/version.properties")
     // def localPropsFile = InputFile("$rootDir/local.properties")

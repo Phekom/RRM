@@ -89,17 +89,23 @@
     <fragment
         android:id="@+id/selectItemFragment"
         android:name="za.co.xisystems.itis_rrm.ui.mainview.create.select_item.SelectItemFragment"
-        android:label="SelectItemFragment">
+        android:label="SelectItemFragment"
+        tools:layout="@layout/fragment_select_item">
         <action
             android:id="@+id/action_selectItemFragment_to_addProjectFragment"
             app:destination="@id/addProjectFragment"
             app:enterAnim="@anim/bounce_250"
             app:popEnterAnim="@anim/bounce" />
+        <argument
+            android:name="projectId"
+            app:argType="string"
+            app:nullable="true" />
     </fragment>
     <fragment
         android:id="@+id/estimatePhotoFragment"
         android:name="za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates.EstimatePhotoFragment"
-        android:label="EstimatePhotoFragment">
+        android:label="EstimatePhotoFragment"
+        tools:layout="@layout/fragment_photo_estimate">
         <action
             android:id="@+id/action_estimatePhotoFragment_to_addProjectFragment"
             app:destination="@id/addProjectFragment"
@@ -109,11 +115,20 @@
             app:destination="@id/nav_create"
             app:enterAnim="@animator/rotation_collapse_to_expand"
             app:popUpTo="@+id/nav_create" />
+        <argument
+            android:name="jobId"
+            app:argType="string"
+            app:nullable="true" />
+        <argument
+            android:name="estimateId"
+            app:argType="string"
+            app:nullable="true" />
     </fragment>
     <fragment
         android:id="@+id/addProjectFragment"
         android:name="za.co.xisystems.itis_rrm.ui.mainview.create.add_project_item.AddProjectFragment"
-        android:label="AddProjectFragment">
+        android:label="AddProjectFragment"
+        tools:layout="@layout/fragment_add_project_items">
         <action
             android:id="@+id/action_addProjectFragment_to_selectItemFragment"
             app:destination="@id/selectItemFragment"
@@ -121,15 +136,20 @@
         <action
             android:id="@+id/action_addProjectFragment_to_nav_create"
             app:destination="@id/nav_create" />
-        <argument
-            android:name="selecteD"
-            app:argType="string" />
         <action
             android:id="@+id/action_addProjectFragment_to_estimatePhotoFragment"
             app:destination="@id/estimatePhotoFragment"
             app:enterAnim="@anim/bounce_short"
             app:launchSingleTop="false"
             app:popUpTo="@+id/addProjectFragment" />
+        <argument
+            android:name="projectId"
+            app:argType="string"
+            app:nullable="true" />
+        <argument
+            android:name="jobId"
+            app:argType="string"
+            app:nullable="true" />
     </fragment>
     <fragment
         android:id="@+id/jobInfoFragment"

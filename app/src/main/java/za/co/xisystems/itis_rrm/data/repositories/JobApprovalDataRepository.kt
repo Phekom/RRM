@@ -279,7 +279,6 @@ class JobApprovalDataRepository(
                 val jobSuccess = XISuccess(data = it)
                 workflowStatus.postValue(XIEvent(jobSuccess))
             }
-
         } catch (t: Throwable) {
             val message = "Could not save updated workflow: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
             Timber.e(t, message)

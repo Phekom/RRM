@@ -144,13 +144,11 @@ class ApproveMeasureViewModel(
     ) = viewModelScope.launch {
         workflowState.postValue(XIProgress(true))
 
-
         withContext(Dispatchers.IO + uncaughtExceptionHandler) {
             try {
                 measureApprovalDataRepository.processWorkflowMove(userId, measurements, workflowDirection.value)
 
                 workflowState.postValue(XISuccess("WORK_COMPLETE"))
-
             } catch (t: Throwable) {
                 workflowState.postValue(XIError(t, t.message ?: UNKNOWN_ERROR))
             }

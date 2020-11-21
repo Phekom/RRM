@@ -85,7 +85,7 @@ class MeasureViewModel(
                 }
             }
             launch(mainContext) {
-                workflowStatus.observeForever{event ->
+                workflowStatus.observeForever { event ->
                     event?.getContentIfNotHandled()?.let {
                         workflowState.postValue(it)
                     }

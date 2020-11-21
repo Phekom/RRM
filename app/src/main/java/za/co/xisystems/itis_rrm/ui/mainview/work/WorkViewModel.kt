@@ -79,7 +79,7 @@ class WorkViewModel(
     suspend fun getJobEstimationItemsForJobId(
         jobID: String?,
         actID: Int
-    )= liveData<List<JobItemEstimateDTO>> {
+    ) = liveData<List<JobItemEstimateDTO>> {
         withContext(Dispatchers.IO + uncaughtExceptionHandler) {
             val data = workDataRepository.getJobEstimationItemsForJobId(jobID, actID).distinctUntilChanged()
             emitSource(data)
@@ -166,7 +166,7 @@ class WorkViewModel(
         activity: FragmentActivity,
         itemEstiJob: JobDTO
 
-    ): Job = viewModelScope.launch( Job(superJob) + Dispatchers.Main + uncaughtExceptionHandler) {
+    ): Job = viewModelScope.launch(Job(superJob) + Dispatchers.Main + uncaughtExceptionHandler) {
         workDataRepository.submitWorks(itemEstiWorks, activity, itemEstiJob)
     }
 
@@ -185,7 +185,6 @@ class WorkViewModel(
         withContext(Dispatchers.IO) {
             workDataRepository.processWorkflowMove(userId, trackRouteId, description, direction)
         }
-
     }
 
     suspend fun getJobItemsEstimatesDoneForJobId(

@@ -22,6 +22,9 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.coroutineScope
 import androidx.navigation.Navigation
+import java.util.ArrayList
+import java.util.Date
+import java.util.HashMap
 import kotlinx.android.synthetic.main.fragment_capture_item_measure_photo.*
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
@@ -55,9 +58,6 @@ import za.co.xisystems.itis_rrm.utils.DateUtil
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
-import java.util.ArrayList
-import java.util.Date
-import java.util.HashMap
 
 //
 class CaptureItemMeasurePhotoFragment :
@@ -201,7 +201,7 @@ class CaptureItemMeasurePhotoFragment :
     }
 
     // TODO: Have location validated here
-// TODO: Check earlier and get user to switch Location on.
+    // TODO: Check earlier and get user to switch Location on.
     private fun saveImage(): JobItemMeasurePhotoDTO? {
         //  Location of picture
         val measurementLocation = getCurrentLocation()

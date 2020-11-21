@@ -29,7 +29,7 @@ class ApproveMeasureItem(
                     approveViewModel.getProjectSectionIdForJobId(jobItemMeasureDTO.jobId!!)
                 val route = approveViewModel.getRouteForProjectSectionId(sectionId)
                 val section = approveViewModel.getSectionForProjectSectionId(sectionId)
-                apv_section.text = itemView.context.getString(R.string.route_section_badge,route,section)
+                apv_section.text = itemView.context.getString(R.string.route_section_badge, route, section)
                 val description = approveViewModel.getItemDesc(jobItemMeasureDTO.jobId!!)
                 apv_description.text = description
             }

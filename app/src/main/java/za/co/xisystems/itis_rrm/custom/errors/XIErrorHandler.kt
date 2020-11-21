@@ -81,7 +81,7 @@ object XIErrorHandler {
         Toast.LENGTH_LONG
     ).show()
 
-    fun crashGuard(fragment: Fragment, throwable: XIError, refreshAction: () -> Unit ){
+    fun crashGuard(fragment: Fragment, throwable: XIError, refreshAction: () -> Unit) {
         crashGuard(fragment, fragment.requireView(), throwable, refreshAction)
     }
     /**

@@ -52,4 +52,4 @@ class LocalDataException(message: String) : Exception(message)
 /**
  * Mostly harmless, but still annoying
  */
-class RecoverableException(message: String): Throwable(message)
+class RecoverableException(message: String) : Throwable(message)

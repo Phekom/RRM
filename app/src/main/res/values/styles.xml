@@ -31,7 +31,7 @@
 
     <!-- ITIS -->
     <style name="ItisRegularText">
-        <item name="android:textSize">15sp</item>
+        <item name="android:textSize">14sp</item>
     </style>
 
     <style name="_lineh" parent="_hline" />
@@ -89,6 +89,12 @@
 
     <style name="TextAppearance">
         <item name="android:textColor">@android:color/white</item>
+    </style>
+
+    <style name="AppTheme.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <!--        <item name="android:statusBarColor">@android:color/transparent</item>-->
     </style>
 
 </resources>

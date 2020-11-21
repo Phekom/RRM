@@ -108,7 +108,7 @@ object PhotoUtil {
         }
     }
 
-    private const val thirtyDays:Long = 2592000000
+    private const val thirtyDays: Long = 2592000000
 
     fun photoExist(fileName: String): Boolean {
         val image =

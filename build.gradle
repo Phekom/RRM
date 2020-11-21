@@ -18,7 +18,7 @@ buildscript {
         maven { url "https://plugins.gradle.org/m2/" }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.1.0'
+        classpath 'com.android.tools.build:gradle:4.1.1'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "com.didiglobal.booster:booster-gradle-plugin:$booster_version"
         classpath 'com.novoda:gradle-static-analysis-plugin:1.2'
@@ -27,7 +27,7 @@ buildscript {
         classpath "androidx.navigation:navigation-safe-args-gradle-plugin:$navigation_version"
         classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4"
         classpath "com.github.dcendents:android-maven-gradle-plugin:2.1"
-        classpath "org.jetbrains.dokka:dokka-android-gradle-plugin:0.9.17"
+        classpath "org.jetbrains.dokka:dokka-android-gradle-plugin:0.9.18"
         classpath "com.deploygate:gradle:2.3.0"
         classpath "eu.davidea:grabver:2.0.2"
         classpath "org.jlleitschuh.gradle:ktlint-gradle:$ktlint_gradle_version"
@@ -55,6 +55,11 @@ allprojects {
         maven { url "https://dl.bintray.com/kodein-framework/Kodein-DI" }
         maven { url "https://clojars.org/repo/" }
         maven { url 'https://jitpack.io' }
+    }
+
+    configurations.all {
+        resolutionStrategy.force "org.antlr:antlr4-runtime:4.7.1"
+        resolutionStrategy.force "org.antlr:antlr4-tool:4.7.1"
     }
 
 
