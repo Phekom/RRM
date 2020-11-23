@@ -27,8 +27,6 @@ import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
-import java.util.Date
-import java.util.HashMap
 import kotlinx.android.synthetic.main.fragment_capture_work.*
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -83,10 +81,11 @@ import za.co.xisystems.itis_rrm.utils.enums.ToastDuration.LONG
 import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.BOTTOM
 import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.CENTER
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.ERROR
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.INFO
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.NO_INTERNET
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.WARNING
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
+import java.util.Date
+import java.util.HashMap
 
 class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), KodeinAware {
 
@@ -325,7 +324,12 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                         refreshAction = { this.retryJobSubmission() })
                 }
                 is XIStatus -> {
-                    sharedViewModel.setColorMessage(result.message, INFO, BOTTOM, LONG)
+                    sharpToast(
+                        result.message,
+                        MotionToast.TOAST_INFO,
+                        position = MotionToast.GRAVITY_TOP,
+                        duration = MotionToast.SHORT_DURATION
+                    )
                 }
                 is XIProgress -> {
                     when (result.isLoading) {
@@ -347,9 +351,12 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
         outcome?.let { result ->
             when (result) {
                 is XISuccess -> {
-                    this.sharpToast("Work captured",
+                    sharpToast(
+                        "Work captured",
                         motionType = MotionToast.TOAST_SUCCESS,
-                        duration = MotionToast.SHORT_DURATION)
+                        position = MotionToast.GRAVITY_BOTTOM,
+                        duration = MotionToast.SHORT_DURATION
+                    )
                     move_workflow_button.doneProgress("Workflow complete")
                     refreshView()
                 }
@@ -362,7 +369,12 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                     )
                 }
                 is XIStatus -> {
-                    sharedViewModel.setColorMessage(result.message, INFO, BOTTOM, LONG)
+                    sharpToast(
+                        result.message,
+                        MotionToast.TOAST_INFO,
+                        position = MotionToast.GRAVITY_TOP,
+                        duration = MotionToast.SHORT_DURATION
+                    )
                 }
                 is XIProgress -> {
                     when (result.isLoading) {
@@ -782,14 +794,14 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
             this.sharpToast(
                 R.string.work_complete,
                 MotionToast.TOAST_SUCCESS,
-                MotionToast.GRAVITY_BOTTOM,
+                MotionToast.GRAVITY_TOP,
                 MotionToast.LONG_DURATION
             )
         } else if (direction == WorkflowDirection.FAIL.value) {
             this.sharpToast(
                 getString(R.string.work_declined),
                 MotionToast.TOAST_INFO,
-                MotionToast.GRAVITY_BOTTOM,
+                MotionToast.GRAVITY_TOP,
                 MotionToast.LONG_DURATION
             )
         }

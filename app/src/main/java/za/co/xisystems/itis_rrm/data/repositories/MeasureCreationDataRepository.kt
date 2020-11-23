@@ -9,7 +9,6 @@ import com.google.gson.Gson
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
-import java.util.ArrayList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -35,12 +34,14 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.WorkflowJobDTO
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
+import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.PhotoUtil.getPhotoPathFromExternalDirectory
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
+import java.util.ArrayList
 
 /**
  * Created by Francis Mahlava on 2019/11/28.
@@ -88,7 +89,7 @@ class MeasureCreationDataRepository(
     ) {
 
         return withContext(Dispatchers.IO) {
-
+            postWorkflowStatus(XIProgress(true))
             val measureData = JsonObject()
             val gson = Gson()
             val newMeasure = gson.toJson(mSures)
@@ -247,23 +248,32 @@ class MeasureCreationDataRepository(
             workflowStatus.postValue(XIEvent(XIError(RecoverableException(errorMessage), errorMessage)))
         } else {
             workComplete = false
-            try {
+            val description = activity.resources.getString(R.string.submit_for_approval)
 
-                myJob.workflowItemMeasures.forEachIndexed { index, jobItemMeasure ->
-                    postWorkflowStatus(XIStatus("Processing ${index + 1} of ${myJob.workflowItemMeasures.size} measurements"))
+            try {
+                val measurementTracks = myJob.workflowItemMeasures.mapIndexedNotNull { index, item ->
+                    if (item.actId < ActivityIdConstants.MEASURE_COMPLETE) {
+                        item.toMeasurementTrack(
+                            userId = job.UserId.toString(),
+                            description = description,
+                            direction = WorkflowDirection.NEXT.value
+                        )
+                    } else {
+                        // remove invalid items from list
+                        null
+                    }
+                }
+
+                measurementTracks.forEachIndexed { index, measurementTrack ->
+                    postWorkflowStatus(XIStatus("Processing ${index + 1} of ${measurementTracks.size} measurements"))
                     if (!workComplete) {
-                        val direction: Int = WorkflowDirection.NEXT.value
-                        val trackRouteId: String =
-                            DataConversion.toLittleEndian(jobItemMeasure.trackRouteId)!!
-                        val description: String =
-                            activity.resources.getString(R.string.submit_for_approval)
 
                         val workflowMoveResponse = apiRequest {
                             api.getWorkflowMove(
-                                job.UserId.toString(),
-                                trackRouteId,
-                                description,
-                                direction
+                                measurementTrack.userId,
+                                measurementTrack.trackRouteId,
+                                measurementTrack.description,
+                                measurementTrack.direction
                             )
                         }
                         when {
@@ -287,6 +297,7 @@ class MeasureCreationDataRepository(
                         }
                     }
                 }
+                postWorkflowStatus(XIProgress(false))
                 postWorkflowStatus(XISuccess(job.JiNo!!))
                 workComplete = true
             } catch (t: Throwable) {
