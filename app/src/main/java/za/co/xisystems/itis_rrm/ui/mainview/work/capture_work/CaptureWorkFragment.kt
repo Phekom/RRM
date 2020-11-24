@@ -714,29 +714,34 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
             workViewModel.workflowState?.postValue(XIProgress(true))
             jobSubmission = uiScope.launch(uiScope.coroutineContext) {
                 withContext(uiScope.coroutineContext) {
-
-                    for (jobEstimate in estimates) {
-                        Timber.d("Id: ${jobEstimate.estimateId}")
-                        val convertedId = DataConversion.toBigEndian(jobEstimate.estimateId)
-                        Timber.d("Converted Id: $convertedId")
-                        val jobItemEstimate = workViewModel.getJobItemEstimateForEstimateId(jobEstimate.estimateId)
-                        jobItemEstimate.observe(viewLifecycleOwner, { jobItEstmt ->
-                            jobItEstmt?.let {
-                                Coroutines.main {
-                                    withContext(uiScope.coroutineContext) {
-                                        moveJobItemEstimateToNextWorkflow(
-                                            WorkflowDirection.NEXT,
-                                            it
-                                        )
+                    try {
+                        for (jobEstimate in estimates) {
+                            Timber.d("Id: ${jobEstimate.estimateId}")
+                            val convertedId = DataConversion.toBigEndian(jobEstimate.estimateId)
+                            Timber.d("Converted Id: $convertedId")
+                            val jobItemEstimate = workViewModel.getJobItemEstimateForEstimateId(jobEstimate.estimateId)
+                            jobItemEstimate.observe(viewLifecycleOwner, { jobItEstmt ->
+                                jobItEstmt?.let {
+                                    Coroutines.main {
+                                        withContext(uiScope.coroutineContext) {
+                                            moveJobItemEstimateToNextWorkflow(
+                                                WorkflowDirection.NEXT,
+                                                it
+                                            )
+                                        }
                                     }
                                 }
-                            }
-                        })
+                            })
+                        }
+                        jobSubmission.join()
+                        workViewModel.workflowState?.postValue(XIProgress(false))
+                        workViewModel.workflowState?.postValue(XISuccess("WORK_COMPLETE"))
+                    } catch (t: Throwable) {
+                       val xiErr = XIError(t, "Failed Workflow: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}")
+                        workViewModel.workflowState?.postValue(xiErr)
                     }
                 }
             }
-            jobSubmission.join()
-            handleJobSubmission(XISuccess("WORK_COMPLETE"))
         }
     }
 
