@@ -75,6 +75,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
 
     private fun handleMeasureSubmission(event: XIResult<String>?) {
         event?.let { outcome ->
+
             when (outcome) {
                 is XISuccess -> {
 
