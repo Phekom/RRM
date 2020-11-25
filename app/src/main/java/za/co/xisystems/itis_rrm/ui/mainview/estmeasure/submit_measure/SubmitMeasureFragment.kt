@@ -1,4 +1,4 @@
-package za.co.xisystems.itis_rrm.ui.mainview.estmeasure.submit_measure
+ package za.co.xisystems.itis_rrm.ui.mainview.estmeasure.submit_measure
 
 import android.app.AlertDialog
 import android.content.Context
@@ -75,6 +75,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
 
     private fun handleMeasureSubmission(event: XIResult<String>?) {
         event?.let { outcome ->
+
             when (outcome) {
                 is XISuccess -> {
 

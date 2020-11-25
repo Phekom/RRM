@@ -108,14 +108,14 @@ class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAw
         jobs.observe(viewLifecycleOwner, { jobList ->
 
             if (jobList.isNullOrEmpty()) {
-                job_data_layout.visibility = View.GONE
-                no_data_layout.visibility = View.VISIBLE
+                approve_job_listView.visibility = View.GONE
+                noData.visibility = View.VISIBLE
             } else {
                 val jItems = jobList.distinctBy {
                     it.JobId
                 }
-                no_data_layout.visibility = View.GONE
-                job_data_layout.visibility = View.VISIBLE
+                noData.visibility = View.GONE
+                approve_job_listView.visibility = View.VISIBLE
                 initRecyclerView(jItems.toApproveListItems())
             }
             group3_loading.visibility = View.GONE
@@ -145,8 +145,8 @@ class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAw
                 freshJobs.observeOnce(viewLifecycleOwner, {
                     jobs_swipe_to_refresh.isRefreshing = false
                     if (it.isNullOrEmpty()) {
-                        job_data_layout.visibility = View.GONE
-                        no_data_layout.visibility = View.VISIBLE
+                        approve_job_listView.visibility = View.GONE
+                        noData.visibility = View.VISIBLE
                     } else {
                         uiScope.launch(uiScope.coroutineContext) {
                             fetchLocalJobs()

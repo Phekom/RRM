@@ -45,7 +45,6 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import kotlin.coroutines.cancellation.CancellationException
 
-
 class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
 
     override val kodein by kodein()
@@ -304,7 +303,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
 
     private suspend fun handleBigSync(signal: XIResult<Boolean>?) {
         Timber.d("$signal")
-        signal?.let{result ->
+        signal?.let { result ->
             when (result) {
                 is XISuccess -> {
                     sharpToast(
@@ -337,7 +336,6 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                 }
             }
         }
-
     }
 
     private fun bigSync() = uiScope.launch(uiScope.coroutineContext) {

@@ -70,6 +70,7 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
 
     private fun handleWorkSubmission(outcome: XIResult<String>?) {
         outcome?.let { result ->
+            Timber.d("$result")
             when (result) {
                 is XISuccess -> {
                     if (result.data == "WORK_COMPLETE") {
@@ -77,7 +78,7 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
                         initRecyclerView(measurementsToApprove.toMeasureItems())
                         progressButton.doneProgress(progressButton.text.toString())
                         popViewOnJobSubmit(flowDirection)
-                        progressButton.initProgress(viewLifecycleOwner)
+                        // progressButton.initProgress(viewLifecycleOwner)
                     }
                 }
                 is XIError -> {
@@ -209,7 +210,7 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
                                         val message = "Measurement Approval Exception: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
                                         Timber.e(t, message)
                                         val measureErr = XIError(t, message)
-                                        handleWorkSubmission(measureErr)
+                                        approveViewModel.workflowState.postValue(measureErr)
                                     }
                                 }
                             }

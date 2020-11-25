@@ -39,7 +39,7 @@ class HomeViewModel(
 
             databaseStatus = offlineDataRepository.databaseStatus.distinctUntilChanged()
 
-            databaseState = Transformations.map(databaseStatus){ it ->
+            databaseState = Transformations.map(databaseStatus) { it ->
                 it?.getContentIfNotHandled()?.let {
                     it
                 }
@@ -85,7 +85,6 @@ class HomeViewModel(
                 val fetchFail =
                     XIError(t, "Failed to fetch contracts: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}")
                 databaseState?.postValue(fetchFail)
-
             }
         }
 
