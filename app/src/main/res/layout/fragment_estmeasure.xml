@@ -15,7 +15,9 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="parent"
+        android:visibility="visible"
+        >
 
         <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
                 android:id="@+id/estimations_swipe_to_refresh"
@@ -32,7 +34,9 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
                 android:padding="@dimen/dimen_8dp"
-                tools:listitem="@layout/single_listview_item" />
+                tools:listitem="@layout/single_listview_item"
+                android:visibility="visible"
+                />
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
     </LinearLayout>
@@ -81,7 +85,7 @@
         android:layout_height="wrap_content"
         android:src="@drawable/no_data"
         android:gravity="center"
-        android:visibility="visible"
+        android:visibility="gone"
         tools:visibility="visible"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"

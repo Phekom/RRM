@@ -57,22 +57,22 @@ class MeasureViewModel(
         measureCreationDataRepository.getUser()
     }
 
-    val measureJob: MutableLiveData<JobDTO> = MutableLiveData()
-    val jobItemMeasure: MutableLiveData<JobItemMeasureDTO> = MutableLiveData()
-    val measureItemPhotos: MutableLiveData<List<JobItemMeasurePhotoDTO>> = MutableLiveData()
+    var measureJob: MutableLiveData<JobDTO> = MutableLiveData()
+    var jobItemMeasure: MutableLiveData<JobItemMeasureDTO> = MutableLiveData()
+    var measureItemPhotos: MutableLiveData<List<JobItemMeasurePhotoDTO>> = MutableLiveData()
 
     val estimateMeasureItem: MutableLiveData<EstimateMeasureItem> = MutableLiveData()
 
     private lateinit var workflowStatus: MutableLiveData<XIEvent<XIResult<String>>>
 
-    val workflowState: MutableLiveData<XIResult<String>> = MutableLiveData()
+    var workflowState: MutableLiveData<XIResult<String>> = MutableLiveData()
 
     val backupJobId: MutableLiveData<String> = MutableLiveData()
 
-    val superJob = SupervisorJob()
+    private val superJob = SupervisorJob()
 
-    val mainContext = (Job(superJob) + Dispatchers.Main + uncaughtExceptionHandler)
-    val ioContext = (Job(superJob) + Dispatchers.IO + uncaughtExceptionHandler)
+    private val mainContext = (Job(superJob) + Dispatchers.Main + uncaughtExceptionHandler)
+    private val ioContext = (Job(superJob) + Dispatchers.IO + uncaughtExceptionHandler)
 
     init {
         viewModelScope.launch(viewModelContext) {
@@ -84,7 +84,7 @@ class MeasureViewModel(
                     }
                 }
             }
-            launch(mainContext) {
+            launch(ioContext) {
                 workflowStatus.observeForever { event ->
                     event?.getContentIfNotHandled()?.let {
                         workflowState.postValue(it)
@@ -221,12 +221,16 @@ class MeasureViewModel(
         }
     }
 
-    fun deleteItemMeasureFromList(itemMeasureId: String) {
-        measureCreationDataRepository.deleteItemMeasurefromList(itemMeasureId)
+    suspend fun deleteItemMeasureFromList(itemMeasureId: String) {
+        withContext(Dispatchers.IO) {
+            measureCreationDataRepository.deleteItemMeasurefromList(itemMeasureId)
+        }
     }
 
-    fun deleteItemMeasurePhotoFromList(itemMeasureId: String) {
-        measureCreationDataRepository.deleteItemMeasurephotofromList(itemMeasureId)
+    suspend fun deleteItemMeasurePhotoFromList(itemMeasureId: String) {
+        withContext(Dispatchers.IO) {
+            measureCreationDataRepository.deleteItemMeasurephotofromList(itemMeasureId)
+        }
     }
 
     suspend fun processWorkflowMove(
@@ -238,19 +242,20 @@ class MeasureViewModel(
         activity: FragmentActivity,
         itemMeasureJob: JobDTO
     ): Job = viewModelScope.launch(viewModelContext) {
-
-        try {
-            measureCreationDataRepository.saveMeasurementItems(
-                userId,
-                jobId,
-                jimNo,
-                contractVoId,
-                mSures,
-                activity,
-                itemMeasureJob
-            )
-        } catch (e: Exception) {
-            workflowState.postValue(XIError(e, e.message!!))
+        withContext(Dispatchers.IO) {
+            try {
+                measureCreationDataRepository.saveMeasurementItems(
+                    userId,
+                    jobId,
+                    jimNo,
+                    contractVoId,
+                    mSures,
+                    activity,
+                    itemMeasureJob
+                )
+            } catch (e: Exception) {
+                workflowState.postValue(XIError(e, e.message!!))
+            }
         }
     }
 
@@ -311,11 +316,14 @@ class MeasureViewModel(
         estimateId: String?,
         selectedJobItemMeasure: JobItemMeasureDTO
     ) {
-        measureCreationDataRepository.setJobItemMeasureImages(
-            jobItemMeasurePhotoList,
-            estimateId,
-            selectedJobItemMeasure
-        )
+
+        withContext(ioContext) {
+            measureCreationDataRepository.setJobItemMeasureImages(
+                jobItemMeasurePhotoList,
+                estimateId,
+                selectedJobItemMeasure
+            )
+        }
     }
 
     fun saveJobItemMeasureItems(jobItemMeasureDTO: ArrayList<JobItemMeasureDTO>) {
@@ -367,6 +375,7 @@ class MeasureViewModel(
      * prevent a leak of this ViewModel.
      */
     override fun onCleared() {
+        workflowState = MutableLiveData()
         workflowStatus = MutableLiveData()
         superJob.cancelChildren()
         super.onCleared()

@@ -272,7 +272,7 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
             MotionToast.TOAST_ERROR,
             MotionToast.GRAVITY_BOTTOM,
             MotionToast.LONG_DURATION,
-            ResourcesCompat.getFont(this, R.font.helvetica_regular)
+            ResourcesCompat.getFont(this, R.font.myriadproit)
         )
 
         resetAllPinColor()
@@ -290,7 +290,7 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
             MotionToast.TOAST_SUCCESS,
             MotionToast.GRAVITY_BOTTOM,
             MotionToast.LONG_DURATION,
-            ResourcesCompat.getFont(this, R.font.helvetica_regular)
+            ResourcesCompat.getFont(this, R.font.myriadproit)
         )
     }
 

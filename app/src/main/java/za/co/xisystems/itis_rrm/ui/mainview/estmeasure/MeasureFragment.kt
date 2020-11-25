@@ -80,7 +80,7 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
             ActivityIdConstants.JOB_ESTIMATE
         )
 
-        itemEstimateData.observeOnce(viewLifecycleOwner, { itemEstimateList ->
+        itemEstimateData.observe(viewLifecycleOwner, { itemEstimateList ->
             itemEstimateList?.let {
                 if (it.isEmpty()) {
                     fetchJobMeasures()
@@ -121,10 +121,10 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
                 withContext(Dispatchers.Main) {
                     val jobs = measureViewModel.offlineUserTaskList.await()
                     jobs.observeOnce(viewLifecycleOwner, { works ->
-                        if (works.isEmpty()) {
-                            noData.visibility = View.VISIBLE
-                        } else {
-                            noData.visibility = View.GONE
+                        if (!works.isNullOrEmpty()) {
+                            Coroutines.main {
+                                fetchEstimateMeasures()
+                            }
                         }
                     })
                 }
@@ -158,7 +158,7 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
                 ActivityIdConstants.MEASURE_PART_COMPLETE
             )
 
-            jobEstimateData.observeOnce(viewLifecycleOwner, { jos ->
+            jobEstimateData.observe(viewLifecycleOwner, { jos ->
                 jos?.let {
                     if (jos.isEmpty()) {
                         noData.visibility = View.VISIBLE

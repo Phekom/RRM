@@ -262,6 +262,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
     override fun onAttach(context: Context) {
         super.onAttach(context)
         (activity as MainActivity).supportActionBar?.title = getString(string.edit_estimate)
+        locationWarning = false
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -799,6 +800,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
     }
 
     private fun showLocationWarning() {
+
         if (!locationWarning) {
             this.sharpToast(
                 getString(string.no_section_for_project),
@@ -806,6 +808,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
                 MotionToast.GRAVITY_BOTTOM,
                 MotionToast.LONG_DURATION
             )
+            Timber.d("showLocationWarning")
             locationWarning = true
         }
     }
