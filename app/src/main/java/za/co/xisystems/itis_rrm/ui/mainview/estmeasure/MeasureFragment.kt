@@ -90,6 +90,7 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
                         item.jobId
                     }
                     Timber.d("Estimate measures detected: ${jobHeaders.size}")
+                    estimations_to_be_measured_listView.visibility = View.VISIBLE
                     initRecyclerView(jobHeaders.toMeasureListItems())
                     noData.visibility = View.GONE
                     group5_loading.visibility = View.GONE
@@ -160,10 +161,13 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
             jobEstimateData.observeOnce(viewLifecycleOwner, { jos ->
                 jos?.let {
                     if (jos.isEmpty()) {
-                        no_data_layout.visibility = View.VISIBLE
+                        noData.visibility = View.VISIBLE
                         group5_loading.visibility = View.GONE
+                        estimations_to_be_measured_listView.visibility = View.GONE
+
                     } else {
-                        no_data_layout.visibility = View.GONE
+                        noData.visibility = View.GONE
+                        estimations_to_be_measured_listView.visibility = View.VISIBLE
                         val measureItems = jos.distinctBy {
                             it.jobId
                         }

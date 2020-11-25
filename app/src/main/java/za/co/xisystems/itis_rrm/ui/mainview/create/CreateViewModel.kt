@@ -198,7 +198,7 @@ class CreateViewModel(
         newJobItemEstimatesList: ArrayList<JobItemEstimateDTO>,
         jobItemSectionArrayList: ArrayList<JobSectionDTO>
     ) {
-        withContext(Dispatchers.IO) {
+        withContext(ioContext) {
             jobCreationDataRepository.updateNewJob(
                 newJobId,
                 startKM,
@@ -217,7 +217,7 @@ class CreateViewModel(
         linearId: String?,
         projectId: String?
     ): String? {
-        return withContext(Dispatchers.IO) {
+        return withContext(ioContext) {
             jobCreationDataRepository.getSectionByRouteSectionProject(
                 sectionId,
                 linearId,
@@ -285,7 +285,7 @@ class CreateViewModel(
         job: JobDTO,
         activity: FragmentActivity
     ): String {
-        return withContext(Dispatchers.IO) {
+        return withContext(ioContext) {
             jobCreationDataRepository.submitJob(userId, job, activity)
         }
     }

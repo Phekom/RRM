@@ -1,6 +1,5 @@
 @file:Suppress(
-    "RemoveExplicitTypeArguments", "RemoveExplicitTypeArguments", "RemoveExplicitTypeArguments", "RemoveExplicitTypeArguments", "RemoveExplicitTypeArguments", "RemoveExplicitTypeArguments", "RemoveExplicitTypeArguments", "RemoveExplicitTypeArguments", "RemoveExplicitTypeArguments",
-    "RemoveExplicitTypeArguments", "RemoveExplicitTypeArguments", "RemoveExplicitTypeArguments", "RemoveExplicitTypeArguments", "RemoveExplicitTypeArguments"
+    "RemoveExplicitTypeArguments"
 )
 
 package za.co.xisystems.itis_rrm.ui.mainview.approvemeasure
@@ -86,11 +85,11 @@ class ApproveMeasureFragment : BaseFragment(R.layout.fragment_approvemeasure), K
                 measurementsSubscription.observe(viewLifecycleOwner, { measurementData ->
 
                     if (measurementData.isNullOrEmpty()) {
-                        no_data_layout.visibility = View.VISIBLE
-                        datagrid.visibility = View.GONE
+                        noData.visibility = View.VISIBLE
+                        approve_measurements_list.visibility = View.GONE
                     } else {
-                        no_data_layout.visibility = View.GONE
-                        datagrid.visibility = View.VISIBLE
+                        noData.visibility = View.GONE
+                        approve_measurements_list.visibility = View.VISIBLE
                         val jobHeaders = measurementData.distinctBy {
                             it.jobId
                         }
@@ -136,11 +135,11 @@ class ApproveMeasureFragment : BaseFragment(R.layout.fragment_approvemeasure), K
                 val freshJobs = approveViewModel.offlineUserTaskList.await()
                 freshJobs.observe(viewLifecycleOwner, {
                     if (it.isNullOrEmpty()) {
-                        no_data_layout.visibility = View.VISIBLE
-                        datagrid.visibility = View.GONE
+                        noData.visibility = View.VISIBLE
+                        approve_measurements_list.visibility = View.GONE
                     } else {
-                        no_data_layout.visibility = View.GONE
-                        datagrid.visibility = View.VISIBLE
+                        noData.visibility = View.GONE
+                        approve_measurements_list.visibility = View.VISIBLE
                     }
                 })
             } catch (t: Throwable) {
