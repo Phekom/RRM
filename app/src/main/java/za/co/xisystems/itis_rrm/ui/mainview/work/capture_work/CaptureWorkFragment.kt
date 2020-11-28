@@ -36,7 +36,6 @@ import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
 import pereira.agnaldo.previewimgcol.ImageCollectionView
 import timber.log.Timber
-import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.LocationFragment
@@ -77,10 +76,15 @@ import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
+import za.co.xisystems.itis_rrm.utils.enums.ToastDuration
 import za.co.xisystems.itis_rrm.utils.enums.ToastDuration.LONG
+import za.co.xisystems.itis_rrm.utils.enums.ToastDuration.SHORT
+import za.co.xisystems.itis_rrm.utils.enums.ToastGravity
 import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.BOTTOM
 import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.CENTER
+import za.co.xisystems.itis_rrm.utils.enums.ToastStyle
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.ERROR
+import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.INFO
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.NO_INTERNET
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.WARNING
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
@@ -217,7 +221,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                 }
             }
             is XIError -> {
-                sharedViewModel.setColorMessage(result.message, ERROR, BOTTOM, LONG)
+                sharpToast(result.message, ERROR, BOTTOM, LONG)
             }
             is XIStatus -> {
                 move_workflow_button.text = result.message
@@ -259,7 +263,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
             sendWorkToService(itemEstiWorks)
         } else {
             sharedViewModel.setColorMessage(
-                msg = getString(R.string.no_connection_detected),
+                message = getString(R.string.no_connection_detected),
                 style = NO_INTERNET,
                 position = CENTER,
                 duration = LONG
@@ -270,7 +274,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
 
     private fun validationNotice(stringId: Int) {
         sharedViewModel.setColorMessage(
-            msg = getString(stringId),
+            message = getString(stringId),
             style = WARNING,
             position = CENTER,
             duration = LONG
@@ -326,9 +330,9 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                 is XIStatus -> {
                     sharpToast(
                         result.message,
-                        MotionToast.TOAST_INFO,
-                        position = MotionToast.GRAVITY_TOP,
-                        duration = MotionToast.SHORT_DURATION
+                        ToastStyle.INFO,
+                        position = ToastGravity.TOP,
+                        duration = SHORT
                     )
                 }
                 is XIProgress -> {
@@ -353,9 +357,9 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                 is XISuccess -> {
                     sharpToast(
                         "Work captured",
-                        motionType = MotionToast.TOAST_SUCCESS,
-                        position = MotionToast.GRAVITY_BOTTOM,
-                        duration = MotionToast.SHORT_DURATION
+                        style = ToastStyle.SUCCESS,
+                        position = ToastGravity.BOTTOM,
+                        duration = SHORT
                     )
                     move_workflow_button.doneProgress("Workflow complete")
                     refreshView()
@@ -371,9 +375,9 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                 is XIStatus -> {
                     sharpToast(
                         result.message,
-                        MotionToast.TOAST_INFO,
-                        position = MotionToast.GRAVITY_TOP,
-                        duration = MotionToast.SHORT_DURATION
+                        INFO,
+                        position = ToastGravity.TOP,
+                        duration = SHORT
                     )
                 }
                 is XIProgress -> {
@@ -491,10 +495,10 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
 
                     groupAdapter.notifyItemChanged(0)
                 }
-                else -> this.sharpToast("Error: Current location is null!", MotionToast.TOAST_ERROR)
+                else -> sharpToast("Error: Current location is null!", ToastStyle.ERROR)
             }
         } catch (e: Exception) {
-            sharedViewModel.setColorMessage(
+            sharpToast(
                 getString(R.string.error_getting_image),
                 ERROR,
                 CENTER,
@@ -513,7 +517,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
 
         if (currentLocation == null) {
             // Check network availability / connectivity
-            sharedViewModel.setColorMessage("Please enable location services.", ERROR, CENTER, LONG)
+            sharpToast("Please enable location services.", ERROR, CENTER, LONG)
             // Launch Dialog
         } else {
             // requireMutex
@@ -751,16 +755,16 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
 
             when {
                 userDTO.userId.isBlank() -> {
-                    sharedViewModel.setColorMessage(
-                        "Error: current user lacks permissions",
-                        ERROR,
+                    sharpToast(
+                        message= "Error: current user lacks permissions",
+                        style = ERROR,
                         CENTER,
                         LONG
                     )
                     move_workflow_button.failProgress("Workflow failed ...")
                 }
                 jobItEstimate?.jobId == null -> {
-                    sharedViewModel.setColorMessage(
+                    sharpToast(
                         "Error: selected job is invalid",
                         ERROR,
                         CENTER,
@@ -792,17 +796,17 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
     private fun popViewOnJobSubmit(direction: Int) {
         if (direction == WorkflowDirection.NEXT.value) {
             this.sharpToast(
-                R.string.work_complete,
-                MotionToast.TOAST_SUCCESS,
-                MotionToast.GRAVITY_TOP,
-                MotionToast.LONG_DURATION
+                resId = R.string.work_complete,
+                ToastStyle.SUCCESS,
+                ToastGravity.TOP,
+                ToastDuration.LONG
             )
         } else if (direction == WorkflowDirection.FAIL.value) {
             this.sharpToast(
                 getString(R.string.work_declined),
-                MotionToast.TOAST_INFO,
-                MotionToast.GRAVITY_TOP,
-                MotionToast.LONG_DURATION
+                ToastStyle.INFO,
+                ToastGravity.TOP,
+                ToastDuration.LONG
             )
         }
         Intent(activity, MainActivity::class.java).also { home ->

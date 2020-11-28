@@ -31,6 +31,7 @@ import androidx.navigation.ui.NavigationUI
 import com.google.android.material.navigation.NavigationView
 import com.raygun.raygun4android.RaygunClient
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.coroutines.launch
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.kodein
 import org.kodein.di.generic.instance
@@ -44,6 +45,7 @@ import za.co.xisystems.itis_rrm.ui.mainview.activities.MainActivityViewModelFact
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SettingsActivity
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModelFactory
+import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
@@ -71,7 +73,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private var networkEnabled = false
 
     private var progressBar: ProgressBar? = null
-
+    private var uiScope = UiLifecycleScope()
     override fun onCreate(savedInstanceState: Bundle?) {
 
         // finally us mortals get to see coroutines from the inside
@@ -409,10 +411,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private fun initializeCountDrawer() {
         // Estimates are completed needs to be submitted currently saved in the local DB
 
-        Coroutines.main {
+        uiScope.launch(uiScope.coroutineContext){
             mainActivityViewModel.getJobsForActivityId(
                 ActivityIdConstants.JOB_ESTIMATE
-            ).observe(this, { newJobData ->
+            ).observe(this@MainActivity, { newJobData ->
                 val tasks = newJobData.distinctBy { job -> job.JiNo }.count()
                 writeBadge(badgeUnSubmitted, tasks)
             })
@@ -423,7 +425,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             mainActivityViewModel.getJobsForActivityId2(
                 ActivityIdConstants.JOB_APPROVED,
                 ActivityIdConstants.ESTIMATE_INCOMPLETE
-            ).observe(this, { workList ->
+            ).observe(this@MainActivity, { workList ->
                 val tasks = workList.distinctBy { job -> job.JobId }.count()
                 writeBadge(badgeWork, tasks)
             })
@@ -432,7 +434,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 ActivityIdConstants.ESTIMATE_MEASURE,
                 ActivityIdConstants.JOB_ESTIMATE,
                 ActivityIdConstants.MEASURE_PART_COMPLETE
-            ).observe(this, { measurementJobs ->
+            ).observe(this@MainActivity, { measurementJobs ->
                 val tasks = measurementJobs.distinctBy { job -> job.jobId }.count()
                 writeBadge(badgeEstMeasure, tasks)
             })
@@ -440,7 +442,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
             mainActivityViewModel.getJobsForActivityId(
                 ActivityIdConstants.JOB_APPROVE
-            ).observe(this, { jobApprovalData ->
+            ).observe(this@MainActivity, { jobApprovalData ->
                 val tasks = jobApprovalData.count()
                 writeBadge(badgeApproveJobs, tasks)
             })
@@ -448,7 +450,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             // Measurements are completed needs approval for payment
             mainActivityViewModel.getJobApproveMeasureForActivityId(
                 ActivityIdConstants.MEASURE_COMPLETE
-            ).observe(this, {
+            ).observe(this@MainActivity, {
                 val tasks = it.distinctBy { job -> job.jobId }.count()
                 writeBadge(badgeApprovMeasure, tasks)
             })
@@ -474,6 +476,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     ) {
         MotionToast.createColorToast(
             context = this,
+            title = colorToast.title,
             message = colorToast.message,
             style = colorToast.style.getValue(),
             position = colorToast.gravity.getValue(),

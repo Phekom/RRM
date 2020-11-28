@@ -44,7 +44,6 @@ import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
 import timber.log.Timber
-import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.BuildConfig
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
@@ -79,6 +78,10 @@ import za.co.xisystems.itis_rrm.utils.GlideApp
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
+import za.co.xisystems.itis_rrm.utils.enums.ToastDuration.LONG
+import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.BOTTOM
+import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.ERROR
+import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.WARNING
 import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
 import java.io.File
 import java.text.DecimalFormat
@@ -212,14 +215,14 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
         }
     }
 
-    private fun onUserFound(foundUserId: Int?): Int? {
+    private fun onUserFound(foundUserId: Int?): Int {
         if (foundUserId != null) {
             currentUser = foundUserId
         }
         return currentUser
     }
 
-    private fun onJobFound(foundJobDTO: JobDTO?): JobDTO? {
+    private fun onJobFound(foundJobDTO: JobDTO?): JobDTO {
         newJob = foundJobDTO!!
         if (estimateId != null) {
             val estimateDTO = newJob?.JobItemEstimates?.find { itemEstimate ->
@@ -262,6 +265,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
     override fun onAttach(context: Context) {
         super.onAttach(context)
         (activity as MainActivity).supportActionBar?.title = getString(string.edit_estimate)
+        locationWarning = false
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -800,12 +804,13 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
 
     private fun showLocationWarning() {
         if (!locationWarning) {
-            this.sharpToast(
-                getString(string.no_section_for_project),
-                MotionToast.TOAST_ERROR,
-                MotionToast.GRAVITY_BOTTOM,
-                MotionToast.LONG_DURATION
+            sharedViewModel.setColorMessage(
+                message = getString(string.no_section_for_project),
+                style = ERROR,
+                position = BOTTOM,
+                duration = LONG
             )
+            Timber.d("showLocationWarning")
             locationWarning = true
         }
     }
@@ -1008,7 +1013,11 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
             updateButton.visibility = View.VISIBLE
             setCost()
         } else {
-            sharedViewModel.setMessage("Estimate is incomplete ...")
+            sharedViewModel.setColorMessage(
+                message = "Please take both photographs ...",
+                style = WARNING,
+                position = BOTTOM
+            )
             hideCostCard()
         }
     }
@@ -1039,7 +1048,12 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
             } catch (t: Throwable) {
                 val secErr = XIError(t, "Failed to caption photo: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}")
                 Timber.e(t, secErr.message)
-                XIErrorHandler.crashGuard(this, this.requireView(), secErr, refreshAction = { retryRouteSectionData(isStart, textView, animate) })
+                XIErrorHandler.crashGuard(
+                    this,
+                    this.requireView(),
+                    secErr,
+                    refreshAction = { retryRouteSectionData(isStart, textView, animate) }
+                )
             }
         }
     }

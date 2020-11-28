@@ -15,26 +15,26 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.ContractDTO
 interface ContractDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun saveAllContracts(contracts: List<ContractDTO>)
+    suspend fun saveAllContracts(contracts: List<ContractDTO>)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertContract(contract: ContractDTO)
 
     @Query("SELECT * FROM CONTRACTS_TABLE ORDER BY contractNo")
-    fun getAllContracts(): LiveData<List<ContractDTO>>
+    suspend fun getAllContracts(): LiveData<List<ContractDTO>>
 
     @Query("SELECT * FROM CONTRACTS_TABLE WHERE contractId = :contractId")
-    fun checkIfContractExists(contractId: String): Boolean
+    suspend fun checkIfContractExists(contractId: String): Boolean
 
     @Query("SELECT * FROM CONTRACTS_TABLE WHERE contractId = :contractId")
-    fun getContractForContractId(contractId: String): LiveData<ContractDTO>
+    suspend fun getContractForContractId(contractId: String): LiveData<ContractDTO>
 
     @Query("DELETE FROM CONTRACTS_TABLE")
-    fun deleteAll()
+    suspend fun deleteAll()
 
     @Query("SELECT contractNo FROM CONTRACTS_TABLE WHERE contractId LIKE :contractVoId")
-    fun getContractNoForId(contractVoId: String?): String
+    suspend fun getContractNoForId(contractVoId: String?): String
 
     @Query("SELECT COUNT(contractNo) FROM CONTRACTS_TABLE")
-    fun countContracts(): Int
+    suspend fun countContracts(): Int
 }

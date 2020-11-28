@@ -10,25 +10,36 @@ import android.view.View
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.view.inputmethod.InputMethodManager
-import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.snackbar.Snackbar
+import org.kodein.di.KodeinAware
+import org.kodein.di.generic.instance
 import timber.log.Timber
-import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data._commons.Animations
 import za.co.xisystems.itis_rrm.data._commons.views.IProgressView
+import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModel
+import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModelFactory
 import za.co.xisystems.itis_rrm.utils.ViewLogger
+import za.co.xisystems.itis_rrm.utils.enums.ToastDuration
+import za.co.xisystems.itis_rrm.utils.enums.ToastDuration.SHORT
+import za.co.xisystems.itis_rrm.utils.enums.ToastGravity
+import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.TOP
+import za.co.xisystems.itis_rrm.utils.enums.ToastStyle
+import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.INFO
 
 /**
  * Created by Francis Mahlava on 03,October,2019
  */
 // R.layout.fragment_home
 //
-abstract class BaseFragment(layoutContentId: Int) : Fragment(), IProgressView {
+abstract class BaseFragment(layoutContentId: Int) : Fragment(), IProgressView, KodeinAware {
+
+    private lateinit var sharedViewModel: SharedViewModel
+    private val shareFactory: SharedViewModelFactory by instance()
 
     companion object {
-
         @JvmField
         var layoutContentId: Int? = null
 
@@ -90,6 +101,26 @@ abstract class BaseFragment(layoutContentId: Int) : Fragment(), IProgressView {
         super.onCreate(savedInstanceState)
         animations = Animations(requireContext().applicationContext)
         initAnimations()
+    }
+
+    /**
+     * Called when the fragment's activity has been created and this
+     * fragment's view hierarchy instantiated.  It can be used to do final
+     * initialization once these pieces are in place, such as retrieving
+     * views or restoring state.  It is also useful for fragments that use
+     * [.setRetainInstance] to retain their instance,
+     * as this callback tells the fragment when it is fully associated with
+     * the new activity instance.  This is called after [.onCreateView]
+     * and before [.onViewStateRestored].
+     *
+     * @param savedInstanceState If the fragment is being re-created from
+     * a previous saved state, this is the state.
+     */
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
+        sharedViewModel = activity?.run {
+            ViewModelProvider(this, shareFactory).get(SharedViewModel::class.java)
+        } ?: throw Exception("Invalid Activity")
     }
 
     private fun initAnimations() {
@@ -160,21 +191,36 @@ abstract class BaseFragment(layoutContentId: Int) : Fragment(), IProgressView {
         }
     }
 
-    protected fun sharpToast(resId: Int, motionType: String = MotionToast.TOAST_INFO, position: Int = MotionToast.GRAVITY_BOTTOM, duration: Int = MotionToast.LONG_DURATION) {
-        val message = getString(resId)
-        sharpToast(message, motionType, position, duration)
+    protected fun sharpToast(
+        resId: Int,
+        style: ToastStyle = INFO,
+        position: ToastGravity = TOP,
+        duration: ToastDuration = SHORT
+    ) {
+        if(!activity?.isFinishing!!) {
+            val message = getString(resId)
+            sharpToast(message, style, position, duration)
+        }
     }
 
-    protected fun sharpToast(message: String, motionType: String = MotionToast.TOAST_INFO, position: Int = MotionToast.GRAVITY_BOTTOM, duration: Int = MotionToast.LONG_DURATION) {
-        if (!activity?.isFinishing!!)
-            MotionToast.createColorToast(
-                context = requireActivity(),
+    protected fun sharpToast(
+        message: String,
+        style: ToastStyle = INFO,
+        position: ToastGravity = TOP,
+        duration: ToastDuration = SHORT
+    ) {
+        if (!activity?.isFinishing!!) {
+            sharedViewModel.setColorMessage(
                 message = message,
-                style = motionType,
+                style = style,
                 position = position,
                 duration = duration,
-                font = ResourcesCompat.getFont(requireActivity(), R.font.helvetica_regular)
             )
+        }
+    }
+
+    protected fun toggleLongRunning(toggle: Boolean) {
+        sharedViewModel.toggleLongRunning(toggle)
     }
 
     private fun snackError(coordinator: View?, string: String?) {

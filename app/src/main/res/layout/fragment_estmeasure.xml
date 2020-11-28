@@ -7,6 +7,7 @@
 
 
     <LinearLayout
+        android:id="@+id/data_grid"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:animateLayoutChanges="true"
@@ -14,7 +15,9 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="parent"
+        android:visibility="visible"
+        >
 
         <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
                 android:id="@+id/estimations_swipe_to_refresh"
@@ -31,31 +34,11 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
                 android:padding="@dimen/dimen_8dp"
-                tools:listitem="@layout/single_listview_item" />
+                tools:listitem="@layout/single_listview_item"
+                android:visibility="visible"
+                />
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
-
-        <LinearLayout
-            android:id="@+id/no_data_layout"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center"
-            android:orientation="vertical"
-            android:visibility="gone">
-
-
-            <ImageView
-                android:id="@+id/noData"
-                android:layout_width="@dimen/image_size"
-                android:layout_height="@dimen/image_size"
-                android:layout_gravity="center"
-                android:layout_marginTop="@dimen/xlarge"
-                android:contentDescription="@string/NoData"
-                android:src="@drawable/no_data"
-                android:visibility="visible"
-                tools:visibility="visible" />
-
-        </LinearLayout>
     </LinearLayout>
 
     <androidx.constraintlayout.widget.Group
@@ -96,12 +79,16 @@
             app:layout_constraintTop_toBottomOf="@+id/mydata_loading"
             app:layout_constraintVertical_bias="0.0" />
 
-
-
-
-
-
-
-
-
+    <ImageView
+        android:id="@+id/noData"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/no_data"
+        android:gravity="center"
+        android:visibility="gone"
+        tools:visibility="visible"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/data_grid" />
 </androidx.constraintlayout.widget.ConstraintLayout>

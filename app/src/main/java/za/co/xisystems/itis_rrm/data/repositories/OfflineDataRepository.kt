@@ -7,8 +7,6 @@ import android.os.Environment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.room.Transaction
-import java.io.File
-import java.util.regex.Pattern
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -54,6 +52,8 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
+import java.io.File
+import java.util.regex.Pattern
 
 private val jobDataController: JobDataController? = null
 
@@ -84,7 +84,9 @@ class OfflineDataRepository(
         }
 
         sectionItems.observeForever {
-            saveSectionsItems(it)
+            Coroutines.io {
+                saveSectionsItems(it)
+            }
         }
 
         workFlow.observeForever {
@@ -280,7 +282,7 @@ class OfflineDataRepository(
         }
     }
 
-    private fun saveSectionsItems(sections: ArrayList<String>?) {
+    private suspend fun saveSectionsItems(sections: ArrayList<String>?) {
         Coroutines.io {
 
             sections?.forEach { section ->
@@ -293,8 +295,8 @@ class OfflineDataRepository(
                     val itemCode = matcher.group(1)?.replace("\\s+".toRegex(), "")
                     itemCode?.let {
                         try {
-                            if (!appDb.getSectionItemDao().checkIfSectionitemsExist(it))
-                                appDb.getSectionItemDao().insertSectionitem(
+                            if (!appDb.getSectionItemDao().checkIfSectionItemsExist(it))
+                                appDb.getSectionItemDao().insertSectionItem(
                                     section,
                                     it,
                                     sectionItemId
@@ -320,7 +322,7 @@ class OfflineDataRepository(
 
         if (contracts.isNotEmpty()) {
             val validContracts = contracts.filter { contract ->
-                contract.projects != null && !contract.contractId.isBlank()
+                contract.projects != null && contract.contractId.isNotBlank()
             }
                 .distinctBy { contract -> contract.contractId }
             contractMax += validContracts.count()
@@ -331,7 +333,7 @@ class OfflineDataRepository(
 
                     val validProjects =
                         contract.projects?.filter { project ->
-                            !project.projectId.isBlank()
+                            project.projectId.isNotBlank()
                         }?.distinctBy { project -> project.projectId }
 
                     validProjects?.let {
@@ -422,7 +424,7 @@ class OfflineDataRepository(
         }
     }
 
-    private fun updateProjectItems(
+    private suspend fun updateProjectItems(
         distinctItems: List<ProjectItemDTO>,
         project: ProjectDTO
     ) {
@@ -465,7 +467,7 @@ class OfflineDataRepository(
         }
     }
 
-    private fun updateProjectSections(
+    private suspend fun updateProjectSections(
         projectSections: ArrayList<ProjectSectionDTO>,
         project: ProjectDTO
     ) {

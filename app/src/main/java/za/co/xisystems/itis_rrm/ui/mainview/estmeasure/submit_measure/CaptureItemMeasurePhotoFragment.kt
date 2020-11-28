@@ -22,9 +22,6 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.coroutineScope
 import androidx.navigation.Navigation
-import java.util.ArrayList
-import java.util.Date
-import java.util.HashMap
 import kotlinx.android.synthetic.main.fragment_capture_item_measure_photo.*
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
@@ -33,13 +30,14 @@ import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
 import pereira.agnaldo.previewimgcol.ImageCollectionView
 import timber.log.Timber
-import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.LocationFragment
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.results.XIError
+import za.co.xisystems.itis_rrm.custom.results.XIProgress
 import za.co.xisystems.itis_rrm.custom.results.XIResult
+import za.co.xisystems.itis_rrm.custom.results.XIStatus
 import za.co.xisystems.itis_rrm.custom.results.XISuccess
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
@@ -58,6 +56,11 @@ import za.co.xisystems.itis_rrm.utils.DateUtil
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
+import za.co.xisystems.itis_rrm.utils.enums.ToastGravity
+import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.INFO
+import java.util.ArrayList
+import java.util.Date
+import java.util.HashMap
 
 //
 class CaptureItemMeasurePhotoFragment :
@@ -121,8 +124,8 @@ class CaptureItemMeasurePhotoFragment :
 
                         this@CaptureItemMeasurePhotoFragment.sharpToast(
                             message = "Measuring job: ${it.jimNo}",
-                            motionType = MotionToast.TOAST_INFO,
-                            position = MotionToast.GRAVITY_TOP
+                            style = INFO,
+                            position = ToastGravity.TOP
                         )
 
                         selectedJobItemMeasure = it
@@ -337,6 +340,7 @@ class CaptureItemMeasurePhotoFragment :
     private fun handleResponse(response: XIResult<MeasureGalleryUIState>) {
         when (response) {
             is XISuccess -> {
+                toggleLongRunning(false)
                 val uiState = response.data
                 estimate_image_collection_view.clearImages()
 
@@ -355,7 +359,7 @@ class CaptureItemMeasurePhotoFragment :
                 }
             }
 
-            is XIError ->
+            is XIError -> {
                 XIErrorHandler.handleError(
                     fragment = this@CaptureItemMeasurePhotoFragment,
                     view = this@CaptureItemMeasurePhotoFragment.requireView(),
@@ -364,6 +368,15 @@ class CaptureItemMeasurePhotoFragment :
                     shouldShowSnackBar = true,
                     refreshAction = { retryGallery() }
                 )
+            }
+            is XIProgress -> {
+                toggleLongRunning(response.isLoading)
+            }
+            is XIStatus -> {
+                sharpToast(
+                    message = response.message
+                )
+            }
         }
     }
 

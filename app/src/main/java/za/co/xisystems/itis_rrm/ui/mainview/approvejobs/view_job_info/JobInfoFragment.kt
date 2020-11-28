@@ -20,7 +20,6 @@ import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
 import timber.log.Timber
-import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
@@ -43,6 +42,8 @@ import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.approve_job_item.Approve
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
+import za.co.xisystems.itis_rrm.utils.enums.ToastStyle
+import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.NO_INTERNET
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import za.co.xisystems.itis_rrm.utils.hide
 import za.co.xisystems.itis_rrm.utils.show
@@ -75,7 +76,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
                     )
                 }
                 is XIStatus -> {
-                    this.sharpToast(result.message, MotionToast.TOAST_INFO)
+                    this.sharpToast(result.message)
                 }
                 is XIProgress -> {
                     when (result.isLoading) {
@@ -162,7 +163,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
                 } else {
                     this.sharpToast(
                         message = getString(R.string.no_connection_detected),
-                        motionType = MotionToast.TOAST_ERROR
+                        style = NO_INTERNET
                     )
                 }
             }
@@ -196,7 +197,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
                 } else {
                     this.sharpToast(
                         message = getString(R.string.no_connection_detected),
-                        motionType = MotionToast.TOAST_ERROR
+                        style = ToastStyle.NO_INTERNET
                     )
                 }
             }
@@ -237,18 +238,18 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
                             Timber.d("ApproveItem was null")
                         }
                         userDTO.userId.isBlank() -> {
-                            this@JobInfoFragment.sharpToast("The user lacks permissions.", MotionToast.TOAST_ERROR)
+                            this@JobInfoFragment.sharpToast("The user lacks permissions.", ToastStyle.ERROR)
                             progressButton.failProgress("Invalid User")
                         }
                         job.jobDTO.JobId.isBlank() -> {
-                            this@JobInfoFragment.sharpToast("The selected job is invalid.", MotionToast.TOAST_ERROR)
+                            this@JobInfoFragment.sharpToast("The selected job is invalid.", ToastStyle.ERROR)
                             progressButton.failProgress("Invalid Job")
                         }
                         workflowDirection == WorkflowDirection.FAIL &&
                             workflow_comments_editText.text.trim().isBlank() -> {
                             this@JobInfoFragment.sharpToast(
                                 "Please provide a comment / reason for declining this job",
-                                MotionToast.TOAST_WARNING
+                                ToastStyle.WARNING
                             )
                             progressButton.failProgress(getString(R.string.decline_job))
                         }
@@ -294,13 +295,13 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
             progressButton.text = getString(R.string.approve_job)
             this.sharpToast(
                 getString(R.string.job_no_approved, jiNo!!),
-                MotionToast.TOAST_SUCCESS
+                ToastStyle.SUCCESS
             )
         } else if (direction == WorkflowDirection.FAIL.value) {
             progressButton.text = getString(R.string.decline_job)
             this.sharpToast(
                 getString(R.string.job_declined),
-                MotionToast.TOAST_INFO
+                ToastStyle.INFO
             )
         }
 

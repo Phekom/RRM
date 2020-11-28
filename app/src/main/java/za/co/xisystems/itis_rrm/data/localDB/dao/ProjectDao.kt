@@ -22,7 +22,7 @@ interface ProjectDao {
 
     //    @Insert(onConflict = OnConflictStrategy.REPLACE)
     @Query("INSERT INTO PROJECT_TABLE (projectId,descr, endDate, items, projectCode, projectMinus, projectPlus,projectSections, voItems, contractId) VALUES (:projectId,:descr, :endDate, :items, :projectCode, :projectMinus, :projectPlus, :projectSections, :voItems, :contractId)")
-    fun insertProject(
+    suspend fun insertProject(
         projectId: String,
         descr: String?,
         endDate: String?,
@@ -36,33 +36,33 @@ interface ProjectDao {
     ): Long
 
     @Update(onConflict = OnConflictStrategy.REPLACE)
-    fun updateProject(project: ProjectDTO)
+    suspend fun updateProject(project: ProjectDTO)
 
     @Query("SELECT projectId FROM PROJECT_TABLE WHERE projectId = projectId")
-    fun getProjectId(): String
+    suspend fun getProjectId(): String
 
     @Query("SELECT * FROM PROJECT_TABLE ")
-    fun getAllProjects(): LiveData<List<ProjectDTO>>
+    suspend fun getAllProjects(): LiveData<List<ProjectDTO>>
 
     @Query("SELECT projectId FROM PROJECT_TABLE WHERE projectId = :projectId")
-    fun checkProjectExists(projectId: String): Boolean
+    suspend fun checkProjectExists(projectId: String): Boolean
 
     @Query("SELECT * FROM PROJECT_TABLE WHERE contractId = :contractId ORDER BY projectCode")
-    fun getAllProjectsByContract(contractId: String): LiveData<List<ProjectDTO>>
+    suspend fun getAllProjectsByContract(contractId: String): LiveData<List<ProjectDTO>>
 
     @Query("SELECT descr FROM PROJECT_TABLE WHERE projectId = :projectId")
-    fun getProjectDescription(projectId: String): String
+    suspend fun getProjectDescription(projectId: String): String
 
     @Query("SELECT * FROM PROJECT_TABLE WHERE projectId = :projectId")
-    fun getProjectById(projectId: String): ProjectDTO
+    suspend fun getProjectById(projectId: String): ProjectDTO
 
     //    @Query("SELECT * FROM PROJECT_TABLE WHERE projectId = :projectId")
 //    fun getContractId(projectId: String): String
 //
 //
     @Query("DELETE FROM PROJECT_TABLE")
-    fun deleteAll()
+    suspend fun deleteAll()
 
     @Query("SELECT projectCode FROM PROJECT_TABLE WHERE projectId LIKE :projectId")
-    fun getProjectCodeForId(projectId: String?): String
+    suspend fun getProjectCodeForId(projectId: String?): String
 }

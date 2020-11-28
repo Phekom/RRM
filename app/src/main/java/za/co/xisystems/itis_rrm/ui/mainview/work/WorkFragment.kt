@@ -83,10 +83,11 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
             ).observeOnce(viewLifecycleOwner, { jobsList ->
                 group7_loading.visibility = View.GONE
                 if (jobsList.isNullOrEmpty()) {
-                    no_data_layout.visibility = View.VISIBLE
+                    work_listView.visibility = View.GONE
+                    noData.visibility = View.VISIBLE
                 } else {
-
-                    no_data_layout.visibility = View.GONE
+                    work_listView.visibility = View.VISIBLE
+                    noData.visibility = View.GONE
 
                     val headerItems = jobsList.distinctBy {
                         it.JobId

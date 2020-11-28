@@ -184,11 +184,11 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
                         } else {
                             MotionToast.createColorToast(
                                 this,
-                                getString(R.string.no_connection_detected),
-                                MotionToast.TOAST_NO_INTERNET,
-                                MotionToast.GRAVITY_BOTTOM,
-                                MotionToast.LONG_DURATION,
-                                ResourcesCompat.getFont(this, R.font.helvetica_regular)
+                                message = getString(R.string.no_connection_detected),
+                                style = MotionToast.TOAST_NO_INTERNET,
+                                position = MotionToast.GRAVITY_BOTTOM,
+                                duration = MotionToast.LONG_DURATION,
+                                font = ResourcesCompat.getFont(this.baseContext, R.font.helvetica_regular)
                             )
                         }
                     }
@@ -268,11 +268,11 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
 
         MotionToast.createColorToast(
             this,
-            "Pin is incorrect",
-            MotionToast.TOAST_ERROR,
-            MotionToast.GRAVITY_BOTTOM,
-            MotionToast.LONG_DURATION,
-            ResourcesCompat.getFont(this, R.font.helvetica_regular)
+            message= "Pin is incorrect",
+            style = MotionToast.TOAST_ERROR,
+            position = MotionToast.GRAVITY_BOTTOM,
+            duration = MotionToast.LONG_DURATION,
+            font = ResourcesCompat.getFont(this.baseContext, R.font.helvetica_regular)
         )
 
         resetAllPinColor()
@@ -286,11 +286,11 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
     override fun onSuccess(userDTO: UserDTO) {
         MotionToast.createColorToast(
             this,
-            "You are Logged in as ${userDTO.userName}",
-            MotionToast.TOAST_SUCCESS,
-            MotionToast.GRAVITY_BOTTOM,
-            MotionToast.LONG_DURATION,
-            ResourcesCompat.getFont(this, R.font.helvetica_regular)
+            message= "You are Logged in as ${userDTO.userName}",
+            style = MotionToast.TOAST_SUCCESS,
+            position = MotionToast.GRAVITY_BOTTOM,
+            duration = MotionToast.LONG_DURATION,
+            font = ResourcesCompat.getFont(this.baseContext, R.font.helvetica_regular)
         )
     }
 
