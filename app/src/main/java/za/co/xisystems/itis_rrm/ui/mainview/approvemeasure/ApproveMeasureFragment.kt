@@ -41,9 +41,7 @@ class ApproveMeasureFragment : BaseFragment(R.layout.fragment_approvemeasure), K
     private lateinit var approveViewModel: ApproveMeasureViewModel
     private val factory: ApproveMeasureViewModelFactory by instance<ApproveMeasureViewModelFactory>()
 
-    companion object {
-        const val JOB_ID_FOR_MEASUREMENT_APPROVAL = "JOB_ID_FOR_MEASUREMENT_APPROVAL"
-    }
+    companion object;
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -100,8 +98,7 @@ class ApproveMeasureFragment : BaseFragment(R.layout.fragment_approvemeasure), K
             } catch (t: Throwable) {
                 Timber.e(t, "Unable to fetch Measurements")
                 val measureErr = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
-                XIErrorHandler.crashGuard(
-                    fragment = this@ApproveMeasureFragment,
+                crashGuard(
                     view = this@ApproveMeasureFragment.requireView(),
                     throwable = measureErr,
                     refreshAction = { retryFetchMeasurements() }
@@ -145,8 +142,7 @@ class ApproveMeasureFragment : BaseFragment(R.layout.fragment_approvemeasure), K
             } catch (t: Throwable) {
                 Timber.e(t, "Unable to fetch remote jobs")
                 val measureErr = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
-                XIErrorHandler.crashGuard(
-                    fragment = this@ApproveMeasureFragment,
+                crashGuard(
                     view = this@ApproveMeasureFragment.requireView(),
                     throwable = measureErr,
                     refreshAction = { retryFetchMeasurements() }

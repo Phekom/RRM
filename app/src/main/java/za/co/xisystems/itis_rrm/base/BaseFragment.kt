@@ -17,16 +17,22 @@ import org.kodein.di.KodeinAware
 import org.kodein.di.generic.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
+import za.co.xisystems.itis_rrm.custom.results.XIError
+import za.co.xisystems.itis_rrm.custom.results.isConnectivityException
 import za.co.xisystems.itis_rrm.data._commons.Animations
 import za.co.xisystems.itis_rrm.data._commons.views.IProgressView
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModelFactory
 import za.co.xisystems.itis_rrm.utils.ViewLogger
 import za.co.xisystems.itis_rrm.utils.enums.ToastDuration
+import za.co.xisystems.itis_rrm.utils.enums.ToastDuration.LONG
 import za.co.xisystems.itis_rrm.utils.enums.ToastDuration.SHORT
 import za.co.xisystems.itis_rrm.utils.enums.ToastGravity
-import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.TOP
+import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.BOTTOM
+import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.CENTER
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle
+import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.ERROR
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.INFO
 
 /**
@@ -40,8 +46,6 @@ abstract class BaseFragment(layoutContentId: Int) : Fragment(), IProgressView, K
     private val shareFactory: SharedViewModelFactory by instance()
 
     companion object {
-        @JvmField
-        var layoutContentId: Int? = null
 
         @JvmField
         var bounce: Animation? = null
@@ -187,30 +191,38 @@ abstract class BaseFragment(layoutContentId: Int) : Fragment(), IProgressView, K
 
     override fun toast(resid: String?) {
         resid?.let {
-            if (!activity?.isFinishing!!) sharpToast(resid)
+            if (!activity?.isFinishing!!)
+                sharpToast(resource = resid)
         }
     }
 
+    protected fun sharpToast(resource: String){
+        sharpToast(message = resource)
+    }
+
     protected fun sharpToast(
+        title: String? = null,
         resId: Int,
         style: ToastStyle = INFO,
-        position: ToastGravity = TOP,
+        position: ToastGravity = BOTTOM,
         duration: ToastDuration = SHORT
     ) {
-        if(!activity?.isFinishing!!) {
+        if (!activity?.isFinishing!!) {
             val message = getString(resId)
-            sharpToast(message, style, position, duration)
+            sharpToast(title, message, style, position, duration)
         }
     }
 
     protected fun sharpToast(
+        title: String? = null,
         message: String,
         style: ToastStyle = INFO,
-        position: ToastGravity = TOP,
+        position: ToastGravity = BOTTOM,
         duration: ToastDuration = SHORT
     ) {
         if (!activity?.isFinishing!!) {
             sharedViewModel.setColorMessage(
+                title = title,
                 message = message,
                 style = style,
                 position = position,
@@ -234,6 +246,39 @@ abstract class BaseFragment(layoutContentId: Int) : Fragment(), IProgressView, K
 
     fun snackError(string: String?) {
         snackError(coordinator, string)
+    }
+
+    /**
+     * if the exception is connectivity-related, give the user the option to retry.
+     * Shaun McDonald - 2020/06/01
+     */
+    protected fun crashGuard(view: View, throwable: XIError, refreshAction: () -> Unit) {
+
+        when (throwable.isConnectivityException()) {
+
+            true -> {
+                XIErrorHandler.handleError(
+                    view = view,
+                    throwable = throwable,
+                    shouldShowSnackBar = true,
+                    refreshAction = refreshAction
+                )
+            }
+            else -> {
+                sharpToast(
+                    message = throwable.message,
+                    style = ERROR,
+                    position = CENTER,
+                    duration = LONG
+                )
+                XIErrorHandler.handleError(
+                    view = view,
+                    throwable = throwable,
+                    shouldToast = false,
+                    shouldShowSnackBar = false
+                )
+            }
+        }
     }
 
     abstract fun onCreateOptionsMenu(menu: Menu): Boolean

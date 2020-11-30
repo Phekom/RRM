@@ -16,7 +16,9 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenStarted
+import kotlinx.android.synthetic.main.activity_login.*
 import kotlinx.android.synthetic.main.fragment_home.*
+import kotlinx.android.synthetic.main.fragment_home.serverTextView
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -24,7 +26,6 @@ import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
 import timber.log.Timber
-import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.BuildConfig
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
@@ -38,21 +39,22 @@ import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.extensions.observeOnce
-import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModel
-import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModelFactory
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
+import za.co.xisystems.itis_rrm.utils.enums.ToastDuration.LONG
+import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.BOTTOM
+import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.ERROR
+import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.INFO
+import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.NO_INTERNET
+import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.SUCCESS
 import kotlin.coroutines.cancellation.CancellationException
-
 
 class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
 
     override val kodein by kodein()
     private lateinit var homeViewModel: HomeViewModel
     private val factory: HomeViewModelFactory by instance()
-    private lateinit var sharedViewModel: SharedViewModel
-    private val shareFactory: SharedViewModelFactory by instance()
     private var gpsEnabled: Boolean = false
     private var networkEnabled: Boolean = false
     private lateinit var userDTO: UserDTO
@@ -63,7 +65,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
     private val colorNotConnected: Int
         get() = Color.RED
 
-    private val bigSyncObserver = Observer<XIResult<Boolean>> {
+    private val bigSyncObserver = Observer<XIResult<Boolean>?> {
         Coroutines.main {
             handleBigSync(it)
         }
@@ -93,10 +95,10 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                     }
                 } else {
                     sharpToast(
-                        getString(R.string.please_connect_to_internet_to_up_sync_offline_workflows),
-                        MotionToast.TOAST_NO_INTERNET,
-                        MotionToast.GRAVITY_BOTTOM,
-                        MotionToast.LONG_DURATION
+                        message = getString(R.string.please_connect_to_internet_to_up_sync_offline_workflows),
+                        style = NO_INTERNET,
+                        position = BOTTOM,
+                        duration = LONG
                     )
                 }
             }
@@ -126,20 +128,23 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
 
                 val user = homeViewModel.user.await()
                 user.observe(this@HomeFragment, { userInstance ->
-                    userInstance?.let {
+                    userInstance.let {
                         userDTO = it
                         username?.text = it.userName
 
                         checkConnectivity()
-                        if (networkEnabled)
+                        if (networkEnabled) {
                             servicesHealthCheck()
+                        }
                     }
                 })
             }
             userJob.join()
         } catch (t: Throwable) {
             val connectErr = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
-            XIErrorHandler.crashGuard(this@HomeFragment, this@HomeFragment.requireView(), connectErr,
+            crashGuard(
+                view = this@HomeFragment.requireView(),
+                throwable = connectErr,
                 refreshAction = { retryAcquireUser() })
         }
     }
@@ -201,10 +206,6 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
 
         homeViewModel = activity?.run {
             ViewModelProvider(this, factory).get(HomeViewModel::class.java)
-        } ?: throw Exception("Invalid Activity")
-
-        sharedViewModel = activity?.run {
-            ViewModelProvider(this, shareFactory).get(SharedViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
 
         // Check if database is synched and prompt user if necessary
@@ -293,9 +294,9 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                 }
             } catch (t: Throwable) {
                 val pingEx = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
-                XIErrorHandler.crashGuard(
-                    this@HomeFragment,
-                    pingEx,
+                crashGuard(
+                    view = this@HomeFragment.requireView(),
+                    throwable = pingEx,
                     refreshAction = { retrySync() }
                 )
             }
@@ -304,26 +305,30 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
 
     private suspend fun handleBigSync(signal: XIResult<Boolean>?) {
         Timber.d("$signal")
-        signal?.let{result ->
+        signal?.let { result ->
             when (result) {
                 is XISuccess -> {
                     sharpToast(
-                        "Sync Complete",
-                        MotionToast.TOAST_SUCCESS,
-                        MotionToast.GRAVITY_BOTTOM,
-                        MotionToast.LONG_DURATION
+                        message = "Sync Complete",
+                        style = SUCCESS,
+                        position = BOTTOM,
+                        duration = LONG
                     )
-                    sharedViewModel.toggleLongRunning(false)
+                    toggleLongRunning(false)
                     items_swipe_to_refresh.isRefreshing = false
                     synchJob.join()
                 }
                 is XIStatus -> {
-                    sharedViewModel.setMessage(result.message)
+                    sharpToast(message = result.message, style = INFO, position = BOTTOM)
                 }
                 is XIError -> {
-                    sharedViewModel.setMessage("Sync Failed")
-                    synchJob.cancel()
-                    sharedViewModel.toggleLongRunning(false)
+                    sharpToast(
+                        title = "Sync Failed",
+                        message = result.message,
+                        style = ERROR
+                    )
+                    synchJob.cancel(CancellationException(result.message))
+                    toggleLongRunning(false)
                     items_swipe_to_refresh.isRefreshing = false
                     XIErrorHandler.crashGuard(
                         view = this@HomeFragment.requireView(),
@@ -332,18 +337,17 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                     )
                 }
                 is XIProgress -> {
-                    sharedViewModel.toggleLongRunning(result.isLoading)
+                    toggleLongRunning(result.isLoading)
                     items_swipe_to_refresh.isRefreshing = result.isLoading
                 }
             }
         }
-
     }
 
     private fun bigSync() = uiScope.launch(uiScope.coroutineContext) {
         try {
-            sharedViewModel.setMessage("Data Loading")
-            homeViewModel.databaseState?.observe(viewLifecycleOwner, bigSyncObserver)
+            toast("Data Loading")
+            homeViewModel.databaseState.observe(viewLifecycleOwner, bigSyncObserver)
             synchJob = homeViewModel.fetchAllData(userDTO.userId)
             synchJob.join()
             ping()

@@ -18,31 +18,27 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import kotlinx.android.synthetic.main.fragment_measure_approval.*
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
-import timber.log.Timber
 import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.R.string
 import za.co.xisystems.itis_rrm.base.BaseFragment
-import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.results.XIError
 import za.co.xisystems.itis_rrm.custom.results.XIProgress
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.results.XIStatus
 import za.co.xisystems.itis_rrm.custom.results.XISuccess
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.ui.extensions.doneProgress
 import za.co.xisystems.itis_rrm.ui.extensions.failProgress
 import za.co.xisystems.itis_rrm.ui.extensions.initProgress
-import za.co.xisystems.itis_rrm.ui.extensions.motionToast
+import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.extensions.startProgress
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureViewModelFactory
@@ -51,6 +47,12 @@ import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
+import za.co.xisystems.itis_rrm.utils.enums.ToastDuration.SHORT
+import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.BOTTOM
+import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.CENTER
+import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.ERROR
+import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.INFO
+import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.SUCCESS
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection.NEXT
 
@@ -59,14 +61,12 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
     private lateinit var approveViewModel: ApproveMeasureViewModel
     private val factory: ApproveMeasureViewModelFactory by instance()
     private lateinit var measurementsToApprove: ArrayList<JobItemMeasureDTO>
-    private var mJob: JobDTO? = null
     lateinit var dialog: Dialog
     private lateinit var progressButton: Button
     private var workObserver = Observer<XIResult<String>?> { handleWorkSubmission(it) }
     private var flowDirection: Int = 0
     private var measuresProcessed: Int = 0
     private var uiScope = UiLifecycleScope()
-    private var measureJob: Job = Job()
 
     private fun handleWorkSubmission(outcome: XIResult<String>?) {
         outcome?.let { result ->
@@ -82,19 +82,18 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
                 }
                 is XIError -> {
                     progressButton.failProgress("Failed")
-                    XIErrorHandler.crashGuard(
-                        fragment = this,
+                   crashGuard(
                         view = this.requireView(),
                         throwable = result,
                         refreshAction = { retryMeasurements() }
                     )
                 }
                 is XIStatus -> {
-                    this.sharpToast(
-                        result.message,
-                        MotionToast.TOAST_INFO,
-                        MotionToast.GRAVITY_TOP,
-                        MotionToast.SHORT_DURATION
+                    sharpToast(
+                        message = result.message,
+                        style = INFO,
+                        position = BOTTOM,
+                        duration = SHORT
                     )
                 }
                 is XIProgress -> {
@@ -178,48 +177,10 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
     private fun processMeasurementWorkflow(workflowDirection: WorkflowDirection) {
         if (ServiceUtil.isNetworkAvailable(this.requireContext().applicationContext)) {
             Coroutines.main {
-                approveViewModel.workflowState.observe(viewLifecycleOwner, workObserver)
-
-                val approvalJob = uiScope.launch(uiScope.coroutineContext) {
-                    progressButton.startProgress("Submitting ...")
-
-                    val user = approveViewModel.user.await()
-                    user.observe(viewLifecycleOwner, { userDTO ->
-
-                        measuresProcessed = 0
-                        flowDirection = workflowDirection.value
-
-                        if (userDTO.userId.isBlank()) {
-                            this@MeasureApprovalFragment.sharpToast(
-                                "User lacks permissions",
-                                MotionToast.TOAST_ERROR,
-                                MotionToast.GRAVITY_BOTTOM
-                            )
-                            progressButton.failProgress("Invalid User")
-                        } else {
-                            Coroutines.main {
-                                withContext(uiScope.coroutineContext) {
-                                    try {
-                                        approveViewModel.approveMeasurements(
-                                            userDTO.userId,
-                                            workflowDirection,
-                                            measurementsToApprove
-                                        )
-                                    } catch (t: Throwable) {
-                                        val message = "Measurement Approval Exception: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
-                                        Timber.e(t, message)
-                                        val measureErr = XIError(t, message)
-                                        handleWorkSubmission(measureErr)
-                                    }
-                                }
-                            }
-                        }
-                    })
-                }
-                approvalJob.join()
+                workflowMeasurements(workflowDirection)
             }
         } else {
-            this.requireActivity().motionToast(
+            this.requireActivity().extensionToast(
                 getString(string.no_connection_detected),
                 MotionToast.TOAST_ERROR
             )
@@ -227,11 +188,50 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
         }
     }
 
+    private suspend fun workflowMeasurements(workflowDirection: WorkflowDirection) {
+        approveViewModel.workflowState.observe(viewLifecycleOwner, workObserver)
+
+        val approvalJob = uiScope.launch(uiScope.coroutineContext) {
+            progressButton.startProgress("Submitting ...")
+
+            val user = approveViewModel.user.await()
+            user.observe(viewLifecycleOwner, { userDTO ->
+
+                measuresProcessed = 0
+                flowDirection = workflowDirection.value
+
+                if (userDTO.userId.isBlank()) {
+                    showSubmissionError("User lacks permissions", "Invalid User")
+                } else {
+                    Coroutines.main {
+                        withContext(uiScope.coroutineContext) {
+                            approveViewModel.approveMeasurements(
+                                userDTO.userId,
+                                workflowDirection,
+                                measurementsToApprove
+                            )
+                        }
+                    }
+                }
+            })
+        }
+        approvalJob.join()
+    }
+
+    private fun showSubmissionError(errMessage: String, progFailCaption: String) {
+        this@MeasureApprovalFragment.sharpToast(
+            message = errMessage,
+            style = ERROR,
+            position = CENTER
+        )
+        progressButton.failProgress(progFailCaption)
+    }
+
     private fun popViewOnJobSubmit(direction: Int) {
         if (direction == NEXT.value) {
-            this.sharpToast(string.measurement_approved, MotionToast.TOAST_SUCCESS)
+            this.sharpToast(resId = string.measurement_approved, style = SUCCESS)
         } else if (direction == WorkflowDirection.FAIL.value) {
-            this.sharpToast(string.measurement_declined, MotionToast.TOAST_INFO)
+            this.sharpToast(resId = string.measurement_declined, style = INFO)
         }
 
         Intent(context?.applicationContext, MainActivity::class.java).also { home ->

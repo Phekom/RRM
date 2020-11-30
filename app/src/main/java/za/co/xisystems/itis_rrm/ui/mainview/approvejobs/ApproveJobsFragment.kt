@@ -81,8 +81,7 @@ class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAw
                 fetchLocalJobs()
             } catch (t: Throwable) {
                 val xiFail = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
-                XIErrorHandler.crashGuard(
-                    fragment = this@ApproveJobsFragment,
+                crashGuard(
                     view = this@ApproveJobsFragment.requireView(),
                     throwable = xiFail,
                     refreshAction = { retryFetchLocalJobs() }
@@ -157,8 +156,7 @@ class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAw
                 val message = t.message ?: XIErrorHandler.UNKNOWN_ERROR
                 Timber.e(t)
                 val xiFail = XIError(t, message)
-                XIErrorHandler.crashGuard(
-                    fragment = this@ApproveJobsFragment,
+                crashGuard(
                     view = this@ApproveJobsFragment.requireView(),
                     throwable = xiFail,
                     refreshAction = { retryFetchRemoteJobs() }

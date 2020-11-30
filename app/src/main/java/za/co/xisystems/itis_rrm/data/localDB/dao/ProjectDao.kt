@@ -17,12 +17,9 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.VoItemDTO
 @Dao
 interface ProjectDao {
 
-//    @Insert(onConflict = OnConflictStrategy.REPLACE)
-//    suspend fun insertProjects(project : List<ProjectDTO>)
-
     //    @Insert(onConflict = OnConflictStrategy.REPLACE)
     @Query("INSERT INTO PROJECT_TABLE (projectId,descr, endDate, items, projectCode, projectMinus, projectPlus,projectSections, voItems, contractId) VALUES (:projectId,:descr, :endDate, :items, :projectCode, :projectMinus, :projectPlus, :projectSections, :voItems, :contractId)")
-    suspend fun insertProject(
+    fun insertProject(
         projectId: String,
         descr: String?,
         endDate: String?,
@@ -36,33 +33,29 @@ interface ProjectDao {
     ): Long
 
     @Update(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun updateProject(project: ProjectDTO)
+    fun updateProject(project: ProjectDTO)
 
     @Query("SELECT projectId FROM PROJECT_TABLE WHERE projectId = projectId")
-    suspend fun getProjectId(): String
+    fun getProjectId(): String
 
     @Query("SELECT * FROM PROJECT_TABLE ")
-    suspend fun getAllProjects(): LiveData<List<ProjectDTO>>
+    fun getAllProjects(): LiveData<List<ProjectDTO>>
 
     @Query("SELECT projectId FROM PROJECT_TABLE WHERE projectId = :projectId")
-    suspend fun checkProjectExists(projectId: String): Boolean
+    fun checkProjectExists(projectId: String): Boolean
 
     @Query("SELECT * FROM PROJECT_TABLE WHERE contractId = :contractId ORDER BY projectCode")
-    suspend fun getAllProjectsByContract(contractId: String): LiveData<List<ProjectDTO>>
+    fun getAllProjectsByContract(contractId: String): LiveData<List<ProjectDTO>>
 
     @Query("SELECT descr FROM PROJECT_TABLE WHERE projectId = :projectId")
-    suspend fun getProjectDescription(projectId: String): String
+    fun getProjectDescription(projectId: String): String
 
     @Query("SELECT * FROM PROJECT_TABLE WHERE projectId = :projectId")
-    suspend fun getProjectById(projectId: String): ProjectDTO
+    fun getProjectById(projectId: String): ProjectDTO
 
-    //    @Query("SELECT * FROM PROJECT_TABLE WHERE projectId = :projectId")
-//    fun getContractId(projectId: String): String
-//
-//
     @Query("DELETE FROM PROJECT_TABLE")
-    suspend fun deleteAll()
+    fun deleteAll()
 
     @Query("SELECT projectCode FROM PROJECT_TABLE WHERE projectId LIKE :projectId")
-    suspend fun getProjectCodeForId(projectId: String?): String
+    fun getProjectCodeForId(projectId: String?): String
 }

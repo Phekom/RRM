@@ -20,16 +20,12 @@ import androidx.recyclerview.widget.RecyclerView
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.Section
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
-import java.util.ArrayList
-import java.util.Calendar
-import java.util.Date
 import kotlinx.android.synthetic.main.fragment_add_project_items.*
 import kotlinx.coroutines.launch
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
 import timber.log.Timber
-import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
@@ -48,6 +44,11 @@ import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedViewModelFact
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DateUtil
 import za.co.xisystems.itis_rrm.utils.JobUtils
+import za.co.xisystems.itis_rrm.utils.enums.ToastStyle
+import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.WARNING
+import java.util.ArrayList
+import java.util.Calendar
+import java.util.Date
 
 /**
  * Created by Francis Mahlava on 2019/12/29.
@@ -357,8 +358,8 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
             Coroutines.main {
                 if (!JobUtils.areQuantitiesValid(job)) {
                     this@AddProjectFragment.sharpToast(
-                        "Error: incomplete estimates.\n Quantity can't be zero!",
-                        MotionToast.TOAST_WARNING
+                        message = "Error: incomplete estimates.\n Quantity can't be zero!",
+                        style = WARNING
                     )
                     itemsCardView.startAnimation(shake_long)
                 } else {
@@ -473,13 +474,13 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
 
             if (!submit.isBlank()) {
                 this@AddProjectFragment.sharpToast(
-                    submit,
-                    MotionToast.TOAST_ERROR
+                    message = submit,
+                    style = ToastStyle.ERROR
                 )
             } else {
                 this@AddProjectFragment.sharpToast(
-                    getString(R.string.job_submitted),
-                    MotionToast.TOAST_SUCCESS
+                   message = getString(R.string.job_submitted),
+                   style = ToastStyle.SUCCESS
                 )
                 popViewOnJobSubmit()
             }
@@ -544,7 +545,7 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
     }
 
     private fun onInvalidJob() {
-        this.sharpToast("Incomplete estimates!", MotionToast.TOAST_WARNING)
+        this.sharpToast(message = "Incomplete estimates!", style = WARNING)
         itemsCardView.startAnimation(shake_long)
     }
 

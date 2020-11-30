@@ -18,13 +18,13 @@ interface ProjectSectionDao {
     suspend fun insertSections(section: ProjectSectionDTO)
 
     @Query("SELECT * FROM PROJECT_SECTION_TABLE WHERE sectionId = :sectionId")
-    suspend fun checkSectionExists(sectionId: String): Boolean
+    fun checkSectionExists(sectionId: String): Boolean
 
     @Query("SELECT * FROM PROJECT_SECTION_TABLE WHERE section = :section AND projectId LIKE :projectId")
-    suspend fun checkSectionNewExists(section: Int, projectId: String?): Boolean
+    fun checkSectionNewExists(section: Int, projectId: String?): Boolean
 
     @Query("INSERT INTO PROJECT_SECTION_TABLE (sectionId, route ,section ,startKm ,  endKm ,direction ,projectId ) VALUES (:sectionId ,:route ,:section ,:startKm ,:endKm ,:direction ,:projectId)")
-    suspend fun insertSection(
+    fun insertSection(
         sectionId: String,
         route: String,
         section: String,
@@ -32,30 +32,30 @@ interface ProjectSectionDao {
         endKm: Double?,
         direction: String?,
         projectId: String
-    )
+    ): Long
 
     @Query("UPDATE PROJECT_SECTION_TABLE SET direction =:direction WHERE projectId = :projectId")
-    suspend fun updateSectionDirection(direction: String?, projectId: String?): Int
+    fun updateSectionDirection(direction: String?, projectId: String?): Int
 
     @Query("SELECT * FROM PROJECT_SECTION_TABLE ")
-    suspend fun getAllItemsForAllProjects(): LiveData<List<ProjectSectionDTO>>
+    fun getAllItemsForAllProjects(): LiveData<List<ProjectSectionDTO>>
 
     @Query("SELECT route FROM PROJECT_SECTION_TABLE WHERE sectionId = :sectionId")
-    suspend fun getRouteForProjectSectionId(sectionId: String): String
+    fun getRouteForProjectSectionId(sectionId: String): String
 
     @Query("SELECT section FROM PROJECT_SECTION_TABLE WHERE sectionId = :sectionId")
-    suspend fun getSectionForProjectSectionId(sectionId: String): String
+    fun getSectionForProjectSectionId(sectionId: String): String
 
     @Query("SELECT sectionId FROM PROJECT_SECTION_TABLE WHERE section = :section  AND route = :linearId AND projectId = :projectId")
-    suspend fun getSectionByRouteSectionProject(
+    fun getSectionByRouteSectionProject(
         section: String,
         linearId: String?,
         projectId: String?
     ): String?
 
     @Query("SELECT * FROM PROJECT_SECTION_TABLE WHERE sectionId LIKE :sectionId")
-    suspend fun getSection(sectionId: String): LiveData<ProjectSectionDTO>
+    fun getSection(sectionId: String): LiveData<ProjectSectionDTO>
 
     @Query("DELETE FROM PROJECT_SECTION_TABLE")
-    suspend fun deleteAll()
+    fun deleteAll()
 }

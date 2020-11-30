@@ -76,16 +76,16 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnabl
                     }
 
                     viewModel.newPinRegistered.observeOnce(this, {
-                        it?.let {
+                        it.let {
                             when (it) {
                                 true -> {
                                     MotionToast.createColorToast(
                                         this@ResetPinActivity,
-                                        "PIN updated successfully",
-                                        MotionToast.TOAST_SUCCESS,
-                                        MotionToast.GRAVITY_BOTTOM,
-                                        MotionToast.LONG_DURATION,
-                                        ResourcesCompat.getFont(this@ResetPinActivity, R.font.helvetica_regular)
+                                        message = "PIN updated successfully",
+                                        style = MotionToast.TOAST_SUCCESS,
+                                        position = MotionToast.GRAVITY_BOTTOM,
+                                        duration = MotionToast.LONG_DURATION,
+                                        font = ResourcesCompat.getFont(this@ResetPinActivity, R.font.helvetica_regular)
                                     )
                                     viewModel.newPinRegistered.value = false
                                     getToLogin()
@@ -179,11 +179,11 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnabl
         hideKeyboard()
         MotionToast.createColorToast(
             this,
-            message,
-            MotionToast.TOAST_WARNING,
-            MotionToast.GRAVITY_BOTTOM,
-            MotionToast.LONG_DURATION,
-            ResourcesCompat.getFont(this, R.font.helvetica_regular)
+            message = message,
+            style = MotionToast.TOAST_WARNING,
+            position = MotionToast.GRAVITY_BOTTOM,
+            duration = MotionToast.LONG_DURATION,
+            font = ResourcesCompat.getFont(this, R.font.helvetica_regular)
         )
         // reg_container.snackbar(message)
     }

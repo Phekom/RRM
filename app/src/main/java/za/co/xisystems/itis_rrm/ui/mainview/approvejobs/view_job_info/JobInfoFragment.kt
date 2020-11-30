@@ -68,8 +68,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
                 }
                 is XIError -> {
                     progressButton.failProgress("Failed")
-                    XIErrorHandler.crashGuard(
-                        fragment = this,
+                    crashGuard(
                         view = this.requireView(),
                         throwable = result,
                         refreshAction = { retryWork() }
@@ -197,7 +196,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
                 } else {
                     this.sharpToast(
                         message = getString(R.string.no_connection_detected),
-                        style = ToastStyle.NO_INTERNET
+                        style = NO_INTERNET
                     )
                 }
             }
@@ -238,18 +237,18 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
                             Timber.d("ApproveItem was null")
                         }
                         userDTO.userId.isBlank() -> {
-                            this@JobInfoFragment.sharpToast("The user lacks permissions.", ToastStyle.ERROR)
+                            this@JobInfoFragment.sharpToast(message = "The user lacks permissions.", style =ToastStyle.ERROR)
                             progressButton.failProgress("Invalid User")
                         }
                         job.jobDTO.JobId.isBlank() -> {
-                            this@JobInfoFragment.sharpToast("The selected job is invalid.", ToastStyle.ERROR)
+                            this@JobInfoFragment.sharpToast(message = "The selected job is invalid.", style = ToastStyle.ERROR)
                             progressButton.failProgress("Invalid Job")
                         }
                         workflowDirection == WorkflowDirection.FAIL &&
                             workflow_comments_editText.text.trim().isBlank() -> {
                             this@JobInfoFragment.sharpToast(
-                                "Please provide a comment / reason for declining this job",
-                                ToastStyle.WARNING
+                                message = "Please provide a comment / reason for declining this job",
+                                style = ToastStyle.WARNING
                             )
                             progressButton.failProgress(getString(R.string.decline_job))
                         }
@@ -294,14 +293,14 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
         if (direction == WorkflowDirection.NEXT.value) {
             progressButton.text = getString(R.string.approve_job)
             this.sharpToast(
-                getString(R.string.job_no_approved, jiNo!!),
-                ToastStyle.SUCCESS
+                message = getString(R.string.job_no_approved, jiNo!!),
+                style = ToastStyle.SUCCESS
             )
         } else if (direction == WorkflowDirection.FAIL.value) {
             progressButton.text = getString(R.string.decline_job)
             this.sharpToast(
-                getString(R.string.job_declined),
-                ToastStyle.INFO
+                message = getString(R.string.job_declined),
+                style = ToastStyle.INFO
             )
         }
 

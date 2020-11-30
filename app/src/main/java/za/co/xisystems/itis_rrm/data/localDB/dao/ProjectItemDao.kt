@@ -18,17 +18,15 @@ interface ProjectItemDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertItems(item: ProjectItemDTO)
 
-    @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE itemId = :itemId")
-    suspend fun checkItemExistsItemId(itemId: String): Boolean
+    @Query("SELECT EXiSTS (SELECT * FROM PROJECT_ITEM_TABLE WHERE itemId = :itemId)")
+    fun checkItemExistsItemId(itemId: String): Boolean
 
-//    @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE itemId = :itemId")
-//    fun getItemForItemId(itemId: String): LiveData<ItemDTO>
 
     @Query("SELECT sectionItemId FROM PROJECT_ITEM_TABLE WHERE itemId = :itemId")
-    suspend fun getSectionItemId(itemId: String): String
+    fun getSectionItemId(itemId: String): String
 
     @Query("INSERT INTO PROJECT_ITEM_TABLE (itemId ,itemCode,descr, itemSections, tenderRate, uom, workflowId,sectionItemId, quantity, estimateId, projectId) VALUES (:itemId, :itemCode,:descr, :itemSections, :tenderRate, :uom, :workflowId, :sectionItemId, :quantity, :estimateId, :projectId)")
-    suspend fun insertItem(
+    fun insertItem(
         itemId: String,
         itemCode: String?,
         descr: String?,
@@ -40,38 +38,38 @@ interface ProjectItemDao {
         quantity: Double,
         estimateId: String?,
         projectId: String
-    )
+    ): Long
 
     @Query("SELECT descr FROM PROJECT_ITEM_TABLE WHERE itemId = :itemId")
-    suspend fun getProjectItemDescription(itemId: String): String
+    fun getProjectItemDescription(itemId: String): String
 
     @Query("SELECT uom FROM PROJECT_ITEM_TABLE WHERE itemId = :itemId")
-    suspend fun getUOMForProjectItemId(itemId: String): String
+    fun getUOMForProjectItemId(itemId: String): String
 
     @Query("SELECT tenderRate FROM PROJECT_ITEM_TABLE WHERE itemId = :itemId")
-    suspend fun getTenderRateForProjectItemId(itemId: String): Double
+    fun getTenderRateForProjectItemId(itemId: String): Double
 
     @Query("SELECT * FROM PROJECT_ITEM_TABLE ")
-    suspend fun getAllItemsForAllProjects(): LiveData<List<ProjectItemDTO>>
+    fun getAllItemsForAllProjects(): LiveData<List<ProjectItemDTO>>
 
     @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE itemId LIKE :itemId")
-    suspend fun getItemForItemId(itemId: String): LiveData<ProjectItemDTO>
+    fun getItemForItemId(itemId: String): LiveData<ProjectItemDTO>
 
     @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE sectionItemId LIKE :sectionItemId")
-    suspend fun getItemForItemCode(sectionItemId: String): LiveData<List<ProjectItemDTO>>
+    fun getItemForItemCode(sectionItemId: String): LiveData<List<ProjectItemDTO>>
 
     @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE projectId LIKE :projectId ORDER BY itemCode ASC ")
-    suspend fun getAllItemsForProjectId(projectId: String): LiveData<List<ProjectItemDTO>>
+    fun getAllItemsForProjectId(projectId: String): LiveData<List<ProjectItemDTO>>
 
     @Query("SELECT DISTINCT sectionItemId FROM PROJECT_ITEM_TABLE WHERE projectId = :projectId")
-    suspend fun getSectionItemIdsForProjectId(projectId: String): List<String>
+    fun getSectionItemIdsForProjectId(projectId: String): List<String>
 
     @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE sectionItemId LIKE :sectionItem AND projectId LIKE :projectId")
-    suspend fun getAllItemsForSectionItemByProject(
+    fun getAllItemsForSectionItemByProject(
         sectionItem: String,
         projectId: String
     ): LiveData<List<ProjectItemDTO>>
 
     @Query("DELETE FROM PROJECT_ITEM_TABLE")
-    suspend fun deleteAll()
+    fun deleteAll()
 }

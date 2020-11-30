@@ -9,15 +9,12 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenStarted
 import androidx.navigation.Navigation
-import java.util.ArrayList
-import java.util.Calendar
 import kotlinx.android.synthetic.main.fragment_createjob.*
 import kotlinx.coroutines.launch
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
 import timber.log.Timber
-import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
@@ -38,12 +35,15 @@ import za.co.xisystems.itis_rrm.data.network.OfflineListener
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.MyState
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper.setSpinner
-import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DateUtil
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
+import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.SUCCESS
+import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.WARNING
 import za.co.xisystems.itis_rrm.utils.hide
 import za.co.xisystems.itis_rrm.utils.show
+import java.util.ArrayList
+import java.util.Calendar
 
 /**
  * Created by Francis Mahlava on 2019/10/18.
@@ -52,10 +52,9 @@ import za.co.xisystems.itis_rrm.utils.show
 
 class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListener, KodeinAware {
 
-    private var uiScope = UiLifecycleScope()
     override val kodein by kodein()
     private lateinit var createViewModel: CreateViewModel
-    private val factory: CreateViewModelFactory by instance<CreateViewModelFactory>()
+    private val factory: CreateViewModelFactory by instance()
     private val estimatesToRemoveFromDb: ArrayList<JobItemEstimateDTO> =
         ArrayList()
 
@@ -64,7 +63,7 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
 
     @MyState
     internal var selectedContract: ContractDTO? = null
-    lateinit var useR: UserDTO
+    private lateinit var useR: UserDTO
     private var descri: String? = null
 
     @MyState
@@ -144,7 +143,7 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
                 R.id.selectContractProjectContinueButton -> {
                     val description = descriptionEditText.text!!.toString().trim { it <= ' ' }
                     if (description.isEmpty()) {
-                        sharpToast("Please Enter Description", MotionToast.TOAST_WARNING)
+                        sharpToast(message = "Please Enter Description", style = WARNING)
                         descriptionEditText.startAnimation(shake)
                         //                            return
                     } else {
@@ -164,8 +163,7 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
             setContract()
         } catch (t: Throwable) {
             val contractErr = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
-            XIErrorHandler.crashGuard(
-                fragment = this,
+            crashGuard(
                 view = this.requireView(),
                 throwable = contractErr,
                 refreshAction = { retryContracts() }
@@ -176,8 +174,8 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
     private fun createNewJob() {
         Coroutines.main {
             val createdJob = createNewJob(
-                selectedContract?.contractId,
-                selectedProject?.projectId,
+                selectedContract!!.contractId,
+                selectedProject!!.projectId,
                 useR.userId.toInt(),
                 newJobItemEstimatesList,
                 jobItemMeasureArrayList,
@@ -253,7 +251,7 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
 
         newJob = createdJob
 
-        sharpToast("New job created", MotionToast.TOAST_SUCCESS)
+        sharpToast(message = "New job created", style = SUCCESS)
         return createdJob
     }
 
@@ -318,7 +316,11 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
             }
         } catch (t: Throwable) {
             val contractErr = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
-            XIErrorHandler.crashGuard(this, this.requireView(), contractErr, refreshAction = { retryContracts() })
+            crashGuard(
+                this.requireView(),
+                contractErr,
+                refreshAction = { retryContracts() }
+            )
         } finally {
             data_loading.hide()
         }

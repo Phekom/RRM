@@ -62,8 +62,7 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
                     } catch (t: Throwable) {
                         Timber.e(t, "Failed to fetch local jobs")
                         val xiFail = XIError(t, t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR)
-                        XIErrorHandler.crashGuard(
-                            fragment = this@WorkFragment,
+                        crashGuard(
                             view = this@WorkFragment.requireView(),
                             throwable = xiFail,
                             refreshAction = { retryFetchingJobs() })
@@ -146,8 +145,7 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
             } catch (t: Throwable) {
                 Timber.e(t, t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR)
                 val jobErr = XIError(t, "Failed to fetch jobs from service")
-                XIErrorHandler.crashGuard(
-                    fragment = this@WorkFragment,
+                crashGuard(
                     view = this@WorkFragment.requireView(),
                     throwable = jobErr,
                     refreshAction = { retryFetchingJobs() }

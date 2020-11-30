@@ -79,6 +79,7 @@ class CaptureItemMeasurePhotoFragment :
     private var filenamePath = HashMap<String, String>()
     private var viewPhotosOnly = false
     private var uiScope = UiLifecycleScope()
+    private var measureIdent: Boolean = false
     override fun onAttach(context: Context) {
         super.onAttach(context)
         (activity as MainActivity).supportActionBar?.title = getString(R.string.captured_photos)
@@ -122,11 +123,14 @@ class CaptureItemMeasurePhotoFragment :
                         estimate_image_collection_view.clearImages()
                         viewPhotosOnly = false
 
-                        this@CaptureItemMeasurePhotoFragment.sharpToast(
-                            message = "Measuring job: ${it.jimNo}",
-                            style = INFO,
-                            position = ToastGravity.TOP
-                        )
+                        if (!measureIdent) {
+                            this@CaptureItemMeasurePhotoFragment.sharpToast(
+                                message = "Measuring job: ${it.jimNo}",
+                                style = INFO,
+                                position = ToastGravity.BOTTOM
+                            )
+                            measureIdent = true
+                        }
 
                         selectedJobItemMeasure = it
                         checkForPhotos(selectedJobItemMeasure)

@@ -10,7 +10,7 @@ import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.custom.results.XIError
 import za.co.xisystems.itis_rrm.custom.results.isConnectivityException
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
-import za.co.xisystems.itis_rrm.ui.extensions.motionToast
+import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 
 /**
  * Created by Shaun McDonald on 2020/04/14.
@@ -45,7 +45,7 @@ object XIErrorHandler {
             if (shouldToast) {
                 // If we don't have a fragment, fallback to dry toast'
                 if (fragment != null)
-                    fragment.motionToast(throwable.message, MotionToast.TOAST_ERROR)
+                    fragment.extensionToast(throwable.message, MotionToast.TOAST_ERROR, title = null)
                 else
                     showMessage(view, throwable.message)
             }

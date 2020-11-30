@@ -13,31 +13,31 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.SectionItemDTO
 @Dao
 interface SectionItemDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertSectionItem(activitySections: SectionItemDTO)
+    fun insertSectionItem(activitySections: SectionItemDTO)
 
     @Query("SELECT * FROM SECTION_ITEM_TABLE WHERE itemCode = :itemCode")
-    suspend fun checkIfSectionItemsExist(itemCode: String?): Boolean
+    fun checkIfSectionItemsExist(itemCode: String?): Boolean
 
     @Query("INSERT INTO SECTION_ITEM_TABLE (sectionItemId, itemCode, description)VALUES(:sectionItemId, :itemCode,:description)")
-    suspend fun insertSectionItem(description: String, itemCode: String, sectionItemId: String)
+    fun insertSectionItem(description: String, itemCode: String, sectionItemId: String): Long
 
 //    @Query("SELECT sectionItemId FROM SECTION_ITEM_TABLE WHERE itemCode + :itemId ")
 
     @Query("SELECT sectionItemId FROM SECTION_ITEM_TABLE WHERE itemCode LIKE :itemCode")
-    suspend fun getSectionItemId(itemCode: String): String
+    fun getSectionItemId(itemCode: String): String
 
     @Query("SELECT * FROM SECTION_ITEM_TABLE WHERE sectionItemId LIKE :sectionItemId")
-    suspend fun getDescriptionFromSectionItemId(sectionItemId: String): List<SectionItemDTO>
+    fun getDescriptionFromSectionItemId(sectionItemId: String): List<SectionItemDTO>
 
     @Query("SELECT * FROM SECTION_ITEM_TABLE")
-    suspend fun getSectionItems(): LiveData<List<SectionItemDTO>>
+    fun getSectionItems(): LiveData<List<SectionItemDTO>>
 
     @Query("SELECT * FROM SECTION_ITEM_TABLE ORDER BY  itemCode  ASC")
-    suspend fun getAllSectionItems(): LiveData<List<SectionItemDTO>>
+    fun getAllSectionItems(): LiveData<List<SectionItemDTO>>
 
     @Query("DELETE FROM SECTION_ITEM_TABLE")
-    suspend fun deleteAll()
+    fun deleteAll()
 
     @Query("SELECT * FROM SECTION_ITEM_TABLE  WHERE sectionItemId IN (SELECT DISTINCT sectionItemId FROM PROJECT_ITEM_TABLE WHERE projectId = :projectId) ORDER BY itemCode ASC")
-    suspend fun getFilteredSectionItems(projectId: String): LiveData<List<SectionItemDTO>>
+    fun getFilteredSectionItems(projectId: String): LiveData<List<SectionItemDTO>>
 }

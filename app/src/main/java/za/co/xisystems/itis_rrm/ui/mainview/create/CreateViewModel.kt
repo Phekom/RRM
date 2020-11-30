@@ -54,13 +54,6 @@ class CreateViewModel(
     }
 
     val estimateLineRate = MutableLiveData<Double>()
-    fun setEstimateLineRate(inRate: Double) {
-        estimateLineRate.value = inRate
-    }
-
-    val offlineSectionItems by lazyDeferred {
-        jobCreationDataRepository.getSectionItems()
-    }
 
     val sectionId = MutableLiveData<String>()
     fun setSectionId(inSectionId: String) {
@@ -107,9 +100,6 @@ class CreateViewModel(
     }
 
     private val projectItem = MutableLiveData<ProjectItemDTO>()
-    fun setProjectItem(inProjectItem: ProjectItemDTO) {
-        projectItem.value = inProjectItem
-    }
 
     val sectionProjectItem = MutableLiveData<SectionProj_Item>()
     fun setSectionProjectItem(inSectionProjectItem: SectionProj_Item) {
@@ -122,14 +112,8 @@ class CreateViewModel(
     }
 
     val projectItemTemp = MutableLiveData<ItemDTOTemp>()
-    fun setProjectItemTemp(inProjectItemTemp: ItemDTOTemp) {
-        projectItemTemp.value = inProjectItemTemp
-    }
 
     private val projectRate = MutableLiveData<Double>()
-    fun setProjectRate(inProjectRate: Double) {
-        projectRate.value = inProjectRate
-    }
 
     fun saveNewJob(newJob: JobDTO) {
         jobCreationDataRepository.saveNewJob(newJob)
@@ -145,12 +129,6 @@ class CreateViewModel(
     suspend fun getSomeProjects(contractId: String): LiveData<List<ProjectDTO>> {
         return withContext(Dispatchers.IO) {
             jobCreationDataRepository.getContractProjects(contractId)
-        }
-    }
-
-    suspend fun getAllSectionItem(): LiveData<List<SectionItemDTO>> {
-        return withContext(Dispatchers.IO) {
-            jobCreationDataRepository.getAllSectionItems()
         }
     }
 
@@ -176,18 +154,8 @@ class CreateViewModel(
         }
     }
 
-    fun deleteItemTemp(item: ItemDTOTemp) {
-        jobCreationDataRepository.delete(item)
-    }
-
     fun deleteJobFromList(jobId: String) {
         jobCreationDataRepository.deleteJobfromList(jobId)
-    }
-
-    suspend fun getJobSectionForJobId(jobId: String): JobSectionDTO? {
-        return withContext(Dispatchers.IO) {
-            jobCreationDataRepository.getJobSection(jobId)
-        }
     }
 
     suspend fun updateNewJob(
@@ -210,7 +178,12 @@ class CreateViewModel(
         }
     }
 
-    suspend fun getPointSectionData(projectId: String): SectionPointDTO = jobCreationDataRepository.getPointSectionData(projectId)
+    suspend fun getPointSectionData(projectId: String): SectionPointDTO {
+       return withContext(ioContext) {
+           jobCreationDataRepository.getPointSectionData(projectId)
+       }
+    }
+
 
     suspend fun getSectionByRouteSectionProject(
         sectionId: Int,

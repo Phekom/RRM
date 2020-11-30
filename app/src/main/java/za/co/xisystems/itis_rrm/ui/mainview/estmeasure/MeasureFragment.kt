@@ -130,12 +130,10 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
                 }
             } catch (t: Throwable) {
                 val fetchError = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
-                XIErrorHandler.crashGuard(
-                    fragment = this@MeasureFragment,
+                crashGuard(
                     view = this@MeasureFragment.requireView(),
                     throwable = fetchError,
-                    refreshAction =
-                    { retryFetchingJobs() }
+                    refreshAction = { retryFetchingJobs() }
                 )
             } finally {
                 estimations_swipe_to_refresh.isRefreshing = false

@@ -18,7 +18,7 @@ import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data._commons.AbstractTextWatcher
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
-import za.co.xisystems.itis_rrm.ui.extensions.motionToast
+import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.ApproveJobsViewModel
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.GlideApp
@@ -124,7 +124,7 @@ class EstimatesItem(
                         text.length > 9 -> {
                             quantityEntry.text =
                                 Editable.Factory.getInstance().newEditable("$defaultQty")
-                            activity.motionToast("You Have exceeded the amount of Quantity allowed", MotionToast.TOAST_WARNING)
+                            activity.extensionToast("You Have exceeded the amount of Quantity allowed", MotionToast.TOAST_WARNING)
                         }
                         else -> {
                             val qty = text.toDouble()
@@ -168,7 +168,7 @@ class EstimatesItem(
                 if (quantityEntry.text.toString() == "" || nanCheck(quantityEntry.text.toString()) || quantityEntry.text.toString()
                         .toDouble() == 0.0
                 ) {
-                    activity.motionToast("Please Enter a valid Quantity", MotionToast.TOAST_WARNING)
+                    activity.extensionToast("Please Enter a valid Quantity", MotionToast.TOAST_WARNING)
                 } else {
                     val updated = approveViewModel.upDateEstimate(
                         quantityEntry.text.toString(),
@@ -176,14 +176,14 @@ class EstimatesItem(
                         jobItemEstimateDTO.estimateId
                     )
                     if (updated.isBlank()) {
-                        activity.motionToast("Data updated", MotionToast.TOAST_SUCCESS)
+                        activity.extensionToast("Data updated", MotionToast.TOAST_SUCCESS)
                     } else {
-                        activity.motionToast("Update failed", MotionToast.TOAST_ERROR)
+                        activity.extensionToast("Update failed", MotionToast.TOAST_ERROR)
                     }
                 }
             }
         } else {
-            activity.motionToast("No connection detected.", MotionToast.TOAST_ERROR)
+            activity.extensionToast("No connection detected.", MotionToast.TOAST_ERROR)
         }
     }
 

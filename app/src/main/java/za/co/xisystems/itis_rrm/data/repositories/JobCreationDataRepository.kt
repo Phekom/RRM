@@ -11,8 +11,6 @@ import com.google.gson.Gson
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
-import java.io.IOException
-import java.util.ArrayList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -40,6 +38,8 @@ import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.PhotoUtil.getPhotoPathFromExternalDirectory
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
+import java.io.IOException
+import java.util.ArrayList
 
 /**
  * Created by Francis Mahlava on 2019/11/28.
@@ -193,7 +193,11 @@ class JobCreationDataRepository(
         }
     }
 
-    suspend fun getPointSectionData(projectId: String): SectionPointDTO = appDb.getSectionPointDao().getPointSectionData(projectId)
+    suspend fun getPointSectionData(projectId: String): SectionPointDTO {
+        return withContext(Dispatchers.IO) {
+            appDb.getSectionPointDao().getPointSectionData(projectId)
+        }
+    }
 
     suspend fun getSectionByRouteSectionProject(
         sectionId: Int,
@@ -311,7 +315,7 @@ class JobCreationDataRepository(
         }
     }
 
-    private fun setWorkflowJobBigEndianGuids(job: WorkflowJobDTO): WorkflowJobDTO? {
+    private fun setWorkflowJobBigEndianGuids(job: WorkflowJobDTO): WorkflowJobDTO {
 
         // Job + WorkflowItems + EstimateWorks
         job.jobId = DataConversion.toBigEndian(job.jobId)
@@ -537,7 +541,7 @@ class JobCreationDataRepository(
         )
     }
 
-    private suspend fun saveRouteSectionPoint(
+    private fun saveRouteSectionPoint(
         direction: String,
         linearId: String?,
         pointLocation: Double,
@@ -558,16 +562,6 @@ class JobCreationDataRepository(
 
         return appDb.getProjectSectionDao()
             .getSectionByRouteSectionProject(sectionId.toString(), linearId, projectId)
-    }
-
-    private fun saveEstimatePhoto(estimatePhoto: String?, fileName: String) {
-        Coroutines.io {
-            if (estimatePhoto != null) {
-                PhotoUtil.createPhotoFolder(estimatePhoto, fileName)
-            } else {
-                PhotoUtil.createPhotoFolder()
-            }
-        }
     }
 
     suspend fun getContractNoForId(contractVoId: String?): String {

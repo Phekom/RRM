@@ -15,7 +15,7 @@ import kotlinx.android.synthetic.main.measurements_item.*
 import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
-import za.co.xisystems.itis_rrm.ui.extensions.motionToast
+import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureViewModel
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.GlideApp
@@ -99,21 +99,21 @@ class MeasurementsItem(
             if (ServiceUtil.isNetworkAvailable(activity.applicationContext)) {
                 Coroutines.main {
                     if (editQuantity.text.toString() == "" || nanCheck(editQuantity.text.toString())) {
-                        activity.motionToast("Please Enter a valid Quantity", MotionToast.TOAST_WARNING)
+                        activity.extensionToast("Please Enter a valid Quantity", MotionToast.TOAST_WARNING)
                     } else {
                         val updated = approveViewModel.upDateMeasure(
                             editQuantity.text.toString(),
                             jobItemMeasureDTO.itemMeasureId
                         )
                         if (updated.isBlank()) {
-                            activity.motionToast("Data Updated", MotionToast.TOAST_SUCCESS)
+                            activity.extensionToast("Data Updated", MotionToast.TOAST_SUCCESS)
                         } else {
-                            activity.motionToast("Error on update: $updated.", MotionToast.TOAST_ERROR)
+                            activity.extensionToast("Error on update: $updated.", MotionToast.TOAST_ERROR)
                         }
                     }
                 }
             } else {
-                activity.motionToast("No connection detected.", MotionToast.TOAST_NO_INTERNET)
+                activity.extensionToast("No connection detected.", MotionToast.TOAST_NO_INTERNET)
             }
         }
         // No button

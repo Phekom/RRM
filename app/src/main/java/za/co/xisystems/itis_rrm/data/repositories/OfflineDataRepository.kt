@@ -84,10 +84,8 @@ class OfflineDataRepository(
         }
 
         sectionItems.observeForever {
-            Coroutines.io {
                 saveSectionsItems(it)
             }
-        }
 
         workFlow.observeForever {
             saveWorkFlowsInfo(it)
@@ -282,7 +280,7 @@ class OfflineDataRepository(
         }
     }
 
-    private suspend fun saveSectionsItems(sections: ArrayList<String>?) {
+    private fun saveSectionsItems(sections: ArrayList<String>?) {
         Coroutines.io {
 
             sections?.forEach { section ->
@@ -336,9 +334,7 @@ class OfflineDataRepository(
                             project.projectId.isNotBlank()
                         }?.distinctBy { project -> project.projectId }
 
-                    validProjects?.let {
-                        saveProjects(validProjects, contract)
-                    }
+                    saveProjects(validProjects, contract)
                 }
             }
         }
@@ -424,7 +420,7 @@ class OfflineDataRepository(
         }
     }
 
-    private suspend fun updateProjectItems(
+    private fun updateProjectItems(
         distinctItems: List<ProjectItemDTO>,
         project: ProjectDTO
     ) {
@@ -467,7 +463,7 @@ class OfflineDataRepository(
         }
     }
 
-    private suspend fun updateProjectSections(
+    private fun updateProjectSections(
         projectSections: ArrayList<ProjectSectionDTO>,
         project: ProjectDTO
     ) {
@@ -1093,34 +1089,6 @@ class OfflineDataRepository(
         return 4
     }
 
-    private suspend fun fetchAllData(userId: String): Boolean {
-        // Redo as async calls in parallel
-        return withContext(Dispatchers.IO) {
-
-            if (!entitiesFetched) {
-                postStatus("Fetching Entities")
-                getAllEntities()
-                entitiesFetched = true
-            }
-            postStatus("Refreshing Contracts")
-            getAllContractsByUserId(userId)
-
-            postStatus("Refreshing Activity Sessions")
-            refreshActivitySections(userId)
-
-            postStatus("Refreshing Workflows")
-            refreshWorkflows(userId)
-
-            postStatus("Refreshing Lookups")
-            refreshLookups(userId)
-
-            postStatus("Fetching Task List")
-            fetchUserTaskList(userId)
-
-            true
-        }
-    }
-
     private fun postEvent(result: XIResult<Boolean>) {
         databaseStatus.postValue(XIEvent(result))
     }
@@ -1279,7 +1247,7 @@ class OfflineDataRepository(
         }
     }
 
-    private fun setWorkflowJobBigEndianGuids(job: WorkflowJobDTO): WorkflowJobDTO? {
+    private fun setWorkflowJobBigEndianGuids(job: WorkflowJobDTO): WorkflowJobDTO {
 
         job.jobId = DataConversion.toBigEndian(job.jobId)
         job.trackRouteId = DataConversion.toBigEndian(job.trackRouteId)

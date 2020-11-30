@@ -32,18 +32,16 @@ class HomeViewModel(
 
     val superJob = SupervisorJob()
 
-    var databaseState: MutableLiveData<XIResult<Boolean>>? = MutableLiveData()
+    var databaseState: MutableLiveData<XIResult<Boolean>?> = MutableLiveData()
 
     init {
         viewModelScope.launch(Job(superJob) + uncaughtExceptionHandler + Dispatchers.Main.immediate) {
 
             databaseStatus = offlineDataRepository.databaseStatus.distinctUntilChanged()
 
-            databaseState = Transformations.map(databaseStatus){ it ->
-                it?.getContentIfNotHandled()?.let {
-                    it
-                }
-            } as? MutableLiveData<XIResult<Boolean>>
+            databaseState = Transformations.map(databaseStatus){
+                it.getContentIfNotHandled()
+            } as MutableLiveData<XIResult<Boolean>?>
         }
     }
 
@@ -69,7 +67,7 @@ class HomeViewModel(
             val jobContext = fetchJob + Dispatchers.IO + uncaughtExceptionHandler
 
             try {
-                databaseState?.postValue(XIProgress(true))
+                databaseState.postValue(XIProgress(true))
                 viewModelScope.launch(jobContext) {
                     offlineDataRepository.loadActivitySections(userId)
                     offlineDataRepository.loadContracts(userId)
@@ -80,11 +78,11 @@ class HomeViewModel(
                 fetchJob.complete()
             } catch (t: Throwable) {
                 fetchJob.completeExceptionally(t)
-                databaseState?.postValue(XIProgress(false))
+                databaseState.postValue(XIProgress(false))
                 jobContext.cancelChildren(CancellationException(t.message ?: XIErrorHandler.UNKNOWN_ERROR))
                 val fetchFail =
                     XIError(t, "Failed to fetch contracts: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}")
-                databaseState?.postValue(fetchFail)
+                databaseState.postValue(fetchFail)
 
             }
         }

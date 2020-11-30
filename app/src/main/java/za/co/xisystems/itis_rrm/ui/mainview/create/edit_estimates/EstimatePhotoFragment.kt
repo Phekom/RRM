@@ -65,8 +65,6 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectSectionDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.SectionPointDTO
 import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.services.LocationModel
-import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModel
-import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.intents.AbstractIntent
@@ -150,8 +148,6 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
     private var startImageUri: Uri? = null
     private var endImageUri: Uri? = null
     private var imageUri: Uri? = null
-    private lateinit var sharedViewModel: SharedViewModel
-    private val shareFactory: SharedViewModelFactory by instance()
     private val uiScope = UiLifecycleScope()
 
     init {
@@ -164,9 +160,6 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
                     ViewModelProvider(this, factory).get(CreateViewModel::class.java)
                 } ?: throw Exception("Invalid Activity")
 
-                sharedViewModel = activity?.run {
-                    ViewModelProvider(this, shareFactory).get(SharedViewModel::class.java)
-                } ?: throw Exception("Invalid Activity")
 
                 uiScope.launch(uiScope.coroutineContext) {
 
@@ -706,8 +699,8 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
             val message = "Failed to verify photo location: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
             Timber.e(t, message)
             val xiErr = XIError(t, message)
-            XIErrorHandler.crashGuard(
-                fragment = this,
+            crashGuard(
+                view = this.requireView(),
                 throwable = xiErr,
                 refreshAction = {
                     retryProcessPhotoLocation(
@@ -804,7 +797,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
 
     private fun showLocationWarning() {
         if (!locationWarning) {
-            sharedViewModel.setColorMessage(
+            sharpToast(
                 message = getString(string.no_section_for_project),
                 style = ERROR,
                 position = BOTTOM,
@@ -1013,7 +1006,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
             updateButton.visibility = View.VISIBLE
             setCost()
         } else {
-            sharedViewModel.setColorMessage(
+            sharpToast(
                 message = "Please take both photographs ...",
                 style = WARNING,
                 position = BOTTOM
@@ -1048,8 +1041,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
             } catch (t: Throwable) {
                 val secErr = XIError(t, "Failed to caption photo: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}")
                 Timber.e(t, secErr.message)
-                XIErrorHandler.crashGuard(
-                    this,
+                crashGuard(
                     this.requireView(),
                     secErr,
                     refreshAction = { retryRouteSectionData(isStart, textView, animate) }
@@ -1283,7 +1275,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
     private fun getStartKm(): Double {
         val jobItemEstimate: JobItemEstimateDTO? = getJobItemEstimate()
         return if (jobItemEstimate != null && jobItemEstimate.size() > 0) {
-            jobItemEstimate.getPhoto(0)?.startKm!!
+            jobItemEstimate.getPhoto(0)!!.startKm
         } else {
             0.0
         }
@@ -1292,7 +1284,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
     private fun getEndKm(): Double {
         val jobItemEstimate: JobItemEstimateDTO? = getJobItemEstimate()
         return if (jobItemEstimate != null && jobItemEstimate.size() > 1) {
-            jobItemEstimate.getPhoto(1)?.endKm!!
+            jobItemEstimate.getPhoto(1)!!.endKm
         } else {
             0.0
         }
@@ -1361,10 +1353,9 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
                 } catch (t: Throwable) {
                     Timber.e(t, "Failed to restore estimate view-state.")
                     val estError = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
-                    XIErrorHandler.crashGuard(
-                        this@EstimatePhotoFragment,
-                        this@EstimatePhotoFragment.requireView(),
-                        estError,
+                    crashGuard(
+                        view = this@EstimatePhotoFragment.requireView(),
+                        throwable = estError,
                         refreshAction = { restoreEstimateViewState() })
                 }
             }
