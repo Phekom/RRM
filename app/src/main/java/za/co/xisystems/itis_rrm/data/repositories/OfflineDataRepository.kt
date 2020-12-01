@@ -12,6 +12,7 @@ import kotlinx.coroutines.withContext
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.custom.results.XIProgress
+import za.co.xisystems.itis_rrm.custom.results.XIProgressUpdate
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.results.XIStatus
 import za.co.xisystems.itis_rrm.custom.results.XISuccess
@@ -84,8 +85,8 @@ class OfflineDataRepository(
         }
 
         sectionItems.observeForever {
-                saveSectionsItems(it)
-            }
+            saveSectionsItems(it)
+        }
 
         workFlow.observeForever {
             saveWorkFlowsInfo(it)
@@ -351,12 +352,14 @@ class OfflineDataRepository(
             "Removal of Traffic Accommodation"
         )
         for (step_code in workState.iterator()) {
-            if (!appDb.getWorkStepDao().checkWorkFlowStepExistsWorkCode(step_code))
+            if (!appDb.getWorkStepDao().checkWorkFlowStepExistsWorkCode(step_code)) {
                 appDb.getWorkStepDao().insertStepsCode(step_code, actId)
+            }
 
             for (description in workStateDescriptions.iterator()) {
-                if (!appDb.getWorkStepDao().checkWorkFlowStepExistsDesc(description))
+                if (!appDb.getWorkStepDao().checkWorkFlowStepExistsDesc(description)) {
                     appDb.getWorkStepDao().updateStepsDesc(description, step_code)
+                }
             }
         }
     }
@@ -407,7 +410,7 @@ class OfflineDataRepository(
                             postEvent(XISuccess(true))
                             postEvent(XIProgress(false))
                         } else {
-                            postStatus("Loading Project $projectCount of $projectMax")
+                            postEvent(XIProgressUpdate("contracts", projectCount.toFloat() / projectMax.toFloat()))
                         }
                     } catch (ex: Exception) {
                         Timber.e(
@@ -1064,31 +1067,6 @@ class OfflineDataRepository(
         return 5
     }
 
-    private suspend fun refreshActivitySections(userId: String): Int {
-        val activitySectionsResponse =
-            apiRequest { api.activitySectionsRefresh(userId) }
-        sectionItems.postValue(activitySectionsResponse.activitySections)
-        return 1
-    }
-
-    private suspend fun refreshWorkflows(userId: String): Int {
-        val workFlowResponse = apiRequest { api.workflowsRefresh(userId) }
-        workFlow.postValue(workFlowResponse.workFlows)
-        return 2
-    }
-
-    private suspend fun refreshLookups(userId: String): Int {
-        val lookupResponse = apiRequest { api.lookupsRefresh(userId) }
-        lookups.postValue(lookupResponse.mobileLookups)
-        return 3
-    }
-
-    private suspend fun getAllContractsByUserId(userId: String): Int {
-        val contractsResponse = apiRequest { api.getAllContractsByUserId(userId) }
-        conTracts.postValue(contractsResponse.contracts)
-        return 4
-    }
-
     private fun postEvent(result: XIResult<Boolean>) {
         databaseStatus.postValue(XIEvent(result))
     }
@@ -1102,8 +1080,9 @@ class OfflineDataRepository(
         Coroutines.io {
             lookups?.forEach { lookup ->
                 lookup.let {
-                    if (!appDb.getLookupDao().checkIfLookupExist(it.lookupName))
+                    if (!appDb.getLookupDao().checkIfLookupExist(it.lookupName)) {
                         appDb.getLookupDao().insertLookup(it)
+                    }
 
                     if (!lookup.lookupOptions.isNullOrEmpty()) {
                         lookup.lookupOptions.forEach { lookupOption ->
@@ -1111,12 +1090,13 @@ class OfflineDataRepository(
                                     lookupOption.valueMember,
                                     lookup.lookupName
                                 )
-                            )
+                            ) {
 
                                 appDb.getLookupOptionDao().insertLookupOption(
                                     lookupOption.valueMember, lookupOption.displayMember,
                                     lookupOption.contextMember, lookup.lookupName
                                 )
+                            }
                         }
                     }
                 }

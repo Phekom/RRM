@@ -30,7 +30,6 @@ import org.kodein.di.generic.instance
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
-import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.results.XIError
 import za.co.xisystems.itis_rrm.custom.results.XIProgress
 import za.co.xisystems.itis_rrm.custom.results.XIResult
@@ -119,8 +118,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                         style = ERROR
                     )
 
-                    XIErrorHandler.crashGuard(
-                        this@SubmitMeasureFragment,
+                    crashGuard(
                         this@SubmitMeasureFragment.requireView(),
                         outcome,
                         refreshAction = { retryMeasurements() })
@@ -411,7 +409,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
     }
 
     private fun popViewOnJobSubmit() {
-        // TODO: Delete data from database after successful upload
+        // Delete data from database after successful upload
         Intent(context?.applicationContext, MainActivity::class.java).also { home ->
             startActivity(home)
         }

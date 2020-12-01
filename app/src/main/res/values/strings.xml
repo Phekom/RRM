@@ -594,10 +594,13 @@
     <string name="user_name">USER NAME</string>
     <string name="no_information">No information.</string>
     <string name="user_icon">user icon</string>
-    <string name="welcome">Welcome </string>
+    <string name="welcome">Welcome</string>
     <string name="location_service_indicator">Location Service Indicator</string>
     <string name="needs_dbsynch">No RRM data detected. Please synchronise the local database for contract and project information.</string>
     <string name="shimmer_placeholder">WHAT\'S HOT AND INTERESTING SHIMMER BABY</string>
     <string name="please_enable_location_services">Please enable Location Services …</string>
+    <string name="welcome_greeting">Welcome %1$s</string>
+    <string name="cellular_data_indicator">Cellular Data Indicator</string>
+    <string name="services_indicator">Services Indicator</string>
 
 </resources>

@@ -39,7 +39,6 @@ import timber.log.Timber
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.LocationFragment
-import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.results.XIError
 import za.co.xisystems.itis_rrm.custom.results.XIProgress
 import za.co.xisystems.itis_rrm.custom.results.XIResult
@@ -311,11 +310,10 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                     }
                 }
                 is XIError -> {
-                    XIErrorHandler.crashGuard(
-                        fragment = this,
+                    crashGuard(
                         view = this.requireView(),
                         throwable = result,
-                        refreshAction = { this.retryJobSubmission() })
+                        refreshAction = { retryJobSubmission() })
                 }
                 is XIStatus -> {
                     sharpToast(
