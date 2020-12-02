@@ -11,7 +11,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
-import za.co.xisystems.itis_rrm.custom.results.XIProgress
 import za.co.xisystems.itis_rrm.custom.results.XIProgressUpdate
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.results.XIStatus
@@ -406,9 +405,7 @@ class OfflineDataRepository(
                         projectCount++
 
                         if (projectCount >= projectMax) {
-                            postEvent(XIStatus("All contract data acquired."))
                             postEvent(XISuccess(true))
-                            postEvent(XIProgress(false))
                         } else {
                             postEvent(XIProgressUpdate("contracts", projectCount.toFloat() / projectMax.toFloat()))
                         }
@@ -940,8 +937,13 @@ class OfflineDataRepository(
         }
     }
 
+    private var tasksMax: Int = 0
+    private var tasksCount: Int = 0
+
     private fun saveUserTaskList(toDoListGroups: ArrayList<ToDoGroupsDTO>) {
         Coroutines.io {
+            tasksMax = toDoListGroups.size
+            tasksCount = 0
             toDoListGroups.forEach { toDoListGroup ->
                 if (!appDb.getToDoGroupsDao().checkIfGroupCollectionExist(toDoListGroup.groupId)) {
                     appDb.getToDoGroupsDao().insertToDoGroups(toDoListGroup)
@@ -959,6 +961,8 @@ class OfflineDataRepository(
                         }
                     }
                 }
+                tasksCount++
+                postEvent(XIProgressUpdate("tasks", tasksCount.toFloat() / tasksMax.toFloat()))
             }
         }
     }

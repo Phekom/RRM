@@ -27,9 +27,14 @@
         <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
             android:id="@+id/items_swipe_to_refresh"
             android:layout_width="wrap_content"
-            android:layout_height="0px">
+            android:layout_height="0px"
+            android:layout_weight="1"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
-            <androidx.recyclerview.widget.RecyclerView
+
+        <androidx.recyclerview.widget.RecyclerView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
@@ -69,14 +74,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/welcome_greeting"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/username"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/username"
                     android:textSize="16sp"
                     android:textStyle="bold" />
 
@@ -171,30 +168,57 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:visibility="gone">
+                android:visibility="invisible">
 
                 <com.skydoves.progressview.ProgressView
                     android:id="@+id/pv_contracts"
                     android:layout_width="match_parent"
                     android:layout_height="35dp"
-                    android:padding="@dimen/dimen_8dp"
+                    android:layout_margin="10dp"
                     app:progressView_colorBackground="@color/white"
+                    app:progressView_colorProgress="@color/sanral_burnt_orange"
                     app:progressView_progress="0"
                     app:progressView_min="0"
                     app:progressView_max="100"
                     app:progressView_progressFromPrevious="true"
                     app:progressView_autoAnimate="true"
+                    app:progressView_animation="accelerateDecelerate"
                     app:progressView_radius="12dp"
                     app:progressView_padding="1dp"
                     app:progressView_labelColorInner="@color/white"
                     app:progressView_labelColorOuter="@color/black"
-                    app:progressView_labelSize="13sp"
+                    app:progressView_labelSize="14sp"
+                    app:progressView_labelSpace="10dp"
+                    app:progressView_labelText=""
+                    app:progressView_labelTypeface="bold"
+                    tools:visibility="visible"
+                    android:visibility="visible" />
+
+                <com.skydoves.progressview.ProgressView
+                    android:id="@+id/pv_tasks"
+                    android:layout_width="match_parent"
+                    android:layout_height="35dp"
+                    android:layout_margin="10dp"
+                    app:progressView_colorBackground="@color/white"
+                    app:progressView_colorProgress="@color/sanral_burnt_green"
+                    app:progressView_progress="0"
+                    app:progressView_min="0"
+                    app:progressView_max="100"
+                    app:progressView_progressFromPrevious="true"
+                    app:progressView_autoAnimate="true"
+                    app:progressView_animation="accelerateDecelerate"
+                    app:progressView_radius="12dp"
+                    app:progressView_padding="1dp"
+                    app:progressView_labelColorInner="@color/white"
+                    app:progressView_labelColorOuter="@color/black"
+                    app:progressView_labelSize="14sp"
                     app:progressView_labelSpace="10dp"
                     app:progressView_labelText=""
                     app:progressView_labelTypeface="bold"
                     tools:visibility="visible"
                     android:visibility="visible" />
             </LinearLayout>
+
         </TableLayout>
 
 

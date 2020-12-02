@@ -118,7 +118,7 @@ android {
         buildConfigField("boolean", "STUB", "false")
         buildConfigField("String", "VERSION_BUILD", "\"$versionBuild\"")
         buildConfigField("String", "VERSION_BUILD_DATE", '"' + versionBuildDate + '"')
-        buildConfigField("String", "DNS_CHECK_IP4","\"8.8.8.8\"")
+        buildConfigField("String", "DNS_CHECK_IP4","\"dns.google.com\"")
         testHandleProfiling true
         testFunctionalTest true
 

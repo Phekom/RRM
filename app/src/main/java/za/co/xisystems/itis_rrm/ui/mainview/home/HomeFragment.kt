@@ -100,7 +100,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                     }
                 } else {
                     sharpToast(
-                        message = "Please connect to internet via mobile or wifi to download contract and project data.",
+                        message = "Please connect to internet via mobile or wifi to download contract and project information",
                         style = NO_INTERNET,
                         position = BOTTOM,
                         duration = LONG
@@ -239,7 +239,10 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
 
     private fun initProgressViews() {
         ui.pvContracts.setOnProgressChangeListener {
-            ui.pvContracts.labelText = "contracts ${it.toInt()}%"
+            ui.pvContracts.labelText = "projects ${it.toInt()}%"
+        }
+        ui.pvTasks.setOnProgressChangeListener {
+            ui.pvTasks.labelText = "tasks ${it.toInt()}%"
         }
     }
 
@@ -316,7 +319,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
             ui.ivLocation.setImageDrawable(
                 ContextCompat.getDrawable(
                     this.requireContext(),
-                    R.drawable.ic_baseline_location_off_24
+                    R.drawable.ic_baseline_location_on_24
                 )
             )
         }
@@ -360,7 +363,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                     )
                     toggleLongRunning(false)
                     ui.itemsSwipeToRefresh.isRefreshing = false
-                    ui.bigsyncProgressLayout.visibility = View.VISIBLE
+                    ui.bigsyncProgressLayout.visibility = View.GONE
                     synchJob.join()
                 }
                 is XIStatus -> {
@@ -404,6 +407,9 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
         when (update.key) {
             "contracts" -> {
                 ui.pvContracts.progress = update.getPercentageComplete()
+            }
+            "tasks" -> {
+                ui.pvTasks.progress = update.getPercentageComplete()
             }
         }
     }
