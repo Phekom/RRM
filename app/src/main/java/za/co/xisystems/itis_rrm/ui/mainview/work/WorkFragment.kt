@@ -226,7 +226,7 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
                             it.onToggleExpanded()
                         }
                     }
-                   layoutManager.scrollToPositionWithOffset(2, 20)
+                    layoutManager.scrollToPositionWithOffset(2, 20)
                 }
 
                 val estimates = workViewModel.getJobEstimationItemsForJobId(

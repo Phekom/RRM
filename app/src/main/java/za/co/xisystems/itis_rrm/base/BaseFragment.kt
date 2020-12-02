@@ -196,7 +196,7 @@ abstract class BaseFragment(layoutContentId: Int) : Fragment(), IProgressView, K
         }
     }
 
-    protected fun sharpToast(resource: String){
+    protected fun sharpToast(resource: String) {
         sharpToast(message = resource)
     }
 
@@ -226,7 +226,7 @@ abstract class BaseFragment(layoutContentId: Int) : Fragment(), IProgressView, K
                 message = message,
                 style = style,
                 position = position,
-                duration = duration,
+                duration = duration
             )
         }
     }

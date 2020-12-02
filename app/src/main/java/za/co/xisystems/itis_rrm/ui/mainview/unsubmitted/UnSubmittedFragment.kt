@@ -93,7 +93,6 @@ class UnSubmittedFragment : BaseFragment(R.layout.fragment_unsubmittedjobs), Kod
                     unsubError,
                     refreshAction = { retryUnsubmitted() }
                 )
-
             } finally {
                 group12_loading.visibility = View.GONE
             }

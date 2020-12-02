@@ -39,7 +39,7 @@ class HomeViewModel(
 
             databaseStatus = offlineDataRepository.databaseStatus.distinctUntilChanged()
 
-            databaseState = Transformations.map(databaseStatus){
+            databaseState = Transformations.map(databaseStatus) {
                 it.getContentIfNotHandled()
             } as MutableLiveData<XIResult<Boolean>?>
         }
@@ -83,7 +83,6 @@ class HomeViewModel(
                 val fetchFail =
                     XIError(t, "Failed to fetch contracts: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}")
                 databaseState.postValue(fetchFail)
-
             }
         }
 

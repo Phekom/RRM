@@ -411,7 +411,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private fun initializeCountDrawer() {
         // Estimates are completed needs to be submitted currently saved in the local DB
 
-        uiScope.launch(uiScope.coroutineContext){
+        uiScope.launch(uiScope.coroutineContext) {
             mainActivityViewModel.getJobsForActivityId(
                 ActivityIdConstants.JOB_ESTIMATE
             ).observe(this@MainActivity, { newJobData ->

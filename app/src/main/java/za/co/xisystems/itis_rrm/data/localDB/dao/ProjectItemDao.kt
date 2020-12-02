@@ -21,7 +21,6 @@ interface ProjectItemDao {
     @Query("SELECT EXiSTS (SELECT * FROM PROJECT_ITEM_TABLE WHERE itemId = :itemId)")
     fun checkItemExistsItemId(itemId: String): Boolean
 
-
     @Query("SELECT sectionItemId FROM PROJECT_ITEM_TABLE WHERE itemId = :itemId")
     fun getSectionItemId(itemId: String): String
 

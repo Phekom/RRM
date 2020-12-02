@@ -16,6 +16,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenStarted
+import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -48,7 +49,6 @@ import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.ERROR
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.INFO
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.NO_INTERNET
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.SUCCESS
-import kotlin.coroutines.cancellation.CancellationException
 
 class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
 
@@ -238,6 +238,10 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
     }
 
     private fun initProgressViews() {
+
+        ui.pvContracts.progress = 0.0f
+        ui.pvTasks.progress = 0.0f
+
         ui.pvContracts.setOnProgressChangeListener {
             ui.pvContracts.labelText = "projects ${it.toInt()}%"
         }

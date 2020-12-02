@@ -5,6 +5,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import java.util.ArrayList
+import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
@@ -26,8 +28,6 @@ import za.co.xisystems.itis_rrm.ui.mainview.create.select_item.SectionProj_Item
 import za.co.xisystems.itis_rrm.utils.JobUtils
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
 import za.co.xisystems.itis_rrm.utils.uncaughtExceptionHandler
-import java.util.ArrayList
-import kotlin.coroutines.CoroutineContext
 
 /**
  * Created by Francis Mahlava on 2019/10/18.
@@ -43,11 +43,13 @@ class CreateViewModel(
     fun setCurrentJob(inJobItemToEdit: JobDTO?) {
         currentJob.value = inJobItemToEdit
     }
+
     private lateinit var ioContext: CoroutineContext
 
     init {
         ioContext = Job(superJob) + Dispatchers.IO + uncaughtExceptionHandler
     }
+
     private val estimateQty = MutableLiveData<Double>()
     fun setEstimateQuantity(inQty: Double) {
         estimateQty.value = inQty
@@ -179,11 +181,10 @@ class CreateViewModel(
     }
 
     suspend fun getPointSectionData(projectId: String): SectionPointDTO {
-       return withContext(ioContext) {
-           jobCreationDataRepository.getPointSectionData(projectId)
-       }
+        return withContext(ioContext) {
+            jobCreationDataRepository.getPointSectionData(projectId)
+        }
     }
-
 
     suspend fun getSectionByRouteSectionProject(
         sectionId: Int,

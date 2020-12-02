@@ -27,6 +27,8 @@ import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
+import java.util.Date
+import java.util.HashMap
 import kotlinx.android.synthetic.main.fragment_capture_work.*
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -83,8 +85,6 @@ import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.INFO
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.NO_INTERNET
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.WARNING
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
-import java.util.Date
-import java.util.HashMap
 
 class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), KodeinAware {
 
@@ -151,7 +151,6 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
         workViewModel = activity?.run {
             ViewModelProvider(this, factory).get(WorkViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
-
 
         uiScope.launch(uiScope.coroutineContext) {
 

@@ -237,7 +237,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
                             Timber.d("ApproveItem was null")
                         }
                         userDTO.userId.isBlank() -> {
-                            this@JobInfoFragment.sharpToast(message = "The user lacks permissions.", style =ToastStyle.ERROR)
+                            this@JobInfoFragment.sharpToast(message = "The user lacks permissions.", style = ToastStyle.ERROR)
                             progressButton.failProgress("Invalid User")
                         }
                         job.jobDTO.JobId.isBlank() -> {

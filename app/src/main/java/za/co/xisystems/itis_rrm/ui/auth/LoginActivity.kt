@@ -268,7 +268,7 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
 
         MotionToast.createColorToast(
             this,
-            message= "Pin is incorrect",
+            message = "Pin is incorrect",
             style = MotionToast.TOAST_ERROR,
             position = MotionToast.GRAVITY_BOTTOM,
             duration = MotionToast.LONG_DURATION,
@@ -286,7 +286,7 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
     override fun onSuccess(userDTO: UserDTO) {
         MotionToast.createColorToast(
             this,
-            message= "You are Logged in as ${userDTO.userName}",
+            message = "You are Logged in as ${userDTO.userName}",
             style = MotionToast.TOAST_SUCCESS,
             position = MotionToast.GRAVITY_BOTTOM,
             duration = MotionToast.LONG_DURATION,

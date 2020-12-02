@@ -7,6 +7,8 @@ import android.os.Environment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.room.Transaction
+import java.io.File
+import java.util.regex.Pattern
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -52,8 +54,6 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
-import java.io.File
-import java.util.regex.Pattern
 
 private val jobDataController: JobDataController? = null
 
@@ -335,7 +335,12 @@ class OfflineDataRepository(
                         }?.distinctBy { project -> project.projectId }
 
                     saveProjects(validProjects, contract)
+                } else {
+                    contractMax--
                 }
+            }
+            if (contractCount >= contractMax) {
+                postEvent(XISuccess(true))
             }
         }
     }
@@ -374,6 +379,7 @@ class OfflineDataRepository(
             validProjects?.forEach { project ->
                 if (appDb.getProjectDao().checkProjectExists(project.projectId)) {
                     Timber.i("Contract: ${contract.shortDescr} (${contract.contractId}) ProjectId: ${project.descr} (${project.projectId}) -> Duplicated")
+                    projectMax--
                 } else {
                     try {
 

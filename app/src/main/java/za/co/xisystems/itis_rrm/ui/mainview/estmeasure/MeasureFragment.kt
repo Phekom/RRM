@@ -162,7 +162,6 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
                         noData.visibility = View.VISIBLE
                         group5_loading.visibility = View.GONE
                         estimations_to_be_measured_listView.visibility = View.GONE
-
                     } else {
                         noData.visibility = View.GONE
                         estimations_to_be_measured_listView.visibility = View.VISIBLE

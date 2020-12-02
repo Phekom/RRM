@@ -35,6 +35,10 @@ import androidx.navigation.Navigation
 import com.airbnb.lottie.LottieAnimationView
 import icepick.Icepick
 import icepick.State
+import java.io.File
+import java.text.DecimalFormat
+import java.util.Date
+import kotlin.collections.set
 import kotlinx.android.synthetic.main.fragment_photo_estimate.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.cancel
@@ -81,10 +85,6 @@ import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.BOTTOM
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.ERROR
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.WARNING
 import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
-import java.io.File
-import java.text.DecimalFormat
-import java.util.Date
-import kotlin.collections.set
 
 /**
  * Created by Francis Mahlava on 2019/12/29.
@@ -159,7 +159,6 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
                 createViewModel = activity?.run {
                     ViewModelProvider(this, factory).get(CreateViewModel::class.java)
                 } ?: throw Exception("Invalid Activity")
-
 
                 uiScope.launch(uiScope.coroutineContext) {
 

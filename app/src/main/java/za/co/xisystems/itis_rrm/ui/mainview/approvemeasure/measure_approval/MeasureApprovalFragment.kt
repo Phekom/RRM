@@ -36,9 +36,9 @@ import za.co.xisystems.itis_rrm.custom.results.XISuccess
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.ui.extensions.doneProgress
+import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.extensions.failProgress
 import za.co.xisystems.itis_rrm.ui.extensions.initProgress
-import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.extensions.startProgress
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureViewModelFactory
@@ -82,7 +82,7 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
                 }
                 is XIError -> {
                     progressButton.failProgress("Failed")
-                   crashGuard(
+                    crashGuard(
                         view = this.requireView(),
                         throwable = result,
                         refreshAction = { retryMeasurements() }

@@ -20,6 +20,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.ExpandableGroup
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
+import java.util.ArrayList
+import java.util.HashMap
 import kotlinx.android.synthetic.main.fragment_submit_measure.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
@@ -59,8 +61,6 @@ import za.co.xisystems.itis_rrm.utils.enums.ToastStyle
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.ERROR
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.NO_INTERNET
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.WARNING
-import java.util.ArrayList
-import java.util.HashMap
 
 class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), KodeinAware {
     override val kodein by kodein()
@@ -82,7 +82,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
 
     init {
         lifecycleScope.launch {
-            whenStarted{
+            whenStarted {
                 uiScope.onCreate()
                 lifecycle.addObserver(uiScope)
 
@@ -177,10 +177,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
-
-
         Coroutines.main {
-
 
             measureViewModel = activity?.run {
                 ViewModelProvider(this, factory).get(MeasureViewModel::class.java)
@@ -343,7 +340,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
     private fun showSubmissionError(errorMessage: String) {
         sharpToast(
             message = errorMessage,
-            style =ERROR,
+            style = ERROR,
             position = ToastGravity.CENTER
         )
         progressButton.failProgress(originalCaption)
