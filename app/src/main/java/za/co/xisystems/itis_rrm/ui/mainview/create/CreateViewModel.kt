@@ -5,8 +5,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import java.util.ArrayList
-import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
@@ -28,6 +26,8 @@ import za.co.xisystems.itis_rrm.ui.mainview.create.select_item.SectionProj_Item
 import za.co.xisystems.itis_rrm.utils.JobUtils
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
 import za.co.xisystems.itis_rrm.utils.uncaughtExceptionHandler
+import java.util.ArrayList
+import kotlin.coroutines.CoroutineContext
 
 /**
  * Created by Francis Mahlava on 2019/10/18.
@@ -44,10 +44,12 @@ class CreateViewModel(
         currentJob.value = inJobItemToEdit
     }
 
-    private lateinit var ioContext: CoroutineContext
+    private  var ioContext: CoroutineContext
+    private  var mainContext: CoroutineContext
 
     init {
         ioContext = Job(superJob) + Dispatchers.IO + uncaughtExceptionHandler
+        mainContext = Job(superJob) + Dispatchers.Main + uncaughtExceptionHandler
     }
 
     private val estimateQty = MutableLiveData<Double>()
@@ -101,8 +103,6 @@ class CreateViewModel(
         projectCode.value = inProjectCode
     }
 
-    private val projectItem = MutableLiveData<ProjectItemDTO>()
-
     val sectionProjectItem = MutableLiveData<SectionProj_Item>()
     fun setSectionProjectItem(inSectionProjectItem: SectionProj_Item) {
         sectionProjectItem.value = inSectionProjectItem
@@ -114,8 +114,6 @@ class CreateViewModel(
     }
 
     val projectItemTemp = MutableLiveData<ItemDTOTemp>()
-
-    private val projectRate = MutableLiveData<Double>()
 
     fun saveNewJob(newJob: JobDTO) {
         jobCreationDataRepository.saveNewJob(newJob)
@@ -234,7 +232,10 @@ class CreateViewModel(
         var isValid = true
         if (!JobUtils.areQuantitiesValid(job)) {
             isValid = false
-        } else if (job == null || items == null || job.JobItemEstimates == null || items.size != job.JobItemEstimates!!.size) {
+        } else if (job == null || items == null ||
+            job.JobItemEstimates == null ||
+            items.size != job.JobItemEstimates!!.size
+        ) {
             isValid = false
         } else {
             for (estimate in job.JobItemEstimates!!) {
@@ -303,5 +304,9 @@ class CreateViewModel(
     suspend fun setJobToEdit(jobId: String) {
         val fetchedJob = jobCreationDataRepository.getUpdatedJob(jobId)
         currentJob.value = fetchedJob
+    }
+
+    suspend fun checkIfJobSectionExists(jobId: String?, projectSectionId: String?): Boolean {
+        return jobCreationDataRepository.checkIfJobSectionExistForJobAndProjectSection(jobId, projectSectionId)
     }
 }

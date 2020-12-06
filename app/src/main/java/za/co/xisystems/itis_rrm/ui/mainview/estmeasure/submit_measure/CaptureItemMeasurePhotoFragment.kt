@@ -1,3 +1,5 @@
+@file:Suppress("Annotator")
+
 package za.co.xisystems.itis_rrm.ui.mainview.estmeasure.submit_measure
 
 import android.Manifest
@@ -22,9 +24,6 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.coroutineScope
 import androidx.navigation.Navigation
-import java.util.ArrayList
-import java.util.Date
-import java.util.HashMap
 import kotlinx.android.synthetic.main.fragment_capture_item_measure_photo.*
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
@@ -36,7 +35,6 @@ import timber.log.Timber
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.LocationFragment
-import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.results.XIError
 import za.co.xisystems.itis_rrm.custom.results.XIProgress
 import za.co.xisystems.itis_rrm.custom.results.XIResult
@@ -61,6 +59,9 @@ import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.enums.ToastGravity
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.INFO
+import java.util.ArrayList
+import java.util.Date
+import java.util.HashMap
 
 //
 class CaptureItemMeasurePhotoFragment :
@@ -364,12 +365,9 @@ class CaptureItemMeasurePhotoFragment :
             }
 
             is XIError -> {
-                XIErrorHandler.handleError(
-                    fragment = this@CaptureItemMeasurePhotoFragment,
+                crashGuard(
                     view = this@CaptureItemMeasurePhotoFragment.requireView(),
                     throwable = response,
-                    shouldToast = false,
-                    shouldShowSnackBar = true,
                     refreshAction = { retryGallery() }
                 )
             }
@@ -393,12 +391,7 @@ class CaptureItemMeasurePhotoFragment :
 
     companion object {
         val TAG: String = CaptureItemMeasurePhotoFragment::class.java.simpleName
-        const val JOB_ITEM_MEASURE_PHOTO_ARRAY_LIST = "JobItemMeasurePhotoArrayList"
-        const val PHOTO_RESULT = 9000
         private const val REQUEST_IMAGE_CAPTURE = 1
         private const val REQUEST_STORAGE_PERMISSION = 1
-
-        const val URI_LIST_DATA = "URI_LIST_DATA"
-        const val IMAGE_FULL_SCREEN_CURRENT_POS = "IMAGE_FULL_SCREEN_CURRENT_POS"
     }
 }

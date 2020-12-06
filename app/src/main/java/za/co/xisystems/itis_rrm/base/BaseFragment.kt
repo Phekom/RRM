@@ -13,27 +13,33 @@ import android.view.inputmethod.InputMethodManager
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.withContext
 import org.kodein.di.KodeinAware
 import org.kodein.di.generic.instance
 import timber.log.Timber
+import za.co.xisystems.itis_rrm.BuildConfig
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.results.XIError
-import za.co.xisystems.itis_rrm.custom.results.isConnectivityException
+import za.co.xisystems.itis_rrm.custom.results.isRecoverableException
+import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data._commons.Animations
 import za.co.xisystems.itis_rrm.data._commons.views.IProgressView
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModelFactory
+import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.ViewLogger
 import za.co.xisystems.itis_rrm.utils.enums.ToastDuration
 import za.co.xisystems.itis_rrm.utils.enums.ToastDuration.LONG
 import za.co.xisystems.itis_rrm.utils.enums.ToastDuration.SHORT
 import za.co.xisystems.itis_rrm.utils.enums.ToastGravity
 import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.BOTTOM
-import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.CENTER
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.ERROR
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.INFO
+import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.NO_INTERNET
+import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.WARNING
+import kotlin.coroutines.CoroutineContext
 
 /**
  * Created by Francis Mahlava on 03,October,2019
@@ -44,6 +50,7 @@ abstract class BaseFragment(layoutContentId: Int) : Fragment(), IProgressView, K
 
     private lateinit var sharedViewModel: SharedViewModel
     private val shareFactory: SharedViewModelFactory by instance()
+    protected var coordinator: View? = null
 
     companion object {
 
@@ -91,14 +98,30 @@ abstract class BaseFragment(layoutContentId: Int) : Fragment(), IProgressView, K
 
         @JvmField
         var shake_longer: Animation? = null
-        protected var coordinator: View? = null
+
 
         var animations: Animations? = null
+
+        const val DNS_PORT = 52
+
+        const val SSL_PORT = 443
+
+        const val FIVE_SECONDS = 5000
     }
 
     override fun onResume() {
         super.onResume()
         ViewLogger.logView(this)
+    }
+
+    /**
+     * Called when the Fragment is no longer resumed.  This is generally
+     * tied to [Activity.onPause] of the containing
+     * Activity's lifecycle.
+     */
+    override fun onPause() {
+        super.onPause()
+        IndefiniteSnackbar.hide()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -185,14 +208,33 @@ abstract class BaseFragment(layoutContentId: Int) : Fragment(), IProgressView, K
         }
     }
 
+    // Helper function that checks connectivity
+    // before allowing the suspend function to execute
+    protected suspend fun connectedCheck(
+        call: suspend () -> Unit,
+        coroutineContext: CoroutineContext
+    ) {
+        when {
+            !isOnline() -> noConnectionWarning()
+            !hasInternet() -> noInternetWarning()
+            !isServiceAvailable() -> noServicesWarning()
+            else -> {
+                withContext(coroutineContext) {
+                    call.invoke()
+                }
+            }
+        }
+    }
+
     override fun toast(resid: Int) {
         if (!activity?.isFinishing!!) toast(getString(resid))
     }
 
     override fun toast(resid: String?) {
         resid?.let {
-            if (!activity?.isFinishing!!)
+            if (!activity?.isFinishing!!) {
                 sharpToast(resource = resid)
+            }
         }
     }
 
@@ -231,6 +273,45 @@ abstract class BaseFragment(layoutContentId: Int) : Fragment(), IProgressView, K
         }
     }
 
+    private fun isOnline(): Boolean {
+        return ServiceUtil.isNetworkAvailable(this.requireContext().applicationContext)
+    }
+
+    protected fun noConnectionWarning() {
+        sharpToast(
+            message = "Please ensure that you have a valid data or wifi connection",
+            style = WARNING,
+            position = BOTTOM,
+            duration = LONG
+        )
+    }
+
+    private fun hasInternet(): Boolean {
+        return ServiceUtil.isHostAvailable("dns.google.com", DNS_PORT, FIVE_SECONDS)
+    }
+
+    private fun isServiceAvailable(): Boolean {
+        return ServiceUtil.isHostAvailable(BuildConfig.API_HOST, SSL_PORT, FIVE_SECONDS)
+    }
+
+    private fun noServicesWarning() {
+        sharpToast(
+            message = "RRM services are unreachable, try again later ...",
+            style = NO_INTERNET,
+            position = BOTTOM,
+            duration = LONG
+        )
+    }
+
+    protected fun noInternetWarning() {
+        sharpToast(
+            message = "No internet access, try again later ...",
+            style = NO_INTERNET,
+            position = BOTTOM,
+            duration = LONG
+        )
+    }
+
     protected fun toggleLongRunning(toggle: Boolean) {
         sharedViewModel.toggleLongRunning(toggle)
     }
@@ -252,25 +333,29 @@ abstract class BaseFragment(layoutContentId: Int) : Fragment(), IProgressView, K
      * if the exception is connectivity-related, give the user the option to retry.
      * Shaun McDonald - 2020/06/01
      */
-    protected fun crashGuard(view: View, throwable: XIError, refreshAction: () -> Unit) {
+    protected fun crashGuard(view: View, throwable: XIError, refreshAction: (() -> Unit)? = null) {
 
-        when (throwable.isConnectivityException()) {
+        when (throwable.isRecoverableException()) {
 
             true -> {
-                XIErrorHandler.handleError(
-                    view = view,
-                    throwable = throwable,
-                    shouldShowSnackBar = true,
-                    refreshAction = refreshAction
-                )
+                if (refreshAction != null) {
+                    XIErrorHandler.handleError(
+                        view = view,
+                        throwable = throwable,
+                        shouldShowSnackBar = true,
+                        refreshAction = refreshAction
+                    )
+                }
             }
             else -> {
+
                 sharpToast(
                     message = throwable.message,
                     style = ERROR,
-                    position = CENTER,
+                    position = BOTTOM,
                     duration = LONG
                 )
+
                 XIErrorHandler.handleError(
                     view = view,
                     throwable = throwable,

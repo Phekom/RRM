@@ -121,10 +121,12 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
                 withContext(Dispatchers.Main) {
                     val jobs = measureViewModel.offlineUserTaskList.await()
                     jobs.observeOnce(viewLifecycleOwner, { works ->
-                        if (works.isEmpty()) {
+                        if (works.isNullOrEmpty()) {
                             noData.visibility = View.VISIBLE
+                            estimations_to_be_measured_listView.visibility = View.GONE
                         } else {
                             noData.visibility = View.GONE
+                            estimations_to_be_measured_listView.visibility = View.VISIBLE
                         }
                     })
                 }

@@ -43,10 +43,11 @@ object XIErrorHandler {
         } else {
             if (shouldToast) {
                 // If we don't have a fragment, fallback to dry toast'
-                if (fragment != null)
+                if (fragment != null) {
                     fragment.extensionToast(throwable.message, MotionToast.TOAST_ERROR, title = null)
-                else
+                } else {
                     showMessage(view, throwable.message)
+                }
             }
         }
         when (throwable.exception) {

@@ -20,9 +20,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.Section
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
-import java.util.ArrayList
-import java.util.Calendar
-import java.util.Date
 import kotlinx.android.synthetic.main.fragment_add_project_items.*
 import kotlinx.coroutines.launch
 import org.kodein.di.KodeinAware
@@ -49,6 +46,9 @@ import za.co.xisystems.itis_rrm.utils.DateUtil
 import za.co.xisystems.itis_rrm.utils.JobUtils
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.WARNING
+import java.util.ArrayList
+import java.util.Calendar
+import java.util.Date
 
 /**
  * Created by Francis Mahlava on 2019/12/29.
@@ -472,7 +472,7 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
             val submit =
                 createViewModel.submitJob(userId, job, requireActivity())
 
-            if (!submit.isBlank()) {
+            if (submit.isNotBlank()) {
                 this@AddProjectFragment.sharpToast(
                     message = submit,
                     style = ToastStyle.ERROR
@@ -545,7 +545,7 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
     }
 
     private fun onInvalidJob() {
-        this.sharpToast(message = "Incomplete estimates!", style = WARNING)
+        sharpToast(message = "Incomplete estimates!", style = WARNING)
         itemsCardView.startAnimation(shake_long)
     }
 

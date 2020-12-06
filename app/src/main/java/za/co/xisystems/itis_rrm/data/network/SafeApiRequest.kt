@@ -1,5 +1,7 @@
 package za.co.xisystems.itis_rrm.data.network
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.json.JSONException
 import org.json.JSONObject
 import retrofit2.Response
@@ -8,26 +10,28 @@ import za.co.xisystems.itis_rrm.custom.errors.ServiceException
 /**
  * Created by Francis Mahlava on 2019/10/18.
  */
-abstract class SafeApiRequest {
+open class SafeApiRequest {
 
     suspend fun <T : Any> apiRequest(call: suspend () -> Response<T>): T {
-        val response = call.invoke()
-        if (response.isSuccessful) {
-            return response.body()!!
-        } else {
-            val error = response.errorBody()?.string()
+        val response = withContext(Dispatchers.Main){ call.invoke() }
+        return withContext(Dispatchers.Main){
+            if (response.isSuccessful) {
+                return@withContext response.body()!!
+            } else {
+                val error = response.errorBody()?.string()
 
-            val message = StringBuilder()
-            error?.let {
-                try {
-                    message.append(JSONObject(it).getString("message"))
-                } catch (e: JSONException) {
-                    e.printStackTrace()
+                val message = StringBuilder()
+                error?.let {
+                    try {
+                        message.append(JSONObject(it).getString("message"))
+                    } catch (e: JSONException) {
+                        e.printStackTrace()
+                    }
+                    message.append("\n")
                 }
-                message.append("\n")
+                message.append("Error Code: ${response.code()}")
+                throw ServiceException(message.toString())
             }
-            message.append("Error Code: ${response.code()}")
-            throw ServiceException(message.toString())
         }
     }
 }

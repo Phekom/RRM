@@ -7,7 +7,7 @@ buildscript {
         ktlint_gradle_version = "9.2.1"
         dependency_evaluation_version = '0.52.0'
         booster_version = '2.4.0'
-        navigation_version = '2.3.0'
+        navigation_version = '2.3.2'
     }
 
     repositories {
@@ -25,7 +25,7 @@ buildscript {
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
         classpath "androidx.navigation:navigation-safe-args-gradle-plugin:$navigation_version"
-        classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4"
+        classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.5"
         classpath "com.github.dcendents:android-maven-gradle-plugin:2.1"
         classpath "org.jetbrains.dokka:dokka-android-gradle-plugin:0.9.18"
         classpath "com.deploygate:gradle:2.3.0"
@@ -66,7 +66,7 @@ allprojects {
 
     ext {
         daggerVersion = "2.15"
-        compile_version = 30
+        compile_version = 29
         android_min_sdk_version = 21
         appcompat_library_version = compile_version + ".0.0"
         support_library_version = "28.0.0"

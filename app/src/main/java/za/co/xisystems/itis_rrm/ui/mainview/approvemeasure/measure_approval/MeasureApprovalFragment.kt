@@ -23,6 +23,7 @@ import kotlinx.coroutines.withContext
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
+import timber.log.Timber
 import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
@@ -63,12 +64,13 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
     private lateinit var measurementsToApprove: ArrayList<JobItemMeasureDTO>
     lateinit var dialog: Dialog
     private lateinit var progressButton: Button
-    private var workObserver = Observer<XIResult<String>?> { handleWorkSubmission(it) }
+    private var workObserver = Observer<XIResult<String>?> { handleMeasureProcessing(it) }
     private var flowDirection: Int = 0
     private var measuresProcessed: Int = 0
+
     private var uiScope = UiLifecycleScope()
 
-    private fun handleWorkSubmission(outcome: XIResult<String>?) {
+    private fun handleMeasureProcessing(outcome: XIResult<String>?) {
         outcome?.let { result ->
             when (result) {
                 is XISuccess -> {
@@ -77,7 +79,6 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
                         initRecyclerView(measurementsToApprove.toMeasureItems())
                         progressButton.doneProgress(progressButton.text.toString())
                         popViewOnJobSubmit(flowDirection)
-                        progressButton.initProgress(viewLifecycleOwner)
                     }
                 }
                 is XIError -> {
@@ -85,7 +86,7 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
                     crashGuard(
                         view = this.requireView(),
                         throwable = result,
-                        refreshAction = { retryMeasurements() }
+                        refreshAction = { this.retryMeasurements() }
                     )
                 }
                 is XIStatus -> {
@@ -102,6 +103,7 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
                         else -> progressButton.doneProgress(progressButton.text.toString())
                     }
                 }
+                else -> Timber.d("$result")
             }
         }
     }
@@ -219,7 +221,7 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
     }
 
     private fun showSubmissionError(errMessage: String, progFailCaption: String) {
-        this@MeasureApprovalFragment.sharpToast(
+        sharpToast(
             message = errMessage,
             style = ERROR,
             position = CENTER
@@ -229,9 +231,9 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
 
     private fun popViewOnJobSubmit(direction: Int) {
         if (direction == NEXT.value) {
-            this.sharpToast(resId = string.measurement_approved, style = SUCCESS)
+            sharpToast(resId = string.measurement_approved, style = SUCCESS)
         } else if (direction == WorkflowDirection.FAIL.value) {
-            this.sharpToast(resId = string.measurement_declined, style = INFO)
+            sharpToast(resId = string.measurement_declined, style = INFO)
         }
 
         Intent(context?.applicationContext, MainActivity::class.java).also { home ->

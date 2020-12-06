@@ -9,13 +9,14 @@ import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.Observer
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import com.xwray.groupie.kotlinandroidextensions.Item
-import java.io.File
 import kotlinx.android.synthetic.main.estimates_item.*
 import timber.log.Timber
 import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.data._commons.AbstractTextWatcher
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
@@ -26,6 +27,7 @@ import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.Util.nanCheck
 import za.co.xisystems.itis_rrm.utils.Util.round
 import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
+import java.io.File
 
 /**
  * Created by Francis Mahlava on 2020/01/02.
@@ -34,7 +36,8 @@ class EstimatesItem(
     private val jobItemEstimateDTO: JobItemEstimateDTO,
     private val approveViewModel: ApproveJobsViewModel,
     private val activity: FragmentActivity?,
-    private val viewLifecycleOwner: LifecycleOwner
+    private val viewLifecycleOwner: LifecycleOwner,
+    private val updateObserver: Observer<XIResult<String>?>
 
 ) : Item() {
 
@@ -170,16 +173,12 @@ class EstimatesItem(
                 ) {
                     activity.extensionToast("Please Enter a valid Quantity", MotionToast.TOAST_WARNING)
                 } else {
-                    val updated = approveViewModel.upDateEstimate(
+                    approveViewModel.updateState.observe(viewLifecycleOwner,updateObserver)
+                    approveViewModel.upDateEstimate(
                         quantityEntry.text.toString(),
                         totalEntry.text.split(" ", ignoreCase = true)[1],
                         jobItemEstimateDTO.estimateId
                     )
-                    if (updated.isBlank()) {
-                        activity.extensionToast("Data updated", MotionToast.TOAST_SUCCESS)
-                    } else {
-                        activity.extensionToast("Update failed", MotionToast.TOAST_ERROR)
-                    }
                 }
             }
         } else {

@@ -14,7 +14,8 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="parent"
+        android:visibility="visible">
 
         <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
             android:id="@+id/works_swipe_to_refresh"
@@ -23,13 +24,15 @@
             android:layout_weight="1"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintTop_toTopOf="parent"
+            android:visibility="visible">
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/work_listView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                tools:listitem="@layout/item_expandable_header" />
+                tools:listitem="@layout/item_expandable_header"
+                android:visibility="visible" />
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
     </LinearLayout>
 
@@ -79,12 +82,13 @@
         android:layout_height="wrap_content"
         android:src="@drawable/no_data"
         android:gravity="center"
-        android:visibility="visible"
+        android:visibility="gone"
         tools:visibility="visible"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="@+id/datagrid" />
+        app:layout_constraintEnd_toEndOf="@+id/datagrid"
+        android:contentDescription="@string/no_data" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -27,8 +27,6 @@ import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
-import java.util.Date
-import java.util.HashMap
 import kotlinx.android.synthetic.main.fragment_capture_work.*
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -85,6 +83,8 @@ import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.INFO
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.NO_INTERNET
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.WARNING
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
+import java.util.Date
+import java.util.HashMap
 
 class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), KodeinAware {
 
@@ -104,8 +104,8 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
     private lateinit var jobWorkStep: ArrayList<WF_WorkStepDTO>
     private lateinit var keyListener: KeyListener
     private var uiScope = UiLifecycleScope()
-    private var workObserver = Observer<XIResult<String>> { handleWorkSubmission(it) }
-    private var jobObserver = Observer<XIResult<String>> { handleJobSubmission(it) }
+    private var workObserver = Observer<XIResult<String>?> { handleWorkSubmission(it) }
+    private var jobObserver = Observer<XIResult<String>?> { handleJobSubmission(it) }
 
     private var filenamePath = HashMap<String, String>()
     private lateinit var useR: UserDTO
@@ -139,7 +139,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
 
     override fun onDestroyView() {
         // Remember to flush the RecyclerView's adaptor
-        workViewModel.workflowState?.removeObservers(viewLifecycleOwner)
+        workViewModel.workflowState.removeObservers(viewLifecycleOwner)
         work_actions_listView.adapter = null
         image_collection_view.clearImages()
         super.onDestroyView()
@@ -220,6 +220,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                     else -> move_workflow_button.doneProgress(move_workflow_button.text.toString())
                 }
             }
+            else -> Timber.d("$result")
         }
     }
 
@@ -289,7 +290,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
         itemEstiWorks: JobEstimateWorksDTO
     ) {
         uiScope.launch(uiScope.coroutineContext) {
-            workViewModel.workflowState?.observe(viewLifecycleOwner, workObserver)
+            workViewModel.workflowState.observe(viewLifecycleOwner, workObserver)
             workViewModel.backupWorkSubmission.postValue(itemEstiWorks)
             val newItemEstimateWorks = setJobWorksLittleEndianGuids(itemEstiWorks)
             workSubmission = workViewModel.submitWorks(newItemEstimateWorks, requireActivity(), itemEstimateJob)
@@ -328,6 +329,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                         else -> move_workflow_button.doneProgress(move_workflow_button.text.toString())
                     }
                 }
+                else -> Timber.d("$result")
             }
         }
     }
@@ -383,6 +385,8 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                         else -> move_workflow_button.doneProgress(move_workflow_button.text.toString())
                     }
                 }
+
+                else -> Timber.d("$result")
             }
         }
     }
@@ -715,10 +719,10 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
         errorState = false
 
         workViewModel.backupCompletedEstimates.postValue(estimates as List<JobItemEstimateDTO>)
-        uiScope.launch(uiScope.coroutineContext) {
-            workViewModel.workflowState?.observe(viewLifecycleOwner, jobObserver)
-            workViewModel.workflowState?.postValue(XIProgress(true))
-            jobSubmission = uiScope.launch(uiScope.coroutineContext) {
+        jobSubmission = uiScope.launch(uiScope.coroutineContext) {
+            workViewModel.workflowState.observe(viewLifecycleOwner, jobObserver)
+            workViewModel.workflowState.postValue(XIProgress(true))
+            withContext(uiScope.coroutineContext) {
                 for (jobEstimate in estimates) {
                     Timber.d("Id: ${jobEstimate.estimateId}")
                     val convertedId = DataConversion.toBigEndian(jobEstimate.estimateId)
@@ -737,10 +741,10 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                         }
                     })
                 }
-                jobSubmission.join()
-                handleJobSubmission(XISuccess("WORK_COMPLETE"))
             }
         }
+        jobSubmission.join()
+        handleJobSubmission(XISuccess("WORK_COMPLETE"))
     }
 
     private var errorState = false
@@ -794,14 +798,14 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
 
     private fun popViewOnJobSubmit(direction: Int) {
         if (direction == WorkflowDirection.NEXT.value) {
-            this.sharpToast(
+            sharpToast(
                 resId = R.string.work_complete,
                 style = ToastStyle.SUCCESS,
                 position = CENTER,
                 duration = LONG
             )
         } else if (direction == WorkflowDirection.FAIL.value) {
-            this.sharpToast(
+            sharpToast(
                 message = getString(R.string.work_declined),
                 style = INFO,
                 position = CENTER,

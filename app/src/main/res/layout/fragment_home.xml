@@ -55,7 +55,7 @@
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_marginBottom="20dp"
+                android:layout_marginBottom="10dp"
                 android:gravity="center"
                 android:orientation="horizontal">
 
@@ -72,18 +72,20 @@
                     android:id="@+id/welcome"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/welcome_greeting"
+                    android:text="@string/welcome"
                     android:textSize="16sp"
                     android:textStyle="bold" />
 
             </LinearLayout>
 
             <RelativeLayout
+                android:layout_marginTop="@dimen/dimen_20dp"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="0dp"
                 android:layout_marginBottom="10dp"
                 android:background="#fff"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:layout_weight="1">
 
                 <ImageView
                     android:id="@+id/iv_connection"
@@ -109,9 +111,10 @@
 
             <RelativeLayout
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="0dp"
                 android:background="#fff"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:layout_weight="1">
 
                 <ImageView
                     android:layout_width="32dp"
@@ -130,15 +133,14 @@
                     android:textSize="14sp"
                     android:textStyle="bold"
                     android:layout_marginTop="@dimen/dimen_18sp" />
-
             </RelativeLayout>
 
-            <!-- TODO test code to be removed -->
             <RelativeLayout
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="0dp"
                 android:layout_marginBottom="10dp"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:layout_weight="1">
 
                 <ImageView
                     android:id="@+id/iv_location"

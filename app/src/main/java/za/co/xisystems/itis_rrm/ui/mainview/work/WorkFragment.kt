@@ -17,6 +17,7 @@ import com.xwray.groupie.ExpandableGroup
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.GroupieViewHolder
 import kotlinx.android.synthetic.main.fragment_work.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.kodein.di.KodeinAware
@@ -34,6 +35,7 @@ import za.co.xisystems.itis_rrm.ui.mainview.work.estimate_work_item.CardItem
 import za.co.xisystems.itis_rrm.ui.mainview.work.estimate_work_item.ExpandableHeaderWorkItem
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
+import za.co.xisystems.itis_rrm.utils.Coroutines
 
 const val INSET_TYPE_KEY = "inset_type"
 const val INSET = "inset"
@@ -61,7 +63,7 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
                         refreshEstimateJobsFromLocal()
                     } catch (t: Throwable) {
                         Timber.e(t, "Failed to fetch local jobs")
-                        val xiFail = XIError(t, t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR)
+                        val xiFail = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
                         crashGuard(
                             view = this@WorkFragment.requireView(),
                             throwable = xiFail,
@@ -79,7 +81,7 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
             workViewModel.getJobsForActivityId(
                 ActivityIdConstants.JOB_APPROVED,
                 ActivityIdConstants.ESTIMATE_INCOMPLETE
-            ).observeOnce(viewLifecycleOwner, { jobsList ->
+            ).observe(viewLifecycleOwner, { jobsList ->
                 group7_loading.visibility = View.GONE
                 if (jobsList.isNullOrEmpty()) {
                     work_listView.visibility = View.GONE
@@ -92,7 +94,7 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
                         it.JobId
                     }
 
-                    uiScope.launch(uiScope.coroutineContext) {
+                    Coroutines.main {
                         this@WorkFragment.initRecyclerView(headerItems.toWorkListItems())
                     }
                 }
@@ -138,8 +140,8 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
     private fun fetchJobsFromService() {
         uiScope.launch(uiScope.coroutineContext) {
             try {
-                withContext(uiScope.coroutineContext) {
-                    refreshUserTaskListFromApi()
+        withContext(uiScope.coroutineContext) {
+                refreshUserTaskListFromApi()
                     refreshEstimateJobsFromLocal()
                 }
             } catch (t: Throwable) {
@@ -161,13 +163,19 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
         fetchJobsFromService()
     }
 
-    private suspend fun refreshUserTaskListFromApi() = uiScope.launch(uiScope.coroutineContext) {
+    private suspend fun refreshUserTaskListFromApi() {
         // This definitely needs to be a one-shot operation
-        withContext(uiScope.coroutineContext) {
-            val jobs = workViewModel.offlineUserTaskList.await()
-            jobs.observeOnce(viewLifecycleOwner, { works ->
-                Timber.d("${works.size} / ${works.count()} loaded.")
-            })
+        withContext(Dispatchers.Main) {
+            try {
+                val jobs = workViewModel.offlineUserTaskList.await()
+                jobs.observeOnce(viewLifecycleOwner, { works ->
+                    Timber.d("${works.size} / ${works.count()} loaded.")
+                })
+            } catch (t: Throwable) {
+                val message = "Failed to fetch jobs from service: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
+                Timber.e(t, message)
+                throw t
+            }
         }
     }
 
@@ -176,7 +184,7 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
     ) {
         val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
             clear()
-            update(workListItems)
+            addAll(workListItems)
         }
 
         work_listView.apply {
@@ -216,6 +224,7 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
 
             val expandableHeaderItem =
                 ExpandableHeaderWorkItem(activity, jobDTO, workViewModel)
+
             ExpandableGroup(expandableHeaderItem, false).apply {
                 expandableGroups.add(this)
                 // When expanding a work item, collapse the others
@@ -226,7 +235,7 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
                             it.onToggleExpanded()
                         }
                     }
-                    layoutManager.scrollToPositionWithOffset(2, 20)
+                    layoutManager.scrollToPositionWithOffset(toggledGroup.getPosition(this), 20)
                 }
 
                 val estimates = workViewModel.getJobEstimationItemsForJobId(
@@ -258,9 +267,8 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
                                 )
                             } catch (t: Throwable) {
                                 Timber.e(t, "Failed to create work-item")
-                                val workError = XIError(t, t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR)
+                                val workError = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
                                 XIErrorHandler.handleError(
-                                    fragment = this@WorkFragment,
                                     view = this@WorkFragment.requireView(),
                                     throwable = workError,
                                     shouldToast = true

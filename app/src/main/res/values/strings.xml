@@ -602,5 +602,7 @@
     <string name="welcome_greeting">Welcome %1$s</string>
     <string name="cellular_data_indicator">Cellular Data Indicator</string>
     <string name="services_indicator">Services Indicator</string>
+    <string name="approve_job_in_progress">Approving Job …</string>
+    <string name="decline_job_in_progress">Declining Job …</string>
 
 </resources>

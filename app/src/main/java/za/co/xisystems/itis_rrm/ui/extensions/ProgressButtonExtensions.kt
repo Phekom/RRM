@@ -10,6 +10,11 @@ import com.github.razir.progressbutton.hideProgress
 import com.github.razir.progressbutton.showProgress
 import za.co.xisystems.itis_rrm.R
 
+/**
+ * ProgressButton UI extensions for XI
+ */
+
+// TODO: Exchange hard-coded colours to match the theme
 fun Button.initProgress(lifecycleOwner: LifecycleOwner) {
     lifecycleOwner.bindProgressButton(this)
     this.attachTextChangeAnimator {
@@ -19,10 +24,10 @@ fun Button.initProgress(lifecycleOwner: LifecycleOwner) {
     }
 }
 
-fun Button.startProgress(caption: String) {
+fun Button.startProgress(caption: String? = null) {
     this.setBackgroundResource(R.drawable.round_corner_green)
     this.showProgress {
-        buttonText = caption
+        buttonText = caption ?: "Loading"
         gravity = DrawableButton.GRAVITY_TEXT_END
         textMarginRes = R.dimen.progressMargin
         progressColor = Color.WHITE
@@ -31,16 +36,16 @@ fun Button.startProgress(caption: String) {
     }
 }
 
-fun Button.doneProgress(caption: String) {
+fun Button.doneProgress(caption: String? = null) {
     this.setBackgroundResource(R.drawable.round_corner_green)
-    this.stopProgress(caption)
+    this.stopProgress(caption ?: "Complete")
 }
 
-fun Button.failProgress(caption: String) {
+fun Button.failProgress(caption: String? = null) {
     this.setBackgroundResource(R.drawable.round_corner_orange)
-    this.stopProgress(caption)
+    this.stopProgress(caption ?: "Failed")
 }
 
-fun Button.stopProgress(caption: String) {
+fun Button.stopProgress(caption: String? = null) {
     this.hideProgress(caption)
 }

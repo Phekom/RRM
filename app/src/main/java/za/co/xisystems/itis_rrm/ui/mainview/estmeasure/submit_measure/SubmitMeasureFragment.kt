@@ -20,8 +20,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.ExpandableGroup
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
-import java.util.ArrayList
-import java.util.HashMap
 import kotlinx.android.synthetic.main.fragment_submit_measure.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
@@ -29,6 +27,7 @@ import kotlinx.coroutines.launch
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
+import timber.log.Timber
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
@@ -61,6 +60,8 @@ import za.co.xisystems.itis_rrm.utils.enums.ToastStyle
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.ERROR
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.NO_INTERNET
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.WARNING
+import java.util.ArrayList
+import java.util.HashMap
 
 class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), KodeinAware {
     override val kodein by kodein()
@@ -88,14 +89,16 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
 
                 uiScope.launch(uiScope.coroutineContext) {
 
-                    measureViewModel.estimateMeasureItem.observe(viewLifecycleOwner, { jobID ->
-                        jobItemEstimate = jobID.jobItemEstimateDTO
+                    val estimateData = measureViewModel.estimateMeasureItem
+                    estimateData.observe(viewLifecycleOwner, { estimateMeasureItem ->
+                        jobItemEstimate = estimateMeasureItem.jobItemEstimateDTO
                         getWorkItems(jobItemEstimate.jobId)
                     })
                 }
             }
         }
     }
+
     private fun handleMeasureSubmission(event: XIResult<String>?) {
         event?.let { outcome ->
             when (outcome) {
@@ -121,10 +124,10 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                     crashGuard(
                         this@SubmitMeasureFragment.requireView(),
                         outcome,
-                        refreshAction = { retryMeasurements() })
+                        refreshAction = { this@SubmitMeasureFragment.retryMeasurements() })
                 }
                 is XIStatus -> {
-                    this@SubmitMeasureFragment.sharpToast(
+                    sharpToast(
                         message = outcome.message,
                         duration = ToastDuration.SHORT,
                         position = BOTTOM
@@ -142,6 +145,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                         }
                     }
                 }
+                else -> Timber.d("$event")
             }
         }
     }
@@ -231,7 +235,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                     )
                     progressButton.failProgress(originalCaption)
                 } else {
-                    this.sharpToast(
+                    sharpToast(
                         message = "You have Done " + validMeasures.size.toString() + " Measurements on this Estimate",
                         style = ToastStyle.INFO
                     )
@@ -244,7 +248,6 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                     submitJobToMeasurements(jobForItemEstimate, jobItemMeasureList)
                 }
             })
-            // jobItemMeasure.removeObservers(viewLifecycleOwner)
         }
     }
 
@@ -356,8 +359,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
     ) {
         uiScope.launch(uiScope.coroutineContext) {
 
-            val workflowOutcome = measureViewModel.workflowState
-            workflowOutcome.observe(
+            measureViewModel.workflowState.observe(
                 viewLifecycleOwner,
                 measurementObserver
             )
@@ -370,11 +372,6 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                 mSures,
                 it,
                 itemMeasureJob
-            )
-
-            workflowOutcome.observe(
-                viewLifecycleOwner,
-                measurementObserver
             )
         }
     }
@@ -441,14 +438,14 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
         Coroutines.main {
             val measurements = measureViewModel.getJobItemsToMeasureForJobId(jobID)
             measurements.observe(viewLifecycleOwner, { estimateList ->
-                initRecyclerView(estimateList.toMeasureItem())
+                initRecyclerView(estimateList.toMeasureItems())
             })
         }
     }
 
-    private fun initRecyclerView(tomeasureItem: List<ExpandableGroup>) {
+    private fun initRecyclerView(measureItems: List<ExpandableGroup>) {
         val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
-            addAll(tomeasureItem)
+            addAll(measureItems)
         }
 
         measure_listView.apply {
@@ -464,7 +461,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
         super.onDestroyView()
     }
 
-    private fun List<JobItemEstimateDTO>.toMeasureItem(): List<ExpandableGroup> {
+    private fun List<JobItemEstimateDTO>.toMeasureItems(): List<ExpandableGroup> {
         expandableGroups = mutableListOf()
         return this.map { jobItemEstimateDTO ->
             val expandableHeaderItem = ExpandableHeaderMeasureItem(

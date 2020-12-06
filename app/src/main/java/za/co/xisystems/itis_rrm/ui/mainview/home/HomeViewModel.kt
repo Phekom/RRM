@@ -21,7 +21,6 @@ import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
-import za.co.xisystems.itis_rrm.utils.uncaughtExceptionHandler
 
 class HomeViewModel(
     private val repository: UserRepository,
@@ -30,12 +29,23 @@ class HomeViewModel(
 
     private var databaseStatus: LiveData<XIEvent<XIResult<Boolean>>> = MutableLiveData()
 
-    val superJob = SupervisorJob()
+    private val superJob = SupervisorJob()
 
+//    private val homeExceptionHandler = CoroutineExceptionHandler { _, throwable ->
+//        val message = "Data download failed: ${throwable.message ?: XIErrorHandler.UNKNOWN_ERROR}"
+//        Timber.e(throwable,message)
+//        val homeError = XIError(throwable, message)
+//        databaseState.postValue(homeError)
+//        superJob.cancelChildren(CancellationException(message))
+//    }
+
+    private var homeIoContext = Dispatchers.IO + Job(superJob)
+    private var homeMainContext = Dispatchers.Main + Job(superJob)
+    private var healthState: MutableLiveData<XIResult<Boolean>> = MutableLiveData()
     var databaseState: MutableLiveData<XIResult<Boolean>?> = MutableLiveData()
 
     init {
-        viewModelScope.launch(Job(superJob) + uncaughtExceptionHandler + Dispatchers.Main.immediate) {
+        viewModelScope.launch(homeMainContext) {
 
             databaseStatus = offlineDataRepository.databaseStatus.distinctUntilChanged()
 
@@ -60,35 +70,42 @@ class HomeViewModel(
     }
 
     suspend fun fetchAllData(userId: String) =
-        viewModelScope.launch(Job(superJob) + uncaughtExceptionHandler + Dispatchers.Main.immediate) {
-
-            val fetchJob = Job()
-
-            val jobContext = fetchJob + Dispatchers.IO + uncaughtExceptionHandler
+        viewModelScope.launch(homeMainContext) {
 
             try {
                 databaseState.postValue(XIProgress(true))
-                viewModelScope.launch(jobContext) {
+                withContext(homeIoContext) {
                     offlineDataRepository.loadActivitySections(userId)
-                    offlineDataRepository.loadContracts(userId)
                     offlineDataRepository.loadLookups(userId)
+                    offlineDataRepository.loadContracts(userId)
                     offlineDataRepository.loadTaskList(userId)
                     offlineDataRepository.loadWorkflows(userId)
                 }
-                fetchJob.complete()
-            } catch (t: Throwable) {
-                fetchJob.completeExceptionally(t)
-                databaseState.postValue(XIProgress(false))
-                jobContext.cancelChildren(CancellationException(t.message ?: XIErrorHandler.UNKNOWN_ERROR))
-                val fetchFail =
-                    XIError(t, "Failed to fetch contracts: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}")
-                databaseState.postValue(fetchFail)
+            } catch (exception: Exception) {
+                withContext(homeMainContext) {
+                    databaseState.postValue(XIProgress(false))
+                    homeIoContext.cancelChildren(
+                        CancellationException(exception.message ?: XIErrorHandler.UNKNOWN_ERROR)
+                    )
+                    val fetchFail =
+                        XIError(exception, "Failed to fetch contracts:" +
+                            " ${exception.message ?: XIErrorHandler.UNKNOWN_ERROR}")
+                    databaseState.postValue(fetchFail)
+                }
             }
         }
 
     suspend fun healthCheck(userId: String): Boolean {
-        return withContext(Dispatchers.IO) {
-            offlineDataRepository.getServiceHealth(userId)
+        return withContext(homeIoContext) {
+            try {
+                offlineDataRepository.getServiceHealth(userId)
+            } catch (t: Throwable) {
+                withContext(homeMainContext) {
+                    val message = "Health check failed: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
+                    healthState.postValue(XIError(t, message))
+                }
+                false
+            }
         }
     }
 

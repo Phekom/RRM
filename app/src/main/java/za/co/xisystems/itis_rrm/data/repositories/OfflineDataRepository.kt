@@ -7,12 +7,12 @@ import android.os.Environment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.room.Transaction
-import java.io.File
-import java.util.regex.Pattern
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
+import za.co.xisystems.itis_rrm.custom.results.XIError
 import za.co.xisystems.itis_rrm.custom.results.XIProgressUpdate
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.results.XIStatus
@@ -54,6 +54,8 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
+import java.io.File
+import java.util.regex.Pattern
 
 private val jobDataController: JobDataController? = null
 
@@ -84,19 +86,27 @@ class OfflineDataRepository(
         }
 
         sectionItems.observeForever {
-            saveSectionsItems(it)
+            Coroutines.io {
+                saveSectionsItems(it)
+            }
         }
 
         workFlow.observeForever {
-            saveWorkFlowsInfo(it)
+            Coroutines.io {
+                saveWorkFlowsInfo(it)
+            }
         }
 
         lookups.observeForever {
-            saveLookups(it)
+            Coroutines.io {
+                saveLookups(it)
+            }
         }
 
         toDoListGroups.observeForever {
-            saveUserTaskList(it)
+            Coroutines.io {
+                saveUserTaskList(it)
+            }
         }
 
         workflows.observeForever {
@@ -178,12 +188,6 @@ class OfflineDataRepository(
     ): LiveData<List<JobItemEstimateDTO>> {
         return withContext(Dispatchers.IO) {
             appDb.getJobItemEstimateDao().getJobMeasureForActivityId(activityId, activityId2, activityId3)
-        }
-    }
-
-    suspend fun getAllItemsForProjectId(projectId: String): LiveData<List<ProjectItemDTO>> {
-        return withContext(Dispatchers.IO) {
-            appDb.getProjectItemDao().getAllItemsForProjectId(projectId)
         }
     }
 
@@ -280,7 +284,7 @@ class OfflineDataRepository(
         }
     }
 
-    private fun saveSectionsItems(sections: ArrayList<String>?) {
+    private suspend fun saveSectionsItems(sections: ArrayList<String>?) {
         Coroutines.io {
 
             sections?.forEach { section ->
@@ -293,12 +297,13 @@ class OfflineDataRepository(
                     val itemCode = matcher.group(1)?.replace("\\s+".toRegex(), "")
                     itemCode?.let {
                         try {
-                            if (!appDb.getSectionItemDao().checkIfSectionItemsExist(it))
+                            if (!appDb.getSectionItemDao().checkIfSectionItemsExist(it)) {
                                 appDb.getSectionItemDao().insertSectionItem(
-                                    section,
-                                    it,
-                                    sectionItemId
+                                    description = section,
+                                    itemCode = it,
+                                    sectionItemId = sectionItemId
                                 )
+                            }
                         } catch (e: Exception) {
                             Timber.e(e, "Exception creating section item $itemCode")
                         }
@@ -312,7 +317,8 @@ class OfflineDataRepository(
     private suspend fun saveContracts(contracts: List<ContractDTO>) {
 
         createWorkflowSteps()
-
+        newContracts = false
+        newProjects = false
         contractCount = 0
         contractMax = 0
         projectCount = 0
@@ -328,18 +334,25 @@ class OfflineDataRepository(
                 if (!appDb.getContractDao().checkIfContractExists(contract.contractId)) {
                     appDb.getContractDao().insertContract(contract)
                     contractCount++
+                    newContracts = true
 
                     val validProjects =
                         contract.projects?.filter { project ->
                             project.projectId.isNotBlank()
                         }?.distinctBy { project -> project.projectId }
 
-                    saveProjects(validProjects, contract)
+                    if (!validProjects.isNullOrEmpty()) {
+                        saveProjects(validProjects, contract)
+                    }
                 } else {
                     contractMax--
                 }
+
+                Timber.d("cr**: $contractCount / $contractMax contracts")
+                Timber.d("cr**: $projectCount / $projectMax projects")
+
             }
-            if (contractCount >= contractMax) {
+            if (contractCount == contractMax && !newProjects) {
                 postEvent(XISuccess(true))
             }
         }
@@ -370,13 +383,13 @@ class OfflineDataRepository(
 
     @Transaction
     private fun saveProjects(
-        validProjects: List<ProjectDTO>?,
+        validProjects: List<ProjectDTO>,
         contract: ContractDTO
     ) {
-        Coroutines.api {
-            projectMax += validProjects?.count() ?: 0
+        Coroutines.io {
+            projectMax += validProjects.size
+            validProjects.forEach { project ->
 
-            validProjects?.forEach { project ->
                 if (appDb.getProjectDao().checkProjectExists(project.projectId)) {
                     Timber.i("Contract: ${contract.shortDescr} (${contract.contractId}) ProjectId: ${project.descr} (${project.projectId}) -> Duplicated")
                     projectMax--
@@ -407,10 +420,13 @@ class OfflineDataRepository(
                         project.voItems?.let { voItems ->
                             updateVOItems(voItems, project)
                         }
-
                         projectCount++
+                        newProjects = true
 
-                        if (projectCount >= projectMax) {
+                        Timber.d("pr**: $contractCount / $contractMax contracts")
+                        Timber.d("pr**: $projectCount / $projectMax projects")
+
+                        if (contractCount >= contractMax && projectCount >= projectMax) {
                             postEvent(XISuccess(true))
                         } else {
                             postEvent(XIProgressUpdate("contracts", projectCount.toFloat() / projectMax.toFloat()))
@@ -769,7 +785,7 @@ class OfflineDataRepository(
             )
             appDb.getJobDao()
                 .setEstimateWorksActId(jobEstimateWorks.actId, job.JobId)
-//                                    job.setEstimateWorksActId(jobEstimateWorks.actId)
+
             if (jobEstimateWorks.jobEstimateWorksPhotos != null) {
                 saveJobItemEstimateWorksPhotos(jobEstimateWorks)
             }
@@ -1024,6 +1040,8 @@ class OfflineDataRepository(
     private var contractMax: Int = 0
     private var projectCount: Int = 0
     private var projectMax: Int = 0
+    private var newContracts: Boolean = false
+    private var newProjects: Boolean = false
 
     suspend fun loadActivitySections(userId: String) {
         postStatus("Fetching Activity Sections")
@@ -1063,18 +1081,9 @@ class OfflineDataRepository(
         return appDb.getEntitiesDao().getAllEntities()
     }
 
-    private suspend fun getAllEntities(): Int {
-        return withContext(Dispatchers.IO) {
-            appDb.getEntitiesDao().getAllEntities()
-            7
-        }
-    }
-
-    private suspend fun fetchUserTaskList(userId: String): Int {
+    private suspend fun fetchUserTaskList(userId: String) {
         val toDoListGroupsResponse = apiRequest { api.getUserTaskList(userId) }
         toDoListGroups.postValue(toDoListGroupsResponse.toDoListGroups)
-
-        return 5
     }
 
     private fun postEvent(result: XIResult<Boolean>) {
@@ -1403,9 +1412,15 @@ class OfflineDataRepository(
     }
 
     suspend fun getServiceHealth(userId: String): Boolean {
-
-        val healthCheck = apiRequest { api.healthCheck(userId) }
-        return healthCheck.errorMessage.isNullOrBlank() || healthCheck.isAlive == 1
+        return try {
+            val healthCheck = apiRequest { api.healthCheck(userId) }
+            healthCheck.errorMessage.isNullOrBlank() || healthCheck.isAlive == 1
+        } catch (t: Throwable) {
+            val errorMessage = "Failed to check service health: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
+            val healthError = XIError(t, errorMessage)
+            postEvent(healthError)
+            false
+        }
     }
 
     companion object {

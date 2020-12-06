@@ -15,7 +15,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.provider.Settings
-import android.view.Gravity
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.Menu
@@ -23,7 +22,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
@@ -35,10 +33,6 @@ import androidx.navigation.Navigation
 import com.airbnb.lottie.LottieAnimationView
 import icepick.Icepick
 import icepick.State
-import java.io.File
-import java.text.DecimalFormat
-import java.util.Date
-import kotlin.collections.set
 import kotlinx.android.synthetic.main.fragment_photo_estimate.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.cancel
@@ -83,8 +77,12 @@ import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import za.co.xisystems.itis_rrm.utils.enums.ToastDuration.LONG
 import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.BOTTOM
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.ERROR
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.WARNING
+import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.INFO
 import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
+import java.io.File
+import java.text.DecimalFormat
+import java.util.Date
+import kotlin.collections.set
 
 /**
  * Created by Francis Mahlava on 2019/12/29.
@@ -642,23 +640,17 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
             newJob?.JobItemEstimates!!.add(newJobItemEstimate!!)
         }
 
+
         if (ServiceUtil.isNetworkAvailable(requireActivity().applicationContext)) {
-
             uiScope.launch(context = uiScope.coroutineContext) {
-
                 processPhotoLocation(estimateLocation, filePath, itemidPhototype)
             }
         } else {
-            val networkToast = Toast.makeText(
-                activity?.applicationContext,
-                string.no_connection_detected,
-                Toast.LENGTH_LONG
-            )
-            networkToast.setGravity(Gravity.CENTER_VERTICAL, 0, 0)
-            networkToast.show()
+            noConnectionWarning()
+            resetPhotos()
         }
     }
-
+    // TODO: polygon verification for offline photography
     private suspend fun processPhotoLocation(
         estimateLocation: LocationModel,
         filePath: Map<String, String>,
@@ -776,18 +768,21 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
                     startKm = localProjectSection.startKm
                     endKm = localProjectSection.endKm
                     Timber.d("ProjectSection: $it")
-                    createRouteSection(
-                        secId = projectSectionId,
-                        jobId = newJob!!.JobId,
-                        startKm = startKm!!,
-                        endKm = endKm!!
-                    ).apply {
-
-                        newJob!!.JobSections?.add(this)
-                        newJob!!.SectionId = jobSectionId
-                        newJob!!.StartKm = this.startKm
-                        newJob!!.EndKm = this.endKm
-                        isRouteSectionPoint = true
+                    Coroutines.main {
+                        if (!createViewModel.checkIfJobSectionExists(newJob!!.JobId, projectSectionId)) {
+                            createRouteSection(
+                                secId = projectSectionId,
+                                jobId = newJob!!.JobId,
+                                startKm = startKm!!,
+                                endKm = endKm!!
+                            ).apply {
+                                newJob!!.JobSections?.add(this)
+                                newJob!!.SectionId = jobSectionId
+                                newJob!!.StartKm = this.startKm
+                                newJob!!.EndKm = this.endKm
+                                isRouteSectionPoint = true
+                            }
+                        }
                     }
                 }
             })
@@ -1007,7 +1002,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
         } else {
             sharpToast(
                 message = "Please take both photographs ...",
-                style = WARNING,
+                style = INFO,
                 position = BOTTOM
             )
             hideCostCard()

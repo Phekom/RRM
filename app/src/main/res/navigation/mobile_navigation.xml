@@ -87,7 +87,7 @@
             app:popUpTo="@+id/nav_approvMeasure" />
     </fragment>
     <fragment
-        android:id="@+id/selectItemFragment"
+        android:id="@+id/nav_selectItem"
         android:name="za.co.xisystems.itis_rrm.ui.mainview.create.select_item.SelectItemFragment"
         android:label="SelectItemFragment"
         tools:layout="@layout/fragment_select_item">
@@ -131,7 +131,7 @@
         tools:layout="@layout/fragment_add_project_items">
         <action
             android:id="@+id/action_addProjectFragment_to_selectItemFragment"
-            app:destination="@id/selectItemFragment"
+            app:destination="@id/nav_selectItem"
             app:popUpTo="@+id/addProjectFragment" />
         <action
             android:id="@+id/action_addProjectFragment_to_nav_create"
@@ -183,6 +183,7 @@
             android:id="@+id/action_submitMeasureFragment_to_captureItemMeasurePhotoFragment"
             app:destination="@id/captureItemMeasurePhotoFragment"
             app:enterAnim="@anim/scale_light"
+            tools:layout="@layout/fragment_capture_item_measure_photo"
             app:popUpTo="@+id/submitMeasureFragment" />
     </fragment>
     <fragment
@@ -198,7 +199,8 @@
     <fragment
         android:id="@+id/captureItemMeasurePhotoFragment"
         android:name="za.co.xisystems.itis_rrm.ui.mainview.estmeasure.submit_measure.CaptureItemMeasurePhotoFragment"
-        android:label="CaptureItemMeasurePhotoFragment">
+        android:label="CaptureItemMeasurePhotoFragment"
+        tools:layout="@layout/fragment_capture_item_measure_photo">
         <action
             android:id="@+id/action_captureItemMeasurePhotoFragment_to_submitMeasureFragment"
             app:destination="@id/submitMeasureFragment" />

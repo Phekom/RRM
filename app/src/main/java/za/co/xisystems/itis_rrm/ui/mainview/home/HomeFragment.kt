@@ -1,4 +1,4 @@
-@file:Suppress("KDocUnresolvedReference")
+@file:Suppress("KDocUnresolvedReference", "Annotator")
 
 package za.co.xisystems.itis_rrm.ui.mainview.home
 
@@ -16,7 +16,6 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenStarted
-import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -47,8 +46,8 @@ import za.co.xisystems.itis_rrm.utils.enums.ToastDuration.LONG
 import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.BOTTOM
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.ERROR
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.INFO
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.NO_INTERNET
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.SUCCESS
+import kotlin.coroutines.cancellation.CancellationException
 
 class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
 
@@ -57,7 +56,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
     private val factory: HomeViewModelFactory by instance()
     private var gpsEnabled: Boolean = false
     private var networkEnabled: Boolean = false
-    private lateinit var userDTO: UserDTO
+    private var userDTO: UserDTO? = null
     private var uiScope = UiLifecycleScope()
     private lateinit var synchJob: Job
     private val colorConnected: Int
@@ -99,12 +98,8 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                         }
                     }
                 } else {
-                    sharpToast(
-                        message = "Please connect to internet via mobile or wifi to download contract and project information",
-                        style = NO_INTERNET,
-                        position = BOTTOM,
-                        duration = LONG
-                    )
+                    noConnectionWarning()
+                    showProgress()
                 }
             }
         }
@@ -170,7 +165,6 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         uiScope.onCreate()
-        lifecycle.addObserver(uiScope)
         setHasOptionsMenu(true)
     }
 
@@ -221,9 +215,8 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
             ViewModelProvider(this, factory).get(HomeViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
 
-        // Check if database is synched and prompt user if necessary
+        // Configure progressView
         initProgressViews()
-        isAppDbSynched()
 
         // Configure SwipeToRefresh
         initSwipeToRefresh()
@@ -235,12 +228,12 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
         ui.imageView7.setOnClickListener {
             ToastUtils().toastVersion(requireContext())
         }
+
+        // Check if database is synched and prompt user if necessary
+        isAppDbSynched()
     }
 
     private fun initProgressViews() {
-
-        ui.pvContracts.progress = 0.0f
-        ui.pvTasks.progress = 0.0f
 
         ui.pvContracts.setOnProgressChangeListener {
             ui.pvContracts.labelText = "projects ${it.toInt()}%"
@@ -248,6 +241,11 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
         ui.pvTasks.setOnProgressChangeListener {
             ui.pvTasks.labelText = "tasks ${it.toInt()}%"
         }
+    }
+
+    private fun resetProgressViews() {
+        ui.pvContracts.progress = 0.0f
+        ui.pvTasks.progress = 0.0f
     }
 
     private fun isAppDbSynched() {
@@ -281,6 +279,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
     }
 
     private fun checkConnectivity(): Boolean {
+        var result = true
         val lm = requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager
         gpsEnabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
         networkEnabled = ServiceUtil.isNetworkAvailable(requireActivity().applicationContext)
@@ -294,7 +293,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                     R.drawable.ic_baseline_signal_cellular_connected_no_internet_32
                 )
             )
-            return false
+            result = false
         } else {
             ui.dataEnabled.setText(R.string.mobile_data_connected)
             ui.dataEnabled.setTextColor(colorConnected)
@@ -316,7 +315,6 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                     R.drawable.ic_baseline_location_off_24
                 )
             )
-            return false
         } else {
             ui.locationEnabled.text = requireActivity().getString(R.string.gps_connected)
             ui.locationEnabled.setTextColor(colorConnected)
@@ -327,12 +325,16 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                 )
             )
         }
-        return true
+
+        return result
     }
 
     private fun retrySync() {
         IndefiniteSnackbar.hide()
-        bigSync()
+        Coroutines.main {
+            bigSync()
+        }
+
     }
 
     private fun ping() {
@@ -348,61 +350,65 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                 crashGuard(
                     view = this@HomeFragment.requireView(),
                     throwable = pingEx,
-                    refreshAction = { retrySync() }
+                    refreshAction = { this@HomeFragment.retrySync() }
                 )
             }
         }
     }
 
-    private suspend fun handleBigSync(signal: XIResult<Boolean>?) {
+    private fun handleBigSync(signal: XIResult<Boolean>?) {
         Timber.d("$signal")
         signal?.let { result ->
             when (result) {
                 is XISuccess -> {
+                    showProgress()
                     sharpToast(
                         message = "Sync Complete",
                         style = SUCCESS,
                         position = BOTTOM,
                         duration = LONG
                     )
-                    toggleLongRunning(false)
-                    ui.itemsSwipeToRefresh.isRefreshing = false
-                    ui.bigsyncProgressLayout.visibility = View.GONE
-                    synchJob.join()
                 }
                 is XIStatus -> {
                     sharpToast(message = result.message, style = INFO, position = BOTTOM)
                 }
                 is XIError -> {
+                    synchJob.cancel(CancellationException(result.message))
+                    showProgress()
+
                     sharpToast(
                         title = "Sync Failed",
                         message = result.message,
                         style = ERROR
                     )
-                    synchJob.cancel(CancellationException(result.message))
-                    toggleLongRunning(false)
-                    ui.itemsSwipeToRefresh.isRefreshing = false
+
                     crashGuard(
                         view = this@HomeFragment.requireView(),
                         throwable = result,
-                        refreshAction = { retrySync() }
+                        refreshAction = { this@HomeFragment.retrySync() }
                     )
                 }
                 is XIProgress -> {
-                    toggleLongRunning(result.isLoading)
-                    ui.itemsSwipeToRefresh.isRefreshing = result.isLoading
-                    when (result.isLoading) {
-                        true -> {
-                            ui.bigsyncProgressLayout.visibility = View.VISIBLE
-                        }
-                        else -> {
-                            ui.bigsyncProgressLayout.visibility = View.GONE
-                        }
-                    }
+                    showProgress(result.isLoading)
                 }
                 is XIProgressUpdate -> {
                     handleProgressUpdate(result)
                 }
+            }
+        }
+    }
+
+    private fun showProgress(
+        isLoading: Boolean = false
+    ) {
+        toggleLongRunning(isLoading)
+        ui.itemsSwipeToRefresh.isRefreshing = isLoading
+        when (isLoading) {
+            true -> {
+                ui.bigsyncProgressLayout.visibility = View.VISIBLE
+            }
+            else -> {
+                ui.bigsyncProgressLayout.visibility = View.GONE
             }
         }
     }
@@ -418,20 +424,29 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
         }
     }
 
-    private fun bigSync() = uiScope.launch(uiScope.coroutineContext) {
-        try {
-            toast("Data Loading")
-            ui.bigsyncProgressLayout.visibility = View.VISIBLE
-            homeViewModel.databaseState.observe(viewLifecycleOwner, bigSyncObserver)
-            synchJob = homeViewModel.fetchAllData(userDTO.userId)
-            synchJob.join()
-            ping()
-        } catch (t: Throwable) {
-            crashGuard(
-                this@HomeFragment.requireView(),
-                XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR),
-                refreshAction = { retrySync() }
-            )
+    private suspend fun bigSync()  {
+        if (networkEnabled) {
+            try {
+
+                toast("Data Loading")
+                resetProgressViews()
+
+                homeViewModel.databaseState.observe(viewLifecycleOwner, bigSyncObserver)
+                synchJob = homeViewModel.fetchAllData(userDTO!!.userId)
+                synchJob.join()
+                ping()
+            } catch (t: Throwable) {
+                val errorMessage = "Failed to download remote data: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
+                Timber.e(t, errorMessage)
+                crashGuard(
+                    this@HomeFragment.requireView(),
+                    XIError(t, errorMessage),
+                    refreshAction = { retrySync() }
+                )
+            }
+        } else {
+            noInternetWarning()
+            showProgress()
         }
     }
 
@@ -458,24 +473,50 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
     }
 
     private fun servicesHealthCheck() = uiScope.launch(uiScope.coroutineContext) {
-        if (networkEnabled && homeViewModel.healthCheck(userDTO.userId)) {
-            ui.connectedTo.text = getString(R.string.services_up, BuildConfig.VERSION_NAME)
-            ui.connectedTo.setTextColor(colorConnected)
-            ui.ivCloud.setImageDrawable(
-                ContextCompat.getDrawable(
-                    this@HomeFragment.requireContext(),
-                    R.drawable.ic_baseline_services_up
+
+        try {
+            if (userDTO != null && networkEnabled && homeViewModel.healthCheck(userDTO!!.userId)) {
+                ui.connectedTo.text = getString(R.string.services_up, BuildConfig.VERSION_NAME)
+                ui.connectedTo.setTextColor(colorConnected)
+                ui.ivCloud.setImageDrawable(
+                    ContextCompat.getDrawable(
+                        this@HomeFragment.requireContext(),
+                        R.drawable.ic_baseline_services_up
+                    )
                 )
-            )
-        } else {
-            ui.connectedTo.text = getString(R.string.services_down, BuildConfig.VERSION_NAME)
-            ui.connectedTo.setTextColor(colorNotConnected)
-            ui.ivCloud.setImageDrawable(
-                ContextCompat.getDrawable(
-                    this@HomeFragment.requireContext(),
-                    R.drawable.ic_baseline_services_down
+            } else {
+                ui.connectedTo.text = getString(R.string.services_down, BuildConfig.VERSION_NAME)
+                ui.connectedTo.setTextColor(colorNotConnected)
+                ui.ivCloud.setImageDrawable(
+                    ContextCompat.getDrawable(
+                        this@HomeFragment.requireContext(),
+                        R.drawable.ic_baseline_services_down
+                    )
                 )
+            }
+        } catch (t: Throwable) {
+            val message = "Could not check service health: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
+            val fetchError = XIError(t, message)
+            crashGuard(
+                this@HomeFragment.requireView(),
+                fetchError,
+                refreshAction = { this@HomeFragment.retryHealthCheck() }
             )
         }
+    }
+
+    private fun retryHealthCheck() {
+        IndefiniteSnackbar.hide()
+        servicesHealthCheck()
+    }
+
+    /**
+     * Called when the Fragment is no longer resumed.  This is generally
+     * tied to [Activity.onPause] of the containing
+     * Activity's lifecycle.
+     */
+    override fun onPause() {
+        super.onPause()
+        uiScope.destroy()
     }
 }

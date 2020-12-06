@@ -10,7 +10,6 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.Navigation
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import com.xwray.groupie.kotlinandroidextensions.Item
-import java.io.File
 import kotlinx.android.synthetic.main.measurements_item.*
 import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.R
@@ -20,6 +19,7 @@ import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureViewMod
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.GlideApp
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
+import java.io.File
 
 /**
  * Created by Francis Mahlava on 2020/01/02.
@@ -95,7 +95,7 @@ class MeasurementsItem(
         // Yes button
         alert.setPositiveButton(
             R.string.save
-        ) { dialog, which ->
+        ) { _, _ ->
             if (ServiceUtil.isNetworkAvailable(activity.applicationContext)) {
                 Coroutines.main {
                     if (editQuantity.text.toString() == "" || nanCheck(editQuantity.text.toString())) {
@@ -144,7 +144,7 @@ class MeasurementsItem(
             val photoPaths = approveViewModel.getJobMeasureItemsPhotoPath(jobItemMeasureDTO.itemMeasureId!!)
             if (photoPaths.isNotEmpty()) {
                 val measurePhoto = photoPaths.first()
-                if (!measurePhoto.isBlank()) {
+                if (measurePhoto.isNotBlank()) {
                     GlideApp.with(this.containerView)
                         .load(Uri.fromFile(File(measurePhoto)))
                         .placeholder(R.drawable.logo_new_medium)
