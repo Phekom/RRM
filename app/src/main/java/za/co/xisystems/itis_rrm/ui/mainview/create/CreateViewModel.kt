@@ -37,7 +37,6 @@ class CreateViewModel(
     private val jobCreationDataRepository: JobCreationDataRepository
 ) : ViewModel() {
 
-    // TODO: Create Call to create a new job item
     private val superJob = SupervisorJob()
     val currentJob: MutableLiveData<JobDTO?> = MutableLiveData()
     fun setCurrentJob(inJobItemToEdit: JobDTO?) {
@@ -147,7 +146,6 @@ class CreateViewModel(
         }
     }
 
-    // TODO: Should return some sort of status
     suspend fun saveNewItem(tempItem: ItemDTOTemp) {
         return withContext(Dispatchers.IO) {
             jobCreationDataRepository.saveNewItem(tempItem)

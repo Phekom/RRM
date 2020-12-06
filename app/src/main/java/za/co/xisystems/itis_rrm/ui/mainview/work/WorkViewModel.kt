@@ -35,7 +35,7 @@ class WorkViewModel(
         workDataRepository.getUser()
     }
     val offlineUserTaskList by lazyDeferred {
-           offlineDataRepository.getUserTaskList()
+        offlineDataRepository.getUserTaskList()
     }
     val workItem = MutableLiveData<JobItemEstimateDTO>()
     val workItemJob = MutableLiveData<JobDTO>()
@@ -45,15 +45,7 @@ class WorkViewModel(
 
     private val superJob = SupervisorJob()
 
-//    private val workExceptionHandler = CoroutineExceptionHandler { _, throwable ->
-//        val message = "Caught during workflow: ${throwable.message ?: XIErrorHandler.UNKNOWN_ERROR}"
-//        val caughtException = XIError(
-//            throwable, message
-//        )
-//        workflowState.postValue(caughtException)
-//        superJob.cancelChildren(CancellationException(message))
-//    }
-private var ioContext = Job(superJob) + Dispatchers.IO
+    private var ioContext = Job(superJob) + Dispatchers.IO
     private var mainContext = Job(superJob) + Dispatchers.Main
 
     init {
@@ -75,7 +67,7 @@ private var ioContext = Job(superJob) + Dispatchers.IO
         workItemJob.value = workJob
     }
 
-    suspend fun getJobsForActivityId(activityId1: Int, activityId2: Int): LiveData<List<JobDTO>>  {
+    suspend fun getJobsForActivityId(activityId1: Int, activityId2: Int): LiveData<List<JobDTO>> {
         return withContext(ioContext) {
             workDataRepository.getJobsForActivityIds(activityId1, activityId2)
         }

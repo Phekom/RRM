@@ -31,14 +31,6 @@ class HomeViewModel(
 
     private val superJob = SupervisorJob()
 
-//    private val homeExceptionHandler = CoroutineExceptionHandler { _, throwable ->
-//        val message = "Data download failed: ${throwable.message ?: XIErrorHandler.UNKNOWN_ERROR}"
-//        Timber.e(throwable,message)
-//        val homeError = XIError(throwable, message)
-//        databaseState.postValue(homeError)
-//        superJob.cancelChildren(CancellationException(message))
-//    }
-
     private var homeIoContext = Dispatchers.IO + Job(superJob)
     private var homeMainContext = Dispatchers.Main + Job(superJob)
     private var healthState: MutableLiveData<XIResult<Boolean>> = MutableLiveData()
