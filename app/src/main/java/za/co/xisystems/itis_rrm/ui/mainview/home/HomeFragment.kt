@@ -16,6 +16,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenStarted
+import com.skydoves.progressview.ProgressView
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -240,11 +241,15 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
         ui.pvTasks.setOnProgressChangeListener {
             ui.pvTasks.labelText = "tasks ${it.toInt()}%"
         }
+        ui.pvSections.setOnProgressChangeListener {
+            ui.pvSections.labelText = "sections ${it.toInt()}%"
+        }
     }
 
     private fun resetProgressViews() {
         ui.pvContracts.progress = 0.0f
         ui.pvTasks.progress = 0.0f
+        ui.pvSections.progress=0.0f
     }
 
     private fun isAppDbSynched() {
@@ -412,17 +417,23 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
     private fun handleProgressUpdate(update: XIProgressUpdate) {
         when (update.key) {
             "projects" -> {
-                if (ui.pvContracts.visibility != View.VISIBLE) {
-                    ui.pvContracts.visibility = View.VISIBLE
-                }
-                ui.pvContracts.progress = update.getPercentageComplete()
+                updateProgress(update, ui.pvContracts)
             }
             "tasks" -> {
-                if (ui.pvTasks.visibility != View.VISIBLE) {
-                    ui.pvTasks.visibility = View.VISIBLE
-                }
-                ui.pvTasks.progress = update.getPercentageComplete()
+                updateProgress(update,ui.pvTasks)
             }
+            "sections" -> {
+               updateProgress(update, ui.pvSections)
+            }
+        }
+    }
+
+    private fun updateProgress(update: XIProgressUpdate, progressView: ProgressView) {
+        if (progressView.visibility != View.VISIBLE) {
+            progressView.visibility = View.VISIBLE
+        }
+        if (update.getPercentageComplete() > ui.pvSections.progress) {
+            progressView.progress = update.getPercentageComplete()
         }
     }
 
@@ -499,12 +510,15 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                 }
             } catch (t: Throwable) {
                 val message = "Could not check service health: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
-                val fetchError = XIError(t, message)
-                crashGuard(
-                    this@HomeFragment.requireView(),
-                    fetchError,
-                    refreshAction = { this@HomeFragment.retryHealthCheck() }
-                )
+                Timber.e(t, message)
+                this@HomeFragment.view?.let {
+                    val fetchError = XIError(t, message)
+                    crashGuard(
+                        this@HomeFragment.requireView(),
+                        fetchError,
+                        refreshAction = { this@HomeFragment.retryHealthCheck() }
+                    )
+                }
             }
         }
     }

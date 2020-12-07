@@ -15,9 +15,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
-import java.util.ArrayList
-import java.util.concurrent.CancellationException
-import kotlinx.android.synthetic.main.fragment_select_item.*
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
@@ -33,6 +30,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.SectionItemDTO
+import za.co.xisystems.itis_rrm.databinding.FragmentSelectItemBinding
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.MyState
@@ -40,6 +38,8 @@ import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper.setSpinner
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.Coroutines
+import java.util.ArrayList
+import java.util.concurrent.CancellationException
 
 /**
  * Created by Francis Mahlava on 2019/12/29.
@@ -54,6 +54,10 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
 
     private lateinit var newJobItemEstimatesList: ArrayList<JobItemEstimateDTO>
     private lateinit var itemSections: ArrayList<ItemSectionDTO>
+
+    // viewBinding implementation
+    private var _ui: FragmentSelectItemBinding? = null
+    private val ui get() = _ui!!
 
     @MyState
     internal var selectedSectionItem: SectionItemDTO? = null
@@ -117,29 +121,20 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
         container: ViewGroup?,
         savedInstanceState: Bundle?
 
-    ): View? {
-
-        return inflater.inflate(R.layout.fragment_select_item, container, false)
+    ): View {
+        _ui = FragmentSelectItemBinding.inflate(inflater, container, false)
+        return ui.root
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-//        createViewModel = ViewModelProviders.of(this, factory).get(CreateViewModel::class.java)
 
         createViewModel = activity?.run {
             ViewModelProvider(this, factory).get(CreateViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
 
-        uiScope.run {
-
-            itemSections = ArrayList()
-            newJobItemEstimatesList = ArrayList()
-            bindUI()
-        }
-    }
-
-    private fun bindUI() {
-        // moved to init
+        itemSections = ArrayList()
+        newJobItemEstimatesList = ArrayList()
     }
 
     private fun setItemsBySections(projectId: String) {
@@ -147,33 +142,33 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
 
             // SectionItems filtered by projectId
             val sectionItems = createViewModel.getSectionItemsForProject(projectId)
-            data_loading2.visibility = View.VISIBLE
+            ui.dataLoading2.visibility = View.VISIBLE
 
             sectionItems.observe(viewLifecycleOwner, { sectionData ->
                 val sectionSelections = arrayOfNulls<String?>(sectionData.size)
-                data_loading2.visibility = View.GONE
+                ui.dataLoading2.visibility = View.GONE
                 for (item in sectionData.indices) {
                     sectionSelections[item] = sectionData[item].description
                 }
                 uiScope.launch(uiScope.coroutineContext) {
                     setSpinner(
                         requireContext().applicationContext,
-                        sectionItemSpinner,
+                        ui.sectionItemSpinner,
                         sectionData,
                         sectionSelections,
                         object : SpinnerHelper.SelectionListener<SectionItemDTO> {
 
                             override fun onItemSelected(position: Int, item: SectionItemDTO) {
                                 if (animate) {
-                                    sectionItemSpinner.startAnimation(bounce_750)
-                                    item_recyclerView.startAnimation(bounce_1000)
+                                    ui.sectionItemSpinner.startAnimation(bounce_750)
+                                    ui.itemRecyclerView.startAnimation(bounce_1000)
                                 }
                                 selectedSectionItem = item
                                 setRecyclerItems(projectId, item.sectionItemId!!)
                             }
                         })
 
-                    sectionItemSpinner.setOnTouchListener { _, _ ->
+                    ui.sectionItemSpinner.setOnTouchListener { _, _ ->
                         animate = true
                         false
                     }
@@ -193,7 +188,7 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
             val projectsItems =
                 createViewModel.getAllItemsForSectionItemByProjectId(sectionItemId, projectId)
             projectsItems.observe(viewLifecycleOwner, { projectItemList ->
-                group_loading.visibility = View.GONE
+                ui.groupLoading.visibility = View.GONE
                 initRecyclerView(projectItemList.toProjectItems())
             })
         }
@@ -207,11 +202,11 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
 
     private fun initRecyclerView(items: List<SectionProj_Item>) {
         val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
-
             addAll(items)
+            notifyDataSetChanged()
         }
 
-        item_recyclerView.apply {
+        ui.itemRecyclerView.apply {
             layoutManager = LinearLayoutManager(this.context)
             adapter = groupAdapter
             adapter!!.stateRestorationPolicy =
@@ -272,10 +267,11 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
     }
 
     override fun onDestroyView() {
+        super.onDestroyView()
         // Prevents RecyclerView Memory leak
-        item_recyclerView.adapter = null
+        ui.itemRecyclerView.adapter = null
         uiScope.destroy()
         viewLifecycleOwner.lifecycleScope.cancel(CancellationException("onDestroyView"))
-        super.onDestroyView()
+        _ui = null
     }
 }

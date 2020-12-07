@@ -87,7 +87,7 @@
             app:popUpTo="@+id/nav_approvMeasure" />
     </fragment>
     <fragment
-        android:id="@+id/nav_selectItem"
+        android:id="@+id/selectItemFragment"
         android:name="za.co.xisystems.itis_rrm.ui.mainview.create.select_item.SelectItemFragment"
         android:label="SelectItemFragment"
         tools:layout="@layout/fragment_select_item">
@@ -131,7 +131,7 @@
         tools:layout="@layout/fragment_add_project_items">
         <action
             android:id="@+id/action_addProjectFragment_to_selectItemFragment"
-            app:destination="@id/nav_selectItem"
+            app:destination="@id/selectItemFragment"
             app:popUpTo="@+id/addProjectFragment" />
         <action
             android:id="@+id/action_addProjectFragment_to_nav_create"

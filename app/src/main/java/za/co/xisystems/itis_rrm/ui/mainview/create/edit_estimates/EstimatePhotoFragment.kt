@@ -33,7 +33,6 @@ import androidx.navigation.Navigation
 import com.airbnb.lottie.LottieAnimationView
 import icepick.Icepick
 import icepick.State
-import kotlinx.android.synthetic.main.fragment_photo_estimate.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
@@ -61,6 +60,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobSectionDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectSectionDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.SectionPointDTO
+import za.co.xisystems.itis_rrm.databinding.FragmentPhotoEstimateBinding
 import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.services.LocationModel
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModel
@@ -88,8 +88,7 @@ import kotlin.collections.set
  * Created by Francis Mahlava on 2019/12/29.
  */
 
-class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate),
-    KodeinAware {
+class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate), KodeinAware {
 
     private var sectionId: String? = null
     override val kodein by kodein()
@@ -105,6 +104,9 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
     private var endKm: Double? = null
     private var disableGlide: Boolean = false
     private var locationWarning: Boolean = false
+
+    private var _ui: FragmentPhotoEstimateBinding? = null
+    private val ui get() = _ui!!
 
     @State
     var photoType: PhotoType = PhotoType.START
@@ -228,7 +230,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
     private fun onItemFound(itemDTO: ItemDTOTemp?): ItemDTOTemp? {
         item = itemDTO
 
-        if (item != null) titleTextView.text =
+        if (item != null) ui.titleTextView.text =
             getString(string.pair, item!!.itemCode, item!!.descr)
         else
             toast(
@@ -248,8 +250,9 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_photo_estimate, container, false)
+    ): View {
+        _ui = FragmentPhotoEstimateBinding.inflate(inflater, container, false)
+        return ui.root
     }
 
     override fun onAttach(context: Context) {
@@ -301,7 +304,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
         Icepick.restoreInstanceState(this, savedInstanceState)
         viewLifecycleOwner.lifecycle.addObserver(uiScope)
 
-        group13_loading.visibility = View.GONE
+        ui.group13Loading.visibility = View.GONE
         mAppExecutor = AppExecutor()
         lm = requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager
 
@@ -318,7 +321,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
             displayPromptForEnablingGPS(requireActivity())
         }
 
-        valueEditText!!.addTextChangedListener(object : AbstractTextWatcher() {
+        ui.valueEditText.addTextChangedListener(object : AbstractTextWatcher() {
             override fun onTextChanged(text: String) {
                 setCost()
             }
@@ -334,14 +337,14 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
 
                 R.id.startPhotoButton -> {
                     locationWarning = false
-                    startImageView.visibility = View.GONE
-                    startAnimationView.visibility = View.VISIBLE
+                    ui.startImageView.visibility = View.GONE
+                    ui.startAnimationView.visibility = View.VISIBLE
                     takePhoto(PhotoType.START)
                 }
                 R.id.endPhotoButton -> {
                     locationWarning = false
-                    endImageView.visibility = View.GONE
-                    endAnimationView.visibility = View.VISIBLE
+                    ui.endImageView.visibility = View.GONE
+                    ui.endAnimationView.visibility = View.VISIBLE
                     takePhoto(PhotoType.END)
                 }
 
@@ -362,9 +365,9 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
                 }
 
                 R.id.updateButton -> {
-                    if (costTextView.text.isNullOrEmpty()) {
+                    if (ui.costTextView.text.isNullOrEmpty()) {
                         toast("Please Make Sure you have Captured Both Images To Continue")
-                        labelTextView.startAnimation(animations!!.shake_long)
+                        ui.labelTextView.startAnimation(animations!!.shake_long)
                     } else {
                         saveValidEstimate(view)
                     }
@@ -372,15 +375,15 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
             }
         }
 
-        startPhotoButton.setOnClickListener(myClickListener)
-        endPhotoButton.setOnClickListener(myClickListener)
-        cancelButton.setOnClickListener(myClickListener)
-        updateButton.setOnClickListener(myClickListener)
+        ui.startPhotoButton.setOnClickListener(myClickListener)
+        ui.endPhotoButton.setOnClickListener(myClickListener)
+        ui.cancelButton.setOnClickListener(myClickListener)
+        ui.updateButton.setOnClickListener(myClickListener)
 
         // If the user hits the enter key on the costing field,
         // hide the keypad.
 
-        valueEditText.setOnEditorActionListener { _, _, event ->
+        ui.valueEditText.setOnEditorActionListener { _, _, event ->
             if (event.action == KeyEvent.ACTION_DOWN && event.keyCode == KeyEvent.KEYCODE_ENTER) {
                 requireActivity().hideKeyboard()
                 true
@@ -393,7 +396,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
     private fun saveValidEstimate(view: View) {
         viewLifecycleOwner.lifecycle.coroutineScope.launch {
 
-            newJobItemEstimate?.qty = valueEditText.text.toString().toDouble()
+            newJobItemEstimate?.qty = ui.valueEditText.text.toString().toDouble()
             val qty = newJobItemEstimate?.qty
             if (qty != null && item?.tenderRate != null) {
                 createViewModel.setEstimateQuantity(qty)
@@ -496,13 +499,13 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
         }
 
         val targetImageView = when (isStart) {
-            true -> startImageView
-            else -> endImageView
+            true -> ui.startImageView
+            else -> ui.endImageView
         }
 
         val targetTextView = when (isStart) {
-            true -> startSectionTextView
-            else -> endSectionTextView
+            true -> ui.startSectionTextView
+            else -> ui.endSectionTextView
         }
 
         val targetUri =
@@ -558,8 +561,8 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
         } else { // Otherwise, delete the temporary image file
             PhotoUtil.deleteImageFile(filenamePath.toString())
             haltAnimation()
-            startImageView.visibility = View.VISIBLE
-            endImageView.visibility = View.VISIBLE
+            ui.startImageView.visibility = View.VISIBLE
+            ui.endImageView.visibility = View.VISIBLE
         }
     }
 
@@ -591,14 +594,14 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
                     PhotoType.START -> updatePhotos(
                         imageUri = imageUri.also { startImageUri = it },
                         animate = true,
-                        textView = startSectionTextView,
+                        textView = ui.startSectionTextView,
                         isStart = true
                     )
 
                     PhotoType.END -> updatePhotos(
                         imageUri = imageUri.also { endImageUri = it },
                         animate = true,
-                        textView = endSectionTextView,
+                        textView = ui.endSectionTextView,
                         isStart = false
                     )
                 }
@@ -716,8 +719,8 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
 
     private fun resetPhotos() {
         haltAnimation()
-        startImageView.visibility = View.VISIBLE
-        endImageView.visibility = View.VISIBLE
+        ui.startImageView.visibility = View.VISIBLE
+        ui.endImageView.visibility = View.VISIBLE
         disableGlide = false
     }
 
@@ -758,7 +761,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
             hideCostCard()
         } else {
             this.disableGlide = false
-            costCard.visibility = View.VISIBLE
+            ui.costCard.visibility = View.VISIBLE
 
             createViewModel.sectionId.value = projectSectionId
             val projectSection = createViewModel.getSection(projectSectionId)
@@ -810,7 +813,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
         val photo: JobItemEstimatesPhotoDTO?
         val sectionPointData = createViewModel.getPointSectionData(newJob?.ProjectId!!)
 
-        if (sectionPointData != null && sectionPointData.sectionId.toString().isNotBlank()) {
+        if (sectionPointData.direction != null && sectionPointData.sectionId.toString().isNotBlank()) {
             Timber.d("SectionPointDto: $sectionPointData")
             photo = createItemEstimatePhoto(
                 itemEst = newJobItemEstimate!!,
@@ -827,13 +830,13 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
 
             val targetUri: Uri? = extractImageUri(photo)
             val targetView = when (photo.is_PhotoStart) {
-                true -> startImageView
-                else -> endImageView
+                true -> ui.startImageView
+                else -> ui.endImageView
             }
 
             val targetAnimation: LottieAnimationView = when (photo.is_PhotoStart) {
-                true -> startAnimationView
-                else -> endAnimationView
+                true -> ui.startAnimationView
+                else -> ui.endAnimationView
             }
 
             targetAnimation.visibility = View.GONE
@@ -996,8 +999,8 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
         this.isEstimateDone = newJobItemEstimate?.isEstimateComplete() ?: false
 
         if (isEstimateDone) {
-            costCard.visibility = View.VISIBLE
-            updateButton.visibility = View.VISIBLE
+            ui.costCard.visibility = View.VISIBLE
+            ui.updateButton.visibility = View.VISIBLE
             setCost()
         } else {
             sharpToast(
@@ -1076,11 +1079,11 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
         when (item?.uom) {
             "m²", "m³", "m" -> {
                 val decQty = "" + qty
-                valueEditText!!.setText(decQty)
+                ui.valueEditText.setText(decQty)
             }
             else -> {
                 val intQty: String = "" + qty.toInt()
-                valueEditText!!.setText(intQty)
+                ui.valueEditText.setText(intQty)
             }
         }
     }
@@ -1088,25 +1091,25 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
     private fun setCost() {
         if (isEstimateDone) {
             calculateCost()
-            valueEditText!!.visibility = View.VISIBLE
-            costTextView!!.visibility = View.VISIBLE
-            costTextView.startAnimation(animations!!.bounce_soft)
+            ui.valueEditText.visibility = View.VISIBLE
+            ui.costTextView.visibility = View.VISIBLE
+            ui.costTextView.startAnimation(animations!!.bounce_soft)
         } else {
-            labelTextView!!.text = getString(string.warning_estimate_incomplete)
-            labelTextView.startAnimation(animations!!.shake_long)
-            valueEditText!!.visibility = View.GONE
-            costTextView!!.visibility = View.GONE
+            ui.labelTextView.text = getString(string.warning_estimate_incomplete)
+            ui.labelTextView.startAnimation(animations!!.shake_long)
+            ui.valueEditText.visibility = View.GONE
+            ui.costTextView.visibility = View.GONE
         }
     }
 
     private fun haltAnimation() {
-        startAnimationView.visibility = View.GONE
-        endAnimationView.visibility = View.GONE
+        ui.startAnimationView.visibility = View.GONE
+        ui.endAnimationView.visibility = View.GONE
     }
 
     private fun hideCostCard() {
-        costCard.visibility = View.GONE
-        updateButton.visibility = View.GONE
+        ui.costCard.visibility = View.GONE
+        ui.updateButton.visibility = View.GONE
     }
 
     private fun calculateCost() {
@@ -1114,7 +1117,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
         val currentStartKm = getStartKm()
         val currentEndKm = getEndKm()
 
-        val value = valueEditText!!.text.toString()
+        val value = ui.valueEditText.text.toString()
         //  Lose focus on fields
         //  valueEditText.clearFocus()
 
@@ -1147,7 +1150,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
                     validateLengthCosting(currentEndKm, currentStartKm, lineRate, tenderRate)
             }
             else -> {
-                labelTextView!!.text = getString(string.label_quantity)
+                ui.labelTextView.text = getString(string.label_quantity)
                 try { //  Default Calculation
                     lineRate = qty * tenderRate!!
                 } catch (e: NumberFormatException) {
@@ -1158,7 +1161,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
             }
         }
 
-        costTextView!!.text =
+        ui.costTextView.text =
             ("  *   R " + tenderRate.toString() + " =  R " + DecimalFormat("##.##").format(
                 lineRate
             ))
@@ -1175,7 +1178,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
         tenderRate: Double?
     ): Double? {
         var inlineRate = lineRate
-        when (labelTextView!!.text) {
+        when (ui.labelTextView.text) {
             getString(string.label_length_m) ->
                 try { //  Set the Area to the QTY
                     val length = (currentEndKm - currentStartKm) * 1000
@@ -1195,7 +1198,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
         tenderRate: Double?
     ): Double? {
         var inlineRate = lineRate
-        labelTextView!!.text = getString(string.label_amount)
+        ui.labelTextView.text = getString(string.label_amount)
         try {
             inlineRate = qty * tenderRate!!
         } catch (e: NumberFormatException) {
@@ -1211,7 +1214,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
         tenderRate: Double?
     ): Double? {
         var inlineRate: Double?
-        labelTextView!!.text = getString(string.label_volume_m3)
+        ui.labelTextView.text = getString(string.label_volume_m3)
         try {
             inlineRate = qty * tenderRate!!
         } catch (e: NumberFormatException) {
@@ -1229,7 +1232,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
         tenderRate: Double?
     ): Double? {
         var inlineRate = lineRate
-        labelTextView!!.text = getString(string.label_area_m2)
+        ui.labelTextView.text = getString(string.label_area_m2)
         try {
             inlineRate = qty * tenderRate!!
         } catch (e: NumberFormatException) {
@@ -1246,7 +1249,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
         tenderRate: Double?
     ): Double? {
         var inlineRate = lineRate
-        labelTextView!!.text = getString(string.label_quantity)
+        ui.labelTextView.text = getString(string.label_quantity)
         try { //  make the change in the array and update view
             inlineRate = qty * tenderRate!!
         } catch (e: NumberFormatException) {
@@ -1330,15 +1333,15 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
                         )
 
                         val targetTextView = when (photo.is_PhotoStart) {
-                            true -> startSectionTextView
-                            else -> endSectionTextView
+                            true -> ui.startSectionTextView
+                            else -> ui.endSectionTextView
                         }
                         establishRouteSectionData(photo.is_PhotoStart, targetTextView, false)
                     }
 
                     if (isEstimateDone) {
-                        costCard.visibility = View.VISIBLE
-                        updateButton.visibility = View.VISIBLE
+                        ui.costCard.visibility = View.VISIBLE
+                        ui.updateButton.visibility = View.VISIBLE
                         startKm = getStartKm()
                         endKm = getEndKm()
                         // newJobItemEstimate!!.qty = createViewModel.estimateQty.value!!

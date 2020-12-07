@@ -284,8 +284,9 @@ class OfflineDataRepository(
     }
 
     private suspend fun saveSectionsItems(sections: ArrayList<String>?) {
-        Coroutines.io {
-
+        var sectionSize: Int? = sections?.size
+        var sectionCount: Int = 0
+        if(sectionSize != null){
             sections?.forEach { section ->
                 //  Let's get the String
                 val pattern = Pattern.compile("(.*?):")
@@ -302,12 +303,16 @@ class OfflineDataRepository(
                                     itemCode = it,
                                     sectionItemId = sectionItemId
                                 )
+                                sectionCount++
+                            } else {
+                                sectionSize--
                             }
                         } catch (e: Exception) {
                             Timber.e(e, "Exception creating section item $itemCode")
                         }
                     }
                 }
+                postEvent(XIProgressUpdate("sections", sectionCount.toFloat() / sectionSize.toFloat()))
             }
         }
     }
@@ -446,7 +451,7 @@ class OfflineDataRepository(
         }
     }
 
-    private fun updateProjectItems(
+    private suspend fun updateProjectItems(
         distinctItems: List<ProjectItemDTO>,
         project: ProjectDTO
     ) {
@@ -1053,7 +1058,7 @@ class OfflineDataRepository(
         postStatus("Fetching Activity Sections")
         val activitySectionsResponse =
             apiRequest { api.activitySectionsRefresh(userId) }
-        sectionItems.postValue(activitySectionsResponse.activitySections)
+        saveSectionsItems(activitySectionsResponse.activitySections)
     }
 
     suspend fun loadWorkflows(userId: String) {

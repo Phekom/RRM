@@ -66,10 +66,10 @@ class HomeViewModel(
 
             try {
                 withContext(homeIoContext) {
-                    offlineDataRepository.loadContracts(userId)
-                    offlineDataRepository.loadTaskList(userId)
                     offlineDataRepository.loadActivitySections(userId)
                     offlineDataRepository.loadLookups(userId)
+                    offlineDataRepository.loadContracts(userId)
+                    offlineDataRepository.loadTaskList(userId)
                     offlineDataRepository.loadWorkflows(userId)
                     databaseState.postValue(XISuccess(true))
                 }

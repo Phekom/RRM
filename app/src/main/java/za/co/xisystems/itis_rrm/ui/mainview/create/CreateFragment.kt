@@ -9,9 +9,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenStarted
 import androidx.navigation.Navigation
-import java.util.ArrayList
-import java.util.Calendar
-import kotlinx.android.synthetic.main.fragment_createjob.*
 import kotlinx.coroutines.launch
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
@@ -34,6 +31,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.data.network.OfflineListener
+import za.co.xisystems.itis_rrm.databinding.FragmentCreatejobBinding
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.MyState
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper.setSpinner
@@ -44,6 +42,8 @@ import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.SUCCESS
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.WARNING
 import za.co.xisystems.itis_rrm.utils.hide
 import za.co.xisystems.itis_rrm.utils.show
+import java.util.ArrayList
+import java.util.Calendar
 
 /**
  * Created by Francis Mahlava on 2019/10/18.
@@ -57,6 +57,10 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
     private val factory: CreateViewModelFactory by instance()
     private val estimatesToRemoveFromDb: ArrayList<JobItemEstimateDTO> =
         ArrayList()
+
+    // viewBinding implementation
+    private var _ui: FragmentCreatejobBinding? = null
+    private val ui get() = _ui!!
 
     @MyState
     var items: ArrayList<ProjectItemDTO> = ArrayList()
@@ -112,8 +116,9 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_createjob, container, false)
+    ): View {
+        _ui = FragmentCreatejobBinding.inflate(inflater, container, false)
+        return ui.root
     }
 
     init {
@@ -141,10 +146,10 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
         val myClickListener = View.OnClickListener { view ->
             when (view?.id) {
                 R.id.selectContractProjectContinueButton -> {
-                    val description = descriptionEditText.text!!.toString().trim { it <= ' ' }
+                    val description = ui.descriptionEditText.text!!.toString().trim { it <= ' ' }
                     if (description.isEmpty()) {
                         sharpToast(message = "Please Enter Description", style = WARNING)
-                        descriptionEditText.startAnimation(shake)
+                        ui.descriptionEditText.startAnimation(shake)
                         //                            return
                     } else {
                         activity?.hideKeyboard()
@@ -157,7 +162,7 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
             }
         }
 
-        selectContractProjectContinueButton.setOnClickListener(myClickListener)
+        ui.selectContractProjectContinueButton.setOnClickListener(myClickListener)
 
         try {
             setContract()
@@ -283,7 +288,7 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
     private fun setContract() {
         try {
             Coroutines.main {
-                data_loading.show()
+                ui.dataLoading.show()
 
                 val contractData = createViewModel.getContracts()
 
@@ -298,7 +303,7 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
                         Timber.d("Thread completed.")
                         setSpinner(
                             requireContext().applicationContext,
-                            contractSpinner,
+                            ui.contractSpinner,
                             contractList,
                             contractIndices, // null)
                             object : SpinnerHelper.SelectionListener<ContractDTO> {
@@ -311,7 +316,7 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
                                 }
                             })
                     }
-                    data_loading.hide()
+                    ui.dataLoading.hide()
                 })
             }
         } catch (t: Throwable) {
@@ -322,7 +327,7 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
                 refreshAction = { retryContracts() }
             )
         } finally {
-            data_loading.hide()
+            ui.dataLoading.hide()
         }
     }
 
@@ -335,7 +340,7 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
 
         Coroutines.main {
             val projects = createViewModel.getSomeProjects(contractId!!)
-            data_loading.show()
+            ui.dataLoading.show()
             projects.observe(viewLifecycleOwner, { projec_t ->
                 val allData = projec_t.count()
                 if (projec_t.size == allData) {
@@ -346,7 +351,7 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
                     }
                     setSpinner(
                         requireContext().applicationContext,
-                        projectSpinner,
+                        ui.projectSpinner,
                         projec_t,
                         projectNmbr, // null)
                         object : SpinnerHelper.SelectionListener<ProjectDTO> {
@@ -358,22 +363,37 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
                             }
                         })
 
-                    data_loading.hide()
+                    ui.dataLoading.hide()
                 }
             })
         }
     }
 
+    /**
+     * Called when the view previously created by [.onCreateView] has
+     * been detached from the fragment.  The next time the fragment needs
+     * to be displayed, a new view will be created.  This is called
+     * after [.onStop] and before [.onDestroy].  It is called
+     * *regardless* of whether [.onCreateView] returned a
+     * non-null view.  Internally it is called after the view's state has
+     * been saved but before it has been removed from its parent.
+     */
+    override fun onDestroyView() {
+        super.onDestroyView()
+        // prevent viewBinding from leaking
+        _ui = null
+    }
+
     override fun onStarted() {
-        data_loading.show()
+       ui.dataLoading.show()
     }
 
     override fun onSuccess() {
-        data_loading.hide()
+        ui.dataLoading.hide()
     }
 
     override fun onFailure(message: String?) {
-        data_loading.hide()
+        ui.dataLoading.hide()
     }
 
     companion object {
