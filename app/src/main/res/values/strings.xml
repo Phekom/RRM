@@ -604,5 +604,6 @@
     <string name="services_indicator">Services Indicator</string>
     <string name="approve_job_in_progress">Approving Job …</string>
     <string name="decline_job_in_progress">Declining Job …</string>
+    <string name="id_label">ID :</string>
 
 </resources>

@@ -24,6 +24,7 @@ import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
 import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
+import java.util.Locale
 
 /**
  * Created by Francis Mahlava on 2019/11/28.
@@ -130,7 +131,7 @@ class JobApprovalDataRepository(
     ) {
         try {
             appDb.getJobItemEstimateDao().upDateLineRate(newEstimateId!!, newQuantity, newTotal)
-            postUpdateStatus(XISuccess("Qauntity updated"))
+            postUpdateStatus(XISuccess("Quantity updated"))
         } catch (throwable: Throwable) {
             val message = "Failed to update local quantity: ${throwable.message ?: XIErrorHandler.UNKNOWN_ERROR}"
             Timber.e(throwable, message)
@@ -150,14 +151,19 @@ class JobApprovalDataRepository(
                 val workflowMoveResponse =
                     apiRequest { api.getWorkflowMove(userId, trackRouteId, description, direction) }
 
-                val messages: String = workflowMoveResponse.errorMessage ?: ""
-                if (messages.isBlank() && workflowMoveResponse.workflowJob != null) {
-                    saveWorkflowJob(workflowMoveResponse.workflowJob!!)
-                } else if (messages == "No Job found" && direction == WorkflowDirection.FAIL.value) {
-                    appDb.getJobDao().softDeleteJobForJobId(jobId)
-                    postWorkflowStatus(XISuccess("DECLINED"))
-                } else {
-                    throw ServiceException(messages)
+                val errorMessage: String = workflowMoveResponse.errorMessage ?: ""
+                when {
+                    errorMessage.toLowerCase(Locale.ENGLISH).contains("no job found")
+                        && direction == WorkflowDirection.FAIL.value -> {
+                        appDb.getJobDao().softDeleteJobForJobId(jobId)
+                        postWorkflowStatus(XISuccess("DECLINED"))
+                    }
+                    errorMessage.isBlank() && workflowMoveResponse.workflowJob != null -> {
+                        saveWorkflowJob(workflowMoveResponse.workflowJob!!)
+                    }
+                    else -> {
+                        throw ServiceException(errorMessage)
+                    }
                 }
             } catch (t: Throwable) {
                 val message = "Failed to move workflow: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"

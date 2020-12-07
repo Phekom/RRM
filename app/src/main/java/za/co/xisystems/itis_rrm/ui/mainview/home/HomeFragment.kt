@@ -132,7 +132,6 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                     userInstance.let {
                         userDTO = it
                         ui.welcome.text = getString(R.string.welcome_greeting, it.userName)
-
                         checkConnectivity()
                         if (networkEnabled) {
                             servicesHealthCheck()

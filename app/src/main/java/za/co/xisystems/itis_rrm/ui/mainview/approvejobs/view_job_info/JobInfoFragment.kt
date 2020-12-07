@@ -153,7 +153,6 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
             ViewModelProvider(this, factory).get(ApproveJobsViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
 
-
         Coroutines.main {
             mydata_loading.show()
 
@@ -242,6 +241,11 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
         }
     }
 
+    private fun resetButtons(){
+        approve_job_button.visibility = View.VISIBLE
+        decline_job_button.visibility = View.VISIBLE
+    }
+
     private fun moveJobToNextWorkflow(workflowDirection: WorkflowDirection) {
         Coroutines.main {
             flowDirection = workflowDirection
@@ -280,6 +284,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
                                 message = "Please provide a comment / reason for declining this job",
                                 style = ToastStyle.WARNING
                             )
+                            resetButtons()
                             progressButton.failProgress(getString(string.decline_job))
                         }
                         else -> {
@@ -324,7 +329,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
             progressButton.text = getString(string.approve_job)
             sharpToast(
                 message = getString(string.job_no_approved, jiNo!!),
-                style = ToastStyle.SUCCESS
+                style = SUCCESS
             )
         } else if (direction == WorkflowDirection.FAIL.value) {
             progressButton.text = getString(string.decline_job)
@@ -367,8 +372,9 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
     }
 
     override fun onDestroyView() {
+        super.onDestroyView()
         view_estimation_items_listView.adapter = null
         approveViewModel.workflowState.removeObservers(viewLifecycleOwner)
-        super.onDestroyView()
+        approveViewModel.updateState.removeObservers(viewLifecycleOwner)
     }
 }

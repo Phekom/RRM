@@ -13,7 +13,7 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
  */
 
 class ApproveMeasureItem(
-    val jobItemMeasureDTO: JobItemMeasureDTO,
+    private val jobItemMeasureDTO: JobItemMeasureDTO,
     private val approveViewModel: ApproveMeasureViewModel
 ) : Item() {
     val jobId = jobItemMeasureDTO.jobId
