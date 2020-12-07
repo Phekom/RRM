@@ -169,14 +169,15 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:visibility="invisible">
+                android:visibility="invisible"
+                tools:visibility="visible">
 
                 <com.skydoves.progressview.ProgressView
                     android:id="@+id/pv_contracts"
                     android:layout_width="match_parent"
                     android:layout_height="35dp"
                     android:layout_margin="10dp"
-                    app:progressView_colorBackground="@color/white"
+                    app:progressView_colorBackground="@color/design_default_color_background"
                     app:progressView_colorProgress="@color/sanral_burnt_orange"
                     app:progressView_progress="0"
                     app:progressView_min="0"
@@ -200,7 +201,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="35dp"
                     android:layout_margin="10dp"
-                    app:progressView_colorBackground="@color/white"
+                    app:progressView_colorBackground="@color/design_default_color_background"
                     app:progressView_colorProgress="@color/sanral_burnt_green"
                     app:progressView_progress="0"
                     app:progressView_min="0"

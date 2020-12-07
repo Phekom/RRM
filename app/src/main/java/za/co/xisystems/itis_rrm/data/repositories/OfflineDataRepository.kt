@@ -16,7 +16,6 @@ import za.co.xisystems.itis_rrm.custom.results.XIError
 import za.co.xisystems.itis_rrm.custom.results.XIProgressUpdate
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.results.XIStatus
-import za.co.xisystems.itis_rrm.custom.results.XISuccess
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.localDB.JobDataController
 import za.co.xisystems.itis_rrm.data.localDB.entities.ContractDTO
@@ -323,37 +322,37 @@ class OfflineDataRepository(
         contractMax = 0
         projectCount = 0
         projectMax = 0
-
-        if (contracts.isNotEmpty()) {
-            val validContracts = contracts.filter { contract ->
-                contract.projects != null && contract.contractId.isNotBlank()
-            }
-                .distinctBy { contract -> contract.contractId }
-            contractMax += validContracts.count()
-            validContracts.forEach { contract ->
-                if (!appDb.getContractDao().checkIfContractExists(contract.contractId)) {
-                    appDb.getContractDao().insertContract(contract)
-                    contractCount++
-                    newContracts = true
-
-                    val validProjects =
-                        contract.projects?.filter { project ->
-                            project.projectId.isNotBlank()
-                        }?.distinctBy { project -> project.projectId }
-
-                    if (!validProjects.isNullOrEmpty()) {
-                        saveProjects(validProjects, contract)
-                    }
-                } else {
-                    contractMax--
+        withContext(Dispatchers.IO) {
+            if (contracts.isNotEmpty()) {
+                val validContracts = contracts.filter { contract ->
+                    contract.projects != null && contract.contractId.isNotBlank()
                 }
+                    .distinctBy { contract -> contract.contractId }
+                contractMax += validContracts.count()
+                validContracts.forEach { contract ->
+                    if (!appDb.getContractDao().checkIfContractExists(contract.contractId)) {
+                        appDb.getContractDao().insertContract(contract)
+                        contractCount++
+                        newContracts = true
 
-                Timber.d("cr**: $contractCount / $contractMax contracts")
-                Timber.d("cr**: $projectCount / $projectMax projects")
+                        val validProjects =
+                            contract.projects?.filter { project ->
+                                project.projectId.isNotBlank()
+                            }?.distinctBy { project -> project.projectId }
 
-            }
-            if (contractCount == contractMax && !newProjects) {
-                postEvent(XISuccess(true))
+                        if (!validProjects.isNullOrEmpty()) {
+                            saveProjects(validProjects, contract)
+                        }
+                    } else {
+                        contractMax--
+                    }
+
+                    Timber.d("cr**: $contractCount / $contractMax contracts")
+                    Timber.d("cr**: $projectCount / $projectMax projects")
+                }
+                if (contractCount == contractMax && !newProjects) {
+                    postEvent(XIStatus("Projects loaded"))
+                }
             }
         }
     }
@@ -382,11 +381,11 @@ class OfflineDataRepository(
     }
 
     @Transaction
-    private fun saveProjects(
+    private suspend fun saveProjects(
         validProjects: List<ProjectDTO>,
         contract: ContractDTO
     ) {
-        Coroutines.io {
+        withContext(Dispatchers.IO) {
             projectMax += validProjects.size
             validProjects.forEach { project ->
 
@@ -427,9 +426,14 @@ class OfflineDataRepository(
                         Timber.d("pr**: $projectCount / $projectMax projects")
 
                         if (contractCount >= contractMax && projectCount >= projectMax) {
-                            postEvent(XISuccess(true))
+                            postEvent(XIStatus("Projects loaded"))
                         } else {
-                            postEvent(XIProgressUpdate("contracts", projectCount.toFloat() / projectMax.toFloat()))
+                            postEvent(
+                                XIProgressUpdate(
+                                    "projects", (projectCount.toFloat() + contractCount.toFloat())
+                                        / (projectMax.toFloat() + contractMax.toFloat())
+                                )
+                            )
                         }
                     } catch (ex: Exception) {
                         Timber.e(
@@ -955,15 +959,17 @@ class OfflineDataRepository(
     private fun saveTaskList(toDoListGroups: ArrayList<ToDoGroupsDTO>?) {
 
         toDoListGroups?.let {
-            saveUserTaskList(it)
+            Coroutines.io {
+                saveUserTaskList(it)
+            }
         }
     }
 
     private var tasksMax: Int = 0
     private var tasksCount: Int = 0
 
-    private fun saveUserTaskList(toDoListGroups: ArrayList<ToDoGroupsDTO>) {
-        Coroutines.io {
+    private suspend fun saveUserTaskList(toDoListGroups: ArrayList<ToDoGroupsDTO>) {
+        withContext(Dispatchers.IO) {
             tasksMax = toDoListGroups.size
             tasksCount = 0
             toDoListGroups.forEach { toDoListGroup ->
@@ -1065,7 +1071,7 @@ class OfflineDataRepository(
     suspend fun loadTaskList(userId: String) {
         postStatus("Updating Task List")
         val toDoListGroupsResponse = apiRequest { api.getUserTaskList(userId) }
-        toDoListGroups.postValue(toDoListGroupsResponse.toDoListGroups)
+        saveUserTaskList(toDoListGroupsResponse.toDoListGroups)
     }
 
     suspend fun loadContracts(userId: String) {

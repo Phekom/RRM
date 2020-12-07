@@ -16,8 +16,8 @@ import za.co.xisystems.itis_rrm.base.BaseViewModel
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.custom.results.XIError
-import za.co.xisystems.itis_rrm.custom.results.XIProgress
 import za.co.xisystems.itis_rrm.custom.results.XIResult
+import za.co.xisystems.itis_rrm.custom.results.XISuccess
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
@@ -65,23 +65,24 @@ class HomeViewModel(
         viewModelScope.launch(homeMainContext) {
 
             try {
-                databaseState.postValue(XIProgress(true))
                 withContext(homeIoContext) {
-                    offlineDataRepository.loadActivitySections(userId)
-                    offlineDataRepository.loadLookups(userId)
                     offlineDataRepository.loadContracts(userId)
                     offlineDataRepository.loadTaskList(userId)
+                    offlineDataRepository.loadActivitySections(userId)
+                    offlineDataRepository.loadLookups(userId)
                     offlineDataRepository.loadWorkflows(userId)
+                    databaseState.postValue(XISuccess(true))
                 }
             } catch (exception: Exception) {
                 withContext(homeMainContext) {
-                    databaseState.postValue(XIProgress(false))
                     homeIoContext.cancelChildren(
                         CancellationException(exception.message ?: XIErrorHandler.UNKNOWN_ERROR)
                     )
                     val fetchFail =
-                        XIError(exception, "Failed to fetch contracts:" +
-                            " ${exception.message ?: XIErrorHandler.UNKNOWN_ERROR}")
+                        XIError(
+                            exception, "Failed to fetch contracts:" +
+                                " ${exception.message ?: XIErrorHandler.UNKNOWN_ERROR}"
+                        )
                     databaseState.postValue(fetchFail)
                 }
             }
@@ -102,9 +103,9 @@ class HomeViewModel(
     }
 
     override fun onCleared() {
+        super.onCleared()
         superJob.cancelChildren()
         databaseState = MutableLiveData()
-
-        super.onCleared()
+        databaseStatus = MutableLiveData()
     }
 }

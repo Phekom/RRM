@@ -128,7 +128,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
             val userJob = uiScope.launch(uiScope.coroutineContext) {
 
                 val user = homeViewModel.user.await()
-                user.observe(this@HomeFragment, { userInstance ->
+                user.observe(viewLifecycleOwner, { userInstance ->
                     userInstance.let {
                         userDTO = it
                         ui.welcome.text = getString(R.string.welcome_greeting, it.userName)
@@ -200,7 +200,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
      */
     override fun onDestroyView() {
         super.onDestroyView()
-        // homeViewModel.databaseState.removeObservers(viewLifecycleOwner)
+        homeViewModel.databaseState.removeObservers(viewLifecycleOwner)
         uiScope.destroy()
         // prevent viewBinding from leaking
         _ui = null
@@ -330,10 +330,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
 
     private fun retrySync() {
         IndefiniteSnackbar.hide()
-        Coroutines.main {
-            bigSync()
-        }
-
+        bigSync()
     }
 
     private fun ping() {
@@ -414,22 +411,28 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
 
     private fun handleProgressUpdate(update: XIProgressUpdate) {
         when (update.key) {
-            "contracts" -> {
+            "projects" -> {
+                if (ui.pvContracts.visibility != View.VISIBLE) {
+                    ui.pvContracts.visibility = View.VISIBLE
+                }
                 ui.pvContracts.progress = update.getPercentageComplete()
             }
             "tasks" -> {
+                if (ui.pvTasks.visibility != View.VISIBLE) {
+                    ui.pvTasks.visibility = View.VISIBLE
+                }
                 ui.pvTasks.progress = update.getPercentageComplete()
             }
         }
     }
 
-    private suspend fun bigSync()  {
+    private fun bigSync() = uiScope.launch {
         if (networkEnabled) {
             try {
 
                 toast("Data Loading")
                 resetProgressViews()
-
+                showProgress(true)
                 homeViewModel.databaseState.observe(viewLifecycleOwner, bigSyncObserver)
                 synchJob = homeViewModel.fetchAllData(userDTO!!.userId)
                 synchJob.join()
@@ -472,50 +475,42 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
     }
 
     private fun servicesHealthCheck() = uiScope.launch(uiScope.coroutineContext) {
+        if (!activity?.isFinishing!!) {
+            try {
 
-        try {
-            if (userDTO != null && networkEnabled && homeViewModel.healthCheck(userDTO!!.userId)) {
-                ui.connectedTo.text = getString(R.string.services_up, BuildConfig.VERSION_NAME)
-                ui.connectedTo.setTextColor(colorConnected)
-                ui.ivCloud.setImageDrawable(
-                    ContextCompat.getDrawable(
-                        this@HomeFragment.requireContext(),
-                        R.drawable.ic_baseline_services_up
+                if (userDTO != null && networkEnabled && homeViewModel.healthCheck(userDTO!!.userId)) {
+                    ui.connectedTo.text = getString(R.string.services_up, BuildConfig.VERSION_NAME)
+                    ui.connectedTo.setTextColor(colorConnected)
+                    ui.ivCloud.setImageDrawable(
+                        ContextCompat.getDrawable(
+                            this@HomeFragment.requireContext(),
+                            R.drawable.ic_baseline_services_up
+                        )
                     )
-                )
-            } else {
-                ui.connectedTo.text = getString(R.string.services_down, BuildConfig.VERSION_NAME)
-                ui.connectedTo.setTextColor(colorNotConnected)
-                ui.ivCloud.setImageDrawable(
-                    ContextCompat.getDrawable(
-                        this@HomeFragment.requireContext(),
-                        R.drawable.ic_baseline_services_down
+                } else {
+                    ui.connectedTo.text = getString(R.string.services_down, BuildConfig.VERSION_NAME)
+                    ui.connectedTo.setTextColor(colorNotConnected)
+                    ui.ivCloud.setImageDrawable(
+                        ContextCompat.getDrawable(
+                            this@HomeFragment.requireContext(),
+                            R.drawable.ic_baseline_services_down
+                        )
                     )
+                }
+            } catch (t: Throwable) {
+                val message = "Could not check service health: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
+                val fetchError = XIError(t, message)
+                crashGuard(
+                    this@HomeFragment.requireView(),
+                    fetchError,
+                    refreshAction = { this@HomeFragment.retryHealthCheck() }
                 )
             }
-        } catch (t: Throwable) {
-            val message = "Could not check service health: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
-            val fetchError = XIError(t, message)
-            crashGuard(
-                this@HomeFragment.requireView(),
-                fetchError,
-                refreshAction = { this@HomeFragment.retryHealthCheck() }
-            )
         }
     }
 
     private fun retryHealthCheck() {
         IndefiniteSnackbar.hide()
         servicesHealthCheck()
-    }
-
-    /**
-     * Called when the Fragment is no longer resumed.  This is generally
-     * tied to [Activity.onPause] of the containing
-     * Activity's lifecycle.
-     */
-    override fun onPause() {
-        super.onPause()
-        uiScope.destroy()
     }
 }
