@@ -426,10 +426,10 @@
 
     <!-- Errors -->
     <string name="not_authorized">Credential error, please re-install app with your valid credentials.</string>
-    <string name="gps_not_connected">GPS NOT CONNECTED.</string>
-    <string name="gps_connected">GPS CONNECTED.</string>
-    <string name="mobile_data_not_connected">MOBILE DATA NOT CONNECTED.</string>
-    <string name="mobile_data_connected">MOBILE DATA CONNECTED.</string>
+    <string name="gps_not_connected">GPS Not Connected.</string>
+    <string name="gps_connected">GPS Connected.</string>
+    <string name="mobile_data_not_connected">Mobile Data Not Connected</string>
+    <string name="mobile_data_connected">Mobile Data Connected</string>
     <string name="sync_now">SYNC NOW</string>
     <string name="cancel_upper_case" tools:ignore="ButtonCase">CANCEL</string>
     <string name="unauthorized">Unauthorized</string>
@@ -457,8 +457,8 @@
     <string name="end_date_error">The end date must not be less than start</string>
     <string name="title_activity_main">MainActivity</string>
 
-    <string name="services_up">SERVICES UP FOR v%1$s</string>
-    <string name="services_down">SERVICES DOWN FOR v%1$s</string>
+    <string name="services_up">Services Up For v%1$s</string>
+    <string name="services_down">Services Down For v%1$s</string>
     <string name="menu_home">Home</string>
     <string name="menu_create">Create Job</string>
     <string name="menu_unSubmitted">Unsubmitted Jobs</string>

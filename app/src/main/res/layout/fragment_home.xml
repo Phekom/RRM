@@ -114,7 +114,8 @@
                 android:layout_height="0dp"
                 android:background="#fff"
                 android:orientation="vertical"
-                android:layout_weight="1">
+                android:layout_weight="1"
+                android:layout_marginBottom="@dimen/dimen_10dp">
 
                 <ImageView
                     android:layout_width="32dp"
