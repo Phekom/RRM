@@ -314,6 +314,7 @@ class OfflineDataRepository(
                 }
                 postEvent(XIProgressUpdate("sections", sectionCount.toFloat() / sectionSize.toFloat()))
             }
+            postEvent(XIProgressUpdate("sections", 100.0f))
         }
     }
 
@@ -355,8 +356,8 @@ class OfflineDataRepository(
                     Timber.d("cr**: $contractCount / $contractMax contracts")
                     Timber.d("cr**: $projectCount / $projectMax projects")
                 }
-                if (contractCount == contractMax && !newProjects) {
-                    postEvent(XIStatus("Projects loaded"))
+                if (contractCount >= contractMax && !newProjects) {
+                    postEvent(XIProgressUpdate("projects", 100.0f))
                 }
             }
         }
@@ -430,15 +431,14 @@ class OfflineDataRepository(
                         Timber.d("pr**: $contractCount / $contractMax contracts")
                         Timber.d("pr**: $projectCount / $projectMax projects")
 
-                        if (contractCount >= contractMax && projectCount >= projectMax) {
-                            postEvent(XIStatus("Projects loaded"))
-                        } else {
-                            postEvent(
-                                XIProgressUpdate(
-                                    "projects", (projectCount.toFloat() + contractCount.toFloat())
-                                        / (projectMax.toFloat() + contractMax.toFloat())
-                                )
+                        postEvent(
+                            XIProgressUpdate(
+                                "projects", (projectCount.toFloat() + contractCount.toFloat())
+                                    / (projectMax.toFloat() + contractMax.toFloat())
                             )
+                        )
+                        if (contractCount >= contractMax && projectCount >= projectMax) {
+                            postEvent(XIProgressUpdate("projects", 100.0f))
                         }
                     } catch (ex: Exception) {
                         Timber.e(
@@ -451,7 +451,7 @@ class OfflineDataRepository(
         }
     }
 
-    private suspend fun updateProjectItems(
+    private fun updateProjectItems(
         distinctItems: List<ProjectItemDTO>,
         project: ProjectDTO
     ) {
@@ -673,8 +673,11 @@ class OfflineDataRepository(
 
     private suspend fun saveJobSections(job: JobDTO) {
         for (jobSection in job.JobSections!!) {
-            if (!appDb.getJobSectionDao().checkIfJobSectionExist(jobSection.jobSectionId))
+
+            if (!appDb.getJobSectionDao().checkIfJobSectionExist(jobSection.jobSectionId)) {
                 jobSection.setJobSectionId(DataConversion.toBigEndian(jobSection.jobSectionId))
+            }
+
             jobSection.setProjectSectionId(DataConversion.toBigEndian(jobSection.projectSectionId))
             jobSection.setJobId(DataConversion.toBigEndian(jobSection.jobId))
             appDb.getJobSectionDao().insertJobSection(
@@ -737,12 +740,14 @@ class OfflineDataRepository(
                     .checkIfJobItemEstimatePhotoExistsByPhotoId(
                         jobItemEstimatePhoto.photoId
                     )
-            )
+            ) {
                 jobItemEstimatePhoto.setPhotoPath(
                     Environment.getExternalStorageDirectory()
                         .toString() + File.separator +
                         PhotoUtil.FOLDER + File.separator + jobItemEstimatePhoto.filename
                 )
+            }
+
             when (jobItemEstimatePhoto.descr) {
                 "photo_start" -> jobItemEstimatePhoto.setIsPhotoStart(true)
                 "photo_end" -> jobItemEstimatePhoto.setIsPhotoStart(false)
@@ -975,27 +980,35 @@ class OfflineDataRepository(
 
     private suspend fun saveUserTaskList(toDoListGroups: ArrayList<ToDoGroupsDTO>) {
         withContext(Dispatchers.IO) {
-            tasksMax = toDoListGroups.size
-            tasksCount = 0
-            toDoListGroups.forEach { toDoListGroup ->
-                if (!appDb.getToDoGroupsDao().checkIfGroupCollectionExist(toDoListGroup.groupId)) {
-                    appDb.getToDoGroupsDao().insertToDoGroups(toDoListGroup)
-                }
+            try {
+                tasksMax = toDoListGroups.size
+                tasksCount = 0
+                toDoListGroups.forEach { toDoListGroup ->
+                    if (!appDb.getToDoGroupsDao().checkIfGroupCollectionExist(toDoListGroup.groupId)) {
+                        appDb.getToDoGroupsDao().insertToDoGroups(toDoListGroup)
+                    }
 
-                val entitiesArrayList = toDoListGroup.toDoListEntities
+                    val entitiesArrayList = toDoListGroup.toDoListEntities
 
-                entitiesArrayList.forEach { toDoListEntity ->
-                    val jobId = getJobIdFromPrimaryKeyValues(toDoListEntity.primaryKeyValues)
-                    jobId?.let { id ->
-                        insertEntity(toDoListEntity, id)
-                        val newJobId = DataConversion.toLittleEndian(id)
-                        newJobId?.let { newId ->
-                            fetchJobList(newId)
+                    entitiesArrayList.forEach { toDoListEntity ->
+                        val jobId = getJobIdFromPrimaryKeyValues(toDoListEntity.primaryKeyValues)
+                        jobId?.let { id ->
+                            insertEntity(toDoListEntity, id)
+                            val newJobId = DataConversion.toLittleEndian(id)
+                            newJobId?.let { newId ->
+                                fetchJobList(newId)
+                            }
                         }
                     }
+                    tasksCount++
+                    postEvent(XIProgressUpdate("tasks", tasksCount.toFloat() / tasksMax.toFloat()))
                 }
-                tasksCount++
                 postEvent(XIProgressUpdate("tasks", tasksCount.toFloat() / tasksMax.toFloat()))
+            } catch (throwable : Throwable){
+                val message = "Failed to save task list locally: ${throwable.message ?: XIErrorHandler.UNKNOWN_ERROR}"
+                Timber.e(throwable, message)
+                val dbError = XIError(throwable, message)
+                postEvent(dbError)
             }
         }
     }

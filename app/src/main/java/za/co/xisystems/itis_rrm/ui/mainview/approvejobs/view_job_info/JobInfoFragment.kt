@@ -14,8 +14,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
-import kotlinx.android.synthetic.main.fragment_approvejob.mydata_loading
-import kotlinx.android.synthetic.main.fragment_job_info.*
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
@@ -33,6 +31,7 @@ import za.co.xisystems.itis_rrm.custom.results.XISuccess
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
+import za.co.xisystems.itis_rrm.databinding.FragmentJobInfoBinding
 import za.co.xisystems.itis_rrm.ui.extensions.doneProgress
 import za.co.xisystems.itis_rrm.ui.extensions.failProgress
 import za.co.xisystems.itis_rrm.ui.extensions.initProgress
@@ -60,6 +59,8 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
     private var updateObserver = Observer<XIResult<String>?> { handleUpdateProcess(it) }
     private lateinit var progressButton: Button
     private lateinit var flowDirection: WorkflowDirection
+    private var _ui: FragmentJobInfoBinding? = null
+    private val ui get() = _ui!!
 
     private fun handleUpdateProcess(outcome: XIResult<String>?) {
         outcome?.let { result ->
@@ -74,7 +75,6 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
                 }
                 else -> handleOthers(result)
             }
-
         }
     }
 
@@ -142,9 +142,9 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_job_info, container, false)
+    ): View {
+       _ui = FragmentJobInfoBinding.inflate(inflater, container, false)
+        return ui.root
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -154,7 +154,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
         } ?: throw Exception("Invalid Activity")
 
         Coroutines.main {
-            mydata_loading.show()
+            ui.mydataLoading.show()
 
             approveViewModel.jobApprovalItem.observe(viewLifecycleOwner, { job ->
                 Coroutines.main {
@@ -164,15 +164,15 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
                     val route = approveViewModel.getRouteForProjectSectionId(sectionId)
                     val section = approveViewModel.getSectionForProjectSectionId(sectionId)
 
-                    project_description_textView.text = description
-                    section_description_textView.text = ("$route/ $section")
-                    start_km_description_textView.text = (job.jobDTO.StartKm.toString())
-                    end_km_description_textView.text = (job.jobDTO.EndKm.toString())
+                    ui.projectDescriptionTextView.text = description
+                    ui.sectionDescriptionTextView.text = ("$route/ $section")
+                    ui.startKmDescriptionTextView.text = (job.jobDTO.StartKm.toString())
+                    ui.endKmDescriptionTextView.text = (job.jobDTO.EndKm.toString())
                 }
             })
         }
 
-        approve_job_button.setOnClickListener {
+        ui.approveJobButton.setOnClickListener {
             val approvalBuilder = AlertDialog.Builder(
                 activity // ,android.R.style.Theme_DeviceDefault_Dialog
             )
@@ -185,7 +185,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
                 string.yes
             ) { _, _ ->
                 if (ServiceUtil.isNetworkAvailable(requireContext().applicationContext)) {
-                    progressButton = approve_job_button
+                    progressButton = ui.approveJobButton
                     progressButton.initProgress(viewLifecycleOwner)
                     moveJobToNextWorkflow(WorkflowDirection.NEXT)
                 } else {
@@ -207,7 +207,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
             approvalDialog.show()
         }
 
-        decline_job_button.setOnClickListener {
+        ui.declineJobButton.setOnClickListener {
             val declineBuilder =
                 AlertDialog.Builder(
                     activity // , android.R.style.Theme_DeviceDefault_Dialog
@@ -220,7 +220,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
                 string.yes
             ) { _, _ ->
                 if (ServiceUtil.isNetworkAvailable(requireContext().applicationContext)) {
-                    progressButton = decline_job_button
+                    progressButton = ui.declineJobButton
                     moveJobToNextWorkflow(WorkflowDirection.FAIL)
                 } else {
                     sharpToast(
@@ -241,23 +241,23 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
         }
     }
 
-    private fun resetButtons(){
-        approve_job_button.visibility = View.VISIBLE
-        decline_job_button.visibility = View.VISIBLE
+    private fun resetButtons() {
+        ui.approveJobButton.visibility = View.VISIBLE
+        ui.declineJobButton.visibility = View.VISIBLE
     }
 
     private fun moveJobToNextWorkflow(workflowDirection: WorkflowDirection) {
         Coroutines.main {
             flowDirection = workflowDirection
 
-            when (progressButton == approve_job_button) {
+            when (progressButton == ui.approveJobButton) {
                 true -> {
                     progressButton.text = getString(string.approve_job_in_progress)
-                    decline_job_button.visibility = View.GONE
+                    ui.declineJobButton.visibility = View.GONE
                 }
                 else -> {
                     progressButton.text = getString(string.decline_job_in_progress)
-                    approve_job_button.visibility = View.GONE
+                    ui.approveJobButton.visibility = View.GONE
                 }
             }
             progressButton.initProgress(viewLifecycleOwner)
@@ -279,7 +279,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
                             progressButton.failProgress("Invalid Job")
                         }
                         workflowDirection == WorkflowDirection.FAIL &&
-                            workflow_comments_editText.text.trim().isBlank() -> {
+                            ui.workflowCommentsEditText.text.trim().isBlank() -> {
                             sharpToast(
                                 message = "Please provide a comment / reason for declining this job",
                                 style = ToastStyle.WARNING
@@ -306,8 +306,8 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
         val direction: Int = workflowDirection.value
 
         var description: String? = ""
-        if (workflow_comments_editText.text != null) {
-            description = workflow_comments_editText.text.toString()
+        if (ui.workflowCommentsEditText.text != null) {
+            description = ui.workflowCommentsEditText.text.toString()
         }
         Coroutines.main {
             try {
@@ -349,7 +349,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
         Coroutines.main {
             val estimates = approveViewModel.getJobEstimationItemsForJobId(jobID)
             estimates.observe(viewLifecycleOwner, { estimateList ->
-                mydata_loading.hide()
+                ui.mydataLoading.hide()
                 initRecyclerView(estimateList.toEstimatesListItem())
             })
         }
@@ -359,7 +359,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
         val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
             addAll(estimatesListItems)
         }
-        view_estimation_items_listView.apply {
+        ui.viewEstimationItemsListView.apply {
             layoutManager = LinearLayoutManager(this.context)
             adapter = groupAdapter
         }
@@ -373,8 +373,9 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        view_estimation_items_listView.adapter = null
+        ui.viewEstimationItemsListView.adapter = null
         approveViewModel.workflowState.removeObservers(viewLifecycleOwner)
         approveViewModel.updateState.removeObservers(viewLifecycleOwner)
+        _ui = null
     }
 }

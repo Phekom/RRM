@@ -420,7 +420,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                 updateProgress(update, ui.pvContracts)
             }
             "tasks" -> {
-                updateProgress(update,ui.pvTasks)
+                updateProgress(update, ui.pvTasks)
             }
             "sections" -> {
                updateProgress(update, ui.pvSections)

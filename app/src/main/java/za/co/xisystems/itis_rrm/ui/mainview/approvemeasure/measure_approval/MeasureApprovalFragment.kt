@@ -17,14 +17,12 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
-import kotlinx.android.synthetic.main.fragment_measure_approval.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
 import timber.log.Timber
-import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.R.string
@@ -36,8 +34,8 @@ import za.co.xisystems.itis_rrm.custom.results.XIStatus
 import za.co.xisystems.itis_rrm.custom.results.XISuccess
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
+import za.co.xisystems.itis_rrm.databinding.FragmentMeasureApprovalBinding
 import za.co.xisystems.itis_rrm.ui.extensions.doneProgress
-import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.extensions.failProgress
 import za.co.xisystems.itis_rrm.ui.extensions.initProgress
 import za.co.xisystems.itis_rrm.ui.extensions.startProgress
@@ -53,6 +51,7 @@ import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.BOTTOM
 import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.CENTER
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.ERROR
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.INFO
+import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.NO_INTERNET
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.SUCCESS
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection.NEXT
@@ -69,6 +68,8 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
     private var measuresProcessed: Int = 0
 
     private var uiScope = UiLifecycleScope()
+    private var _ui: FragmentMeasureApprovalBinding? = null
+    private val ui get() = _ui!!
 
     private fun handleMeasureProcessing(outcome: XIResult<String>?) {
         outcome?.let { result ->
@@ -130,9 +131,10 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_measure_approval, container, false)
+        _ui = FragmentMeasureApprovalBinding.inflate(inflater, container, false)
+        return ui.root
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -147,7 +149,7 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
                 getMeasureItems(job)
             })
 
-            approve_measure_button.setOnClickListener {
+            ui.approveMeasureButton.setOnClickListener {
                 val approveBuilder = AlertDialog.Builder(
                     requireActivity()
                 )
@@ -158,7 +160,7 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
                 approveBuilder.setPositiveButton(
                     string.yes
                 ) { _, _ ->
-                    progressButton = approve_measure_button
+                    progressButton = ui.approveMeasureButton
                     progressButton.initProgress(viewLifecycleOwner)
                     processMeasurementWorkflow(NEXT)
                 }
@@ -182,9 +184,9 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
                 workflowMeasurements(workflowDirection)
             }
         } else {
-            this.requireActivity().extensionToast(
-                getString(string.no_connection_detected),
-                MotionToast.TOAST_ERROR
+            sharpToast(
+                message = getString(string.no_connection_detected),
+                style = NO_INTERNET
             )
             progressButton.failProgress("No internet")
         }
@@ -261,7 +263,7 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
         val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
             update(measureListItems)
         }
-        view_measured_items.apply {
+        ui.viewMeasuredItems.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = groupAdapter
         }
@@ -269,7 +271,7 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
 
     override fun onDestroyView() {
         approveViewModel.workflowState.removeObservers(viewLifecycleOwner)
-        view_measured_items.adapter = null
+        ui.viewMeasuredItems.adapter = null
         super.onDestroyView()
     }
 
