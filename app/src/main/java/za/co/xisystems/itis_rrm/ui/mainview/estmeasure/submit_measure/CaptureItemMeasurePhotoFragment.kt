@@ -254,7 +254,7 @@ class CaptureItemMeasurePhotoFragment :
         builder.setMessage(R.string.start_taking_photo)
         builder.setCancelable(false)
         // Yes button
-        builder.setPositiveButton(R.string.ok) { dialog, which ->
+        builder.setPositiveButton(R.string.ok) { _, _ ->
             if (ContextCompat.checkSelfPermission(
                     requireActivity(),
                     Manifest.permission.WRITE_EXTERNAL_STORAGE

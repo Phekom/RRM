@@ -174,6 +174,8 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
         }
 
         image_collection_view.visibility = View.GONE
+        image_collection_view.clearImages()
+
         take_photo_button.setOnClickListener {
             initCameraLaunch()
         }
@@ -352,7 +354,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                             sharpToast(
                                 message = "Work captured",
                                 style = ToastStyle.SUCCESS,
-                                position = BOTTOM,
+                                position = CENTER,
                                 duration = SHORT
                             )
                             move_workflow_button.doneProgress("Workflow complete")
@@ -371,7 +373,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                     sharpToast(
                         message = result.message,
                         style = INFO,
-                        position = BOTTOM,
+                        position = CENTER,
                         duration = SHORT
                     )
                 }
@@ -724,9 +726,6 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
             workViewModel.workflowState.postValue(XIProgress(true))
             withContext(uiScope.coroutineContext) {
                 for (jobEstimate in estimates) {
-                    Timber.d("Id: ${jobEstimate.estimateId}")
-                    val convertedId = DataConversion.toBigEndian(jobEstimate.estimateId)
-                    Timber.d("Converted Id: $convertedId")
                     val jobItemEstimate = workViewModel.getJobItemEstimateForEstimateId(jobEstimate.estimateId)
                     jobItemEstimate.observe(viewLifecycleOwner, { jobItEstmt ->
                         jobItEstmt?.let {

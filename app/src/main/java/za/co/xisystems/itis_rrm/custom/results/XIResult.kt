@@ -1,12 +1,12 @@
 package za.co.xisystems.itis_rrm.custom.results
 
+import java.io.IOException
+import java.net.SocketException
+import java.net.SocketTimeoutException
 import za.co.xisystems.itis_rrm.custom.errors.NoConnectivityException
 import za.co.xisystems.itis_rrm.custom.errors.NoInternetException
 import za.co.xisystems.itis_rrm.custom.errors.ServiceHostUnreachableException
 import za.co.xisystems.itis_rrm.data.network.responses.ErrorResponse
-import java.io.IOException
-import java.net.SocketException
-import java.net.SocketTimeoutException
 
 // Created by Shaun McDonald on 2020/05/23.
 // Copyright (c) 2020 XI Systems. All rights reserved.
@@ -37,7 +37,7 @@ class XIError(
 class XIRestException(
     val code: Int? = null,
     val error: ErrorResponse? = null
-): XIResult<Nothing>()
+) : XIResult<Nothing>()
 
 class XIProgressUpdate(val key: String, val ratio: Float = 0.0f) : XIResult<Nothing>()
 

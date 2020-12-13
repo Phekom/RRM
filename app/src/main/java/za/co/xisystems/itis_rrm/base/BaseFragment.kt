@@ -13,12 +13,16 @@ import android.view.inputmethod.InputMethodManager
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.snackbar.Snackbar
+import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.withContext
 import org.kodein.di.KodeinAware
 import org.kodein.di.generic.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.BuildConfig
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.constants.Constants.DNS_PORT
+import za.co.xisystems.itis_rrm.constants.Constants.FIVE_SECONDS
+import za.co.xisystems.itis_rrm.constants.Constants.SSL_PORT
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.results.XIError
 import za.co.xisystems.itis_rrm.custom.results.isRecoverableException
@@ -39,7 +43,6 @@ import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.ERROR
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.INFO
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.NO_INTERNET
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.WARNING
-import kotlin.coroutines.CoroutineContext
 
 /**
  * Created by Francis Mahlava on 03,October,2019
@@ -99,14 +102,7 @@ abstract class BaseFragment(layoutContentId: Int) : Fragment(), IProgressView, K
         @JvmField
         var shake_longer: Animation? = null
 
-
         var animations: Animations? = null
-
-        const val DNS_PORT = 52
-
-        const val SSL_PORT = 443
-
-        const val FIVE_SECONDS = 5000
     }
 
     override fun onResume() {

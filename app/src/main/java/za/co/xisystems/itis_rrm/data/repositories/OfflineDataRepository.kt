@@ -285,36 +285,44 @@ class OfflineDataRepository(
 
     private suspend fun saveSectionsItems(sections: ArrayList<String>?) {
         var sectionSize: Int? = sections?.size
-        var sectionCount: Int = 0
-        if(sectionSize != null){
-            sections?.forEach { section ->
-                //  Let's get the String
-                val pattern = Pattern.compile("(.*?):")
-                val matcher = pattern.matcher(section)
+        var sectionCount = 0
+        if (sectionSize != null) {
+            withContext(Dispatchers.IO) {
 
-                val sectionItemId = SqlLitUtils.generateUuid()
-                if (matcher.find() && section.isNotEmpty()) {
-                    val itemCode = matcher.group(1)?.replace("\\s+".toRegex(), "")
-                    itemCode?.let {
-                        try {
-                            if (!appDb.getSectionItemDao().checkIfSectionItemsExist(it)) {
-                                appDb.getSectionItemDao().insertSectionItem(
-                                    description = section,
-                                    itemCode = it,
-                                    sectionItemId = sectionItemId
-                                )
-                                sectionCount++
-                            } else {
-                                sectionSize--
+                try {
+                    sections?.forEach { section ->
+                        //  Let's get the String
+                        val pattern = Pattern.compile("(.*?):")
+                        val matcher = pattern.matcher(section)
+
+                        val sectionItemId = SqlLitUtils.generateUuid()
+                        if (matcher.find() && section.isNotEmpty()) {
+                            val itemCode = matcher.group(1)?.replace("\\s+".toRegex(), "")
+                            itemCode?.let {
+                                try {
+                                    if (!appDb.getSectionItemDao().checkIfSectionItemsExist(it)) {
+                                        appDb.getSectionItemDao().insertSectionItem(
+                                            description = section,
+                                            itemCode = it,
+                                            sectionItemId = sectionItemId
+                                        )
+                                        sectionCount++
+                                    } else {
+                                        sectionSize--
+                                    }
+                                } catch (e: Exception) {
+                                    Timber.e(e, "Exception creating section item $itemCode")
+                                }
                             }
-                        } catch (e: Exception) {
-                            Timber.e(e, "Exception creating section item $itemCode")
                         }
+                        postEvent(XIProgressUpdate("sections", sectionCount.toFloat() / sectionSize.toFloat()))
                     }
+                } catch (throwable: Throwable) {
+                    Timber.e(throwable, "Exception caught saving section items: ${throwable.message}")
+                } finally {
+                    postEvent(XIProgressUpdate("sections", 1.0f))
                 }
-                postEvent(XIProgressUpdate("sections", sectionCount.toFloat() / sectionSize.toFloat()))
             }
-            postEvent(XIProgressUpdate("sections", 100.0f))
         }
     }
 
@@ -357,7 +365,7 @@ class OfflineDataRepository(
                     Timber.d("cr**: $projectCount / $projectMax projects")
                 }
                 if (contractCount >= contractMax && !newProjects) {
-                    postEvent(XIProgressUpdate("projects", 100.0f))
+                    postEvent(XIProgressUpdate("projects", 1.0f))
                 }
             }
         }
@@ -433,12 +441,12 @@ class OfflineDataRepository(
 
                         postEvent(
                             XIProgressUpdate(
-                                "projects", (projectCount.toFloat() + contractCount.toFloat())
-                                    / (projectMax.toFloat() + contractMax.toFloat())
+                                "projects", (projectCount.toFloat() + contractCount.toFloat()) /
+                                    (projectMax.toFloat() + contractMax.toFloat())
                             )
                         )
                         if (contractCount >= contractMax && projectCount >= projectMax) {
-                            postEvent(XIProgressUpdate("projects", 100.0f))
+                            postEvent(XIProgressUpdate("projects", 1.0f))
                         }
                     } catch (ex: Exception) {
                         Timber.e(
@@ -1003,8 +1011,8 @@ class OfflineDataRepository(
                     tasksCount++
                     postEvent(XIProgressUpdate("tasks", tasksCount.toFloat() / tasksMax.toFloat()))
                 }
-                postEvent(XIProgressUpdate("tasks", tasksCount.toFloat() / tasksMax.toFloat()))
-            } catch (throwable : Throwable){
+                postEvent(XIProgressUpdate("tasks", 1.0f))
+            } catch (throwable: Throwable) {
                 val message = "Failed to save task list locally: ${throwable.message ?: XIErrorHandler.UNKNOWN_ERROR}"
                 Timber.e(throwable, message)
                 val dbError = XIError(throwable, message)

@@ -36,103 +36,104 @@
                 android:visibility="visible">
 
                 <LinearLayout
-                        android:id="@+id/layout"
+                    android:id="@+id/layout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="150dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/textV"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="150dp"
-                        android:orientation="vertical">
-                    <TextView
-                            android:id="@+id/textV"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center"
-                            android:layout_marginLeft="10dp"
-                            android:layout_marginTop="4dp"
-                            android:layout_marginBottom="20dp"
-                            android:layout_marginRight="10dp"
-                            android:gravity="center"
-                            android:text="@string/please_enter_a_unique_pin"
-                            android:textColor="@color/itis_gray"
-                            android:textSize="12sp" />
+                        android:layout_gravity="center"
+                        android:layout_marginLeft="10dp"
+                        android:layout_marginTop="4dp"
+                        android:layout_marginBottom="20dp"
+                        android:layout_marginRight="10dp"
+                        android:gravity="center"
+                        android:text="@string/please_enter_a_unique_pin"
+                        android:textColor="@color/itis_gray"
+                        android:textSize="12sp" />
 
                     <com.google.android.material.textfield.TextInputLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="52dp"
-                            android:layout_marginTop="4dp"
-                            android:layout_marginRight="52dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="52dp"
+                        android:layout_marginTop="4dp"
+                        android:layout_marginRight="52dp"
                         android:background="@drawable/round_corner_orange"
                         android:hint="Create Pin Code"
-                            app:hintTextAppearance="@style/TextAppearance.AppCompat">
+                        app:hintTextAppearance="@style/TextAppearance.AppCompat">
 
                         <EditText
-                                android:id="@+id/enterPinEditText"
-                                android:layout_width="fill_parent"
-                                android:layout_height="wrap_content"
-                                android:background="@null"
-                                android:digits="0123456789"
-                                android:drawableLeft="@android:drawable/ic_lock_idle_lock"
-                                android:imeOptions="actionNext"
-                                android:inputType="numberPassword"
-                                android:padding="4dp"
-                                android:singleLine="true"
-                                android:text="@={viewmodel.enterPin}"
-                                android:textColor="@android:color/white"
-                                android:textColorHint="@android:color/white" />
+                            android:id="@+id/enterPinEditText"
+                            android:layout_width="fill_parent"
+                            android:layout_height="wrap_content"
+                            android:background="@null"
+                            android:digits="0123456789"
+                            android:drawableLeft="@android:drawable/ic_lock_idle_lock"
+                            android:imeOptions="actionNext"
+                            android:inputType="numberPassword"
+                            android:padding="4dp"
+                            android:singleLine="true"
+                            android:text="@={viewmodel.enterPin}"
+                            android:textColor="@android:color/white"
+                            android:textColorHint="@android:color/white" />
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <com.google.android.material.textfield.TextInputLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="52dp"
-                            android:layout_marginTop="4dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="52dp"
+                        android:layout_marginTop="4dp"
                         android:layout_marginRight="52dp"
                         android:background="@drawable/round_corner_orange"
                         android:hint="Confirm Pin Code"
-                            android:imeOptions="actionDone"
-                            app:hintTextAppearance="@style/TextAppearance.AppCompat">
+                        android:imeOptions="actionDone"
+                        app:hintTextAppearance="@style/TextAppearance.AppCompat">
 
                         <EditText
-                                android:id="@+id/confirmPinEditText"
-                                android:layout_width="fill_parent"
-                                android:layout_height="wrap_content"
-                                android:background="@null"
-                                android:digits="0123456789"
-                                android:drawableLeft="@android:drawable/ic_lock_idle_lock"
-                                android:imeOptions="actionDone"
-                                android:inputType="numberPassword"
-                                android:padding="4dp"
-                                android:singleLine="true"
-                                android:text="@={viewmodel.confirmPin}"
-                                android:textColor="@android:color/white"
-                                android:textColorHint="@android:color/white" />
+                            android:id="@+id/confirmPinEditText"
+                            android:layout_width="fill_parent"
+                            android:layout_height="wrap_content"
+                            android:background="@null"
+                            android:digits="0123456789"
+                            android:drawableLeft="@android:drawable/ic_lock_idle_lock"
+                            android:imeOptions="actionDone"
+                            android:inputType="numberPassword"
+                            android:padding="4dp"
+                            android:singleLine="true"
+                            android:text="@={viewmodel.confirmPin}"
+                            android:textColor="@android:color/white"
+                            android:textColorHint="@android:color/white" />
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <TextView
-                            android:id="@+id/textVV"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center"
-                            android:layout_marginLeft="10dp"
-                            android:layout_marginTop="4dp"
-                            android:layout_marginRight="10dp"
-                            android:gravity="center"
-                            android:text="@string/please_enter_a_unique_pin"
-                            android:textColor="@color/transparent"
-                            android:textSize="12sp" />
+                        android:id="@+id/textVV"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginLeft="10dp"
+                        android:layout_marginTop="4dp"
+                        android:layout_marginRight="10dp"
+                        android:gravity="center"
+                        android:text="@string/please_enter_a_unique_pin"
+                        android:textColor="@color/transparent"
+                        android:textSize="12sp" />
 
                     <Button
-                            android:id="@+id/register_Pin_button"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center_horizontal"
-                            android:layout_marginLeft="52dp"
-                            android:layout_marginTop="4dp"
+                        android:id="@+id/register_Pin_button"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginLeft="52dp"
+                        android:layout_marginTop="4dp"
                         android:layout_marginRight="52dp"
                         android:background="@drawable/round_corner_orange"
                         android:onClick="@{viewmodel::onRegPinButtonClick}"
-                            android:text="@string/register"
-                            android:textColor="@android:color/white" />
+                        android:text="@string/register"
+                        android:textColor="@android:color/white" />
                 </LinearLayout>
 
 
@@ -172,7 +173,7 @@
                 android:id="@+id/serverTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
                 android:layout_marginStart="30dp"
                 android:alpha="0.5"
                 android:text="Server"
@@ -182,7 +183,7 @@
                 android:id="@+id/buildFlavorTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true"
                 android:layout_marginEnd="30dp"
 
                 android:alpha="0.5"

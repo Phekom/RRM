@@ -78,7 +78,9 @@ open class CardMeasureItem(
                     uiScope.launch(uiScope.coroutineContext) {
                         measureViewModel.generateGalleryUI(itemMeasureId)
                     }
-                    Navigation.createNavigateOnClickListener(R.id.estimatePhotoFragment, null)
+
+                    Navigation.findNavController(view)
+                        .navigate(R.id.action_submitMeasureFragment_to_captureItemMeasurePhotoFragment)
                 }
             } else {
                 GlideApp.with(this.containerView)

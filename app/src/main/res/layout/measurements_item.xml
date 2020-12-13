@@ -19,11 +19,11 @@
             android:layout_alignParentStart="true"
 
             android:layout_alignParentTop="true"
-            android:maxWidth="150dp"
+            android:maxWidth="@dimen/dimen_160dp"
             android:layout_marginStart="10dp"
             android:text="@string/some_super_long_item_name_in_case_it_gets_cut_off"
             android:textColor="@color/sanral_burnt_orange"
-            android:textSize="17sp" />
+            android:textSize="18sp" />
 
         <TextView
             android:id="@+id/measure_item_quantity_textView"
@@ -79,7 +79,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
             android:layout_gravity="center"
-            android:layout_marginStart="30dp"
+            android:layout_marginStart="@dimen/dimen_10dp"
             android:layout_marginTop="54dp"
             android:layout_marginEnd="10dp"
             android:layout_toStartOf="@+id/view_captured_item_photo"

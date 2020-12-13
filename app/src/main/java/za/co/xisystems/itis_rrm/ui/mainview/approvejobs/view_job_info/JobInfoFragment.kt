@@ -4,14 +4,18 @@ import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.Toast
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.skydoves.androidveil.VeiledItemOnClickListener
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import org.kodein.di.KodeinAware
@@ -22,6 +26,7 @@ import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.R.string
 import za.co.xisystems.itis_rrm.base.BaseFragment
+import za.co.xisystems.itis_rrm.constants.Constants
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.results.XIError
 import za.co.xisystems.itis_rrm.custom.results.XIProgress
@@ -32,6 +37,7 @@ import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentJobInfoBinding
+import za.co.xisystems.itis_rrm.ui.extensions.ShimmerUtils
 import za.co.xisystems.itis_rrm.ui.extensions.doneProgress
 import za.co.xisystems.itis_rrm.ui.extensions.failProgress
 import za.co.xisystems.itis_rrm.ui.extensions.initProgress
@@ -48,8 +54,6 @@ import za.co.xisystems.itis_rrm.utils.enums.ToastStyle
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.NO_INTERNET
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.SUCCESS
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
-import za.co.xisystems.itis_rrm.utils.hide
-import za.co.xisystems.itis_rrm.utils.show
 
 class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
     override val kodein by kodein()
@@ -61,6 +65,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
     private lateinit var flowDirection: WorkflowDirection
     private var _ui: FragmentJobInfoBinding? = null
     private val ui get() = _ui!!
+    private var groupAdapter = GroupAdapter<GroupieViewHolder>()
 
     private fun handleUpdateProcess(outcome: XIResult<String>?) {
         outcome?.let { result ->
@@ -100,7 +105,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
                 crashGuard(
                     view = this.requireView(),
                     throwable = result,
-                    refreshAction = { retryAction }
+                    refreshAction = { retryAction() }
                 )
             }
             is XIStatus -> {
@@ -143,7 +148,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-       _ui = FragmentJobInfoBinding.inflate(inflater, container, false)
+        _ui = FragmentJobInfoBinding.inflate(inflater, container, false)
         return ui.root
     }
 
@@ -154,7 +159,20 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
         } ?: throw Exception("Invalid Activity")
 
         Coroutines.main {
-            ui.mydataLoading.show()
+
+            ui.viewEstimationItemsListView.run {
+                setVeilLayout(R.layout.estimates_item, object : VeiledItemOnClickListener {
+                    /** will be invoked when the item on the [VeilRecyclerFrameView] clicked. */
+                    override fun onItemClicked(pos: Int) {
+                        Toast.makeText(this@JobInfoFragment.requireContext(), "Loading ...", Toast.LENGTH_SHORT).show()
+                    }
+                })
+                setAdapter(groupAdapter)
+                setLayoutManager(LinearLayoutManager(this.context))
+                addVeiledItems(3)
+                shimmer = ShimmerUtils.getGrayShimmer(this@JobInfoFragment.requireContext())
+            }
+
 
             approveViewModel.jobApprovalItem.observe(viewLifecycleOwner, { job ->
                 Coroutines.main {
@@ -264,17 +282,17 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
             progressButton.startProgress()
             val user = approveViewModel.user.await()
             user.observe(viewLifecycleOwner, { userDTO ->
-                approveViewModel.jobApprovalItem.observe(viewLifecycleOwner, { job ->
+                approveViewModel.jobApprovalItem.observe(viewLifecycleOwner, { approveJobItem ->
 
                     when {
-                        job == null -> {
+                        approveJobItem == null -> {
                             Timber.d("ApproveItem was null")
                         }
                         userDTO.userId.isBlank() -> {
                             sharpToast(message = "The user lacks permissions.", style = ToastStyle.ERROR)
                             progressButton.failProgress("Invalid User")
                         }
-                        job.jobDTO.JobId.isBlank() -> {
+                        approveJobItem.jobDTO.JobId.isBlank() -> {
                             sharpToast(message = "The selected job is invalid.", style = ToastStyle.ERROR)
                             progressButton.failProgress("Invalid Job")
                         }
@@ -288,7 +306,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
                             progressButton.failProgress(getString(string.decline_job))
                         }
                         else -> {
-                            initJobWorkflow(job, workflowDirection, userDTO)
+                            initJobWorkflow(approveJobItem, workflowDirection, userDTO)
                         }
                     }
                 })
@@ -349,20 +367,34 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
         Coroutines.main {
             val estimates = approveViewModel.getJobEstimationItemsForJobId(jobID)
             estimates.observe(viewLifecycleOwner, { estimateList ->
-                ui.mydataLoading.hide()
                 initRecyclerView(estimateList.toEstimatesListItem())
             })
         }
     }
 
     private fun initRecyclerView(estimatesListItems: List<EstimatesItem>) {
-        val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
+        groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
             addAll(estimatesListItems)
+            notifyDataSetChanged()
         }
-        ui.viewEstimationItemsListView.apply {
-            layoutManager = LinearLayoutManager(this.context)
-            adapter = groupAdapter
+        ui.viewEstimationItemsListView.run {
+            setLayoutManager(LinearLayoutManager(this.context))
+            setAdapter(groupAdapter)
         }
+
+        delayedUnveil()
+    }
+
+    private fun delayedUnveil() {
+        Handler(Looper.getMainLooper()).postDelayed(
+            {
+                if (!activity?.isFinishing!!) {
+
+                    ui.viewEstimationItemsListView.unVeil()
+                }
+            },
+            Constants.ONE_SECOND
+        )
     }
 
     private fun List<JobItemEstimateDTO>.toEstimatesListItem(): List<EstimatesItem> {
@@ -373,7 +405,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        ui.viewEstimationItemsListView.adapter = null
+        ui.viewEstimationItemsListView.setAdapter(null)
         approveViewModel.workflowState.removeObservers(viewLifecycleOwner)
         approveViewModel.updateState.removeObservers(viewLifecycleOwner)
         _ui = null

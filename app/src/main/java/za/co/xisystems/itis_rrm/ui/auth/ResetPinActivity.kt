@@ -11,7 +11,7 @@ import androidx.core.content.res.ResourcesCompat
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.common.ConnectionResult
-import com.google.android.gms.common.GooglePlayServicesUtil
+import com.google.android.gms.common.GoogleApiAvailability
 import kotlinx.android.synthetic.main.activity_register.*
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.kodein
@@ -32,6 +32,7 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnabl
     companion object {
         val TAG: String = ResetPinActivity::class.java.simpleName
         private const val PERMISSION_REQUEST = 10
+        const val GOOGLE_PLAY_SERVICES_RESOLUTION_REQUEST = 1
     }
 
     override val kodein by kodein()
@@ -156,10 +157,11 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnabl
 
     override fun onStart() {
         super.onStart()
-        val resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this)
-        if (resultCode != ConnectionResult.SUCCESS) { // This dialog will help the user update to the latest GooglePlayServices
-            val dialog =
-                GooglePlayServicesUtil.getErrorDialog(resultCode, this, 0)
+        val apiAvailability = GoogleApiAvailability.getInstance()
+        val resultCode = apiAvailability.isGooglePlayServicesAvailable(this)
+        if (resultCode != ConnectionResult.SUCCESS) {
+            // This dialog will help the user update to the latest GooglePlayServices
+            val dialog = apiAvailability.getErrorDialog(this, resultCode, RegisterPinActivity.GOOGLE_PLAY_SERVICES_RESOLUTION_REQUEST)
             dialog?.show()
         }
     }

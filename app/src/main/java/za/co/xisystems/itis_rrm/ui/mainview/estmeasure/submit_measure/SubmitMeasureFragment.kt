@@ -275,7 +275,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
             setIcon(R.drawable.ic_approve)
             setMessage(R.string.are_you_sure_you_want_to_submit_measurements)
             // Yes button
-            setPositiveButton(R.string.yes) { dialog, which ->
+            setPositiveButton(R.string.yes) { _, _ ->
                 if (ServiceUtil.isNetworkAvailable(requireContext().applicationContext)) {
                     submitMeasures(itemMeasureJob, mSures)
                 } else {
@@ -290,7 +290,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
             // No button
             setNegativeButton(
                 R.string.no
-            ) { dialog, which ->
+            ) { dialog, _ ->
                 // Do nothing but close dialog
                 dialog.dismiss()
                 progressButton.doneProgress(originalCaption)
@@ -455,10 +455,10 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
     }
 
     override fun onDestroyView() {
+        super.onDestroyView()
         uiScope.destroy()
         // measureViewModel.workflowState.removeObservers(viewLifecycleOwner)
         measure_listView.adapter = null
-        super.onDestroyView()
     }
 
     private fun List<JobItemEstimateDTO>.toMeasureItems(): List<ExpandableGroup> {

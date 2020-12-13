@@ -28,15 +28,20 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent">
 
-            <androidx.recyclerview.widget.RecyclerView
+            <com.skydoves.androidveil.VeilRecyclerFrameView
                 android:id="@+id/estimations_to_be_measured_listView"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:padding="@dimen/dimen_8dp"
-                tools:listitem="@layout/single_listview_item"
-                android:visibility="visible"
-                />
+                android:layout_height="match_parent"
+                app:veilFrame_baseColor="@color/shimmerBase0"
+                app:veilFrame_highlightColor="@color/shimmerHighlight0"
+                app:veilFrame_layout="@layout/single_listview_item"
+                app:veilFrame_radius="2dp"
+                app:veilFrame_shimmerEnable="true"
+                app:veilFrame_veiled="false"
+                tools:visibility="visible"
+                android:padding="8dp"
+                android:layout_marginTop="2dp"/>
+
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
     </LinearLayout>
@@ -90,6 +95,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="@+id/data_grid"
+        app:layout_constraintEnd_toEndOf="parent"
         android:contentDescription="@string/no_data" />
 </androidx.constraintlayout.widget.ConstraintLayout>

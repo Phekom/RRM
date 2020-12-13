@@ -3,12 +3,12 @@ package za.co.xisystems.itis_rrm.ui.mainview.home
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
-import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -21,6 +21,7 @@ import za.co.xisystems.itis_rrm.custom.results.XISuccess
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
+import za.co.xisystems.itis_rrm.utils.uncaughtExceptionHandler
 
 class HomeViewModel(
     private val repository: UserRepository,
@@ -39,7 +40,7 @@ class HomeViewModel(
     init {
         viewModelScope.launch(homeMainContext) {
 
-            databaseStatus = offlineDataRepository.databaseStatus.distinctUntilChanged()
+            databaseStatus = offlineDataRepository.databaseStatus
 
             databaseState = Transformations.map(databaseStatus) {
                 it.getContentIfNotHandled()
@@ -65,12 +66,15 @@ class HomeViewModel(
         viewModelScope.launch(homeMainContext) {
 
             try {
-                withContext(homeIoContext) {
-                    offlineDataRepository.loadActivitySections(userId)
-                    offlineDataRepository.loadLookups(userId)
-                    offlineDataRepository.loadContracts(userId)
-                    offlineDataRepository.loadTaskList(userId)
-                    offlineDataRepository.loadWorkflows(userId)
+                withContext(homeIoContext + uncaughtExceptionHandler) {
+                    val contractJob = async(homeIoContext) {
+                        offlineDataRepository.loadActivitySections(userId)
+                        offlineDataRepository.loadLookups(userId)
+                        offlineDataRepository.loadContracts(userId)
+                        offlineDataRepository.loadTaskList(userId)
+                        offlineDataRepository.loadWorkflows(userId)
+                    }
+                    contractJob.await()
                     databaseState.postValue(XISuccess(true))
                 }
             } catch (exception: Exception) {

@@ -569,6 +569,7 @@
     <string name="no_location_text">No current location</string>
     <string name="badge">(%1$s)</string>
     <string name="pair">%1$s %2$s</string>
+    <string name="triad">%1$s %2$s %3$s</string>
     <string name="comment_placeholder">No comment</string>
     <string name="route_section_badge">( %1$s/0%2$s )</string>
     <string name="no_data">no data returned</string>
@@ -605,5 +606,8 @@
     <string name="approve_job_in_progress">Approving Job …</string>
     <string name="decline_job_in_progress">Declining Job …</string>
     <string name="id_label">ID :</string>
+    <string name="contract_placeholder">N.002–036-2017/1 DEMO</string>
+    <string name="rrm_value_placeholder">N.002-036-2017/1 DEMO</string>
+    <string name="edit_quantity_button">Edit quantity button</string>
 
 </resources>

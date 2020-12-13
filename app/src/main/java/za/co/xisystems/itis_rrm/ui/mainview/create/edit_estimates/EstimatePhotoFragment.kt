@@ -33,6 +33,10 @@ import androidx.navigation.Navigation
 import com.airbnb.lottie.LottieAnimationView
 import icepick.Icepick
 import icepick.State
+import java.io.File
+import java.text.DecimalFormat
+import java.util.Date
+import kotlin.collections.set
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
@@ -79,10 +83,6 @@ import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.BOTTOM
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.ERROR
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.INFO
 import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
-import java.io.File
-import java.text.DecimalFormat
-import java.util.Date
-import kotlin.collections.set
 
 /**
  * Created by Francis Mahlava on 2019/12/29.
@@ -643,7 +643,6 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
             newJob?.JobItemEstimates!!.add(newJobItemEstimate!!)
         }
 
-
         if (ServiceUtil.isNetworkAvailable(requireActivity().applicationContext)) {
             uiScope.launch(context = uiScope.coroutineContext) {
                 processPhotoLocation(estimateLocation, filePath, itemidPhototype)
@@ -653,6 +652,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
             resetPhotos()
         }
     }
+
     // TODO: polygon verification for offline photography
     private suspend fun processPhotoLocation(
         estimateLocation: LocationModel,
@@ -1357,6 +1357,21 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
                 }
             }
         }
+    }
+
+    /**
+     * Called when the view previously created by [.onCreateView] has
+     * been detached from the fragment.  The next time the fragment needs
+     * to be displayed, a new view will be created.  This is called
+     * after [.onStop] and before [.onDestroy].  It is called
+     * *regardless* of whether [.onCreateView] returned a
+     * non-null view.  Internally it is called after the view's state has
+     * been saved but before it has been removed from its parent.
+     */
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _ui = null
+        uiScope.destroy()
     }
 
     companion object {

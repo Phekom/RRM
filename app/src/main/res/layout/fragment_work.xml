@@ -27,12 +27,18 @@
             app:layout_constraintTop_toTopOf="parent"
             android:visibility="visible">
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/work_listView"
+            <com.skydoves.androidveil.VeilRecyclerFrameView
+                android:id="@+id/veiled_work_list_view"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                tools:listitem="@layout/item_expandable_header"
-                android:visibility="visible" />
+                android:layout_height="match_parent"
+                app:veilFrame_baseColor="@color/shimmerBase0"
+                app:veilFrame_highlightColor="@color/shimmerHighlight0"
+                app:veilFrame_layout="@layout/item_expandable_header"
+                app:veilFrame_radius="4dp"
+                app:veilFrame_shimmerEnable="true"
+                app:veilFrame_veiled="false"
+                tools:visibility="visible" />
+
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
     </LinearLayout>
 

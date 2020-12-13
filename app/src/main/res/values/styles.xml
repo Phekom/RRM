@@ -31,7 +31,7 @@
 
     <!-- ITIS -->
     <style name="ItisRegularText">
-        <item name="android:textSize">14sp</item>
+        <item name="android:textSize">15sp</item>
     </style>
 
     <style name="_lineh" parent="_hline" />

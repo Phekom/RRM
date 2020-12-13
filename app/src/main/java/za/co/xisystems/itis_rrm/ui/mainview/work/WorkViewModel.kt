@@ -6,7 +6,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CoroutineStart.ATOMIC
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelChildren
@@ -37,6 +39,7 @@ class WorkViewModel(
     val offlineUserTaskList by lazyDeferred {
         offlineDataRepository.getUserTaskList()
     }
+
     val workItem = MutableLiveData<JobItemEstimateDTO>()
     val workItemJob = MutableLiveData<JobDTO>()
     val backupWorkSubmission: MutableLiveData<JobEstimateWorksDTO> = MutableLiveData()
@@ -50,8 +53,11 @@ class WorkViewModel(
 
     init {
         viewModelScope.launch(mainContext) {
+            // Set up the feed from the repository
             workflowStatus = workDataRepository.workStatus
 
+            // This works so much better than observeForever, in that it doesn't
+            // eat the device's memory alive and clears when the viewModel is cleared.
             workflowState = Transformations.map(workflowStatus) {
                 it.getContentIfNotHandled()
             } as MutableLiveData<XIResult<String>?>
@@ -154,12 +160,13 @@ class WorkViewModel(
         }
     }
 
+    @ExperimentalCoroutinesApi
     suspend fun submitWorks(
         itemEstiWorks: JobEstimateWorksDTO,
         activity: FragmentActivity,
         itemEstiJob: JobDTO
 
-    ): Job = viewModelScope.launch(ioContext) {
+    ): Job = viewModelScope.launch(ioContext, ATOMIC) {
         workDataRepository.submitWorks(itemEstiWorks, activity, itemEstiJob)
     }
 
@@ -169,15 +176,14 @@ class WorkViewModel(
         }
     }
 
-    suspend fun processWorkflowMove(
+    @ExperimentalCoroutinesApi
+    fun processWorkflowMove(
         userId: String,
         trackRouteId: String,
         description: String?,
         direction: Int
-    ) {
-        withContext(ioContext) {
-            workDataRepository.processWorkflowMove(userId, trackRouteId, description, direction)
-        }
+    ) = viewModelScope.launch(ioContext, ATOMIC) {
+        workDataRepository.processWorkflowMove(userId, trackRouteId, description, direction)
     }
 
     suspend fun getJobItemsEstimatesDoneForJobId(

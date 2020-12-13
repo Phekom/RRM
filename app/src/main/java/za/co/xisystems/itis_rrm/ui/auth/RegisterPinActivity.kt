@@ -8,11 +8,9 @@ import android.os.Build
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
-import com.google.android.gms.common.GooglePlayServicesUtil
 import kotlinx.android.synthetic.main.activity_register.*
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.kodein
@@ -34,6 +32,7 @@ private const val PERMISSION_REQUEST = 10
 class RegisterPinActivity : AppCompatActivity(), AuthListener, KodeinAware {
     companion object {
         val TAG: String = RegisterPinActivity::class.java.simpleName
+        const val GOOGLE_PLAY_SERVICES_RESOLUTION_REQUEST = 1
     }
 
     override val kodein by kodein()
@@ -67,15 +66,13 @@ class RegisterPinActivity : AppCompatActivity(), AuthListener, KodeinAware {
 
         Coroutines.main {
             val loggedInUser = viewModel.user.await()
-            loggedInUser.observe(this, Observer { user ->
+            loggedInUser.observe(this, { user ->
                 // Register the user
-                if (user != null) {
-                    if (!user.PIN.equals(null)) {
-                        Intent(this, MainActivity::class.java).also { home ->
-                            home.flags =
-                                Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-                            startActivity(home)
-                        }
+                if (user != null && !user.PIN.equals(null)) {
+                    Intent(this, MainActivity::class.java).also { home ->
+                        home.flags =
+                            Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                        startActivity(home)
                     }
                 }
             })
@@ -112,8 +109,7 @@ class RegisterPinActivity : AppCompatActivity(), AuthListener, KodeinAware {
                     }
                 }
             }
-            if (allAllowed)
-                toast("Permissions Granted")
+            if (allAllowed) toast("Permissions Granted")
         }
     }
 
@@ -129,10 +125,11 @@ class RegisterPinActivity : AppCompatActivity(), AuthListener, KodeinAware {
 
     override fun onStart() {
         super.onStart()
-        val resultCode = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(this)
-        if (resultCode != ConnectionResult.SUCCESS) { // This dialog will help the user update to the latest GooglePlayServices
-            val dialog =
-                GooglePlayServicesUtil.getErrorDialog(resultCode, this, 1)
+        val apiAvailability = GoogleApiAvailability.getInstance()
+        val resultCode = apiAvailability.isGooglePlayServicesAvailable(this)
+        if (resultCode != ConnectionResult.SUCCESS) {
+            // This dialog will help the user update to the latest GooglePlayServices
+            val dialog = apiAvailability.getErrorDialog(this, resultCode, GOOGLE_PLAY_SERVICES_RESOLUTION_REQUEST)
             dialog?.show()
         }
     }
@@ -154,5 +151,6 @@ class RegisterPinActivity : AppCompatActivity(), AuthListener, KodeinAware {
     }
 
     override fun onSignOut(userDTO: UserDTO) {
+        // Nothing to do here
     }
 }

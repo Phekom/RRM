@@ -135,7 +135,17 @@ android {
     buildTypes {
 
         release {
-            minifyEnabled false
+            // Enables code shrinking, obfuscation, and optimization for only
+            // your project's release build type.
+            // minifyEnabled false
+
+            // Enables resource shrinking, which is performed by the
+            // Android Gradle plugin.
+            // shrinkResources true
+
+            // Includes the default ProGuard rules files that are packaged with
+            // the Android Gradle plugin. To learn more, go to the section about
+            // R8 configuration files.
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.release
             debuggable false
@@ -147,6 +157,7 @@ android {
             minifyEnabled false
             // useProguard false
             debuggable true
+            crunchPngs true
             ext.enableCrashlytics = false
             ext.alwaysUpdateBuildId = false
         }
@@ -252,6 +263,11 @@ android {
     lintOptions {
         disable 'InvalidPackage'
         abortOnError false
+        // if true, check all issues, including those that are off by default
+        checkAllWarnings true
+        // if true, treat all warnings as errors
+        warningsAsErrors true
+
     }
 
     compileOptions {
@@ -456,7 +472,7 @@ dependencies {
     // implementation 'com.amitshekhar.android:jackson-android-networking:1.0.2'
 
     // Jackson
-    def jackson_version = "2.11.3"
+    def jackson_version = '2.12.0'
     implementation "com.fasterxml.jackson.core:jackson-databind:$jackson_version"
     implementation "com.fasterxml.jackson.core:jackson-core:$jackson_version"
     implementation "com.fasterxml.jackson.core:jackson-annotations:$jackson_version"

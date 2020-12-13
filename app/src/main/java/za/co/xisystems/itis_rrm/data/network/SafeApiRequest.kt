@@ -13,8 +13,8 @@ import za.co.xisystems.itis_rrm.custom.errors.ServiceException
 open class SafeApiRequest {
 
     suspend fun <T : Any> apiRequest(call: suspend () -> Response<T>): T {
-        val response = withContext(Dispatchers.Main){ call.invoke() }
-        return withContext(Dispatchers.Main){
+        val response = withContext(Dispatchers.IO) { call.invoke() }
+        return withContext(Dispatchers.Main) {
             if (response.isSuccessful) {
                 return@withContext response.body()!!
             } else {

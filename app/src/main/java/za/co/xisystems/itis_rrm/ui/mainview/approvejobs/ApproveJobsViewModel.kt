@@ -14,6 +14,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import timber.log.Timber
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.custom.results.XIError
@@ -40,14 +41,17 @@ class ApproveJobsViewModel(
     private lateinit var workflowStatus: LiveData<XIEvent<XIResult<String>>>
     private lateinit var updateStatus: LiveData<XIEvent<XIResult<String>>>
 
-
     private val workExceptionHandler = CoroutineExceptionHandler { _, throwable ->
         val message = "Caught during workflow: ${throwable.message ?: XIErrorHandler.UNKNOWN_ERROR}"
+
         val caughtException = XIError(
             throwable, message
         )
+
         workflowState.postValue(caughtException)
+
         superJob.cancelChildren(CancellationException(message))
+        Timber.e(throwable, message)
     }
 
     private val mainContext = Job(superJob) + Dispatchers.Main + workExceptionHandler
@@ -146,9 +150,6 @@ class ApproveJobsViewModel(
         return withContext(ioContext) {
             jobApprovalDataRepository.getJobsForActivityId(
                 activityId
-//                , measureComplete,
-//                estWorksComplete,
-//                jobApproved
             ).distinctUntilChanged()
         }
     }
@@ -216,6 +217,8 @@ class ApproveJobsViewModel(
         superJob.cancelChildren()
         workflowState = MutableLiveData()
         workflowStatus = MutableLiveData()
+        updateState = MutableLiveData()
+        updateStatus = MutableLiveData()
         super.onCleared()
     }
 }

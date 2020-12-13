@@ -4,7 +4,6 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -60,18 +59,19 @@ class ApproveMeasureViewModel(
 
     var workflowState: MutableLiveData<XIResult<String>?> = MutableLiveData()
 
+    val approveMainContext = Job(superJob) + Dispatchers.Main + uncaughtExceptionHandler
+    val approvalIOContext = Job(superJob) + Dispatchers.IO + uncaughtExceptionHandler
+
     init {
-        viewModelScope.launch(Job(superJob) + Dispatchers.Main + uncaughtExceptionHandler) {
-            workflowStatus = measureApprovalDataRepository.workflowStatus.distinctUntilChanged()
+        viewModelScope.launch(approveMainContext) {
+            workflowStatus = measureApprovalDataRepository.workflowStatus
             workflowStatus.observeForever {
                 it?.let {
                     workflowState.postValue(it.getContentIfNotHandled())
                 }
             }
             galleryMeasure.observeForever {
-                viewModelScope.launch(Job(superJob) + Dispatchers.Main + uncaughtExceptionHandler) {
-                    generateGallery(it)
-                }
+                generateGallery(it)
             }
         }
     }
@@ -191,8 +191,8 @@ class ApproveMeasureViewModel(
         }
     }
 
-    private suspend fun generateGallery(measureItem: JobItemMeasureDTO) =
-        viewModelScope.launch(viewModelScope.coroutineContext) {
+    private fun generateGallery(measureItem: JobItemMeasureDTO) =
+        viewModelScope.launch(approvalIOContext) {
             try {
 
                 val measureDescription =
@@ -258,8 +258,11 @@ class ApproveMeasureViewModel(
      * prevent a leak of this ViewModel.
      */
     override fun onCleared() {
+        super.onCleared()
+        approveMainContext.cancelChildren()
+        approvalIOContext.cancelChildren()
         superJob.cancelChildren()
         workflowState = MutableLiveData()
-        super.onCleared()
+        workflowStatus = MutableLiveData()
     }
 }

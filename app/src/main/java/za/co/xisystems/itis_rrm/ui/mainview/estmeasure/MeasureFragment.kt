@@ -2,18 +2,21 @@ package za.co.xisystems.itis_rrm.ui.mainview.estmeasure
 
 import android.graphics.Color
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.skydoves.androidveil.VeiledItemOnClickListener
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
-import kotlinx.android.synthetic.main.fragment_approvemeasure.noData
-import kotlinx.android.synthetic.main.fragment_estmeasure.*
+import kotlinx.android.synthetic.main.fragment_work.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.kodein.di.KodeinAware
@@ -22,10 +25,12 @@ import org.kodein.di.generic.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
+import za.co.xisystems.itis_rrm.constants.Constants
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.results.XIError
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
+import za.co.xisystems.itis_rrm.databinding.FragmentEstmeasureBinding
 import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.estimate_measure_item.EstimateMeasureItem
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
@@ -36,6 +41,10 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
     override val kodein by kodein()
     private lateinit var measureViewModel: MeasureViewModel
     private val factory: MeasureViewModelFactory by instance()
+    private var _ui: FragmentEstmeasureBinding? = null
+    private val ui get() = _ui!!
+    private var groupAdapter = GroupAdapter<GroupieViewHolder>()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
@@ -52,8 +61,9 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_estmeasure, container, false)
+    ): View {
+        _ui = FragmentEstmeasureBinding.inflate(inflater, container, false)
+        return ui.root
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -67,10 +77,24 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
             ViewModelProvider(this, factory).get(MeasureViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
 
+
+
         Coroutines.main {
+            initVeiledRecycler()
             fetchEstimateMeasures()
             swipeToRefreshInit()
         }
+    }
+
+    private fun delayedUnveil() {
+        Handler(Looper.getMainLooper()).postDelayed(
+            {
+                if (!activity?.isFinishing!!) {
+                    ui.estimationsToBeMeasuredListView.unVeil()
+                }
+            },
+            Constants.ONE_SECOND
+        )
     }
 
     private suspend fun fetchEstimateMeasures() {
@@ -80,7 +104,7 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
             ActivityIdConstants.JOB_ESTIMATE
         )
 
-        itemEstimateData.observeOnce(viewLifecycleOwner, { itemEstimateList ->
+        itemEstimateData.observe(viewLifecycleOwner, { itemEstimateList ->
             itemEstimateList?.let {
                 if (it.isEmpty()) {
                     fetchJobMeasures()
@@ -90,26 +114,27 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
                         item.jobId
                     }
                     Timber.d("Estimate measures detected: ${jobHeaders.size}")
-                    estimations_to_be_measured_listView.visibility = View.VISIBLE
+                    ui.estimationsToBeMeasuredListView.visibility = View.VISIBLE
                     initRecyclerView(jobHeaders.toMeasureListItems())
-                    noData.visibility = View.GONE
-                    group5_loading.visibility = View.GONE
+                    ui.noData.visibility = View.GONE
+                    ui.group5Loading.visibility = View.GONE
                 }
             }
         })
     }
 
     private fun swipeToRefreshInit() {
-        estimations_swipe_to_refresh.setProgressBackgroundColorSchemeColor(
+        ui.estimationsSwipeToRefresh.setProgressBackgroundColorSchemeColor(
             ContextCompat.getColor(
                 requireContext().applicationContext,
                 R.color.colorPrimary
             )
         )
-        estimations_swipe_to_refresh.setColorSchemeColors(Color.WHITE)
+        ui.estimationsSwipeToRefresh.setColorSchemeColors(Color.WHITE)
 
-        estimations_swipe_to_refresh.setOnRefreshListener {
+        ui.estimationsSwipeToRefresh.setOnRefreshListener {
             Coroutines.main {
+                ui.estimationsToBeMeasuredListView.veil()
                 fetchRemoteJobs()
             }
         }
@@ -122,11 +147,11 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
                     val jobs = measureViewModel.offlineUserTaskList.await()
                     jobs.observeOnce(viewLifecycleOwner, { works ->
                         if (works.isNullOrEmpty()) {
-                            noData.visibility = View.VISIBLE
-                            estimations_to_be_measured_listView.visibility = View.GONE
+                            ui.noData.visibility = View.VISIBLE
+                            ui.estimationsToBeMeasuredListView.visibility = View.GONE
                         } else {
-                            noData.visibility = View.GONE
-                            estimations_to_be_measured_listView.visibility = View.VISIBLE
+                            ui.noData.visibility = View.GONE
+                            ui.estimationsToBeMeasuredListView.visibility = View.VISIBLE
                         }
                     })
                 }
@@ -138,7 +163,8 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
                     refreshAction = { retryFetchingJobs() }
                 )
             } finally {
-                estimations_swipe_to_refresh.isRefreshing = false
+                ui.estimationsSwipeToRefresh.isRefreshing = false
+                delayedUnveil()
             }
         }
     }
@@ -158,21 +184,21 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
                 ActivityIdConstants.MEASURE_PART_COMPLETE
             )
 
-            jobEstimateData.observeOnce(viewLifecycleOwner, { jos ->
+            jobEstimateData.observe(viewLifecycleOwner, { jos ->
                 jos?.let {
                     if (jos.isEmpty()) {
-                        noData.visibility = View.VISIBLE
-                        group5_loading.visibility = View.GONE
-                        estimations_to_be_measured_listView.visibility = View.GONE
+                        ui.noData.visibility = View.VISIBLE
+                        ui.group5Loading.visibility = View.GONE
+                        ui.estimationsToBeMeasuredListView.visibility = View.GONE
                     } else {
-                        noData.visibility = View.GONE
-                        estimations_to_be_measured_listView.visibility = View.VISIBLE
+                        ui.noData.visibility = View.GONE
+                        ui.estimationsToBeMeasuredListView.visibility = View.VISIBLE
                         val measureItems = jos.distinctBy {
                             it.jobId
                         }
                         Timber.d("Job measures detected: ${measureItems.size}")
                         initRecyclerView(measureItems.toMeasureListItems())
-                        group5_loading.visibility = View.GONE
+                        ui.group5Loading.visibility = View.GONE
                     }
                 }
             })
@@ -180,12 +206,11 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
     }
 
     private fun initRecyclerView(measureList: List<EstimateMeasureItem>) {
-        val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
+        groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
             update(measureList)
         }
-        estimations_to_be_measured_listView.apply {
-            layoutManager = LinearLayoutManager(this.context)
-            adapter = groupAdapter
+        ui.estimationsToBeMeasuredListView.run {
+            setAdapter(adapter = groupAdapter, layoutManager = LinearLayoutManager(this.context))
         }
 
         groupAdapter.setOnItemClickListener { item, view ->
@@ -216,8 +241,23 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
         }
     }
 
+    private fun initVeiledRecycler() {
+        ui.estimationsToBeMeasuredListView.run {
+            setVeilLayout(R.layout.single_listview_item, object : VeiledItemOnClickListener {
+                /** will be invoked when the item on the [VeilRecyclerFrameView] clicked. */
+                override fun onItemClicked(pos: Int) {
+                    Toast.makeText(this@MeasureFragment.requireContext(), "Loading ...", Toast.LENGTH_SHORT).show()
+                }
+            })
+            setAdapter(groupAdapter)
+            setLayoutManager(LinearLayoutManager(this.context))
+            addVeiledItems(10)
+        }
+    }
+
     override fun onDestroyView() {
-        estimations_to_be_measured_listView.adapter = null
         super.onDestroyView()
+        ui.estimationsToBeMeasuredListView.setAdapter(null)
+        _ui = null
     }
 }

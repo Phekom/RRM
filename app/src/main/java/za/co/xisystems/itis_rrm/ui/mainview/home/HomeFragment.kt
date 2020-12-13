@@ -17,6 +17,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenStarted
 import com.skydoves.progressview.ProgressView
+import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -48,7 +49,6 @@ import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.BOTTOM
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.ERROR
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.INFO
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.SUCCESS
-import kotlin.coroutines.cancellation.CancellationException
 
 class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
 
@@ -201,10 +201,10 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
      */
     override fun onDestroyView() {
         super.onDestroyView()
-        homeViewModel.databaseState.removeObservers(viewLifecycleOwner)
-        uiScope.destroy()
         // prevent viewBinding from leaking
         _ui = null
+        uiScope.destroy()
+        homeViewModel.databaseState.removeObservers(viewLifecycleOwner)
     }
 
     @ExperimentalStdlibApi
@@ -249,7 +249,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
     private fun resetProgressViews() {
         ui.pvContracts.progress = 0.0f
         ui.pvTasks.progress = 0.0f
-        ui.pvSections.progress=0.0f
+        ui.pvSections.progress = 0.0f
     }
 
     private fun isAppDbSynched() {
@@ -423,7 +423,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                 updateProgress(update, ui.pvTasks)
             }
             "sections" -> {
-               updateProgress(update, ui.pvSections)
+                updateProgress(update, ui.pvSections)
             }
         }
     }
@@ -432,7 +432,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
         if (progressView.visibility != View.VISIBLE) {
             progressView.visibility = View.VISIBLE
         }
-        if (update.getPercentageComplete() > ui.pvSections.progress) {
+        if (update.getPercentageComplete() > progressView.progress) {
             progressView.progress = update.getPercentageComplete()
         }
     }
@@ -473,7 +473,7 @@ class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
                 .setCancelable(false)
                 .setIcon(R.drawable.ic_baseline_cloud_download_24)
                 .setPositiveButton(R.string.ok) { _, _ ->
-                    Coroutines.main {
+                    uiScope.launch {
                         bigSync()
                     }
                 }

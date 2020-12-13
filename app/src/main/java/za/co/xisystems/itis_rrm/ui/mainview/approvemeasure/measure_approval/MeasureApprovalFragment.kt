@@ -6,15 +6,19 @@ import android.app.Dialog
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.skydoves.androidveil.VeiledItemOnClickListener
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import kotlinx.coroutines.launch
@@ -27,6 +31,7 @@ import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.R.string
 import za.co.xisystems.itis_rrm.base.BaseFragment
+import za.co.xisystems.itis_rrm.constants.Constants
 import za.co.xisystems.itis_rrm.custom.results.XIError
 import za.co.xisystems.itis_rrm.custom.results.XIProgress
 import za.co.xisystems.itis_rrm.custom.results.XIResult
@@ -70,6 +75,7 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
     private var uiScope = UiLifecycleScope()
     private var _ui: FragmentMeasureApprovalBinding? = null
     private val ui get() = _ui!!
+    private var groupAdapter = GroupAdapter<GroupieViewHolder>()
 
     private fun handleMeasureProcessing(outcome: XIResult<String>?) {
         outcome?.let { result ->
@@ -112,8 +118,9 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
     private fun retryMeasurements() {
         IndefiniteSnackbar.hide()
         Coroutines.main {
-            processMeasurementWorkflow(NEXT)
             approveViewModel.workflowState.observe(viewLifecycleOwner, workObserver)
+            processMeasurementWorkflow(NEXT)
+
         }
     }
 
@@ -145,6 +152,23 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
 
         Coroutines.main {
 
+            ui.viewMeasuredItems.run {
+                setVeilLayout(R.layout.measurements_item, object : VeiledItemOnClickListener {
+                    /** will be invoked when the item on the [VeilRecyclerFrameView] clicked. */
+                    override fun onItemClicked(pos: Int) {
+                        Toast.makeText(
+                            this@MeasureApprovalFragment.requireContext(),
+                            "Loading ...",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                })
+                setAdapter(groupAdapter)
+                setLayoutManager(LinearLayoutManager(this.context))
+                addVeiledItems(10)
+            }
+
+            ui.viewMeasuredItems.veil()
             approveViewModel.measureApprovalItem.observe(viewLifecycleOwner, { job ->
                 getMeasureItems(job)
             })
@@ -256,23 +280,39 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
                     initRecyclerView(it.toMeasureItems())
                 }
             })
+            delayedUnveil()
         }
     }
 
+    private fun delayedUnveil() {
+        Handler(Looper.getMainLooper()).postDelayed(
+            {
+                if (!activity?.isFinishing!!) {
+                    ui.viewMeasuredItems.unVeil()
+                }
+            },
+            Constants.ONE_SECOND
+        )
+    }
+
     private fun initRecyclerView(measureListItems: List<MeasurementsItem>) {
-        val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
+        groupAdapter.apply {
+            clear()
             update(measureListItems)
+            notifyDataSetChanged()
         }
-        ui.viewMeasuredItems.apply {
-            layoutManager = LinearLayoutManager(context)
-            adapter = groupAdapter
+        ui.viewMeasuredItems.run {
+            setAdapter(groupAdapter, layoutManager = LinearLayoutManager(context))
         }
     }
 
     override fun onDestroyView() {
-        approveViewModel.workflowState.removeObservers(viewLifecycleOwner)
-        ui.viewMeasuredItems.adapter = null
         super.onDestroyView()
+        // clear out all the leakers
+        uiScope.destroy()
+        approveViewModel.workflowState.removeObservers(viewLifecycleOwner)
+        ui.viewMeasuredItems.setAdapter(null)
+        _ui = null
     }
 
     private fun List<JobItemMeasureDTO>.toMeasureItems(): List<MeasurementsItem> {

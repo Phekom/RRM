@@ -17,7 +17,7 @@ open class MeasureHeaderItem(
     private val onIconClickListener: View.OnClickListener? = null
 ) : Item() {
 
-    private var projID = measures.projectItemId
+    private var projectId = measures.projectItemId
     var qty = measures.qty
 
     override fun getLayout(): Int {
@@ -32,11 +32,11 @@ open class MeasureHeaderItem(
                     visibility = View.GONE
                     subtitleResId.let {
                         visibility = View.VISIBLE
-                        text = "Quantity : ${it.toString().dropLast(2)}"
+                        text = itemView.context.getString(R.string.pair,"Quantity : ", it.toString().dropLast(2))
                     }
                 }
-                val desc = measureViewModel.getDescForProjectItemId(projID!!)
-                title.text = "Estimate - $desc "
+                val desc = measureViewModel.getDescForProjectItemId(projectId!!)
+                title.text = this.itemView.context.getString(R.string.pair,"Estimate - ", desc)
             }
         }
 

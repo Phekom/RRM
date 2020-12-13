@@ -61,4 +61,4 @@ class RecoverableException(message: String) : Throwable(message)
 
 class RestException(message: String, override val cause: Throwable?) : Throwable(message, cause)
 
-class ConnectException(message: String): IOException(message)
+class ConnectException(message: String) : IOException(message)
