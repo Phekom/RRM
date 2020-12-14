@@ -54,7 +54,6 @@ class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAw
     private var uiScope = UiLifecycleScope()
     private var _ui: FragmentApprovejobBinding? = null
     private val ui get() = _ui!!
-    private var layoutVeiled = false
     private var groupAdapter = GroupAdapter<GroupieViewHolder>()
     private var queryObserver = Observer<XIResult<String>?> { handleQueryErrors(it) }
 
@@ -188,7 +187,7 @@ class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAw
         }
     }
 
-    suspend fun fetchJobsFromServices() {
+    private suspend fun fetchJobsFromServices() {
         try {
             val freshJobs = approveViewModel.offlineUserTaskList.await()
             freshJobs.observeOnce(viewLifecycleOwner, {

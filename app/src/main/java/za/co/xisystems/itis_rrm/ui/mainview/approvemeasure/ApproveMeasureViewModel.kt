@@ -59,8 +59,8 @@ class ApproveMeasureViewModel(
 
     var workflowState: MutableLiveData<XIResult<String>?> = MutableLiveData()
 
-    val approveMainContext = Job(superJob) + Dispatchers.Main + uncaughtExceptionHandler
-    val approvalIOContext = Job(superJob) + Dispatchers.IO + uncaughtExceptionHandler
+    private val approveMainContext = Job(superJob) + Dispatchers.Main + uncaughtExceptionHandler
+    private val approvalIOContext = Job(superJob) + Dispatchers.IO + uncaughtExceptionHandler
 
     init {
         viewModelScope.launch(approveMainContext) {
@@ -144,7 +144,7 @@ class ApproveMeasureViewModel(
     ) = viewModelScope.launch {
         workflowState.postValue(XIProgress(true))
 
-        withContext(Dispatchers.IO + uncaughtExceptionHandler) {
+        withContext(approvalIOContext) {
             try {
                 measureApprovalDataRepository.processWorkflowMove(userId, measurements, workflowDirection.value)
 
@@ -171,7 +171,7 @@ class ApproveMeasureViewModel(
     }
 
     suspend fun generateGalleryUI(itemMeasureId: String) =
-        viewModelScope.launch(Job(superJob) + Dispatchers.Main + uncaughtExceptionHandler) {
+        viewModelScope.launch(approveMainContext) {
             try {
                 getJobItemMeasureByItemMeasureId(itemMeasureId).observeForever {
                     it?.let {
@@ -192,7 +192,7 @@ class ApproveMeasureViewModel(
     }
 
     private fun generateGallery(measureItem: JobItemMeasureDTO) =
-        viewModelScope.launch(approvalIOContext) {
+        viewModelScope.launch(approveMainContext) {
             try {
 
                 val measureDescription =

@@ -35,6 +35,7 @@ import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.results.XIError
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
+import za.co.xisystems.itis_rrm.databinding.FragmentWorkBinding
 import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.ui.mainview.work.estimate_work_item.CardItem
 import za.co.xisystems.itis_rrm.ui.mainview.work.estimate_work_item.ExpandableHeaderWorkItem
@@ -55,6 +56,8 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
     private lateinit var layoutManager: LinearLayoutManager
     private var groupAdapter = GroupAdapter<GroupieViewHolder>()
     private var veiled: Boolean = false
+    private var _ui: FragmentWorkBinding? = null
+    private val ui get() = _ui!!
 
     init {
 
@@ -114,8 +117,9 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_work, container, false)
+    ): View {
+        _ui = FragmentWorkBinding.inflate(inflater, container, false)
+        return ui.root
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -131,7 +135,7 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
     }
 
     private fun initVeiledRecycler() {
-        veiled_work_list_view.run {
+        ui.veiledWorkListView.run {
             setVeilLayout(R.layout.item_expandable_header, object : VeiledItemOnClickListener {
                 /** will be invoked when the item on the [VeilRecyclerFrameView] clicked. */
                 override fun onItemClicked(pos: Int) {
@@ -146,23 +150,23 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
 
     private fun initSwipeToRefresh() {
 
-        works_swipe_to_refresh.setProgressBackgroundColorSchemeColor(
+        ui.worksSwipeToRefresh.setProgressBackgroundColorSchemeColor(
             ContextCompat.getColor(
                 requireContext().applicationContext,
                 R.color.colorPrimary
             )
         )
 
-        works_swipe_to_refresh.setColorSchemeColors(Color.WHITE)
+        ui.worksSwipeToRefresh.setColorSchemeColors(Color.WHITE)
 
-        works_swipe_to_refresh.setOnRefreshListener {
+        ui.worksSwipeToRefresh.setOnRefreshListener {
             fetchJobsFromService()
         }
     }
 
     private fun fetchJobsFromService() = uiScope.launch(uiScope.coroutineContext) {
         try {
-            veiled_work_list_view.veil()
+            ui.veiledWorkListView.veil()
             veiled = true
             withContext(uiScope.coroutineContext) {
                 refreshUserTaskListFromApi()
@@ -177,11 +181,11 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
                 refreshAction = { retryFetchingJobs() }
             )
         } finally {
-            works_swipe_to_refresh.isRefreshing = false
+            ui.worksSwipeToRefresh.isRefreshing = false
             // delay-auto-unveil
             Handler(Looper.getMainLooper()).postDelayed(
                 {
-                    veiled_work_list_view.unVeil()
+                    ui.veiledWorkListView.unVeil()
                     veiled = false
                 },
                 Constants.ONE_SECOND
@@ -219,8 +223,8 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
             notifyDataSetChanged()
         }
 
-        veiled_work_list_view.setLayoutManager(LinearLayoutManager(this.context))
-        veiled_work_list_view.setAdapter(groupAdapter)
+        ui.veiledWorkListView.setLayoutManager(LinearLayoutManager(this.context))
+        ui.veiledWorkListView.setAdapter(groupAdapter)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -237,9 +241,10 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
     }
 
     override fun onDestroyView() {
-        uiScope.destroy()
-        veiled_work_list_view.setAdapter(null)
         super.onDestroyView()
+        uiScope.destroy()
+        ui.veiledWorkListView.setAdapter(null)
+        _ui = null
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

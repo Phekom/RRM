@@ -412,6 +412,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         // Estimates are completed needs to be submitted currently saved in the local DB
 
         uiScope.launch(uiScope.coroutineContext) {
+
+            // Unsubmitted jobs are collected here
             mainActivityViewModel.getJobsForActivityId(
                 ActivityIdConstants.JOB_ESTIMATE
             ).observe(this@MainActivity, { newJobData ->

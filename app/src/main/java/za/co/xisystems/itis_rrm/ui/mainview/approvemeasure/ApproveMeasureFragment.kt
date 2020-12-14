@@ -163,7 +163,7 @@ class ApproveMeasureFragment : BaseFragment(R.layout.fragment_approvemeasure), K
     }
 
     private fun fetchJobsFromService() {
-        Coroutines.io {
+        Coroutines.main {
             try {
                 val freshJobs = approveViewModel.offlineUserTaskList.await()
                 freshJobs.observe(viewLifecycleOwner, {

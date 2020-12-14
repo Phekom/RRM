@@ -173,7 +173,6 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
                 shimmer = ShimmerUtils.getGrayShimmer(this@JobInfoFragment.requireContext())
             }
 
-
             approveViewModel.jobApprovalItem.observe(viewLifecycleOwner, { job ->
                 Coroutines.main {
                     getEstimateItems(job.jobDTO.JobId)
@@ -374,6 +373,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
 
     private fun initRecyclerView(estimatesListItems: List<EstimatesItem>) {
         groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
+            clear()
             addAll(estimatesListItems)
             notifyDataSetChanged()
         }
@@ -389,7 +389,6 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
         Handler(Looper.getMainLooper()).postDelayed(
             {
                 if (!activity?.isFinishing!!) {
-
                     ui.viewEstimationItemsListView.unVeil()
                 }
             },
