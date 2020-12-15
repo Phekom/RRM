@@ -120,7 +120,6 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
         Coroutines.main {
             approveViewModel.workflowState.observe(viewLifecycleOwner, workObserver)
             processMeasurementWorkflow(NEXT)
-
         }
     }
 
@@ -257,14 +256,15 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
 
     private fun popViewOnJobSubmit(direction: Int) {
         if (direction == NEXT.value) {
-            sharpToast(resId = string.measurement_approved, style = SUCCESS)
+            sharpToast(resId = string.measurement_approved, style = SUCCESS, duration = SHORT)
         } else if (direction == WorkflowDirection.FAIL.value) {
-            sharpToast(resId = string.measurement_declined, style = INFO)
+            sharpToast(resId = string.measurement_declined, style = INFO, duration = SHORT)
         }
-
-        Intent(context?.applicationContext, MainActivity::class.java).also { home ->
-            startActivity(home)
-        }
+        Handler(Looper.getMainLooper()).postDelayed({
+            Intent(context?.applicationContext, MainActivity::class.java).also { home ->
+                startActivity(home)
+            }
+        }, Constants.TWO_SECONDS)
     }
 
     private fun getMeasureItems(job: ApproveMeasureItem) {
