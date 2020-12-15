@@ -1,6 +1,6 @@
 package za.co.xisystems.itis_rrm.ui.mainview.approvejobs.view_job_info
 
-import android.app.AlertDialog
+import android.app.AlertDialog.Builder
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -24,6 +24,8 @@ import org.kodein.di.generic.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.R.drawable
+import za.co.xisystems.itis_rrm.R.layout
 import za.co.xisystems.itis_rrm.R.string
 import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.constants.Constants
@@ -54,6 +56,8 @@ import za.co.xisystems.itis_rrm.utils.enums.ToastStyle
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.NO_INTERNET
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.SUCCESS
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
+import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection.FAIL
+import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection.NEXT
 
 class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
     override val kodein by kodein()
@@ -160,41 +164,58 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
 
         Coroutines.main {
 
-            ui.viewEstimationItemsListView.run {
-                setVeilLayout(R.layout.estimates_item, object : VeiledItemOnClickListener {
-                    /** will be invoked when the item on the [VeilRecyclerFrameView] clicked. */
-                    override fun onItemClicked(pos: Int) {
-                        Toast.makeText(this@JobInfoFragment.requireContext(), "Loading ...", Toast.LENGTH_SHORT).show()
-                    }
-                })
-                setAdapter(groupAdapter)
-                setLayoutManager(LinearLayoutManager(this.context))
-                addVeiledItems(3)
-                shimmer = ShimmerUtils.getGrayShimmer(this@JobInfoFragment.requireContext())
-            }
+            initVeiledRecyclerView()
 
-            approveViewModel.jobApprovalItem.observe(viewLifecycleOwner, { job ->
-                Coroutines.main {
-                    getEstimateItems(job.jobDTO.JobId)
-                    val description = approveViewModel.getDescForProjectId(job.jobDTO.ProjectId!!)
-                    val sectionId = approveViewModel.getProjectSectionIdForJobId(job.jobDTO.JobId)
-                    val route = approveViewModel.getRouteForProjectSectionId(sectionId)
-                    val section = approveViewModel.getSectionForProjectSectionId(sectionId)
-
-                    ui.projectDescriptionTextView.text = description
-                    ui.sectionDescriptionTextView.text = ("$route/ $section")
-                    ui.startKmDescriptionTextView.text = (job.jobDTO.StartKm.toString())
-                    ui.endKmDescriptionTextView.text = (job.jobDTO.EndKm.toString())
-                }
-            })
+            initApprovalHeader()
         }
 
+        buildApprovalDialog()
+
+        buildDeclineDialog()
+    }
+
+    private fun buildDeclineDialog() {
+        ui.declineJobButton.setOnClickListener {
+            val declineBuilder =
+                Builder(
+                    activity // , android.R.style.Theme_DeviceDefault_Dialog
+                )
+            declineBuilder.setTitle(string.confirm)
+            declineBuilder.setIcon(drawable.ic_warning)
+            declineBuilder.setMessage(string.are_you_sure_you_want_to_decline)
+            // Yes button
+            declineBuilder.setPositiveButton(
+                string.yes
+            ) { _, _ ->
+                if (ServiceUtil.isNetworkAvailable(requireContext().applicationContext)) {
+                    progressButton = ui.declineJobButton
+                    moveJobToNextWorkflow(FAIL)
+                } else {
+                    sharpToast(
+                        message = getString(string.no_connection_detected),
+                        style = NO_INTERNET
+                    )
+                }
+            }
+            // No button
+            declineBuilder.setNegativeButton(
+                string.no
+            ) { dialog, _ ->
+                // Do nothing but close dialog
+                dialog.dismiss()
+            }
+            val declineAlert = declineBuilder.create()
+            declineAlert.show()
+        }
+    }
+
+    private fun buildApprovalDialog() {
         ui.approveJobButton.setOnClickListener {
-            val approvalBuilder = AlertDialog.Builder(
+            val approvalBuilder = Builder(
                 activity // ,android.R.style.Theme_DeviceDefault_Dialog
             )
             approvalBuilder.setTitle(string.confirm)
-            approvalBuilder.setIcon(R.drawable.ic_approve)
+            approvalBuilder.setIcon(drawable.ic_approve)
             approvalBuilder.setMessage(string.are_you_sure_you_want_to_approve)
 
             // Yes button
@@ -204,7 +225,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
                 if (ServiceUtil.isNetworkAvailable(requireContext().applicationContext)) {
                     progressButton = ui.approveJobButton
                     progressButton.initProgress(viewLifecycleOwner)
-                    moveJobToNextWorkflow(WorkflowDirection.NEXT)
+                    moveJobToNextWorkflow(NEXT)
                 } else {
                     sharpToast(
                         message = getString(string.no_connection_detected),
@@ -223,38 +244,37 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
             val approvalDialog = approvalBuilder.create()
             approvalDialog.show()
         }
+    }
 
-        ui.declineJobButton.setOnClickListener {
-            val declineBuilder =
-                AlertDialog.Builder(
-                    activity // , android.R.style.Theme_DeviceDefault_Dialog
-                )
-            declineBuilder.setTitle(string.confirm)
-            declineBuilder.setIcon(R.drawable.ic_warning)
-            declineBuilder.setMessage(string.are_you_sure_you_want_to_decline)
-            // Yes button
-            declineBuilder.setPositiveButton(
-                string.yes
-            ) { _, _ ->
-                if (ServiceUtil.isNetworkAvailable(requireContext().applicationContext)) {
-                    progressButton = ui.declineJobButton
-                    moveJobToNextWorkflow(WorkflowDirection.FAIL)
-                } else {
-                    sharpToast(
-                        message = getString(string.no_connection_detected),
-                        style = NO_INTERNET
-                    )
+    private fun initApprovalHeader() {
+        approveViewModel.jobApprovalItem.observe(viewLifecycleOwner, { job ->
+            Coroutines.main {
+                getEstimateItems(job.jobDTO.JobId)
+                val description = approveViewModel.getDescForProjectId(job.jobDTO.ProjectId!!)
+                val sectionId = approveViewModel.getProjectSectionIdForJobId(job.jobDTO.JobId)
+                val route = approveViewModel.getRouteForProjectSectionId(sectionId)
+                val section = approveViewModel.getSectionForProjectSectionId(sectionId)
+
+                ui.projectDescriptionTextView.text = description
+                ui.sectionDescriptionTextView.text = ("$route/ $section")
+                ui.startKmDescriptionTextView.text = (job.jobDTO.StartKm.toString())
+                ui.endKmDescriptionTextView.text = (job.jobDTO.EndKm.toString())
+            }
+        })
+    }
+
+    private fun initVeiledRecyclerView() {
+        ui.viewEstimationItemsListView.run {
+            setVeilLayout(layout.estimates_item, object : VeiledItemOnClickListener {
+                /** will be invoked when the item on the [VeilRecyclerFrameView] clicked. */
+                override fun onItemClicked(pos: Int) {
+                    Toast.makeText(this@JobInfoFragment.requireContext(), "Loading ...", Toast.LENGTH_SHORT).show()
                 }
-            }
-            // No button
-            declineBuilder.setNegativeButton(
-                string.no
-            ) { dialog, _ ->
-                // Do nothing but close dialog
-                dialog.dismiss()
-            }
-            val declineAlert = declineBuilder.create()
-            declineAlert.show()
+            })
+            setAdapter(groupAdapter)
+            setLayoutManager(LinearLayoutManager(this.context))
+            addVeiledItems(3)
+            shimmer = ShimmerUtils.getGrayShimmer(this@JobInfoFragment.requireContext())
         }
     }
 

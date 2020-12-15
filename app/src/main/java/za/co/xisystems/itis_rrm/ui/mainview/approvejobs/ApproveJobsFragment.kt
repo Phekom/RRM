@@ -16,6 +16,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.whenStarted
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.skydoves.androidveil.VeiledItemOnClickListener
@@ -27,6 +28,7 @@ import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.R.layout
 import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.constants.Constants.ONE_SECOND
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
@@ -80,6 +82,10 @@ class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAw
 
     init {
         lifecycleScope.launch {
+            whenStarted {
+                uiScope.onCreate()
+                viewLifecycleOwner.lifecycle.addObserver(uiScope)
+            }
         }
     }
 
@@ -103,17 +109,7 @@ class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAw
             ViewModelProvider(this, factory).get(ApproveJobsViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
 
-        ui.approveJobVeiledRecycler.run {
-            setVeilLayout(R.layout.single_job_listing, object : VeiledItemOnClickListener {
-                /** will be invoked when the item on the [VeilRecyclerFrameView] clicked. */
-                override fun onItemClicked(pos: Int) {
-                    Toast.makeText(this@ApproveJobsFragment.requireContext(), "Loading ...", Toast.LENGTH_SHORT).show()
-                }
-            })
-            setAdapter(groupAdapter)
-            setLayoutManager(LinearLayoutManager(this.context))
-            addVeiledItems(10)
-        }
+        initVeiledRecyclerView()
 
         Coroutines.main {
 
@@ -123,13 +119,27 @@ class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAw
         }
     }
 
+    private fun initVeiledRecyclerView() {
+        ui.approveJobVeiledRecycler.run {
+            setVeilLayout(layout.single_job_listing, object : VeiledItemOnClickListener {
+                /** will be invoked when the item on the [VeilRecyclerFrameView] clicked. */
+                override fun onItemClicked(pos: Int) {
+                    Toast.makeText(this@ApproveJobsFragment.requireContext(), "Loading ...", Toast.LENGTH_SHORT).show()
+                }
+            })
+            setAdapter(groupAdapter)
+            setLayoutManager(LinearLayoutManager(this.context))
+            addVeiledItems(10)
+        }
+    }
+
     private suspend fun ApproveJobsFragment.protectedFetch(
         veiled: Boolean = false,
         fetchQuery: suspend () -> Unit = {},
         retryAction: suspend () -> Unit = {}
     ) {
         try {
-            if(veiled){
+            if (veiled) {
                 ui.approveJobVeiledRecycler.veil()
             }
             approveViewModel.workflowState.observe(viewLifecycleOwner, queryObserver)
@@ -144,7 +154,7 @@ class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAw
             )
         } finally {
 
-            if(veiled) delayedUnveil()
+            if (veiled) delayedUnveil()
 
             approveViewModel.workflowState.removeObserver(queryObserver)
         }
@@ -266,6 +276,7 @@ class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAw
         super.onDestroyView()
         approveViewModel.workflowState.removeObservers(viewLifecycleOwner)
         ui.approveJobVeiledRecycler.setAdapter(null)
+        uiScope.destroy()
         _ui = null
     }
 }
