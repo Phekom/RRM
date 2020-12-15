@@ -130,6 +130,7 @@ class MeasureApprovalDataRepository(
                 }
             }
             saveWorkflowJob(flowJob!!)
+            postWorkflowStatus(XISuccess("WORK_COMPLETE"))
         } catch (t: Throwable) {
             val message = "Failed to Approve Measurement: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
             postWorkflowStatus(XIError(t, message))

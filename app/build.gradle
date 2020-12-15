@@ -458,6 +458,10 @@ dependencies {
     // optional - Test helpers
     testImplementation "androidx.room:room-testing:$room_version"
 
+    // Roomigrant
+    implementation 'com.github.MatrixDev.Roomigrant:RoomigrantLib:0.2.0'
+    kapt 'com.github.MatrixDev.Roomigrant:RoomigrantCompiler:0.2.0'
+
 
     // Groupie
     implementation 'com.xwray:groupie:2.8.0'

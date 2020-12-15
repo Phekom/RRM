@@ -148,7 +148,7 @@ class ApproveMeasureViewModel(
             try {
                 measureApprovalDataRepository.processWorkflowMove(userId, measurements, workflowDirection.value)
 
-                workflowState.postValue(XISuccess("WORK_COMPLETE"))
+                // workflowState.postValue(XISuccess("WORK_COMPLETE"))
             } catch (t: Throwable) {
                 workflowState.postValue(XIError(t, t.message ?: UNKNOWN_ERROR))
             }
@@ -259,8 +259,6 @@ class ApproveMeasureViewModel(
      */
     override fun onCleared() {
         super.onCleared()
-        approveMainContext.cancelChildren()
-        approvalIOContext.cancelChildren()
         superJob.cancelChildren()
         workflowState = MutableLiveData()
         workflowStatus = MutableLiveData()
