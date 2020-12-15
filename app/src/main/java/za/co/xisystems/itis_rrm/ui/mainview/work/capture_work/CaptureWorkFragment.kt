@@ -111,9 +111,10 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
     private lateinit var useR: UserDTO
     private lateinit var workSubmission: Job
     private lateinit var jobSubmission: Job
+
     override fun onStop() {
-        uiScope.destroy()
         super.onStop()
+        uiScope.destroy()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

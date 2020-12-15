@@ -6,6 +6,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
+import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
@@ -176,7 +177,7 @@ class MeasureViewModel(
         activityId3: Int
     ): LiveData<List<JobItemEstimateDTO>> {
         return withContext(Dispatchers.IO + uncaughtExceptionHandler) {
-            measureCreationDataRepository.getJobMeasureForActivityId(activityId, activityId2, activityId3)
+            measureCreationDataRepository.getJobMeasureForActivityId(activityId, activityId2, activityId3).distinctUntilChanged()
         }
     }
 

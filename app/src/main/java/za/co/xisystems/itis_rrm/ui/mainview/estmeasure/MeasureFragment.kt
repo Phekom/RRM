@@ -102,7 +102,7 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
             ActivityIdConstants.JOB_ESTIMATE
         )
 
-        itemEstimateData.observe(viewLifecycleOwner, { itemEstimateList ->
+        itemEstimateData.observeOnce(viewLifecycleOwner, { itemEstimateList ->
 
             if (itemEstimateList.isNullOrEmpty()) {
                 ui.noData.visibility = View.VISIBLE
@@ -149,6 +149,9 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
                         } else {
                             ui.noData.visibility = View.GONE
                             ui.estimationsToBeMeasuredListView.visibility = View.VISIBLE
+                            Coroutines.main {
+                                fetchEstimateMeasures()
+                            }
                         }
                     })
                 }
@@ -181,7 +184,7 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
                 ActivityIdConstants.MEASURE_PART_COMPLETE
             )
 
-            jobEstimateData.observe(viewLifecycleOwner, { jos ->
+            jobEstimateData.observeOnce(viewLifecycleOwner, { jos ->
                 if (jos.isNullOrEmpty()) {
                     ui.noData.visibility = View.VISIBLE
                     ui.estimationsToBeMeasuredListView.visibility = View.GONE
