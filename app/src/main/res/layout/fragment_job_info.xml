@@ -230,10 +230,11 @@
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
                     android:backgroundTint="@color/itis_burnt_orange"
-                    android:maxLength="50"
+                    android:maxLength="80"
                     android:singleLine="true"
                     android:textColor="@color/itis_gray"
                     android:importantForAutofill="no"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
                     android:inputType="textAutoCorrect" />
 
 

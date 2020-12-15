@@ -52,6 +52,7 @@ import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.enums.ToastDuration.LONG
 import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.BOTTOM
+import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.CENTER
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.NO_INTERNET
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.SUCCESS
@@ -308,18 +309,27 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
                             Timber.d("ApproveItem was null")
                         }
                         userDTO.userId.isBlank() -> {
-                            sharpToast(message = "The user lacks permissions.", style = ToastStyle.ERROR)
+                            sharpToast(
+                                message = "The user lacks permissions.",
+                                style = ToastStyle.ERROR,
+                                position = CENTER
+                            )
                             progressButton.failProgress("Invalid User")
                         }
                         approveJobItem.jobDTO.JobId.isBlank() -> {
-                            sharpToast(message = "The selected job is invalid.", style = ToastStyle.ERROR)
+                            sharpToast(
+                                message = "The selected job is invalid.",
+                                style = ToastStyle.ERROR,
+                                position = CENTER
+                            )
                             progressButton.failProgress("Invalid Job")
                         }
                         workflowDirection == WorkflowDirection.FAIL &&
                             ui.workflowCommentsEditText.text.trim().isBlank() -> {
                             sharpToast(
                                 message = "Please provide a comment / reason for declining this job",
-                                style = ToastStyle.WARNING
+                                style = ToastStyle.WARNING,
+                                position = CENTER
                             )
                             resetButtons()
                             progressButton.failProgress(getString(string.decline_job))
@@ -376,10 +386,15 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
             )
         }
 
-        Intent(context?.applicationContext, MainActivity::class.java).also { home ->
-            home.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-            startActivity(home)
-        }
+        Handler(Looper.getMainLooper()).postDelayed(
+            {
+                Intent(context?.applicationContext, MainActivity::class.java).also { home ->
+                    home.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                    startActivity(home)
+                }
+            },
+            Constants.TWO_SECONDS
+        )
     }
 
     private fun getEstimateItems(jobID: String?) {
