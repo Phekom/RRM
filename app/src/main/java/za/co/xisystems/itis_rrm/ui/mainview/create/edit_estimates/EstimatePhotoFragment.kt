@@ -793,6 +793,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
     }
 
     private fun showLocationWarning() {
+
         if (!locationWarning) {
             sharpToast(
                 message = getString(string.no_section_for_project),
