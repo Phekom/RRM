@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- parent="android:Theme.Holo.Light.DarkActionBar" -->
-    <style name="RrmAppTheme" parent="Base.Theme.AppCompat.Light.DarkActionBar">
+    <style name="RrmAppTheme" parent="Base.Theme.MaterialComponents.Light.DarkActionBar">
         <item name="android:actionBarStyle">@style/ItisActionBar</item>
         <item name="android:actionBarWidgetTheme">@style/PopupWrapper</item>
         <item name="homeAsUpIndicator">@drawable/ic_action_ic_navigation_drawer</item>
@@ -9,7 +9,7 @@
         <item name="android:colorAccent">@color/sanral_burnt_orange</item>
     </style>
 
-    <style name="BackNavigationTheme" parent="Base.Theme.AppCompat.Light.DarkActionBar">
+    <style name="BackNavigationTheme" parent="Base.Theme.MaterialComponents.Light.DarkActionBar">
         <item name="android:actionBarStyle">@style/ItisActionBar</item>
         <item name="android:actionBarWidgetTheme">@style/PopupWrapper</item>
         <item name="android:colorAccent">@color/sanral_burnt_orange</item>

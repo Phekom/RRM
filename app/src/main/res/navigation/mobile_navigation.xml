@@ -51,7 +51,7 @@
         <action
             android:id="@+id/action_nav_work_to_captureWorkFragment"
             app:destination="@id/captureWorkFragment"
-            app:popUpTo="@+id/nav_work" />
+            app:popUpTo="@id/nav_work" />
     </fragment>
 
     <fragment
@@ -178,14 +178,12 @@
         android:name="za.co.xisystems.itis_rrm.ui.mainview.estmeasure.submit_measure.SubmitMeasureFragment"
         android:label="fragment_submit_measure"
         tools:layout="@layout/fragment_submit_measure">
-        <!--        <action-->
-        <!--                android:id="@+id/action_submitMeasureFragment_to_captureItemMeasurePhotoFragment"-->
-        <!--                app:destination="@id/captureItemMeasurePhotoFragment"-->
-        <!--                app:popUpTo="@+id/submitMeasureFragment" />-->
+
         <action
             android:id="@+id/action_submitMeasureFragment_to_captureItemMeasurePhotoFragment"
             app:destination="@id/captureItemMeasurePhotoFragment"
             app:enterAnim="@anim/scale_light"
+            tools:layout="@layout/fragment_capture_item_measure_photo"
             app:popUpTo="@+id/submitMeasureFragment" />
     </fragment>
     <fragment
@@ -195,12 +193,14 @@
         tools:layout="@layout/fragment_capture_work">
         <action
             android:id="@+id/action_captureWorkFragment_to_nav_work"
-            app:destination="@id/nav_work" />
+            app:destination="@id/nav_work"
+            app:enterAnim="@anim/nav_default_enter_anim" />
     </fragment>
     <fragment
         android:id="@+id/captureItemMeasurePhotoFragment"
         android:name="za.co.xisystems.itis_rrm.ui.mainview.estmeasure.submit_measure.CaptureItemMeasurePhotoFragment"
-        android:label="CaptureItemMeasurePhotoFragment">
+        android:label="CaptureItemMeasurePhotoFragment"
+        tools:layout="@layout/fragment_capture_item_measure_photo">
         <action
             android:id="@+id/action_captureItemMeasurePhotoFragment_to_submitMeasureFragment"
             app:destination="@id/submitMeasureFragment" />
@@ -209,14 +209,10 @@
     <fragment
         android:id="@+id/measureGalleryFragment"
         android:name="za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.measure_approval.MeasureGalleryFragment"
-        android:label="MeasureGalleryFragment">
+        android:label="MeasureGalleryFragment"
+        tools:layout="@layout/fragment_measure_gallery">
         <action
             android:id="@+id/action_measureGalleryFragment_to_measureApprovalFragment"
             app:destination="@id/measureApprovalFragment" />
     </fragment>
-    <!--    <fragment-->
-    <!--            android:id="@+id/captureItemMeasurePhotoFragment"-->
-    <!--            android:name="za.co.xisystems.itis_rrm.ui.mainview.estmeasure.submit_measure.CaptureItemMeasurePhotoFragment"-->
-    <!--            android:label="fragment_capture_item_measure_photo"-->
-    <!--            tools:layout="@layout/fragment_capture_item_measure_photo" />-->
 </navigation>

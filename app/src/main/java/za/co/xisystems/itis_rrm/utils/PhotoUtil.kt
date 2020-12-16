@@ -23,6 +23,7 @@ import org.apache.sanselan.formats.jpeg.exifRewrite.ExifRewriter
 import org.apache.sanselan.formats.tiff.write.TiffOutputSet
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.BuildConfig
+import za.co.xisystems.itis_rrm.constants.Constants.THIRTY_DAYS
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -99,7 +100,7 @@ object PhotoUtil {
                 File.separator + FOLDER
         ).walkTopDown().forEach { file ->
             val diff = presentTime - file.lastModified()
-            if (diff >= thirtyDays && file.isFile) {
+            if (diff >= THIRTY_DAYS && file.isFile) {
                 Timber.d("${file.name} was deleted, it was $diff old.")
                 file.delete()
             } else {
@@ -108,11 +109,9 @@ object PhotoUtil {
         }
     }
 
-    private const val thirtyDays: Long = 2592000000
-
     fun photoExist(fileName: String): Boolean {
         val image =
-            File(getPhotoPathFromExternalDirectory(fileName).path)
+            File(getPhotoPathFromExternalDirectory(fileName).path!!)
         return image.exists()
     }
 
@@ -193,7 +192,7 @@ object PhotoUtil {
                 File(
                     getPhotoPathFromExternalDirectory(
                         fileName
-                    ).path
+                    ).path!!
                 )
             )
         } catch (e: ImageReadException) {

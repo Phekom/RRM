@@ -51,7 +51,7 @@ class WorkDataRepository(
         val TAG: String = WorkDataRepository::class.java.simpleName
     }
 
-    val photoUpload = MutableLiveData<String?>()
+    private val photoUpload = MutableLiveData<String?>()
 
     val workStatus: MutableLiveData<XIEvent<XIResult<String>>> = MutableLiveData()
 
@@ -133,17 +133,13 @@ class WorkDataRepository(
                     estimateJob.UserId
                 )
             } else {
-                val uploadException = ServiceException(messages)
-                val uploadFail =
-                    XIError(uploadException, "Failed to upload work for Job: ${estimateJob.JiNo}")
-                postWorkStatus(uploadFail)
+                throw ServiceException(messages)
             }
-
-            return withContext(Dispatchers.IO) {
-                messages
-            }
-        } catch (e: Exception) {
-            throw e
+        } catch (t: Throwable) {
+            val message = "Failed to upload job ${estimateJob.JiNo}: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
+            Timber.e(t, message)
+            val uploadException = XIError(t, message)
+            postWorkStatus(uploadException)
         }
     }
 
@@ -286,7 +282,6 @@ class WorkDataRepository(
                     }
                 }
 
-                postWorkStatus(XIProgress(false))
                 postWorkStatus(XISuccess(jobEstimateWorks.worksId))
             } catch (t: Throwable) {
                 val message = "Failed to update workflow: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"

@@ -38,6 +38,7 @@ class AuthViewModel(
     val user by lazyDeferred {
         repository.getUser()
     }
+
     val offlineData by lazyDeferred {
         offlineDataRepository.getSectionItems()
         offlineDataRepository.getContracts()

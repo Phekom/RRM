@@ -23,12 +23,13 @@ import za.co.xisystems.itis_rrm.BuildConfig
  * @property coroutineContext CoroutineContext
  */
 class UiLifecycleScope : CoroutineScope, LifecycleObserver {
-    val handler = CoroutineExceptionHandler { _, throwable ->
+    private val handler = CoroutineExceptionHandler { _, throwable ->
         if (BuildConfig.DEBUG) {
+            Timber.d("uiScope throwing: ${throwable.message}")
             println(throwable)
         }
         Timber.e(throwable)
-        throw Throwable(throwable)
+        throw throwable
     }
 
     private var job = SupervisorJob()

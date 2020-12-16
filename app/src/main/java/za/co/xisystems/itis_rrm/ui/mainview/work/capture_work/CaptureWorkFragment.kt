@@ -36,11 +36,9 @@ import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
 import pereira.agnaldo.previewimgcol.ImageCollectionView
 import timber.log.Timber
-import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.LocationFragment
-import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.results.XIError
 import za.co.xisystems.itis_rrm.custom.results.XIProgress
 import za.co.xisystems.itis_rrm.custom.results.XIResult
@@ -62,8 +60,6 @@ import za.co.xisystems.itis_rrm.ui.extensions.initProgress
 import za.co.xisystems.itis_rrm.ui.extensions.scaleForSize
 import za.co.xisystems.itis_rrm.ui.extensions.showZoomedImage
 import za.co.xisystems.itis_rrm.ui.extensions.startProgress
-import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModel
-import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.intents.AbstractIntent
 import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModelFactory
@@ -78,9 +74,12 @@ import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.enums.ToastDuration.LONG
+import za.co.xisystems.itis_rrm.utils.enums.ToastDuration.SHORT
 import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.BOTTOM
 import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.CENTER
+import za.co.xisystems.itis_rrm.utils.enums.ToastStyle
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.ERROR
+import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.INFO
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.NO_INTERNET
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.WARNING
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
@@ -92,8 +91,6 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
     override val kodein by kodein()
     private lateinit var workViewModel: WorkViewModel
     private val factory: WorkViewModelFactory by instance()
-    private lateinit var sharedViewModel: SharedViewModel
-    private val shareFactory: SharedViewModelFactory by instance()
     private var imageUri: Uri? = null
     private lateinit var workFlowMenuTitles: ArrayList<String>
     private lateinit var groupAdapter: GroupAdapter<GroupieViewHolder>
@@ -107,17 +104,17 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
     private lateinit var jobWorkStep: ArrayList<WF_WorkStepDTO>
     private lateinit var keyListener: KeyListener
     private var uiScope = UiLifecycleScope()
-    private var workObserver = Observer<XIResult<String>> { handleWorkSubmission(it) }
-    private var jobObserver = Observer<XIResult<String>> { handleJobSubmission(it) }
+    private var workObserver = Observer<XIResult<String>?> { handleWorkSubmission(it) }
+    private var jobObserver = Observer<XIResult<String>?> { handleJobSubmission(it) }
 
     private var filenamePath = HashMap<String, String>()
-    private var workLocation: LocationModel? = null
     private lateinit var useR: UserDTO
     private lateinit var workSubmission: Job
     private lateinit var jobSubmission: Job
+
     override fun onStop() {
-        uiScope.destroy()
         super.onStop()
+        uiScope.destroy()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -143,7 +140,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
 
     override fun onDestroyView() {
         // Remember to flush the RecyclerView's adaptor
-        workViewModel.workflowState?.removeObservers(viewLifecycleOwner)
+        workViewModel.workflowState.removeObservers(viewLifecycleOwner)
         work_actions_listView.adapter = null
         image_collection_view.clearImages()
         super.onDestroyView()
@@ -154,10 +151,6 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
 
         workViewModel = activity?.run {
             ViewModelProvider(this, factory).get(WorkViewModel::class.java)
-        } ?: throw Exception("Invalid Activity")
-
-        sharedViewModel = activity?.run {
-            ViewModelProvider(this, shareFactory).get(SharedViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
 
         uiScope.launch(uiScope.coroutineContext) {
@@ -182,6 +175,8 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
         }
 
         image_collection_view.visibility = View.GONE
+        image_collection_view.clearImages()
+
         take_photo_button.setOnClickListener {
             initCameraLaunch()
         }
@@ -217,7 +212,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                 }
             }
             is XIError -> {
-                sharedViewModel.setColorMessage(result.message, ERROR, BOTTOM, LONG)
+                sharpToast(message = result.message, style = ERROR, position = BOTTOM, duration = LONG)
             }
             is XIStatus -> {
                 move_workflow_button.text = result.message
@@ -228,6 +223,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                     else -> move_workflow_button.doneProgress(move_workflow_button.text.toString())
                 }
             }
+            else -> Timber.d("$result")
         }
     }
 
@@ -258,8 +254,8 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
 
             sendWorkToService(itemEstiWorks)
         } else {
-            sharedViewModel.setColorMessage(
-                msg = getString(R.string.no_connection_detected),
+            sharpToast(
+                message = getString(R.string.no_connection_detected),
                 style = NO_INTERNET,
                 position = CENTER,
                 duration = LONG
@@ -269,8 +265,8 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
     }
 
     private fun validationNotice(stringId: Int) {
-        sharedViewModel.setColorMessage(
-            msg = getString(stringId),
+        sharpToast(
+            message = getString(stringId),
             style = WARNING,
             position = CENTER,
             duration = LONG
@@ -297,7 +293,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
         itemEstiWorks: JobEstimateWorksDTO
     ) {
         uiScope.launch(uiScope.coroutineContext) {
-            workViewModel.workflowState?.observe(viewLifecycleOwner, workObserver)
+            workViewModel.workflowState.observe(viewLifecycleOwner, workObserver)
             workViewModel.backupWorkSubmission.postValue(itemEstiWorks)
             val newItemEstimateWorks = setJobWorksLittleEndianGuids(itemEstiWorks)
             workSubmission = workViewModel.submitWorks(newItemEstimateWorks, requireActivity(), itemEstimateJob)
@@ -317,18 +313,17 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                     }
                 }
                 is XIError -> {
-                    XIErrorHandler.crashGuard(
-                        fragment = this,
+                    crashGuard(
                         view = this.requireView(),
                         throwable = result,
-                        refreshAction = { this.retryJobSubmission() })
+                        refreshAction = { retryJobSubmission() })
                 }
                 is XIStatus -> {
                     sharpToast(
-                        result.message,
-                        MotionToast.TOAST_INFO,
-                        position = MotionToast.GRAVITY_TOP,
-                        duration = MotionToast.SHORT_DURATION
+                        message = result.message,
+                        style = INFO,
+                        position = BOTTOM,
+                        duration = SHORT
                     )
                 }
                 is XIProgress -> {
@@ -337,6 +332,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                         else -> move_workflow_button.doneProgress(move_workflow_button.text.toString())
                     }
                 }
+                else -> Timber.d("$result")
             }
         }
     }
@@ -351,18 +347,24 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
         outcome?.let { result ->
             when (result) {
                 is XISuccess -> {
-                    sharpToast(
-                        "Work captured",
-                        motionType = MotionToast.TOAST_SUCCESS,
-                        position = MotionToast.GRAVITY_BOTTOM,
-                        duration = MotionToast.SHORT_DURATION
-                    )
-                    move_workflow_button.doneProgress("Workflow complete")
-                    refreshView()
+                    when (result.data == "WORK_COMPLETE") {
+                        true -> {
+                            popViewOnJobSubmit(WorkflowDirection.NEXT.value)
+                        }
+                        else -> {
+                            sharpToast(
+                                message = "Work captured",
+                                style = ToastStyle.SUCCESS,
+                                position = CENTER,
+                                duration = SHORT
+                            )
+                            move_workflow_button.doneProgress("Workflow complete")
+                            refreshView()
+                        }
+                    }
                 }
                 is XIError -> {
-                    XIErrorHandler.crashGuard(
-                        fragment = this@CaptureWorkFragment,
+                    crashGuard(
                         view = this@CaptureWorkFragment.requireView(),
                         throwable = result,
                         refreshAction = { this@CaptureWorkFragment.retryWorkSubmission() }
@@ -370,10 +372,10 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                 }
                 is XIStatus -> {
                     sharpToast(
-                        result.message,
-                        MotionToast.TOAST_INFO,
-                        position = MotionToast.GRAVITY_TOP,
-                        duration = MotionToast.SHORT_DURATION
+                        message = result.message,
+                        style = INFO,
+                        position = CENTER,
+                        duration = SHORT
                     )
                 }
                 is XIProgress -> {
@@ -386,6 +388,8 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                         else -> move_workflow_button.doneProgress(move_workflow_button.text.toString())
                     }
                 }
+
+                else -> Timber.d("$result")
             }
         }
     }
@@ -491,14 +495,17 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
 
                     groupAdapter.notifyItemChanged(0)
                 }
-                else -> this.sharpToast("Error: Current location is null!", MotionToast.TOAST_ERROR)
+                else -> sharpToast(
+                    message = getString(R.string.please_enable_location_services),
+                    style = ERROR, position = CENTER, duration = LONG
+                )
             }
         } catch (e: Exception) {
-            sharedViewModel.setColorMessage(
-                getString(R.string.error_getting_image),
-                ERROR,
-                CENTER,
-                LONG
+            sharpToast(
+                message = getString(R.string.error_getting_image),
+                style = ERROR,
+                position = CENTER,
+                duration = LONG
             )
 
             e.printStackTrace()
@@ -513,7 +520,9 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
 
         if (currentLocation == null) {
             // Check network availability / connectivity
-            sharedViewModel.setColorMessage("Please enable location services.", ERROR, CENTER, LONG)
+            sharpToast(
+                message = getString(R.string.please_enable_location_services), style = ERROR, position = CENTER, duration = LONG
+            )
             // Launch Dialog
         } else {
             // requireMutex
@@ -686,7 +695,9 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                 R.string.yes
             ) { dialog, which ->
 
-                pushCompletedEstimates(estimates)
+                Coroutines.main {
+                    pushCompletedEstimates(estimates)
+                }
             }
 
             dialogBuilder.show()
@@ -698,51 +709,42 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
         val retryJobData = workViewModel.backupCompletedEstimates
         retryJobData.observeOnce(viewLifecycleOwner, {
             it?.let {
-                pushCompletedEstimates(it as ArrayList<JobItemEstimateDTO>)
+                Coroutines.main {
+                    pushCompletedEstimates(it as ArrayList<JobItemEstimateDTO>)
+                }
             }
         })
     }
 
-    private fun pushCompletedEstimates(estimates: ArrayList<JobItemEstimateDTO>, workStep: Boolean = true) {
+    private suspend fun pushCompletedEstimates(estimates: ArrayList<JobItemEstimateDTO>) {
         estimateSize = estimates.size
         estimateCount = 0
         errorState = false
 
         workViewModel.backupCompletedEstimates.postValue(estimates as List<JobItemEstimateDTO>)
-        Coroutines.main {
-            workViewModel.workflowState?.observe(viewLifecycleOwner, jobObserver)
-            workViewModel.workflowState?.postValue(XIProgress(true))
-            jobSubmission = uiScope.launch(uiScope.coroutineContext) {
-                withContext(uiScope.coroutineContext) {
-                    try {
-                        for (jobEstimate in estimates) {
-                            Timber.d("Id: ${jobEstimate.estimateId}")
-                            val convertedId = DataConversion.toBigEndian(jobEstimate.estimateId)
-                            Timber.d("Converted Id: $convertedId")
-                            val jobItemEstimate = workViewModel.getJobItemEstimateForEstimateId(jobEstimate.estimateId)
-                            jobItemEstimate.observe(viewLifecycleOwner, { jobItEstmt ->
-                                jobItEstmt?.let {
-                                    Coroutines.main {
-                                        withContext(uiScope.coroutineContext) {
-                                            moveJobItemEstimateToNextWorkflow(
-                                                WorkflowDirection.NEXT,
-                                                it
-                                            )
-                                        }
-                                    }
+        jobSubmission = uiScope.launch(uiScope.coroutineContext) {
+            workViewModel.workflowState.observe(viewLifecycleOwner, jobObserver)
+            workViewModel.workflowState.postValue(XIProgress(true))
+            withContext(uiScope.coroutineContext) {
+                for (jobEstimate in estimates) {
+                    val jobItemEstimate = workViewModel.getJobItemEstimateForEstimateId(jobEstimate.estimateId)
+                    jobItemEstimate.observe(viewLifecycleOwner, { jobItEstmt ->
+                        jobItEstmt?.let {
+                            Coroutines.main {
+                                withContext(uiScope.coroutineContext) {
+                                    moveJobItemEstimateToNextWorkflow(
+                                        WorkflowDirection.NEXT,
+                                        it
+                                    )
                                 }
-                            })
+                            }
                         }
-                        jobSubmission.join()
-                        workViewModel.workflowState?.postValue(XIProgress(false))
-                        workViewModel.workflowState?.postValue(XISuccess("WORK_COMPLETE"))
-                    } catch (t: Throwable) {
-                       val xiErr = XIError(t, "Failed Workflow: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}")
-                        workViewModel.workflowState?.postValue(xiErr)
-                    }
+                    })
                 }
             }
         }
+        jobSubmission.join()
+        handleJobSubmission(XISuccess("WORK_COMPLETE"))
     }
 
     private var errorState = false
@@ -756,20 +758,20 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
 
             when {
                 userDTO.userId.isBlank() -> {
-                    sharedViewModel.setColorMessage(
-                        "Error: current user lacks permissions",
-                        ERROR,
-                        CENTER,
-                        LONG
+                    sharpToast(
+                        message = "Error: current user lacks permissions",
+                        style = ERROR,
+                        position = CENTER,
+                        duration = LONG
                     )
                     move_workflow_button.failProgress("Workflow failed ...")
                 }
                 jobItEstimate?.jobId == null -> {
-                    sharedViewModel.setColorMessage(
-                        "Error: selected job is invalid",
-                        ERROR,
-                        CENTER,
-                        LONG
+                    sharpToast(
+                        message = "Error: selected job is invalid",
+                        style = ERROR,
+                        position = CENTER,
+                        duration = LONG
                     )
                     move_workflow_button.failProgress("Workflow failed ...")
                 }
@@ -796,18 +798,18 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
 
     private fun popViewOnJobSubmit(direction: Int) {
         if (direction == WorkflowDirection.NEXT.value) {
-            this.sharpToast(
-                R.string.work_complete,
-                MotionToast.TOAST_SUCCESS,
-                MotionToast.GRAVITY_TOP,
-                MotionToast.LONG_DURATION
+            sharpToast(
+                resId = R.string.work_complete,
+                style = ToastStyle.SUCCESS,
+                position = CENTER,
+                duration = LONG
             )
         } else if (direction == WorkflowDirection.FAIL.value) {
-            this.sharpToast(
-                getString(R.string.work_declined),
-                MotionToast.TOAST_INFO,
-                MotionToast.GRAVITY_TOP,
-                MotionToast.LONG_DURATION
+            sharpToast(
+                message = getString(R.string.work_declined),
+                style = INFO,
+                position = CENTER,
+                duration = LONG
             )
         }
         Intent(activity, MainActivity::class.java).also { home ->

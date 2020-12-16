@@ -11,7 +11,8 @@
         android:id="@+id/gallery_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:visibility="invisible">
+        tools:visibility="visible"
+        android:visibility="visible">
 
         <pereira.agnaldo.previewimgcol.ImageCollectionView
             android:id="@+id/estimate_image_collection_view"
@@ -41,7 +42,8 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            tools:visibility="gone">
+            tools:visibility="visible"
+            android:visibility="gone">
 
             <Button
                 android:id="@+id/capture_another_photo_button"
@@ -54,7 +56,8 @@
                 android:background="@drawable/round_corner_orange"
                 android:text="@string/add_photo"
                 android:textColor="@android:color/white"
-                android:visibility="visible" />
+                android:visibility="visible"
+                tools:visibility="visible" />
 
             <Button
                 android:id="@+id/done_image_button"
@@ -66,7 +69,8 @@
                 android:background="@drawable/round_corner_orange"
                 android:text="@string/back"
                 android:textColor="@android:color/white"
-                android:visibility="visible" />
+                android:visibility="visible"
+                tools:visibility="visible" />
         </LinearLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 

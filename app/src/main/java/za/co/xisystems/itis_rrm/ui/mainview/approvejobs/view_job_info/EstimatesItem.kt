@@ -9,6 +9,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.Observer
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import com.xwray.groupie.kotlinandroidextensions.Item
 import java.io.File
@@ -16,9 +17,10 @@ import kotlinx.android.synthetic.main.estimates_item.*
 import timber.log.Timber
 import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.data._commons.AbstractTextWatcher
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
-import za.co.xisystems.itis_rrm.ui.extensions.motionToast
+import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.ApproveJobsViewModel
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.GlideApp
@@ -34,7 +36,8 @@ class EstimatesItem(
     private val jobItemEstimateDTO: JobItemEstimateDTO,
     private val approveViewModel: ApproveJobsViewModel,
     private val activity: FragmentActivity?,
-    private val viewLifecycleOwner: LifecycleOwner
+    private val viewLifecycleOwner: LifecycleOwner,
+    private val updateObserver: Observer<XIResult<String>?>
 
 ) : Item() {
 
@@ -124,7 +127,7 @@ class EstimatesItem(
                         text.length > 9 -> {
                             quantityEntry.text =
                                 Editable.Factory.getInstance().newEditable("$defaultQty")
-                            activity.motionToast("You Have exceeded the amount of Quantity allowed", MotionToast.TOAST_WARNING)
+                            activity.extensionToast("You Have exceeded the amount of Quantity allowed", MotionToast.TOAST_WARNING)
                         }
                         else -> {
                             val qty = text.toDouble()
@@ -168,22 +171,18 @@ class EstimatesItem(
                 if (quantityEntry.text.toString() == "" || nanCheck(quantityEntry.text.toString()) || quantityEntry.text.toString()
                         .toDouble() == 0.0
                 ) {
-                    activity.motionToast("Please Enter a valid Quantity", MotionToast.TOAST_WARNING)
+                    activity.extensionToast("Please Enter a valid Quantity", MotionToast.TOAST_WARNING)
                 } else {
-                    val updated = approveViewModel.upDateEstimate(
+                    approveViewModel.updateState.observe(viewLifecycleOwner, updateObserver)
+                    approveViewModel.upDateEstimate(
                         quantityEntry.text.toString(),
                         totalEntry.text.split(" ", ignoreCase = true)[1],
                         jobItemEstimateDTO.estimateId
                     )
-                    if (updated.isBlank()) {
-                        activity.motionToast("Data updated", MotionToast.TOAST_SUCCESS)
-                    } else {
-                        activity.motionToast("Update failed", MotionToast.TOAST_ERROR)
-                    }
                 }
             }
         } else {
-            activity.motionToast("No connection detected.", MotionToast.TOAST_ERROR)
+            activity.extensionToast("No connection detected.", MotionToast.TOAST_ERROR)
         }
     }
 

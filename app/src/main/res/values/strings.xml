@@ -426,10 +426,10 @@
 
     <!-- Errors -->
     <string name="not_authorized">Credential error, please re-install app with your valid credentials.</string>
-    <string name="gps_not_connected">GPS NOT CONNECTED.</string>
-    <string name="gps_connected">GPS CONNECTED.</string>
-    <string name="mobile_data_not_connected">MOBILE DATA NOT CONNECTED.</string>
-    <string name="mobile_data_connected">MOBILE DATA CONNECTED.</string>
+    <string name="gps_not_connected">GPS Not Connected.</string>
+    <string name="gps_connected">GPS Connected.</string>
+    <string name="mobile_data_not_connected">Mobile Data Not Connected</string>
+    <string name="mobile_data_connected">Mobile Data Connected</string>
     <string name="sync_now">SYNC NOW</string>
     <string name="cancel_upper_case" tools:ignore="ButtonCase">CANCEL</string>
     <string name="unauthorized">Unauthorized</string>
@@ -457,8 +457,8 @@
     <string name="end_date_error">The end date must not be less than start</string>
     <string name="title_activity_main">MainActivity</string>
 
-    <string name="services_up">SERVICES UP FOR v%1$s</string>
-    <string name="services_down">SERVICES DOWN FOR v%1$s</string>
+    <string name="services_up">Services Up For v%1$s</string>
+    <string name="services_down">Services Down For v%1$s</string>
     <string name="menu_home">Home</string>
     <string name="menu_create">Create Job</string>
     <string name="menu_unSubmitted">Unsubmitted Jobs</string>
@@ -569,6 +569,7 @@
     <string name="no_location_text">No current location</string>
     <string name="badge">(%1$s)</string>
     <string name="pair">%1$s %2$s</string>
+    <string name="triad">%1$s %2$s %3$s</string>
     <string name="comment_placeholder">No comment</string>
     <string name="route_section_badge">( %1$s/0%2$s )</string>
     <string name="no_data">no data returned</string>
@@ -594,9 +595,19 @@
     <string name="user_name">USER NAME</string>
     <string name="no_information">No information.</string>
     <string name="user_icon">user icon</string>
-    <string name="welcome">Welcome </string>
+    <string name="welcome">Welcome</string>
     <string name="location_service_indicator">Location Service Indicator</string>
     <string name="needs_dbsynch">No RRM data detected. Please synchronise the local database for contract and project information.</string>
     <string name="shimmer_placeholder">WHAT\'S HOT AND INTERESTING SHIMMER BABY</string>
+    <string name="please_enable_location_services">Please enable Location Services …</string>
+    <string name="welcome_greeting">Welcome %1$s</string>
+    <string name="cellular_data_indicator">Cellular Data Indicator</string>
+    <string name="services_indicator">Services Indicator</string>
+    <string name="approve_job_in_progress">Approving Job …</string>
+    <string name="decline_job_in_progress">Declining Job …</string>
+    <string name="id_label">ID :</string>
+    <string name="contract_placeholder">N.002–036-2017/1 DEMO</string>
+    <string name="rrm_value_placeholder">N.002-036-2017/1 DEMO</string>
+    <string name="edit_quantity_button">Edit quantity button</string>
 
 </resources>

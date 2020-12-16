@@ -11,7 +11,7 @@ import androidx.core.content.res.ResourcesCompat
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.common.ConnectionResult
-import com.google.android.gms.common.GooglePlayServicesUtil
+import com.google.android.gms.common.GoogleApiAvailability
 import kotlinx.android.synthetic.main.activity_register.*
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.kodein
@@ -32,6 +32,7 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnabl
     companion object {
         val TAG: String = ResetPinActivity::class.java.simpleName
         private const val PERMISSION_REQUEST = 10
+        const val GOOGLE_PLAY_SERVICES_RESOLUTION_REQUEST = 1
     }
 
     override val kodein by kodein()
@@ -76,16 +77,16 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnabl
                     }
 
                     viewModel.newPinRegistered.observeOnce(this, {
-                        it?.let {
+                        it.let {
                             when (it) {
                                 true -> {
                                     MotionToast.createColorToast(
                                         this@ResetPinActivity,
-                                        "PIN updated successfully",
-                                        MotionToast.TOAST_SUCCESS,
-                                        MotionToast.GRAVITY_BOTTOM,
-                                        MotionToast.LONG_DURATION,
-                                        ResourcesCompat.getFont(this@ResetPinActivity, R.font.helvetica_regular)
+                                        message = "PIN updated successfully",
+                                        style = MotionToast.TOAST_SUCCESS,
+                                        position = MotionToast.GRAVITY_BOTTOM,
+                                        duration = MotionToast.LONG_DURATION,
+                                        font = ResourcesCompat.getFont(this@ResetPinActivity, R.font.helvetica_regular)
                                     )
                                     viewModel.newPinRegistered.value = false
                                     getToLogin()
@@ -156,10 +157,11 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnabl
 
     override fun onStart() {
         super.onStart()
-        val resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this)
-        if (resultCode != ConnectionResult.SUCCESS) { // This dialog will help the user update to the latest GooglePlayServices
-            val dialog =
-                GooglePlayServicesUtil.getErrorDialog(resultCode, this, 0)
+        val apiAvailability = GoogleApiAvailability.getInstance()
+        val resultCode = apiAvailability.isGooglePlayServicesAvailable(this)
+        if (resultCode != ConnectionResult.SUCCESS) {
+            // This dialog will help the user update to the latest GooglePlayServices
+            val dialog = apiAvailability.getErrorDialog(this, resultCode, RegisterPinActivity.GOOGLE_PLAY_SERVICES_RESOLUTION_REQUEST)
             dialog?.show()
         }
     }
@@ -179,11 +181,11 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnabl
         hideKeyboard()
         MotionToast.createColorToast(
             this,
-            message,
-            MotionToast.TOAST_WARNING,
-            MotionToast.GRAVITY_BOTTOM,
-            MotionToast.LONG_DURATION,
-            ResourcesCompat.getFont(this, R.font.helvetica_regular)
+            message = message,
+            style = MotionToast.TOAST_WARNING,
+            position = MotionToast.GRAVITY_BOTTOM,
+            duration = MotionToast.LONG_DURATION,
+            font = ResourcesCompat.getFont(this, R.font.helvetica_regular)
         )
         // reg_container.snackbar(message)
     }

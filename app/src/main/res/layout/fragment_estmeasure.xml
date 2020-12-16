@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    xmlns:tools="http://schemas.android.com/tools">
+    android:layout_height="match_parent">
 
 
     <LinearLayout
@@ -16,68 +16,74 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:visibility="visible"
-        >
+        android:visibility="visible">
 
         <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-                android:id="@+id/estimations_swipe_to_refresh"
-                android:layout_width="wrap_content"
-                android:layout_height="0px"
-                android:layout_weight="1"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
+            android:id="@+id/estimations_swipe_to_refresh"
+            android:layout_width="wrap_content"
+            android:layout_height="0px"
+            android:layout_weight="1"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
-            <androidx.recyclerview.widget.RecyclerView
+            <com.skydoves.androidveil.VeilRecyclerFrameView
                 android:id="@+id/estimations_to_be_measured_listView"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:padding="@dimen/dimen_8dp"
-                tools:listitem="@layout/single_listview_item"
-                android:visibility="visible"
-                />
+                android:layout_height="match_parent"
+                app:veilFrame_baseColor="@color/shimmerBase0"
+                app:veilFrame_highlightColor="@color/shimmerHighlight0"
+                app:veilFrame_layout="@layout/single_listview_item"
+                app:veilFrame_radius="2dp"
+                app:veilFrame_shimmerEnable="true"
+                app:veilFrame_veiled="false"
+                tools:visibility="visible"
+                android:padding="8dp"
+                android:layout_marginTop="2dp" />
+
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
     </LinearLayout>
 
     <androidx.constraintlayout.widget.Group
-            android:id="@+id/group5_loading"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:constraint_referenced_ids="mydata_loading,textView_loading"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+        android:id="@+id/group5_loading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:constraint_referenced_ids="mydata_loading,textView_loading"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:visibility="gone" />
 
     <ProgressBar
-            android:id="@+id/mydata_loading"
-            android:layout_width="46dp"
-            android:layout_height="51dp"
-            android:layout_marginTop="350dp"
-            android:layout_marginBottom="100dp"
-            android:visibility="visible"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.3" />
+        android:id="@+id/mydata_loading"
+        android:layout_width="46dp"
+        android:layout_height="51dp"
+        android:layout_marginTop="350dp"
+        android:layout_marginBottom="100dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.3" />
 
     <TextView
-            android:id="@+id/textView_loading"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginBottom="8dp"
-            android:text="@string/data_loading_please_wait"
-            android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/mydata_loading"
-            app:layout_constraintVertical_bias="0.0" />
+        android:id="@+id/textView_loading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:text="@string/data_loading_please_wait"
+        android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/mydata_loading"
+        app:layout_constraintVertical_bias="0.0"
+        android:visibility="gone" />
 
     <ImageView
         android:id="@+id/noData"
@@ -90,5 +96,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="@+id/data_grid" />
+        app:layout_constraintEnd_toEndOf="parent"
+        android:contentDescription="@string/no_data" />
 </androidx.constraintlayout.widget.ConstraintLayout>

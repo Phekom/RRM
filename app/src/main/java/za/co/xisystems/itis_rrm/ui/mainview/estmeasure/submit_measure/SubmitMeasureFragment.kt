@@ -14,6 +14,8 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.whenStarted
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.ExpandableGroup
 import com.xwray.groupie.GroupAdapter
@@ -25,11 +27,10 @@ import kotlinx.coroutines.launch
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
-import www.sanju.motiontoast.MotionToast
+import timber.log.Timber
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
-import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.results.XIError
 import za.co.xisystems.itis_rrm.custom.results.XIProgress
 import za.co.xisystems.itis_rrm.custom.results.XIResult
@@ -52,6 +53,13 @@ import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
+import za.co.xisystems.itis_rrm.utils.enums.ToastDuration
+import za.co.xisystems.itis_rrm.utils.enums.ToastGravity
+import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.BOTTOM
+import za.co.xisystems.itis_rrm.utils.enums.ToastStyle
+import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.ERROR
+import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.NO_INTERNET
+import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.WARNING
 import java.util.ArrayList
 import java.util.HashMap
 
@@ -73,15 +81,33 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
     private var measurementObserver = Observer<XIResult<String>?> { handleMeasureSubmission(it) }
     private lateinit var measureJob: Job
 
+    init {
+        lifecycleScope.launch {
+            whenStarted {
+                uiScope.onCreate()
+                lifecycle.addObserver(uiScope)
+
+                uiScope.launch(uiScope.coroutineContext) {
+
+                    val estimateData = measureViewModel.estimateMeasureItem
+                    estimateData.observe(viewLifecycleOwner, { estimateMeasureItem ->
+                        jobItemEstimate = estimateMeasureItem.jobItemEstimateDTO
+                        getWorkItems(jobItemEstimate.jobId)
+                    })
+                }
+            }
+        }
+    }
+
     private fun handleMeasureSubmission(event: XIResult<String>?) {
         event?.let { outcome ->
 
             when (outcome) {
                 is XISuccess -> {
 
-                    this.sharpToast(
-                        "Measurements submitted for Job ${outcome.data}",
-                        MotionToast.TOAST_SUCCESS
+                    sharpToast(
+                        message = "Measurements submitted for Job ${outcome.data}",
+                        style = ToastStyle.SUCCESS
                     )
                     progressButton.doneProgress(originalCaption)
                     jobItemMeasureList.clear()
@@ -91,22 +117,21 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                     progressButton.failProgress("Workflow failed ...")
                     measureJob.cancel(CancellationException(outcome.message))
 
-                    this@SubmitMeasureFragment.sharpToast(
-                        "Submission failed: ${outcome.message}",
-                        MotionToast.TOAST_ERROR
+                    sharpToast(
+                        message = "Submission failed: ${outcome.message}",
+                        style = ERROR
                     )
 
-                    XIErrorHandler.crashGuard(
-                        this@SubmitMeasureFragment,
+                    crashGuard(
                         this@SubmitMeasureFragment.requireView(),
                         outcome,
-                        refreshAction = { retryMeasurements() })
+                        refreshAction = { this@SubmitMeasureFragment.retryMeasurements() })
                 }
                 is XIStatus -> {
-                    this@SubmitMeasureFragment.sharpToast(
+                    sharpToast(
                         message = outcome.message,
-                        duration = MotionToast.SHORT_DURATION,
-                        position = MotionToast.GRAVITY_TOP
+                        duration = ToastDuration.SHORT,
+                        position = BOTTOM
                     )
                 }
 
@@ -121,6 +146,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                         }
                     }
                 }
+                else -> Timber.d("$event")
             }
         }
     }
@@ -156,16 +182,11 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
-        measureViewModel = activity?.run {
-            ViewModelProvider(this, factory).get(MeasureViewModel::class.java)
-        } ?: throw Exception("Invalid Activity")
-
         Coroutines.main {
 
-            measureViewModel.estimateMeasureItem.observe(viewLifecycleOwner, { jobID ->
-                jobItemEstimate = jobID.jobItemEstimateDTO
-                getWorkItems(jobItemEstimate.jobId)
-            })
+            measureViewModel = activity?.run {
+                ViewModelProvider(this, factory).get(MeasureViewModel::class.java)
+            } ?: throw Exception("Invalid Activity")
 
             submit_measurements_button.setOnClickListener {
                 progressButton = submit_measurements_button
@@ -209,12 +230,15 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                     msure.qty > 0 && msure.jobItemMeasurePhotos.isNotEmpty()
                 }
                 if (validMeasures.isNullOrEmpty()) {
-                    this.sharpToast(R.string.please_make_sure_you_have_captured_photos, MotionToast.TOAST_WARNING)
+                    sharpToast(
+                        resId = R.string.please_make_sure_you_have_captured_photos,
+                        style = WARNING
+                    )
                     progressButton.failProgress(originalCaption)
                 } else {
-                    this.sharpToast(
-                        "You have Done " + validMeasures.size.toString() + " Measurements on this Estimate",
-                        MotionToast.TOAST_INFO
+                    sharpToast(
+                        message = "You have Done " + validMeasures.size.toString() + " Measurements on this Estimate",
+                        style = ToastStyle.INFO
                     )
 
                     val itemMeasures = validMeasures as ArrayList
@@ -225,7 +249,6 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                     submitJobToMeasurements(jobForItemEstimate, jobItemMeasureList)
                 }
             })
-            // jobItemMeasure.removeObservers(viewLifecycleOwner)
         }
     }
 
@@ -253,14 +276,14 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
             setIcon(R.drawable.ic_approve)
             setMessage(R.string.are_you_sure_you_want_to_submit_measurements)
             // Yes button
-            setPositiveButton(R.string.yes) { dialog, which ->
+            setPositiveButton(R.string.yes) { _, _ ->
                 if (ServiceUtil.isNetworkAvailable(requireContext().applicationContext)) {
                     submitMeasures(itemMeasureJob, mSures)
                 } else {
-                    this@SubmitMeasureFragment.sharpToast(
-                        getString(R.string.no_connection_detected),
-                        MotionToast.TOAST_ERROR,
-                        MotionToast.GRAVITY_BOTTOM
+                    sharpToast(
+                        message = getString(R.string.no_connection_detected),
+                        style = NO_INTERNET,
+                        position = ToastGravity.CENTER
                     )
                     progressButton.failProgress(originalCaption)
                 }
@@ -268,7 +291,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
             // No button
             setNegativeButton(
                 R.string.no
-            ) { dialog, which ->
+            ) { dialog, _ ->
                 // Do nothing but close dialog
                 dialog.dismiss()
                 progressButton.doneProgress(originalCaption)
@@ -287,20 +310,10 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
             user.observe(viewLifecycleOwner, { userDTO ->
                 when {
                     userDTO.userId.isBlank() -> {
-                        this@SubmitMeasureFragment.sharpToast(
-                            "Error: current user lacks permissions",
-                            MotionToast.TOAST_ERROR,
-                            MotionToast.GRAVITY_TOP
-                        )
-                        progressButton.failProgress(originalCaption)
+                        showSubmissionError("Current user lacks permissions")
                     }
                     itemMeasureJob.JobId.isBlank() -> {
-                        this@SubmitMeasureFragment.sharpToast(
-                            "Error: selected job is invalid",
-                            MotionToast.TOAST_ERROR,
-                            MotionToast.GRAVITY_TOP
-                        )
-                        progressButton.failProgress(originalCaption)
+                        showSubmissionError("Selected job is invalid")
                     }
                     else -> {
                         // beware littleEndian conversion for transport to backend
@@ -328,6 +341,15 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
         }
     }
 
+    private fun showSubmissionError(errorMessage: String) {
+        sharpToast(
+            message = errorMessage,
+            style = ERROR,
+            position = ToastGravity.CENTER
+        )
+        progressButton.failProgress(originalCaption)
+    }
+
     private fun processMeasurementWorkflow(
         userDTO: UserDTO,
         jobId: String,
@@ -338,8 +360,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
     ) {
         uiScope.launch(uiScope.coroutineContext) {
 
-            val workflowOutcome = measureViewModel.workflowState
-            workflowOutcome.observe(
+            measureViewModel.workflowState.observe(
                 viewLifecycleOwner,
                 measurementObserver
             )
@@ -352,11 +373,6 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                 mSures,
                 it,
                 itemMeasureJob
-            )
-
-            workflowOutcome.observe(
-                viewLifecycleOwner,
-                measurementObserver
             )
         }
     }
@@ -388,7 +404,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
     }
 
     private fun popViewOnJobSubmit() {
-        // TODO: Delete data from database after successful upload
+        // Delete data from database after successful upload
         Intent(context?.applicationContext, MainActivity::class.java).also { home ->
             startActivity(home)
         }
@@ -423,14 +439,14 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
         Coroutines.main {
             val measurements = measureViewModel.getJobItemsToMeasureForJobId(jobID)
             measurements.observe(viewLifecycleOwner, { estimateList ->
-                initRecyclerView(estimateList.toMeasureItem())
+                initRecyclerView(estimateList.toMeasureItems())
             })
         }
     }
 
-    private fun initRecyclerView(tomeasureItem: List<ExpandableGroup>) {
+    private fun initRecyclerView(measureItems: List<ExpandableGroup>) {
         val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
-            addAll(tomeasureItem)
+            addAll(measureItems)
         }
 
         measure_listView.apply {
@@ -440,13 +456,13 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
     }
 
     override fun onDestroyView() {
+        super.onDestroyView()
         uiScope.destroy()
         // measureViewModel.workflowState.removeObservers(viewLifecycleOwner)
         measure_listView.adapter = null
-        super.onDestroyView()
     }
 
-    private fun List<JobItemEstimateDTO>.toMeasureItem(): List<ExpandableGroup> {
+    private fun List<JobItemEstimateDTO>.toMeasureItems(): List<ExpandableGroup> {
         expandableGroups = mutableListOf()
         return this.map { jobItemEstimateDTO ->
             val expandableHeaderItem = ExpandableHeaderMeasureItem(

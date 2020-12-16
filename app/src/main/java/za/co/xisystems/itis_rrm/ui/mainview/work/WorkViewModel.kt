@@ -5,12 +5,13 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.distinctUntilChanged
-import androidx.lifecycle.liveData
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CoroutineStart.ATOMIC
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
@@ -26,7 +27,6 @@ import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.WorkDataRepository
 import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
-import za.co.xisystems.itis_rrm.utils.uncaughtExceptionHandler
 
 class WorkViewModel(
     private val workDataRepository: WorkDataRepository,
@@ -39,19 +39,28 @@ class WorkViewModel(
     val offlineUserTaskList by lazyDeferred {
         offlineDataRepository.getUserTaskList()
     }
+
     val workItem = MutableLiveData<JobItemEstimateDTO>()
     val workItemJob = MutableLiveData<JobDTO>()
     val backupWorkSubmission: MutableLiveData<JobEstimateWorksDTO> = MutableLiveData()
     private var workflowStatus: LiveData<XIEvent<XIResult<String>>> = MutableLiveData()
-    var workflowState: MutableLiveData<XIResult<String>>? = MutableLiveData()
-    private val superJob = SupervisorJob()
-    init {
-        viewModelScope.launch(Job(superJob) + Dispatchers.Main + uncaughtExceptionHandler) {
-            workflowStatus = workDataRepository.workStatus.distinctUntilChanged()
+    var workflowState: MutableLiveData<XIResult<String>?> = MutableLiveData()
 
-            workflowState = Transformations.map(workflowStatus) { it ->
-                it?.peekContent()
-            } as? MutableLiveData<XIResult<String>>
+    private val superJob = SupervisorJob()
+
+    private var ioContext = Job(superJob) + Dispatchers.IO
+    private var mainContext = Job(superJob) + Dispatchers.Main
+
+    init {
+        viewModelScope.launch(mainContext) {
+            // Set up the feed from the repository
+            workflowStatus = workDataRepository.workStatus
+
+            // This works so much better than observeForever, in that it doesn't
+            // eat the device's memory alive and clears when the viewModel is cleared.
+            workflowState = Transformations.map(workflowStatus) {
+                it.getContentIfNotHandled()
+            } as MutableLiveData<XIResult<String>?>
         }
     }
 
@@ -60,94 +69,84 @@ class WorkViewModel(
         workItem.value = work
     }
 
-    fun setWorkItemJob(workjob: JobDTO) {
-        workItemJob.value = workjob
+    fun setWorkItemJob(workJob: JobDTO) {
+        workItemJob.value = workJob
     }
 
     suspend fun getJobsForActivityId(activityId1: Int, activityId2: Int): LiveData<List<JobDTO>> {
-        return withContext(Dispatchers.IO + uncaughtExceptionHandler) {
+        return withContext(ioContext) {
             workDataRepository.getJobsForActivityIds(activityId1, activityId2)
         }
     }
 
-    suspend fun getJobsForActivityId1(activityId1: Int): LiveData<List<JobItemEstimateDTO>> {
-        return withContext(Dispatchers.IO) {
-            workDataRepository.getJobsForActivityId(activityId1)
-        }
-    }
-
-    suspend fun getJobEstimationItemsForJobId(
-        jobID: String?,
-        actID: Int
-    ) = liveData<List<JobItemEstimateDTO>> {
-        withContext(Dispatchers.IO + uncaughtExceptionHandler) {
-            val data = workDataRepository.getJobEstimationItemsForJobId(jobID, actID).distinctUntilChanged()
-            emitSource(data)
+    suspend fun getJobEstimationItemsForJobId(jobID: String?, actID: Int): LiveData<List<JobItemEstimateDTO>> {
+        return withContext(ioContext) {
+            workDataRepository.getJobEstimationItemsForJobId(jobID, actID)
         }
     }
 
     suspend fun getDescForProjectItemId(projectItemId: String): String {
-        return withContext(Dispatchers.IO + uncaughtExceptionHandler) {
+        return withContext(ioContext) {
             workDataRepository.getProjectItemDescription(projectItemId)
         }
     }
 
     suspend fun getItemDescription(jobId: String): String {
-        return withContext(Dispatchers.IO + uncaughtExceptionHandler) {
+        return withContext(ioContext) {
             workDataRepository.getItemDescription(jobId)
         }
     }
 
     suspend fun getItemJobNo(jobId: String): String {
-        return withContext(Dispatchers.IO + uncaughtExceptionHandler) {
+        return withContext(ioContext) {
             workDataRepository.getItemJobNo(jobId)
         }
     }
 
     suspend fun getItemStartKm(jobId: String): Double {
-        return withContext(Dispatchers.IO + uncaughtExceptionHandler) {
+        return withContext(ioContext) {
             workDataRepository.getItemStartKm(jobId)
         }
     }
 
     suspend fun getItemEndKm(jobId: String): Double {
-        return withContext(Dispatchers.IO + uncaughtExceptionHandler) {
+        return withContext(ioContext) {
             workDataRepository.getItemEndKm(jobId)
         }
     }
 
     suspend fun getItemTrackRouteId(jobId: String): String {
-        return withContext(Dispatchers.IO) {
+        return withContext(ioContext) {
             workDataRepository.getItemTrackRouteId(jobId)
         }
     }
 
     suspend fun getProjectSectionIdForJobId(jobId: String): String {
-        return withContext(Dispatchers.IO) {
+        return withContext(ioContext) {
             workDataRepository.getProjectSectionIdForJobId(jobId)
         }
     }
 
     suspend fun getRouteForProjectSectionId(sectionId: String): String {
-        return withContext(Dispatchers.IO) {
+        return withContext(ioContext) {
             workDataRepository.getRouteForProjectSectionId(sectionId)
         }
     }
 
     suspend fun getSectionForProjectSectionId(sectionId: String): String {
-        return withContext(Dispatchers.IO) {
+        return withContext(ioContext) {
             workDataRepository.getSectionForProjectSectionId(sectionId)
         }
     }
 
     suspend fun getJobEstiItemForEstimateId(estimateId: String?): LiveData<List<JobEstimateWorksDTO>> {
-        return withContext(Dispatchers.IO) {
+        return withContext(ioContext) {
             workDataRepository.getJobEstiItemForEstimateId(estimateId)
         }
     }
 
     suspend fun getWorkFlowCodes(eId: Int): LiveData<List<WF_WorkStepDTO>> {
-        return withContext(Dispatchers.IO) {
+        return withContext(ioContext) {
             workDataRepository.getWorkFlowCodes(eId)
         }
     }
@@ -156,35 +155,35 @@ class WorkViewModel(
         estimateWorksPhoto: ArrayList<JobEstimateWorksPhotoDTO>,
         itemEstiWorks: JobEstimateWorksDTO
     ) {
-        return withContext(Dispatchers.IO) {
+        return withContext(ioContext) {
             workDataRepository.createEstimateWorksPhoto(estimateWorksPhoto, itemEstiWorks)
         }
     }
 
+    @ExperimentalCoroutinesApi
     suspend fun submitWorks(
         itemEstiWorks: JobEstimateWorksDTO,
         activity: FragmentActivity,
         itemEstiJob: JobDTO
 
-    ): Job = viewModelScope.launch(Job(superJob) + Dispatchers.Main + uncaughtExceptionHandler) {
+    ): Job = viewModelScope.launch(ioContext, ATOMIC) {
         workDataRepository.submitWorks(itemEstiWorks, activity, itemEstiJob)
     }
 
     suspend fun getJobItemEstimateForEstimateId(estimateId: String): LiveData<JobItemEstimateDTO> {
-        return withContext(Dispatchers.IO) {
+        return withContext(ioContext) {
             workDataRepository.getJobItemEstimateForEstimateId(estimateId)
         }
     }
 
-    suspend fun processWorkflowMove(
+    @ExperimentalCoroutinesApi
+    fun processWorkflowMove(
         userId: String,
         trackRouteId: String,
         description: String?,
         direction: Int
-    ) {
-        withContext(Dispatchers.IO) {
-            workDataRepository.processWorkflowMove(userId, trackRouteId, description, direction)
-        }
+    ) = viewModelScope.launch(ioContext, ATOMIC) {
+        workDataRepository.processWorkflowMove(userId, trackRouteId, description, direction)
     }
 
     suspend fun getJobItemsEstimatesDoneForJobId(
@@ -192,7 +191,7 @@ class WorkViewModel(
         estimateWorkPartComplete: Int,
         estWorksComplete: Int
     ): Int {
-        return withContext(Dispatchers.IO) {
+        return withContext(ioContext) {
             workDataRepository.getJobItemsEstimatesDoneForJobId(
                 jobId,
                 estimateWorkPartComplete,
@@ -201,18 +200,12 @@ class WorkViewModel(
         }
     }
 
-    suspend fun getWorkItemsForActID(actId: Int): LiveData<List<JobEstimateWorksDTO>> {
-        return withContext(Dispatchers.IO) {
-            workDataRepository.getWorkItemsForActID(actId)
-        }
-    }
-
     val historicalWorks: MutableLiveData<XIResult<JobEstimateWorksDTO>> = MutableLiveData()
 
     suspend fun populateWorkTab(estimateId: String, actId: Int) {
         val newEstimateId = DataConversion.toBigEndian(estimateId)
-        val worksDTO: JobEstimateWorksDTO? = workDataRepository.getWorkItemsForEstimateIDAndActID(newEstimateId!!, actId)
-        if (worksDTO != null) {
+        val worksDTO: JobEstimateWorksDTO = workDataRepository.getWorkItemsForEstimateIDAndActID(newEstimateId!!, actId)
+        if (worksDTO.estimateId.isNullOrBlank()) {
             val worksPhotos = workDataRepository.getEstimateWorksPhotosForWorksId(worksDTO.worksId)
             if (!worksPhotos.isNullOrEmpty()) {
                 worksDTO.jobEstimateWorksPhotos = worksPhotos as java.util.ArrayList<JobEstimateWorksPhotoDTO>
@@ -233,8 +226,9 @@ class WorkViewModel(
      * prevent a leak of this ViewModel.
      */
     override fun onCleared() {
+        super.onCleared()
+        superJob.cancelChildren()
         workflowState = MutableLiveData()
         workflowStatus = MutableLiveData()
-        super.onCleared()
     }
 }

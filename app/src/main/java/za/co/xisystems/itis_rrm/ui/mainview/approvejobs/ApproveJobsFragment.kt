@@ -5,29 +5,38 @@ package za.co.xisystems.itis_rrm.ui.mainview.approvejobs
 import android.app.Dialog
 import android.graphics.Color
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.whenStarted
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.skydoves.androidveil.VeiledItemOnClickListener
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.GroupieViewHolder
-import kotlinx.android.synthetic.main.fragment_approvejob.*
 import kotlinx.coroutines.launch
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.R.layout
 import za.co.xisystems.itis_rrm.base.BaseFragment
+import za.co.xisystems.itis_rrm.constants.Constants.ONE_SECOND
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.results.XIError
+import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
+import za.co.xisystems.itis_rrm.databinding.FragmentApprovejobBinding
 import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.approve_job_item.ApproveJobItem
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
@@ -45,6 +54,27 @@ class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAw
     private val factory: ApproveJobsViewModelFactory by instance<ApproveJobsViewModelFactory>()
     lateinit var dialog: Dialog
     private var uiScope = UiLifecycleScope()
+    private var _ui: FragmentApprovejobBinding? = null
+    private val ui get() = _ui!!
+    private var groupAdapter = GroupAdapter<GroupieViewHolder>()
+    private var queryObserver = Observer<XIResult<String>?> { handleQueryErrors(it) }
+
+    private fun handleQueryErrors(outcome: XIResult<String>?) {
+        outcome?.let { result ->
+            when (result) {
+                is XIError -> {
+                    crashGuard(
+                        view = this.requireView(),
+                        throwable = result,
+                        refreshAction = { retryFetchRemoteJobs() }
+                    )
+                }
+                else -> {
+                    Timber.d("ignored: $result")
+                }
+            }
+        }
+    }
 
     companion object {
         val TAG: String = ApproveJobsFragment::class.java.simpleName
@@ -52,6 +82,10 @@ class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAw
 
     init {
         lifecycleScope.launch {
+            whenStarted {
+                uiScope.onCreate()
+                viewLifecycleOwner.lifecycle.addObserver(uiScope)
+            }
         }
     }
 
@@ -59,8 +93,9 @@ class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAw
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_approvejob, container, false)
+    ): View {
+        _ui = FragmentApprovejobBinding.inflate(inflater, container, false)
+        return ui.root
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -74,117 +109,141 @@ class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAw
             ViewModelProvider(this, factory).get(ApproveJobsViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
 
+        initVeiledRecyclerView()
+
         Coroutines.main {
 
-            try {
-                group3_loading.visibility = View.VISIBLE
-                fetchLocalJobs()
-            } catch (t: Throwable) {
-                val xiFail = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
-                XIErrorHandler.crashGuard(
-                    fragment = this@ApproveJobsFragment,
-                    view = this@ApproveJobsFragment.requireView(),
-                    throwable = xiFail,
-                    refreshAction = { retryFetchLocalJobs() }
-                )
-            } finally {
-                group3_loading.visibility = View.GONE
-            }
+            protectedFetch(veiled = false, { fetchLocalJobs() }, { retryFetchRemoteJobs() })
 
             swipeToRefreshInit()
         }
     }
 
-    private fun retryFetchLocalJobs() {
-        IndefiniteSnackbar.hide()
-        Coroutines.main {
-            fetchRemoteJobs()
+    private fun initVeiledRecyclerView() {
+        ui.approveJobVeiledRecycler.run {
+            setVeilLayout(layout.single_job_listing, object : VeiledItemOnClickListener {
+                /** will be invoked when the item on the [VeilRecyclerFrameView] clicked. */
+                override fun onItemClicked(pos: Int) {
+                    Toast.makeText(this@ApproveJobsFragment.requireContext(), "Loading ...", Toast.LENGTH_SHORT).show()
+                }
+            })
+            setAdapter(groupAdapter)
+            setLayoutManager(LinearLayoutManager(this.context))
+            addVeiledItems(10)
+        }
+    }
+
+    private suspend fun ApproveJobsFragment.protectedFetch(
+        veiled: Boolean = false,
+        fetchQuery: suspend () -> Unit = {},
+        retryAction: suspend () -> Unit = {}
+    ) {
+        try {
+            if (veiled) {
+                ui.approveJobVeiledRecycler.veil()
+            }
+            approveViewModel.workflowState.observe(viewLifecycleOwner, queryObserver)
+            fetchQuery()
+        } catch (t: Throwable) {
+            ui.approveJobVeiledRecycler.unVeil()
+            val xiFail = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
+            crashGuard(
+                view = this@ApproveJobsFragment.requireView(),
+                throwable = xiFail,
+                refreshAction = { retryAction }
+            )
+        } finally {
+
+            if (veiled) delayedUnveil()
+
+            approveViewModel.workflowState.removeObserver(queryObserver)
         }
     }
 
     private suspend fun fetchLocalJobs() {
-
         val jobs = approveViewModel.getJobsForActivityId(ActivityIdConstants.JOB_APPROVE)
         jobs.observe(viewLifecycleOwner, { jobList ->
 
             if (jobList.isNullOrEmpty()) {
-                approve_job_listView.visibility = View.GONE
-                noData.visibility = View.VISIBLE
+                ui.approveJobVeiledRecycler.visibility = View.GONE
+                ui.noData.visibility = View.VISIBLE
             } else {
                 val jItems = jobList.distinctBy {
                     it.JobId
                 }
-                noData.visibility = View.GONE
-                approve_job_listView.visibility = View.VISIBLE
+                ui.noData.visibility = View.GONE
+                ui.approveJobVeiledRecycler.visibility = View.VISIBLE
                 initRecyclerView(jItems.toApproveListItems())
             }
-            group3_loading.visibility = View.GONE
         })
     }
 
     private fun swipeToRefreshInit() {
-        jobs_swipe_to_refresh.setProgressBackgroundColorSchemeColor(
+        ui.jobsSwipeToRefresh.setProgressBackgroundColorSchemeColor(
             ContextCompat.getColor(
                 requireContext().applicationContext,
                 R.color.colorPrimary
             )
         )
 
-        jobs_swipe_to_refresh.setColorSchemeColors(Color.WHITE)
+        ui.jobsSwipeToRefresh.setColorSchemeColors(Color.WHITE)
 
-        jobs_swipe_to_refresh.setOnRefreshListener {
-            fetchRemoteJobs()
-        }
-    }
-
-    private fun fetchRemoteJobs() {
-        Coroutines.main {
-            try {
-                group3_loading.visibility = View.VISIBLE
-                val freshJobs = approveViewModel.offlineUserTaskList.await()
-                freshJobs.observeOnce(viewLifecycleOwner, {
-                    jobs_swipe_to_refresh.isRefreshing = false
-                    if (it.isNullOrEmpty()) {
-                        approve_job_listView.visibility = View.GONE
-                        noData.visibility = View.VISIBLE
-                    } else {
-                        uiScope.launch(uiScope.coroutineContext) {
-                            fetchLocalJobs()
-                        }
-                    }
-                })
-            } catch (t: Throwable) {
-                val message = t.message ?: XIErrorHandler.UNKNOWN_ERROR
-                Timber.e(t)
-                val xiFail = XIError(t, message)
-                XIErrorHandler.crashGuard(
-                    fragment = this@ApproveJobsFragment,
-                    view = this@ApproveJobsFragment.requireView(),
-                    throwable = xiFail,
-                    refreshAction = { retryFetchRemoteJobs() }
+        ui.jobsSwipeToRefresh.setOnRefreshListener {
+            uiScope.launch(uiScope.coroutineContext) {
+                protectedFetch(veiled = true, { fetchJobsFromServices() },
+                    { retryFetchRemoteJobs() }
                 )
-            } finally {
-                jobs_swipe_to_refresh.isRefreshing = false
-                group3_loading.visibility = View.GONE
             }
         }
     }
 
-    private fun retryFetchRemoteJobs() {
+    private suspend fun fetchJobsFromServices() {
+        try {
+            val freshJobs = approveViewModel.offlineUserTaskList.await()
+            freshJobs.observeOnce(viewLifecycleOwner, {
+                ui.jobsSwipeToRefresh.isRefreshing = false
+                if (it.isNullOrEmpty()) {
+                    ui.approveJobVeiledRecycler.visibility = View.GONE
+                    ui.noData.visibility = View.VISIBLE
+                } else {
+                    uiScope.launch(uiScope.coroutineContext) {
+                        protectedFetch(veiled = true, { fetchLocalJobs() }, { retryFetchRemoteJobs() })
+                    }
+                }
+            })
+        } catch (throwable: Throwable) {
+            val message = "Failed to retrieve remote jobs: ${throwable.message ?: XIErrorHandler.UNKNOWN_ERROR}"
+            Timber.e(throwable, message)
+            throw throwable
+        }
+    }
+
+    private fun delayedUnveil() {
+        Handler(Looper.getMainLooper()).postDelayed(
+            {
+                if (!activity?.isFinishing!!) {
+                    ui.approveJobVeiledRecycler.unVeil()
+                }
+            },
+            ONE_SECOND
+        )
+    }
+
+    private fun retryFetchRemoteJobs() = uiScope.launch {
         IndefiniteSnackbar.hide()
-        fetchRemoteJobs()
+        protectedFetch(veiled = true, { fetchJobsFromServices() })
     }
 
     private fun initRecyclerView(
         approveJobListItems: List<ApproveJobItem>
     ) {
-        val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
+        groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
             addAll(approveJobListItems)
+            notifyDataSetChanged()
         }
-        approve_job_listView.apply {
-            layoutManager = LinearLayoutManager(this.context)
-            adapter = groupAdapter
-        }
+
+        ui.approveJobVeiledRecycler.setLayoutManager(LinearLayoutManager(this.context))
+        ui.approveJobVeiledRecycler.setAdapter(groupAdapter)
 
         groupAdapter.setOnItemClickListener { item, view ->
             Coroutines.main {
@@ -214,8 +273,10 @@ class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAw
     }
 
     override fun onDestroyView() {
-        // approveViewModel.workflowState.removeObservers(viewLifecycleOwner)
-        approve_job_listView.adapter = null
         super.onDestroyView()
+        approveViewModel.workflowState.removeObservers(viewLifecycleOwner)
+        ui.approveJobVeiledRecycler.setAdapter(null)
+        uiScope.destroy()
+        _ui = null
     }
 }

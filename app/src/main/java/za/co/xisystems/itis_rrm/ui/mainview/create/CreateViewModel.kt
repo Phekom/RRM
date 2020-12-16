@@ -5,6 +5,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import java.util.ArrayList
+import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
@@ -26,8 +28,6 @@ import za.co.xisystems.itis_rrm.ui.mainview.create.select_item.SectionProj_Item
 import za.co.xisystems.itis_rrm.utils.JobUtils
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
 import za.co.xisystems.itis_rrm.utils.uncaughtExceptionHandler
-import java.util.ArrayList
-import kotlin.coroutines.CoroutineContext
 
 /**
  * Created by Francis Mahlava on 2019/10/18.
@@ -37,30 +37,26 @@ class CreateViewModel(
     private val jobCreationDataRepository: JobCreationDataRepository
 ) : ViewModel() {
 
-    // TODO: Create Call to create a new job item
     private val superJob = SupervisorJob()
     val currentJob: MutableLiveData<JobDTO?> = MutableLiveData()
     fun setCurrentJob(inJobItemToEdit: JobDTO?) {
         currentJob.value = inJobItemToEdit
     }
-    private lateinit var ioContext: CoroutineContext
+
+    private var ioContext: CoroutineContext
+    private var mainContext: CoroutineContext
 
     init {
         ioContext = Job(superJob) + Dispatchers.IO + uncaughtExceptionHandler
+        mainContext = Job(superJob) + Dispatchers.Main + uncaughtExceptionHandler
     }
+
     private val estimateQty = MutableLiveData<Double>()
     fun setEstimateQuantity(inQty: Double) {
         estimateQty.value = inQty
     }
 
     val estimateLineRate = MutableLiveData<Double>()
-    fun setEstimateLineRate(inRate: Double) {
-        estimateLineRate.value = inRate
-    }
-
-    val offlineSectionItems by lazyDeferred {
-        jobCreationDataRepository.getSectionItems()
-    }
 
     val sectionId = MutableLiveData<String>()
     fun setSectionId(inSectionId: String) {
@@ -106,11 +102,6 @@ class CreateViewModel(
         projectCode.value = inProjectCode
     }
 
-    private val projectItem = MutableLiveData<ProjectItemDTO>()
-    fun setProjectItem(inProjectItem: ProjectItemDTO) {
-        projectItem.value = inProjectItem
-    }
-
     val sectionProjectItem = MutableLiveData<SectionProj_Item>()
     fun setSectionProjectItem(inSectionProjectItem: SectionProj_Item) {
         sectionProjectItem.value = inSectionProjectItem
@@ -122,14 +113,6 @@ class CreateViewModel(
     }
 
     val projectItemTemp = MutableLiveData<ItemDTOTemp>()
-    fun setProjectItemTemp(inProjectItemTemp: ItemDTOTemp) {
-        projectItemTemp.value = inProjectItemTemp
-    }
-
-    private val projectRate = MutableLiveData<Double>()
-    fun setProjectRate(inProjectRate: Double) {
-        projectRate.value = inProjectRate
-    }
 
     fun saveNewJob(newJob: JobDTO) {
         jobCreationDataRepository.saveNewJob(newJob)
@@ -148,12 +131,6 @@ class CreateViewModel(
         }
     }
 
-    suspend fun getAllSectionItem(): LiveData<List<SectionItemDTO>> {
-        return withContext(Dispatchers.IO) {
-            jobCreationDataRepository.getAllSectionItems()
-        }
-    }
-
     suspend fun getAllItemsForSectionItemByProjectId(
         sectionItemId: String,
         projectId: String
@@ -169,25 +146,14 @@ class CreateViewModel(
         }
     }
 
-    // TODO: Should return some sort of status
     suspend fun saveNewItem(tempItem: ItemDTOTemp) {
         return withContext(Dispatchers.IO) {
             jobCreationDataRepository.saveNewItem(tempItem)
         }
     }
 
-    fun deleteItemTemp(item: ItemDTOTemp) {
-        jobCreationDataRepository.delete(item)
-    }
-
     fun deleteJobFromList(jobId: String) {
         jobCreationDataRepository.deleteJobfromList(jobId)
-    }
-
-    suspend fun getJobSectionForJobId(jobId: String): JobSectionDTO? {
-        return withContext(Dispatchers.IO) {
-            jobCreationDataRepository.getJobSection(jobId)
-        }
     }
 
     suspend fun updateNewJob(
@@ -210,7 +176,11 @@ class CreateViewModel(
         }
     }
 
-    suspend fun getPointSectionData(projectId: String): SectionPointDTO = jobCreationDataRepository.getPointSectionData(projectId)
+    suspend fun getPointSectionData(projectId: String): SectionPointDTO {
+        return withContext(ioContext) {
+            jobCreationDataRepository.getPointSectionData(projectId)
+        }
+    }
 
     suspend fun getSectionByRouteSectionProject(
         sectionId: Int,
@@ -260,7 +230,10 @@ class CreateViewModel(
         var isValid = true
         if (!JobUtils.areQuantitiesValid(job)) {
             isValid = false
-        } else if (job == null || items == null || job.JobItemEstimates == null || items.size != job.JobItemEstimates!!.size) {
+        } else if (job == null || items == null ||
+            job.JobItemEstimates == null ||
+            items.size != job.JobItemEstimates!!.size
+        ) {
             isValid = false
         } else {
             for (estimate in job.JobItemEstimates!!) {
@@ -329,5 +302,9 @@ class CreateViewModel(
     suspend fun setJobToEdit(jobId: String) {
         val fetchedJob = jobCreationDataRepository.getUpdatedJob(jobId)
         currentJob.value = fetchedJob
+    }
+
+    suspend fun checkIfJobSectionExists(jobId: String?, projectSectionId: String?): Boolean {
+        return jobCreationDataRepository.checkIfJobSectionExistForJobAndProjectSection(jobId, projectSectionId)
     }
 }
