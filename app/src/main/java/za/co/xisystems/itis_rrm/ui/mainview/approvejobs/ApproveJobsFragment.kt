@@ -112,10 +112,8 @@ class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAw
         initVeiledRecyclerView()
 
         Coroutines.main {
-
-            protectedFetch(veiled = false, { fetchLocalJobs() }, { retryFetchRemoteJobs() })
-
             swipeToRefreshInit()
+            protectedFetch(veiled = false, { fetchLocalJobs() }, { retryFetchRemoteJobs() })
         }
     }
 
@@ -133,11 +131,11 @@ class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAw
         }
     }
 
-    private suspend fun ApproveJobsFragment.protectedFetch(
+    private fun protectedFetch(
         veiled: Boolean = false,
         fetchQuery: suspend () -> Unit = {},
         retryAction: suspend () -> Unit = {}
-    ) {
+    ) = uiScope.launch(uiScope.coroutineContext) {
         try {
             if (veiled) {
                 ui.approveJobVeiledRecycler.veil()
@@ -153,14 +151,13 @@ class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAw
                 refreshAction = { retryAction }
             )
         } finally {
-
             if (veiled) delayedUnveil()
-
             approveViewModel.workflowState.removeObserver(queryObserver)
         }
     }
 
     private suspend fun fetchLocalJobs() {
+
         val jobs = approveViewModel.getJobsForActivityId(ActivityIdConstants.JOB_APPROVE)
         jobs.observe(viewLifecycleOwner, { jobList ->
 
@@ -168,11 +165,11 @@ class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAw
                 ui.approveJobVeiledRecycler.visibility = View.GONE
                 ui.noData.visibility = View.VISIBLE
             } else {
+                ui.noData.visibility = View.GONE
+                ui.approveJobVeiledRecycler.visibility = View.VISIBLE
                 val jItems = jobList.distinctBy {
                     it.JobId
                 }
-                ui.noData.visibility = View.GONE
-                ui.approveJobVeiledRecycler.visibility = View.VISIBLE
                 initRecyclerView(jItems.toApproveListItems())
             }
         })
@@ -202,14 +199,7 @@ class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAw
             val freshJobs = approveViewModel.offlineUserTaskList.await()
             freshJobs.observeOnce(viewLifecycleOwner, {
                 ui.jobsSwipeToRefresh.isRefreshing = false
-                if (it.isNullOrEmpty()) {
-                    ui.approveJobVeiledRecycler.visibility = View.GONE
-                    ui.noData.visibility = View.VISIBLE
-                } else {
-                    uiScope.launch(uiScope.coroutineContext) {
-                        protectedFetch(veiled = true, { fetchLocalJobs() }, { retryFetchRemoteJobs() })
-                    }
-                }
+                protectedFetch(veiled = true, { fetchLocalJobs() }, { retryFetchRemoteJobs() })
             })
         } catch (throwable: Throwable) {
             val message = "Failed to retrieve remote jobs: ${throwable.message ?: XIErrorHandler.UNKNOWN_ERROR}"

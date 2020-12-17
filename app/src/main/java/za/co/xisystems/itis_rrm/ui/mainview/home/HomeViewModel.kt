@@ -29,13 +29,19 @@ class HomeViewModel(
 ) : BaseViewModel() {
 
     private var databaseStatus: LiveData<XIEvent<XIResult<Boolean>>> = MutableLiveData()
-
     private val superJob = SupervisorJob()
-
     private var homeIoContext = Dispatchers.IO + Job(superJob)
     private var homeMainContext = Dispatchers.Main + Job(superJob)
     private var healthState: MutableLiveData<XIResult<Boolean>> = MutableLiveData()
     var databaseState: MutableLiveData<XIResult<Boolean>?> = MutableLiveData()
+
+    val user by lazyDeferred {
+        repository.getUser()
+    }
+    val offlineSectionItems by lazyDeferred {
+        offlineDataRepository.getSectionItems()
+    }
+    val bigSyncDone: MutableLiveData<Boolean> = offlineDataRepository.bigSyncDone
 
     init {
         viewModelScope.launch(homeMainContext) {
@@ -47,16 +53,6 @@ class HomeViewModel(
             } as MutableLiveData<XIResult<Boolean>?>
         }
     }
-
-    val user by lazyDeferred {
-        repository.getUser()
-    }
-
-    val offlineSectionItems by lazyDeferred {
-        offlineDataRepository.getSectionItems()
-    }
-
-    val bigSyncDone: MutableLiveData<Boolean> = offlineDataRepository.bigSyncDone
 
     suspend fun bigSyncCheck() {
         offlineDataRepository.bigSyncCheck()
@@ -80,7 +76,7 @@ class HomeViewModel(
             } catch (exception: Exception) {
                 withContext(homeMainContext) {
                     homeIoContext.cancelChildren(
-                        CancellationException(exception.message ?: XIErrorHandler.UNKNOWN_ERROR)
+                        CancellationException(exception.message ?: XIErrorHandler.UNKNOWN_ERROR, exception)
                     )
                     val fetchFail =
                         XIError(
@@ -108,7 +104,7 @@ class HomeViewModel(
 
     override fun onCleared() {
         super.onCleared()
-        superJob.cancelChildren()
+        superJob.cancelChildren(CancellationException("viewmodel cleared"))
         databaseState = MutableLiveData()
         databaseStatus = MutableLiveData()
     }

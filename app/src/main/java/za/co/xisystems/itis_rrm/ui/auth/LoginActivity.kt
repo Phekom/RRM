@@ -28,6 +28,7 @@ import za.co.xisystems.itis_rrm.databinding.ActivityLoginBinding
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
+import za.co.xisystems.itis_rrm.utils.Util.sha256
 import za.co.xisystems.itis_rrm.utils.hide
 import za.co.xisystems.itis_rrm.utils.hideKeyboard
 import za.co.xisystems.itis_rrm.utils.snackbar
@@ -243,7 +244,7 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
     }
 
     private fun validatePin() {
-        if (pin == pinInput) {
+        if (pin == pinInput.sha256()) {
             Coroutines.io {
                 PhotoUtil.cleanupDevice()
             }

@@ -166,8 +166,10 @@ class WorkViewModel(
         activity: FragmentActivity,
         itemEstiJob: JobDTO
 
-    ): Job = viewModelScope.launch(ioContext, ATOMIC) {
-        workDataRepository.submitWorks(itemEstiWorks, activity, itemEstiJob)
+    ) {
+        withContext(ioContext) {
+            workDataRepository.submitWorks(itemEstiWorks, activity, itemEstiJob)
+        }
     }
 
     suspend fun getJobItemEstimateForEstimateId(estimateId: String): LiveData<JobItemEstimateDTO> {
