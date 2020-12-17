@@ -218,6 +218,10 @@
     <color name="line_background_pin">#de4f32</color>
     <color name="buletanPin">#de4f32</color>
 
+    <color name="shimmerBase0">#c2c2c2</color>
+    <color name="shimmerHighlight0">#ffffff</color>
+    <color name="shimmerHighlight1">#DFDEDE</color>
+
 
 
 

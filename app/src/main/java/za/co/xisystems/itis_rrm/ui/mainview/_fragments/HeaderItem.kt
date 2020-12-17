@@ -12,7 +12,6 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
 
 open class HeaderItem(
     @DrawableRes private val iconResId: Int? = null,
-//    workItems: JobItemEstimateDTO,
     workItems: JobDTO,
     var workViewModel: WorkViewModel,
     private val onIconClickListener: View.OnClickListener? = null
@@ -28,31 +27,30 @@ open class HeaderItem(
     override fun bind(viewHolder: GroupieViewHolder, position: Int) {
         viewHolder.apply {
             Coroutines.main {
-                subtitle.apply {
-
-                    val sectionId = workViewModel.getProjectSectionIdForJobId(jobId)
-
-                    val route = workViewModel.getRouteForProjectSectionId(sectionId)
-                    val section = workViewModel.getSectionForProjectSectionId(sectionId)
-                    val subtitleResId = workViewModel.getItemDescription(jobId)
-                    val sectionRoute = " ( $route ${"/0$section"} )"
-                    visibility = View.GONE
-                    subtitleResId.let {
-                        visibility = View.VISIBLE
-                        text = "$it $sectionRoute"
+                val jobNumber = workViewModel.getItemJobNo(jobId)
+                title.apply {
+                    text = context.applicationContext.getString(R.string.pair, "JI:", jobNumber)
+                    subtitle.apply {
+                        val sectionId = workViewModel.getProjectSectionIdForJobId(jobId)
+                        val route = workViewModel.getRouteForProjectSectionId(sectionId)
+                        val section = workViewModel.getSectionForProjectSectionId(sectionId)
+                        val subtitleResId = workViewModel.getItemDescription(jobId)
+                        val sectionRoute = " ( $route ${"/0$section"} )"
+                        visibility = View.GONE
+                        subtitleResId.let {
+                            visibility = View.VISIBLE
+                            text = context.applicationContext.getString(R.string.pair, it, sectionRoute)
+                        }
                     }
                 }
-                val jobNumber = workViewModel.getItemJobNo(jobId)
-                title.text = "JI:$jobNumber"
             }
-        }
-
-        viewHolder.icon.apply {
-            visibility = View.GONE
-            iconResId?.let {
-                visibility = View.VISIBLE
-                setImageResource(it)
-                setOnClickListener(onIconClickListener)
+            viewHolder.icon.apply {
+                visibility = View.GONE
+                iconResId?.let {
+                    visibility = View.VISIBLE
+                    setImageResource(it)
+                    setOnClickListener(onIconClickListener)
+                }
             }
         }
     }

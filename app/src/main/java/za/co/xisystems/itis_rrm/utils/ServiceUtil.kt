@@ -20,8 +20,6 @@ object ServiceUtil {
                     result = when {
                         hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
                         hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> true
-                        hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH) -> true
-                        hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> true
                         else -> false
                     }
                 }
@@ -43,12 +41,12 @@ object ServiceUtil {
         return result
     }
 
-    fun isHostAvailable(host: String?, port: Int, timeout: Int): Boolean {
+    fun isHostAvailable(host: String?, port: Int, timeout: Long): Boolean {
         try {
             Socket().use { socket ->
                 val inetAddress: InetAddress = InetAddress.getByName(host)
                 val inetSocketAddress = InetSocketAddress(inetAddress, port)
-                socket.connect(inetSocketAddress, timeout)
+                socket.connect(inetSocketAddress, timeout.toInt())
                 socket.close()
                 return true
             }

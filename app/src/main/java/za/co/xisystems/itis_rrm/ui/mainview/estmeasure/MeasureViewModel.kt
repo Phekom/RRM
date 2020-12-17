@@ -5,6 +5,8 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Transformations
+import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
@@ -41,7 +43,7 @@ class MeasureViewModel(
 
 ) : AndroidViewModel(application) {
 
-    var galleryMeasure: MutableLiveData<JobItemMeasureDTO> = MutableLiveData()
+    private var galleryMeasure: MutableLiveData<JobItemMeasureDTO> = MutableLiveData()
     var measureGalleryUIState: MutableLiveData<XIResult<MeasureGalleryUIState>> = MutableLiveData()
 
     private var job: Job = SupervisorJob()
@@ -57,22 +59,22 @@ class MeasureViewModel(
         measureCreationDataRepository.getUser()
     }
 
-    val measureJob: MutableLiveData<JobDTO> = MutableLiveData()
+    private val measureJob: MutableLiveData<JobDTO> = MutableLiveData()
     val jobItemMeasure: MutableLiveData<JobItemMeasureDTO> = MutableLiveData()
-    val measureItemPhotos: MutableLiveData<List<JobItemMeasurePhotoDTO>> = MutableLiveData()
+    private val measureItemPhotos: MutableLiveData<List<JobItemMeasurePhotoDTO>> = MutableLiveData()
 
     val estimateMeasureItem: MutableLiveData<EstimateMeasureItem> = MutableLiveData()
 
     private lateinit var workflowStatus: MutableLiveData<XIEvent<XIResult<String>>>
 
-    val workflowState: MutableLiveData<XIResult<String>> = MutableLiveData()
+    var workflowState: MutableLiveData<XIResult<String>?> = MutableLiveData()
 
     val backupJobId: MutableLiveData<String> = MutableLiveData()
 
-    val superJob = SupervisorJob()
+    private val superJob = SupervisorJob()
 
-    val mainContext = (Job(superJob) + Dispatchers.Main + uncaughtExceptionHandler)
-    val ioContext = (Job(superJob) + Dispatchers.IO + uncaughtExceptionHandler)
+    private val mainContext = (Job(superJob) + Dispatchers.Main + uncaughtExceptionHandler)
+    private val ioContext = (Job(superJob) + Dispatchers.IO + uncaughtExceptionHandler)
 
     init {
         viewModelScope.launch(viewModelContext) {
@@ -83,22 +85,18 @@ class MeasureViewModel(
                         generateGallery(it)
                     }
                 }
-            }
-            launch(mainContext) {
-                workflowStatus.observeForever{event ->
-                    event?.getContentIfNotHandled()?.let {
-                        workflowState.postValue(it)
-                    }
-                }
+                workflowState = Transformations.map(workflowStatus) {
+                    it.getContentIfNotHandled()
+                } as MutableLiveData<XIResult<String>?>
             }
         }
     }
 
-    fun setGalleryMeasure(value: JobItemMeasureDTO) {
+    private fun setGalleryMeasure(value: JobItemMeasureDTO) {
         galleryMeasure.postValue(value)
     }
 
-    private suspend fun generateGallery(measureItem: JobItemMeasureDTO) {
+    private fun generateGallery(measureItem: JobItemMeasureDTO) = viewModelScope.launch(ioContext) {
         try {
             galleryBackup.postValue(measureItem.itemMeasureId)
             val measureDescription =
@@ -149,18 +147,14 @@ class MeasureViewModel(
         }
     }
 
-    suspend fun getDescForProjectId(projectItemId: String): String {
+    private suspend fun getDescForProjectId(projectItemId: String): String {
         return withContext(Dispatchers.IO) {
             measureCreationDataRepository.getProjectItemDescription(projectItemId)
         }
     }
 
-    fun setMeasureJob(value: JobDTO) {
-        measureJob.postValue(value)
-    }
-
     fun setJobItemMeasure(measurea1: JobItemMeasureDTO) {
-        jobItemMeasure.postValue(measurea1)
+        jobItemMeasure.value = measurea1
     }
 
     fun setMeasureItemPhotos(measurePhotoList: List<JobItemMeasurePhotoDTO>) {
@@ -183,7 +177,7 @@ class MeasureViewModel(
         activityId3: Int
     ): LiveData<List<JobItemEstimateDTO>> {
         return withContext(Dispatchers.IO + uncaughtExceptionHandler) {
-            measureCreationDataRepository.getJobMeasureForActivityId(activityId, activityId2, activityId3)
+            measureCreationDataRepository.getJobMeasureForActivityId(activityId, activityId2, activityId3).distinctUntilChanged()
         }
     }
 
@@ -237,7 +231,7 @@ class MeasureViewModel(
         mSures: ArrayList<JobItemMeasureDTO>,
         activity: FragmentActivity,
         itemMeasureJob: JobDTO
-    ): Job = viewModelScope.launch(viewModelContext) {
+    ): Job = viewModelScope.launch(ioContext) {
 
         try {
             measureCreationDataRepository.saveMeasurementItems(
@@ -272,7 +266,7 @@ class MeasureViewModel(
             measureCreationDataRepository.getJobItemMeasuresForJobIdAndEstimateId2(
                 jobId,
                 estimateId
-            ) // ,jobItemMeasureArrayList
+            )
         }
     }
 
@@ -294,18 +288,6 @@ class MeasureViewModel(
         }
     }
 
-    suspend fun errorMsg(): String {
-        return withContext(Dispatchers.IO) {
-            measureCreationDataRepository.errorMsg()
-        }
-    }
-
-    suspend fun errorState(): Boolean {
-        return withContext(Dispatchers.IO) {
-            measureCreationDataRepository.errorState()
-        }
-    }
-
     suspend fun setJobItemMeasureImages(
         jobItemMeasurePhotoList: ArrayList<JobItemMeasurePhotoDTO>,
         estimateId: String?,
@@ -316,16 +298,6 @@ class MeasureViewModel(
             estimateId,
             selectedJobItemMeasure
         )
-    }
-
-    fun saveJobItemMeasureItems(jobItemMeasureDTO: ArrayList<JobItemMeasureDTO>) {
-        measureCreationDataRepository.saveJobItemMeasureItems(jobItemMeasureDTO)
-    }
-
-    suspend fun getJobItemMeasurePhotosForItemEstimateID(estimateId: String): LiveData<List<JobItemMeasurePhotoDTO>> {
-        return withContext(Dispatchers.IO) {
-            measureCreationDataRepository.getJobItemMeasurePhotosForItemEstimateID(estimateId)
-        }
     }
 
     fun setBackupJobId(jobId: String) {

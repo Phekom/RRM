@@ -7,12 +7,14 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import timber.log.Timber
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.custom.results.XIError
@@ -24,7 +26,7 @@ import za.co.xisystems.itis_rrm.data.repositories.JobApprovalDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.approve_job_item.ApproveJobItem
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
-import za.co.xisystems.itis_rrm.utils.uncaughtExceptionHandler
+import kotlin.coroutines.cancellation.CancellationException
 
 /**
  * Created by Francis Mahlava on 03,October,2019
@@ -37,21 +39,40 @@ class ApproveJobsViewModel(
 
     private val superJob = SupervisorJob()
     private lateinit var workflowStatus: LiveData<XIEvent<XIResult<String>>>
+    private lateinit var updateStatus: LiveData<XIEvent<XIResult<String>>>
 
-    val mainContext = Job(superJob) + Dispatchers.Main + uncaughtExceptionHandler
-    val ioContext = Job(superJob) + Dispatchers.Main + uncaughtExceptionHandler
-    var workflowState: MutableLiveData<XIResult<String>>? = MutableLiveData()
+    private val workExceptionHandler = CoroutineExceptionHandler { _, throwable ->
+        val message = "Caught during workflow: ${throwable.message ?: XIErrorHandler.UNKNOWN_ERROR}"
+
+        val caughtException = XIError(
+            throwable, message
+        )
+
+        workflowState.postValue(caughtException)
+
+        superJob.cancelChildren(CancellationException(message))
+        Timber.e(throwable, message)
+    }
+
+    private val mainContext = Job(superJob) + Dispatchers.Main + workExceptionHandler
+    private val ioContext = Job(superJob) + Dispatchers.Main + workExceptionHandler
+    var workflowState: MutableLiveData<XIResult<String>?> = MutableLiveData()
+    var updateState: MutableLiveData<XIResult<String>?> = MutableLiveData()
 
     init {
-        viewModelScope.launch(Job(superJob) + uncaughtExceptionHandler + Dispatchers.Main.immediate) {
+        viewModelScope.launch(mainContext) {
 
-            workflowStatus = jobApprovalDataRepository.workflowStatus.distinctUntilChanged()
+            workflowStatus = jobApprovalDataRepository.workflowStatus
 
-            workflowState = Transformations.map(workflowStatus){ it ->
-                it?.getContentIfNotHandled()?.let {
-                    it
-                }
-            } as? MutableLiveData<XIResult<String>>
+            workflowState = Transformations.map(workflowStatus) {
+                it.getContentIfNotHandled()
+            } as MutableLiveData<XIResult<String>?>
+
+            updateStatus = jobApprovalDataRepository.updateStatus
+
+            updateState = Transformations.map(updateStatus) {
+                it.getContentIfNotHandled()
+            } as MutableLiveData<XIResult<String>?>
         }
     }
 
@@ -93,9 +114,9 @@ class ApproveJobsViewModel(
         }
     }
 
-    val jobApprovalItem : MutableLiveData<ApproveJobItem> = MutableLiveData()
-    fun setJobForApproval(jobapproval6: ApproveJobItem) {
-        jobApprovalItem.value = jobapproval6
+    val jobApprovalItem: MutableLiveData<ApproveJobItem> = MutableLiveData()
+    fun setJobForApproval(approveJobItem: ApproveJobItem) {
+        jobApprovalItem.value = approveJobItem
     }
 
     suspend fun processWorkflowMove(
@@ -105,9 +126,9 @@ class ApproveJobsViewModel(
         direction: Int,
         jobId: String
     ) = viewModelScope.launch(viewModelScope.coroutineContext) {
-        withContext(Dispatchers.IO) {
+        withContext(ioContext) {
             try {
-                workflowState?.postValue(XIProgress(true))
+                workflowState.postValue(XIProgress(true))
 
                 jobApprovalDataRepository.processWorkflowMove(
                     userId,
@@ -118,20 +139,17 @@ class ApproveJobsViewModel(
                 )
             } catch (t: Throwable) {
                 val message = "Failed to process workflow: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
-                workflowState?.postValue(XIError(t, message))
+                workflowState.postValue(XIError(t, message))
             } finally {
-                workflowState?.postValue(XIProgress(false))
+                workflowState.postValue(XIProgress(false))
             }
         }
     }
 
     suspend fun getJobsForActivityId(activityId: Int): LiveData<List<JobDTO>> {
-        return withContext(Dispatchers.IO) {
+        return withContext(ioContext) {
             jobApprovalDataRepository.getJobsForActivityId(
                 activityId
-//                , measureComplete,
-//                estWorksComplete,
-//                jobApproved
             ).distinctUntilChanged()
         }
     }
@@ -150,29 +168,29 @@ class ApproveJobsViewModel(
 
     suspend fun getJobEstimationItemsPhotoStartPath(estimateId: String): String {
         return withContext(Dispatchers.IO) {
-        jobApprovalDataRepository.getJobEstimationItemsPhotoStartPath(estimateId)
+            jobApprovalDataRepository.getJobEstimationItemsPhotoStartPath(estimateId)
         }
     }
 
     suspend fun getJobEstimationItemsPhotoEndPath(estimateId: String): String {
         return withContext(Dispatchers.IO) {
-        jobApprovalDataRepository.getJobEstimationItemsPhotoEndPath(estimateId)
+            jobApprovalDataRepository.getJobEstimationItemsPhotoEndPath(estimateId)
         }
     }
 
     suspend fun getDescForProjectItemId(projectItemId: String): String {
         return withContext(Dispatchers.IO) {
-        jobApprovalDataRepository.getProjectItemDescription(projectItemId)
+            jobApprovalDataRepository.getProjectItemDescription(projectItemId)
         }
     }
 
     suspend fun upDateEstimate(
-        new_quantity: String,
-        new_total: String,
+        updatedQty: String,
+        updatedTotal: String,
         estimateId: String
-    ): String {
-        return withContext(Dispatchers.IO){
-            jobApprovalDataRepository.upDateEstimate(new_quantity, new_total, estimateId)
+    ) {
+        withContext(Dispatchers.IO) {
+            jobApprovalDataRepository.upDateEstimate(updatedQty, updatedTotal, estimateId)
         }
     }
 
@@ -199,6 +217,8 @@ class ApproveJobsViewModel(
         superJob.cancelChildren()
         workflowState = MutableLiveData()
         workflowStatus = MutableLiveData()
+        updateState = MutableLiveData()
+        updateStatus = MutableLiveData()
         super.onCleared()
     }
 }

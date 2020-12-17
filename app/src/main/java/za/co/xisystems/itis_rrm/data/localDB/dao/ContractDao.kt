@@ -23,7 +23,7 @@ interface ContractDao {
     @Query("SELECT * FROM CONTRACTS_TABLE ORDER BY contractNo")
     fun getAllContracts(): LiveData<List<ContractDTO>>
 
-    @Query("SELECT * FROM CONTRACTS_TABLE WHERE contractId = :contractId")
+    @Query("SELECT EXISTS (SELECT contractId FROM CONTRACTS_TABLE WHERE contractId = :contractId)")
     fun checkIfContractExists(contractId: String): Boolean
 
     @Query("SELECT * FROM CONTRACTS_TABLE WHERE contractId = :contractId")

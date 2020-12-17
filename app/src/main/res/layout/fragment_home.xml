@@ -1,187 +1,284 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-            xmlns:android="http://schemas.android.com/apk/res/android"
-            xmlns:app="http://schemas.android.com/apk/res-auto"
-            xmlns:tools="http://schemas.android.com/tools"
-        android:theme="@style/AppTheme"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:theme="@style/Theme.MaterialComponents.DayNight.DarkActionBar"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
-        <RelativeLayout
-            android:id="@+id/welcome_screen"
-            android:layout_width="fill_parent"
-            android:layout_height="match_parent"
-            android:layout_margin="@dimen/small"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginBottom="8dp"
-            android:visibility="visible"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:ignore="MissingConstraints">
+    <RelativeLayout
+        android:id="@+id/welcome_screen"
+        android:layout_width="fill_parent"
+        android:layout_height="match_parent"
+        android:layout_margin="@dimen/small"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="MissingConstraints">
 
-
-            <TableLayout
-                android:id="@+id/homeinfo"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_alignParentStart="true"
-                android:layout_alignParentTop="true"
-                android:layout_alignParentEnd="true"
-                android:layout_marginStart="0dp"
-                android:layout_marginTop="100dp"
-                android:layout_marginEnd="0dp"
-                android:layout_marginBottom="70dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_marginBottom="20dp"
-                    android:gravity="center"
-                    android:orientation="horizontal">
-
-                    <ImageView
-                        android:id="@+id/userimg"
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:layout_gravity="center"
-                        android:layout_margin="@dimen/xsmall"
-                        android:contentDescription="@string/user_icon"
-                        android:src="@drawable/user" />
-                    <TextView
-                            android:id="@+id/welcome"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Welcome "
-                        android:textSize="16sp"
-                        android:textStyle="bold" />
-                    <TextView
-                        android:id="@+id/username"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/username"
-                        android:textSize="16sp"
-                        android:textStyle="bold" />
-
-                </LinearLayout>
-
-                <RelativeLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="10dp"
-                    android:background="#fff"
-                    android:orientation="vertical">
-
-                    <ImageView
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:layout_margin="10dp"
-                        android:background="#F5F5F5"
-                        android:gravity="start"
-                        android:src="@drawable/data" />
-
-                    <TextView
-                        android:id="@+id/dataEnabled"
-                        android:layout_width="fill_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="18dp"
-                        android:gravity="center"
-                        android:text="@string/no_information"
-                        android:textSize="14sp"
-                        android:textStyle="bold" />
-
-                </RelativeLayout>
-
-                <RelativeLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="#fff"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:id="@+id/connectedTo"
-                        android:layout_width="fill_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="18dp"
-                        android:gravity="center"
-                        android:text="@string/no_information"
-                        android:textSize="14sp"
-                        android:textStyle="bold" />
-
-                </RelativeLayout>
-
-                <!-- TODO test code to be removed -->
-                <RelativeLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="10dp"
-                    android:orientation="vertical">
-
-                    <ImageView
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:layout_margin="10dp"
-                        android:background="#F5F5F5"
-                        android:contentDescription="@string/location_service_indicator"
-                        android:gravity="start"
-                        android:src="@drawable/location" />
-
-                    <TextView
-                        android:id="@+id/locationEnabled"
-                        android:layout_width="fill_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="18dp"
-                        android:gravity="center"
-                        android:text="@string/no_information"
-                        android:textSize="14sp"
-                        android:textStyle="bold" />
-
-                </RelativeLayout>
-            </TableLayout>
-
-            <TextView
-                android:id="@+id/serverTextView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentStart="true"
-                android:layout_alignParentBottom="true"
-                android:layout_margin="@dimen/small"
-                android:alpha="0.5"
-                android:padding="@dimen/medium"
-                android:text="@string/server"
-                android:textColor="@android:color/black" />
-
-            <ImageView
-                android:id="@+id/imageView7"
-                android:layout_width="100dp"
-                android:layout_height="92dp"
-                android:layout_alignParentEnd="true"
-                android:layout_alignParentBottom="true"
-                android:layout_margin="@dimen/small"
-                android:alpha="0.3"
-                android:scaleType="centerInside"
-                android:src="@drawable/logo_new_medium" />
-
-        </RelativeLayout>
-
-    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
             android:id="@+id/items_swipe_to_refresh"
             android:layout_width="wrap_content"
-            android:layout_height="0px"
-            android:layout_weight="1"
+            android:layout_height="match_parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
+
 
         <androidx.recyclerview.widget.RecyclerView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
 
-    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+
+        <TableLayout
+            android:id="@+id/homeinfo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginStart="0dp"
+            android:layout_marginTop="100dp"
+            android:layout_marginEnd="0dp"
+            android:layout_marginBottom="70dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_marginBottom="10dp"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/userimg"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_gravity="center"
+                    android:layout_margin="@dimen/xsmall"
+                    android:contentDescription="@string/user_icon"
+                    android:src="@drawable/user" />
+
+                <TextView
+                    android:id="@+id/welcome"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/welcome"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
+
+            <RelativeLayout
+                android:layout_marginTop="@dimen/dimen_20dp"
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:layout_marginBottom="10dp"
+                android:background="#fff"
+                android:orientation="vertical"
+                android:layout_weight="1">
+
+                <ImageView
+                    android:id="@+id/iv_connection"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_margin="10dp"
+                    android:background="#F5F5F5"
+                    android:gravity="start"
+                    android:src="@drawable/ic_baseline_signal_cellular_waiting"
+                    android:contentDescription="@string/cellular_data_indicator" />
+
+                <TextView
+                    android:id="@+id/dataEnabled"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="18dp"
+                    android:gravity="center"
+                    android:text="@string/no_information"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:background="#fff"
+                android:orientation="vertical"
+                android:layout_weight="1"
+                android:layout_marginBottom="@dimen/dimen_10dp">
+
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_margin="10dp"
+                    app:srcCompat="@drawable/ic_baseline_services_waiting"
+                    android:id="@+id/iv_cloud"
+                    android:contentDescription="@string/services_indicator" />
+
+                <TextView
+                    android:id="@+id/connectedTo"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="@string/no_information"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="@dimen/dimen_18sp" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:layout_marginBottom="10dp"
+                android:orientation="vertical"
+                android:layout_weight="1">
+
+                <ImageView
+                    android:id="@+id/iv_location"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:background="#F5F5F5"
+                    android:contentDescription="@string/location_service_indicator"
+                    android:gravity="start"
+                    android:src="@drawable/ic_baseline_location_off_24"
+                    android:layout_margin="10dp" />
+
+                <TextView
+                    android:id="@+id/locationEnabled"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="18dp"
+                    android:gravity="center"
+                    android:text="@string/no_information"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+            </RelativeLayout>
+
+            <LinearLayout
+                android:id="@+id/bigsync_progress_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="invisible"
+                tools:visibility="visible">
+
+                <com.skydoves.progressview.ProgressView
+                    android:id="@+id/pv_contracts"
+                    android:layout_width="match_parent"
+                    android:layout_height="35dp"
+                    android:layout_margin="10dp"
+                    app:progressView_colorBackground="@color/design_default_color_background"
+                    app:progressView_colorProgress="@color/sanral_burnt_orange"
+                    app:progressView_progress="0"
+                    app:progressView_min="0"
+                    app:progressView_max="100"
+                    app:progressView_progressFromPrevious="true"
+                    app:progressView_autoAnimate="true"
+                    app:progressView_animation="accelerateDecelerate"
+                    app:progressView_radius="12dp"
+                    app:progressView_padding="1dp"
+                    app:progressView_labelColorInner="@color/white"
+                    app:progressView_labelColorOuter="@color/black"
+                    app:progressView_labelSize="14sp"
+                    app:progressView_labelSpace="10dp"
+                    app:progressView_labelText=""
+                    app:progressView_labelTypeface="bold"
+                    tools:visibility="visible"
+                    android:visibility="gone" />
+
+                <com.skydoves.progressview.ProgressView
+                    android:id="@+id/pv_tasks"
+                    android:layout_width="match_parent"
+                    android:layout_height="35dp"
+                    android:layout_margin="10dp"
+                    app:progressView_colorBackground="@color/design_default_color_background"
+                    app:progressView_colorProgress="@color/sanral_burnt_green"
+                    app:progressView_progress="0"
+                    app:progressView_min="0"
+                    app:progressView_max="100"
+                    app:progressView_progressFromPrevious="true"
+                    app:progressView_autoAnimate="true"
+                    app:progressView_animation="accelerateDecelerate"
+                    app:progressView_radius="12dp"
+                    app:progressView_padding="1dp"
+                    app:progressView_labelColorInner="@color/white"
+                    app:progressView_labelColorOuter="@color/black"
+                    app:progressView_labelSize="14sp"
+                    app:progressView_labelSpace="10dp"
+                    app:progressView_labelText=""
+                    app:progressView_labelTypeface="bold"
+                    tools:visibility="visible"
+                    android:visibility="gone" />
+
+                <com.skydoves.progressview.ProgressView
+                    android:id="@+id/pv_sections"
+                    android:layout_width="match_parent"
+                    android:layout_height="35dp"
+                    android:layout_margin="10dp"
+                    app:progressView_colorBackground="@color/design_default_color_background"
+                    app:progressView_colorProgress="@color/sanral_dark_red"
+                    app:progressView_progress="0"
+                    app:progressView_min="0"
+                    app:progressView_max="100"
+                    app:progressView_progressFromPrevious="true"
+                    app:progressView_autoAnimate="true"
+                    app:progressView_animation="accelerateDecelerate"
+                    app:progressView_radius="12dp"
+                    app:progressView_padding="1dp"
+                    app:progressView_labelColorInner="@color/white"
+                    app:progressView_labelColorOuter="@color/black"
+                    app:progressView_labelSize="14sp"
+                    app:progressView_labelSpace="10dp"
+                    app:progressView_labelText=""
+                    app:progressView_labelTypeface="bold"
+                    tools:visibility="visible"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+        </TableLayout>
+
+
+        <TextView
+            android:id="@+id/serverTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentBottom="true"
+            android:layout_margin="@dimen/small"
+            android:alpha="0.5"
+            android:padding="@dimen/medium"
+            android:text="@string/server"
+            android:textColor="@android:color/black" />
+
+        <ImageView
+            android:id="@+id/imageView7"
+            android:layout_width="100dp"
+            android:layout_height="92dp"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true"
+            android:alpha="0.3"
+            android:scaleType="centerInside"
+            android:src="@drawable/logo_new_medium"
+            android:layout_toEndOf="@+id/serverTextView"
+            android:layout_marginTop="@dimen/small"
+            android:layout_marginStart="207dp"
+            android:layout_marginEnd="@dimen/small"
+            android:layout_marginBottom="@dimen/small"
+            android:contentDescription="@string/sanral_logo"/>
+
+
+    </RelativeLayout>
 
     <androidx.constraintlayout.widget.Group
         android:id="@+id/group2_loading"
@@ -195,33 +292,34 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <ProgressBar
-            android:id="@+id/data2_loading"
-            android:layout_width="46dp"
-            android:layout_height="51dp"
-            android:layout_marginTop="350dp"
-            android:layout_marginBottom="100dp"
-            android:visibility="visible"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.3" />
+        android:id="@+id/data2_loading"
+        android:layout_width="46dp"
+        android:layout_height="51dp"
+        android:layout_marginTop="350dp"
+        android:layout_marginBottom="100dp"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.3" />
+
     <TextView
-            android:id="@+id/textView_loading"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginBottom="8dp"
-            android:text="@string/data_loading_please_wait"
-            android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/data2_loading"
-            app:layout_constraintVertical_bias="0.0" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
+        android:id="@+id/textView_loading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:text="@string/data_loading_please_wait"
+        android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/data2_loading"
+        app:layout_constraintVertical_bias="0.0" />
+</androidx.constraintlayout.widget.ConstraintLayout>
 
 
 

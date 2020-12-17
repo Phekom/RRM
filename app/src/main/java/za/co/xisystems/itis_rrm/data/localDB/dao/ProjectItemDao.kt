@@ -18,11 +18,8 @@ interface ProjectItemDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertItems(item: ProjectItemDTO)
 
-    @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE itemId = :itemId")
+    @Query("SELECT EXiSTS (SELECT * FROM PROJECT_ITEM_TABLE WHERE itemId = :itemId)")
     fun checkItemExistsItemId(itemId: String): Boolean
-
-//    @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE itemId = :itemId")
-//    fun getItemForItemId(itemId: String): LiveData<ItemDTO>
 
     @Query("SELECT sectionItemId FROM PROJECT_ITEM_TABLE WHERE itemId = :itemId")
     fun getSectionItemId(itemId: String): String
@@ -40,7 +37,7 @@ interface ProjectItemDao {
         quantity: Double,
         estimateId: String?,
         projectId: String
-    )
+    ): Long
 
     @Query("SELECT descr FROM PROJECT_ITEM_TABLE WHERE itemId = :itemId")
     fun getProjectItemDescription(itemId: String): String

@@ -19,8 +19,8 @@ interface JobSectionDao {
     @Query("SELECT * FROM JOB_SECTION_TABLE WHERE jobSectionId = :jobSectionId")
     fun checkIfJobSectionExist(jobSectionId: String): Boolean
 
-    @Query("SELECT * FROM JOB_SECTION_TABLE WHERE jobId = :jobId")
-    fun checkIfJobSectionExistForJobId(jobId: String?): Boolean
+    @Query("SELECT EXISTS(SELECT * FROM JOB_SECTION_TABLE WHERE jobId = :jobId AND projectSectionId = :projectSectionId)")
+    suspend fun checkIfJobSectionExistForJob(jobId: String?, projectSectionId: String?): Boolean
 
     @Query("SELECT * FROM JOB_SECTION_TABLE WHERE jobId = :jobId")
     fun getJobSectionFromJobId(jobId: String): JobSectionDTO?
@@ -39,14 +39,6 @@ interface JobSectionDao {
         recordSynchStateId: Int
     )
 
-    //    @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE projectId = :projectId")
-//    fun getAllItemsForProjectId(projectId: String): LiveData<List<ItemDTO>>
-//
-//
-//    @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE sectionItemId = :sectionItem AND projectId = :projectId")
-//    fun getAllItemsForSectionItem(sectionItem : String, projectId : String ): LiveData<List<ItemDTO>>
-//
-//
     @Query("DELETE FROM JOB_SECTION_TABLE")
     fun deleteAll()
 }

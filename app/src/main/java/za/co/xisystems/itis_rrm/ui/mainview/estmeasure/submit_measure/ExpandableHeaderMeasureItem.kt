@@ -77,7 +77,7 @@ class ExpandableHeaderMeasureItem(
             }
         }
 
-        viewHolder.itemView.setOnClickListener { view ->
+        viewHolder.itemView.setOnClickListener { _ ->
             clickListener?.invoke(this)
         }
     }
@@ -121,7 +121,7 @@ class ExpandableHeaderMeasureItem(
                     quantityInputEditText.textAlignment = View.TEXT_ALIGNMENT_CENTER
                     if (!selected.uom.equals(fragment.requireActivity().getString(R.string.none))) {
                         quantityInputEditText.hint = selected.uom
-                        message += fragment.requireActivity().getString(R.string.badge, selected.uom )
+                        message += fragment.requireActivity().getString(R.string.badge, selected.uom)
                     }
                     Coroutines.main {
                         val desc = measureViewModel.getDescForProjectItemId(projectItemIdz!!)
@@ -140,7 +140,7 @@ class ExpandableHeaderMeasureItem(
                                 .setView(quantityInputEditText)
                                 .setPositiveButton(
                                     R.string.ok
-                                ) { dialog, whichButton ->
+                                ) { _, _ ->
                                     updateMeasureQuantity(
                                         quantityInputEditText,
                                         selected,
@@ -153,9 +153,9 @@ class ExpandableHeaderMeasureItem(
 
                                 .setNegativeButton(
                                     R.string.cancel
-                                ) { dialog, which -> }.show()
+                                ) { _, _ -> }.show()
                         quantityInputEditText.onFocusChangeListener =
-                            OnFocusChangeListener { v, hasFocus ->
+                            OnFocusChangeListener { _, hasFocus ->
                                 if (hasFocus) enterQuantityDialog.window?.setSoftInputMode(
                                     WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE
                                 )
@@ -195,7 +195,7 @@ class ExpandableHeaderMeasureItem(
                         jobItemMeasurePhotoDTO
                     )
                     jobItemMeasureArrayList.add(jobItemMeasure)
-                    captureItemMeasureImages(jobItemMeasure, view)
+                    captureItemMeasureImages(jobItemMeasure)
                 }
             }
         }
@@ -242,8 +242,7 @@ class ExpandableHeaderMeasureItem(
     }
 
     private fun captureItemMeasureImages(
-        jobItemMeasure: JobItemMeasureDTO?,
-        view: View
+        jobItemMeasure: JobItemMeasureDTO?
     ) {
         when {
             jobItemMeasure != null -> {

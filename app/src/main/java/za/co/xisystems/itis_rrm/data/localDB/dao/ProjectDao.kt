@@ -17,9 +17,6 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.VoItemDTO
 @Dao
 interface ProjectDao {
 
-//    @Insert(onConflict = OnConflictStrategy.REPLACE)
-//    suspend fun insertProjects(project : List<ProjectDTO>)
-
     //    @Insert(onConflict = OnConflictStrategy.REPLACE)
     @Query("INSERT INTO PROJECT_TABLE (projectId,descr, endDate, items, projectCode, projectMinus, projectPlus,projectSections, voItems, contractId) VALUES (:projectId,:descr, :endDate, :items, :projectCode, :projectMinus, :projectPlus, :projectSections, :voItems, :contractId)")
     fun insertProject(
@@ -56,10 +53,6 @@ interface ProjectDao {
     @Query("SELECT * FROM PROJECT_TABLE WHERE projectId = :projectId")
     fun getProjectById(projectId: String): ProjectDTO
 
-    //    @Query("SELECT * FROM PROJECT_TABLE WHERE projectId = :projectId")
-//    fun getContractId(projectId: String): String
-//
-//
     @Query("DELETE FROM PROJECT_TABLE")
     fun deleteAll()
 

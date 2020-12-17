@@ -76,18 +76,23 @@ class UnSubmittedFragment : BaseFragment(R.layout.fragment_unsubmittedjobs), Kod
                 measurements.observe(viewLifecycleOwner, { jobList ->
                     if (jobList.isNullOrEmpty()) {
                         groupAdapter.clear()
-                        no_data_layout.visibility = View.VISIBLE
-                        unsubmitted_job_layout.visibility = View.GONE
+                        noData.visibility = View.VISIBLE
+                        incomplete_job_listView.visibility = View.GONE
                     } else {
-                        no_data_layout.visibility = View.GONE
-                        unsubmitted_job_layout.visibility = View.VISIBLE
+                        noData.visibility = View.GONE
+                        incomplete_job_listView.visibility = View.VISIBLE
                         initRecyclerView(jobList.toApproveListItems())
                     }
                 })
             } catch (t: Throwable) {
                 Timber.e(t, "Failed to fetch unsubmitted jobs!")
                 val unsubError = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
-                XIErrorHandler.crashGuard(this@UnSubmittedFragment, this@UnSubmittedFragment.requireView(), unsubError, refreshAction = { retryUnsubmitted() })
+
+                crashGuard(
+                    this@UnSubmittedFragment.requireView(),
+                    unsubError,
+                    refreshAction = { retryUnsubmitted() }
+                )
             } finally {
                 group12_loading.visibility = View.GONE
             }

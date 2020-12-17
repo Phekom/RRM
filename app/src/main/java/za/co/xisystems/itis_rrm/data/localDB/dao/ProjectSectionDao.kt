@@ -32,7 +32,7 @@ interface ProjectSectionDao {
         endKm: Double?,
         direction: String?,
         projectId: String
-    )
+    ): Long
 
     @Query("UPDATE PROJECT_SECTION_TABLE SET direction =:direction WHERE projectId = :projectId")
     fun updateSectionDirection(direction: String?, projectId: String?): Int
@@ -52,19 +52,10 @@ interface ProjectSectionDao {
         linearId: String?,
         projectId: String?
     ): String?
-//    fun getSectionByRouteSectionProject(linearId: String, sectionId: Int, direction: String, projectId: String?)
 
     @Query("SELECT * FROM PROJECT_SECTION_TABLE WHERE sectionId LIKE :sectionId")
     fun getSection(sectionId: String): LiveData<ProjectSectionDTO>
 
-    //    @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE projectId = :projectId")
-//    fun getAllItemsForProjectId(projectId: String): LiveData<List<ItemDTO>>
-//
-//
-//    @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE sectionItemId = :sectionItem AND projectId = :projectId")
-//    fun getAllItemsForSectionItem(sectionItem : String, projectId : String ): LiveData<List<ItemDTO>>
-//
-//
     @Query("DELETE FROM PROJECT_SECTION_TABLE")
     fun deleteAll()
 }

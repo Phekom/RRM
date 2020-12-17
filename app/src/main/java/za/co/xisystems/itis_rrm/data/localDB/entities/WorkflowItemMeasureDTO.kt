@@ -2,6 +2,8 @@ package za.co.xisystems.itis_rrm.data.localDB.entities
 
 import androidx.room.Entity
 import com.google.gson.annotations.SerializedName
+import za.co.xisystems.itis_rrm.domain.MeasurementTrack
+import za.co.xisystems.itis_rrm.utils.DataConversion
 
 @Entity
 data class WorkflowItemMeasureDTO(
@@ -13,4 +15,15 @@ data class WorkflowItemMeasureDTO(
     var measureGroupId: String, // sample string 3
     @SerializedName("TrackRouteId")
     var trackRouteId: String // sample string 2
-)
+) {
+    fun toMeasurementTrack(userId: String, description: String, direction: Int): MeasurementTrack {
+        return DataConversion.toLittleEndian(trackRouteId)?.let {
+            MeasurementTrack(
+                userId = userId,
+                description = description,
+                direction = direction,
+                trackRouteId = it
+            )
+        }!!
+    }
+}

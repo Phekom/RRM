@@ -8,9 +8,8 @@ import retrofit2.HttpException
 import timber.log.Timber
 import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.custom.results.XIError
-import za.co.xisystems.itis_rrm.custom.results.isConnectivityException
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
-import za.co.xisystems.itis_rrm.ui.extensions.motionToast
+import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 
 /**
  * Created by Shaun McDonald on 2020/04/14.
@@ -44,10 +43,11 @@ object XIErrorHandler {
         } else {
             if (shouldToast) {
                 // If we don't have a fragment, fallback to dry toast'
-                if (fragment != null)
-                    fragment.motionToast(throwable.message, MotionToast.TOAST_ERROR)
-                else
+                if (fragment != null) {
+                    fragment.extensionToast(throwable.message, MotionToast.TOAST_ERROR, title = null)
+                } else {
                     showMessage(view, throwable.message)
+                }
             }
         }
         when (throwable.exception) {
@@ -80,35 +80,4 @@ object XIErrorHandler {
         message,
         Toast.LENGTH_LONG
     ).show()
-
-    fun crashGuard(fragment: Fragment, throwable: XIError, refreshAction: () -> Unit ){
-        crashGuard(fragment, fragment.requireView(), throwable, refreshAction)
-    }
-    /**
-     * if the exception is connectivity-related, give the user the option to retry.
-     * Shaun McDonald - 2020/06/01
-     */
-    fun crashGuard(fragment: Fragment? = null, view: View, throwable: XIError, refreshAction: () -> Unit) {
-        when (throwable.isConnectivityException()) {
-
-            true -> {
-                handleError(
-                    fragment = fragment,
-                    view = view,
-                    throwable = throwable,
-                    shouldShowSnackBar = true,
-                    refreshAction = refreshAction
-                )
-            }
-            else -> {
-                handleError(
-                    fragment = fragment,
-                    view = view,
-                    throwable = throwable,
-                    shouldToast = true,
-                    shouldShowSnackBar = false
-                )
-            }
-        }
-    }
 }
