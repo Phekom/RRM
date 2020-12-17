@@ -184,7 +184,7 @@ object PhotoUtil {
     ): ByteArray {
         var byteArrayOutputStream = ByteArrayOutputStream()
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream)
-        val data = byteArrayOutputStream.toByteArray()
+        var data = byteArrayOutputStream.toByteArray()
         var outputSet: TiffOutputSet? = null
         var metadata: IImageMetadata? = null
         try {
@@ -219,7 +219,9 @@ object PhotoUtil {
             } catch (e: ImageReadException) {
                 e.printStackTrace()
             }
-            return byteArrayOutputStream.toByteArray()
+            data = byteArrayOutputStream.toByteArray()
+            byteArrayOutputStream.flush()
+            byteArrayOutputStream.close()
         }
         return data
     }
@@ -242,7 +244,7 @@ object PhotoUtil {
         }
         return outputSet1
     }
-    // =============================================================================================================================================================
+
     /**
      * saveImageToInternalStorage
      * Todo Make Image Quality Better

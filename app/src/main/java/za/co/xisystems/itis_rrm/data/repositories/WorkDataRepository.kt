@@ -9,7 +9,6 @@ import com.google.gson.Gson
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
-import java.util.ArrayList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -56,7 +55,9 @@ class WorkDataRepository(
     val workStatus: MutableLiveData<XIEvent<XIResult<String>>> = MutableLiveData()
 
     private fun postWorkStatus(result: XIResult<String>) {
-        workStatus.postValue(XIEvent(result))
+        Coroutines.main {
+            workStatus.postValue(XIEvent(result))
+        }
     }
 
     suspend fun getUser(): LiveData<UserDTO> {
@@ -113,6 +114,7 @@ class WorkDataRepository(
         estimateJob: JobDTO
     ) {
         postWorkStatus(XIProgress(true))
+        val worksPhotos = estimateWorksItem.jobEstimateWorksPhotos
         val worksData = JsonObject()
         val gson = Gson()
         val newMeasure = gson.toJson(estimateWorksItem)
@@ -127,7 +129,9 @@ class WorkDataRepository(
             val messages = uploadWorksItemResponse.errorMessage ?: ""
 
             if (messages.isBlank()) {
+
                 postEstimateWorks(
+                    worksPhotos,
                     estimateWorksItem,
                     activity,
                     estimateJob.UserId
@@ -144,35 +148,34 @@ class WorkDataRepository(
     }
 
     private suspend fun postEstimateWorks(
+        photos: ArrayList<JobEstimateWorksPhotoDTO>?,
         jobEstimateWorks: JobEstimateWorksDTO,
         activity: FragmentActivity,
         useR: Int
     ) {
         withContext(Dispatchers.IO) {
-            uploadWorksImages(jobEstimateWorks, activity)
+            uploadWorksImages(jobEstimateWorks, photos, activity)
             moveJobToNextWorkflowStep(jobEstimateWorks, useR)
         }
     }
 
     private fun uploadWorksImages(
-        jobEstimateWorks: JobEstimateWorksDTO,
+        workEstimate: JobEstimateWorksDTO,
+        worksPhotos: ArrayList<JobEstimateWorksPhotoDTO>?,
         activity: FragmentActivity
     ) {
         var imageCounter = 1
 
-        if (jobEstimateWorks.jobEstimateWorksPhotos != null) {
-            if (jobEstimateWorks.jobEstimateWorksPhotos!!.isEmpty()) {
-                val noPhotosException =
-                    NoDataException("WorkEstimate ${jobEstimateWorks.estimateId} has no photos.")
-                val uploadFail = XIError(noPhotosException, noPhotosException.message ?: XIErrorHandler.UNKNOWN_ERROR)
-                postWorkStatus(uploadFail)
+        try {
+            if (worksPhotos.isNullOrEmpty()) {
+                throw java.lang.NullPointerException("WorkEstimate ${workEstimate.estimateId} has no photos.")
             } else {
-                val totalImages = jobEstimateWorks.jobEstimateWorksPhotos!!.size
-                for (jobItemPhotos in jobEstimateWorks.jobEstimateWorksPhotos!!) {
-                    if (PhotoUtil.photoExist(jobItemPhotos.filename)) {
+                val totalImages = worksPhotos.size
+                for (jobItemPhoto in worksPhotos) {
+                    if (PhotoUtil.photoExist(jobItemPhoto.filename)) {
                         Timber.d("x -> UploadRrImage $imageCounter")
                         uploadRrmImage(
-                            jobItemPhotos.filename,
+                            jobItemPhoto.filename,
                             PhotoQuality.HIGH,
                             imageCounter,
                             totalImages,
@@ -180,20 +183,14 @@ class WorkDataRepository(
                         )
                         imageCounter++
                     } else {
-                        val noDataException =
-                            NoDataException("Photo ${jobItemPhotos.filename} could not be loaded.")
-                        Timber.e(noDataException)
-                        val photoError = XIError(noDataException,
-                            noDataException.message ?: XIErrorHandler.UNKNOWN_ERROR)
-                        postWorkStatus(photoError)
+                        throw NoDataException("Photo ${jobItemPhoto.filename} could not be loaded.")
                     }
                 }
             }
-        } else {
-            val emptyPhotosException =
-                NoDataException("WorkEstimate ${jobEstimateWorks.estimateId} photos are null.")
-            Timber.e(emptyPhotosException)
-            postWorkStatus(XIError(emptyPhotosException, emptyPhotosException.message ?: XIErrorHandler.UNKNOWN_ERROR))
+        } catch (throwable: Throwable) {
+            val errMessage = "Failed to stage image: ${throwable.message ?: XIErrorHandler.UNKNOWN_ERROR}"
+            Timber.e(throwable, errMessage)
+            postWorkStatus(XIError(throwable,errMessage))
         }
     }
 
@@ -222,16 +219,27 @@ class WorkDataRepository(
         imageCounter: Int
     ) {
         Coroutines.io {
-            val imagedata = JsonObject()
-            imagedata.addProperty("Filename", filename)
-            imagedata.addProperty("ImageByteArray", PhotoUtil.encode64Pic(photo))
-            imagedata.addProperty("ImageFileExtension", extension)
-            Timber.d("ImageData: $imagedata")
+            try {
+                val imagedata = JsonObject()
+                imagedata.addProperty("Filename", filename)
+                imagedata.addProperty("ImageByteArray", PhotoUtil.encode64Pic(photo))
+                imagedata.addProperty("ImageFileExtension", extension)
+                Timber.d("ImageData: $imagedata")
 
-            val uploadImageResponse = apiRequest { api.uploadRrmImage(imagedata) }
-            photoUpload.postValue(uploadImageResponse.errorMessage)
-            if (totalImages <= imageCounter) {
-                Timber.d("Total Images: $totalImages")
+                val uploadImageResponse = apiRequest { api.uploadRrmImage(imagedata) }
+                val apiMessage = uploadImageResponse.errorMessage ?: ""
+
+                if(apiMessage.trim().isNotBlank()){
+                    throw ServiceException(apiMessage)
+                }
+
+                if (totalImages <= imageCounter) {
+                    Timber.d("Total Images: $totalImages")
+                }
+            } catch (throwable: Throwable){
+                val errMessage = "Failed to upload image: ${throwable.message ?: XIErrorHandler.UNKNOWN_ERROR}"
+                Timber.e(throwable, errMessage)
+                postWorkStatus(XIError(throwable,errMessage))
             }
         }
     }

@@ -94,6 +94,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
                 is XISuccess<String> -> {
                     val jiNo = result.data
                     progressButton.doneProgress()
+                    toggleLongRunning(false)
                     popViewOnJobSubmit(flowDirection.value, jiNo)
                 }
                 else -> {
@@ -106,6 +107,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
     private fun handleOthers(result: XIResult<String>, retryAction: () -> Unit = {}) {
         when (result) {
             is XIError -> {
+                toggleLongRunning(false)
                 progressButton.failProgress("Failed")
                 crashGuard(
                     view = this.requireView(),
@@ -118,7 +120,10 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
             }
             is XIProgress -> {
                 when (result.isLoading) {
-                    true -> progressButton.startProgress()
+                    true -> {
+                        progressButton.startProgress()
+                        toggleLongRunning(true)
+                    }
                     else -> progressButton.doneProgress()
                 }
                 Timber.d("Loading ${result.isLoading}")

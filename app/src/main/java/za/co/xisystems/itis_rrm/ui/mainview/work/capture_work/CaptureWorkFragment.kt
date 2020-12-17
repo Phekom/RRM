@@ -176,6 +176,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
 
         image_collection_view.visibility = View.GONE
         image_collection_view.clearImages()
+        estimateWorksPhotoArrayList = ArrayList()
 
         take_photo_button.setOnClickListener {
             initCameraLaunch()
@@ -239,18 +240,18 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                 }
                 else -> {
                     move_workflow_button.isClickable = false
-                    uploadEstimateWorksItem()
+                    uploadEstimateWorksItem(estimateWorksPhotoArrayList, jobitemEsti)
                     move_workflow_button.isClickable = true
                 }
             }
         }
     }
 
-    private fun uploadEstimateWorksItem() {
+    private fun uploadEstimateWorksItem(estimatePhotos: ArrayList<JobEstimateWorksPhotoDTO>, estimateItem: JobItemEstimateDTO?) {
         if (ServiceUtil.isNetworkAvailable(requireActivity().applicationContext)) { //  Lets Send to Service
 
-            itemEstiWorks.jobEstimateWorksPhotos = estimateWorksPhotoArrayList
-            itemEstiWorks.jobItemEstimate = jobitemEsti
+            itemEstiWorks.jobEstimateWorksPhotos = estimatePhotos
+            itemEstiWorks.jobItemEstimate = estimateItem
 
             sendWorkToService(itemEstiWorks)
         } else {
@@ -290,14 +291,17 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
     }
 
     private fun sendWorkToService(
-        itemEstiWorks: JobEstimateWorksDTO
+        estimateWorksItem: JobEstimateWorksDTO
     ) {
         uiScope.launch(uiScope.coroutineContext) {
             workViewModel.workflowState.observe(viewLifecycleOwner, workObserver)
-            workViewModel.backupWorkSubmission.postValue(itemEstiWorks)
-            val newItemEstimateWorks = setJobWorksLittleEndianGuids(itemEstiWorks)
-            workSubmission = workViewModel.submitWorks(newItemEstimateWorks, requireActivity(), itemEstimateJob)
-            workSubmission.join()
+            workViewModel.backupWorkSubmission.value = estimateWorksItem
+            val newItemEstimateWorks = setJobWorksLittleEndianGuids(estimateWorksItem)
+            if (newItemEstimateWorks.jobEstimateWorksPhotos.isNullOrEmpty()) {
+                validationNotice(R.string.please_ensure_estimation_items_contain_photos)
+            } else {
+                workViewModel.submitWorks(newItemEstimateWorks, requireActivity(), itemEstimateJob)
+            }
         }
     }
 
@@ -425,10 +429,6 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
     }
 
     private fun refreshView() {
-        groupAdapter.clear()
-        image_collection_view.clearImages()
-        estimateWorksPhotoArrayList.clear()
-        comments_editText.setText("")
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
 
             fragmentManager?.beginTransaction()?.detach(this)?.commitNow()
@@ -439,15 +439,17 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
 
         // Await the updated estimate record
         uiScope.launch(uiScope.coroutineContext) {
-            workViewModel.workItem.observe(viewLifecycleOwner, {
+            workViewModel.workItem.observeOnce(viewLifecycleOwner, {
                 Timber.d("$it")
-
                 val id = 3
                 // This part must be Deleted when the Dynamic workflow is complete.
                 uiScope.launch(uiScope.coroutineContext) {
                     val workCodeData = workViewModel.getWorkFlowCodes(id)
-                    workCodeData.observe(viewLifecycleOwner, {
+                    workCodeData.observeOnce(viewLifecycleOwner, {
                         groupAdapter.notifyItemChanged(2)
+                        image_collection_view.clearImages()
+                        // estimateWorksPhotoArrayList.clear()
+                        comments_editText.setText("")
                         Timber.d("IsRefresh -> Yes")
                     })
                 }
@@ -526,14 +528,17 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
             // Launch Dialog
         } else {
             // requireMutex
+
             val photo = createItemWorksPhoto(
                 filenamePath,
                 currentLocation
             )
+
             estimateWorksPhotoArrayList.add(photo)
             // unlock mutex
             uiScope.launch(uiScope.coroutineContext) {
                 itemEstiWorks.jobEstimateWorksPhotos = estimateWorksPhotoArrayList
+
                 workViewModel.createSaveWorksPhotos(
                     estimateWorksPhotoArrayList,
                     itemEstiWorks
@@ -552,6 +557,11 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                         PhotoQuality.HIGH
                     )
 
+                // Prepare gallery for new size
+                image_collection_view.scaleForSize(
+                    image_collection_view.childCount + 1
+                )
+
                 // Push photo into ImageCollectionView
                 image_collection_view.addImage(
                     bitmap!!,
@@ -559,10 +569,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                         override fun onClick(bitmap: Bitmap, imageView: ImageView) {
                             showZoomedImage(imageUrl, this@CaptureWorkFragment.requireActivity())
                         }
-                    })
-
-                image_collection_view.scaleForSize(
-                    estimateWorksPhotoArrayList.size
+                    }
                 )
             }
         }

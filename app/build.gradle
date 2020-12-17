@@ -331,8 +331,13 @@ dependencies {
     testImplementation 'io.mockk:mockk:1.10.3'
     testImplementation "androidx.test.espresso:espresso-core:3.3.0"
 
+    // TODO: Mock api response unit tests
+    testImplementation "com.squareup.okhttp3:mockwebserver:4.7.2"
+
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
+    androidTestImplementation 'com.kaspersky.android-components:kaspresso:1.2.0'
+
 
     // VectorDrawable
     def vectorVersion = "1.1.0"
