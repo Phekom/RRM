@@ -74,6 +74,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     private var progressBar: ProgressBar? = null
     private var uiScope = UiLifecycleScope()
+
     override fun onCreate(savedInstanceState: Bundle?) {
 
         // finally us mortals get to see coroutines from the inside
@@ -432,6 +433,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 writeBadge(badgeWork, tasks)
             })
 
+            // Estimate measurements
             mainActivityViewModel.getJobMeasureForActivityId(
                 ActivityIdConstants.ESTIMATE_MEASURE,
                 ActivityIdConstants.JOB_ESTIMATE,
@@ -440,15 +442,15 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 val tasks = measurementJobs.distinctBy { job -> job.jobId }.count()
                 writeBadge(badgeEstMeasure, tasks)
             })
-//        //===================================================================================================================================================\
 
+            // Jobs awaiting approval
             mainActivityViewModel.getJobsForActivityId(
                 ActivityIdConstants.JOB_APPROVE
             ).observe(this@MainActivity, { jobApprovalData ->
                 val tasks = jobApprovalData.count()
                 writeBadge(badgeApproveJobs, tasks)
             })
-//        //=====================================================================================================================================================
+
             // Measurements are completed needs approval for payment
             mainActivityViewModel.getJobApproveMeasureForActivityId(
                 ActivityIdConstants.MEASURE_COMPLETE
@@ -483,7 +485,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             style = colorToast.style.getValue(),
             position = colorToast.gravity.getValue(),
             duration = colorToast.duration.getValue(),
-            font = ResourcesCompat.getFont(baseContext, R.font.helvetica_regular)
+            font = ResourcesCompat.getFont(this, R.font.helvetica_regular)
         )
     }
 

@@ -451,7 +451,6 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                     workCodeData.observeOnce(viewLifecycleOwner, {
                         groupAdapter.notifyItemChanged(2)
                         image_collection_view.clearImages()
-                        // estimateWorksPhotoArrayList.clear()
                         comments_editText.setText("")
                         Timber.d("IsRefresh -> Yes")
                     })

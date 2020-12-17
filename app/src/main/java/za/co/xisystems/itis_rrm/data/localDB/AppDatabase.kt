@@ -142,10 +142,8 @@ abstract class AppDatabase : RoomDatabase() {
                 instance = it
             }
         }
-        
-        val AppDatabase_Migrations: Array<out Migration> = emptyArray()
 
-        val AppDatabase_Migration_1_2 = object: Migration(1, 2) {
+        val AppDatabase_Migration_1_2 = object : Migration(1, 2) {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("ALTER TABLE JOB_ITEM_MEASURE ADD COLUMN deleted INT NOT NULL DEFAULT 0")
             }
@@ -157,6 +155,7 @@ abstract class AppDatabase : RoomDatabase() {
                 database.execSQL("ALTER TABLE JOB_TABLE ADD COLUMN deleted INT NOT NULL DEFAULT 0")
             }
         }
+        var AppDatabase_Migrations: Array<out Migration> = arrayOf(AppDatabase_Migration_1_2, AppDatabase_Migration_2_3)
 
         private fun buildDatabase(context: Context) =
             Room.databaseBuilder(
