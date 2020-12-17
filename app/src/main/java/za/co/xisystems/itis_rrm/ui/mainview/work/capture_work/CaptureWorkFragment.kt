@@ -10,6 +10,8 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.provider.MediaStore
 import android.text.method.KeyListener
 import android.view.LayoutInflater
@@ -39,6 +41,7 @@ import timber.log.Timber
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.LocationFragment
+import za.co.xisystems.itis_rrm.constants.Constants
 import za.co.xisystems.itis_rrm.custom.results.XIError
 import za.co.xisystems.itis_rrm.custom.results.XIProgress
 import za.co.xisystems.itis_rrm.custom.results.XIResult
@@ -559,7 +562,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
 
                 // Prepare gallery for new size
                 image_collection_view.scaleForSize(
-                    image_collection_view.childCount + 1
+                    estimateWorksPhotoArrayList.size
                 )
 
                 // Push photo into ImageCollectionView
@@ -819,9 +822,15 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                 duration = LONG
             )
         }
-        Intent(activity, MainActivity::class.java).also { home ->
-            startActivity(home)
-        }
+
+        Handler(Looper.getMainLooper()).postDelayed(
+            {
+                Intent(activity, MainActivity::class.java).also { home ->
+                    startActivity(home)
+                }
+            },
+            Constants.TWO_SECONDS
+        )
     }
 
     private fun initRecyclerView(
