@@ -1,9 +1,14 @@
 package za.co.xisystems.itis_rrm.extensions
 
+import android.app.Activity
+import android.os.Build
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.Observer
+import com.google.android.material.appbar.CollapsingToolbarLayout
 
 /**
  * Created by Shaun McDonald on 2020/06/05.
@@ -48,4 +53,28 @@ fun <T> LiveData<T>.getDistinct(): LiveData<T> {
         }
     })
     return distinctLiveData
+}
+
+fun Activity.checkIsMaterialVersion() =
+    Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
+
+fun AppCompatActivity.applyToolbarMargin(toolbar: Toolbar) {
+    if (checkIsMaterialVersion()) {
+        toolbar.layoutParams = (
+            toolbar.layoutParams
+                as CollapsingToolbarLayout.LayoutParams
+            ).apply {
+                topMargin = getStatusBarSize()
+            }
+    }
+}
+
+private fun AppCompatActivity.getStatusBarSize(): Int {
+    val idStatusBarHeight =
+        resources.getIdentifier("status_bar_height", "dimen", "android")
+    return if (idStatusBarHeight > 0) {
+        resources.getDimensionPixelSize(idStatusBarHeight)
+    } else {
+        0
+    }
 }

@@ -10,27 +10,52 @@ import android.view.View
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.view.inputmethod.InputMethodManager
-import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.snackbar.Snackbar
+import kotlin.coroutines.CoroutineContext
+import kotlinx.coroutines.withContext
+import org.kodein.di.KodeinAware
+import org.kodein.di.generic.instance
 import timber.log.Timber
-import www.sanju.motiontoast.MotionToast
+import za.co.xisystems.itis_rrm.BuildConfig
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.constants.Constants.DNS_PORT
+import za.co.xisystems.itis_rrm.constants.Constants.FIVE_SECONDS
+import za.co.xisystems.itis_rrm.constants.Constants.SSL_PORT
+import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
+import za.co.xisystems.itis_rrm.custom.results.XIError
+import za.co.xisystems.itis_rrm.custom.results.isRecoverableException
+import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data._commons.Animations
 import za.co.xisystems.itis_rrm.data._commons.views.IProgressView
+import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModel
+import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModelFactory
+import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.ViewLogger
+import za.co.xisystems.itis_rrm.utils.enums.ToastDuration
+import za.co.xisystems.itis_rrm.utils.enums.ToastDuration.LONG
+import za.co.xisystems.itis_rrm.utils.enums.ToastDuration.SHORT
+import za.co.xisystems.itis_rrm.utils.enums.ToastGravity
+import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.BOTTOM
+import za.co.xisystems.itis_rrm.utils.enums.ToastStyle
+import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.ERROR
+import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.INFO
+import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.NO_INTERNET
+import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.WARNING
 
 /**
  * Created by Francis Mahlava on 03,October,2019
  */
 // R.layout.fragment_home
 //
-abstract class BaseFragment(layoutContentId: Int) : Fragment(), IProgressView {
+abstract class BaseFragment(layoutContentId: Int) : Fragment(), IProgressView, KodeinAware {
+
+    private lateinit var sharedViewModel: SharedViewModel
+    private val shareFactory: SharedViewModelFactory by instance()
+    protected var coordinator: View? = null
 
     companion object {
-
-        @JvmField
-        var layoutContentId: Int? = null
 
         @JvmField
         var bounce: Animation? = null
@@ -76,7 +101,6 @@ abstract class BaseFragment(layoutContentId: Int) : Fragment(), IProgressView {
 
         @JvmField
         var shake_longer: Animation? = null
-        protected var coordinator: View? = null
 
         var animations: Animations? = null
     }
@@ -86,10 +110,40 @@ abstract class BaseFragment(layoutContentId: Int) : Fragment(), IProgressView {
         ViewLogger.logView(this)
     }
 
+    /**
+     * Called when the Fragment is no longer resumed.  This is generally
+     * tied to [Activity.onPause] of the containing
+     * Activity's lifecycle.
+     */
+    override fun onPause() {
+        super.onPause()
+        IndefiniteSnackbar.hide()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         animations = Animations(requireContext().applicationContext)
         initAnimations()
+    }
+
+    /**
+     * Called when the fragment's activity has been created and this
+     * fragment's view hierarchy instantiated.  It can be used to do final
+     * initialization once these pieces are in place, such as retrieving
+     * views or restoring state.  It is also useful for fragments that use
+     * [.setRetainInstance] to retain their instance,
+     * as this callback tells the fragment when it is fully associated with
+     * the new activity instance.  This is called after [.onCreateView]
+     * and before [.onViewStateRestored].
+     *
+     * @param savedInstanceState If the fragment is being re-created from
+     * a previous saved state, this is the state.
+     */
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
+        sharedViewModel = activity?.run {
+            ViewModelProvider(this, shareFactory).get(SharedViewModel::class.java)
+        } ?: throw Exception("Invalid Activity")
     }
 
     private fun initAnimations() {
@@ -150,31 +204,112 @@ abstract class BaseFragment(layoutContentId: Int) : Fragment(), IProgressView {
         }
     }
 
+    // Helper function that checks connectivity
+    // before allowing the suspend function to execute
+    protected suspend fun connectedCheck(
+        call: suspend () -> Unit,
+        coroutineContext: CoroutineContext
+    ) {
+        when {
+            !isOnline() -> noConnectionWarning()
+            !hasInternet() -> noInternetWarning()
+            !isServiceAvailable() -> noServicesWarning()
+            else -> {
+                withContext(coroutineContext) {
+                    call.invoke()
+                }
+            }
+        }
+    }
+
     override fun toast(resid: Int) {
         if (!activity?.isFinishing!!) toast(getString(resid))
     }
 
     override fun toast(resid: String?) {
         resid?.let {
-            if (!activity?.isFinishing!!) sharpToast(resid)
+            if (!activity?.isFinishing!!) {
+                sharpToast(resource = resid)
+            }
         }
     }
 
-    protected fun sharpToast(resId: Int, motionType: String = MotionToast.TOAST_INFO, position: Int = MotionToast.GRAVITY_BOTTOM, duration: Int = MotionToast.LONG_DURATION) {
-        val message = getString(resId)
-        sharpToast(message, motionType, position, duration)
+    protected fun sharpToast(resource: String) {
+        sharpToast(message = resource)
     }
 
-    protected fun sharpToast(message: String, motionType: String = MotionToast.TOAST_INFO, position: Int = MotionToast.GRAVITY_BOTTOM, duration: Int = MotionToast.LONG_DURATION) {
-        if (!activity?.isFinishing!!)
-            MotionToast.createColorToast(
-                context = requireActivity(),
+    protected fun sharpToast(
+        title: String? = null,
+        resId: Int,
+        style: ToastStyle = INFO,
+        position: ToastGravity = BOTTOM,
+        duration: ToastDuration = SHORT
+    ) {
+        if (!activity?.isFinishing!!) {
+            val message = getString(resId)
+            sharpToast(title, message, style, position, duration)
+        }
+    }
+
+    protected fun sharpToast(
+        title: String? = null,
+        message: String,
+        style: ToastStyle = INFO,
+        position: ToastGravity = BOTTOM,
+        duration: ToastDuration = SHORT
+    ) {
+        if (!activity?.isFinishing!!) {
+            sharedViewModel.setColorMessage(
+                title = title,
                 message = message,
-                style = motionType,
+                style = style,
                 position = position,
-                duration = duration,
-                font = ResourcesCompat.getFont(requireActivity(), R.font.helvetica_regular)
+                duration = duration
             )
+        }
+    }
+
+    private fun isOnline(): Boolean {
+        return ServiceUtil.isNetworkAvailable(this.requireContext().applicationContext)
+    }
+
+    protected fun noConnectionWarning() {
+        sharpToast(
+            message = "Please ensure that you have a valid data or wifi connection",
+            style = WARNING,
+            position = BOTTOM,
+            duration = LONG
+        )
+    }
+
+    private fun hasInternet(): Boolean {
+        return ServiceUtil.isHostAvailable("dns.google.com", DNS_PORT, FIVE_SECONDS)
+    }
+
+    private fun isServiceAvailable(): Boolean {
+        return ServiceUtil.isHostAvailable(BuildConfig.API_HOST, SSL_PORT, FIVE_SECONDS)
+    }
+
+    private fun noServicesWarning() {
+        sharpToast(
+            message = "RRM services are unreachable, try again later ...",
+            style = NO_INTERNET,
+            position = BOTTOM,
+            duration = LONG
+        )
+    }
+
+    protected fun noInternetWarning() {
+        sharpToast(
+            message = "No internet access, try again later ...",
+            style = NO_INTERNET,
+            position = BOTTOM,
+            duration = LONG
+        )
+    }
+
+    protected fun toggleLongRunning(toggle: Boolean) {
+        sharedViewModel.toggleLongRunning(toggle)
     }
 
     private fun snackError(coordinator: View?, string: String?) {
@@ -188,6 +323,43 @@ abstract class BaseFragment(layoutContentId: Int) : Fragment(), IProgressView {
 
     fun snackError(string: String?) {
         snackError(coordinator, string)
+    }
+
+    /**
+     * if the exception is connectivity-related, give the user the option to retry.
+     * Shaun McDonald - 2020/06/01
+     */
+    protected fun crashGuard(view: View, throwable: XIError, refreshAction: (() -> Unit)? = null) {
+
+        when (throwable.isRecoverableException()) {
+
+            true -> {
+                if (refreshAction != null) {
+                    XIErrorHandler.handleError(
+                        view = view,
+                        throwable = throwable,
+                        shouldShowSnackBar = true,
+                        refreshAction = refreshAction
+                    )
+                }
+            }
+            else -> {
+
+                sharpToast(
+                    message = throwable.message,
+                    style = ERROR,
+                    position = BOTTOM,
+                    duration = LONG
+                )
+
+                XIErrorHandler.handleError(
+                    view = view,
+                    throwable = throwable,
+                    shouldToast = false,
+                    shouldShowSnackBar = false
+                )
+            }
+        }
     }
 
     abstract fun onCreateOptionsMenu(menu: Menu): Boolean

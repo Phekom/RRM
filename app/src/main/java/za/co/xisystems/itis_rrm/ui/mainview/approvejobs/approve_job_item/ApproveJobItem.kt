@@ -3,7 +3,8 @@ package za.co.xisystems.itis_rrm.ui.mainview.approvejobs.approve_job_item
 import android.content.Context
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import com.xwray.groupie.kotlinandroidextensions.Item
-import kotlinx.android.synthetic.main.single_listview_item.*
+import kotlinx.android.synthetic.main.single_job_listing.*
+import kotlinx.android.synthetic.main.single_listview_item.appListID
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.ApproveJobsViewModel
@@ -24,7 +25,7 @@ class ApproveJobItem(
     override fun bind(viewHolder: GroupieViewHolder, position: Int) {
         viewHolder.apply {
             appListID.text = getItemId(position + 1).toString()
-            listview_item_textView.text = context.getString(R.string.pair, "JI: ", jobDTO.JiNo.toString())
+            title.text = context.getString(R.string.pair, "JI: ", jobDTO.JiNo.toString())
             Coroutines.main {
                 sectionId = approveViewModel.getProjectSectionIdForJobId(jobDTO.JobId)
                 if (sectionId.isNullOrEmpty()) sectionId = ""
@@ -32,14 +33,18 @@ class ApproveJobItem(
                 if (route.isNullOrEmpty()) route = ""
                 section = approveViewModel.getSectionForProjectSectionId(sectionId!!)
                 if (section.isNullOrEmpty()) section = ""
-
-                apv_section.text = context.getString(R.string.route_section_badge, route, section)
+                subtitle.apply {
+                    text = context.getString(
+                        R.string.pair,
+                        context.getString(R.string.route_section_badge, route, section),
+                        jobDTO.Descr
+                    )
+                }
             }
-            apv_description.text = jobDTO.Descr
         }
     }
 
-    override fun getLayout() = R.layout.single_listview_item
+    override fun getLayout() = R.layout.single_job_listing
 }
 
 private fun getItemId(position: Int): Long {

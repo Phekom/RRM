@@ -15,13 +15,13 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.SectionPointDTO
 interface SectionPointDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertSection(section: SectionPointDTO)
+    fun insertSection(section: SectionPointDTO)
 
-    @Query("SELECT * FROM SECTION_POINT_TABLE WHERE sectionId = :sectionId AND projectId LIKE :projectId AND jobId LIKE :jobId")
+    @Query("SELECT EXISTS(SELECT * FROM SECTION_POINT_TABLE WHERE sectionId = :sectionId AND projectId LIKE :projectId AND jobId LIKE :jobId)")
     fun checkSectionExists(sectionId: Int, projectId: String?, jobId: String?): Boolean
 
     @Query("INSERT INTO SECTION_POINT_TABLE (direction, linearId ,pointLocation,sectionId ,projectId ,  jobId ) VALUES (:direction ,:linearId ,:pointLocation  ,:sectionId ,:projectId ,:jobId)")
-    suspend fun insertSection(
+    fun insertSection(
         direction: String,
         linearId: String,
         pointLocation: Double,
@@ -31,7 +31,7 @@ interface SectionPointDao {
     ): Long
 
     @Query("SELECT * FROM SECTION_POINT_TABLE WHERE  projectId = :projectId")
-    suspend fun getPointSectionData(projectId: String): SectionPointDTO
+    fun getPointSectionData(projectId: String): SectionPointDTO
 
     @Query("SELECT * FROM SECTION_POINT_TABLE WHERE sectionId = :sectionId AND projectId LIKE :projectId AND jobId LIKE :jobId")
     fun getExistingSection(

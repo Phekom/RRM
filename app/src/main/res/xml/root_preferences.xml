@@ -38,39 +38,23 @@
 
         <SwitchPreferenceCompat
             app:dependency="notification"
-            app:key="attachment"
+            app:key="notification_preview"
             app:summaryOff="@string/att_summary_off"
             app:summaryOn="@string/att_summary_on"
             app:title="@string/att_title" />
 
         <SwitchPreferenceCompat
             app:dependency="notification"
-            app:key="notification"
+            app:key="notification_tone"
             app:title="@string/notificationv_title" />
 
 
 
         <SwitchPreferenceCompat
             app:dependency="notification"
-            app:key="notification"
+            app:key="notification_vibrate"
             app:title="@string/notificationS_title" />
     </PreferenceCategory>
-<!--    <PreferenceCategory app:title="@string/messages_header">-->
-
-<!--        <EditTextPreference-->
-<!--            app:key="signature"-->
-<!--            app:title="@string/signature_title"-->
-<!--            app:useSimpleSummaryProvider="true" />-->
-
-<!--        <ListPreference-->
-<!--            app:defaultValue="reply"-->
-<!--            app:entries="@array/reply_entries"-->
-<!--            app:entryValues="@array/reply_values"-->
-<!--            app:key="reply"-->
-<!--            app:title="@string/reply_title"-->
-<!--            app:useSimpleSummaryProvider="true" />-->
-
-<!--    </PreferenceCategory>-->
 
     <PreferenceCategory app:title="@string/sync_header">
 
@@ -80,7 +64,7 @@
 
         <SwitchPreferenceCompat
             app:dependency="sync"
-            app:key="attachment"
+            app:key="sync_auto"
             app:summaryOff="@string/attachment_summary_off"
             app:summaryOn="@string/attachment_summary_on"
             app:title="@string/attachment_title" />

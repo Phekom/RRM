@@ -15,6 +15,7 @@ import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
 import za.co.xisystems.itis_rrm.utils.Coroutines
+import za.co.xisystems.itis_rrm.utils.Util.sha256
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
 
 /**
@@ -38,6 +39,7 @@ class AuthViewModel(
     val user by lazyDeferred {
         repository.getUser()
     }
+
     val offlineData by lazyDeferred {
         offlineDataRepository.getSectionItems()
         offlineDataRepository.getContracts()
@@ -132,7 +134,7 @@ class AuthViewModel(
                     phoneNumber,
                     imei,
                     androidDevice,
-                    confirmPin!!
+                    confirmPin!!.sha256()
                 )
             } catch (e: AuthException) {
                 authListener?.onFailure(e.message!!)

@@ -1,6 +1,6 @@
 package za.co.xisystems.itis_rrm.custom.errors
 
-import java.io.IOException
+import okio.IOException
 
 /**
  * Created by Francis Mahlava on 2019/10/18.
@@ -31,25 +31,34 @@ class NoDataException(message: String) : NullPointerException(message)
 
 /**
  * Incorrect credentials / pin entries fire this exception
+ * @constructor
  */
 class AuthException(message: String) : SecurityException(message)
 
 /**
  * Returning an empty response fires this error
+ * @constructor
  */
 class NoResponseException(message: String) : Exception(message)
 
 /**
  * Being unable to contact the mobile services platform fires this error
+ * @constructor
  */
 class ServiceHostUnreachableException(message: String) : IOException(message)
 
 /**
  * Being unable to read or write to the local datastore fires this exception
+ * @constructor
  */
 class LocalDataException(message: String) : Exception(message)
 
 /**
  * Mostly harmless, but still annoying
+ * @constructor
  */
-class RecoverableException(message: String): Throwable(message)
+class RecoverableException(message: String) : Throwable(message)
+
+class RestException(message: String, override val cause: Throwable?) : Throwable(message, cause)
+
+class ConnectException(message: String) : IOException(message)

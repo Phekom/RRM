@@ -7,6 +7,7 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import dev.matrix.roomigrant.GenerateRoomMigrations
 import za.co.xisystems.itis_rrm.data.localDB.dao.ActivityDao
 import za.co.xisystems.itis_rrm.data.localDB.dao.ContractDao
 import za.co.xisystems.itis_rrm.data.localDB.dao.EntitiesDao
@@ -94,6 +95,7 @@ import za.co.xisystems.itis_rrm.utils.Converters
     version = 3
 )
 @TypeConverters(Converters::class)
+@GenerateRoomMigrations
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun getJobDao(): JobDao
@@ -123,17 +125,11 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun getToDoGroupsDao(): ToDoGroupsDao
     abstract fun getEstimateWorkDao(): EstimateWorkDao
     abstract fun getEstimateWorkPhotoDao(): EstimateWorkPhotoDao
-
     abstract fun getSectionItemDao(): SectionItemDao
-
-    //    abstract fun getJobItemMeasureDao_Temp(): JobItemMeasureDao_Temp
-//    abstract fun getJobItemMeasurePhotoDao_Temp(): JobItemMeasurePhotoDao_Temp
     abstract fun getJobDaoTemp(): JobDaoTemp
     abstract fun getItemDaoTemp(): ItemDaoTemp
     abstract fun getSectionPointDao(): SectionPointDao
     abstract fun getWorkStepDao(): WorkStepDao
-
-//    abstract fun getWorkFlowRouteDao(): WorkFlowRouteDao
 
     companion object {
 
@@ -146,14 +142,17 @@ abstract class AppDatabase : RoomDatabase() {
                 instance = it
             }
         }
+        
+        val AppDatabase_Migrations: Array<out Migration> = emptyArray()
 
-        val MIGRATION_1_2 = object : Migration(1, 2) {
+        val AppDatabase_Migration_1_2 = object: Migration(1, 2) {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("ALTER TABLE JOB_ITEM_MEASURE ADD COLUMN deleted INT NOT NULL DEFAULT 0")
             }
         }
 
-        val MIGRATION_2_3 = object : Migration(2, 3) {
+        // Soft delete of jobs for Decline Job functionality
+        val AppDatabase_Migration_2_3 = object : Migration(2, 3) {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("ALTER TABLE JOB_TABLE ADD COLUMN deleted INT NOT NULL DEFAULT 0")
             }
@@ -164,6 +163,6 @@ abstract class AppDatabase : RoomDatabase() {
                 context.applicationContext,
                 AppDatabase::class.java,
                 "myRRM_Database.db"
-            ).addMigrations(MIGRATION_2_3).build()
+            ).addMigrations(*AppDatabase_Migrations).build()
     }
 }

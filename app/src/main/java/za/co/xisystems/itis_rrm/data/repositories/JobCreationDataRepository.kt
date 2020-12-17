@@ -69,12 +69,6 @@ class JobCreationDataRepository(
         }
     }
 
-    suspend fun getJobSection(jobId: String): JobSectionDTO? {
-        return withContext(Dispatchers.IO) {
-            appDb.getJobSectionDao().getJobSectionFromJobId(jobId)
-        }
-    }
-
     suspend fun getUser(): LiveData<UserDTO> {
         return withContext(Dispatchers.IO) {
             appDb.getUserDao().getUser()
@@ -121,12 +115,6 @@ class JobCreationDataRepository(
     suspend fun getContractProjects(contractId: String): LiveData<List<ProjectDTO>> {
         return withContext(Dispatchers.Default) {
             appDb.getProjectDao().getAllProjectsByContract(contractId)
-        }
-    }
-
-    suspend fun getAllSectionItems(): LiveData<List<SectionItemDTO>> {
-        return withContext(Dispatchers.IO) {
-            appDb.getSectionItemDao().getAllSectionItems()
         }
     }
 
@@ -193,7 +181,11 @@ class JobCreationDataRepository(
         }
     }
 
-    suspend fun getPointSectionData(projectId: String): SectionPointDTO = appDb.getSectionPointDao().getPointSectionData(projectId)
+    suspend fun getPointSectionData(projectId: String): SectionPointDTO {
+        return withContext(Dispatchers.IO) {
+            appDb.getSectionPointDao().getPointSectionData(projectId)
+        }
+    }
 
     suspend fun getSectionByRouteSectionProject(
         sectionId: Int,
@@ -311,7 +303,7 @@ class JobCreationDataRepository(
         }
     }
 
-    private fun setWorkflowJobBigEndianGuids(job: WorkflowJobDTO): WorkflowJobDTO? {
+    private fun setWorkflowJobBigEndianGuids(job: WorkflowJobDTO): WorkflowJobDTO {
 
         // Job + WorkflowItems + EstimateWorks
         job.jobId = DataConversion.toBigEndian(job.jobId)
@@ -386,8 +378,9 @@ class JobCreationDataRepository(
             }
 
             job.workflowJobSections?.forEach { jobSection ->
-                if (!appDb.getJobSectionDao().checkIfJobSectionExist(jobSection.jobSectionId))
-                    appDb.getJobSectionDao().insertJobSection(jobSection) else
+                if (!appDb.getJobSectionDao().checkIfJobSectionExist(jobSection.jobSectionId)) {
+                    appDb.getJobSectionDao().insertJobSection(jobSection)
+                } else {
                     appDb.getJobSectionDao().updateExistingJobSectionWorkflow(
                         jobSectionId = jobSection.jobSectionId,
                         projectSectionId = jobSection.projectSectionId,
@@ -397,6 +390,7 @@ class JobCreationDataRepository(
                         recordVersion = jobSection.recordVersion,
                         recordSynchStateId = jobSection.recordSynchStateId
                     )
+                }
             }
         }
     }
@@ -519,7 +513,7 @@ class JobCreationDataRepository(
         }
     }
 
-    private suspend fun postValue(
+    private fun postValue(
         direction: String,
         linearId: String?,
         pointLocation: Double,
@@ -537,7 +531,7 @@ class JobCreationDataRepository(
         )
     }
 
-    private suspend fun saveRouteSectionPoint(
+    private fun saveRouteSectionPoint(
         direction: String,
         linearId: String?,
         pointLocation: Double,
@@ -560,16 +554,6 @@ class JobCreationDataRepository(
             .getSectionByRouteSectionProject(sectionId.toString(), linearId, projectId)
     }
 
-    private fun saveEstimatePhoto(estimatePhoto: String?, fileName: String) {
-        Coroutines.io {
-            if (estimatePhoto != null) {
-                PhotoUtil.createPhotoFolder(estimatePhoto, fileName)
-            } else {
-                PhotoUtil.createPhotoFolder()
-            }
-        }
-    }
-
     suspend fun getContractNoForId(contractVoId: String?): String {
         return withContext(Dispatchers.IO) {
             appDb.getContractDao().getContractNoForId(contractVoId)
@@ -582,7 +566,9 @@ class JobCreationDataRepository(
         }
     }
 
-    suspend fun backupJob(job: JobDTO)= appDb.getJobDao().insertOrUpdateJobs(job)
+    suspend fun backupJob(job: JobDTO) = appDb.getJobDao().insertOrUpdateJobs(job)
 
-
+    suspend fun checkIfJobSectionExistForJobAndProjectSection(jobId: String?, projectSectionId: String?): Boolean {
+        return appDb.getJobSectionDao().checkIfJobSectionExistForJob(jobId, projectSectionId)
+    }
 }

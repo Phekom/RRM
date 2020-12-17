@@ -14,18 +14,20 @@ import za.co.xisystems.itis_rrm.utils.ServiceUtil
 class NetworkConnectionInterceptor(
     context: Context
 ) : Interceptor {
-    private val testConnection = "dns.google.com"
+    private val testConnection = "google.co.za"
     private val serviceURL = "itisqa.nra.co.za"
     private val applicationContext = context.applicationContext
-
     override fun intercept(chain: Interceptor.Chain): Response {
-        if (!ServiceUtil.isNetworkAvailable(applicationContext))
-            throw NoInternetException("Please ensure you have an active data connection")
 
-        if (!ServiceUtil.isHostAvailable(host = testConnection, port = 53, timeout = 5000))
+        if (!ServiceUtil.isNetworkAvailable(applicationContext)) {
+            throw NoInternetException("Please ensure you have an active data connection")
+        }
+
+        if (!ServiceUtil.isHostAvailable(host = testConnection, port = 443, timeout = 5000)) {
             throw NoConnectivityException(
                 "Network appears to be down, please try again later."
             )
+        }
 
         if (!ServiceUtil.isHostAvailable(host = serviceURL, port = 443, timeout = 5000)) {
             throw ServiceHostUnreachableException(

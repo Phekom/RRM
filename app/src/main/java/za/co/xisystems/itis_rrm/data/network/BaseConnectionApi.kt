@@ -193,6 +193,7 @@ interface BaseConnectionApi {
                 okkHttpclient.addInterceptor(interceptor)
 
             return Retrofit.Builder()
+                // .addCallAdapterFactory(NetworkResponseAdapterFactory())
                 .client(okkHttpclient.build())
                 .baseUrl(BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create())

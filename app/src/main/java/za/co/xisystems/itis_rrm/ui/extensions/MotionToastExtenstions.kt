@@ -6,7 +6,7 @@ import androidx.fragment.app.Fragment
 import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.R
 
-fun Activity.motionToast(message: String, motionType: String) {
+fun Activity.extensionToast(message: String, motionType: String) {
 
     MotionToast.createColorToast(
         context = this,
@@ -18,13 +18,30 @@ fun Activity.motionToast(message: String, motionType: String) {
     )
 }
 
-fun Fragment.motionToast(message: String, motionType: String = MotionToast.TOAST_INFO, position: Int = MotionToast.GRAVITY_BOTTOM) {
-    MotionToast.createColorToast(
-        context = this.requireActivity(),
-        message = message,
-        style = motionType,
-        position = position,
-        duration = MotionToast.LONG_DURATION,
-        font = ResourcesCompat.getFont(this.requireActivity(), R.font.helvetica_regular)
-    )
+fun Fragment.extensionToast(
+    message: String,
+    motionType: String = MotionToast.TOAST_INFO,
+    position: Int = MotionToast.GRAVITY_BOTTOM,
+    title: String?
+) {
+    if (title.isNullOrBlank()) {
+        MotionToast.createColorToast(
+            context = this.requireActivity(),
+            message = message,
+            style = motionType,
+            position = position,
+            duration = MotionToast.LONG_DURATION,
+            font = ResourcesCompat.getFont(this.requireContext(), R.font.helvetica_regular)
+        )
+    } else {
+        MotionToast.createColorToast(
+            context = this.requireActivity(),
+            title = title,
+            message = message,
+            style = motionType,
+            position = position,
+            duration = MotionToast.LONG_DURATION,
+            font = ResourcesCompat.getFont(this.requireContext(), R.font.helvetica_regular)
+        )
+    }
 }
