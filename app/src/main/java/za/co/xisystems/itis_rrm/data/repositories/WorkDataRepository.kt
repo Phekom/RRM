@@ -190,7 +190,7 @@ class WorkDataRepository(
         } catch (throwable: Throwable) {
             val errMessage = "Failed to stage image: ${throwable.message ?: XIErrorHandler.UNKNOWN_ERROR}"
             Timber.e(throwable, errMessage)
-            postWorkStatus(XIError(throwable,errMessage))
+            postWorkStatus(XIError(throwable, errMessage))
         }
     }
 
@@ -229,17 +229,17 @@ class WorkDataRepository(
                 val uploadImageResponse = apiRequest { api.uploadRrmImage(imagedata) }
                 val apiMessage = uploadImageResponse.errorMessage ?: ""
 
-                if(apiMessage.trim().isNotBlank()){
+                if (apiMessage.trim().isNotBlank()) {
                     throw ServiceException(apiMessage)
                 }
 
                 if (totalImages <= imageCounter) {
                     Timber.d("Total Images: $totalImages")
                 }
-            } catch (throwable: Throwable){
+            } catch (throwable: Throwable) {
                 val errMessage = "Failed to upload image: ${throwable.message ?: XIErrorHandler.UNKNOWN_ERROR}"
                 Timber.e(throwable, errMessage)
-                postWorkStatus(XIError(throwable,errMessage))
+                postWorkStatus(XIError(throwable, errMessage))
             }
         }
     }

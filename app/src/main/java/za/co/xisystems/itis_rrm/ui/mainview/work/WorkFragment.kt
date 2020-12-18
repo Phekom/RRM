@@ -68,8 +68,6 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
                 uiScope.onCreate()
 
                 viewLifecycleOwner.lifecycle.addObserver(uiScope)
-
-
             }
         }
     }
@@ -99,7 +97,6 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
 
                         this@WorkFragment.initRecyclerView(headerItems.toWorkListItems())
                         delayedUnveil()
-
                     }
                 }
             })

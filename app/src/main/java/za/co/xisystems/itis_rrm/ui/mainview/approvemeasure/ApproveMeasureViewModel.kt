@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Transformations
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -28,7 +29,6 @@ import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
-import za.co.xisystems.itis_rrm.utils.uncaughtExceptionHandler
 
 /**
  * Created by Francis Mahlava on 03,October,2019
@@ -59,17 +59,17 @@ class ApproveMeasureViewModel(
 
     var workflowState: MutableLiveData<XIResult<String>?> = MutableLiveData()
 
-    private val approveMainContext = Job(superJob) + Dispatchers.Main + uncaughtExceptionHandler
-    private val approvalIOContext = Job(superJob) + Dispatchers.IO + uncaughtExceptionHandler
+    private val approveMainContext = Job(superJob) + Dispatchers.Main
+    private val approvalIOContext = Job(superJob) + Dispatchers.IO
 
     init {
         viewModelScope.launch(approveMainContext) {
             workflowStatus = measureApprovalDataRepository.workflowStatus
-            workflowStatus.observeForever {
-                it?.let {
-                    workflowState.postValue(it.getContentIfNotHandled())
-                }
-            }
+
+            workflowState = Transformations.map(workflowStatus) {
+                it.getContentIfNotHandled()
+            } as MutableLiveData<XIResult<String>?>
+
             galleryMeasure.observeForever {
                 generateGallery(it)
             }
