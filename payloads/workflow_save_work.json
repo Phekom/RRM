@@ -1,0 +1,205 @@
+{
+    "ErrorMessage": null,
+    "WorkflowJob": {
+        "ActId": 3,
+        "JiNo": "000000385",
+        "JobId": "4a67e93e-568f-494c-985b-6bf52d89b1b4",
+        "TrackRouteId": "c6999ae1-8712-2f44-88ab-fdc8f802cee6",
+        "WorkflowItemEstimates": [
+            {
+                "ActId": 7,
+                "EstimateId": "6ed19938-1369-464a-9aff-1f46fae3ecb4",
+                "TrackRouteId": "e0395fb1-2557-0947-9ba2-a10583506d6a",
+                "WorkflowEstimateWorks": [
+                    {
+                        "WorksId": "ae06dad2-0395-4fa8-ba28-0e39644a2535",
+                        "ActId": 17,
+                        "TrackRouteId": "0a105532-19bc-8743-9a3f-aef742b0d8c7",
+                        "EstimateId": "6ed19938-1369-464a-9aff-1f46fae3ecb4",
+                        "RecordVersion": 0,
+                        "RecordSynchStateId": 0
+                    }
+                ]
+            },
+            {
+                "ActId": 7,
+                "EstimateId": "f705ee07-4f12-2e4e-ba6f-31f1d8564acf",
+                "TrackRouteId": "d2b43e90-8b6e-1c48-a4f6-3f9cc16f0f16",
+                "WorkflowEstimateWorks": [
+                    {
+                        "WorksId": "84ba98ac-2b8e-402d-8bcd-a38201f4fd4e",
+                        "ActId": 15,
+                        "TrackRouteId": "ce1ffcbe-ea16-594c-9b15-478aaa3bce8f",
+                        "EstimateId": "f705ee07-4f12-2e4e-ba6f-31f1d8564acf",
+                        "RecordVersion": 0,
+                        "RecordSynchStateId": 0
+                    }
+                ]
+            },
+            {
+                "ActId": 7,
+                "EstimateId": "9f051413-8eed-3f45-83f5-1b3e4f8985b6",
+                "TrackRouteId": "8ab66157-c7ce-7e44-8ed3-7763603a1cbe",
+                "WorkflowEstimateWorks": [
+                    {
+                        "WorksId": "348ba66d-e054-442f-aaad-616178f4665a",
+                        "ActId": 15,
+                        "TrackRouteId": "0e0f44d4-1ed7-c94e-b0f4-71db0d51bf65",
+                        "EstimateId": "9f051413-8eed-3f45-83f5-1b3e4f8985b6",
+                        "RecordVersion": 0,
+                        "RecordSynchStateId": 0
+                    }
+                ]
+            },
+            {
+                "ActId": 7,
+                "EstimateId": "8662eb13-86c7-6741-8a25-4b9f06ae5b42",
+                "TrackRouteId": "e5dbe561-66e2-8e4b-88cb-0f8efb8e07d6",
+                "WorkflowEstimateWorks": [
+                    {
+                        "WorksId": "60f2cdcb-5fab-4fb6-887e-24a8604bac08",
+                        "ActId": 15,
+                        "TrackRouteId": "14e579a8-3235-2d40-8be1-09540d9ec8d1",
+                        "EstimateId": "8662eb13-86c7-6741-8a25-4b9f06ae5b42",
+                        "RecordVersion": 0,
+                        "RecordSynchStateId": 0
+                    }
+                ]
+            }
+        ],
+        "WorkflowItemMeasures": [],
+        "WorkflowJobSections": [
+            {
+                "EndKm": 26.0,
+                "JobId": "4a67e93e-568f-494c-985b-6bf52d89b1b4",
+                "JobSectionId": "99a97e6d-fadc-4c41-a460-0613363dd082",
+                "ProjectSectionId": "b10728dd-2c08-d746-9ed0-7131ebcfc453",
+                "RecordSynchStateId": 0,
+                "RecordVersion": 0,
+                "StartKm": 0.0
+            },
+            {
+                "EndKm": 26.0,
+                "JobId": "4a67e93e-568f-494c-985b-6bf52d89b1b4",
+                "JobSectionId": "99fe2289-6a1d-f64d-b8fe-559171fd2266",
+                "ProjectSectionId": "b10728dd-2c08-d746-9ed0-7131ebcfc453",
+                "RecordSynchStateId": 0,
+                "RecordVersion": 0,
+                "StartKm": 0.0
+            },
+            {
+                "EndKm": 26.0,
+                "JobId": "4a67e93e-568f-494c-985b-6bf52d89b1b4",
+                "JobSectionId": "f7231015-c44d-dc43-a094-5877688270c1",
+                "ProjectSectionId": "b10728dd-2c08-d746-9ed0-7131ebcfc453",
+                "RecordSynchStateId": 0,
+                "RecordVersion": 0,
+                "StartKm": 0.0
+            },
+            {
+                "EndKm": 26.0,
+                "JobId": "4a67e93e-568f-494c-985b-6bf52d89b1b4",
+                "JobSectionId": "f1d8a9a2-cef7-1a44-9895-12c6878aa2b2",
+                "ProjectSectionId": "b10728dd-2c08-d746-9ed0-7131ebcfc453",
+                "RecordSynchStateId": 0,
+                "RecordVersion": 0,
+                "StartKm": 0.0
+            },
+            {
+                "EndKm": 26.0,
+                "JobId": "4a67e93e-568f-494c-985b-6bf52d89b1b4",
+                "JobSectionId": "ed9e180e-3bd8-bb44-8ad2-d50940a67092",
+                "ProjectSectionId": "b10728dd-2c08-d746-9ed0-7131ebcfc453",
+                "RecordSynchStateId": 0,
+                "RecordVersion": 0,
+                "StartKm": 0.0
+            },
+            {
+                "EndKm": 26.0,
+                "JobId": "4a67e93e-568f-494c-985b-6bf52d89b1b4",
+                "JobSectionId": "e42660b6-55c5-d149-aa09-b644ef32d2dd",
+                "ProjectSectionId": "b10728dd-2c08-d746-9ed0-7131ebcfc453",
+                "RecordSynchStateId": 0,
+                "RecordVersion": 0,
+                "StartKm": 0.0
+            },
+            {
+                "EndKm": 26.0,
+                "JobId": "4a67e93e-568f-494c-985b-6bf52d89b1b4",
+                "JobSectionId": "e1e01b9a-96fb-4241-9f24-b3557d3595fc",
+                "ProjectSectionId": "b10728dd-2c08-d746-9ed0-7131ebcfc453",
+                "RecordSynchStateId": 0,
+                "RecordVersion": 0,
+                "StartKm": 0.0
+            },
+            {
+                "EndKm": 26.0,
+                "JobId": "4a67e93e-568f-494c-985b-6bf52d89b1b4",
+                "JobSectionId": "e14a716b-d5db-bc46-9cd5-41bdc458a223",
+                "ProjectSectionId": "b10728dd-2c08-d746-9ed0-7131ebcfc453",
+                "RecordSynchStateId": 0,
+                "RecordVersion": 0,
+                "StartKm": 0.0
+            },
+            {
+                "EndKm": 26.0,
+                "JobId": "4a67e93e-568f-494c-985b-6bf52d89b1b4",
+                "JobSectionId": "d9b11bfa-ab69-ff46-a756-412cc87c3bc3",
+                "ProjectSectionId": "b10728dd-2c08-d746-9ed0-7131ebcfc453",
+                "RecordSynchStateId": 0,
+                "RecordVersion": 0,
+                "StartKm": 0.0
+            },
+            {
+                "EndKm": 26.0,
+                "JobId": "4a67e93e-568f-494c-985b-6bf52d89b1b4",
+                "JobSectionId": "cbb6ad82-5191-304e-be91-6bb2c5414ae7",
+                "ProjectSectionId": "b10728dd-2c08-d746-9ed0-7131ebcfc453",
+                "RecordSynchStateId": 0,
+                "RecordVersion": 0,
+                "StartKm": 0.0
+            },
+            {
+                "EndKm": 26.0,
+                "JobId": "4a67e93e-568f-494c-985b-6bf52d89b1b4",
+                "JobSectionId": "c4da50b4-8473-0d45-81d1-d463168a6a47",
+                "ProjectSectionId": "b10728dd-2c08-d746-9ed0-7131ebcfc453",
+                "RecordSynchStateId": 0,
+                "RecordVersion": 0,
+                "StartKm": 0.0
+            },
+            {
+                "EndKm": 26.0,
+                "JobId": "4a67e93e-568f-494c-985b-6bf52d89b1b4",
+                "JobSectionId": "ad875bb2-2e9b-8c4c-8d3c-8b5c0a593e61",
+                "ProjectSectionId": "b10728dd-2c08-d746-9ed0-7131ebcfc453",
+                "RecordSynchStateId": 0,
+                "RecordVersion": 0,
+                "StartKm": 0.0
+            }
+        ]
+    },
+    "ToDoListGroups": [
+        {
+            "Entities": [],
+            "GroupDescription": "Jobs that are in the process of being established",
+            "GroupId": "JobEstimate",
+            "GroupName": "New Jobs",
+            "SortOrder": 0
+        },
+        {
+            "Entities": [],
+            "GroupDescription": "Jobs where approval is required",
+            "GroupId": "JobApprove",
+            "GroupName": "Unapproved Jobs",
+            "SortOrder": 1
+        },
+        {
+            "Entities": [],
+            "GroupDescription": "Measurements that require Approval for payment processing",
+            "GroupId": "MeasureApprove",
+            "GroupName": "Measurements To Approve",
+            "SortOrder": 5
+        }
+    ]
+}

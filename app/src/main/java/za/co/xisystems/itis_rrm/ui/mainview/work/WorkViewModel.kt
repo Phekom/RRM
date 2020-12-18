@@ -6,9 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.CoroutineStart.ATOMIC
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelChildren
@@ -25,6 +23,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.WF_WorkStepDTO
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.WorkDataRepository
+import za.co.xisystems.itis_rrm.extensions.getDistinct
 import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
 
@@ -75,7 +74,7 @@ class WorkViewModel(
 
     suspend fun getJobsForActivityId(activityId1: Int, activityId2: Int): LiveData<List<JobDTO>> {
         return withContext(ioContext) {
-            workDataRepository.getJobsForActivityIds(activityId1, activityId2)
+            workDataRepository.getJobsForActivityIds(activityId1, activityId2).getDistinct()
         }
     }
 
@@ -160,14 +159,13 @@ class WorkViewModel(
         }
     }
 
-    @ExperimentalCoroutinesApi
-    suspend fun submitWorks(
+    fun submitWorks(
         itemEstiWorks: JobEstimateWorksDTO,
         activity: FragmentActivity,
         itemEstiJob: JobDTO
 
     ) {
-        withContext(ioContext) {
+        viewModelScope.launch (ioContext) {
             workDataRepository.submitWorks(itemEstiWorks, activity, itemEstiJob)
         }
     }
@@ -178,14 +176,15 @@ class WorkViewModel(
         }
     }
 
-    @ExperimentalCoroutinesApi
     fun processWorkflowMove(
         userId: String,
         trackRouteId: String,
         description: String?,
         direction: Int
-    ) = viewModelScope.launch(ioContext, ATOMIC) {
-        workDataRepository.processWorkflowMove(userId, trackRouteId, description, direction)
+    ) {
+        viewModelScope.launch (ioContext) {
+            workDataRepository.processWorkflowMove(userId, trackRouteId, description, direction)
+        }
     }
 
     suspend fun getJobItemsEstimatesDoneForJobId(
