@@ -142,11 +142,11 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
     }
 
     override fun onDestroyView() {
+        super.onDestroyView()
         // Remember to flush the RecyclerView's adaptor
         workViewModel.workflowState.removeObservers(viewLifecycleOwner)
         work_actions_listView.adapter = null
         image_collection_view.clearImages()
-        super.onDestroyView()
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -450,8 +450,6 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
                     val workCodeData = workViewModel.getWorkFlowCodes(id)
                     workCodeData.observeOnce(viewLifecycleOwner, {
                         groupAdapter.notifyItemChanged(2)
-                        image_collection_view.clearImages()
-                        // estimateWorksPhotoArrayList.clear()
                         comments_editText.setText("")
                         Timber.d("IsRefresh -> Yes")
                     })
