@@ -69,18 +69,7 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
 
                 viewLifecycleOwner.lifecycle.addObserver(uiScope)
 
-                uiScope.launch(uiScope.coroutineContext) {
-                    try {
-                        refreshEstimateJobsFromLocal()
-                    } catch (t: Throwable) {
-                        Timber.e(t, "Failed to fetch local jobs")
-                        val xiFail = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
-                        crashGuard(
-                            view = this@WorkFragment.requireView(),
-                            throwable = xiFail,
-                            refreshAction = { retryFetchingJobs() })
-                    }
-                }
+
             }
         }
     }
@@ -88,25 +77,29 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
     private suspend fun refreshEstimateJobsFromLocal() {
 
         // Never veil local fetches
+        ui.veiledWorkListView.veil()
         withContext(uiScope.coroutineContext) {
-            workViewModel.getJobsForActivityId(
+            val localJobs = workViewModel.getJobsForActivityId(
                 ActivityIdConstants.JOB_APPROVED,
                 ActivityIdConstants.ESTIMATE_INCOMPLETE
-            ).observe(viewLifecycleOwner, { jobsList ->
-                group7_loading.visibility = View.GONE
+            )
+
+            localJobs.observeOnce(viewLifecycleOwner, { jobsList ->
+                ui.group7Loading.visibility = View.GONE
                 if (jobsList.isNullOrEmpty()) {
-                    veiled_work_list_view.visibility = View.GONE
-                    noData.visibility = View.VISIBLE
+                    ui.veiledWorkListView.visibility = View.GONE
+                    ui.noData.visibility = View.VISIBLE
                 } else {
-                    veiled_work_list_view.visibility = View.VISIBLE
-                    noData.visibility = View.GONE
-
-                    val headerItems = jobsList.distinctBy {
-                        it.JobId
-                    }
-
                     Coroutines.main {
+                        ui.veiledWorkListView.visibility = View.VISIBLE
+                        ui.noData.visibility = View.GONE
+                        val headerItems = jobsList.distinctBy {
+                            it.JobId
+                        }
+
                         this@WorkFragment.initRecyclerView(headerItems.toWorkListItems())
+                        delayedUnveil()
+
                     }
                 }
             })
@@ -132,6 +125,18 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
 
         initSwipeToRefresh()
         initVeiledRecycler()
+        uiScope.launch(uiScope.coroutineContext) {
+            try {
+                refreshEstimateJobsFromLocal()
+            } catch (t: Throwable) {
+                Timber.e(t, "Failed to fetch local jobs")
+                val xiFail = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
+                crashGuard(
+                    view = this@WorkFragment.requireView(),
+                    throwable = xiFail,
+                    refreshAction = { retryFetchingJobs() })
+            }
+        }
     }
 
     private fun initVeiledRecycler() {
@@ -144,7 +149,7 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
             })
             setAdapter(groupAdapter)
             setLayoutManager(LinearLayoutManager(this.context))
-            addVeiledItems(10)
+            addVeiledItems(15)
         }
     }
 
@@ -182,15 +187,17 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
             )
         } finally {
             ui.worksSwipeToRefresh.isRefreshing = false
-            // delay-auto-unveil
-            Handler(Looper.getMainLooper()).postDelayed(
-                {
-                    ui.veiledWorkListView.unVeil()
-                    veiled = false
-                },
-                Constants.ONE_SECOND
-            )
         }
+    }
+
+    private fun delayedUnveil() {
+        Handler(Looper.getMainLooper()).postDelayed(
+            {
+                ui.veiledWorkListView.unVeil()
+                veiled = false
+            },
+            Constants.ONE_SECOND
+        )
     }
 
     private fun retryFetchingJobs() {
