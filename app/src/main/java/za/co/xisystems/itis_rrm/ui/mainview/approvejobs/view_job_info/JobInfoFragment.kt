@@ -15,6 +15,7 @@ import android.widget.Toast
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.skydoves.androidveil.VeilRecyclerFrameView
 import com.skydoves.androidveil.VeiledItemOnClickListener
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
@@ -329,7 +330,7 @@ class JobInfoFragment : BaseFragment(), KodeinAware {
                             )
                             progressButton.failProgress("Invalid Job")
                         }
-                        workflowDirection == WorkflowDirection.FAIL &&
+                        workflowDirection == FAIL &&
                             ui.workflowCommentsEditText.text.trim().isBlank() -> {
                             sharpToast(
                                 message = "Please provide a comment / reason for declining this job",
@@ -377,13 +378,13 @@ class JobInfoFragment : BaseFragment(), KodeinAware {
     }
 
     private fun popViewOnJobSubmit(direction: Int, jiNo: String?) {
-        if (direction == WorkflowDirection.NEXT.value) {
+        if (direction == NEXT.value) {
             progressButton.text = getString(string.approve_job)
             sharpToast(
                 message = getString(string.job_no_approved, jiNo!!),
                 style = SUCCESS
             )
-        } else if (direction == WorkflowDirection.FAIL.value) {
+        } else if (direction == FAIL.value) {
             progressButton.text = getString(string.decline_job)
             sharpToast(
                 message = getString(string.job_declined),

@@ -20,6 +20,7 @@ import androidx.lifecycle.whenStarted
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.skydoves.androidveil.VeiledItemOnClickListener
+import com.skydoves.androidveil.VeilRecyclerFrameView
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.GroupieViewHolder
 import kotlinx.coroutines.launch
