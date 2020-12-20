@@ -23,7 +23,6 @@ import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.MainActivity
-import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.R.drawable
 import za.co.xisystems.itis_rrm.R.layout
 import za.co.xisystems.itis_rrm.R.string
@@ -60,7 +59,7 @@ import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection.FAIL
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection.NEXT
 
-class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
+class JobInfoFragment : BaseFragment(), KodeinAware {
     override val kodein by kodein()
     private lateinit var approveViewModel: ApproveJobsViewModel
     private val factory: ApproveJobsViewModelFactory by instance()
@@ -145,7 +144,8 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
+        // no options menu
+        return false
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

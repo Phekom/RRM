@@ -14,7 +14,7 @@ import za.co.xisystems.itis_rrm.constants.Constants
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.results.XIError
 
-abstract class VeiledRecyclerFragment(layoutContentId: Int) : BaseFragment(layoutContentId) {
+abstract class VeiledRecyclerFragment : BaseFragment() {
 
     /**
      * Extension function to set up VeilRecyclerFrameView for display

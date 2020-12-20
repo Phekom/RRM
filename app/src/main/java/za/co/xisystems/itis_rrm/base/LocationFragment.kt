@@ -23,7 +23,7 @@ import za.co.xisystems.itis_rrm.utils.GPSUtils
  * Created by Shaun McDonald on 2020/06/06.
  * Copyright (c) 2020 XI Systems. All rights reserved.
  **/
-abstract class LocationFragment(layoutContentId: Int) : BaseFragment(0), KodeinAware {
+abstract class LocationFragment : BaseFragment(), KodeinAware {
 
     private var currentLocation: LocationModel? = null
     override val kodein: Kodein by kodein()

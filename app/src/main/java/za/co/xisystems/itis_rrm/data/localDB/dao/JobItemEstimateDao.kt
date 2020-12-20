@@ -82,4 +82,7 @@ interface JobItemEstimateDao {
 
     @Query("UPDATE JOB_ITEM_ESTIMATE set actId = :actId WHERE estimateId = :estimateId")
     suspend fun updateActIdForJobItemEstimate(actId: Int, estimateId: String): Int
+
+    @Query("DELETE FROM JOB_ITEM_ESTIMATE WHERE jobId = :jobId and projectItemId = :projectItemId")
+    suspend fun deleteJobItemEstimateByJobIdAndProjectItemId(jobId: String, projectItemId: String)
 }

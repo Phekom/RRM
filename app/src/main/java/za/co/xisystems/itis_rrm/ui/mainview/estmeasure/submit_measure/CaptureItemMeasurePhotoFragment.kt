@@ -65,7 +65,7 @@ import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.INFO
 
 //
 class CaptureItemMeasurePhotoFragment :
-    LocationFragment(R.layout.fragment_capture_item_measure_photo),
+    LocationFragment(),
     KodeinAware {
 
     override val kodein by kodein()
@@ -87,7 +87,8 @@ class CaptureItemMeasurePhotoFragment :
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
+        // no options menu
+        return false
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

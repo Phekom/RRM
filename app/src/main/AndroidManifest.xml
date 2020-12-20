@@ -4,9 +4,9 @@
     package="za.co.xisystems.itis_rrm"
     android:installLocation="auto">
 
-    <uses-feature
-        android:name="android.hardware.camera"
-        android:required="true" /> <!-- When adding a permission, also add to  "xisystemsms.itismaintenance.controllers.PermissionController"  if necessary. -->
+    <uses-feature android:name="android.hardware.camera" android:required="true" />
+
+    <!-- When adding a permission, also add to  "xisystemsms.itismaintenance.controllers.PermissionController"  if necessary. -->
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />

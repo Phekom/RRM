@@ -47,7 +47,7 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
  * Created by Francis Mahlava on 03,October,2019
  */
 
-class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAware {
+class ApproveJobsFragment : BaseFragment(), KodeinAware {
 
     override val kodein by kodein()
     private lateinit var approveViewModel: ApproveJobsViewModel
@@ -99,7 +99,8 @@ class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAw
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
+        // No options for this fragment
+        return false
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -148,7 +149,7 @@ class ApproveJobsFragment : BaseFragment(R.layout.fragment_approvejob), KodeinAw
             crashGuard(
                 view = this@ApproveJobsFragment.requireView(),
                 throwable = xiFail,
-                refreshAction = { retryAction }
+                refreshAction = { uiScope.launch { retryAction() } }
             )
         } finally {
             if (veiled) delayedUnveil()

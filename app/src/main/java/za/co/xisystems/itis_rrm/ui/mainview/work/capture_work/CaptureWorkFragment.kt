@@ -89,7 +89,7 @@ import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.NO_INTERNET
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.WARNING
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 
-class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), KodeinAware {
+class CaptureWorkFragment : LocationFragment(), KodeinAware {
 
     override val kodein by kodein()
     private lateinit var workViewModel: WorkViewModel
@@ -701,7 +701,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
             dialogBuilder.setCancelable(false)
             dialogBuilder.setPositiveButton(
                 R.string.yes
-            ) { dialog, which ->
+            ) { _, _ ->
 
                 Coroutines.main {
                     pushCompletedEstimates(estimates)
@@ -863,7 +863,8 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
+        // no options menu
+        return false
     }
 
     private fun getCurrentLocation(): LocationModel? {

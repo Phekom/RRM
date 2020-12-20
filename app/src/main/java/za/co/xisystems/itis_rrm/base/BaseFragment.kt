@@ -49,7 +49,7 @@ import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.WARNING
  */
 // R.layout.fragment_home
 //
-abstract class BaseFragment(layoutContentId: Int) : Fragment(), IProgressView, KodeinAware {
+abstract class BaseFragment : Fragment(), IProgressView, KodeinAware {
 
     private lateinit var sharedViewModel: SharedViewModel
     private val shareFactory: SharedViewModelFactory by instance()
@@ -251,7 +251,7 @@ abstract class BaseFragment(layoutContentId: Int) : Fragment(), IProgressView, K
         }
     }
 
-    protected fun sharpToast(
+    fun sharpToast(
         title: String? = null,
         message: String,
         style: ToastStyle = INFO,

@@ -50,7 +50,7 @@ import za.co.xisystems.itis_rrm.utils.show
  * Updated by Shaun McDonald on 2020/04/22
  */
 
-class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListener, KodeinAware {
+class CreateFragment : BaseFragment(), OfflineListener, KodeinAware {
 
     override val kodein by kodein()
     private lateinit var createViewModel: CreateViewModel
@@ -100,7 +100,8 @@ class CreateFragment : BaseFragment(R.layout.fragment_createjob), OfflineListene
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
+        // no options menu
+        return false
     }
 
     override fun onPrepareOptionsMenu(menu: Menu) {

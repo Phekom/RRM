@@ -88,7 +88,7 @@ import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
  * Created by Francis Mahlava on 2019/12/29.
  */
 
-class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate), KodeinAware {
+class EstimatePhotoFragment : LocationFragment(), KodeinAware {
 
     private var sectionId: String? = null
     override val kodein by kodein()
@@ -262,7 +262,9 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
+        // no options menu
+        return false
+    // To change body of created functions use File | Settings | File Templates.
     }
 
     override fun onPrepareOptionsMenu(menu: Menu) {

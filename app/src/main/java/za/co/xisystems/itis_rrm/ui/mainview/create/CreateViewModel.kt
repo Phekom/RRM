@@ -267,8 +267,8 @@ class CreateViewModel(
         jobCreationDataRepository.deleteItemList(jobId)
     }
 
-    fun deleteItemFromList(itemId: String) {
-        jobCreationDataRepository.deleteItemFromList(itemId)
+    fun deleteItemFromList(itemId: String, jobId: String) {
+        jobCreationDataRepository.deleteItemFromList(itemId, jobId)
     }
 
     suspend fun getContractNoForId(contractVoId: String?): String {

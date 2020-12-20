@@ -7,6 +7,7 @@ import android.widget.Toast
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.room.Transaction
 import com.google.gson.Gson
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
@@ -252,9 +253,11 @@ class JobCreationDataRepository(
         }
     }
 
-    fun deleteItemFromList(itemId: String) {
+    @Transaction
+    fun deleteItemFromList(itemId: String, jobId: String) {
         Coroutines.io {
             appDb.getItemDaoTemp().deleteItemfromList(itemId)
+            appDb.getJobItemEstimateDao().deleteJobItemEstimateByJobIdAndProjectItemId(jobId, itemId)
         }
     }
 

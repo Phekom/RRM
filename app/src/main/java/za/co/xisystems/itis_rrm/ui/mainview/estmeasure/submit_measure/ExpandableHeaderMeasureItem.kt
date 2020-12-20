@@ -146,8 +146,7 @@ class ExpandableHeaderMeasureItem(
                                         selected,
                                         jobForJobItemEstimate,
                                         measureItem,
-                                        jobItemMeasurePhotoDTO,
-                                        view
+                                        jobItemMeasurePhotoDTO
                                     )
                                 }
 
@@ -172,8 +171,7 @@ class ExpandableHeaderMeasureItem(
         selected: ProjectItemDTO?,
         jobForJobItemEstimate: JobDTO,
         measureItem: JobItemEstimateDTO,
-        jobItemMeasurePhotoDTO: ArrayList<JobItemMeasurePhotoDTO>,
-        view: View
+        jobItemMeasurePhotoDTO: ArrayList<JobItemMeasurePhotoDTO>
     ) {
         if (quantityInputEditText.text.toString() == "") {
             Toast.makeText(

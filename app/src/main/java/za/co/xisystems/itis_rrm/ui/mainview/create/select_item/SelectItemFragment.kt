@@ -45,7 +45,7 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
  * Created by Francis Mahlava on 2019/12/29.
  */
 
-class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAware {
+class SelectItemFragment : BaseFragment(), KodeinAware {
     override val kodein by kodein()
     private lateinit var createViewModel: CreateViewModel
     private val factory: CreateViewModelFactory by instance()
@@ -113,7 +113,8 @@ class SelectItemFragment : BaseFragment(R.layout.fragment_select_item), KodeinAw
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
+        // no options menu
+        return false // To change body of created functions use File | Settings | File Templates.
     }
 
     override fun onCreateView(

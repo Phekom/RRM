@@ -46,7 +46,7 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
 const val INSET_TYPE_KEY = "inset_type"
 const val INSET = "inset"
 
-class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
+class WorkFragment : BaseFragment(), KodeinAware {
 
     override val kodein by kodein()
     private lateinit var workViewModel: WorkViewModel
@@ -252,7 +252,8 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
+        // no options menu
+        return false
     }
 
     private suspend fun List<JobDTO>.toWorkListItems(): List<ExpandableGroup> {

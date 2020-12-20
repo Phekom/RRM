@@ -275,7 +275,7 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
     }
 
     override fun onStarted() {
-        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
+        Timber.d("AuthInit")
     }
 
     override fun onSuccess(userDTO: UserDTO) {

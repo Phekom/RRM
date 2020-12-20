@@ -20,9 +20,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.Section
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
-import java.util.ArrayList
-import java.util.Calendar
-import java.util.Date
 import kotlinx.coroutines.launch
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
@@ -49,12 +46,15 @@ import za.co.xisystems.itis_rrm.utils.DateUtil
 import za.co.xisystems.itis_rrm.utils.JobUtils
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.WARNING
+import java.util.ArrayList
+import java.util.Calendar
+import java.util.Date
 
 /**
  * Created by Francis Mahlava on 2019/12/29.
  */
 //
-class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), KodeinAware {
+class AddProjectFragment : BaseFragment(), KodeinAware {
     override val kodein by kodein()
     private lateinit var createViewModel: CreateViewModel
     private lateinit var unsubmittedViewModel: UnSubmittedViewModel
@@ -209,7 +209,8 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
+        // no options menu
+        return false // To change body of created functions use File | Settings | File Templates.
     }
 
     override fun onResume() {
@@ -282,7 +283,13 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
 
     private fun List<ItemDTOTemp>.toProjecListItems(): List<ProjectItem> {
         return this.map {
-            ProjectItem(it, createViewModel, contractID, job)
+            ProjectItem(
+                fragment = this@AddProjectFragment,
+                itemDesc = it,
+                createViewModel = createViewModel,
+                contractID = contractID,
+                job = job
+            )
         }
     }
 
@@ -297,7 +304,7 @@ class AddProjectFragment : BaseFragment(R.layout.fragment_add_project_items), Ko
             }
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                val item = GroupAdapter<GroupieViewHolder>().getItem(viewHolder.adapterPosition)
+                val item = GroupAdapter<GroupieViewHolder>().getItem(viewHolder.layoutPosition)
                 // Change notification to the adapter happens automatically when the section is
                 // changed.
 
