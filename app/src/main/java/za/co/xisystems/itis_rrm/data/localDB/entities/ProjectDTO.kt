@@ -2,14 +2,15 @@ package za.co.xisystems.itis_rrm.data.localDB.entities
 
 import android.os.Parcel
 import android.os.Parcelable
+import android.os.Parcelable.Creator
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
-import java.io.Serializable
 import org.jetbrains.annotations.NotNull
+import java.io.Serializable
 
 /**
  * Created by Francis Mahlava on 2019/11/22.
@@ -32,7 +33,7 @@ data class ProjectDTO(
 
     @SerializedName("ProjectId")
     @NotNull
-    val projectId: String,
+    val projectId: String?,
 
     @SerializedName("Descr")
     val descr: String?,
@@ -65,7 +66,7 @@ data class ProjectDTO(
 ) : Serializable, Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.readInt(),
-        parcel.readString()!!,
+        parcel.readString(),
         parcel.readString(),
         parcel.readString(),
         TODO("items"),
@@ -92,7 +93,7 @@ data class ProjectDTO(
         return 0
     }
 
-    companion object CREATOR : Parcelable.Creator<ProjectDTO> {
+    companion object CREATOR : Creator<ProjectDTO> {
         override fun createFromParcel(parcel: Parcel): ProjectDTO {
             return ProjectDTO(parcel)
         }

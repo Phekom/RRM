@@ -32,12 +32,10 @@ abstract class LocationFragment : BaseFragment(), KodeinAware {
     private var gpsEnabled = false
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        TODO("Not yet implemented")
+        // fragment has no options
+        return false
     }
 
-    /**
-     *
-     */
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
