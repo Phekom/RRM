@@ -6,10 +6,13 @@ import android.app.DatePickerDialog
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.os.HandlerCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenStarted
@@ -28,6 +31,7 @@ import timber.log.Timber
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
+import za.co.xisystems.itis_rrm.constants.Constants.TWO_SECONDS
 import za.co.xisystems.itis_rrm.data.localDB.JobDataController
 import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
@@ -79,7 +83,7 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
     @MyState
     private var items: List<ItemDTOTemp> = ArrayList()
 
-    // TODO: Restore to last state saved when user arrives here by clicking the back button.
+    // TODO("Restore to last state saved when user arrives here by clicking the back button.")
 
     init {
         lifecycleScope.launch {
@@ -499,10 +503,15 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
     }
 
     private fun popViewOnJobSubmit() {
-        // TODO: delete Items data from the database after success upload
-        Intent(context?.applicationContext, MainActivity::class.java).also { home ->
-            startActivity(home)
-        }
+        // Delete Items data from the database after success upload
+        onResetClicked(this.requireView())
+        createViewModel.setCurrentJob(null)
+        // Conduct user back to home fragment
+        HandlerCompat.postDelayed(Handler(Looper.getMainLooper()), {
+            Intent(context?.applicationContext, MainActivity::class.java).also { home ->
+                startActivity(home)
+            }
+        }, null, TWO_SECONDS)
     }
 
     private fun setDueDateTextView(year: Int, month: Int, dayOfMonth: Int) {
@@ -540,7 +549,7 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
         resetContractAndProjectSelection(view)
     }
 
-    private fun calculateTotalCost() {
+    fun calculateTotalCost() {
         ui.totalCostTextView.text = JobUtils.formatTotalCost(job)
     }
 

@@ -115,7 +115,14 @@ open class ProjectItem(
             string.yes
         ) { _, _ ->
             fragment.sharpToast("Deleting ...", "${this.itemDesc} removed.", DELETE, CENTER, LONG)
-            createViewModel.deleteItemFromList(itemDesc.itemId, itemDesc.jobId)
+            Coroutines.main {
+                // Delete the line item
+                createViewModel.deleteItemFromList(itemDesc.itemId, itemDesc.jobId)
+
+                // Set updated job and recalculate costs if applicable
+                createViewModel.setJobToEdit(itemDesc.jobId)
+                fragment.calculateTotalCost()
+            }
         }
         // No button
         itemDeleteBuilder.setNegativeButton(

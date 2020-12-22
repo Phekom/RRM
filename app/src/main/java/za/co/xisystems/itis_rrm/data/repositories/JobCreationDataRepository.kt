@@ -12,8 +12,6 @@ import com.google.gson.Gson
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
-import java.io.IOException
-import java.util.ArrayList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -41,6 +39,8 @@ import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.PhotoUtil.getPhotoPathFromExternalDirectory
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
+import java.io.IOException
+import java.util.ArrayList
 
 /**
  * Created by Francis Mahlava on 2019/11/28.
@@ -78,8 +78,9 @@ class JobCreationDataRepository(
 
     private fun sendMsg(uploadResponse: String?) {
         val response: UploadImageResponse? = null
-        if (uploadResponse.isNullOrEmpty())
+        if (uploadResponse.isNullOrEmpty()) {
             jobDataController?.setMsg(response!!.errorMessage)
+        }
     }
 
     private fun saveWorkflowJob(workflowJob: WorkflowJobDTO?) {
@@ -254,10 +255,13 @@ class JobCreationDataRepository(
     }
 
     @Transaction
-    fun deleteItemFromList(itemId: String, jobId: String) {
-        Coroutines.io {
-            appDb.getItemDaoTemp().deleteItemfromList(itemId)
-            appDb.getJobItemEstimateDao().deleteJobItemEstimateByJobIdAndProjectItemId(jobId, itemId)
+    suspend fun deleteItemFromList(itemId: String, jobId: String): Int {
+        return withContext(Dispatchers.IO) {
+            val itemsDeleted = appDb.getItemDaoTemp().deleteItemFromList(itemId)
+            val estimatesDeleted =
+                appDb.getJobItemEstimateDao()
+                    .deleteJobItemEstimateByJobIdAndProjectItemId(jobId, itemId)
+            itemsDeleted + estimatesDeleted
         }
     }
 

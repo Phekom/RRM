@@ -24,36 +24,6 @@ interface ItemDaoTemp {
     @Query("SELECT * FROM PROJECT_ITEM_TABLE_TEMP WHERE projectId = :projectId AND jobId = :jobId")
     fun getAllProjecItems(projectId: String, jobId: String): LiveData<List<ItemDTOTemp>>
 
-//    @Query("SELECT * FROM PROJECT_ITEM_TABLE_TEMP WHERE itemId = :itemId")
-//    fun getItemForItemId(itemId: String): LiveData<ItemDTO>
-
-//    @Query("SELECT sectionItemId FROM PROJECT_ITEM_TABLE_TEMP WHERE itemId = :itemId")
-//    fun getSectionItemId(itemId: String): String
-//
-//    @Query("INSERT INTO PROJECT_ITEM_TABLE_TEMP (itemId ,itemCode,descr, itemSections, tenderRate, uom, workflowId,sectionItemId, quantity, estimateId, projectId) VALUES (:itemId, :itemCode,:descr, :itemSections, :tenderRate, :uom, :workflowId, :sectionItemId, :quantity, :estimateId, :projectId)")
-//    fun insertItem(itemId :String, itemCode :String?, descr :String?, itemSections : ArrayList<ItemSectionDTO>, tenderRate :Double, uom :String?, workflowId :Int?, sectionItemId :String?, quantity :Double, estimateId :String?, projectId :String)
-//
-//    @Query("SELECT descr FROM PROJECT_ITEM_TABLE_TEMP WHERE itemId = :itemId")
-//    fun getProjectItemDescription(itemId: String): String
-//
-//    @Query("SELECT uom FROM PROJECT_ITEM_TABLE_TEMP WHERE itemId = :itemId")
-//    fun getUOMForProjectItemId(itemId: String): String
-//
-
-//    @Query("SELECT * FROM PROJECT_ITEM_TABLE_TEMP WHERE itemId LIKE :itemId")
-//    fun getItemForItemId(itemId: String): LiveData<ProjectItemDTO>
-//
-//    @Query("SELECT * FROM PROJECT_ITEM_TABLE_TEMP WHERE sectionItemId LIKE :sectionItemId")
-//    fun getItemForItemCode(sectionItemId: String): LiveData<List<ProjectItemDTO>>
-//
-//    @Query("SELECT * FROM PROJECT_ITEM_TABLE_TEMP WHERE projectId LIKE :projectId ORDER BY itemCode ASC "  )
-//    fun getAllItemsForProjectId(projectId: String): LiveData<List<ProjectItemDTO>>
-
-//
-//    @Query("SELECT * FROM PROJECT_ITEM_TABLE_TEMP WHERE sectionItemId LIKE :sectionItem AND projectId LIKE :projectId")
-//    fun getAllItemsForSectionItem(sectionItem : String, projectId : String ): LiveData<List<ProjectItemDTO>>
-//
-
     @Query("DELETE FROM PROJECT_ITEM_TABLE_TEMP")
     fun deleteAll()
 
@@ -64,5 +34,6 @@ interface ItemDaoTemp {
     fun deleteItemList(jobId: String)
 
     @Query("DELETE FROM PROJECT_ITEM_TABLE_TEMP WHERE itemId = :itemId")
-    fun deleteItemfromList(itemId: String)
+    fun deleteItemFromList(itemId: String): Int
 }
+

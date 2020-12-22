@@ -7,8 +7,6 @@ import android.os.Environment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.room.Transaction
-import java.io.File
-import java.util.regex.Pattern
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -55,6 +53,8 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
+import java.io.File
+import java.util.regex.Pattern
 
 private val jobDataController: JobDataController? = null
 
@@ -284,45 +284,38 @@ class OfflineDataRepository(
     }
 
     private suspend fun saveSectionsItems(sections: ArrayList<String>?) {
-        var sectionSize: Int? = sections?.size
-        var sectionCount = 0
-        if (sectionSize != null) {
-            withContext(Dispatchers.IO) {
 
-                try {
-                    sections?.forEach { section ->
-                        //  Let's get the String
-                        val pattern = Pattern.compile("(.*?):")
-                        val matcher = pattern.matcher(section)
+        try {
+            var sectionSize = sections?.size ?: 0
+            var sectionCount = 0
+            sections?.forEach { section ->
+                //  Let's get the String
+                val pattern = Pattern.compile("(.*?):")
+                val matcher = pattern.matcher(section)
 
-                        val sectionItemId = SqlLitUtils.generateUuid()
-                        if (matcher.find() && section.isNotEmpty()) {
-                            val itemCode = matcher.group(1)?.replace("\\s+".toRegex(), "")
-                            itemCode?.let {
-                                try {
-                                    if (!appDb.getSectionItemDao().checkIfSectionItemsExist(it)) {
-                                        appDb.getSectionItemDao().insertSectionItem(
-                                            description = section,
-                                            itemCode = it,
-                                            sectionItemId = sectionItemId
-                                        )
-                                        sectionCount++
-                                    } else {
-                                        sectionSize--
-                                    }
-                                } catch (e: Exception) {
-                                    Timber.e(e, "Exception creating section item $itemCode")
-                                }
-                            }
+                val sectionItemId = SqlLitUtils.generateUuid()
+                if (matcher.find() && section.isNotEmpty()) {
+                    val itemCode = matcher.group(1)?.replace("\\s+".toRegex(), "")
+                    itemCode?.let {
+
+                        if (!appDb.getSectionItemDao().checkIfSectionItemsExist(it)) {
+                            appDb.getSectionItemDao().insertSectionItem(
+                                description = section,
+                                itemCode = it,
+                                sectionItemId = sectionItemId
+                            )
+                            sectionCount++
+                        } else {
+                            sectionSize--
                         }
-                        postEvent(XIProgressUpdate("sections", sectionCount.toFloat() / sectionSize.toFloat()))
                     }
-                } catch (throwable: Throwable) {
-                    Timber.e(throwable, "Exception caught saving section items: ${throwable.message}")
-                } finally {
-                    postEvent(XIProgressUpdate("sections", 1.0f))
                 }
+                postEvent(XIProgressUpdate("sections", sectionCount.toFloat() / sectionSize.toFloat()))
             }
+        } catch (throwable: Throwable) {
+            Timber.e(throwable, "Exception caught reading section items: ${throwable.message}")
+        } finally {
+            postEvent(XIProgressUpdate("sections", 1.0f))
         }
     }
 
@@ -338,31 +331,10 @@ class OfflineDataRepository(
         projectMax = 0
         withContext(Dispatchers.IO) {
             if (contracts.isNotEmpty()) {
-                val validContracts = contracts.filter { contract ->
-                    contract.projects != null && contract.contractId.isNotBlank()
-                }
-                    .distinctBy { contract -> contract.contractId }
+                val validContracts = listValidContracts(contracts)
                 contractMax += validContracts.count()
                 validContracts.forEach { contract ->
-                    if (!appDb.getContractDao().checkIfContractExists(contract.contractId)) {
-                        appDb.getContractDao().insertContract(contract)
-                        contractCount++
-                        newContracts = true
-
-                        val validProjects =
-                            contract.projects?.filter { project ->
-                                project.projectId.isNotBlank()
-                            }?.distinctBy { project -> project.projectId }
-
-                        if (!validProjects.isNullOrEmpty()) {
-                            saveProjects(validProjects, contract)
-                        }
-                    } else {
-                        contractMax--
-                    }
-
-                    Timber.d("cr**: $contractCount / $contractMax contracts")
-                    Timber.d("cr**: $projectCount / $projectMax projects")
+                    insertOrIgnoreContract(contract)
                 }
                 if (contractCount >= contractMax && !newProjects) {
                     postEvent(XIProgressUpdate("projects", 1.0f))
@@ -370,6 +342,36 @@ class OfflineDataRepository(
             }
         }
     }
+
+    private suspend fun insertOrIgnoreContract(
+        contract: ContractDTO
+    ) {
+        if (!appDb.getContractDao().checkIfContractExists(contract.contractId)) {
+            appDb.getContractDao().insertContract(contract)
+            contractCount++
+            newContracts = true
+
+            val validProjects = listValidProjects(contract)
+
+            if (!validProjects.isNullOrEmpty()) {
+                saveProjects(validProjects, contract)
+            }
+        } else {
+            contractMax--
+        }
+
+        Timber.d("cr**: $contractCount / $contractMax contracts")
+        Timber.d("cr**: $projectCount / $projectMax projects")
+    }
+
+    private fun listValidProjects(contract: ContractDTO) = contract.projects?.filter { project ->
+        project.projectId.isNotBlank()
+    }?.distinctBy { project -> project.projectId }
+
+    private fun listValidContracts(contracts: List<ContractDTO>) = contracts.filter { contract ->
+        !contract.projects.isNullOrEmpty() && contract.contractId.isNotBlank()
+    }
+        .distinctBy { contract -> contract.contractId }
 
     private fun createWorkflowSteps() {
         val actId = ActivityIdConstants.JOB_APPROVED
@@ -511,6 +513,7 @@ class OfflineDataRepository(
                     .checkSectionExists(section.sectionId)
             )
                 try {
+
                     appDb.getProjectSectionDao().insertSection(
                         section.sectionId,
                         section.route,
@@ -1437,10 +1440,6 @@ class OfflineDataRepository(
 
     private fun JobItemEstimateDTO.setEstimateId(toBigEndian: String?) {
         this.estimateId = toBigEndian!!
-    }
-
-    private operator fun <T> LiveData<T>.not(): Boolean {
-        return true
     }
 
     suspend fun getServiceHealth(userId: String): Boolean {
