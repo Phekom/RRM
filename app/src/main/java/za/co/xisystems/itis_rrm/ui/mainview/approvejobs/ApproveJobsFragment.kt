@@ -19,8 +19,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenStarted
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.skydoves.androidveil.VeiledItemOnClickListener
 import com.skydoves.androidveil.VeilRecyclerFrameView
+import com.skydoves.androidveil.VeiledItemOnClickListener
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.GroupieViewHolder
 import kotlinx.coroutines.launch
@@ -29,7 +29,6 @@ import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
-import za.co.xisystems.itis_rrm.R.layout
 import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.constants.Constants.ONE_SECOND
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
@@ -115,13 +114,13 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
 
         Coroutines.main {
             swipeToRefreshInit()
-            protectedFetch(veiled = false, { fetchLocalJobs() }, { retryFetchRemoteJobs() })
+            protectedFetch(veiled = true, { fetchLocalJobs() }, { retryFetchRemoteJobs() })
         }
     }
 
     private fun initVeiledRecyclerView() {
         ui.approveJobVeiledRecycler.run {
-            setVeilLayout(layout.single_job_listing, object : VeiledItemOnClickListener {
+            setVeilLayout(R.layout.item_expandable_header, object : VeiledItemOnClickListener {
                 /** will be invoked when the item on the [VeilRecyclerFrameView] clicked. */
                 override fun onItemClicked(pos: Int) {
                     Toast.makeText(this@ApproveJobsFragment.requireContext(), "Loading ...", Toast.LENGTH_SHORT).show()
@@ -129,7 +128,7 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
             })
             setAdapter(groupAdapter)
             setLayoutManager(LinearLayoutManager(this.context))
-            addVeiledItems(10)
+            addVeiledItems(15)
         }
     }
 

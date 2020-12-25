@@ -20,7 +20,7 @@ open class DebugMainApp : MainApp(), KodeinAware {
         // Shaun McDonald - 2020/04/02 - Added LeakCanary and AppWatcher to debug build.
         if (BuildConfig.DEBUG) {
             Timber.plant(HyperlinkDebugTree())
-            LeakCanary.config = LeakCanary.config.copy(retainedVisibleThreshold = 3)
+            LeakCanary.config = LeakCanary.config.copy(retainedVisibleThreshold = 5)
             AppWatcher.config = AppWatcher.config.copy(watchFragmentViews = true)
         }
     }

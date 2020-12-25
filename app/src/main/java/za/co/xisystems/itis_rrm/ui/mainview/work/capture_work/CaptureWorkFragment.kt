@@ -29,8 +29,6 @@ import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
-import java.util.Date
-import java.util.HashMap
 import kotlinx.android.synthetic.main.fragment_capture_work.*
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -88,6 +86,8 @@ import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.INFO
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.NO_INTERNET
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.WARNING
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
+import java.util.Date
+import java.util.HashMap
 
 class CaptureWorkFragment : LocationFragment(), KodeinAware {
 
@@ -115,11 +115,6 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
     private lateinit var workSubmission: Job
     private lateinit var jobSubmission: Job
 
-    override fun onStop() {
-        super.onStop()
-        uiScope.destroy()
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         lifecycle.addObserver(uiScope)
@@ -143,6 +138,7 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        uiScope.destroy()
         // Remember to flush the RecyclerView's adaptor
         workViewModel.workflowState.removeObservers(viewLifecycleOwner)
         work_actions_listView.adapter = null

@@ -33,10 +33,6 @@ import androidx.navigation.Navigation
 import com.airbnb.lottie.LottieAnimationView
 import icepick.Icepick
 import icepick.State
-import java.io.File
-import java.text.DecimalFormat
-import java.util.Date
-import kotlin.collections.set
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
@@ -83,6 +79,10 @@ import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.BOTTOM
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.ERROR
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.INFO
 import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
+import java.io.File
+import java.text.DecimalFormat
+import java.util.Date
+import kotlin.collections.set
 
 /**
  * Created by Francis Mahlava on 2019/12/29.
@@ -363,7 +363,6 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
                         Navigation.findNavController(view)
                             .navigate(R.id.action_estimatePhotoFragment_to_nav_create)
                     }
-                    // TODO(clear temp database Tables for Job And Items)
                 }
 
                 R.id.updateButton -> {
@@ -777,7 +776,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
                     endKm = localProjectSection.endKm
                     Timber.d("ProjectSection: $it")
                     Coroutines.main {
-                        if (!createViewModel.checkIfJobSectionExists(newJob!!.JobId, projectSectionId)) {
+                        if (newJob!!.SectionId.isNullOrEmpty()) {
                             createRouteSection(
                                 secId = projectSectionId,
                                 jobId = newJob!!.JobId,
