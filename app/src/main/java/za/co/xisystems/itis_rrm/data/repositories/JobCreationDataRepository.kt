@@ -255,12 +255,14 @@ class JobCreationDataRepository(
     }
 
     @Transaction
-    suspend fun deleteItemFromList(itemId: String, jobId: String): Int {
+    suspend fun deleteItemFromList(itemId: String, estimateId: String?): Int {
         return withContext(Dispatchers.IO) {
             val itemsDeleted = appDb.getItemDaoTemp().deleteItemFromList(itemId)
             val estimatesDeleted =
-                appDb.getJobItemEstimateDao()
-                    .deleteJobItemEstimateByJobIdAndProjectItemId(jobId, itemId)
+                estimateId?.let {
+                    appDb.getJobItemEstimateDao()
+                        .deleteJobItemEstimateByEstimateId(it)
+                } ?: 0
             itemsDeleted + estimatesDeleted
         }
     }
@@ -549,7 +551,6 @@ class JobCreationDataRepository(
         val name = object {}.javaClass.enclosingMethod?.name
         Timber.d("x -> $name")
         if (linearId != null) {
-
             if (!appDb.getSectionPointDao().checkSectionExists(sectionId, projectId, jobId)) {
                 appDb.getSectionPointDao()
                     .insertSection(direction, linearId, pointLocation, sectionId, projectId, jobId)
@@ -573,7 +574,11 @@ class JobCreationDataRepository(
         }
     }
 
-    suspend fun backupJob(job: JobDTO) = appDb.getJobDao().insertOrUpdateJobs(job)
+    suspend fun backupJob(job: JobDTO) {
+       withContext(Dispatchers.IO){
+           appDb.getJobDao().insertOrUpdateJobs(job)
+       }
+    }
 
     suspend fun checkIfJobSectionExistForJobAndProjectSection(jobId: String?, projectSectionId: String?): Boolean {
         return appDb.getJobSectionDao().checkIfJobSectionExistForJob(jobId, projectSectionId)

@@ -18,7 +18,7 @@ import za.co.xisystems.itis_rrm.ui.mainview.work.INSET_TYPE_KEY
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.JobUtils
 import za.co.xisystems.itis_rrm.utils.enums.ToastDuration.LONG
-import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.CENTER
+import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.BOTTOM
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.DELETE
 
 /**
@@ -66,7 +66,6 @@ open class ProjectItem(
 
         viewHolder.itemView.setOnLongClickListener {
             Coroutines.main {
-                // TODO: Build Delete Confirmation Dialog
                 buildDeleteDialog(it)
             }
             it.isLongClickable
@@ -114,14 +113,21 @@ open class ProjectItem(
         itemDeleteBuilder.setPositiveButton(
             string.yes
         ) { _, _ ->
-            fragment.sharpToast("Deleting ...", "${this.itemDesc} removed.", DELETE, CENTER, LONG)
+            fragment.sharpToast("Deleting ...", "${this.itemDesc.descr} removed.", DELETE, BOTTOM, LONG)
             Coroutines.main {
-                // Delete the line item
-                createViewModel.deleteItemFromList(itemDesc.itemId, itemDesc.jobId)
+                // Get the JobEstimate
+                val jobItemEstimate = getJobItemEstimate(itemDesc.itemId)
+
+                // Delete the project item.
+                createViewModel.deleteItemFromList(itemDesc.itemId, estimateId = jobItemEstimate?.estimateId)
 
                 // Set updated job and recalculate costs if applicable
-                createViewModel.setJobToEdit(itemDesc.jobId)
-                fragment.calculateTotalCost()
+                job?.let {
+                    it.removeJobEstimateByItemId(itemDesc.itemId)
+                    createViewModel.backupJob(it)
+                    createViewModel.setJobToEdit(itemDesc.jobId)
+                    fragment.uiUpdate()
+                }
             }
         }
         // No button

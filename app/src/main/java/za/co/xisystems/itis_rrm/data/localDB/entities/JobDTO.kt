@@ -11,7 +11,6 @@ import java.util.ArrayList
  */
 
 const val JOB_TABLE = "JOB_TABLE"
-// val JOB_ID = UUID.randomUUID().toString()
 
 @Entity(tableName = JOB_TABLE)
 class JobDTO(
@@ -60,13 +59,6 @@ class JobDTO(
     var DueDate: String?,
     @SerializedName("ApprovalDate")
     var ApprovalDate: String?,
-
-//    var dateissue: String? = Date().toString(),
-//
-//    var datestart: String? = Date().toString(),
-//
-//    var datedue:  String? = Date().toString(),
-//    var dateApproval:String? = Date().toString(),
 
     @SerializedName("MobileJobItemEstimates")
     var JobItemEstimates: ArrayList<JobItemEstimateDTO>?,
@@ -130,105 +122,6 @@ class JobDTO(
 
     @SerializedName("Deleted")
     var deleted: Int = 0
-
-//    @SerializedName("JobId")
-//    @PrimaryKey
-//    var JobId: String,
-//    @SerializedName("ProjectId")
-//    var ProjectId: String?,
-//    @SerializedName("JiNo")
-//    val JiNo: String?,
-//    @SerializedName("UserId")
-//    val UserId: Int,
-//    @SerializedName("ActId")
-//    val ActId: Int,
-//    @SerializedName("Descr")
-//    var Descr: String?,
-//    @SerializedName("IssueDate")
-//    var IssueDate: String? = Date().toString(),
-//    @SerializedName("StartDate")
-//    var StartDate: String? = Date().toString(),
-//    @SerializedName("DueDate")
-//    var DueDate:  String? = Date().toString(),
-//    @SerializedName("TrackRouteId")
-//    var TrackRouteId: String?,
-//    @SerializedName("StartKm")
-//    val StartKm: Double,
-//    @SerializedName("EndKm")
-//    val EndKm: Double,
-//    @SerializedName("ContractVoId")
-//    var ContractVoId: String?,
-//
-//    @SerializedName("ApprovalDate")
-//    val ApprovalDate:String? = Date().toString(),
-//    @SerializedName("ContractorId")
-//    val ContractorId: Int,
-//    @SerializedName("M9100")
-//    val M9100: Int,
-//    var ESTIMATES_ACT_ID: Int?,
-//
-//    var MEASURE_ACT_ID: Int?,
-//
-//    var WORKS_ACT_ID: Int?,
-//    @SerializedName("MobileJobItemEstimates")
-//    var JobItemEstimates: ArrayList<JobItemEstimateDTO>,
-//    @SerializedName("MobileJobItemMeasures")
-//    var JobItemMeasures: ArrayList<JobItemMeasureDTO>,
-//    @SerializedName("MobileJobSections")
-//    var JobSections: ArrayList<JobSectionDTO>,
-//    @SerializedName("PerfitemGroupId")
-//    val PerfitemGroupId: String?,
-//    @SerializedName("RecordVersion")
-//    val RecordVersion: Int,
-//    @SerializedName("Remarks")
-//    val Remarks: String?,
-//    @SerializedName("Route")
-//    var Route: String?,
-//    @SerializedName("RrmJiNo")
-//    val RrmJiNo: String?,
-//    @SerializedName("Section")
-//    val Section: String?,
-//
-//    @SerializedName("Cpa")
-//    val Cpa: Int,
-//    @SerializedName("DayWork")
-//    val DayWork: Int?,
-//
-//    @SerializedName("EngineerId")
-//    val EngineerId: Int,
-//    @SerializedName("EntireRoute")
-//    val EntireRoute: Int,
-//    @SerializedName("IsExtraWork")
-//    val IsExtraWork: Int,
-//
-//    @SerializedName("JobCategoryId")
-//    val JobCategoryId: Int,
-//    @SerializedName("JobDirectionId")
-//    val JobDirectionId: Int,
-//
-//    @SerializedName("JobPositionId")
-//    val JobPositionId: Int,
-//    @SerializedName("JobStatusId")
-//    val JobStatusId: Int,
-//
-//
-//    @SerializedName("ProjectVoId")
-//    val ProjectVoId: String?,
-//    @SerializedName("QtyUpdateAllowed")
-//    val QtyUpdateAllowed: Int,
-//    @SerializedName("RecordSynchStateId")
-//    val RecordSynchStateId: Int,
-//
-//    @SerializedName("VoId")
-//    val VoId: String?,
-//    @SerializedName("WorkCompleteDate")
-//    val WorkCompleteDate: String?,
-//    @SerializedName("WorkStartDate")
-//    val WorkStartDate: String?,
-//
-
-//    var ESTIMATES_ACT_ID: Int?
-
 ) : Serializable {
 
     fun addOrUpdateJobItemEstimate(newEstimate: JobItemEstimateDTO) {

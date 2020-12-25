@@ -18,7 +18,7 @@
         tools:layout="@layout/fragment_createjob">
         <action
             android:id="@+id/action_nav_create_to_addProjectFragment"
-            app:destination="@id/addProjectFragment"
+            app:destination="@id/nav_addProjectItem"
             app:enterAnim="@anim/bounce_250"
             app:launchSingleTop="false"
             app:popEnterAnim="@anim/bounce_500"
@@ -33,8 +33,12 @@
         tools:layout="@layout/fragment_unsubmittedjobs">
         <action
             android:id="@+id/action_nav_unSubmitted_to_addProjectFragment"
-            app:destination="@id/addProjectFragment"
-            app:enterAnim="@anim/click" />
+            app:destination="@id/nav_addProjectItem"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:exitAnim="@anim/nav_default_exit_anim"
+            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
+            app:popExitAnim="@anim/nav_default_pop_exit_anim"
+            app:popUpTo="@id/nav_unSubmitted" />
     </fragment>
 
     <fragment
@@ -87,28 +91,30 @@
             app:popUpTo="@+id/nav_approvMeasure" />
     </fragment>
     <fragment
-        android:id="@+id/selectItemFragment"
+        android:id="@+id/nav_selectItem"
         android:name="za.co.xisystems.itis_rrm.ui.mainview.create.select_item.SelectItemFragment"
         android:label="SelectItemFragment"
         tools:layout="@layout/fragment_select_item">
         <action
             android:id="@+id/action_selectItemFragment_to_addProjectFragment"
-            app:destination="@id/addProjectFragment"
-            app:enterAnim="@anim/bounce_250"
-            app:popEnterAnim="@anim/bounce" />
+            app:destination="@id/nav_addProjectItem"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
+            app:exitAnim="@anim/nav_default_exit_anim"
+            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
         <argument
             android:name="projectId"
             app:argType="string"
             app:nullable="true" />
     </fragment>
     <fragment
-        android:id="@+id/estimatePhotoFragment"
+        android:id="@+id/nav_estimatePhoto"
         android:name="za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates.EstimatePhotoFragment"
         android:label="EstimatePhotoFragment"
         tools:layout="@layout/fragment_photo_estimate">
         <action
             android:id="@+id/action_estimatePhotoFragment_to_addProjectFragment"
-            app:destination="@id/addProjectFragment"
+            app:destination="@id/nav_addProjectItem"
             app:enterAnim="@anim/bounce" />
         <action
             android:id="@+id/action_estimatePhotoFragment_to_nav_create"
@@ -125,23 +131,34 @@
             app:nullable="true" />
     </fragment>
     <fragment
-        android:id="@+id/addProjectFragment"
+        android:id="@+id/nav_addProjectItem"
         android:name="za.co.xisystems.itis_rrm.ui.mainview.create.add_project_item.AddProjectFragment"
         android:label="AddProjectFragment"
         tools:layout="@layout/fragment_add_project_items">
         <action
             android:id="@+id/action_addProjectFragment_to_selectItemFragment"
-            app:destination="@id/selectItemFragment"
-            app:popUpTo="@+id/addProjectFragment" />
+            app:destination="@id/nav_selectItem"
+            app:popUpTo="@id/nav_addProjectItem"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:exitAnim="@anim/nav_default_exit_anim"
+            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
+            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
         <action
             android:id="@+id/action_addProjectFragment_to_nav_create"
-            app:destination="@id/nav_create" />
+            app:destination="@id/nav_create"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:exitAnim="@anim/nav_default_exit_anim"
+            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
+            app:popExitAnim="@animator/nav_default_pop_exit_anim" />
         <action
             android:id="@+id/action_addProjectFragment_to_estimatePhotoFragment"
-            app:destination="@id/estimatePhotoFragment"
-            app:enterAnim="@anim/bounce_short"
+            app:destination="@id/nav_estimatePhoto"
+            app:enterAnim="@anim/nav_default_enter_anim"
             app:launchSingleTop="false"
-            app:popUpTo="@+id/addProjectFragment" />
+            app:popUpTo="@+id/nav_addProjectItem"
+            app:exitAnim="@anim/nav_default_exit_anim"
+            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
+            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
         <argument
             android:name="projectId"
             app:argType="string"
@@ -154,7 +171,8 @@
     <fragment
         android:id="@+id/jobInfoFragment"
         android:name="za.co.xisystems.itis_rrm.ui.mainview.approvejobs.view_job_info.JobInfoFragment"
-        android:label="fragment_job_info">
+        android:label="fragment_job_info"
+        tools:layout="@layout/fragment_job_info">
         <action
             android:id="@+id/action_jobInfoFragment_to_nav_home"
             app:destination="@id/nav_home"

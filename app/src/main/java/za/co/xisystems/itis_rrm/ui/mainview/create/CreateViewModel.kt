@@ -226,24 +226,21 @@ class CreateViewModel(
 
     suspend fun areEstimatesValid(job: JobDTO?, items: ArrayList<Any?>?): Boolean {
         var isValid = true
-        if (!JobUtils.areQuantitiesValid(job)) {
-            isValid = false
-        } else if (job == null || items == null ||
-            job.JobItemEstimates == null ||
-            items.size != job.JobItemEstimates!!.size
-        ) {
-            isValid = false
-        } else {
-            for (estimate in job.JobItemEstimates!!) {
-                if (!estimate.isEstimateComplete()) {
-                    isValid = false
-                    break
-                }
+        when {
+            !JobUtils.areQuantitiesValid(job) -> {
+                isValid = false
             }
-        }
-        if (!isValid) {
-            return withContext(Dispatchers.IO) {
-                false
+            job == null || items == null || job.JobItemEstimates == null
+                || items.size != job.JobItemEstimates!!.size -> {
+                isValid = false
+            }
+            else -> {
+                for (estimate in job.JobItemEstimates!!) {
+                    if (!estimate.isEstimateComplete()) {
+                        isValid = false
+                        break
+                    }
+                }
             }
         }
         return withContext(Dispatchers.IO) {
@@ -265,9 +262,9 @@ class CreateViewModel(
         jobCreationDataRepository.deleteItemList(jobId)
     }
 
-    fun deleteItemFromList(itemId: String, jobId: String) = viewModelScope.launch{
-        val recordsAffect = jobCreationDataRepository.deleteItemFromList(itemId, jobId)
-        Timber.d("deleteItemFromList: $recordsAffect deleted.")
+    fun deleteItemFromList(itemId: String, estimateId: String?) = viewModelScope.launch {
+        val recordsAffected = jobCreationDataRepository.deleteItemFromList(itemId, estimateId)
+        Timber.d("deleteItemFromList: $recordsAffected deleted.")
     }
 
     suspend fun getContractNoForId(contractVoId: String?): String {
@@ -282,7 +279,7 @@ class CreateViewModel(
         }
     }
 
-    suspend fun backupJob(job: JobDTO) = viewModelScope.launch(ioContext) {
+    suspend fun backupJob(job: JobDTO) = viewModelScope.launch(mainContext) {
         jobCreationDataRepository.backupJob(job)
         setJobToEdit(job.JobId)
     }
