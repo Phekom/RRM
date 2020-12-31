@@ -3,6 +3,7 @@ package za.co.xisystems.itis_rrm.data.localDB.entities
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
+import java.io.Serializable
 
 /**
  * Created by Francis Mahlava on 2019/11/26.
@@ -10,7 +11,6 @@ import com.google.gson.annotations.SerializedName
 
 const val SECTION_POINT_TABLE = "SECTION_POINT_TABLE"
 
-// val JOB_ID = UUID.randomUUID().toString()
 
 @Entity(tableName = SECTION_POINT_TABLE)
 data class SectionPointDTO(
@@ -30,4 +30,4 @@ data class SectionPointDTO(
     @SerializedName("jobId")
     val jobId: String?
 
-)
+): Serializable

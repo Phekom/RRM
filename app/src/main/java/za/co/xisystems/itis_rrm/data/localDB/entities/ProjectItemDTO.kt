@@ -6,6 +6,7 @@ import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import org.jetbrains.annotations.NotNull
+import org.jetbrains.annotations.Nullable
 import java.io.Serializable
 
 /**
@@ -28,18 +29,17 @@ data class ProjectItemDTO(
     @PrimaryKey
     val id: Int,
     @SerializedName("ItemId")
-//    @ColumnInfo(name = "itemId", index = true)
+    @NotNull
     val itemId: String,
     @SerializedName("Descr")
     val descr: String?,
     @SerializedName("ItemCode")
     val itemCode: String?,
-
+    @Nullable
     @SerializedName("ItemSections")
-    val itemSections: ArrayList<ItemSectionDTO>,
-
+    val itemSections: ArrayList<ItemSectionDTO>?,
     @SerializedName("TenderRate")
-    val tenderRate: Double = 0.toDouble(),
+    val tenderRate: Double = 0.0,
     @SerializedName("Uom")
     val uom: String?,
     @SerializedName("WorkflowId")

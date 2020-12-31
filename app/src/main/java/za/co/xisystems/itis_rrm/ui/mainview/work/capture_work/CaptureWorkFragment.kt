@@ -293,6 +293,7 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
         estimateWorksItem: JobEstimateWorksDTO
     ) {
         uiScope.launch(uiScope.coroutineContext) {
+            workViewModel.workflowState.removeObserver(jobObserver)
             workViewModel.workflowState.observe(viewLifecycleOwner, workObserver)
             workViewModel.backupWorkSubmission.value = estimateWorksItem
             val newItemEstimateWorks = setJobWorksLittleEndianGuids(estimateWorksItem)
@@ -520,7 +521,8 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
         if (currentLocation == null) {
             // Check network availability / connectivity
             sharpToast(
-                message = getString(R.string.please_enable_location_services), style = ERROR, position = CENTER, duration = LONG
+                message = getString(R.string.please_enable_location_services),
+                style = ERROR, position = CENTER, duration = LONG
             )
             // Launch Dialog
         } else {
@@ -588,7 +590,6 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
             photoLongitude = currentLocation.latitude,
             photoLatitude = currentLocation.longitude,
             photoPath = filenamePath["path"]!!,
-            estimateWorks = estimateWorksList,
             recordVersion = 0,
             recordSynchStateId = 0,
             worksId = itemEstiWorks.worksId
@@ -603,7 +604,7 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
 
             val workDone: Int = getEstimatesCompleted(estimateJob)
 
-            if (workDone == estimateJob.JobItemEstimates?.size) {
+            if (workDone == estimateJob.JobItemEstimates.size) {
                 collectCompletedEstimates(estimateJob)
             } else {
 
@@ -634,7 +635,7 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
         estWorkDone: Int,
         estimateJob: JobDTO
     ) {
-        if (estWorkDone == estimateJob.JobItemEstimates?.size) {
+        if (estWorkDone == estimateJob.JobItemEstimates.size) {
             Coroutines.main {
                 collectCompletedEstimates(estimateJob)
             }
@@ -727,6 +728,7 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
 
         workViewModel.backupCompletedEstimates.postValue(estimates as List<JobItemEstimateDTO>)
         jobSubmission = uiScope.launch(uiScope.coroutineContext) {
+            workViewModel.workflowState.removeObserver(workObserver)
             workViewModel.workflowState.observe(viewLifecycleOwner, jobObserver)
             workViewModel.workflowState.postValue(XIProgress(true))
             withContext(uiScope.coroutineContext) {

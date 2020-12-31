@@ -186,14 +186,6 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
                             }
                         } else {
                             toast("No internet connection detected")
-//                            MotionToast.createColorToast(
-//                                this,
-//                                message = getString(R.string.no_connection_detected),
-//                                style = MotionToast.TOAST_NO_INTERNET,
-//                                position = MotionToast.GRAVITY_BOTTOM,
-//                                duration = MotionToast.LONG_DURATION,
-//                                font = ResourcesCompat.getFont(this, R.font.helvetica_regular)
-//                            )
                         }
                     }
                     val setPinDialog = builder.create()

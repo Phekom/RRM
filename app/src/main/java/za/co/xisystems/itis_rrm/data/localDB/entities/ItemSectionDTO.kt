@@ -18,16 +18,16 @@ data class ItemSectionDTO(
     @PrimaryKey
     val sectionId: String,
     @SerializedName("Direction")
-    val direction: String,
+    val direction: String?,
     @SerializedName("EndKm")
     val endKm: Double,
     @SerializedName("ProjectId")
-    val projectId: String,
+    val projectId: String?,
     @SerializedName("Route")
-    val route: String,
+    val route: String?,
     @SerializedName("Section")
-    val section: String,
+    val section: String?,
 
     @SerializedName("StartKm")
     val startKm: Double
-) : Serializable
+): Serializable

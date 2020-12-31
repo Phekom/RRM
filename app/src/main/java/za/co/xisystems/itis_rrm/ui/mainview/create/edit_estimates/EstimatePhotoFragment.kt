@@ -24,6 +24,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.widget.doOnTextChanged
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.coroutineScope
 import androidx.lifecycle.lifecycleScope
@@ -49,7 +50,6 @@ import za.co.xisystems.itis_rrm.base.LocationFragment
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.results.XIError
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
-import za.co.xisystems.itis_rrm.data._commons.AbstractTextWatcher
 import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
 import za.co.xisystems.itis_rrm.data.localDB.entities.ItemSectionDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
@@ -230,17 +230,19 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
     private fun onItemFound(itemDTO: ItemDTOTemp?): ItemDTOTemp? {
         item = itemDTO
 
-        if (item != null) ui.titleTextView.text =
-            getString(string.pair, item!!.itemCode, item!!.descr)
-        else
+        if (item != null) {
+            ui.titleTextView.text =
+                getString(string.pair, item!!.itemCode, item!!.descr)
+        } else {
             toast(
                 "item is null in " + javaClass.simpleName
             )
+        }
 
         if (newJob != null) {
-            if (newJobItemEstimate == null && item != null)
+            if (newJobItemEstimate == null && item != null) {
                 newJobItemEstimate = newJob?.getJobEstimateByItemId(item?.itemId)
-
+            }
             restoreEstimateViewState()
         }
         return item
@@ -264,7 +266,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // no options menu
         return false
-    // To change body of created functions use File | Settings | File Templates.
+        // To change body of created functions use File | Settings | File Templates.
     }
 
     override fun onPrepareOptionsMenu(menu: Menu) {
@@ -323,11 +325,9 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
             displayPromptForEnablingGPS(requireActivity())
         }
 
-        ui.valueEditText.addTextChangedListener(object : AbstractTextWatcher() {
-            override fun onTextChanged(text: String) {
-                setCost()
-            }
-        })
+        ui.valueEditText.doOnTextChanged { text, start, before, count ->
+            setCost()
+        }
 
         setValueEditText(getStoredValue())
     }
@@ -783,7 +783,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
                                 startKm = startKm!!,
                                 endKm = endKm!!
                             ).apply {
-                                newJob!!.JobSections?.add(this)
+                                newJob!!.JobSections.add(this)
                                 newJob!!.SectionId = jobSectionId
                                 newJob!!.StartKm = this.startKm
                                 newJob!!.EndKm = this.endKm
@@ -894,7 +894,6 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
             photoLatitudeEnd = currentLocation.latitude,
             photoLongitudeEnd = currentLocation.longitude,
             photoPath = filePath["path"] ?: error(""),
-            jobItemEstimate = null,
             recordSynchStateId = 0,
             recordVersion = 0,
             is_PhotoStart = isPhotoStart,
@@ -918,7 +917,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
             lineRate = item!!.tenderRate * item.quantity,
             jobEstimateWorks = null,
             jobItemEstimatePhotos = null, // newJobItemPhotosList,
-            jobItemMeasure = null,
+            // jobItemMeasure = null,
             // job = null,
             projectItemId = itemId,
             projectVoId = newJob?.ProjectVoId,
@@ -948,7 +947,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
             jobId = jobId,
             startKm = startKm,
             endKm = endKm,
-            job = null,
+            // job = null,
             recordSynchStateId = 0,
             recordVersion = 0
         )
@@ -990,8 +989,10 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
     ) = try {
         GlideApp.with(this)
             .load(imageUri)
+            .centerCrop()
             .error(R.drawable.no_image)
             .into(imageView)
+
         if (animate) imageView.startAnimation(bounce_1000)
 
         imageView.setOnClickListener {

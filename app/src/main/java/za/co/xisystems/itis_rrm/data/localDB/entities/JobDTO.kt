@@ -3,8 +3,8 @@ package za.co.xisystems.itis_rrm.data.localDB.entities
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
+import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import java.io.Serializable
-import java.util.ArrayList
 
 /**
  * Created by Francis Mahlava on 2019/11/21.
@@ -14,17 +14,16 @@ const val JOB_TABLE = "JOB_TABLE"
 
 @Entity(tableName = JOB_TABLE)
 class JobDTO(
-
     @SerializedName("ActId")
     val ActId: Int,
     @SerializedName("JobId")
     @PrimaryKey
-    var JobId: String,
+    var JobId: String = SqlLitUtils.generateUuid(),
     @SerializedName("ContractVoId")
     var ContractVoId: String?,
     @SerializedName("ProjectId")
     var ProjectId: String?,
-
+    @SerializedName("SectionId")
     var SectionId: String?,
     @SerializedName("StartKm")
     var StartKm: Double,
@@ -59,52 +58,63 @@ class JobDTO(
     var DueDate: String?,
     @SerializedName("ApprovalDate")
     var ApprovalDate: String?,
-
     @SerializedName("MobileJobItemEstimates")
-    var JobItemEstimates: ArrayList<JobItemEstimateDTO>?,
+    var JobItemEstimates: ArrayList<JobItemEstimateDTO>,
     @SerializedName("MobileJobItemMeasures")
-    var JobItemMeasures: ArrayList<JobItemMeasureDTO>?,
+    var JobItemMeasures: ArrayList<JobItemMeasureDTO>,
     @SerializedName("MobileJobSections")
-    var JobSections: ArrayList<JobSectionDTO>?,
+    var JobSections: ArrayList<JobSectionDTO>,
     @SerializedName("PerfitemGroupId")
     var PerfitemGroupId: String?,
+
     @SerializedName("RecordVersion")
     val RecordVersion: Int,
+
     @SerializedName("Remarks")
     val Remarks: String?,
+
     @SerializedName("Route")
     var Route: String?,
+
     @SerializedName("RrmJiNo")
     val RrmJiNo: String?,
 
     @SerializedName("EngineerId")
     val EngineerId: Int,
+
     @SerializedName("EntireRoute")
     val EntireRoute: Int,
+
     @SerializedName("IsExtraWork")
     val IsExtraWork: Int,
 
     @SerializedName("JobCategoryId")
     val JobCategoryId: Int,
+
     @SerializedName("JobDirectionId")
     val JobDirectionId: Int,
 
     @SerializedName("JobPositionId")
     val JobPositionId: Int,
+
     @SerializedName("JobStatusId")
     val JobStatusId: Int,
 
     @SerializedName("ProjectVoId")
     var ProjectVoId: String?,
+
     @SerializedName("QtyUpdateAllowed")
     val QtyUpdateAllowed: Int,
+
     @SerializedName("RecordSynchStateId")
     val RecordSynchStateId: Int,
 
     @SerializedName("VoId")
     var VoId: String?,
+
     @SerializedName("WorkCompleteDate")
     val WorkCompleteDate: String?,
+
     @SerializedName("WorkStartDate")
     val WorkStartDate: String?,
 
@@ -122,23 +132,11 @@ class JobDTO(
 
     @SerializedName("Deleted")
     var deleted: Int = 0
+
 ) : Serializable {
-
-    fun addOrUpdateJobItemEstimate(newEstimate: JobItemEstimateDTO) {
-        val x = getJobEstimateIndexByItemId(newEstimate.projectItemId)
-        if (x < 0) JobItemEstimates?.add(newEstimate) else JobItemEstimates?.set(
-            x,
-            newEstimate
-        )
-    }
-
-    fun jobEstimateExist(itemId: String?): Boolean {
-        return getJobEstimateIndexByItemId(itemId) > -1
-    }
-
-    fun getJobEstimateIndexByItemId(itemId: String?): Int {
-        if (itemId != null) for (i in JobItemEstimates!!.indices) {
-            val currEstimate: JobItemEstimateDTO = JobItemEstimates?.get(i)!!
+    private fun getJobEstimateIndexByItemId(itemId: String?): Int {
+        if (itemId != null) for (i in JobItemEstimates.indices) {
+            val currEstimate: JobItemEstimateDTO = JobItemEstimates[i]
             if (currEstimate.projectItemId != null && currEstimate.projectItemId.equals(
                     itemId
                 )
@@ -152,12 +150,12 @@ class JobDTO(
     fun removeJobEstimateByItemId(itemId: String?): JobItemEstimateDTO? {
         val x = getJobEstimateIndexByItemId(itemId)
         return if (x > -1) {
-            JobItemEstimates?.removeAt(x)
+            JobItemEstimates.removeAt(x)
         } else null
     }
 
     fun getJobEstimateByItemId(itemId: String?): JobItemEstimateDTO? {
         val x = getJobEstimateIndexByItemId(itemId)
-        return if (x < 0) null else JobItemEstimates?.get(x)
+        return if (x < 0) null else JobItemEstimates[x]
     }
 }

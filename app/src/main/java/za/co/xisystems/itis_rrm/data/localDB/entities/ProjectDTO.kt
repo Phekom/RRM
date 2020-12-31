@@ -7,6 +7,7 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import org.jetbrains.annotations.NotNull
+import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import java.io.Serializable
 
 /**
@@ -23,6 +24,7 @@ const val PROJECT_TABLE = "PROJECT_TABLE"
         onDelete = ForeignKey.CASCADE
     )], indices = [Index(value = ["projectId"], unique = true)]
 )
+
 data class ProjectDTO(
     @PrimaryKey
     @NotNull
@@ -30,7 +32,7 @@ data class ProjectDTO(
 
     @SerializedName("ProjectId")
     @NotNull
-    val projectId: String,
+    val projectId: String = SqlLitUtils.generateUuid(),
 
     @SerializedName("Descr")
     val descr: String?,
@@ -54,10 +56,10 @@ data class ProjectDTO(
     val projectSections: ArrayList<ProjectSectionDTO>?,
 
     @SerializedName("VoItems")
-    val voItems: ArrayList<VoItemDTO>?,
+    val voItems:ArrayList<VoItemDTO>?,
 
     @SerializedName("ContractId")
     @ColumnInfo(name = "contractId", index = true)
-    val contractId: String?
+    val contractId: String
 
 ) : Serializable

@@ -7,6 +7,7 @@ import android.view.View
 import android.widget.EditText
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
+import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
@@ -18,7 +19,6 @@ import timber.log.Timber
 import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.custom.results.XIResult
-import za.co.xisystems.itis_rrm.data._commons.AbstractTextWatcher
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.ApproveJobsViewModel
@@ -115,27 +115,28 @@ class EstimatesItem(
 
             quantityEntry.text = Editable.Factory.getInstance().newEditable("$newQuantity")
 
-            quantityEntry.addTextChangedListener(object : AbstractTextWatcher() {
-                override fun onTextChanged(text: String) {
-                    updated = true
-                    when {
-                        nanCheck(text) || text.toDouble() == 0.0 -> {
-                            cost = 0.0
-                            totalEntry.text = activity.getString(R.string.pair, "R", cost.toString())
-                        }
-                        text.length > 9 -> {
-                            quantityEntry.text =
-                                Editable.Factory.getInstance().newEditable("$defaultQty")
-                            activity.extensionToast("You Have exceeded the amount of Quantity allowed", MotionToast.TOAST_WARNING)
-                        }
-                        else -> {
-                            val qty = text.toDouble()
-                            cost = (tenderRate * qty).round(2)
-                            totalEntry.text = activity.getString(R.string.pair, "R", cost.toString())
-                        }
+            quantityEntry.doOnTextChanged { text, start, before, count ->
+                updated = true
+                when {
+                    nanCheck(text as String) || text.toDouble() == 0.0 -> {
+                        cost = 0.0
+                        totalEntry.text = activity.getString(R.string.pair, "R", cost.toString())
+                    }
+                    text.length > 9 -> {
+                        quantityEntry.text =
+                            Editable.Factory.getInstance().newEditable("$defaultQty")
+                        activity.extensionToast(
+                            message = "You Have exceeded the amount of Quantity allowed",
+                            motionType = MotionToast.TOAST_WARNING
+                        )
+                    }
+                    else -> {
+                        val qty = text.toDouble()
+                        cost = (tenderRate * qty).round(2)
+                        totalEntry.text = activity.getString(R.string.pair, "R", cost.toString())
                     }
                 }
-            })
+            }
         }
 
         // Yes button
@@ -167,21 +168,24 @@ class EstimatesItem(
     ) {
         if (ServiceUtil.isNetworkAvailable(activity.applicationContext)) {
             Coroutines.main {
-                if (quantityEntry.text.toString() == "" || nanCheck(quantityEntry.text.toString()) || quantityEntry.text.toString()
-                        .toDouble() == 0.0
-                ) {
-                    activity.extensionToast("Please Enter a valid Quantity", MotionToast.TOAST_WARNING)
-                } else {
-                    approveViewModel.updateState.observe(viewLifecycleOwner, updateObserver)
-                    approveViewModel.upDateEstimate(
-                        quantityEntry.text.toString(),
-                        totalEntry.text.split(" ", ignoreCase = true)[1],
-                        jobItemEstimateDTO.estimateId
-                    )
+                when {
+                    quantityEntry.text.toString() == "" ||
+                        nanCheck(quantityEntry.text.toString()) ||
+                        quantityEntry.text.toString().toDouble() == 0.0 -> {
+                        activity.extensionToast("Please Enter a valid Quantity", MotionToast.TOAST_WARNING)
+                    }
+                    else -> {
+                        approveViewModel.updateState.observe(viewLifecycleOwner, updateObserver)
+                        approveViewModel.upDateEstimate(
+                            quantityEntry.text.toString(),
+                            totalEntry.text.split(" ", ignoreCase = true)[1],
+                            jobItemEstimateDTO.estimateId
+                        )
+                    }
                 }
             }
         } else {
-            activity.extensionToast("No connection detected.", MotionToast.TOAST_ERROR)
+            activity.extensionToast("No connection detected.", MotionToast.TOAST_NO_INTERNET)
         }
     }
 

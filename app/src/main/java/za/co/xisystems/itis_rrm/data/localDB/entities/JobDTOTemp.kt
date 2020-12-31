@@ -12,7 +12,6 @@ import java.util.Date
  */
 
 const val JOB_TABLE_TEMP = "JOB_TABLE_TEMP"
-// val JOB_ID = UUID.randomUUID().toString()
 
 @Entity(tableName = JOB_TABLE_TEMP)
 class JobDTOTemp(
@@ -123,12 +122,11 @@ class JobDTOTemp(
         return getJobEstimateIndexByItemId(itemId) > -1
     }
 
-    fun getJobEstimateIndexByItemId(itemId: String?): Int {
+    private fun getJobEstimateIndexByItemId(itemId: String?): Int {
         if (itemId != null) for (i in JobItemEstimates!!.indices) {
             val currEstimate: JobItemEstimateDTO = JobItemEstimates?.get(i)!!
-            if (currEstimate.projectItemId != null) if (currEstimate.projectItemId.equals(
-                    itemId
-                )
+            if (currEstimate.projectItemId != null &&
+                currEstimate.projectItemId.equals(itemId)
             ) {
                 return i
             }
@@ -136,35 +134,9 @@ class JobDTOTemp(
         return -1
     }
 
-//    fun removeJobEstimateByItemId(itemId: String?): JobItemEstimateDTO? {
-//        val x = getJobEstimateIndexByItemId(itemId)
-//        return if (x > -1) {
-//            JobItemEstimates?.removeAt(x)
-//        } else null
-//    }
-
     fun getJobEstimateByItemId(itemId: String?): JobItemEstimateDTO? {
         val x = getJobEstimateIndexByItemId(itemId)
         return if (x < 0) null else JobItemEstimates?.get(x)
     }
 
-//    fun getJobItemMeasures(): ArrayList<JobItemMeasureDTO?>? {
-//        return jobItemMeasures
-//    }
-
-//    fun setJobItemMeasures(jobItemMeasures: ArrayList<JobItemMeasureDTO?>) {
-//        jobItemMeasures = jobItemMeasures
-//    }
-
-//    fun getSortString(): String? {
-//        return sortString
-//    }
-//
-//    fun setSortString(sortString: String?) {
-//        this.sortString = sortString
-//    }
-
-//    fun clearJobItemEstimates() {
-//        JobItemEstimates?.clear()
-//    }
 }

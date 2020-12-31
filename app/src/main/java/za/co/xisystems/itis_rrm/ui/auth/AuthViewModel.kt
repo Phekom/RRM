@@ -36,6 +36,7 @@ class AuthViewModel(
     var enterNewPin: String? = null
     var confirmNewPin: String? = null
     var authListener: AuthListener? = null
+
     val user by lazyDeferred {
         repository.getUser()
     }
@@ -55,43 +56,42 @@ class AuthViewModel(
 
     fun onResetPinButtonClick(view: View) {
 
-        if (enterOldPin.isNullOrBlank()) {
-            authListener?.onFailure("Please enter old PIN")
-            return
-        }
-
-        if (enterNewPin.isNullOrEmpty()) {
-            authListener?.onFailure("Please enter new PIN")
-            return
-        }
-
-        if (confirmNewPin.isNullOrEmpty()) {
-            authListener?.onFailure("Please confirm new Pin")
-            return
-        }
-
-        if (enterNewPin != confirmNewPin) {
-            authListener?.onFailure("PINs did not match")
-            return
-        }
-        Coroutines.main {
-            try {
-                if (enterOldPin == repository.getPin()) {
-                    if (enterOldPin.equals(enterNewPin)) {
-                        authListener?.onFailure("New PIN cannot be the same as the old PIN. Please enter a new PIN")
+        when {
+            enterOldPin.isNullOrBlank() -> {
+                authListener?.onFailure("Please enter old PIN")
+                return
+            }
+            enterNewPin.isNullOrEmpty() -> {
+                authListener?.onFailure("Please enter new PIN")
+                return
+            }
+            confirmNewPin.isNullOrEmpty() -> {
+                authListener?.onFailure("Please confirm new Pin")
+                return
+            }
+            enterNewPin != confirmNewPin -> {
+                authListener?.onFailure("PINs did not match")
+                return
+            }
+            else -> Coroutines.main {
+                try {
+                    if (enterOldPin!!.sha256() == repository.getPin()) {
+                        if (enterOldPin.equals(enterNewPin)) {
+                            authListener?.onFailure("New PIN cannot be the same as the old PIN. Please enter a new PIN")
+                        } else {
+                            repository.upDateUserPin(confirmNewPin!!, enterOldPin!!)
+                            newPinRegistered.value = true
+                        }
                     } else {
-                        repository.upDateUserPin(confirmNewPin!!, enterOldPin!!)
-                        newPinRegistered.value = true
+                        authListener?.onFailure("Old PIN is incorrect, pLease enter your current PIN")
                     }
-                } else {
-                    authListener?.onFailure("Old PIN is incorrect, pLease enter your current PIN")
+                } catch (e: AuthException) {
+                    authListener?.onFailure(e.message!!)
+                } catch (e: NoInternetException) {
+                    authListener?.onFailure(e.message!!)
+                } catch (e: NoConnectivityException) {
+                    authListener?.onFailure(e.message!!)
                 }
-            } catch (e: AuthException) {
-                authListener?.onFailure(e.message!!)
-            } catch (e: NoInternetException) {
-                authListener?.onFailure(e.message!!)
-            } catch (e: NoConnectivityException) {
-                authListener?.onFailure(e.message!!)
             }
         }
     }
@@ -124,7 +124,6 @@ class AuthViewModel(
 
         Coroutines.main {
             try {
-                // TODO: Get these metrics for the device
                 val phoneNumber = "12345457"
                 val imei = "45678"
                 val androidDevice =
@@ -163,7 +162,6 @@ class AuthViewModel(
 
         Coroutines.main {
             try {
-                // TODO: Read these metrics from the device.
                 val phoneNumber = "12345457"
                 val imei = "45678"
                 val androidDevice =

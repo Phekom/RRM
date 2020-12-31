@@ -9,7 +9,6 @@ import java.io.Serializable
  * Created by Francis Mahlava on 2019/10/23.
  */
 
-// const val CURRENT_LOGGEDIN_USER = 0
 const val USER_TABLE = "USER_TABLE"
 
 @Entity(tableName = USER_TABLE)
@@ -31,10 +30,7 @@ data class UserDTO(
     var IMEI: String?,
     var DEVICE: String?,
     var Password: String?,
-    var WEB_SERVICE_URI: String?
+    var WEB_SERVICE_URI: String?,
+    var salt: String?
 
-) : Serializable {
-
-//    @PrimaryKey(autoGenerate = false)
-//    var uid: Int = CURRENT_LOGGEDIN_USER
-}
+) : Serializable
