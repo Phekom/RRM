@@ -137,9 +137,9 @@ android {
         release {
             // Enables code shrinking, obfuscation, and optimization for only
             // your project's release build type.
-            minifyEnabled true
+            // minifyEnabled true
 
-            // Enables resource shrinking, which is performed by the
+           // Enables resource shrinking, which is performed by the
             // Android Gradle plugin.
             // shrinkResources true
 
@@ -154,7 +154,7 @@ android {
 
         debug {
             testCoverageEnabled false
-            minifyEnabled false
+            // minifyEnabled false
             // useProguard false
             debuggable true
             crunchPngs true

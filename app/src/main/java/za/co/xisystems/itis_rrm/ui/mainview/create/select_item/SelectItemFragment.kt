@@ -15,8 +15,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
-import java.util.ArrayList
-import java.util.concurrent.CancellationException
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
@@ -40,6 +38,8 @@ import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper.setSpinner
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.Coroutines
+import java.util.ArrayList
+import java.util.concurrent.CancellationException
 
 /**
  * Created by Francis Mahlava on 2019/12/29.
@@ -165,7 +165,7 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
                                     ui.itemRecyclerView.startAnimation(bounce_1000)
                                 }
                                 selectedSectionItem = item
-                                setRecyclerItems(projectId, item.sectionItemId!!)
+                                setRecyclerItems(projectId, item.sectionItemId)
                             }
                         })
 
