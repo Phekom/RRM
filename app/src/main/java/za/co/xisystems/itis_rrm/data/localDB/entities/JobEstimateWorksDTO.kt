@@ -4,7 +4,6 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import java.io.Serializable
-import java.util.ArrayList
 
 /**
  * Created by Francis Mahlava on 2019/11/26.
@@ -32,3 +31,5 @@ class JobEstimateWorksDTO(
     @PrimaryKey
     var worksId: String
 ) : Serializable
+
+

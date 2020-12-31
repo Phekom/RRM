@@ -11,6 +11,7 @@ import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
 import za.co.xisystems.itis_rrm.ui.auth.AuthListener
 import za.co.xisystems.itis_rrm.utils.Coroutines
+import za.co.xisystems.itis_rrm.utils.Util.sha256
 
 /**
  * Created by Francis Mahlava on 2019/10/23.
@@ -27,13 +28,13 @@ class UserRepository(
 
     init {
         users.observeForever { user ->
-            Coroutines.main {
+            Coroutines.io {
                 saveUser(user)
-                return@main
+                return@io
             }
         }
         userError.observeForever { error_msg ->
-            Coroutines.main {
+            Coroutines.io {
                 val authEx =
                     AuthException(
                         error_msg
@@ -81,13 +82,13 @@ class UserRepository(
         confirmPin: String
     ) {
         Coroutines.io {
-            Db.getUserDao().updateUser(confirmPin, phoneNumber, IMEI, androidDevice) // userId,
+            Db.getUserDao().updateUser(confirmPin.sha256(), phoneNumber, IMEI, androidDevice) // userId,
         }
     }
 
     fun upDateUserPin(confirmNewPin: String, enterOldPin: String) {
         Coroutines.io {
-            Db.getUserDao().upDateUserPin(confirmNewPin, enterOldPin) // userId,
+            Db.getUserDao().upDateUserPin(confirmNewPin.sha256(), enterOldPin.sha256()) // userId,
         }
     }
 

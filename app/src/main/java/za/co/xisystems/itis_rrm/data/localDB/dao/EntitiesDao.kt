@@ -16,7 +16,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.ToDoListEntityDTO
 interface EntitiesDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertEntities(intities: ToDoListEntityDTO)
+    suspend fun insertEntities(intities: ToDoListEntityDTO): Long
 
     @Query(
         "INSERT INTO TODO_ENTITY_TABLE (trackRouteIdString, actionable, activityId, currentRouteId, data, description, entities, entityName, location, primaryKeyValues, recordVersion, jobId) " +
@@ -36,16 +36,13 @@ interface EntitiesDao {
         primaryKeyValues: ArrayList<PrimaryKeyValueDTO>,
         recordVersion: Int,
         jobId: String?
-    )
+    ): Long
 
-    @Query("SELECT * FROM TODO_ENTITY_TABLE WHERE trackRouteIdString = :trackRouteId")
+    @Query("SELECT EXISTS(SELECT * FROM TODO_ENTITY_TABLE WHERE trackRouteIdString = :trackRouteId)")
     fun checkIfEntitiesExist(trackRouteId: String?): Boolean
 
     @Query("SELECT * FROM TODO_ENTITY_TABLE ")
     fun getAllEntities(): LiveData<List<ToDoListEntityDTO>>
-
-//    @Query("SELECT * FROM JOB_ITEM_MEASURE WHERE actId = :actId ORDER BY jimNo ASC")
-//    fun getJobApproveMeasureForActivityId(actId: Int): LiveData<List<ToDoListEntityDTO>>
 
     @Query("SELECT * FROM TODO_ENTITY_TABLE WHERE trackRouteIdString = :trackRouteId")
     fun getEntitiesForTrackRouteId(trackRouteId: String): LiveData<ToDoListEntityDTO>
@@ -55,9 +52,6 @@ interface EntitiesDao {
 
     @Query("SELECT * FROM TODO_ENTITY_TABLE WHERE activityId = :actId AND jobId = :jobId")
     fun getEntitiesForJobIdAndActId(jobId: String, actId: Int): LiveData<List<ToDoListEntityDTO>>
-
-//    @Query("SELECT * FROM TODO_ENTITY_TABLE WHERE jobId = :jobId")
-//    fun getEntitiesForJobId(jobId : String): LiveData<List<ToDoListEntityDTO>>
 
     @Query("SELECT jobId FROM TODO_ENTITY_TABLE WHERE jobId = jobId")
     fun getJobIdForEntities(): String?

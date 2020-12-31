@@ -3,6 +3,7 @@ package za.co.xisystems.itis_rrm.data.localDB.entities
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
+import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import java.io.Serializable
 
 /**
@@ -24,15 +25,15 @@ data class JobEstimateWorksPhotoDTO(
     @SerializedName("PhotoDate")
     val photoDate: String,
     @SerializedName("PhotoId")
-    var photoId: String,
+    var photoId: String = SqlLitUtils.generateUuid(),
     @SerializedName("PhotoLatitude")
     val photoLatitude: Double,
     @SerializedName("PhotoLongitude")
     val photoLongitude: Double,
     @SerializedName("PhotoPath")
     val photoPath: String,
-    @SerializedName("PrjEstimateWorksDto")
-    val estimateWorks: ArrayList<JobEstimateWorksDTO>,
+//    @SerializedName("PrjEstimateWorksDto")
+//    val estimateWorks: ArrayList<JobEstimateWorksDTO>?,
     @SerializedName("RecordSynchStateId")
     val recordSynchStateId: Int,
     @SerializedName("RecordVersion")

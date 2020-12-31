@@ -9,9 +9,6 @@ import androidx.room.TypeConverter
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import java.util.ArrayList
-import java.util.Collections
-import java.util.Date
 import za.co.xisystems.itis_rrm.data.localDB.entities.ActivityDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.ChildLookupDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.InfoClassDTO
@@ -35,6 +32,9 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.UserRoleDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.VoItemDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.WorkFlowDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.WorkFlowRouteDTO
+import java.util.ArrayList
+import java.util.Collections
+import java.util.Date
 
 /**
  * Created by Francis Mahlava on 2019/11/22.
@@ -71,8 +71,6 @@ class Converters {
         val gson = Gson()
         return gson.toJson(myObjects)
     }
-
-    // ===========================================================================
 
     @TypeConverter
     fun storedStringToProjectDTO(data: String?): ArrayList<ProjectDTO> {
@@ -148,10 +146,10 @@ class Converters {
 
     // ======================================================================================
     @TypeConverter
-    fun storedStringToItemSectionDTO(data: String?): ArrayList<ItemSectionDTO> {
+    fun storedStringToItemSectionDTO(data: String?): ArrayList<ItemSectionDTO>? {
         val gson = Gson()
         if (data == null) {
-            return Collections.EMPTY_LIST as ArrayList<ItemSectionDTO>
+            return Collections.EMPTY_LIST as ArrayList<ItemSectionDTO>?
         }
         val listType = object : TypeToken<ArrayList<ItemSectionDTO>>() {
         }.type
@@ -586,8 +584,9 @@ class Converters {
     }
 
     @TypeConverter
-    fun JobItemMeasureToStoredString(myObjects: JobItemMeasureDTO?): String {
+    fun JobItemMeasuresToStoredString(myObjects: JobItemMeasureDTO?): String {
         val gson = Gson()
         return gson.toJson(myObjects)
     }
 }
+

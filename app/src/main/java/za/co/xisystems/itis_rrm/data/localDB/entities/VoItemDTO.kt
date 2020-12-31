@@ -12,7 +12,6 @@ import java.io.Serializable
  */
 
 const val TABLE_JOB_VO_ITEM = "TABLE_JOB_VO_ITEM"
-// const val PROJECT_VO_ID = 0
 
 @Entity(
     tableName = TABLE_JOB_VO_ITEM, foreignKeys = [ForeignKey(
@@ -48,3 +47,4 @@ data class VoItemDTO(
     val projectId: String
 
 ) : Serializable
+

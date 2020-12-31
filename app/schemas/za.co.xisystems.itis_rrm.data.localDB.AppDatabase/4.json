@@ -1,8 +1,8 @@
 {
   "formatVersion": 1,
   "database": {
-    "version": 3,
-    "identityHash": "d3fa3e9183ca5ab774cde47ebdade0d0",
+    "version": 4,
+    "identityHash": "b6a6915dd04e9c8e9d18b02375b708b2",
     "entities": [
       {
         "tableName": "JOB_TABLE",
@@ -308,7 +308,7 @@
       },
       {
         "tableName": "USER_TABLE",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`registrationId` TEXT NOT NULL, `userId` TEXT NOT NULL, `userName` TEXT NOT NULL, `userRoles` TEXT NOT NULL, `userStatus` TEXT NOT NULL, `PIN` TEXT, `PHONE_NUMBER` TEXT, `IMEI` TEXT, `DEVICE` TEXT, `Password` TEXT, `WEB_SERVICE_URI` TEXT, `salt` TEXT NOT NULL, PRIMARY KEY(`userId`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`registrationId` TEXT NOT NULL, `userId` TEXT NOT NULL, `userName` TEXT NOT NULL, `userRoles` TEXT NOT NULL, `userStatus` TEXT NOT NULL, `PIN` TEXT, `PHONE_NUMBER` TEXT, `IMEI` TEXT, `DEVICE` TEXT, `Password` TEXT, `WEB_SERVICE_URI` TEXT, `salt` TEXT, PRIMARY KEY(`userId`))",
         "fields": [
           {
             "fieldPath": "registrationId",
@@ -380,7 +380,7 @@
             "fieldPath": "salt",
             "columnName": "salt",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           }
         ],
         "primaryKey": {
@@ -2722,7 +2722,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'd3fa3e9183ca5ab774cde47ebdade0d0')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'b6a6915dd04e9c8e9d18b02375b708b2')"
     ]
   }
 }

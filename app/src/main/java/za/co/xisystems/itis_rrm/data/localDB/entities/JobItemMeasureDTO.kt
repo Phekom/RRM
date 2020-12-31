@@ -3,6 +3,7 @@ package za.co.xisystems.itis_rrm.data.localDB.entities
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
+import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import java.io.Serializable
 import java.util.ArrayList
 import java.util.Date
@@ -13,7 +14,7 @@ const val JOB_ITEM_MEASURE = "JOB_ITEM_MEASURE"
 data class JobItemMeasureDTO(
 
     @PrimaryKey(autoGenerate = true)
-    val ID: Int,
+    val id: Int = 0,
     @SerializedName("ActId")
     var actId: Int,
     @SerializedName("ApprovalDate")
@@ -25,7 +26,7 @@ data class JobItemMeasureDTO(
     @SerializedName("EstimateId")
     var estimateId: String?,
     @SerializedName("ItemMeasureId")
-    var itemMeasureId: String?,
+    var itemMeasureId: String = SqlLitUtils.generateUuid(),
     @SerializedName("JimNo")
     var jimNo: String?,
     @SerializedName("JobDirectionId")
@@ -42,11 +43,11 @@ data class JobItemMeasureDTO(
     var measureGroupId: String?,
     @SerializedName("PrjItemMeasurePhotoDtos")
     var jobItemMeasurePhotos: ArrayList<JobItemMeasurePhotoDTO>,
-    @SerializedName("PrjJobDto")
-    var job: JobDTO? = null,
-    @SerializedName("PrjJobItemEstimateDto")
+//    @SerializedName("PrjJobDto")
+//    var job: JobDTO? = null,
+ //   @SerializedName("PrjJobItemEstimateDto")
 //    val prjJobItemEstimateDto: ArrayList<JobItemEstimateDTO>,
-    var jobItemEstimate: JobItemEstimateDTO? = null,
+   // var jobItemEstimate: JobItemEstimateDTO? = null,
     @SerializedName("ProjectItemId")
     var projectItemId: String?,
     @SerializedName("ProjectVoId")
@@ -65,6 +66,8 @@ data class JobItemMeasureDTO(
     var deleted: Int = 0,
     var entityDescription: String?,
 
-    var selectedItemUom: String?
+    var selectedItemUom: String?,
+    val job: JobDTO?,
+    val jobItemEstimate: JobItemEstimateDTO?
 
 ) : Serializable

@@ -1,13 +1,12 @@
 package za.co.xisystems.itis_rrm.data.localDB.entities
 
-// import com.google.android.gms.common.util.Base64Utils
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import org.springframework.util.Base64Utils
+import java.io.Serializable
 
 const val TODO_ENTITY_TABLE = "TODO_ENTITY_TABLE"
-// const val TRACK_ROUTE_ID = "TRACK_ROUTE_ID"indices = [Index(value = ["itemCode"], unique = true)]
 
 @Entity(tableName = TODO_ENTITY_TABLE)
 data class ToDoListEntityDTO(
@@ -40,7 +39,7 @@ data class ToDoListEntityDTO(
 
     var jobId: String?
 
-) {
+) : Serializable {
     var trackRouteId: ByteArray?
         get() = if (trackRouteIdString == null) trackRouteIdBytes else Base64Utils.decodeFromString(
             trackRouteIdString
@@ -49,4 +48,29 @@ data class ToDoListEntityDTO(
             this.trackRouteIdBytes = trackRouteId
             this.trackRouteIdString = Base64Utils.encode(trackRouteId).toString()
         }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as ToDoListEntityDTO
+
+        if (trackRouteIdBytes != null) {
+            if (other.trackRouteIdBytes == null) return false
+            if (!trackRouteIdBytes.contentEquals(other.trackRouteIdBytes)) return false
+        } else if (other.trackRouteIdBytes != null) return false
+        if (data != other.data) return false
+        if (description != other.description) return false
+        if (entities != other.entities) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = trackRouteIdBytes?.contentHashCode() ?: 0
+        result = 31 * result + (data?.hashCode() ?: 0)
+        result = 31 * result + (description?.hashCode() ?: 0)
+        result = 31 * result + entities.hashCode()
+        return result
+    }
 }
