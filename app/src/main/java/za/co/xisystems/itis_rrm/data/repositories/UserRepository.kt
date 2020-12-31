@@ -18,7 +18,7 @@ import za.co.xisystems.itis_rrm.utils.Util.sha256
  */
 class UserRepository(
     private val api: BaseConnectionApi,
-    private val Db: AppDatabase
+    private val appDb: AppDatabase
 ) : SafeApiRequest() {
 
     private val users = MutableLiveData<UserDTO>()
@@ -46,13 +46,13 @@ class UserRepository(
 
     suspend fun getPin(): String {
         return withContext(Dispatchers.IO) {
-            Db.getUserDao().getPin()
+            appDb.getUserDao().getPin()
         }
     }
 
     suspend fun getUser(): LiveData<UserDTO> {
         return withContext(Dispatchers.IO) {
-            Db.getUserDao().getUser()
+            appDb.getUserDao().getUser()
         }
     }
 
@@ -82,26 +82,26 @@ class UserRepository(
         confirmPin: String
     ) {
         Coroutines.io {
-            Db.getUserDao().updateUser(confirmPin.sha256(), phoneNumber, IMEI, androidDevice) // userId,
+            appDb.getUserDao().updateUser(confirmPin.sha256(), phoneNumber, IMEI, androidDevice) // userId,
         }
     }
 
     fun upDateUserPin(confirmNewPin: String, enterOldPin: String) {
         Coroutines.io {
-            Db.getUserDao().upDateUserPin(confirmNewPin.sha256(), enterOldPin.sha256()) // userId,
+            appDb.getUserDao().upDateUserPin(confirmNewPin.sha256(), enterOldPin.sha256()) // userId,
         }
     }
 
     private suspend fun saveUser(user: UserDTO) {
         Coroutines.io {
 
-            if (!Db.getUserDao().checkUserExists(user.userId)) {
-                Db.getUserDao().insert(user)
+            if (!appDb.getUserDao().checkUserExists(user.userId)) {
+                appDb.getUserDao().insert(user)
             }
 
             if (user.userRoles.isNotEmpty()) {
                 for (userRole in user.userRoles) {
-                    Db.getUserRoleDao().saveRole(userRole)
+                    appDb.getUserRoleDao().saveRole(userRole)
                 }
             }
         }
