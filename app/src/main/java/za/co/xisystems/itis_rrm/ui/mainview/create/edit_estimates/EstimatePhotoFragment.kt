@@ -776,7 +776,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
                     endKm = localProjectSection.endKm
                     Timber.d("ProjectSection: $it")
                     Coroutines.main {
-                        if (!createViewModel.checkIfJobSectionExists(newJob!!.JobId, projectSectionId)) {
+                        if (newJob!!.SectionId.isNullOrEmpty()) {
                             createRouteSection(
                                 secId = projectSectionId,
                                 jobId = newJob!!.JobId,

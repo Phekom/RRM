@@ -115,11 +115,6 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
     private lateinit var workSubmission: Job
     private lateinit var jobSubmission: Job
 
-    override fun onStop() {
-        super.onStop()
-        uiScope.destroy()
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         lifecycle.addObserver(uiScope)
@@ -143,6 +138,7 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        uiScope.destroy()
         // Remember to flush the RecyclerView's adaptor
         workViewModel.workflowState.removeObservers(viewLifecycleOwner)
         work_actions_listView.adapter = null

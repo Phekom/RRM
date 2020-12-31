@@ -121,6 +121,7 @@ class JobInfoFragment : BaseFragment(), KodeinAware {
             is XIProgress -> {
                 when (result.isLoading) {
                     true -> {
+                        activity?.hideKeyboard()
                         progressButton.startProgress()
                         toggleLongRunning(true)
                     }
@@ -399,7 +400,7 @@ class JobInfoFragment : BaseFragment(), KodeinAware {
                     startActivity(home)
                 }
             },
-            Constants.TWO_SECONDS
+            Constants.ONE_SECOND
         )
     }
 
