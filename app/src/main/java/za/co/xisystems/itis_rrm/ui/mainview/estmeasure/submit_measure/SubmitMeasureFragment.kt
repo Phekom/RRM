@@ -20,8 +20,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.ExpandableGroup
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
-import java.util.ArrayList
-import java.util.HashMap
 import kotlinx.android.synthetic.main.fragment_submit_measure.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
@@ -62,6 +60,8 @@ import za.co.xisystems.itis_rrm.utils.enums.ToastStyle
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.ERROR
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.NO_INTERNET
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.WARNING
+import java.util.ArrayList
+import java.util.HashMap
 
 class SubmitMeasureFragment : BaseFragment(), KodeinAware {
     override val kodein by kodein()
@@ -500,7 +500,7 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
                                     Coroutines.main {
                                         for (jobItemM in measureList) {
                                             Coroutines.main {
-                                                val itemMeasureId = jobItemM.itemMeasureId!!
+                                                val itemMeasureId = jobItemM.itemMeasureId
                                                 val qty = jobItemM.qty.toString()
                                                 val rate = jobItemM.lineRate.toString()
                                                 val jNo = jobItemM.jimNo.toString()
@@ -556,10 +556,10 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
     }
 
     private fun JobItemMeasurePhotoDTO.setEstimateId(toLittleEndian: String?) {
-        this.estimateId = toLittleEndian
+        this.estimateId = toLittleEndian!!
     }
 
     private fun JobItemMeasureDTO.setItemMeasureId(toLittleEndian: String?) {
-        this.itemMeasureId = toLittleEndian
+        this.itemMeasureId = toLittleEndian!!
     }
 }

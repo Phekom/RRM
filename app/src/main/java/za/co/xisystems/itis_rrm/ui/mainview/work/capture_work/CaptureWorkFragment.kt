@@ -29,8 +29,6 @@ import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
-import java.util.Date
-import java.util.HashMap
 import kotlinx.android.synthetic.main.fragment_capture_work.*
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -88,6 +86,8 @@ import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.INFO
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.NO_INTERNET
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.WARNING
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
+import java.util.Date
+import java.util.HashMap
 
 class CaptureWorkFragment : LocationFragment(), KodeinAware {
 
@@ -297,6 +297,7 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
         estimateWorksItem: JobEstimateWorksDTO
     ) {
         uiScope.launch(uiScope.coroutineContext) {
+            workViewModel.workflowState.removeObserver(jobObserver)
             workViewModel.workflowState.observe(viewLifecycleOwner, workObserver)
             workViewModel.backupWorkSubmission.value = estimateWorksItem
             val newItemEstimateWorks = setJobWorksLittleEndianGuids(estimateWorksItem)
@@ -524,7 +525,8 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
         if (currentLocation == null) {
             // Check network availability / connectivity
             sharpToast(
-                message = getString(R.string.please_enable_location_services), style = ERROR, position = CENTER, duration = LONG
+                message = getString(R.string.please_enable_location_services),
+                style = ERROR, position = CENTER, duration = LONG
             )
             // Launch Dialog
         } else {
@@ -592,7 +594,6 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
             photoLongitude = currentLocation.latitude,
             photoLatitude = currentLocation.longitude,
             photoPath = filenamePath["path"]!!,
-            estimateWorks = estimateWorksList,
             recordVersion = 0,
             recordSynchStateId = 0,
             worksId = itemEstiWorks.worksId
@@ -607,7 +608,7 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
 
             val workDone: Int = getEstimatesCompleted(estimateJob)
 
-            if (workDone == estimateJob.JobItemEstimates?.size) {
+            if (workDone == estimateJob.JobItemEstimates.size) {
                 collectCompletedEstimates(estimateJob)
             } else {
 
@@ -638,7 +639,7 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
         estWorkDone: Int,
         estimateJob: JobDTO
     ) {
-        if (estWorkDone == estimateJob.JobItemEstimates?.size) {
+        if (estWorkDone == estimateJob.JobItemEstimates.size) {
             Coroutines.main {
                 collectCompletedEstimates(estimateJob)
             }
@@ -731,6 +732,7 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
 
         workViewModel.backupCompletedEstimates.postValue(estimates as List<JobItemEstimateDTO>)
         jobSubmission = uiScope.launch(uiScope.coroutineContext) {
+            workViewModel.workflowState.removeObserver(workObserver)
             workViewModel.workflowState.observe(viewLifecycleOwner, jobObserver)
             workViewModel.workflowState.postValue(XIProgress(true))
             withContext(uiScope.coroutineContext) {
