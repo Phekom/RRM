@@ -407,9 +407,9 @@ class JobCreationDataRepository(
     private fun uploadCreateJobImages(packageJob: JobDTO, activity: FragmentActivity) {
 
         var jobCounter = 1
-        val totalJobs = packageJob.JobItemEstimates?.size ?: 0
+        val totalJobs = packageJob.JobItemEstimates.size
 
-        packageJob.JobItemEstimates?.map { jobItemEstimate ->
+        packageJob.JobItemEstimates.map { jobItemEstimate ->
             val totalImages = jobItemEstimate.jobItemEstimatePhotos?.size ?: 0
             var imageCounter = 1
             jobItemEstimate.jobItemEstimatePhotos?.map { estimatePhoto ->

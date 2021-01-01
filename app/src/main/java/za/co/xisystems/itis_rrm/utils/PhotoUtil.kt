@@ -14,6 +14,17 @@ import android.os.Environment
 import androidx.core.content.FileProvider
 import androidx.exifinterface.media.ExifInterface
 import androidx.fragment.app.Fragment
+import org.apache.sanselan.ImageReadException
+import org.apache.sanselan.ImageWriteException
+import org.apache.sanselan.Sanselan
+import org.apache.sanselan.common.IImageMetadata
+import org.apache.sanselan.formats.jpeg.JpegImageMetadata
+import org.apache.sanselan.formats.jpeg.exifRewrite.ExifRewriter
+import org.apache.sanselan.formats.tiff.write.TiffOutputSet
+import timber.log.Timber
+import za.co.xisystems.itis_rrm.BuildConfig
+import za.co.xisystems.itis_rrm.constants.Constants.THIRTY_DAYS
+import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileNotFoundException
@@ -27,17 +38,6 @@ import java.util.HashMap
 import java.util.Locale
 import java.util.UUID
 import kotlin.math.roundToLong
-import org.apache.sanselan.ImageReadException
-import org.apache.sanselan.ImageWriteException
-import org.apache.sanselan.Sanselan
-import org.apache.sanselan.common.IImageMetadata
-import org.apache.sanselan.formats.jpeg.JpegImageMetadata
-import org.apache.sanselan.formats.jpeg.exifRewrite.ExifRewriter
-import org.apache.sanselan.formats.tiff.write.TiffOutputSet
-import timber.log.Timber
-import za.co.xisystems.itis_rrm.BuildConfig
-import za.co.xisystems.itis_rrm.constants.Constants.THIRTY_DAYS
-import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 
 object PhotoUtil {
     const val FOLDER = "ITIS_RRM_Photos"
@@ -92,6 +92,10 @@ object PhotoUtil {
         }
     }
 
+    /**
+     * Erase RRM-related photograohs older than 30 days
+     * @return Job
+     */
     fun cleanupDevice() = Coroutines.io {
 
         val presentTime: Long = (Date().time)

@@ -21,8 +21,8 @@ interface UserDao {
     @Query("SELECT * FROM USER_TABLE WHERE userId = :userId")
     fun checkUserExists(userId: String): Boolean
 
-    @Query("UPDATE USER_TABLE SET PIN =:PIN,  PHONE_NUMBER = :PHONE_NUMBER, IMEI=:IMEI, DEVICE=:DEVICE ")
-    fun updateUser(PIN: String?, PHONE_NUMBER: String?, IMEI: String?, DEVICE: String?)
+    @Query("UPDATE USER_TABLE SET PIN = :newPin, binHash =:binHash,  PHONE_NUMBER = :PHONE_NUMBER, IMEI=:IMEI, DEVICE=:DEVICE ")
+    fun updateUser(newPin: String?, binHash: ByteArray?, PHONE_NUMBER: String?, IMEI: String?, DEVICE: String?)
 
     @Query("UPDATE USER_TABLE SET PIN =:confirmNewPin WHERE PIN = :enterOldPin")
     fun upDateUserPin(confirmNewPin: String, enterOldPin: String)
@@ -45,6 +45,15 @@ interface UserDao {
     @Query("SELECT PIN FROM USER_TABLE WHERE userId = userId LIMIT 1")
     fun getPin(): String
 
+    @Query("SELECT binHash FROM USER_TABLE LIMIT 1")
+    fun getHash(): ByteArray?
+
+    @Query("UPDATE USER_TABLE SET binHash = :binHash WHERE userId = :userId")
+    fun putHash(userId: String, binHash: ByteArray)
+
     @Query("DELETE FROM USER_TABLE")
     fun deleteAll()
+
+    @Query("UPDATE USER_TABLE SET binHash = :newHash WHERE binHash = :oldHash")
+    fun updateUserHash(newHash: ByteArray, oldHash: ByteArray)
 }

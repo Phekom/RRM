@@ -11,6 +11,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
+import com.toxicbakery.bcrypt.Bcrypt
 import kotlinx.android.synthetic.main.activity_login.*
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.kodein
@@ -28,7 +29,6 @@ import za.co.xisystems.itis_rrm.databinding.ActivityLoginBinding
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
-import za.co.xisystems.itis_rrm.utils.Util.sha256
 import za.co.xisystems.itis_rrm.utils.hide
 import za.co.xisystems.itis_rrm.utils.hideKeyboard
 import za.co.xisystems.itis_rrm.utils.snackbar
@@ -37,7 +37,7 @@ import za.co.xisystems.itis_rrm.utils.toast
 class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, KodeinAware {
     private var activityPinLockBinding: ActivityLoginBinding? = null
 
-    private var pin = String()
+    private var hash: ByteArray? = null
     private var pinInput = ""
     private var index = 0
 
@@ -83,9 +83,9 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
         Coroutines.main {
             val loggedInUser = viewModel.user.await()
             loggedInUser.observe(this, { user ->
-                if (user.PIN != null) {
+                if (user.binHash != null) {
                     Coroutines.main {
-                        pin = viewModel.getPin()
+                        hash = user.binHash
                     }
                 }
             })
@@ -168,7 +168,7 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
         Coroutines.main {
             val loggedInUser = viewModel.user.await()
             loggedInUser.observe(this, { user ->
-                if (user.PIN.isNullOrEmpty()) {
+                if (user.binHash == null) {
 
                     val builder =
                         AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog)
@@ -236,7 +236,8 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
     }
 
     private fun validatePin() {
-        if (pin == pinInput.sha256()) {
+
+        if (Bcrypt.verify(pinInput, hash!!)) {
             Coroutines.io {
                 PhotoUtil.cleanupDevice()
             }

@@ -74,15 +74,15 @@ class RegisterActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnabl
             loggedInUser.observe(this, { user ->
                 // Register the user
                 if (user != null) {
-
-                    if (user.PIN.isNullOrEmpty()) {
+                    if (user.binHash == null) {
                         registerPinOrNot()
-                    } else
+                    } else {
                         Intent(this, MainActivity::class.java).also { home ->
                             home.flags =
                                 Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
                             startActivity(home)
                         }
+                    }
                 }
             })
             serverTextView.setOnClickListener {
@@ -173,7 +173,8 @@ class RegisterActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnabl
 
     fun googlePlayServicesCheck(activity: Activity) {
         val resultCode = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(activity.applicationContext)
-        if (resultCode != ConnectionResult.SUCCESS) { // This dialog will help the user update to the latest GooglePlayServices
+        if (resultCode != ConnectionResult.SUCCESS) {
+            // This dialog will help the user update to the latest GooglePlayServices
             val dialog =
                 GoogleApiAvailability.getInstance().getErrorDialog(activity, resultCode, 0)
             dialog?.show()
@@ -215,6 +216,6 @@ class RegisterActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnabl
     }
 
     override fun run() {
-        TODO("Not yet implemented")
+        // Yagni
     }
 }

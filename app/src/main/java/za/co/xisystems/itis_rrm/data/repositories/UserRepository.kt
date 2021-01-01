@@ -44,9 +44,9 @@ class UserRepository(
         }
     }
 
-    suspend fun getPin(): String {
+    suspend fun getHash(): ByteArray? {
         return withContext(Dispatchers.IO) {
-            appDb.getUserDao().getPin()
+            appDb.getUserDao().getHash()
         }
     }
 
@@ -79,16 +79,31 @@ class UserRepository(
         phoneNumber: String,
         IMEI: String,
         androidDevice: String,
-        confirmPin: String
-    ) {
+        confirmPin: String,
+        binHash: ByteArray,
+
+        ) {
         Coroutines.io {
-            appDb.getUserDao().updateUser(confirmPin.sha256(), phoneNumber, IMEI, androidDevice) // userId,
+
+            appDb.getUserDao().updateUser(
+                newPin = confirmPin,
+                binHash = binHash,
+                PHONE_NUMBER = phoneNumber,
+                IMEI = IMEI,
+                DEVICE = androidDevice
+            ) // userId,
         }
     }
 
     fun upDateUserPin(confirmNewPin: String, enterOldPin: String) {
         Coroutines.io {
             appDb.getUserDao().upDateUserPin(confirmNewPin.sha256(), enterOldPin.sha256()) // userId,
+        }
+    }
+
+    fun updateHash(newHash: ByteArray, oldHash: ByteArray) {
+        Coroutines.io {
+            appDb.getUserDao().updateUserHash(newHash, oldHash) // userId,
         }
     }
 

@@ -31,6 +31,7 @@ data class UserDTO(
     var DEVICE: String?,
     var Password: String?,
     var WEB_SERVICE_URI: String?,
-    var salt: String?
+    var salt: String?,
+    var binHash: ByteArray?
 
 ) : Serializable

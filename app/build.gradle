@@ -544,6 +544,8 @@ dependencies {
 
     implementation "org.springframework.android:spring-android-core:2.0.0.M3"
     // implementation 'org.springframework.android:spring-android-auth:1.0.1.RELEASE'
+    implementation "com.ToxicBakery.library.bcrypt:bcrypt:1.0.9"
+
 
 }
 

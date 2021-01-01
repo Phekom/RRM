@@ -53,7 +53,8 @@ class MeasureGalleryFragment : BaseFragment(), KodeinAware {
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        TODO("Not yet implemented")
+        // Noy all fragments have options
+        return false
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -102,12 +103,12 @@ class MeasureGalleryFragment : BaseFragment(), KodeinAware {
     }
 
     private fun retryGallery() {
-        TODO("Set up contingency id.")
+        //  Not needed
     }
 
     override fun onDestroyView() {
+        super.onDestroyView()
         estimate_image_gallery_view.clearImages()
         uiScope.destroy()
-        super.onDestroyView()
     }
 }

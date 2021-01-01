@@ -14,4 +14,7 @@ object Constants {
     // Ports
     const val DNS_PORT = 52
     const val SSL_PORT = 443
+
+    // crypio
+    const val SALT_ROUNDS = 14
 }

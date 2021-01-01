@@ -4,9 +4,11 @@ import android.os.Build
 import android.view.View
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.toxicbakery.bcrypt.Bcrypt
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.constants.Constants.SALT_ROUNDS
 import za.co.xisystems.itis_rrm.custom.errors.AuthException
 import za.co.xisystems.itis_rrm.custom.errors.NoConnectivityException
 import za.co.xisystems.itis_rrm.custom.errors.NoInternetException
@@ -15,7 +17,6 @@ import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
 import za.co.xisystems.itis_rrm.utils.Coroutines
-import za.co.xisystems.itis_rrm.utils.Util.sha256
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
 
 /**
@@ -46,9 +47,9 @@ class AuthViewModel(
         offlineDataRepository.getContracts()
     }
 
-    suspend fun getPin(): String {
+    suspend fun getHash(): ByteArray? {
         return withContext(Dispatchers.IO) {
-            repository.getPin()
+            repository.getHash()
         }
     }
 
@@ -59,38 +60,32 @@ class AuthViewModel(
         when {
             enterOldPin.isNullOrBlank() -> {
                 authListener?.onFailure("Please enter old PIN")
-                return
             }
             enterNewPin.isNullOrEmpty() -> {
                 authListener?.onFailure("Please enter new PIN")
-                return
             }
             confirmNewPin.isNullOrEmpty() -> {
-                authListener?.onFailure("Please confirm new Pin")
-                return
+                authListener?.onFailure("Please confirm new PIN")
             }
             enterNewPin != confirmNewPin -> {
                 authListener?.onFailure("PINs did not match")
-                return
+            }
+            enterOldPin == enterNewPin -> {
+                authListener?.onFailure("New PIN cannot be the same as the old PIN. Please enter a new PIN")
             }
             else -> Coroutines.main {
+
                 try {
-                    if (enterOldPin!!.sha256() == repository.getPin()) {
-                        if (enterOldPin.equals(enterNewPin)) {
-                            authListener?.onFailure("New PIN cannot be the same as the old PIN. Please enter a new PIN")
-                        } else {
-                            repository.upDateUserPin(confirmNewPin!!, enterOldPin!!)
-                            newPinRegistered.value = true
-                        }
+                    val pinHash = repository.getHash()
+                    if (Bcrypt.verify(enterOldPin!!, pinHash!!)) {
+                        val newHash = Bcrypt.hash(confirmNewPin!!, SALT_ROUNDS)
+                        repository.updateHash(newHash, pinHash)
+                        newPinRegistered.value = true
                     } else {
                         authListener?.onFailure("Old PIN is incorrect, pLease enter your current PIN")
                     }
-                } catch (e: AuthException) {
-                    authListener?.onFailure(e.message!!)
-                } catch (e: NoInternetException) {
-                    authListener?.onFailure(e.message!!)
-                } catch (e: NoConnectivityException) {
-                    authListener?.onFailure(e.message!!)
+                } catch (t: Throwable) {
+                    authListener?.onFailure(t.message ?: XIErrorHandler.UNKNOWN_ERROR)
                 }
             }
         }
@@ -128,12 +123,15 @@ class AuthViewModel(
                 val imei = "45678"
                 val androidDevice =
                     " " + R.string.android_sdk + Build.VERSION.SDK_INT + R.string.space + Build.BRAND + R.string.space + Build.MODEL + R.string.space + Build.DEVICE + ""
+                val pinHash = Bcrypt.hash(confirmPin!!, SALT_ROUNDS)
                 repository.upDateUser(
-//                    userId ,
+//                   userId ,
                     phoneNumber,
                     imei,
                     androidDevice,
-                    confirmPin!!.sha256()
+                    confirmPin!!,
+                    pinHash
+
                 )
             } catch (e: AuthException) {
                 authListener?.onFailure(e.message!!)
