@@ -24,14 +24,46 @@ data class UserDTO(
     @SerializedName("UserRoles")
     val userRoles: ArrayList<UserRoleDTO>,
     @SerializedName("UserStatus")
-    val userStatus: String, // Y
-    var PIN: String?,
-    var PHONE_NUMBER: String?,
-    var IMEI: String?,
-    var DEVICE: String?,
-    var Password: String?,
-    var WEB_SERVICE_URI: String?,
+    val userStatus: String,
+    @SerializedName("PHONE_NUMBER")
+    var phoneNumber: String?,
+    @SerializedName("IMEI")
+    var imei: String?,
+    @SerializedName("DEVICE")
+    var device: String?,
+    @SerializedName("Password")
+    var password: String?,
+    @SerializedName("WEB_SERVICE_URI")
+    var webServiceUri: String?,
     var salt: String?,
-    var binHash: ByteArray?
+    var pin: ByteArray?
 
-) : Serializable
+) : Serializable {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as UserDTO
+
+        if (registrationId != other.registrationId) return false
+        if (userId != other.userId) return false
+        if (userName != other.userName) return false
+        if (userRoles != other.userRoles) return false
+        if (phoneNumber != other.phoneNumber) return false
+        if (imei != other.imei) return false
+        if (device != other.device) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = registrationId.hashCode()
+        result = 31 * result + userId.hashCode()
+        result = 31 * result + userName.hashCode()
+        result = 31 * result + userRoles.hashCode()
+        result = 31 * result + (phoneNumber?.hashCode() ?: 0)
+        result = 31 * result + (imei?.hashCode() ?: 0)
+        result = 31 * result + (device?.hashCode() ?: 0)
+        return result
+    }
+}

@@ -9,9 +9,7 @@ import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
-import za.co.xisystems.itis_rrm.ui.auth.AuthListener
 import za.co.xisystems.itis_rrm.utils.Coroutines
-import za.co.xisystems.itis_rrm.utils.Util.sha256
 
 /**
  * Created by Francis Mahlava on 2019/10/23.
@@ -24,8 +22,6 @@ class UserRepository(
     private val users = MutableLiveData<UserDTO>()
     private val userError = MutableLiveData<String>()
 
-    private var authListener: AuthListener? = null
-
     init {
         users.observeForever { user ->
             Coroutines.io {
@@ -33,11 +29,11 @@ class UserRepository(
                 return@io
             }
         }
-        userError.observeForever { error_msg ->
+        userError.observeForever { errorMsg ->
             Coroutines.io {
                 val authEx =
                     AuthException(
-                        error_msg
+                        errorMsg
                     )
                 throw authEx
             }
@@ -60,11 +56,11 @@ class UserRepository(
         username: String,
         password: String,
         phoneNumber: String,
-        IMEI: String,
+        imei: String,
         androidDevice: String
     ) {
         val authResponse =
-            apiRequest { api.userRegister(androidDevice, IMEI, phoneNumber, username, password) }
+            apiRequest { api.userRegister(androidDevice, imei, phoneNumber, username, password) }
 
         if (authResponse.errorMessage != null) {
             val authException =
@@ -77,27 +73,18 @@ class UserRepository(
 
     fun upDateUser(
         phoneNumber: String,
-        IMEI: String,
+        imei: String,
         androidDevice: String,
-        confirmPin: String,
-        binHash: ByteArray,
-
-        ) {
+        binHash: ByteArray
+    ) {
         Coroutines.io {
 
             appDb.getUserDao().updateUser(
-                newPin = confirmPin,
-                binHash = binHash,
-                PHONE_NUMBER = phoneNumber,
-                IMEI = IMEI,
-                DEVICE = androidDevice
+                binHash,
+                phoneNumber,
+                imei,
+                androidDevice
             ) // userId,
-        }
-    }
-
-    fun upDateUserPin(confirmNewPin: String, enterOldPin: String) {
-        Coroutines.io {
-            appDb.getUserDao().upDateUserPin(confirmNewPin.sha256(), enterOldPin.sha256()) // userId,
         }
     }
 

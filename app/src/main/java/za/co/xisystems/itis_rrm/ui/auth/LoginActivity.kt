@@ -83,9 +83,9 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
         Coroutines.main {
             val loggedInUser = viewModel.user.await()
             loggedInUser.observe(this, { user ->
-                if (user.binHash != null) {
+                if (user.pin != null) {
                     Coroutines.main {
-                        hash = user.binHash
+                        hash = user.pin
                     }
                 }
             })
@@ -168,7 +168,7 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
         Coroutines.main {
             val loggedInUser = viewModel.user.await()
             loggedInUser.observe(this, { user ->
-                if (user.binHash == null) {
+                if (user.pin == null) {
 
                     val builder =
                         AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog)

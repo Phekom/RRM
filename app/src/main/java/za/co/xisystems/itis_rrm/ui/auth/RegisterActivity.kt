@@ -39,7 +39,7 @@ private const val PERMISSION_REQUEST = 10
 class RegisterActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnable {
 
     override val kodein by kodein()
-    private val factory: AuthViewModelFactory by instance<AuthViewModelFactory>()
+    private val factory: AuthViewModelFactory by instance()
     private lateinit var viewModel: AuthViewModel
     private lateinit var appContext: Context
     private var permissions = arrayOf(
@@ -74,7 +74,7 @@ class RegisterActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnabl
             loggedInUser.observe(this, { user ->
                 // Register the user
                 if (user != null) {
-                    if (user.binHash == null) {
+                    if (user.pin == null) {
                         registerPinOrNot()
                     } else {
                         Intent(this, MainActivity::class.java).also { home ->
@@ -171,7 +171,7 @@ class RegisterActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnabl
         googlePlayServicesCheck(this)
     }
 
-    fun googlePlayServicesCheck(activity: Activity) {
+    private fun googlePlayServicesCheck(activity: Activity) {
         val resultCode = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(activity.applicationContext)
         if (resultCode != ConnectionResult.SUCCESS) {
             // This dialog will help the user update to the latest GooglePlayServices

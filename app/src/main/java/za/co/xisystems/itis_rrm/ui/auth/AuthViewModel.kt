@@ -5,8 +5,6 @@ import android.view.View
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.toxicbakery.bcrypt.Bcrypt
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.constants.Constants.SALT_ROUNDS
 import za.co.xisystems.itis_rrm.custom.errors.AuthException
@@ -14,7 +12,6 @@ import za.co.xisystems.itis_rrm.custom.errors.NoConnectivityException
 import za.co.xisystems.itis_rrm.custom.errors.NoInternetException
 import za.co.xisystems.itis_rrm.custom.errors.ServiceException
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
-import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
@@ -25,8 +22,7 @@ import za.co.xisystems.itis_rrm.utils.lazyDeferred
  */
 
 class AuthViewModel(
-    private val repository: UserRepository,
-    private val offlineDataRepository: OfflineDataRepository
+    private val repository: UserRepository
 ) : ViewModel() {
 
     var username: String? = null
@@ -40,17 +36,6 @@ class AuthViewModel(
 
     val user by lazyDeferred {
         repository.getUser()
-    }
-
-    val offlineData by lazyDeferred {
-        offlineDataRepository.getSectionItems()
-        offlineDataRepository.getContracts()
-    }
-
-    suspend fun getHash(): ByteArray? {
-        return withContext(Dispatchers.IO) {
-            repository.getHash()
-        }
     }
 
     val newPinRegistered: MutableLiveData<Boolean> = MutableLiveData()
@@ -125,13 +110,10 @@ class AuthViewModel(
                     " " + R.string.android_sdk + Build.VERSION.SDK_INT + R.string.space + Build.BRAND + R.string.space + Build.MODEL + R.string.space + Build.DEVICE + ""
                 val pinHash = Bcrypt.hash(confirmPin!!, SALT_ROUNDS)
                 repository.upDateUser(
-//                   userId ,
                     phoneNumber,
                     imei,
                     androidDevice,
-                    confirmPin!!,
                     pinHash
-
                 )
             } catch (e: AuthException) {
                 authListener?.onFailure(e.message!!)

@@ -1,8 +1,8 @@
 {
   "formatVersion": 1,
   "database": {
-    "version": 8,
-    "identityHash": "ec7ff00cd48794dd4605b88c4ec84872",
+    "version": 6,
+    "identityHash": "3cd4986c8272a951604188b73d8aaf46",
     "entities": [
       {
         "tableName": "JOB_TABLE",
@@ -308,7 +308,7 @@
       },
       {
         "tableName": "USER_TABLE",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`registrationId` TEXT NOT NULL, `userId` TEXT NOT NULL, `userName` TEXT NOT NULL, `userRoles` TEXT NOT NULL, `userStatus` TEXT NOT NULL, `PIN` TEXT, `PHONE_NUMBER` TEXT, `IMEI` TEXT, `DEVICE` TEXT, `Password` TEXT, `WEB_SERVICE_URI` TEXT, `salt` TEXT, `binHash` BLOB, PRIMARY KEY(`userId`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`registrationId` TEXT NOT NULL, `userId` TEXT NOT NULL, `userName` TEXT NOT NULL, `userRoles` TEXT NOT NULL, `userStatus` TEXT NOT NULL, `phoneNumber` TEXT, `imei` TEXT, `device` TEXT, `password` TEXT, `webServiceUri` TEXT, `salt` TEXT, `pin` BLOB, PRIMARY KEY(`userId`))",
         "fields": [
           {
             "fieldPath": "registrationId",
@@ -341,38 +341,32 @@
             "notNull": true
           },
           {
-            "fieldPath": "PIN",
-            "columnName": "PIN",
+            "fieldPath": "phoneNumber",
+            "columnName": "phoneNumber",
             "affinity": "TEXT",
             "notNull": false
           },
           {
-            "fieldPath": "PHONE_NUMBER",
-            "columnName": "PHONE_NUMBER",
+            "fieldPath": "imei",
+            "columnName": "imei",
             "affinity": "TEXT",
             "notNull": false
           },
           {
-            "fieldPath": "IMEI",
-            "columnName": "IMEI",
+            "fieldPath": "device",
+            "columnName": "device",
             "affinity": "TEXT",
             "notNull": false
           },
           {
-            "fieldPath": "DEVICE",
-            "columnName": "DEVICE",
+            "fieldPath": "password",
+            "columnName": "password",
             "affinity": "TEXT",
             "notNull": false
           },
           {
-            "fieldPath": "Password",
-            "columnName": "Password",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "WEB_SERVICE_URI",
-            "columnName": "WEB_SERVICE_URI",
+            "fieldPath": "webServiceUri",
+            "columnName": "webServiceUri",
             "affinity": "TEXT",
             "notNull": false
           },
@@ -383,8 +377,8 @@
             "notNull": false
           },
           {
-            "fieldPath": "binHash",
-            "columnName": "binHash",
+            "fieldPath": "pin",
+            "columnName": "pin",
             "affinity": "BLOB",
             "notNull": false
           }
@@ -2728,7 +2722,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'ec7ff00cd48794dd4605b88c4ec84872')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '3cd4986c8272a951604188b73d8aaf46')"
     ]
   }
 }

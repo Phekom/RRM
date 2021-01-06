@@ -5,7 +5,6 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import androidx.room.migration.Migration
 import dev.matrix.roomigrant.GenerateRoomMigrations
 import za.co.xisystems.itis_rrm.data.localDB.dao.ActivityDao
 import za.co.xisystems.itis_rrm.data.localDB.dao.ContractDao
@@ -89,7 +88,7 @@ import za.co.xisystems.itis_rrm.utils.Converters
         JobEstimateWorksDTO::class, JobEstimateWorksPhotoDTO::class, SectionItemDTO::class,
         WorkFlowsDTO::class, WF_WorkStepDTO::class
     ],
-    version = 8
+    version = 6
 )
 @TypeConverters(Converters::class)
 @GenerateRoomMigrations
@@ -140,14 +139,12 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
-        private var AppDatabase_Migrations: Array<out Migration> = arrayOf()
-
         private fun buildDatabase(context: Context) =
             Room.databaseBuilder(
                 context.applicationContext,
                 AppDatabase::class.java,
                 "myRRM_Database.db"
-            ).addMigrations(*AppDatabase_Migrations)
-                .fallbackToDestructiveMigrationFrom(5).build()
+            ).addMigrations(*AppDatabase_Migrations.build())
+                .fallbackToDestructiveMigrationFrom(10).build()
     }
 }
