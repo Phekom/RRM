@@ -80,7 +80,7 @@ class ApproveMeasureFragment : BaseFragment(), KodeinAware {
 
     private fun initVeiledRecyclerView() {
         ui.approveMeasurementsList.run {
-            setVeilLayout(layout.single_job_listing, object : VeiledItemOnClickListener {
+            setVeilLayout(layout.item_velied_slug, object : VeiledItemOnClickListener {
                 /** will be invoked when the item on the [VeilRecyclerFrameView] clicked. */
                 override fun onItemClicked(pos: Int) {
                     Toast.makeText(this@ApproveMeasureFragment.requireContext(), "Loading ...", Toast.LENGTH_SHORT).show()
@@ -88,7 +88,7 @@ class ApproveMeasureFragment : BaseFragment(), KodeinAware {
             })
             setAdapter(groupAdapter)
             setLayoutManager(LinearLayoutManager(this.context))
-            addVeiledItems(10)
+            addVeiledItems(15)
         }
     }
 

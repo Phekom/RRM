@@ -138,7 +138,7 @@ class WorkFragment : BaseFragment(), KodeinAware {
 
     private fun initVeiledRecycler() {
         ui.veiledWorkListView.run {
-            setVeilLayout(R.layout.item_expandable_header, object : VeiledItemOnClickListener {
+            setVeilLayout(R.layout.item_velied_slug, object : VeiledItemOnClickListener {
                 /** will be invoked when the item on the [VeilRecyclerFrameView] clicked. */
                 override fun onItemClicked(pos: Int) {
                     Toast.makeText(this@WorkFragment.requireContext(), "Loading ...", Toast.LENGTH_SHORT).show()

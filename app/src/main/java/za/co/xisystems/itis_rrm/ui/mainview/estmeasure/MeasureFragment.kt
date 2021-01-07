@@ -242,7 +242,7 @@ class MeasureFragment : BaseFragment(), KodeinAware {
 
     private fun initVeiledRecycler() {
         ui.estimationsToBeMeasuredListView.run {
-            setVeilLayout(R.layout.single_listview_item, object : VeiledItemOnClickListener {
+            setVeilLayout(R.layout.item_velied_slug, object : VeiledItemOnClickListener {
                 /** will be invoked when the item on the [VeilRecyclerFrameView] clicked. */
                 override fun onItemClicked(pos: Int) {
                     Toast.makeText(this@MeasureFragment.requireContext(), "Loading ...", Toast.LENGTH_SHORT).show()
@@ -250,7 +250,7 @@ class MeasureFragment : BaseFragment(), KodeinAware {
             })
             setAdapter(groupAdapter)
             setLayoutManager(LinearLayoutManager(this.context))
-            addVeiledItems(10)
+            addVeiledItems(15)
         }
     }
 

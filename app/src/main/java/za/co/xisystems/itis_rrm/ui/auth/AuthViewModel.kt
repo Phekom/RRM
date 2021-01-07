@@ -5,12 +5,9 @@ import android.view.View
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.toxicbakery.bcrypt.Bcrypt
+import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.constants.Constants.SALT_ROUNDS
-import za.co.xisystems.itis_rrm.custom.errors.AuthException
-import za.co.xisystems.itis_rrm.custom.errors.NoConnectivityException
-import za.co.xisystems.itis_rrm.custom.errors.NoInternetException
-import za.co.xisystems.itis_rrm.custom.errors.ServiceException
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
 import za.co.xisystems.itis_rrm.utils.Coroutines
@@ -53,7 +50,7 @@ class AuthViewModel(
                 authListener?.onFailure("Please confirm new PIN")
             }
             enterNewPin != confirmNewPin -> {
-                authListener?.onFailure("PINs did not match")
+                authListener?.onFailure("New PINs do not match")
             }
             enterOldPin == enterNewPin -> {
                 authListener?.onFailure("New PIN cannot be the same as the old PIN. Please enter a new PIN")
@@ -70,7 +67,7 @@ class AuthViewModel(
                         authListener?.onFailure("Old PIN is incorrect, pLease enter your current PIN")
                     }
                 } catch (t: Throwable) {
-                    authListener?.onFailure(t.message ?: XIErrorHandler.UNKNOWN_ERROR)
+                    showCauseAndEffect(t, "PIN update failed.")
                 }
             }
         }
@@ -78,27 +75,27 @@ class AuthViewModel(
 
     fun onRegPinButtonClick(view: View) {
 
-        if (enterPin.isNullOrEmpty()) {
-            authListener?.onFailure("Please Enter PIN")
-            return
-        }
-
-        if (confirmPin.isNullOrEmpty()) {
-            authListener?.onFailure("Please confirm PIN")
-            return
-        }
-
-        if (enterPin != confirmPin) {
-            authListener?.onFailure("PIN did not match")
-            return
-        }
-
-        // Length restrictions
-        if (!enterPin.isNullOrBlank()) {
-            val pin = enterPin
-            if (pin!!.length < 4 || pin.length > 4) {
-                authListener?.onFailure("PIN needs to be four digits long.")
+        when {
+            enterPin.isNullOrEmpty() -> {
+                authListener?.onFailure("Please Enter PIN")
                 return
+            }
+            confirmPin.isNullOrEmpty() -> {
+                authListener?.onFailure("Please confirm PIN")
+                return
+            }
+            enterPin != confirmPin -> {
+                authListener?.onFailure("PIN did not match")
+                return
+            }
+
+            // Length restrictions
+            !enterPin.isNullOrBlank() -> {
+                val pin = enterPin
+                if (pin!!.length < 4 || pin.length > 4) {
+                    authListener?.onFailure("PIN needs to be four digits long.")
+                    return
+                }
             }
         }
 
@@ -107,7 +104,9 @@ class AuthViewModel(
                 val phoneNumber = "12345457"
                 val imei = "45678"
                 val androidDevice =
-                    " " + R.string.android_sdk + Build.VERSION.SDK_INT + R.string.space + Build.BRAND + R.string.space + Build.MODEL + R.string.space + Build.DEVICE + ""
+                    " " + R.string.android_sdk + Build.VERSION.SDK_INT + R.string.space +
+                        Build.BRAND + R.string.space + Build.MODEL + R.string.space +
+                        Build.DEVICE + ""
                 val pinHash = Bcrypt.hash(confirmPin!!, SALT_ROUNDS)
                 repository.upDateUser(
                     phoneNumber,
@@ -115,15 +114,9 @@ class AuthViewModel(
                     androidDevice,
                     pinHash
                 )
-            } catch (e: AuthException) {
-                authListener?.onFailure(e.message!!)
-            } catch (e: ServiceException) {
-                authListener?.onFailure(e.message!!)
-            } catch (e: NoInternetException) {
-                authListener?.onFailure(e.message!!)
-            } catch (e: NoConnectivityException) {
-                authListener?.onFailure(e.message!!)
-            }
+            } catch (t: Throwable) {
+                showCauseAndEffect(t, "PIN update failed.")
+             }
         }
     }
 
@@ -145,7 +138,9 @@ class AuthViewModel(
                 val phoneNumber = "12345457"
                 val imei = "45678"
                 val androidDevice =
-                    " " + R.string.android_sdk + Build.VERSION.SDK_INT + R.string.space + Build.BRAND + R.string.space + Build.MODEL + R.string.space + Build.DEVICE + ""
+                    " " + R.string.android_sdk + Build.VERSION.SDK_INT + R.string.space +
+                        Build.BRAND + R.string.space + Build.MODEL + R.string.space +
+                        Build.DEVICE + ""
                 repository.userRegister(
                     username!!,
                     password!!,
@@ -154,8 +149,16 @@ class AuthViewModel(
                     androidDevice
                 )
             } catch (t: Throwable) {
-                authListener?.onFailure(t.message ?: XIErrorHandler.UNKNOWN_ERROR)
+                showCauseAndEffect(t, "User Registration failed.")
             }
         }
+    }
+
+    private fun showCauseAndEffect(t: Throwable, mEffect: String) {
+        val effect = mEffect
+        val cause = t.message ?: XIErrorHandler.UNKNOWN_ERROR
+        val message = "$effect - $cause"
+        Timber.e(t, message)
+        authListener?.onFailure(t.message ?: XIErrorHandler.UNKNOWN_ERROR)
     }
 }

@@ -115,14 +115,15 @@ class EstimatesItem(
 
             quantityEntry.text = Editable.Factory.getInstance().newEditable("$newQuantity")
 
-            quantityEntry.doOnTextChanged { text, start, before, count ->
+            quantityEntry.doOnTextChanged { text, _, _, _ ->
                 updated = true
+                val input = text.toString()
                 when {
-                    nanCheck(text as String) || text.toDouble() == 0.0 -> {
+                    nanCheck(input) || input.toDouble() == 0.0 -> {
                         cost = 0.0
                         totalEntry.text = activity.getString(R.string.pair, "R", cost.toString())
                     }
-                    text.length > 9 -> {
+                    input.length > 9 -> {
                         quantityEntry.text =
                             Editable.Factory.getInstance().newEditable("$defaultQty")
                         activity.extensionToast(
@@ -131,7 +132,7 @@ class EstimatesItem(
                         )
                     }
                     else -> {
-                        val qty = text.toDouble()
+                        val qty = input.toDouble()
                         cost = (tenderRate * qty).round(2)
                         totalEntry.text = activity.getString(R.string.pair, "R", cost.toString())
                     }
@@ -171,7 +172,7 @@ class EstimatesItem(
                 when {
                     quantityEntry.text.toString() == "" ||
                         nanCheck(quantityEntry.text.toString()) ||
-                        quantityEntry.text.toString().toDouble() == 0.0 -> {
+                        quantityEntry.text.toString().toDouble() < 0.0 -> {
                         activity.extensionToast("Please Enter a valid Quantity", MotionToast.TOAST_WARNING)
                     }
                     else -> {

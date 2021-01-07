@@ -5,9 +5,9 @@
 
     <data>
 
-        <variable
-            name="viewmodel"
-            type="za.co.xisystems.itis_rrm.ui.auth.model.PinLock" />
+<!--        <variable-->
+<!--            name="viewmodel"-->
+<!--            type="za.co.xisystems.itis_rrm.ui.auth.model.PinLock" />-->
 
     </data>
     <androidx.constraintlayout.widget.ConstraintLayout
