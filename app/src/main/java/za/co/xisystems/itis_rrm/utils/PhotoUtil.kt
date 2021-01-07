@@ -1,6 +1,5 @@
 package za.co.xisystems.itis_rrm.utils
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.AssetFileDescriptor
 import android.graphics.Bitmap
@@ -14,6 +13,17 @@ import android.os.Environment
 import androidx.core.content.FileProvider
 import androidx.exifinterface.media.ExifInterface
 import androidx.fragment.app.Fragment
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.FileNotFoundException
+import java.io.FileOutputStream
+import java.io.IOException
+import java.util.Base64
+import java.util.Date
+import java.util.HashMap
+import java.util.Locale
+import java.util.UUID
+import kotlin.math.roundToLong
 import org.apache.sanselan.ImageReadException
 import org.apache.sanselan.ImageWriteException
 import org.apache.sanselan.Sanselan
@@ -23,28 +33,13 @@ import org.apache.sanselan.formats.jpeg.exifRewrite.ExifRewriter
 import org.apache.sanselan.formats.tiff.write.TiffOutputSet
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.BuildConfig
+import za.co.xisystems.itis_rrm.constants.Constants.NINETY_DAYS
 import za.co.xisystems.itis_rrm.constants.Constants.THIRTY_DAYS
+import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
-import java.io.ByteArrayOutputStream
-import java.io.File
-import java.io.FileNotFoundException
-import java.io.FileOutputStream
-import java.io.IOException
-import java.text.DateFormat
-import java.text.SimpleDateFormat
-import java.util.Base64
-import java.util.Date
-import java.util.HashMap
-import java.util.Locale
-import java.util.UUID
-import kotlin.math.roundToLong
 
 object PhotoUtil {
     const val FOLDER = "ITIS_RRM_Photos"
-
-    @SuppressLint("SimpleDateFormat")
-    private val ISO_8601_FORMAT: DateFormat =
-        SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
 
     fun getPhotoBitMapFromFile(
         context: Context,
@@ -55,16 +50,21 @@ object PhotoUtil {
         val options = BitmapFactory.Options()
         options.inSampleSize = photoQuality.value
         var fileDescriptor: AssetFileDescriptor? = null
-        // TODO improve this try-catch-finally
+
         try {
             fileDescriptor =
-                selectedImage?.let { context.contentResolver.openAssetFileDescriptor(it, "r") }
-            if (fileDescriptor != null)
+                selectedImage?.let {
+                    return@let context.contentResolver.openAssetFileDescriptor(
+                        it, "r"
+                    )
+                }
+            fileDescriptor?.let {
                 bm = BitmapFactory.decodeFileDescriptor(
                     fileDescriptor.fileDescriptor,
                     null,
                     options
                 )
+            }
         } catch (e: FileNotFoundException) {
             e.printStackTrace()
         } finally {
@@ -93,22 +93,37 @@ object PhotoUtil {
     }
 
     /**
-     * Erase RRM-related photograohs older than 30 days
+     * Erase RRM-related photographs older than 90 days in production
+     * and 30 days in the dev environment.
+     * Note, this simply clears up space on the device - image data on
+     * the server side is unaffected.
+     * Called after each successful login
      * @return Job
      */
     fun cleanupDevice() = Coroutines.io {
+
+        val daysToKeepThreshold = if (BuildConfig.DEBUG) {
+            THIRTY_DAYS
+        } else {
+            NINETY_DAYS
+        }
 
         val presentTime: Long = (Date().time)
         File(
             Environment.getExternalStorageDirectory().toString() +
                 File.separator + FOLDER
-        ).walkTopDown().forEach { file ->
+        ).walkTopDown().filter { file -> file.isFile }.sortedByDescending { file -> file.lastModified() }.forEach { file ->
             val diff = presentTime - file.lastModified()
-            if (diff >= THIRTY_DAYS && file.isFile) {
+            if (diff > daysToKeepThreshold && file.isFile) {
                 Timber.d("${file.name} was deleted, it was $diff old.")
                 file.delete()
             } else {
-                Timber.d("${file.name} was spared")
+                /**
+                 * Call off the search - sorting means the first file
+                 * younger than our criteria and it's sorted siblings are
+                 * safe to keep.
+                 */
+                return@io
             }
         }
     }
@@ -251,7 +266,6 @@ object PhotoUtil {
 
     /**
      * saveImageToInternalStorage
-     * Todo Make Image Quality Better
      * @param imageUri
      */
 //    public static Map<String, String> saveImageToInternalStorage(Context context, Bitmap bitmap) {
@@ -276,7 +290,7 @@ object PhotoUtil {
                             if (index == -1) // google drive
                                 index = cursor.getColumnIndex("_display_name")
                             result = cursor.getString(index)
-                            scaledUri = if (!result.isBlank()) Uri.parse(result) else return null
+                            scaledUri = if (result.isNotBlank()) Uri.parse(result) else return null
                         }
                     } catch (e: Exception) {
                         Timber.e(e, "Ërror loading photo $scaledUri")
@@ -343,7 +357,7 @@ object PhotoUtil {
             val out: FileOutputStream?
             try {
                 out = FileOutputStream(path)
-                //          write the compressed bitmap at the destination specified by filename.
+                // write the compressed bitmap at the destination specified by filename.
                 scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
             } catch (e: FileNotFoundException) {
                 e.printStackTrace()
@@ -373,20 +387,10 @@ object PhotoUtil {
             )
             Timber.d("Exif: initial $orientation")
             val matrix = Matrix()
-            when (orientation) {
-                6 -> {
-                    matrix.postRotate(90f)
-                    Timber.d("Exif: $orientation")
-                }
-                3 -> {
-                    matrix.postRotate(180f)
-                    Timber.d("Exif: $orientation")
-                }
-                8 -> {
-                    matrix.postRotate(270f)
-                    Timber.d("Exif: $orientation")
-                }
-            }
+            val degrees = exifToDegrees(orientation).toFloat()
+            matrix.postRotate(degrees)
+            Timber.d("Exif: $orientation")
+
             scaledBitmap1 = Bitmap.createBitmap(
                 scaledBitmap1,
                 0,
@@ -585,6 +589,8 @@ object PhotoUtil {
                 }
                 Pair(uri!!, bmp!!)
             } catch (t: Throwable) {
+                val message = "Failed to create gallery image: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
+                Timber.e(t, message)
                 null
             }
         }

@@ -10,11 +10,12 @@ object Constants {
     const val TWO_SECONDS = 2_000L
     const val FIVE_SECONDS = 5_000L
     const val THIRTY_DAYS = 2_592_000_000L
+    const val NINETY_DAYS = 7_776_000_000L
 
     // Ports
     const val DNS_PORT = 52
     const val SSL_PORT = 443
 
-    // crypio
-    const val SALT_ROUNDS = 14
+    // Crypto
+    const val SALT_ROUNDS = 12
 }

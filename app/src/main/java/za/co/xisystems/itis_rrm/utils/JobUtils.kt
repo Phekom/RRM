@@ -21,22 +21,22 @@ object JobUtils {
     fun formatTotalCost(job: JobDTO?): String {
         var quantity = 0.0
         var cost = 0.0
-        if (job?.JobItemEstimates != null)
-            for (estimate in job.JobItemEstimates!!) {
-                quantity += estimate.qty
-                cost += estimate.lineRate
-            }
+        job?.JobItemEstimates?.forEach { estimate ->
+            quantity += estimate.qty
+            cost += estimate.lineRate
+        }
         return formatTotalCost(cost)
     }
 
     fun areQuantitiesValid(job: JobDTO?): Boolean {
-        if (job?.JobItemEstimates == null || job.JobItemEstimates!!.isEmpty())
-            return false
-        else {
-            for (estimate in job.JobItemEstimates!!) {
-                if (estimate.qty < 0.01) return false
+        when {
+            job?.JobItemEstimates.isNullOrEmpty() -> return false
+            else -> {
+                job?.JobItemEstimates?.forEach { estimate ->
+                    if (estimate.qty < 0.01) return false
+                }
+                return true
             }
-            return true
         }
     }
 
