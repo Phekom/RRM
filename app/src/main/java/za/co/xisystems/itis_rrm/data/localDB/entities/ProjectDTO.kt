@@ -6,9 +6,9 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
+import java.io.Serializable
 import org.jetbrains.annotations.NotNull
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
-import java.io.Serializable
 
 /**
  * Created by Francis Mahlava on 2019/11/22.
@@ -56,7 +56,7 @@ data class ProjectDTO(
     val projectSections: ArrayList<ProjectSectionDTO>?,
 
     @SerializedName("VoItems")
-    val voItems:ArrayList<VoItemDTO>?,
+    val voItems: ArrayList<VoItemDTO>?,
 
     @SerializedName("ContractId")
     @ColumnInfo(name = "contractId", index = true)

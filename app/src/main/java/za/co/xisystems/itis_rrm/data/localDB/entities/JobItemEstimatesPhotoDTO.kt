@@ -6,8 +6,8 @@ import android.os.Parcelable.Creator
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
-import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import java.io.Serializable
+import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 
 const val JOB_ITEM_ESTIMATE_PHOTO = "JOB_ITEM_ESTIMATE_PHOTO"
 
@@ -44,8 +44,6 @@ data class JobItemEstimatesPhotoDTO(
 
     @SerializedName("PhotoPath")
     var photoPath: String,
-//    @SerializedName("PrjJobItemEstimateDto")
-//    var jobItemEstimate: JobItemEstimateDTO?,
     @SerializedName("RecordSynchStateId")
     val recordSynchStateId: Int,
     @SerializedName("RecordVersion")
@@ -54,8 +52,6 @@ data class JobItemEstimatesPhotoDTO(
     var is_PhotoStart: Boolean,
     @SerializedName("Photo")
     val image: ByteArray?
-
-//    val jobItemEstimate: ArrayList<JobItemEstimateDTO>,
 ) : Serializable, Parcelable {
 
     constructor(parcel: Parcel) : this(

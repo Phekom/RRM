@@ -138,5 +138,4 @@ class JobDTOTemp(
         val x = getJobEstimateIndexByItemId(itemId)
         return if (x < 0) null else JobItemEstimates?.get(x)
     }
-
 }

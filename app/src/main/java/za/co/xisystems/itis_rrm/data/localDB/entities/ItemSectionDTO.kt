@@ -30,4 +30,4 @@ data class ItemSectionDTO(
 
     @SerializedName("StartKm")
     val startKm: Double
-): Serializable
+) : Serializable

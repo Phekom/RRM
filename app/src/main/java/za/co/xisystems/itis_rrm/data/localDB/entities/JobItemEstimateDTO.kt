@@ -4,10 +4,10 @@ import androidx.core.util.Pair
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
-import za.co.xisystems.itis_rrm.utils.JobUtils
-import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import java.io.Serializable
 import java.util.ArrayList
+import za.co.xisystems.itis_rrm.utils.JobUtils
+import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 
 /**
  * Created by Francis Mahlava on 2019/11/21.

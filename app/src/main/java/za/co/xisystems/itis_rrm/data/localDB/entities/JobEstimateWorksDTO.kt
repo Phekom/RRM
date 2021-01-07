@@ -31,5 +31,3 @@ class JobEstimateWorksDTO(
     @PrimaryKey
     var worksId: String
 ) : Serializable
-
-

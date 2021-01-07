@@ -11,7 +11,6 @@ import java.io.Serializable
 
 const val SECTION_POINT_TABLE = "SECTION_POINT_TABLE"
 
-
 @Entity(tableName = SECTION_POINT_TABLE)
 data class SectionPointDTO(
     @PrimaryKey(autoGenerate = true)
@@ -30,4 +29,4 @@ data class SectionPointDTO(
     @SerializedName("jobId")
     val jobId: String?
 
-): Serializable
+) : Serializable

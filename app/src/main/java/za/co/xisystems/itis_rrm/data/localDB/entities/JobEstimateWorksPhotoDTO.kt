@@ -3,8 +3,8 @@ package za.co.xisystems.itis_rrm.data.localDB.entities
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
-import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import java.io.Serializable
+import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 
 /**
  * Created by Francis Mahlava on 2019/11/26.
@@ -32,8 +32,6 @@ data class JobEstimateWorksPhotoDTO(
     val photoLongitude: Double,
     @SerializedName("PhotoPath")
     val photoPath: String,
-//    @SerializedName("PrjEstimateWorksDto")
-//    val estimateWorks: ArrayList<JobEstimateWorksDTO>?,
     @SerializedName("RecordSynchStateId")
     val recordSynchStateId: Int,
     @SerializedName("RecordVersion")

@@ -21,4 +21,3 @@ data class UserRoleDTO(
     val roleDescription: String // RRM Job Mobile - Engineer
 
 ) : Serializable
-

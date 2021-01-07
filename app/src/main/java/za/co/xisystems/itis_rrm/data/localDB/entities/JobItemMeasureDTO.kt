@@ -3,10 +3,10 @@ package za.co.xisystems.itis_rrm.data.localDB.entities
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
-import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import java.io.Serializable
 import java.util.ArrayList
 import java.util.Date
+import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 
 const val JOB_ITEM_MEASURE = "JOB_ITEM_MEASURE"
 

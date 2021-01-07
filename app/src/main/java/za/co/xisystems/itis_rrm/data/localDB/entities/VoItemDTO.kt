@@ -47,4 +47,3 @@ data class VoItemDTO(
     val projectId: String
 
 ) : Serializable
-

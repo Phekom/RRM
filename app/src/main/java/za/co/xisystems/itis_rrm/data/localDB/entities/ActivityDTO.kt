@@ -27,4 +27,4 @@ data class ActivityDTO(
     @SerializedName("Descr")
     val descr: String?
 
-): Serializable
+) : Serializable

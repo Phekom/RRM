@@ -28,8 +28,6 @@ class JobSectionDTO(
     val startKm: Double,
     @SerializedName("EndKm")
     val endKm: Double,
-//    @SerializedName("PrjJobDto")
-//    val job: JobDTO? = null,
     @SerializedName("RecordSynchStateId")
     val recordSynchStateId: Int,
     @SerializedName("RecordVersion")

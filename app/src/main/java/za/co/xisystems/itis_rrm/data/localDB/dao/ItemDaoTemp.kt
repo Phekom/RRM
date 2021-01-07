@@ -36,4 +36,3 @@ interface ItemDaoTemp {
     @Query("DELETE FROM PROJECT_ITEM_TABLE_TEMP WHERE itemId = :itemId")
     fun deleteItemFromList(itemId: String): Int
 }
-
