@@ -13,7 +13,7 @@ const val JOB_ITEM_MEASURE_PHOTO = "JOB_ITEM_MEASURE_PHOTO"
 @Entity(tableName = JOB_ITEM_MEASURE_PHOTO)
 data class JobItemMeasurePhotoDTO(
     @PrimaryKey(autoGenerate = true)
-    val ID: Int,
+    val id: Int,
     @SerializedName("Descr")
     val descr: String?,
     @SerializedName("Filename")
@@ -41,22 +41,22 @@ data class JobItemMeasurePhotoDTO(
 
 ) : Serializable, Parcelable {
     constructor(parcel: Parcel) : this(
-        ID = parcel.readInt(),
-        descr = parcel.readString(),
-        filename = parcel.readString(),
-        estimateId = parcel.readString(),
-        itemMeasureId = parcel.readString(),
-        photoDate = parcel.readString(),
-        photoId = parcel.readString()!!,
-        photoLatitude = parcel.readDouble(),
-        photoLongitude = parcel.readDouble(),
-        photoPath = parcel.readString(),
-        recordSynchStateId = parcel.readInt(),
-        recordVersion = parcel.readInt()
+        parcel.readInt(),
+        parcel.readString(),
+        parcel.readString(),
+        parcel.readString(),
+        parcel.readString(),
+        parcel.readString(),
+        parcel.readString()!!,
+        parcel.readDouble(),
+        parcel.readDouble(),
+        parcel.readString(),
+        parcel.readInt(),
+        parcel.readInt()
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeInt(ID)
+        parcel.writeInt(id)
         parcel.writeString(descr)
         parcel.writeString(filename)
         parcel.writeString(estimateId)

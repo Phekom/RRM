@@ -31,11 +31,6 @@ data class UserDTO(
     var imei: String?,
     @SerializedName("DEVICE")
     var device: String?,
-    @SerializedName("Password")
-    var password: String?,
-    @SerializedName("WEB_SERVICE_URI")
-    var webServiceUri: String?,
-    var salt: String?,
     var pin: ByteArray?
 
 ) : Serializable {

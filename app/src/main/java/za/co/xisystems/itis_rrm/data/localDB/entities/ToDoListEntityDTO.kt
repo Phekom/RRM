@@ -1,10 +1,13 @@
 package za.co.xisystems.itis_rrm.data.localDB.entities
 
+import android.os.Parcel
+import android.os.Parcelable
+import android.os.Parcelable.Creator
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
-import java.io.Serializable
 import org.springframework.util.Base64Utils
+import java.io.Serializable
 
 const val TODO_ENTITY_TABLE = "TODO_ENTITY_TABLE"
 
@@ -39,7 +42,7 @@ data class ToDoListEntityDTO(
 
     var jobId: String?
 
-) : Serializable {
+) : Serializable, Parcelable {
     var trackRouteId: ByteArray?
         get() = if (trackRouteIdString == null) trackRouteIdBytes else Base64Utils.decodeFromString(
             trackRouteIdString
@@ -48,6 +51,23 @@ data class ToDoListEntityDTO(
             this.trackRouteIdBytes = trackRouteId
             this.trackRouteIdString = Base64Utils.encode(trackRouteId).toString()
         }
+
+    constructor(parcel: Parcel) : this(
+        parcel.readInt(),
+        parcel.readString(),
+        parcel.createByteArray(),
+        parcel.readByte() != 0.toByte(),
+        parcel.readInt(),
+        parcel.readInt(),
+        parcel.readString(),
+        parcel.readString(),
+        TODO("entities"),
+        parcel.readString(),
+        parcel.readString(),
+        TODO("primaryKeyValues"),
+        parcel.readValue(Int::class.java.classLoader) as? Int,
+        parcel.readString()
+    )
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -72,5 +92,34 @@ data class ToDoListEntityDTO(
         result = 31 * result + (description?.hashCode() ?: 0)
         result = 31 * result + entities.hashCode()
         return result
+    }
+
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeInt(id)
+        parcel.writeString(trackRouteIdString)
+        parcel.writeByteArray(trackRouteIdBytes)
+        parcel.writeByte(if (actionable) 1 else 0)
+        parcel.writeInt(activityId)
+        parcel.writeInt(currentRouteId)
+        parcel.writeString(data)
+        parcel.writeString(description)
+        parcel.writeString(entityName)
+        parcel.writeString(location)
+        parcel.writeValue(recordVersion)
+        parcel.writeString(jobId)
+    }
+
+    override fun describeContents(): Int {
+        return 0
+    }
+
+    companion object CREATOR : Creator<ToDoListEntityDTO> {
+        override fun createFromParcel(parcel: Parcel): ToDoListEntityDTO {
+            return ToDoListEntityDTO(parcel)
+        }
+
+        override fun newArray(size: Int): Array<ToDoListEntityDTO?> {
+            return arrayOfNulls(size)
+        }
     }
 }

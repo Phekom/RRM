@@ -24,9 +24,6 @@ interface UserDao {
     @Query("UPDATE USER_TABLE SET pin =:binHash,  phoneNumber = :phoneNumber, imei=:imei, device=:device ")
     fun updateUser(binHash: ByteArray?, phoneNumber: String?, imei: String?, device: String?)
 
-    @Query("UPDATE USER_TABLE SET PIN =:confirmNewPin WHERE PIN = :enterOldPin")
-    fun upDateUserPin(confirmNewPin: String, enterOldPin: String)
-
     @Query("SELECT * FROM USER_TABLE WHERE userId = userId")
     fun getUser(): LiveData<UserDTO>
 

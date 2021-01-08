@@ -1,14 +1,17 @@
 package za.co.xisystems.itis_rrm.data.localDB.entities
 
+import android.os.Parcel
+import android.os.Parcelable
+import android.os.Parcelable.Creator
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
-import java.io.Serializable
 import org.jetbrains.annotations.NotNull
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
+import java.io.Serializable
 
 /**
  * Created by Francis Mahlava on 2019/11/22.
@@ -62,4 +65,43 @@ data class ProjectDTO(
     @ColumnInfo(name = "contractId", index = true)
     val contractId: String
 
-) : Serializable
+) : Serializable, Parcelable {
+    constructor(parcel: Parcel) : this(
+        parcel.readInt(),
+        parcel.readString()!!,
+        parcel.readString(),
+        parcel.readString(),
+        TODO("items"),
+        parcel.readString(),
+        parcel.readString(),
+        parcel.readString(),
+        TODO("projectSections"),
+        TODO("voItems"),
+        parcel.readString()!!
+    )
+
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeInt(id)
+        parcel.writeString(projectId)
+        parcel.writeString(descr)
+        parcel.writeString(endDate)
+        parcel.writeString(projectCode)
+        parcel.writeString(projectMinus)
+        parcel.writeString(projectPlus)
+        parcel.writeString(contractId)
+    }
+
+    override fun describeContents(): Int {
+        return 0
+    }
+
+    companion object CREATOR : Creator<ProjectDTO> {
+        override fun createFromParcel(parcel: Parcel): ProjectDTO {
+            return ProjectDTO(parcel)
+        }
+
+        override fun newArray(size: Int): Array<ProjectDTO?> {
+            return arrayOfNulls(size)
+        }
+    }
+}

@@ -23,27 +23,15 @@ interface JobItemEstimatePhotoDao {
     @Query("SELECT * FROM JOB_ITEM_ESTIMATE_PHOTO WHERE estimateId = :estimateId")
     fun getJobEstimationItemsPhoto(estimateId: String): LiveData<List<JobItemEstimatesPhotoDTO>>
 
-    @Query("SELECT photoPath FROM JOB_ITEM_ESTIMATE_PHOTO WHERE estimateId = :estimateId AND is_PhotoStart LIKE 0 ")
+    @Query("SELECT photoPath FROM JOB_ITEM_ESTIMATE_PHOTO WHERE estimateId = :estimateId AND isPhotostart LIKE 0 ")
     fun getJobEstimationItemsPhotoEndPath(estimateId: String): String
 
-    @Query("SELECT photoPath FROM JOB_ITEM_ESTIMATE_PHOTO WHERE estimateId = :estimateId AND is_PhotoStart LIKE 1 ")
+    @Query("SELECT photoPath FROM JOB_ITEM_ESTIMATE_PHOTO WHERE estimateId = :estimateId AND isPhotostart LIKE 1 ")
     fun getJobEstimationItemsPhotoStartPath(estimateId: String): String
 
     @Query("SELECT * FROM JOB_ITEM_ESTIMATE_PHOTO WHERE estimateId = :estimateId")
     fun getJobItemEstimatePhotoForEstimateId(estimateId: String): LiveData<List<JobItemEstimatesPhotoDTO>>
 
-    //    @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE itemId = :itemId")
-//    fun getItemForItemId(itemId: String): LiveData<ItemDTO>
-//
-//
-//    @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE projectId = :projectId")
-//    fun getAllItemsForProjectId(projectId: String): LiveData<List<ItemDTO>>
-//
-//
-//    @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE sectionItemId = :sectionItem AND projectId = :projectId")
-//    fun getAllItemsForSectionItem(sectionItem : String, projectId : String ): LiveData<List<ItemDTO>>
-//
-//
     @Query("DELETE FROM JOB_ITEM_ESTIMATE_PHOTO")
     fun deleteAll()
 }

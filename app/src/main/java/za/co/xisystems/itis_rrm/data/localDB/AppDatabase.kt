@@ -88,7 +88,7 @@ import za.co.xisystems.itis_rrm.utils.Converters
         JobEstimateWorksDTO::class, JobEstimateWorksPhotoDTO::class, SectionItemDTO::class,
         WorkFlowsDTO::class, WF_WorkStepDTO::class
     ],
-    version = 6
+    version = 8
 )
 @TypeConverters(Converters::class)
 @GenerateRoomMigrations
@@ -145,6 +145,6 @@ abstract class AppDatabase : RoomDatabase() {
                 AppDatabase::class.java,
                 "myRRM_Database.db"
             ).addMigrations(*AppDatabase_Migrations.build())
-                .fallbackToDestructiveMigrationFrom(10).build()
+                .fallbackToDestructiveMigrationFrom(20).build()
     }
 }

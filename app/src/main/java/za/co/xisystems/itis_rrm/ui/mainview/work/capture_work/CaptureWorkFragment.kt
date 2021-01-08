@@ -29,8 +29,6 @@ import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
-import java.util.Date
-import java.util.HashMap
 import kotlinx.android.synthetic.main.fragment_capture_work.*
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -88,6 +86,8 @@ import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.INFO
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.NO_INTERNET
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.WARNING
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
+import java.util.Date
+import java.util.HashMap
 
 class CaptureWorkFragment : LocationFragment(), KodeinAware {
 
@@ -112,7 +112,6 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
 
     private var filenamePath = HashMap<String, String>()
     private lateinit var useR: UserDTO
-    private lateinit var workSubmission: Job
     private lateinit var jobSubmission: Job
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -250,7 +249,7 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
         if (ServiceUtil.isNetworkAvailable(requireActivity().applicationContext)) { //  Lets Send to Service
 
             itemEstiWorks.jobEstimateWorksPhotos = estimatePhotos
-            itemEstiWorks.jobItemEstimate = estimateItem
+            itemEstiWorks.estimateId = estimateItem?.estimateId
 
             sendWorkToService(itemEstiWorks)
         } else {
@@ -581,7 +580,7 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
         val photoId = SqlLitUtils.generateUuid()
 
         return JobEstimateWorksPhotoDTO(
-            Id = 0,
+            id = 0,
             descr = "",
             filename = filenamePath["filename"]!!,
             photoActivityId = itemEstiWorks.actId,

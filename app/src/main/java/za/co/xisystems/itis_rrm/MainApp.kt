@@ -9,6 +9,7 @@ import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.util.Log
 import androidx.annotation.NonNull
+import com.jakewharton.threetenabp.AndroidThreeTen
 import org.kodein.di.Kodein
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.androidXModule
@@ -106,6 +107,9 @@ open class MainApp : Application(), KodeinAware {
 
     override fun onCreate() {
         super.onCreate()
+
+        // Time-zone support for better times with Room
+        AndroidThreeTen.init(this)
 
         registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {
             override fun onActivityCreated(p0: Activity, p1: Bundle?) {

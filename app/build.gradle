@@ -58,7 +58,7 @@ android {
     // def localPropsFile = InputFile("$rootDir/local.properties")
 
     // Build Features
-    buildFeatures{
+    buildFeatures {
         viewBinding = true
         dataBinding = true
         buildConfig = true
@@ -118,7 +118,7 @@ android {
         buildConfigField("boolean", "STUB", "false")
         buildConfigField("String", "VERSION_BUILD", "\"$versionBuild\"")
         buildConfigField("String", "VERSION_BUILD_DATE", '"' + versionBuildDate + '"')
-        buildConfigField("String", "DNS_CHECK_IP4","\"dns.google.com\"")
+        buildConfigField("String", "DNS_CHECK_IP4", "\"dns.google.com\"")
         testHandleProfiling true
         testFunctionalTest true
 
@@ -137,11 +137,11 @@ android {
         release {
             // Enables code shrinking, obfuscation, and optimization for only
             // your project's release build type.
-            // minifyEnabled true
+            minifyEnabled true
 
-           // Enables resource shrinking, which is performed by the
+            // Enables resource shrinking, which is performed by the
             // Android Gradle plugin.
-            // shrinkResources true
+            shrinkResources true
 
             // Includes the default ProGuard rules files that are packaged with
             // the Android Gradle plugin. To learn more, go to the section about
@@ -369,7 +369,6 @@ dependencies {
     androidTestImplementation "androidx.navigation:navigation-testing:$nav_version"
 
 
-
     // secure exif from androidx
     implementation 'androidx.exifinterface:exifinterface:1.3.2'
 
@@ -454,7 +453,8 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.0"
 
     // Better Date-time
-    // implementation 'com.jakewharton.threetenabp:threetenabp:1.3.0'
+    implementation 'com.jakewharton.threetenabp:threetenabp:1.3.0'
+    // implementation 'org.threeten:threetenbp:1.5.0'
 
     //Kodein Dependency Injection
     implementation 'org.kodein.di:kodein-di-framework-android-core:6.5.5'

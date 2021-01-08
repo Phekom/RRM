@@ -1,12 +1,15 @@
 package za.co.xisystems.itis_rrm.data.localDB.entities
 
+import android.os.Parcel
+import android.os.Parcelable
+import android.os.Parcelable.Creator
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
+import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import java.io.Serializable
 import java.util.ArrayList
 import java.util.Date
-import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 
 const val JOB_ITEM_MEASURE = "JOB_ITEM_MEASURE"
 
@@ -43,11 +46,6 @@ data class JobItemMeasureDTO(
     var measureGroupId: String?,
     @SerializedName("PrjItemMeasurePhotoDtos")
     var jobItemMeasurePhotos: ArrayList<JobItemMeasurePhotoDTO>,
-//    @SerializedName("PrjJobDto")
-//    var job: JobDTO? = null,
- //   @SerializedName("PrjJobItemEstimateDto")
-//    val prjJobItemEstimateDto: ArrayList<JobItemEstimateDTO>,
-   // var jobItemEstimate: JobItemEstimateDTO? = null,
     @SerializedName("ProjectItemId")
     var projectItemId: String?,
     @SerializedName("ProjectVoId")
@@ -70,4 +68,77 @@ data class JobItemMeasureDTO(
     val job: JobDTO?,
     val jobItemEstimate: JobItemEstimateDTO?
 
-) : Serializable
+) : Serializable, Parcelable {
+    constructor(parcel: Parcel) : this(
+        parcel.readInt(),
+        parcel.readInt(),
+        parcel.readString(),
+        parcel.readInt(),
+        parcel.readDouble(),
+        parcel.readString(),
+        parcel.readString()!!,
+        parcel.readString(),
+        parcel.readInt(),
+        parcel.readString(),
+        parcel.readDouble(),
+        parcel.readDouble(),
+        parcel.readString(),
+        parcel.readString(),
+        TODO("jobItemMeasurePhotos"),
+        parcel.readString(),
+        parcel.readString(),
+        parcel.readDouble(),
+        parcel.readInt(),
+        parcel.readInt(),
+        parcel.readDouble(),
+        parcel.readString(),
+        parcel.readInt(),
+        parcel.readString(),
+        parcel.readString(),
+        parcel.readParcelable(JobDTO::class.java.classLoader),
+        parcel.readParcelable(JobItemEstimateDTO::class.java.classLoader)
+    )
+
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeInt(id)
+        parcel.writeInt(actId)
+        parcel.writeString(approvalDate)
+        parcel.writeInt(cpa)
+        parcel.writeDouble(endKm)
+        parcel.writeString(estimateId)
+        parcel.writeString(itemMeasureId)
+        parcel.writeString(jimNo)
+        parcel.writeInt(jobDirectionId)
+        parcel.writeString(jobId)
+        parcel.writeDouble(lineAmount)
+        parcel.writeDouble(lineRate)
+        parcel.writeString(measureDate)
+        parcel.writeString(measureGroupId)
+        parcel.writeString(projectItemId)
+        parcel.writeString(projectVoId)
+        parcel.writeDouble(qty)
+        parcel.writeInt(recordSynchStateId)
+        parcel.writeInt(recordVersion)
+        parcel.writeDouble(startKm)
+        parcel.writeString(trackRouteId)
+        parcel.writeInt(deleted)
+        parcel.writeString(entityDescription)
+        parcel.writeString(selectedItemUom)
+        parcel.writeParcelable(job, flags)
+        parcel.writeParcelable(jobItemEstimate, flags)
+    }
+
+    override fun describeContents(): Int {
+        return 0
+    }
+
+    companion object CREATOR : Creator<JobItemMeasureDTO> {
+        override fun createFromParcel(parcel: Parcel): JobItemMeasureDTO {
+            return JobItemMeasureDTO(parcel)
+        }
+
+        override fun newArray(size: Int): Array<JobItemMeasureDTO?> {
+            return arrayOfNulls(size)
+        }
+    }
+}

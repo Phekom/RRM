@@ -226,7 +226,7 @@ class CaptureItemMeasurePhotoFragment :
             Timber.d("accuracy: ${measurementLocation.accuracy}")
 
             return JobItemMeasurePhotoDTO(
-                ID = 0,
+                id = 0,
                 descr = null,
                 filename = filenamePath["filename"],
                 estimateId = selectedJobItemMeasure.estimateId,

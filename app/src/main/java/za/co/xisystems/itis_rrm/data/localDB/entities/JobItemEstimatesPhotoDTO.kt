@@ -6,8 +6,8 @@ import android.os.Parcelable.Creator
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
-import java.io.Serializable
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
+import java.io.Serializable
 
 const val JOB_ITEM_ESTIMATE_PHOTO = "JOB_ITEM_ESTIMATE_PHOTO"
 
@@ -49,7 +49,7 @@ data class JobItemEstimatesPhotoDTO(
     @SerializedName("RecordVersion")
     val recordVersion: Int,
     @SerializedName("IsPhotoStart")
-    var is_PhotoStart: Boolean,
+    var isPhotostart: Boolean,
     @SerializedName("Photo")
     val image: ByteArray?
 ) : Serializable, Parcelable {
@@ -71,42 +71,30 @@ data class JobItemEstimatesPhotoDTO(
         photoPath = parcel.readString().toString(),
         recordSynchStateId = parcel.readInt(),
         recordVersion = parcel.readInt(),
-        is_PhotoStart = parcel.readByte() != 0.toByte(),
+        isPhotostart = parcel.readByte() != 0.toByte(),
         image = parcel.createByteArray()
     )
 
     fun isPhotoStart(): Boolean {
-        return is_PhotoStart
-    }
-
-    fun setPhotoLatitude(photoLatitude: Double) {
-        this.photoLatitude = photoLatitude
-    }
-
-    fun setPhotoLongitude(photoLongitude: Double) {
-        this.photoLongitude = photoLongitude
+        return isPhotostart
     }
 
     override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as JobItemEstimatesPhotoDTO
-
-        if (descr != other.descr) return false
-        if (estimateId != other.estimateId) return false
-        if (filename != other.filename) return false
-        if (photoDate != other.photoDate) return false
-        if (photoId != other.photoId) return false
-        if (photoStart != other.photoStart) return false
-        if (photoEnd != other.photoEnd) return false
-        if (photoPath != other.photoPath) return false
-        if (image != null) {
-            if (other.image == null) return false
-            if (!image.contentEquals(other.image)) return false
-        } else if (other.image != null) return false
-
-        return true
+        when {
+            this === other -> return true
+            javaClass != other?.javaClass -> return false
+            else -> {
+                other as JobItemEstimatesPhotoDTO
+                when {
+                    descr != other.descr -> return false
+                    estimateId != other.estimateId -> return false
+                    filename != other.filename -> return false
+                    photoDate != other.photoDate -> return false
+                    photoId != other.photoId -> return false
+                    else -> return true
+                }
+            }
+        }
     }
 
     override fun hashCode(): Int {
@@ -133,7 +121,7 @@ data class JobItemEstimatesPhotoDTO(
         parcel.writeString(photoPath)
         parcel.writeInt(recordSynchStateId)
         parcel.writeInt(recordVersion)
-        parcel.writeByte(if (is_PhotoStart) 1 else 0)
+        parcel.writeByte(if (isPhotostart) 1 else 0)
         parcel.writeByteArray(image)
     }
 
