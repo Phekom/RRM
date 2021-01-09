@@ -63,7 +63,7 @@ import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.ERROR
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.NO_INTERNET
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.WARNING
 
-class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), KodeinAware {
+class SubmitMeasureFragment : BaseFragment(), KodeinAware {
     override val kodein by kodein()
     private lateinit var measureViewModel: MeasureViewModel
     private val factory: MeasureViewModelFactory by instance()
@@ -411,7 +411,8 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
+        // no options menu
+        return false
     }
 
     override fun onResume() {
@@ -499,7 +500,7 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
                                     Coroutines.main {
                                         for (jobItemM in measureList) {
                                             Coroutines.main {
-                                                val itemMeasureId = jobItemM.itemMeasureId!!
+                                                val itemMeasureId = jobItemM.itemMeasureId
                                                 val qty = jobItemM.qty.toString()
                                                 val rate = jobItemM.lineRate.toString()
                                                 val jNo = jobItemM.jimNo.toString()
@@ -555,10 +556,10 @@ class SubmitMeasureFragment : BaseFragment(R.layout.fragment_submit_measure), Ko
     }
 
     private fun JobItemMeasurePhotoDTO.setEstimateId(toLittleEndian: String?) {
-        this.estimateId = toLittleEndian
+        this.estimateId = toLittleEndian!!
     }
 
     private fun JobItemMeasureDTO.setItemMeasureId(toLittleEndian: String?) {
-        this.itemMeasureId = toLittleEndian
+        this.itemMeasureId = toLittleEndian!!
     }
 }

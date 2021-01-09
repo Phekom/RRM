@@ -14,7 +14,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         tools:text="9999"
-        android:padding="@dimen/padding_standard"
+        android:padding="5dp"
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:textColor="@android:color/black"
         android:layout_marginStart="@dimen/dimen_10dp"
@@ -27,7 +27,7 @@
         android:textAllCaps="true"
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:textColor="?android:attr/textColorSecondary"
-        android:padding="@dimen/padding_standard"
+        android:padding="5dp"
         android:layout_marginStart="@dimen/dimen_10dp"
         android:layout_marginEnd="@dimen/dimen_10dp"
         tools:text="ALL ABOUT" />

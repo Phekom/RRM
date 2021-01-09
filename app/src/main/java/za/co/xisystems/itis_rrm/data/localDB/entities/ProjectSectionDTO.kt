@@ -1,5 +1,8 @@
 package za.co.xisystems.itis_rrm.data.localDB.entities
 
+import android.os.Parcel
+import android.os.Parcelable
+import android.os.Parcelable.Creator
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
@@ -46,4 +49,40 @@ data class ProjectSectionDTO(
     @SerializedName("ProjectId")
     @ColumnInfo(name = "projectId", index = true)
     val projectId: String?
-) : Serializable
+) : Serializable, Parcelable {
+    constructor(parcel: Parcel) : this(
+        parcel.readInt(),
+        parcel.readString()!!,
+        parcel.readString()!!,
+        parcel.readString()!!,
+        parcel.readDouble(),
+        parcel.readDouble(),
+        parcel.readString(),
+        parcel.readString()
+    )
+
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeInt(id)
+        parcel.writeString(sectionId)
+        parcel.writeString(route)
+        parcel.writeString(section)
+        parcel.writeDouble(startKm)
+        parcel.writeDouble(endKm)
+        parcel.writeString(direction)
+        parcel.writeString(projectId)
+    }
+
+    override fun describeContents(): Int {
+        return 0
+    }
+
+    companion object CREATOR : Creator<ProjectSectionDTO> {
+        override fun createFromParcel(parcel: Parcel): ProjectSectionDTO {
+            return ProjectSectionDTO(parcel)
+        }
+
+        override fun newArray(size: Int): Array<ProjectSectionDTO?> {
+            return arrayOfNulls(size)
+        }
+    }
+}

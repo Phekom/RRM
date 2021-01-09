@@ -2,6 +2,7 @@ package za.co.xisystems.itis_rrm.data.localDB.entities
 
 import android.os.Parcel
 import android.os.Parcelable
+import android.os.Parcelable.Creator
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
@@ -52,7 +53,7 @@ data class ContractDTO(
         return 0
     }
 
-    companion object CREATOR : Parcelable.Creator<ContractDTO> {
+    companion object CREATOR : Creator<ContractDTO> {
         override fun createFromParcel(parcel: Parcel): ContractDTO {
             return ContractDTO(parcel)
         }

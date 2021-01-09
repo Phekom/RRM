@@ -39,7 +39,7 @@ private const val PERMISSION_REQUEST = 10
 class RegisterActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnable {
 
     override val kodein by kodein()
-    private val factory: AuthViewModelFactory by instance<AuthViewModelFactory>()
+    private val factory: AuthViewModelFactory by instance()
     private lateinit var viewModel: AuthViewModel
     private lateinit var appContext: Context
     private var permissions = arrayOf(
@@ -74,15 +74,15 @@ class RegisterActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnabl
             loggedInUser.observe(this, { user ->
                 // Register the user
                 if (user != null) {
-
-                    if (user.PIN.isNullOrEmpty()) {
+                    if (user.pin == null) {
                         registerPinOrNot()
-                    } else
+                    } else {
                         Intent(this, MainActivity::class.java).also { home ->
                             home.flags =
                                 Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
                             startActivity(home)
                         }
+                    }
                 }
             })
             serverTextView.setOnClickListener {
@@ -171,9 +171,10 @@ class RegisterActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnabl
         googlePlayServicesCheck(this)
     }
 
-    fun googlePlayServicesCheck(activity: Activity) {
+    private fun googlePlayServicesCheck(activity: Activity) {
         val resultCode = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(activity.applicationContext)
-        if (resultCode != ConnectionResult.SUCCESS) { // This dialog will help the user update to the latest GooglePlayServices
+        if (resultCode != ConnectionResult.SUCCESS) {
+            // This dialog will help the user update to the latest GooglePlayServices
             val dialog =
                 GoogleApiAvailability.getInstance().getErrorDialog(activity, resultCode, 0)
             dialog?.show()
@@ -215,6 +216,6 @@ class RegisterActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnabl
     }
 
     override fun run() {
-        TODO("Not yet implemented")
+        // Yagni
     }
 }

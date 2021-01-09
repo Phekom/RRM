@@ -41,7 +41,7 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
  * Created by Francis Mahlava on 03,October,2019
  */
 
-class ApproveMeasureFragment : BaseFragment(R.layout.fragment_approvemeasure), KodeinAware {
+class ApproveMeasureFragment : BaseFragment(), KodeinAware {
 
     override val kodein by kodein()
     private lateinit var approveViewModel: ApproveMeasureViewModel
@@ -61,7 +61,8 @@ class ApproveMeasureFragment : BaseFragment(R.layout.fragment_approvemeasure), K
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
+        // no options menu
+        return false
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -79,7 +80,7 @@ class ApproveMeasureFragment : BaseFragment(R.layout.fragment_approvemeasure), K
 
     private fun initVeiledRecyclerView() {
         ui.approveMeasurementsList.run {
-            setVeilLayout(layout.single_job_listing, object : VeiledItemOnClickListener {
+            setVeilLayout(layout.item_velied_slug, object : VeiledItemOnClickListener {
                 /** will be invoked when the item on the [VeilRecyclerFrameView] clicked. */
                 override fun onItemClicked(pos: Int) {
                     Toast.makeText(this@ApproveMeasureFragment.requireContext(), "Loading ...", Toast.LENGTH_SHORT).show()
@@ -87,7 +88,7 @@ class ApproveMeasureFragment : BaseFragment(R.layout.fragment_approvemeasure), K
             })
             setAdapter(groupAdapter)
             setLayoutManager(LinearLayoutManager(this.context))
-            addVeiledItems(10)
+            addVeiledItems(15)
         }
     }
 

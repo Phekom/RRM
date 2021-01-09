@@ -65,7 +65,7 @@ import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.INFO
 
 //
 class CaptureItemMeasurePhotoFragment :
-    LocationFragment(R.layout.fragment_capture_item_measure_photo),
+    LocationFragment(),
     KodeinAware {
 
     override val kodein by kodein()
@@ -87,7 +87,8 @@ class CaptureItemMeasurePhotoFragment :
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
+        // no options menu
+        return false
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -171,7 +172,7 @@ class CaptureItemMeasurePhotoFragment :
         uiScope.launch(uiScope.coroutineContext) {
             estimate_image_collection_view.clearImages()
             val photoFetch =
-                measureViewModel.getMeasureItemPhotos(selectedJobItemMeasure.itemMeasureId!!)
+                measureViewModel.getMeasureItemPhotos(selectedJobItemMeasure.itemMeasureId)
             photoFetch.observe(viewLifecycleOwner, {
                 it?.let {
                     if (it.isEmpty()) {
@@ -225,7 +226,7 @@ class CaptureItemMeasurePhotoFragment :
             Timber.d("accuracy: ${measurementLocation.accuracy}")
 
             return JobItemMeasurePhotoDTO(
-                ID = 0,
+                id = 0,
                 descr = null,
                 filename = filenamePath["filename"],
                 estimateId = selectedJobItemMeasure.estimateId,
@@ -235,7 +236,6 @@ class CaptureItemMeasurePhotoFragment :
                 photoLatitude = measurementLocation.latitude,
                 photoLongitude = measurementLocation.longitude,
                 photoPath = filenamePath["path"],
-                jobItemMeasure = jobItemMeasure,
                 recordSynchStateId = 0,
                 recordVersion = 0
             )

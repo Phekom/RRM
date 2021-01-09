@@ -1,11 +1,14 @@
 package za.co.xisystems.itis_rrm.ui.mainview.create.add_project_item
 
+import android.app.AlertDialog.Builder
 import android.view.View
 import androidx.navigation.Navigation
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import com.xwray.groupie.kotlinandroidextensions.Item
 import kotlinx.android.synthetic.main.new_job_item.*
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.R.drawable
+import za.co.xisystems.itis_rrm.R.string
 import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
@@ -14,6 +17,9 @@ import za.co.xisystems.itis_rrm.ui.mainview.work.INSET
 import za.co.xisystems.itis_rrm.ui.mainview.work.INSET_TYPE_KEY
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.JobUtils
+import za.co.xisystems.itis_rrm.utils.enums.ToastDuration.LONG
+import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.BOTTOM
+import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.DELETE
 
 /**
  * Created by Francis Mahlava on 2019/12/29.
@@ -21,6 +27,7 @@ import za.co.xisystems.itis_rrm.utils.JobUtils
 
 // open class Project_Item(private val itemDesc: SectionProj_Item) : Item() {
 open class ProjectItem(
+    private val fragment: AddProjectFragment,
     private val itemDesc: ItemDTOTemp,
     private val createViewModel: CreateViewModel,
     private val contractID: String?,
@@ -59,7 +66,7 @@ open class ProjectItem(
 
         viewHolder.itemView.setOnLongClickListener {
             Coroutines.main {
-                createViewModel.deleteItemFromList(itemDesc.itemId)
+                buildDeleteDialog(it)
             }
             it.isLongClickable
         }
@@ -91,5 +98,46 @@ open class ProjectItem(
 
     private fun getJobItemEstimate(itemId: String): JobItemEstimateDTO? {
         return job?.getJobEstimateByItemId(itemId)
+    }
+
+    private fun buildDeleteDialog(view: View) {
+        val itemDeleteBuilder =
+            Builder(
+                view.context // , android.R.style
+                // .Theme_DeviceDefault_Dialog
+            )
+        itemDeleteBuilder.setTitle(string.confirm)
+        itemDeleteBuilder.setIcon(drawable.ic_warning)
+        itemDeleteBuilder.setMessage("Delete this project item?")
+        // Yes button
+        itemDeleteBuilder.setPositiveButton(
+            string.yes
+        ) { _, _ ->
+            fragment.sharpToast("Deleting ...", "${this.itemDesc.descr} removed.", DELETE, BOTTOM, LONG)
+            Coroutines.main {
+                // Get the JobEstimate
+                val jobItemEstimate = getJobItemEstimate(itemDesc.itemId)
+
+                // Delete the project item.
+                createViewModel.deleteItemFromList(itemDesc.itemId, estimateId = jobItemEstimate?.estimateId)
+
+                // Set updated job and recalculate costs if applicable
+                job?.let {
+                    it.removeJobEstimateByItemId(itemDesc.itemId)
+                    createViewModel.backupJob(it)
+                    createViewModel.setJobToEdit(itemDesc.jobId)
+                    fragment.uiUpdate()
+                }
+            }
+        }
+        // No button
+        itemDeleteBuilder.setNegativeButton(
+            string.no
+        ) { dialog, _ ->
+            // Do nothing but close dialog
+            dialog.dismiss()
+        }
+        val deleteAlert = itemDeleteBuilder.create()
+        deleteAlert.show()
     }
 }

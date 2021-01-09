@@ -61,7 +61,7 @@ import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.SUCCESS
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection.NEXT
 
-class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval), KodeinAware {
+class MeasureApprovalFragment : BaseFragment(), KodeinAware {
     override val kodein by kodein()
     private lateinit var approveViewModel: ApproveMeasureViewModel
     private val factory: ApproveMeasureViewModelFactory by instance()
@@ -130,7 +130,8 @@ class MeasureApprovalFragment : BaseFragment(R.layout.fragment_measure_approval)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
+        // no options menu
+        return false
     }
 
     override fun onCreateView(

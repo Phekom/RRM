@@ -17,7 +17,7 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
  * Created by Francis Mahlava on 03,October,2019
  */
 
-class CorrectionsFragment : BaseFragment(R.layout.fragment_correction), KodeinAware {
+class CorrectionsFragment : BaseFragment(), KodeinAware {
     //
     override val kodein by kodein()
     private lateinit var correctionsViewModel: CorrectionsViewModel
@@ -40,7 +40,8 @@ class CorrectionsFragment : BaseFragment(R.layout.fragment_correction), KodeinAw
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
+        // no options menu
+        return false
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {

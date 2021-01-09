@@ -1,5 +1,8 @@
 package za.co.xisystems.itis_rrm.data.localDB.entities
 
+import android.os.Parcel
+import android.os.Parcelable
+import android.os.Parcelable.Creator
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
@@ -12,7 +15,6 @@ import java.util.Date
  */
 
 const val JOB_TABLE_TEMP = "JOB_TABLE_TEMP"
-// val JOB_ID = UUID.randomUUID().toString()
 
 @Entity(tableName = JOB_TABLE_TEMP)
 class JobDTOTemp(
@@ -109,62 +111,100 @@ class JobDTOTemp(
     @SerializedName("WorkStartDate")
     val WorkStartDate: String?
 
-) : Serializable {
+) : Serializable, Parcelable {
 
-    fun addOrUpdateJobItemEstimate(newEstimate: JobItemEstimateDTO) {
-        val x = getJobEstimateIndexByItemId(newEstimate.projectItemId)
-        if (x < 0) JobItemEstimates?.add(newEstimate) else JobItemEstimates?.set(
-            x,
-            newEstimate
-        )
+    constructor(parcel: Parcel) : this(
+        parcel.readInt(),
+        parcel.readString()!!,
+        parcel.readString(),
+        parcel.readString(),
+        parcel.readString(),
+        parcel.readDouble(),
+        parcel.readDouble(),
+        parcel.readString(),
+        parcel.readString(),
+        parcel.readInt(),
+        parcel.readString(),
+        parcel.readString(),
+        parcel.readInt(),
+        parcel.readInt(),
+        parcel.readInt(),
+        parcel.readInt(),
+        TODO("IssueDate"),
+        TODO("StartDate"),
+        TODO("DueDate"),
+        TODO("ApprovalDate"),
+        TODO("JobItemEstimates"),
+        TODO("JobItemMeasures"),
+        TODO("JobSections"),
+        parcel.readString(),
+        parcel.readInt(),
+        parcel.readString(),
+        parcel.readString(),
+        parcel.readString(),
+        parcel.readInt(),
+        parcel.readInt(),
+        parcel.readInt(),
+        parcel.readInt(),
+        parcel.readInt(),
+        parcel.readInt(),
+        parcel.readInt(),
+        parcel.readString(),
+        parcel.readInt(),
+        parcel.readInt(),
+        parcel.readString(),
+        parcel.readString(),
+        parcel.readString()
+    )
+
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeInt(ActId)
+        parcel.writeString(JobId)
+        parcel.writeString(ContractVoId)
+        parcel.writeString(ProjectId)
+        parcel.writeString(SectionId)
+        parcel.writeDouble(StartKm)
+        parcel.writeDouble(EndKm)
+        parcel.writeString(Descr)
+        parcel.writeString(JiNo)
+        parcel.writeInt(UserId)
+        parcel.writeString(TrackRouteId)
+        parcel.writeString(Section)
+        parcel.writeInt(Cpa)
+        parcel.writeInt(DayWork)
+        parcel.writeInt(ContractorId)
+        parcel.writeInt(M9100)
+        parcel.writeString(PerfitemGroupId)
+        parcel.writeInt(RecordVersion)
+        parcel.writeString(Remarks)
+        parcel.writeString(Route)
+        parcel.writeString(RrmJiNo)
+        parcel.writeInt(EngineerId)
+        parcel.writeInt(EntireRoute)
+        parcel.writeInt(IsExtraWork)
+        parcel.writeInt(JobCategoryId)
+        parcel.writeInt(JobDirectionId)
+        parcel.writeInt(JobPositionId)
+        parcel.writeInt(JobStatusId)
+        parcel.writeString(ProjectVoId)
+        parcel.writeInt(QtyUpdateAllowed)
+        parcel.writeInt(RecordSynchStateId)
+        parcel.writeString(VoId)
+        parcel.writeString(WorkCompleteDate)
+        parcel.writeString(WorkStartDate)
     }
 
-    fun jobEstimateExist(itemId: String?): Boolean {
-        return getJobEstimateIndexByItemId(itemId) > -1
+    override fun describeContents(): Int {
+        return 0
     }
 
-    fun getJobEstimateIndexByItemId(itemId: String?): Int {
-        if (itemId != null) for (i in JobItemEstimates!!.indices) {
-            val currEstimate: JobItemEstimateDTO = JobItemEstimates?.get(i)!!
-            if (currEstimate.projectItemId != null) if (currEstimate.projectItemId.equals(
-                    itemId
-                )
-            ) {
-                return i
-            }
+    companion object CREATOR : Creator<JobDTOTemp> {
+        override fun createFromParcel(parcel: Parcel): JobDTOTemp {
+            return JobDTOTemp(parcel)
         }
-        return -1
+
+        override fun newArray(size: Int): Array<JobDTOTemp?> {
+            return arrayOfNulls(size)
+        }
     }
-
-//    fun removeJobEstimateByItemId(itemId: String?): JobItemEstimateDTO? {
-//        val x = getJobEstimateIndexByItemId(itemId)
-//        return if (x > -1) {
-//            JobItemEstimates?.removeAt(x)
-//        } else null
-//    }
-
-    fun getJobEstimateByItemId(itemId: String?): JobItemEstimateDTO? {
-        val x = getJobEstimateIndexByItemId(itemId)
-        return if (x < 0) null else JobItemEstimates?.get(x)
-    }
-
-//    fun getJobItemMeasures(): ArrayList<JobItemMeasureDTO?>? {
-//        return jobItemMeasures
-//    }
-
-//    fun setJobItemMeasures(jobItemMeasures: ArrayList<JobItemMeasureDTO?>) {
-//        jobItemMeasures = jobItemMeasures
-//    }
-
-//    fun getSortString(): String? {
-//        return sortString
-//    }
-//
-//    fun setSortString(sortString: String?) {
-//        this.sortString = sortString
-//    }
-
-//    fun clearJobItemEstimates() {
-//        JobItemEstimates?.clear()
-//    }
 }

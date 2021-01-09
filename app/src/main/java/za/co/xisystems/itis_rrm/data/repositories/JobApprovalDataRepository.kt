@@ -240,13 +240,13 @@ class JobApprovalDataRepository(
                     ) {
                         // Create Bare Bones
                         val estimateWorks = JobEstimateWorksDTO(
-                            worksId = jobEstimateWorks.worksId,
-                            estimateId = jobEstimateWorks.estimateId,
-                            recordVersion = jobEstimateWorks.recordVersion,
-                            recordSynchStateId = jobEstimateWorks.recordSynchStateId,
                             actId = jobEstimateWorks.actId,
+                            estimateId = jobEstimateWorks.estimateId,
+                            jobEstimateWorksPhotos = ArrayList(),
+                            recordSynchStateId = jobEstimateWorks.recordSynchStateId,
+                            recordVersion = jobEstimateWorks.recordVersion,
                             trackRouteId = jobEstimateWorks.trackRouteId,
-                            jobEstimateWorksPhotos = ArrayList()
+                            worksId = jobEstimateWorks.worksId
                         )
 
                         appDb.getEstimateWorkDao().insertJobEstimateWorks(

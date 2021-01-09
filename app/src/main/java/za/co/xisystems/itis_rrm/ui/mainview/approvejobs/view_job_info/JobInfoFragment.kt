@@ -15,6 +15,7 @@ import android.widget.Toast
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.skydoves.androidveil.VeilRecyclerFrameView
 import com.skydoves.androidveil.VeiledItemOnClickListener
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
@@ -23,7 +24,6 @@ import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.MainActivity
-import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.R.drawable
 import za.co.xisystems.itis_rrm.R.layout
 import za.co.xisystems.itis_rrm.R.string
@@ -60,7 +60,7 @@ import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection.FAIL
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection.NEXT
 
-class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
+class JobInfoFragment : BaseFragment(), KodeinAware {
     override val kodein by kodein()
     private lateinit var approveViewModel: ApproveJobsViewModel
     private val factory: ApproveJobsViewModelFactory by instance()
@@ -121,6 +121,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
             is XIProgress -> {
                 when (result.isLoading) {
                     true -> {
+                        activity?.hideKeyboard()
                         progressButton.startProgress()
                         toggleLongRunning(true)
                     }
@@ -145,7 +146,8 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
+        // no options menu
+        return false
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -329,7 +331,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
                             )
                             progressButton.failProgress("Invalid Job")
                         }
-                        workflowDirection == WorkflowDirection.FAIL &&
+                        workflowDirection == FAIL &&
                             ui.workflowCommentsEditText.text.trim().isBlank() -> {
                             sharpToast(
                                 message = "Please provide a comment / reason for declining this job",
@@ -377,13 +379,13 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
     }
 
     private fun popViewOnJobSubmit(direction: Int, jiNo: String?) {
-        if (direction == WorkflowDirection.NEXT.value) {
+        if (direction == NEXT.value) {
             progressButton.text = getString(string.approve_job)
             sharpToast(
                 message = getString(string.job_no_approved, jiNo!!),
                 style = SUCCESS
             )
-        } else if (direction == WorkflowDirection.FAIL.value) {
+        } else if (direction == FAIL.value) {
             progressButton.text = getString(string.decline_job)
             sharpToast(
                 message = getString(string.job_declined),
@@ -398,7 +400,7 @@ class JobInfoFragment : BaseFragment(R.layout.fragment_job_info), KodeinAware {
                     startActivity(home)
                 }
             },
-            Constants.TWO_SECONDS
+            Constants.ONE_SECOND
         )
     }
 

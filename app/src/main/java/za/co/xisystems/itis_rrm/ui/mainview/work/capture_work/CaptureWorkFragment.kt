@@ -29,8 +29,6 @@ import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
-import java.util.Date
-import java.util.HashMap
 import kotlinx.android.synthetic.main.fragment_capture_work.*
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -88,8 +86,10 @@ import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.INFO
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.NO_INTERNET
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.WARNING
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
+import java.util.Date
+import java.util.HashMap
 
-class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), KodeinAware {
+class CaptureWorkFragment : LocationFragment(), KodeinAware {
 
     override val kodein by kodein()
     private lateinit var workViewModel: WorkViewModel
@@ -112,13 +112,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
 
     private var filenamePath = HashMap<String, String>()
     private lateinit var useR: UserDTO
-    private lateinit var workSubmission: Job
     private lateinit var jobSubmission: Job
-
-    override fun onStop() {
-        super.onStop()
-        uiScope.destroy()
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -143,6 +137,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
 
     override fun onDestroyView() {
         super.onDestroyView()
+        uiScope.destroy()
         // Remember to flush the RecyclerView's adaptor
         workViewModel.workflowState.removeObservers(viewLifecycleOwner)
         work_actions_listView.adapter = null
@@ -254,7 +249,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
         if (ServiceUtil.isNetworkAvailable(requireActivity().applicationContext)) { //  Lets Send to Service
 
             itemEstiWorks.jobEstimateWorksPhotos = estimatePhotos
-            itemEstiWorks.jobItemEstimate = estimateItem
+            itemEstiWorks.estimateId = estimateItem?.estimateId
 
             sendWorkToService(itemEstiWorks)
         } else {
@@ -297,6 +292,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
         estimateWorksItem: JobEstimateWorksDTO
     ) {
         uiScope.launch(uiScope.coroutineContext) {
+            workViewModel.workflowState.removeObserver(jobObserver)
             workViewModel.workflowState.observe(viewLifecycleOwner, workObserver)
             workViewModel.backupWorkSubmission.value = estimateWorksItem
             val newItemEstimateWorks = setJobWorksLittleEndianGuids(estimateWorksItem)
@@ -524,7 +520,8 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
         if (currentLocation == null) {
             // Check network availability / connectivity
             sharpToast(
-                message = getString(R.string.please_enable_location_services), style = ERROR, position = CENTER, duration = LONG
+                message = getString(R.string.please_enable_location_services),
+                style = ERROR, position = CENTER, duration = LONG
             )
             // Launch Dialog
         } else {
@@ -583,7 +580,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
         val photoId = SqlLitUtils.generateUuid()
 
         return JobEstimateWorksPhotoDTO(
-            Id = 0,
+            id = 0,
             descr = "",
             filename = filenamePath["filename"]!!,
             photoActivityId = itemEstiWorks.actId,
@@ -592,7 +589,6 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
             photoLongitude = currentLocation.latitude,
             photoLatitude = currentLocation.longitude,
             photoPath = filenamePath["path"]!!,
-            estimateWorks = estimateWorksList,
             recordVersion = 0,
             recordSynchStateId = 0,
             worksId = itemEstiWorks.worksId
@@ -607,7 +603,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
 
             val workDone: Int = getEstimatesCompleted(estimateJob)
 
-            if (workDone == estimateJob.JobItemEstimates?.size) {
+            if (workDone == estimateJob.JobItemEstimates.size) {
                 collectCompletedEstimates(estimateJob)
             } else {
 
@@ -638,7 +634,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
         estWorkDone: Int,
         estimateJob: JobDTO
     ) {
-        if (estWorkDone == estimateJob.JobItemEstimates?.size) {
+        if (estWorkDone == estimateJob.JobItemEstimates.size) {
             Coroutines.main {
                 collectCompletedEstimates(estimateJob)
             }
@@ -701,7 +697,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
             dialogBuilder.setCancelable(false)
             dialogBuilder.setPositiveButton(
                 R.string.yes
-            ) { dialog, which ->
+            ) { _, _ ->
 
                 Coroutines.main {
                     pushCompletedEstimates(estimates)
@@ -731,6 +727,7 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
 
         workViewModel.backupCompletedEstimates.postValue(estimates as List<JobItemEstimateDTO>)
         jobSubmission = uiScope.launch(uiScope.coroutineContext) {
+            workViewModel.workflowState.removeObserver(workObserver)
             workViewModel.workflowState.observe(viewLifecycleOwner, jobObserver)
             workViewModel.workflowState.postValue(XIProgress(true))
             withContext(uiScope.coroutineContext) {
@@ -863,7 +860,8 @@ class CaptureWorkFragment : LocationFragment(R.layout.fragment_capture_work), Ko
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
+        // no options menu
+        return false
     }
 
     private fun getCurrentLocation(): LocationModel? {

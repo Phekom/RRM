@@ -69,22 +69,20 @@ class ExpandableHeaderMeasureItem(
                 }
             }
             headerLin.apply {
-                setOnClickListener { view ->
-                    measureJobItemEstimate(view)
+                setOnClickListener {
+                    measureJobItemEstimate()
                     onExpandListener?.invoke(expandableGroup)
                     navController?.invoke(NavController(fragment.requireActivity()))
                 }
             }
         }
 
-        viewHolder.itemView.setOnClickListener { _ ->
+        viewHolder.itemView.setOnClickListener {
             clickListener?.invoke(this)
         }
     }
 
-    private fun measureJobItemEstimate(
-        view: View
-    ) {
+    private fun measureJobItemEstimate() {
         Coroutines.main {
             val jobForJobItemEstimate = measureViewModel.getJobFromJobId(measureItem.jobId)
             jobForJobItemEstimate.observeOnce(fragment.requireActivity(), { job ->
@@ -92,8 +90,7 @@ class ExpandableHeaderMeasureItem(
                     showAddMeasurementQuantityDialog(
                         measureItem,
                         job,
-                        jobItemMeasurePhotoDTOArrayList,
-                        view
+                        jobItemMeasurePhotoDTOArrayList
                     )
             })
         }
@@ -102,8 +99,7 @@ class ExpandableHeaderMeasureItem(
     private fun showAddMeasurementQuantityDialog(
         measureItem: JobItemEstimateDTO,
         jobForJobItemEstimate: JobDTO,
-        jobItemMeasurePhotoDTO: ArrayList<JobItemMeasurePhotoDTO>,
-        view: View
+        jobItemMeasurePhotoDTO: ArrayList<JobItemMeasurePhotoDTO>
     ) {
 
         Coroutines.main {
@@ -146,8 +142,7 @@ class ExpandableHeaderMeasureItem(
                                         selected,
                                         jobForJobItemEstimate,
                                         measureItem,
-                                        jobItemMeasurePhotoDTO,
-                                        view
+                                        jobItemMeasurePhotoDTO
                                     )
                                 }
 
@@ -172,8 +167,7 @@ class ExpandableHeaderMeasureItem(
         selected: ProjectItemDTO?,
         jobForJobItemEstimate: JobDTO,
         measureItem: JobItemEstimateDTO,
-        jobItemMeasurePhotoDTO: ArrayList<JobItemMeasurePhotoDTO>,
-        view: View
+        jobItemMeasurePhotoDTO: ArrayList<JobItemMeasurePhotoDTO>
     ) {
         if (quantityInputEditText.text.toString() == "") {
             Toast.makeText(
@@ -211,7 +205,7 @@ class ExpandableHeaderMeasureItem(
         val newItemMeasureId: String = SqlLitUtils.generateUuid()
 
         return JobItemMeasureDTO(
-            ID = 0,
+            id = 0,
             actId = 0,
             approvalDate = null,
             cpa = (jobForJobItemEstimate.Cpa).toString().toInt(),

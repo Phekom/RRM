@@ -23,7 +23,7 @@ import za.co.xisystems.itis_rrm.utils.GPSUtils
  * Created by Shaun McDonald on 2020/06/06.
  * Copyright (c) 2020 XI Systems. All rights reserved.
  **/
-abstract class LocationFragment(layoutContentId: Int) : BaseFragment(0), KodeinAware {
+abstract class LocationFragment : BaseFragment(), KodeinAware {
 
     private var currentLocation: LocationModel? = null
     override val kodein: Kodein by kodein()
@@ -32,12 +32,10 @@ abstract class LocationFragment(layoutContentId: Int) : BaseFragment(0), KodeinA
     private var gpsEnabled = false
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        TODO("Not yet implemented")
+        // fragment has no options
+        return false
     }
 
-    /**
-     *
-     */
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 

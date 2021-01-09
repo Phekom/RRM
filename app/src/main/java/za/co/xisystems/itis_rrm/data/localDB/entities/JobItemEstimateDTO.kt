@@ -1,12 +1,16 @@
 package za.co.xisystems.itis_rrm.data.localDB.entities
 
+import android.os.Parcel
+import android.os.Parcelable
+import android.os.Parcelable.Creator
 import androidx.core.util.Pair
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
+import za.co.xisystems.itis_rrm.utils.JobUtils
+import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import java.io.Serializable
 import java.util.ArrayList
-import za.co.xisystems.itis_rrm.utils.JobUtils
 
 /**
  * Created by Francis Mahlava on 2019/11/21.
@@ -21,19 +25,19 @@ data class JobItemEstimateDTO(
     val actId: Int,
     @SerializedName("EstimateId")
     @PrimaryKey
-    var estimateId: String,
+    var estimateId: String = SqlLitUtils.generateUuid(),
     @SerializedName("JobId")
     var jobId: String?,
     @SerializedName("LineRate")
     var lineRate: Double,
     @SerializedName("MobileEstimateWorks")
-    var jobEstimateWorks: ArrayList<JobEstimateWorksDTO>?,
+    var jobEstimateWorks: ArrayList<JobEstimateWorksDTO>? = arrayListOf(),
     @SerializedName("MobileJobItemEstimatesPhotos")
-    var jobItemEstimatePhotos: ArrayList<JobItemEstimatesPhotoDTO>?,
+    var jobItemEstimatePhotos: ArrayList<JobItemEstimatesPhotoDTO>? = arrayListOf(),
     @SerializedName("MobileJobItemMeasures")
-    val jobItemMeasure: ArrayList<JobItemMeasureDTO>?,
-    @SerializedName("PrjJobDto")
-    val job: JobDTO? = null,
+   val jobItemMeasure: ArrayList<JobItemMeasureDTO>? = arrayListOf(),
+//    @SerializedName("PrjJobDto")
+//    val job: JobDTO? = null,
     @SerializedName("ProjectItemId")
     var projectItemId: String?,
     @SerializedName("ProjectVoId")
@@ -57,7 +61,28 @@ data class JobItemEstimateDTO(
 
     val SelectedItemUOM: String?
 
-) : Serializable {
+) : Serializable, Parcelable {
+
+    constructor(parcel: Parcel) : this(
+        parcel.readInt(),
+        parcel.readString()!!,
+        parcel.readString(),
+        parcel.readDouble(),
+        TODO("jobEstimateWorks"),
+        TODO("jobItemEstimatePhotos"),
+        TODO("jobItemMeasure"),
+        parcel.readString(),
+        parcel.readString(),
+        parcel.readDouble(),
+        parcel.readInt(),
+        parcel.readInt(),
+        parcel.readString(),
+        parcel.readParcelable(JobItemEstimatesPhotoDTO::class.java.classLoader),
+        parcel.readParcelable(JobItemEstimatesPhotoDTO::class.java.classLoader),
+        parcel.readString(),
+        parcel.readInt(),
+        parcel.readString()
+    )
 
     private fun getJobItemEstimatePhoto(lookForStartPhoto: Boolean): Pair<Int, JobItemEstimatesPhotoDTO> {
         val photos = jobItemEstimatePhotos
@@ -67,7 +92,7 @@ data class JobItemEstimateDTO(
             if (lookForStartPhoto) {
                 if (isPhotoStart) {
                     println("look: $lookForStartPhoto is:$isPhotoStart")
-                    val pair = Pair<Int, JobItemEstimatesPhotoDTO>(i, photos[i])
+                    val pair = Pair(i, photos[i])
                     println("pair[" + pair.first + "]" + pair)
                     return pair
                 }
@@ -88,16 +113,6 @@ data class JobItemEstimateDTO(
         } else null
     }
 
-    fun setJobItemEstimatePhotoStart(photoStart: JobItemEstimatesPhotoDTO) {
-        photoStart.estimateId
-        setJobItemEstimatePhoto(photoStart)
-    }
-
-    fun setJobItemEstimatePhotoEnd(photoEnd: JobItemEstimatesPhotoDTO) {
-        photoEnd.estimateId
-        setJobItemEstimatePhoto(photoEnd)
-    }
-
     fun setJobItemEstimatePhoto(photo: JobItemEstimatesPhotoDTO) {
         if (jobItemEstimatePhotos == null) {
             jobItemEstimatePhotos = ArrayList<JobItemEstimatesPhotoDTO>()
@@ -105,18 +120,19 @@ data class JobItemEstimateDTO(
         } else {
             val photoToChange = getJobItemEstimatePhoto(photo.isPhotoStart())
             val index = photoToChange.first!!
-            if (index == -1)
+            if (index == -1) {
                 jobItemEstimatePhotos!!.add(photo)
-            else
+            } else {
                 jobItemEstimatePhotos!![index] = photo
+            }
         }
         JobUtils.sort(jobItemEstimatePhotos)
     }
 
     fun isEstimateComplete(): Boolean {
-        return if (size() < 2)
+        return if (size() < 2) {
             false
-        else {
+        } else {
             val photoStart = jobItemEstimatePhotos?.get(0)
             val photoEnd = jobItemEstimatePhotos?.get(1)
             !(photoStart?.filename == null || photoEnd == null)
@@ -125,5 +141,37 @@ data class JobItemEstimateDTO(
 
     fun size(): Int {
         return if (jobItemEstimatePhotos == null) 0 else jobItemEstimatePhotos!!.size
+    }
+
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeInt(actId)
+        parcel.writeString(estimateId)
+        parcel.writeString(jobId)
+        parcel.writeDouble(lineRate)
+        parcel.writeString(projectItemId)
+        parcel.writeString(projectVoId)
+        parcel.writeDouble(qty)
+        parcel.writeInt(recordSynchStateId)
+        parcel.writeInt(recordVersion)
+        parcel.writeString(trackRouteId)
+        parcel.writeParcelable(jobItemEstimatePhotoStart, flags)
+        parcel.writeParcelable(jobItemEstimatePhotoEnd, flags)
+        parcel.writeString(estimateComplete)
+        parcel.writeInt(MEASURE_ACT_ID)
+        parcel.writeString(SelectedItemUOM)
+    }
+
+    override fun describeContents(): Int {
+        return 0
+    }
+
+    companion object CREATOR : Creator<JobItemEstimateDTO> {
+        override fun createFromParcel(parcel: Parcel): JobItemEstimateDTO {
+            return JobItemEstimateDTO(parcel)
+        }
+
+        override fun newArray(size: Int): Array<JobItemEstimateDTO?> {
+            return arrayOfNulls(size)
+        }
     }
 }

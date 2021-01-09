@@ -1,10 +1,10 @@
 package za.co.xisystems.itis_rrm.ui.mainview.approvejobs.approve_job_item
 
 import android.content.Context
+import android.view.View
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import com.xwray.groupie.kotlinandroidextensions.Item
-import kotlinx.android.synthetic.main.single_job_listing.*
-import kotlinx.android.synthetic.main.single_listview_item.appListID
+import kotlinx.android.synthetic.main.item_header.*
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.ApproveJobsViewModel
@@ -41,10 +41,11 @@ class ApproveJobItem(
                     )
                 }
             }
+            icon.visibility = View.GONE
         }
     }
 
-    override fun getLayout() = R.layout.single_job_listing
+    override fun getLayout() = R.layout.item_header
 }
 
 private fun getItemId(position: Int): Long {

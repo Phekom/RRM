@@ -7,6 +7,7 @@ import android.widget.Toast
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.room.Transaction
 import com.google.gson.Gson
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
@@ -77,8 +78,9 @@ class JobCreationDataRepository(
 
     private fun sendMsg(uploadResponse: String?) {
         val response: UploadImageResponse? = null
-        if (uploadResponse.isNullOrEmpty())
+        if (uploadResponse.isNullOrEmpty()) {
             jobDataController?.setMsg(response!!.errorMessage)
+        }
     }
 
     private fun saveWorkflowJob(workflowJob: WorkflowJobDTO?) {
@@ -252,9 +254,16 @@ class JobCreationDataRepository(
         }
     }
 
-    fun deleteItemFromList(itemId: String) {
-        Coroutines.io {
-            appDb.getItemDaoTemp().deleteItemfromList(itemId)
+    @Transaction
+    suspend fun deleteItemFromList(itemId: String, estimateId: String?): Int {
+        return withContext(Dispatchers.IO) {
+            val itemsDeleted = appDb.getItemDaoTemp().deleteItemFromList(itemId)
+            val estimatesDeleted =
+                estimateId?.let {
+                    appDb.getJobItemEstimateDao()
+                        .deleteJobItemEstimateByEstimateId(it)
+                } ?: 0
+            itemsDeleted + estimatesDeleted
         }
     }
 
@@ -398,9 +407,9 @@ class JobCreationDataRepository(
     private fun uploadCreateJobImages(packageJob: JobDTO, activity: FragmentActivity) {
 
         var jobCounter = 1
-        val totalJobs = packageJob.JobItemEstimates?.size ?: 0
+        val totalJobs = packageJob.JobItemEstimates.size
 
-        packageJob.JobItemEstimates?.map { jobItemEstimate ->
+        packageJob.JobItemEstimates.map { jobItemEstimate ->
             val totalImages = jobItemEstimate.jobItemEstimatePhotos?.size ?: 0
             var imageCounter = 1
             jobItemEstimate.jobItemEstimatePhotos?.map { estimatePhoto ->
@@ -542,7 +551,6 @@ class JobCreationDataRepository(
         val name = object {}.javaClass.enclosingMethod?.name
         Timber.d("x -> $name")
         if (linearId != null) {
-
             if (!appDb.getSectionPointDao().checkSectionExists(sectionId, projectId, jobId)) {
                 appDb.getSectionPointDao()
                     .insertSection(direction, linearId, pointLocation, sectionId, projectId, jobId)
@@ -566,7 +574,11 @@ class JobCreationDataRepository(
         }
     }
 
-    suspend fun backupJob(job: JobDTO) = appDb.getJobDao().insertOrUpdateJobs(job)
+    suspend fun backupJob(job: JobDTO) {
+       withContext(Dispatchers.IO) {
+           appDb.getJobDao().insertOrUpdateJobs(job)
+       }
+    }
 
     suspend fun checkIfJobSectionExistForJobAndProjectSection(jobId: String?, projectSectionId: String?): Boolean {
         return appDb.getJobSectionDao().checkIfJobSectionExistForJob(jobId, projectSectionId)

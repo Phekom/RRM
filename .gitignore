@@ -200,3 +200,6 @@ lint/tmp/
 
 /signing.properties
 .idea
+
+app/obfuscation/
+!app/obfuscation/keywords.txt

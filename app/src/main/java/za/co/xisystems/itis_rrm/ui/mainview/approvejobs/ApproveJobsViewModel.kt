@@ -7,7 +7,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.viewModelScope
-import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -43,15 +42,11 @@ class ApproveJobsViewModel(
 
     private val workExceptionHandler = CoroutineExceptionHandler { _, throwable ->
         val message = "Caught during workflow: ${throwable.message ?: XIErrorHandler.UNKNOWN_ERROR}"
-
+        Timber.e(throwable)
         val caughtException = XIError(
             throwable, message
         )
-
         workflowState.postValue(caughtException)
-
-        superJob.cancelChildren(CancellationException(message))
-        Timber.e(throwable, message)
     }
 
     private val mainContext = Job(superJob) + Dispatchers.Main + workExceptionHandler
