@@ -88,7 +88,7 @@ import za.co.xisystems.itis_rrm.utils.Converters
         JobEstimateWorksDTO::class, JobEstimateWorksPhotoDTO::class, SectionItemDTO::class,
         WorkFlowsDTO::class, WF_WorkStepDTO::class
     ],
-    version = 8
+    version = 4
 )
 @TypeConverters(Converters::class)
 @GenerateRoomMigrations
