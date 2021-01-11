@@ -27,6 +27,7 @@ import androidx.core.view.GravityCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
+import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.NavigationUI
 import com.google.android.material.navigation.NavigationView
 import com.raygun.raygun4android.RaygunClient
@@ -59,7 +60,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private val factory: MainActivityViewModelFactory by instance()
     private lateinit var sharedViewModel: SharedViewModel
     private val shareFactory: SharedViewModelFactory by instance()
-    private var navController: NavController? = null
+    private lateinit var navController: NavController
     private var toggle: ActionBarDrawerToggle? = null
     private lateinit var navigationView: NavigationView
     private var badgeUnSubmitted: TextView? = null
@@ -84,10 +85,15 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 
+        // Because we're creating the NavHostFragment using FragmentContainerView, we must
+        // retrieve the NavController directly from the NavHostFragment instead
+        val navHostFragment =
+            supportFragmentManager.findFragmentById(R.id.nav_host_fragment_container) as NavHostFragment
+        navController = navHostFragment.navController
+
         navigationView = findViewById(R.id.nav_view)
-        navController = Navigation.findNavController(this, R.id.nav_host_fragment)
-        NavigationUI.setupActionBarWithNavController(this, navController!!)
-        NavigationUI.setupWithNavController(navigationView, navController!!)
+        NavigationUI.setupActionBarWithNavController(this, navController)
+        NavigationUI.setupWithNavController(navigationView, navController)
 
         RaygunClient.init(application)
         RaygunClient.enableCrashReporting()
@@ -97,6 +103,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         MotionToast.setSuccessColor(R.color.sanral_dark_green)
         MotionToast.setWarningColor(R.color.colorPrimaryYellow)
         MotionToast.setInfoColor(R.color.dark_bg_color)
+        MotionToast.setDeleteColor(R.color.sanral_orange_red)
 
         this.mainActivityViewModel = this.run {
             ViewModelProvider(this, factory).get(MainActivityViewModel::class.java)
@@ -260,45 +267,46 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     override fun onSupportNavigateUp(): Boolean {
-        val navController = Navigation.findNavController(this, R.id.nav_host_fragment)
-        return NavigationUI.navigateUp(navController, drawer_layout) || super.onSupportNavigateUp()
+        val navController = Navigation.findNavController(this, R.id.nav_host_fragment_container)
+        return NavigationUI.navigateUp(navController, drawer_layout) // ?:  navController.navigateUp()
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         // Handle navigation view item clicks here.
+
         when (item.itemId) {
             R.id.nav_home -> {
-                navController?.navigate(R.id.nav_home)
+                navController.navigate(R.id.nav_home)
                 toggle?.syncState()
                 initializeCountDrawer()
             }
             R.id.nav_create -> {
-                navController?.navigate(R.id.nav_create)
+                navController.navigate(R.id.nav_create)
                 toggle?.syncState()
             }
 
             R.id.nav_unSubmitted -> {
-                navController?.navigate(R.id.nav_unSubmitted)
+                navController.navigate(R.id.nav_unSubmitted)
                 toggle?.syncState()
             }
             R.id.nav_correction -> {
-                navController?.navigate(R.id.nav_correction)
+                navController.navigate(R.id.nav_correction)
                 toggle?.syncState()
             }
             R.id.nav_work -> {
-                navController?.navigate(R.id.nav_work)
+                navController.navigate(R.id.nav_work)
                 toggle?.syncState()
             }
             R.id.nav_estMeasure -> {
-                navController?.navigate(R.id.nav_estMeasure)
+                navController.navigate(R.id.nav_estMeasure)
                 toggle?.syncState()
             }
             R.id.nav_approveJbs -> {
-                navController?.navigate(R.id.nav_approveJbs)
+                navController.navigate(R.id.nav_approveJbs)
                 toggle?.syncState()
             }
             R.id.nav_approvMeasure -> {
-                navController?.navigate(R.id.nav_approvMeasure)
+                navController.navigate(R.id.nav_approvMeasure)
                 toggle?.syncState()
             }
         }
@@ -310,6 +318,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private fun startLongRunningTask() {
         Timber.i("starting task...")
         progressBar?.visibility = View.VISIBLE
+
+        // Make UI untouchable for duration of big synch
         window.setFlags(
             WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
             WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
@@ -323,6 +333,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private fun endLongRunningTask() {
         Timber.i("stopping task...")
         progressBar?.visibility = View.GONE
+
+        // Re-enable UI touches
         window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
         window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     }

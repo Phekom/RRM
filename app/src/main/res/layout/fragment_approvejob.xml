@@ -39,10 +39,10 @@
                 app:veilFrame_baseAlpha="0.6"
                 app:veilFrame_highlightColor="@color/shimmerHighlight0"
                 app:veilFrame_highlightAlpha="1.0"
-                app:veilFrame_layout="@layout/single_job_listing"
+                app:veilFrame_layout="@layout/item_expandable_header"
                 app:veilFrame_radius="2dp"
                 app:veilFrame_shimmerEnable="true"
-                app:veilFrame_veiled="false"
+                app:veilFrame_veiled="true"
                 tools:visibility="visible" />
 
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

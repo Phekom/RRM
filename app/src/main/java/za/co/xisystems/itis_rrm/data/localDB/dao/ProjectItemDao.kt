@@ -29,7 +29,7 @@ interface ProjectItemDao {
         itemId: String,
         itemCode: String?,
         descr: String?,
-        itemSections: ArrayList<ItemSectionDTO>,
+        itemSections: ArrayList<ItemSectionDTO> = arrayListOf(),
         tenderRate: Double,
         uom: String?,
         workflowId: Int?,

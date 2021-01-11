@@ -5,11 +5,9 @@
 
     <data>
 
-        <variable
-            name="viewmodel"
-            type="za.co.xisystems.itis_rrm.ui.auth.model.PinLock" />
 
     </data>
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -26,7 +24,6 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
-
 
 
             <RelativeLayout
@@ -388,7 +385,7 @@
                         android:text="@string/login"
                         android:textColor="@android:color/white"
                         android:visibility="gone" />
-<!--                    android:onClick="@{viewmodel::onLoginButtonClick}"-->
+
                     <TextView
                         android:id="@+id/textView2"
                         android:layout_width="fill_parent"

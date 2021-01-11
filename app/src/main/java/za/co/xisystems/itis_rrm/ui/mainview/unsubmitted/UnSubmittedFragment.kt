@@ -26,7 +26,7 @@ import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.unsubmited_item.UnSubmit
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
 
-class UnSubmittedFragment : BaseFragment(R.layout.fragment_unsubmittedjobs), KodeinAware {
+class UnSubmittedFragment : BaseFragment(), KodeinAware {
 
     override val kodein by kodein()
     private lateinit var createViewModel: CreateViewModel
@@ -48,7 +48,8 @@ class UnSubmittedFragment : BaseFragment(R.layout.fragment_unsubmittedjobs), Kod
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
+        // no options menu
+        return false
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {

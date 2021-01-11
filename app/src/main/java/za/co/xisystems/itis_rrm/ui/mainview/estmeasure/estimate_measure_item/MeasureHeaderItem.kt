@@ -32,11 +32,11 @@ open class MeasureHeaderItem(
                     visibility = View.GONE
                     subtitleResId.let {
                         visibility = View.VISIBLE
-                        text = itemView.context.getString(R.string.pair,"Quantity : ", it.toString().dropLast(2))
+                        text = itemView.context.getString(R.string.pair, "Quantity : ", it.toString().dropLast(2))
                     }
                 }
                 val desc = measureViewModel.getDescForProjectItemId(projectId!!)
-                title.text = this.itemView.context.getString(R.string.pair,"Estimate - ", desc)
+                title.text = this.itemView.context.getString(R.string.pair, "Estimate - ", desc)
             }
         }
 

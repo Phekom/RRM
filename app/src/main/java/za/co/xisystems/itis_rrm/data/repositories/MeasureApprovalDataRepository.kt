@@ -99,46 +99,50 @@ class MeasureApprovalDataRepository(
         measurements: List<JobItemMeasureDTO>,
         direction: Int
     ) {
-        try {
-            val description = ""
+        Coroutines.io {
+            try {
+                val description = ""
 
-            var flowJob: WorkflowJobDTO? = null
-            measurements.forEachIndexed { index, measure ->
-                val measureTrackId = DataConversion.toLittleEndian(measure.trackRouteId)
-                measureTrackId?.let {
-                    withContext(Dispatchers.IO) {
-                        postWorkflowStatus(XIStatus("Processing ${index + 1} of ${measurements.size} measurements"))
-                        val workflowMoveResponse =
-                            apiRequest { api.getWorkflowMove(userId, measureTrackId, description, direction) }
-                        workflowMoveResponse.workflowJob?.let { job ->
-                            job.workflowItemMeasures?.forEach { jobItemMeasure ->
-                                if (jobItemMeasure.actId == ActivityIdConstants.MEASURE_APPROVED) {
-                                    val itemMeasureId = DataConversion.toBigEndian(jobItemMeasure.itemMeasureId)
-                                    val trackRouteId = DataConversion.toBigEndian(jobItemMeasure.trackRouteId)
-                                    val measureGroupId = DataConversion.toBigEndian(jobItemMeasure.measureGroupId)
-                                    appDb.getJobItemMeasureDao().updateWorkflowJobItemMeasure(
-                                        itemMeasureId,
-                                        trackRouteId,
-                                        jobItemMeasure.actId,
-                                        measureGroupId
-                                    )
+                var flowJob: WorkflowJobDTO? = null
+                measurements.forEachIndexed { index, measure ->
+                    val measureTrackId = DataConversion.toLittleEndian(measure.trackRouteId)
+                    measureTrackId?.let {
+                        withContext(Dispatchers.IO) {
+                            postWorkflowStatus(XIStatus("Processing ${index + 1} of ${measurements.size} measurements"))
+                            val workflowMoveResponse =
+                                apiRequest { api.getWorkflowMove(userId, measureTrackId, description, direction) }
+                            workflowMoveResponse.workflowJob?.let { job ->
+                                job.workflowItemMeasures?.forEach { jobItemMeasure ->
+                                    if (jobItemMeasure.actId == ActivityIdConstants.MEASURE_APPROVED) {
+                                        val itemMeasureId = DataConversion.toBigEndian(jobItemMeasure.itemMeasureId)
+                                        val trackRouteId = DataConversion.toBigEndian(jobItemMeasure.trackRouteId)
+                                        val measureGroupId = DataConversion.toBigEndian(jobItemMeasure.measureGroupId)
+                                        appDb.getJobItemMeasureDao().updateWorkflowJobItemMeasure(
+                                            itemMeasureId,
+                                            trackRouteId,
+                                            jobItemMeasure.actId,
+                                            measureGroupId
+                                        )
+                                    }
                                 }
+                                flowJob = job
                             }
-                            flowJob = job
                         }
                     }
                 }
+                saveWorkflowJob(flowJob!!)
+                postWorkflowStatus(XISuccess("WORK_COMPLETE"))
+            } catch (t: Throwable) {
+                val message = "Failed to Approve Measurement: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
+                postWorkflowStatus(XIError(t, message))
             }
-            saveWorkflowJob(flowJob!!)
-            postWorkflowStatus(XISuccess("WORK_COMPLETE"))
-        } catch (t: Throwable) {
-            val message = "Failed to Approve Measurement: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
-            postWorkflowStatus(XIError(t, message))
         }
     }
 
-    private fun postWorkflowStatus(status: XIResult<String>) {
-        workflowStatus.postValue(XIEvent(status))
+    private suspend fun postWorkflowStatus(status: XIResult<String>) {
+        withContext(Dispatchers.Main) {
+            workflowStatus.postValue(XIEvent(status))
+        }
     }
 
     suspend fun getSectionForProjectSectionId(sectionId: String?): String {
@@ -275,12 +279,14 @@ class MeasureApprovalDataRepository(
 
             return job
         } catch (t: Throwable) {
-            postWorkflowStatus(
-                XIError(
-                    LocalDataException(t.message ?: XIErrorHandler.UNKNOWN_ERROR),
-                    t.message ?: XIErrorHandler.UNKNOWN_ERROR
+            Coroutines.io {
+                postWorkflowStatus(
+                    XIError(
+                        LocalDataException(t.message ?: XIErrorHandler.UNKNOWN_ERROR),
+                        t.message ?: XIErrorHandler.UNKNOWN_ERROR
+                    )
                 )
-            )
+            }
             return null
         }
     }
@@ -315,7 +321,9 @@ class MeasureApprovalDataRepository(
             val message = "Failed to update Quantity: $errorMessage"
             val serviceException = ServiceException(message)
             Timber.e(serviceException)
-            postWorkflowStatus(XIError(serviceException, message))
+            Coroutines.main {
+                postWorkflowStatus(XIError(serviceException, message))
+            }
         }
     }
 

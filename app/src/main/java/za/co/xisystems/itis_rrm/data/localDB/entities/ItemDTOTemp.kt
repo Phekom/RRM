@@ -27,7 +27,7 @@ data class ItemDTOTemp(
     @PrimaryKey(autoGenerate = true)
     val id: Int,
     @SerializedName("ItemId")
-//    @ColumnInfo(name = "itemId", index = true)
+    @ColumnInfo(name = "itemId", index = true)
     val itemId: String,
     @SerializedName("Descr")
     val descr: String?,
@@ -35,7 +35,7 @@ data class ItemDTOTemp(
     val itemCode: String?,
 
     @SerializedName("ItemSections")
-    val itemSections: ArrayList<ItemSectionDTO>,
+    val itemSections: ArrayList<ItemSectionDTO>?,
 
     @SerializedName("TenderRate")
     val tenderRate: Double = 0.toDouble(),

@@ -165,7 +165,7 @@ class WorkViewModel(
         itemEstiJob: JobDTO
 
     ) {
-        viewModelScope.launch (ioContext) {
+        viewModelScope.launch(ioContext) {
             workDataRepository.submitWorks(itemEstiWorks, activity, itemEstiJob)
         }
     }
@@ -182,7 +182,7 @@ class WorkViewModel(
         description: String?,
         direction: Int
     ) {
-        viewModelScope.launch (ioContext) {
+        viewModelScope.launch(ioContext) {
             workDataRepository.processWorkflowMove(userId, trackRouteId, description, direction)
         }
     }

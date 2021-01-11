@@ -4,7 +4,9 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Transformations
 import androidx.lifecycle.viewModelScope
+import java.util.concurrent.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
@@ -28,7 +30,6 @@ import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
-import za.co.xisystems.itis_rrm.utils.uncaughtExceptionHandler
 
 /**
  * Created by Francis Mahlava on 03,October,2019
@@ -51,7 +52,7 @@ class ApproveMeasureViewModel(
 
     var measureGalleryUIState: MutableLiveData<XIResult<MeasureGalleryUIState>> = MutableLiveData()
 
-    private val superJob = SupervisorJob()
+    private var superJob: Job = SupervisorJob()
 
     private var galleryMeasure: MutableLiveData<JobItemMeasureDTO> = MutableLiveData()
 
@@ -59,17 +60,17 @@ class ApproveMeasureViewModel(
 
     var workflowState: MutableLiveData<XIResult<String>?> = MutableLiveData()
 
-    private val approveMainContext = Job(superJob) + Dispatchers.Main + uncaughtExceptionHandler
-    private val approvalIOContext = Job(superJob) + Dispatchers.IO + uncaughtExceptionHandler
+    private val contextMain = Job(superJob) + Dispatchers.Main
+    private val contextIO = Job(superJob) + Dispatchers.IO
 
     init {
-        viewModelScope.launch(approveMainContext) {
+        viewModelScope.launch(contextMain) {
             workflowStatus = measureApprovalDataRepository.workflowStatus
-            workflowStatus.observeForever {
-                it?.let {
-                    workflowState.postValue(it.getContentIfNotHandled())
-                }
-            }
+
+            workflowState = Transformations.map(workflowStatus) {
+                it.getContentIfNotHandled()
+            } as MutableLiveData<XIResult<String>?>
+
             galleryMeasure.observeForever {
                 generateGallery(it)
             }
@@ -81,37 +82,37 @@ class ApproveMeasureViewModel(
     }
 
     suspend fun getJobApproveMeasureForActivityId(activityId: Int): LiveData<List<JobItemMeasureDTO>> {
-        return withContext(Dispatchers.IO) {
+        return withContext(contextIO) {
             measureApprovalDataRepository.getJobApproveMeasureForActivityId(activityId).getDistinct()
         }
     }
 
     suspend fun getProjectSectionIdForJobId(jobId: String): String {
-        return withContext(Dispatchers.IO) {
+        return withContext(contextIO) {
             measureApprovalDataRepository.getProjectSectionIdForJobId(jobId)
         }
     }
 
     suspend fun getRouteForProjectSectionId(sectionId: String): String {
-        return withContext(Dispatchers.IO) {
+        return withContext(contextIO) {
             measureApprovalDataRepository.getRouteForProjectSectionId(sectionId)
         }
     }
 
     suspend fun getSectionForProjectSectionId(sectionId: String): String {
-        return withContext(Dispatchers.IO) {
+        return withContext(contextIO) {
             measureApprovalDataRepository.getSectionForProjectSectionId(sectionId)
         }
     }
 
     suspend fun getItemDesc(jobId: String): String {
-        return withContext(Dispatchers.IO) {
+        return withContext(contextIO) {
             measureApprovalDataRepository.getItemDescription(jobId)
         }
     }
 
     suspend fun getDescForProjectId(projectItemId: String): String {
-        return withContext(Dispatchers.IO) {
+        return withContext(contextIO) {
             measureApprovalDataRepository.getProjectItemDescription(projectItemId)
         }
     }
@@ -120,19 +121,19 @@ class ApproveMeasureViewModel(
         jobID: String?,
         actId: Int
     ): LiveData<List<JobItemMeasureDTO>> {
-        return withContext(Dispatchers.IO) {
+        return withContext(contextIO) {
             measureApprovalDataRepository.getJobMeasureItemsForJobId(jobID, actId).getDistinct()
         }
     }
 
     suspend fun getUOMForProjectItemId(projectItemId: String): String {
-        return withContext(Dispatchers.IO) {
+        return withContext(contextIO) {
             measureApprovalDataRepository.getUOMForProjectItemId(projectItemId)
         }
     }
 
     suspend fun getJobMeasureItemsPhotoPath(itemMeasureId: String): List<String> {
-        return withContext(Dispatchers.IO) {
+        return withContext(contextIO) {
             measureApprovalDataRepository.getJobMeasureItemPhotoPaths(itemMeasureId)
         }
     }
@@ -144,7 +145,7 @@ class ApproveMeasureViewModel(
     ) = viewModelScope.launch {
         workflowState.postValue(XIProgress(true))
 
-        withContext(approvalIOContext) {
+        withContext(contextIO) {
             try {
                 measureApprovalDataRepository.processWorkflowMove(userId, measurements, workflowDirection.value)
 
@@ -159,19 +160,19 @@ class ApproveMeasureViewModel(
         editQuantity: String,
         itemMeasureId: String?
     ): String {
-        return withContext(Dispatchers.IO) {
+        return withContext(contextIO) {
             measureApprovalDataRepository.upDateMeasure(editQuantity, itemMeasureId!!)
         }
     }
 
     suspend fun getQuantityForMeasureItemId(itemMeasureId: String): LiveData<Double> {
-        return withContext(Dispatchers.IO) {
+        return withContext(contextIO) {
             measureApprovalDataRepository.getQuantityForMeasureItemId(itemMeasureId)
         }
     }
 
     suspend fun generateGalleryUI(itemMeasureId: String) =
-        viewModelScope.launch(approveMainContext) {
+        viewModelScope.launch(contextMain) {
             try {
                 getJobItemMeasureByItemMeasureId(itemMeasureId).observeForever {
                     it?.let {
@@ -186,13 +187,13 @@ class ApproveMeasureViewModel(
         }
 
     suspend fun getLineRateForMeasureItemId(itemMeasureId: String): LiveData<Double> {
-        return withContext(Dispatchers.IO) {
+        return withContext(contextIO) {
             measureApprovalDataRepository.getLineRateForMeasureItemId(itemMeasureId)
         }
     }
 
     private fun generateGallery(measureItem: JobItemMeasureDTO) =
-        viewModelScope.launch(approveMainContext) {
+        viewModelScope.launch(contextIO) {
             try {
 
                 val measureDescription =
@@ -231,12 +232,16 @@ class ApproveMeasureViewModel(
 
                 )
 
-                measureGalleryUIState.postValue(XISuccess(uiState))
+                withContext(contextMain) {
+                    measureGalleryUIState.postValue(XISuccess(uiState))
+                }
             } catch (t: Throwable) {
                 val message = "$galleryError: ${t.message ?: UNKNOWN_ERROR}"
                 Timber.e(t, message)
                 val galleryFail = XIError(t, message)
-                measureGalleryUIState.postValue(galleryFail)
+                withContext(contextMain) {
+                    measureGalleryUIState.postValue(galleryFail)
+                }
             }
         }
 
@@ -245,7 +250,7 @@ class ApproveMeasureViewModel(
     }
 
     private suspend fun getJobItemMeasureByItemMeasureId(itemMeasureId: String): LiveData<JobItemMeasureDTO> {
-        return withContext(Dispatchers.IO) {
+        return withContext(contextIO) {
             measureApprovalDataRepository.getJobItemMeasureByItemMeasureId(itemMeasureId).getDistinct()
         }
     }
@@ -259,7 +264,7 @@ class ApproveMeasureViewModel(
      */
     override fun onCleared() {
         super.onCleared()
-        superJob.cancelChildren()
+        superJob.cancelChildren(CancellationException("clearing measureApprovalViewModel"))
         workflowState = MutableLiveData()
         workflowStatus = MutableLiveData()
     }

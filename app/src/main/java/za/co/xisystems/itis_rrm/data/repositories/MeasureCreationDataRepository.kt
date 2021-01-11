@@ -373,7 +373,7 @@ class MeasureCreationDataRepository(
         Coroutines.io {
             for (jobItemMeasure in jobItemMeasures.iterator()) {
                 if (!appDb.getJobItemMeasureDao()
-                        .checkIfJobItemMeasureExists(jobItemMeasure.itemMeasureId!!)
+                        .checkIfJobItemMeasureExists(jobItemMeasure.itemMeasureId)
                 ) {
                     appDb.getJobItemMeasureDao().insertJobItemMeasure(jobItemMeasure)
                 }
@@ -407,7 +407,7 @@ class MeasureCreationDataRepository(
     ) {
         Coroutines.io {
             if (!appDb.getJobItemMeasureDao()
-                    .checkIfJobItemMeasureExists(selectedJobItemMeasure.itemMeasureId!!)
+                    .checkIfJobItemMeasureExists(selectedJobItemMeasure.itemMeasureId)
             )
                 appDb.getJobItemMeasureDao()
                     .insertJobItemMeasure(selectedJobItemMeasure)
@@ -417,7 +417,7 @@ class MeasureCreationDataRepository(
 
             appDb.getJobItemMeasureDao().upDatePhotList(
                 jobItemMeasurePhotoList,
-                selectedJobItemMeasure.itemMeasureId!!
+                selectedJobItemMeasure.itemMeasureId
             )
 
             for (jobItemMeasurePhoto in jobItemMeasurePhotoList.iterator()) {

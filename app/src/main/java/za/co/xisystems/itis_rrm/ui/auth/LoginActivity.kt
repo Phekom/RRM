@@ -11,7 +11,11 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import com.toxicbakery.bcrypt.Bcrypt
 import kotlinx.android.synthetic.main.activity_login.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.kodein
 import org.kodein.di.generic.instance
@@ -28,7 +32,6 @@ import za.co.xisystems.itis_rrm.databinding.ActivityLoginBinding
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
-import za.co.xisystems.itis_rrm.utils.Util.sha256
 import za.co.xisystems.itis_rrm.utils.hide
 import za.co.xisystems.itis_rrm.utils.hideKeyboard
 import za.co.xisystems.itis_rrm.utils.snackbar
@@ -37,7 +40,7 @@ import za.co.xisystems.itis_rrm.utils.toast
 class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, KodeinAware {
     private var activityPinLockBinding: ActivityLoginBinding? = null
 
-    private var pin = String()
+    private var hash: ByteArray? = null
     private var pinInput = ""
     private var index = 0
 
@@ -83,9 +86,9 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
         Coroutines.main {
             val loggedInUser = viewModel.user.await()
             loggedInUser.observe(this, { user ->
-                if (user.PIN != null) {
+                if (user.pin != null) {
                     Coroutines.main {
-                        pin = viewModel.getPin()
+                        hash = user.pin
                     }
                 }
             })
@@ -168,7 +171,7 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
         Coroutines.main {
             val loggedInUser = viewModel.user.await()
             loggedInUser.observe(this, { user ->
-                if (user.PIN.isNullOrEmpty()) {
+                if (user.pin == null) {
 
                     val builder =
                         AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog)
@@ -186,14 +189,6 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
                             }
                         } else {
                             toast("No internet connection detected")
-//                            MotionToast.createColorToast(
-//                                this,
-//                                message = getString(R.string.no_connection_detected),
-//                                style = MotionToast.TOAST_NO_INTERNET,
-//                                position = MotionToast.GRAVITY_BOTTOM,
-//                                duration = MotionToast.LONG_DURATION,
-//                                font = ResourcesCompat.getFont(this, R.font.helvetica_regular)
-//                            )
                         }
                     }
                     val setPinDialog = builder.create()
@@ -244,8 +239,10 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
     }
 
     private fun validatePin() {
-        if (pin == pinInput.sha256()) {
-            Coroutines.io {
+
+        if (Bcrypt.verify(pinInput, hash!!)) {
+
+            lifecycleScope.launch(Dispatchers.IO) {
                 PhotoUtil.cleanupDevice()
             }
             gotoMainActivity()
@@ -275,7 +272,7 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
     }
 
     override fun onStarted() {
-        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
+        Timber.d("AuthInit")
     }
 
     override fun onSuccess(userDTO: UserDTO) {

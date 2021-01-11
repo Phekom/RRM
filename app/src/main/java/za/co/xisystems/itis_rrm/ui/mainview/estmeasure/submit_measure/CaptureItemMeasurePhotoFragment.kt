@@ -24,6 +24,9 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.coroutineScope
 import androidx.navigation.Navigation
+import java.util.ArrayList
+import java.util.Date
+import java.util.HashMap
 import kotlinx.android.synthetic.main.fragment_capture_item_measure_photo.*
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
@@ -59,13 +62,10 @@ import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.enums.ToastGravity
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.INFO
-import java.util.ArrayList
-import java.util.Date
-import java.util.HashMap
 
 //
 class CaptureItemMeasurePhotoFragment :
-    LocationFragment(R.layout.fragment_capture_item_measure_photo),
+    LocationFragment(),
     KodeinAware {
 
     override val kodein by kodein()
@@ -87,7 +87,8 @@ class CaptureItemMeasurePhotoFragment :
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
+        // no options menu
+        return false
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -171,7 +172,7 @@ class CaptureItemMeasurePhotoFragment :
         uiScope.launch(uiScope.coroutineContext) {
             estimate_image_collection_view.clearImages()
             val photoFetch =
-                measureViewModel.getMeasureItemPhotos(selectedJobItemMeasure.itemMeasureId!!)
+                measureViewModel.getMeasureItemPhotos(selectedJobItemMeasure.itemMeasureId)
             photoFetch.observe(viewLifecycleOwner, {
                 it?.let {
                     if (it.isEmpty()) {
@@ -225,7 +226,7 @@ class CaptureItemMeasurePhotoFragment :
             Timber.d("accuracy: ${measurementLocation.accuracy}")
 
             return JobItemMeasurePhotoDTO(
-                ID = 0,
+                id = 0,
                 descr = null,
                 filename = filenamePath["filename"],
                 estimateId = selectedJobItemMeasure.estimateId,
@@ -235,7 +236,6 @@ class CaptureItemMeasurePhotoFragment :
                 photoLatitude = measurementLocation.latitude,
                 photoLongitude = measurementLocation.longitude,
                 photoPath = filenamePath["path"],
-                jobItemMeasure = jobItemMeasure,
                 recordSynchStateId = 0,
                 recordVersion = 0
             )

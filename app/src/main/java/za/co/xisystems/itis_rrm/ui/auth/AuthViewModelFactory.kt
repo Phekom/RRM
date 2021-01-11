@@ -15,6 +15,6 @@ class AuthViewModelFactory(
     private val offlineDataRepository: OfflineDataRepository
 ) : ViewModelProvider.NewInstanceFactory() {
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-        return AuthViewModel(repository, offlineDataRepository) as T
+        return AuthViewModel(repository) as T
     }
 }

@@ -27,7 +27,7 @@ import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureViewMod
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureViewModelFactory
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 
-class MeasureGalleryFragment : BaseFragment(R.layout.fragment_measure_gallery), KodeinAware {
+class MeasureGalleryFragment : BaseFragment(), KodeinAware {
     override val kodein by kodein()
     private lateinit var approveViewModel: ApproveMeasureViewModel
     private val factory: ApproveMeasureViewModelFactory by instance()
@@ -53,7 +53,8 @@ class MeasureGalleryFragment : BaseFragment(R.layout.fragment_measure_gallery), 
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        TODO("Not yet implemented")
+        // Noy all fragments have options
+        return false
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -102,12 +103,12 @@ class MeasureGalleryFragment : BaseFragment(R.layout.fragment_measure_gallery), 
     }
 
     private fun retryGallery() {
-        TODO("Set up contingency id.")
+        //  Not needed
     }
 
     override fun onDestroyView() {
+        super.onDestroyView()
         estimate_image_gallery_view.clearImages()
         uiScope.destroy()
-        super.onDestroyView()
     }
 }

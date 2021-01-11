@@ -13,6 +13,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import timber.log.Timber
 import za.co.xisystems.itis_rrm.data.localDB.entities.ContractDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
@@ -39,80 +40,77 @@ class CreateViewModel(
 
     private val superJob = SupervisorJob()
     val currentJob: MutableLiveData<JobDTO?> = MutableLiveData()
-    fun setCurrentJob(inJobItemToEdit: JobDTO?) {
-        currentJob.value = inJobItemToEdit
-    }
-
     private var ioContext: CoroutineContext
     private var mainContext: CoroutineContext
+    private val estimateQty = MutableLiveData<Double>()
+    val estimateLineRate = MutableLiveData<Double>()
+    val sectionId = MutableLiveData<String>()
+    val user by lazyDeferred {
+        jobCreationDataRepository.getUser()
+    }
+    val loggedUser = MutableLiveData<Int>()
+    val description: MutableLiveData<String> = MutableLiveData()
+    val newJob: MutableLiveData<JobDTO?> = MutableLiveData()
+    val contractNo = MutableLiveData<String>()
+    val contractId = MutableLiveData<String>()
+    val projectId = MutableLiveData<String>()
+    val projectCode = MutableLiveData<String>()
+    val sectionProjectItem = MutableLiveData<SectionProj_Item>()
+    val jobItem = MutableLiveData<JobDTO?>()
+    val projectItemTemp = MutableLiveData<ItemDTOTemp>()
 
     init {
         ioContext = Job(superJob) + Dispatchers.IO + uncaughtExceptionHandler
         mainContext = Job(superJob) + Dispatchers.Main + uncaughtExceptionHandler
     }
 
-    private val estimateQty = MutableLiveData<Double>()
+    fun setCurrentJob(inJobItemToEdit: JobDTO?) {
+        currentJob.value = inJobItemToEdit
+    }
+
     fun setEstimateQuantity(inQty: Double) {
         estimateQty.value = inQty
     }
 
-    val estimateLineRate = MutableLiveData<Double>()
-
-    val sectionId = MutableLiveData<String>()
     fun setSectionId(inSectionId: String) {
         sectionId.value = inSectionId
     }
 
-    val user by lazyDeferred {
-        jobCreationDataRepository.getUser()
-    }
-
-    val loggedUser = MutableLiveData<Int>()
     fun setLoggerUser(inLoggedUser: Int) {
         loggedUser.value = inLoggedUser
     }
 
-    val description: MutableLiveData<String> = MutableLiveData()
     fun setDescription(desc: String) {
         description.value = desc
     }
 
-    val newJob: MutableLiveData<JobDTO?> = MutableLiveData()
     fun createNewJob(job: JobDTO?) {
         newJob.value = job
     }
 
-    val contractNo = MutableLiveData<String>()
     fun setContractorNo(inContractNo: String) {
         contractNo.value = inContractNo
     }
 
-    val contractId = MutableLiveData<String>()
     fun setContractId(inContractId: String) {
         contractId.value = inContractId
     }
 
-    val projectId = MutableLiveData<String>()
     fun setProjectId(inProjectId: String) {
         projectId.value = inProjectId
     }
 
-    val projectCode = MutableLiveData<String>()
     fun setProjectCode(inProjectCode: String) {
         projectCode.value = inProjectCode
     }
 
-    val sectionProjectItem = MutableLiveData<SectionProj_Item>()
     fun setSectionProjectItem(inSectionProjectItem: SectionProj_Item) {
         sectionProjectItem.value = inSectionProjectItem
     }
 
-    val jobItem = MutableLiveData<JobDTO?>()
     suspend fun getJob(inJobId: String) {
         jobItem.value = jobCreationDataRepository.getUpdatedJob(jobId = inJobId)
     }
-
-    val projectItemTemp = MutableLiveData<ItemDTOTemp>()
 
     fun saveNewJob(newJob: JobDTO) {
         jobCreationDataRepository.saveNewJob(newJob)
@@ -228,24 +226,21 @@ class CreateViewModel(
 
     suspend fun areEstimatesValid(job: JobDTO?, items: ArrayList<Any?>?): Boolean {
         var isValid = true
-        if (!JobUtils.areQuantitiesValid(job)) {
-            isValid = false
-        } else if (job == null || items == null ||
-            job.JobItemEstimates == null ||
-            items.size != job.JobItemEstimates!!.size
-        ) {
-            isValid = false
-        } else {
-            for (estimate in job.JobItemEstimates!!) {
-                if (!estimate.isEstimateComplete()) {
-                    isValid = false
-                    break
-                }
+        when {
+            !JobUtils.areQuantitiesValid(job) -> {
+                isValid = false
             }
-        }
-        if (!isValid) {
-            return withContext(Dispatchers.IO) {
-                false
+            job == null || items == null || job.JobItemEstimates.isEmpty()
+                || items.size != job.JobItemEstimates.size -> {
+                isValid = false
+            }
+            else -> {
+                for (estimate in job.JobItemEstimates) {
+                    if (!estimate.isEstimateComplete()) {
+                        isValid = false
+                        break
+                    }
+                }
             }
         }
         return withContext(Dispatchers.IO) {
@@ -267,8 +262,9 @@ class CreateViewModel(
         jobCreationDataRepository.deleteItemList(jobId)
     }
 
-    fun deleteItemFromList(itemId: String) {
-        jobCreationDataRepository.deleteItemFromList(itemId)
+    fun deleteItemFromList(itemId: String, estimateId: String?) = viewModelScope.launch {
+        val recordsAffected = jobCreationDataRepository.deleteItemFromList(itemId, estimateId)
+        Timber.d("deleteItemFromList: $recordsAffected deleted.")
     }
 
     suspend fun getContractNoForId(contractVoId: String?): String {
@@ -283,8 +279,9 @@ class CreateViewModel(
         }
     }
 
-    suspend fun backupJob(job: JobDTO) = viewModelScope.launch(ioContext) {
+    suspend fun backupJob(job: JobDTO) = viewModelScope.launch(mainContext) {
         jobCreationDataRepository.backupJob(job)
+        setJobToEdit(job.JobId)
     }
 
     /**
