@@ -474,7 +474,7 @@ dependencies {
     implementation 'com.github.tntkhang:full-screen-image-view-library:1.1.0'
 
     //Android  Room
-    def room_version = '2.2.5' // align with Roomigrant
+    def room_version = '2.2.6' // align with Roomigrant
 
     implementation "androidx.room:room-runtime:$room_version"
     implementation "androidx.room:room-ktx:$room_version"
@@ -501,7 +501,7 @@ dependencies {
     // implementation 'com.amitshekhar.android:jackson-android-networking:1.0.2'
 
     // Jackson
-    def jackson_version = '2.12.0'
+    def jackson_version = '2.12.1'
     implementation "com.fasterxml.jackson.core:jackson-databind:$jackson_version"
     implementation "com.fasterxml.jackson.core:jackson-core:$jackson_version"
     implementation "com.fasterxml.jackson.core:jackson-annotations:$jackson_version"
