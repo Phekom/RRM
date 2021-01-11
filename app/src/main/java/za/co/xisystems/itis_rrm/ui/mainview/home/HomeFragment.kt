@@ -50,7 +50,7 @@ import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.ERROR
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.INFO
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.SUCCESS
 
-class HomeFragment : BaseFragment(R.layout.fragment_home), KodeinAware {
+class HomeFragment : BaseFragment(), KodeinAware {
 
     override val kodein by kodein()
     private lateinit var homeViewModel: HomeViewModel

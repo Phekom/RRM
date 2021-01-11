@@ -182,7 +182,7 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnabl
         MotionToast.createColorToast(
             this,
             message = message,
-            style = MotionToast.TOAST_WARNING,
+            style = MotionToast.TOAST_ERROR,
             position = MotionToast.GRAVITY_BOTTOM,
             duration = MotionToast.LONG_DURATION,
             font = ResourcesCompat.getFont(this, R.font.helvetica_regular)

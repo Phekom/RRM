@@ -46,7 +46,7 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
 const val INSET_TYPE_KEY = "inset_type"
 const val INSET = "inset"
 
-class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
+class WorkFragment : BaseFragment(), KodeinAware {
 
     override val kodein by kodein()
     private lateinit var workViewModel: WorkViewModel
@@ -68,8 +68,6 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
                 uiScope.onCreate()
 
                 viewLifecycleOwner.lifecycle.addObserver(uiScope)
-
-
             }
         }
     }
@@ -99,7 +97,6 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
 
                         this@WorkFragment.initRecyclerView(headerItems.toWorkListItems())
                         delayedUnveil()
-
                     }
                 }
             })
@@ -141,7 +138,7 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
 
     private fun initVeiledRecycler() {
         ui.veiledWorkListView.run {
-            setVeilLayout(R.layout.item_expandable_header, object : VeiledItemOnClickListener {
+            setVeilLayout(R.layout.item_velied_slug, object : VeiledItemOnClickListener {
                 /** will be invoked when the item on the [VeilRecyclerFrameView] clicked. */
                 override fun onItemClicked(pos: Int) {
                     Toast.makeText(this@WorkFragment.requireContext(), "Loading ...", Toast.LENGTH_SHORT).show()
@@ -255,7 +252,8 @@ class WorkFragment : BaseFragment(R.layout.fragment_work), KodeinAware {
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
+        // no options menu
+        return false
     }
 
     private suspend fun List<JobDTO>.toWorkListItems(): List<ExpandableGroup> {

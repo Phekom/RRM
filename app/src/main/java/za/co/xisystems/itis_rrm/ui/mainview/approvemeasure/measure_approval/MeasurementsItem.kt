@@ -36,12 +36,12 @@ class MeasurementsItem(
 
             Coroutines.main {
 
-            val quantity = approveViewModel.getQuantityForMeasureItemId(jobItemMeasureDTO.itemMeasureId!!)
+                val quantity = approveViewModel.getQuantityForMeasureItemId(jobItemMeasureDTO.itemMeasureId)
                 quantity.observe(viewLifecycleOwner, {
                     measure_item_quantity_textView.text = activity?.getString(R.string.pair, "Qty:", it.toString())
                 })
 
-                val lineRate = approveViewModel.getLineRateForMeasureItemId(jobItemMeasureDTO.itemMeasureId!!)
+                val lineRate = approveViewModel.getLineRateForMeasureItemId(jobItemMeasureDTO.itemMeasureId)
                 lineRate.observe(viewLifecycleOwner, {
                     measure_item_price_textView.text = activity?.getString(R.string.pair, "R", it.toString())
                 })
@@ -61,7 +61,7 @@ class MeasurementsItem(
             }
             view_captured_item_photo.setOnClickListener {
                 Coroutines.main {
-                    approveViewModel.generateGalleryUI(jobItemMeasureDTO.itemMeasureId!!)
+                    approveViewModel.generateGalleryUI(jobItemMeasureDTO.itemMeasureId)
                     Navigation.findNavController(it)
                         .navigate(R.id.action_measureApprovalFragment_to_measureGalleryFragment)
                 }
@@ -141,7 +141,7 @@ class MeasurementsItem(
     private suspend fun GroupieViewHolder.updateMeasureImage() {
         Coroutines.main {
 
-            val photoPaths = approveViewModel.getJobMeasureItemsPhotoPath(jobItemMeasureDTO.itemMeasureId!!)
+            val photoPaths = approveViewModel.getJobMeasureItemsPhotoPath(jobItemMeasureDTO.itemMeasureId)
             if (photoPaths.isNotEmpty()) {
                 val measurePhoto = photoPaths.first()
                 if (measurePhoto.isNotBlank()) {

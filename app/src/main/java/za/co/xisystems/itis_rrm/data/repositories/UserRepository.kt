@@ -9,7 +9,6 @@ import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
-import za.co.xisystems.itis_rrm.ui.auth.AuthListener
 import za.co.xisystems.itis_rrm.utils.Coroutines
 
 /**
@@ -17,41 +16,39 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
  */
 class UserRepository(
     private val api: BaseConnectionApi,
-    private val Db: AppDatabase
+    private val appDb: AppDatabase
 ) : SafeApiRequest() {
 
     private val users = MutableLiveData<UserDTO>()
     private val userError = MutableLiveData<String>()
 
-    private var authListener: AuthListener? = null
-
     init {
         users.observeForever { user ->
-            Coroutines.main {
+            Coroutines.io {
                 saveUser(user)
-                return@main
+                return@io
             }
         }
-        userError.observeForever { error_msg ->
-            Coroutines.main {
+        userError.observeForever { errorMsg ->
+            Coroutines.io {
                 val authEx =
                     AuthException(
-                        error_msg
+                        errorMsg
                     )
                 throw authEx
             }
         }
     }
 
-    suspend fun getPin(): String {
+    suspend fun getHash(): ByteArray? {
         return withContext(Dispatchers.IO) {
-            Db.getUserDao().getPin()
+            appDb.getUserDao().getHash()
         }
     }
 
     suspend fun getUser(): LiveData<UserDTO> {
         return withContext(Dispatchers.IO) {
-            Db.getUserDao().getUser()
+            appDb.getUserDao().getUser()
         }
     }
 
@@ -59,11 +56,11 @@ class UserRepository(
         username: String,
         password: String,
         phoneNumber: String,
-        IMEI: String,
+        imei: String,
         androidDevice: String
     ) {
         val authResponse =
-            apiRequest { api.userRegister(androidDevice, IMEI, phoneNumber, username, password) }
+            apiRequest { api.userRegister(androidDevice, imei, phoneNumber, username, password) }
 
         if (authResponse.errorMessage != null) {
             val authException =
@@ -76,31 +73,37 @@ class UserRepository(
 
     fun upDateUser(
         phoneNumber: String,
-        IMEI: String,
+        imei: String,
         androidDevice: String,
-        confirmPin: String
+        binHash: ByteArray
     ) {
         Coroutines.io {
-            Db.getUserDao().updateUser(confirmPin, phoneNumber, IMEI, androidDevice) // userId,
+
+            appDb.getUserDao().updateUser(
+                binHash,
+                phoneNumber,
+                imei,
+                androidDevice
+            ) // userId,
         }
     }
 
-    fun upDateUserPin(confirmNewPin: String, enterOldPin: String) {
+    fun updateHash(newHash: ByteArray, oldHash: ByteArray) {
         Coroutines.io {
-            Db.getUserDao().upDateUserPin(confirmNewPin, enterOldPin) // userId,
+            appDb.getUserDao().updateUserHash(newHash, oldHash) // userId,
         }
     }
 
     private suspend fun saveUser(user: UserDTO) {
         Coroutines.io {
 
-            if (!Db.getUserDao().checkUserExists(user.userId)) {
-                Db.getUserDao().insert(user)
+            if (!appDb.getUserDao().checkUserExists(user.userId)) {
+                appDb.getUserDao().insert(user)
             }
 
             if (user.userRoles.isNotEmpty()) {
                 for (userRole in user.userRoles) {
-                    Db.getUserRoleDao().saveRole(userRole)
+                    appDb.getUserRoleDao().saveRole(userRole)
                 }
             }
         }

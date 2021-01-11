@@ -24,6 +24,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.widget.doOnTextChanged
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.coroutineScope
 import androidx.lifecycle.lifecycleScope
@@ -49,7 +50,6 @@ import za.co.xisystems.itis_rrm.base.LocationFragment
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.results.XIError
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
-import za.co.xisystems.itis_rrm.data._commons.AbstractTextWatcher
 import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
 import za.co.xisystems.itis_rrm.data.localDB.entities.ItemSectionDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
@@ -88,7 +88,7 @@ import kotlin.collections.set
  * Created by Francis Mahlava on 2019/12/29.
  */
 
-class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate), KodeinAware {
+class EstimatePhotoFragment : LocationFragment(), KodeinAware {
 
     private var sectionId: String? = null
     override val kodein by kodein()
@@ -230,17 +230,19 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
     private fun onItemFound(itemDTO: ItemDTOTemp?): ItemDTOTemp? {
         item = itemDTO
 
-        if (item != null) ui.titleTextView.text =
-            getString(string.pair, item!!.itemCode, item!!.descr)
-        else
+        if (item != null) {
+            ui.titleTextView.text =
+                getString(string.pair, item!!.itemCode, item!!.descr)
+        } else {
             toast(
                 "item is null in " + javaClass.simpleName
             )
+        }
 
         if (newJob != null) {
-            if (newJobItemEstimate == null && item != null)
+            if (newJobItemEstimate == null && item != null) {
                 newJobItemEstimate = newJob?.getJobEstimateByItemId(item?.itemId)
-
+            }
             restoreEstimateViewState()
         }
         return item
@@ -262,7 +264,9 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
+        // no options menu
+        return false
+        // To change body of created functions use File | Settings | File Templates.
     }
 
     override fun onPrepareOptionsMenu(menu: Menu) {
@@ -321,11 +325,9 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
             displayPromptForEnablingGPS(requireActivity())
         }
 
-        ui.valueEditText.addTextChangedListener(object : AbstractTextWatcher() {
-            override fun onTextChanged(text: String) {
-                setCost()
-            }
-        })
+        ui.valueEditText.doOnTextChanged { _, _, _, _ ->
+            setCost()
+        }
 
         setValueEditText(getStoredValue())
     }
@@ -361,7 +363,6 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
                         Navigation.findNavController(view)
                             .navigate(R.id.action_estimatePhotoFragment_to_nav_create)
                     }
-                    // TODO(clear temp database Tables for Job And Items)
                 }
 
                 R.id.updateButton -> {
@@ -775,14 +776,14 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
                     endKm = localProjectSection.endKm
                     Timber.d("ProjectSection: $it")
                     Coroutines.main {
-                        if (!createViewModel.checkIfJobSectionExists(newJob!!.JobId, projectSectionId)) {
+                        if (newJob!!.SectionId.isNullOrEmpty()) {
                             createRouteSection(
                                 secId = projectSectionId,
                                 jobId = newJob!!.JobId,
                                 startKm = startKm!!,
                                 endKm = endKm!!
                             ).apply {
-                                newJob!!.JobSections?.add(this)
+                                newJob!!.JobSections.add(this)
                                 newJob!!.SectionId = jobSectionId
                                 newJob!!.StartKm = this.startKm
                                 newJob!!.EndKm = this.endKm
@@ -833,12 +834,12 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
             this@EstimatePhotoFragment.disableGlide = false
 
             val targetUri: Uri? = extractImageUri(photo)
-            val targetView = when (photo.is_PhotoStart) {
+            val targetView = when (photo.isPhotostart) {
                 true -> ui.startImageView
                 else -> ui.endImageView
             }
 
-            val targetAnimation: LottieAnimationView = when (photo.is_PhotoStart) {
+            val targetAnimation: LottieAnimationView = when (photo.isPhotostart) {
                 true -> ui.startAnimationView
                 else -> ui.endAnimationView
             }
@@ -893,10 +894,9 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
             photoLatitudeEnd = currentLocation.latitude,
             photoLongitudeEnd = currentLocation.longitude,
             photoPath = filePath["path"] ?: error(""),
-            jobItemEstimate = null,
             recordSynchStateId = 0,
             recordVersion = 0,
-            is_PhotoStart = isPhotoStart,
+            isPhotostart = isPhotoStart,
             image = null
         )
     }
@@ -917,7 +917,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
             lineRate = item!!.tenderRate * item.quantity,
             jobEstimateWorks = null,
             jobItemEstimatePhotos = null, // newJobItemPhotosList,
-            jobItemMeasure = null,
+            // jobItemMeasure = null,
             // job = null,
             projectItemId = itemId,
             projectVoId = newJob?.ProjectVoId,
@@ -947,7 +947,7 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
             jobId = jobId,
             startKm = startKm,
             endKm = endKm,
-            job = null,
+            // job = null,
             recordSynchStateId = 0,
             recordVersion = 0
         )
@@ -989,8 +989,10 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
     ) = try {
         GlideApp.with(this)
             .load(imageUri)
+            .centerCrop()
             .error(R.drawable.no_image)
             .into(imageView)
+
         if (animate) imageView.startAnimation(bounce_1000)
 
         imageView.setOnClickListener {
@@ -1333,14 +1335,14 @@ class EstimatePhotoFragment : LocationFragment(R.layout.fragment_photo_estimate)
                     isEstimateDone = newJobItemEstimate!!.isEstimateComplete()
                     newJobItemEstimate?.jobItemEstimatePhotos?.forEach { photo ->
                         restoreEstimatePhoto(
-                            photo.is_PhotoStart
+                            photo.isPhotostart
                         )
 
-                        val targetTextView = when (photo.is_PhotoStart) {
+                        val targetTextView = when (photo.isPhotostart) {
                             true -> ui.startSectionTextView
                             else -> ui.endSectionTextView
                         }
-                        establishRouteSectionData(photo.is_PhotoStart, targetTextView, false)
+                        establishRouteSectionData(photo.isPhotostart, targetTextView, false)
                     }
 
                     if (isEstimateDone) {

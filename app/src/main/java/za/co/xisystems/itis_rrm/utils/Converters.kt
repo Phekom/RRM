@@ -72,8 +72,6 @@ class Converters {
         return gson.toJson(myObjects)
     }
 
-    // ===========================================================================
-
     @TypeConverter
     fun storedStringToProjectDTO(data: String?): ArrayList<ProjectDTO> {
         val gson = Gson()
@@ -148,10 +146,10 @@ class Converters {
 
     // ======================================================================================
     @TypeConverter
-    fun storedStringToItemSectionDTO(data: String?): ArrayList<ItemSectionDTO> {
+    fun storedStringToItemSectionDTO(data: String?): ArrayList<ItemSectionDTO>? {
         val gson = Gson()
         if (data == null) {
-            return Collections.EMPTY_LIST as ArrayList<ItemSectionDTO>
+            return Collections.EMPTY_LIST as ArrayList<ItemSectionDTO>?
         }
         val listType = object : TypeToken<ArrayList<ItemSectionDTO>>() {
         }.type
@@ -586,7 +584,7 @@ class Converters {
     }
 
     @TypeConverter
-    fun JobItemMeasureToStoredString(myObjects: JobItemMeasureDTO?): String {
+    fun JobItemMeasuresToStoredString(myObjects: JobItemMeasureDTO?): String {
         val gson = Gson()
         return gson.toJson(myObjects)
     }

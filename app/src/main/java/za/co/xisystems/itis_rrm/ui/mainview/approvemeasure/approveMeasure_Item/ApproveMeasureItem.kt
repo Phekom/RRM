@@ -1,5 +1,6 @@
 package za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.approveMeasure_Item
 
+import android.view.View
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import com.xwray.groupie.kotlinandroidextensions.Item
 import kotlinx.android.synthetic.main.single_job_listing.*
@@ -22,9 +23,10 @@ class ApproveMeasureItem(
         viewHolder.apply {
             appListID.text = getItemId(position + 1).toString()
             title.text = itemView.context.getString(
-                    R.string.pair,
-                    "JI:",
-                    jobItemMeasureDTO.jimNo)
+                R.string.pair,
+                "JI:",
+                jobItemMeasureDTO.jimNo
+            )
             Coroutines.main {
                 val sectionId =
                     approveViewModel.getProjectSectionIdForJobId(jobItemMeasureDTO.jobId!!)
@@ -35,11 +37,12 @@ class ApproveMeasureItem(
                 subtitle.run {
                     text = context.getString(R.string.pair, routeSection, description)
                 }
+                icon.visibility = View.GONE
             }
         }
     }
 
-    override fun getLayout() = R.layout.single_job_listing
+    override fun getLayout() = R.layout.item_header
 }
 
 private fun getItemId(position: Int): Long {

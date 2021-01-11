@@ -67,13 +67,13 @@ object JobDataController {
         job.setContractVoId(DataConversion.toLittleEndian(job.ContractVoId))
         job.setVoId(DataConversion.toLittleEndian(job.VoId))
 
-        job.JobSections?.forEach { jobSection ->
+        job.JobSections.forEach { jobSection ->
             jobSection.setJobSectionId(DataConversion.toLittleEndian(jobSection.jobSectionId))
             jobSection.setProjectSectionId(DataConversion.toLittleEndian(jobSection.projectSectionId))
             jobSection.setJobId(DataConversion.toLittleEndian(jobSection.jobId))
         }
 
-        job.JobItemEstimates?.forEach { jie ->
+        job.JobItemEstimates.forEach { jie ->
             jie.setEstimateId(DataConversion.toLittleEndian(jie.estimateId))
             jie.setJobId(DataConversion.toLittleEndian(jie.jobId))
             jie.setProjectItemId(DataConversion.toLittleEndian(jie.projectItemId))
@@ -101,7 +101,7 @@ object JobDataController {
             }
         }
 
-        job.JobItemMeasures?.forEach { jim ->
+        job.JobItemMeasures.forEach { jim ->
 
             jim.setItemMeasureId(DataConversion.toLittleEndian(jim.itemMeasureId))
             jim.setJobId(DataConversion.toLittleEndian(jim.jobId))
@@ -219,7 +219,7 @@ private fun JobEstimateWorksPhotoDTO.setWorksId(toLittleEndian: String?) {
 }
 
 private fun JobItemMeasureDTO.setItemMeasureId(toLittleEndian: String?) {
-    this.itemMeasureId = toLittleEndian
+    this.itemMeasureId = toLittleEndian!!
 }
 
 private fun JobEstimateWorksPhotoDTO.setPhotoId(toLittleEndian: String?) {

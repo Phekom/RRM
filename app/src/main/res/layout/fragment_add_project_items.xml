@@ -64,13 +64,15 @@
                 <TextView
                     android:id="@+id/projectLabel"
                     style="@style/_orangeTextLabel"
-                    android:layout_width="0dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_margin="@dimen/small"
                     android:text="@string/project"
                     app:layout_constraintEnd_toStartOf="@+id/selectedProjectTextView"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/contractLabel" />
+                    app:layout_constraintTop_toBottomOf="@+id/contractLabel"
+                    android:layout_marginTop="8dp"
+                    app:layout_constraintHorizontal_bias="0.0" />
 
                 <TextView
                     android:id="@+id/selectedProjectTextView"
@@ -82,8 +84,9 @@
                     android:hint="@string/contract"
                     android:textStyle="bold"
                     app:layout_constraintEnd_toStartOf="@+id/resetButton"
-                    app:layout_constraintStart_toStartOf="@+id/selectedContractTextView"
-                    app:layout_constraintTop_toBottomOf="@+id/selectedContractTextView" />
+                    app:layout_constraintTop_toBottomOf="@+id/selectedContractTextView"
+                    android:layout_marginTop="8dp"
+                    app:layout_constraintStart_toEndOf="@+id/projectLabel" />
             </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.cardview.widget.CardView>
 
@@ -121,8 +124,9 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.50"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/mid_lin">
+        app:layout_constraintTop_toBottomOf="@+id/mid_lin"
         app:layout_constraintBottom_toTopOf="@+id/last_lin">
+
         <androidx.cardview.widget.CardView
             android:id="@+id/itemsCardView"
             android:layout_width="match_parent"

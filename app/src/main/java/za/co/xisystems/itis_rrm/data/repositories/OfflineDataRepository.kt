@@ -202,12 +202,6 @@ class OfflineDataRepository(
         }
     }
 
-    suspend fun getItemForItemId(projectItemId: String?): LiveData<ProjectItemDTO> {
-        return withContext(Dispatchers.IO) {
-            appDb.getProjectItemDao().getItemForItemId(projectItemId!!)
-        }
-    }
-
     suspend fun getProjectSectionIdForJobId(jobId: String?): String {
         return withContext(Dispatchers.IO) {
             appDb.getJobSectionDao().getProjectSectionId(jobId!!)
@@ -284,44 +278,39 @@ class OfflineDataRepository(
     }
 
     private suspend fun saveSectionsItems(sections: ArrayList<String>?) {
-        var sectionSize: Int? = sections?.size
+        var sectionSize: Int = sections?.size ?: 0
         var sectionCount = 0
-        if (sectionSize != null) {
-            withContext(Dispatchers.IO) {
 
-                try {
-                    sections?.forEach { section ->
-                        //  Let's get the String
-                        val pattern = Pattern.compile("(.*?):")
-                        val matcher = pattern.matcher(section)
+        withContext(Dispatchers.IO) {
 
-                        val sectionItemId = SqlLitUtils.generateUuid()
-                        if (matcher.find() && section.isNotEmpty()) {
-                            val itemCode = matcher.group(1)?.replace("\\s+".toRegex(), "")
-                            itemCode?.let {
-                                try {
-                                    if (!appDb.getSectionItemDao().checkIfSectionItemsExist(it)) {
-                                        appDb.getSectionItemDao().insertSectionItem(
-                                            description = section,
-                                            itemCode = it,
-                                            sectionItemId = sectionItemId
-                                        )
-                                        sectionCount++
-                                    } else {
-                                        sectionSize--
-                                    }
-                                } catch (e: Exception) {
-                                    Timber.e(e, "Exception creating section item $itemCode")
-                                }
+            try {
+                sections?.forEach { section ->
+                    //  Let's get the String
+                    val pattern = Pattern.compile("(.*?):")
+                    val matcher = pattern.matcher(section)
+
+                    val sectionItemId = SqlLitUtils.generateUuid()
+                    if (matcher.find() && section.isNotBlank()) {
+                        val itemCode = matcher.group(1)?.replace("\\s+".toRegex(), "")
+                        itemCode?.let {
+                            if (!appDb.getSectionItemDao().checkIfSectionItemsExist(it)) {
+                                appDb.getSectionItemDao().insertSectionItem(
+                                    description = section,
+                                    itemCode = it,
+                                    sectionItemId = sectionItemId
+                                )
+                                sectionCount++
+                            } else {
+                                sectionSize--
                             }
                         }
-                        postEvent(XIProgressUpdate("sections", sectionCount.toFloat() / sectionSize.toFloat()))
                     }
-                } catch (throwable: Throwable) {
-                    Timber.e(throwable, "Exception caught saving section items: ${throwable.message}")
-                } finally {
-                    postEvent(XIProgressUpdate("sections", 1.0f))
+                    postEvent(XIProgressUpdate("sections", sectionCount.toFloat() / sectionSize.toFloat()))
                 }
+            } catch (throwable: Throwable) {
+                Timber.e(throwable, "Exception caught saving section items: ${throwable.message}")
+            } finally {
+                postEvent(XIProgressUpdate("sections", 1.0f))
             }
         }
     }
@@ -337,36 +326,35 @@ class OfflineDataRepository(
         projectCount = 0
         projectMax = 0
         withContext(Dispatchers.IO) {
-            if (contracts.isNotEmpty()) {
-                val validContracts = contracts.filter { contract ->
-                    contract.projects != null && contract.contractId.isNotBlank()
-                }
-                    .distinctBy { contract -> contract.contractId }
-                contractMax += validContracts.count()
-                validContracts.forEach { contract ->
-                    if (!appDb.getContractDao().checkIfContractExists(contract.contractId)) {
-                        appDb.getContractDao().insertContract(contract)
-                        contractCount++
-                        newContracts = true
 
-                        val validProjects =
-                            contract.projects?.filter { project ->
-                                project.projectId.isNotBlank()
-                            }?.distinctBy { project -> project.projectId }
+            val validContracts = contracts.filter { contract ->
+                contract.projects != null && contract.contractId.isNotBlank()
+            }
+                .distinctBy { contract -> contract.contractId }
+            contractMax += validContracts.count()
+            validContracts.forEach { contract ->
+                if (!appDb.getContractDao().checkIfContractExists(contract.contractId)) {
+                    appDb.getContractDao().insertContract(contract)
+                    contractCount++
+                    newContracts = true
 
-                        if (!validProjects.isNullOrEmpty()) {
-                            saveProjects(validProjects, contract)
-                        }
-                    } else {
-                        contractMax--
+                    val validProjects =
+                        contract.projects?.filter { project ->
+                            project.projectId.isNotBlank()
+                        }?.distinctBy { project -> project.projectId }
+
+                    if (!validProjects.isNullOrEmpty()) {
+                        saveProjects(validProjects, contract)
                     }
+                } else {
+                    contractMax--
+                }
 
-                    Timber.d("cr**: $contractCount / $contractMax contracts")
-                    Timber.d("cr**: $projectCount / $projectMax projects")
-                }
-                if (contractCount >= contractMax && !newProjects) {
-                    postEvent(XIProgressUpdate("projects", 1.0f))
-                }
+                Timber.d("cr**: $contractCount / $contractMax contracts")
+                Timber.d("cr**: $projectCount / $projectMax projects")
+            }
+            if (contractCount >= contractMax && !newProjects) {
+                postEvent(XIProgressUpdate("projects", 1.0f))
             }
         }
     }
@@ -481,19 +469,21 @@ class OfflineDataRepository(
                                 )
                             )
 
-                        appDb.getProjectItemDao().insertItem(
-                            itemId = item.itemId,
-                            itemCode = item.itemCode,
-                            descr = item.descr,
-                            itemSections = item.itemSections,
-                            tenderRate = item.tenderRate,
-                            uom = item.uom,
-                            workflowId = item.workflowId,
-                            sectionItemId = sectionItemId,
-                            quantity = item.quantity,
-                            estimateId = item.estimateId,
-                            projectId = project.projectId
-                        )
+                        item.itemSections?.let {
+                            appDb.getProjectItemDao().insertItem(
+                                itemId = item.itemId,
+                                itemCode = item.itemCode,
+                                descr = item.descr,
+                                itemSections = it,
+                                tenderRate = item.tenderRate,
+                                uom = item.uom,
+                                workflowId = item.workflowId,
+                                sectionItemId = sectionItemId,
+                                quantity = item.quantity,
+                                estimateId = item.estimateId,
+                                projectId = project.projectId
+                            )
+                        }
                     }
                 } catch (ex: Exception) {
                     Timber.e(ex, "ItemId: ${item.itemId} -> ${ex.message}")
@@ -617,15 +607,13 @@ class OfflineDataRepository(
                     appDb.getJobDao().insertOrUpdateJobs(job)
                 }
 
-                job.JobSections?.let {
                     saveJobSections(job)
-                }
 
-                job.JobItemEstimates?.let {
+
                     saveJobItemEstimates(job)
-                }
 
-                job.JobItemMeasures?.let {
+
+                if (job.JobItemMeasures.isNotEmpty()) {
                     saveJobItemMeasuresForJob(job)
                 }
             }
@@ -635,16 +623,20 @@ class OfflineDataRepository(
     private suspend fun saveJobItemMeasuresForJob(
         job: JobDTO
     ) {
-        for (jobItemMeasure in job.JobItemMeasures!!) {
+        job.JobItemMeasures?.forEach{ jobItemMeasure ->
             if (!appDb.getJobItemMeasureDao()
-                    .checkIfJobItemMeasureExists(jobItemMeasure.itemMeasureId!!)
+                    .checkIfJobItemMeasureExists(jobItemMeasure.itemMeasureId)
             ) {
-                jobItemMeasure.setItemMeasureId(
-                    DataConversion.toBigEndian(
-                        jobItemMeasure.itemMeasureId
+                DataConversion.toBigEndian(
+                    jobItemMeasure.itemMeasureId
+                )?.let {
+                    jobItemMeasure.setItemMeasureId(
+                        it
                     )
+                }
+                jobItemMeasure.setJobId(
+                    DataConversion.toBigEndian(jobItemMeasure.jobId)!!
                 )
-                jobItemMeasure.setJobId(DataConversion.toBigEndian(jobItemMeasure.jobId))
                 jobItemMeasure.setProjectItemId(
                     DataConversion.toBigEndian(
                         jobItemMeasure.projectItemId
@@ -662,7 +654,7 @@ class OfflineDataRepository(
                 jobItemMeasure.setQty(jobItemMeasure.qty)
                 jobItemMeasure.setDeleted(0)
                 if (!appDb.getJobItemMeasureDao()
-                        .checkIfJobItemMeasureExists(jobItemMeasure.itemMeasureId!!)
+                        .checkIfJobItemMeasureExists(jobItemMeasure.itemMeasureId)
                 )
                     appDb.getJobItemMeasureDao().insertJobItemMeasure(jobItemMeasure)
 
@@ -674,13 +666,13 @@ class OfflineDataRepository(
                     saveJobItemMeasurePhotos(jobItemMeasure)
                 }
 
-                appDb.getJobItemMeasureDao().undeleteMeasurement(jobItemMeasure.itemMeasureId!!)
+                appDb.getJobItemMeasureDao().undeleteMeasurement(jobItemMeasure.itemMeasureId)
             }
         }
     }
 
     private suspend fun saveJobSections(job: JobDTO) {
-        for (jobSection in job.JobSections!!) {
+        job.JobSections?.forEach{ jobSection ->
 
             if (!appDb.getJobSectionDao().checkIfJobSectionExist(jobSection.jobSectionId)) {
                 jobSection.setJobSectionId(DataConversion.toBigEndian(jobSection.jobSectionId))
@@ -842,19 +834,23 @@ class OfflineDataRepository(
     ) {
         for (jobItemMeasure in jobItemMeasures) {
             if (!appDb.getJobItemMeasureDao().checkIfJobItemMeasureExists(
-                    jobItemMeasure.itemMeasureId!!
+                    jobItemMeasure.itemMeasureId
                 )
             ) {
-                jobItemMeasure.setItemMeasureId(
-                    DataConversion.toBigEndian(
-                        jobItemMeasure.itemMeasureId
+                DataConversion.toBigEndian(
+                    jobItemMeasure.itemMeasureId
+                )?.let {
+                    jobItemMeasure.setItemMeasureId(
+                        it
                     )
-                )
-                jobItemMeasure.setJobId(
-                    DataConversion.toBigEndian(
-                        jobItemMeasure.jobId
+                }
+                DataConversion.toBigEndian(
+                    jobItemMeasure.jobId
+                )?.let {
+                    jobItemMeasure.setJobId(
+                        it
                     )
-                )
+                }
                 jobItemMeasure.setProjectItemId(
                     DataConversion.toBigEndian(
                         jobItemMeasure.projectItemId
@@ -882,7 +878,7 @@ class OfflineDataRepository(
                 )
                 jobItemMeasure.setJobNo(job.JiNo)
                 if (!appDb.getJobItemMeasureDao().checkIfJobItemMeasureExists(
-                        jobItemMeasure.itemMeasureId!!
+                        jobItemMeasure.itemMeasureId
                     )
                 )
                     appDb.getJobItemMeasureDao().insertJobItemMeasure(
@@ -1054,7 +1050,7 @@ class OfflineDataRepository(
         }
     }
 
-    private fun getJobIdFromPrimaryKeyValues(primaryKeyValues: ArrayList<PrimaryKeyValueDTO>): String? {
+    private fun getJobIdFromPrimaryKeyValues(primaryKeyValues: List<PrimaryKeyValueDTO>): String? {
         for (primaryKeyValue in primaryKeyValues) {
             if (primaryKeyValue.primary_key!!.contains("JobId")) {
                 return DataConversion.bigEndianToString(primaryKeyValue.p_value!!)
@@ -1240,8 +1236,11 @@ class OfflineDataRepository(
         workflowJobSections: java.util.ArrayList<JobSectionDTO>
     ) {
         workflowJobSections.forEach { jobSection ->
-            if (!appDb.getJobSectionDao().checkIfJobSectionExist(jobSection.jobSectionId))
-                appDb.getJobSectionDao().insertJobSection(jobSection) else
+            if (!appDb.getJobSectionDao()
+                    .checkIfJobSectionExist(jobSection.jobSectionId)
+            ) {
+                appDb.getJobSectionDao().insertJobSection(jobSection)
+            } else {
                 appDb.getJobSectionDao().updateExistingJobSectionWorkflow(
                     jobSection.jobSectionId,
                     jobSection.projectSectionId,
@@ -1251,6 +1250,7 @@ class OfflineDataRepository(
                     jobSection.recordVersion,
                     jobSection.recordSynchStateId
                 )
+            }
         }
     }
 
@@ -1316,7 +1316,7 @@ class OfflineDataRepository(
     }
 
     private fun JobItemEstimatesPhotoDTO.setIsPhotoStart(photoStart: Boolean) {
-        this.is_PhotoStart = photoStart
+        this.isPhotostart = photoStart
     }
 
     private fun JobItemEstimatesPhotoDTO.setPhotoPath(photoPath: String) {
@@ -1367,11 +1367,11 @@ class OfflineDataRepository(
         this.worksId = toBigEndian!!
     }
 
-    private fun JobItemMeasureDTO.setItemMeasureId(toBigEndian: String?) {
+    private fun JobItemMeasureDTO.setItemMeasureId(toBigEndian: String) {
         this.itemMeasureId = toBigEndian
     }
 
-    private fun JobItemMeasureDTO.setJobId(toBigEndian: String?) {
+    private fun JobItemMeasureDTO.setJobId(toBigEndian: String) {
         this.jobId = toBigEndian
     }
 

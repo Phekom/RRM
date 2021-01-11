@@ -36,7 +36,7 @@ import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.estimate_measure_item.Est
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
 
-class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware {
+class MeasureFragment : BaseFragment(), KodeinAware {
 
     override val kodein by kodein()
     private lateinit var measureViewModel: MeasureViewModel
@@ -67,7 +67,8 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
+        // no options menu
+        return false
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -241,7 +242,7 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
 
     private fun initVeiledRecycler() {
         ui.estimationsToBeMeasuredListView.run {
-            setVeilLayout(R.layout.single_listview_item, object : VeiledItemOnClickListener {
+            setVeilLayout(R.layout.item_velied_slug, object : VeiledItemOnClickListener {
                 /** will be invoked when the item on the [VeilRecyclerFrameView] clicked. */
                 override fun onItemClicked(pos: Int) {
                     Toast.makeText(this@MeasureFragment.requireContext(), "Loading ...", Toast.LENGTH_SHORT).show()
@@ -249,7 +250,7 @@ class MeasureFragment : BaseFragment(R.layout.fragment_estmeasure), KodeinAware 
             })
             setAdapter(groupAdapter)
             setLayoutManager(LinearLayoutManager(this.context))
-            addVeiledItems(10)
+            addVeiledItems(15)
         }
     }
 

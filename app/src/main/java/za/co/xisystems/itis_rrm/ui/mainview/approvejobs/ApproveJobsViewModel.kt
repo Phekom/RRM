@@ -26,7 +26,6 @@ import za.co.xisystems.itis_rrm.data.repositories.JobApprovalDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.approve_job_item.ApproveJobItem
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
-import kotlin.coroutines.cancellation.CancellationException
 
 /**
  * Created by Francis Mahlava on 03,October,2019
@@ -43,15 +42,11 @@ class ApproveJobsViewModel(
 
     private val workExceptionHandler = CoroutineExceptionHandler { _, throwable ->
         val message = "Caught during workflow: ${throwable.message ?: XIErrorHandler.UNKNOWN_ERROR}"
-
+        Timber.e(throwable)
         val caughtException = XIError(
             throwable, message
         )
-
         workflowState.postValue(caughtException)
-
-        superJob.cancelChildren(CancellationException(message))
-        Timber.e(throwable, message)
     }
 
     private val mainContext = Job(superJob) + Dispatchers.Main + workExceptionHandler

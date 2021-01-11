@@ -5,8 +5,6 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import androidx.room.migration.Migration
-import androidx.sqlite.db.SupportSQLiteDatabase
 import dev.matrix.roomigrant.GenerateRoomMigrations
 import za.co.xisystems.itis_rrm.data.localDB.dao.ActivityDao
 import za.co.xisystems.itis_rrm.data.localDB.dao.ContractDao
@@ -89,10 +87,8 @@ import za.co.xisystems.itis_rrm.utils.Converters
         JobItemMeasureDTO::class, ToDoListEntityDTO::class, ChildLookupDTO::class,
         JobEstimateWorksDTO::class, JobEstimateWorksPhotoDTO::class, SectionItemDTO::class,
         WorkFlowsDTO::class, WF_WorkStepDTO::class
-        // JobItemMeasureDTOTemp::class,JobItemMeasurePhotoDTOTemp::class,
-
     ],
-    version = 3
+    version = 4
 )
 @TypeConverters(Converters::class)
 @GenerateRoomMigrations
@@ -143,25 +139,12 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
-        val AppDatabase_Migration_1_2 = object : Migration(1, 2) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("ALTER TABLE JOB_ITEM_MEASURE ADD COLUMN deleted INT NOT NULL DEFAULT 0")
-            }
-        }
-
-        // Soft delete of jobs for Decline Job functionality
-        val AppDatabase_Migration_2_3 = object : Migration(2, 3) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("ALTER TABLE JOB_TABLE ADD COLUMN deleted INT NOT NULL DEFAULT 0")
-            }
-        }
-        var AppDatabase_Migrations: Array<out Migration> = arrayOf(AppDatabase_Migration_1_2, AppDatabase_Migration_2_3)
-
         private fun buildDatabase(context: Context) =
             Room.databaseBuilder(
                 context.applicationContext,
                 AppDatabase::class.java,
                 "myRRM_Database.db"
-            ).addMigrations(*AppDatabase_Migrations).build()
+            ).addMigrations(*AppDatabase_Migrations.build())
+                .fallbackToDestructiveMigrationFrom(20).build()
     }
 }
