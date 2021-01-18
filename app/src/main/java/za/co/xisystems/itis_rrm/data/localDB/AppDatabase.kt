@@ -1,3 +1,5 @@
+@file:Suppress("SpellCheckingInspection")
+
 package za.co.xisystems.itis_rrm.data.localDB
 
 import android.content.Context
@@ -6,6 +8,8 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import dev.matrix.roomigrant.GenerateRoomMigrations
+import net.sqlcipher.database.SQLiteDatabase
+import net.sqlcipher.database.SupportFactory
 import za.co.xisystems.itis_rrm.data.localDB.dao.ActivityDao
 import za.co.xisystems.itis_rrm.data.localDB.dao.ContractDao
 import za.co.xisystems.itis_rrm.data.localDB.dao.EntitiesDao
@@ -100,7 +104,6 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun getJobItemMeasureDao(): JobItemMeasureDao
     abstract fun getJobItemEstimatePhotoDao(): JobItemEstimatePhotoDao
     abstract fun getJobItemMeasurePhotoDao(): JobItemMeasurePhotoDao
-
     abstract fun getUserDao(): UserDao
     abstract fun getUserRoleDao(): UserRoleDao
     abstract fun getContractDao(): ContractDao
@@ -132,6 +135,8 @@ abstract class AppDatabase : RoomDatabase() {
         @Volatile
         private var instance: AppDatabase? = null
         private val LOCK = Any()
+        private val passphrase: ByteArray = SQLiteDatabase.getBytes("sillypassphrase".toCharArray())
+        val factory = SupportFactory(passphrase, null, false)
 
         operator fun invoke(context: Context) = instance ?: synchronized(LOCK) {
             instance ?: buildDatabase(context).also {
@@ -144,7 +149,8 @@ abstract class AppDatabase : RoomDatabase() {
                 context.applicationContext,
                 AppDatabase::class.java,
                 "myRRM_Database.db"
-            ).addMigrations(*AppDatabase_Migrations.build())
+            ).openHelperFactory(factory)
+                .addMigrations(*AppDatabase_Migrations.build())
                 .fallbackToDestructiveMigrationFrom(20).build()
     }
 }
