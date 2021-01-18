@@ -7,9 +7,9 @@
 
 -verbose
 
--printseeds obfuscation/seeds.txt
+-printseeds obfuscation/seeds.txt ## all the classes and dependencies we actually use
 -printusage obfuscation/unused.txt ## unused classes that are stripped out in the process
--printmapping obfuscation/mapping.txt ## mapping file that shows the obfuscated names of the classes after proguad is applied
+-printmapping obfuscation/mapping.txt ## mapping file that shows the obfuscated names of the classes after proguard is applied
 
 ## the developer can specify keywords for the obfuscation (I'm using Pokemon names)
 -obfuscationdictionary obfuscation/keywords.txt
@@ -43,6 +43,10 @@
 -keepattributes EnclosingMethod
 -keep class sun.misc.Unsafe { *; }
 -keep class com.google.gson.** { *; }
+
+# SQLCipher
+-keep,includedescriptorclasses class net.sqlcipher.** { *; }
+-keep,includedescriptorclasses interface net.sqlcipher.** { *; }
 
 # OkHttp3
 -keep class okhttp3.** { *; }
