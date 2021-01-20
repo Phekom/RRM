@@ -16,6 +16,7 @@ import androidx.room.TypeConverters
 import dev.matrix.roomigrant.GenerateRoomMigrations
 import net.sqlcipher.database.SQLiteDatabase
 import net.sqlcipher.database.SupportFactory
+import za.co.xisystems.itis_rrm.BuildConfig
 import za.co.xisystems.itis_rrm.data.localDB.dao.ActivityDao
 import za.co.xisystems.itis_rrm.data.localDB.dao.ContractDao
 import za.co.xisystems.itis_rrm.data.localDB.dao.EntitiesDao
@@ -152,12 +153,25 @@ abstract class AppDatabase : RoomDatabase() {
         }
 
         private fun buildDatabase(context: Context) =
-            Room.databaseBuilder(
-                context.applicationContext,
-                AppDatabase::class.java,
-                "myRRM_Database.db"
-            ).openHelperFactory(factory)
-                .addMigrations(*AppDatabase_Migrations.build())
-                .fallbackToDestructiveMigrationFrom(20).build()
+            when {
+                BuildConfig.DEBUG -> {
+                    // Unecrypted DB
+                    Room.databaseBuilder(
+                        context.applicationContext,
+                        AppDatabase::class.java,
+                        "myRRM_Database.db"
+                    ).addMigrations(*AppDatabase_Migrations.build())
+                        .fallbackToDestructiveMigrationFrom(20).build()
+                }
+                else -> {
+                    Room.databaseBuilder(
+                        context.applicationContext,
+                        AppDatabase::class.java,
+                        "myRRM_Database.db"
+                    ).openHelperFactory(factory)
+                        .addMigrations(*AppDatabase_Migrations.build())
+                        .fallbackToDestructiveMigrationFrom(20).build()
+                }
+            }
     }
 }
