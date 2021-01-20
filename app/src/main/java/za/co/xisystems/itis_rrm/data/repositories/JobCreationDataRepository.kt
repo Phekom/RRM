@@ -1,3 +1,9 @@
+/*
+ * Updated by Shaun McDonald on 2021/22/20
+ * Last modified on 2021/01/20 12:46 PM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.data.repositories
 
 // import sun.security.krb5.Confounder.bytes
@@ -12,8 +18,6 @@ import com.google.gson.Gson
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
-import java.io.IOException
-import java.util.ArrayList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -41,6 +45,8 @@ import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.PhotoUtil.getPhotoPathFromExternalDirectory
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
+import java.io.IOException
+import java.util.ArrayList
 
 /**
  * Created by Francis Mahlava on 2019/11/28.
@@ -407,9 +413,9 @@ class JobCreationDataRepository(
     private fun uploadCreateJobImages(packageJob: JobDTO, activity: FragmentActivity) {
 
         var jobCounter = 1
-        val totalJobs = packageJob.JobItemEstimates.size
+        val totalJobs = packageJob.JobItemEstimates?.size ?: 0
 
-        packageJob.JobItemEstimates.map { jobItemEstimate ->
+        packageJob.JobItemEstimates?.map { jobItemEstimate ->
             val totalImages = jobItemEstimate.jobItemEstimatePhotos?.size ?: 0
             var imageCounter = 1
             jobItemEstimate.jobItemEstimatePhotos?.map { estimatePhoto ->

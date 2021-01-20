@@ -1,8 +1,11 @@
+/*
+ * Updated by Shaun McDonald on 2021/22/20
+ * Last modified on 2021/01/20 12:46 PM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.data.localDB.entities
 
-import android.os.Parcel
-import android.os.Parcelable
-import android.os.Parcelable.Creator
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
@@ -39,48 +42,4 @@ data class JobItemMeasurePhotoDTO(
     @SerializedName("RecordVersion")
     val recordVersion: Int
 
-) : Serializable, Parcelable {
-    constructor(parcel: Parcel) : this(
-        parcel.readInt(),
-        parcel.readString(),
-        parcel.readString(),
-        parcel.readString(),
-        parcel.readString(),
-        parcel.readString(),
-        parcel.readString()!!,
-        parcel.readDouble(),
-        parcel.readDouble(),
-        parcel.readString(),
-        parcel.readInt(),
-        parcel.readInt()
-    )
-
-    override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeInt(id)
-        parcel.writeString(descr)
-        parcel.writeString(filename)
-        parcel.writeString(estimateId)
-        parcel.writeString(itemMeasureId)
-        parcel.writeString(photoDate)
-        parcel.writeString(photoId)
-        parcel.writeDouble(photoLatitude)
-        parcel.writeDouble(photoLongitude)
-        parcel.writeString(photoPath)
-        parcel.writeInt(recordSynchStateId)
-        parcel.writeInt(recordVersion)
-    }
-
-    override fun describeContents(): Int {
-        return 0
-    }
-
-    companion object CREATOR : Creator<JobItemMeasurePhotoDTO> {
-        override fun createFromParcel(parcel: Parcel): JobItemMeasurePhotoDTO {
-            return JobItemMeasurePhotoDTO(parcel)
-        }
-
-        override fun newArray(size: Int): Array<JobItemMeasurePhotoDTO?> {
-            return arrayOfNulls(size)
-        }
-    }
-}
+) : Serializable

@@ -1,3 +1,9 @@
+/*
+ * Updated by Shaun McDonald on 2021/22/20
+ * Last modified on 2021/01/20 1:28 PM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 @file:Suppress("SpellCheckingInspection")
 
 package za.co.xisystems.itis_rrm.data.localDB
@@ -74,6 +80,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.WorkFlowDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.WorkFlowRouteDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.WorkFlowsDTO
 import za.co.xisystems.itis_rrm.utils.Converters
+import za.co.xisystems.itis_rrm.utils.OffsetDatetimeConverters
 
 /**
  * Created by Francis Mahlava on 2019/10/23., exportSchema = false
@@ -92,9 +99,9 @@ import za.co.xisystems.itis_rrm.utils.Converters
         JobEstimateWorksDTO::class, JobEstimateWorksPhotoDTO::class, SectionItemDTO::class,
         WorkFlowsDTO::class, WF_WorkStepDTO::class
     ],
-    version = 4
+    version = 5
 )
-@TypeConverters(Converters::class)
+@TypeConverters(Converters::class, OffsetDatetimeConverters::class)
 @GenerateRoomMigrations
 abstract class AppDatabase : RoomDatabase() {
 

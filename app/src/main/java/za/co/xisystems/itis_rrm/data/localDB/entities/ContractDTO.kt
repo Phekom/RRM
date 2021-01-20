@@ -1,8 +1,11 @@
+/*
+ * Updated by Shaun McDonald on 2021/22/20
+ * Last modified on 2021/01/20 12:46 PM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.data.localDB.entities
 
-import android.os.Parcel
-import android.os.Parcelable
-import android.os.Parcelable.Creator
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
@@ -33,33 +36,4 @@ data class ContractDTO(
     @SerializedName("Projects")
     val projects: ArrayList<ProjectDTO>?
 
-) : Serializable, Parcelable {
-    constructor(parcel: Parcel) : this(
-        parcel.readString()!!,
-        parcel.readString(),
-        parcel.readString(),
-        parcel.readString(),
-        TODO("projects")
-    )
-
-    override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeString(contractId)
-        parcel.writeString(descr)
-        parcel.writeString(shortDescr)
-        parcel.writeString(contractNo)
-    }
-
-    override fun describeContents(): Int {
-        return 0
-    }
-
-    companion object CREATOR : Creator<ContractDTO> {
-        override fun createFromParcel(parcel: Parcel): ContractDTO {
-            return ContractDTO(parcel)
-        }
-
-        override fun newArray(size: Int): Array<ContractDTO?> {
-            return arrayOfNulls(size)
-        }
-    }
-}
+) : Serializable

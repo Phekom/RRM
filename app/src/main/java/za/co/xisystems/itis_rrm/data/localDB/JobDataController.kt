@@ -1,3 +1,9 @@
+/*
+ * Updated by Shaun McDonald on 2021/22/20
+ * Last modified on 2021/01/20 2:14 PM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.data.localDB
 
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
@@ -9,7 +15,6 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasurePhotoDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobSectionDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.WorkflowJobDTO
-import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.utils.DataConversion
 
 /**
@@ -54,7 +59,7 @@ object JobDataController {
         return job
     }
 
-    fun setJobLittleEndianGuids(job: JobDTO): JobDTO? {
+    fun setJobLittleEndianGuids(job: JobDTO): JobDTO {
 
         job.setJobId(DataConversion.toLittleEndian(job.JobId))
         job.setProjectId(DataConversion.toLittleEndian(job.ProjectId))
@@ -67,13 +72,13 @@ object JobDataController {
         job.setContractVoId(DataConversion.toLittleEndian(job.ContractVoId))
         job.setVoId(DataConversion.toLittleEndian(job.VoId))
 
-        job.JobSections.forEach { jobSection ->
+        job.JobSections?.forEach { jobSection ->
             jobSection.setJobSectionId(DataConversion.toLittleEndian(jobSection.jobSectionId))
             jobSection.setProjectSectionId(DataConversion.toLittleEndian(jobSection.projectSectionId))
             jobSection.setJobId(DataConversion.toLittleEndian(jobSection.jobId))
         }
 
-        job.JobItemEstimates.forEach { jie ->
+        job.JobItemEstimates?.forEach { jie ->
             jie.setEstimateId(DataConversion.toLittleEndian(jie.estimateId))
             jie.setJobId(DataConversion.toLittleEndian(jie.jobId))
             jie.setProjectItemId(DataConversion.toLittleEndian(jie.projectItemId))
@@ -101,7 +106,7 @@ object JobDataController {
             }
         }
 
-        job.JobItemMeasures.forEach { jim ->
+        job.JobItemMeasures?.forEach { jim ->
 
             jim.setItemMeasureId(DataConversion.toLittleEndian(jim.itemMeasureId))
             jim.setJobId(DataConversion.toLittleEndian(jim.jobId))
@@ -142,8 +147,6 @@ object JobDataController {
     fun setMsg(uplodmsg: String?): String? {
         return uplodmsg
     }
-
-    private val offlineDataRepository: OfflineDataRepository? = null
 }
 
 private fun JobItemMeasurePhotoDTO.setEstimateId(toLittleEndian: String?) {

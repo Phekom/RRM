@@ -1,3 +1,9 @@
+/*
+ * Updated by Shaun McDonald on 2021/22/20
+ * Last modified on 2021/01/20 12:46 PM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.data.repositories
 
 // import sun.security.krb5.Confounder.bytes
@@ -613,7 +619,7 @@ class OfflineDataRepository(
                     saveJobItemEstimates(job)
 
 
-                if (job.JobItemMeasures.isNotEmpty()) {
+                if (!job.JobItemMeasures.isNullOrEmpty()) {
                     saveJobItemMeasuresForJob(job)
                 }
             }

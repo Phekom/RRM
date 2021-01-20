@@ -1,8 +1,11 @@
+/*
+ * Updated by Shaun McDonald on 2021/22/20
+ * Last modified on 2021/01/20 12:55 PM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.data.localDB.entities
 
-import android.os.Parcel
-import android.os.Parcelable
-import android.os.Parcelable.Creator
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
@@ -32,37 +35,4 @@ class JobEstimateWorksDTO(
     @SerializedName("WorksId")
     @PrimaryKey
     var worksId: String = SqlLitUtils.generateUuid()
-) : Serializable, Parcelable {
-    constructor(parcel: Parcel) : this(
-        parcel.readInt(),
-        parcel.readString(),
-        TODO("jobEstimateWorksPhotos"),
-        parcel.readInt(),
-        parcel.readInt(),
-        parcel.readString()!!,
-        parcel.readString()!!
-    )
-
-    override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeInt(actId)
-        parcel.writeString(estimateId)
-        parcel.writeInt(recordSynchStateId)
-        parcel.writeInt(recordVersion)
-        parcel.writeString(trackRouteId)
-        parcel.writeString(worksId)
-    }
-
-    override fun describeContents(): Int {
-        return 0
-    }
-
-    companion object CREATOR : Creator<JobEstimateWorksDTO> {
-        override fun createFromParcel(parcel: Parcel): JobEstimateWorksDTO {
-            return JobEstimateWorksDTO(parcel)
-        }
-
-        override fun newArray(size: Int): Array<JobEstimateWorksDTO?> {
-            return arrayOfNulls(size)
-        }
-    }
-}
+) : Serializable

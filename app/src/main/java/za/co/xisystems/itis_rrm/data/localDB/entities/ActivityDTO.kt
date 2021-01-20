@@ -1,8 +1,15 @@
+/*
+ * Updated by Shaun McDonald on 2021/22/20
+ * Last modified on 2021/01/20 12:46 PM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.data.localDB.entities
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
+import org.jetbrains.annotations.NotNull
 import java.io.Serializable
 
 /**
@@ -14,6 +21,7 @@ const val ACTIVITY_TABLE = "ACTIVITY_TABLE"
 @Entity(tableName = ACTIVITY_TABLE)
 data class ActivityDTO(
     @SerializedName("ActId")
+    @NotNull
     @PrimaryKey
     val actId: Long,
     @SerializedName("ActTypeId")

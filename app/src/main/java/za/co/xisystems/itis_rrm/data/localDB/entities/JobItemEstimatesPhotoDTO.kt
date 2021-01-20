@@ -1,8 +1,11 @@
+/*
+ * Updated by Shaun McDonald on 2021/22/20
+ * Last modified on 2021/01/20 1:22 PM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.data.localDB.entities
 
-import android.os.Parcel
-import android.os.Parcelable
-import android.os.Parcelable.Creator
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
@@ -49,49 +52,26 @@ data class JobItemEstimatesPhotoDTO(
     @SerializedName("RecordVersion")
     val recordVersion: Int,
     @SerializedName("IsPhotoStart")
-    var isPhotostart: Boolean,
-    @SerializedName("Photo")
-    val image: ByteArray?
-) : Serializable, Parcelable {
-
-    constructor(parcel: Parcel) : this(
-        descr = parcel.readString().toString(),
-        estimateId = parcel.readString()!!,
-        filename = parcel.readString().toString(),
-        photoDate = parcel.readString().toString(),
-        photoId = parcel.readString()!!,
-        photoStart = parcel.readString(),
-        photoEnd = parcel.readString(),
-        startKm = parcel.readDouble(),
-        endKm = parcel.readDouble(),
-        photoLatitude = parcel.readValue(Double::class.java.classLoader) as? Double,
-        photoLongitude = parcel.readValue(Double::class.java.classLoader) as? Double,
-        photoLatitudeEnd = parcel.readDouble(),
-        photoLongitudeEnd = parcel.readDouble(),
-        photoPath = parcel.readString().toString(),
-        recordSynchStateId = parcel.readInt(),
-        recordVersion = parcel.readInt(),
-        isPhotostart = parcel.readByte() != 0.toByte(),
-        image = parcel.createByteArray()
-    )
+    var isPhotostart: Boolean
+) : Serializable {
 
     fun isPhotoStart(): Boolean {
         return isPhotostart
     }
 
     override fun equals(other: Any?): Boolean {
-        when {
-            this === other -> return true
-            javaClass != other?.javaClass -> return false
+        return when {
+            this === other -> true
+            javaClass != other?.javaClass -> false
             else -> {
                 other as JobItemEstimatesPhotoDTO
                 when {
-                    descr != other.descr -> return false
-                    estimateId != other.estimateId -> return false
-                    filename != other.filename -> return false
-                    photoDate != other.photoDate -> return false
-                    photoId != other.photoId -> return false
-                    else -> return true
+                    descr != other.descr -> false
+                    estimateId != other.estimateId -> false
+                    filename != other.filename -> false
+                    photoDate != other.photoDate -> false
+                    photoId != other.photoId -> false
+                    else -> true
                 }
             }
         }
@@ -100,42 +80,6 @@ data class JobItemEstimatesPhotoDTO(
     override fun hashCode(): Int {
         var result = photoId.hashCode()
         result = 31 * result + photoPath.hashCode()
-        result = 31 * result + (image?.contentHashCode() ?: 0)
         return result
-    }
-
-    override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeString(descr)
-        parcel.writeString(estimateId)
-        parcel.writeString(filename)
-        parcel.writeString(photoDate)
-        parcel.writeString(photoId)
-        parcel.writeString(photoStart)
-        parcel.writeString(photoEnd)
-        parcel.writeDouble(startKm)
-        parcel.writeDouble(endKm)
-        parcel.writeValue(photoLatitude)
-        parcel.writeValue(photoLongitude)
-        parcel.writeDouble(photoLatitudeEnd)
-        parcel.writeDouble(photoLongitudeEnd)
-        parcel.writeString(photoPath)
-        parcel.writeInt(recordSynchStateId)
-        parcel.writeInt(recordVersion)
-        parcel.writeByte(if (isPhotostart) 1 else 0)
-        parcel.writeByteArray(image)
-    }
-
-    override fun describeContents(): Int {
-        return 0
-    }
-
-    companion object CREATOR : Creator<JobItemEstimatesPhotoDTO> {
-        override fun createFromParcel(parcel: Parcel): JobItemEstimatesPhotoDTO {
-            return JobItemEstimatesPhotoDTO(parcel)
-        }
-
-        override fun newArray(size: Int): Array<JobItemEstimatesPhotoDTO?> {
-            return arrayOfNulls(size)
-        }
     }
 }

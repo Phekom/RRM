@@ -1,8 +1,11 @@
+/*
+ * Updated by Shaun McDonald on 2021/22/20
+ * Last modified on 2021/01/20 12:55 PM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.data.localDB.entities
 
-import android.os.Parcel
-import android.os.Parcelable
-import android.os.Parcelable.Creator
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
@@ -65,43 +68,4 @@ data class ProjectDTO(
     @ColumnInfo(name = "contractId", index = true)
     val contractId: String
 
-) : Serializable, Parcelable {
-    constructor(parcel: Parcel) : this(
-        parcel.readInt(),
-        parcel.readString()!!,
-        parcel.readString(),
-        parcel.readString(),
-        TODO("items"),
-        parcel.readString(),
-        parcel.readString(),
-        parcel.readString(),
-        TODO("projectSections"),
-        TODO("voItems"),
-        parcel.readString()!!
-    )
-
-    override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeInt(id)
-        parcel.writeString(projectId)
-        parcel.writeString(descr)
-        parcel.writeString(endDate)
-        parcel.writeString(projectCode)
-        parcel.writeString(projectMinus)
-        parcel.writeString(projectPlus)
-        parcel.writeString(contractId)
-    }
-
-    override fun describeContents(): Int {
-        return 0
-    }
-
-    companion object CREATOR : Creator<ProjectDTO> {
-        override fun createFromParcel(parcel: Parcel): ProjectDTO {
-            return ProjectDTO(parcel)
-        }
-
-        override fun newArray(size: Int): Array<ProjectDTO?> {
-            return arrayOfNulls(size)
-        }
-    }
-}
+) : Serializable
