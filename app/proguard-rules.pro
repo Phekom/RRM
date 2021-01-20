@@ -35,7 +35,8 @@
 
 -keep class sun.misc.Unsafe { *; }
 #your package path where your gson models are stored
--keep class za.co.xisystems.itis_rrm.data.** { *; }
+-keep class za.co.xisystems.itis_rrm.data.localDB.entities.** { *; }
+-keep class za.co.xisystems.itis_rrm.data.localDB.dao.** {*; }
 
 # Keep these for GSON and Jackson
 -keepattributes Signature
