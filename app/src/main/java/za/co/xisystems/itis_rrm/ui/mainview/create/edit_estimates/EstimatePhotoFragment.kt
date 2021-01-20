@@ -1,3 +1,9 @@
+/*
+ * Updated by Shaun McDonald on 2021/22/20
+ * Last modified on 2021/01/20 1:22 PM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates
 
 import android.Manifest
@@ -776,17 +782,23 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
                     endKm = localProjectSection.endKm
                     Timber.d("ProjectSection: $it")
                     Coroutines.main {
-                        if (newJob!!.SectionId.isNullOrEmpty()) {
+                        if (newJob!!.SectionId.isNullOrEmpty() &&
+                            !createViewModel.checkIfJobSectionExists(
+                                newJob!!.JobId,
+                                projectSectionId
+                            )) {
                             createRouteSection(
                                 secId = projectSectionId,
                                 jobId = newJob!!.JobId,
                                 startKm = startKm!!,
                                 endKm = endKm!!
                             ).apply {
-                                newJob!!.JobSections.add(this)
+                                val sectionList = newJob!!.JobSections as MutableList<JobSectionDTO>
+                                sectionList.add(this)
                                 newJob!!.SectionId = jobSectionId
                                 newJob!!.StartKm = this.startKm
                                 newJob!!.EndKm = this.endKm
+                                newJob!!.JobSections = sectionList as ArrayList<JobSectionDTO>?
                                 isRouteSectionPoint = true
                             }
                         }
@@ -896,8 +908,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
             photoPath = filePath["path"] ?: error(""),
             recordSynchStateId = 0,
             recordVersion = 0,
-            isPhotostart = isPhotoStart,
-            image = null
+            isPhotostart = isPhotoStart
         )
     }
 

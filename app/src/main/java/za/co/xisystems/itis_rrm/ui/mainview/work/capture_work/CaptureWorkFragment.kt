@@ -1,3 +1,9 @@
+/*
+ * Updated by Shaun McDonald on 2021/22/20
+ * Last modified on 2021/01/20 12:55 PM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.ui.mainview.work.capture_work
 
 import android.Manifest
@@ -607,7 +613,7 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
 
             val workDone: Int = getEstimatesCompleted(estimateJob)
 
-            if (workDone == estimateJob.JobItemEstimates.size) {
+            if (workDone == estimateJob.JobItemEstimates?.size ?: 0) {
                 collectCompletedEstimates(estimateJob)
             } else {
 
@@ -638,7 +644,7 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
         estWorkDone: Int,
         estimateJob: JobDTO
     ) {
-        if (estWorkDone == estimateJob.JobItemEstimates.size) {
+        if (estWorkDone == estimateJob.JobItemEstimates?.size ?: 0) {
             Coroutines.main {
                 collectCompletedEstimates(estimateJob)
             }

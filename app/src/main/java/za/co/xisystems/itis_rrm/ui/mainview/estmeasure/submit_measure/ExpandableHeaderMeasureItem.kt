@@ -1,3 +1,9 @@
+/*
+ * Updated by Shaun McDonald on 2021/22/20
+ * Last modified on 2021/01/20 2:14 PM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.ui.mainview.estmeasure.submit_measure
 
 import android.app.AlertDialog
@@ -14,8 +20,6 @@ import androidx.navigation.fragment.findNavController
 import com.xwray.groupie.ExpandableGroup
 import com.xwray.groupie.ExpandableItem
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
-import java.util.ArrayList
-import java.util.Date
 import kotlinx.android.synthetic.main.item_header.appListID
 import kotlinx.android.synthetic.main.item_header.icon
 import kotlinx.android.synthetic.main.item_measure_header.headerLin
@@ -31,6 +35,8 @@ import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.estimate_measure_item.Mea
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
+import java.util.ArrayList
+import java.util.Date
 
 class ExpandableHeaderMeasureItem(
     private var fragment: Fragment,
@@ -44,9 +50,6 @@ class ExpandableHeaderMeasureItem(
     private var clickListener: ((ExpandableHeaderMeasureItem) -> Unit)? = null
     private var navController: ((NavController) -> Unit)? = null
     private var projectItemIdz: String? = measureItem.projectItemId
-
-    private var jobItemEst: JobDTO? = null
-    private var itemEs: JobItemEstimateDTO? = null
 
     companion object {
         const val JOB_ITEM_MEASURE: String = "JobItemMeasure"
@@ -220,8 +223,6 @@ class ExpandableHeaderMeasureItem(
             measureDate = (Date()).toString(),
             measureGroupId = null,
             jobItemMeasurePhotos = jobItemMeasurePhotoDTO,
-            job = jobItemEst,
-            jobItemEstimate = itemEs,
             projectItemId = (selectedJobItemEstimate.projectItemId).toString(),
             projectVoId = jobForJobItemEstimate.VoId,
             qty = (quantity).toString().toDouble(),

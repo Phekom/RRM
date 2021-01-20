@@ -1,3 +1,9 @@
+/*
+ * Updated by Shaun McDonald on 2021/22/20
+ * Last modified on 2021/01/20 1:51 PM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.ui.mainview.create
 
 import androidx.fragment.app.FragmentActivity
@@ -5,8 +11,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import java.util.ArrayList
-import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
@@ -29,6 +33,8 @@ import za.co.xisystems.itis_rrm.ui.mainview.create.select_item.SectionProj_Item
 import za.co.xisystems.itis_rrm.utils.JobUtils
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
 import za.co.xisystems.itis_rrm.utils.uncaughtExceptionHandler
+import java.util.ArrayList
+import kotlin.coroutines.CoroutineContext
 
 /**
  * Created by Francis Mahlava on 2019/10/18.
@@ -82,10 +88,6 @@ class CreateViewModel(
 
     fun setDescription(desc: String) {
         description.value = desc
-    }
-
-    fun createNewJob(job: JobDTO?) {
-        newJob.value = job
     }
 
     fun setContractorNo(inContractNo: String) {
@@ -230,15 +232,14 @@ class CreateViewModel(
             !JobUtils.areQuantitiesValid(job) -> {
                 isValid = false
             }
-            job == null || items == null || job.JobItemEstimates.isEmpty()
-                || items.size != job.JobItemEstimates.size -> {
+            job == null || items == null || job.JobItemEstimates.isNullOrEmpty()
+                || items.size != (job.JobItemEstimates?.size ?: 0) -> {
                 isValid = false
             }
             else -> {
-                for (estimate in job.JobItemEstimates) {
+                job.JobItemEstimates?.forEach { estimate ->
                     if (!estimate.isEstimateComplete()) {
                         isValid = false
-                        break
                     }
                 }
             }
@@ -262,7 +263,7 @@ class CreateViewModel(
         jobCreationDataRepository.deleteItemList(jobId)
     }
 
-    fun deleteItemFromList(itemId: String, estimateId: String?) = viewModelScope.launch {
+    fun deleteItemFromList(itemId: String, estimateId: String?) = viewModelScope.launch(ioContext){
         val recordsAffected = jobCreationDataRepository.deleteItemFromList(itemId, estimateId)
         Timber.d("deleteItemFromList: $recordsAffected deleted.")
     }
