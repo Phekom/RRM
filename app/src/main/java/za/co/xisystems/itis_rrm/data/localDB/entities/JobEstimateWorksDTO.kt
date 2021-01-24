@@ -25,7 +25,7 @@ class JobEstimateWorksDTO(
     @SerializedName("EstimateId")
     var estimateId: String?,
     @SerializedName("MobileJobEstimateWorksPhotos")
-    var jobEstimateWorksPhotos: ArrayList<JobEstimateWorksPhotoDTO>?,
+    var jobEstimateWorksPhotos: ArrayList<JobEstimateWorksPhotoDTO>? = arrayListOf(),
     @SerializedName("RecordSynchStateId")
     var recordSynchStateId: Int,
     @SerializedName("RecordVersion")

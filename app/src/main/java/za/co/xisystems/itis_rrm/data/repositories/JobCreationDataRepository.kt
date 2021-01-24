@@ -6,8 +6,6 @@
 
 package za.co.xisystems.itis_rrm.data.repositories
 
-// import sun.security.krb5.Confounder.bytes
-
 import android.os.Looper
 import android.widget.Toast
 import androidx.fragment.app.FragmentActivity
@@ -22,6 +20,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.constants.Constants.FIFTY_METRES_INSIDE_BUFFER
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.localDB.JobDataController
 import za.co.xisystems.itis_rrm.data.localDB.entities.ContractDTO
@@ -104,7 +103,7 @@ class JobCreationDataRepository(
 
     fun saveNewJob(newJob: JobDTO?) {
         Coroutines.io {
-            if (newJob != null && !appDb.getJobDao().checkIfJobExist(newJob.JobId)) {
+            if (newJob != null && !appDb.getJobDao().checkIfJobExist(newJob.jobId)) {
                 appDb.getJobDao().insertOrUpdateJobs(newJob)
             }
         }
@@ -220,7 +219,7 @@ class JobCreationDataRepository(
         jobId: String
     ): String? {
 
-        val distance = 50
+        val distance = FIFTY_METRES_INSIDE_BUFFER
         val buffer = -1
         val routeSectionPointResponse =
             apiRequest { api.getRouteSectionPoint(distance, buffer, latitude, longitude, useR) }
@@ -306,7 +305,7 @@ class JobCreationDataRepository(
                     packageJob = job,
                     activity = activity
                 )
-                val myJob = getUpdatedJob(DataConversion.toBigEndian(job.JobId)!!)
+                val myJob = getUpdatedJob(DataConversion.toBigEndian(job.jobId)!!)
                 moveJobToNextWorkflow(myJob, activity)
             }
         }
@@ -326,7 +325,7 @@ class JobCreationDataRepository(
         job.workflowItemEstimates?.forEach { jie ->
             jie.estimateId = DataConversion.toBigEndian(jie.estimateId)!!
             jie.trackRouteId = DataConversion.toBigEndian(jie.trackRouteId)!!
-            jie.workflowEstimateWorks.forEach { wfe ->
+            jie.workflowEstimateWorks?.forEach { wfe ->
                 wfe.trackRouteId = DataConversion.toBigEndian(wfe.trackRouteId)!!
                 wfe.worksId = DataConversion.toBigEndian(wfe.worksId)!!
                 wfe.estimateId = DataConversion.toBigEndian(wfe.estimateId)!!
@@ -371,7 +370,7 @@ class JobCreationDataRepository(
                     actId = workflowItemEstimate.actId,
                     estimateId = workflowItemEstimate.estimateId
                 )
-                workflowItemEstimate.workflowEstimateWorks.forEach { workflowEstimateWork ->
+                workflowItemEstimate.workflowEstimateWorks?.forEach { workflowEstimateWork ->
                     appDb.getEstimateWorkDao().updateJobEstimateWorksWorkflow(
                         worksId = workflowEstimateWork.worksId,
                         estimateId = workflowEstimateWork.estimateId,
@@ -413,7 +412,7 @@ class JobCreationDataRepository(
     private fun uploadCreateJobImages(packageJob: JobDTO, activity: FragmentActivity) {
 
         var jobCounter = 1
-        val totalJobs = packageJob.JobItemEstimates?.size ?: 0
+        val totalJobs = packageJob.JobItemEstimates?.size
 
         packageJob.JobItemEstimates?.map { jobItemEstimate ->
             val totalImages = jobItemEstimate.jobItemEstimatePhotos?.size ?: 0
@@ -503,27 +502,27 @@ class JobCreationDataRepository(
         activity: FragmentActivity
     ) {
 
-        if (job.TrackRouteId == null) {
+        if (job.trackRouteId == null) {
             Looper.prepare() // to be able to make toast
             Toast.makeText(activity, "Error: trackRouteId is null", Toast.LENGTH_LONG).show()
         } else {
-            job.TrackRouteId = DataConversion.toLittleEndian(job.TrackRouteId)
+            job.trackRouteId = DataConversion.toLittleEndian(job.trackRouteId)
             val direction: Int = WorkflowDirection.NEXT.value
-            val trackRouteId: String = job.TrackRouteId!!
+            val trackRouteId: String = job.trackRouteId!!
             val description: String =
                 activity.resources.getString(R.string.submit_for_approval)
 
             Coroutines.io {
                 val workflowMoveResponse = apiRequest {
                     api.getWorkflowMove(
-                        job.UserId.toString(),
+                        job.userId.toString(),
                         trackRouteId,
                         description,
                         direction
                     )
                 }
                 workflowJobs.postValue(workflowMoveResponse.workflowJob)
-                appDb.getItemDaoTemp().deleteItemList(job.JobId)
+                appDb.getItemDaoTemp().deleteItemList(job.jobId)
             }
         }
     }

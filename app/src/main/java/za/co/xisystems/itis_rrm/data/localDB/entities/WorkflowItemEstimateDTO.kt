@@ -12,5 +12,5 @@ data class WorkflowItemEstimateDTO(
     @SerializedName("TrackRouteId")
     var trackRouteId: String, // sample string 2
     @SerializedName("WorkflowEstimateWorks")
-    var workflowEstimateWorks: List<WorkflowEstimateWorkDTO>
+    var workflowEstimateWorks: List<WorkflowEstimateWorkDTO>? = arrayListOf()
 )

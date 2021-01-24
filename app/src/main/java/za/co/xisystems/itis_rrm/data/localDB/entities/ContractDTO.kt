@@ -34,6 +34,6 @@ data class ContractDTO(
     val contractNo: String?,
 
     @SerializedName("Projects")
-    val projects: ArrayList<ProjectDTO>?
+    val projects: ArrayList<ProjectDTO>? = arrayListOf()
 
 ) : Serializable

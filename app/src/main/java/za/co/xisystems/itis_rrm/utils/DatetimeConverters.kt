@@ -7,10 +7,11 @@
 package za.co.xisystems.itis_rrm.utils
 
 import androidx.room.TypeConverter
+import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 
-class OffsetDatetimeConverters {
+class DatetimeConverters {
     private val formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME
 
     @TypeConverter
@@ -35,5 +36,19 @@ class OffsetDatetimeConverters {
                 null
             }
         }
+    }
+
+    @TypeConverter
+    fun toDate(dateString: String?): LocalDateTime? {
+        return if (dateString == null) {
+            null
+        } else {
+            LocalDateTime.parse(dateString)
+        }
+    }
+
+    @TypeConverter
+    fun toDateString(date: LocalDateTime?): String? {
+        return date?.toString()
     }
 }

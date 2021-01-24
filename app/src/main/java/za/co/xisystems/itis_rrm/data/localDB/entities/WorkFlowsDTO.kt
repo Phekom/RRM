@@ -12,7 +12,7 @@ data class WorkFlowsDTO(
     @PrimaryKey
     val activities: ArrayList<ActivityDTO>,
     @SerializedName("InfoClasses")
-    val infoClasses: ArrayList<InfoClassDTO>,
+    val infoClasses: ArrayList<InfoClassDTO> = arrayListOf(),
     @SerializedName("Workflows")
-    val workflows: ArrayList<WorkFlowDTO>
+    val workflows: ArrayList<WorkFlowDTO> = arrayListOf()
 )

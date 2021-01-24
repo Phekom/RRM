@@ -31,12 +31,12 @@ class WorkflowJobDTO(
     var jiNo: String? = null,
 
     @SerializedName("WorkflowItemEstimates")
-    val workflowItemEstimates: ArrayList<WorkflowItemEstimateDTO>?,
+    val workflowItemEstimates: ArrayList<WorkflowItemEstimateDTO>? = arrayListOf(),
 
     @SerializedName("WorkflowItemMeasures")
-    val workflowItemMeasures: ArrayList<WorkflowItemMeasureDTO>?,
+    val workflowItemMeasures: ArrayList<WorkflowItemMeasureDTO>? = arrayListOf(),
 
     @SerializedName("WorkflowJobSections")
-    val workflowJobSections: ArrayList<JobSectionDTO>? = null
+    val workflowJobSections: ArrayList<JobSectionDTO>? = arrayListOf()
 
 ) : Serializable

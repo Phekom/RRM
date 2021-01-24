@@ -4,7 +4,6 @@ package za.co.xisystems.itis_rrm.data.repositories
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import java.util.Locale
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -25,6 +24,7 @@ import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
 import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
+import java.util.Locale
 
 /**
  * Created by Francis Mahlava on 2019/11/28.
@@ -234,7 +234,7 @@ class JobApprovalDataRepository(
                     jobItemEstimate.estimateId
                 )
 
-                jobItemEstimate.workflowEstimateWorks.forEach { jobEstimateWorks ->
+                jobItemEstimate.workflowEstimateWorks?.forEach { jobEstimateWorks ->
                     if (!appDb.getEstimateWorkDao()
                             .checkIfJobEstimateWorksExist(jobEstimateWorks.worksId)
                     ) {
@@ -311,7 +311,7 @@ class JobApprovalDataRepository(
                 jie.estimateId = DataConversion.toBigEndian(jie.estimateId)!!
                 jie.trackRouteId = DataConversion.toBigEndian(jie.trackRouteId)!!
                 //  Let's go through the WorkFlowEstimateWorks
-                jie.workflowEstimateWorks.forEach { wfe ->
+                jie.workflowEstimateWorks?.forEach { wfe ->
                     wfe.trackRouteId = DataConversion.toBigEndian(wfe.trackRouteId)!!
                     wfe.worksId = DataConversion.toBigEndian(wfe.worksId)!!
                     wfe.estimateId = DataConversion.toBigEndian(wfe.estimateId)!!

@@ -21,30 +21,30 @@ const val JOB_TABLE = "JOB_TABLE"
 @Entity(tableName = JOB_TABLE)
 class JobDTO(
     @SerializedName("ActId")
-    val ActId: Int,
+    val actId: Int,
     @SerializedName("JobId")
     @PrimaryKey
-    var JobId: String = SqlLitUtils.generateUuid(),
+    var jobId: String = SqlLitUtils.generateUuid(),
     @SerializedName("ContractVoId")
-    var ContractVoId: String?,
+    var contractVoId: String?,
     @SerializedName("ProjectId")
-    var ProjectId: String?,
+    var projectId: String?,
     @SerializedName("SectionId")
-    var SectionId: String?,
+    var sectionId: String?,
     @SerializedName("StartKm")
-    var StartKm: Double,
+    var startKm: Double,
     @SerializedName("EndKm")
-    var EndKm: Double,
+    var endKm: Double,
     @SerializedName("Descr")
-    var Descr: String?,
+    var descr: String?,
     @SerializedName("JiNo")
-    val JiNo: String?,
+    val jiNo: String?,
     @SerializedName("UserId")
-    val UserId: Int,
+    val userId: Int,
     @SerializedName("TrackRouteId")
-    var TrackRouteId: String?,
+    var trackRouteId: String?,
     @SerializedName("Section")
-    val Section: String?,
+    val section: String?,
 
     @SerializedName("Cpa")
     val Cpa: Int,
@@ -57,19 +57,19 @@ class JobDTO(
     val M9100: Int,
 
     @SerializedName("IssueDate")
-    var IssueDate: String?,
+    var IssueDate: String? = null,
     @SerializedName("StartDate")
-    var StartDate: String?,
+    var StartDate: String? = null,
     @SerializedName("DueDate")
-    var DueDate: String?,
+    var DueDate: String? = null,
     @SerializedName("ApprovalDate")
-    var ApprovalDate: String?,
+    var ApprovalDate: String? = null,
     @SerializedName("MobileJobItemEstimates")
-    var JobItemEstimates: ArrayList<JobItemEstimateDTO>?,
+    var JobItemEstimates: ArrayList<JobItemEstimateDTO>? = arrayListOf(),
     @SerializedName("MobileJobItemMeasures")
-    var JobItemMeasures: ArrayList<JobItemMeasureDTO>?,
+    var JobItemMeasures: ArrayList<JobItemMeasureDTO>? = arrayListOf(),
     @SerializedName("MobileJobSections")
-    var JobSections: ArrayList<JobSectionDTO>?,
+    var JobSections: ArrayList<JobSectionDTO>? = arrayListOf(),
     @SerializedName("PerfitemGroupId")
     var PerfitemGroupId: String?,
 
@@ -119,10 +119,10 @@ class JobDTO(
     var VoId: String?,
 
     @SerializedName("WorkCompleteDate")
-    val WorkCompleteDate: String?,
+    val WorkCompleteDate: String? = null,
 
     @SerializedName("WorkStartDate")
-    val WorkStartDate: String?,
+    val WorkStartDate: String? = null,
 
     var ESTIMATES_ACT_ID: Int?,
 
@@ -143,7 +143,7 @@ class JobDTO(
 
     private fun getJobEstimateIndexByItemId(itemId: String?): Int {
 
-        JobItemEstimates?.forEachIndexed {index,estimate ->
+        JobItemEstimates?.forEachIndexed { index, estimate ->
             if (estimate.projectItemId != null && estimate.projectItemId.equals(
                     itemId
                 )
@@ -163,7 +163,7 @@ class JobDTO(
 
     fun getJobEstimateByItemId(itemId: String?): JobItemEstimateDTO? {
         val x = getJobEstimateIndexByItemId(itemId)
-        return if (JobItemEstimates.isNullOrEmpty() || x < 0 ) {
+        return if (JobItemEstimates.isNullOrEmpty() || x < 0) {
             null
         } else {
             JobItemEstimates!![x]

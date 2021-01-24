@@ -32,7 +32,7 @@ const val PROJECT_ITEM_TABLE = "PROJECT_ITEM_TABLE"
     ]
 )
 data class ProjectItemDTO(
-    @PrimaryKey
+    @PrimaryKey(autoGenerate = true)
     val id: Int,
     @SerializedName("ItemId")
     @NotNull
@@ -43,7 +43,7 @@ data class ProjectItemDTO(
     val itemCode: String?,
     @Nullable
     @SerializedName("ItemSections")
-    val itemSections: ArrayList<ItemSectionDTO>?,
+    val itemSections: ArrayList<ItemSectionDTO>? = arrayListOf(),
     @SerializedName("TenderRate")
     val tenderRate: Double = 0.0,
     @SerializedName("Uom")

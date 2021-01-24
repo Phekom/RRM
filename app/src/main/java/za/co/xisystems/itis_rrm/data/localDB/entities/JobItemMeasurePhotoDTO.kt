@@ -35,11 +35,8 @@ data class JobItemMeasurePhotoDTO(
     val photoLongitude: Double,
     @SerializedName("PhotoPath")
     var photoPath: String?,
-//    @SerializedName("PrjJobItemMeasureDto")
-//    val jobItemMeasure: JobItemMeasureDTO? = null,
     @SerializedName("RecordSynchStateId")
     val recordSynchStateId: Int,
     @SerializedName("RecordVersion")
     val recordVersion: Int
-
 ) : Serializable

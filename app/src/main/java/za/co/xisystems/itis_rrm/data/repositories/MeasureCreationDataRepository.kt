@@ -9,7 +9,6 @@ import com.google.gson.Gson
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
-import java.util.ArrayList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -43,6 +42,7 @@ import za.co.xisystems.itis_rrm.utils.PhotoUtil.getPhotoPathFromExternalDirector
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import za.co.xisystems.itis_rrm.utils.uncaughtExceptionHandler
+import java.util.ArrayList
 
 /**
  * Created by Francis Mahlava on 2019/11/28.
@@ -139,7 +139,7 @@ class MeasureCreationDataRepository(
                 val measureJob = setWorkflowJobBigEndianGuids(workflowJobDTO)
                 insertOrUpdateWorkflowJobInSQLite(measureJob, estimatesPush = false)
                 uploadMeasurementImages(jobItemMeasure, activity)
-                val myJob = getUpdatedJob(itemMeasureJob.JobId)
+                val myJob = getUpdatedJob(itemMeasureJob.jobId)
                 moveJobToNextWorkflow(activity, measureJob, myJob)
             } catch (t: Throwable) {
                 val message = "Failed to process workflow move: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
@@ -163,9 +163,10 @@ class MeasureCreationDataRepository(
         var totalImages = 0
         if (jobItemMeasures.isNotEmpty()) {
             for (jobItemMeasure in jobItemMeasures.iterator()) {
-                if (jobItemMeasure.jobItemMeasurePhotos.isNotEmpty()) {
-                    totalImages += jobItemMeasure.jobItemMeasurePhotos.size
-                    for (photo in jobItemMeasure.jobItemMeasurePhotos) {
+                if (jobItemMeasure.jobItemMeasurePhotos != null) {
+                    val photos = jobItemMeasure.jobItemMeasurePhotos!!
+                    totalImages += photos.size
+                    for (photo in photos) {
                         if (PhotoUtil.photoExist(photo.filename!!)) {
                             val data: ByteArray =
                                 getData(photo.filename, PhotoQuality.HIGH, activity!!)
@@ -254,7 +255,7 @@ class MeasureCreationDataRepository(
                 val measurementTracks = myJob.workflowItemMeasures.mapNotNull { item ->
                     if (item.actId < ActivityIdConstants.MEASURE_COMPLETE) {
                         item.toMeasurementTrack(
-                            userId = job.UserId.toString(),
+                            userId = job.userId.toString(),
                             description = description,
                             direction = WorkflowDirection.NEXT.value
                         )
@@ -281,8 +282,8 @@ class MeasureCreationDataRepository(
                         }
 
                         workflowMoveResponse.workflowJob == null -> {
-                            Timber.d("WorkflowJob is null for JiNo: ${job.JiNo}")
-                            throw NoDataException("WorkflowJob is null for JiNo: ${job.JiNo}")
+                            Timber.d("WorkflowJob is null for JiNo: ${job.jiNo}")
+                            throw NoDataException("WorkflowJob is null for JiNo: ${job.jiNo}")
                         }
 
                         else -> {
@@ -295,7 +296,7 @@ class MeasureCreationDataRepository(
                     }
                 }
 
-                postWorkflowStatus(XISuccess(job.JiNo!!))
+                postWorkflowStatus(XISuccess(job.jiNo!!))
                 workComplete = true
             } catch (t: Throwable) {
                 val prefix = "Workflow failed:"
@@ -492,7 +493,7 @@ class MeasureCreationDataRepository(
                     )
                 }
 
-                jobItemEstimate.workflowEstimateWorks.forEach { jobEstimateWorks ->
+                jobItemEstimate.workflowEstimateWorks?.forEach { jobEstimateWorks ->
                     if (appDb.getEstimateWorkDao()
                             .checkIfJobEstimateWorksExist(jobEstimateWorks.worksId)
                     ) {
@@ -568,7 +569,7 @@ class MeasureCreationDataRepository(
                 jie.estimateId = DataConversion.toBigEndian(jie.estimateId)!!
                 jie.trackRouteId = DataConversion.toBigEndian(jie.trackRouteId)!!
                 //  Let's go through the WorkFlowEstimateWorks
-                for (wfe in jie.workflowEstimateWorks) {
+                jie.workflowEstimateWorks?.forEach { wfe ->
                     wfe.trackRouteId =
                         DataConversion.toBigEndian(wfe.trackRouteId)!!
                     wfe.worksId = DataConversion.toBigEndian(wfe.worksId)!!

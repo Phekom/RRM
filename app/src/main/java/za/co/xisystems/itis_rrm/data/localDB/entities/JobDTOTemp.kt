@@ -12,7 +12,6 @@ import com.google.gson.annotations.SerializedName
 import org.jetbrains.annotations.NotNull
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import java.io.Serializable
-import java.time.OffsetDateTime
 import java.util.ArrayList
 
 /**
@@ -24,7 +23,7 @@ const val JOB_TABLE_TEMP = "JOB_TABLE_TEMP"
 @Entity(tableName = JOB_TABLE_TEMP)
 data class JobDTOTemp(
     @SerializedName("ActId")
-    val ActId: Int,
+    var ActId: Int,
     @SerializedName("JobId")
     @PrimaryKey
     @NotNull
@@ -60,19 +59,19 @@ data class JobDTOTemp(
     @SerializedName("M9100")
     val M9100: Int,
     @SerializedName("IssueDate")
-    var IssueDate: OffsetDateTime? = null,
+    var IssueDate: String? = null,
     @SerializedName("StartDate")
-    var StartDate: OffsetDateTime? = null,
+    var StartDate: String? = null,
     @SerializedName("DueDate")
-    var DueDate: OffsetDateTime? = null,
+    var DueDate: String? = null,
     @SerializedName("ApprovalDate")
-    val ApprovalDate: OffsetDateTime? = null,
+    val ApprovalDate: String? = null,
     @SerializedName("MobileJobItemEstimates")
-    var JobItemEstimates: ArrayList<JobItemEstimateDTO>?,
+    var JobItemEstimates: ArrayList<JobItemEstimateDTO>? = arrayListOf(),
     @SerializedName("MobileJobItemMeasures")
-    var JobItemMeasures: ArrayList<JobItemMeasureDTO>?,
+    var JobItemMeasures: ArrayList<JobItemMeasureDTO>? = arrayListOf(),
     @SerializedName("MobileJobSections")
-    var JobSections: ArrayList<JobSectionDTO>?,
+    var JobSections: ArrayList<JobSectionDTO>? = arrayListOf(),
     @SerializedName("PerfitemGroupId")
     var PerfitemGroupId: String?,
     @SerializedName("RecordVersion")
@@ -111,8 +110,8 @@ data class JobDTOTemp(
     @SerializedName("VoId")
     var VoId: String?,
     @SerializedName("WorkCompleteDate")
-    val WorkCompleteDate: String?,
+    val WorkCompleteDate: String? = null,
     @SerializedName("WorkStartDate")
-    val WorkStartDate: String?
+    val WorkStartDate: String? = null
 
 ) : Serializable

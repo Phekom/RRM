@@ -22,7 +22,7 @@ data class UserDTO(
     @SerializedName("UserName")
     val userName: String, // niebuhrk
     @SerializedName("UserRoles")
-    val userRoles: ArrayList<UserRoleDTO>,
+    val userRoles: ArrayList<UserRoleDTO> = arrayListOf(),
     @SerializedName("UserStatus")
     val userStatus: String,
     @SerializedName("PHONE_NUMBER")

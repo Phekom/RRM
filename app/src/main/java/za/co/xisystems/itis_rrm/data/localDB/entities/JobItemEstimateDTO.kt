@@ -39,8 +39,6 @@ data class JobItemEstimateDTO(
     var jobItemEstimatePhotos: ArrayList<JobItemEstimatesPhotoDTO>? = arrayListOf(),
     @SerializedName("MobileJobItemMeasures")
    val jobItemMeasure: ArrayList<JobItemMeasureDTO>? = arrayListOf(),
-//    @SerializedName("PrjJobDto")
-//    val job: JobDTO? = null,
     @SerializedName("ProjectItemId")
     var projectItemId: String?,
     @SerializedName("ProjectVoId")
@@ -117,7 +115,7 @@ data class JobItemEstimateDTO(
         } else {
             val photoStart = jobItemEstimatePhotos?.get(0)
             val photoEnd = jobItemEstimatePhotos?.get(1)
-            !(photoStart?.filename == null || photoEnd == null)
+            !(photoStart == null || photoEnd == null)
         }
     }
 

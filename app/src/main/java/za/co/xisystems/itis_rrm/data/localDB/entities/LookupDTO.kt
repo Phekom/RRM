@@ -18,6 +18,6 @@ class LookupDTO(
     @PrimaryKey
     val lookupName: String,
     @SerializedName("LookupOptions")
-    val lookupOptions: ArrayList<LookupOptionDTO> = arrayListOf()
+    val lookupOptions: ArrayList<LookupOptionDTO>? = arrayListOf()
 
 )

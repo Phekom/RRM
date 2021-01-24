@@ -11,14 +11,14 @@ import com.google.gson.annotations.SerializedName
 const val WorkStep_TABLE = "WorkStep_TABLE"
 
 @Entity(tableName = WorkStep_TABLE)
-class WF_WorkStepDTO(
+class WfWorkStepDTO(
     @SerializedName("WorkStep_ID")
     @PrimaryKey
-    val WorkStep_ID: Int,
+    val workStepId: Int,
     @SerializedName("Step_Code")
-    val Step_Code: String?,
+    val stepCode: String?,
     @SerializedName("DESCR")
-    val Descrip: String?,
+    val descrip: String?,
     @SerializedName("ACT_TYPE_ID")
-    val Act_Type_id: Int?
+    val actTypeId: Int?
 )

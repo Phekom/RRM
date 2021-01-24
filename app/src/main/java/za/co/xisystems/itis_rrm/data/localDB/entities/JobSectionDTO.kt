@@ -36,3 +36,4 @@ class JobSectionDTO(
     @SerializedName("RecordVersion")
     val recordVersion: Int
 ) : Serializable
+

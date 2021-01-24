@@ -47,7 +47,7 @@ data class ProjectDTO(
     val endDate: String?,
 
     @SerializedName("Items")
-    val items: ArrayList<ProjectItemDTO>?,
+    val items: ArrayList<ProjectItemDTO>? = arrayListOf(),
 
     @SerializedName("ProjectCode")
     val projectCode: String?,
@@ -59,10 +59,10 @@ data class ProjectDTO(
     val projectPlus: String?,
 
     @SerializedName("Sections")
-    val projectSections: ArrayList<ProjectSectionDTO>?,
+    val projectSections: ArrayList<ProjectSectionDTO>? = arrayListOf(),
 
     @SerializedName("VoItems")
-    val voItems: ArrayList<VoItemDTO>?,
+    val voItems: ArrayList<VoItemDTO>? = arrayListOf(),
 
     @SerializedName("ContractId")
     @ColumnInfo(name = "contractId", index = true)

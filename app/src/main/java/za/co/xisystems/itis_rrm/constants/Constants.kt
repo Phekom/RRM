@@ -18,4 +18,7 @@ object Constants {
 
     // Crypto
     const val SALT_ROUNDS = 12
+
+    // SANRAL distances
+    const val FIFTY_METRES_INSIDE_BUFFER = 5
 }

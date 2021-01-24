@@ -76,12 +76,13 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.ToDoListEntityDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserRoleDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.VoItemDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.WF_WorkStepDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.WfWorkStepDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.WorkFlowDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.WorkFlowRouteDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.WorkFlowsDTO
+import za.co.xisystems.itis_rrm.data.localDB.views.ContractSelectorView
 import za.co.xisystems.itis_rrm.utils.Converters
-import za.co.xisystems.itis_rrm.utils.OffsetDatetimeConverters
+import za.co.xisystems.itis_rrm.utils.DatetimeConverters
 
 /**
  * Created by Francis Mahlava on 2019/10/23., exportSchema = false
@@ -98,11 +99,12 @@ import za.co.xisystems.itis_rrm.utils.OffsetDatetimeConverters
         JobItemEstimatesPhotoDTO::class, JobItemMeasurePhotoDTO::class, JobItemEstimateDTO::class,
         JobItemMeasureDTO::class, ToDoListEntityDTO::class, ChildLookupDTO::class,
         JobEstimateWorksDTO::class, JobEstimateWorksPhotoDTO::class, SectionItemDTO::class,
-        WorkFlowsDTO::class, WF_WorkStepDTO::class
+        WorkFlowsDTO::class, WfWorkStepDTO::class
     ],
-    version = 5
+    views = [ContractSelectorView::class],
+    version = 7
 )
-@TypeConverters(Converters::class, OffsetDatetimeConverters::class)
+@TypeConverters(Converters::class, DatetimeConverters::class)
 @GenerateRoomMigrations
 abstract class AppDatabase : RoomDatabase() {
 
@@ -143,9 +145,6 @@ abstract class AppDatabase : RoomDatabase() {
         @Volatile
         private var instance: AppDatabase? = null
         private val LOCK = Any()
-        private val passphrase: ByteArray = SQLiteDatabase.getBytes("sillypassphrase".toCharArray())
-        val factory = SupportFactory(passphrase, null, false)
-
         operator fun invoke(context: Context) = instance ?: synchronized(LOCK) {
             instance ?: buildDatabase(context).also {
                 instance = it
@@ -155,19 +154,22 @@ abstract class AppDatabase : RoomDatabase() {
         private fun buildDatabase(context: Context) =
             when {
                 BuildConfig.DEBUG -> {
-                    // Unecrypted DB
+                    // Unecrypted DB for Dev, Tracing and Testing
                     Room.databaseBuilder(
                         context.applicationContext,
                         AppDatabase::class.java,
-                        "myRRM_Database.db"
+                        "myRRM_Development.db"
                     ).addMigrations(*AppDatabase_Migrations.build())
                         .fallbackToDestructiveMigrationFrom(20).build()
                 }
                 else -> {
+                    // Encrypyed DB with one-time generated passphrase
+                    val passphrase: ByteArray = SQLiteDatabase.getBytes("sillypassphrase".toCharArray())
+                    val factory = SupportFactory(passphrase, null, false)
                     Room.databaseBuilder(
                         context.applicationContext,
                         AppDatabase::class.java,
-                        "myRRM_Database.db"
+                        "myRRM_Release.db"
                     ).openHelperFactory(factory)
                         .addMigrations(*AppDatabase_Migrations.build())
                         .fallbackToDestructiveMigrationFrom(20).build()

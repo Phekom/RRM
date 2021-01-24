@@ -28,7 +28,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksPhotoDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.WF_WorkStepDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.WfWorkStepDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.WorkflowJobDTO
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
@@ -134,13 +134,13 @@ class WorkDataRepository(
                     worksPhotos,
                     estimateWorksItem,
                     activity,
-                    estimateJob.UserId
+                    estimateJob.userId
                 )
             } else {
                 throw ServiceException(messages)
             }
         } catch (t: Throwable) {
-            val message = "Failed to upload job ${estimateJob.JiNo}: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
+            val message = "Failed to upload job ${estimateJob.jiNo}: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
             Timber.e(t, message)
             val uploadException = XIError(t, message)
             postWorkStatus(uploadException)
@@ -300,7 +300,7 @@ class WorkDataRepository(
         }
     }
 
-    suspend fun getWorkFlowCodes(eId: Int): LiveData<List<WF_WorkStepDTO>> {
+    suspend fun getWorkFlowCodes(eId: Int): LiveData<List<WfWorkStepDTO>> {
         return withContext(Dispatchers.IO) {
             appDb.getWorkStepDao().getWorkflowSteps(eId)
         }
@@ -378,7 +378,7 @@ class WorkDataRepository(
                     jobItemEstimate.estimateId
                 )
 
-                jobItemEstimate.workflowEstimateWorks.forEach { jobEstimateWorks ->
+                jobItemEstimate.workflowEstimateWorks?.forEach { jobEstimateWorks ->
                     appDb.getEstimateWorkDao().updateJobEstimateWorksWorkflow(
                         jobEstimateWorks.worksId,
                         jobEstimateWorks.estimateId,
@@ -435,7 +435,7 @@ class WorkDataRepository(
                 jie.estimateId = DataConversion.toBigEndian(jie.estimateId)!!
                 jie.trackRouteId = DataConversion.toBigEndian(jie.trackRouteId)!!
                 //  Lets go through the WorkFlowEstimateWorks
-                jie.workflowEstimateWorks.forEach { wfe ->
+                jie.workflowEstimateWorks?.forEach { wfe ->
                     wfe.trackRouteId = DataConversion.toBigEndian(wfe.trackRouteId)!!
                     wfe.worksId = DataConversion.toBigEndian(wfe.worksId)!!
                     wfe.estimateId = DataConversion.toBigEndian(wfe.estimateId)!!

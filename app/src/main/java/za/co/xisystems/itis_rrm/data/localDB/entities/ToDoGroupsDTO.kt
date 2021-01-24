@@ -29,7 +29,7 @@ data class ToDoGroupsDTO(
     val groupDescription: String, // Measurements that require Approval for payment processing
 
     @SerializedName("Entities")
-    val toDoListEntities: ArrayList<ToDoListEntityDTO>,
+    val toDoListEntities: ArrayList<ToDoListEntityDTO>? = arrayListOf(),
 
     @SerializedName("SortOrder")
     val sortOrder: Int // 5

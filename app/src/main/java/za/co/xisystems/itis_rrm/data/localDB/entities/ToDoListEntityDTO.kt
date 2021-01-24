@@ -33,13 +33,13 @@ data class ToDoListEntityDTO(
     @SerializedName("Description")
     val description: String?, // 000000309 - smalltest
     @SerializedName("Entities")
-    val entities: ArrayList<ToDoListEntityDTO>,
+    val entities: ArrayList<ToDoListEntityDTO> = arrayListOf(),
     @SerializedName("EntityName")
     val entityName: String?, // PRJ_JOB
     @SerializedName("Location")
     val location: String?, // null
     @SerializedName("PrimaryKeyValues")
-    val primaryKeyValues: ArrayList<PrimaryKeyValueDTO>,
+    val primaryKeyValues: ArrayList<PrimaryKeyValueDTO> = arrayListOf(),
     @SerializedName("RecordVersion")
     val recordVersion: Int?, // 0
 

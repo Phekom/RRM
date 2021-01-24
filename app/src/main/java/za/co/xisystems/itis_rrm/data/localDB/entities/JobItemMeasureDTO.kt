@@ -12,7 +12,6 @@ import com.google.gson.annotations.SerializedName
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import java.io.Serializable
 import java.util.ArrayList
-import java.util.Date
 
 const val JOB_ITEM_MEASURE = "JOB_ITEM_MEASURE"
 
@@ -24,7 +23,7 @@ data class JobItemMeasureDTO(
     @SerializedName("ActId")
     var actId: Int,
     @SerializedName("ApprovalDate")
-    var approvalDate: String? = Date().toString(),
+    var approvalDate: String? = null,
     @SerializedName("Cpa")
     var cpa: Int = 0,
     @SerializedName("EndKm")
@@ -44,11 +43,11 @@ data class JobItemMeasureDTO(
     @SerializedName("LineRate")
     var lineRate: Double,
     @SerializedName("MeasureDate")
-    var measureDate: String? = Date().toString(),
+    var measureDate: String? = null,
     @SerializedName("MeasureGroupId")
     var measureGroupId: String?,
     @SerializedName("PrjItemMeasurePhotoDtos")
-    var jobItemMeasurePhotos: ArrayList<JobItemMeasurePhotoDTO>,
+    var jobItemMeasurePhotos: ArrayList<JobItemMeasurePhotoDTO>? = arrayListOf(),
     @SerializedName("ProjectItemId")
     var projectItemId: String?,
     @SerializedName("ProjectVoId")
@@ -66,6 +65,5 @@ data class JobItemMeasureDTO(
     @SerializedName("Deleted")
     var deleted: Int = 0,
     var entityDescription: String?,
-
     var selectedItemUom: String?
 ) : Serializable

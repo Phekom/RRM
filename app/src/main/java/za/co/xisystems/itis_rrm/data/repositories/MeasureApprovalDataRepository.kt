@@ -199,7 +199,7 @@ class MeasureApprovalDataRepository(
                         jobItemEstimate.estimateId
                     )
 
-                    jobItemEstimate.workflowEstimateWorks.forEach { jobEstimateWorks ->
+                    jobItemEstimate.workflowEstimateWorks?.forEach { jobEstimateWorks ->
                         appDb.getEstimateWorkDao().updateJobEstimateWorksWorkflow(
                             jobEstimateWorks.worksId,
                             jobEstimateWorks.estimateId,
@@ -258,7 +258,7 @@ class MeasureApprovalDataRepository(
                 jie.estimateId = DataConversion.toBigEndian(jie.estimateId)!!
                 jie.trackRouteId = DataConversion.toBigEndian(jie.trackRouteId)!!
                 //  Lets go through the WorkFlowEstimateWorks
-                jie.workflowEstimateWorks.forEach { wfe ->
+                jie.workflowEstimateWorks?.forEach { wfe ->
                     wfe.trackRouteId = DataConversion.toBigEndian(wfe.trackRouteId)!!
                     wfe.worksId = DataConversion.toBigEndian(wfe.worksId)!!
                     wfe.estimateId = DataConversion.toBigEndian(wfe.estimateId)!!

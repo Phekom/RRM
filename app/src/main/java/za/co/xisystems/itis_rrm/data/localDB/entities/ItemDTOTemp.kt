@@ -35,7 +35,7 @@ data class ItemDTOTemp(
     val itemCode: String?,
 
     @SerializedName("ItemSections")
-    val itemSections: ArrayList<ItemSectionDTO>?,
+    val itemSections: ArrayList<ItemSectionDTO>? = arrayListOf(),
 
     @SerializedName("TenderRate")
     val tenderRate: Double = 0.toDouble(),
