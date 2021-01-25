@@ -1,6 +1,6 @@
 /*
- * Updated by Shaun McDonald on 2021/22/20
- * Last modified on 2021/01/20 1:51 PM
+ * Updated by Shaun McDonald on 2021/01/25
+ * Last modified on 2021/01/25 6:30 PM
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  */
 
@@ -11,6 +11,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import java.util.ArrayList
+import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
@@ -33,8 +35,6 @@ import za.co.xisystems.itis_rrm.ui.mainview.create.select_item.SectionProj_Item
 import za.co.xisystems.itis_rrm.utils.JobUtils
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
 import za.co.xisystems.itis_rrm.utils.uncaughtExceptionHandler
-import java.util.ArrayList
-import kotlin.coroutines.CoroutineContext
 
 /**
  * Created by Francis Mahlava on 2019/10/18.
@@ -233,11 +233,11 @@ class CreateViewModel(
                 isValid = false
             }
             job == null || items == null || job.JobItemEstimates.isNullOrEmpty()
-                || items.size != (job.JobItemEstimates?.size ?: 0) -> {
+                || items.size != job.JobItemEstimates.size -> {
                 isValid = false
             }
             else -> {
-                job.JobItemEstimates?.forEach { estimate ->
+                job.JobItemEstimates.forEach { estimate ->
                     if (!estimate.isEstimateComplete()) {
                         isValid = false
                     }
@@ -263,7 +263,7 @@ class CreateViewModel(
         jobCreationDataRepository.deleteItemList(jobId)
     }
 
-    fun deleteItemFromList(itemId: String, estimateId: String?) = viewModelScope.launch(ioContext){
+    fun deleteItemFromList(itemId: String, estimateId: String?) = viewModelScope.launch(ioContext) {
         val recordsAffected = jobCreationDataRepository.deleteItemFromList(itemId, estimateId)
         Timber.d("deleteItemFromList: $recordsAffected deleted.")
     }
@@ -282,7 +282,7 @@ class CreateViewModel(
 
     suspend fun backupJob(job: JobDTO) = viewModelScope.launch(mainContext) {
         jobCreationDataRepository.backupJob(job)
-        setJobToEdit(job.JobId)
+        setJobToEdit(job.jobId)
     }
 
     /**

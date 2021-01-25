@@ -1,3 +1,9 @@
+/*
+ * Updated by Shaun McDonald on 2021/01/25
+ * Last modified on 2021/01/25 6:30 PM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.ui.mainview.create
 
 import android.os.Bundle
@@ -10,7 +16,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenStarted
 import androidx.navigation.Navigation
 import java.util.ArrayList
-import java.util.Calendar
+import java.util.Date
 import kotlinx.coroutines.launch
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
@@ -139,8 +145,8 @@ class CreateFragment : BaseFragment(), OfflineListener, KodeinAware {
 
         Coroutines.main {
             val user = createViewModel.user.await()
-            user.observe(viewLifecycleOwner, { user_ ->
-                useR = user_
+            user.observe(viewLifecycleOwner, { userDTO ->
+                useR = userDTO
             })
         }
 
@@ -202,56 +208,56 @@ class CreateFragment : BaseFragment(), OfflineListener, KodeinAware {
         description: String?
     ): JobDTO {
         val newJobId: String = SqlLitUtils.generateUuid()
-        val today = (Calendar.getInstance().time)
+        val today = Date()
 
         val createdJob = JobDTO(
-            0,
-            newJobId,
-            contractID,
-            projectID,
-            null,
-            0.0,
-            0.0,
-            description,
-            null,
-            useR!!,
-            null,
-            null,
-            0,
-            0,
-            0,
-            0,
-            DateUtil.DateToString(today),
-            DateUtil.DateToString(today),
-            DateUtil.DateToString(today),
-            null, // null,null,null,null,
-            newJobItemEstimatesList,
-            jobItemMeasureArrayList,
-            jobItemSectionArrayList,
-            null,
-            0,
-            null,
-            null,
-            null,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            null,
-            0,
-            0,
-            null,
-            null,
-            null,
-            null,
-            null,
-            0,
-            null,
-            0,
-            null
+            actId = 0,
+            jobId = newJobId,
+            contractVoId = contractID,
+            projectId = projectID,
+            sectionId = null,
+            startKm = 0.0,
+            endKm = 0.0,
+            descr = description,
+            jiNo = null,
+            userId = useR!!,
+            trackRouteId = null,
+            section = null,
+            Cpa = 0,
+            DayWork = 0,
+            ContractorId = 0,
+            M9100 = 0,
+            IssueDate = DateUtil.DateToString(today),
+            StartDate = DateUtil.DateToString(today),
+            DueDate = DateUtil.DateToString(today),
+            ApprovalDate = null, // null,null,null,null,
+            JobItemEstimates = newJobItemEstimatesList,
+            JobItemMeasures = jobItemMeasureArrayList,
+            JobSections = jobItemSectionArrayList,
+            PerfitemGroupId = null,
+            RecordVersion = 0,
+            Remarks = null,
+            Route = null,
+            RrmJiNo = null,
+            EngineerId = 0,
+            EntireRoute = 0,
+            IsExtraWork = 0,
+            JobCategoryId = 0,
+            JobDirectionId = 0,
+            JobPositionId = 0,
+            JobStatusId = 0,
+            ProjectVoId = null,
+            QtyUpdateAllowed = 0,
+            RecordSynchStateId = 0,
+            VoId = null,
+            WorkCompleteDate = null,
+            WorkStartDate = null,
+            ESTIMATES_ACT_ID = null,
+            MEASURE_ACT_ID = null,
+            WORKS_ACT_ID = 0,
+            sortString = null,
+            ActivityId = 0,
+            Is_synced = null
 
         )
 
@@ -264,7 +270,6 @@ class CreateFragment : BaseFragment(), OfflineListener, KodeinAware {
     private fun setContractAndProjectSelection(
         view: View
     ) {
-        Navigation.findNavController(view).navigate(R.id.action_nav_create_to_addProjectFragment)
         Coroutines.main {
 
             createViewModel.setLoggerUser(useR.userId.toInt())
@@ -274,7 +279,12 @@ class CreateFragment : BaseFragment(), OfflineListener, KodeinAware {
             createViewModel.setProjectId(selectedProject?.projectId!!)
 
             // Uniform entry point to minimize confusion - Shaun McDonald
-            createViewModel.setJobToEdit(newJob?.JobId!!)
+            createViewModel.setJobToEdit(newJob?.jobId!!)
+            val navDirection = CreateFragmentDirections.actionNavCreateToAddProjectFragment(
+                selectedProject?.projectId!!,
+                newJob!!.jobId
+            )
+            Navigation.findNavController(view).navigate(navDirection)
         }
     }
 
@@ -308,7 +318,7 @@ class CreateFragment : BaseFragment(), OfflineListener, KodeinAware {
                             requireContext().applicationContext,
                             ui.contractSpinner,
                             contractList,
-                            contractIndices, // null)
+                            contractIndices,
                             object : SpinnerHelper.SelectionListener<ContractDTO> {
                                 override fun onItemSelected(position: Int, item: ContractDTO) {
                                     selectedContract = item
@@ -344,18 +354,18 @@ class CreateFragment : BaseFragment(), OfflineListener, KodeinAware {
         Coroutines.main {
             val projects = createViewModel.getSomeProjects(contractId!!)
             ui.dataLoading.show()
-            projects.observe(viewLifecycleOwner, { projec_t ->
-                val allData = projec_t.count()
-                if (projec_t.size == allData) {
+            projects.observe(viewLifecycleOwner, { projectList ->
+                val allData = projectList.count()
+                if (projectList.size == allData) {
 
-                    val projectNmbr = arrayOfNulls<String>(projec_t.size)
-                    for (project in projec_t.indices) {
-                        projectNmbr[project] = projec_t[project].projectCode
+                    val projectNmbr = arrayOfNulls<String>(projectList.size)
+                    for (project in projectList.indices) {
+                        projectNmbr[project] = projectList[project].projectCode
                     }
                     setSpinner(
                         requireContext().applicationContext,
                         ui.projectSpinner,
-                        projec_t,
+                        projectList,
                         projectNmbr, // null)
                         object : SpinnerHelper.SelectionListener<ProjectDTO> {
                             override fun onItemSelected(position: Int, item: ProjectDTO) {
