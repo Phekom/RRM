@@ -6,7 +6,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import androidx.lifecycle.viewModelScope
-import java.util.concurrent.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
@@ -30,6 +29,7 @@ import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
+import java.util.concurrent.CancellationException
 
 /**
  * Created by Francis Mahlava on 03,October,2019
@@ -201,13 +201,13 @@ class ApproveMeasureViewModel(
                         getDescForProjectId(it)
                     }
 
-                val photoQuality = when (measureItem.jobItemMeasurePhotos.size) {
+                val photoQuality = when (measureItem.jobItemMeasurePhotos?.size ?: 1) {
                     in 1..4 -> PhotoQuality.HIGH
                     in 5..10 -> PhotoQuality.MEDIUM
                     else -> PhotoQuality.THUMB
                 }
 
-                val bitmaps = measureItem.jobItemMeasurePhotos.map { photo ->
+                val bitmaps = measureItem.jobItemMeasurePhotos?.map { photo ->
 
                     val uri = photo.filename?.let { fileName ->
                         PhotoUtil.getPhotoPathFromExternalDirectory(fileName)
@@ -226,7 +226,7 @@ class ApproveMeasureViewModel(
                     description = measureDescription,
                     qty = measureItem.qty,
                     lineRate = measureItem.lineRate,
-                    photoPairs = bitmaps,
+                    photoPairs = bitmaps!!,
                     lineAmount = measureItem.qty * measureItem.lineRate,
                     jobItemMeasureDTO = measureItem
 
