@@ -1,6 +1,6 @@
 <!--
-  * Updated by Shaun McDonald on 2021/22/20
-  * Last modified on 2021/01/20 12:55 PM
+  * Updated by Shaun McDonald on 2021/01/25
+  * Last modified on 2021/01/25 6:30 PM
   * Copyright (c) 2021.  XI Systems  - All rights reserved
   -->
 
@@ -216,5 +216,4 @@
     <string name="contract_placeholder">N.002–036–2017/1 DEMO</string>
     <string name="edit_quantity_button">Edit quantity button</string>
     <string name="rrm_placeholder_text">N.002–036–2017/1 DEMO</string>
-
 </resources>
