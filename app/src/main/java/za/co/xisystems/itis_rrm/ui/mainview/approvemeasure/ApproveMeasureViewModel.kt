@@ -1,3 +1,9 @@
+/*
+ * Updated by Shaun McDonald on 2021/01/25
+ * Last modified on 2021/01/25 6:30 PM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.ui.mainview.approvemeasure
 
 import android.app.Application
@@ -201,13 +207,13 @@ class ApproveMeasureViewModel(
                         getDescForProjectId(it)
                     }
 
-                val photoQuality = when (measureItem.jobItemMeasurePhotos?.size ?: 1) {
+                val photoQuality = when (measureItem.jobItemMeasurePhotos.size) {
                     in 1..4 -> PhotoQuality.HIGH
                     in 5..10 -> PhotoQuality.MEDIUM
                     else -> PhotoQuality.THUMB
                 }
 
-                val bitmaps = measureItem.jobItemMeasurePhotos?.map { photo ->
+                val bitmaps = measureItem.jobItemMeasurePhotos.map { photo ->
 
                     val uri = photo.filename?.let { fileName ->
                         PhotoUtil.getPhotoPathFromExternalDirectory(fileName)
@@ -226,7 +232,7 @@ class ApproveMeasureViewModel(
                     description = measureDescription,
                     qty = measureItem.qty,
                     lineRate = measureItem.lineRate,
-                    photoPairs = bitmaps!!,
+                    photoPairs = bitmaps,
                     lineAmount = measureItem.qty * measureItem.lineRate,
                     jobItemMeasureDTO = measureItem
 
