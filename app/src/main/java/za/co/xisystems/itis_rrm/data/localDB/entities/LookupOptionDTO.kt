@@ -1,5 +1,14 @@
+/*
+ * Updated by Shaun McDonald on 2021/01/25
+ * Last modified on 2021/01/25 6:30 PM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.data.localDB.entities
 
+import android.os.Parcel
+import android.os.Parcelable
+import android.os.Parcelable.Creator
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
@@ -39,4 +48,34 @@ class LookupOptionDTO(
     @ColumnInfo(name = "lookupName", index = true)
     var lookupName: String
 
-) : Serializable
+) : Serializable, Parcelable {
+    constructor(parcel: Parcel) : this(
+        parcel.readInt(),
+        parcel.readString(),
+        parcel.readString(),
+        parcel.readString(),
+        parcel.readString()!!
+    )
+
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeInt(id)
+        parcel.writeString(valueMember)
+        parcel.writeString(displayMember)
+        parcel.writeString(contextMember)
+        parcel.writeString(lookupName)
+    }
+
+    override fun describeContents(): Int {
+        return 0
+    }
+
+    companion object CREATOR : Creator<LookupOptionDTO> {
+        override fun createFromParcel(parcel: Parcel): LookupOptionDTO {
+            return LookupOptionDTO(parcel)
+        }
+
+        override fun newArray(size: Int): Array<LookupOptionDTO?> {
+            return arrayOfNulls(size)
+        }
+    }
+}

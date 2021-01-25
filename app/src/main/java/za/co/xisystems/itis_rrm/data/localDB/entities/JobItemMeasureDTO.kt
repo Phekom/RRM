@@ -1,6 +1,6 @@
 /*
- * Updated by Shaun McDonald on 2021/22/20
- * Last modified on 2021/01/20 12:55 PM
+ * Updated by Shaun McDonald on 2021/01/25
+ * Last modified on 2021/01/25 6:30 PM
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  */
 
@@ -9,7 +9,6 @@ package za.co.xisystems.itis_rrm.data.localDB.entities
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
-import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import java.io.Serializable
 import java.util.ArrayList
 
@@ -31,7 +30,7 @@ data class JobItemMeasureDTO(
     @SerializedName("EstimateId")
     var estimateId: String?,
     @SerializedName("ItemMeasureId")
-    var itemMeasureId: String = SqlLitUtils.generateUuid(),
+    var itemMeasureId: String,
     @SerializedName("JimNo")
     var jimNo: String?,
     @SerializedName("JobDirectionId")
@@ -47,7 +46,7 @@ data class JobItemMeasureDTO(
     @SerializedName("MeasureGroupId")
     var measureGroupId: String?,
     @SerializedName("PrjItemMeasurePhotoDtos")
-    var jobItemMeasurePhotos: ArrayList<JobItemMeasurePhotoDTO>? = arrayListOf(),
+    var jobItemMeasurePhotos: ArrayList<JobItemMeasurePhotoDTO> = ArrayList(),
     @SerializedName("ProjectItemId")
     var projectItemId: String?,
     @SerializedName("ProjectVoId")

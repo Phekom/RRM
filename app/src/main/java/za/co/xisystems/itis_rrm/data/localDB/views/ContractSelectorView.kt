@@ -1,4 +1,10 @@
 /*
+ * Updated by Shaun McDonald on 2021/01/25
+ * Last modified on 2021/01/25 6:30 PM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
+/*
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  */
 
@@ -15,4 +21,3 @@ data class ContractSelectorView(
     val contractNo: String,
     val shortDesc: String
 )
-

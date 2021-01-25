@@ -1,11 +1,14 @@
 /*
- * Updated by Shaun McDonald on 2021/22/20
- * Last modified on 2021/01/20 12:55 PM
+ * Updated by Shaun McDonald on 2021/01/25
+ * Last modified on 2021/01/25 6:30 PM
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  */
 
 package za.co.xisystems.itis_rrm.data.localDB.entities
 
+import android.os.Parcel
+import android.os.Parcelable
+import android.os.Parcelable.Creator
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
@@ -35,4 +38,38 @@ data class SectionPointDTO(
     @SerializedName("jobId")
     val jobId: String?
 
-) : Serializable
+) : Serializable, Parcelable {
+    constructor(parcel: Parcel) : this(
+        parcel.readInt(),
+        parcel.readInt(),
+        parcel.readString(),
+        parcel.readString(),
+        parcel.readDouble(),
+        parcel.readString(),
+        parcel.readString()
+    )
+
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeInt(id)
+        parcel.writeInt(sectionId)
+        parcel.writeString(direction)
+        parcel.writeString(linearId)
+        parcel.writeDouble(pointLocation)
+        parcel.writeString(projectId)
+        parcel.writeString(jobId)
+    }
+
+    override fun describeContents(): Int {
+        return 0
+    }
+
+    companion object CREATOR : Creator<SectionPointDTO> {
+        override fun createFromParcel(parcel: Parcel): SectionPointDTO {
+            return SectionPointDTO(parcel)
+        }
+
+        override fun newArray(size: Int): Array<SectionPointDTO?> {
+            return arrayOfNulls(size)
+        }
+    }
+}

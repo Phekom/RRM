@@ -1,3 +1,9 @@
+/*
+ * Updated by Shaun McDonald on 2021/01/25
+ * Last modified on 2021/01/25 6:30 PM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.data.repositories
 
 // import sun.security.krb5.Confounder.bytes
@@ -321,10 +327,9 @@ class WorkDataRepository(
                 }
             }
             appDb.getEstimateWorkDao().updateJobEstimateWorkForEstimateID(
-                estimateWorksItem.jobEstimateWorksPhotos!!,
+                estimateWorksItem.jobEstimateWorksPhotos,
                 estimateWorksItem.estimateId
             )
-
         }
     }
 
@@ -371,14 +376,14 @@ class WorkDataRepository(
         try {
             appDb.getJobDao().updateJob(job.trackRouteId, job.actId, job.jiNo, job.jobId)
 
-            job.workflowItemEstimates?.forEach { jobItemEstimate ->
+            job.workflowItemEstimates.forEach { jobItemEstimate ->
                 appDb.getJobItemEstimateDao().updateExistingJobItemEstimateWorkflow(
                     jobItemEstimate.trackRouteId,
                     jobItemEstimate.actId,
                     jobItemEstimate.estimateId
                 )
 
-                jobItemEstimate.workflowEstimateWorks?.forEach { jobEstimateWorks ->
+                jobItemEstimate.workflowEstimateWorks.forEach { jobEstimateWorks ->
                     appDb.getEstimateWorkDao().updateJobEstimateWorksWorkflow(
                         jobEstimateWorks.worksId,
                         jobEstimateWorks.estimateId,
@@ -390,7 +395,7 @@ class WorkDataRepository(
                 }
             }
 
-            job.workflowItemMeasures?.forEach { jobItemMeasure ->
+            job.workflowItemMeasures.forEach { jobItemMeasure ->
                 appDb.getJobItemMeasureDao().updateWorkflowJobItemMeasure(
                     jobItemMeasure.itemMeasureId,
                     jobItemMeasure.trackRouteId,
@@ -400,7 +405,7 @@ class WorkDataRepository(
             }
 
             //  Place the Job Section, UPDATE OR CREATE
-            job.workflowJobSections?.forEach { jobSection ->
+            job.workflowJobSections.forEach { jobSection ->
                 if (!appDb.getJobSectionDao().checkIfJobSectionExist(jobSection.jobSectionId)) {
                     appDb.getJobSectionDao().insertJobSection(jobSection)
                 } else {
@@ -431,24 +436,24 @@ class WorkDataRepository(
             job.jobId = DataConversion.toBigEndian(job.jobId)
             job.trackRouteId = DataConversion.toBigEndian(job.trackRouteId)
 
-            job.workflowItemEstimates?.forEach { jie ->
+            job.workflowItemEstimates.forEach { jie ->
                 jie.estimateId = DataConversion.toBigEndian(jie.estimateId)!!
                 jie.trackRouteId = DataConversion.toBigEndian(jie.trackRouteId)!!
                 //  Lets go through the WorkFlowEstimateWorks
-                jie.workflowEstimateWorks?.forEach { wfe ->
+                jie.workflowEstimateWorks.forEach { wfe ->
                     wfe.trackRouteId = DataConversion.toBigEndian(wfe.trackRouteId)!!
                     wfe.worksId = DataConversion.toBigEndian(wfe.worksId)!!
                     wfe.estimateId = DataConversion.toBigEndian(wfe.estimateId)!!
                 }
             }
 
-            job.workflowItemMeasures?.forEach { jim ->
+            job.workflowItemMeasures.forEach { jim ->
                 jim.itemMeasureId = DataConversion.toBigEndian(jim.itemMeasureId)!!
                 jim.measureGroupId = DataConversion.toBigEndian(jim.measureGroupId)!!
                 jim.trackRouteId = DataConversion.toBigEndian(jim.trackRouteId)!!
             }
 
-            job.workflowJobSections?.forEach { js ->
+            job.workflowJobSections.forEach { js ->
                 js.jobSectionId = DataConversion.toBigEndian(js.jobSectionId)!!
                 js.projectSectionId = DataConversion.toBigEndian(js.projectSectionId)!!
                 js.jobId = DataConversion.toBigEndian(js.jobId)

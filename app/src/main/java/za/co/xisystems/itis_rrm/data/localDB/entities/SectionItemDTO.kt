@@ -1,11 +1,20 @@
 /*
- * Updated by Shaun McDonald on 2021/22/20
- * Last modified on 2021/01/20 12:47 PM
+ * Updated by Shaun McDonald on 2021/01/25
+ * Last modified on 2021/01/25 6:30 PM
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  */
 
+/*******************************************************************************
+ * Updated by Shaun McDonald on 2021/29/25
+ * Last modified on 2021/01/25 3:23 PM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ ******************************************************************************/
+
 package za.co.xisystems.itis_rrm.data.localDB.entities
 
+import android.os.Parcel
+import android.os.Parcelable
+import android.os.Parcelable.Creator
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
@@ -34,4 +43,32 @@ data class SectionItemDTO(
 
     @SerializedName("ActivitySections")
     var description: String?
-) : Serializable
+) : Serializable, Parcelable {
+    constructor(parcel: Parcel) : this(
+        parcel.readInt(),
+        parcel.readString()!!,
+        parcel.readString()!!,
+        parcel.readString()
+    )
+
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeInt(id)
+        parcel.writeString(sectionItemId)
+        parcel.writeString(itemCode)
+        parcel.writeString(description)
+    }
+
+    override fun describeContents(): Int {
+        return 0
+    }
+
+    companion object CREATOR : Creator<SectionItemDTO> {
+        override fun createFromParcel(parcel: Parcel): SectionItemDTO {
+            return SectionItemDTO(parcel)
+        }
+
+        override fun newArray(size: Int): Array<SectionItemDTO?> {
+            return arrayOfNulls(size)
+        }
+    }
+}

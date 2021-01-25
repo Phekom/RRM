@@ -1,5 +1,14 @@
+/*
+ * Updated by Shaun McDonald on 2021/01/25
+ * Last modified on 2021/01/25 6:30 PM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.data.localDB.entities
 
+import android.os.Parcel
+import android.os.Parcelable
+import android.os.Parcelable.Creator
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
@@ -13,14 +22,12 @@ import com.google.gson.annotations.SerializedName
 const val WORKFLOW_ROUTE_TABLE = "WORKFLOW_ROUTE_TABLE"
 
 @Entity(
-    tableName = WORKFLOW_ROUTE_TABLE, foreignKeys = arrayOf(
-        ForeignKey(
-            entity = WorkFlowDTO::class,
-            parentColumns = arrayOf("workflowId"),
-            childColumns = arrayOf("workflowId"),
-            onDelete = ForeignKey.CASCADE
-        )
-    )
+    tableName = WORKFLOW_ROUTE_TABLE, foreignKeys = [ForeignKey(
+        entity = WorkFlowDTO::class,
+        parentColumns = arrayOf("workflowId"),
+        childColumns = arrayOf("workflowId"),
+        onDelete = ForeignKey.CASCADE
+    )]
 )
 data class WorkFlowRouteDTO(
 
@@ -48,4 +55,40 @@ data class WorkFlowRouteDTO(
     @SerializedName("WorkflowId")
     @ColumnInfo(name = "workflowId", index = true)
     var workflowId: Long?
-)
+) : Parcelable {
+    constructor(parcel: Parcel) : this(
+        parcel.readInt(),
+        parcel.readLong(),
+        parcel.readLong(),
+        parcel.readLong(),
+        parcel.readLong(),
+        parcel.readLong(),
+        parcel.readLong(),
+        parcel.readValue(Long::class.java.classLoader) as? Long
+    )
+
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeInt(id)
+        parcel.writeLong(routeId)
+        parcel.writeLong(actId)
+        parcel.writeLong(nextRouteId)
+        parcel.writeLong(failRouteId)
+        parcel.writeLong(errorRouteId)
+        parcel.writeLong(canStart)
+        parcel.writeValue(workflowId)
+    }
+
+    override fun describeContents(): Int {
+        return 0
+    }
+
+    companion object CREATOR : Creator<WorkFlowRouteDTO> {
+        override fun createFromParcel(parcel: Parcel): WorkFlowRouteDTO {
+            return WorkFlowRouteDTO(parcel)
+        }
+
+        override fun newArray(size: Int): Array<WorkFlowRouteDTO?> {
+            return arrayOfNulls(size)
+        }
+    }
+}

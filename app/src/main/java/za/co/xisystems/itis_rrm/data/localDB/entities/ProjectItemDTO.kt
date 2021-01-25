@@ -1,6 +1,6 @@
 /*
- * Updated by Shaun McDonald on 2021/22/20
- * Last modified on 2021/01/20 12:46 PM
+ * Updated by Shaun McDonald on 2021/01/25
+ * Last modified on 2021/01/25 6:30 PM
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  */
 
@@ -11,9 +11,9 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
+import java.io.Serializable
 import org.jetbrains.annotations.NotNull
 import org.jetbrains.annotations.Nullable
-import java.io.Serializable
 
 /**
  * Created by Francis Mahlava on 2019/11/21.
@@ -43,7 +43,7 @@ data class ProjectItemDTO(
     val itemCode: String?,
     @Nullable
     @SerializedName("ItemSections")
-    val itemSections: ArrayList<ItemSectionDTO>? = arrayListOf(),
+    val itemSections: ArrayList<ItemSectionDTO>? = ArrayList(),
     @SerializedName("TenderRate")
     val tenderRate: Double = 0.0,
     @SerializedName("Uom")

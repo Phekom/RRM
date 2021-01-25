@@ -1,9 +1,16 @@
+/*
+ * Updated by Shaun McDonald on 2021/01/25
+ * Last modified on 2021/01/25 6:30 PM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.data.repositories
 
 // import sun.security.krb5.Confounder.bytes
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import java.util.Locale
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -24,7 +31,6 @@ import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
 import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
-import java.util.Locale
 
 /**
  * Created by Francis Mahlava on 2019/11/28.
@@ -227,14 +233,14 @@ class JobApprovalDataRepository(
         try {
             appDb.getJobDao().updateJob(job.trackRouteId, job.actId, job.jiNo, job.jobId)
 
-            job.workflowItemEstimates?.forEach { jobItemEstimate ->
+            job.workflowItemEstimates.forEach { jobItemEstimate ->
                 appDb.getJobItemEstimateDao().updateExistingJobItemEstimateWorkflow(
                     jobItemEstimate.trackRouteId,
                     jobItemEstimate.actId,
                     jobItemEstimate.estimateId
                 )
 
-                jobItemEstimate.workflowEstimateWorks?.forEach { jobEstimateWorks ->
+                jobItemEstimate.workflowEstimateWorks.forEach { jobEstimateWorks ->
                     if (!appDb.getEstimateWorkDao()
                             .checkIfJobEstimateWorksExist(jobEstimateWorks.worksId)
                     ) {
@@ -265,7 +271,7 @@ class JobApprovalDataRepository(
                 }
             }
 
-            job.workflowItemMeasures?.forEach { jobItemMeasure ->
+            job.workflowItemMeasures.forEach { jobItemMeasure ->
                 appDb.getJobItemMeasureDao().updateWorkflowJobItemMeasure(
                     jobItemMeasure.itemMeasureId,
                     jobItemMeasure.trackRouteId,
@@ -275,7 +281,7 @@ class JobApprovalDataRepository(
             }
 
             //  Place the Job Section, UPDATE OR CREATE
-            job.workflowJobSections?.forEach { jobSection ->
+            job.workflowJobSections.forEach { jobSection ->
                 if (!appDb.getJobSectionDao().checkIfJobSectionExist(jobSection.jobSectionId)) {
                     appDb.getJobSectionDao().insertJobSection(jobSection)
                 } else {
@@ -307,24 +313,24 @@ class JobApprovalDataRepository(
             job.jobId = DataConversion.toBigEndian(job.jobId)
             job.trackRouteId = DataConversion.toBigEndian(job.trackRouteId)
 
-            job.workflowItemEstimates?.forEach { jie ->
+            job.workflowItemEstimates.forEach { jie ->
                 jie.estimateId = DataConversion.toBigEndian(jie.estimateId)!!
                 jie.trackRouteId = DataConversion.toBigEndian(jie.trackRouteId)!!
                 //  Let's go through the WorkFlowEstimateWorks
-                jie.workflowEstimateWorks?.forEach { wfe ->
+                jie.workflowEstimateWorks.forEach { wfe ->
                     wfe.trackRouteId = DataConversion.toBigEndian(wfe.trackRouteId)!!
                     wfe.worksId = DataConversion.toBigEndian(wfe.worksId)!!
                     wfe.estimateId = DataConversion.toBigEndian(wfe.estimateId)!!
                 }
             }
 
-            job.workflowItemMeasures?.forEach { jim ->
+            job.workflowItemMeasures.forEach { jim ->
                 jim.itemMeasureId = DataConversion.toBigEndian(jim.itemMeasureId)!!
                 jim.measureGroupId = DataConversion.toBigEndian(jim.measureGroupId)!!
                 jim.trackRouteId = DataConversion.toBigEndian(jim.trackRouteId)!!
             }
 
-            job.workflowJobSections?.forEach { js ->
+            job.workflowJobSections.forEach { js ->
                 js.jobSectionId = DataConversion.toBigEndian(js.jobSectionId)!!
                 js.projectSectionId = DataConversion.toBigEndian(js.projectSectionId)!!
                 js.jobId = DataConversion.toBigEndian(js.jobId)

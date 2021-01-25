@@ -1,15 +1,17 @@
 /*
- * Updated by Shaun McDonald on 2021/22/20
- * Last modified on 2021/01/20 12:55 PM
+ * Updated by Shaun McDonald on 2021/01/25
+ * Last modified on 2021/01/25 6:30 PM
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  */
 
 package za.co.xisystems.itis_rrm.data.localDB.entities
 
+import android.os.Parcel
+import android.os.Parcelable
+import android.os.Parcelable.Creator
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
-import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import java.io.Serializable
 
 /**
@@ -25,7 +27,7 @@ class JobEstimateWorksDTO(
     @SerializedName("EstimateId")
     var estimateId: String?,
     @SerializedName("MobileJobEstimateWorksPhotos")
-    var jobEstimateWorksPhotos: ArrayList<JobEstimateWorksPhotoDTO>? = arrayListOf(),
+    var jobEstimateWorksPhotos: ArrayList<JobEstimateWorksPhotoDTO> = ArrayList(),
     @SerializedName("RecordSynchStateId")
     var recordSynchStateId: Int,
     @SerializedName("RecordVersion")
@@ -34,5 +36,41 @@ class JobEstimateWorksDTO(
     var trackRouteId: String,
     @SerializedName("WorksId")
     @PrimaryKey
-    var worksId: String = SqlLitUtils.generateUuid()
-) : Serializable
+    var worksId: String
+) : Serializable, Parcelable {
+    constructor(parcel: Parcel) : this(
+        actId = parcel.readInt(),
+        estimateId = parcel.readString(),
+        jobEstimateWorksPhotos = arrayListOf<JobEstimateWorksPhotoDTO>().apply {
+            parcel.readList(this.toList(), JobEstimateWorksPhotoDTO::class.java.classLoader)
+        },
+        recordSynchStateId = parcel.readInt(),
+        recordVersion = parcel.readInt(),
+        trackRouteId = parcel.readString()!!,
+        worksId = parcel.readString()!!
+    )
+
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeInt(actId)
+        parcel.writeString(estimateId)
+        parcel.writeList(jobEstimateWorksPhotos.toList())
+        parcel.writeInt(recordSynchStateId)
+        parcel.writeInt(recordVersion)
+        parcel.writeString(trackRouteId)
+        parcel.writeString(worksId)
+    }
+
+    override fun describeContents(): Int {
+        return 0
+    }
+
+    companion object CREATOR : Creator<JobEstimateWorksDTO> {
+        override fun createFromParcel(parcel: Parcel): JobEstimateWorksDTO {
+            return JobEstimateWorksDTO(parcel)
+        }
+
+        override fun newArray(size: Int): Array<JobEstimateWorksDTO?> {
+            return arrayOfNulls(size)
+        }
+    }
+}
