@@ -35,8 +35,9 @@
 
 -keep class sun.misc.Unsafe { *; }
 #your package path where your gson models are stored
--keep class za.co.xisystems.itis_rrm.data.localDB.entities.** { *; }
--keep class za.co.xisystems.itis_rrm.data.localDB.dao.** {*; }
+
+-keep class za.co.xisystems.itis_rrm.data.** { *; }
+
 
 # Keep these for GSON and Jackson
 -keepattributes Signature
@@ -56,6 +57,6 @@
 -dontwarn okhttp3.**
 
 # Needed for Parcelable/SafeParcelable Creators to not get stripped
--keepnames class * implements android.os.Parcelable {
+-keep class * implements android.os.Parcelable {
     public static final ** CREATOR;
 }
