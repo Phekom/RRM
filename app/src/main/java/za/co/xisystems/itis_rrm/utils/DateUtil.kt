@@ -1,6 +1,12 @@
+/*
+ * Updated by Shaun McDonald on 2021/01/25
+ * Last modified on 2021/01/25 6:30 PM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.utils
 
-import android.util.Log
+import timber.log.Timber
 import java.text.DateFormat
 import java.text.ParseException
 import java.text.SimpleDateFormat
@@ -31,11 +37,11 @@ object DateUtil {
 
     // endregion (Private Static Fields)
 // region (Public Static Methods)
-    private fun StringToDate(stringDate: String?): Date? {
+    fun StringToDate(stringDate: String?): Date? {
         return if (null == stringDate) null else try {
             iso8601Format.parse(stringDate)
         } catch (e: ParseException) {
-            Log.e(TAG, parsingIso8601DateTimeFailed, e)
+            Timber.e(e, parsingIso8601DateTimeFailed)
             null
         }
     }
@@ -78,21 +84,4 @@ object DateUtil {
         cal.time = date
         return cal
     } // endregion
-
-//    var inputFormatter: DateTimeFormatter =
-//        DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.ENGLISH)
-//    var outputFormatter: DateTimeFormatter =
-//        DateTimeFormatter.ofPattern("dd-MM-yyy", Locale.ENGLISH)
-//    var date: LocalDate = LocalDate.parse("2018-04-10T04:00:00.000Z", inputFormatter)
-//    var formattedDate: String = outputFormatter.format(date)
 }
-
-// class DateTypeAdapter : JsonDeserializer<Date> {
-//    override fun deserialize(json: JsonElement, typeOfT: Type, context: JsonDeserializationContext): Date {
-//        try {
-//            return DateTime(json.asString).toDate()
-//        } catch (e: Exception) {
-//            throw JsonParseException("'$json' is not a valid Date")
-//        }
-//    }
-// }

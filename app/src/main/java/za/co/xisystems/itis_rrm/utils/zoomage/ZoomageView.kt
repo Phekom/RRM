@@ -1,9 +1,3 @@
-/*
- * Updated by Shaun McDonald on 2021/22/20
- * Last modified on 2021/01/20 2:14 PM
- * Copyright (c) 2021.  XI Systems  - All rights reserved
- */
-
 /**
  * Copyright 2016 Jeffrey Sibbold
  *
@@ -437,8 +431,8 @@ class ZoomageView : AppCompatImageView, OnScaleGestureListener {
                 }
             }
             parent.requestDisallowInterceptTouchEvent(
-                isTranslatable && currentPointerCount > 0
-                    || isZoomable && currentPointerCount > 1
+                isTranslatable && currentPointerCount > 0 ||
+                    isZoomable && currentPointerCount > 1
             )
 
             // this tracks whether they have changed the number of fingers down
@@ -600,7 +594,7 @@ class ZoomageView : AppCompatImageView, OnScaleGestureListener {
     /**
      * Get the x distance to translate the current image.
      *
-     * @param toX   the current x location of touch focus
+     * @param toX the current x location of touch focus
      * @param fromX the last x location of touch focus
      * @return the distance to move the image,
      * will restrict the translation to keep the image on screen.
@@ -651,7 +645,7 @@ class ZoomageView : AppCompatImageView, OnScaleGestureListener {
     /**
      * Get the y distance to translate the current image.
      *
-     * @param toY   the current y location of touch focus
+     * @param toY the current y location of touch focus
      * @param fromY the last y location of touch focus
      * @return the distance to move the image,
      * will restrict the translation to keep the image on screen.
