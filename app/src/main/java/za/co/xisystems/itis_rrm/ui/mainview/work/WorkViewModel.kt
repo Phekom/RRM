@@ -1,3 +1,9 @@
+/*
+ * Updated by Shaun McDonald on 2021/01/25
+ * Last modified on 2021/01/25 6:30 PM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.ui.mainview.work
 
 import androidx.fragment.app.FragmentActivity
@@ -20,7 +26,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksPhotoDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.WF_WorkStepDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.WfWorkStepDTO
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.WorkDataRepository
 import za.co.xisystems.itis_rrm.extensions.getDistinct
@@ -144,7 +150,7 @@ class WorkViewModel(
         }
     }
 
-    suspend fun getWorkFlowCodes(eId: Int): LiveData<List<WF_WorkStepDTO>> {
+    suspend fun getWorkFlowCodes(eId: Int): LiveData<List<WfWorkStepDTO>> {
         return withContext(ioContext) {
             workDataRepository.getWorkFlowCodes(eId)
         }

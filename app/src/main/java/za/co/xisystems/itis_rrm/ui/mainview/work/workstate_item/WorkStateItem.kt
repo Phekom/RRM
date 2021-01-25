@@ -1,3 +1,9 @@
+/*
+ * Updated by Shaun McDonald on 2021/01/25
+ * Last modified on 2021/01/25 6:30 PM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.ui.mainview.work.workstate_item
 
 import android.graphics.Color
@@ -9,7 +15,7 @@ import com.xwray.groupie.kotlinandroidextensions.Item
 import kotlinx.android.synthetic.main.list_selector.*
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.WF_WorkStepDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.WfWorkStepDTO
 import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModel
 import za.co.xisystems.itis_rrm.utils.toast
 
@@ -21,7 +27,7 @@ class WorkStateItem(
     private val jobItemWorks: JobEstimateWorksDTO?,
     private var activity: FragmentActivity?,
     private var groupAdapter: GroupAdapter<GroupieViewHolder>,
-    private val jobWorkStep: ArrayList<WF_WorkStepDTO>,
+    private val jobWorkStep: ArrayList<WfWorkStepDTO>,
     private val viewModel: WorkViewModel
 ) : Item() {
 
@@ -35,11 +41,11 @@ class WorkStateItem(
 
         val step = jobWorkStep
         val workState = arrayOf(
-            step[0].Step_Code!!,
-            step[1].Step_Code!!,
-            step[2].Step_Code!!,
-            step[3].Step_Code!!,
-            step[4].Step_Code!!
+            step[0].stepCode!!,
+            step[1].stepCode!!,
+            step[2].stepCode!!,
+            step[3].stepCode!!,
+            step[4].stepCode!!
         )
 
         viewHolder.apply {
