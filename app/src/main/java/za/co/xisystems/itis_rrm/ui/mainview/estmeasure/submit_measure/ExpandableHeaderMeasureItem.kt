@@ -1,6 +1,6 @@
 /*
- * Updated by Shaun McDonald on 2021/22/20
- * Last modified on 2021/01/20 2:14 PM
+ * Updated by Shaun McDonald on 2021/01/25
+ * Last modified on 2021/01/25 6:30 PM
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  */
 
@@ -33,7 +33,7 @@ import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.estimate_measure_item.MeasureHeaderItem
 import za.co.xisystems.itis_rrm.utils.Coroutines
-import za.co.xisystems.itis_rrm.utils.DataConversion
+import za.co.xisystems.itis_rrm.utils.DateUtil
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import java.util.ArrayList
 import java.util.Date
@@ -89,7 +89,7 @@ class ExpandableHeaderMeasureItem(
         Coroutines.main {
             val jobForJobItemEstimate = measureViewModel.getJobFromJobId(measureItem.jobId)
             jobForJobItemEstimate.observeOnce(fragment.requireActivity(), { job ->
-                if (measureItem.jobId != null && job.JobId == measureItem.jobId!!)
+                if (measureItem.jobId != null && job.jobId == measureItem.jobId!!)
                     showAddMeasurementQuantityDialog(
                         measureItem,
                         job,
@@ -212,15 +212,15 @@ class ExpandableHeaderMeasureItem(
             actId = 0,
             approvalDate = null,
             cpa = (jobForJobItemEstimate.Cpa).toString().toInt(),
-            endKm = (jobForJobItemEstimate.EndKm).toString().toDouble(),
+            endKm = (jobForJobItemEstimate.endKm).toString().toDouble(),
             estimateId = (selectedJobItemEstimate.estimateId),
-            itemMeasureId = (DataConversion.toBigEndian(newItemMeasureId)).toString(),
-            jimNo = jobForJobItemEstimate.JiNo,
+            itemMeasureId = newItemMeasureId,
+            jimNo = jobForJobItemEstimate.jiNo,
             jobDirectionId = (jobForJobItemEstimate.JobDirectionId).toString().toInt(),
-            jobId = (jobForJobItemEstimate.JobId),
+            jobId = (jobForJobItemEstimate.jobId),
             lineAmount = (selectedJobItemEstimate.lineRate * quantity).toString().toDouble(),
             lineRate = (selectedJobItemEstimate.lineRate).toString().toDouble(),
-            measureDate = (Date()).toString(),
+            measureDate = DateUtil.DateToString(Date()).toString(),
             measureGroupId = null,
             jobItemMeasurePhotos = jobItemMeasurePhotoDTO,
             projectItemId = (selectedJobItemEstimate.projectItemId).toString(),
@@ -228,7 +228,7 @@ class ExpandableHeaderMeasureItem(
             qty = (quantity).toString().toDouble(),
             recordSynchStateId = 0,
             recordVersion = 0,
-            startKm = (jobForJobItemEstimate.StartKm).toString().toDouble(),
+            startKm = (jobForJobItemEstimate.startKm).toString().toDouble(),
             trackRouteId = null,
             deleted = 0,
             entityDescription = null,
@@ -251,7 +251,13 @@ class ExpandableHeaderMeasureItem(
     private fun bindIcon(viewHolder: GroupieViewHolder) {
         viewHolder.icon.apply {
             visibility = View.VISIBLE
-            setImageResource(if (expandableGroup.isExpanded) R.drawable.collapse_animated else R.drawable.expand_animated)
+            setImageResource(
+                if (expandableGroup.isExpanded) {
+                    R.drawable.collapse_animated
+                } else {
+                    R.drawable.expand_animated
+                }
+            )
             (drawable as Animatable).start()
         }
     }
