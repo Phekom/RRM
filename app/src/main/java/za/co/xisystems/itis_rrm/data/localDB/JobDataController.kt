@@ -25,8 +25,8 @@ object JobDataController {
 
         job.setJobId(DataConversion.toLittleEndian(job.jobId))
         job.setProjectId(DataConversion.toLittleEndian(job.projectId))
-        job.setPerfitemGroupId(DataConversion.toLittleEndian(job.PerfitemGroupId))
-        job.setProjectVoId(DataConversion.toLittleEndian(job.ProjectVoId))
+        job.setPerfitemGroupId(DataConversion.toLittleEndian(job.perfitemGroupId))
+        job.setProjectVoId(DataConversion.toLittleEndian(job.projectVoId))
 
         if (job.trackRouteId != null) {
             job.setTrackRouteId(DataConversion.toLittleEndian(job.trackRouteId))
@@ -34,15 +34,15 @@ object JobDataController {
             job.trackRouteId = null
         }
         job.setContractVoId(DataConversion.toLittleEndian(job.contractVoId))
-        job.setVoId(DataConversion.toLittleEndian(job.VoId))
+        job.setVoId(DataConversion.toLittleEndian(job.voId))
 
-        job.JobSections.forEach { jobSection ->
+        job.jobSections.forEach { jobSection ->
             jobSection.setJobSectionId(DataConversion.toLittleEndian(jobSection.jobSectionId))
             jobSection.setProjectSectionId(DataConversion.toLittleEndian(jobSection.projectSectionId))
             jobSection.setJobId(DataConversion.toLittleEndian(jobSection.jobId))
         }
 
-        job.JobItemEstimates.forEach { jie ->
+        job.jobItemEstimates.forEach { jie ->
             jie.setEstimateId(DataConversion.toLittleEndian(jie.estimateId))
             jie.setJobId(DataConversion.toLittleEndian(jie.jobId))
             jie.setProjectItemId(DataConversion.toLittleEndian(jie.projectItemId))
@@ -72,7 +72,7 @@ object JobDataController {
             }
         }
 
-        job.JobItemMeasures.forEach { jim ->
+        job.jobItemMeasures.forEach { jim ->
 
             jim.setItemMeasureId(DataConversion.toLittleEndian(jim.itemMeasureId))
             jim.setJobId(DataConversion.toLittleEndian(jim.jobId))
@@ -194,7 +194,7 @@ private fun JobSectionDTO.setJobSectionId(toLittleEndian: String?) {
 }
 
 private fun JobDTO.setVoId(toLittleEndian: String?) {
-    this.VoId = toLittleEndian
+    this.voId = toLittleEndian
 }
 
 private fun JobDTO.setContractVoId(toLittleEndian: String?) {
@@ -206,11 +206,11 @@ private fun JobDTO.setTrackRouteId(toLittleEndian: String?) {
 }
 
 private fun JobDTO.setProjectVoId(toLittleEndian: String?) {
-    this.ProjectVoId = toLittleEndian
+    this.projectVoId = toLittleEndian
 }
 
 private fun JobDTO.setPerfitemGroupId(toLittleEndian: String?) {
-    this.PerfitemGroupId = toLittleEndian
+    this.perfitemGroupId = toLittleEndian
 }
 
 private fun JobDTO.setProjectId(toLittleEndian: String?) {

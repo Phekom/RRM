@@ -223,7 +223,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
     private fun onJobFound(foundJobDTO: JobDTO?): JobDTO {
         newJob = foundJobDTO!!
         if (estimateId != null) {
-            val estimateDTO = newJob?.JobItemEstimates?.find { itemEstimate ->
+            val estimateDTO = newJob?.jobItemEstimates?.find { itemEstimate ->
                 itemEstimate.estimateId == estimateId
             }
             if (estimateDTO != null) {
@@ -417,8 +417,8 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
                 startKm!!,
                 endKm!!,
                 newJob?.sectionId!!,
-                newJob?.JobItemEstimates!!,
-                newJob?.JobSections!!
+                newJob?.jobItemEstimates!!,
+                newJob?.jobSections!!
             )
 
             updateData(view)
@@ -643,11 +643,11 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
                 item = item
             )
 
-            if (newJob?.JobItemEstimates == null) {
-                newJob?.JobItemEstimates = ArrayList()
+            if (newJob?.jobItemEstimates == null) {
+                newJob?.jobItemEstimates = ArrayList()
             }
 
-            newJob?.JobItemEstimates!!.add(newJobItemEstimate!!)
+            newJob?.jobItemEstimates!!.add(newJobItemEstimate!!)
         }
 
         if (ServiceUtil.isNetworkAvailable(requireActivity().applicationContext)) {
@@ -793,12 +793,12 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
                                 startKm = startKm!!,
                                 endKm = endKm!!
                             ).apply {
-                                val sectionList = newJob!!.JobSections as MutableList<JobSectionDTO>
+                                val sectionList = newJob!!.jobSections as MutableList<JobSectionDTO>
                                 sectionList.add(this)
                                 newJob!!.sectionId = jobSectionId
                                 newJob!!.startKm = this.startKm
                                 newJob!!.endKm = this.endKm
-                                newJob!!.JobSections = sectionList as ArrayList<JobSectionDTO>
+                                newJob!!.jobSections = sectionList as ArrayList<JobSectionDTO>
                                 isRouteSectionPoint = true
                             }
                         }
@@ -933,7 +933,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
             // jobItemMeasure = null,
             // job = null,
             projectItemId = itemId,
-            projectVoId = newJob?.ProjectVoId,
+            projectVoId = newJob?.projectVoId,
             qty = quantity,
             recordSynchStateId = 0,
             recordVersion = 0,

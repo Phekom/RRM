@@ -611,7 +611,7 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
 
             val workDone: Int = getEstimatesCompleted(estimateJob)
 
-            if (workDone == estimateJob.JobItemEstimates.size) {
+            if (workDone == estimateJob.jobItemEstimates.size) {
                 collectCompletedEstimates(estimateJob)
             } else {
 
@@ -642,7 +642,7 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
         estWorkDone: Int,
         estimateJob: JobDTO
     ) {
-        if (estWorkDone == estimateJob.JobItemEstimates.size) {
+        if (estWorkDone == estimateJob.jobItemEstimates.size) {
             Coroutines.main {
                 collectCompletedEstimates(estimateJob)
             }

@@ -27,7 +27,7 @@ object JobUtils {
     fun formatTotalCost(job: JobDTO?): String {
         var quantity = 0.0
         var cost = 0.0
-        job?.JobItemEstimates?.forEach { estimate ->
+        job?.jobItemEstimates?.forEach { estimate ->
             quantity += estimate.qty
             cost += estimate.lineRate
         }
@@ -36,9 +36,9 @@ object JobUtils {
 
     fun areQuantitiesValid(job: JobDTO?): Boolean {
         when {
-            job?.JobItemEstimates.isNullOrEmpty() -> return false
+            job?.jobItemEstimates.isNullOrEmpty() -> return false
             else -> {
-                job?.JobItemEstimates?.forEach { estimate ->
+                job?.jobItemEstimates?.forEach { estimate ->
                     if (estimate.qty < 0.01) return false
                 }
                 return true

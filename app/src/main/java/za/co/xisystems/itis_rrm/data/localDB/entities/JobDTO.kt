@@ -49,94 +49,99 @@ class JobDTO(
     val section: String?,
 
     @SerializedName("Cpa")
-    val Cpa: Int,
+    val cpa: Int,
     @SerializedName("DayWork")
-    val DayWork: Int,
+    val dayWork: Int,
 
     @SerializedName("ContractorId")
-    val ContractorId: Int,
+    val contractorId: Int,
     @SerializedName("M9100")
-    val M9100: Int,
+    val m9100: Int,
 
     @SerializedName("IssueDate")
-    var IssueDate: String? = null,
+    var issueDate: String? = null,
     @SerializedName("StartDate")
-    var StartDate: String? = null,
+    var startDate: String? = null,
     @SerializedName("DueDate")
-    var DueDate: String? = null,
+    var dueDate: String? = null,
     @SerializedName("ApprovalDate")
-    var ApprovalDate: String? = null,
+    var approvalDate: String? = null,
     @SerializedName("MobileJobItemEstimates")
-    var JobItemEstimates: ArrayList<JobItemEstimateDTO> = ArrayList(),
+    var jobItemEstimates: ArrayList<JobItemEstimateDTO> = ArrayList(),
     @SerializedName("MobileJobItemMeasures")
-    var JobItemMeasures: ArrayList<JobItemMeasureDTO> = ArrayList(),
+    var jobItemMeasures: ArrayList<JobItemMeasureDTO> = ArrayList(),
     @SerializedName("MobileJobSections")
-    var JobSections: ArrayList<JobSectionDTO> = ArrayList(),
+    var jobSections: ArrayList<JobSectionDTO> = ArrayList(),
     @SerializedName("PerfitemGroupId")
-    var PerfitemGroupId: String?,
+    var perfitemGroupId: String?,
 
     @SerializedName("RecordVersion")
-    val RecordVersion: Int,
+    val recordVersion: Int,
 
     @SerializedName("Remarks")
-    val Remarks: String?,
+    val remarks: String?,
 
     @SerializedName("Route")
-    var Route: String?,
+    var route: String?,
 
     @SerializedName("RrmJiNo")
-    val RrmJiNo: String?,
+    val rrmJiNo: String?,
 
     @SerializedName("EngineerId")
-    val EngineerId: Int,
+    val engineerId: Int,
 
     @SerializedName("EntireRoute")
-    val EntireRoute: Int,
+    val entireRoute: Int,
 
     @SerializedName("IsExtraWork")
-    val IsExtraWork: Int,
+    val isExtraWork: Int,
 
     @SerializedName("JobCategoryId")
-    val JobCategoryId: Int,
+    val jobCategoryId: Int,
 
     @SerializedName("JobDirectionId")
-    val JobDirectionId: Int,
+    val jobDirectionId: Int,
 
     @SerializedName("JobPositionId")
-    val JobPositionId: Int,
+    val jobPositionId: Int,
 
     @SerializedName("JobStatusId")
-    val JobStatusId: Int,
+    val jobStatusId: Int,
 
     @SerializedName("ProjectVoId")
-    var ProjectVoId: String?,
+    var projectVoId: String?,
 
     @SerializedName("QtyUpdateAllowed")
-    val QtyUpdateAllowed: Int,
+    val qtyUpdateAllowed: Int,
 
     @SerializedName("RecordSynchStateId")
-    val RecordSynchStateId: Int,
+    val recordSynchStateId: Int,
 
     @SerializedName("VoId")
-    var VoId: String?,
+    var voId: String?,
 
     @SerializedName("WorkCompleteDate")
-    val WorkCompleteDate: String? = null,
+    val workCompleteDate: String? = null,
 
     @SerializedName("WorkStartDate")
-    val WorkStartDate: String? = null,
+    val workStartDate: String? = null,
 
-    var ESTIMATES_ACT_ID: Int?,
+    @SerializedName("ESTIMATES_ACT_ID")
+    var estimatesActId: Int?,
 
-    var MEASURE_ACT_ID: Int?,
+    @SerializedName("MEASURE_ACT_ID")
+    var measureActId: Int?,
 
-    var WORKS_ACT_ID: Int,
+    @SerializedName("WORKS_ACT_ID")
+    var worksActId: Int,
 
     val sortString: String?,
 
-    val ActivityId: Int,
+    @SerializedName("ActivityId")
+    val activityId: Int,
 
-    val Is_synced: String?,
+    @SerializedName("Is_synced")
+    val isSynced: String?,
 
     @SerializedName("Deleted")
     var deleted: Int = 0
@@ -156,54 +161,53 @@ class JobDTO(
         userId = parcel.readInt(),
         trackRouteId = parcel.readString(),
         section = parcel.readString(),
-        Cpa = parcel.readInt(),
-        DayWork = parcel.readInt(),
-        ContractorId = parcel.readInt(),
-        M9100 = parcel.readInt(),
-        IssueDate = parcel.readString(),
-        StartDate = parcel.readString(),
-        DueDate = parcel.readString(),
-        ApprovalDate = parcel.readString(),
-        JobItemEstimates = arrayListOf<JobItemEstimateDTO>().apply {
+        cpa = parcel.readInt(),
+        dayWork = parcel.readInt(),
+        contractorId = parcel.readInt(),
+        m9100 = parcel.readInt(),
+        issueDate = parcel.readString(),
+        startDate = parcel.readString(),
+        dueDate = parcel.readString(),
+        approvalDate = parcel.readString(),
+        jobItemEstimates = arrayListOf<JobItemEstimateDTO>().apply {
             parcel.readList(this.toList(), JobItemEstimateDTO::class.java.classLoader)
         },
-        JobItemMeasures = arrayListOf<JobItemMeasureDTO>().apply {
+        jobItemMeasures = arrayListOf<JobItemMeasureDTO>().apply {
             parcel.readList(this.toList(), JobItemMeasureDTO::class.java.classLoader)
         },
-        JobSections = arrayListOf<JobSectionDTO>().apply {
+        jobSections = arrayListOf<JobSectionDTO>().apply {
             parcel.readList(this.toList(), JobSectionDTO::class.java.classLoader)
         },
-        PerfitemGroupId = parcel.readString(),
-        RecordVersion = parcel.readInt(),
-        Remarks = parcel.readString(),
-        Route = parcel.readString(),
-        RrmJiNo = parcel.readString(),
-        EngineerId = parcel.readInt(),
-        EntireRoute = parcel.readInt(),
-        IsExtraWork = parcel.readInt(),
-        JobCategoryId = parcel.readInt(),
-        JobDirectionId = parcel.readInt(),
-        JobPositionId = parcel.readInt(),
-        JobStatusId = parcel.readInt(),
-        ProjectVoId = parcel.readString(),
-        QtyUpdateAllowed = parcel.readInt(),
-        RecordSynchStateId = parcel.readInt(),
-        VoId = parcel.readString(),
-        WorkCompleteDate = parcel.readString(),
-        WorkStartDate = parcel.readString(),
-        ESTIMATES_ACT_ID = parcel.readValue(Int::class.java.classLoader) as? Int,
-        MEASURE_ACT_ID = parcel.readValue(Int::class.java.classLoader) as? Int,
-        WORKS_ACT_ID = parcel.readInt(),
+        perfitemGroupId = parcel.readString(),
+        recordVersion = parcel.readInt(),
+        remarks = parcel.readString(),
+        route = parcel.readString(),
+        rrmJiNo = parcel.readString(),
+        engineerId = parcel.readInt(),
+        entireRoute = parcel.readInt(),
+        isExtraWork = parcel.readInt(),
+        jobCategoryId = parcel.readInt(),
+        jobDirectionId = parcel.readInt(),
+        jobPositionId = parcel.readInt(),
+        jobStatusId = parcel.readInt(),
+        projectVoId = parcel.readString(),
+        qtyUpdateAllowed = parcel.readInt(),
+        recordSynchStateId = parcel.readInt(),
+        voId = parcel.readString(),
+        workCompleteDate = parcel.readString(),
+        workStartDate = parcel.readString(),
+        estimatesActId = parcel.readValue(Int::class.java.classLoader) as? Int,
+        measureActId = parcel.readValue(Int::class.java.classLoader) as? Int,
+        worksActId = parcel.readInt(),
         sortString = parcel.readString(),
-        ActivityId = parcel.readInt(),
-        Is_synced = parcel.readString(),
+        activityId = parcel.readInt(),
+        isSynced = parcel.readString(),
         deleted = parcel.readInt()
-    ) {
-    }
+    )
 
     private fun getJobEstimateIndexByItemId(itemId: String?): Int {
 
-        JobItemEstimates.forEachIndexed { index, estimate ->
+        jobItemEstimates.forEachIndexed { index, estimate ->
             if (estimate.projectItemId != null && estimate.projectItemId.equals(
                     itemId
                 )
@@ -217,16 +221,16 @@ class JobDTO(
     fun removeJobEstimateByItemId(itemId: String?): JobItemEstimateDTO? {
         val x = getJobEstimateIndexByItemId(itemId)
         return if (x > -1) {
-            JobItemEstimates.removeAt(x)
+            jobItemEstimates.removeAt(x)
         } else null
     }
 
     fun getJobEstimateByItemId(itemId: String?): JobItemEstimateDTO? {
         val x = getJobEstimateIndexByItemId(itemId)
-        return if (JobItemEstimates.isNullOrEmpty() || x < 0) {
+        return if (jobItemEstimates.isNullOrEmpty() || x < 0) {
             null
         } else {
-            JobItemEstimates[x]
+            jobItemEstimates[x]
         }
     }
 
@@ -243,42 +247,42 @@ class JobDTO(
         parcel.writeInt(userId)
         parcel.writeString(trackRouteId)
         parcel.writeString(section)
-        parcel.writeInt(Cpa)
-        parcel.writeInt(DayWork)
-        parcel.writeInt(ContractorId)
-        parcel.writeInt(M9100)
-        parcel.writeString(IssueDate)
-        parcel.writeString(StartDate)
-        parcel.writeString(DueDate)
-        parcel.writeString(ApprovalDate)
-        parcel.writeString(PerfitemGroupId)
-        parcel.writeInt(RecordVersion)
-        parcel.writeString(Remarks)
-        parcel.writeString(Route)
-        parcel.writeString(RrmJiNo)
-        parcel.writeInt(EngineerId)
-        parcel.writeInt(EntireRoute)
-        parcel.writeInt(IsExtraWork)
-        parcel.writeInt(JobCategoryId)
-        parcel.writeInt(JobDirectionId)
-        parcel.writeInt(JobPositionId)
-        parcel.writeInt(JobStatusId)
-        parcel.writeString(ProjectVoId)
-        parcel.writeInt(QtyUpdateAllowed)
-        parcel.writeInt(RecordSynchStateId)
-        parcel.writeString(VoId)
-        parcel.writeString(WorkCompleteDate)
-        parcel.writeString(WorkStartDate)
-        parcel.writeValue(ESTIMATES_ACT_ID)
-        parcel.writeValue(MEASURE_ACT_ID)
-        parcel.writeInt(WORKS_ACT_ID)
+        parcel.writeInt(cpa)
+        parcel.writeInt(dayWork)
+        parcel.writeInt(contractorId)
+        parcel.writeInt(m9100)
+        parcel.writeString(issueDate)
+        parcel.writeString(startDate)
+        parcel.writeString(dueDate)
+        parcel.writeString(approvalDate)
+        parcel.writeString(perfitemGroupId)
+        parcel.writeInt(recordVersion)
+        parcel.writeString(remarks)
+        parcel.writeString(route)
+        parcel.writeString(rrmJiNo)
+        parcel.writeInt(engineerId)
+        parcel.writeInt(entireRoute)
+        parcel.writeInt(isExtraWork)
+        parcel.writeInt(jobCategoryId)
+        parcel.writeInt(jobDirectionId)
+        parcel.writeInt(jobPositionId)
+        parcel.writeInt(jobStatusId)
+        parcel.writeString(projectVoId)
+        parcel.writeInt(qtyUpdateAllowed)
+        parcel.writeInt(recordSynchStateId)
+        parcel.writeString(voId)
+        parcel.writeString(workCompleteDate)
+        parcel.writeString(workStartDate)
+        parcel.writeValue(estimatesActId)
+        parcel.writeValue(measureActId)
+        parcel.writeInt(worksActId)
         parcel.writeString(sortString)
-        parcel.writeInt(ActivityId)
-        parcel.writeString(Is_synced)
+        parcel.writeInt(activityId)
+        parcel.writeString(isSynced)
         parcel.writeInt(deleted)
-        parcel.writeList(JobSections.toList())
-        parcel.writeList(JobItemMeasures.toList())
-        parcel.writeList(JobItemEstimates.toList())
+        parcel.writeList(jobSections.toList())
+        parcel.writeList(jobItemMeasures.toList())
+        parcel.writeList(jobItemEstimates.toList())
     }
 
     override fun describeContents(): Int {

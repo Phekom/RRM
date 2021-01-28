@@ -160,12 +160,12 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
 
                             // Set Job Start & Completion Dates
 
-                            jobToEdit.DueDate?.let {
+                            jobToEdit.dueDate?.let {
                                 ui.dueDateTextView.text = DateUtil.toStringReadable(DateUtil.StringToDate(it))
                                 dueDate = DateUtil.StringToDate(it)!!
                             }
 
-                            jobToEdit.StartDate?.let {
+                            jobToEdit.startDate?.let {
                                 ui.startDateTextView.text = DateUtil.toStringReadable(DateUtil.StringToDate(it))
                                 startDate = DateUtil.StringToDate(it)!!
                             }
@@ -199,7 +199,10 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
                     else -> {
                         items = itemList
 
-                        val legitItems = itemList.filter { itemDTOTemp -> itemDTOTemp.jobId == job!!.jobId }.toProjecListItems()
+                        val legitItems =
+                            itemList.filter { itemDTOTemp ->
+                                itemDTOTemp.jobId == job!!.jobId
+                            }.toProjecListItems()
 
                         when {
                             legitItems.isNotEmpty() -> {
@@ -399,7 +402,7 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
                         ui.submitButton.initProgress(viewLifecycleOwner)
                         ui.submitButton.startProgress("Submitting data ...")
 
-                        job!!.IssueDate = DateUtil.DateToString(Date())
+                        job!!.issueDate = DateUtil.DateToString(Date())
                         submitJob(job!!)
                     }
                 }
@@ -416,27 +419,27 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
         var startResult = false
         var dueResult = false
 
-        if (job?.DueDate != null) {
+        if (job?.dueDate != null) {
 
             if (dueDate < startDate || dueDate < yesterday || dueDate == yesterday
             ) {
                 sharpToast(message = "Please select a valid due date", style = WARNING)
                 ui.dueDateCardView.startAnimation(shake_long)
             } else {
-                job?.DueDate
+                job?.dueDate
                 dueResult = true
             }
         } else {
             sharpToast(message = "Please select a Due Date", style = WARNING)
             ui.dueDateCardView.startAnimation(shake_long)
         }
-        if (job!!.StartDate != null) {
+        if (job!!.startDate != null) {
             if (startDate < yesterday || dueDate == yesterday
             ) {
                 sharpToast(message = "Please select a valid Start Date", style = WARNING)
                 ui.dueDateCardView.startAnimation(shake_long)
             } else {
-                job!!.StartDate
+                job!!.startDate
                 startResult = true
             }
         } else {
@@ -535,7 +538,7 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
         ui.dueDateCardView.startAnimation(bounce_500)
         val calendar = Calendar.getInstance()
         calendar[year, month] = dayOfMonth
-        job?.DueDate = DateUtil.DateToString(Date.from(calendar.toInstant()))
+        job?.dueDate = DateUtil.DateToString(Date.from(calendar.toInstant()))
         backupJobInProgress(job)
     }
 
@@ -544,7 +547,7 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
         ui.startDateCardView.startAnimation(bounce_500)
         val calendar = Calendar.getInstance()
         calendar[year, month] = dayOfMonth
-        job?.StartDate = DateUtil.DateToString(Date.from(calendar.toInstant()))
+        job?.startDate = DateUtil.DateToString(Date.from(calendar.toInstant()))
         backupJobInProgress(job)
     }
 

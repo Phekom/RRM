@@ -100,7 +100,8 @@ class RegisterPinActivity : AppCompatActivity(), AuthListener, KodeinAware {
                     val requestAgain = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                         shouldShowRequestPermissionRationale(permissions[i])
                     } else {
-                        TODO("VERSION.SDK_INT < M")
+                        // Fallback granting all permissions
+                        false
                     }
                     if (requestAgain) {
                         toast("Permission Denied")

@@ -600,8 +600,8 @@ class OfflineDataRepository(
                         }
                         setTrackRouteId(DataConversion.toBigEndian(trackRouteId))
                     }
-                    job.PerfitemGroupId = DataConversion.toBigEndian(job.PerfitemGroupId)
-                    job.ProjectVoId = DataConversion.toBigEndian(job.ProjectVoId)
+                    job.perfitemGroupId = DataConversion.toBigEndian(job.perfitemGroupId)
+                    job.projectVoId = DataConversion.toBigEndian(job.projectVoId)
                     appDb.getJobDao().insertOrUpdateJobs(job)
                 }
 
@@ -609,7 +609,7 @@ class OfflineDataRepository(
 
                 saveJobItemEstimates(job)
 
-                if (!job.JobItemMeasures.isNullOrEmpty()) {
+                if (!job.jobItemMeasures.isNullOrEmpty()) {
                     saveJobItemMeasuresForJob(job)
                 }
             }
@@ -619,7 +619,7 @@ class OfflineDataRepository(
     private suspend fun saveJobItemMeasuresForJob(
         job: JobDTO
     ) {
-        job.JobItemMeasures.forEach { jobItemMeasure ->
+        job.jobItemMeasures.forEach { jobItemMeasure ->
             if (!appDb.getJobItemMeasureDao()
                     .checkIfJobItemMeasureExists(jobItemMeasure.itemMeasureId)
             ) {
@@ -668,7 +668,7 @@ class OfflineDataRepository(
     }
 
     private suspend fun saveJobSections(job: JobDTO) {
-        job.JobSections.forEach { jobSection ->
+        job.jobSections.forEach { jobSection ->
 
             if (!appDb.getJobSectionDao().checkIfJobSectionExist(jobSection.jobSectionId)) {
                 jobSection.setJobSectionId(DataConversion.toBigEndian(jobSection.jobSectionId))
@@ -685,7 +685,7 @@ class OfflineDataRepository(
     private suspend fun saveJobItemEstimates(
         job: JobDTO
     ) {
-        job.JobItemEstimates.forEach { jobItemEstimate ->
+        job.jobItemEstimates.forEach { jobItemEstimate ->
             if (!appDb.getJobItemEstimateDao()
                     .checkIfJobItemEstimateExist(jobItemEstimate.estimateId)
             ) {

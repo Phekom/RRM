@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 12,
-    "identityHash": "fdeb1ce9053ef0404ab7f8c84bbdc95a",
+    "identityHash": "8c20f65b6035e105eefe05390b7e703d",
     "entities": [
       {
         "tableName": "JOB_TABLE",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`actId` INTEGER NOT NULL, `jobId` TEXT NOT NULL, `contractVoId` TEXT, `projectId` TEXT, `sectionId` TEXT, `startKm` REAL NOT NULL, `endKm` REAL NOT NULL, `descr` TEXT, `jiNo` TEXT, `userId` INTEGER NOT NULL, `trackRouteId` TEXT, `section` TEXT, `Cpa` INTEGER NOT NULL, `DayWork` INTEGER NOT NULL, `ContractorId` INTEGER NOT NULL, `M9100` INTEGER NOT NULL, `IssueDate` TEXT, `StartDate` TEXT, `DueDate` TEXT, `ApprovalDate` TEXT, `JobItemEstimates` TEXT NOT NULL, `JobItemMeasures` TEXT NOT NULL, `JobSections` TEXT NOT NULL, `PerfitemGroupId` TEXT, `RecordVersion` INTEGER NOT NULL, `Remarks` TEXT, `Route` TEXT, `RrmJiNo` TEXT, `EngineerId` INTEGER NOT NULL, `EntireRoute` INTEGER NOT NULL, `IsExtraWork` INTEGER NOT NULL, `JobCategoryId` INTEGER NOT NULL, `JobDirectionId` INTEGER NOT NULL, `JobPositionId` INTEGER NOT NULL, `JobStatusId` INTEGER NOT NULL, `ProjectVoId` TEXT, `QtyUpdateAllowed` INTEGER NOT NULL, `RecordSynchStateId` INTEGER NOT NULL, `VoId` TEXT, `WorkCompleteDate` TEXT, `WorkStartDate` TEXT, `ESTIMATES_ACT_ID` INTEGER, `MEASURE_ACT_ID` INTEGER, `WORKS_ACT_ID` INTEGER NOT NULL, `sortString` TEXT, `ActivityId` INTEGER NOT NULL, `Is_synced` TEXT, `deleted` INTEGER NOT NULL, PRIMARY KEY(`jobId`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`actId` INTEGER NOT NULL, `jobId` TEXT NOT NULL, `contractVoId` TEXT, `projectId` TEXT, `sectionId` TEXT, `startKm` REAL NOT NULL, `endKm` REAL NOT NULL, `descr` TEXT, `jiNo` TEXT, `userId` INTEGER NOT NULL, `trackRouteId` TEXT, `section` TEXT, `cpa` INTEGER NOT NULL, `dayWork` INTEGER NOT NULL, `contractorId` INTEGER NOT NULL, `m9100` INTEGER NOT NULL, `issueDate` TEXT, `startDate` TEXT, `dueDate` TEXT, `approvalDate` TEXT, `jobItemEstimates` TEXT NOT NULL, `jobItemMeasures` TEXT NOT NULL, `jobSections` TEXT NOT NULL, `perfitemGroupId` TEXT, `recordVersion` INTEGER NOT NULL, `remarks` TEXT, `route` TEXT, `rrmJiNo` TEXT, `engineerId` INTEGER NOT NULL, `entireRoute` INTEGER NOT NULL, `isExtraWork` INTEGER NOT NULL, `jobCategoryId` INTEGER NOT NULL, `jobDirectionId` INTEGER NOT NULL, `jobPositionId` INTEGER NOT NULL, `jobStatusId` INTEGER NOT NULL, `projectVoId` TEXT, `qtyUpdateAllowed` INTEGER NOT NULL, `recordSynchStateId` INTEGER NOT NULL, `voId` TEXT, `workCompleteDate` TEXT, `workStartDate` TEXT, `estimatesActId` INTEGER, `measureActId` INTEGER, `worksActId` INTEGER NOT NULL, `sortString` TEXT, `activityId` INTEGER NOT NULL, `isSynced` TEXT, `deleted` INTEGER NOT NULL, PRIMARY KEY(`jobId`))",
         "fields": [
           {
             "fieldPath": "actId",
@@ -81,194 +81,194 @@
             "notNull": false
           },
           {
-            "fieldPath": "Cpa",
-            "columnName": "Cpa",
+            "fieldPath": "cpa",
+            "columnName": "cpa",
             "affinity": "INTEGER",
             "notNull": true
           },
           {
-            "fieldPath": "DayWork",
-            "columnName": "DayWork",
+            "fieldPath": "dayWork",
+            "columnName": "dayWork",
             "affinity": "INTEGER",
             "notNull": true
           },
           {
-            "fieldPath": "ContractorId",
-            "columnName": "ContractorId",
+            "fieldPath": "contractorId",
+            "columnName": "contractorId",
             "affinity": "INTEGER",
             "notNull": true
           },
           {
-            "fieldPath": "M9100",
-            "columnName": "M9100",
+            "fieldPath": "m9100",
+            "columnName": "m9100",
             "affinity": "INTEGER",
             "notNull": true
           },
           {
-            "fieldPath": "IssueDate",
-            "columnName": "IssueDate",
+            "fieldPath": "issueDate",
+            "columnName": "issueDate",
             "affinity": "TEXT",
             "notNull": false
           },
           {
-            "fieldPath": "StartDate",
-            "columnName": "StartDate",
+            "fieldPath": "startDate",
+            "columnName": "startDate",
             "affinity": "TEXT",
             "notNull": false
           },
           {
-            "fieldPath": "DueDate",
-            "columnName": "DueDate",
+            "fieldPath": "dueDate",
+            "columnName": "dueDate",
             "affinity": "TEXT",
             "notNull": false
           },
           {
-            "fieldPath": "ApprovalDate",
-            "columnName": "ApprovalDate",
+            "fieldPath": "approvalDate",
+            "columnName": "approvalDate",
             "affinity": "TEXT",
             "notNull": false
           },
           {
-            "fieldPath": "JobItemEstimates",
-            "columnName": "JobItemEstimates",
+            "fieldPath": "jobItemEstimates",
+            "columnName": "jobItemEstimates",
             "affinity": "TEXT",
             "notNull": true
           },
           {
-            "fieldPath": "JobItemMeasures",
-            "columnName": "JobItemMeasures",
+            "fieldPath": "jobItemMeasures",
+            "columnName": "jobItemMeasures",
             "affinity": "TEXT",
             "notNull": true
           },
           {
-            "fieldPath": "JobSections",
-            "columnName": "JobSections",
+            "fieldPath": "jobSections",
+            "columnName": "jobSections",
             "affinity": "TEXT",
             "notNull": true
           },
           {
-            "fieldPath": "PerfitemGroupId",
-            "columnName": "PerfitemGroupId",
+            "fieldPath": "perfitemGroupId",
+            "columnName": "perfitemGroupId",
             "affinity": "TEXT",
             "notNull": false
           },
           {
-            "fieldPath": "RecordVersion",
-            "columnName": "RecordVersion",
+            "fieldPath": "recordVersion",
+            "columnName": "recordVersion",
             "affinity": "INTEGER",
             "notNull": true
           },
           {
-            "fieldPath": "Remarks",
-            "columnName": "Remarks",
+            "fieldPath": "remarks",
+            "columnName": "remarks",
             "affinity": "TEXT",
             "notNull": false
           },
           {
-            "fieldPath": "Route",
-            "columnName": "Route",
+            "fieldPath": "route",
+            "columnName": "route",
             "affinity": "TEXT",
             "notNull": false
           },
           {
-            "fieldPath": "RrmJiNo",
-            "columnName": "RrmJiNo",
+            "fieldPath": "rrmJiNo",
+            "columnName": "rrmJiNo",
             "affinity": "TEXT",
             "notNull": false
           },
           {
-            "fieldPath": "EngineerId",
-            "columnName": "EngineerId",
+            "fieldPath": "engineerId",
+            "columnName": "engineerId",
             "affinity": "INTEGER",
             "notNull": true
           },
           {
-            "fieldPath": "EntireRoute",
-            "columnName": "EntireRoute",
+            "fieldPath": "entireRoute",
+            "columnName": "entireRoute",
             "affinity": "INTEGER",
             "notNull": true
           },
           {
-            "fieldPath": "IsExtraWork",
-            "columnName": "IsExtraWork",
+            "fieldPath": "isExtraWork",
+            "columnName": "isExtraWork",
             "affinity": "INTEGER",
             "notNull": true
           },
           {
-            "fieldPath": "JobCategoryId",
-            "columnName": "JobCategoryId",
+            "fieldPath": "jobCategoryId",
+            "columnName": "jobCategoryId",
             "affinity": "INTEGER",
             "notNull": true
           },
           {
-            "fieldPath": "JobDirectionId",
-            "columnName": "JobDirectionId",
+            "fieldPath": "jobDirectionId",
+            "columnName": "jobDirectionId",
             "affinity": "INTEGER",
             "notNull": true
           },
           {
-            "fieldPath": "JobPositionId",
-            "columnName": "JobPositionId",
+            "fieldPath": "jobPositionId",
+            "columnName": "jobPositionId",
             "affinity": "INTEGER",
             "notNull": true
           },
           {
-            "fieldPath": "JobStatusId",
-            "columnName": "JobStatusId",
+            "fieldPath": "jobStatusId",
+            "columnName": "jobStatusId",
             "affinity": "INTEGER",
             "notNull": true
           },
           {
-            "fieldPath": "ProjectVoId",
-            "columnName": "ProjectVoId",
+            "fieldPath": "projectVoId",
+            "columnName": "projectVoId",
             "affinity": "TEXT",
             "notNull": false
           },
           {
-            "fieldPath": "QtyUpdateAllowed",
-            "columnName": "QtyUpdateAllowed",
+            "fieldPath": "qtyUpdateAllowed",
+            "columnName": "qtyUpdateAllowed",
             "affinity": "INTEGER",
             "notNull": true
           },
           {
-            "fieldPath": "RecordSynchStateId",
-            "columnName": "RecordSynchStateId",
+            "fieldPath": "recordSynchStateId",
+            "columnName": "recordSynchStateId",
             "affinity": "INTEGER",
             "notNull": true
           },
           {
-            "fieldPath": "VoId",
-            "columnName": "VoId",
+            "fieldPath": "voId",
+            "columnName": "voId",
             "affinity": "TEXT",
             "notNull": false
           },
           {
-            "fieldPath": "WorkCompleteDate",
-            "columnName": "WorkCompleteDate",
+            "fieldPath": "workCompleteDate",
+            "columnName": "workCompleteDate",
             "affinity": "TEXT",
             "notNull": false
           },
           {
-            "fieldPath": "WorkStartDate",
-            "columnName": "WorkStartDate",
+            "fieldPath": "workStartDate",
+            "columnName": "workStartDate",
             "affinity": "TEXT",
             "notNull": false
           },
           {
-            "fieldPath": "ESTIMATES_ACT_ID",
-            "columnName": "ESTIMATES_ACT_ID",
+            "fieldPath": "estimatesActId",
+            "columnName": "estimatesActId",
             "affinity": "INTEGER",
             "notNull": false
           },
           {
-            "fieldPath": "MEASURE_ACT_ID",
-            "columnName": "MEASURE_ACT_ID",
+            "fieldPath": "measureActId",
+            "columnName": "measureActId",
             "affinity": "INTEGER",
             "notNull": false
           },
           {
-            "fieldPath": "WORKS_ACT_ID",
-            "columnName": "WORKS_ACT_ID",
+            "fieldPath": "worksActId",
+            "columnName": "worksActId",
             "affinity": "INTEGER",
             "notNull": true
           },
@@ -279,14 +279,14 @@
             "notNull": false
           },
           {
-            "fieldPath": "ActivityId",
-            "columnName": "ActivityId",
+            "fieldPath": "activityId",
+            "columnName": "activityId",
             "affinity": "INTEGER",
             "notNull": true
           },
           {
-            "fieldPath": "Is_synced",
-            "columnName": "Is_synced",
+            "fieldPath": "isSynced",
+            "columnName": "isSynced",
             "affinity": "TEXT",
             "notNull": false
           },
@@ -2685,7 +2685,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'fdeb1ce9053ef0404ab7f8c84bbdc95a')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '8c20f65b6035e105eefe05390b7e703d')"
     ]
   }
 }

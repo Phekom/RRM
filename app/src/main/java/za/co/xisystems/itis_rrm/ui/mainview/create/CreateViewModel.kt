@@ -232,12 +232,12 @@ class CreateViewModel(
             !JobUtils.areQuantitiesValid(job) -> {
                 isValid = false
             }
-            job == null || items == null || job.JobItemEstimates.isNullOrEmpty()
-                || items.size != job.JobItemEstimates.size -> {
+            job == null || items == null || job.jobItemEstimates.isNullOrEmpty()
+                || items.size != job.jobItemEstimates.size -> {
                 isValid = false
             }
             else -> {
-                job.JobItemEstimates.forEach { estimate ->
+                job.jobItemEstimates.forEach { estimate ->
                     if (!estimate.isEstimateComplete()) {
                         isValid = false
                     }

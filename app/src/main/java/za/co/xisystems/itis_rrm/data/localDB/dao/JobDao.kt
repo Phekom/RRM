@@ -6,10 +6,10 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import java.util.ArrayList
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobSectionDTO
+import java.util.ArrayList
 
 /**
  * Created by Francis Mahlava on 2019/11/21.
@@ -34,16 +34,17 @@ interface JobDao {
     @Query("UPDATE JOB_TABLE SET route =:route, section =:section WHERE jobId = :jobId AND deleted = 0")
     fun updateAllJobs(route: String?, section: String?, jobId: String?)
 
-    @Query("UPDATE JOB_TABLE SET trackRouteId =:trackRouteId, actId =:actId, jiNo =:jiNo WHERE jobId = :jobId AND deleted = 0")
+    @Query("UPDATE JOB_TABLE SET trackRouteId =:trackRouteId, actId =:actId, jiNo =:jiNo" +
+        " WHERE jobId = :jobId AND deleted = 0")
     fun updateJob(trackRouteId: String?, actId: Int, jiNo: String?, jobId: String?)
 
-    @Query("UPDATE JOB_TABLE SET ESTIMATES_ACT_ID =:actId WHERE jobId = :jobId AND deleted = 0")
+    @Query("UPDATE JOB_TABLE SET estimatesActId =:actId WHERE jobId = :jobId AND deleted = 0")
     fun setEstimateActId(actId: Int?, jobId: String?)
 
-    @Query("UPDATE JOB_TABLE SET WORKS_ACT_ID =:actId WHERE jobId = :jobId AND deleted = 0")
+    @Query("UPDATE JOB_TABLE SET worksActId =:actId WHERE jobId = :jobId AND deleted = 0")
     fun setEstimateWorksActId(actId: Int, jobId: String)
 
-    @Query("UPDATE JOB_TABLE SET MEASURE_ACT_ID =:actId WHERE jobId = :jobId AND deleted = 0")
+    @Query("UPDATE JOB_TABLE SET measureActId =:actId WHERE jobId = :jobId AND deleted = 0")
     fun setMeasureActId(actId: Int, jobId: String)
 
     @Query("SELECT descr FROM JOB_TABLE WHERE jobId = :jobId AND deleted = 0")
@@ -64,10 +65,13 @@ interface JobDao {
     @Query("SELECT * FROM JOB_TABLE where deleted = 0")
     fun getAllJobsForAllProjects(): LiveData<List<JobDTO>>
 
-    @Query("SELECT * FROM JOB_TABLE WHERE is_synced = 0 AND deleted = 0")
+    @Query("SELECT * FROM JOB_TABLE WHERE isSynced = 0 AND deleted = 0")
     fun getUnSyncedJobs(): LiveData<List<JobDTO>>
 
-    @Query("SELECT * FROM JOB_TABLE WHERE actId = :jobApproved  AND ESTIMATES_ACT_ID LIKE :estimateComplete AND  WORKS_ACT_ID LIKE :estWorksComplete AND MEASURE_ACT_ID LIKE :measureComplete AND deleted = 0 ORDER BY jiNo ASC")
+    @Query("SELECT * FROM JOB_TABLE WHERE " +
+        "actId = :jobApproved  AND estimatesActId LIKE :estimateComplete " +
+        "AND  worksActId LIKE :estWorksComplete AND " +
+        "measureActId LIKE :measureComplete AND deleted = 0 ORDER BY jiNo ASC")
     fun getJobsMeasureForActivityIds(
         estimateComplete: Int,
         measureComplete: Int,
@@ -78,15 +82,22 @@ interface JobDao {
     @Query("SELECT * FROM JOB_TABLE WHERE actId = :actId AND deleted = 0 ORDER BY jiNo ASC")
     fun getJobsForActivityId(actId: Int): LiveData<List<JobDTO>>
 
-    @Query(" SELECT j.*, e.* FROM JOB_TABLE AS j JOIN JOB_ITEM_ESTIMATE AS e ON e.JobId = j.jobId WHERE j.actId Like :actId and e.ActId Like :actId2 AND j.deleted = 0 ORDER BY jiNo ASC ")
+    @Query(" SELECT j.*, e.* FROM JOB_TABLE AS j JOIN " +
+        "JOB_ITEM_ESTIMATE AS e ON e.JobId = j.jobId " +
+        "WHERE j.actId Like :actId and e.ActId Like :actId2 " +
+        "AND j.deleted = 0 ORDER BY jiNo ASC ")
     fun getJobsForActivityIds(actId: Int, actId2: Int): List<JobDTO>
 
-    @Query(" SELECT j.*, e.* FROM JOB_TABLE AS j JOIN JOB_ITEM_ESTIMATE AS e ON e.JobId = j.jobId WHERE j.actId Like :actId and e.ActId Like :actId2 AND j.deleted = 0 ORDER BY jiNo ASC ")
+    @Query(" SELECT j.*, e.* FROM JOB_TABLE AS j JOIN JOB_ITEM_ESTIMATE AS e " +
+        "ON e.JobId = j.jobId WHERE j.actId Like :actId " +
+        "AND e.ActId Like :actId2 AND j.deleted = 0 ORDER BY jiNo ASC ")
     fun getJobsForActivityIds1(actId: Int, actId2: Int): LiveData<List<JobDTO>>
 
     //    LiveData<List<JobDTO>>
 // OR e.ActId Like 8
-    @Query("UPDATE JOB_TABLE SET sectionId =:sectionId ,startKm =:startKM , endKm =:endKM ,JobItemEstimates =:newJobItemEstimatesList, JobSections =:jobItemSectionArrayList  WHERE jobId = :newJobId AND deleted = 0")
+    @Query("UPDATE JOB_TABLE SET sectionId =:sectionId ,startKm =:startKM , endKm =:endKM ," +
+        "jobItemEstimates =:newJobItemEstimatesList, jobSections =:jobItemSectionArrayList" +
+        "  WHERE jobId = :newJobId AND deleted = 0")
     fun updateJoSecId(
         newJobId: String,
         startKM: Double,
