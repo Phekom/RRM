@@ -161,13 +161,13 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
                             // Set Job Start & Completion Dates
 
                             jobToEdit.dueDate?.let {
-                                ui.dueDateTextView.text = DateUtil.toStringReadable(DateUtil.StringToDate(it))
-                                dueDate = DateUtil.StringToDate(it)!!
+                                ui.dueDateTextView.text = DateUtil.toStringReadable(DateUtil.stringToDate(it))
+                                dueDate = DateUtil.stringToDate(it)!!
                             }
 
                             jobToEdit.startDate?.let {
-                                ui.startDateTextView.text = DateUtil.toStringReadable(DateUtil.StringToDate(it))
-                                startDate = DateUtil.StringToDate(it)!!
+                                ui.startDateTextView.text = DateUtil.toStringReadable(DateUtil.stringToDate(it))
+                                startDate = DateUtil.stringToDate(it)!!
                             }
                             bindProjectItems()
                         }
@@ -402,7 +402,7 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
                         ui.submitButton.initProgress(viewLifecycleOwner)
                         ui.submitButton.startProgress("Submitting data ...")
 
-                        job!!.issueDate = DateUtil.DateToString(Date())
+                        job!!.issueDate = DateUtil.dateToString(Date())
                         submitJob(job!!)
                     }
                 }
@@ -538,7 +538,7 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
         ui.dueDateCardView.startAnimation(bounce_500)
         val calendar = Calendar.getInstance()
         calendar[year, month] = dayOfMonth
-        job?.dueDate = DateUtil.DateToString(Date.from(calendar.toInstant()))
+        job?.dueDate = DateUtil.dateToString(Date.from(calendar.toInstant()))
         backupJobInProgress(job)
     }
 
@@ -547,7 +547,7 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
         ui.startDateCardView.startAnimation(bounce_500)
         val calendar = Calendar.getInstance()
         calendar[year, month] = dayOfMonth
-        job?.startDate = DateUtil.DateToString(Date.from(calendar.toInstant()))
+        job?.startDate = DateUtil.dateToString(Date.from(calendar.toInstant()))
         backupJobInProgress(job)
     }
 

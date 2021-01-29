@@ -40,10 +40,6 @@ import androidx.navigation.Navigation
 import com.airbnb.lottie.LottieAnimationView
 import icepick.Icepick
 import icepick.State
-import java.io.File
-import java.text.DecimalFormat
-import java.util.Date
-import kotlin.collections.set
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
@@ -89,6 +85,10 @@ import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.BOTTOM
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.ERROR
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.INFO
 import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
+import java.io.File
+import java.text.DecimalFormat
+import java.util.Date
+import kotlin.collections.set
 
 /**
  * Created by Francis Mahlava on 2019/12/29.
@@ -895,7 +895,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
             descr = "",
             estimateId = itemEst.estimateId,
             filename = filePath["filename"] ?: error(""),
-            photoDate = DateUtil.DateToString(Date())!!,
+            photoDate = DateUtil.dateToString(Date())!!,
             photoId = photoId,
             photoStart = null,
             photoEnd = null,

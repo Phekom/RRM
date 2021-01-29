@@ -390,12 +390,15 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
             jobMeasure.setProjectItemId(DataConversion.toLittleEndian(jobMeasure.projectItemId))
             jobMeasure.setItemMeasureId(DataConversion.toLittleEndian(jobMeasure.itemMeasureId))
 
-            if (jobMeasure.trackRouteId != null)
+            if (jobMeasure.trackRouteId != null) {
                 jobMeasure.setTrackRouteId(DataConversion.toLittleEndian(jobMeasure.trackRouteId))
-            else jobMeasure.trackRouteId = null
+            } else {
+                jobMeasure.trackRouteId = null
+            }
 
-            if (jobMeasure.measureGroupId != null)
+            if (jobMeasure.measureGroupId != null) {
                 jobMeasure.setMeasureGroupId(DataConversion.toLittleEndian(jobMeasure.measureGroupId))
+            }
 
             jobMeasure.jobItemMeasurePhotos.forEach { jmep ->
                 jmep.setPhotoId(DataConversion.toLittleEndian(jmep.photoId))

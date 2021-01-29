@@ -592,7 +592,7 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
             descr = "",
             filename = filenamePath["filename"]!!,
             photoActivityId = itemEstiWorks.actId,
-            photoDate = DateUtil.DateToString(Date())!!,
+            photoDate = DateUtil.dateToString(Date())!!,
             photoId = photoId,
             photoLongitude = currentLocation.latitude,
             photoLatitude = currentLocation.longitude,

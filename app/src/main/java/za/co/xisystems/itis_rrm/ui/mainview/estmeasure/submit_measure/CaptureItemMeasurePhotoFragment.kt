@@ -235,7 +235,7 @@ class CaptureItemMeasurePhotoFragment :
                 filename = filenamePath["filename"],
                 estimateId = selectedJobItemMeasure.estimateId,
                 itemMeasureId = selectedJobItemMeasure.itemMeasureId,
-                photoDate = DateUtil.DateToString(Date()),
+                photoDate = DateUtil.dateToString(Date()),
                 photoId = SqlLitUtils.generateUuid(),
                 photoLatitude = measurementLocation.latitude,
                 photoLongitude = measurementLocation.longitude,
