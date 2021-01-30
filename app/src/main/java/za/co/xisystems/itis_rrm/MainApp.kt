@@ -108,6 +108,8 @@ open class MainApp : Application(), KodeinAware {
     override fun onCreate() {
         super.onCreate()
 
+
+
         // Time-zone support for better times with Room
         AndroidThreeTen.init(this)
 

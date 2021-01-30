@@ -115,13 +115,14 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
     private var uiScope = UiLifecycleScope()
     private var workObserver = Observer<XIResult<String>?> { handleWorkSubmission(it) }
     private var jobObserver = Observer<XIResult<String>?> { handleJobSubmission(it) }
-
     private var filenamePath = HashMap<String, String>()
     private lateinit var useR: UserDTO
     private lateinit var jobSubmission: Job
     private var _ui: FragmentCaptureWorkBinding? = null
     private val ui get() = _ui!!
-
+    private var estimateSize = 0
+    private var estimateCount = 0
+    private var errorState = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         lifecycle.addObserver(uiScope)
@@ -349,9 +350,6 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
             }
         }
     }
-
-    private var estimateSize = 0
-    private var estimateCount = 0
 
     /**
      * Handler for submitting a completed work step
@@ -760,7 +758,6 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
         handleJobSubmission(XISuccess("WORK_COMPLETE"))
     }
 
-    private var errorState = false
     private suspend fun moveJobItemEstimateToNextWorkflow(
         workflowDirection: WorkflowDirection,
         jobItEstimate: JobItemEstimateDTO?

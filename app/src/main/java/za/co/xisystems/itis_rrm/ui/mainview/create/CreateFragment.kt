@@ -15,8 +15,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenStarted
 import androidx.navigation.Navigation
-import java.util.ArrayList
-import java.util.Date
 import kotlinx.coroutines.launch
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
@@ -50,6 +48,8 @@ import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.SUCCESS
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.WARNING
 import za.co.xisystems.itis_rrm.utils.hide
 import za.co.xisystems.itis_rrm.utils.show
+import java.util.ArrayList
+import java.util.Date
 
 /**
  * Created by Francis Mahlava on 2019/10/18.
@@ -185,7 +185,7 @@ class CreateFragment : BaseFragment(), OfflineListener, KodeinAware {
 
     private fun createNewJob() {
         Coroutines.main {
-            val createdJob = createNewJob(
+            newJob = createNewJob(
                 selectedContract!!.contractId,
                 selectedProject!!.projectId,
                 useR.userId.toInt(),
@@ -194,7 +194,7 @@ class CreateFragment : BaseFragment(), OfflineListener, KodeinAware {
                 jobItemSectionArrayList,
                 descri
             )
-            createViewModel.saveNewJob(createdJob)
+            createViewModel.backupJob(newJob!!)
         }
     }
 
@@ -260,9 +260,6 @@ class CreateFragment : BaseFragment(), OfflineListener, KodeinAware {
             isSynced = null
 
         )
-
-        newJob = createdJob
-
         sharpToast(message = "New job created", style = SUCCESS)
         return createdJob
     }
@@ -279,22 +276,25 @@ class CreateFragment : BaseFragment(), OfflineListener, KodeinAware {
             createViewModel.setProjectId(selectedProject?.projectId!!)
 
             // Uniform entry point to minimize confusion - Shaun McDonald
-            createViewModel.setJobToEdit(newJob?.jobId!!)
-            val navDirection = CreateFragmentDirections.actionNavCreateToAddProjectFragment(
-                selectedProject?.projectId!!,
-                newJob!!.jobId
-            )
-            Navigation.findNavController(view).navigate(navDirection)
+            newJob?.let {
+                createViewModel.backupJob(it)
+                createViewModel.setJobToEdit(it.jobId)
+
+                val navDirection = CreateFragmentDirections.actionNavCreateToAddProjectFragment(
+                    it.projectId,
+                    it.jobId
+                )
+                Navigation.findNavController(view).navigate(navDirection)
+            }
         }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        outState.putSerializable("selectedContract", selectedContract)
-        outState.putSerializable("selectedProject", selectedProject)
-        outState.putSerializable("job", newJob)
-        outState.putSerializable("items", selectedProjectItem)
+        outState.putSerializable("selectedContractId", selectedContract?.contractId)
+        outState.putSerializable("selectedProjectId", selectedProject?.projectId)
+        outState.putSerializable("jobId", newJob?.jobId)
         outState.putBoolean("isJobSaved", isJobSaved)
-        outState.putSerializable("estimatesToRemoveFromDb", estimatesToRemoveFromDb)
+        // outState.putSerializable("estimatesToRemoveFromDb", estimatesToRemoveFromDb)
         super.onSaveInstanceState(outState)
     }
 

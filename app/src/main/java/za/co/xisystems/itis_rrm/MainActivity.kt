@@ -84,8 +84,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
-        // finally us mortals get to see coroutines from the inside
-        System.setProperty("kotlinx.coroutines.debug", if (BuildConfig.DEBUG) "on" else "off")
+
 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)

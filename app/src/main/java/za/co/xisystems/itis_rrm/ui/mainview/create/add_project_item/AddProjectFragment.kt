@@ -49,7 +49,6 @@ import za.co.xisystems.itis_rrm.ui.extensions.initProgress
 import za.co.xisystems.itis_rrm.ui.extensions.startProgress
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModelFactory
-import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.MyState
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SwipeTouchCallback
 import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedViewModelFactory
@@ -88,10 +87,8 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
     private val ui get() = _ui!!
     private var uiScope = UiLifecycleScope()
 
-    @MyState
     private var job: JobDTO? = null
 
-    @MyState
     private var items: List<ItemDTOTemp> = ArrayList()
 
     init {
@@ -307,12 +304,12 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
 
     private fun onRestoreInstanceState(savedInstanceState: Bundle) {
         savedInstanceState.run {
-            val job = getSerializable("job") as JobDTO
-            val items = getSerializable("items") as? ArrayList<ItemDTOTemp>
-            newJobItemEstimatesList = ArrayList<JobItemEstimateDTO>()
-            createViewModel.setCurrentJob(job)
-            items?.let {
-                initRecyclerView(it.toProjecListItems())
+            val jobId = getSerializable("jobId") as String?
+            Coroutines.main {
+                jobId?.let { restoredId ->
+                    createViewModel.setJobToEdit(restoredId)
+                    uiUpdate()
+                }
             }
         }
     }
@@ -570,8 +567,8 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        outState.putSerializable("job", job as JobDTO)
-        outState.putSerializable("items", items as ArrayList<ItemDTOTemp>)
+        outState.putSerializable("jobId", job!!.jobId)
+        // outState.putSerializable("items", items as ArrayList<ItemDTOTemp>)
         super.onSaveInstanceState(outState)
     }
 

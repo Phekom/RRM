@@ -39,7 +39,6 @@ import androidx.lifecycle.whenStarted
 import androidx.navigation.Navigation
 import com.airbnb.lottie.LottieAnimationView
 import icepick.Icepick
-import icepick.State
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
@@ -114,28 +113,21 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
     private var _ui: FragmentPhotoEstimateBinding? = null
     private val ui get() = _ui!!
 
-    @State
-    var photoType: PhotoType = PhotoType.START
+    private var photoType: PhotoType = PhotoType.START
 
-    @State
-    var itemIdPhotoType: HashMap<String, String> = HashMap()
+    private var itemIdPhotoType: HashMap<String, String> = HashMap()
     internal var job: JobDTO? = null
 
-    @State
-    var filenamePath: HashMap<String, String> = HashMap()
+    private var filenamePath: HashMap<String, String> = HashMap()
 
-    @State
     private var item: ItemDTOTemp? = null
 
-    @State
-    internal var newJob: JobDTO? = null
+    private var newJob: JobDTO? = null
 
-    @State
     internal var estimate: JobItemEstimateDTO? = null
     var direction: String? = null
     private var newJobItemEstimate: JobItemEstimateDTO? = null
 
-    @State
     var quantity: Double = 1.0
     private var estimateId: String? = null
     private lateinit var jobArrayList: ArrayList<JobDTO>
@@ -182,7 +174,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
 
                     withContext(uiScope.coroutineContext) {
                         var myJobDTO: JobDTO?
-                        createViewModel.jobItem.observeOnce(
+                        createViewModel.currentJob.observeOnce(
                             viewLifecycleOwner,
                             { jobDto ->
                                 jobDto?.let { jobDTO ->
@@ -786,7 +778,8 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
                             !createViewModel.checkIfJobSectionExists(
                                 newJob!!.jobId,
                                 projectSectionId
-                            )) {
+                            )
+                        ) {
                             createRouteSection(
                                 secId = projectSectionId,
                                 jobId = newJob!!.jobId,
@@ -1328,7 +1321,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
 
         Coroutines.io {
             if (jobId != null) {
-                createViewModel.getJob(jobId)
+                createViewModel.setJobToEdit(jobId)
             }
         }
     }

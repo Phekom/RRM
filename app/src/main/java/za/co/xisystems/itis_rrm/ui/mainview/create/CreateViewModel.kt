@@ -11,8 +11,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import java.util.ArrayList
-import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
@@ -35,6 +33,8 @@ import za.co.xisystems.itis_rrm.ui.mainview.create.select_item.SectionProj_Item
 import za.co.xisystems.itis_rrm.utils.JobUtils
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
 import za.co.xisystems.itis_rrm.utils.uncaughtExceptionHandler
+import java.util.ArrayList
+import kotlin.coroutines.CoroutineContext
 
 /**
  * Created by Francis Mahlava on 2019/10/18.
@@ -298,11 +298,17 @@ class CreateViewModel(
     }
 
     suspend fun setJobToEdit(jobId: String) {
-        val fetchedJob = jobCreationDataRepository.getUpdatedJob(jobId)
-        currentJob.value = fetchedJob
+        withContext(Dispatchers.IO) {
+            val fetchedJob = jobCreationDataRepository.getUpdatedJob(jobId)
+            withContext(Dispatchers.Main) {
+                currentJob.value = fetchedJob
+            }
+        }
     }
 
     suspend fun checkIfJobSectionExists(jobId: String?, projectSectionId: String?): Boolean {
-        return jobCreationDataRepository.checkIfJobSectionExistForJobAndProjectSection(jobId, projectSectionId)
+        return withContext(Dispatchers.IO) {
+            jobCreationDataRepository.checkIfJobSectionExistForJobAndProjectSection(jobId, projectSectionId)
+        }
     }
 }
