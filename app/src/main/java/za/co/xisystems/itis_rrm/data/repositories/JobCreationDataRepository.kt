@@ -588,4 +588,5 @@ class JobCreationDataRepository(
     suspend fun checkIfJobSectionExistForJobAndProjectSection(jobId: String?, projectSectionId: String?): Boolean {
         return appDb.getJobSectionDao().checkIfJobSectionExistForJob(jobId, projectSectionId)
     }
+
 }

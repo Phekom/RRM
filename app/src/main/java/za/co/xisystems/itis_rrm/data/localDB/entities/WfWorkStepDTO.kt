@@ -6,9 +6,6 @@
 
 package za.co.xisystems.itis_rrm.data.localDB.entities
 
-import android.os.Parcel
-import android.os.Parcelable
-import android.os.Parcelable.Creator
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
@@ -30,32 +27,4 @@ class WfWorkStepDTO(
     val descrip: String?,
     @SerializedName("ACT_TYPE_ID")
     val actTypeId: Int?
-) : Parcelable {
-    constructor(parcel: Parcel) : this(
-        parcel.readInt(),
-        parcel.readString(),
-        parcel.readString(),
-        parcel.readValue(Int::class.java.classLoader) as? Int
-    )
-
-    override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeInt(workStepId)
-        parcel.writeString(stepCode)
-        parcel.writeString(descrip)
-        parcel.writeValue(actTypeId)
-    }
-
-    override fun describeContents(): Int {
-        return 0
-    }
-
-    companion object CREATOR : Creator<WfWorkStepDTO> {
-        override fun createFromParcel(parcel: Parcel): WfWorkStepDTO {
-            return WfWorkStepDTO(parcel)
-        }
-
-        override fun newArray(size: Int): Array<WfWorkStepDTO?> {
-            return arrayOfNulls(size)
-        }
-    }
-}
+)
