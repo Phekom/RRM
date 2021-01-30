@@ -61,6 +61,7 @@ allprojects {
         maven { url "https://dl.bintray.com/kodein-framework/Kodein-DI" }
         maven { url "https://clojars.org/repo/" }
         maven { url 'https://jitpack.io' }
+        maven { url 'https://dl.bintray.com/guardian/android' }
     }
 
     configurations.all {
