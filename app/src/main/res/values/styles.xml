@@ -1,3 +1,9 @@
+<!--
+  * Updated by Shaun McDonald on 2021/01/25
+  * Last modified on 2021/01/25 6:30 PM
+  * Copyright (c) 2021.  XI Systems  - All rights reserved
+  -->
+
 <resources>
 
     <!-- Base application theme. -->
@@ -21,20 +27,10 @@
     </style>
 
 
-    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.MaterialComponents.Dark.ActionBar" />
-
-    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.MaterialComponents.Light" />
-
-
-
-
-
     <!-- ITIS -->
     <style name="ItisRegularText">
-        <item name="android:textSize">15sp</item>
+        <item name="android:textSize">14sp</item>
     </style>
-
-    <style name="_lineh" parent="_hline" />
 
     <style name="_hline" parent="_default">
         <item name="android:layout_height">1dp</item>
@@ -63,11 +59,6 @@
         <item name="android:textColor">@color/white</item>
     </style>
 
-    <style name="_button_white" parent="_default">
-        <item name="android:background">@drawable/style_white_round_corner</item>
-        <item name="android:textColor">@color/sanral_burnt_orange</item>
-    </style>
-
     <style name="_linear_layout_horiz" parent="_default">
         <item name="android:orientation">horizontal</item>
     </style>
@@ -85,10 +76,6 @@
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:backgroundDimEnabled">true</item>
-    </style>
-
-    <style name="TextAppearance">
-        <item name="android:textColor">@android:color/white</item>
     </style>
 
     <style name="AppTheme.NoActionBar">

@@ -1,3 +1,9 @@
+/*
+ * Updated by Shaun McDonald on 2021/01/25
+ * Last modified on 2021/01/25 6:30 PM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 @file:Suppress("ControlFlowWithEmptyBody")
 
 package za.co.xisystems.itis_rrm
@@ -78,8 +84,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
-        // finally us mortals get to see coroutines from the inside
-        System.setProperty("kotlinx.coroutines.debug", if (BuildConfig.DEBUG) "on" else "off")
+
 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -430,7 +435,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             mainActivityViewModel.getJobsForActivityId(
                 ActivityIdConstants.JOB_ESTIMATE
             ).observe(this@MainActivity, { newJobData ->
-                val tasks = newJobData.distinctBy { job -> job.JiNo }.count()
+                val tasks = newJobData.distinctBy { job -> job.jiNo }.count()
                 writeBadge(badgeUnSubmitted, tasks)
             })
 
@@ -441,7 +446,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 ActivityIdConstants.JOB_APPROVED,
                 ActivityIdConstants.ESTIMATE_INCOMPLETE
             ).observe(this@MainActivity, { workList ->
-                val tasks = workList.distinctBy { job -> job.JobId }.count()
+                val tasks = workList.distinctBy { job -> job.jobId }.count()
                 writeBadge(badgeWork, tasks)
             })
 

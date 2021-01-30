@@ -1,3 +1,9 @@
+/*
+ * Updated by Shaun McDonald on 2021/01/25
+ * Last modified on 2021/01/25 6:30 PM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.data.localDB.entities
 
 import android.os.Parcel
@@ -6,7 +12,6 @@ import android.os.Parcelable.Creator
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
-import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import java.io.Serializable
 
 const val JOB_ITEM_ESTIMATE_PHOTO = "JOB_ITEM_ESTIMATE_PHOTO"
@@ -23,7 +28,7 @@ data class JobItemEstimatesPhotoDTO(
     var photoDate: String,
     @SerializedName("PhotoId")
     @PrimaryKey
-    var photoId: String = SqlLitUtils.generateUuid(),
+    var photoId: String,
     @SerializedName("PhotoStart")
     val photoStart: String?,
     @SerializedName("PhotoEnd")
@@ -49,16 +54,14 @@ data class JobItemEstimatesPhotoDTO(
     @SerializedName("RecordVersion")
     val recordVersion: Int,
     @SerializedName("IsPhotoStart")
-    var isPhotostart: Boolean,
-    @SerializedName("Photo")
-    val image: ByteArray?
+    var isPhotostart: Boolean
 ) : Serializable, Parcelable {
 
     constructor(parcel: Parcel) : this(
-        descr = parcel.readString().toString(),
+        descr = parcel.readString()!!,
         estimateId = parcel.readString()!!,
-        filename = parcel.readString().toString(),
-        photoDate = parcel.readString().toString(),
+        filename = parcel.readString()!!,
+        photoDate = parcel.readString()!!,
         photoId = parcel.readString()!!,
         photoStart = parcel.readString(),
         photoEnd = parcel.readString(),
@@ -68,11 +71,10 @@ data class JobItemEstimatesPhotoDTO(
         photoLongitude = parcel.readValue(Double::class.java.classLoader) as? Double,
         photoLatitudeEnd = parcel.readDouble(),
         photoLongitudeEnd = parcel.readDouble(),
-        photoPath = parcel.readString().toString(),
+        photoPath = parcel.readString()!!,
         recordSynchStateId = parcel.readInt(),
         recordVersion = parcel.readInt(),
-        isPhotostart = parcel.readByte() != 0.toByte(),
-        image = parcel.createByteArray()
+        isPhotostart = parcel.readByte() != 0.toByte()
     )
 
     fun isPhotoStart(): Boolean {
@@ -80,18 +82,18 @@ data class JobItemEstimatesPhotoDTO(
     }
 
     override fun equals(other: Any?): Boolean {
-        when {
-            this === other -> return true
-            javaClass != other?.javaClass -> return false
+        return when {
+            this === other -> true
+            javaClass != other?.javaClass -> false
             else -> {
                 other as JobItemEstimatesPhotoDTO
                 when {
-                    descr != other.descr -> return false
-                    estimateId != other.estimateId -> return false
-                    filename != other.filename -> return false
-                    photoDate != other.photoDate -> return false
-                    photoId != other.photoId -> return false
-                    else -> return true
+                    descr != other.descr -> false
+                    estimateId != other.estimateId -> false
+                    filename != other.filename -> false
+                    photoDate != other.photoDate -> false
+                    photoId != other.photoId -> false
+                    else -> true
                 }
             }
         }
@@ -100,7 +102,6 @@ data class JobItemEstimatesPhotoDTO(
     override fun hashCode(): Int {
         var result = photoId.hashCode()
         result = 31 * result + photoPath.hashCode()
-        result = 31 * result + (image?.contentHashCode() ?: 0)
         return result
     }
 
@@ -122,7 +123,6 @@ data class JobItemEstimatesPhotoDTO(
         parcel.writeInt(recordSynchStateId)
         parcel.writeInt(recordVersion)
         parcel.writeByte(if (isPhotostart) 1 else 0)
-        parcel.writeByteArray(image)
     }
 
     override fun describeContents(): Int {

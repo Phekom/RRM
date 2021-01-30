@@ -1,3 +1,9 @@
+/*
+ * Updated by Shaun McDonald on 2021/01/25
+ * Last modified on 2021/01/25 6:30 PM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.data.repositories
 
 // import sun.security.krb5.Confounder.bytes
@@ -28,7 +34,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksPhotoDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.WF_WorkStepDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.WfWorkStepDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.WorkflowJobDTO
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
@@ -134,13 +140,13 @@ class WorkDataRepository(
                     worksPhotos,
                     estimateWorksItem,
                     activity,
-                    estimateJob.UserId
+                    estimateJob.userId
                 )
             } else {
                 throw ServiceException(messages)
             }
         } catch (t: Throwable) {
-            val message = "Failed to upload job ${estimateJob.JiNo}: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
+            val message = "Failed to upload job ${estimateJob.jiNo}: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
             Timber.e(t, message)
             val uploadException = XIError(t, message)
             postWorkStatus(uploadException)
@@ -300,7 +306,7 @@ class WorkDataRepository(
         }
     }
 
-    suspend fun getWorkFlowCodes(eId: Int): LiveData<List<WF_WorkStepDTO>> {
+    suspend fun getWorkFlowCodes(eId: Int): LiveData<List<WfWorkStepDTO>> {
         return withContext(Dispatchers.IO) {
             appDb.getWorkStepDao().getWorkflowSteps(eId)
         }
@@ -321,10 +327,9 @@ class WorkDataRepository(
                 }
             }
             appDb.getEstimateWorkDao().updateJobEstimateWorkForEstimateID(
-                estimateWorksItem.jobEstimateWorksPhotos!!,
+                estimateWorksItem.jobEstimateWorksPhotos,
                 estimateWorksItem.estimateId
             )
-
         }
     }
 
@@ -371,7 +376,7 @@ class WorkDataRepository(
         try {
             appDb.getJobDao().updateJob(job.trackRouteId, job.actId, job.jiNo, job.jobId)
 
-            job.workflowItemEstimates?.forEach { jobItemEstimate ->
+            job.workflowItemEstimates.forEach { jobItemEstimate ->
                 appDb.getJobItemEstimateDao().updateExistingJobItemEstimateWorkflow(
                     jobItemEstimate.trackRouteId,
                     jobItemEstimate.actId,
@@ -390,7 +395,7 @@ class WorkDataRepository(
                 }
             }
 
-            job.workflowItemMeasures?.forEach { jobItemMeasure ->
+            job.workflowItemMeasures.forEach { jobItemMeasure ->
                 appDb.getJobItemMeasureDao().updateWorkflowJobItemMeasure(
                     jobItemMeasure.itemMeasureId,
                     jobItemMeasure.trackRouteId,
@@ -400,7 +405,7 @@ class WorkDataRepository(
             }
 
             //  Place the Job Section, UPDATE OR CREATE
-            job.workflowJobSections?.forEach { jobSection ->
+            job.workflowJobSections.forEach { jobSection ->
                 if (!appDb.getJobSectionDao().checkIfJobSectionExist(jobSection.jobSectionId)) {
                     appDb.getJobSectionDao().insertJobSection(jobSection)
                 } else {
@@ -431,7 +436,7 @@ class WorkDataRepository(
             job.jobId = DataConversion.toBigEndian(job.jobId)
             job.trackRouteId = DataConversion.toBigEndian(job.trackRouteId)
 
-            job.workflowItemEstimates?.forEach { jie ->
+            job.workflowItemEstimates.forEach { jie ->
                 jie.estimateId = DataConversion.toBigEndian(jie.estimateId)!!
                 jie.trackRouteId = DataConversion.toBigEndian(jie.trackRouteId)!!
                 //  Lets go through the WorkFlowEstimateWorks
@@ -442,13 +447,13 @@ class WorkDataRepository(
                 }
             }
 
-            job.workflowItemMeasures?.forEach { jim ->
+            job.workflowItemMeasures.forEach { jim ->
                 jim.itemMeasureId = DataConversion.toBigEndian(jim.itemMeasureId)!!
                 jim.measureGroupId = DataConversion.toBigEndian(jim.measureGroupId)!!
                 jim.trackRouteId = DataConversion.toBigEndian(jim.trackRouteId)!!
             }
 
-            job.workflowJobSections?.forEach { js ->
+            job.workflowJobSections.forEach { js ->
                 js.jobSectionId = DataConversion.toBigEndian(js.jobSectionId)!!
                 js.projectSectionId = DataConversion.toBigEndian(js.projectSectionId)!!
                 js.jobId = DataConversion.toBigEndian(js.jobId)

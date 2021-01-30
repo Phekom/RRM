@@ -20,9 +20,9 @@
 -dontwarn okio.**
 -keepattributes Signature
 -keepattributes *Annotation*
-#noinspection ShrinkerUnresolvedReference
+# noinspection ShrinkerUnresolvedReference
 -keep class com.squareup.okhttp.** { *; }
-#noinspection ShrinkerUnresolvedReference
+# noinspection ShrinkerUnresolvedReference
 -keep interface com.squareup.okhttp.** { *; }
 -dontwarn com.squareup.okhttp.**
 
@@ -34,8 +34,12 @@
 }
 
 -keep class sun.misc.Unsafe { *; }
-#your package path where your gson models are stored
--keep class za.co.xisystems.itis_rrm.data.** { *; }
+# your package path where your gson models are stored
+-keep interface za.co.xisystems.itis_rrm.data.localDB.dao.** { *; }
+-keep class za.co.xisystems.itis_rrm.data.localDB.entities.** { *; }
+-keep class za.co.xisystems.itis_rrm.data.localDB.views.** { *; }
+-keep class za.co.xisystems.itis_rrm.data.network.responses.** { *; }
+-keep class za.co.xisystems.itis_rrm.data.network.request.** { *; }
 
 # Keep these for GSON and Jackson
 -keepattributes Signature
@@ -58,3 +62,5 @@
 -keepnames class * implements android.os.Parcelable {
     public static final ** CREATOR;
 }
+# -keepnames class * implements androidx.fragment.app.** { *; }
+-keepnames class * implements java.io.Serializable { *;}

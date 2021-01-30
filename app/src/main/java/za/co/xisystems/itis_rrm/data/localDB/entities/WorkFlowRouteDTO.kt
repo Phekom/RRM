@@ -1,3 +1,9 @@
+/*
+ * Updated by Shaun McDonald on 2021/01/25
+ * Last modified on 2021/01/25 6:30 PM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.data.localDB.entities
 
 import androidx.room.ColumnInfo
@@ -13,14 +19,12 @@ import com.google.gson.annotations.SerializedName
 const val WORKFLOW_ROUTE_TABLE = "WORKFLOW_ROUTE_TABLE"
 
 @Entity(
-    tableName = WORKFLOW_ROUTE_TABLE, foreignKeys = arrayOf(
-        ForeignKey(
-            entity = WorkFlowDTO::class,
-            parentColumns = arrayOf("workflowId"),
-            childColumns = arrayOf("workflowId"),
-            onDelete = ForeignKey.CASCADE
-        )
-    )
+    tableName = WORKFLOW_ROUTE_TABLE, foreignKeys = [ForeignKey(
+        entity = WorkFlowDTO::class,
+        parentColumns = arrayOf("workflowId"),
+        childColumns = arrayOf("workflowId"),
+        onDelete = ForeignKey.CASCADE
+    )]
 )
 data class WorkFlowRouteDTO(
 

@@ -1,3 +1,9 @@
+/*
+ * Updated by Shaun McDonald on 2021/01/25
+ * Last modified on 2021/01/25 6:30 PM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.ui.mainview.create.select_item
 
 import android.content.Context
@@ -15,8 +21,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
-import java.util.ArrayList
-import java.util.concurrent.CancellationException
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
@@ -40,6 +44,8 @@ import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper.setSpinner
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.Coroutines
+import java.util.ArrayList
+import java.util.concurrent.CancellationException
 
 /**
  * Created by Francis Mahlava on 2019/12/29.
@@ -66,9 +72,6 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
     internal var useR: Int? = null
 
     @MyState
-    var newJob: JobDTO? = null
-
-    @MyState
     lateinit var editJob: JobDTO
     private var uiScope = UiLifecycleScope()
 
@@ -86,22 +89,16 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
                         useR = user
                     })
 
-                    createViewModel.projectId.observe(viewLifecycleOwner, { projectId ->
-                        setItemsBySections(projectId)
-                    })
+//                    createViewModel.projectId.observe(viewLifecycleOwner, { projectId ->
+//                        setItemsBySections(projectId)
+//                    })
 
-                    createViewModel.newJob.observe(viewLifecycleOwner, { newJ ->
-                        newJob = newJ
+                    createViewModel.currentJob.observe(viewLifecycleOwner, { newJ ->
+                        newJ?.let {
+                            editJob = it
+                            setItemsBySections(it.projectId!!)
+                        }
                     })
-
-                    createViewModel.currentJob.observe(
-                        viewLifecycleOwner,
-                        { incompleteJob ->
-                            incompleteJob?.let {
-                                setItemsBySections(incompleteJob.ProjectId!!)
-                                editJob = incompleteJob
-                            }
-                        })
                 }
             }
         }
@@ -151,28 +148,26 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
                 for (item in sectionData.indices) {
                     sectionSelections[item] = sectionData[item].description
                 }
-                uiScope.launch(uiScope.coroutineContext) {
-                    setSpinner(
-                        requireContext().applicationContext,
-                        ui.sectionItemSpinner,
-                        sectionData,
-                        sectionSelections,
-                        object : SpinnerHelper.SelectionListener<SectionItemDTO> {
 
-                            override fun onItemSelected(position: Int, item: SectionItemDTO) {
-                                if (animate) {
-                                    ui.sectionItemSpinner.startAnimation(bounce_750)
-                                    ui.itemRecyclerView.startAnimation(bounce_1000)
-                                }
-                                selectedSectionItem = item
-                                setRecyclerItems(projectId, item.sectionItemId)
+                setSpinner(
+                    requireContext().applicationContext,
+                    ui.sectionItemSpinner,
+                    sectionData,
+                    sectionSelections,
+                    object : SpinnerHelper.SelectionListener<SectionItemDTO> {
+
+                        override fun onItemSelected(position: Int, item: SectionItemDTO) {
+                            if (animate) {
+                                ui.sectionItemSpinner.startAnimation(bounce_750)
+                                ui.itemRecyclerView.startAnimation(bounce_1000)
                             }
-                        })
-
-                    ui.sectionItemSpinner.setOnTouchListener { _, _ ->
-                        animate = true
-                        false
-                    }
+                            selectedSectionItem = item
+                            setRecyclerItems(projectId, item.sectionItemId)
+                        }
+                    })
+                ui.sectionItemSpinner.setOnTouchListener { _, _ ->
+                    animate = true
+                    false
                 }
             })
         }
@@ -248,7 +243,7 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
             quantity = itemDTO.quantity,
             estimateId = itemDTO.estimateId,
             projectId = itemDTO.projectId!!,
-            jobId = newJob?.JobId ?: editJob.JobId
+            jobId = editJob.jobId
         )
         items.add(newItem)
         return newItem

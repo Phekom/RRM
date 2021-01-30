@@ -1,3 +1,9 @@
+/*
+ * Updated by Shaun McDonald on 2021/22/20
+ * Last modified on 2021/01/20 12:46 PM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.data.localDB.entities
 
 import androidx.room.Entity
@@ -25,12 +31,12 @@ class WorkflowJobDTO(
     var jiNo: String? = null,
 
     @SerializedName("WorkflowItemEstimates")
-    val workflowItemEstimates: ArrayList<WorkflowItemEstimateDTO>? = null,
+    val workflowItemEstimates: ArrayList<WorkflowItemEstimateDTO> = ArrayList(),
 
     @SerializedName("WorkflowItemMeasures")
-    val workflowItemMeasures: ArrayList<WorkflowItemMeasureDTO>? = null,
+    val workflowItemMeasures: ArrayList<WorkflowItemMeasureDTO> = ArrayList(),
 
     @SerializedName("WorkflowJobSections")
-    val workflowJobSections: ArrayList<JobSectionDTO>? = null
+    val workflowJobSections: ArrayList<JobSectionDTO> = ArrayList()
 
 ) : Serializable

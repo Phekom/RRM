@@ -1,4 +1,10 @@
- package za.co.xisystems.itis_rrm.ui.mainview.estmeasure.submit_measure
+/*
+ * Updated by Shaun McDonald on 2021/01/25
+ * Last modified on 2021/01/25 6:30 PM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
+package za.co.xisystems.itis_rrm.ui.mainview.estmeasure.submit_measure
 
 import android.app.AlertDialog
 import android.content.Context
@@ -20,8 +26,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.ExpandableGroup
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
-import java.util.ArrayList
-import java.util.HashMap
 import kotlinx.android.synthetic.main.fragment_submit_measure.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
@@ -62,6 +66,8 @@ import za.co.xisystems.itis_rrm.utils.enums.ToastStyle
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.ERROR
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.NO_INTERNET
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.WARNING
+import java.util.ArrayList
+import java.util.HashMap
 
 class SubmitMeasureFragment : BaseFragment(), KodeinAware {
     override val kodein by kodein()
@@ -227,7 +233,7 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
                 measureViewModel.getJobItemMeasuresForJobIdAndEstimateId(jobId) // estimateId
             jobItemMeasure.observeOnce(viewLifecycleOwner, { measureList ->
                 val validMeasures = measureList.filter { msure ->
-                    msure.qty > 0 && msure.jobItemMeasurePhotos.isNotEmpty()
+                    msure.qty > 0 && !msure.jobItemMeasurePhotos.isNullOrEmpty()
                 }
                 if (validMeasures.isNullOrEmpty()) {
                     sharpToast(
@@ -312,14 +318,14 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
                     userDTO.userId.isBlank() -> {
                         showSubmissionError("Current user lacks permissions")
                     }
-                    itemMeasureJob.JobId.isBlank() -> {
+                    itemMeasureJob.jobId.isBlank() -> {
                         showSubmissionError("Selected job is invalid")
                     }
                     else -> {
                         // beware littleEndian conversion for transport to backend
                         val contractVoId: String =
-                            DataConversion.toLittleEndian(itemMeasureJob.ContractVoId)!!
-                        val jobId: String = DataConversion.toLittleEndian(itemMeasureJob.JobId)!!
+                            DataConversion.toLittleEndian(itemMeasureJob.contractVoId)!!
+                        val jobId: String = DataConversion.toLittleEndian(itemMeasureJob.jobId)!!
 
                         Coroutines.main {
 
@@ -368,7 +374,7 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
             measureJob = measureViewModel.processWorkflowMove(
                 userDTO.userId,
                 jobId,
-                itemMeasureJob.JiNo,
+                itemMeasureJob.jiNo,
                 contractVoId,
                 mSures,
                 it,
@@ -384,19 +390,20 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
             jobMeasure.setProjectItemId(DataConversion.toLittleEndian(jobMeasure.projectItemId))
             jobMeasure.setItemMeasureId(DataConversion.toLittleEndian(jobMeasure.itemMeasureId))
 
-            if (jobMeasure.trackRouteId != null)
+            if (jobMeasure.trackRouteId != null) {
                 jobMeasure.setTrackRouteId(DataConversion.toLittleEndian(jobMeasure.trackRouteId))
-            else jobMeasure.trackRouteId = null
+            } else {
+                jobMeasure.trackRouteId = null
+            }
 
-            if (jobMeasure.measureGroupId != null)
+            if (jobMeasure.measureGroupId != null) {
                 jobMeasure.setMeasureGroupId(DataConversion.toLittleEndian(jobMeasure.measureGroupId))
+            }
 
-            if (jobMeasure.jobItemMeasurePhotos.isNotEmpty()) {
-                for (jmep in jobMeasure.jobItemMeasurePhotos) {
-                    jmep.setPhotoId(DataConversion.toLittleEndian(jmep.photoId))
-                    jmep.setEstimateId(DataConversion.toLittleEndian(jmep.estimateId))
-                    jmep.setItemMeasureId(DataConversion.toLittleEndian(jmep.itemMeasureId))
-                }
+            jobMeasure.jobItemMeasurePhotos.forEach { jmep ->
+                jmep.setPhotoId(DataConversion.toLittleEndian(jmep.photoId))
+                jmep.setEstimateId(DataConversion.toLittleEndian(jmep.estimateId))
+                jmep.setItemMeasureId(DataConversion.toLittleEndian(jmep.itemMeasureId))
             }
         }
 
@@ -493,7 +500,7 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
                             Coroutines.main {
                                 val jobItemMeasure =
                                     measureViewModel.getJobItemMeasuresForJobIdAndEstimateId2(
-                                        job.JobId,
+                                        job.jobId,
                                         jobItemEstimateDTO.estimateId
                                     )
                                 jobItemMeasure.observeOnce(requireActivity(), { measureList ->

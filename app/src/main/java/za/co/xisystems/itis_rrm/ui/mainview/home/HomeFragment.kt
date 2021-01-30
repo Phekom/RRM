@@ -17,7 +17,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenStarted
 import com.skydoves.progressview.ProgressView
-import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -49,6 +48,7 @@ import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.BOTTOM
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.ERROR
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.INFO
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.SUCCESS
+import kotlin.coroutines.cancellation.CancellationException
 
 class HomeFragment : BaseFragment(), KodeinAware {
 
@@ -406,10 +406,10 @@ class HomeFragment : BaseFragment(), KodeinAware {
         ui.itemsSwipeToRefresh.isRefreshing = isLoading
         when (isLoading) {
             true -> {
-                ui.bigsyncProgressLayout.visibility = View.VISIBLE
+                ui.bigSyncProgressLayout.visibility = View.VISIBLE
             }
             else -> {
-                ui.bigsyncProgressLayout.visibility = View.GONE
+                ui.bigSyncProgressLayout.visibility = View.GONE
             }
         }
     }

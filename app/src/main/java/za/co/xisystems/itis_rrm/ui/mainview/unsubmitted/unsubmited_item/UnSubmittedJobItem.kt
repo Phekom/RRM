@@ -1,3 +1,9 @@
+/*
+ * Updated by Shaun McDonald on 2021/01/25
+ * Last modified on 2021/01/25 6:30 PM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.unsubmited_item
 
 import android.view.View
@@ -6,7 +12,9 @@ import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import com.xwray.groupie.kotlinandroidextensions.Item
 import kotlinx.android.synthetic.main.unsubmtd_job_list_item.*
+import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedViewModel
@@ -28,21 +36,27 @@ class UnSubmittedJobItem(
     override fun bind(viewHolder: GroupieViewHolder, position: Int) {
 
         viewHolder.apply {
+
             iTemID.text = getItemId(position + 1).toString()
-            unsubmitted_project_textView.text = "JI:${jobDTO.JiNo} - "
+            unsubmitted_project_textView.text = itemView
+                .context.getString(R.string.pair, "JI:", jobDTO.jiNo)
             Coroutines.main {
-                val descri = viewModel.getDescForProjectId(jobDTO.ProjectId!!)
+                val descri = viewModel.getDescForProjectId(jobDTO.projectId!!)
                 unsubmitted_project_textView.text = descri
             }
-            unsubmitted_description_textView.text = jobDTO.Descr
+            unsubmitted_description_textView.text = jobDTO.descr
 
             deleteButton.setOnClickListener {
                 Coroutines.main {
-                    viewModel.deleJobfromList(jobDTO.JobId)
-                    viewModel.deleteItemList(jobDTO.JobId)
-                    groupAdapter.clear()
-                    groupAdapter.notifyDataSetChanged()
-                    notifyChanged()
+                    try {
+                        viewModel.deleJobfromList(jobDTO.jobId)
+                        viewModel.deleteItemList(jobDTO.jobId)
+                        groupAdapter.clear()
+                        groupAdapter.notifyDataSetChanged()
+                        notifyChanged()
+                    } catch (t: Throwable) {
+                        Timber.e("Failed to delete unsubmitted job: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}")
+                    }
                 }
             }
 
@@ -51,15 +65,15 @@ class UnSubmittedJobItem(
 
         viewHolder.itemView.setOnClickListener { view ->
             clickListener?.invoke(this)
-            sendJobtoEdit((jobDTO), view)
+            sendJobToEdit((jobDTO), view)
         }
     }
 
-    private fun sendJobtoEdit(jobDTO: JobDTO, view: View) {
+    private fun sendJobToEdit(jobDTO: JobDTO, view: View) {
 
         val job = jobDTO
         Coroutines.main {
-            createModel.setJobToEdit(job.JobId)
+            createModel.setJobToEdit(job.jobId)
         }
 
         Navigation.findNavController(view)
@@ -69,6 +83,7 @@ class UnSubmittedJobItem(
     override fun getLayout() = R.layout.unsubmtd_job_list_item
 
     private fun updateItem() {
+        // Not interested in this
     }
 }
 

@@ -1,6 +1,13 @@
+/*
+ * Updated by Shaun McDonald on 2021/01/25
+ * Last modified on 2021/01/25 6:30 PM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.data.localDB.entities
 
 import com.google.gson.annotations.SerializedName
+import java.io.Serializable
 
 data class WorkflowEstimateWorkDTO(
     @SerializedName("ActId")
@@ -15,4 +22,4 @@ data class WorkflowEstimateWorkDTO(
     var trackRouteId: String, // sample string 2
     @SerializedName("WorksId")
     var worksId: String // sample string 1
-)
+) : Serializable

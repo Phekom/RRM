@@ -1,3 +1,9 @@
+/*
+ * Updated by Shaun McDonald on 2021/01/25
+ * Last modified on 2021/01/25 6:30 PM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.data.localDB.entities
 
 import android.os.Parcel
@@ -6,7 +12,6 @@ import android.os.Parcelable.Creator
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
-import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import java.io.Serializable
 
 /**
@@ -22,7 +27,7 @@ class JobEstimateWorksDTO(
     @SerializedName("EstimateId")
     var estimateId: String?,
     @SerializedName("MobileJobEstimateWorksPhotos")
-    var jobEstimateWorksPhotos: ArrayList<JobEstimateWorksPhotoDTO>?,
+    var jobEstimateWorksPhotos: ArrayList<JobEstimateWorksPhotoDTO> = ArrayList(),
     @SerializedName("RecordSynchStateId")
     var recordSynchStateId: Int,
     @SerializedName("RecordVersion")
@@ -31,21 +36,24 @@ class JobEstimateWorksDTO(
     var trackRouteId: String,
     @SerializedName("WorksId")
     @PrimaryKey
-    var worksId: String = SqlLitUtils.generateUuid()
+    var worksId: String
 ) : Serializable, Parcelable {
     constructor(parcel: Parcel) : this(
-        parcel.readInt(),
-        parcel.readString(),
-        TODO("jobEstimateWorksPhotos"),
-        parcel.readInt(),
-        parcel.readInt(),
-        parcel.readString()!!,
-        parcel.readString()!!
+        actId = parcel.readInt(),
+        estimateId = parcel.readString(),
+        jobEstimateWorksPhotos = arrayListOf<JobEstimateWorksPhotoDTO>().apply {
+            parcel.readList(this.toList(), JobEstimateWorksPhotoDTO::class.java.classLoader)
+        },
+        recordSynchStateId = parcel.readInt(),
+        recordVersion = parcel.readInt(),
+        trackRouteId = parcel.readString()!!,
+        worksId = parcel.readString()!!
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeInt(actId)
         parcel.writeString(estimateId)
+        parcel.writeList(jobEstimateWorksPhotos.toList())
         parcel.writeInt(recordSynchStateId)
         parcel.writeInt(recordVersion)
         parcel.writeString(trackRouteId)

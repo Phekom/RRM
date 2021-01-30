@@ -1,3 +1,9 @@
+/*
+ * Updated by Shaun McDonald on 2021/01/30
+ * Last modified on 2021/01/30 7:07 AM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 @file:Suppress("RemoveExplicitTypeArguments")
 
 package za.co.xisystems.itis_rrm.ui.mainview.approvejobs
@@ -5,14 +11,13 @@ package za.co.xisystems.itis_rrm.ui.mainview.approvejobs
 import android.app.Dialog
 import android.graphics.Color
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.content.ContextCompat
+import androidx.core.view.doOnNextLayout
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -30,7 +35,6 @@ import org.kodein.di.generic.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
-import za.co.xisystems.itis_rrm.constants.Constants.ONE_SECOND
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.results.XIError
 import za.co.xisystems.itis_rrm.custom.results.XIResult
@@ -59,6 +63,15 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
     private var groupAdapter = GroupAdapter<GroupieViewHolder>()
     private var queryObserver = Observer<XIResult<String>?> { handleQueryErrors(it) }
 
+    init {
+        lifecycleScope.launch {
+            whenStarted {
+                uiScope.onCreate()
+                viewLifecycleOwner.lifecycle.addObserver(uiScope)
+            }
+        }
+    }
+
     private fun handleQueryErrors(outcome: XIResult<String>?) {
         outcome?.let { result ->
             when (result) {
@@ -72,19 +85,6 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
                 else -> {
                     Timber.d("ignored: $result")
                 }
-            }
-        }
-    }
-
-    companion object {
-        val TAG: String = ApproveJobsFragment::class.java.simpleName
-    }
-
-    init {
-        lifecycleScope.launch {
-            whenStarted {
-                uiScope.onCreate()
-                viewLifecycleOwner.lifecycle.addObserver(uiScope)
             }
         }
     }
@@ -103,12 +103,8 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
         return false
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-
-        approveViewModel = activity?.run {
-            ViewModelProvider(this, factory).get(ApproveJobsViewModel::class.java)
-        } ?: throw Exception("Invalid Activity")
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
         initVeiledRecyclerView()
 
@@ -118,9 +114,17 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
         }
     }
 
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
+
+        approveViewModel = activity?.run {
+            ViewModelProvider(this, factory).get(ApproveJobsViewModel::class.java)
+        } ?: throw Exception("Invalid Activity")
+    }
+
     private fun initVeiledRecyclerView() {
         ui.approveJobVeiledRecycler.run {
-            setVeilLayout(R.layout.item_expandable_header, object : VeiledItemOnClickListener {
+            setVeilLayout(R.layout.item_velied_slug, object : VeiledItemOnClickListener {
                 /** will be invoked when the item on the [VeilRecyclerFrameView] clicked. */
                 override fun onItemClicked(pos: Int) {
                     Toast.makeText(this@ApproveJobsFragment.requireContext(), "Loading ...", Toast.LENGTH_SHORT).show()
@@ -152,7 +156,6 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
                 refreshAction = { uiScope.launch { retryAction() } }
             )
         } finally {
-            if (veiled) delayedUnveil()
             approveViewModel.workflowState.removeObserver(queryObserver)
         }
     }
@@ -163,13 +166,14 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
         jobs.observe(viewLifecycleOwner, { jobList ->
 
             if (jobList.isNullOrEmpty()) {
+                ui.approveJobVeiledRecycler.unVeil()
                 ui.approveJobVeiledRecycler.visibility = View.GONE
                 ui.noData.visibility = View.VISIBLE
             } else {
                 ui.noData.visibility = View.GONE
                 ui.approveJobVeiledRecycler.visibility = View.VISIBLE
                 val jItems = jobList.distinctBy {
-                    it.JobId
+                    it.jobId
                 }
                 initRecyclerView(jItems.toApproveListItems())
             }
@@ -209,17 +213,6 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
         }
     }
 
-    private fun delayedUnveil() {
-        Handler(Looper.getMainLooper()).postDelayed(
-            {
-                if (!activity?.isFinishing!!) {
-                    ui.approveJobVeiledRecycler.unVeil()
-                }
-            },
-            ONE_SECOND
-        )
-    }
-
     private fun retryFetchRemoteJobs() = uiScope.launch {
         IndefiniteSnackbar.hide()
         protectedFetch(veiled = true, { fetchJobsFromServices() })
@@ -235,6 +228,7 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
 
         ui.approveJobVeiledRecycler.setLayoutManager(LinearLayoutManager(this.context))
         ui.approveJobVeiledRecycler.setAdapter(groupAdapter)
+        ui.approveJobVeiledRecycler.doOnNextLayout { ui.approveJobVeiledRecycler.unVeil() }
 
         groupAdapter.setOnItemClickListener { item, view ->
             Coroutines.main {
@@ -269,5 +263,9 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
         ui.approveJobVeiledRecycler.setAdapter(null)
         uiScope.destroy()
         _ui = null
+    }
+
+    companion object {
+        val TAG: String = ApproveJobsFragment::class.java.simpleName
     }
 }

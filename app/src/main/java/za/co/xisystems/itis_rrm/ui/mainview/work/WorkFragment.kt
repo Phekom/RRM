@@ -1,17 +1,22 @@
+/*
+ * Updated by Shaun McDonald on 2021/01/25
+ * Last modified on 2021/01/25 6:30 PM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 @file:Suppress("KDocUnresolvedReference")
 
 package za.co.xisystems.itis_rrm.ui.mainview.work
 
 import android.graphics.Color
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.content.ContextCompat
+import androidx.core.view.doOnNextLayout
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenStarted
@@ -30,7 +35,6 @@ import org.kodein.di.generic.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
-import za.co.xisystems.itis_rrm.constants.Constants
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.results.XIError
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
@@ -73,8 +77,6 @@ class WorkFragment : BaseFragment(), KodeinAware {
     }
 
     private suspend fun refreshEstimateJobsFromLocal() {
-
-        // Never veil local fetches
         ui.veiledWorkListView.veil()
         withContext(uiScope.coroutineContext) {
             val localJobs = workViewModel.getJobsForActivityId(
@@ -92,11 +94,10 @@ class WorkFragment : BaseFragment(), KodeinAware {
                         ui.veiledWorkListView.visibility = View.VISIBLE
                         ui.noData.visibility = View.GONE
                         val headerItems = jobsList.distinctBy {
-                            it.JobId
+                            it.jobId
                         }
 
                         this@WorkFragment.initRecyclerView(headerItems.toWorkListItems())
-                        delayedUnveil()
                     }
                 }
             })
@@ -139,7 +140,7 @@ class WorkFragment : BaseFragment(), KodeinAware {
     private fun initVeiledRecycler() {
         ui.veiledWorkListView.run {
             setVeilLayout(R.layout.item_velied_slug, object : VeiledItemOnClickListener {
-                /** will be invoked when the item on the [VeilRecyclerFrameView] clicked. */
+                /* will be invoked when the item on the [VeilRecyclerFrameView] clicked. */
                 override fun onItemClicked(pos: Int) {
                     Toast.makeText(this@WorkFragment.requireContext(), "Loading ...", Toast.LENGTH_SHORT).show()
                 }
@@ -187,16 +188,6 @@ class WorkFragment : BaseFragment(), KodeinAware {
         }
     }
 
-    private fun delayedUnveil() {
-        Handler(Looper.getMainLooper()).postDelayed(
-            {
-                ui.veiledWorkListView.unVeil()
-                veiled = false
-            },
-            Constants.ONE_SECOND
-        )
-    }
-
     private fun retryFetchingJobs() {
         IndefiniteSnackbar.hide()
         fetchJobsFromService()
@@ -229,6 +220,7 @@ class WorkFragment : BaseFragment(), KodeinAware {
 
         ui.veiledWorkListView.setLayoutManager(LinearLayoutManager(this.context))
         ui.veiledWorkListView.setAdapter(groupAdapter)
+        ui.veiledWorkListView.doOnNextLayout { ui.veiledWorkListView.unVeil() }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -278,7 +270,7 @@ class WorkFragment : BaseFragment(), KodeinAware {
                 }
 
                 val estimates = workViewModel.getJobEstimationItemsForJobId(
-                    jobDTO.JobId,
+                    jobDTO.jobId,
                     ActivityIdConstants.ESTIMATE_INCOMPLETE
                 )
                 estimates.observeOnce(viewLifecycleOwner, { estimateItems ->

@@ -1,3 +1,9 @@
+/*
+ * Updated by Shaun McDonald on 2021/01/25
+ * Last modified on 2021/01/25 6:30 PM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.data.repositories
 
 // import sun.security.krb5.Confounder.bytes
@@ -227,7 +233,7 @@ class JobApprovalDataRepository(
         try {
             appDb.getJobDao().updateJob(job.trackRouteId, job.actId, job.jiNo, job.jobId)
 
-            job.workflowItemEstimates?.forEach { jobItemEstimate ->
+            job.workflowItemEstimates.forEach { jobItemEstimate ->
                 appDb.getJobItemEstimateDao().updateExistingJobItemEstimateWorkflow(
                     jobItemEstimate.trackRouteId,
                     jobItemEstimate.actId,
@@ -265,7 +271,7 @@ class JobApprovalDataRepository(
                 }
             }
 
-            job.workflowItemMeasures?.forEach { jobItemMeasure ->
+            job.workflowItemMeasures.forEach { jobItemMeasure ->
                 appDb.getJobItemMeasureDao().updateWorkflowJobItemMeasure(
                     jobItemMeasure.itemMeasureId,
                     jobItemMeasure.trackRouteId,
@@ -275,7 +281,7 @@ class JobApprovalDataRepository(
             }
 
             //  Place the Job Section, UPDATE OR CREATE
-            job.workflowJobSections?.forEach { jobSection ->
+            job.workflowJobSections.forEach { jobSection ->
                 if (!appDb.getJobSectionDao().checkIfJobSectionExist(jobSection.jobSectionId)) {
                     appDb.getJobSectionDao().insertJobSection(jobSection)
                 } else {
@@ -307,7 +313,7 @@ class JobApprovalDataRepository(
             job.jobId = DataConversion.toBigEndian(job.jobId)
             job.trackRouteId = DataConversion.toBigEndian(job.trackRouteId)
 
-            job.workflowItemEstimates?.forEach { jie ->
+            job.workflowItemEstimates.forEach { jie ->
                 jie.estimateId = DataConversion.toBigEndian(jie.estimateId)!!
                 jie.trackRouteId = DataConversion.toBigEndian(jie.trackRouteId)!!
                 //  Let's go through the WorkFlowEstimateWorks
@@ -318,13 +324,13 @@ class JobApprovalDataRepository(
                 }
             }
 
-            job.workflowItemMeasures?.forEach { jim ->
+            job.workflowItemMeasures.forEach { jim ->
                 jim.itemMeasureId = DataConversion.toBigEndian(jim.itemMeasureId)!!
                 jim.measureGroupId = DataConversion.toBigEndian(jim.measureGroupId)!!
                 jim.trackRouteId = DataConversion.toBigEndian(jim.trackRouteId)!!
             }
 
-            job.workflowJobSections?.forEach { js ->
+            job.workflowJobSections.forEach { js ->
                 js.jobSectionId = DataConversion.toBigEndian(js.jobSectionId)!!
                 js.projectSectionId = DataConversion.toBigEndian(js.projectSectionId)!!
                 js.jobId = DataConversion.toBigEndian(js.jobId)

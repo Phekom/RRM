@@ -3,6 +3,7 @@ package za.co.xisystems.itis_rrm.data.network
 import android.content.Context
 import okhttp3.Interceptor
 import okhttp3.Response
+import za.co.xisystems.itis_rrm.BuildConfig
 import za.co.xisystems.itis_rrm.custom.errors.NoConnectivityException
 import za.co.xisystems.itis_rrm.custom.errors.NoInternetException
 import za.co.xisystems.itis_rrm.custom.errors.ServiceHostUnreachableException
@@ -15,7 +16,7 @@ class NetworkConnectionInterceptor(
     context: Context
 ) : Interceptor {
     private val testConnection = "www.nra.co.za"
-    private val serviceURL = "itisqa.nra.co.za"
+    private val serviceURL = BuildConfig.BASE_HOST
     private val applicationContext = context.applicationContext
     override fun intercept(chain: Interceptor.Chain): Response {
 
