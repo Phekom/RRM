@@ -1,3 +1,9 @@
+/*
+ * Updated by Shaun McDonald on 2021/01/30
+ * Last modified on 2021/01/30 7:07 AM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 @file:Suppress("RemoveExplicitTypeArguments")
 
 package za.co.xisystems.itis_rrm.ui.mainview.approvejobs
@@ -160,6 +166,7 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
         jobs.observe(viewLifecycleOwner, { jobList ->
 
             if (jobList.isNullOrEmpty()) {
+                ui.approveJobVeiledRecycler.unVeil()
                 ui.approveJobVeiledRecycler.visibility = View.GONE
                 ui.noData.visibility = View.VISIBLE
             } else {
