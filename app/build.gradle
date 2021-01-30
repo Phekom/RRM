@@ -93,10 +93,13 @@ android {
         }
     }
 
-    def qa_env = hostProps['QA_HOST'].toString()
-    def dev_env = hostProps['DEV_HOST'].toString()
+    def qa_api = hostProps['QA_API'].toString()
+    def qa_host = hostProps['QA_HOST'].toString()
+    def dev_api = hostProps['DEV_API'].toString()
+    def dev_host = hostProps['DEV_HOST'].toString()
 //    def xi_env = hostProps['XI_HOST'].toString()
-    def prod_env = hostProps['PROD_HOST'].toString()
+    def prod_host = hostProps['PROD_HOST'].toString()
+    def prod_api = hostProps['PROD_API'].toString()
 //    def sdev_env = hostProps['SDEV_HOST'].toString()
 
     def registerAutoFillTest = safePropertyGetter(hostProps, 'REGISTER_AUTO_FILL_TEST', "false") as Boolean
@@ -203,7 +206,8 @@ android {
             buildConfigField("boolean", "REGISTER_AUTO_FILL_TEST", registerAutoFillTest.toString())
             manifestPlaceholders = [app_name: "RRM-Dev", app_icon: "@mipmap/ic_launcher", HOCKEYAPP_APP_ID: ""]
             buildConfigField("boolean", "REGISTER_AUTO_FILL_TEST", "true")
-            buildConfigField("String", "API_HOST", dev_env)
+            buildConfigField("String", "API_HOST", dev_api)
+            buildConfigField("String", "BASE_HOST", dev_host)
             buildConfigField "String", "HOCKEYAPP_APP_ID", "\"\""
         }
 
@@ -245,7 +249,8 @@ android {
             buildConfigField("boolean", "REGISTER_AUTO_FILL_TEST", registerAutoFillTest.toString())
             manifestPlaceholders = [app_name: "RRM-Qa", app_icon: "@mipmap/ic_launcher", HOCKEYAPP_APP_ID: "7b77445b888a411b83ae27491a5bd7c9"]
             buildConfigField("boolean", "REGISTER_AUTO_FILL_TEST", "false")
-            buildConfigField("String", "API_HOST", qa_env)
+            buildConfigField("String", "API_HOST", qa_api)
+            buildConfigField("String", "BASE_HOST", qa_host)
             buildConfigField "String", "HOCKEYAPP_APP_ID", "\"7b77445b888a411b83ae27491a5bd7c9\""
         }
 
@@ -253,7 +258,9 @@ android {
             appId = "za.co.nra.itisrrm"
             applicationId appId
             manifestPlaceholders = [app_name: "RRM", app_icon: "@mipmap/ic_launcher", HOCKEYAPP_APP_ID: "722fd7502681497f96d51c26284bc056"]
-            buildConfigField("String", "API_HOST", prod_env)
+            buildConfigField("String", "API_HOST", prod_api)
+            buildConfigField("String", "BASE_HOST", prod_host)
+
             buildConfigField "String", "HOCKEYAPP_APP_ID", "\"722fd7502681497f96d51c26284bc056\""
         }
     }
@@ -571,6 +578,9 @@ dependencies {
     // SQLCipher
     implementation 'net.zetetic:android-database-sqlcipher:4.4.2'
     implementation "androidx.sqlite:sqlite-ktx:2.1.0"
+
+    // TooLargeTool
+    debugImplementation 'com.gu.android:toolargetool:0.3.0@aar'
 
 
 }
