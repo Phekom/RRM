@@ -137,7 +137,10 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
                 viewLifecycleOwner,
                 { currentJob ->
                     currentJob?.let { jobToEdit ->
-                        toast("Editing ${jobToEdit.descr}")
+                        if(createViewModel.jobDesc != jobToEdit.descr){
+                            toast("Editing ${jobToEdit.descr}")
+                            createViewModel.jobDesc = jobToEdit.descr
+                        }
                         Coroutines.main {
                             projectID = jobToEdit.projectId
                             job = jobToEdit
@@ -153,7 +156,7 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
                             ui.totalCostTextView.visibility = View.VISIBLE
 
                             // Set job description init actionBar
-                            (activity as MainActivity).supportActionBar?.title = jobToEdit.descr
+                            (activity as MainActivity).supportActionBar?.title = createViewModel.jobDesc
 
                             // Set Job Start & Completion Dates
 

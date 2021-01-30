@@ -4,7 +4,6 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.os.Build
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.res.ResourcesCompat
@@ -53,9 +52,7 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnabl
         if (startPermissionRequest(permissions)) {
             toast("Permissions Are already provided ")
         } else {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                requestPermissions(permissions, PERMISSION_REQUEST)
-            }
+            requestPermissions(permissions, PERMISSION_REQUEST)
         }
 
         val binding: ActivityResetPinBinding =
@@ -128,11 +125,7 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnabl
             for (i in permissions.indices) {
                 if (grantResults[i] == PackageManager.PERMISSION_DENIED) {
                     allAllowed = false
-                    val requestAgain = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        shouldShowRequestPermissionRationale(permissions[i])
-                    } else {
-                        false
-                    }
+                    val requestAgain = shouldShowRequestPermissionRationale(permissions[i])
                     if (requestAgain) {
                         toast("Permission Denied")
                     } else {

@@ -4,7 +4,6 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.os.Build
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
@@ -53,9 +52,7 @@ class RegisterPinActivity : AppCompatActivity(), AuthListener, KodeinAware {
         if (startPermissionRequest(permissions)) {
             toast("Permissions are already provided ")
         } else {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                requestPermissions(permissions, PERMISSION_REQUEST)
-            }
+            requestPermissions(permissions, PERMISSION_REQUEST)
         }
 
         val binding: ActivityRegisterPinBinding =
@@ -97,12 +94,7 @@ class RegisterPinActivity : AppCompatActivity(), AuthListener, KodeinAware {
             for (i in permissions.indices) {
                 if (grantResults[i] == PackageManager.PERMISSION_DENIED) {
                     allAllowed = false
-                    val requestAgain = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        shouldShowRequestPermissionRationale(permissions[i])
-                    } else {
-                        // Fallback granting all permissions
-                        false
-                    }
+                    val requestAgain = shouldShowRequestPermissionRationale(permissions[i])
                     if (requestAgain) {
                         toast("Permission Denied")
                     } else {

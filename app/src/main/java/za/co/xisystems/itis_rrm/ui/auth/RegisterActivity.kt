@@ -8,7 +8,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.os.Build
 import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -57,10 +56,7 @@ class RegisterActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnabl
         if (startPermissionRequest(permissions)) {
             toast("Permissions already provided.")
         } else {
-            // The only fallback from Marshmallow is to grant all permissions
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                requestPermissions(permissions, PERMISSION_REQUEST)
-            }
+            requestPermissions(permissions, PERMISSION_REQUEST)
         }
 
         val binding: ActivityRegisterBinding =
@@ -140,12 +136,7 @@ class RegisterActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnabl
         for (i in permissions.indices) {
             if (grantResults[i] == PackageManager.PERMISSION_DENIED) {
                 allAllowed = false
-                val requestAgain = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    shouldShowRequestPermissionRationale(permissions[i])
-                } else {
-                    // Fallback granting all permissions
-                    false
-                }
+                val requestAgain = shouldShowRequestPermissionRationale(permissions[i])
                 if (requestAgain) {
                     toast("Permission Denied")
                 } else {

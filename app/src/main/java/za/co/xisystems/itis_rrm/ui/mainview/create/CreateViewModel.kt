@@ -44,6 +44,8 @@ class CreateViewModel(
     private val jobCreationDataRepository: JobCreationDataRepository
 ) : ViewModel() {
 
+    var jobDesc: String? = null
+
     private val superJob = SupervisorJob()
     val currentJob: MutableLiveData<JobDTO?> = MutableLiveData()
     private var ioContext: CoroutineContext
@@ -69,6 +71,7 @@ class CreateViewModel(
         ioContext = Job(superJob) + Dispatchers.IO + uncaughtExceptionHandler
         mainContext = Job(superJob) + Dispatchers.Main + uncaughtExceptionHandler
     }
+
 
     fun setCurrentJob(inJobItemToEdit: JobDTO?) {
         currentJob.value = inJobItemToEdit
