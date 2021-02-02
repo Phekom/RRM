@@ -11,6 +11,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import java.util.ArrayList
+import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
@@ -33,8 +35,6 @@ import za.co.xisystems.itis_rrm.ui.mainview.create.select_item.SectionProj_Item
 import za.co.xisystems.itis_rrm.utils.JobUtils
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
 import za.co.xisystems.itis_rrm.utils.uncaughtExceptionHandler
-import java.util.ArrayList
-import kotlin.coroutines.CoroutineContext
 
 /**
  * Created by Francis Mahlava on 2019/10/18.
@@ -71,7 +71,6 @@ class CreateViewModel(
         ioContext = Job(superJob) + Dispatchers.IO + uncaughtExceptionHandler
         mainContext = Job(superJob) + Dispatchers.Main + uncaughtExceptionHandler
     }
-
 
     fun setCurrentJob(inJobItemToEdit: JobDTO?) {
         currentJob.value = inJobItemToEdit

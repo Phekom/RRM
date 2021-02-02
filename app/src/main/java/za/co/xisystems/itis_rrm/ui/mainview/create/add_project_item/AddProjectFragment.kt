@@ -30,6 +30,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.Section
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
+import java.util.ArrayList
+import java.util.Calendar
+import java.util.Date
 import kotlinx.coroutines.launch
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
@@ -58,9 +61,6 @@ import za.co.xisystems.itis_rrm.utils.DateUtil
 import za.co.xisystems.itis_rrm.utils.JobUtils
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.WARNING
-import java.util.ArrayList
-import java.util.Calendar
-import java.util.Date
 
 /**
  * Created by Francis Mahlava on 2019/12/29.
@@ -137,7 +137,7 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
                 viewLifecycleOwner,
                 { currentJob ->
                     currentJob?.let { jobToEdit ->
-                        if(createViewModel.jobDesc != jobToEdit.descr){
+                        if (createViewModel.jobDesc != jobToEdit.descr) {
                             toast("Editing ${jobToEdit.descr}")
                             createViewModel.jobDesc = jobToEdit.descr
                         }

@@ -4,7 +4,6 @@
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  */
 
-@file:Suppress("ControlFlowWithEmptyBody")
 
 package za.co.xisystems.itis_rrm
 
@@ -83,8 +82,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private var uiScope = UiLifecycleScope()
 
     override fun onCreate(savedInstanceState: Bundle?) {
-
-
 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -514,6 +511,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             // initializeCountDrawer()
             // refreshData()
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        uiScope.destroy()
     }
 
     companion object {

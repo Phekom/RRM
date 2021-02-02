@@ -47,6 +47,7 @@ import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.LocationFragment
 import za.co.xisystems.itis_rrm.constants.Constants
+import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.results.XIError
 import za.co.xisystems.itis_rrm.custom.results.XIProgress
 import za.co.xisystems.itis_rrm.custom.results.XIResult
@@ -533,48 +534,60 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
         } else {
             // requireMutex
 
-            val photo = createItemWorksPhoto(
-                filenamePath,
-                currentLocation
-            )
-
-            estimateWorksPhotoArrayList.add(photo)
             // unlock mutex
             uiScope.launch(uiScope.coroutineContext) {
-                itemEstiWorks.jobEstimateWorksPhotos = estimateWorksPhotoArrayList
 
-                workViewModel.createSaveWorksPhotos(
-                    estimateWorksPhotoArrayList,
-                    itemEstiWorks
-                )
-
-                // Get imageUri from filename
-                val imageUrl = PhotoUtil.getPhotoPathFromExternalDirectory(
-                    photo.filename
-                )
-
-                // Generate Bitmap from file
-                val bitmap =
-                    PhotoUtil.getPhotoBitmapFromFile(
-                        requireActivity(),
-                        imageUrl,
-                        PhotoQuality.HIGH
+                try {
+                    val photo = createItemWorksPhoto(
+                        filenamePath,
+                        currentLocation
                     )
 
-                // Prepare gallery for new size
-                ui.imageCollectionView.scaleForSize(
-                    estimateWorksPhotoArrayList.size
-                )
+                    estimateWorksPhotoArrayList.add(photo)
+                    Timber.d("^*^ Photo Bug ^*^ Photos in array: ${estimateWorksPhotoArrayList.size}")
 
-                // Push photo into ImageCollectionView
-                ui.imageCollectionView.addImage(
-                    bitmap!!,
-                    object : ImageCollectionView.OnImageClickListener {
-                        override fun onClick(bitmap: Bitmap, imageView: ImageView) {
-                            showZoomedImage(imageUrl, this@CaptureWorkFragment.requireActivity())
+                    itemEstiWorks.jobEstimateWorksPhotos = estimateWorksPhotoArrayList
+
+                    workViewModel.createSaveWorksPhotos(
+                        estimateWorksPhotoArrayList,
+                        itemEstiWorks
+                    )
+
+                    // Get imageUri from filename
+                    val imageUrl = PhotoUtil.getPhotoPathFromExternalDirectory(
+                        photo.filename
+                    )
+
+                    // Generate Bitmap from file
+                    val bitmap =
+                        PhotoUtil.getPhotoBitmapFromFile(
+                            requireActivity(),
+                            imageUrl,
+                            PhotoQuality.HIGH
+                        )
+
+                    // Prepare gallery for new size
+                    ui.imageCollectionView.scaleForSize(
+                        estimateWorksPhotoArrayList.size
+                    )
+
+                    // Push photo into ImageCollectionView
+                    ui.imageCollectionView.addImage(
+                        bitmap!!,
+                        object : ImageCollectionView.OnImageClickListener {
+                            override fun onClick(bitmap: Bitmap, imageView: ImageView) {
+                                showZoomedImage(imageUrl, this@CaptureWorkFragment.requireActivity())
+                            }
                         }
-                    }
-                )
+                    )
+
+                    Timber.d("*^* PhotoBug *^* Photos in gallery: ${ui.imageCollectionView.childCount}")
+                } catch (t: Throwable) {
+                    val message = "Gallery update failed: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
+                    Timber.e(t, message)
+                    crashGuard(this@CaptureWorkFragment.requireView(), XIError(t, message))
+                }
+
             }
         }
     }
