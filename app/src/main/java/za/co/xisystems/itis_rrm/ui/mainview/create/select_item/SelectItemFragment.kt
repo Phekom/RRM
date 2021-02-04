@@ -1,6 +1,6 @@
 /*
- * Updated by Shaun McDonald on 2021/01/25
- * Last modified on 2021/01/25 6:30 PM
+ * Updated by Shaun McDonald on 2021/02/04
+ * Last modified on 2021/02/04 11:31 AM
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  */
 
@@ -21,8 +21,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
-import java.util.ArrayList
-import java.util.concurrent.CancellationException
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
@@ -46,6 +44,8 @@ import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper.setSpinner
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.Coroutines
+import java.util.ArrayList
+import java.util.concurrent.CancellationException
 
 /**
  * Created by Francis Mahlava on 2019/12/29.
@@ -257,9 +257,10 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
         Coroutines.main {
             createViewModel.setSectionProjectItem(item)
         }
-
+        val navDirections = SelectItemFragmentDirections
+            .actionSelectItemFragmentToAddProjectFragment(editJob.projectId, editJob.jobId)
         Navigation.findNavController(view)
-            .navigate(R.id.action_selectItemFragment_to_addProjectFragment)
+            .navigate(navDirections)
     }
 
     override fun onDestroyView() {

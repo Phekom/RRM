@@ -1,6 +1,6 @@
 /*
- * Updated by Shaun McDonald on 2021/01/25
- * Last modified on 2021/01/25 6:30 PM
+ * Updated by Shaun McDonald on 2021/02/04
+ * Last modified on 2021/02/04 11:36 AM
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  */
 
@@ -37,6 +37,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenResumed
 import androidx.lifecycle.whenStarted
 import androidx.navigation.Navigation
+import androidx.navigation.fragment.navArgs
 import com.airbnb.lottie.LottieAnimationView
 import icepick.Icepick
 import kotlinx.coroutines.CancellationException
@@ -158,6 +159,8 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
                     ViewModelProvider(this, factory).get(CreateViewModel::class.java)
                 } ?: throw Exception("Invalid Activity")
 
+                readNavArgs()
+
                 uiScope.launch(uiScope.coroutineContext) {
 
                     withContext(uiScope.coroutineContext) {
@@ -200,7 +203,19 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
             }
 
             whenResumed {
-                // uiScope.job.cancel(cause = CancellationException("onResume"))
+                readNavArgs()
+            }
+        }
+    }
+
+    private suspend fun readNavArgs() {
+        val args: EstimatePhotoFragmentArgs? by navArgs()
+        if (args != null) {
+            args!!.jobId?.let {
+                createViewModel.setJobToEdit(it)
+            }
+            args!!.estimateId?.let {
+                estimateId = it
             }
         }
     }
@@ -357,9 +372,9 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
                         createViewModel.newJob.value = null
                         fragmentManager?.beginTransaction()?.remove(this)?.commit()
                         fragmentManager?.beginTransaction()?.detach(this)?.commit()
-
+                        val navDirections = EstimatePhotoFragmentDirections.actionEstimatePhotoFragmentToNavCreate()
                         Navigation.findNavController(view)
-                            .navigate(R.id.action_estimatePhotoFragment_to_nav_create)
+                            .navigate(navDirections)
                     }
                 }
 
@@ -422,8 +437,12 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
         viewLifecycleOwner.lifecycle.coroutineScope.coroutineContext.cancel(
             CancellationException("updating estimates ...")
         )
+        val navDirections = EstimatePhotoFragmentDirections.actionEstimatePhotoFragmentToAddProjectFragment(
+            newJob!!.projectId,
+            newJob!!.jobId
+        )
         Navigation.findNavController(view)
-            .navigate(R.id.action_estimatePhotoFragment_to_addProjectFragment)
+            .navigate(navDirections)
     }
 
     private fun takePhoto(picType: PhotoType) {
