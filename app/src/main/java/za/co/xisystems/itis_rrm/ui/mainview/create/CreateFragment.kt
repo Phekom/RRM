@@ -1,6 +1,6 @@
 /*
- * Updated by Shaun McDonald on 2021/01/25
- * Last modified on 2021/01/25 6:30 PM
+ * Updated by Shaun McDonald on 2021/02/04
+ * Last modified on 2021/02/04 11:31 AM
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  */
 
@@ -15,8 +15,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenStarted
 import androidx.navigation.Navigation
-import java.util.ArrayList
-import java.util.Date
 import kotlinx.coroutines.launch
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
@@ -50,6 +48,8 @@ import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.SUCCESS
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.WARNING
 import za.co.xisystems.itis_rrm.utils.hide
 import za.co.xisystems.itis_rrm.utils.show
+import java.util.ArrayList
+import java.util.Date
 
 /**
  * Created by Francis Mahlava on 2019/10/18.
@@ -60,6 +60,7 @@ class CreateFragment : BaseFragment(), OfflineListener, KodeinAware {
 
     override val kodein by kodein()
     private lateinit var createViewModel: CreateViewModel
+    private var jobPk: Long = -1L
     private val factory: CreateViewModelFactory by instance()
     private val estimatesToRemoveFromDb: ArrayList<JobItemEstimateDTO> =
         ArrayList()
@@ -195,6 +196,9 @@ class CreateFragment : BaseFragment(), OfflineListener, KodeinAware {
                 descri
             )
             createViewModel.backupJob(newJob!!)
+            createViewModel.jobId.observe(viewLifecycleOwner, {
+                Timber.d("Job PK: $it")
+            })
         }
     }
 
@@ -281,7 +285,7 @@ class CreateFragment : BaseFragment(), OfflineListener, KodeinAware {
                 createViewModel.setJobToEdit(it.jobId)
 
                 val navDirection = CreateFragmentDirections.actionNavCreateToAddProjectFragment(
-                    it.projectId,
+                    it.projectId!!,
                     it.jobId
                 )
                 Navigation.findNavController(view).navigate(navDirection)
@@ -393,6 +397,7 @@ class CreateFragment : BaseFragment(), OfflineListener, KodeinAware {
      */
     override fun onDestroyView() {
         super.onDestroyView()
+
         // prevent viewBinding from leaking
         _ui = null
     }

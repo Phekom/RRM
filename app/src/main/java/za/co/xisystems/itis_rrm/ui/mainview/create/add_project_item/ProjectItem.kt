@@ -1,3 +1,9 @@
+/*
+ * Updated by Shaun McDonald on 2021/02/04
+ * Last modified on 2021/02/04 12:13 PM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.ui.mainview.create.add_project_item
 
 import android.app.AlertDialog.Builder
@@ -53,7 +59,7 @@ open class ProjectItem(
                     ("$qty  *   R $tenderRate = " + JobUtils.formatCost(lineRate))
                 subTextView.visibility = View.GONE
             } else {
-                costTextView.text = "Incomplete Estimate..."
+                costTextView.text = viewHolder.itemView.context.getString(R.string.incomplete_estimate)
                 subTextView.visibility = View.VISIBLE
             }
 
@@ -85,9 +91,15 @@ open class ProjectItem(
             createViewModel.contractId.value = contractId
             createViewModel.projectItemTemp.value = item
         }
+        val navDirections =
+            AddProjectFragmentDirections
+                .actionAddProjectFragmentToEstimatePhotoFragment(
+                    newJob?.jobId,
+                    getJobItemEstimate(itemId = item.itemId)?.estimateId
+                )
 
         Navigation.findNavController(view)
-            .navigate(R.id.action_addProjectFragment_to_estimatePhotoFragment)
+            .navigate(navDirections)
     }
 
     private fun bindItem(viewHolder: GroupieViewHolder) {

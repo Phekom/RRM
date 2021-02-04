@@ -1,6 +1,6 @@
 /*
- * Updated by Shaun McDonald on 2021/01/25
- * Last modified on 2021/01/25 6:30 PM
+ * Updated by Shaun McDonald on 2021/02/04
+ * Last modified on 2021/02/04 11:39 AM
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  */
 
@@ -532,7 +532,6 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
             )
             // Launch Dialog
         } else {
-            // requireMutex
 
             // unlock mutex
             uiScope.launch(uiScope.coroutineContext) {
@@ -580,6 +579,7 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
                             }
                         }
                     )
+                    ui.imageCollectionView.visibility = View.VISIBLE
 
                     Timber.d("*^* PhotoBug *^* Photos in gallery: ${ui.imageCollectionView.childCount}")
                 } catch (t: Throwable) {
@@ -587,7 +587,6 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
                     Timber.e(t, message)
                     crashGuard(this@CaptureWorkFragment.requireView(), XIError(t, message))
                 }
-
             }
         }
     }
@@ -701,8 +700,9 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
     }
 
     private fun popViewOnWorkSubmit(view: View) {
+        val navDirections = CaptureWorkFragmentDirections.actionCaptureWorkFragmentToNavWork()
         Navigation.findNavController(view)
-            .navigate(R.id.action_captureWorkFragment_to_nav_work)
+            .navigate(navDirections)
     }
 
     private fun submitAllOutStandingEstimates(estimates: ArrayList<JobItemEstimateDTO>?) {

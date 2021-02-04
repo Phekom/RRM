@@ -1,6 +1,6 @@
 /*
- * Updated by Shaun McDonald on 2021/01/25
- * Last modified on 2021/01/25 6:30 PM
+ * Updated by Shaun McDonald on 2021/02/04
+ * Last modified on 2021/02/04 11:21 AM
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  */
 
@@ -16,8 +16,6 @@ import com.google.gson.Gson
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
-import java.io.IOException
-import java.util.ArrayList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -46,6 +44,8 @@ import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.PhotoUtil.getPhotoPathFromExternalDirectory
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
+import java.io.IOException
+import java.util.ArrayList
 
 /**
  * Created by Francis Mahlava on 2019/11/28.
@@ -104,7 +104,7 @@ class JobCreationDataRepository(
     fun saveNewJob(newJob: JobDTO?) {
         Coroutines.io {
             if (newJob != null && !appDb.getJobDao().checkIfJobExist(newJob.jobId)) {
-                appDb.getJobDao().insertOrUpdateJobs(newJob)
+                appDb.getJobDao().insertOrUpdateJob(newJob)
             }
         }
     }
@@ -580,8 +580,8 @@ class JobCreationDataRepository(
     }
 
     suspend fun backupJob(job: JobDTO) {
-        withContext(Dispatchers.IO) {
-            appDb.getJobDao().insertOrUpdateJobs(job)
+        return withContext(Dispatchers.IO) {
+            appDb.getJobDao().insertOrUpdateJob(job)
         }
     }
 

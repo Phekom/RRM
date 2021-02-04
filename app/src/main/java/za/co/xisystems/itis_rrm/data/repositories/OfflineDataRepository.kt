@@ -1,6 +1,6 @@
 /*
- * Updated by Shaun McDonald on 2021/01/25
- * Last modified on 2021/01/25 6:30 PM
+ * Updated by Shaun McDonald on 2021/02/04
+ * Last modified on 2021/02/04 11:27 AM
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  */
 
@@ -13,8 +13,6 @@ import android.os.Environment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.room.Transaction
-import java.io.File
-import java.util.regex.Pattern
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -61,6 +59,8 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
+import java.io.File
+import java.util.regex.Pattern
 
 private val jobDataController: JobDataController? = null
 
@@ -612,7 +612,7 @@ class OfflineDataRepository(
                     }
                     job.perfitemGroupId = DataConversion.toBigEndian(job.perfitemGroupId)
                     job.projectVoId = DataConversion.toBigEndian(job.projectVoId)
-                    appDb.getJobDao().insertOrUpdateJobs(job)
+                    appDb.getJobDao().insertOrUpdateJob(job)
                 }
 
                 saveJobSections(job)

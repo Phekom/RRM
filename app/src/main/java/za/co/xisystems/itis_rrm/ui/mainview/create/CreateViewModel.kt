@@ -1,6 +1,6 @@
 /*
- * Updated by Shaun McDonald on 2021/01/25
- * Last modified on 2021/01/25 6:30 PM
+ * Updated by Shaun McDonald on 2021/02/04
+ * Last modified on 2021/02/04 11:31 AM
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  */
 
@@ -11,8 +11,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import java.util.ArrayList
-import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
@@ -35,6 +33,8 @@ import za.co.xisystems.itis_rrm.ui.mainview.create.select_item.SectionProj_Item
 import za.co.xisystems.itis_rrm.utils.JobUtils
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
 import za.co.xisystems.itis_rrm.utils.uncaughtExceptionHandler
+import java.util.ArrayList
+import kotlin.coroutines.CoroutineContext
 
 /**
  * Created by Francis Mahlava on 2019/10/18.
@@ -66,6 +66,7 @@ class CreateViewModel(
     val sectionProjectItem = MutableLiveData<SectionProj_Item>()
     val jobItem = MutableLiveData<JobDTO?>()
     val projectItemTemp = MutableLiveData<ItemDTOTemp>()
+    val jobId: MutableLiveData<String?> = MutableLiveData()
 
     init {
         ioContext = Job(superJob) + Dispatchers.IO + uncaughtExceptionHandler
@@ -282,9 +283,11 @@ class CreateViewModel(
         }
     }
 
-    suspend fun backupJob(job: JobDTO) = viewModelScope.launch(mainContext) {
+    suspend fun backupJob(job: JobDTO) = viewModelScope.launch(ioContext) {
         jobCreationDataRepository.backupJob(job)
+        withContext(mainContext) {
         setJobToEdit(job.jobId)
+    }
     }
 
     /**

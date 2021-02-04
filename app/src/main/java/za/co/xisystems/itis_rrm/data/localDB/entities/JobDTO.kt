@@ -1,6 +1,6 @@
 /*
- * Updated by Shaun McDonald on 2021/22/20
- * Last modified on 2021/01/20 12:55 PM
+ * Updated by Shaun McDonald on 2021/02/04
+ * Last modified on 2021/02/04 11:19 AM
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  */
 
@@ -10,6 +10,7 @@ import android.os.Parcel
 import android.os.Parcelable
 import android.os.Parcelable.Creator
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import java.io.Serializable
@@ -20,12 +21,16 @@ import java.io.Serializable
 
 const val JOB_TABLE = "JOB_TABLE"
 
-@Entity(tableName = JOB_TABLE)
+@Entity(
+    indices = [Index(value = ["projectId", "jobId"], unique = true, name = "idxjobIdByProject")],
+    tableName = JOB_TABLE
+)
+
 class JobDTO(
     @SerializedName("ActId")
     val actId: Int,
-    @SerializedName("JobId")
     @PrimaryKey
+    @SerializedName("JobId")
     var jobId: String,
     @SerializedName("ContractVoId")
     var contractVoId: String?,
