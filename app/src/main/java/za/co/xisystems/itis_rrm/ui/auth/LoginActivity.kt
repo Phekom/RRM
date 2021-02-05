@@ -16,6 +16,7 @@ import com.toxicbakery.bcrypt.Bcrypt
 import kotlinx.android.synthetic.main.activity_login.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.kodein
 import org.kodein.di.generic.instance
@@ -238,17 +239,21 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
         gotoMainActivity()
     }
 
-    private fun validatePin() {
+    private fun validatePin() = lifecycleScope.launch(Dispatchers.Default) {
 
         if (Bcrypt.verify(pinInput, hash!!)) {
 
             lifecycleScope.launch(Dispatchers.IO) {
                 PhotoUtil.cleanupDevice()
             }
-            gotoMainActivity()
+            withContext(Dispatchers.Main.immediate) {
+                gotoMainActivity()
+            }
         } else {
-            reset()
-            showMessage()
+            withContext(Dispatchers.Main.immediate) {
+                reset()
+                showMessage()
+            }
         }
     }
 

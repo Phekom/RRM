@@ -350,7 +350,7 @@ class WorkDataRepository(
         }
     }
 
-    suspend fun getJobItemEstimateForEstimateId(estimateId: String): LiveData<JobItemEstimateDTO> {
+    suspend fun getJobItemEstimateForEstimateId(estimateId: String): JobItemEstimateDTO {
         return withContext(Dispatchers.IO) {
             appDb.getJobItemEstimateDao().getJobItemEstimateForEstimateId(estimateId)
         }

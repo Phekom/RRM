@@ -31,7 +31,10 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.whenStarted
 import androidx.navigation.Navigation
+import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
@@ -124,6 +127,27 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
     private var estimateSize = 0
     private var estimateCount = 0
     private var errorState = false
+    private var selectedJobId: String = ""
+
+    init {
+        lifecycleScope.launch {
+            whenStarted {
+                workViewModel = activity?.run {
+                    ViewModelProvider(this, factory).get(WorkViewModel::class.java)
+                } ?: throw Exception("Invalid Activity")
+            }
+            // CONTINUE HERE !!
+            val args: CaptureWorkFragmentArgs by navArgs()
+            args.jobId?.let {
+                selectedJobId = it
+                workViewModel.setWorkItemJob(it)
+            }
+            args.estimateId?.let {
+                workViewModel.setWorkItem(it)
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         lifecycle.addObserver(uiScope)
@@ -159,10 +183,6 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
-        workViewModel = activity?.run {
-            ViewModelProvider(this, factory).get(WorkViewModel::class.java)
-        } ?: throw Exception("Invalid Activity")
-
         uiScope.launch(uiScope.coroutineContext) {
 
             val user = workViewModel.user.await()
@@ -171,13 +191,17 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
             })
 
             workViewModel.workItemJob.observe(viewLifecycleOwner, { estimateJob ->
-                itemEstimateJob = estimateJob
+                estimateJob?.let {
+                    itemEstimateJob = it
+                }
             })
 
             workViewModel.workItem.observe(viewLifecycleOwner, { estimate ->
-                itemEstimate = estimate
+                estimate?.let {
+                    itemEstimate = it
+                    getWorkItems(itemEstimate, itemEstimateJob)
+                }
 
-                getWorkItems(itemEstimate, itemEstimateJob)
             })
             workViewModel.historicalWorks.observe(viewLifecycleOwner, {
                 it?.let { populateHistoricalWorkEstimate(it) }
@@ -258,8 +282,8 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
     }
 
     private fun uploadEstimateWorksItem(estimatePhotos: ArrayList<JobEstimateWorksPhotoDTO>, estimateItem: JobItemEstimateDTO?) {
-        if (ServiceUtil.isNetworkAvailable(requireActivity().applicationContext)) { //  Lets Send to Service
-
+        if (ServiceUtil.isNetworkAvailable(requireActivity().applicationContext)) {
+            //  Lets Send to Service
             itemEstiWorks.jobEstimateWorksPhotos = estimatePhotos
             itemEstiWorks.estimateId = estimateItem?.estimateId
 
@@ -487,7 +511,8 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
     }
 
     private fun processAndSetImage(itemEstiWorks: JobEstimateWorksDTO) {
-        try { //  Location of picture
+        try {
+            //  Location of picture
             val currentLocation: LocationModel? = this.getCurrentLocation()
             Timber.d("$currentLocation")
             when (currentLocation != null) {
@@ -700,9 +725,8 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
     }
 
     private fun popViewOnWorkSubmit(view: View) {
-        val navDirections = CaptureWorkFragmentDirections.actionCaptureWorkFragmentToNavWork()
-        Navigation.findNavController(view)
-            .navigate(navDirections)
+        val navDirections = CaptureWorkFragmentDirections.actionCaptureWorkFragmentToNavWork(selectedJobId)
+        Navigation.findNavController(view).navigate(navDirections)
     }
 
     private fun submitAllOutStandingEstimates(estimates: ArrayList<JobItemEstimateDTO>?) {
@@ -751,22 +775,23 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
             workViewModel.workflowState.postValue(XIProgress(true))
             withContext(uiScope.coroutineContext) {
                 for (jobEstimate in estimates) {
-                    val jobItemEstimate = workViewModel.getJobItemEstimateForEstimateId(jobEstimate.estimateId)
-                    jobItemEstimate.observe(viewLifecycleOwner, { jobItEstmt ->
-                        jobItEstmt?.let {
-                            Coroutines.main {
-                                withContext(uiScope.coroutineContext) {
-                                    moveJobItemEstimateToNextWorkflow(
-                                        WorkflowDirection.NEXT,
-                                        it
-                                    )
-                                }
+
+                    Coroutines.main {
+                        val jobItemEstimate = workViewModel.getJobItemEstimateForEstimateId(jobEstimate.estimateId)
+                        if (jobItemEstimate.actId == ActivityIdConstants.ESTIMATE_WORK_PART_COMPLETE) {
+                            withContext(uiScope.coroutineContext) {
+                                moveJobItemEstimateToNextWorkflow(
+                                    WorkflowDirection.NEXT,
+                                    jobEstimate
+                                )
                             }
                         }
-                    })
+
+                    }
                 }
             }
         }
+
         jobSubmission.join()
         handleJobSubmission(XISuccess("WORK_COMPLETE"))
     }
@@ -842,7 +867,7 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
                     startActivity(home)
                 }
             },
-            Constants.ONE_SECOND
+            Constants.TWO_SECONDS
         )
     }
 

@@ -15,9 +15,9 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.whenResumed
 import androidx.lifecycle.whenStarted
 import com.skydoves.progressview.ProgressView
-import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -49,6 +49,7 @@ import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.BOTTOM
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.ERROR
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.INFO
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.SUCCESS
+import kotlin.coroutines.cancellation.CancellationException
 
 class HomeFragment : BaseFragment(), KodeinAware {
 
@@ -83,26 +84,34 @@ class HomeFragment : BaseFragment(), KodeinAware {
                 lifecycle.addObserver(uiScope)
                 checkConnectivity()
 
-                if (networkEnabled) {
-                    uiScope.launch(uiScope.coroutineContext) {
-                        try {
+                homeDiagnostic()
 
-                            ui.group2Loading.visibility = View.VISIBLE
-                            acquireUser()
-                            getOfflineSectionItems()
-                        } catch (t: Throwable) {
-                            Timber.e(t, "Failed to fetch Section Items.")
-                            val xiErr = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
-                            crashGuard(this@HomeFragment.requireView(), xiErr, refreshAction = { retrySections() })
-                        } finally {
-                            ui.group2Loading.visibility = View.GONE
-                        }
-                    }
-                } else {
-                    noConnectionWarning()
-                    showProgress()
+            }
+            whenResumed {
+                homeDiagnostic()
+            }
+        }
+    }
+
+    private fun homeDiagnostic() {
+        if (networkEnabled) {
+            uiScope.launch(uiScope.coroutineContext) {
+                try {
+
+                    ui.group2Loading.visibility = View.VISIBLE
+                    acquireUser()
+                    getOfflineSectionItems()
+                } catch (t: Throwable) {
+                    Timber.e(t, "Failed to fetch Section Items.")
+                    val xiErr = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
+                    crashGuard(this@HomeFragment.requireView(), xiErr, refreshAction = { retrySections() })
+                } finally {
+                    ui.group2Loading.visibility = View.GONE
                 }
             }
+        } else {
+            noConnectionWarning()
+            showProgress()
         }
     }
 

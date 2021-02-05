@@ -237,7 +237,7 @@ class OfflineDataRepository(
         actId: Int
     ): LiveData<List<JobItemMeasureDTO>> {
         return withContext(Dispatchers.IO) {
-            appDb.getJobItemMeasureDao().getJobMeasureItemsForJobId(jobID!!, actId)
+            appDb.getJobItemMeasureDao().getJobItemMeasuresByJobIdAndActId(jobID!!, actId)
         }
     }
 

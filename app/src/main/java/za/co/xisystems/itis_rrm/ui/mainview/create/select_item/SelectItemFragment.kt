@@ -258,7 +258,11 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
             createViewModel.setSectionProjectItem(item)
         }
         val navDirections = SelectItemFragmentDirections
-            .actionSelectItemFragmentToAddProjectFragment(editJob.projectId, editJob.jobId)
+            .actionSelectItemFragmentToAddProjectFragment(
+                jobId = editJob.jobId,
+                projectId = editJob.projectId
+            )
+
         Navigation.findNavController(view)
             .navigate(navDirections)
     }

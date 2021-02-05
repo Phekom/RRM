@@ -108,13 +108,13 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
     }
 
     private fun initViewModels() {
-                createViewModel = activity?.run {
-                    ViewModelProvider(this, createFactory).get(CreateViewModel::class.java)
-                } ?: throw Exception("Invalid Activity")
+        createViewModel = activity?.run {
+            ViewModelProvider(this, createFactory).get(CreateViewModel::class.java)
+        } ?: throw Exception("Invalid Activity")
 
-                unsubmittedViewModel = activity?.run {
-                    ViewModelProvider(this, unsubFactory).get(UnSubmittedViewModel::class.java)
-                } ?: throw Exception("Invalid Activity")
+        unsubmittedViewModel = activity?.run {
+            ViewModelProvider(this, unsubFactory).get(UnSubmittedViewModel::class.java)
+        } ?: throw Exception("Invalid Activity")
     }
 
     private val touchCallback: SwipeTouchCallback by lazy {
@@ -272,8 +272,8 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
         if (savedInstanceState != null) {
             onRestoreInstanceState(savedInstanceState)
         } else {
-        (activity as MainActivity).supportActionBar?.title = getString(R.string.new_job)
-        newJobItemEstimatesList = ArrayList<JobItemEstimateDTO>()
+            (activity as MainActivity).supportActionBar?.title = getString(R.string.new_job)
+            newJobItemEstimatesList = ArrayList<JobItemEstimateDTO>()
         }
     }
 
@@ -318,12 +318,12 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
             onRestoreInstanceState(savedInstanceState)
         } else {
             // Generic new job layout
-        ui.lastLin.visibility = View.GONE
-        ui.totalCostTextView.visibility = View.GONE
-        ui.dueDateTextView.text = DateUtil.toStringReadable(DateUtil.currentDateTime)
-        ui.startDateTextView.text = DateUtil.toStringReadable(DateUtil.currentDateTime)
-        startDate = DateUtil.currentDateTime!!
-        dueDate = DateUtil.currentDateTime!!
+            ui.lastLin.visibility = View.GONE
+            ui.totalCostTextView.visibility = View.GONE
+            ui.dueDateTextView.text = DateUtil.toStringReadable(DateUtil.currentDateTime)
+            ui.startDateTextView.text = DateUtil.toStringReadable(DateUtil.currentDateTime)
+            startDate = DateUtil.currentDateTime!!
+            dueDate = DateUtil.currentDateTime!!
         }
 
         Coroutines.main {
@@ -417,7 +417,9 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
 
     private fun openSelectItemFragment(view: View) {
         val navDirection =
-            AddProjectFragmentDirections.actionAddProjectFragmentToSelectItemFragment(projectID)
+            AddProjectFragmentDirections.actionAddProjectFragmentToSelectItemFragment(
+                projectID
+            )
         Navigation.findNavController(view)
             .navigate(navDirection)
     }
@@ -573,8 +575,6 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
 
     private fun setDueDateTextView(year: Int, month: Int, dayOfMonth: Int) {
         ui.dueDateTextView.text = DateUtil.toStringReadable(year, month, dayOfMonth)
-        Timber.d("")
-        // dueDate = DateUtil.CalendarItemsToDate(year,month,dayOfMonth)!!
         ui.dueDateCardView.startAnimation(bounce_500)
         val calendar = Calendar.getInstance()
         calendar[year, month] = dayOfMonth

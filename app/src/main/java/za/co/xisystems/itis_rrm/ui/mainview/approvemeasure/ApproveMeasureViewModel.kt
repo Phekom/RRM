@@ -12,7 +12,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import androidx.lifecycle.viewModelScope
-import java.util.concurrent.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
@@ -31,11 +30,11 @@ import za.co.xisystems.itis_rrm.data.repositories.MeasureApprovalDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.extensions.getDistinct
 import za.co.xisystems.itis_rrm.ui.custom.MeasureGalleryUIState
-import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.approveMeasure_Item.ApproveMeasureItem
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
+import java.util.concurrent.CancellationException
 
 /**
  * Created by Francis Mahlava on 03,October,2019
@@ -54,7 +53,7 @@ class ApproveMeasureViewModel(
         measureApprovalDataRepository.getUser()
     }
 
-    val measureApprovalItem: MutableLiveData<ApproveMeasureItem> = MutableLiveData()
+    val jobIdForApproval: MutableLiveData<String> = MutableLiveData()
 
     var measureGalleryUIState: MutableLiveData<XIResult<MeasureGalleryUIState>> = MutableLiveData()
 
@@ -83,8 +82,8 @@ class ApproveMeasureViewModel(
         }
     }
 
-    fun setApproveMeasureItem(measureapproval: ApproveMeasureItem) {
-        measureApprovalItem.postValue(measureapproval)
+    fun setJobIdForApproval(jobId: String) {
+        jobIdForApproval.value = jobId
     }
 
     suspend fun getJobApproveMeasureForActivityId(activityId: Int): LiveData<List<JobItemMeasureDTO>> {

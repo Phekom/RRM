@@ -39,7 +39,6 @@ import androidx.lifecycle.whenStarted
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.navArgs
 import com.airbnb.lottie.LottieAnimationView
-import icepick.Icepick
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
@@ -208,14 +207,14 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
         }
     }
 
-    private suspend fun readNavArgs() {
+    private fun readNavArgs() = uiScope.launch(uiScope.coroutineContext){
         val args: EstimatePhotoFragmentArgs? by navArgs()
         if (args != null) {
-            args!!.jobId?.let {
-                createViewModel.setJobToEdit(it)
+            if(!args?.estimateId.isNullOrEmpty()) {
+                estimateId = args!!.estimateId
             }
-            args!!.estimateId?.let {
-                estimateId = it
+            if(!args?.jobId.isNullOrEmpty()) {
+                createViewModel.setJobToEdit(args?.jobId!!)
             }
         }
     }
@@ -318,7 +317,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        Icepick.restoreInstanceState(this, savedInstanceState)
+
         viewLifecycleOwner.lifecycle.addObserver(uiScope)
 
         ui.group13Loading.visibility = View.GONE
@@ -340,6 +339,9 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
 
         ui.valueEditText.doOnTextChanged { _, _, _, _ ->
             setCost()
+        }
+        if(savedInstanceState != null){
+            onRestoreInstanceState(savedInstanceState)
         }
 
         setValueEditText(getStoredValue())
@@ -370,8 +372,8 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
                         createViewModel.setCurrentJob(null)
                         createViewModel.jobItem.value = null
                         createViewModel.newJob.value = null
-                        fragmentManager?.beginTransaction()?.remove(this)?.commit()
-                        fragmentManager?.beginTransaction()?.detach(this)?.commit()
+                        activity?.supportFragmentManager?.beginTransaction()?.remove(this)?.commit()
+                        activity?.supportFragmentManager?.beginTransaction()?.detach(this)?.commit()
                         val navDirections = EstimatePhotoFragmentDirections.actionEstimatePhotoFragmentToNavCreate()
                         Navigation.findNavController(view)
                             .navigate(navDirections)
@@ -437,12 +439,14 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
         viewLifecycleOwner.lifecycle.coroutineScope.coroutineContext.cancel(
             CancellationException("updating estimates ...")
         )
-        val navDirections = EstimatePhotoFragmentDirections.actionEstimatePhotoFragmentToAddProjectFragment(
-            newJob!!.projectId,
-            newJob!!.jobId
-        )
-        Navigation.findNavController(view)
-            .navigate(navDirections)
+        newJob?.let {
+            val navDirections = EstimatePhotoFragmentDirections
+                .actionEstimatePhotoFragmentToAddProjectFragment(
+                    jobId = it.jobId,
+                    projectId = it.projectId,
+                )
+            Navigation.findNavController(view).navigate(navDirections)
+        }
     }
 
     private fun takePhoto(picType: PhotoType) {
@@ -991,6 +995,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
 
     override fun onResume() {
         super.onResume()
+        readNavArgs()
         setCost()
     }
 

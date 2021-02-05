@@ -286,8 +286,8 @@ class CreateViewModel(
     suspend fun backupJob(job: JobDTO) = viewModelScope.launch(ioContext) {
         jobCreationDataRepository.backupJob(job)
         withContext(mainContext) {
-        setJobToEdit(job.jobId)
-    }
+            setJobToEdit(job.jobId)
+        }
     }
 
     /**
@@ -302,12 +302,10 @@ class CreateViewModel(
         superJob.cancelChildren()
     }
 
-    suspend fun setJobToEdit(jobId: String) {
-        withContext(Dispatchers.IO) {
-            val fetchedJob = jobCreationDataRepository.getUpdatedJob(jobId)
-            withContext(Dispatchers.Main) {
-                currentJob.value = fetchedJob
-            }
+    suspend fun setJobToEdit(jobId: String) = viewModelScope.launch(ioContext) {
+        val fetchedJob = jobCreationDataRepository.getUpdatedJob(jobId)
+        withContext(mainContext) {
+            currentJob.value = fetchedJob
         }
     }
 

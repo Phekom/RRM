@@ -158,7 +158,6 @@ class CreateFragment : BaseFragment(), OfflineListener, KodeinAware {
                     if (description.isEmpty()) {
                         sharpToast(message = "Please Enter Description", style = WARNING)
                         ui.descriptionEditText.startAnimation(shake)
-                        //                            return
                     } else {
                         activity?.hideKeyboard()
                         createNewJob()
@@ -234,7 +233,7 @@ class CreateFragment : BaseFragment(), OfflineListener, KodeinAware {
             issueDate = DateUtil.dateToString(today),
             startDate = DateUtil.dateToString(today),
             dueDate = DateUtil.dateToString(today),
-            approvalDate = null, // null,null,null,null,
+            approvalDate = null,
             jobItemEstimates = newJobItemEstimatesList,
             jobItemMeasures = jobItemMeasureArrayList,
             jobSections = jobItemSectionArrayList,
@@ -284,10 +283,11 @@ class CreateFragment : BaseFragment(), OfflineListener, KodeinAware {
                 createViewModel.backupJob(it)
                 createViewModel.setJobToEdit(it.jobId)
 
-                val navDirection = CreateFragmentDirections.actionNavCreateToAddProjectFragment(
-                    it.projectId!!,
-                    it.jobId
-                )
+                val navDirection = CreateFragmentDirections
+                    .actionNavCreateToAddProjectFragment(
+                        projectId = it.projectId!!,
+                        jobId = it.jobId
+                    )
                 Navigation.findNavController(view).navigate(navDirection)
             }
         }
