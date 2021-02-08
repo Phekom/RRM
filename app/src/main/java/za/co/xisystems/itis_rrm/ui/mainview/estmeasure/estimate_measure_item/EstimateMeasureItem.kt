@@ -1,9 +1,17 @@
+/*
+ * Updated by Shaun McDonald on 2021/02/08
+ * Last modified on 2021/02/08 3:35 PM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.ui.mainview.estmeasure.estimate_measure_item
 
 import android.annotation.SuppressLint
+import android.view.View
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import com.xwray.groupie.kotlinandroidextensions.Item
-import kotlinx.android.synthetic.main.single_listview_item.*
+import kotlinx.android.synthetic.main.item_header.*
+import kotlinx.android.synthetic.main.single_listview_item.appListID
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModel
@@ -27,19 +35,19 @@ class EstimateMeasureItem(
 
             Coroutines.main {
                 val jiNo = measureViewModel.getItemJobNo(jobItemEstimateDTO.jobId!!)
-                listview_item_textView.text = "JI:$jiNo - "
+                title.text = "JI:$jiNo"
                 val sectionId =
                     measureViewModel.getProjectSectionIdForJobId(jobItemEstimateDTO.jobId!!)
                 val route = measureViewModel.getRouteForProjectSectionId(sectionId)
                 val section = measureViewModel.getSectionForProjectSectionId(sectionId)
-                apv_section.text = "( $route ${"/0$section"} )"
                 val description = measureViewModel.getItemDescription(jobItemEstimateDTO.jobId!!)
-                apv_description.text = description
+                subtitle.text = "( $route ${"/0$section"} ) - $description"
             }
+            icon.visibility = View.GONE
         }
     }
 
-    override fun getLayout() = R.layout.single_listview_item
+    override fun getLayout() = R.layout.item_header
 }
 
 private fun GroupieViewHolder.getItemId(position: Int): Long {

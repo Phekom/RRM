@@ -1,3 +1,9 @@
+/*
+ * Updated by Shaun McDonald on 2021/02/08
+ * Last modified on 2021/02/08 10:45 AM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 @file:Suppress("KDocUnresolvedReference", "Annotator")
 
 package za.co.xisystems.itis_rrm.ui.mainview.home
@@ -82,12 +88,9 @@ class HomeFragment : BaseFragment(), KodeinAware {
         lifecycleScope.launch {
             whenStarted {
                 lifecycle.addObserver(uiScope)
-                checkConnectivity()
-
-                homeDiagnostic()
-
             }
             whenResumed {
+                checkConnectivity()
                 homeDiagnostic()
             }
         }
@@ -199,6 +202,27 @@ class HomeFragment : BaseFragment(), KodeinAware {
         return ui.root
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        // Configure progressView
+        initProgressViews()
+
+        // Configure SwipeToRefresh
+        initSwipeToRefresh()
+
+        ui.serverTextView.setOnClickListener {
+            ToastUtils().toastServerAddress(requireContext())
+        }
+
+        ui.imageView7.setOnClickListener {
+            ToastUtils().toastVersion(requireContext())
+        }
+
+        // Check if database is synched and prompt user if necessary
+        isAppDbSynched()
+    }
+
     /**
      * Called when the view previously created by [.onCreateView] has
      * been detached from the fragment.  The next time the fragment needs
@@ -224,22 +248,7 @@ class HomeFragment : BaseFragment(), KodeinAware {
             ViewModelProvider(this, factory).get(HomeViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
 
-        // Configure progressView
-        initProgressViews()
 
-        // Configure SwipeToRefresh
-        initSwipeToRefresh()
-
-        ui.serverTextView.setOnClickListener {
-            ToastUtils().toastServerAddress(requireContext())
-        }
-
-        ui.imageView7.setOnClickListener {
-            ToastUtils().toastVersion(requireContext())
-        }
-
-        // Check if database is synched and prompt user if necessary
-        isAppDbSynched()
     }
 
     private fun initProgressViews() {
@@ -273,7 +282,6 @@ class HomeFragment : BaseFragment(), KodeinAware {
         }
     }
 
-    @ExperimentalStdlibApi
     private fun initSwipeToRefresh() {
         ui.itemsSwipeToRefresh.setProgressBackgroundColorSchemeColor(
             ContextCompat.getColor(
@@ -446,7 +454,7 @@ class HomeFragment : BaseFragment(), KodeinAware {
         }
     }
 
-    private fun bigSync() = uiScope.launch {
+    private fun bigSync() = uiScope.launch(uiScope.coroutineContext){
         if (networkEnabled) {
             try {
 
@@ -490,10 +498,6 @@ class HomeFragment : BaseFragment(), KodeinAware {
         syncDialog.show()
     }
 
-    companion object {
-        val TAG: String = HomeFragment::class.java.simpleName
-    }
-
     private fun servicesHealthCheck() = uiScope.launch(uiScope.coroutineContext) {
         if (!activity?.isFinishing!!) {
             try {
@@ -535,5 +539,9 @@ class HomeFragment : BaseFragment(), KodeinAware {
     private fun retryHealthCheck() {
         IndefiniteSnackbar.hide()
         servicesHealthCheck()
+    }
+
+    companion object {
+        val TAG: String = HomeFragment::class.java.simpleName
     }
 }

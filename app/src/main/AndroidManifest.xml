@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  * Updated by Shaun McDonald on 2021/01/25
-  * Last modified on 2021/01/25 6:30 PM
+  * Updated by Shaun McDonald on 2021/02/08
+  * Last modified on 2021/02/07 3:29 PM
   * Copyright (c) 2021.  XI Systems  - All rights reserved
   -->
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="za.co.xisystems.itis_rrm"
-    android:installLocation="internalOnly">
+    android:installLocation="auto">
     <!-- When adding a permission, also add to  "xisystemsms.itismaintenance.controllers.PermissionController"  if necessary. -->
 
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />

@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  * Updated by Shaun McDonald on 2021/02/08
+  * Last modified on 2021/02/08 3:05 PM
+  * Copyright (c) 2021.  XI Systems  - All rights reserved
+  -->
+
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -31,7 +37,7 @@
         <menu>
             <group android:checkableBehavior="single">
                 <item
-                    android:id="@+id/nav_approveJbs"
+                    android:id="@+id/nav_approveJobs"
                     app:actionViewClass="android.widget.TextView"
                     android:icon="@drawable/ic_approve"
                     android:title="@string/menu_approveJbs" />
@@ -43,7 +49,7 @@
                     android:title="@string/menu_estMeasure" />
 
                 <item
-                    android:id="@+id/nav_approvMeasure"
+                    android:id="@+id/nav_approveMeasure"
                     app:actionViewClass="android.widget.TextView"
                     android:icon="@drawable/ic_approve_measure"
                     android:title="@string/menu_approvMeasure" />

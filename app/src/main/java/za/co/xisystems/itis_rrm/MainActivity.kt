@@ -1,6 +1,6 @@
 /*
- * Updated by Shaun McDonald on 2021/02/04
- * Last modified on 2021/02/04 11:32 AM
+ * Updated by Shaun McDonald on 2021/02/08
+ * Last modified on 2021/02/08 3:05 PM
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  */
 
@@ -30,8 +30,8 @@ import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.GravityCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
-import androidx.navigation.Navigation
 import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI
 import com.google.android.material.navigation.NavigationView
 import com.raygun.raygun4android.RaygunClient
@@ -44,6 +44,7 @@ import timber.log.Timber
 import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.custom.notifications.ColorToast
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
+import za.co.xisystems.itis_rrm.databinding.ActivityMainBinding
 import za.co.xisystems.itis_rrm.ui.auth.LoginActivity
 import za.co.xisystems.itis_rrm.ui.mainview.activities.MainActivityViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.activities.MainActivityViewModelFactory
@@ -65,6 +66,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private lateinit var sharedViewModel: SharedViewModel
     private val shareFactory: SharedViewModelFactory by instance()
     private lateinit var navController: NavController
+    private lateinit var navHostFragment: NavHostFragment
+
     private var toggle: ActionBarDrawerToggle? = null
     private lateinit var navigationView: NavigationView
     private var badgeUnSubmitted: TextView? = null
@@ -80,21 +83,35 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private var progressBar: ProgressBar? = null
     private var uiScope = UiLifecycleScope()
 
+    private lateinit var ui: ActivityMainBinding
+
+    private val appBarConfiguration by lazy {
+        AppBarConfiguration(
+            setOf(
+                R.id.nav_home,
+            ),
+            ui.drawerLayout
+        )
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-        setSupportActionBar(toolbar)
+        ui = ActivityMainBinding.inflate(layoutInflater)
+        val view = ui.root
+        setContentView(view)
+        setSupportActionBar(ui.toolbar)
 
         // Because we're creating the NavHostFragment using FragmentContainerView, we must
         // retrieve the NavController directly from the NavHostFragment instead
-        val navHostFragment =
+        navHostFragment =
             supportFragmentManager.findFragmentById(R.id.nav_host_fragment_container) as NavHostFragment
         navController = navHostFragment.navController
 
-        navigationView = findViewById(R.id.nav_view)
+
+        navigationView = ui.navView
         NavigationUI.setupActionBarWithNavController(this, navController)
-        NavigationUI.setupWithNavController(navigationView, navController)
+        NavigationUI.setupWithNavController(ui.toolbar, navController, appBarConfiguration)
 
         RaygunClient.init(application)
         RaygunClient.enableCrashReporting()
@@ -142,9 +159,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         badgeWork =
             navigationView.menu.findItem(R.id.nav_work).actionView as TextView
         badgeApproveJobs =
-            navigationView.menu.findItem(R.id.nav_approveJbs).actionView as TextView
+            navigationView.menu.findItem(R.id.nav_approveJobs).actionView as TextView
         badgeApprovMeasure =
-            navigationView.menu.findItem(R.id.nav_approvMeasure).actionView as TextView
+            navigationView.menu.findItem(R.id.nav_approveMeasure).actionView as TextView
         badgeEstMeasure =
             navigationView.menu.findItem(R.id.nav_estMeasure).actionView as TextView
         progressBar = findViewById(R.id.progressbar)
@@ -169,6 +186,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         sharedViewModel.actionCaption.observe(this@MainActivity, {
             setCaption(it)
         })
+
+        if (savedInstanceState == null) {
+            navController.navigate(R.id.nav_home)
+        }
     }
 
     private fun displayPromptForEnablingGPS(
@@ -207,13 +228,15 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     override fun onBackPressed() {
-        if (drawer_layout.isDrawerOpen(GravityCompat.START)) {
-            drawer_layout.closeDrawer(GravityCompat.START)
+
+        if (ui.drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            ui.drawerLayout.closeDrawer(GravityCompat.START)
         } else {
             super.onBackPressed()
             toggle?.syncState()
         }
     }
+
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -268,8 +291,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     override fun onSupportNavigateUp(): Boolean {
-        val navController = Navigation.findNavController(this, R.id.nav_host_fragment_container)
-        return NavigationUI.navigateUp(navController, drawer_layout) // ?:  navController.navigateUp()
+        val navHostFragment =
+            supportFragmentManager.findFragmentById(R.id.nav_host_fragment_container) as NavHostFragment
+        val navController = navHostFragment.navController
+
+        return NavigationUI.navigateUp(navController, ui.drawerLayout) || super.onSupportNavigateUp()
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
@@ -302,12 +328,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 navController.navigate(R.id.nav_estMeasure)
                 toggle?.syncState()
             }
-            R.id.nav_approveJbs -> {
-                navController.navigate(R.id.nav_approveJbs)
+            R.id.nav_approveJobs -> {
+                navController.navigate(R.id.nav_approveJobs)
                 toggle?.syncState()
             }
-            R.id.nav_approvMeasure -> {
-                navController.navigate(R.id.nav_approvMeasure)
+            R.id.nav_approveMeasure -> {
+                navController.navigate(R.id.nav_approveMeasure)
                 toggle?.syncState()
             }
         }
@@ -366,13 +392,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             val navWork = menuNav.findItem(R.id.nav_work)
             navWork.isEnabled = false
 
-            val navApproveJobs = menuNav.findItem(R.id.nav_approveJbs)
+            val navApproveJobs = menuNav.findItem(R.id.nav_approveJobs)
             navApproveJobs.isEnabled = false
 
             val navEstMeasures = menuNav.findItem(R.id.nav_estMeasure)
             navEstMeasures.isEnabled = false
 
-            val navApproveMeasures = menuNav.findItem(R.id.nav_approvMeasure)
+            val navApproveMeasures = menuNav.findItem(R.id.nav_approveMeasure)
             navApproveMeasures.isEnabled = false
 
             val userRoles = mainActivityViewModel.getRoles()

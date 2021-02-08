@@ -1,6 +1,6 @@
 /*
- * Updated by Shaun McDonald on 2021/02/04
- * Last modified on 2021/02/04 11:27 AM
+ * Updated by Shaun McDonald on 2021/02/08
+ * Last modified on 2021/02/08 3:05 PM
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  */
 
@@ -203,7 +203,7 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
             }
             if (it.jobId != null) {
                 Coroutines.io {
-                    createViewModel.setJobToEdit(it.jobId!!)
+                    createViewModel.setJobToEdit(it.jobId)
                     withContext(Dispatchers.Main.immediate) {
                         uiUpdate()
                     }
@@ -601,23 +601,26 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
         Coroutines.main {
             createViewModel.deleteItemList(job!!.jobId)
             createViewModel.deleteJobFromList(job!!.jobId)
+            createViewModel.setCurrentJob(null)
         }
         resetContractAndProjectSelection(view)
+
     }
 
     private fun calculateTotalCost() {
-        ui.totalCostTextView.text = JobUtils.formatTotalCost(job)
+        Coroutines.main {
+            // ui.totalCostTextView.text = createViewModel.formatTotalCost(job!!.jobId, ActivityIdConstants.ESTIMATE_INCOMPLETE)
+            ui.totalCostTextView.text = JobUtils.formatTotalCost(job)
+        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putSerializable("jobId", job!!.jobId)
-        // outState.putSerializable("items", items as ArrayList<ItemDTOTemp>)
         super.onSaveInstanceState(outState)
     }
 
     private fun resetContractAndProjectSelection(view: View) {
-        val navDirections = AddProjectFragmentDirections.actionAddProjectFragmentToNavCreate()
-        Navigation.findNavController(view).navigate(navDirections)
+        Navigation.findNavController(view).popBackStack(R.id.nav_create, false)
         ui.infoTextView.text = null
     }
 
