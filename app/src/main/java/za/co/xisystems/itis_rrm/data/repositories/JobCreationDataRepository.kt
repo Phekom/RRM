@@ -1,6 +1,6 @@
 /*
- * Updated by Shaun McDonald on 2021/02/04
- * Last modified on 2021/02/04 11:21 AM
+ * Updated by Shaun McDonald on 2021/02/08
+ * Last modified on 2021/02/08 5:44 AM
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  */
 
@@ -38,6 +38,8 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.WorkflowJobDTO
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
 import za.co.xisystems.itis_rrm.data.network.responses.UploadImageResponse
+import za.co.xisystems.itis_rrm.domain.ContractSelector
+import za.co.xisystems.itis_rrm.domain.ProjectSelector
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
@@ -587,5 +589,17 @@ class JobCreationDataRepository(
 
     suspend fun checkIfJobSectionExistForJobAndProjectSection(jobId: String?, projectSectionId: String?): Boolean {
         return appDb.getJobSectionDao().checkIfJobSectionExistForJob(jobId, projectSectionId)
+    }
+
+    fun getContractSelectors(): List<ContractSelector> {
+        return appDb.getContractDao().getContractSelectors()
+    }
+
+    fun getProjectSelectors(contractId: String): List<ProjectSelector> {
+        return appDb.getProjectDao().getProjectSelectorsForContractId(contractId)
+    }
+
+    fun getValidEstimatesForJobId(jobId: String, actId: Int): List<JobItemEstimateDTO> {
+        return appDb.getJobItemEstimateDao().getJobEstimationItemsForJobId(jobId, actId).value.orEmpty()
     }
 }
