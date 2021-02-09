@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  * Updated by Shaun McDonald on 2021/02/08
+  * Last modified on 2021/02/07 10:53 PM
+  * Copyright (c) 2021.  XI Systems  - All rights reserved
+  -->
+
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -54,34 +60,21 @@
             android:fitsSystemWindows="false"
             app:menu="@menu/activity_main_drawer">
 
+
             <ImageView
                 android:id="@+id/itisImageView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
-                android:src="@drawable/itis_maintenance_header" />
+                android:src="@drawable/itis_maintenance_header"
+                android:contentDescription="@string/sanral_logo" />
         </com.google.android.material.navigation.NavigationView>
 
 
 
+
+
     </androidx.drawerlayout.widget.DrawerLayout>
-
-
-
-
-
-
-
-
-
-<!--    <com.google.android.material.floatingactionbutton.FloatingActionButton-->
-<!--        android:id="@+id/fab"-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:layout_gravity="bottom|end"-->
-<!--        android:layout_margin="@dimen/fab_margin"-->
-<!--        app:srcCompat="@android:drawable/ic_dialog_email" />-->
-
 
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

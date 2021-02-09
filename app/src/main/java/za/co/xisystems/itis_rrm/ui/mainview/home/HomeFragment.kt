@@ -1,3 +1,9 @@
+/*
+ * Updated by Shaun McDonald on 2021/02/08
+ * Last modified on 2021/02/08 10:45 AM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 @file:Suppress("KDocUnresolvedReference", "Annotator")
 
 package za.co.xisystems.itis_rrm.ui.mainview.home
@@ -17,7 +23,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenStarted
 import com.skydoves.progressview.ProgressView
-import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -49,6 +54,7 @@ import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.BOTTOM
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.ERROR
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.INFO
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.SUCCESS
+import kotlin.coroutines.cancellation.CancellationException
 
 class HomeFragment : BaseFragment(), KodeinAware {
 
@@ -81,28 +87,29 @@ class HomeFragment : BaseFragment(), KodeinAware {
         lifecycleScope.launch {
             whenStarted {
                 lifecycle.addObserver(uiScope)
-                checkConnectivity()
+            }
+        }
+    }
 
-                if (networkEnabled) {
-                    uiScope.launch(uiScope.coroutineContext) {
-                        try {
+    private fun homeDiagnostic() {
+        if (networkEnabled) {
+            uiScope.launch(uiScope.coroutineContext) {
+                try {
 
-                            ui.group2Loading.visibility = View.VISIBLE
-                            acquireUser()
-                            getOfflineSectionItems()
-                        } catch (t: Throwable) {
-                            Timber.e(t, "Failed to fetch Section Items.")
-                            val xiErr = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
-                            crashGuard(this@HomeFragment.requireView(), xiErr, refreshAction = { retrySections() })
-                        } finally {
-                            ui.group2Loading.visibility = View.GONE
-                        }
-                    }
-                } else {
-                    noConnectionWarning()
-                    showProgress()
+                    ui.group2Loading.visibility = View.VISIBLE
+                    acquireUser()
+                    getOfflineSectionItems()
+                } catch (t: Throwable) {
+                    Timber.e(t, "Failed to fetch Section Items.")
+                    val xiErr = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
+                    crashGuard(this@HomeFragment.requireView(), xiErr, refreshAction = { retrySections() })
+                } finally {
+                    ui.group2Loading.visibility = View.GONE
                 }
             }
+        } else {
+            noConnectionWarning()
+            showProgress()
         }
     }
 
@@ -122,6 +129,15 @@ class HomeFragment : BaseFragment(), KodeinAware {
                 ui.group2Loading.visibility = View.GONE
             }
         })
+    }
+
+    /**
+     * Called when the Fragment is visible to the user.  This is generally
+     * tied to [Activity.onStart] of the containing
+     * Activity's lifecycle.
+     */
+    override fun onStart() {
+        super.onStart()
     }
 
     private suspend fun acquireUser() {
@@ -165,6 +181,7 @@ class HomeFragment : BaseFragment(), KodeinAware {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         uiScope.onCreate()
+
         setHasOptionsMenu(true)
     }
 
@@ -190,6 +207,29 @@ class HomeFragment : BaseFragment(), KodeinAware {
         return ui.root
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        homeViewModel = ViewModelProvider(this, factory).get(HomeViewModel::class.java)
+        checkConnectivity()
+        homeDiagnostic()
+        // Configure progressView
+        initProgressViews()
+
+        // Configure SwipeToRefresh
+        initSwipeToRefresh()
+
+        ui.serverTextView.setOnClickListener {
+            ToastUtils().toastServerAddress(requireContext())
+        }
+
+        ui.imageView7.setOnClickListener {
+            ToastUtils().toastVersion(requireContext())
+        }
+
+        // Check if database is synched and prompt user if necessary
+        isAppDbSynched()
+    }
+
     /**
      * Called when the view previously created by [.onCreateView] has
      * been detached from the fragment.  The next time the fragment needs
@@ -211,26 +251,10 @@ class HomeFragment : BaseFragment(), KodeinAware {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
-        homeViewModel = activity?.run {
-            ViewModelProvider(this, factory).get(HomeViewModel::class.java)
-        } ?: throw Exception("Invalid Activity")
 
-        // Configure progressView
-        initProgressViews()
 
-        // Configure SwipeToRefresh
-        initSwipeToRefresh()
 
-        ui.serverTextView.setOnClickListener {
-            ToastUtils().toastServerAddress(requireContext())
-        }
 
-        ui.imageView7.setOnClickListener {
-            ToastUtils().toastVersion(requireContext())
-        }
-
-        // Check if database is synched and prompt user if necessary
-        isAppDbSynched()
     }
 
     private fun initProgressViews() {
@@ -264,7 +288,6 @@ class HomeFragment : BaseFragment(), KodeinAware {
         }
     }
 
-    @ExperimentalStdlibApi
     private fun initSwipeToRefresh() {
         ui.itemsSwipeToRefresh.setProgressBackgroundColorSchemeColor(
             ContextCompat.getColor(
@@ -437,7 +460,7 @@ class HomeFragment : BaseFragment(), KodeinAware {
         }
     }
 
-    private fun bigSync() = uiScope.launch {
+    private fun bigSync() = uiScope.launch(uiScope.coroutineContext){
         if (networkEnabled) {
             try {
 
@@ -481,10 +504,6 @@ class HomeFragment : BaseFragment(), KodeinAware {
         syncDialog.show()
     }
 
-    companion object {
-        val TAG: String = HomeFragment::class.java.simpleName
-    }
-
     private fun servicesHealthCheck() = uiScope.launch(uiScope.coroutineContext) {
         if (!activity?.isFinishing!!) {
             try {
@@ -526,5 +545,9 @@ class HomeFragment : BaseFragment(), KodeinAware {
     private fun retryHealthCheck() {
         IndefiniteSnackbar.hide()
         servicesHealthCheck()
+    }
+
+    companion object {
+        val TAG: String = HomeFragment::class.java.simpleName
     }
 }

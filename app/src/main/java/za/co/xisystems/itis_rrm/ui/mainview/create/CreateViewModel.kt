@@ -1,6 +1,6 @@
 /*
- * Updated by Shaun McDonald on 2021/02/04
- * Last modified on 2021/02/04 11:31 AM
+ * Updated by Shaun McDonald on 2021/02/08
+ * Last modified on 2021/02/08 5:24 AM
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  */
 
@@ -10,6 +10,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.liveData
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -29,6 +30,8 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectSectionDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.SectionItemDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.SectionPointDTO
 import za.co.xisystems.itis_rrm.data.repositories.JobCreationDataRepository
+import za.co.xisystems.itis_rrm.domain.ContractSelector
+import za.co.xisystems.itis_rrm.domain.ProjectSelector
 import za.co.xisystems.itis_rrm.ui.mainview.create.select_item.SectionProj_Item
 import za.co.xisystems.itis_rrm.utils.JobUtils
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
@@ -286,8 +289,8 @@ class CreateViewModel(
     suspend fun backupJob(job: JobDTO) = viewModelScope.launch(ioContext) {
         jobCreationDataRepository.backupJob(job)
         withContext(mainContext) {
-        setJobToEdit(job.jobId)
-    }
+            setJobToEdit(job.jobId)
+        }
     }
 
     /**
@@ -302,12 +305,10 @@ class CreateViewModel(
         superJob.cancelChildren()
     }
 
-    suspend fun setJobToEdit(jobId: String) {
-        withContext(Dispatchers.IO) {
-            val fetchedJob = jobCreationDataRepository.getUpdatedJob(jobId)
-            withContext(Dispatchers.Main) {
-                currentJob.value = fetchedJob
-            }
+    fun setJobToEdit(jobId: String) = viewModelScope.launch(ioContext) {
+        val fetchedJob = jobCreationDataRepository.getUpdatedJob(jobId)
+        withContext(mainContext) {
+            currentJob.value = fetchedJob
         }
     }
 
@@ -316,4 +317,24 @@ class CreateViewModel(
             jobCreationDataRepository.checkIfJobSectionExistForJobAndProjectSection(jobId, projectSectionId)
         }
     }
+
+    suspend fun getContractSelectors(): LiveData<List<ContractSelector>> = liveData {
+        withContext(ioContext) {
+            val data = jobCreationDataRepository.getContractSelectors()
+            withContext(mainContext) {
+                emit(data)
+            }
+        }
+    }
+
+    suspend fun getProjectSelectors(contractId: String): LiveData<List<ProjectSelector>> = liveData {
+        withContext(ioContext) {
+            val data = jobCreationDataRepository.getProjectSelectors(contractId)
+            withContext(mainContext) {
+                emit(data)
+            }
+        }
+    }
+
 }
+

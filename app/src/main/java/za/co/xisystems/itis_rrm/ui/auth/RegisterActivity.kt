@@ -1,3 +1,9 @@
+/*
+ * Updated by Shaun McDonald on 2021/02/08
+ * Last modified on 2021/02/07 4:41 PM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.ui.auth
 
 /**
@@ -35,7 +41,7 @@ import za.co.xisystems.itis_rrm.utils.toast
 
 private const val PERMISSION_REQUEST = 10
 
-class RegisterActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnable {
+class RegisterActivity : AppCompatActivity(), AuthListener, KodeinAware {
 
     override val kodein by kodein()
     private val factory: AuthViewModelFactory by instance()
@@ -185,7 +191,6 @@ class RegisterActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnabl
     override fun onSuccess(userDTO: UserDTO) {
         loading.hide()
         toast("You are logged in as ${userDTO.userName}")
-        this.run()
     }
 
     override fun onFailure(message: String) {
@@ -199,14 +204,10 @@ class RegisterActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnabl
     }
 
     override fun onSignOut(userDTO: UserDTO) {
-        finishAffinity()
+        userDTO.authd = false
     }
 
     companion object {
         val TAG: String = RegisterActivity::class.java.simpleName
-    }
-
-    override fun run() {
-        // Yagni
     }
 }

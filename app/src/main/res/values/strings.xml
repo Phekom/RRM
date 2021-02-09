@@ -217,4 +217,5 @@
     <string name="edit_quantity_button">Edit quantity button</string>
     <string name="rrm_placeholder_text">N.002–036–2017/1 DEMO</string>
     <string name="incomplete_estimate">Incomplete Estimate...</string>
+    <string name="engineering_section_title">Engineering Section</string>
 </resources>

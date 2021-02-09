@@ -1,6 +1,6 @@
 /*
- * Updated by Shaun McDonald on 2021/02/04
- * Last modified on 2021/02/04 11:19 AM
+ * Updated by Shaun McDonald on 2021/02/08
+ * Last modified on 2021/02/07 10:38 AM
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  */
 
@@ -13,6 +13,7 @@ import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
+import org.jetbrains.annotations.NotNull
 import java.io.Serializable
 
 /**
@@ -22,7 +23,7 @@ import java.io.Serializable
 const val JOB_TABLE = "JOB_TABLE"
 
 @Entity(
-    indices = [Index(value = ["projectId", "jobId"], unique = true, name = "idxjobIdByProject")],
+    indices = [Index(value = ["projectId", "jobId"], unique = true, name = "idxJobIdByProject")],
     tableName = JOB_TABLE
 )
 
@@ -30,6 +31,7 @@ class JobDTO(
     @SerializedName("ActId")
     val actId: Int,
     @PrimaryKey
+    @NotNull
     @SerializedName("JobId")
     var jobId: String,
     @SerializedName("ContractVoId")

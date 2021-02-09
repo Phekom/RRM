@@ -1,11 +1,14 @@
 /*
- * Updated by Shaun McDonald on 2021/01/25
- * Last modified on 2021/01/25 6:30 PM
+ * Updated by Shaun McDonald on 2021/02/08
+ * Last modified on 2021/02/07 12:13 AM
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  */
 
 package za.co.xisystems.itis_rrm.data.localDB.entities
 
+import android.os.Parcel
+import android.os.Parcelable
+import android.os.Parcelable.Creator
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
@@ -65,4 +68,76 @@ data class JobItemMeasureDTO(
     var deleted: Int = 0,
     var entityDescription: String?,
     var selectedItemUom: String?
-) : Serializable
+) : Serializable, Parcelable {
+    constructor(parcel: Parcel) : this(
+        id = parcel.readInt(),
+        actId = parcel.readInt(),
+        approvalDate = parcel.readString(),
+        cpa = parcel.readInt(),
+        endKm = parcel.readDouble(),
+        estimateId = parcel.readString(),
+        itemMeasureId = parcel.readString()!!,
+        jimNo = parcel.readString(),
+        jobDirectionId = parcel.readInt(),
+        jobId = parcel.readString(),
+        lineAmount = parcel.readDouble(),
+        lineRate = parcel.readDouble(),
+        measureDate = parcel.readString(),
+        measureGroupId = parcel.readString(),
+        jobItemMeasurePhotos = arrayListOf<JobItemMeasurePhotoDTO>().apply {
+            parcel.readList(this.toList(), JobItemMeasurePhotoDTO::class.java.classLoader)
+        },
+        projectItemId = parcel.readString(),
+        projectVoId = parcel.readString(),
+        qty = parcel.readDouble(),
+        recordSynchStateId = parcel.readInt(),
+        recordVersion = parcel.readInt(),
+        startKm = parcel.readDouble(),
+        trackRouteId = parcel.readString(),
+        deleted = parcel.readInt(),
+        entityDescription = parcel.readString(),
+        selectedItemUom = parcel.readString()
+    )
+
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeInt(id)
+        parcel.writeInt(actId)
+        parcel.writeString(approvalDate)
+        parcel.writeInt(cpa)
+        parcel.writeDouble(endKm)
+        parcel.writeString(estimateId)
+        parcel.writeString(itemMeasureId)
+        parcel.writeString(jimNo)
+        parcel.writeInt(jobDirectionId)
+        parcel.writeString(jobId)
+        parcel.writeDouble(lineAmount)
+        parcel.writeDouble(lineRate)
+        parcel.writeString(measureDate)
+        parcel.writeString(measureGroupId)
+        parcel.writeString(projectItemId)
+        parcel.writeString(projectVoId)
+        parcel.writeDouble(qty)
+        parcel.writeInt(recordSynchStateId)
+        parcel.writeInt(recordVersion)
+        parcel.writeDouble(startKm)
+        parcel.writeString(trackRouteId)
+        parcel.writeInt(deleted)
+        parcel.writeString(entityDescription)
+        parcel.writeString(selectedItemUom)
+        parcel.writeList(jobItemMeasurePhotos.toList())
+    }
+
+    override fun describeContents(): Int {
+        return 0
+    }
+
+    companion object CREATOR : Creator<JobItemMeasureDTO> {
+        override fun createFromParcel(parcel: Parcel): JobItemMeasureDTO {
+            return JobItemMeasureDTO(parcel)
+        }
+
+        override fun newArray(size: Int): Array<JobItemMeasureDTO?> {
+            return arrayOfNulls(size)
+        }
+    }
+}

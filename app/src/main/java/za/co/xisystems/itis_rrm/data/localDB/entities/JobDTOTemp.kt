@@ -1,6 +1,6 @@
 /*
- * Updated by Shaun McDonald on 2021/01/25
- * Last modified on 2021/01/25 6:30 PM
+ * Updated by Shaun McDonald on 2021/02/08
+ * Last modified on 2021/02/07 10:38 AM
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  */
 
@@ -12,9 +12,9 @@ import android.os.Parcelable.Creator
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
+import org.jetbrains.annotations.NotNull
 import java.io.Serializable
 import java.util.ArrayList
-import org.jetbrains.annotations.NotNull
 
 /**
  * Created by Francis Mahlava on 2019/11/21.
@@ -25,28 +25,28 @@ const val JOB_TABLE_TEMP = "JOB_TABLE_TEMP"
 @Entity(tableName = JOB_TABLE_TEMP)
 data class JobDTOTemp(
     @SerializedName("ActId")
-    var ActId: Int,
+    var actId: Int,
     @SerializedName("JobId")
     @PrimaryKey
     @NotNull
-    var JobId: String,
+    var jobId: String,
 
     @SerializedName("ContractVoId")
-    var ContractVoId: String?,
+    var contractVoId: String?,
     @SerializedName("ProjectId")
-    var ProjectId: String?,
+    var projectId: String?,
 
-    var SectionId: String?,
+    var sectionId: String?,
     @SerializedName("StartKm")
-    var StartKm: Double,
+    var startKm: Double,
     @SerializedName("EndKm")
-    var EndKm: Double,
+    var endKm: Double,
     @SerializedName("Descr")
-    var Descr: String?,
+    var descr: String?,
     @SerializedName("JiNo")
-    val JiNo: String?,
+    val jiNo: String?,
     @SerializedName("UserId")
-    val UserId: Int,
+    val userId: Int,
     @SerializedName("TrackRouteId")
     var TrackRouteId: String?,
     @SerializedName("Section")
@@ -118,16 +118,16 @@ data class JobDTOTemp(
 
 ) : Serializable, Parcelable {
     constructor(parcel: Parcel) : this(
-        ActId = parcel.readInt(),
-        JobId = parcel.readString()!!,
-        ContractVoId = parcel.readString(),
-        ProjectId = parcel.readString(),
-        SectionId = parcel.readString(),
-        StartKm = parcel.readDouble(),
-        EndKm = parcel.readDouble(),
-        Descr = parcel.readString(),
-        JiNo = parcel.readString(),
-        UserId = parcel.readInt(),
+        actId = parcel.readInt(),
+        jobId = parcel.readString()!!,
+        contractVoId = parcel.readString(),
+        projectId = parcel.readString(),
+        sectionId = parcel.readString(),
+        startKm = parcel.readDouble(),
+        endKm = parcel.readDouble(),
+        descr = parcel.readString(),
+        jiNo = parcel.readString(),
+        userId = parcel.readInt(),
         TrackRouteId = parcel.readString(),
         Section = parcel.readString(),
         Cpa = parcel.readInt(),
@@ -168,16 +168,16 @@ data class JobDTOTemp(
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeInt(ActId)
-        parcel.writeString(JobId)
-        parcel.writeString(ContractVoId)
-        parcel.writeString(ProjectId)
-        parcel.writeString(SectionId)
-        parcel.writeDouble(StartKm)
-        parcel.writeDouble(EndKm)
-        parcel.writeString(Descr)
-        parcel.writeString(JiNo)
-        parcel.writeInt(UserId)
+        parcel.writeInt(actId)
+        parcel.writeString(jobId)
+        parcel.writeString(contractVoId)
+        parcel.writeString(projectId)
+        parcel.writeString(sectionId)
+        parcel.writeDouble(startKm)
+        parcel.writeDouble(endKm)
+        parcel.writeString(descr)
+        parcel.writeString(jiNo)
+        parcel.writeInt(userId)
         parcel.writeString(TrackRouteId)
         parcel.writeString(Section)
         parcel.writeInt(Cpa)

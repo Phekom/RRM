@@ -1,6 +1,6 @@
 /*
- * Updated by Shaun McDonald on 2021/02/04
- * Last modified on 2021/02/04 11:27 AM
+ * Updated by Shaun McDonald on 2021/02/08
+ * Last modified on 2021/02/08 3:05 PM
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  */
 
@@ -108,13 +108,13 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
     }
 
     private fun initViewModels() {
-                createViewModel = activity?.run {
-                    ViewModelProvider(this, createFactory).get(CreateViewModel::class.java)
-                } ?: throw Exception("Invalid Activity")
+        createViewModel = activity?.run {
+            ViewModelProvider(this, createFactory).get(CreateViewModel::class.java)
+        } ?: throw Exception("Invalid Activity")
 
-                unsubmittedViewModel = activity?.run {
-                    ViewModelProvider(this, unsubFactory).get(UnSubmittedViewModel::class.java)
-                } ?: throw Exception("Invalid Activity")
+        unsubmittedViewModel = activity?.run {
+            ViewModelProvider(this, unsubFactory).get(UnSubmittedViewModel::class.java)
+        } ?: throw Exception("Invalid Activity")
     }
 
     private val touchCallback: SwipeTouchCallback by lazy {
@@ -203,7 +203,7 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
             }
             if (it.jobId != null) {
                 Coroutines.io {
-                    createViewModel.setJobToEdit(it.jobId!!)
+                    createViewModel.setJobToEdit(it.jobId)
                     withContext(Dispatchers.Main.immediate) {
                         uiUpdate()
                     }
@@ -272,8 +272,8 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
         if (savedInstanceState != null) {
             onRestoreInstanceState(savedInstanceState)
         } else {
-        (activity as MainActivity).supportActionBar?.title = getString(R.string.new_job)
-        newJobItemEstimatesList = ArrayList<JobItemEstimateDTO>()
+            (activity as MainActivity).supportActionBar?.title = getString(R.string.new_job)
+            newJobItemEstimatesList = ArrayList<JobItemEstimateDTO>()
         }
     }
 
@@ -312,18 +312,20 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
         return ui.root
     }
 
+
+
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         if (savedInstanceState != null) {
             onRestoreInstanceState(savedInstanceState)
         } else {
             // Generic new job layout
-        ui.lastLin.visibility = View.GONE
-        ui.totalCostTextView.visibility = View.GONE
-        ui.dueDateTextView.text = DateUtil.toStringReadable(DateUtil.currentDateTime)
-        ui.startDateTextView.text = DateUtil.toStringReadable(DateUtil.currentDateTime)
-        startDate = DateUtil.currentDateTime!!
-        dueDate = DateUtil.currentDateTime!!
+            ui.lastLin.visibility = View.GONE
+            ui.totalCostTextView.visibility = View.GONE
+            ui.dueDateTextView.text = DateUtil.toStringReadable(DateUtil.currentDateTime)
+            ui.startDateTextView.text = DateUtil.toStringReadable(DateUtil.currentDateTime)
+            startDate = DateUtil.currentDateTime!!
+            dueDate = DateUtil.currentDateTime!!
         }
 
         Coroutines.main {
@@ -417,7 +419,9 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
 
     private fun openSelectItemFragment(view: View) {
         val navDirection =
-            AddProjectFragmentDirections.actionAddProjectFragmentToSelectItemFragment(projectID)
+            AddProjectFragmentDirections.actionAddProjectFragmentToSelectItemFragment(
+                projectID
+            )
         Navigation.findNavController(view)
             .navigate(navDirection)
     }
@@ -573,8 +577,6 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
 
     private fun setDueDateTextView(year: Int, month: Int, dayOfMonth: Int) {
         ui.dueDateTextView.text = DateUtil.toStringReadable(year, month, dayOfMonth)
-        Timber.d("")
-        // dueDate = DateUtil.CalendarItemsToDate(year,month,dayOfMonth)!!
         ui.dueDateCardView.startAnimation(bounce_500)
         val calendar = Calendar.getInstance()
         calendar[year, month] = dayOfMonth
@@ -601,23 +603,26 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
         Coroutines.main {
             createViewModel.deleteItemList(job!!.jobId)
             createViewModel.deleteJobFromList(job!!.jobId)
+            createViewModel.setCurrentJob(null)
         }
         resetContractAndProjectSelection(view)
+
     }
 
     private fun calculateTotalCost() {
-        ui.totalCostTextView.text = JobUtils.formatTotalCost(job)
+        Coroutines.main {
+            // ui.totalCostTextView.text = createViewModel.formatTotalCost(job!!.jobId, ActivityIdConstants.ESTIMATE_INCOMPLETE)
+            ui.totalCostTextView.text = JobUtils.formatTotalCost(job)
+        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putSerializable("jobId", job!!.jobId)
-        // outState.putSerializable("items", items as ArrayList<ItemDTOTemp>)
         super.onSaveInstanceState(outState)
     }
 
     private fun resetContractAndProjectSelection(view: View) {
-        val navDirections = AddProjectFragmentDirections.actionAddProjectFragmentToNavCreate()
-        Navigation.findNavController(view).navigate(navDirections)
+        Navigation.findNavController(view).popBackStack(R.id.nav_create, false)
         ui.infoTextView.text = null
     }
 

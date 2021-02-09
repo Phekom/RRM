@@ -1,7 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
-  * Updated by Shaun McDonald on 2021/01/25
-  * Last modified on 2021/01/25 6:30 PM
+<?xml version="1.0" encoding="utf-8"?><!--
+  * Updated by Shaun McDonald on 2021/02/08
+  * Last modified on 2021/02/08 3:05 PM
   * Copyright (c) 2021.  XI Systems  - All rights reserved
   -->
 
@@ -9,27 +8,29 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_navigation"
-    app:startDestination="@+id/nav_home">
+    android:label="RRM Navigation"
+    app:startDestination="@id/nav_home">
 
     <fragment
         android:id="@+id/nav_home"
         android:name="za.co.xisystems.itis_rrm.ui.mainview.home.HomeFragment"
-        android:label="@string/menu_home"
-        tools:layout="@layout/fragment_home" />
+        tools:layout="@layout/fragment_home"
+        android:label="@string/menu_home" />
 
     <fragment
         android:id="@+id/nav_create"
         android:name="za.co.xisystems.itis_rrm.ui.mainview.create.CreateFragment"
-        android:label="@string/menu_create"
-        tools:layout="@layout/fragment_createjob">
+        tools:layout="@layout/fragment_createjob"
+        android:label="Job Creation">
         <action
             android:id="@+id/action_nav_create_to_addProjectFragment"
             app:destination="@id/addProjectFragment"
-            app:enterAnim="@anim/bounce_250"
-            app:launchSingleTop="false"
-            app:popEnterAnim="@anim/bounce_500"
-            app:popUpTo="@+id/nav_create"
-            app:popUpToInclusive="true" />
+            app:enterAnim="@anim/fragment_open_enter"
+            app:popEnterAnim="@anim/fragment_open_enter"
+            app:popUpTo="@id/nav_create"
+            app:popUpToInclusive="true"
+            app:exitAnim="@anim/fragment_open_exit"
+            app:popExitAnim="@anim/fragment_open_exit" />
     </fragment>
 
     <fragment
@@ -61,7 +62,16 @@
         <action
             android:id="@+id/action_nav_work_to_captureWorkFragment"
             app:destination="@id/captureWorkFragment"
-            app:popUpTo="@id/nav_work" />
+            app:popUpTo="@id/nav_work"
+            app:enterAnim="@anim/animate_in_out_enter"
+            app:exitAnim="@anim/animate_in_out_exit"
+            app:popEnterAnim="@anim/animate_fade_enter"
+            app:popExitAnim="@anim/animate_fade_exit"
+            app:popUpToInclusive="false" />
+        <argument
+            android:name="jobId"
+            app:argType="string"
+            app:nullable="true" />
     </fragment>
 
     <fragment
@@ -72,61 +82,63 @@
         <action
             android:id="@+id/action_nav_estMeasure_to_submitMeasureFragment"
             app:destination="@id/submitMeasureFragment"
-            app:popUpTo="@+id/nav_estMeasure" />
+            app:popUpTo="@id/nav_estMeasure"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:exitAnim="@anim/nav_default_exit_anim"
+            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
+            app:popExitAnim="@anim/nav_default_pop_exit_anim"
+            app:popUpToInclusive="false" />
     </fragment>
 
     <fragment
-        android:id="@+id/nav_approveJbs"
+        android:id="@+id/nav_approveJobs"
         android:name="za.co.xisystems.itis_rrm.ui.mainview.approvejobs.ApproveJobsFragment"
         android:label="@string/menu_approveJbs"
         tools:layout="@layout/fragment_approvejob">
         <action
             android:id="@+id/action_nav_approveJbs_to_jobInfoFragment"
             app:destination="@id/jobInfoFragment"
-            app:popUpTo="@+id/nav_approveJbs" />
+            app:popUpTo="@id/nav_approveJobs"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:exitAnim="@anim/nav_default_exit_anim"
+            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
+            app:popExitAnim="@anim/nav_default_pop_exit_anim"
+            app:popUpToInclusive="false" />
     </fragment>
 
     <fragment
-        android:id="@+id/nav_approvMeasure"
+        android:id="@+id/nav_approveMeasure"
         android:name="za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureFragment"
         android:label="@string/menu_approvMeasure"
         tools:layout="@layout/fragment_approvemeasure">
         <action
             android:id="@+id/action_nav_approvMeasure_to_measureApprovalFragment"
             app:destination="@id/measureApprovalFragment"
-            app:popUpTo="@+id/nav_approvMeasure" />
+            app:popUpTo="@id/nav_approveMeasure"
+            app:enterAnim="@anim/animate_in_out_enter"
+            app:exitAnim="@anim/animate_in_out_exit"
+            app:popEnterAnim="@anim/fragment_fade_enter"
+            app:popExitAnim="@anim/fragment_fade_exit" />
     </fragment>
     <fragment
         android:id="@+id/selectItemFragment"
         android:name="za.co.xisystems.itis_rrm.ui.mainview.create.select_item.SelectItemFragment"
-        android:label="SelectItemFragment"
-        tools:layout="@layout/fragment_select_item">
-        <action
-            android:id="@+id/action_selectItemFragment_to_addProjectFragment"
-            app:destination="@id/addProjectFragment"
-            app:enterAnim="@anim/nav_default_enter_anim"
-            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
-            app:exitAnim="@anim/nav_default_exit_anim"
-            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
+        tools:layout="@layout/fragment_select_item"
+        android:label="Select Project Items">
         <argument
-            android:name="projectId"
+            android:name="jobId"
             app:argType="string"
             app:nullable="true" />
+        <action
+            android:id="@+id/action_selectItemFragment_to_addProjectFragment2"
+            app:destination="@id/addProjectFragment"
+            app:popUpTo="@id/addProjectFragment" />
     </fragment>
     <fragment
         android:id="@+id/estimatePhotoFragment"
         android:name="za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates.EstimatePhotoFragment"
-        android:label="EstimatePhotoFragment"
+        android:label="Photograph Estimates"
         tools:layout="@layout/fragment_photo_estimate">
-        <action
-            android:id="@+id/action_estimatePhotoFragment_to_addProjectFragment"
-            app:destination="@id/addProjectFragment"
-            app:enterAnim="@anim/bounce" />
-        <action
-            android:id="@+id/action_estimatePhotoFragment_to_nav_create"
-            app:destination="@id/nav_create"
-            app:enterAnim="@animator/rotation_collapse_to_expand"
-            app:popUpTo="@+id/nav_create" />
         <argument
             android:name="jobId"
             app:argType="string"
@@ -135,12 +147,16 @@
             android:name="estimateId"
             app:argType="string"
             app:nullable="true" />
+        <action
+            android:id="@+id/action_estimatePhotoFragment_to_addProjectFragment2"
+            app:destination="@id/addProjectFragment"
+            app:popUpTo="@id/addProjectFragment" />
     </fragment>
     <fragment
         android:id="@+id/addProjectFragment"
         android:name="za.co.xisystems.itis_rrm.ui.mainview.create.add_project_item.AddProjectFragment"
-        android:label="AddProjectFragment"
-        tools:layout="@layout/fragment_add_project_items">
+        tools:layout="@layout/fragment_add_project_items"
+        android:label="AddProjectFragment">
         <action
             android:id="@+id/action_addProjectFragment_to_selectItemFragment"
             app:destination="@id/selectItemFragment"
@@ -150,18 +166,11 @@
             app:popEnterAnim="@anim/nav_default_pop_enter_anim"
             app:popExitAnim="@anim/nav_default_pop_exit_anim" />
         <action
-            android:id="@+id/action_addProjectFragment_to_nav_create"
-            app:destination="@id/nav_create"
-            app:enterAnim="@anim/nav_default_enter_anim"
-            app:exitAnim="@anim/nav_default_exit_anim"
-            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
-            app:popExitAnim="@animator/nav_default_pop_exit_anim" />
-        <action
             android:id="@+id/action_addProjectFragment_to_estimatePhotoFragment"
             app:destination="@id/estimatePhotoFragment"
             app:enterAnim="@anim/nav_default_enter_anim"
             app:launchSingleTop="false"
-            app:popUpTo="@+id/addProjectFragment"
+            app:popUpTo="@id/addProjectFragment"
             app:exitAnim="@anim/nav_default_exit_anim"
             app:popEnterAnim="@anim/nav_default_pop_enter_anim"
             app:popExitAnim="@anim/nav_default_pop_exit_anim" />
@@ -179,10 +188,17 @@
         android:name="za.co.xisystems.itis_rrm.ui.mainview.approvejobs.view_job_info.JobInfoFragment"
         android:label="fragment_job_info"
         tools:layout="@layout/fragment_job_info">
+        <argument
+            android:name="jobId"
+            app:argType="string"
+            app:nullable="true" />
         <action
-            android:id="@+id/action_jobInfoFragment_to_nav_home"
-            app:destination="@id/nav_home"
-            app:popEnterAnim="@animator/opacity_pulse" />
+            android:id="@+id/action_jobInfoFragment_to_nav_approveJbs"
+            app:destination="@id/nav_approveJobs"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:exitAnim="@anim/nav_default_exit_anim"
+            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
+            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
     </fragment>
     <fragment
         android:id="@+id/measureApprovalFragment"
@@ -192,10 +208,15 @@
         <action
             android:id="@+id/action_measureApprovalFragment_to_measureGalleryFragment"
             app:destination="@id/measureGalleryFragment"
-            app:enterAnim="@anim/nav_default_enter_anim"
-            app:exitAnim="@anim/nav_default_exit_anim"
+            app:enterAnim="@anim/animate_slide_up_enter"
+            app:exitAnim="@anim/animate_slide_up_exit"
             app:popEnterAnim="@anim/nav_default_pop_enter_anim"
-            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
+            app:popExitAnim="@anim/nav_default_pop_exit_anim"
+            app:popUpTo="@id/measureApprovalFragment" />
+        <argument
+            android:name="jobId"
+            app:argType="string"
+            app:nullable="true" />
     </fragment>
     <fragment
         android:id="@+id/submitMeasureFragment"
@@ -203,31 +224,59 @@
         android:label="fragment_submit_measure"
         tools:layout="@layout/fragment_submit_measure">
 
+
         <action
             android:id="@+id/action_submitMeasureFragment_to_captureItemMeasurePhotoFragment"
             app:destination="@id/captureItemMeasurePhotoFragment"
-            app:enterAnim="@anim/scale_light"
+            app:enterAnim="@anim/fragment_open_enter"
+            app:exitAnim="@anim/fragment_open_exit"
+            app:popEnterAnim="@anim/fragment_fade_enter"
+            app:popExitAnim="@anim/animate_fade_exit"
             tools:layout="@layout/fragment_capture_item_measure_photo"
-            app:popUpTo="@+id/submitMeasureFragment" />
+            app:popUpTo="@id/submitMeasureFragment"
+            app:popUpToInclusive="false" />
+        <argument
+            android:name="jobId"
+            app:argType="string"
+            app:nullable="true" />
     </fragment>
     <fragment
         android:id="@+id/captureWorkFragment"
         android:name="za.co.xisystems.itis_rrm.ui.mainview.work.capture_work.CaptureWorkFragment"
         android:label="fragment_capture_work"
         tools:layout="@layout/fragment_capture_work">
+        <argument
+            android:name="jobId"
+            app:argType="string"
+            app:nullable="true" />
+        <argument
+            android:name="estimateId"
+            app:argType="string"
+            app:nullable="true" />
         <action
             android:id="@+id/action_captureWorkFragment_to_nav_work"
             app:destination="@id/nav_work"
-            app:enterAnim="@anim/nav_default_enter_anim" />
+            app:enterAnim="@anim/animate_slide_up_enter"
+            app:exitAnim="@anim/animate_slide_down_exit"
+            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
+            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
     </fragment>
     <fragment
         android:id="@+id/captureItemMeasurePhotoFragment"
         android:name="za.co.xisystems.itis_rrm.ui.mainview.estmeasure.submit_measure.CaptureItemMeasurePhotoFragment"
         android:label="CaptureItemMeasurePhotoFragment"
         tools:layout="@layout/fragment_capture_item_measure_photo">
+        <argument
+            android:name="jobItemMeasureId"
+            app:argType="string"
+            app:nullable="true" />
         <action
             android:id="@+id/action_captureItemMeasurePhotoFragment_to_submitMeasureFragment"
-            app:destination="@id/submitMeasureFragment" />
+            app:destination="@id/submitMeasureFragment"
+            app:enterAnim="@anim/animate_card_enter"
+            app:exitAnim="@anim/animate_card_exit"
+            app:popEnterAnim="@anim/animate_swipe_right_enter"
+            app:popExitAnim="@anim/animate_swipe_right_exit" />
     </fragment>
 
     <fragment
@@ -235,8 +284,36 @@
         android:name="za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.measure_approval.MeasureGalleryFragment"
         android:label="MeasureGalleryFragment"
         tools:layout="@layout/fragment_measure_gallery">
+        <argument
+            android:name="jobItemMeasureId"
+            app:argType="string"
+            app:nullable="true" />
         <action
             android:id="@+id/action_measureGalleryFragment_to_measureApprovalFragment"
-            app:destination="@id/measureApprovalFragment" />
+            app:destination="@id/measureApprovalFragment"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:exitAnim="@anim/nav_default_exit_anim"
+            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
+            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
     </fragment>
+    <action
+        android:id="@+id/action_global_nav_home"
+        app:destination="@id/nav_home"
+        app:popUpTo="@id/nav_home" />
+    <activity
+        android:id="@+id/registerActivity"
+        android:name="za.co.xisystems.itis_rrm.ui.auth.RegisterActivity"
+        android:label="RegisterActivity" />
+    <activity
+        android:id="@+id/loginActivity"
+        android:name="za.co.xisystems.itis_rrm.ui.auth.LoginActivity"
+        android:label="LoginActivity" />
+    <activity
+        android:id="@+id/resetPinActivity"
+        android:name="za.co.xisystems.itis_rrm.ui.auth.ResetPinActivity"
+        android:label="ResetPinActivity" />
+    <activity
+        android:id="@+id/settingsActivity"
+        android:name="za.co.xisystems.itis_rrm.ui.mainview.activities.SettingsActivity"
+        android:label="SettingsActivity" />
 </navigation>

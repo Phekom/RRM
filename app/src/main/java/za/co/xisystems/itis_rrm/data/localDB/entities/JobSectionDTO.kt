@@ -1,11 +1,14 @@
 /*
- * Updated by Shaun McDonald on 2021/01/25
- * Last modified on 2021/01/25 6:30 PM
+ * Updated by Shaun McDonald on 2021/02/08
+ * Last modified on 2021/02/08 2:32 PM
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  */
 
 package za.co.xisystems.itis_rrm.data.localDB.entities
 
+import android.os.Parcel
+import android.os.Parcelable
+import android.os.Parcelable.Creator
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
@@ -34,4 +37,38 @@ class JobSectionDTO(
     val recordSynchStateId: Int,
     @SerializedName("RecordVersion")
     val recordVersion: Int
-) : Serializable
+) : Serializable, Parcelable {
+    constructor(parcel: Parcel) : this(
+        parcel.readString()!!,
+        parcel.readString(),
+        parcel.readString(),
+        parcel.readDouble(),
+        parcel.readDouble(),
+        parcel.readInt(),
+        parcel.readInt()
+    )
+
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeString(jobSectionId)
+        parcel.writeString(projectSectionId)
+        parcel.writeString(jobId)
+        parcel.writeDouble(startKm)
+        parcel.writeDouble(endKm)
+        parcel.writeInt(recordSynchStateId)
+        parcel.writeInt(recordVersion)
+    }
+
+    override fun describeContents(): Int {
+        return 0
+    }
+
+    companion object CREATOR : Creator<JobSectionDTO> {
+        override fun createFromParcel(parcel: Parcel): JobSectionDTO {
+            return JobSectionDTO(parcel)
+        }
+
+        override fun newArray(size: Int): Array<JobSectionDTO?> {
+            return arrayOfNulls(size)
+        }
+    }
+}

@@ -94,8 +94,8 @@ open class ProjectItem(
         val navDirections =
             AddProjectFragmentDirections
                 .actionAddProjectFragmentToEstimatePhotoFragment(
-                    newJob?.jobId,
-                    getJobItemEstimate(itemId = item.itemId)?.estimateId
+                    jobId = newJob?.jobId,
+                    estimateId = getJobItemEstimate(itemId = item.itemId)?.estimateId
                 )
 
         Navigation.findNavController(view)

@@ -1,18 +1,18 @@
 /*
- * Updated by Shaun McDonald on 2021/01/25
- * Last modified on 2021/01/25 6:30 PM
+ * Updated by Shaun McDonald on 2021/02/08
+ * Last modified on 2021/02/08 4:25 AM
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  */
 
 package za.co.xisystems.itis_rrm.utils
 
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimatesPhotoDTO
 import java.text.DecimalFormat
 import java.util.ArrayList
 import java.util.Collections
 import java.util.Comparator
 import java.util.Locale
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimatesPhotoDTO
 
 object JobUtils {
     fun formatCost(value: Double): String {
@@ -25,6 +25,9 @@ object JobUtils {
     }
 
     fun formatTotalCost(job: JobDTO?): String {
+        Coroutines.main {
+
+        }
         var quantity = 0.0
         var cost = 0.0
         job?.jobItemEstimates?.forEach { estimate ->

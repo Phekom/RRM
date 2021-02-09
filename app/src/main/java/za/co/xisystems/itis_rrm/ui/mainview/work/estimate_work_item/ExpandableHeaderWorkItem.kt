@@ -32,8 +32,10 @@ class ExpandableHeaderWorkItem(
                 visibility = View.VISIBLE
                 setImageResource(if (expandableGroup.isExpanded) R.drawable.collapse else R.drawable.expand)
                 setOnClickListener {
-                    expandableGroup.onToggleExpanded()
+
                     bindIcon(viewHolder)
+                    expandableGroup.onToggleExpanded()
+                    onExpandListener?.invoke(expandableGroup)
                 }
             }
             bindItem(viewHolder)
@@ -41,6 +43,8 @@ class ExpandableHeaderWorkItem(
 
         viewHolder.itemView.setOnClickListener {
             clickListener?.invoke(this)
+            expandableGroup.onToggleExpanded()
+            onExpandListener?.invoke(expandableGroup)
         }
     }
 
@@ -62,6 +66,8 @@ class ExpandableHeaderWorkItem(
                         "Job not found please click on item to download job."
                     )
                 }
+                expandableGroup.onToggleExpanded()
+                onExpandListener?.invoke(expandableGroup)
             }
         }
     }

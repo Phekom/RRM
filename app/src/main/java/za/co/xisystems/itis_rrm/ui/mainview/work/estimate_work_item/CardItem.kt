@@ -6,11 +6,14 @@ import androidx.navigation.Navigation
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import com.xwray.groupie.kotlinandroidextensions.Item
 import kotlinx.android.synthetic.main.work_list_item.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.ui.mainview.work.INSET
 import za.co.xisystems.itis_rrm.ui.mainview.work.INSET_TYPE_KEY
+import za.co.xisystems.itis_rrm.ui.mainview.work.WorkFragmentDirections
 import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModel
 import za.co.xisystems.itis_rrm.utils.Coroutines
 
@@ -51,11 +54,17 @@ open class CardItem(
         view: View?,
         job: JobDTO
     ) {
-        Coroutines.main {
-            workViewModel.setWorkItemJob(job)
-            workViewModel.setWorkItem(estimate)
+        Coroutines.io {
+            workViewModel.setWorkItemJob(job.jobId)
+            workViewModel.setWorkItem(estimate.estimateId)
+            withContext(Dispatchers.Main.immediate){
+                val navDirection = WorkFragmentDirections.actionNavWorkToCaptureWorkFragment(
+                        jobId = job.jobId,
+                        estimateId = estimate.estimateId
+                    )
+                Navigation.findNavController(view!!).navigate(navDirection)
+            }
         }
-        Navigation.findNavController(view!!)
-            .navigate(R.id.action_nav_work_to_captureWorkFragment)
+
     }
 }

@@ -4,6 +4,8 @@
 -allowaccessmodification
 -optimizations !code/simplification/arithmetic
 -keepattributes *Annotation*
+-keepattributes LineNumberTable,SourceFile
+
 
 -verbose
 
@@ -59,8 +61,10 @@
 -dontwarn okhttp3.**
 
 # Needed for Parcelable/SafeParcelable Creators to not get stripped
--keepnames class * implements android.os.Parcelable {
+-keep class * implements android.os.Parcelable {
     public static final ** CREATOR;
 }
-# -keepnames class * implements androidx.fragment.app.** { *; }
--keepnames class * implements java.io.Serializable { *;}
+
+# Preserve the names of Serializable and Enum Objects
+-keep class * implements java.io.Serializable { *;}
+-keep enum za.co.xisystems.itis_rrm.** { *;}

@@ -1,6 +1,6 @@
 /*
- * Updated by Shaun McDonald on 2021/02/04
- * Last modified on 2021/02/04 11:27 AM
+ * Updated by Shaun McDonald on 2021/02/08
+ * Last modified on 2021/02/07 9:24 AM
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  */
 
@@ -237,7 +237,7 @@ class OfflineDataRepository(
         actId: Int
     ): LiveData<List<JobItemMeasureDTO>> {
         return withContext(Dispatchers.IO) {
-            appDb.getJobItemMeasureDao().getJobMeasureItemsForJobId(jobID!!, actId)
+            appDb.getJobItemMeasureDao().getJobItemMeasuresByJobIdAndActId(jobID!!, actId)
         }
     }
 
@@ -398,10 +398,7 @@ class OfflineDataRepository(
             validProjects.forEach { project ->
 
                 if (appDb.getProjectDao().checkProjectExists(project.projectId)) {
-                    Timber.i(
-                        "Contract: ${contract.shortDescr} " +
-                            "(${contract.contractId}) ProjectId: ${project.descr} " +
-                            "(${project.projectId}) -> Duplicated"
+                    Timber.i("Contract: ${contract.shortDescr} (${contract.contractId}) ProjectId: ${project.descr} (${project.projectId}) -> Duplicated"
                     )
                     projectMax--
                 } else {
@@ -443,9 +440,7 @@ class OfflineDataRepository(
                     } catch (ex: Exception) {
                         Timber.e(
                             ex,
-                            "Contract: ${contract.shortDescr} (${contract.contractId})" +
-                                " ProjectId: ${project.descr} (${project.projectId})" +
-                                " -> ${ex.message}"
+                            "Contract: ${contract.shortDescr} (${contract.contractId}) ProjectId: ${project.descr} (${project.projectId}) -> ${ex.message}"
                         )
                     }
                 }
@@ -475,21 +470,19 @@ class OfflineDataRepository(
                                 )
                             )
 
-                        item.itemSections?.let {
-                            appDb.getProjectItemDao().insertItem(
-                                itemId = item.itemId,
-                                itemCode = item.itemCode,
-                                descr = item.descr,
-                                itemSections = it,
-                                tenderRate = item.tenderRate,
-                                uom = item.uom,
-                                workflowId = item.workflowId,
-                                sectionItemId = sectionItemId,
-                                quantity = item.quantity,
-                                estimateId = item.estimateId,
-                                projectId = project.projectId
-                            )
-                        }
+                        appDb.getProjectItemDao().insertItem(
+                            itemId = item.itemId,
+                            itemCode = item.itemCode,
+                            descr = item.descr,
+                            itemSections = item.itemSections,
+                            tenderRate = item.tenderRate,
+                            uom = item.uom,
+                            workflowId = item.workflowId,
+                            sectionItemId = sectionItemId,
+                            quantity = item.quantity,
+                            estimateId = item.estimateId,
+                            projectId = project.projectId
+                        )
                     }
                 } catch (ex: Exception) {
                     Timber.e(ex, "ItemId: ${item.itemId} -> ${ex.message}")

@@ -77,7 +77,10 @@ class UnSubmittedJobItem(
             createModel.setJobToEdit(job.jobId)
         }
         val navDirection =
-            UnSubmittedFragmentDirections.actionNavUnSubmittedToAddProjectFragment(job.projectId, job.jobId)
+            UnSubmittedFragmentDirections.actionNavUnSubmittedToAddProjectFragment(
+                job.projectId,
+                job.jobId
+            )
 
         Navigation.findNavController(view)
             .navigate(navDirection)

@@ -13,8 +13,8 @@ import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.core.view.doOnNextLayout
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -29,6 +29,7 @@ import org.kodein.di.generic.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.R.layout
 import za.co.xisystems.itis_rrm.R.string
 import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.constants.Constants
@@ -46,7 +47,6 @@ import za.co.xisystems.itis_rrm.ui.extensions.initProgress
 import za.co.xisystems.itis_rrm.ui.extensions.startProgress
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureViewModelFactory
-import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.approveMeasure_Item.ApproveMeasureItem
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
@@ -152,25 +152,11 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
 
         Coroutines.main {
 
-            ui.viewMeasuredItems.run {
-                setVeilLayout(R.layout.measurements_item, object : VeiledItemOnClickListener {
-                    /** will be invoked when the item on the [VeilRecyclerFrameView] clicked. */
-                    override fun onItemClicked(pos: Int) {
-                        Toast.makeText(
-                            this@MeasureApprovalFragment.requireContext(),
-                            "Loading ...",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                })
-                setAdapter(groupAdapter)
-                setLayoutManager(LinearLayoutManager(this.context))
-                addVeiledItems(10)
-            }
+            initVeiledRecycler()
 
             ui.viewMeasuredItems.veil()
-            approveViewModel.measureApprovalItem.observe(viewLifecycleOwner, { job ->
-                getMeasureItems(job)
+            approveViewModel.jobIdForApproval.observe(viewLifecycleOwner, { jobId ->
+                getMeasureItems(jobId)
             })
 
             ui.approveMeasureButton.setOnClickListener {
@@ -199,6 +185,20 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
                 val approveAlert = approveBuilder.create()
                 approveAlert.show()
             }
+        }
+    }
+
+    private fun initVeiledRecycler() {
+        ui.viewMeasuredItems.run {
+            setVeilLayout(layout.measurements_item, object : VeiledItemOnClickListener {
+                /** will be invoked when the item on the [VeilRecyclerFrameView] clicked. */
+                override fun onItemClicked(pos: Int) {
+                    toast("Loading ...")
+                }
+            })
+            setAdapter(groupAdapter)
+            setLayoutManager(LinearLayoutManager(this.context))
+            addVeiledItems(10)
         }
     }
 
@@ -268,10 +268,10 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
         }, Constants.TWO_SECONDS)
     }
 
-    private fun getMeasureItems(job: ApproveMeasureItem) {
+    private fun getMeasureItems(jobId: String) {
         Coroutines.main {
             val measurements = approveViewModel.getJobMeasureItemsForJobId(
-                job.jobId,
+                jobId,
                 ActivityIdConstants.MEASURE_COMPLETE
             )
             measurements.observe(viewLifecycleOwner, { jobItemMeasures ->
@@ -281,7 +281,7 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
                     initRecyclerView(it.toMeasureItems())
                 }
             })
-            delayedUnveil()
+
         }
     }
 
@@ -304,6 +304,7 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
         }
         ui.viewMeasuredItems.run {
             setAdapter(groupAdapter, layoutManager = LinearLayoutManager(context))
+            doOnNextLayout { ui.viewMeasuredItems.unVeil() }
         }
     }
 

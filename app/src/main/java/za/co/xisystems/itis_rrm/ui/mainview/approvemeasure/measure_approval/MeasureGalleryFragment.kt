@@ -1,3 +1,9 @@
+/*
+ * Updated by Shaun McDonald on 2021/02/08
+ * Last modified on 2021/02/08 2:29 PM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.measure_approval
 
 import android.os.Bundle
@@ -34,6 +40,7 @@ class MeasureGalleryFragment : BaseFragment(), KodeinAware {
     private val galleryObserver =
         Observer<XIResult<MeasureGalleryUIState>> { handleResponse(it) }
     private var uiScope = UiLifecycleScope()
+    private var galleryJobId: String? = null
 
     companion object {
         fun newInstance() = MeasureGalleryFragment()
@@ -69,8 +76,10 @@ class MeasureGalleryFragment : BaseFragment(), KodeinAware {
         }
 
         done_image_button.setOnClickListener { view ->
+            val directions = MeasureGalleryFragmentDirections
+                .actionMeasureGalleryFragmentToMeasureApprovalFragment(galleryJobId)
             Navigation.findNavController(view)
-                .navigate(R.id.action_measureGalleryFragment_to_measureApprovalFragment)
+                .navigate(directions)
         }
     }
 
@@ -89,6 +98,7 @@ class MeasureGalleryFragment : BaseFragment(), KodeinAware {
                 estimate_image_gallery_view.scaleForSize(
                     uiState.photoPairs.size
                 )
+                galleryJobId = uiState.jobItemMeasureDTO?.jobId!!
             }
             is XIError ->
                 handleError(

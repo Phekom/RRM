@@ -1,6 +1,6 @@
 /*
- * Updated by Shaun McDonald on 2021/01/25
- * Last modified on 2021/01/25 6:30 PM
+ * Updated by Shaun McDonald on 2021/02/08
+ * Last modified on 2021/02/07 8:43 AM
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  */
 
@@ -89,7 +89,6 @@ data class ItemDTOTemp(
         parcel.writeString(itemId)
         parcel.writeString(descr)
         parcel.writeString(itemCode)
-        parcel.writeTypedList(itemSections)
         parcel.writeDouble(tenderRate)
         parcel.writeString(uom)
         parcel.writeValue(workflowId)
