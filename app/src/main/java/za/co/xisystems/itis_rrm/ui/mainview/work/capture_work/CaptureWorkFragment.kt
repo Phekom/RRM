@@ -463,10 +463,10 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
     private fun refreshView() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
 
-            fragmentManager?.beginTransaction()?.detach(this)?.commitNow()
-            fragmentManager?.beginTransaction()?.attach(this)?.commitNow()
+            parentFragmentManager.beginTransaction().detach(this).commitNow()
+            parentFragmentManager.beginTransaction().attach(this).commitNow()
         } else {
-            fragmentManager?.beginTransaction()?.detach(this)?.attach(this)?.commit()
+            parentFragmentManager.beginTransaction().detach(this).attach(this).commit()
         }
 
         // Await the updated estimate record

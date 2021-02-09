@@ -13,6 +13,7 @@ import android.content.Intent
 import android.graphics.Typeface
 import android.location.LocationManager
 import android.os.Bundle
+import android.os.Handler
 import android.provider.Settings
 import android.view.Gravity
 import android.view.Menu
@@ -21,6 +22,7 @@ import android.view.View
 import android.view.WindowManager
 import android.widget.ProgressBar
 import android.widget.TextView
+import androidx.appcompat.app.ActionBar
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
@@ -56,6 +58,8 @@ import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.hideKeyboard
+import za.co.xisystems.itis_rrm.utils.toast
+import kotlin.system.exitProcess
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener,
     KodeinAware {
@@ -84,6 +88,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private var uiScope = UiLifecycleScope()
 
     private lateinit var ui: ActivityMainBinding
+    private var doubleBackToExitPressed = 0
 
     private val appBarConfiguration by lazy {
         AppBarConfiguration(
@@ -101,6 +106,15 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val view = ui.root
         setContentView(view)
         setSupportActionBar(ui.toolbar)
+
+        // Get a support ActionBar corresponding to this toolbar
+        val ab: ActionBar? = supportActionBar
+
+        if (ab != null) {
+            ab.setDisplayHomeAsUpEnabled(true)
+        } else {
+            throw NullPointerException("Something went wrong")
+        }
 
         // Because we're creating the NavHostFragment using FragmentContainerView, we must
         // retrieve the NavController directly from the NavHostFragment instead
@@ -188,7 +202,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         })
 
         if (savedInstanceState == null) {
-            navController.navigate(R.id.nav_home)
+
+            navController.navigate(R.id.action_global_nav_home)
         }
     }
 
@@ -232,11 +247,24 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         if (ui.drawerLayout.isDrawerOpen(GravityCompat.START)) {
             ui.drawerLayout.closeDrawer(GravityCompat.START)
         } else {
-            super.onBackPressed()
-            toggle?.syncState()
+            if (navHostFragment.childFragmentManager.backStackEntryCount > 1) {
+                super.onBackPressed()
+                toggle?.syncState()
+            } else {
+                if (doubleBackToExitPressed == 2) {
+                    finishAffinity()
+                    exitProcess(0)
+                } else {
+                    doubleBackToExitPressed++
+                    toast("Please press Back again to exit")
+                }
+
+                Handler().postDelayed({
+                    doubleBackToExitPressed = 1
+                }, 2000)
+            }
         }
     }
-
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -291,9 +319,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     override fun onSupportNavigateUp(): Boolean {
-        val navHostFragment =
+        navHostFragment =
             supportFragmentManager.findFragmentById(R.id.nav_host_fragment_container) as NavHostFragment
-        val navController = navHostFragment.navController
+        navController = navHostFragment.navController
 
         return NavigationUI.navigateUp(navController, ui.drawerLayout) || super.onSupportNavigateUp()
     }

@@ -584,6 +584,12 @@ dependencies {
     implementation 'net.zetetic:android-database-sqlcipher:4.4.2'
     implementation "androidx.sqlite:sqlite-ktx:2.1.0"
 
+    // Apache Commons Text - for generating random pass phrases
+    implementation 'org.apache.commons:commons-text:1.9'
+
+    // More random pass phrase generating goodness
+    implementation 'org.passay:passay:1.6.0'
+
     // TooLargeTool
     debugImplementation 'com.gu.android:toolargetool:0.3.0@aar'
 

@@ -33,7 +33,7 @@
 
     </group>
 
-    <item android:title="Engineering Section">
+    <item android:title="@string/engineering_section_title">
         <menu>
             <group android:checkableBehavior="single">
                 <item

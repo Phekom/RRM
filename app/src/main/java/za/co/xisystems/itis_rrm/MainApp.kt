@@ -7,6 +7,9 @@ import android.app.Activity
 import android.app.Application
 import android.content.pm.ActivityInfo
 import android.os.Bundle
+import android.os.StrictMode
+import android.os.StrictMode.ThreadPolicy
+import android.os.StrictMode.VmPolicy
 import android.util.Log
 import androidx.annotation.NonNull
 import com.jakewharton.threetenabp.AndroidThreeTen
@@ -142,6 +145,8 @@ open class MainApp : Application(), KodeinAware {
         })
         Timber.plant(CrashReportingTree())
     }
+
+
 
     /** A tree which logs important information for crash reporting.  */
     private class CrashReportingTree : Timber.Tree() {
