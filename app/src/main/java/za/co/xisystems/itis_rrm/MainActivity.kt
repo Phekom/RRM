@@ -59,7 +59,6 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.hideKeyboard
 import za.co.xisystems.itis_rrm.utils.toast
-import kotlin.system.exitProcess
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener,
     KodeinAware {
@@ -251,9 +250,15 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 super.onBackPressed()
                 toggle?.syncState()
             } else {
+                navController
                 if (doubleBackToExitPressed == 2) {
                     finishAffinity()
-                    exitProcess(0)
+                    // Take user back to the Registration screen
+                    Intent(this, LoginActivity::class.java).also { home ->
+                        home.flags =
+                            Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                        startActivity(home)
+                    }
                 } else {
                     doubleBackToExitPressed++
                     toast("Please press Back again to exit")

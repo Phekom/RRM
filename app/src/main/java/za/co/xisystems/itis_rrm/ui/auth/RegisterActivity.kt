@@ -204,7 +204,7 @@ class RegisterActivity : AppCompatActivity(), AuthListener, KodeinAware {
     }
 
     override fun onSignOut(userDTO: UserDTO) {
-        finishAffinity()
+        userDTO.authd = false
     }
 
     companion object {

@@ -40,22 +40,26 @@ data class UserDTO(
     var imei: String?,
     @SerializedName("DEVICE")
     var device: String?,
-    var pin: ByteArray?
+    var pin: ByteArray?,
+    var authd: Boolean = true
 
 ) : Serializable, Parcelable {
+
     constructor(parcel: Parcel) : this(
-        parcel.readString()!!,
-        parcel.readString()!!,
-        parcel.readString()!!,
-        arrayListOf<UserRoleDTO>().apply {
+        registrationId = parcel.readString()!!,
+        userId = parcel.readString()!!,
+        userName = parcel.readString()!!,
+        userRoles = arrayListOf<UserRoleDTO>().apply {
             parcel.readList(this.toList(), UserRoleDTO::class.java.classLoader)
         },
-        parcel.readString()!!,
-        parcel.readString(),
-        parcel.readString(),
-        parcel.readString(),
-        parcel.createByteArray()
+        userStatus = parcel.readString()!!,
+        phoneNumber = parcel.readString(),
+        imei = parcel.readString(),
+        device = parcel.readString(),
+        pin = parcel.createByteArray(),
+        authd = parcel.readByte() != 0.toByte()
     )
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -94,6 +98,7 @@ data class UserDTO(
         parcel.writeString(device)
         parcel.writeByteArray(pin)
         parcel.writeList(userRoles.toList())
+        parcel.writeByte(if (authd) 1 else 0)
     }
 
     override fun describeContents(): Int {

@@ -21,7 +21,6 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.whenResumed
 import androidx.lifecycle.whenStarted
 import com.skydoves.progressview.ProgressView
 import kotlinx.coroutines.Job
@@ -89,10 +88,6 @@ class HomeFragment : BaseFragment(), KodeinAware {
             whenStarted {
                 lifecycle.addObserver(uiScope)
             }
-            whenResumed {
-                checkConnectivity()
-                homeDiagnostic()
-            }
         }
     }
 
@@ -136,6 +131,15 @@ class HomeFragment : BaseFragment(), KodeinAware {
         })
     }
 
+    /**
+     * Called when the Fragment is visible to the user.  This is generally
+     * tied to [Activity.onStart] of the containing
+     * Activity's lifecycle.
+     */
+    override fun onStart() {
+        super.onStart()
+    }
+
     private suspend fun acquireUser() {
         try {
             val userJob = uiScope.launch(uiScope.coroutineContext) {
@@ -177,6 +181,7 @@ class HomeFragment : BaseFragment(), KodeinAware {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         uiScope.onCreate()
+
         setHasOptionsMenu(true)
     }
 
@@ -204,7 +209,9 @@ class HomeFragment : BaseFragment(), KodeinAware {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
+        homeViewModel = ViewModelProvider(this, factory).get(HomeViewModel::class.java)
+        checkConnectivity()
+        homeDiagnostic()
         // Configure progressView
         initProgressViews()
 
@@ -244,9 +251,8 @@ class HomeFragment : BaseFragment(), KodeinAware {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
-        homeViewModel = activity?.run {
-            ViewModelProvider(this, factory).get(HomeViewModel::class.java)
-        } ?: throw Exception("Invalid Activity")
+
+
 
 
     }
