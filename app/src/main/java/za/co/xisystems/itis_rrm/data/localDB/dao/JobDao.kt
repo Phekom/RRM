@@ -1,3 +1,9 @@
+/*
+ * Updated by Shaun McDonald on 2021/02/04
+ * Last modified on 2021/02/04 11:19 AM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.data.localDB.dao
 
 import androidx.lifecycle.LiveData
@@ -20,22 +26,27 @@ import java.util.ArrayList
 interface JobDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertOrUpdateJobs(job: JobDTO)
+    fun insertOrUpdateJob(job: JobDTO)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertJobs(jobs: List<JobDTO>)
 
     @Delete
-    fun deleteJob(job: JobDTO)
+    fun deleteJob(job: JobDTO): Int
 
     @Query("SELECT * FROM JOB_TABLE WHERE jobId = :jobId AND deleted = 0")
     fun checkIfJobExist(jobId: String): Boolean
 
-    @Query("SELECT * FROM JOB_TABLE WHERE actId = null OR actId = 0 ")
+    @Query("SELECT * FROM JOB_TABLE WHERE actId = null OR actId = 0 and deleted = 0")
     fun checkIfUnsubmittedJobsExist(): Boolean
 
     @Query("UPDATE JOB_TABLE SET route =:route, section =:section WHERE jobId = :jobId AND deleted = 0")
     fun updateAllJobs(route: String?, section: String?, jobId: String?)
 
-    @Query("UPDATE JOB_TABLE SET trackRouteId =:trackRouteId, actId =:actId, jiNo =:jiNo" +
-        " WHERE jobId = :jobId AND deleted = 0")
+    @Query(
+        "UPDATE JOB_TABLE SET trackRouteId =:trackRouteId, actId =:actId, jiNo =:jiNo" +
+            " WHERE jobId = :jobId AND deleted = 0"
+    )
     fun updateJob(trackRouteId: String?, actId: Int, jiNo: String?, jobId: String?)
 
     @Query("UPDATE JOB_TABLE SET estimatesActId =:actId WHERE jobId = :jobId AND deleted = 0")
@@ -68,10 +79,12 @@ interface JobDao {
     @Query("SELECT * FROM JOB_TABLE WHERE isSynced = 0 AND deleted = 0")
     fun getUnSyncedJobs(): LiveData<List<JobDTO>>
 
-    @Query("SELECT * FROM JOB_TABLE WHERE " +
+    @Query(
+        "SELECT * FROM JOB_TABLE WHERE " +
         "actId = :jobApproved  AND estimatesActId LIKE :estimateComplete " +
         "AND  worksActId LIKE :estWorksComplete AND " +
-        "measureActId LIKE :measureComplete AND deleted = 0 ORDER BY jiNo ASC")
+            "measureActId LIKE :measureComplete AND deleted = 0 ORDER BY jiNo ASC"
+    )
     fun getJobsMeasureForActivityIds(
         estimateComplete: Int,
         measureComplete: Int,
@@ -82,22 +95,28 @@ interface JobDao {
     @Query("SELECT * FROM JOB_TABLE WHERE actId = :actId AND deleted = 0 ORDER BY jiNo ASC")
     fun getJobsForActivityId(actId: Int): LiveData<List<JobDTO>>
 
-    @Query(" SELECT j.*, e.* FROM JOB_TABLE AS j JOIN " +
+    @Query(
+        " SELECT j.*, e.* FROM JOB_TABLE AS j JOIN " +
         "JOB_ITEM_ESTIMATE AS e ON e.JobId = j.jobId " +
         "WHERE j.actId Like :actId and e.ActId Like :actId2 " +
-        "AND j.deleted = 0 ORDER BY jiNo ASC ")
+            "AND j.deleted = 0 ORDER BY jiNo ASC "
+    )
     fun getJobsForActivityIds(actId: Int, actId2: Int): List<JobDTO>
 
-    @Query(" SELECT j.*, e.* FROM JOB_TABLE AS j JOIN JOB_ITEM_ESTIMATE AS e " +
+    @Query(
+        " SELECT j.*, e.* FROM JOB_TABLE AS j JOIN JOB_ITEM_ESTIMATE AS e " +
         "ON e.JobId = j.jobId WHERE j.actId Like :actId " +
-        "AND e.ActId Like :actId2 AND j.deleted = 0 ORDER BY jiNo ASC ")
+            "AND e.ActId Like :actId2 AND j.deleted = 0 ORDER BY jiNo ASC "
+    )
     fun getJobsForActivityIds1(actId: Int, actId2: Int): LiveData<List<JobDTO>>
 
     //    LiveData<List<JobDTO>>
 // OR e.ActId Like 8
-    @Query("UPDATE JOB_TABLE SET sectionId =:sectionId ,startKm =:startKM , endKm =:endKM ," +
+    @Query(
+        "UPDATE JOB_TABLE SET sectionId =:sectionId ,startKm =:startKM , endKm =:endKM ," +
         "jobItemEstimates =:newJobItemEstimatesList, jobSections =:jobItemSectionArrayList" +
-        "  WHERE jobId = :newJobId AND deleted = 0")
+            "  WHERE jobId = :newJobId AND deleted = 0"
+    )
     fun updateJoSecId(
         newJobId: String,
         startKM: Double,
@@ -116,7 +135,7 @@ interface JobDao {
     @Query("SELECT * FROM JOB_TABLE WHERE jobId = :jobId AND deleted = 0")
     fun getJobFromJobId(jobId: String): LiveData<JobDTO>
 
-    @Query("DELETE FROM JOB_TABLE WHERE jobId = :jobId")
+    @Query("DELETE FROM JOB_TABLE WHERE jobId = :jobId AND deleted = 0")
     fun deleteJobForJobId(jobId: String)
 
     @Query("DELETE FROM JOB_TABLE")

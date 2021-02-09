@@ -35,6 +35,7 @@ fun ImageCollectionView.scaleForSize(imageCount: Int) {
     }
 }
 
+
 fun ImageCollectionView.addZoomedImages(
     photoPaths: List<Pair<Uri, Bitmap?>>,
     activity: FragmentActivity

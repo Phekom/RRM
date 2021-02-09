@@ -1,6 +1,6 @@
 /*
- * Updated by Shaun McDonald on 2021/01/25
- * Last modified on 2021/01/25 6:30 PM
+ * Updated by Shaun McDonald on 2021/02/08
+ * Last modified on 2021/02/08 1:50 AM
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  */
 
@@ -25,7 +25,6 @@ import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.results.XIError
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
-import za.co.xisystems.itis_rrm.data.localDB.entities.ContractDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.ItemSectionDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksDTO
@@ -33,12 +32,12 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimatesPhotoDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobSectionDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.data.network.OfflineListener
 import za.co.xisystems.itis_rrm.databinding.FragmentCreatejobBinding
-import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.MyState
+import za.co.xisystems.itis_rrm.domain.ContractSelector
+import za.co.xisystems.itis_rrm.domain.ProjectSelector
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper.setSpinner
 import za.co.xisystems.itis_rrm.utils.Coroutines
@@ -61,28 +60,26 @@ class CreateFragment : BaseFragment(), OfflineListener, KodeinAware {
     override val kodein by kodein()
     private lateinit var createViewModel: CreateViewModel
     private val factory: CreateViewModelFactory by instance()
-    private val estimatesToRemoveFromDb: ArrayList<JobItemEstimateDTO> =
-        ArrayList()
 
     // viewBinding implementation
     private var _ui: FragmentCreatejobBinding? = null
     private val ui get() = _ui!!
 
-    @MyState
+
     var items: ArrayList<ProjectItemDTO> = ArrayList()
 
-    @MyState
-    internal var selectedContract: ContractDTO? = null
+
+    internal var selectedContract: ContractSelector? = null
     private lateinit var useR: UserDTO
     private var descri: String? = null
 
-    @MyState
-    internal var selectedProject: ProjectDTO? = null
 
-    @MyState
+    internal var selectedProject: ProjectSelector? = null
+
+
     internal var selectedProjectItem: ProjectItemDTO? = null
 
-    @MyState
+
     var newJob: JobDTO? = null
     private lateinit var newJobItemEstimatesPhotosList: ArrayList<JobItemEstimatesPhotoDTO>
     private lateinit var newJobItemEstimatesWorksList: ArrayList<JobEstimateWorksDTO>
@@ -91,8 +88,6 @@ class CreateFragment : BaseFragment(), OfflineListener, KodeinAware {
     private lateinit var jobItemSectionArrayList: ArrayList<JobSectionDTO>
     private lateinit var itemSections: ArrayList<ItemSectionDTO>
 
-    @MyState
-    var isJobSaved = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         itemSections = ArrayList()
@@ -157,7 +152,6 @@ class CreateFragment : BaseFragment(), OfflineListener, KodeinAware {
                     if (description.isEmpty()) {
                         sharpToast(message = "Please Enter Description", style = WARNING)
                         ui.descriptionEditText.startAnimation(shake)
-                        //                            return
                     } else {
                         activity?.hideKeyboard()
                         createNewJob()
@@ -195,6 +189,9 @@ class CreateFragment : BaseFragment(), OfflineListener, KodeinAware {
                 descri
             )
             createViewModel.backupJob(newJob!!)
+            createViewModel.jobId.observe(viewLifecycleOwner, {
+                Timber.d("Job PK: $it")
+            })
         }
     }
 
@@ -230,7 +227,7 @@ class CreateFragment : BaseFragment(), OfflineListener, KodeinAware {
             issueDate = DateUtil.dateToString(today),
             startDate = DateUtil.dateToString(today),
             dueDate = DateUtil.dateToString(today),
-            approvalDate = null, // null,null,null,null,
+            approvalDate = null,
             jobItemEstimates = newJobItemEstimatesList,
             jobItemMeasures = jobItemMeasureArrayList,
             jobSections = jobItemSectionArrayList,
@@ -280,21 +277,20 @@ class CreateFragment : BaseFragment(), OfflineListener, KodeinAware {
                 createViewModel.backupJob(it)
                 createViewModel.setJobToEdit(it.jobId)
 
-                val navDirection = CreateFragmentDirections.actionNavCreateToAddProjectFragment(
-                    it.projectId,
-                    it.jobId
-                )
+                val navDirection = CreateFragmentDirections
+                    .actionNavCreateToAddProjectFragment(
+                        projectId = it.projectId!!,
+                        jobId = it.jobId
+                    )
                 Navigation.findNavController(view).navigate(navDirection)
             }
         }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        outState.putSerializable("selectedContractId", selectedContract?.contractId)
-        outState.putSerializable("selectedProjectId", selectedProject?.projectId)
-        outState.putSerializable("jobId", newJob?.jobId)
-        outState.putBoolean("isJobSaved", isJobSaved)
-        // outState.putSerializable("estimatesToRemoveFromDb", estimatesToRemoveFromDb)
+        outState.putString(CONTRACT_KEY, selectedContract?.contractId)
+        outState.putString(PROJECT_KEY, selectedProject?.projectId)
+        outState.putString(JOB_KEY, newJob?.jobId)
         super.onSaveInstanceState(outState)
     }
 
@@ -303,7 +299,7 @@ class CreateFragment : BaseFragment(), OfflineListener, KodeinAware {
             Coroutines.main {
                 ui.dataLoading.show()
 
-                val contractData = createViewModel.getContracts()
+                val contractData = createViewModel.getContractSelectors()
 
                 contractData.observe(viewLifecycleOwner, { contractList ->
                     val allData = contractList.count()
@@ -319,8 +315,8 @@ class CreateFragment : BaseFragment(), OfflineListener, KodeinAware {
                             ui.contractSpinner,
                             contractList,
                             contractIndices,
-                            object : SpinnerHelper.SelectionListener<ContractDTO> {
-                                override fun onItemSelected(position: Int, item: ContractDTO) {
+                            object : SpinnerHelper.SelectionListener<ContractSelector> {
+                                override fun onItemSelected(position: Int, item: ContractSelector) {
                                     selectedContract = item
                                     setProjects(item.contractId)
                                     Coroutines.main {
@@ -352,7 +348,7 @@ class CreateFragment : BaseFragment(), OfflineListener, KodeinAware {
     private fun setProjects(contractId: String?) {
 
         Coroutines.main {
-            val projects = createViewModel.getSomeProjects(contractId!!)
+            val projects = createViewModel.getProjectSelectors(contractId!!)
             ui.dataLoading.show()
             projects.observe(viewLifecycleOwner, { projectList ->
                 val allData = projectList.count()
@@ -367,8 +363,8 @@ class CreateFragment : BaseFragment(), OfflineListener, KodeinAware {
                         ui.projectSpinner,
                         projectList,
                         projectNmbr, // null)
-                        object : SpinnerHelper.SelectionListener<ProjectDTO> {
-                            override fun onItemSelected(position: Int, item: ProjectDTO) {
+                        object : SpinnerHelper.SelectionListener<ProjectSelector> {
+                            override fun onItemSelected(position: Int, item: ProjectSelector) {
                                 selectedProject = item
                                 Coroutines.main {
                                     createViewModel.setProjectId(item.projectId)
@@ -393,6 +389,7 @@ class CreateFragment : BaseFragment(), OfflineListener, KodeinAware {
      */
     override fun onDestroyView() {
         super.onDestroyView()
+
         // prevent viewBinding from leaking
         _ui = null
     }
@@ -411,5 +408,8 @@ class CreateFragment : BaseFragment(), OfflineListener, KodeinAware {
 
     companion object {
         val TAG: String = CreateFragment::class.java.simpleName
+        const val CONTRACT_KEY = "contractId"
+        const val PROJECT_KEY = "projectId"
+        const val JOB_KEY = "jobId"
     }
 }

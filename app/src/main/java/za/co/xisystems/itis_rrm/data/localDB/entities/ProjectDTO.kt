@@ -1,6 +1,6 @@
 /*
- * Updated by Shaun McDonald on 2021/01/25
- * Last modified on 2021/01/25 6:30 PM
+ * Updated by Shaun McDonald on 2021/02/08
+ * Last modified on 2021/02/07 12:57 PM
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  */
 
@@ -15,8 +15,8 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
-import java.io.Serializable
 import org.jetbrains.annotations.NotNull
+import java.io.Serializable
 
 /**
  * Created by Francis Mahlava on 2019/11/22.
@@ -29,8 +29,9 @@ const val PROJECT_TABLE = "PROJECT_TABLE"
         entity = ContractDTO::class,
         parentColumns = arrayOf("contractId"),
         childColumns = arrayOf("contractId"),
-        onDelete = ForeignKey.CASCADE
-    )], indices = [Index(value = ["projectId"], unique = true)]
+        onDelete = ForeignKey.CASCADE,
+        onUpdate = ForeignKey.CASCADE
+    )], indices = [Index(value = ["projectId"], unique = true, name = "")]
 )
 
 data class ProjectDTO(

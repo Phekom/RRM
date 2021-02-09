@@ -1,6 +1,6 @@
 /*
- * Updated by Shaun McDonald on 2021/01/25
- * Last modified on 2021/01/25 6:30 PM
+ * Updated by Shaun McDonald on 2021/02/08
+ * Last modified on 2021/02/08 5:44 AM
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  */
 
@@ -16,8 +16,6 @@ import com.google.gson.Gson
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
-import java.io.IOException
-import java.util.ArrayList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -40,12 +38,16 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.WorkflowJobDTO
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
 import za.co.xisystems.itis_rrm.data.network.responses.UploadImageResponse
+import za.co.xisystems.itis_rrm.domain.ContractSelector
+import za.co.xisystems.itis_rrm.domain.ProjectSelector
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.PhotoUtil.getPhotoPathFromExternalDirectory
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
+import java.io.IOException
+import java.util.ArrayList
 
 /**
  * Created by Francis Mahlava on 2019/11/28.
@@ -104,7 +106,7 @@ class JobCreationDataRepository(
     fun saveNewJob(newJob: JobDTO?) {
         Coroutines.io {
             if (newJob != null && !appDb.getJobDao().checkIfJobExist(newJob.jobId)) {
-                appDb.getJobDao().insertOrUpdateJobs(newJob)
+                appDb.getJobDao().insertOrUpdateJob(newJob)
             }
         }
     }
@@ -580,8 +582,8 @@ class JobCreationDataRepository(
     }
 
     suspend fun backupJob(job: JobDTO) {
-        withContext(Dispatchers.IO) {
-            appDb.getJobDao().insertOrUpdateJobs(job)
+        return withContext(Dispatchers.IO) {
+            appDb.getJobDao().insertOrUpdateJob(job)
         }
     }
 
@@ -589,4 +591,15 @@ class JobCreationDataRepository(
         return appDb.getJobSectionDao().checkIfJobSectionExistForJob(jobId, projectSectionId)
     }
 
+    fun getContractSelectors(): List<ContractSelector> {
+        return appDb.getContractDao().getContractSelectors()
+    }
+
+    fun getProjectSelectors(contractId: String): List<ProjectSelector> {
+        return appDb.getProjectDao().getProjectSelectorsForContractId(contractId)
+    }
+
+    fun getValidEstimatesForJobId(jobId: String, actId: Int): List<JobItemEstimateDTO> {
+        return appDb.getJobItemEstimateDao().getJobEstimationItemsForJobId(jobId, actId).value.orEmpty()
+    }
 }

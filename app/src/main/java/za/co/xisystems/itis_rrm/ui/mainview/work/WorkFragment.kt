@@ -62,6 +62,7 @@ class WorkFragment : BaseFragment(), KodeinAware {
     private var veiled: Boolean = false
     private var _ui: FragmentWorkBinding? = null
     private val ui get() = _ui!!
+    private var selectedJobId: String? = null
 
     init {
 
@@ -116,6 +117,8 @@ class WorkFragment : BaseFragment(), KodeinAware {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
 
         super.onActivityCreated(savedInstanceState)
+
+        layoutManager = LinearLayoutManager(this.context)
 
         workViewModel = activity?.run {
             ViewModelProvider(this, factory).get(WorkViewModel::class.java)
@@ -218,7 +221,7 @@ class WorkFragment : BaseFragment(), KodeinAware {
             notifyDataSetChanged()
         }
 
-        ui.veiledWorkListView.setLayoutManager(LinearLayoutManager(this.context))
+        ui.veiledWorkListView.setLayoutManager(layoutManager)
         ui.veiledWorkListView.setAdapter(groupAdapter)
         ui.veiledWorkListView.doOnNextLayout { ui.veiledWorkListView.unVeil() }
     }
@@ -256,19 +259,20 @@ class WorkFragment : BaseFragment(), KodeinAware {
             val expandableHeaderItem =
                 ExpandableHeaderWorkItem(activity, jobDTO, workViewModel)
 
-            ExpandableGroup(expandableHeaderItem, false).apply {
-                expandableGroups.add(this)
-                // When expanding a work item, collapse the others
-                // and scrollToPositionWithOffset it to the top
-                expandableHeaderItem.onExpandListener = { toggledGroup ->
-                    expandableGroups.forEach {
-                        if (it != toggledGroup && it.isExpanded) {
-                            it.onToggleExpanded()
-                        }
-                    }
-                    layoutManager.scrollToPositionWithOffset(toggledGroup.getPosition(this), 20)
-                }
+            // When expanding a work item, collapse the others
 
+            expandableHeaderItem.onExpandListener = { toggledGroup ->
+
+                expandableGroups.forEach {
+                    if (it != toggledGroup && it.isExpanded) {
+                        it.onToggleExpanded()
+                    }
+                }
+                // scrollToPositionWithOffset it to the top
+                scrollToTop(toggledGroup)
+            }
+
+            ExpandableGroup(expandableHeaderItem, false).apply {
                 val estimates = workViewModel.getJobEstimationItemsForJobId(
                     jobDTO.jobId,
                     ActivityIdConstants.ESTIMATE_INCOMPLETE
@@ -308,7 +312,12 @@ class WorkFragment : BaseFragment(), KodeinAware {
                         }
                     }
                 })
+                expandableGroups.add(this)
             }
         }
+    }
+
+    private fun scrollToTop(toggledGroup: ExpandableGroup) {
+        layoutManager.scrollToPositionWithOffset(toggledGroup.getPosition(toggledGroup.getItem(0)), 20)
     }
 }

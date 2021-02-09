@@ -1,6 +1,6 @@
 /*
- * Updated by Shaun McDonald on 2021/01/25
- * Last modified on 2021/01/25 6:30 PM
+ * Updated by Shaun McDonald on 2021/02/04
+ * Last modified on 2021/02/04 10:39 AM
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  */
 
@@ -17,6 +17,7 @@ import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModel
+import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedFragmentDirections
 import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedViewModel
 import za.co.xisystems.itis_rrm.utils.Coroutines
 
@@ -75,9 +76,14 @@ class UnSubmittedJobItem(
         Coroutines.main {
             createModel.setJobToEdit(job.jobId)
         }
+        val navDirection =
+            UnSubmittedFragmentDirections.actionNavUnSubmittedToAddProjectFragment(
+                job.projectId,
+                job.jobId
+            )
 
         Navigation.findNavController(view)
-            .navigate(R.id.action_nav_unSubmitted_to_addProjectFragment)
+            .navigate(navDirection)
     }
 
     override fun getLayout() = R.layout.unsubmtd_job_list_item

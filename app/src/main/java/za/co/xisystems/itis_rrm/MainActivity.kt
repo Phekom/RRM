@@ -1,10 +1,8 @@
 /*
- * Updated by Shaun McDonald on 2021/01/25
- * Last modified on 2021/01/25 6:30 PM
+ * Updated by Shaun McDonald on 2021/02/08
+ * Last modified on 2021/02/08 3:05 PM
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  */
-
-@file:Suppress("ControlFlowWithEmptyBody")
 
 package za.co.xisystems.itis_rrm
 
@@ -15,6 +13,7 @@ import android.content.Intent
 import android.graphics.Typeface
 import android.location.LocationManager
 import android.os.Bundle
+import android.os.Handler
 import android.provider.Settings
 import android.view.Gravity
 import android.view.Menu
@@ -23,6 +22,7 @@ import android.view.View
 import android.view.WindowManager
 import android.widget.ProgressBar
 import android.widget.TextView
+import androidx.appcompat.app.ActionBar
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
@@ -32,8 +32,8 @@ import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.GravityCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
-import androidx.navigation.Navigation
 import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI
 import com.google.android.material.navigation.NavigationView
 import com.raygun.raygun4android.RaygunClient
@@ -46,6 +46,7 @@ import timber.log.Timber
 import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.custom.notifications.ColorToast
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
+import za.co.xisystems.itis_rrm.databinding.ActivityMainBinding
 import za.co.xisystems.itis_rrm.ui.auth.LoginActivity
 import za.co.xisystems.itis_rrm.ui.mainview.activities.MainActivityViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.activities.MainActivityViewModelFactory
@@ -57,6 +58,7 @@ import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.hideKeyboard
+import za.co.xisystems.itis_rrm.utils.toast
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener,
     KodeinAware {
@@ -67,6 +69,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private lateinit var sharedViewModel: SharedViewModel
     private val shareFactory: SharedViewModelFactory by instance()
     private lateinit var navController: NavController
+    private lateinit var navHostFragment: NavHostFragment
+
     private var toggle: ActionBarDrawerToggle? = null
     private lateinit var navigationView: NavigationView
     private var badgeUnSubmitted: TextView? = null
@@ -82,23 +86,45 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private var progressBar: ProgressBar? = null
     private var uiScope = UiLifecycleScope()
 
+    private lateinit var ui: ActivityMainBinding
+    private var doubleBackToExitPressed = 0
+
+    private val appBarConfiguration by lazy {
+        AppBarConfiguration(
+            setOf(
+                R.id.nav_home,
+            ),
+            ui.drawerLayout
+        )
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
 
-
-
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-        setSupportActionBar(toolbar)
+        ui = ActivityMainBinding.inflate(layoutInflater)
+        val view = ui.root
+        setContentView(view)
+        setSupportActionBar(ui.toolbar)
+
+        // Get a support ActionBar corresponding to this toolbar
+        val ab: ActionBar? = supportActionBar
+
+        if (ab != null) {
+            ab.setDisplayHomeAsUpEnabled(true)
+        } else {
+            throw NullPointerException("Something went wrong")
+        }
 
         // Because we're creating the NavHostFragment using FragmentContainerView, we must
         // retrieve the NavController directly from the NavHostFragment instead
-        val navHostFragment =
+        navHostFragment =
             supportFragmentManager.findFragmentById(R.id.nav_host_fragment_container) as NavHostFragment
         navController = navHostFragment.navController
 
-        navigationView = findViewById(R.id.nav_view)
+
+        navigationView = ui.navView
         NavigationUI.setupActionBarWithNavController(this, navController)
-        NavigationUI.setupWithNavController(navigationView, navController)
+        NavigationUI.setupWithNavController(ui.toolbar, navController, appBarConfiguration)
 
         RaygunClient.init(application)
         RaygunClient.enableCrashReporting()
@@ -146,9 +172,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         badgeWork =
             navigationView.menu.findItem(R.id.nav_work).actionView as TextView
         badgeApproveJobs =
-            navigationView.menu.findItem(R.id.nav_approveJbs).actionView as TextView
+            navigationView.menu.findItem(R.id.nav_approveJobs).actionView as TextView
         badgeApprovMeasure =
-            navigationView.menu.findItem(R.id.nav_approvMeasure).actionView as TextView
+            navigationView.menu.findItem(R.id.nav_approveMeasure).actionView as TextView
         badgeEstMeasure =
             navigationView.menu.findItem(R.id.nav_estMeasure).actionView as TextView
         progressBar = findViewById(R.id.progressbar)
@@ -173,6 +199,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         sharedViewModel.actionCaption.observe(this@MainActivity, {
             setCaption(it)
         })
+
+        if (savedInstanceState == null) {
+
+            navController.navigate(R.id.action_global_nav_home)
+        }
     }
 
     private fun displayPromptForEnablingGPS(
@@ -211,11 +242,32 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     override fun onBackPressed() {
-        if (drawer_layout.isDrawerOpen(GravityCompat.START)) {
-            drawer_layout.closeDrawer(GravityCompat.START)
+
+        if (ui.drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            ui.drawerLayout.closeDrawer(GravityCompat.START)
         } else {
-            super.onBackPressed()
-            toggle?.syncState()
+            if (navHostFragment.childFragmentManager.backStackEntryCount > 1) {
+                super.onBackPressed()
+                toggle?.syncState()
+            } else {
+                navController
+                if (doubleBackToExitPressed == 2) {
+                    finishAffinity()
+                    // Take user back to the Registration screen
+                    Intent(this, LoginActivity::class.java).also { home ->
+                        home.flags =
+                            Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                        startActivity(home)
+                    }
+                } else {
+                    doubleBackToExitPressed++
+                    toast("Please press Back again to exit")
+                }
+
+                Handler().postDelayed({
+                    doubleBackToExitPressed = 1
+                }, 2000)
+            }
         }
     }
 
@@ -272,8 +324,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     override fun onSupportNavigateUp(): Boolean {
-        val navController = Navigation.findNavController(this, R.id.nav_host_fragment_container)
-        return NavigationUI.navigateUp(navController, drawer_layout) // ?:  navController.navigateUp()
+        navHostFragment =
+            supportFragmentManager.findFragmentById(R.id.nav_host_fragment_container) as NavHostFragment
+        navController = navHostFragment.navController
+
+        return NavigationUI.navigateUp(navController, ui.drawerLayout) || super.onSupportNavigateUp()
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
@@ -306,12 +361,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 navController.navigate(R.id.nav_estMeasure)
                 toggle?.syncState()
             }
-            R.id.nav_approveJbs -> {
-                navController.navigate(R.id.nav_approveJbs)
+            R.id.nav_approveJobs -> {
+                navController.navigate(R.id.nav_approveJobs)
                 toggle?.syncState()
             }
-            R.id.nav_approvMeasure -> {
-                navController.navigate(R.id.nav_approvMeasure)
+            R.id.nav_approveMeasure -> {
+                navController.navigate(R.id.nav_approveMeasure)
                 toggle?.syncState()
             }
         }
@@ -370,13 +425,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             val navWork = menuNav.findItem(R.id.nav_work)
             navWork.isEnabled = false
 
-            val navApproveJobs = menuNav.findItem(R.id.nav_approveJbs)
+            val navApproveJobs = menuNav.findItem(R.id.nav_approveJobs)
             navApproveJobs.isEnabled = false
 
             val navEstMeasures = menuNav.findItem(R.id.nav_estMeasure)
             navEstMeasures.isEnabled = false
 
-            val navApproveMeasures = menuNav.findItem(R.id.nav_approvMeasure)
+            val navApproveMeasures = menuNav.findItem(R.id.nav_approveMeasure)
             navApproveMeasures.isEnabled = false
 
             val userRoles = mainActivityViewModel.getRoles()
@@ -514,6 +569,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             // initializeCountDrawer()
             // refreshData()
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        uiScope.destroy()
     }
 
     companion object {

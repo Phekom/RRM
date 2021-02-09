@@ -16,7 +16,6 @@ import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.core.view.doOnNextLayout
 import androidx.lifecycle.ViewModelProvider
@@ -87,7 +86,7 @@ class ApproveMeasureFragment : BaseFragment(), KodeinAware {
             setVeilLayout(layout.item_velied_slug, object : VeiledItemOnClickListener {
                 /** will be invoked when the item on the [VeilRecyclerFrameView] clicked. */
                 override fun onItemClicked(pos: Int) {
-                    Toast.makeText(this@ApproveMeasureFragment.requireContext(), "Loading ...", Toast.LENGTH_SHORT).show()
+                    toast("Loading ...")
                 }
             })
             setAdapter(groupAdapter)
@@ -216,11 +215,13 @@ class ApproveMeasureFragment : BaseFragment(), KodeinAware {
         view: View
     ) {
         Coroutines.main {
-            job?.let { approveViewModel.setApproveMeasureItem(job) }
+            job?.jobId?.let {
+                approveViewModel.setJobIdForApproval(it)
+                val navDirection = ApproveMeasureFragmentDirections
+                    .actionNavApprovMeasureToMeasureApprovalFragment(it)
+                Navigation.findNavController(view).navigate(navDirection)
+            }
         }
-
-        Navigation.findNavController(view)
-            .navigate(R.id.action_nav_approvMeasure_to_measureApprovalFragment)
     }
 
     private fun List<JobItemMeasureDTO>.toApproveListItems(): List<ApproveMeasureItem> {

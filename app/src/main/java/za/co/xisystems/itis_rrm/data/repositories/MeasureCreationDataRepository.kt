@@ -1,6 +1,6 @@
 /*
- * Updated by Shaun McDonald on 2021/01/25
- * Last modified on 2021/01/25 6:30 PM
+ * Updated by Shaun McDonald on 2021/02/08
+ * Last modified on 2021/02/08 4:48 AM
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  */
 
@@ -15,7 +15,6 @@ import com.google.gson.Gson
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
-import java.util.ArrayList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -49,6 +48,7 @@ import za.co.xisystems.itis_rrm.utils.PhotoUtil.getPhotoPathFromExternalDirector
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import za.co.xisystems.itis_rrm.utils.uncaughtExceptionHandler
+import java.util.ArrayList
 
 /**
  * Created by Francis Mahlava on 2019/11/28.
@@ -347,8 +347,7 @@ class MeasureCreationDataRepository(
 
     suspend fun getSingleJobFromJobId(
         jobId: String?
-    ):
-        LiveData<JobDTO> {
+    ): LiveData<JobDTO> {
         return withContext(Dispatchers.IO) {
             appDb.getJobDao().getJobFromJobId(jobId!!)
         }
@@ -642,4 +641,15 @@ class MeasureCreationDataRepository(
             appDb.getJobItemMeasurePhotoDao().getJobItemMeasurePhotosForItemMeasureID(itemMeasureId)
         }
     }
+
+    suspend fun getJobMeasureItemsByJobIdAndActId(
+        jobID: String?,
+        actId: Int
+    ): LiveData<List<JobItemMeasureDTO>> {
+        return withContext(Dispatchers.IO) {
+            appDb.getJobItemMeasureDao().getJobItemMeasuresByJobIdAndActId(jobID!!, actId)
+        }
+    }
+
+
 }

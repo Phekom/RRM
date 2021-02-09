@@ -1,6 +1,6 @@
 /*
- * Updated by Shaun McDonald on 2021/01/25
- * Last modified on 2021/01/25 6:30 PM
+ * Updated by Shaun McDonald on 2021/02/04
+ * Last modified on 2021/02/04 11:39 AM
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  */
 
@@ -31,7 +31,10 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.whenStarted
 import androidx.navigation.Navigation
+import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
@@ -47,6 +50,7 @@ import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.LocationFragment
 import za.co.xisystems.itis_rrm.constants.Constants
+import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.results.XIError
 import za.co.xisystems.itis_rrm.custom.results.XIProgress
 import za.co.xisystems.itis_rrm.custom.results.XIResult
@@ -123,6 +127,27 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
     private var estimateSize = 0
     private var estimateCount = 0
     private var errorState = false
+    private var selectedJobId: String = ""
+
+    init {
+        lifecycleScope.launch {
+            whenStarted {
+                workViewModel = activity?.run {
+                    ViewModelProvider(this, factory).get(WorkViewModel::class.java)
+                } ?: throw Exception("Invalid Activity")
+            }
+            // CONTINUE HERE !!
+            val args: CaptureWorkFragmentArgs by navArgs()
+            args.jobId?.let {
+                selectedJobId = it
+                workViewModel.setWorkItemJob(it)
+            }
+            args.estimateId?.let {
+                workViewModel.setWorkItem(it)
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         lifecycle.addObserver(uiScope)
@@ -158,10 +183,6 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
-        workViewModel = activity?.run {
-            ViewModelProvider(this, factory).get(WorkViewModel::class.java)
-        } ?: throw Exception("Invalid Activity")
-
         uiScope.launch(uiScope.coroutineContext) {
 
             val user = workViewModel.user.await()
@@ -170,13 +191,17 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
             })
 
             workViewModel.workItemJob.observe(viewLifecycleOwner, { estimateJob ->
-                itemEstimateJob = estimateJob
+                estimateJob?.let {
+                    itemEstimateJob = it
+                }
             })
 
             workViewModel.workItem.observe(viewLifecycleOwner, { estimate ->
-                itemEstimate = estimate
+                estimate?.let {
+                    itemEstimate = it
+                    getWorkItems(itemEstimate, itemEstimateJob)
+                }
 
-                getWorkItems(itemEstimate, itemEstimateJob)
             })
             workViewModel.historicalWorks.observe(viewLifecycleOwner, {
                 it?.let { populateHistoricalWorkEstimate(it) }
@@ -257,8 +282,8 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
     }
 
     private fun uploadEstimateWorksItem(estimatePhotos: ArrayList<JobEstimateWorksPhotoDTO>, estimateItem: JobItemEstimateDTO?) {
-        if (ServiceUtil.isNetworkAvailable(requireActivity().applicationContext)) { //  Lets Send to Service
-
+        if (ServiceUtil.isNetworkAvailable(requireActivity().applicationContext)) {
+            //  Lets Send to Service
             itemEstiWorks.jobEstimateWorksPhotos = estimatePhotos
             itemEstiWorks.estimateId = estimateItem?.estimateId
 
@@ -438,10 +463,10 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
     private fun refreshView() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
 
-            fragmentManager?.beginTransaction()?.detach(this)?.commitNow()
-            fragmentManager?.beginTransaction()?.attach(this)?.commitNow()
+            parentFragmentManager.beginTransaction().detach(this).commitNow()
+            parentFragmentManager.beginTransaction().attach(this).commitNow()
         } else {
-            fragmentManager?.beginTransaction()?.detach(this)?.attach(this)?.commit()
+            parentFragmentManager.beginTransaction().detach(this).attach(this).commit()
         }
 
         // Await the updated estimate record
@@ -486,7 +511,8 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
     }
 
     private fun processAndSetImage(itemEstiWorks: JobEstimateWorksDTO) {
-        try { //  Location of picture
+        try {
+            //  Location of picture
             val currentLocation: LocationModel? = this.getCurrentLocation()
             Timber.d("$currentLocation")
             when (currentLocation != null) {
@@ -531,50 +557,61 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
             )
             // Launch Dialog
         } else {
-            // requireMutex
 
-            val photo = createItemWorksPhoto(
-                filenamePath,
-                currentLocation
-            )
-
-            estimateWorksPhotoArrayList.add(photo)
             // unlock mutex
             uiScope.launch(uiScope.coroutineContext) {
-                itemEstiWorks.jobEstimateWorksPhotos = estimateWorksPhotoArrayList
 
-                workViewModel.createSaveWorksPhotos(
-                    estimateWorksPhotoArrayList,
-                    itemEstiWorks
-                )
-
-                // Get imageUri from filename
-                val imageUrl = PhotoUtil.getPhotoPathFromExternalDirectory(
-                    photo.filename
-                )
-
-                // Generate Bitmap from file
-                val bitmap =
-                    PhotoUtil.getPhotoBitmapFromFile(
-                        requireActivity(),
-                        imageUrl,
-                        PhotoQuality.HIGH
+                try {
+                    val photo = createItemWorksPhoto(
+                        filenamePath,
+                        currentLocation
                     )
 
-                // Prepare gallery for new size
-                ui.imageCollectionView.scaleForSize(
-                    estimateWorksPhotoArrayList.size
-                )
+                    estimateWorksPhotoArrayList.add(photo)
+                    Timber.d("^*^ Photo Bug ^*^ Photos in array: ${estimateWorksPhotoArrayList.size}")
 
-                // Push photo into ImageCollectionView
-                ui.imageCollectionView.addImage(
-                    bitmap!!,
-                    object : ImageCollectionView.OnImageClickListener {
-                        override fun onClick(bitmap: Bitmap, imageView: ImageView) {
-                            showZoomedImage(imageUrl, this@CaptureWorkFragment.requireActivity())
+                    itemEstiWorks.jobEstimateWorksPhotos = estimateWorksPhotoArrayList
+
+                    workViewModel.createSaveWorksPhotos(
+                        estimateWorksPhotoArrayList,
+                        itemEstiWorks
+                    )
+
+                    // Get imageUri from filename
+                    val imageUrl = PhotoUtil.getPhotoPathFromExternalDirectory(
+                        photo.filename
+                    )
+
+                    // Generate Bitmap from file
+                    val bitmap =
+                        PhotoUtil.getPhotoBitmapFromFile(
+                            requireActivity(),
+                            imageUrl,
+                            PhotoQuality.HIGH
+                        )
+
+                    // Prepare gallery for new size
+                    ui.imageCollectionView.scaleForSize(
+                        estimateWorksPhotoArrayList.size
+                    )
+
+                    // Push photo into ImageCollectionView
+                    ui.imageCollectionView.addImage(
+                        bitmap!!,
+                        object : ImageCollectionView.OnImageClickListener {
+                            override fun onClick(bitmap: Bitmap, imageView: ImageView) {
+                                showZoomedImage(imageUrl, this@CaptureWorkFragment.requireActivity())
+                            }
                         }
-                    }
-                )
+                    )
+                    ui.imageCollectionView.visibility = View.VISIBLE
+
+                    Timber.d("*^* PhotoBug *^* Photos in gallery: ${ui.imageCollectionView.childCount}")
+                } catch (t: Throwable) {
+                    val message = "Gallery update failed: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
+                    Timber.e(t, message)
+                    crashGuard(this@CaptureWorkFragment.requireView(), XIError(t, message))
+                }
             }
         }
     }
@@ -688,8 +725,8 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
     }
 
     private fun popViewOnWorkSubmit(view: View) {
-        Navigation.findNavController(view)
-            .navigate(R.id.action_captureWorkFragment_to_nav_work)
+        val navDirections = CaptureWorkFragmentDirections.actionCaptureWorkFragmentToNavWork(selectedJobId)
+        Navigation.findNavController(view).navigate(navDirections)
     }
 
     private fun submitAllOutStandingEstimates(estimates: ArrayList<JobItemEstimateDTO>?) {
@@ -738,22 +775,23 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
             workViewModel.workflowState.postValue(XIProgress(true))
             withContext(uiScope.coroutineContext) {
                 for (jobEstimate in estimates) {
-                    val jobItemEstimate = workViewModel.getJobItemEstimateForEstimateId(jobEstimate.estimateId)
-                    jobItemEstimate.observe(viewLifecycleOwner, { jobItEstmt ->
-                        jobItEstmt?.let {
-                            Coroutines.main {
-                                withContext(uiScope.coroutineContext) {
-                                    moveJobItemEstimateToNextWorkflow(
-                                        WorkflowDirection.NEXT,
-                                        it
-                                    )
-                                }
+
+                    Coroutines.main {
+                        val jobItemEstimate = workViewModel.getJobItemEstimateForEstimateId(jobEstimate.estimateId)
+                        if (jobItemEstimate.actId == ActivityIdConstants.ESTIMATE_WORK_PART_COMPLETE) {
+                            withContext(uiScope.coroutineContext) {
+                                moveJobItemEstimateToNextWorkflow(
+                                    WorkflowDirection.NEXT,
+                                    jobEstimate
+                                )
                             }
                         }
-                    })
+
+                    }
                 }
             }
         }
+
         jobSubmission.join()
         handleJobSubmission(XISuccess("WORK_COMPLETE"))
     }
@@ -829,7 +867,7 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
                     startActivity(home)
                 }
             },
-            Constants.ONE_SECOND
+            Constants.TWO_SECONDS
         )
     }
 

@@ -5,9 +5,9 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import java.util.ArrayList
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasurePhotoDTO
+import java.util.ArrayList
 
 /**
  * Created by Francis Mahlava on 2019/11/21.
@@ -31,11 +31,10 @@ interface JobItemMeasureDao {
     @Query("SELECT * FROM JOB_ITEM_MEASURE WHERE actId = :actId AND deleted = 0 ORDER BY jimNo ASC")
     fun getJobApproveMeasureForActivityId(actId: Int): LiveData<List<JobItemMeasureDTO>>
 
-    @Query("SELECT * FROM JOB_ITEM_MEASURE WHERE jobId = :jobId AND actId = :actId AND deleted = 0 ORDER BY jimNo ASC")
-    fun
-        getJobMeasureItemsForJobId(jobId: String?, actId: Int): LiveData<List<JobItemMeasureDTO>>
+    @Query("SELECT * FROM JOB_ITEM_MEASURE WHERE jobId = :jobId AND actId = :actId AND deleted = 0 ORDER BY jimNo, projectItemId ASC")
+    fun getJobItemMeasuresByJobIdAndActId(jobId: String?, actId: Int): LiveData<List<JobItemMeasureDTO>>
 
-    @Query("SELECT * FROM JOB_ITEM_MEASURE WHERE jobId = :jobId AND actId = :actId AND deleted = 0 ORDER BY jimNo ASC")
+    @Query("SELECT * FROM JOB_ITEM_MEASURE WHERE jobId = :jobId AND actId = :actId AND deleted = 0 ORDER BY jimNo, projectItemId ASC")
     fun getJobMeasuresForJobId(jobId: String?, actId: Int): List<JobItemMeasureDTO>
 
     @Query("UPDATE JOB_ITEM_MEASURE SET trackRouteId =:trackRouteId, ActId =:actId , measureGroupId =:measureGroupId  WHERE itemMeasureId = :itemMeasureId")

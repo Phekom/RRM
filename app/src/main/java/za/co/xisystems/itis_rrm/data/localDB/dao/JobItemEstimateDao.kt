@@ -74,7 +74,7 @@ interface JobItemEstimateDao {
     fun deleteAll()
 
     @Query("SELECT * FROM JOB_ITEM_ESTIMATE WHERE estimateId = :estimateId")
-    fun getJobItemEstimateForEstimateId(estimateId: String): LiveData<JobItemEstimateDTO>
+    fun getJobItemEstimateForEstimateId(estimateId: String): JobItemEstimateDTO
 
     @Query("UPDATE JOB_ITEM_ESTIMATE SET measureActId =:actId WHERE estimateId = :estimateId")
     fun setMeasureActId(actId: Int, estimateId: String)
@@ -91,4 +91,5 @@ interface JobItemEstimateDao {
 
     @Query("DELETE FROM JOB_ITEM_ESTIMATE WHERE estimateId = :estimateId")
     suspend fun deleteJobItemEstimateByEstimateId(estimateId: String): Int
+
 }

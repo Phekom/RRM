@@ -1,10 +1,15 @@
+/*
+ * Updated by Shaun McDonald on 2021/02/08
+ * Last modified on 2021/02/07 6:42 PM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.ui.auth
 
 import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.os.Build
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.res.ResourcesCompat
@@ -28,7 +33,7 @@ import za.co.xisystems.itis_rrm.utils.hideKeyboard
 import za.co.xisystems.itis_rrm.utils.show
 import za.co.xisystems.itis_rrm.utils.toast
 
-class ResetPinActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnable {
+class ResetPinActivity : AppCompatActivity(), AuthListener, KodeinAware {
     companion object {
         val TAG: String = ResetPinActivity::class.java.simpleName
         private const val PERMISSION_REQUEST = 10
@@ -51,11 +56,9 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnabl
         appContext = this
 
         if (startPermissionRequest(permissions)) {
-            toast("Permissions Are already provided ")
+            toast("Permissions are already provided.")
         } else {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                requestPermissions(permissions, PERMISSION_REQUEST)
-            }
+            requestPermissions(permissions, PERMISSION_REQUEST)
         }
 
         val binding: ActivityResetPinBinding =
@@ -81,7 +84,7 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnabl
                             when (it) {
                                 true -> {
                                     MotionToast.createColorToast(
-                                        this@ResetPinActivity,
+                                        context = this@ResetPinActivity,
                                         message = "PIN updated successfully",
                                         style = MotionToast.TOAST_SUCCESS,
                                         position = MotionToast.GRAVITY_BOTTOM,
@@ -128,11 +131,7 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnabl
             for (i in permissions.indices) {
                 if (grantResults[i] == PackageManager.PERMISSION_DENIED) {
                     allAllowed = false
-                    val requestAgain = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        shouldShowRequestPermissionRationale(permissions[i])
-                    } else {
-                        false
-                    }
+                    val requestAgain = shouldShowRequestPermissionRationale(permissions[i])
                     if (requestAgain) {
                         toast("Permission Denied")
                     } else {
@@ -173,6 +172,7 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnabl
 
     override fun onSuccess(userDTO: UserDTO) {
         loading.hide()
+        hideKeyboard()
         toast("You are logged in as ${userDTO.userName}")
     }
 
@@ -192,9 +192,5 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnabl
 
     override fun onSignOut(userDTO: UserDTO) {
         // Not interested in this
-    }
-
-    override fun run() {
-        // Nothing to do
     }
 }

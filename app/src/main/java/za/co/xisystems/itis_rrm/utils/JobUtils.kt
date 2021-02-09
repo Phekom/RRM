@@ -1,6 +1,6 @@
 /*
- * Updated by Shaun McDonald on 2021/01/25
- * Last modified on 2021/01/25 6:30 PM
+ * Updated by Shaun McDonald on 2021/02/08
+ * Last modified on 2021/02/08 4:25 AM
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  */
 
@@ -25,6 +25,9 @@ object JobUtils {
     }
 
     fun formatTotalCost(job: JobDTO?): String {
+        Coroutines.main {
+
+        }
         var quantity = 0.0
         var cost = 0.0
         job?.jobItemEstimates?.forEach { estimate ->
