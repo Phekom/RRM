@@ -312,6 +312,8 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
         return ui.root
     }
 
+
+
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         if (savedInstanceState != null) {

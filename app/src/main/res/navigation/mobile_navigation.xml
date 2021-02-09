@@ -132,10 +132,7 @@
         <action
             android:id="@+id/action_selectItemFragment_to_addProjectFragment2"
             app:destination="@id/addProjectFragment"
-            app:enterAnim="@anim/nav_default_enter_anim"
-            app:exitAnim="@anim/nav_default_exit_anim"
-            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
-            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
+            app:popUpTo="@id/addProjectFragment" />
     </fragment>
     <fragment
         android:id="@+id/estimatePhotoFragment"
@@ -153,10 +150,7 @@
         <action
             android:id="@+id/action_estimatePhotoFragment_to_addProjectFragment2"
             app:destination="@id/addProjectFragment"
-            app:enterAnim="@anim/nav_default_enter_anim"
-            app:exitAnim="@anim/nav_default_exit_anim"
-            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
-            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
+            app:popUpTo="@id/addProjectFragment" />
     </fragment>
     <fragment
         android:id="@+id/addProjectFragment"
