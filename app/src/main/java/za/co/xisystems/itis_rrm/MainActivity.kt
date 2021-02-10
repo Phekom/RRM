@@ -126,8 +126,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         NavigationUI.setupActionBarWithNavController(this, navController)
         NavigationUI.setupWithNavController(ui.toolbar, navController, appBarConfiguration)
 
-        RaygunClient.init(application)
-        RaygunClient.enableCrashReporting()
+
+        Coroutines.io {
+            RaygunClient.init(application)
+            RaygunClient.enableCrashReporting()
+        }
 
         // Set MotionToast to use Sanral colours
         MotionToast.setErrorColor(R.color.sanral_dark_red)
@@ -324,9 +327,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     override fun onSupportNavigateUp(): Boolean {
-        navHostFragment =
-            supportFragmentManager.findFragmentById(R.id.nav_host_fragment_container) as NavHostFragment
-        navController = navHostFragment.navController
 
         return NavigationUI.navigateUp(navController, ui.drawerLayout) || super.onSupportNavigateUp()
     }
@@ -490,7 +490,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             mainActivityViewModel.getJobsForActivityId(
                 ActivityIdConstants.JOB_ESTIMATE
             ).observe(this@MainActivity, { newJobData ->
-                val tasks = newJobData.distinctBy { job -> job.jiNo }.count()
+                val tasks = newJobData.distinctBy { job -> job.jobId }.count()
                 writeBadge(badgeUnSubmitted, tasks)
             })
 

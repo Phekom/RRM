@@ -35,6 +35,7 @@ open class DebugMainApp : MainApp(), KodeinAware {
         super.onCreate()
     }
 
+    // Strict mode halps us catch leaks and bad practices super quick
     private fun SetStrictMode() {
 
         StrictMode.setThreadPolicy(
