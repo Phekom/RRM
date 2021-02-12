@@ -1,3 +1,9 @@
+/*
+ * Updated by Shaun McDonald on 2021/01/30
+ * Last modified on 2021/01/30 7:07 AM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 @file:Suppress(
     "RemoveExplicitTypeArguments"
 )
@@ -6,14 +12,12 @@ package za.co.xisystems.itis_rrm.ui.mainview.approvemeasure
 
 import android.graphics.Color
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.core.content.ContextCompat
+import androidx.core.view.doOnNextLayout
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -27,7 +31,6 @@ import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.R.layout
 import za.co.xisystems.itis_rrm.base.BaseFragment
-import za.co.xisystems.itis_rrm.constants.Constants
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.results.XIError
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
@@ -83,7 +86,7 @@ class ApproveMeasureFragment : BaseFragment(), KodeinAware {
             setVeilLayout(layout.item_velied_slug, object : VeiledItemOnClickListener {
                 /** will be invoked when the item on the [VeilRecyclerFrameView] clicked. */
                 override fun onItemClicked(pos: Int) {
-                    Toast.makeText(this@ApproveMeasureFragment.requireContext(), "Loading ...", Toast.LENGTH_SHORT).show()
+                    toast("Loading ...")
                 }
             })
             setAdapter(groupAdapter)
@@ -96,15 +99,14 @@ class ApproveMeasureFragment : BaseFragment(), KodeinAware {
         IndefiniteSnackbar.hide()
         ui.approveMeasurementsList.veil()
         fetchJobsFromService()
-        loadJobHeaders()
-        delayedUnveil()
     }
 
     private fun loadJobHeaders() {
 
         Coroutines.main {
             try {
-
+                ui.approveMeasurementsList.visibility = View.VISIBLE
+                ui.approveMeasurementsList.veil()
                 val measurementsSubscription =
                     approveViewModel.getJobApproveMeasureForActivityId(ActivityIdConstants.MEASURE_COMPLETE)
 
@@ -113,9 +115,11 @@ class ApproveMeasureFragment : BaseFragment(), KodeinAware {
                     if (measurementData.isNullOrEmpty()) {
                         ui.noData.visibility = View.VISIBLE
                         ui.approveMeasurementsList.visibility = View.GONE
+                        ui.approveMeasurementsList.unVeil()
                     } else {
                         ui.noData.visibility = View.GONE
                         ui.approveMeasurementsList.visibility = View.VISIBLE
+
                         val jobHeaders = measurementData.distinctBy {
                             it.jobId
                         }
@@ -147,20 +151,7 @@ class ApproveMeasureFragment : BaseFragment(), KodeinAware {
         ui.approvemSwipeToRefresh.setOnRefreshListener {
             ui.approveMeasurementsList.veil()
             fetchJobsFromService()
-            loadJobHeaders()
-            delayedUnveil()
         }
-    }
-
-    private fun delayedUnveil() {
-        Handler(Looper.getMainLooper()).postDelayed(
-            {
-                if (!activity?.isFinishing!!) {
-                    ui.approveMeasurementsList.unVeil()
-                }
-            },
-            Constants.ONE_SECOND
-        )
     }
 
     private fun fetchJobsFromService() {
@@ -173,8 +164,7 @@ class ApproveMeasureFragment : BaseFragment(), KodeinAware {
                         ui.noData.visibility = View.VISIBLE
                         ui.approveMeasurementsList.visibility = View.GONE
                     } else {
-                        ui.noData.visibility = View.GONE
-                        ui.approveMeasurementsList.visibility = View.VISIBLE
+                        loadJobHeaders()
                     }
                 })
             } catch (t: Throwable) {
@@ -202,6 +192,7 @@ class ApproveMeasureFragment : BaseFragment(), KodeinAware {
         ui.approveMeasurementsList.run {
             setLayoutManager(LinearLayoutManager(this.context))
             setAdapter(adapter = groupAdapter)
+            doOnNextLayout { ui.approveMeasurementsList.unVeil() }
         }
 
         groupAdapter.setOnItemClickListener { item, view ->
@@ -224,11 +215,13 @@ class ApproveMeasureFragment : BaseFragment(), KodeinAware {
         view: View
     ) {
         Coroutines.main {
-            job?.let { approveViewModel.setApproveMeasureItem(job) }
+            job?.jobId?.let {
+                approveViewModel.setJobIdForApproval(it)
+                val navDirection = ApproveMeasureFragmentDirections
+                    .actionNavApprovMeasureToMeasureApprovalFragment(it)
+                Navigation.findNavController(view).navigate(navDirection)
+            }
         }
-
-        Navigation.findNavController(view)
-            .navigate(R.id.action_nav_approvMeasure_to_measureApprovalFragment)
     }
 
     private fun List<JobItemMeasureDTO>.toApproveListItems(): List<ApproveMeasureItem> {

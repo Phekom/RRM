@@ -1,3 +1,9 @@
+/*
+ * Updated by Shaun McDonald on 2021/01/25
+ * Last modified on 2021/01/25 6:30 PM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 @file:Suppress("Annotator")
 
 package za.co.xisystems.itis_rrm.ui.mainview.estmeasure.submit_measure
@@ -75,12 +81,10 @@ class CaptureItemMeasurePhotoFragment :
     private lateinit var jobItemMeasurePhotoArrayList: ArrayList<JobItemMeasurePhotoDTO>
     private var mTempPhotoPath: String? = null
     private lateinit var selectedJobItemMeasure: JobItemMeasureDTO
-    private var jobItemMeasure: JobItemMeasureDTO? = null
     private lateinit var imageUri: Uri
     private var filenamePath = HashMap<String, String>()
     private var viewPhotosOnly = false
     private var uiScope = UiLifecycleScope()
-    private var measureIdent: Boolean = false
     override fun onAttach(context: Context) {
         super.onAttach(context)
         (activity as MainActivity).supportActionBar?.title = getString(R.string.captured_photos)
@@ -125,13 +129,13 @@ class CaptureItemMeasurePhotoFragment :
                         estimate_image_collection_view.clearImages()
                         viewPhotosOnly = false
 
-                        if (!measureIdent) {
+                        if (measureViewModel.measuredJiNo != it.jimNo) {
                             this@CaptureItemMeasurePhotoFragment.sharpToast(
                                 message = "Measuring job: ${it.jimNo}",
                                 style = INFO,
                                 position = ToastGravity.BOTTOM
                             )
-                            measureIdent = true
+                            measureViewModel.measuredJiNo = it.jimNo!!
                         }
 
                         selectedJobItemMeasure = it
@@ -231,7 +235,7 @@ class CaptureItemMeasurePhotoFragment :
                 filename = filenamePath["filename"],
                 estimateId = selectedJobItemMeasure.estimateId,
                 itemMeasureId = selectedJobItemMeasure.itemMeasureId,
-                photoDate = DateUtil.DateToString(Date()),
+                photoDate = DateUtil.dateToString(Date()),
                 photoId = SqlLitUtils.generateUuid(),
                 photoLatitude = measurementLocation.latitude,
                 photoLongitude = measurementLocation.longitude,

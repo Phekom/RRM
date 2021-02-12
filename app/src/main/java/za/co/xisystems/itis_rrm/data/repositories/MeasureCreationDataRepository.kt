@@ -1,3 +1,9 @@
+/*
+ * Updated by Shaun McDonald on 2021/02/08
+ * Last modified on 2021/02/08 4:48 AM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.data.repositories
 
 // import sun.security.krb5.Confounder.bytes
@@ -9,7 +15,6 @@ import com.google.gson.Gson
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
-import java.util.ArrayList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -43,6 +48,7 @@ import za.co.xisystems.itis_rrm.utils.PhotoUtil.getPhotoPathFromExternalDirector
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import za.co.xisystems.itis_rrm.utils.uncaughtExceptionHandler
+import java.util.ArrayList
 
 /**
  * Created by Francis Mahlava on 2019/11/28.
@@ -139,7 +145,7 @@ class MeasureCreationDataRepository(
                 val measureJob = setWorkflowJobBigEndianGuids(workflowJobDTO)
                 insertOrUpdateWorkflowJobInSQLite(measureJob, estimatesPush = false)
                 uploadMeasurementImages(jobItemMeasure, activity)
-                val myJob = getUpdatedJob(itemMeasureJob.JobId)
+                val myJob = getUpdatedJob(itemMeasureJob.jobId)
                 moveJobToNextWorkflow(activity, measureJob, myJob)
             } catch (t: Throwable) {
                 val message = "Failed to process workflow move: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
@@ -163,22 +169,21 @@ class MeasureCreationDataRepository(
         var totalImages = 0
         if (jobItemMeasures.isNotEmpty()) {
             for (jobItemMeasure in jobItemMeasures.iterator()) {
-                if (jobItemMeasure.jobItemMeasurePhotos.isNotEmpty()) {
-                    totalImages += jobItemMeasure.jobItemMeasurePhotos.size
-                    for (photo in jobItemMeasure.jobItemMeasurePhotos) {
-                        if (PhotoUtil.photoExist(photo.filename!!)) {
-                            val data: ByteArray =
-                                getData(photo.filename, PhotoQuality.HIGH, activity!!)
-                            processImageUpload(
-                                photo.filename,
-                                activity.getString(R.string.jpg),
-                                data,
-                                imageCounter,
-                                totalImages
-                            )
-                            imageCounter++
-                            Timber.d("$imageCounter / $totalImages processed")
-                        }
+                val photos = jobItemMeasure.jobItemMeasurePhotos
+                totalImages += photos.size
+                for (photo in photos) {
+                    if (PhotoUtil.photoExist(photo.filename!!)) {
+                        val data: ByteArray =
+                            getData(photo.filename, PhotoQuality.HIGH, activity!!)
+                        processImageUpload(
+                            photo.filename,
+                            activity.getString(R.string.jpg),
+                            data,
+                            imageCounter,
+                            totalImages
+                        )
+                        imageCounter++
+                        Timber.d("$imageCounter / $totalImages processed")
                     }
                 }
             }
@@ -254,7 +259,7 @@ class MeasureCreationDataRepository(
                 val measurementTracks = myJob.workflowItemMeasures.mapNotNull { item ->
                     if (item.actId < ActivityIdConstants.MEASURE_COMPLETE) {
                         item.toMeasurementTrack(
-                            userId = job.UserId.toString(),
+                            userId = job.userId.toString(),
                             description = description,
                             direction = WorkflowDirection.NEXT.value
                         )
@@ -281,8 +286,8 @@ class MeasureCreationDataRepository(
                         }
 
                         workflowMoveResponse.workflowJob == null -> {
-                            Timber.d("WorkflowJob is null for JiNo: ${job.JiNo}")
-                            throw NoDataException("WorkflowJob is null for JiNo: ${job.JiNo}")
+                            Timber.d("WorkflowJob is null for JiNo: ${job.jiNo}")
+                            throw NoDataException("WorkflowJob is null for JiNo: ${job.jiNo}")
                         }
 
                         else -> {
@@ -295,7 +300,7 @@ class MeasureCreationDataRepository(
                     }
                 }
 
-                postWorkflowStatus(XISuccess(job.JiNo!!))
+                postWorkflowStatus(XISuccess(job.jiNo!!))
                 workComplete = true
             } catch (t: Throwable) {
                 val prefix = "Workflow failed:"
@@ -342,8 +347,7 @@ class MeasureCreationDataRepository(
 
     suspend fun getSingleJobFromJobId(
         jobId: String?
-    ):
-        LiveData<JobDTO> {
+    ): LiveData<JobDTO> {
         return withContext(Dispatchers.IO) {
             appDb.getJobDao().getJobFromJobId(jobId!!)
         }
@@ -477,7 +481,7 @@ class MeasureCreationDataRepository(
             appDb.getJobDao()
                 .updateJob(job.trackRouteId, job.actId, job.jiNo, job.jobId)
 
-            job.workflowItemEstimates?.forEach { jobItemEstimate ->
+            job.workflowItemEstimates.forEach { jobItemEstimate ->
                 appDb.getJobItemEstimateDao().updateExistingJobItemEstimateWorkflow(
                     jobItemEstimate.trackRouteId,
                     jobItemEstimate.actId,
@@ -507,7 +511,7 @@ class MeasureCreationDataRepository(
                     }
                 }
 
-                job.workflowItemMeasures?.forEach { jobItemMeasure ->
+                job.workflowItemMeasures.forEach { jobItemMeasure ->
                     appDb.getJobItemMeasureDao().updateWorkflowJobItemMeasure(
                         jobItemMeasure.itemMeasureId,
                         jobItemMeasure.trackRouteId,
@@ -535,7 +539,7 @@ class MeasureCreationDataRepository(
 
             //  Place the Job Section, UPDATE OR CREATE
 
-            job.workflowJobSections?.forEach { jobSection ->
+            job.workflowJobSections.forEach { jobSection ->
                 if (!appDb.getJobSectionDao()
                         .checkIfJobSectionExist(jobSection.jobSectionId)
                 ) {
@@ -564,11 +568,11 @@ class MeasureCreationDataRepository(
 
             job.jobId = DataConversion.toBigEndian(job.jobId)
             job.trackRouteId = DataConversion.toBigEndian(job.trackRouteId)
-            job.workflowItemEstimates?.forEach { jie ->
+            job.workflowItemEstimates.forEach { jie ->
                 jie.estimateId = DataConversion.toBigEndian(jie.estimateId)!!
                 jie.trackRouteId = DataConversion.toBigEndian(jie.trackRouteId)!!
                 //  Let's go through the WorkFlowEstimateWorks
-                for (wfe in jie.workflowEstimateWorks) {
+                jie.workflowEstimateWorks.forEach { wfe ->
                     wfe.trackRouteId =
                         DataConversion.toBigEndian(wfe.trackRouteId)!!
                     wfe.worksId = DataConversion.toBigEndian(wfe.worksId)!!
@@ -577,7 +581,7 @@ class MeasureCreationDataRepository(
                 }
             }
 
-            if (job.workflowItemMeasures != null) {
+            if (job.workflowItemMeasures.isNotEmpty()) {
                 for (jim in job.workflowItemMeasures) {
                     jim.itemMeasureId = DataConversion.toBigEndian(jim.itemMeasureId)!!
                     jim.measureGroupId =
@@ -585,7 +589,7 @@ class MeasureCreationDataRepository(
                     jim.trackRouteId = DataConversion.toBigEndian(jim.trackRouteId)!!
                 }
             }
-            if (job.workflowJobSections != null) {
+            if (job.workflowJobSections.isNotEmpty()) {
                 for (js in job.workflowJobSections) {
                     js.jobSectionId = DataConversion.toBigEndian(js.jobSectionId)!!
                     js.projectSectionId =
@@ -637,4 +641,15 @@ class MeasureCreationDataRepository(
             appDb.getJobItemMeasurePhotoDao().getJobItemMeasurePhotosForItemMeasureID(itemMeasureId)
         }
     }
+
+    suspend fun getJobMeasureItemsByJobIdAndActId(
+        jobID: String?,
+        actId: Int
+    ): LiveData<List<JobItemMeasureDTO>> {
+        return withContext(Dispatchers.IO) {
+            appDb.getJobItemMeasureDao().getJobItemMeasuresByJobIdAndActId(jobID!!, actId)
+        }
+    }
+
+
 }

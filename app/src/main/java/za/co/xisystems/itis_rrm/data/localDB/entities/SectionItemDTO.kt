@@ -1,3 +1,15 @@
+/*
+ * Updated by Shaun McDonald on 2021/01/25
+ * Last modified on 2021/01/25 6:30 PM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
+/*******************************************************************************
+ * Updated by Shaun McDonald on 2021/29/25
+ * Last modified on 2021/01/25 3:23 PM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ ******************************************************************************/
+
 package za.co.xisystems.itis_rrm.data.localDB.entities
 
 import android.os.Parcel

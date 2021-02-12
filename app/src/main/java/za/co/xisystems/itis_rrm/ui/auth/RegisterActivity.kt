@@ -1,3 +1,9 @@
+/*
+ * Updated by Shaun McDonald on 2021/02/08
+ * Last modified on 2021/02/07 4:41 PM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.ui.auth
 
 /**
@@ -8,7 +14,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.os.Build
 import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -36,7 +41,7 @@ import za.co.xisystems.itis_rrm.utils.toast
 
 private const val PERMISSION_REQUEST = 10
 
-class RegisterActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnable {
+class RegisterActivity : AppCompatActivity(), AuthListener, KodeinAware {
 
     override val kodein by kodein()
     private val factory: AuthViewModelFactory by instance()
@@ -57,10 +62,7 @@ class RegisterActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnabl
         if (startPermissionRequest(permissions)) {
             toast("Permissions already provided.")
         } else {
-            // The only fallback from Marshmallow is to grant all permissions
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                requestPermissions(permissions, PERMISSION_REQUEST)
-            }
+            requestPermissions(permissions, PERMISSION_REQUEST)
         }
 
         val binding: ActivityRegisterBinding =
@@ -140,12 +142,7 @@ class RegisterActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnabl
         for (i in permissions.indices) {
             if (grantResults[i] == PackageManager.PERMISSION_DENIED) {
                 allAllowed = false
-                val requestAgain = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    shouldShowRequestPermissionRationale(permissions[i])
-                } else {
-                    // Fallback granting all permissions
-                    false
-                }
+                val requestAgain = shouldShowRequestPermissionRationale(permissions[i])
                 if (requestAgain) {
                     toast("Permission Denied")
                 } else {
@@ -194,7 +191,6 @@ class RegisterActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnabl
     override fun onSuccess(userDTO: UserDTO) {
         loading.hide()
         toast("You are logged in as ${userDTO.userName}")
-        this.run()
     }
 
     override fun onFailure(message: String) {
@@ -208,14 +204,10 @@ class RegisterActivity : AppCompatActivity(), AuthListener, KodeinAware, Runnabl
     }
 
     override fun onSignOut(userDTO: UserDTO) {
-        finishAffinity()
+        userDTO.authd = false
     }
 
     companion object {
         val TAG: String = RegisterActivity::class.java.simpleName
-    }
-
-    override fun run() {
-        // Yagni
     }
 }

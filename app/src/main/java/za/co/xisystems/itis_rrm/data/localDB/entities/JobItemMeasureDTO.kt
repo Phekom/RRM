@@ -1,3 +1,9 @@
+/*
+ * Updated by Shaun McDonald on 2021/02/08
+ * Last modified on 2021/02/07 12:13 AM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.data.localDB.entities
 
 import android.os.Parcel
@@ -6,10 +12,8 @@ import android.os.Parcelable.Creator
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
-import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import java.io.Serializable
 import java.util.ArrayList
-import java.util.Date
 
 const val JOB_ITEM_MEASURE = "JOB_ITEM_MEASURE"
 
@@ -21,7 +25,7 @@ data class JobItemMeasureDTO(
     @SerializedName("ActId")
     var actId: Int,
     @SerializedName("ApprovalDate")
-    var approvalDate: String? = Date().toString(),
+    var approvalDate: String? = null,
     @SerializedName("Cpa")
     var cpa: Int = 0,
     @SerializedName("EndKm")
@@ -29,7 +33,7 @@ data class JobItemMeasureDTO(
     @SerializedName("EstimateId")
     var estimateId: String?,
     @SerializedName("ItemMeasureId")
-    var itemMeasureId: String = SqlLitUtils.generateUuid(),
+    var itemMeasureId: String,
     @SerializedName("JimNo")
     var jimNo: String?,
     @SerializedName("JobDirectionId")
@@ -41,11 +45,11 @@ data class JobItemMeasureDTO(
     @SerializedName("LineRate")
     var lineRate: Double,
     @SerializedName("MeasureDate")
-    var measureDate: String? = Date().toString(),
+    var measureDate: String? = null,
     @SerializedName("MeasureGroupId")
     var measureGroupId: String?,
     @SerializedName("PrjItemMeasurePhotoDtos")
-    var jobItemMeasurePhotos: ArrayList<JobItemMeasurePhotoDTO>,
+    var jobItemMeasurePhotos: ArrayList<JobItemMeasurePhotoDTO> = ArrayList(),
     @SerializedName("ProjectItemId")
     var projectItemId: String?,
     @SerializedName("ProjectVoId")
@@ -63,40 +67,36 @@ data class JobItemMeasureDTO(
     @SerializedName("Deleted")
     var deleted: Int = 0,
     var entityDescription: String?,
-
-    var selectedItemUom: String?,
-    val job: JobDTO?,
-    val jobItemEstimate: JobItemEstimateDTO?
-
+    var selectedItemUom: String?
 ) : Serializable, Parcelable {
     constructor(parcel: Parcel) : this(
-        parcel.readInt(),
-        parcel.readInt(),
-        parcel.readString(),
-        parcel.readInt(),
-        parcel.readDouble(),
-        parcel.readString(),
-        parcel.readString()!!,
-        parcel.readString(),
-        parcel.readInt(),
-        parcel.readString(),
-        parcel.readDouble(),
-        parcel.readDouble(),
-        parcel.readString(),
-        parcel.readString(),
-        TODO("jobItemMeasurePhotos"),
-        parcel.readString(),
-        parcel.readString(),
-        parcel.readDouble(),
-        parcel.readInt(),
-        parcel.readInt(),
-        parcel.readDouble(),
-        parcel.readString(),
-        parcel.readInt(),
-        parcel.readString(),
-        parcel.readString(),
-        parcel.readParcelable(JobDTO::class.java.classLoader),
-        parcel.readParcelable(JobItemEstimateDTO::class.java.classLoader)
+        id = parcel.readInt(),
+        actId = parcel.readInt(),
+        approvalDate = parcel.readString(),
+        cpa = parcel.readInt(),
+        endKm = parcel.readDouble(),
+        estimateId = parcel.readString(),
+        itemMeasureId = parcel.readString()!!,
+        jimNo = parcel.readString(),
+        jobDirectionId = parcel.readInt(),
+        jobId = parcel.readString(),
+        lineAmount = parcel.readDouble(),
+        lineRate = parcel.readDouble(),
+        measureDate = parcel.readString(),
+        measureGroupId = parcel.readString(),
+        jobItemMeasurePhotos = arrayListOf<JobItemMeasurePhotoDTO>().apply {
+            parcel.readList(this.toList(), JobItemMeasurePhotoDTO::class.java.classLoader)
+        },
+        projectItemId = parcel.readString(),
+        projectVoId = parcel.readString(),
+        qty = parcel.readDouble(),
+        recordSynchStateId = parcel.readInt(),
+        recordVersion = parcel.readInt(),
+        startKm = parcel.readDouble(),
+        trackRouteId = parcel.readString(),
+        deleted = parcel.readInt(),
+        entityDescription = parcel.readString(),
+        selectedItemUom = parcel.readString()
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -124,8 +124,7 @@ data class JobItemMeasureDTO(
         parcel.writeInt(deleted)
         parcel.writeString(entityDescription)
         parcel.writeString(selectedItemUom)
-        parcel.writeParcelable(job, flags)
-        parcel.writeParcelable(jobItemEstimate, flags)
+        parcel.writeList(jobItemMeasurePhotos.toList())
     }
 
     override fun describeContents(): Int {

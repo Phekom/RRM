@@ -1,3 +1,9 @@
+/*
+ * Updated by Shaun McDonald on 2021/01/25
+ * Last modified on 2021/01/25 6:30 PM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.ui.mainview.estmeasure.submit_measure
 
 import android.app.AlertDialog
@@ -29,7 +35,7 @@ import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.estimate_measure_item.MeasureHeaderItem
 import za.co.xisystems.itis_rrm.utils.Coroutines
-import za.co.xisystems.itis_rrm.utils.DataConversion
+import za.co.xisystems.itis_rrm.utils.DateUtil
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 
 class ExpandableHeaderMeasureItem(
@@ -44,9 +50,6 @@ class ExpandableHeaderMeasureItem(
     private var clickListener: ((ExpandableHeaderMeasureItem) -> Unit)? = null
     private var navController: ((NavController) -> Unit)? = null
     private var projectItemIdz: String? = measureItem.projectItemId
-
-    private var jobItemEst: JobDTO? = null
-    private var itemEs: JobItemEstimateDTO? = null
 
     companion object {
         const val JOB_ITEM_MEASURE: String = "JobItemMeasure"
@@ -86,12 +89,13 @@ class ExpandableHeaderMeasureItem(
         Coroutines.main {
             val jobForJobItemEstimate = measureViewModel.getJobFromJobId(measureItem.jobId)
             jobForJobItemEstimate.observeOnce(fragment.requireActivity(), { job ->
-                if (measureItem.jobId != null && job.JobId == measureItem.jobId!!)
+                if (measureItem.jobId != null && job.jobId == measureItem.jobId!!) {
                     showAddMeasurementQuantityDialog(
                         measureItem,
                         job,
                         jobItemMeasurePhotoDTOArrayList
                     )
+                }
             })
         }
     }
@@ -208,26 +212,24 @@ class ExpandableHeaderMeasureItem(
             id = 0,
             actId = 0,
             approvalDate = null,
-            cpa = (jobForJobItemEstimate.Cpa).toString().toInt(),
-            endKm = (jobForJobItemEstimate.EndKm).toString().toDouble(),
+            cpa = (jobForJobItemEstimate.cpa).toString().toInt(),
+            endKm = (jobForJobItemEstimate.endKm).toString().toDouble(),
             estimateId = (selectedJobItemEstimate.estimateId),
-            itemMeasureId = (DataConversion.toBigEndian(newItemMeasureId)).toString(),
-            jimNo = jobForJobItemEstimate.JiNo,
-            jobDirectionId = (jobForJobItemEstimate.JobDirectionId).toString().toInt(),
-            jobId = (jobForJobItemEstimate.JobId),
+            itemMeasureId = newItemMeasureId,
+            jimNo = jobForJobItemEstimate.jiNo,
+            jobDirectionId = (jobForJobItemEstimate.jobDirectionId).toString().toInt(),
+            jobId = (jobForJobItemEstimate.jobId),
             lineAmount = (selectedJobItemEstimate.lineRate * quantity).toString().toDouble(),
             lineRate = (selectedJobItemEstimate.lineRate).toString().toDouble(),
-            measureDate = (Date()).toString(),
+            measureDate = DateUtil.dateToString(Date()).toString(),
             measureGroupId = null,
             jobItemMeasurePhotos = jobItemMeasurePhotoDTO,
-            job = jobItemEst,
-            jobItemEstimate = itemEs,
             projectItemId = (selectedJobItemEstimate.projectItemId).toString(),
-            projectVoId = jobForJobItemEstimate.VoId,
+            projectVoId = jobForJobItemEstimate.voId,
             qty = (quantity).toString().toDouble(),
             recordSynchStateId = 0,
             recordVersion = 0,
-            startKm = (jobForJobItemEstimate.StartKm).toString().toDouble(),
+            startKm = (jobForJobItemEstimate.startKm).toString().toDouble(),
             trackRouteId = null,
             deleted = 0,
             entityDescription = null,
@@ -250,7 +252,13 @@ class ExpandableHeaderMeasureItem(
     private fun bindIcon(viewHolder: GroupieViewHolder) {
         viewHolder.icon.apply {
             visibility = View.VISIBLE
-            setImageResource(if (expandableGroup.isExpanded) R.drawable.collapse_animated else R.drawable.expand_animated)
+            setImageResource(
+                if (expandableGroup.isExpanded) {
+                    R.drawable.collapse_animated
+                } else {
+                    R.drawable.expand_animated
+                }
+            )
             (drawable as Animatable).start()
         }
     }

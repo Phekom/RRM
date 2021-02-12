@@ -257,16 +257,16 @@ class JobInfoFragment : BaseFragment(), KodeinAware {
     private fun initApprovalHeader() {
         approveViewModel.jobApprovalItem.observe(viewLifecycleOwner, { job ->
             Coroutines.main {
-                getEstimateItems(job.jobDTO.JobId)
-                val description = approveViewModel.getDescForProjectId(job.jobDTO.ProjectId!!)
-                val sectionId = approveViewModel.getProjectSectionIdForJobId(job.jobDTO.JobId)
+                getEstimateItems(job.jobDTO.jobId)
+                val description = approveViewModel.getDescForProjectId(job.jobDTO.projectId!!)
+                val sectionId = approveViewModel.getProjectSectionIdForJobId(job.jobDTO.jobId)
                 val route = approveViewModel.getRouteForProjectSectionId(sectionId)
                 val section = approveViewModel.getSectionForProjectSectionId(sectionId)
 
                 ui.projectDescriptionTextView.text = description
                 ui.sectionDescriptionTextView.text = ("$route/ $section")
-                ui.startKmDescriptionTextView.text = (job.jobDTO.StartKm.toString())
-                ui.endKmDescriptionTextView.text = (job.jobDTO.EndKm.toString())
+                ui.startKmDescriptionTextView.text = (job.jobDTO.startKm.toString())
+                ui.endKmDescriptionTextView.text = (job.jobDTO.endKm.toString())
             }
         })
     }
@@ -323,7 +323,7 @@ class JobInfoFragment : BaseFragment(), KodeinAware {
                             )
                             progressButton.failProgress("Invalid User")
                         }
-                        approveJobItem.jobDTO.JobId.isBlank() -> {
+                        approveJobItem.jobDTO.jobId.isBlank() -> {
                             sharpToast(
                                 message = "The selected job is invalid.",
                                 style = ToastStyle.ERROR,
@@ -356,7 +356,7 @@ class JobInfoFragment : BaseFragment(), KodeinAware {
         userDTO: UserDTO
     ) {
         val trackRouteId: String =
-            DataConversion.toLittleEndian(job.jobDTO.TrackRouteId)!!
+            DataConversion.toLittleEndian(job.jobDTO.trackRouteId)!!
         val direction: Int = workflowDirection.value
 
         var description: String? = ""
@@ -367,7 +367,7 @@ class JobInfoFragment : BaseFragment(), KodeinAware {
             try {
                 approveViewModel.workflowState.observe(viewLifecycleOwner, workObserver)
                 val task = approveViewModel.processWorkflowMove(
-                    userDTO.userId, trackRouteId, description, direction, job.jobDTO.JobId
+                    userDTO.userId, trackRouteId, description, direction, job.jobDTO.jobId
                 )
                 task.join()
             } catch (t: Throwable) {

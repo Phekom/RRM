@@ -1,39 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  * Updated by Shaun McDonald on 2021/22/20
+  * Last modified on 2021/01/20 12:46 PM
+  * Copyright (c) 2021.  XI Systems  - All rights reserved
+  -->
+
 <resources>
     <!-- parent="android:Theme.Holo.Light.DarkActionBar" -->
-    <style name="RrmAppTheme" parent="Base.Theme.MaterialComponents.Light.DarkActionBar">
-        <item name="android:actionBarStyle">@style/ItisActionBar</item>
-        <item name="android:actionBarWidgetTheme">@style/PopupWrapper</item>
-        <item name="homeAsUpIndicator">@drawable/ic_action_ic_navigation_drawer</item>
-        <item name="android:homeAsUpIndicator">@drawable/ic_action_ic_navigation_drawer</item>
-        <item name="android:colorAccent">@color/sanral_burnt_orange</item>
-    </style>
-
-    <style name="BackNavigationTheme" parent="Base.Theme.MaterialComponents.Light.DarkActionBar">
-        <item name="android:actionBarStyle">@style/ItisActionBar</item>
-        <item name="android:actionBarWidgetTheme">@style/PopupWrapper</item>
-        <item name="android:colorAccent">@color/sanral_burnt_orange</item>
-    </style>
 
     <!-- parent="@android:style/Widget.Holo.Light.ActionBar" -->
-    <style name="ItisActionBar" parent="@android:style/Widget.ActionBar">
-        <item name="android:background">@color/itis_gray</item>
-        <item name="android:titleTextStyle">@style/ItisActionBarTitleColor</item>
-    </style>
 
     <!-- parent="android:TextAppearance.Holo.Widget.ActionBar.Title" -->
-    <style name="ItisActionBarTitleColor" parent="android:TextAppearance.DeviceDefault.Widget.ActionBar.Title">
-        <item name="android:textColor">@android:color/white</item>
-    </style>
 
     <!-- parent="@android:style/Theme.Holo" -->
-    <style name="PopupWrapper" parent="@android:style/Theme.DeviceDefault">
-        <item name="android:popupMenuStyle">@style/MyPopupMenu</item>
-        <item name="android:itemTextAppearance">@style/TextAppearance</item>
-    </style>
 
     <!-- parent="@android:style/Widget.Holo.ListPopupWindow" -->
-    <style name="MyPopupMenu" parent="@android:style/Widget.DeviceDefault.ListPopupWindow">
-        <item name="android:popupBackground">@color/itis_gray</item>
-    </style>
 </resources>

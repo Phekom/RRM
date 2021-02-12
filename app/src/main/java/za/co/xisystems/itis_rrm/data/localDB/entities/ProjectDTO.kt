@@ -1,3 +1,9 @@
+/*
+ * Updated by Shaun McDonald on 2021/02/08
+ * Last modified on 2021/02/07 12:57 PM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.data.localDB.entities
 
 import android.os.Parcel
@@ -10,7 +16,6 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import org.jetbrains.annotations.NotNull
-import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import java.io.Serializable
 
 /**
@@ -24,8 +29,9 @@ const val PROJECT_TABLE = "PROJECT_TABLE"
         entity = ContractDTO::class,
         parentColumns = arrayOf("contractId"),
         childColumns = arrayOf("contractId"),
-        onDelete = ForeignKey.CASCADE
-    )], indices = [Index(value = ["projectId"], unique = true)]
+        onDelete = ForeignKey.CASCADE,
+        onUpdate = ForeignKey.CASCADE
+    )], indices = [Index(value = ["projectId"], unique = true, name = "")]
 )
 
 data class ProjectDTO(
@@ -35,7 +41,7 @@ data class ProjectDTO(
 
     @SerializedName("ProjectId")
     @NotNull
-    val projectId: String = SqlLitUtils.generateUuid(),
+    val projectId: String,
 
     @SerializedName("Descr")
     val descr: String?,
@@ -44,7 +50,7 @@ data class ProjectDTO(
     val endDate: String?,
 
     @SerializedName("Items")
-    val items: ArrayList<ProjectItemDTO>?,
+    val items: ArrayList<ProjectItemDTO> = ArrayList(),
 
     @SerializedName("ProjectCode")
     val projectCode: String?,
@@ -56,10 +62,10 @@ data class ProjectDTO(
     val projectPlus: String?,
 
     @SerializedName("Sections")
-    val projectSections: ArrayList<ProjectSectionDTO>?,
+    val projectSections: ArrayList<ProjectSectionDTO> = ArrayList(),
 
     @SerializedName("VoItems")
-    val voItems: ArrayList<VoItemDTO>?,
+    val voItems: ArrayList<VoItemDTO> = ArrayList(),
 
     @SerializedName("ContractId")
     @ColumnInfo(name = "contractId", index = true)
@@ -67,17 +73,23 @@ data class ProjectDTO(
 
 ) : Serializable, Parcelable {
     constructor(parcel: Parcel) : this(
-        parcel.readInt(),
-        parcel.readString()!!,
-        parcel.readString(),
-        parcel.readString(),
-        TODO("items"),
-        parcel.readString(),
-        parcel.readString(),
-        parcel.readString(),
-        TODO("projectSections"),
-        TODO("voItems"),
-        parcel.readString()!!
+        id = parcel.readInt(),
+        projectId = parcel.readString()!!,
+        descr = parcel.readString(),
+        endDate = parcel.readString(),
+        items = arrayListOf<ProjectItemDTO>().apply {
+            parcel.readList(this.toList(), ProjectItemDTO::class.java.classLoader)
+        },
+        projectCode = parcel.readString(),
+        projectMinus = parcel.readString(),
+        projectPlus = parcel.readString(),
+        projectSections = arrayListOf<ProjectSectionDTO>().apply {
+            parcel.readList(this.toList(), ProjectSectionDTO::class.java.classLoader)
+        },
+        voItems = arrayListOf<VoItemDTO>().apply {
+            parcel.readList(this.toList(), VoItemDTO::class.java.classLoader)
+        },
+        contractId = parcel.readString()!!
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -89,6 +101,9 @@ data class ProjectDTO(
         parcel.writeString(projectMinus)
         parcel.writeString(projectPlus)
         parcel.writeString(contractId)
+        parcel.writeList(items.toList())
+        parcel.writeList(projectSections.toList())
+        parcel.writeList(voItems.toList())
     }
 
     override fun describeContents(): Int {

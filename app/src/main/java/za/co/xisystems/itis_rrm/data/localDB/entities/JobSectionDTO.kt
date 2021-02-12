@@ -1,3 +1,9 @@
+/*
+ * Updated by Shaun McDonald on 2021/02/08
+ * Last modified on 2021/02/08 2:32 PM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.data.localDB.entities
 
 import android.os.Parcel
@@ -6,7 +12,6 @@ import android.os.Parcelable.Creator
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
-import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import java.io.Serializable
 
 /**
@@ -19,7 +24,7 @@ const val JOB_SECTION_TABLE = "JOB_SECTION_TABLE"
 class JobSectionDTO(
     @SerializedName("JobSectionId")
     @PrimaryKey
-    var jobSectionId: String = SqlLitUtils.generateUuid(),
+    var jobSectionId: String,
     @SerializedName("ProjectSectionId")
     var projectSectionId: String?,
     @SerializedName("JobId")

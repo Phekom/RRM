@@ -1,3 +1,9 @@
+/**
+ * Updated by Shaun McDonald on 2021/02/08
+ * Last modified on 2021/02/07 12:57 PM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.data.localDB.dao
 
 import androidx.lifecycle.LiveData
@@ -9,6 +15,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectSectionDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.VoItemDTO
+import za.co.xisystems.itis_rrm.domain.ProjectSelector
 
 /**
  * Created by Francis Mahlava on 2019/11/22.
@@ -58,4 +65,7 @@ interface ProjectDao {
 
     @Query("SELECT projectCode FROM PROJECT_TABLE WHERE projectId LIKE :projectId")
     fun getProjectCodeForId(projectId: String?): String
+
+    @Query("SELECT projectId, projectCode, descr FROM PROJECT_TABLE WHERE contractId = :contractId ORDER BY projectCode")
+    fun getProjectSelectorsForContractId(contractId: String): List<ProjectSelector>
 }

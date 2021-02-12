@@ -1,3 +1,9 @@
+/*
+ * Updated by Shaun McDonald on 2021/01/25
+ * Last modified on 2021/01/25 6:30 PM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.data.localDB.entities
 
 import android.os.Parcel
@@ -6,8 +12,8 @@ import android.os.Parcelable.Creator
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
-import org.springframework.util.Base64Utils
 import java.io.Serializable
+import org.springframework.util.Base64Utils
 
 const val TODO_ENTITY_TABLE = "TODO_ENTITY_TABLE"
 
@@ -30,13 +36,13 @@ data class ToDoListEntityDTO(
     @SerializedName("Description")
     val description: String?, // 000000309 - smalltest
     @SerializedName("Entities")
-    val entities: ArrayList<ToDoListEntityDTO>,
+    val entities: ArrayList<ToDoListEntityDTO> = ArrayList(),
     @SerializedName("EntityName")
     val entityName: String?, // PRJ_JOB
     @SerializedName("Location")
     val location: String?, // null
     @SerializedName("PrimaryKeyValues")
-    val primaryKeyValues: ArrayList<PrimaryKeyValueDTO>,
+    val primaryKeyValues: ArrayList<PrimaryKeyValueDTO> = ArrayList(),
     @SerializedName("RecordVersion")
     val recordVersion: Int?, // 0
 
@@ -61,10 +67,14 @@ data class ToDoListEntityDTO(
         parcel.readInt(),
         parcel.readString(),
         parcel.readString(),
-        TODO("entities"),
+        arrayListOf<ToDoListEntityDTO>().apply {
+            parcel.readList(this.toList(), ToDoListEntityDTO::class.java.classLoader)
+        },
         parcel.readString(),
         parcel.readString(),
-        TODO("primaryKeyValues"),
+        arrayListOf<PrimaryKeyValueDTO>().apply {
+            parcel.readList(this.toList(), PrimaryKeyValueDTO::class.java.classLoader)
+        },
         parcel.readValue(Int::class.java.classLoader) as? Int,
         parcel.readString()
     )
@@ -107,6 +117,8 @@ data class ToDoListEntityDTO(
         parcel.writeString(location)
         parcel.writeValue(recordVersion)
         parcel.writeString(jobId)
+        parcel.writeList(primaryKeyValues.toList())
+        parcel.writeList(entities.toList())
     }
 
     override fun describeContents(): Int {

@@ -1,3 +1,11 @@
+/*
+ * Updated by Shaun McDonald on 2021/02/08
+ * Last modified on 2021/02/07 1:56 PM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
+@file:Suppress("SpellCheckingInspection")
+
 package za.co.xisystems.itis_rrm.data.localDB
 
 import android.content.Context
@@ -6,6 +14,9 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import dev.matrix.roomigrant.GenerateRoomMigrations
+import net.sqlcipher.database.SQLiteDatabase
+import net.sqlcipher.database.SupportFactory
+import za.co.xisystems.itis_rrm.BuildConfig
 import za.co.xisystems.itis_rrm.data.localDB.dao.ActivityDao
 import za.co.xisystems.itis_rrm.data.localDB.dao.ContractDao
 import za.co.xisystems.itis_rrm.data.localDB.dao.EntitiesDao
@@ -65,11 +76,13 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.ToDoListEntityDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserRoleDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.VoItemDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.WF_WorkStepDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.WfWorkStepDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.WorkFlowDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.WorkFlowRouteDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.WorkFlowsDTO
+import za.co.xisystems.itis_rrm.data.localDB.views.ContractSelectorView
 import za.co.xisystems.itis_rrm.utils.Converters
+import za.co.xisystems.itis_rrm.utils.DatetimeConverters
 
 /**
  * Created by Francis Mahlava on 2019/10/23., exportSchema = false
@@ -86,11 +99,12 @@ import za.co.xisystems.itis_rrm.utils.Converters
         JobItemEstimatesPhotoDTO::class, JobItemMeasurePhotoDTO::class, JobItemEstimateDTO::class,
         JobItemMeasureDTO::class, ToDoListEntityDTO::class, ChildLookupDTO::class,
         JobEstimateWorksDTO::class, JobEstimateWorksPhotoDTO::class, SectionItemDTO::class,
-        WorkFlowsDTO::class, WF_WorkStepDTO::class
+        WorkFlowsDTO::class, WfWorkStepDTO::class
     ],
-    version = 4
+    views = [ContractSelectorView::class],
+    version = 15
 )
-@TypeConverters(Converters::class)
+@TypeConverters(Converters::class, DatetimeConverters::class)
 @GenerateRoomMigrations
 abstract class AppDatabase : RoomDatabase() {
 
@@ -100,7 +114,6 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun getJobItemMeasureDao(): JobItemMeasureDao
     abstract fun getJobItemEstimatePhotoDao(): JobItemEstimatePhotoDao
     abstract fun getJobItemMeasurePhotoDao(): JobItemMeasurePhotoDao
-
     abstract fun getUserDao(): UserDao
     abstract fun getUserRoleDao(): UserRoleDao
     abstract fun getContractDao(): ContractDao
@@ -132,7 +145,6 @@ abstract class AppDatabase : RoomDatabase() {
         @Volatile
         private var instance: AppDatabase? = null
         private val LOCK = Any()
-
         operator fun invoke(context: Context) = instance ?: synchronized(LOCK) {
             instance ?: buildDatabase(context).also {
                 instance = it
@@ -140,11 +152,28 @@ abstract class AppDatabase : RoomDatabase() {
         }
 
         private fun buildDatabase(context: Context) =
-            Room.databaseBuilder(
-                context.applicationContext,
-                AppDatabase::class.java,
-                "myRRM_Database.db"
-            ).addMigrations(*AppDatabase_Migrations.build())
-                .fallbackToDestructiveMigrationFrom(20).build()
+            when {
+                BuildConfig.DEBUG -> {
+                    // Unecrypted DB for Dev, Tracing and Testing
+                    Room.databaseBuilder(
+                        context.applicationContext,
+                        AppDatabase::class.java,
+                        "myRRM_Development.db"
+                    ).addMigrations(*AppDatabase_Migrations.build())
+                        .fallbackToDestructiveMigrationFrom(20).build()
+                }
+                else -> {
+                    // Encrypyed DB with one-time generated passphrase
+                    val passphrase: ByteArray = SQLiteDatabase.getBytes("sillypassphrase".toCharArray())
+                    val factory = SupportFactory(passphrase, null, false)
+                    Room.databaseBuilder(
+                        context.applicationContext,
+                        AppDatabase::class.java,
+                        "myRRM_Release.db"
+                    ).openHelperFactory(factory)
+                        .addMigrations(*AppDatabase_Migrations.build())
+                        .fallbackToDestructiveMigrationFrom(20).build()
+                }
+            }
     }
 }

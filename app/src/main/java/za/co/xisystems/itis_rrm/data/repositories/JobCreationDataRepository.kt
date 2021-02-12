@@ -1,6 +1,10 @@
-package za.co.xisystems.itis_rrm.data.repositories
+/*
+ * Updated by Shaun McDonald on 2021/02/08
+ * Last modified on 2021/02/08 5:44 AM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
 
-// import sun.security.krb5.Confounder.bytes
+package za.co.xisystems.itis_rrm.data.repositories
 
 import android.os.Looper
 import android.widget.Toast
@@ -12,12 +16,11 @@ import com.google.gson.Gson
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
-import java.io.IOException
-import java.util.ArrayList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.constants.Constants.FIFTY_METRES_INSIDE_BUFFER
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.localDB.JobDataController
 import za.co.xisystems.itis_rrm.data.localDB.entities.ContractDTO
@@ -35,12 +38,16 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.WorkflowJobDTO
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
 import za.co.xisystems.itis_rrm.data.network.responses.UploadImageResponse
+import za.co.xisystems.itis_rrm.domain.ContractSelector
+import za.co.xisystems.itis_rrm.domain.ProjectSelector
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.PhotoUtil.getPhotoPathFromExternalDirectory
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
+import java.io.IOException
+import java.util.ArrayList
 
 /**
  * Created by Francis Mahlava on 2019/11/28.
@@ -98,8 +105,8 @@ class JobCreationDataRepository(
 
     fun saveNewJob(newJob: JobDTO?) {
         Coroutines.io {
-            if (newJob != null && !appDb.getJobDao().checkIfJobExist(newJob.JobId)) {
-                appDb.getJobDao().insertOrUpdateJobs(newJob)
+            if (newJob != null && !appDb.getJobDao().checkIfJobExist(newJob.jobId)) {
+                appDb.getJobDao().insertOrUpdateJob(newJob)
             }
         }
     }
@@ -214,7 +221,7 @@ class JobCreationDataRepository(
         jobId: String
     ): String? {
 
-        val distance = 50
+        val distance = FIFTY_METRES_INSIDE_BUFFER
         val buffer = -1
         val routeSectionPointResponse =
             apiRequest { api.getRouteSectionPoint(distance, buffer, latitude, longitude, useR) }
@@ -300,7 +307,7 @@ class JobCreationDataRepository(
                     packageJob = job,
                     activity = activity
                 )
-                val myJob = getUpdatedJob(DataConversion.toBigEndian(job.JobId)!!)
+                val myJob = getUpdatedJob(DataConversion.toBigEndian(job.jobId)!!)
                 moveJobToNextWorkflow(myJob, activity)
             }
         }
@@ -317,7 +324,7 @@ class JobCreationDataRepository(
         // Job + WorkflowItems + EstimateWorks
         job.jobId = DataConversion.toBigEndian(job.jobId)
         job.trackRouteId = DataConversion.toBigEndian(job.trackRouteId)
-        job.workflowItemEstimates?.forEach { jie ->
+        job.workflowItemEstimates.forEach { jie ->
             jie.estimateId = DataConversion.toBigEndian(jie.estimateId)!!
             jie.trackRouteId = DataConversion.toBigEndian(jie.trackRouteId)!!
             jie.workflowEstimateWorks.forEach { wfe ->
@@ -328,14 +335,14 @@ class JobCreationDataRepository(
         }
 
         // WorkflowItemMeasures
-        job.workflowItemMeasures?.forEach { jim ->
+        job.workflowItemMeasures.forEach { jim ->
             jim.itemMeasureId = DataConversion.toBigEndian(jim.itemMeasureId)!!
             jim.measureGroupId = DataConversion.toBigEndian(jim.measureGroupId)!!
             jim.trackRouteId = DataConversion.toBigEndian(jim.trackRouteId)!!
         }
 
         // WorkflowJobSections
-        job.workflowJobSections?.forEach { js ->
+        job.workflowJobSections.forEach { js ->
             js.jobSectionId = DataConversion.toBigEndian(js.jobSectionId)!!
             js.projectSectionId = DataConversion.toBigEndian(js.projectSectionId)!!
             js.jobId = DataConversion.toBigEndian(js.jobId)
@@ -359,7 +366,7 @@ class JobCreationDataRepository(
                 jobId = job.jobId
             )
 
-            job.workflowItemEstimates?.forEach { workflowItemEstimate ->
+            job.workflowItemEstimates.forEach { workflowItemEstimate ->
                 appDb.getJobItemEstimateDao().updateExistingJobItemEstimateWorkflow(
                     trackRouteId = workflowItemEstimate.trackRouteId,
                     actId = workflowItemEstimate.actId,
@@ -377,7 +384,7 @@ class JobCreationDataRepository(
                 }
             }
 
-            job.workflowItemMeasures?.forEach { workflowItemMeasure ->
+            job.workflowItemMeasures.forEach { workflowItemMeasure ->
                 appDb.getJobItemMeasureDao().updateWorkflowJobItemMeasure(
                     itemMeasureId = workflowItemMeasure.itemMeasureId,
                     trackRouteId = workflowItemMeasure.trackRouteId,
@@ -386,7 +393,7 @@ class JobCreationDataRepository(
                 )
             }
 
-            job.workflowJobSections?.forEach { jobSection ->
+            job.workflowJobSections.forEach { jobSection ->
                 if (!appDb.getJobSectionDao().checkIfJobSectionExist(jobSection.jobSectionId)) {
                     appDb.getJobSectionDao().insertJobSection(jobSection)
                 } else {
@@ -407,12 +414,12 @@ class JobCreationDataRepository(
     private fun uploadCreateJobImages(packageJob: JobDTO, activity: FragmentActivity) {
 
         var jobCounter = 1
-        val totalJobs = packageJob.JobItemEstimates.size
+        val totalJobs = packageJob.jobItemEstimates.size
 
-        packageJob.JobItemEstimates.map { jobItemEstimate ->
-            val totalImages = jobItemEstimate.jobItemEstimatePhotos?.size ?: 0
+        packageJob.jobItemEstimates.map { jobItemEstimate ->
+            val totalImages = jobItemEstimate.jobItemEstimatePhotos.size
             var imageCounter = 1
-            jobItemEstimate.jobItemEstimatePhotos?.map { estimatePhoto ->
+            jobItemEstimate.jobItemEstimatePhotos.map { estimatePhoto ->
                 if (PhotoUtil.photoExist(estimatePhoto.filename)) {
 
                     uploadRrmImage(
@@ -497,27 +504,27 @@ class JobCreationDataRepository(
         activity: FragmentActivity
     ) {
 
-        if (job.TrackRouteId == null) {
+        if (job.trackRouteId == null) {
             Looper.prepare() // to be able to make toast
             Toast.makeText(activity, "Error: trackRouteId is null", Toast.LENGTH_LONG).show()
         } else {
-            job.TrackRouteId = DataConversion.toLittleEndian(job.TrackRouteId)
+            job.trackRouteId = DataConversion.toLittleEndian(job.trackRouteId)
             val direction: Int = WorkflowDirection.NEXT.value
-            val trackRouteId: String = job.TrackRouteId!!
+            val trackRouteId: String = job.trackRouteId!!
             val description: String =
                 activity.resources.getString(R.string.submit_for_approval)
 
             Coroutines.io {
                 val workflowMoveResponse = apiRequest {
                     api.getWorkflowMove(
-                        job.UserId.toString(),
+                        job.userId.toString(),
                         trackRouteId,
                         description,
                         direction
                     )
                 }
                 workflowJobs.postValue(workflowMoveResponse.workflowJob)
-                appDb.getItemDaoTemp().deleteItemList(job.JobId)
+                appDb.getItemDaoTemp().deleteItemList(job.jobId)
             }
         }
     }
@@ -575,12 +582,24 @@ class JobCreationDataRepository(
     }
 
     suspend fun backupJob(job: JobDTO) {
-       withContext(Dispatchers.IO) {
-           appDb.getJobDao().insertOrUpdateJobs(job)
-       }
+        return withContext(Dispatchers.IO) {
+            appDb.getJobDao().insertOrUpdateJob(job)
+        }
     }
 
     suspend fun checkIfJobSectionExistForJobAndProjectSection(jobId: String?, projectSectionId: String?): Boolean {
         return appDb.getJobSectionDao().checkIfJobSectionExistForJob(jobId, projectSectionId)
+    }
+
+    fun getContractSelectors(): List<ContractSelector> {
+        return appDb.getContractDao().getContractSelectors()
+    }
+
+    fun getProjectSelectors(contractId: String): List<ProjectSelector> {
+        return appDb.getProjectDao().getProjectSelectorsForContractId(contractId)
+    }
+
+    fun getValidEstimatesForJobId(jobId: String, actId: Int): List<JobItemEstimateDTO> {
+        return appDb.getJobItemEstimateDao().getJobEstimationItemsForJobId(jobId, actId).value.orEmpty()
     }
 }
