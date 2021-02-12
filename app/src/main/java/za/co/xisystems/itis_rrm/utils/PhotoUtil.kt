@@ -332,6 +332,7 @@ object PhotoUtil {
             options.inTempStorage = ByteArray(16 * 1024)
             try { //          load the bitmap from its path
                 bmp = BitmapFactory.decodeFile(path, options)
+
                 scaledBitmap =
                     Bitmap.createBitmap(actualWidth, actualHeight, Bitmap.Config.ARGB_8888)
             } catch (exception: OutOfMemoryError) {
@@ -363,6 +364,7 @@ object PhotoUtil {
             } catch (e: FileNotFoundException) {
                 e.printStackTrace()
             }
+
             val map: MutableMap<String, String> =
                 HashMap()
             map["filename"] = imageFileName

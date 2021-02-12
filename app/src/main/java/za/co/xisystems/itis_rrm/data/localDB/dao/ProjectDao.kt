@@ -1,4 +1,4 @@
-/*
+/**
  * Updated by Shaun McDonald on 2021/02/08
  * Last modified on 2021/02/07 12:57 PM
  * Copyright (c) 2021.  XI Systems  - All rights reserved
@@ -66,6 +66,6 @@ interface ProjectDao {
     @Query("SELECT projectCode FROM PROJECT_TABLE WHERE projectId LIKE :projectId")
     fun getProjectCodeForId(projectId: String?): String
 
-    @Query("SELECT projectId, projectCode, descr FROM PROJECT_TABLE WHERE contractId = :contractId")
+    @Query("SELECT projectId, projectCode, descr FROM PROJECT_TABLE WHERE contractId = :contractId ORDER BY projectCode")
     fun getProjectSelectorsForContractId(contractId: String): List<ProjectSelector>
 }

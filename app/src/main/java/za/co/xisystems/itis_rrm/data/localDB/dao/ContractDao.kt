@@ -39,6 +39,6 @@ interface ContractDao {
     @Query("SELECT COUNT(contractNo) FROM CONTRACTS_TABLE")
     fun countContracts(): Int
 
-    @Query("SELECT contractId, contractNo, shortDescr FROM CONTRACTS_TABLE")
+    @Query("SELECT contractId, contractNo, shortDescr FROM CONTRACTS_TABLE ORDER BY contractNo")
     fun getContractSelectors(): List<ContractSelector>
 }
