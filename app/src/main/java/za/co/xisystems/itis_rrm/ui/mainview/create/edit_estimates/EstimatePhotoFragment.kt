@@ -1,3 +1,9 @@
+/*
+ * Updated by Shaun McDonald on 2021/02/08
+ * Last modified on 2021/02/08 3:05 PM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates
 
 import android.Manifest
@@ -31,9 +37,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenResumed
 import androidx.lifecycle.whenStarted
 import androidx.navigation.Navigation
+import androidx.navigation.fragment.navArgs
 import com.airbnb.lottie.LottieAnimationView
-import icepick.Icepick
-import icepick.State
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
@@ -108,28 +113,21 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
     private var _ui: FragmentPhotoEstimateBinding? = null
     private val ui get() = _ui!!
 
-    @State
-    var photoType: PhotoType = PhotoType.START
+    private var photoType: PhotoType = PhotoType.START
 
-    @State
-    var itemIdPhotoType: HashMap<String, String> = HashMap()
+    private var itemIdPhotoType: HashMap<String, String> = HashMap()
     internal var job: JobDTO? = null
 
-    @State
-    var filenamePath: HashMap<String, String> = HashMap()
+    private var filenamePath: HashMap<String, String> = HashMap()
 
-    @State
     private var item: ItemDTOTemp? = null
 
-    @State
-    internal var newJob: JobDTO? = null
+    private var newJob: JobDTO? = null
 
-    @State
     internal var estimate: JobItemEstimateDTO? = null
     var direction: String? = null
     private var newJobItemEstimate: JobItemEstimateDTO? = null
 
-    @State
     var quantity: Double = 1.0
     private var estimateId: String? = null
     private lateinit var jobArrayList: ArrayList<JobDTO>
@@ -160,6 +158,8 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
                     ViewModelProvider(this, factory).get(CreateViewModel::class.java)
                 } ?: throw Exception("Invalid Activity")
 
+                readNavArgs()
+
                 uiScope.launch(uiScope.coroutineContext) {
 
                     withContext(uiScope.coroutineContext) {
@@ -176,7 +176,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
 
                     withContext(uiScope.coroutineContext) {
                         var myJobDTO: JobDTO?
-                        createViewModel.jobItem.observeOnce(
+                        createViewModel.currentJob.observeOnce(
                             viewLifecycleOwner,
                             { jobDto ->
                                 jobDto?.let { jobDTO ->
@@ -202,7 +202,19 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
             }
 
             whenResumed {
-                // uiScope.job.cancel(cause = CancellationException("onResume"))
+                readNavArgs()
+            }
+        }
+    }
+
+    private fun readNavArgs() = uiScope.launch(uiScope.coroutineContext) {
+        val args: EstimatePhotoFragmentArgs? by navArgs()
+        if (args != null) {
+            if (!args?.estimateId.isNullOrEmpty()) {
+                estimateId = args!!.estimateId
+            }
+            if (!args?.jobId.isNullOrEmpty()) {
+                createViewModel.setJobToEdit(args?.jobId!!)
             }
         }
     }
@@ -217,7 +229,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
     private fun onJobFound(foundJobDTO: JobDTO?): JobDTO {
         newJob = foundJobDTO!!
         if (estimateId != null) {
-            val estimateDTO = newJob?.JobItemEstimates?.find { itemEstimate ->
+            val estimateDTO = newJob?.jobItemEstimates?.find { itemEstimate ->
                 itemEstimate.estimateId == estimateId
             }
             if (estimateDTO != null) {
@@ -305,7 +317,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        Icepick.restoreInstanceState(this, savedInstanceState)
+
         viewLifecycleOwner.lifecycle.addObserver(uiScope)
 
         ui.group13Loading.visibility = View.GONE
@@ -327,6 +339,9 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
 
         ui.valueEditText.doOnTextChanged { _, _, _, _ ->
             setCost()
+        }
+        if (savedInstanceState != null) {
+            onRestoreInstanceState(savedInstanceState)
         }
 
         setValueEditText(getStoredValue())
@@ -352,16 +367,18 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
 
                 R.id.cancelButton -> {
                     Coroutines.main {
-                        createViewModel.deleteJobFromList(newJob!!.JobId)
-                        createViewModel.deleteItemList(newJob!!.JobId)
-                        createViewModel.setCurrentJob(null)
-                        createViewModel.jobItem.value = null
-                        createViewModel.newJob.value = null
-                        fragmentManager?.beginTransaction()?.remove(this)?.commit()
-                        fragmentManager?.beginTransaction()?.detach(this)?.commit()
+                        // Deep six this item and estimate
+                        estimateId?.let {
+                            createViewModel.deleteItemFromList(item!!.itemId, it)
+                            createViewModel.jobItem.value = null
+                            newJob?.removeJobEstimateByItemId(item!!.itemId)
+                            createViewModel.backupJob(newJob!!)
+                            createViewModel.setJobToEdit(newJob?.jobId!!)
+                            fragmentManager?.beginTransaction()?.remove(this)?.commit()
+                            fragmentManager?.beginTransaction()?.detach(this)?.commit()
+                            navToAddProject(view)
+                        }
 
-                        Navigation.findNavController(view)
-                            .navigate(R.id.action_estimatePhotoFragment_to_nav_create)
                     }
                 }
 
@@ -394,6 +411,14 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
         }
     }
 
+    private fun navToAddProject(view: View) {
+        val directions = EstimatePhotoFragmentDirections.actionEstimatePhotoFragmentToAddProjectFragment2(
+            newJob?.projectId!!,
+            newJob?.jobId!!
+        )
+        Navigation.findNavController(view).navigate(directions)
+    }
+
     private fun saveValidEstimate(view: View) {
         viewLifecycleOwner.lifecycle.coroutineScope.launch {
 
@@ -407,12 +432,12 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
             createViewModel.saveNewJob(newJob!!)
 
             createViewModel.updateNewJob(
-                newJob!!.JobId,
+                newJob!!.jobId,
                 startKm!!,
                 endKm!!,
-                newJob?.SectionId!!,
-                newJob?.JobItemEstimates!!,
-                newJob?.JobSections!!
+                newJob?.sectionId!!,
+                newJob?.jobItemEstimates!!,
+                newJob?.jobSections!!
             )
 
             updateData(view)
@@ -420,12 +445,13 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
     }
 
     private fun updateData(view: View) {
-        uiScope.cancel(CancellationException("updating estimates..."))
+        uiScope.destroy()
         viewLifecycleOwner.lifecycle.coroutineScope.coroutineContext.cancel(
             CancellationException("updating estimates ...")
         )
-        Navigation.findNavController(view)
-            .navigate(R.id.action_estimatePhotoFragment_to_addProjectFragment)
+        newJob?.let {
+            navToAddProject(view)
+        }
     }
 
     private fun takePhoto(picType: PhotoType) {
@@ -637,11 +663,11 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
                 item = item
             )
 
-            if (newJob?.JobItemEstimates == null) {
-                newJob?.JobItemEstimates = ArrayList()
+            if (newJob?.jobItemEstimates == null) {
+                newJob?.jobItemEstimates = ArrayList()
             }
 
-            newJob?.JobItemEstimates!!.add(newJobItemEstimate!!)
+            newJob?.jobItemEstimates!!.add(newJobItemEstimate!!)
         }
 
         if (ServiceUtil.isNetworkAvailable(requireActivity().applicationContext)) {
@@ -674,7 +700,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
             }
             withContext(uiScope.coroutineContext) {
                 if (!this@EstimatePhotoFragment.disableGlide) {
-                    validateRouteSection(newJob?.ProjectId!!)
+                    validateRouteSection(newJob?.projectId!!)
                 } else {
                     resetPhotos()
                 }
@@ -751,7 +777,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
         val projectSectionId = createViewModel.getSectionByRouteSectionProject(
             sectionPoint.sectionId,
             sectionPoint.linearId,
-            newJob?.ProjectId
+            newJob?.projectId
         )
 
         onProjectSectionIdFound(projectSectionId)
@@ -776,17 +802,24 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
                     endKm = localProjectSection.endKm
                     Timber.d("ProjectSection: $it")
                     Coroutines.main {
-                        if (newJob!!.SectionId.isNullOrEmpty()) {
+                        if (newJob!!.sectionId.isNullOrEmpty() &&
+                            !createViewModel.checkIfJobSectionExists(
+                                newJob!!.jobId,
+                                projectSectionId
+                            )
+                        ) {
                             createRouteSection(
                                 secId = projectSectionId,
-                                jobId = newJob!!.JobId,
+                                jobId = newJob!!.jobId,
                                 startKm = startKm!!,
                                 endKm = endKm!!
                             ).apply {
-                                newJob!!.JobSections.add(this)
-                                newJob!!.SectionId = jobSectionId
-                                newJob!!.StartKm = this.startKm
-                                newJob!!.EndKm = this.endKm
+                                val sectionList = newJob!!.jobSections as MutableList<JobSectionDTO>
+                                sectionList.add(this)
+                                newJob!!.sectionId = jobSectionId
+                                newJob!!.startKm = this.startKm
+                                newJob!!.endKm = this.endKm
+                                newJob!!.jobSections = sectionList as ArrayList<JobSectionDTO>
                                 isRouteSectionPoint = true
                             }
                         }
@@ -816,7 +849,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
         itemidPhototype: Map<String, String>
     ) {
         val photo: JobItemEstimatesPhotoDTO?
-        val sectionPointData = createViewModel.getPointSectionData(newJob?.ProjectId!!)
+        val sectionPointData = createViewModel.getPointSectionData(newJob?.projectId!!)
 
         if (sectionPointData.direction != null && sectionPointData.sectionId.toString().isNotBlank()) {
             Timber.d("SectionPointDto: $sectionPointData")
@@ -862,9 +895,9 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
         createViewModel.getRouteSectionPoint(
             currentLocation.latitude,
             currentLocation.longitude,
-            newJob!!.UserId.toString(),
-            newJob!!.ProjectId,
-            newJob!!.JobId
+            newJob!!.userId.toString(),
+            newJob!!.projectId,
+            newJob!!.jobId
         )
 
     private fun createItemEstimatePhoto(
@@ -883,7 +916,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
             descr = "",
             estimateId = itemEst.estimateId,
             filename = filePath["filename"] ?: error(""),
-            photoDate = DateUtil.DateToString(Date())!!,
+            photoDate = DateUtil.dateToString(Date())!!,
             photoId = photoId,
             photoStart = null,
             photoEnd = null,
@@ -896,8 +929,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
             photoPath = filePath["path"] ?: error(""),
             recordSynchStateId = 0,
             recordVersion = 0,
-            isPhotostart = isPhotoStart,
-            image = null
+            isPhotostart = isPhotoStart
         )
     }
 
@@ -913,14 +945,16 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
         return JobItemEstimateDTO(
             actId = 0,
             estimateId = estimateId,
-            jobId = newJob?.JobId,
+            jobId = newJob?.jobId,
             lineRate = item!!.tenderRate * item.quantity,
-            jobEstimateWorks = null,
-            jobItemEstimatePhotos = null, // newJobItemPhotosList,
+            jobEstimateWorks = arrayListOf(),
+            jobItemEstimatePhotos = arrayListOf(),
+            jobItemMeasure = arrayListOf(),
+            // newJobItemPhotosList,
             // jobItemMeasure = null,
             // job = null,
             projectItemId = itemId,
-            projectVoId = newJob?.ProjectVoId,
+            projectVoId = newJob?.projectVoId,
             qty = quantity,
             recordSynchStateId = 0,
             recordVersion = 0,
@@ -928,8 +962,8 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
             jobItemEstimatePhotoStart = null,
             jobItemEstimatePhotoEnd = null,
             estimateComplete = null,
-            MEASURE_ACT_ID = 0,
-            SelectedItemUOM = item.uom
+            measureActId = 0,
+            selectedItemUom = item.uom
         )
     }
 
@@ -966,6 +1000,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
 
     override fun onResume() {
         super.onResume()
+        readNavArgs()
         setCost()
     }
 
@@ -1299,10 +1334,8 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
 
     override fun onSaveInstanceState(outState: Bundle) {
         outState.run {
-            outState.putString("jobId", newJob?.JobId)
-            newJobItemEstimate?.estimateId?.let {
-                outState.putString("estimateId", it)
-            }
+            outState.putString("jobId", newJob?.jobId)
+            outState.putString("estimateId", newJobItemEstimate?.estimateId ?: "")
         }
         super.onSaveInstanceState(outState)
         Timber.i("$outState")
@@ -1313,16 +1346,16 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
         val jobId = inState?.getString("jobId")
         estimateId = inState?.getString("estimateId")
 
-        Coroutines.main {
+        Coroutines.io {
             if (jobId != null) {
-                createViewModel.getJob(jobId)
+                createViewModel.setJobToEdit(jobId)
             }
         }
     }
 
     private fun restoreEstimateViewState() {
 
-        sectionId = newJob?.SectionId
+        sectionId = newJob?.sectionId
         if (sectionId != null) {
             createViewModel.setSectionId(sectionId!!)
         }

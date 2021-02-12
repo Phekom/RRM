@@ -1,3 +1,9 @@
+/*
+ * Updated by Shaun McDonald on 2021/02/08
+ * Last modified on 2021/02/08 3:05 PM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.ui.mainview.create.select_item
 
 import android.content.Context
@@ -9,15 +15,15 @@ import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenCreated
+import androidx.lifecycle.whenResumed
 import androidx.lifecycle.whenStarted
 import androidx.navigation.Navigation
+import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
-import java.util.ArrayList
-import java.util.concurrent.CancellationException
-import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.CoroutineStart.DEFAULT
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import org.kodein.di.KodeinAware
@@ -35,11 +41,12 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.SectionItemDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentSelectItemBinding
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModelFactory
-import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.MyState
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper.setSpinner
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.Coroutines
+import java.util.ArrayList
+import java.util.concurrent.CancellationException
 
 /**
  * Created by Francis Mahlava on 2019/12/29.
@@ -59,16 +66,10 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
     private var _ui: FragmentSelectItemBinding? = null
     private val ui get() = _ui!!
 
-    @MyState
     internal var selectedSectionItem: SectionItemDTO? = null
 
-    @MyState
     internal var useR: Int? = null
 
-    @MyState
-    var newJob: JobDTO? = null
-
-    @MyState
     lateinit var editJob: JobDTO
     private var uiScope = UiLifecycleScope()
 
@@ -80,30 +81,28 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
             }
             whenStarted {
                 viewLifecycleOwner.lifecycle.addObserver(uiScope)
-
-                uiScope.launch(context = uiScope.coroutineContext, start = CoroutineStart.DEFAULT) {
-                    createViewModel.loggedUser.observe(viewLifecycleOwner, { user ->
-                        useR = user
-                    })
-
-                    createViewModel.projectId.observe(viewLifecycleOwner, { projectId ->
-                        setItemsBySections(projectId)
-                    })
-
-                    createViewModel.newJob.observe(viewLifecycleOwner, { newJ ->
-                        newJob = newJ
-                    })
-
-                    createViewModel.currentJob.observe(
-                        viewLifecycleOwner,
-                        { incompleteJob ->
-                            incompleteJob?.let {
-                                setItemsBySections(incompleteJob.ProjectId!!)
-                                editJob = incompleteJob
-                            }
-                        })
+                initUI()
+            }
+            whenResumed {
+                if (useR == null) {
+                    initUI()
                 }
             }
+        }
+    }
+
+    private fun initUI() {
+        uiScope.launch(context = uiScope.coroutineContext, start = DEFAULT) {
+            createViewModel.loggedUser.observe(viewLifecycleOwner, { user ->
+                useR = user
+            })
+
+            createViewModel.currentJob.observe(viewLifecycleOwner, { newJ ->
+                newJ?.let {
+                    editJob = it
+                    setItemsBySections(it.projectId!!)
+                }
+            })
         }
     }
 
@@ -129,13 +128,76 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-
+        var stateRestored = false
         createViewModel = activity?.run {
             ViewModelProvider(this, factory).get(CreateViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
 
         itemSections = ArrayList()
         newJobItemEstimatesList = ArrayList()
+
+        val args by navArgs<SelectItemFragmentArgs>()
+
+        if(!args.jobId.isNullOrBlank()){
+            onRestoreSavedState(args.toBundle())
+            stateRestored = true
+        }
+
+        if (savedInstanceState != null && !stateRestored) {
+            onRestoreSavedState(savedInstanceState)
+        }
+    }
+
+    /**
+     * Called when all saved state has been restored into the view hierarchy
+     * of the fragment.  This can be used to do initialization based on saved
+     * state that you are letting the view hierarchy track itself, such as
+     * whether check box widgets are currently checked.  This is called
+     * after [.onActivityCreated] and before
+     * [.onStart].
+     *
+     * @param savedInstanceState If the fragment is being re-created from
+     * a previous saved state, this is the state.
+     */
+    private fun onRestoreSavedState(savedInstanceState: Bundle?) {
+        super.onViewStateRestored(savedInstanceState)
+
+        savedInstanceState?.let {
+            it.run {
+                val jobId = getString("jobId", "")
+                if (jobId.isNotBlank()) {
+                    createViewModel.setJobToEdit(jobId)
+                    initUI()
+                }
+            }
+
+        }
+    }
+
+    /**
+     * Called to ask the fragment to save its current dynamic state, so it
+     * can later be reconstructed in a new instance of its process is
+     * restarted.  If a new instance of the fragment later needs to be
+     * created, the data you place in the Bundle here will be available
+     * in the Bundle given to [.onCreate],
+     * [.onCreateView], and
+     * [.onActivityCreated].
+     *
+     *
+     * This corresponds to [ Activity.onSaveInstanceState(Bundle)][Activity.onSaveInstanceState] and most of the discussion there
+     * applies here as well.  Note however: *this method may be called
+     * at any time before [.onDestroy]*.  There are many situations
+     * where a fragment may be mostly torn down (such as when placed on the
+     * back stack with no UI showing), but its state will not be saved until
+     * its owning activity actually needs to save its state.
+     *
+     * @param outState Bundle in which to place your saved state.
+     */
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.run {
+            putString("jobId", editJob.jobId)
+        }
+        super.onSaveInstanceState(outState)
     }
 
     private fun setItemsBySections(projectId: String) {
@@ -151,28 +213,26 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
                 for (item in sectionData.indices) {
                     sectionSelections[item] = sectionData[item].description
                 }
-                uiScope.launch(uiScope.coroutineContext) {
-                    setSpinner(
-                        requireContext().applicationContext,
-                        ui.sectionItemSpinner,
-                        sectionData,
-                        sectionSelections,
-                        object : SpinnerHelper.SelectionListener<SectionItemDTO> {
 
-                            override fun onItemSelected(position: Int, item: SectionItemDTO) {
-                                if (animate) {
-                                    ui.sectionItemSpinner.startAnimation(bounce_750)
-                                    ui.itemRecyclerView.startAnimation(bounce_1000)
-                                }
-                                selectedSectionItem = item
-                                setRecyclerItems(projectId, item.sectionItemId)
+                setSpinner(
+                    requireContext().applicationContext,
+                    ui.sectionItemSpinner,
+                    sectionData,
+                    sectionSelections,
+                    object : SpinnerHelper.SelectionListener<SectionItemDTO> {
+
+                        override fun onItemSelected(position: Int, item: SectionItemDTO) {
+                            if (animate) {
+                                ui.sectionItemSpinner.startAnimation(bounce_750)
+                                ui.itemRecyclerView.startAnimation(bounce_1000)
                             }
-                        })
-
-                    ui.sectionItemSpinner.setOnTouchListener { _, _ ->
-                        animate = true
-                        false
-                    }
+                            selectedSectionItem = item
+                            setRecyclerItems(projectId, item.sectionItemId)
+                        }
+                    })
+                ui.sectionItemSpinner.setOnTouchListener { _, _ ->
+                    animate = true
+                    false
                 }
             })
         }
@@ -248,7 +308,7 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
             quantity = itemDTO.quantity,
             estimateId = itemDTO.estimateId,
             projectId = itemDTO.projectId!!,
-            jobId = newJob?.JobId ?: editJob.JobId
+            jobId = editJob.jobId
         )
         items.add(newItem)
         return newItem
@@ -263,8 +323,12 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
             createViewModel.setSectionProjectItem(item)
         }
 
-        Navigation.findNavController(view)
-            .navigate(R.id.action_selectItemFragment_to_addProjectFragment)
+        val directions = SelectItemFragmentDirections.actionSelectItemFragmentToAddProjectFragment2(
+            editJob.projectId,
+            editJob.jobId
+        )
+
+        Navigation.findNavController(view).navigate(directions)
     }
 
     override fun onDestroyView() {

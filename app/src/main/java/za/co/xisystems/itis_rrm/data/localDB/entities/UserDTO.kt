@@ -1,5 +1,14 @@
+/*
+ * Updated by Shaun McDonald on 2021/01/25
+ * Last modified on 2021/01/25 6:30 PM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.data.localDB.entities
 
+import android.os.Parcel
+import android.os.Parcelable
+import android.os.Parcelable.Creator
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
@@ -22,7 +31,7 @@ data class UserDTO(
     @SerializedName("UserName")
     val userName: String, // niebuhrk
     @SerializedName("UserRoles")
-    val userRoles: ArrayList<UserRoleDTO>,
+    val userRoles: ArrayList<UserRoleDTO> = ArrayList(),
     @SerializedName("UserStatus")
     val userStatus: String,
     @SerializedName("PHONE_NUMBER")
@@ -31,9 +40,26 @@ data class UserDTO(
     var imei: String?,
     @SerializedName("DEVICE")
     var device: String?,
-    var pin: ByteArray?
+    var pin: ByteArray?,
+    var authd: Boolean = true
 
-) : Serializable {
+) : Serializable, Parcelable {
+
+    constructor(parcel: Parcel) : this(
+        registrationId = parcel.readString()!!,
+        userId = parcel.readString()!!,
+        userName = parcel.readString()!!,
+        userRoles = arrayListOf<UserRoleDTO>().apply {
+            parcel.readList(this.toList(), UserRoleDTO::class.java.classLoader)
+        },
+        userStatus = parcel.readString()!!,
+        phoneNumber = parcel.readString(),
+        imei = parcel.readString(),
+        device = parcel.readString(),
+        pin = parcel.createByteArray(),
+        authd = parcel.readByte() != 0.toByte()
+    )
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -60,5 +86,32 @@ data class UserDTO(
         result = 31 * result + (imei?.hashCode() ?: 0)
         result = 31 * result + (device?.hashCode() ?: 0)
         return result
+    }
+
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeString(registrationId)
+        parcel.writeString(userId)
+        parcel.writeString(userName)
+        parcel.writeString(userStatus)
+        parcel.writeString(phoneNumber)
+        parcel.writeString(imei)
+        parcel.writeString(device)
+        parcel.writeByteArray(pin)
+        parcel.writeList(userRoles.toList())
+        parcel.writeByte(if (authd) 1 else 0)
+    }
+
+    override fun describeContents(): Int {
+        return 0
+    }
+
+    companion object CREATOR : Creator<UserDTO> {
+        override fun createFromParcel(parcel: Parcel): UserDTO {
+            return UserDTO(parcel)
+        }
+
+        override fun newArray(size: Int): Array<UserDTO?> {
+            return arrayOfNulls(size)
+        }
     }
 }

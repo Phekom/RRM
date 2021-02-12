@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+ **/
 package za.co.xisystems.itis_rrm.utils.zoomage;
 
 import android.animation.Animator;
@@ -49,15 +49,14 @@ public class ZoomageView extends AppCompatImageView implements OnScaleGestureLis
 
     private static final float MIN_SCALE = 0.6f;
     private static final float MAX_SCALE = 8f;
-    private static final int RESET_DURATION = 200;
 
     private ScaleType startScaleType;
 
     // These matrices will be used to move and zoom image
-    private Matrix matrix = new Matrix();
+    private final Matrix matrix = new Matrix();
     private Matrix startMatrix = new Matrix();
 
-    private float[] matrixValues = new float[9];
+    private final float[] matrixValues = new float[9];
     private float[] startValues = null;
 
     private float minScale = MIN_SCALE;
@@ -79,7 +78,7 @@ public class ZoomageView extends AppCompatImageView implements OnScaleGestureLis
     @AutoResetMode
     private int autoResetMode;
 
-    private PointF last = new PointF(0, 0);
+    private final PointF last = new PointF(0, 0);
     private float startScale = 1f;
     private float scaleBy = 1f;
     private float currentScaleFactor = 1f;
@@ -476,7 +475,7 @@ public class ZoomageView extends AppCompatImageView implements OnScaleGestureLis
                 } else {
                     Matrix zoomMatrix = new Matrix(matrix);
                     zoomMatrix.postScale(doubleTapToZoomScaleFactor, doubleTapToZoomScaleFactor, scaleDetector.getFocusX(), scaleDetector.getFocusY());
-                    animateScaleAndTranslationToMatrix(zoomMatrix, RESET_DURATION);
+                    animateScaleAndTranslationToMatrix(zoomMatrix);
                 }
                 return true;
             } else if (!singleTapDetected) {
@@ -551,9 +550,6 @@ public class ZoomageView extends AppCompatImageView implements OnScaleGestureLis
                 break;
             case AutoResetMode.NEVER:
                 center();
-                break;
-            default:
-                break;
         }
     }
 
@@ -594,7 +590,7 @@ public class ZoomageView extends AppCompatImageView implements OnScaleGestureLis
      * Animate the matrix back to its original position after the user stopped interacting with it.
      */
     private void animateToStartMatrix() {
-        animateScaleAndTranslationToMatrix(startMatrix, RESET_DURATION);
+        animateScaleAndTranslationToMatrix(startMatrix);
     }
 
     /**
@@ -603,7 +599,7 @@ public class ZoomageView extends AppCompatImageView implements OnScaleGestureLis
      *
      * @param targetMatrix the target matrix to animate values to
      */
-    private void animateScaleAndTranslationToMatrix(final Matrix targetMatrix, final int duration) {
+    private void animateScaleAndTranslationToMatrix(final Matrix targetMatrix) {
 
         final float[] targetValues = new float[9];
         targetMatrix.getValues(targetValues);
@@ -644,7 +640,7 @@ public class ZoomageView extends AppCompatImageView implements OnScaleGestureLis
             }
         });
 
-        anim.setDuration(duration);
+        anim.setDuration(200);
         anim.start();
     }
 
@@ -697,7 +693,7 @@ public class ZoomageView extends AppCompatImageView implements OnScaleGestureLis
         animator.addUpdateListener(new AnimatorUpdateListener() {
 
             final float[] values = new float[9];
-            Matrix current = new Matrix();
+            final Matrix current = new Matrix();
 
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
@@ -708,6 +704,7 @@ public class ZoomageView extends AppCompatImageView implements OnScaleGestureLis
                 setImageMatrix(current);
             }
         });
+        int RESET_DURATION = 200;
         animator.setDuration(RESET_DURATION);
         animator.start();
     }
@@ -880,26 +877,21 @@ public class ZoomageView extends AppCompatImageView implements OnScaleGestureLis
         }
     };
 
-    private class SimpleAnimatorListener implements Animator.AnimatorListener {
+    private static class SimpleAnimatorListener implements Animator.AnimatorListener {
         @Override
         public void onAnimationStart(Animator animation) {
-            // Not interested
         }
-
 
         @Override
         public void onAnimationEnd(Animator animation) {
-            // not interested
         }
 
         @Override
         public void onAnimationCancel(Animator animation) {
-            // not interested
         }
 
         @Override
         public void onAnimationRepeat(Animator animation) {
-            // not interested
         }
     }
 }

@@ -1,3 +1,9 @@
+/*
+ * Updated by Shaun McDonald on 2021/01/25
+ * Last modified on 2021/01/25 6:30 PM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.data.localDB.entities
 
 import android.os.Parcel
@@ -32,27 +38,24 @@ data class JobItemMeasurePhotoDTO(
     val photoLongitude: Double,
     @SerializedName("PhotoPath")
     var photoPath: String?,
-//    @SerializedName("PrjJobItemMeasureDto")
-//    val jobItemMeasure: JobItemMeasureDTO? = null,
     @SerializedName("RecordSynchStateId")
     val recordSynchStateId: Int,
     @SerializedName("RecordVersion")
     val recordVersion: Int
-
 ) : Serializable, Parcelable {
     constructor(parcel: Parcel) : this(
-        parcel.readInt(),
-        parcel.readString(),
-        parcel.readString(),
-        parcel.readString(),
-        parcel.readString(),
-        parcel.readString(),
-        parcel.readString()!!,
-        parcel.readDouble(),
-        parcel.readDouble(),
-        parcel.readString(),
-        parcel.readInt(),
-        parcel.readInt()
+        id = parcel.readInt(),
+        descr = parcel.readString(),
+        filename = parcel.readString(),
+        estimateId = parcel.readString(),
+        itemMeasureId = parcel.readString(),
+        photoDate = parcel.readString(),
+        photoId = parcel.readString()!!,
+        photoLatitude = parcel.readDouble(),
+        photoLongitude = parcel.readDouble(),
+        photoPath = parcel.readString(),
+        recordSynchStateId = parcel.readInt(),
+        recordVersion = parcel.readInt()
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {

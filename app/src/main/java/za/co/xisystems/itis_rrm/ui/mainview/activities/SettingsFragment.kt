@@ -13,22 +13,23 @@ class SettingsFragment : PreferenceFragmentCompat() {
         savedInstanceState: Bundle?,
         rootKey: String?
     ) {
-        setPreferencesFromResource(R.xml.root_preferences, rootKey)
-        val isChecked = false
-        val myTheme =
-            findPreference<SwitchPreferenceCompat>(SettingsActivity.HOME)
-        myTheme!!.onPreferenceChangeListener =
-            Preference.OnPreferenceChangeListener { _, newValue ->
-                if (newValue == !isChecked) {
+            setPreferencesFromResource(R.xml.root_preferences, rootKey)
+            val isChecked = false
 
-                    (activity as SettingsActivity?)?.delegate?.localNightMode =
-                        AppCompatDelegate.MODE_NIGHT_YES
-                } else {
+            val myTheme =
+                findPreference<SwitchPreferenceCompat>(SettingsActivity.HOME)
+            myTheme!!.onPreferenceChangeListener =
+                Preference.OnPreferenceChangeListener { _, newValue ->
+                    if (newValue == !isChecked) {
 
-                    (activity as SettingsActivity?)!!.delegate.localNightMode =
-                        AppCompatDelegate.MODE_NIGHT_NO
+                        (activity as SettingsActivity?)?.delegate?.localNightMode =
+                            AppCompatDelegate.MODE_NIGHT_YES
+                    } else {
+
+                        (activity as SettingsActivity?)!!.delegate.localNightMode =
+                            AppCompatDelegate.MODE_NIGHT_NO
+                    }
+                    true
                 }
-                true
-            }
     }
 }

@@ -1,3 +1,9 @@
+/*
+ * Updated by Shaun McDonald on 2021/01/25
+ * Last modified on 2021/01/25 6:30 PM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.ui.mainview.estmeasure
 
 import android.app.Application
@@ -45,11 +51,8 @@ class MeasureViewModel(
 
     private var galleryMeasure: MutableLiveData<JobItemMeasureDTO> = MutableLiveData()
     var measureGalleryUIState: MutableLiveData<XIResult<MeasureGalleryUIState>> = MutableLiveData()
-
     private var job: Job = SupervisorJob()
-
     private var viewModelContext = job + Dispatchers.Main + uncaughtExceptionHandler
-
     val galleryBackup: MutableLiveData<String> = MutableLiveData()
 
     val offlineUserTaskList: Deferred<LiveData<List<ToDoListEntityDTO>>> by lazyDeferred {
@@ -58,21 +61,14 @@ class MeasureViewModel(
     val user: Deferred<LiveData<UserDTO>> by lazyDeferred {
         measureCreationDataRepository.getUser()
     }
-
-    private val measureJob: MutableLiveData<JobDTO> = MutableLiveData()
     val jobItemMeasure: MutableLiveData<JobItemMeasureDTO> = MutableLiveData()
     private val measureItemPhotos: MutableLiveData<List<JobItemMeasurePhotoDTO>> = MutableLiveData()
-
+    var measuredJiNo: String = ""
     val estimateMeasureItem: MutableLiveData<EstimateMeasureItem> = MutableLiveData()
-
     private lateinit var workflowStatus: MutableLiveData<XIEvent<XIResult<String>>>
-
     var workflowState: MutableLiveData<XIResult<String>?> = MutableLiveData()
-
     val backupJobId: MutableLiveData<String> = MutableLiveData()
-
     private val superJob = SupervisorJob()
-
     private val mainContext = (Job(superJob) + Dispatchers.Main + uncaughtExceptionHandler)
     private val ioContext = (Job(superJob) + Dispatchers.IO + uncaughtExceptionHandler)
 
@@ -200,7 +196,6 @@ class MeasureViewModel(
     }
 
     suspend fun getItemDescription(jobId: String): String = measureCreationDataRepository.getItemDescription(jobId)
-
     suspend fun getDescForProjectItemId(projectItemId: String): String {
         return withContext(Dispatchers.IO) {
             measureCreationDataRepository.getProjectItemDescription(projectItemId)
@@ -208,7 +203,6 @@ class MeasureViewModel(
     }
 
     suspend fun getItemJobNo(jobId: String): String = measureCreationDataRepository.getItemJobNo(jobId)
-
     suspend fun getJobMeasureItemsPhotoPath(itemMeasureId: String): List<String> {
         return withContext(Dispatchers.IO) {
             measureCreationDataRepository.getJobMeasureItemsPhotoPath(itemMeasureId)
@@ -327,10 +321,6 @@ class MeasureViewModel(
         }
     }
 
-    companion object {
-        const val galleryError = "Failed to retrieve itemMeasure for Gallery"
-    }
-
     /**
      * This method will be called when this ViewModel is no longer used and will be destroyed.
      *
@@ -342,5 +332,9 @@ class MeasureViewModel(
         workflowStatus = MutableLiveData()
         superJob.cancelChildren()
         super.onCleared()
+    }
+
+    companion object {
+        const val galleryError = "Failed to retrieve itemMeasure for Gallery"
     }
 }

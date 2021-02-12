@@ -17,7 +17,7 @@ open class HeaderItem(
     private val onIconClickListener: View.OnClickListener? = null
 ) : Item() {
 
-    var jobId = workItems.JobId
+    var jobId = workItems.jobId
     var sectionId: String? = null
 
     override fun getLayout(): Int {

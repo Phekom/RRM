@@ -143,6 +143,8 @@ open class MainApp : Application(), KodeinAware {
         Timber.plant(CrashReportingTree())
     }
 
+
+
     /** A tree which logs important information for crash reporting.  */
     private class CrashReportingTree : Timber.Tree() {
         override fun log(

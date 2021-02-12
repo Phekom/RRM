@@ -1,15 +1,20 @@
+/*
+ * Updated by Shaun McDonald on 2021/01/30
+ * Last modified on 2021/01/30 6:41 AM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.ui.mainview.estmeasure
 
 import android.graphics.Color
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.content.ContextCompat
+import androidx.core.view.doOnNextLayout
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -25,7 +30,6 @@ import org.kodein.di.generic.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
-import za.co.xisystems.itis_rrm.constants.Constants
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.results.XIError
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
@@ -83,17 +87,6 @@ class MeasureFragment : BaseFragment(), KodeinAware {
             fetchEstimateMeasures()
             swipeToRefreshInit()
         }
-    }
-
-    private fun delayedUnveil() {
-        Handler(Looper.getMainLooper()).postDelayed(
-            {
-                if (!activity?.isFinishing!!) {
-                    ui.estimationsToBeMeasuredListView.unVeil()
-                }
-            },
-            Constants.ONE_SECOND
-        )
     }
 
     private suspend fun fetchEstimateMeasures() {
@@ -165,7 +158,6 @@ class MeasureFragment : BaseFragment(), KodeinAware {
                 )
             } finally {
                 ui.estimationsSwipeToRefresh.isRefreshing = false
-                delayedUnveil()
             }
         }
     }
@@ -210,6 +202,7 @@ class MeasureFragment : BaseFragment(), KodeinAware {
         }
         ui.estimationsToBeMeasuredListView.run {
             setAdapter(adapter = groupAdapter, layoutManager = LinearLayoutManager(this.context))
+            doOnNextLayout { unVeil() }
         }
 
         groupAdapter.setOnItemClickListener { item, view ->

@@ -1,3 +1,9 @@
+/*
+ * Updated by Shaun McDonald on 2021/02/08
+ * Last modified on 2021/02/08 4:25 AM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.utils
 
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
@@ -19,9 +25,12 @@ object JobUtils {
     }
 
     fun formatTotalCost(job: JobDTO?): String {
+        Coroutines.main {
+
+        }
         var quantity = 0.0
         var cost = 0.0
-        job?.JobItemEstimates?.forEach { estimate ->
+        job?.jobItemEstimates?.forEach { estimate ->
             quantity += estimate.qty
             cost += estimate.lineRate
         }
@@ -30,9 +39,9 @@ object JobUtils {
 
     fun areQuantitiesValid(job: JobDTO?): Boolean {
         when {
-            job?.JobItemEstimates.isNullOrEmpty() -> return false
+            job?.jobItemEstimates.isNullOrEmpty() -> return false
             else -> {
-                job?.JobItemEstimates?.forEach { estimate ->
+                job?.jobItemEstimates?.forEach { estimate ->
                     if (estimate.qty < 0.01) return false
                 }
                 return true
@@ -46,10 +55,11 @@ object JobUtils {
             Collections.sort(photos, Comparator { o1, o2 ->
                 if (o1 == null || o2 == null) return@Comparator 0 // this case should never happen
                 if (o1.isPhotoStart()) return@Comparator -1
-                if (o2.isPhotoStart())
-                    1
-                else
+                if (!o2.isPhotoStart()) {
                     0
+                } else {
+                    1
+                }
             })
         }
         return photos

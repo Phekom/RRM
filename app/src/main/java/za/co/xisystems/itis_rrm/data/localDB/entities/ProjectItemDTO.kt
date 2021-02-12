@@ -1,3 +1,9 @@
+/*
+ * Updated by Shaun McDonald on 2021/02/08
+ * Last modified on 2021/02/08 2:32 PM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.data.localDB.entities
 
 import android.os.Parcel
@@ -29,7 +35,7 @@ const val PROJECT_ITEM_TABLE = "PROJECT_ITEM_TABLE"
     ]
 )
 data class ProjectItemDTO(
-    @PrimaryKey
+    @PrimaryKey(autoGenerate = true)
     val id: Int,
     @SerializedName("ItemId")
     @NotNull
@@ -40,7 +46,7 @@ data class ProjectItemDTO(
     val itemCode: String?,
     @Nullable
     @SerializedName("ItemSections")
-    val itemSections: ArrayList<ItemSectionDTO>?,
+    val itemSections: ArrayList<ItemSectionDTO> = ArrayList(),
     @SerializedName("TenderRate")
     val tenderRate: Double = 0.0,
     @SerializedName("Uom")
@@ -61,18 +67,20 @@ data class ProjectItemDTO(
 
 ) : Serializable, Parcelable {
     constructor(parcel: Parcel) : this(
-        parcel.readInt(),
-        parcel.readString()!!,
-        parcel.readString(),
-        parcel.readString(),
-        TODO("itemSections"),
-        parcel.readDouble(),
-        parcel.readString(),
-        parcel.readValue(Int::class.java.classLoader) as? Int,
-        parcel.readString(),
-        parcel.readDouble(),
-        parcel.readString(),
-        parcel.readString()
+        id = parcel.readInt(),
+        itemId = parcel.readString()!!,
+        descr = parcel.readString(),
+        itemCode = parcel.readString(),
+        itemSections = arrayListOf<ItemSectionDTO>().apply {
+            parcel.readList(this.toList(), ItemSectionDTO::class.java.classLoader)
+        },
+        tenderRate = parcel.readDouble(),
+        uom = parcel.readString(),
+        workflowId = parcel.readValue(Int::class.java.classLoader) as? Int,
+        sectionItemId = parcel.readString(),
+        quantity = parcel.readDouble(),
+        estimateId = parcel.readString(),
+        projectId = parcel.readString()
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -87,6 +95,7 @@ data class ProjectItemDTO(
         parcel.writeDouble(quantity)
         parcel.writeString(estimateId)
         parcel.writeString(projectId)
+        parcel.writeList(itemSections.toList())
     }
 
     override fun describeContents(): Int {

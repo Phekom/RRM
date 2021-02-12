@@ -1,3 +1,9 @@
+/*
+ * Updated by Shaun McDonald on 2021/01/25
+ * Last modified on 2021/01/25 6:30 PM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.ui.mainview.work
 
 import androidx.fragment.app.FragmentActivity
@@ -5,6 +11,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -20,7 +27,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksPhotoDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.WF_WorkStepDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.WfWorkStepDTO
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.WorkDataRepository
 import za.co.xisystems.itis_rrm.extensions.getDistinct
@@ -38,17 +45,16 @@ class WorkViewModel(
     val offlineUserTaskList by lazyDeferred {
         offlineDataRepository.getUserTaskList()
     }
-
-    val workItem = MutableLiveData<JobItemEstimateDTO>()
-    val workItemJob = MutableLiveData<JobDTO>()
+    var workItem = MutableLiveData<JobItemEstimateDTO>()
+    var workItemJob = MutableLiveData<JobDTO>()
     val backupWorkSubmission: MutableLiveData<JobEstimateWorksDTO> = MutableLiveData()
     private var workflowStatus: LiveData<XIEvent<XIResult<String>>> = MutableLiveData()
     var workflowState: MutableLiveData<XIResult<String>?> = MutableLiveData()
-
     private val superJob = SupervisorJob()
-
     private var ioContext = Job(superJob) + Dispatchers.IO
     private var mainContext = Job(superJob) + Dispatchers.Main
+    val backupCompletedEstimates: MutableLiveData<List<JobItemEstimateDTO>> = MutableLiveData()
+    val historicalWorks: MutableLiveData<XIResult<JobEstimateWorksDTO>> = MutableLiveData()
 
     init {
         viewModelScope.launch(mainContext) {
@@ -63,13 +69,18 @@ class WorkViewModel(
         }
     }
 
-    val backupCompletedEstimates: MutableLiveData<List<JobItemEstimateDTO>> = MutableLiveData()
-    fun setWorkItem(work: JobItemEstimateDTO) {
-        workItem.value = work
+    suspend fun setWorkItem(estimateId: String) = viewModelScope.launch(ioContext) {
+        val data = workDataRepository.getJobItemEstimateForEstimateId(estimateId)
+        withContext(mainContext) {
+            workItem.value = data
+        }
     }
 
-    fun setWorkItemJob(workJob: JobDTO) {
-        workItemJob.value = workJob
+    suspend fun setWorkItemJob(jobId: String) = viewModelScope.launch(ioContext) {
+        val data = offlineDataRepository.getUpdatedJob(jobId)
+        withContext(mainContext) {
+            workItemJob.value = data
+        }
     }
 
     suspend fun getJobsForActivityId(activityId1: Int, activityId2: Int): LiveData<List<JobDTO>> {
@@ -80,7 +91,7 @@ class WorkViewModel(
 
     suspend fun getJobEstimationItemsForJobId(jobID: String?, actID: Int): LiveData<List<JobItemEstimateDTO>> {
         return withContext(ioContext) {
-            workDataRepository.getJobEstimationItemsForJobId(jobID, actID)
+            workDataRepository.getJobEstimationItemsForJobId(jobID, actID).distinctUntilChanged()
         }
     }
 
@@ -144,7 +155,7 @@ class WorkViewModel(
         }
     }
 
-    suspend fun getWorkFlowCodes(eId: Int): LiveData<List<WF_WorkStepDTO>> {
+    suspend fun getWorkFlowCodes(eId: Int): LiveData<List<WfWorkStepDTO>> {
         return withContext(ioContext) {
             workDataRepository.getWorkFlowCodes(eId)
         }
@@ -170,7 +181,7 @@ class WorkViewModel(
         }
     }
 
-    suspend fun getJobItemEstimateForEstimateId(estimateId: String): LiveData<JobItemEstimateDTO> {
+    suspend fun getJobItemEstimateForEstimateId(estimateId: String): JobItemEstimateDTO {
         return withContext(ioContext) {
             workDataRepository.getJobItemEstimateForEstimateId(estimateId)
         }
@@ -200,8 +211,6 @@ class WorkViewModel(
             )
         }
     }
-
-    val historicalWorks: MutableLiveData<XIResult<JobEstimateWorksDTO>> = MutableLiveData()
 
     suspend fun populateWorkTab(estimateId: String, actId: Int) {
         val newEstimateId = DataConversion.toBigEndian(estimateId)

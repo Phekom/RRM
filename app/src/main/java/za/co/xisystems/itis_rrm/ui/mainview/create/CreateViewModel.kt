@@ -1,12 +1,17 @@
+/*
+ * Updated by Shaun McDonald on 2021/02/08
+ * Last modified on 2021/02/08 5:24 AM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.ui.mainview.create
 
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.liveData
 import androidx.lifecycle.viewModelScope
-import java.util.ArrayList
-import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
@@ -25,10 +30,14 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectSectionDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.SectionItemDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.SectionPointDTO
 import za.co.xisystems.itis_rrm.data.repositories.JobCreationDataRepository
+import za.co.xisystems.itis_rrm.domain.ContractSelector
+import za.co.xisystems.itis_rrm.domain.ProjectSelector
 import za.co.xisystems.itis_rrm.ui.mainview.create.select_item.SectionProj_Item
 import za.co.xisystems.itis_rrm.utils.JobUtils
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
 import za.co.xisystems.itis_rrm.utils.uncaughtExceptionHandler
+import java.util.ArrayList
+import kotlin.coroutines.CoroutineContext
 
 /**
  * Created by Francis Mahlava on 2019/10/18.
@@ -37,6 +46,8 @@ import za.co.xisystems.itis_rrm.utils.uncaughtExceptionHandler
 class CreateViewModel(
     private val jobCreationDataRepository: JobCreationDataRepository
 ) : ViewModel() {
+
+    var jobDesc: String? = null
 
     private val superJob = SupervisorJob()
     val currentJob: MutableLiveData<JobDTO?> = MutableLiveData()
@@ -58,6 +69,7 @@ class CreateViewModel(
     val sectionProjectItem = MutableLiveData<SectionProj_Item>()
     val jobItem = MutableLiveData<JobDTO?>()
     val projectItemTemp = MutableLiveData<ItemDTOTemp>()
+    val jobId: MutableLiveData<String?> = MutableLiveData()
 
     init {
         ioContext = Job(superJob) + Dispatchers.IO + uncaughtExceptionHandler
@@ -82,10 +94,6 @@ class CreateViewModel(
 
     fun setDescription(desc: String) {
         description.value = desc
-    }
-
-    fun createNewJob(job: JobDTO?) {
-        newJob.value = job
     }
 
     fun setContractorNo(inContractNo: String) {
@@ -230,15 +238,14 @@ class CreateViewModel(
             !JobUtils.areQuantitiesValid(job) -> {
                 isValid = false
             }
-            job == null || items == null || job.JobItemEstimates.isEmpty()
-                || items.size != job.JobItemEstimates.size -> {
+            job == null || items == null || job.jobItemEstimates.isNullOrEmpty()
+                || items.size != job.jobItemEstimates.size -> {
                 isValid = false
             }
             else -> {
-                for (estimate in job.JobItemEstimates) {
+                job.jobItemEstimates.forEach { estimate ->
                     if (!estimate.isEstimateComplete()) {
                         isValid = false
-                        break
                     }
                 }
             }
@@ -262,7 +269,7 @@ class CreateViewModel(
         jobCreationDataRepository.deleteItemList(jobId)
     }
 
-    fun deleteItemFromList(itemId: String, estimateId: String?) = viewModelScope.launch {
+    fun deleteItemFromList(itemId: String, estimateId: String?) = viewModelScope.launch(ioContext) {
         val recordsAffected = jobCreationDataRepository.deleteItemFromList(itemId, estimateId)
         Timber.d("deleteItemFromList: $recordsAffected deleted.")
     }
@@ -279,9 +286,11 @@ class CreateViewModel(
         }
     }
 
-    suspend fun backupJob(job: JobDTO) = viewModelScope.launch(mainContext) {
+    suspend fun backupJob(job: JobDTO) = viewModelScope.launch(ioContext) {
         jobCreationDataRepository.backupJob(job)
-        setJobToEdit(job.JobId)
+        withContext(mainContext) {
+            setJobToEdit(job.jobId)
+        }
     }
 
     /**
@@ -296,12 +305,36 @@ class CreateViewModel(
         superJob.cancelChildren()
     }
 
-    suspend fun setJobToEdit(jobId: String) {
+    fun setJobToEdit(jobId: String) = viewModelScope.launch(ioContext) {
         val fetchedJob = jobCreationDataRepository.getUpdatedJob(jobId)
-        currentJob.value = fetchedJob
+        withContext(mainContext) {
+            currentJob.value = fetchedJob
+        }
     }
 
     suspend fun checkIfJobSectionExists(jobId: String?, projectSectionId: String?): Boolean {
-        return jobCreationDataRepository.checkIfJobSectionExistForJobAndProjectSection(jobId, projectSectionId)
+        return withContext(Dispatchers.IO) {
+            jobCreationDataRepository.checkIfJobSectionExistForJobAndProjectSection(jobId, projectSectionId)
+        }
     }
+
+    suspend fun getContractSelectors(): LiveData<List<ContractSelector>> = liveData {
+        withContext(ioContext) {
+            val data = jobCreationDataRepository.getContractSelectors()
+            withContext(mainContext) {
+                emit(data)
+            }
+        }
+    }
+
+    suspend fun getProjectSelectors(contractId: String): LiveData<List<ProjectSelector>> = liveData {
+        withContext(ioContext) {
+            val data = jobCreationDataRepository.getProjectSelectors(contractId)
+            withContext(mainContext) {
+                emit(data)
+            }
+        }
+    }
+
 }
+

@@ -1,3 +1,9 @@
+/*
+ * Updated by Shaun McDonald on 2021/02/08
+ * Last modified on 2021/02/07 10:38 AM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.data.localDB.entities
 
 import android.os.Parcel
@@ -6,9 +12,9 @@ import android.os.Parcelable.Creator
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
+import org.jetbrains.annotations.NotNull
 import java.io.Serializable
 import java.util.ArrayList
-import java.util.Date
 
 /**
  * Created by Francis Mahlava on 2019/11/21.
@@ -17,28 +23,30 @@ import java.util.Date
 const val JOB_TABLE_TEMP = "JOB_TABLE_TEMP"
 
 @Entity(tableName = JOB_TABLE_TEMP)
-class JobDTOTemp(
+data class JobDTOTemp(
     @SerializedName("ActId")
-    val ActId: Int,
+    var actId: Int,
     @SerializedName("JobId")
     @PrimaryKey
-    var JobId: String,
-    @SerializedName("ContractVoId")
-    var ContractVoId: String?,
-    @SerializedName("ProjectId")
-    var ProjectId: String?,
+    @NotNull
+    var jobId: String,
 
-    var SectionId: String?,
+    @SerializedName("ContractVoId")
+    var contractVoId: String?,
+    @SerializedName("ProjectId")
+    var projectId: String?,
+
+    var sectionId: String?,
     @SerializedName("StartKm")
-    var StartKm: Double,
+    var startKm: Double,
     @SerializedName("EndKm")
-    var EndKm: Double,
+    var endKm: Double,
     @SerializedName("Descr")
-    var Descr: String?,
+    var descr: String?,
     @SerializedName("JiNo")
-    val JiNo: String?,
+    val jiNo: String?,
     @SerializedName("UserId")
-    val UserId: Int,
+    val userId: Int,
     @SerializedName("TrackRouteId")
     var TrackRouteId: String?,
     @SerializedName("Section")
@@ -48,27 +56,24 @@ class JobDTOTemp(
     val Cpa: Int,
     @SerializedName("DayWork")
     val DayWork: Int,
-
     @SerializedName("ContractorId")
     val ContractorId: Int,
     @SerializedName("M9100")
     val M9100: Int,
-
     @SerializedName("IssueDate")
-    var IssueDate: Date? = Date(),
+    var IssueDate: String? = null,
     @SerializedName("StartDate")
-    var StartDate: Date? = Date(),
+    var StartDate: String? = null,
     @SerializedName("DueDate")
-    var DueDate: Date? = Date(),
+    var DueDate: String? = null,
     @SerializedName("ApprovalDate")
-    val ApprovalDate: Date? = Date(),
-
+    val ApprovalDate: String? = null,
     @SerializedName("MobileJobItemEstimates")
-    var JobItemEstimates: ArrayList<JobItemEstimateDTO>?,
+    var JobItemEstimates: ArrayList<JobItemEstimateDTO> = arrayListOf(),
     @SerializedName("MobileJobItemMeasures")
-    var JobItemMeasures: ArrayList<JobItemMeasureDTO>?,
+    var JobItemMeasures: ArrayList<JobItemMeasureDTO> = arrayListOf(),
     @SerializedName("MobileJobSections")
-    var JobSections: ArrayList<JobSectionDTO>?,
+    var JobSections: ArrayList<JobSectionDTO> = arrayListOf(),
     @SerializedName("PerfitemGroupId")
     var PerfitemGroupId: String?,
     @SerializedName("RecordVersion")
@@ -107,73 +112,85 @@ class JobDTOTemp(
     @SerializedName("VoId")
     var VoId: String?,
     @SerializedName("WorkCompleteDate")
-    val WorkCompleteDate: String?,
+    val WorkCompleteDate: String? = null,
     @SerializedName("WorkStartDate")
-    val WorkStartDate: String?
+    val WorkStartDate: String? = null
 
 ) : Serializable, Parcelable {
-
     constructor(parcel: Parcel) : this(
-        parcel.readInt(),
-        parcel.readString()!!,
-        parcel.readString(),
-        parcel.readString(),
-        parcel.readString(),
-        parcel.readDouble(),
-        parcel.readDouble(),
-        parcel.readString(),
-        parcel.readString(),
-        parcel.readInt(),
-        parcel.readString(),
-        parcel.readString(),
-        parcel.readInt(),
-        parcel.readInt(),
-        parcel.readInt(),
-        parcel.readInt(),
-        TODO("IssueDate"),
-        TODO("StartDate"),
-        TODO("DueDate"),
-        TODO("ApprovalDate"),
-        TODO("JobItemEstimates"),
-        TODO("JobItemMeasures"),
-        TODO("JobSections"),
-        parcel.readString(),
-        parcel.readInt(),
-        parcel.readString(),
-        parcel.readString(),
-        parcel.readString(),
-        parcel.readInt(),
-        parcel.readInt(),
-        parcel.readInt(),
-        parcel.readInt(),
-        parcel.readInt(),
-        parcel.readInt(),
-        parcel.readInt(),
-        parcel.readString(),
-        parcel.readInt(),
-        parcel.readInt(),
-        parcel.readString(),
-        parcel.readString(),
-        parcel.readString()
+        actId = parcel.readInt(),
+        jobId = parcel.readString()!!,
+        contractVoId = parcel.readString(),
+        projectId = parcel.readString(),
+        sectionId = parcel.readString(),
+        startKm = parcel.readDouble(),
+        endKm = parcel.readDouble(),
+        descr = parcel.readString(),
+        jiNo = parcel.readString(),
+        userId = parcel.readInt(),
+        TrackRouteId = parcel.readString(),
+        Section = parcel.readString(),
+        Cpa = parcel.readInt(),
+        DayWork = parcel.readInt(),
+        ContractorId = parcel.readInt(),
+        M9100 = parcel.readInt(),
+        IssueDate = parcel.readString(),
+        StartDate = parcel.readString(),
+        DueDate = parcel.readString(),
+        ApprovalDate = parcel.readString(),
+        JobItemEstimates = arrayListOf<JobItemEstimateDTO>().apply {
+            parcel.readList(this.toList(), JobItemEstimateDTO::class.java.classLoader)
+        },
+        JobItemMeasures = arrayListOf<JobItemMeasureDTO>().apply {
+            parcel.readList(this.toList(), JobItemMeasureDTO::class.java.classLoader)
+        },
+        JobSections = arrayListOf<JobSectionDTO>().apply {
+            parcel.readList(this.toList(), JobSectionDTO::class.java.classLoader)
+        },
+        PerfitemGroupId = parcel.readString(),
+        RecordVersion = parcel.readInt(),
+        Remarks = parcel.readString(),
+        Route = parcel.readString(),
+        RrmJiNo = parcel.readString(),
+        EngineerId = parcel.readInt(),
+        EntireRoute = parcel.readInt(),
+        IsExtraWork = parcel.readInt(),
+        JobCategoryId = parcel.readInt(),
+        JobDirectionId = parcel.readInt(),
+        JobPositionId = parcel.readInt(),
+        JobStatusId = parcel.readInt(),
+        ProjectVoId = parcel.readString(),
+        QtyUpdateAllowed = parcel.readInt(),
+        RecordSynchStateId = parcel.readInt(),
+        VoId = parcel.readString(),
+        WorkCompleteDate = parcel.readString(),
+        WorkStartDate = parcel.readString()
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeInt(ActId)
-        parcel.writeString(JobId)
-        parcel.writeString(ContractVoId)
-        parcel.writeString(ProjectId)
-        parcel.writeString(SectionId)
-        parcel.writeDouble(StartKm)
-        parcel.writeDouble(EndKm)
-        parcel.writeString(Descr)
-        parcel.writeString(JiNo)
-        parcel.writeInt(UserId)
+        parcel.writeInt(actId)
+        parcel.writeString(jobId)
+        parcel.writeString(contractVoId)
+        parcel.writeString(projectId)
+        parcel.writeString(sectionId)
+        parcel.writeDouble(startKm)
+        parcel.writeDouble(endKm)
+        parcel.writeString(descr)
+        parcel.writeString(jiNo)
+        parcel.writeInt(userId)
         parcel.writeString(TrackRouteId)
         parcel.writeString(Section)
         parcel.writeInt(Cpa)
         parcel.writeInt(DayWork)
         parcel.writeInt(ContractorId)
         parcel.writeInt(M9100)
+        parcel.writeString(IssueDate)
+        parcel.writeString(StartDate)
+        parcel.writeString(DueDate)
+        parcel.writeString(ApprovalDate)
+        parcel.writeList(JobItemEstimates.toList())
+        parcel.writeList(JobItemMeasures.toList())
+        parcel.writeList(JobSections.toList())
         parcel.writeString(PerfitemGroupId)
         parcel.writeInt(RecordVersion)
         parcel.writeString(Remarks)

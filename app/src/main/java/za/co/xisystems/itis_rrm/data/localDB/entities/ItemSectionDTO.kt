@@ -1,3 +1,9 @@
+/*
+ * Updated by Shaun McDonald on 2021/01/25
+ * Last modified on 2021/01/25 6:30 PM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.data.localDB.entities
 
 import android.os.Parcel
@@ -7,6 +13,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import java.io.Serializable
+import org.jetbrains.annotations.NotNull
 
 /**
  * Created by Francis Mahlava on 2019/11/26.
@@ -19,6 +26,7 @@ data class ItemSectionDTO(
 
     @SerializedName("SectionId")
     @PrimaryKey
+    @NotNull
     val sectionId: String,
     @SerializedName("Direction")
     val direction: String?,
@@ -35,13 +43,13 @@ data class ItemSectionDTO(
     val startKm: Double
 ) : Serializable, Parcelable {
     constructor(parcel: Parcel) : this(
-        parcel.readString()!!,
-        parcel.readString(),
-        parcel.readDouble(),
-        parcel.readString(),
-        parcel.readString(),
-        parcel.readString(),
-        parcel.readDouble()
+        sectionId = parcel.readString()!!,
+        direction = parcel.readString(),
+        endKm = parcel.readDouble(),
+        projectId = parcel.readString(),
+        route = parcel.readString(),
+        section = parcel.readString(),
+        startKm = parcel.readDouble()
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {

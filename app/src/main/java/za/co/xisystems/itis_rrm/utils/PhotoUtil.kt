@@ -13,17 +13,6 @@ import android.os.Environment
 import androidx.core.content.FileProvider
 import androidx.exifinterface.media.ExifInterface
 import androidx.fragment.app.Fragment
-import java.io.ByteArrayOutputStream
-import java.io.File
-import java.io.FileNotFoundException
-import java.io.FileOutputStream
-import java.io.IOException
-import java.util.Base64
-import java.util.Date
-import java.util.HashMap
-import java.util.Locale
-import java.util.UUID
-import kotlin.math.roundToLong
 import org.apache.sanselan.ImageReadException
 import org.apache.sanselan.ImageWriteException
 import org.apache.sanselan.Sanselan
@@ -37,6 +26,17 @@ import za.co.xisystems.itis_rrm.constants.Constants.NINETY_DAYS
 import za.co.xisystems.itis_rrm.constants.Constants.THIRTY_DAYS
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.FileNotFoundException
+import java.io.FileOutputStream
+import java.io.IOException
+import java.util.Base64
+import java.util.Date
+import java.util.HashMap
+import java.util.Locale
+import java.util.UUID
+import kotlin.math.roundToLong
 
 object PhotoUtil {
     const val FOLDER = "ITIS_RRM_Photos"
@@ -332,6 +332,7 @@ object PhotoUtil {
             options.inTempStorage = ByteArray(16 * 1024)
             try { //          load the bitmap from its path
                 bmp = BitmapFactory.decodeFile(path, options)
+
                 scaledBitmap =
                     Bitmap.createBitmap(actualWidth, actualHeight, Bitmap.Config.ARGB_8888)
             } catch (exception: OutOfMemoryError) {
@@ -359,9 +360,11 @@ object PhotoUtil {
                 out = FileOutputStream(path)
                 // write the compressed bitmap at the destination specified by filename.
                 scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
+                out.close()
             } catch (e: FileNotFoundException) {
                 e.printStackTrace()
             }
+
             val map: MutableMap<String, String> =
                 HashMap()
             map["filename"] = imageFileName

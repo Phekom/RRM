@@ -1,98 +1,34 @@
+<!--
+  * Updated by Shaun McDonald on 2021/22/20
+  * Last modified on 2021/01/20 12:46 PM
+  * Copyright (c) 2021.  XI Systems  - All rights reserved
+  -->
+
 <resources>
     <!-- Default screen margins, per the Android Design guidelines. -->
-    <dimen name="activity_horizontal_margin">16dp</dimen>
-    <dimen name="activity_vertical_margin">16dp</dimen>
-    <dimen name="heading_text">25sp</dimen>
-    <dimen name="steps_heading_text">18sp</dimen>
-    <dimen name="margin">10dp</dimen>
-    <dimen name="linear_margin">15dp</dimen>
     <dimen name="image_size">200dp</dimen>
     <dimen name="xsmall">4dp</dimen>
     <dimen name="small">8dp</dimen>
-    <dimen name="xmedium">12dp</dimen>
     <dimen name="medium">16dp</dimen>
-    <dimen name="large">24dp</dimen>
     <dimen name="xlarge">32dp</dimen>
-    <dimen name="xxlarge">64dp</dimen>
-    <dimen name="medium_finger">150dp</dimen>
-    <dimen name="text_xlarge">24sp</dimen>
-    <dimen name="text_large">20sp</dimen>
     <dimen name="text_medium">16sp</dimen>
-    <dimen name="text_small">12sp</dimen>
-    <dimen name="icon">24dp</dimen>
     <dimen name="button_size">60dp</dimen>
-    <dimen name="image_xxsmall">32dp</dimen>
-    <dimen name="image_xsmall">48dp</dimen>
-    <dimen name="image_small">64dp</dimen>
     <dimen name="image_xmedium">80dp</dimen>
-    <dimen name="image_medium">96dp</dimen>
-    <dimen name="image_large">128dp</dimen>
     <dimen name="image_xlarge">156dp</dimen>
-    <dimen name="drawer_width">255dp</dimen>
-    <dimen name="nav_header_vertical_spacing">8dp</dimen>
-    <dimen name="nav_header_height">176dp</dimen>
-    <dimen name="fab_margin">16dp</dimen>
 
-    <dimen name="padding_tiny">4dp</dimen>
     <dimen name="padding_small">8dp</dimen>
     <dimen name="padding_standard">16dp</dimen>
-    <integer name="num_columns">2</integer>
 
 
-    <dimen name="textsize_small">12sp</dimen>
-    <dimen name="button_big">200dp</dimen>
-    <dimen name="tolerance">0.5</dimen>
-    <dimen name="text_margin">16dp</dimen>
-    <dimen name="dimen_15dp">15dp</dimen>
-    <dimen name="dimen_330dp">330dp</dimen>
     <dimen name="dimen_50dp">50dp</dimen>
     <dimen name="dimen_30dp">30dp</dimen>
-    <dimen name="dimen_11dp">11dp</dimen>
     <dimen name="dimen_5dp">5dp</dimen>
-    <dimen name="dimen_32dp">32dp</dimen>
-    <dimen name="dimen_9dp">9dp</dimen>
-    <dimen name="dimen_329dp">329dp</dimen>
     <dimen name="dimen_10dp">10dp</dimen>
-    <dimen name="dimen_28dp">28dp</dimen>
-    <dimen name="dimen_120dp">120dp</dimen>
-    <dimen name="dimen_28sp">28sp</dimen>
-    <dimen name="dimen_45dp">45dp</dimen>
-    <dimen name="dimen_17dp">17dp</dimen>
-    <dimen name="dimen_26sp">26sp</dimen>
-    <dimen name="dimen_24sp">24sp</dimen>
-    <dimen name="dimen_22dp">22dp</dimen>
-    <dimen name="dimen_180dp">180dp</dimen>
-    <dimen name="dimen_7dp">7dp</dimen>
-    <dimen name="dimen_22sp">22sp</dimen>
     <dimen name="dimen_8dp">8dp</dimen>
-    <dimen name="dimen_140dp">140dp</dimen>
-    <dimen name="dimen_20sp">20sp</dimen>
     <dimen name="dimen_20dp">20dp</dimen>
-    <dimen name="dimen_34dpp">34dp</dimen>
-    <dimen name="dimen_80dp">80dp</dimen>
-    <dimen name="dimen_21sp">21sp</dimen>
-    <dimen name="dimen_100dp">100dp</dimen>
-    <dimen name="dimen_32sp">32sp</dimen>
-    <dimen name="dimen_40dp">40dp</dimen>
-    <dimen name="dimen_90dp">90dp</dimen>
-    <dimen name="dimen_35dp">35dp</dimen>
-    <dimen name="dimen_164dp">164dp</dimen>
-    <dimen name="dimen_150dp">150dp</dimen>
 
-    <dimen name="dimen_30sp">30sp</dimen>
-    <dimen name="dimen_35sp">35sp</dimen>
-    <dimen name="dimen_40sp">40sp</dimen>
-    <dimen name="dimen_25sp">25sp</dimen>
-    <dimen name="dimen_38sp">38sp</dimen>
     <dimen name="dimen_18sp">18sp</dimen>
-    <dimen name="dimen_17sp">17sp</dimen>
     <dimen name="dimen_160dp">160dp</dimen>
-    <dimen name="dimen_56dp">56dp</dimen>
-    <dimen name="dimen_60dp">60dp</dimen>
-    <dimen name="dimen_24dp">24dp</dimen>
-    <dimen name="dimen_65dp">65dp</dimen>
-    <dimen name="dimen_15sp">15sp</dimen>
-    <dimen name="dimen_10sp">10sp</dimen>
 
     <dimen name="progressMargin">10dp</dimen>
     <dimen name="smallRadius">7.5dp</dimen>

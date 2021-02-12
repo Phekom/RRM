@@ -1,3 +1,9 @@
+/*
+ * Updated by Shaun McDonald on 2021/01/25
+ * Last modified on 2021/01/25 6:30 PM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.data.localDB.entities
 
 import android.os.Parcel
@@ -6,7 +12,6 @@ import android.os.Parcelable.Creator
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
-import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import java.io.Serializable
 
 /**
@@ -18,7 +23,7 @@ const val JOB_ESTIMATE_WORKS_PHOTO = "JOB_ESTIMATE_WORKS_PHOTO"
 @Entity(tableName = JOB_ESTIMATE_WORKS_PHOTO)
 data class JobEstimateWorksPhotoDTO(
     @PrimaryKey(autoGenerate = true)
-    var id: Int,
+    var id: Long,
     @SerializedName("Descr")
     val descr: String,
     @SerializedName("Filename")
@@ -28,7 +33,7 @@ data class JobEstimateWorksPhotoDTO(
     @SerializedName("PhotoDate")
     val photoDate: String,
     @SerializedName("PhotoId")
-    var photoId: String = SqlLitUtils.generateUuid(),
+    var photoId: String,
     @SerializedName("PhotoLatitude")
     val photoLatitude: Double,
     @SerializedName("PhotoLongitude")
@@ -43,22 +48,22 @@ data class JobEstimateWorksPhotoDTO(
     var worksId: String
 ) : Serializable, Parcelable {
     constructor(parcel: Parcel) : this(
-        parcel.readInt(),
-        parcel.readString()!!,
-        parcel.readString()!!,
-        parcel.readInt(),
-        parcel.readString()!!,
-        parcel.readString()!!,
-        parcel.readDouble(),
-        parcel.readDouble(),
-        parcel.readString()!!,
-        parcel.readInt(),
-        parcel.readInt(),
-        parcel.readString()!!
+        id = parcel.readLong(),
+        descr = parcel.readString()!!,
+        filename = parcel.readString()!!,
+        photoActivityId = parcel.readInt(),
+        photoDate = parcel.readString()!!,
+        photoId = parcel.readString()!!,
+        photoLatitude = parcel.readDouble(),
+        photoLongitude = parcel.readDouble(),
+        photoPath = parcel.readString()!!,
+        recordSynchStateId = parcel.readInt(),
+        recordVersion = parcel.readInt(),
+        worksId = parcel.readString()!!
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeInt(id)
+        parcel.writeLong(id)
         parcel.writeString(descr)
         parcel.writeString(filename)
         parcel.writeInt(photoActivityId)

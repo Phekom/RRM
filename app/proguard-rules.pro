@@ -4,12 +4,14 @@
 -allowaccessmodification
 -optimizations !code/simplification/arithmetic
 -keepattributes *Annotation*
+-keepattributes LineNumberTable,SourceFile
+
 
 -verbose
 
--printseeds obfuscation/seeds.txt
+-printseeds obfuscation/seeds.txt ## all the classes and dependencies we actually use
 -printusage obfuscation/unused.txt ## unused classes that are stripped out in the process
--printmapping obfuscation/mapping.txt ## mapping file that shows the obfuscated names of the classes after proguad is applied
+-printmapping obfuscation/mapping.txt ## mapping file that shows the obfuscated names of the classes after proguard is applied
 
 ## the developer can specify keywords for the obfuscation (I'm using Pokemon names)
 -obfuscationdictionary obfuscation/keywords.txt
@@ -20,9 +22,9 @@
 -dontwarn okio.**
 -keepattributes Signature
 -keepattributes *Annotation*
-#noinspection ShrinkerUnresolvedReference
+# noinspection ShrinkerUnresolvedReference
 -keep class com.squareup.okhttp.** { *; }
-#noinspection ShrinkerUnresolvedReference
+# noinspection ShrinkerUnresolvedReference
 -keep interface com.squareup.okhttp.** { *; }
 -dontwarn com.squareup.okhttp.**
 
@@ -34,8 +36,12 @@
 }
 
 -keep class sun.misc.Unsafe { *; }
-#your package path where your gson models are stored
--keep class za.co.xisystems.itis_rrm.data.** { *; }
+# your package path where your gson models are stored
+-keep interface za.co.xisystems.itis_rrm.data.localDB.dao.** { *; }
+-keep class za.co.xisystems.itis_rrm.data.localDB.entities.** { *; }
+-keep class za.co.xisystems.itis_rrm.data.localDB.views.** { *; }
+-keep class za.co.xisystems.itis_rrm.data.network.responses.** { *; }
+-keep class za.co.xisystems.itis_rrm.data.network.request.** { *; }
 
 # Keep these for GSON and Jackson
 -keepattributes Signature
@@ -44,6 +50,10 @@
 -keep class sun.misc.Unsafe { *; }
 -keep class com.google.gson.** { *; }
 
+# SQLCipher
+-keep,includedescriptorclasses class net.sqlcipher.** { *; }
+-keep,includedescriptorclasses interface net.sqlcipher.** { *; }
+
 # OkHttp3
 -keep class okhttp3.** { *; }
 #noinspection ShrinkerUnresolvedReference,ShrinkerUnresolvedReference
@@ -51,6 +61,10 @@
 -dontwarn okhttp3.**
 
 # Needed for Parcelable/SafeParcelable Creators to not get stripped
--keepnames class * implements android.os.Parcelable {
+-keep class * implements android.os.Parcelable {
     public static final ** CREATOR;
 }
+
+# Preserve the names of Serializable and Enum Objects
+-keep class * implements java.io.Serializable { *;}
+-keep enum za.co.xisystems.itis_rrm.** { *;}

@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import za.co.xisystems.itis_rrm.data.localDB.entities.ContractDTO
+import za.co.xisystems.itis_rrm.domain.ContractSelector
 
 /**
  * Created by Francis Mahlava on 2019/11/21.
@@ -37,4 +38,7 @@ interface ContractDao {
 
     @Query("SELECT COUNT(contractNo) FROM CONTRACTS_TABLE")
     fun countContracts(): Int
+
+    @Query("SELECT contractId, contractNo, shortDescr FROM CONTRACTS_TABLE ORDER BY contractNo")
+    fun getContractSelectors(): List<ContractSelector>
 }
