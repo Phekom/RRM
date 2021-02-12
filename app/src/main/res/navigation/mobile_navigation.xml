@@ -276,7 +276,9 @@
             app:enterAnim="@anim/animate_card_enter"
             app:exitAnim="@anim/animate_card_exit"
             app:popEnterAnim="@anim/animate_swipe_right_enter"
-            app:popExitAnim="@anim/animate_swipe_right_exit" />
+            app:popExitAnim="@anim/animate_swipe_right_exit"
+            app:popUpTo="@id/nav_estMeasure"
+            app:popUpToInclusive="false" />
     </fragment>
 
     <fragment
