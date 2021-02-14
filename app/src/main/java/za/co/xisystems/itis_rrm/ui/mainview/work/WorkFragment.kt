@@ -1,6 +1,6 @@
 /*
- * Updated by Shaun McDonald on 2021/01/25
- * Last modified on 2021/01/25 6:30 PM
+ * Updated by Shaun McDonald on 2021/02/15
+ * Last modified on 2021/02/15 12:45 AM
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  */
 
@@ -243,6 +243,7 @@ class WorkFragment : BaseFragment(), KodeinAware {
         super.onDestroyView()
         uiScope.destroy()
         ui.veiledWorkListView.setAdapter(null)
+        layoutManager.detachAndScrapAttachedViews(ui.veiledWorkListView.getVeiledRecyclerView().Recycler())
         _ui = null
     }
 

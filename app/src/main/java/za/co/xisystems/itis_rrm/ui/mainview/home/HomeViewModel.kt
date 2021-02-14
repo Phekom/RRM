@@ -1,3 +1,9 @@
+/*
+ * Updated by Shaun McDonald on 2021/02/15
+ * Last modified on 2021/02/14 7:49 AM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.ui.mainview.home
 
 import androidx.lifecycle.LiveData
@@ -7,7 +13,6 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
@@ -29,7 +34,6 @@ class HomeViewModel(
 ) : BaseViewModel() {
 
     private var databaseStatus: LiveData<XIEvent<XIResult<Boolean>>> = MutableLiveData()
-    private val superJob = SupervisorJob()
     private var homeIoContext = Dispatchers.IO + Job(superJob)
     private var homeMainContext = Dispatchers.Main + Job(superJob)
     private var healthState: MutableLiveData<XIResult<Boolean>> = MutableLiveData()
