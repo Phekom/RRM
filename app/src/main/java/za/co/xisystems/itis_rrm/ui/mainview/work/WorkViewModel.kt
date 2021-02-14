@@ -1,6 +1,6 @@
 /*
- * Updated by Shaun McDonald on 2021/01/25
- * Last modified on 2021/01/25 6:30 PM
+ * Updated by Shaun McDonald on 2021/02/15
+ * Last modified on 2021/02/15 12:11 AM
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  */
 
@@ -48,6 +48,7 @@ class WorkViewModel(
     var workItem = MutableLiveData<JobItemEstimateDTO>()
     var workItemJob = MutableLiveData<JobDTO>()
     val backupWorkSubmission: MutableLiveData<JobEstimateWorksDTO> = MutableLiveData()
+
     private var workflowStatus: LiveData<XIEvent<XIResult<String>>> = MutableLiveData()
     var workflowState: MutableLiveData<XIResult<String>?> = MutableLiveData()
     private val superJob = SupervisorJob()
@@ -75,6 +76,8 @@ class WorkViewModel(
             workItem.value = data
         }
     }
+
+
 
     suspend fun setWorkItemJob(jobId: String) = viewModelScope.launch(ioContext) {
         val data = offlineDataRepository.getUpdatedJob(jobId)

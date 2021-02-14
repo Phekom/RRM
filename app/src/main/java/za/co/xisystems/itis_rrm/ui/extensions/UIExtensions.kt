@@ -1,3 +1,9 @@
+/*
+ * Updated by Shaun McDonald on 2021/02/15
+ * Last modified on 2021/02/14 10:37 AM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.ui.extensions
 
 import android.app.Dialog
@@ -17,7 +23,7 @@ import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
 
 fun ImageCollectionView.scaleForSize(imageCount: Int) {
     when (imageCount) {
-        1 -> {
+        in 0..1 -> {
             this.baseImageHeight = this.measuredHeight - 5
             this.maxImagePerRow = 1
             this.maxRows = 1

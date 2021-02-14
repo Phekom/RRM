@@ -1,11 +1,16 @@
+/*
+ * Updated by Shaun McDonald on 2021/02/15
+ * Last modified on 2021/02/15 12:29 AM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.base
 
 import androidx.lifecycle.ViewModel
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelChildren
-import za.co.xisystems.itis_rrm.utils.uncaughtExceptionHandler
 
 /**
  * Created by Shaun McDonald on 2020/05/29.
@@ -13,19 +18,19 @@ import za.co.xisystems.itis_rrm.utils.uncaughtExceptionHandler
  **/
 
 /**
- * BaseViewModel
- * @property scope CoroutineScope
- * The scope property is so that we can instantly have coroutines to launch inside
- * or view models without all the boiler plate.
+ * BaseVieModel uses ViewModelScope
+ * @property superJob CompletableJob - one job to close for onCleared()
+ * @property ioContext CoroutineContext - queries and updates to Data
+ * @property mainContext CoroutineContext - changes tu UI
  */
-
 abstract class BaseViewModel : ViewModel() {
 
-    protected val scope = CoroutineScope(
-        SupervisorJob() + Dispatchers.Main + uncaughtExceptionHandler
-    )
+    protected val superJob = SupervisorJob()
+    protected val ioContext = Job(superJob) + Dispatchers.IO
+    protected val mainContext = Job(superJob) + Dispatchers.Main
+
 
     override fun onCleared() {
-        scope.coroutineContext.cancelChildren()
+        superJob.cancelChildren()
     }
 }

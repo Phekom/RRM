@@ -1,3 +1,9 @@
+/*
+ * Updated by Shaun McDonald on 2021/02/15
+ * Last modified on 2021/02/15 12:30 AM
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
 package za.co.xisystems.itis_rrm.utils
 
 import android.content.Context
@@ -496,16 +502,17 @@ object PhotoUtil {
 
     @Throws(IOException::class)
     private fun createImageFile(): File {
-        val uuid = UUID.randomUUID()
-        val imageFileName = uuid.toString()
 
-        val storageDir =
-            File(Environment.getExternalStorageDirectory().toString() + File.separator + FOLDER)
-        if (!storageDir.exists()) {
-            storageDir.mkdirs()
-        }
+            val uuid = UUID.randomUUID()
+            val imageFileName = uuid.toString()
 
-        return File(storageDir, "$imageFileName.jpg")
+            val storageDir = File(Environment.getExternalStorageDirectory().toString() + File.separator + FOLDER)
+            if (!storageDir.exists()) {
+                storageDir.mkdirs()
+            }
+
+            return File(storageDir, "$imageFileName.jpg")
+
     }
 
     fun createPhotoFolder(photo: String, fileName: String) {
