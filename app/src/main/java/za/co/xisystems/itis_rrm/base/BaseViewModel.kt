@@ -1,8 +1,14 @@
-/*
- * Updated by Shaun McDonald on 2021/02/15
- * Last modified on 2021/02/15 12:29 AM
+/**
+ * Updated by Shaun McDonald on 2021/05/15
+ * Last modified on 2021/05/14, 20:32
  * Copyright (c) 2021.  XI Systems  - All rights reserved
- */
+ **/
+
+/**
+ * Updated by Shaun McDonald on 2021/05/14
+ * Last modified on 2021/05/14, 19:43
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ **/
 
 package za.co.xisystems.itis_rrm.base
 
@@ -28,7 +34,6 @@ abstract class BaseViewModel : ViewModel() {
     protected val superJob = SupervisorJob()
     protected val ioContext = Job(superJob) + Dispatchers.IO
     protected val mainContext = Job(superJob) + Dispatchers.Main
-
 
     override fun onCleared() {
         superJob.cancelChildren()

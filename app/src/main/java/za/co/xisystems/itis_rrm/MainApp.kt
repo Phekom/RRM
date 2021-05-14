@@ -1,4 +1,16 @@
 /**
+ * Updated by Shaun McDonald on 2021/05/15
+ * Last modified on 2021/05/14, 20:32
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ **/
+
+/**
+ * Updated by Shaun McDonald on 2021/05/14
+ * Last modified on 2021/05/14, 19:43
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ **/
+
+/**
  * Created by Francis Mahlava on 2019/10/23.
  */
 package za.co.xisystems.itis_rrm
@@ -142,8 +154,6 @@ open class MainApp : Application(), KodeinAware {
         })
         Timber.plant(CrashReportingTree())
     }
-
-
 
     /** A tree which logs important information for crash reporting.  */
     private class CrashReportingTree : Timber.Tree() {

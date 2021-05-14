@@ -1,8 +1,20 @@
-/*
- * Updated by Shaun McDonald on 2021/02/08
- * Last modified on 2021/02/08 5:44 AM
+/**
+ * Updated by Shaun McDonald on 2021/05/15
+ * Last modified on 2021/05/14, 20:32
  * Copyright (c) 2021.  XI Systems  - All rights reserved
- */
+ **/
+
+/**
+ * Updated by Shaun McDonald on 2021/05/14
+ * Last modified on 2021/05/14, 19:43
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ **/
+
+/**
+ * Updated by Shaun McDonald on 2021/05/14
+ * Last modified on 2021/05/14, 16:39
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ **/
 
 package za.co.xisystems.itis_rrm.data.repositories
 
@@ -16,11 +28,12 @@ import com.google.gson.Gson
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
+import java.io.IOException
+import java.util.ArrayList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
-import za.co.xisystems.itis_rrm.constants.Constants.FIFTY_METRES_INSIDE_BUFFER
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.localDB.JobDataController
 import za.co.xisystems.itis_rrm.data.localDB.entities.ContractDTO
@@ -46,8 +59,6 @@ import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.PhotoUtil.getPhotoPathFromExternalDirectory
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
-import java.io.IOException
-import java.util.ArrayList
 
 /**
  * Created by Francis Mahlava on 2019/11/28.
@@ -138,7 +149,6 @@ class JobCreationDataRepository(
         projectId: String
     ): LiveData<List<ProjectItemDTO>> {
         return withContext(Dispatchers.IO) {
-
             appDb.getProjectItemDao().getAllItemsForSectionItemByProject(sectionItemId, projectId)
         }
     }
@@ -175,9 +185,7 @@ class JobCreationDataRepository(
         jobItemSectionArrayList: ArrayList<JobSectionDTO>
     ) {
         Coroutines.io {
-            if (!appDb.getJobDao().checkIfJobExist(newJobId)) {
-//
-            } else {
+            if (appDb.getJobDao().checkIfJobExist(newJobId)) {
                 appDb.getJobDao().updateJoSecId(
                     newJobId,
                     startKM,
@@ -197,13 +205,13 @@ class JobCreationDataRepository(
     }
 
     suspend fun getSectionByRouteSectionProject(
-        sectionId: Int,
+        sectionId: String,
         linearId: String?,
         projectId: String?
     ): String? {
         return withContext(Dispatchers.IO) {
             appDb.getProjectSectionDao()
-                .getSectionByRouteSectionProject(sectionId.toString(), linearId!!, projectId!!)
+                .getSectionByRouteSectionProject(sectionId, linearId!!, projectId!!)
         }
     }
 
@@ -221,31 +229,31 @@ class JobCreationDataRepository(
         jobId: String
     ): String? {
 
-        val distance = FIFTY_METRES_INSIDE_BUFFER
-        val buffer = -1
+        val distance = 0.5
+        val buffer = -1.0
         val routeSectionPointResponse =
             apiRequest { api.getRouteSectionPoint(distance, buffer, latitude, longitude, useR) }
 
-        Timber.d("$routeSectionPointResponse")
+        with(routeSectionPointResponse) {
+            Timber.d("$routeSectionPointResponse")
 
-        return if (routeSectionPointResponse.bufferLocation.contains("xxx" as CharSequence, ignoreCase = true) ||
-            routeSectionPointResponse.bufferLocation.isBlank()
-        ) {
-            routeSectionPointResponse.bufferLocation
-        } else {
-            postValue(
-                direction = routeSectionPointResponse.direction,
-                linearId = routeSectionPointResponse.linearId,
-                pointLocation = routeSectionPointResponse.pointLocation,
-                sectionId = routeSectionPointResponse.sectionId,
-                projectId = projectId,
-                jobId = jobId
-            )
-
-            appDb.getProjectSectionDao().getSectionByRouteSectionProject(
-                routeSectionPointResponse.sectionId.toString(),
-                routeSectionPointResponse.linearId, projectId
-            )
+            return if (!errorMessage.isNullOrBlank()) {
+                Timber.d(errorMessage.toString())
+                "Error: $errorMessage"
+            } else {
+                return if (linearId.contains("xxx" as CharSequence, ignoreCase = true)) {
+                    this.bufferLocation
+                } else {
+                    postRouteSection(
+                        direction = direction,
+                        linearId = linearId,
+                        pointLocation = pointLocation,
+                        sectionId = sectionId,
+                        projectId = projectId,
+                        jobId = jobId
+                    )
+                }
+            }
         }
     }
 
@@ -391,21 +399,21 @@ class JobCreationDataRepository(
                     actId = workflowItemMeasure.actId,
                     measureGroupId = workflowItemMeasure.measureGroupId
                 )
-            }
 
-            job.workflowJobSections.forEach { jobSection ->
-                if (!appDb.getJobSectionDao().checkIfJobSectionExist(jobSection.jobSectionId)) {
-                    appDb.getJobSectionDao().insertJobSection(jobSection)
-                } else {
-                    appDb.getJobSectionDao().updateExistingJobSectionWorkflow(
-                        jobSectionId = jobSection.jobSectionId,
-                        projectSectionId = jobSection.projectSectionId,
-                        jobId = jobSection.jobId,
-                        startKm = jobSection.startKm,
-                        endKm = jobSection.endKm,
-                        recordVersion = jobSection.recordVersion,
-                        recordSynchStateId = jobSection.recordSynchStateId
-                    )
+                job.workflowJobSections.forEach { jobSection ->
+                    if (!appDb.getJobSectionDao().checkIfJobSectionExist(jobSection.jobSectionId)) {
+                        appDb.getJobSectionDao().insertJobSection(jobSection)
+                    } else {
+                        appDb.getJobSectionDao().updateExistingJobSectionWorkflow(
+                            jobSectionId = jobSection.jobSectionId,
+                            projectSectionId = jobSection.projectSectionId,
+                            jobId = jobSection.jobId,
+                            startKm = jobSection.startKm,
+                            endKm = jobSection.endKm,
+                            recordVersion = jobSection.recordVersion,
+                            recordSynchStateId = jobSection.recordSynchStateId
+                        )
+                    }
                 }
             }
         }
@@ -523,13 +531,15 @@ class JobCreationDataRepository(
                         direction
                     )
                 }
-                workflowJobs.postValue(workflowMoveResponse.workflowJob)
-                appDb.getItemDaoTemp().deleteItemList(job.jobId)
+                workflowMoveResponse.workflowJob?.let { workflowJob ->
+                    workflowJobs.postValue(workflowJob)
+                    appDb.getItemDaoTemp().deleteItemList(job.jobId)
+                }
             }
         }
     }
 
-    private fun postValue(
+    private fun postRouteSection(
         direction: String,
         linearId: String?,
         pointLocation: Double,
@@ -565,8 +575,20 @@ class JobCreationDataRepository(
             appDb.getProjectSectionDao().updateSectionDirection(direction, projectId)
         }
 
-        return appDb.getProjectSectionDao()
+        var projectSectionId = appDb.getProjectSectionDao()
             .getSectionByRouteSectionProject(sectionId.toString(), linearId, projectId)
+
+        // Deal with SectionDirection combinations.
+        // S.McDonald 2021/05/14
+        if (projectSectionId.isNullOrBlank()) {
+            projectSectionId = appDb.getProjectSectionDao().getSectionByRouteSectionProject(
+                sectionId.toString().plus(direction),
+                linearId,
+                projectId
+            )
+        }
+        Timber.d("ProjectSectionId: $projectSectionId")
+        return projectSectionId
     }
 
     suspend fun getContractNoForId(contractVoId: String?): String {

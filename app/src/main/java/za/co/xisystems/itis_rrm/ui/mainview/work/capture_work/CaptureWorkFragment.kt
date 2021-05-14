@@ -1,8 +1,14 @@
-/*
- * Updated by Shaun McDonald on 2021/02/15
- * Last modified on 2021/02/15 12:10 AM
+/**
+ * Updated by Shaun McDonald on 2021/05/15
+ * Last modified on 2021/05/14, 20:32
  * Copyright (c) 2021.  XI Systems  - All rights reserved
- */
+ **/
+
+/**
+ * Updated by Shaun McDonald on 2021/05/14
+ * Last modified on 2021/05/14, 19:43
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ **/
 
 package za.co.xisystems.itis_rrm.ui.mainview.work.capture_work
 
@@ -38,6 +44,8 @@ import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
+import java.util.Date
+import java.util.HashMap
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -96,8 +104,6 @@ import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.INFO
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.NO_INTERNET
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.WARNING
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
-import java.util.Date
-import java.util.HashMap
 
 class CaptureWorkFragment : LocationFragment(), KodeinAware {
 
@@ -201,7 +207,6 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
                     itemEstimate = it
                     getWorkItems(itemEstimate, itemEstimateJob)
                 }
-
             })
             workViewModel.historicalWorks.observe(viewLifecycleOwner, {
                 it?.let { populateHistoricalWorkEstimate(it) }
@@ -574,7 +579,6 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
 
                 itemEstiWorks.jobEstimateWorksPhotos = estimateWorksPhotoArrayList
 
-
                 workViewModel.createSaveWorksPhotos(
                         estimateWorksPhotoArrayList,
                     itemEstiWorks
@@ -789,7 +793,6 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
                                 )
                             }
                         }
-
                     }
                 }
             }

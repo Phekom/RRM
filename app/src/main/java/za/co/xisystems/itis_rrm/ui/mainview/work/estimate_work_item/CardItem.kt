@@ -1,3 +1,15 @@
+/**
+ * Updated by Shaun McDonald on 2021/05/15
+ * Last modified on 2021/05/14, 20:32
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ **/
+
+/**
+ * Updated by Shaun McDonald on 2021/05/14
+ * Last modified on 2021/05/14, 19:43
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ **/
+
 package za.co.xisystems.itis_rrm.ui.mainview.work.estimate_work_item
 
 import android.view.View
@@ -57,7 +69,7 @@ open class CardItem(
         Coroutines.io {
             workViewModel.setWorkItemJob(job.jobId)
             workViewModel.setWorkItem(estimate.estimateId)
-            withContext(Dispatchers.Main.immediate){
+            withContext(Dispatchers.Main.immediate) {
                 val navDirection = WorkFragmentDirections.actionNavWorkToCaptureWorkFragment(
                         jobId = job.jobId,
                         estimateId = estimate.estimateId
@@ -65,6 +77,5 @@ open class CardItem(
                 Navigation.findNavController(view!!).navigate(navDirection)
             }
         }
-
     }
 }

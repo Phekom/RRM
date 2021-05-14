@@ -1,8 +1,14 @@
-/*
- * Updated by Shaun McDonald on 2021/02/08
- * Last modified on 2021/02/08 2:32 PM
+/**
+ * Updated by Shaun McDonald on 2021/05/15
+ * Last modified on 2021/05/14, 20:32
  * Copyright (c) 2021.  XI Systems  - All rights reserved
- */
+ **/
+
+/**
+ * Updated by Shaun McDonald on 2021/05/14
+ * Last modified on 2021/05/14, 19:43
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ **/
 
 package za.co.xisystems.itis_rrm.data.localDB.entities
 
@@ -11,9 +17,9 @@ import android.os.Parcelable
 import android.os.Parcelable.Creator
 import androidx.room.Entity
 import com.google.gson.annotations.SerializedName
+import java.io.Serializable
 import za.co.xisystems.itis_rrm.domain.MeasurementTrack
 import za.co.xisystems.itis_rrm.utils.DataConversion
-import java.io.Serializable
 
 @Entity
 data class WorkflowItemMeasureDTO(
@@ -25,7 +31,7 @@ data class WorkflowItemMeasureDTO(
     var measureGroupId: String, // sample string 3
     @SerializedName("TrackRouteId")
     var trackRouteId: String // sample string 2
-): Serializable, Parcelable {
+) : Serializable, Parcelable {
     constructor(parcel: Parcel) : this(
         actId = parcel.readInt(),
         itemMeasureId = parcel.readString()!!,

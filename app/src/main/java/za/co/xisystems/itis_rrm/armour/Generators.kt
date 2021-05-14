@@ -1,3 +1,15 @@
+/**
+ * Updated by Shaun McDonald on 2021/05/15
+ * Last modified on 2021/05/15, 00:49
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ **/
+
+/**
+ * Updated by Shaun McDonald on 2021/05/14
+ * Last modified on 2021/05/14, 19:43
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ **/
+
 /*
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  */
@@ -48,7 +60,7 @@ class Generators {
 
     @RequiresApi(VERSION_CODES.N)
     fun generateCommonTextPassword(): String {
-        val pwString = generateRandomSpecialCharacters(4) + generateRandomNumbers(4) + generateRandomAlphabet(4, true) + generateRandomAlphabet(4, false) + generateRandomCharacters(2)
+        val pwString = generateRandomSpecialCharacters(4) + generateRandomNumbers(4) + generateRandomAlphabet(4, true) + generateRandomAlphabet(4, false) + generateRandomNumbers(2)
         val pwChars = pwString.chars()
             .mapToObj { data: Int -> data.toChar() }
             .collect(Collectors.toList())
@@ -92,12 +104,6 @@ class Generators {
     }
 
     private fun generateRandomNumbers(length: Int): String {
-        val pwdGenerator = Builder().withinRange(48, 57)
-            .build()
-        return pwdGenerator.generate(length)
-    }
-
-    private fun generateRandomCharacters(length: Int): String {
         val pwdGenerator = Builder().withinRange(48, 57)
             .build()
         return pwdGenerator.generate(length)

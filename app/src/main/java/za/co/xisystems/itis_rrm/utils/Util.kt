@@ -1,14 +1,20 @@
+/**
+ * Updated by Shaun McDonald on 2021/05/15
+ * Last modified on 2021/05/14, 20:32
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ **/
+
+/**
+ * Updated by Shaun McDonald on 2021/05/14
+ * Last modified on 2021/05/14, 18:44
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ **/
+
 package za.co.xisystems.itis_rrm.utils
 
-import android.annotation.SuppressLint
-import android.os.Environment
 import android.view.View
-import java.io.File
-import java.io.IOException
 import java.math.BigInteger
 import java.security.MessageDigest
-import java.text.SimpleDateFormat
-import java.util.Date
 import kotlin.math.round
 
 object Util {
@@ -28,22 +34,6 @@ object Util {
         sb = StringBuffer(sb.toString())
         sb.insert(23, "-")
         return sb.toString()
-    }
-
-    @SuppressLint("SimpleDateFormat")
-    @Throws(IOException::class)
-    private fun createImageFile(): File {
-        val timeStamp =
-            SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
-        val imageFileName = "JPEG_" + timeStamp + "_"
-        val storageDir = File(
-            Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_DCIM
-            ), "Camera"
-        )
-        return File.createTempFile(
-            imageFileName, ".jpg", storageDir
-        )
     }
 
     fun nanCheck(toString: String): Boolean {
