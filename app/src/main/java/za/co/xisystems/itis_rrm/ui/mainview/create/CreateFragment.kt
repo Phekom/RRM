@@ -1,8 +1,14 @@
-/*
- * Updated by Shaun McDonald on 2021/02/08
- * Last modified on 2021/02/08 1:50 AM
+/**
+ * Updated by Shaun McDonald on 2021/05/15
+ * Last modified on 2021/05/14, 20:32
  * Copyright (c) 2021.  XI Systems  - All rights reserved
- */
+ **/
+
+/**
+ * Updated by Shaun McDonald on 2021/05/14
+ * Last modified on 2021/05/14, 19:43
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ **/
 
 package za.co.xisystems.itis_rrm.ui.mainview.create
 
@@ -15,6 +21,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenStarted
 import androidx.navigation.Navigation
+import java.util.ArrayList
+import java.util.Date
 import kotlinx.coroutines.launch
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
@@ -47,8 +55,6 @@ import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.SUCCESS
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.WARNING
 import za.co.xisystems.itis_rrm.utils.hide
 import za.co.xisystems.itis_rrm.utils.show
-import java.util.ArrayList
-import java.util.Date
 
 /**
  * Created by Francis Mahlava on 2019/10/18.
@@ -65,20 +71,15 @@ class CreateFragment : BaseFragment(), OfflineListener, KodeinAware {
     private var _ui: FragmentCreatejobBinding? = null
     private val ui get() = _ui!!
 
-
     var items: ArrayList<ProjectItemDTO> = ArrayList()
-
 
     internal var selectedContract: ContractSelector? = null
     private lateinit var useR: UserDTO
     private var descri: String? = null
 
-
     internal var selectedProject: ProjectSelector? = null
 
-
     internal var selectedProjectItem: ProjectItemDTO? = null
-
 
     var newJob: JobDTO? = null
     private lateinit var newJobItemEstimatesPhotosList: ArrayList<JobItemEstimatesPhotoDTO>

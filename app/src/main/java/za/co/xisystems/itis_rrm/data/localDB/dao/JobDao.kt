@@ -1,8 +1,14 @@
-/*
- * Updated by Shaun McDonald on 2021/02/04
- * Last modified on 2021/02/04 11:19 AM
+/**
+ * Updated by Shaun McDonald on 2021/05/15
+ * Last modified on 2021/05/14, 20:32
  * Copyright (c) 2021.  XI Systems  - All rights reserved
- */
+ **/
+
+/**
+ * Updated by Shaun McDonald on 2021/05/14
+ * Last modified on 2021/05/14, 19:43
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ **/
 
 package za.co.xisystems.itis_rrm.data.localDB.dao
 
@@ -12,10 +18,10 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import java.util.ArrayList
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobSectionDTO
-import java.util.ArrayList
 
 /**
  * Created by Francis Mahlava on 2019/11/21.

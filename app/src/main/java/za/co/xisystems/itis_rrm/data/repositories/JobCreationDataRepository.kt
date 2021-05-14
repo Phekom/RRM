@@ -1,12 +1,18 @@
 /**
- * Updated by Shaun McDonald on 2021/05/14
- * Last modified on 2021/05/14, 16:39
+ * Updated by Shaun McDonald on 2021/05/15
+ * Last modified on 2021/05/14, 20:32
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  **/
 
 /**
  * Updated by Shaun McDonald on 2021/05/14
- * Last modified on 2021/05/14, 16:35
+ * Last modified on 2021/05/14, 19:43
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ **/
+
+/**
+ * Updated by Shaun McDonald on 2021/05/14
+ * Last modified on 2021/05/14, 16:39
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  **/
 
@@ -22,6 +28,8 @@ import com.google.gson.Gson
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
+import java.io.IOException
+import java.util.ArrayList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -51,8 +59,6 @@ import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.PhotoUtil.getPhotoPathFromExternalDirectory
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
-import java.io.IOException
-import java.util.ArrayList
 
 /**
  * Created by Francis Mahlava on 2019/11/28.
@@ -228,12 +234,12 @@ class JobCreationDataRepository(
         val routeSectionPointResponse =
             apiRequest { api.getRouteSectionPoint(distance, buffer, latitude, longitude, useR) }
 
-        with(routeSectionPointResponse){
+        with(routeSectionPointResponse) {
             Timber.d("$routeSectionPointResponse")
 
             return if (!errorMessage.isNullOrBlank()) {
                 Timber.d(errorMessage.toString())
-                "Error: ${errorMessage}"
+                "Error: $errorMessage"
             } else {
                 return if (linearId.contains("xxx" as CharSequence, ignoreCase = true)) {
                     this.bufferLocation
@@ -393,7 +399,6 @@ class JobCreationDataRepository(
                     actId = workflowItemMeasure.actId,
                     measureGroupId = workflowItemMeasure.measureGroupId
                 )
-
 
                 job.workflowJobSections.forEach { jobSection ->
                     if (!appDb.getJobSectionDao().checkIfJobSectionExist(jobSection.jobSectionId)) {

@@ -1,8 +1,21 @@
+/**
+ * Updated by Shaun McDonald on 2021/05/15
+ * Last modified on 2021/05/14, 20:32
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ **/
+
+/**
+ * Updated by Shaun McDonald on 2021/05/14
+ * Last modified on 2021/05/14, 19:46
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ **/
+
 package za.co.xisystems.itis_rrm.services
 
 import android.annotation.SuppressLint
 import android.content.Context
 import android.location.Location
+import android.os.Looper
 import androidx.lifecycle.LiveData
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
@@ -18,9 +31,6 @@ class LocationLiveData(context: Context) : LiveData<LocationModel>() {
         fusedLocationClient.removeLocationUpdates(locationCallback)
     }
 
-    /**
-     *
-     */
     @SuppressLint("MissingPermission")
     override fun onActive() {
         super.onActive()
@@ -38,7 +48,7 @@ class LocationLiveData(context: Context) : LiveData<LocationModel>() {
         fusedLocationClient.requestLocationUpdates(
             locationRequest,
             locationCallback,
-            null
+            Looper.getMainLooper()
         )
     }
 

@@ -1,4 +1,16 @@
 /**
+ * Updated by Shaun McDonald on 2021/05/15
+ * Last modified on 2021/05/14, 20:32
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ **/
+
+/**
+ * Updated by Shaun McDonald on 2021/05/14
+ * Last modified on 2021/05/14, 19:43
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ **/
+
+/**
  * Created by Francis Mahlava on 2019/10/23.
  */
 package za.co.xisystems.itis_rrm
@@ -42,7 +54,7 @@ open class DebugMainApp : MainApp(), KodeinAware {
             ThreadPolicy.Builder()
                 .detectDiskReads()
                 .detectDiskWrites()
-                .detectNetwork()   // or .detectAll() for all detectable problems
+                .detectNetwork() // or .detectAll() for all detectable problems
                 .penaltyLog()
                 .build()
         )

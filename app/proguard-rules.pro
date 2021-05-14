@@ -6,6 +6,8 @@
 -keepattributes *Annotation*
 -keepattributes LineNumberTable,SourceFile
 
+-keep interface android.view.** { *; }
+-keep class java.beans.** { *; }
 
 -verbose
 
@@ -68,3 +70,7 @@
 # Preserve the names of Serializable and Enum Objects
 -keep class * implements java.io.Serializable { *;}
 -keep enum za.co.xisystems.itis_rrm.** { *;}
+
+-keep interface android.view.WindowInsetsController { *; }
+-keep interface android.view.WindowInsetsAnimationControlListener { *; }
+-keep interface android.view.WindowInsetsAnimation { *; }

@@ -1,8 +1,14 @@
-/*
- * Updated by Shaun McDonald on 2021/01/25
- * Last modified on 2021/01/25 6:30 PM
+/**
+ * Updated by Shaun McDonald on 2021/05/15
+ * Last modified on 2021/05/14, 20:32
  * Copyright (c) 2021.  XI Systems  - All rights reserved
- */
+ **/
+
+/**
+ * Updated by Shaun McDonald on 2021/05/14
+ * Last modified on 2021/05/14, 19:43
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ **/
 
 package za.co.xisystems.itis_rrm.ui.mainview.approvemeasure
 
@@ -12,6 +18,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import androidx.lifecycle.viewModelScope
+import java.util.concurrent.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
@@ -34,7 +41,6 @@ import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
-import java.util.concurrent.CancellationException
 
 /**
  * Created by Francis Mahlava on 03,October,2019

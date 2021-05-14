@@ -1,12 +1,12 @@
 /**
- * Updated by Shaun McDonald on 2021/05/14
- * Last modified on 2021/05/14, 16:39
+ * Updated by Shaun McDonald on 2021/05/15
+ * Last modified on 2021/05/14, 23:50
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  **/
 
 /**
  * Updated by Shaun McDonald on 2021/05/14
- * Last modified on 2021/05/14, 16:35
+ * Last modified on 2021/05/14, 19:43
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  **/
 
@@ -374,17 +374,16 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
                 R.id.cancelButton -> {
                     Coroutines.main {
                         // Deep six this item and estimate
-                        estimateId?.let {
-                            createViewModel.deleteItemFromList(item!!.itemId, it)
+                        item?.let {
+                            createViewModel.deleteItemFromList(it.itemId, it.estimateId)
                             createViewModel.jobItem.value = null
-                            newJob?.removeJobEstimateByItemId(item!!.itemId)
+                            newJob?.removeJobEstimateByItemId(it.itemId)
                             createViewModel.backupJob(newJob!!)
                             createViewModel.setJobToEdit(newJob?.jobId!!)
-                            parentFragmentManager.beginTransaction().remove(this)?.commit()
-                            parentFragmentManager.beginTransaction().detach(this)?.commit()
+                            parentFragmentManager.beginTransaction().remove(this).commit()
+                            parentFragmentManager.beginTransaction().detach(this).commit()
                             navToAddProject(view)
                         }
-
                     }
                 }
 

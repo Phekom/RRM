@@ -1,4 +1,16 @@
 /**
+ * Updated by Shaun McDonald on 2021/05/15
+ * Last modified on 2021/05/14, 20:32
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ **/
+
+/**
+ * Updated by Shaun McDonald on 2021/05/14
+ * Last modified on 2021/05/14, 19:43
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ **/
+
+/**
  * Updated by Shaun McDonald on 2021/05/14
  * Last modified on 2021/05/14, 16:39
  * Copyright (c) 2021.  XI Systems  - All rights reserved
@@ -13,6 +25,7 @@
 package za.co.xisystems.itis_rrm.data.network
 
 import com.google.gson.JsonObject
+import java.util.concurrent.TimeUnit
 import okhttp3.OkHttpClient
 import okhttp3.Protocol
 import okhttp3.logging.HttpLoggingInterceptor
@@ -40,7 +53,6 @@ import za.co.xisystems.itis_rrm.data.network.responses.UploadImageResponse
 import za.co.xisystems.itis_rrm.data.network.responses.UploadWorksItemResponse
 import za.co.xisystems.itis_rrm.data.network.responses.WorkflowMoveResponse
 import za.co.xisystems.itis_rrm.data.network.responses.WorkflowResponse
-import java.util.concurrent.TimeUnit
 
 /**
  * Created by Francis Mahlava on 2019/10/23.
