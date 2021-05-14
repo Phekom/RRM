@@ -1,8 +1,14 @@
-/*
- * Updated by Shaun McDonald on 2021/02/08
- * Last modified on 2021/02/08 3:05 PM
+/**
+ * Updated by Shaun McDonald on 2021/05/14
+ * Last modified on 2021/05/14, 16:39
  * Copyright (c) 2021.  XI Systems  - All rights reserved
- */
+ **/
+
+/**
+ * Updated by Shaun McDonald on 2021/05/14
+ * Last modified on 2021/05/14, 16:35
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ **/
 
 package za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates
 
@@ -209,12 +215,12 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
 
     private fun readNavArgs() = uiScope.launch(uiScope.coroutineContext) {
         val args: EstimatePhotoFragmentArgs? by navArgs()
-        if (args != null) {
-            if (!args?.estimateId.isNullOrEmpty()) {
-                estimateId = args!!.estimateId
+        args?.let { navArgs ->
+            if (!navArgs.estimateId.isNullOrEmpty()) {
+                estimateId = navArgs.estimateId
             }
-            if (!args?.jobId.isNullOrEmpty()) {
-                createViewModel.setJobToEdit(args?.jobId!!)
+            if (!navArgs.jobId.isNullOrEmpty()) {
+                createViewModel.setJobToEdit(navArgs.jobId!!)
             }
         }
     }
@@ -374,8 +380,8 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
                             newJob?.removeJobEstimateByItemId(item!!.itemId)
                             createViewModel.backupJob(newJob!!)
                             createViewModel.setJobToEdit(newJob?.jobId!!)
-                            fragmentManager?.beginTransaction()?.remove(this)?.commit()
-                            fragmentManager?.beginTransaction()?.detach(this)?.commit()
+                            parentFragmentManager.beginTransaction().remove(this)?.commit()
+                            parentFragmentManager.beginTransaction().detach(this)?.commit()
                             navToAddProject(view)
                         }
 
@@ -696,6 +702,12 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
                     this@EstimatePhotoFragment.disableGlide = true
                     showLocationWarning()
                     resetPhotos()
+                } else if (result.startsWith("Error:")) {
+                    sharpToast(
+                        message = result, style = ERROR,
+                        position = BOTTOM, duration = LONG
+                    )
+                    resetPhotos()
                 }
             }
             withContext(uiScope.coroutineContext) {
@@ -774,11 +786,18 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
         sectionPoint: SectionPointDTO
     ) {
 
-        val projectSectionId = createViewModel.getSectionByRouteSectionProject(
-            sectionPoint.sectionId,
+        var projectSectionId = createViewModel.getSectionByRouteSectionProject(
+            sectionPoint.sectionId.toString(),
             sectionPoint.linearId,
             newJob?.projectId
         )
+        if (projectSectionId.isNullOrBlank()) {
+            projectSectionId = createViewModel.getSectionByRouteSectionProject(
+                sectionPoint.sectionId.toString().plus(sectionPoint.direction),
+                sectionPoint.linearId,
+                newJob?.projectId
+            )
+        }
 
         onProjectSectionIdFound(projectSectionId)
     }
