@@ -1,8 +1,8 @@
-/*
- * Updated by Shaun McDonald on 2021/01/30
- * Last modified on 2021/01/30 7:07 AM
+/**
+ * Updated by Shaun McDonald on 2021/05/17
+ * Last modified on 2021/05/17, 15:59
  * Copyright (c) 2021.  XI Systems  - All rights reserved
- */
+ **/
 
 @file:Suppress(
     "RemoveExplicitTypeArguments"
@@ -76,7 +76,7 @@ class ApproveMeasureFragment : BaseFragment(), KodeinAware {
 
         initVeiledRecyclerView()
 
-        loadJobHeaders()
+        fetchJobsFromService()
 
         swipeToRefreshInit()
     }
