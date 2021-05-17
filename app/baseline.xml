@@ -1,0 +1,571 @@
+<?xml version="1.0" ?>
+<!--
+  * Updated by Shaun McDonald on 2021/05/17
+  * Last modified on 2021/05/15, 02:38
+  * Copyright (c) 2021.  XI Systems  - All rights reserved
+  -->
+
+<SmellBaseline>
+  <ManuallySuppressedIssues></ManuallySuppressedIssues>
+  <CurrentIssues>
+    <ID>ClassNaming:All_IDs.kt$All_IDs</ID>
+    <ID>ClassNaming:ID_Provider.kt$ID_Provider</ID>
+    <ID>ClassNaming:SectionProj_Item.kt$SectionProj_Item : Item</ID>
+    <ID>ComplexMethod:PasswordStrength.kt$PasswordStrength.Companion$fun calculateStrength(password: String): PasswordStrength</ID>
+    <ID>ConstructorParameterNaming:PrimaryKeyValueDTO.kt$PrimaryKeyValueDTO$@SerializedName("Key") val primary_key: String?</ID>
+    <ID>EmptyFunctionBlock:AppExecutor.kt$AppExecutor.MainThreadExecutor${}</ID>
+    <ID>EmptyFunctionBlock:ArmouredFileSystem.kt$ArmouredFileSystem${ }</ID>
+    <ID>EmptyFunctionBlock:ArmouredPreferences.kt$ArmouredPreferences${ }</ID>
+    <ID>EmptyFunctionBlock:SectionProj_Item.kt$SectionProj_Item${ }</ID>
+    <ID>EmptyFunctionBlock:SpinnerHelper.kt$SpinnerHelper.&lt;no name provided&gt;${}</ID>
+    <ID>ForbiddenComment:CaptureItemMeasurePhotoFragment.kt$CaptureItemMeasurePhotoFragment$// TODO: Check earlier and get user to switch Location on.</ID>
+    <ID>ForbiddenComment:CaptureItemMeasurePhotoFragment.kt$CaptureItemMeasurePhotoFragment$// TODO: Have location validated here</ID>
+    <ID>ForbiddenComment:EstimatePhotoFragment.kt$EstimatePhotoFragment$// TODO: polygon verification for offline photography</ID>
+    <ID>ForbiddenComment:ForegroundOnlyLocationService.kt$ForegroundOnlyLocationService$// TODO: Step 1.1, Review variables (no changes).</ID>
+    <ID>ForbiddenComment:ForegroundOnlyLocationService.kt$ForegroundOnlyLocationService$// TODO: Step 1.2, Review the FusedLocationProviderClient.</ID>
+    <ID>ForbiddenComment:ForegroundOnlyLocationService.kt$ForegroundOnlyLocationService$// TODO: Step 1.3, Create a LocationRequest.</ID>
+    <ID>ForbiddenComment:ForegroundOnlyLocationService.kt$ForegroundOnlyLocationService$// TODO: Step 1.4, Initialize the LocationCallback.</ID>
+    <ID>ForbiddenComment:ForegroundOnlyLocationService.kt$ForegroundOnlyLocationService$// TODO: Step 1.5, Subscribe to location changes.</ID>
+    <ID>ForbiddenComment:ForegroundOnlyLocationService.kt$ForegroundOnlyLocationService$// TODO: Step 1.6, Unsubscribe to location changes.</ID>
+    <ID>ForbiddenComment:ProgressButtonExtensions.kt$// TODO: Exchange hard-coded colours to match the theme</ID>
+    <ID>FunctionNaming:AppExecutor.kt$AppExecutor$fun AppExecutor( diskIO: Executor?, mainThread: Executor?, networkIO: Executor? ): AppExecutor?</ID>
+    <ID>FunctionNaming:DebugMainApp.kt$DebugMainApp$// Strict mode halps us catch leaks and bad practices super quick private fun SetStrictMode()</ID>
+    <ID>FunctionNaming:MainActivityViewModel.kt$MainActivityViewModel$fun Item5(measureapproval: ApproveMeasureItem)</ID>
+    <ID>FunctionNaming:SettingsViewModel.kt$SettingsViewModel$fun Item5(measureapproval: ApproveMeasureItem)</ID>
+    <ID>FunctionOnlyReturningConstant:MeasureCreationDataRepository.kt$MeasureCreationDataRepository$private fun getErrorState(): Boolean</ID>
+    <ID>FunctionParameterNaming:ActivityDao.kt$ActivityDao$ACT_ID: Long</ID>
+    <ID>FunctionParameterNaming:ActivityDao.kt$ActivityDao$ACT_NAME: String?</ID>
+    <ID>FunctionParameterNaming:ActivityDao.kt$ActivityDao$ACT_TYPE_ID: Long?</ID>
+    <ID>FunctionParameterNaming:ActivityDao.kt$ActivityDao$APPROVAL_ID: Long?</ID>
+    <ID>FunctionParameterNaming:ActivityDao.kt$ActivityDao$CONTENT_ID: Long?</ID>
+    <ID>FunctionParameterNaming:ActivityDao.kt$ActivityDao$DESCRIPTION: String?</ID>
+    <ID>FunctionParameterNaming:GPSUtils.kt$GPSUtils$OnGpsListener: OnGpsListener?</ID>
+    <ID>FunctionParameterNaming:PrimaryKeyValueDao.kt$PrimaryKeyValueDao$primary_key: String?</ID>
+    <ID>LargeClass:CaptureWorkFragment.kt$CaptureWorkFragment : LocationFragmentKodeinAware</ID>
+    <ID>LargeClass:EstimatePhotoFragment.kt$EstimatePhotoFragment : LocationFragmentKodeinAware</ID>
+    <ID>LargeClass:OfflineDataRepository.kt$OfflineDataRepository : SafeApiRequest</ID>
+    <ID>LongMethod:EstimatesItem.kt$EstimatesItem$private fun alertdialog( jobItemEstimateDTO: JobItemEstimateDTO )</ID>
+    <ID>LongMethod:JobApprovalDataRepository.kt$JobApprovalDataRepository$private suspend fun updateWorkflowJobValuesAndInsertWhenNeeded(job: WorkflowJobDTO)</ID>
+    <ID>LongMethod:MainActivity.kt$MainActivity$override fun onCreate(savedInstanceState: Bundle?)</ID>
+    <ID>LongMethod:MeasureCreationDataRepository.kt$MeasureCreationDataRepository$private suspend fun persistWorkflowJob( job: WorkflowJobDTO, pushMeasures: Boolean = false )</ID>
+    <ID>LongMethod:OfflineDataRepository.kt$OfflineDataRepository$private suspend fun saveJobItemMeasuresForEstimate( jobItemMeasures: java.util.ArrayList&lt;JobItemMeasureDTO&gt;, job: JobDTO )</ID>
+    <ID>LongMethod:PhotoUtil.kt$PhotoUtil$ // public static Map&lt;String, String&gt; saveImageToInternalStorage(Context context, Bitmap bitmap) { fun saveImageToInternalStorage( context: Context, imageUri: Uri ): Map&lt;String, String&gt;?</ID>
+    <ID>LongMethod:SubmitMeasureFragment.kt$SubmitMeasureFragment$private fun List&lt;JobItemEstimateDTO&gt;.toMeasureItems(): List&lt;ExpandableGroup&gt;</ID>
+    <ID>LongParameterList:ActivityDao.kt$ActivityDao$( ACT_ID: Long, ACT_TYPE_ID: Long?, APPROVAL_ID: Long?, CONTENT_ID: Long?, ACT_NAME: String?, DESCRIPTION: String? )</ID>
+    <ID>LongParameterList:CardItem.kt$CardItem$( val activity: FragmentActivity?, val text: String, val qty: String, val rate: String, val estimateId: String, private val workViewModel: WorkViewModel, private val jobItemEstimate: JobItemEstimateDTO, private val job: JobDTO )</ID>
+    <ID>LongParameterList:CardMeasureItem.kt$CardMeasureItem$( val activity: FragmentActivity?, val itemMeasureId: String, val qty: String, val rate: String, val text: String, val measureViewModel: MeasureViewModel, var uiScope: UiLifecycleScope )</ID>
+    <ID>LongParameterList:CreateFragment.kt$CreateFragment$( contractID: String?, projectID: String?, useR: Int?, newJobItemEstimatesList: ArrayList&lt;JobItemEstimateDTO&gt;, jobItemMeasureArrayList: ArrayList&lt;JobItemMeasureDTO&gt;, jobItemSectionArrayList: ArrayList&lt;JobSectionDTO&gt;, description: String? )</ID>
+    <ID>LongParameterList:CreateViewModel.kt$CreateViewModel$( newJobId: String, startKM: Double, endKM: Double, sectionId: String, newJobItemEstimatesList: ArrayList&lt;JobItemEstimateDTO&gt;, jobItemSectionArrayList: ArrayList&lt;JobSectionDTO&gt; )</ID>
+    <ID>LongParameterList:EntitiesDao.kt$EntitiesDao$( trackRouteId: String?, actionable: Int, activityId: Int, currentRouteId: Int, data: String?, description: String?, entities: ArrayList&lt;ToDoListEntityDTO&gt;, entityName: String?, location: String?, primaryKeyValues: ArrayList&lt;PrimaryKeyValueDTO&gt;, recordVersion: Int, jobId: String? )</ID>
+    <ID>LongParameterList:EstimateWorkDao.kt$EstimateWorkDao$( worksId: String?, estimateId: String?, recordVersion: Int, recordSynchStateId: Int, actId: Int, trackRouteId: String? )</ID>
+    <ID>LongParameterList:JobCreationDataRepository.kt$JobCreationDataRepository$( direction: String, linearId: String?, pointLocation: Double, sectionId: Int, projectId: String?, jobId: String? )</ID>
+    <ID>LongParameterList:JobCreationDataRepository.kt$JobCreationDataRepository$( newJobId: String, startKM: Double, endKM: Double, sectionId: String, newJobItemEstimatesList: ArrayList&lt;JobItemEstimateDTO&gt;, jobItemSectionArrayList: ArrayList&lt;JobSectionDTO&gt; )</ID>
+    <ID>LongParameterList:JobDTO.kt$JobDTO$( @SerializedName("ActId") val actId: Int, @PrimaryKey @NotNull @SerializedName("JobId") var jobId: String, @SerializedName("ContractVoId") var contractVoId: String?, @SerializedName("ProjectId") var projectId: String?, @SerializedName("SectionId") var sectionId: String?, @SerializedName("StartKm") var startKm: Double, @SerializedName("EndKm") var endKm: Double, @SerializedName("Descr") var descr: String?, @SerializedName("JiNo") val jiNo: String?, @SerializedName("UserId") val userId: Int, @SerializedName("TrackRouteId") var trackRouteId: String?, @SerializedName("Section") val section: String?, @SerializedName("Cpa") val cpa: Int, @SerializedName("DayWork") val dayWork: Int, @SerializedName("ContractorId") val contractorId: Int, @SerializedName("M9100") val m9100: Int, @SerializedName("IssueDate") var issueDate: String? = null, @SerializedName("StartDate") var startDate: String? = null, @SerializedName("DueDate") var dueDate: String? = null, @SerializedName("ApprovalDate") var approvalDate: String? = null, @SerializedName("MobileJobItemEstimates") var jobItemEstimates: ArrayList&lt;JobItemEstimateDTO&gt; = ArrayList(), @SerializedName("MobileJobItemMeasures") var jobItemMeasures: ArrayList&lt;JobItemMeasureDTO&gt; = ArrayList(), @SerializedName("MobileJobSections") var jobSections: ArrayList&lt;JobSectionDTO&gt; = ArrayList(), @SerializedName("PerfitemGroupId") var perfitemGroupId: String?, @SerializedName("RecordVersion") val recordVersion: Int, @SerializedName("Remarks") val remarks: String?, @SerializedName("Route") var route: String?, @SerializedName("RrmJiNo") val rrmJiNo: String?, @SerializedName("EngineerId") val engineerId: Int, @SerializedName("EntireRoute") val entireRoute: Int, @SerializedName("IsExtraWork") val isExtraWork: Int, @SerializedName("JobCategoryId") val jobCategoryId: Int, @SerializedName("JobDirectionId") val jobDirectionId: Int, @SerializedName("JobPositionId") val jobPositionId: Int, @SerializedName("JobStatusId") val jobStatusId: Int, @SerializedName("ProjectVoId") var projectVoId: String?, @SerializedName("QtyUpdateAllowed") val qtyUpdateAllowed: Int, @SerializedName("RecordSynchStateId") val recordSynchStateId: Int, @SerializedName("VoId") var voId: String?, @SerializedName("WorkCompleteDate") val workCompleteDate: String? = null, @SerializedName("WorkStartDate") val workStartDate: String? = null, @SerializedName("ESTIMATES_ACT_ID") var estimatesActId: Int?, @SerializedName("MEASURE_ACT_ID") var measureActId: Int?, @SerializedName("WORKS_ACT_ID") var worksActId: Int, val sortString: String?, @SerializedName("ActivityId") val activityId: Int, @SerializedName("Is_synced") val isSynced: String?, @SerializedName("Deleted") var deleted: Int = 0 )</ID>
+    <ID>LongParameterList:JobDao.kt$JobDao$( newJobId: String, startKM: Double, endKM: Double, sectionId: String, newJobItemEstimatesList: ArrayList&lt;JobItemEstimateDTO&gt;, jobItemSectionArrayList: ArrayList&lt;JobSectionDTO&gt; )</ID>
+    <ID>LongParameterList:JobDaoTemp.kt$JobDaoTemp$( newjobId: String, startKM: Double, endKM: Double, sectionId: String, newJobItemEstimatesList: ArrayList&lt;JobItemEstimateDTO&gt;, jobItemSectionArrayList: ArrayList&lt;JobSectionDTO&gt; )</ID>
+    <ID>LongParameterList:JobEstimateWorksDTO.kt$JobEstimateWorksDTO$( @SerializedName("ActId") var actId: Int, @SerializedName("EstimateId") var estimateId: String?, @SerializedName("MobileJobEstimateWorksPhotos") var jobEstimateWorksPhotos: ArrayList&lt;JobEstimateWorksPhotoDTO&gt; = ArrayList(), @SerializedName("RecordSynchStateId") var recordSynchStateId: Int, @SerializedName("RecordVersion") var recordVersion: Int, @SerializedName("TrackRouteId") var trackRouteId: String, @SerializedName("WorksId") @PrimaryKey var worksId: String )</ID>
+    <ID>LongParameterList:JobSectionDTO.kt$JobSectionDTO$( @SerializedName("JobSectionId") @PrimaryKey var jobSectionId: String, @SerializedName("ProjectSectionId") var projectSectionId: String?, @SerializedName("JobId") var jobId: String?, @SerializedName("StartKm") val startKm: Double, @SerializedName("EndKm") val endKm: Double, @SerializedName("RecordSynchStateId") val recordSynchStateId: Int, @SerializedName("RecordVersion") val recordVersion: Int )</ID>
+    <ID>LongParameterList:JobSectionDao.kt$JobSectionDao$( jobSectionId: String?, projectSectionId: String?, jobId: String?, startKm: Double, endKm: Double, recordVersion: Int, recordSynchStateId: Int )</ID>
+    <ID>LongParameterList:MeasureCreationDataRepository.kt$MeasureCreationDataRepository$( userId: String, jobId: String, jimNo: String?, contractVoId: String?, mSures: ArrayList&lt;JobItemMeasureDTO&gt;, activity: FragmentActivity, itemMeasureJob: JobDTO )</ID>
+    <ID>LongParameterList:MeasureViewModel.kt$MeasureViewModel$( userId: String, jobId: String, jimNo: String?, contractVoId: String?, mSures: ArrayList&lt;JobItemMeasureDTO&gt;, activity: FragmentActivity, itemMeasureJob: JobDTO )</ID>
+    <ID>LongParameterList:PasswordStrength.kt$PasswordStrength.Companion$( password: String, sawSpecial: Boolean, sawUpper: Boolean, sawLower: Boolean, sawDigit: Boolean, currentScore: Int )</ID>
+    <ID>LongParameterList:ProjectDao.kt$ProjectDao$( projectId: String, descr: String?, endDate: String?, items: ArrayList&lt;ProjectItemDTO&gt;?, projectCode: String?, projectMinus: String?, projectPlus: String?, projectSections: ArrayList&lt;ProjectSectionDTO&gt;?, voItems: ArrayList&lt;VoItemDTO&gt;?, contractId: String? )</ID>
+    <ID>LongParameterList:ProjectItemDao.kt$ProjectItemDao$( itemId: String, itemCode: String?, descr: String?, itemSections: ArrayList&lt;ItemSectionDTO&gt; = arrayListOf(), tenderRate: Double, uom: String?, workflowId: Int?, sectionItemId: String?, quantity: Double, estimateId: String?, projectId: String )</ID>
+    <ID>LongParameterList:ProjectSectionDao.kt$ProjectSectionDao$( sectionId: String, route: String, section: String, startKm: Double?, endKm: Double?, direction: String?, projectId: String )</ID>
+    <ID>LongParameterList:SectionPointDao.kt$SectionPointDao$( direction: String, linearId: String, pointLocation: Double, sectionId: Int, projectId: String?, jobId: String? )</ID>
+    <ID>LongParameterList:SubmitMeasureFragment.kt$SubmitMeasureFragment$( userDTO: UserDTO, jobId: String, itemMeasureJob: JobDTO, contractVoId: String, mSures: ArrayList&lt;JobItemMeasureDTO&gt;, it: FragmentActivity )</ID>
+    <ID>LongParameterList:VoItemDao.kt$VoItemDao$( projectVoId: String, itemCode: String?, voDescr: String?, descr: String?, uom: String?, rate: Double?, projectItemId: String?, contractVoId: String?, contractVoItemId: String?, projectId: String )</ID>
+    <ID>LongParameterList:WorkFlowRouteDao.kt$WorkFlowRouteDao$( routeId: Long, actId: Long, nextRouteId: Long, failRouteId: Long, errorRouteId: Long, canStart: Long, workflowId: Long? )</ID>
+    <ID>LongParameterList:WorkflowJobDTO.kt$WorkflowJobDTO$( @PrimaryKey @SerializedName("JobId") var jobId: String? = null, @SerializedName("ActId") var actId: Int = 0, @SerializedName("TrackRouteId") var trackRouteId: String? = null, @SerializedName("JiNo") var jiNo: String? = null, @SerializedName("WorkflowItemEstimates") val workflowItemEstimates: ArrayList&lt;WorkflowItemEstimateDTO&gt; = ArrayList(), @SerializedName("WorkflowItemMeasures") val workflowItemMeasures: ArrayList&lt;WorkflowItemMeasureDTO&gt; = ArrayList(), @SerializedName("WorkflowJobSections") val workflowJobSections: ArrayList&lt;JobSectionDTO&gt; = ArrayList() )</ID>
+    <ID>LongParameterList:WorkflowJobSectionDTO.kt$WorkflowJobSectionDTO$( @SerializedName("JobId") var jobId: String? = null, @SerializedName("JobSectionId") val jobSectionId: String? = null, @SerializedName("ProjectSectionId") val projectSectionId: String? = null, @SerializedName("RecordVersion") val recordVersion: Int = 0, @SerializedName("RecordSynchStateId") val recordSynchStateId: Int = 0, @SerializedName("StartKm") val startKm: Double = 0.0, @SerializedName("EndKm") val endKm: Double = 0.0 )</ID>
+    <ID>LongParameterList:XIErrorHandler.kt$XIErrorHandler$( fragment: Fragment? = null, view: View, throwable: XIError, shouldToast: Boolean = false, shouldShowSnackBar: Boolean = false, refreshAction: () -&gt; Unit = {} )</ID>
+    <ID>MagicNumber:AppDatabase.kt$AppDatabase.Companion$20</ID>
+    <ID>MagicNumber:AppExecutor.kt$AppExecutor$3</ID>
+    <ID>MagicNumber:ApproveJobsFragment.kt$ApproveJobsFragment$15</ID>
+    <ID>MagicNumber:ApproveMeasureFragment.kt$ApproveMeasureFragment$15</ID>
+    <ID>MagicNumber:ApproveMeasureViewModel.kt$ApproveMeasureViewModel$10</ID>
+    <ID>MagicNumber:ApproveMeasureViewModel.kt$ApproveMeasureViewModel$4</ID>
+    <ID>MagicNumber:ApproveMeasureViewModel.kt$ApproveMeasureViewModel$5</ID>
+    <ID>MagicNumber:AuthViewModel.kt$AuthViewModel$4</ID>
+    <ID>MagicNumber:BaseConnectionApi.kt$BaseConnectionApi.Companion$5</ID>
+    <ID>MagicNumber:BaseFragment.kt$BaseFragment$3000</ID>
+    <ID>MagicNumber:DataConversion.kt$DataConversion$10</ID>
+    <ID>MagicNumber:DataConversion.kt$DataConversion$16</ID>
+    <ID>MagicNumber:DataConversion.kt$DataConversion$3</ID>
+    <ID>MagicNumber:DataConversion.kt$DataConversion$4</ID>
+    <ID>MagicNumber:DataConversion.kt$DataConversion$5</ID>
+    <ID>MagicNumber:DataConversion.kt$DataConversion$6</ID>
+    <ID>MagicNumber:DataConversion.kt$DataConversion$7</ID>
+    <ID>MagicNumber:DataConversion.kt$DataConversion$8</ID>
+    <ID>MagicNumber:EstimatePhotoFragment.kt$EstimatePhotoFragment$1000</ID>
+    <ID>MagicNumber:EstimatesItem.kt$EstimatesItem$9</ID>
+    <ID>MagicNumber:ForegroundOnlyLocationService.kt$ForegroundOnlyLocationService$30</ID>
+    <ID>MagicNumber:ForegroundOnlyLocationService.kt$ForegroundOnlyLocationService$60</ID>
+    <ID>MagicNumber:Generators.kt$Generators$122</ID>
+    <ID>MagicNumber:Generators.kt$Generators$16</ID>
+    <ID>MagicNumber:Generators.kt$Generators$33</ID>
+    <ID>MagicNumber:Generators.kt$Generators$4</ID>
+    <ID>MagicNumber:Generators.kt$Generators$45</ID>
+    <ID>MagicNumber:Generators.kt$Generators$47</ID>
+    <ID>MagicNumber:Generators.kt$Generators$48</ID>
+    <ID>MagicNumber:Generators.kt$Generators$57</ID>
+    <ID>MagicNumber:Generators.kt$Generators$65</ID>
+    <ID>MagicNumber:Generators.kt$Generators$8</ID>
+    <ID>MagicNumber:Generators.kt$Generators$90</ID>
+    <ID>MagicNumber:Generators.kt$Generators$97</ID>
+    <ID>MagicNumber:JobCreationDataRepository.kt$JobCreationDataRepository$0.5</ID>
+    <ID>MagicNumber:JobInfoFragment.kt$JobInfoFragment$3</ID>
+    <ID>MagicNumber:JobUtils.kt$JobUtils$0.01</ID>
+    <ID>MagicNumber:LoginActivity.kt$LoginActivity$3</ID>
+    <ID>MagicNumber:LoginActivity.kt$LoginActivity$4</ID>
+    <ID>MagicNumber:MainActivity.kt$MainActivity$2000</ID>
+    <ID>MagicNumber:MapActivity.kt$MapActivity$151.0</ID>
+    <ID>MagicNumber:MapActivity.kt$MapActivity$34.0</ID>
+    <ID>MagicNumber:MeasureApprovalFragment.kt$MeasureApprovalFragment$10</ID>
+    <ID>MagicNumber:MeasureFragment.kt$MeasureFragment$15</ID>
+    <ID>MagicNumber:MeasureViewModel.kt$MeasureViewModel$16</ID>
+    <ID>MagicNumber:MeasureViewModel.kt$MeasureViewModel$4</ID>
+    <ID>MagicNumber:MeasureViewModel.kt$MeasureViewModel$5</ID>
+    <ID>MagicNumber:PasswordStrength.kt$PasswordStrength.Companion$3</ID>
+    <ID>MagicNumber:PasswordStrength.kt$PasswordStrength.MEDIUM$185</ID>
+    <ID>MagicNumber:PasswordStrength.kt$PasswordStrength.MEDIUM$220</ID>
+    <ID>MagicNumber:PasswordStrength.kt$PasswordStrength.MEDIUM$255</ID>
+    <ID>MagicNumber:PhotoQuality.kt$PhotoQuality.LOW$8</ID>
+    <ID>MagicNumber:PhotoQuality.kt$PhotoQuality.MEDIUM$6</ID>
+    <ID>MagicNumber:PhotoQuality.kt$PhotoQuality.THUMB$16</ID>
+    <ID>MagicNumber:PhotoQuality.kt$PhotoQuality.TINY$24</ID>
+    <ID>MagicNumber:PhotoUtil.kt$PhotoUtil$100</ID>
+    <ID>MagicNumber:PhotoUtil.kt$PhotoUtil$1024</ID>
+    <ID>MagicNumber:PhotoUtil.kt$PhotoUtil$16</ID>
+    <ID>MagicNumber:PhotoUtil.kt$PhotoUtil$180</ID>
+    <ID>MagicNumber:PhotoUtil.kt$PhotoUtil$270</ID>
+    <ID>MagicNumber:PhotoUtil.kt$PhotoUtil$4</ID>
+    <ID>MagicNumber:PhotoUtil.kt$PhotoUtil$5</ID>
+    <ID>MagicNumber:PhotoUtil.kt$PhotoUtil$612.0f</ID>
+    <ID>MagicNumber:PhotoUtil.kt$PhotoUtil$816.0f</ID>
+    <ID>MagicNumber:PhotoUtil.kt$PhotoUtil$90</ID>
+    <ID>MagicNumber:ProgressButtonExtensions.kt$100</ID>
+    <ID>MagicNumber:ShimmerUtils.kt$ShimmerUtils$0.6f</ID>
+    <ID>MagicNumber:UIExtensions.kt$3</ID>
+    <ID>MagicNumber:UIExtensions.kt$4</ID>
+    <ID>MagicNumber:UIExtensions.kt$5</ID>
+    <ID>MagicNumber:Util.kt$Util$10</ID>
+    <ID>MagicNumber:Util.kt$Util$13</ID>
+    <ID>MagicNumber:Util.kt$Util$16</ID>
+    <ID>MagicNumber:Util.kt$Util$18</ID>
+    <ID>MagicNumber:Util.kt$Util$23</ID>
+    <ID>MagicNumber:Util.kt$Util$32</ID>
+    <ID>MagicNumber:Util.kt$Util$500</ID>
+    <ID>MagicNumber:Util.kt$Util$8</ID>
+    <ID>MagicNumber:VeiledRecyclerViewExtensions.kt$10</ID>
+    <ID>MagicNumber:WorkFragment.kt$WorkFragment$15</ID>
+    <ID>MagicNumber:WorkFragment.kt$WorkFragment$20</ID>
+    <ID>MagicNumber:WorkStateItem.kt$WorkStateItem$15</ID>
+    <ID>MagicNumber:WorkStateItem.kt$WorkStateItem$16</ID>
+    <ID>MagicNumber:WorkStateItem.kt$WorkStateItem$17</ID>
+    <ID>MagicNumber:WorkStateItem.kt$WorkStateItem$18</ID>
+    <ID>MagicNumber:WorkStateItem.kt$WorkStateItem$19</ID>
+    <ID>MagicNumber:WorkStateItem.kt$WorkStateItem$3</ID>
+    <ID>MagicNumber:WorkStateItem.kt$WorkStateItem$4</ID>
+    <ID>PackageNaming:ActivityDTO.kt$package za.co.xisystems.itis_rrm.data.localDB.entities</ID>
+    <ID>PackageNaming:ActivityDao.kt$package za.co.xisystems.itis_rrm.data.localDB.dao</ID>
+    <ID>PackageNaming:ActivityIdConstants.kt$package za.co.xisystems.itis_rrm.utils</ID>
+    <ID>PackageNaming:ActivitySectionsResponse.kt$package za.co.xisystems.itis_rrm.data.network.responses</ID>
+    <ID>PackageNaming:AddProjectFragment.kt$package za.co.xisystems.itis_rrm.ui.mainview.create.add_project_item</ID>
+    <ID>PackageNaming:All_IDs.kt$package za.co.xisystems.itis_rrm.internal</ID>
+    <ID>PackageNaming:Animations.kt$package za.co.xisystems.itis_rrm.data._commons</ID>
+    <ID>PackageNaming:AppDatabase.kt$package za.co.xisystems.itis_rrm.data.localDB</ID>
+    <ID>PackageNaming:AppExecutor.kt$package za.co.xisystems.itis_rrm.data.network</ID>
+    <ID>PackageNaming:AppExecutor.kt$package za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates</ID>
+    <ID>PackageNaming:ApproveJobItem.kt$package za.co.xisystems.itis_rrm.ui.mainview.approvejobs.approve_job_item</ID>
+    <ID>PackageNaming:ApproveJobsFragment.kt$package za.co.xisystems.itis_rrm.ui.mainview.approvejobs</ID>
+    <ID>PackageNaming:ApproveJobsViewModel.kt$package za.co.xisystems.itis_rrm.ui.mainview.approvejobs</ID>
+    <ID>PackageNaming:ApproveJobsViewModelFactory.kt$package za.co.xisystems.itis_rrm.ui.mainview.approvejobs</ID>
+    <ID>PackageNaming:ApproveMeasureFragment.kt$package za.co.xisystems.itis_rrm.ui.mainview.approvemeasure</ID>
+    <ID>PackageNaming:ApproveMeasureItem.kt$package za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.approveMeasure_Item</ID>
+    <ID>PackageNaming:ApproveMeasureViewModel.kt$package za.co.xisystems.itis_rrm.ui.mainview.approvemeasure</ID>
+    <ID>PackageNaming:ApproveMeasureViewModelFactory.kt$package za.co.xisystems.itis_rrm.ui.mainview.approvemeasure</ID>
+    <ID>PackageNaming:ArmouredFileSystem.kt$package za.co.xisystems.itis_rrm.armour</ID>
+    <ID>PackageNaming:ArmouredPreferences.kt$package za.co.xisystems.itis_rrm.armour</ID>
+    <ID>PackageNaming:AuthListener.kt$package za.co.xisystems.itis_rrm.ui.auth</ID>
+    <ID>PackageNaming:AuthResponse.kt$package za.co.xisystems.itis_rrm.data.network.responses</ID>
+    <ID>PackageNaming:AuthViewModel.kt$package za.co.xisystems.itis_rrm.ui.auth</ID>
+    <ID>PackageNaming:AuthViewModelFactory.kt$package za.co.xisystems.itis_rrm.ui.auth</ID>
+    <ID>PackageNaming:BaseActivity.kt$package za.co.xisystems.itis_rrm.ui.base</ID>
+    <ID>PackageNaming:BaseConnectionApi.kt$package za.co.xisystems.itis_rrm.data.network</ID>
+    <ID>PackageNaming:BaseFragment.kt$package za.co.xisystems.itis_rrm.base</ID>
+    <ID>PackageNaming:BaseViewModel.kt$package za.co.xisystems.itis_rrm.base</ID>
+    <ID>PackageNaming:CaptureItemMeasurePhotoFragment.kt$package za.co.xisystems.itis_rrm.ui.mainview.estmeasure.submit_measure</ID>
+    <ID>PackageNaming:CaptureWorkFragment.kt$package za.co.xisystems.itis_rrm.ui.mainview.work.capture_work</ID>
+    <ID>PackageNaming:CardItem.kt$package za.co.xisystems.itis_rrm.ui.mainview.work.estimate_work_item</ID>
+    <ID>PackageNaming:CardMeasureItem.kt$package za.co.xisystems.itis_rrm.ui.mainview.estmeasure.submit_measure</ID>
+    <ID>PackageNaming:ChildLookupDTO.kt$package za.co.xisystems.itis_rrm.data.localDB.entities</ID>
+    <ID>PackageNaming:ColorToast.kt$package za.co.xisystems.itis_rrm.custom.notifications</ID>
+    <ID>PackageNaming:Constants.kt$package za.co.xisystems.itis_rrm.constants</ID>
+    <ID>PackageNaming:Constants.kt$package za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils</ID>
+    <ID>PackageNaming:ContractDTO.kt$package za.co.xisystems.itis_rrm.data.localDB.entities</ID>
+    <ID>PackageNaming:ContractDao.kt$package za.co.xisystems.itis_rrm.data.localDB.dao</ID>
+    <ID>PackageNaming:ContractSelector.kt$package za.co.xisystems.itis_rrm.domain</ID>
+    <ID>PackageNaming:ContractSelectorView.kt$package za.co.xisystems.itis_rrm.data.localDB.views</ID>
+    <ID>PackageNaming:ContractsResponse.kt$package za.co.xisystems.itis_rrm.data.network.responses</ID>
+    <ID>PackageNaming:Converters.kt$package za.co.xisystems.itis_rrm.utils</ID>
+    <ID>PackageNaming:Coroutines.kt$package za.co.xisystems.itis_rrm.utils</ID>
+    <ID>PackageNaming:CorrectionsFragment.kt$package za.co.xisystems.itis_rrm.ui.mainview.corrections</ID>
+    <ID>PackageNaming:CorrectionsViewModel.kt$package za.co.xisystems.itis_rrm.ui.mainview.corrections</ID>
+    <ID>PackageNaming:CorrectionsViewModelFactory.kt$package za.co.xisystems.itis_rrm.ui.mainview.corrections</ID>
+    <ID>PackageNaming:CreateFragment.kt$package za.co.xisystems.itis_rrm.ui.mainview.create</ID>
+    <ID>PackageNaming:CreateViewModel.kt$package za.co.xisystems.itis_rrm.ui.mainview.create</ID>
+    <ID>PackageNaming:CreateViewModelFactory.kt$package za.co.xisystems.itis_rrm.ui.mainview.create</ID>
+    <ID>PackageNaming:DataConversion.kt$package za.co.xisystems.itis_rrm.utils</ID>
+    <ID>PackageNaming:DateDeserializer.kt$package za.co.xisystems.itis_rrm.utils</ID>
+    <ID>PackageNaming:DateUtil.kt$package za.co.xisystems.itis_rrm.utils</ID>
+    <ID>PackageNaming:DatetimeConverters.kt$package za.co.xisystems.itis_rrm.utils</ID>
+    <ID>PackageNaming:DebugMainApp.kt$package za.co.xisystems.itis_rrm</ID>
+    <ID>PackageNaming:Delegates.kt$package za.co.xisystems.itis_rrm.utils</ID>
+    <ID>PackageNaming:DeviceCleanup.kt$package za.co.xisystems.itis_rrm.utils.interfaces</ID>
+    <ID>PackageNaming:DialogUtils.kt$package za.co.xisystems.itis_rrm.data._commons.views</ID>
+    <ID>PackageNaming:EntitiesDao.kt$package za.co.xisystems.itis_rrm.data.localDB.dao</ID>
+    <ID>PackageNaming:EntityAction.kt$package za.co.xisystems.itis_rrm.utils.enums</ID>
+    <ID>PackageNaming:ErrorResponse.kt$package za.co.xisystems.itis_rrm.data.network.responses</ID>
+    <ID>PackageNaming:EstimateMeasureItem.kt$package za.co.xisystems.itis_rrm.ui.mainview.estmeasure.estimate_measure_item</ID>
+    <ID>PackageNaming:EstimatePhotoFragment.kt$package za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates</ID>
+    <ID>PackageNaming:EstimateWorkDao.kt$package za.co.xisystems.itis_rrm.data.localDB.dao</ID>
+    <ID>PackageNaming:EstimateWorkPhotoDao.kt$package za.co.xisystems.itis_rrm.data.localDB.dao</ID>
+    <ID>PackageNaming:EstimatesItem.kt$package za.co.xisystems.itis_rrm.ui.mainview.approvejobs.view_job_info</ID>
+    <ID>PackageNaming:Exceptions.kt$package za.co.xisystems.itis_rrm.custom.errors</ID>
+    <ID>PackageNaming:ExpandableHeaderMeasureItem.kt$package za.co.xisystems.itis_rrm.ui.mainview.estmeasure.submit_measure</ID>
+    <ID>PackageNaming:ExpandableHeaderWorkItem.kt$package za.co.xisystems.itis_rrm.ui.mainview.work.estimate_work_item</ID>
+    <ID>PackageNaming:Extensions.kt$package za.co.xisystems.itis_rrm.extensions</ID>
+    <ID>PackageNaming:ForegroundOnlyLocationService.kt$package za.co.xisystems.itis_rrm.services</ID>
+    <ID>PackageNaming:GPSUtils.kt$package za.co.xisystems.itis_rrm.utils</ID>
+    <ID>PackageNaming:Generators.kt$package za.co.xisystems.itis_rrm.armour</ID>
+    <ID>PackageNaming:GenericSavedStateViewModelFactory.kt$package za.co.xisystems.itis_rrm.ui.base</ID>
+    <ID>PackageNaming:HeaderItem.kt$package za.co.xisystems.itis_rrm.ui.mainview._fragments</ID>
+    <ID>PackageNaming:HealthCheckResponse.kt$package za.co.xisystems.itis_rrm.data.network.responses</ID>
+    <ID>PackageNaming:HealthDTO.kt$package za.co.xisystems.itis_rrm.data.localDB.entities</ID>
+    <ID>PackageNaming:HealthDao.kt$package za.co.xisystems.itis_rrm.data.localDB.dao</ID>
+    <ID>PackageNaming:HomeFragment.kt$package za.co.xisystems.itis_rrm.ui.mainview.home</ID>
+    <ID>PackageNaming:HomeUIState.kt$package za.co.xisystems.itis_rrm.ui.mainview.home</ID>
+    <ID>PackageNaming:HomeViewModel.kt$package za.co.xisystems.itis_rrm.ui.mainview.home</ID>
+    <ID>PackageNaming:HomeViewModelFactory.kt$package za.co.xisystems.itis_rrm.ui.mainview.home</ID>
+    <ID>PackageNaming:IActivityProgressView.kt$package za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.contracts</ID>
+    <ID>PackageNaming:IBaseActivity.kt$package za.co.xisystems.itis_rrm.data._commons.views</ID>
+    <ID>PackageNaming:IBaseFragment.kt$package za.co.xisystems.itis_rrm.data._commons.views</ID>
+    <ID>PackageNaming:ICallBack.kt$package za.co.xisystems.itis_rrm.data._commons</ID>
+    <ID>PackageNaming:ID_Provider.kt$package za.co.xisystems.itis_rrm.data.provider</ID>
+    <ID>PackageNaming:IEstimateCalculator.kt$package za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.contracts</ID>
+    <ID>PackageNaming:IJobOfflineHelper.kt$package za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.contracts</ID>
+    <ID>PackageNaming:IJobSectionView.kt$package za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.contracts</ID>
+    <ID>PackageNaming:IJobSubmit.kt$package za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils</ID>
+    <ID>PackageNaming:INewJobEditEstimateIntent.kt$package za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.intents</ID>
+    <ID>PackageNaming:INewJobSelectItemIntent.kt$package za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.intents</ID>
+    <ID>PackageNaming:IProgressView.kt$package za.co.xisystems.itis_rrm.data._commons.views</ID>
+    <ID>PackageNaming:IRefreshLookupData.kt$package za.co.xisystems.itis_rrm.utils.interfaces</ID>
+    <ID>PackageNaming:IRefreshWorkflowItems.kt$package za.co.xisystems.itis_rrm.utils.interfaces</ID>
+    <ID>PackageNaming:IdProviderImpl.kt$package za.co.xisystems.itis_rrm.internal</ID>
+    <ID>PackageNaming:IndefiniteSnackbar.kt$package za.co.xisystems.itis_rrm.custom.views</ID>
+    <ID>PackageNaming:InfoClassDTO.kt$package za.co.xisystems.itis_rrm.data.localDB.entities</ID>
+    <ID>PackageNaming:InfoClassDao.kt$package za.co.xisystems.itis_rrm.data.localDB.dao</ID>
+    <ID>PackageNaming:ItemDTOTemp.kt$package za.co.xisystems.itis_rrm.data.localDB.entities</ID>
+    <ID>PackageNaming:ItemDaoTemp.kt$package za.co.xisystems.itis_rrm.data.localDB.dao</ID>
+    <ID>PackageNaming:ItemSectionDTO.kt$package za.co.xisystems.itis_rrm.data.localDB.entities</ID>
+    <ID>PackageNaming:ItemSectionDao.kt$package za.co.xisystems.itis_rrm.data.localDB.dao</ID>
+    <ID>PackageNaming:ItemsResponse.kt$package za.co.xisystems.itis_rrm.data.network.responses</ID>
+    <ID>PackageNaming:JobApprovalDataRepository.kt$package za.co.xisystems.itis_rrm.data.repositories</ID>
+    <ID>PackageNaming:JobCreationDataRepository.kt$package za.co.xisystems.itis_rrm.data.repositories</ID>
+    <ID>PackageNaming:JobDTO.kt$package za.co.xisystems.itis_rrm.data.localDB.entities</ID>
+    <ID>PackageNaming:JobDTOTemp.kt$package za.co.xisystems.itis_rrm.data.localDB.entities</ID>
+    <ID>PackageNaming:JobDao.kt$package za.co.xisystems.itis_rrm.data.localDB.dao</ID>
+    <ID>PackageNaming:JobDaoTemp.kt$package za.co.xisystems.itis_rrm.data.localDB.dao</ID>
+    <ID>PackageNaming:JobDataController.kt$package za.co.xisystems.itis_rrm.data.localDB</ID>
+    <ID>PackageNaming:JobEstimateWorksDTO.kt$package za.co.xisystems.itis_rrm.data.localDB.entities</ID>
+    <ID>PackageNaming:JobEstimateWorksPhotoDTO.kt$package za.co.xisystems.itis_rrm.data.localDB.entities</ID>
+    <ID>PackageNaming:JobInfo.kt$package za.co.xisystems.itis_rrm.domain</ID>
+    <ID>PackageNaming:JobInfoFragment.kt$package za.co.xisystems.itis_rrm.ui.mainview.approvejobs.view_job_info</ID>
+    <ID>PackageNaming:JobItemEstimateDTO.kt$package za.co.xisystems.itis_rrm.data.localDB.entities</ID>
+    <ID>PackageNaming:JobItemEstimateDao.kt$package za.co.xisystems.itis_rrm.data.localDB.dao</ID>
+    <ID>PackageNaming:JobItemEstimatePhotoDao.kt$package za.co.xisystems.itis_rrm.data.localDB.dao</ID>
+    <ID>PackageNaming:JobItemEstimatesPhotoDTO.kt$package za.co.xisystems.itis_rrm.data.localDB.entities</ID>
+    <ID>PackageNaming:JobItemMeasureDTO.kt$package za.co.xisystems.itis_rrm.data.localDB.entities</ID>
+    <ID>PackageNaming:JobItemMeasureDao.kt$package za.co.xisystems.itis_rrm.data.localDB.dao</ID>
+    <ID>PackageNaming:JobItemMeasurePhotoDTO.kt$package za.co.xisystems.itis_rrm.data.localDB.entities</ID>
+    <ID>PackageNaming:JobItemMeasurePhotoDao.kt$package za.co.xisystems.itis_rrm.data.localDB.dao</ID>
+    <ID>PackageNaming:JobResponse.kt$package za.co.xisystems.itis_rrm.data.network.responses</ID>
+    <ID>PackageNaming:JobSectionDTO.kt$package za.co.xisystems.itis_rrm.data.localDB.entities</ID>
+    <ID>PackageNaming:JobSectionDao.kt$package za.co.xisystems.itis_rrm.data.localDB.dao</ID>
+    <ID>PackageNaming:JobUtils.kt$package za.co.xisystems.itis_rrm.utils</ID>
+    <ID>PackageNaming:LameCrashLibrary.kt$package za.co.xisystems.itis_rrm.logging</ID>
+    <ID>PackageNaming:LiveDataLocation.kt$package za.co.xisystems.itis_rrm.services</ID>
+    <ID>PackageNaming:LocationFragment.kt$package za.co.xisystems.itis_rrm.base</ID>
+    <ID>PackageNaming:LocationViewModel.kt$package za.co.xisystems.itis_rrm.base</ID>
+    <ID>PackageNaming:LocationViewModelFactory.kt$package za.co.xisystems.itis_rrm.ui.mainview.activities</ID>
+    <ID>PackageNaming:LoginActivity.kt$package za.co.xisystems.itis_rrm.ui.auth</ID>
+    <ID>PackageNaming:LookupDTO.kt$package za.co.xisystems.itis_rrm.data.localDB.entities</ID>
+    <ID>PackageNaming:LookupDao.kt$package za.co.xisystems.itis_rrm.data.localDB.dao</ID>
+    <ID>PackageNaming:LookupOptionDTO.kt$package za.co.xisystems.itis_rrm.data.localDB.entities</ID>
+    <ID>PackageNaming:LookupOptionDao.kt$package za.co.xisystems.itis_rrm.data.localDB.dao</ID>
+    <ID>PackageNaming:LookupResponse.kt$package za.co.xisystems.itis_rrm.data.network.responses</ID>
+    <ID>PackageNaming:MainActivity.kt$package za.co.xisystems.itis_rrm</ID>
+    <ID>PackageNaming:MainActivityViewModel.kt$package za.co.xisystems.itis_rrm.ui.mainview.activities</ID>
+    <ID>PackageNaming:MainActivityViewModelFactory.kt$package za.co.xisystems.itis_rrm.ui.mainview.activities</ID>
+    <ID>PackageNaming:MainApp.kt$package za.co.xisystems.itis_rrm</ID>
+    <ID>PackageNaming:MapActivity.kt$package za.co.xisystems.itis_rrm.ui.mainview.activities</ID>
+    <ID>PackageNaming:MeasureApprovalDataRepository.kt$package za.co.xisystems.itis_rrm.data.repositories</ID>
+    <ID>PackageNaming:MeasureApprovalFragment.kt$package za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.measure_approval</ID>
+    <ID>PackageNaming:MeasureCreationDataRepository.kt$package za.co.xisystems.itis_rrm.data.repositories</ID>
+    <ID>PackageNaming:MeasureFragment.kt$package za.co.xisystems.itis_rrm.ui.mainview.estmeasure</ID>
+    <ID>PackageNaming:MeasureGalleryFragment.kt$package za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.measure_approval</ID>
+    <ID>PackageNaming:MeasureGalleryUIState.kt$package za.co.xisystems.itis_rrm.ui.custom</ID>
+    <ID>PackageNaming:MeasureHeaderItem.kt$package za.co.xisystems.itis_rrm.ui.mainview.estmeasure.estimate_measure_item</ID>
+    <ID>PackageNaming:MeasureViewModel.kt$package za.co.xisystems.itis_rrm.ui.mainview.estmeasure</ID>
+    <ID>PackageNaming:MeasureViewModelFactory.kt$package za.co.xisystems.itis_rrm.ui.mainview.estmeasure</ID>
+    <ID>PackageNaming:MeasurementTrack.kt$package za.co.xisystems.itis_rrm.domain</ID>
+    <ID>PackageNaming:MeasurementsItem.kt$package za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.measure_approval</ID>
+    <ID>PackageNaming:MotionToastExtenstions.kt$package za.co.xisystems.itis_rrm.ui.extensions</ID>
+    <ID>PackageNaming:MyState.kt$package za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils</ID>
+    <ID>PackageNaming:NetworkConnectionInterceptor.kt$package za.co.xisystems.itis_rrm.data.network</ID>
+    <ID>PackageNaming:OfflineDataRepository.kt$package za.co.xisystems.itis_rrm.data.repositories</ID>
+    <ID>PackageNaming:OfflineListener.kt$package za.co.xisystems.itis_rrm.data.network</ID>
+    <ID>PackageNaming:PasswordStrength.kt$package za.co.xisystems.itis_rrm.armour</ID>
+    <ID>PackageNaming:PermissionController.kt$package za.co.xisystems.itis_rrm.data.network</ID>
+    <ID>PackageNaming:PhotoEstimateResponse.kt$package za.co.xisystems.itis_rrm.data.network.responses</ID>
+    <ID>PackageNaming:PhotoInfo.kt$package za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.models</ID>
+    <ID>PackageNaming:PhotoMeasureResponse.kt$package za.co.xisystems.itis_rrm.data.network.responses</ID>
+    <ID>PackageNaming:PhotoQuality.kt$package za.co.xisystems.itis_rrm.utils.enums</ID>
+    <ID>PackageNaming:PhotoType.kt$package za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.models</ID>
+    <ID>PackageNaming:PhotoUtil.kt$package za.co.xisystems.itis_rrm.utils</ID>
+    <ID>PackageNaming:PinLock.kt$package za.co.xisystems.itis_rrm.ui.auth.model</ID>
+    <ID>PackageNaming:PreferenceProvider.kt$package za.co.xisystems.itis_rrm.data.preferences</ID>
+    <ID>PackageNaming:PrimaryKeyValueDTO.kt$package za.co.xisystems.itis_rrm.data.localDB.entities</ID>
+    <ID>PackageNaming:PrimaryKeyValueDao.kt$package za.co.xisystems.itis_rrm.data.localDB.dao</ID>
+    <ID>PackageNaming:ProgressButtonExtensions.kt$package za.co.xisystems.itis_rrm.ui.extensions</ID>
+    <ID>PackageNaming:ProjectDTO.kt$package za.co.xisystems.itis_rrm.data.localDB.entities</ID>
+    <ID>PackageNaming:ProjectDao.kt$package za.co.xisystems.itis_rrm.data.localDB.dao</ID>
+    <ID>PackageNaming:ProjectItem.kt$package za.co.xisystems.itis_rrm.ui.mainview.create.add_project_item</ID>
+    <ID>PackageNaming:ProjectItemDTO.kt$package za.co.xisystems.itis_rrm.data.localDB.entities</ID>
+    <ID>PackageNaming:ProjectItemDao.kt$package za.co.xisystems.itis_rrm.data.localDB.dao</ID>
+    <ID>PackageNaming:ProjectSectionDTO.kt$package za.co.xisystems.itis_rrm.data.localDB.entities</ID>
+    <ID>PackageNaming:ProjectSectionDao.kt$package za.co.xisystems.itis_rrm.data.localDB.dao</ID>
+    <ID>PackageNaming:ProjectSelector.kt$package za.co.xisystems.itis_rrm.domain</ID>
+    <ID>PackageNaming:QuantityUpdateResponse.kt$package za.co.xisystems.itis_rrm.data.network.responses</ID>
+    <ID>PackageNaming:RRMGlideModule.kt$package za.co.xisystems.itis_rrm.utils</ID>
+    <ID>PackageNaming:RegisterActivity.kt$package za.co.xisystems.itis_rrm.ui.auth</ID>
+    <ID>PackageNaming:RegisterPinActivity.kt$package za.co.xisystems.itis_rrm.ui.auth</ID>
+    <ID>PackageNaming:ResetPinActivity.kt$package za.co.xisystems.itis_rrm.ui.auth</ID>
+    <ID>PackageNaming:RouteSectionPointResponse.kt$package za.co.xisystems.itis_rrm.data.network.responses</ID>
+    <ID>PackageNaming:RrmJobRequest.kt$package za.co.xisystems.itis_rrm.data.network.request</ID>
+    <ID>PackageNaming:RxUtils.kt$package za.co.xisystems.itis_rrm.utils</ID>
+    <ID>PackageNaming:SafeApiRequest.kt$package za.co.xisystems.itis_rrm.data.network</ID>
+    <ID>PackageNaming:SaveMeasurementResponse.kt$package za.co.xisystems.itis_rrm.data.network.responses</ID>
+    <ID>PackageNaming:SavedJob.kt$package za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.models</ID>
+    <ID>PackageNaming:ScrollAwareFABBehavior.kt$package za.co.xisystems.itis_rrm.ui.behaviors</ID>
+    <ID>PackageNaming:SecretPreferences.kt$package za.co.xisystems.itis_rrm.data.preferences</ID>
+    <ID>PackageNaming:SectionItem.kt$package za.co.xisystems.itis_rrm.data.localDB.entities</ID>
+    <ID>PackageNaming:SectionItemDTO.kt$package za.co.xisystems.itis_rrm.data.localDB.entities</ID>
+    <ID>PackageNaming:SectionItemDao.kt$package za.co.xisystems.itis_rrm.data.localDB.dao</ID>
+    <ID>PackageNaming:SectionPointDTO.kt$package za.co.xisystems.itis_rrm.data.localDB.entities</ID>
+    <ID>PackageNaming:SectionPointDao.kt$package za.co.xisystems.itis_rrm.data.localDB.dao</ID>
+    <ID>PackageNaming:SectionProj_Item.kt$package za.co.xisystems.itis_rrm.ui.mainview.create.select_item</ID>
+    <ID>PackageNaming:SelectItemFragment.kt$package za.co.xisystems.itis_rrm.ui.mainview.create.select_item</ID>
+    <ID>PackageNaming:ServiceUriUtil.kt$package za.co.xisystems.itis_rrm.utils</ID>
+    <ID>PackageNaming:ServiceUtil.kt$package za.co.xisystems.itis_rrm.utils</ID>
+    <ID>PackageNaming:SettingsActivity.kt$package za.co.xisystems.itis_rrm.ui.mainview.activities</ID>
+    <ID>PackageNaming:SettingsFragment.kt$package za.co.xisystems.itis_rrm.ui.mainview.activities</ID>
+    <ID>PackageNaming:SettingsViewModel.kt$package za.co.xisystems.itis_rrm.ui.mainview.activities</ID>
+    <ID>PackageNaming:SettingsViewModelFactory.kt$package za.co.xisystems.itis_rrm.ui.mainview.activities</ID>
+    <ID>PackageNaming:SharedViewModel.kt$package za.co.xisystems.itis_rrm.ui.mainview.activities</ID>
+    <ID>PackageNaming:SharedViewModelFactory.kt$package za.co.xisystems.itis_rrm.ui.mainview.activities</ID>
+    <ID>PackageNaming:ShimmerUtils.kt$package za.co.xisystems.itis_rrm.ui.extensions</ID>
+    <ID>PackageNaming:SpinnerHelper.kt$package za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils</ID>
+    <ID>PackageNaming:SqlLitUtils.kt$package za.co.xisystems.itis_rrm.data._commons.utils</ID>
+    <ID>PackageNaming:SqlLitUtils.kt$package za.co.xisystems.itis_rrm.utils</ID>
+    <ID>PackageNaming:StringKeyValueDao.kt$package za.co.xisystems.itis_rrm.data.localDB.dao</ID>
+    <ID>PackageNaming:StringKeyValuePair.kt$package za.co.xisystems.itis_rrm.data.localDB.entities</ID>
+    <ID>PackageNaming:SubmitMeasureFragment.kt$package za.co.xisystems.itis_rrm.ui.mainview.estmeasure.submit_measure</ID>
+    <ID>PackageNaming:ToDoGroupsDTO.kt$package za.co.xisystems.itis_rrm.data.localDB.entities</ID>
+    <ID>PackageNaming:ToDoGroupsDao.kt$package za.co.xisystems.itis_rrm.data.localDB.dao</ID>
+    <ID>PackageNaming:ToDoListEntityDTO.kt$package za.co.xisystems.itis_rrm.data.localDB.entities</ID>
+    <ID>PackageNaming:ToDoListGroupsResponse.kt$package za.co.xisystems.itis_rrm.data.network.responses</ID>
+    <ID>PackageNaming:ToastDuration.kt$package za.co.xisystems.itis_rrm.utils.enums</ID>
+    <ID>PackageNaming:ToastGravity.kt$package za.co.xisystems.itis_rrm.utils.enums</ID>
+    <ID>PackageNaming:ToastStyle.kt$package za.co.xisystems.itis_rrm.utils.enums</ID>
+    <ID>PackageNaming:ToastUtils.kt$package za.co.xisystems.itis_rrm.data._commons.views</ID>
+    <ID>PackageNaming:UIExtensions.kt$package za.co.xisystems.itis_rrm.ui.extensions</ID>
+    <ID>PackageNaming:UiLifecycleScope.kt$package za.co.xisystems.itis_rrm.ui.scopes</ID>
+    <ID>PackageNaming:UnSubmittedFragment.kt$package za.co.xisystems.itis_rrm.ui.mainview.unsubmitted</ID>
+    <ID>PackageNaming:UnSubmittedJobItem.kt$package za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.unsubmited_item</ID>
+    <ID>PackageNaming:UnSubmittedViewModel.kt$package za.co.xisystems.itis_rrm.ui.mainview.unsubmitted</ID>
+    <ID>PackageNaming:UnSubmittedViewModelFactory.kt$package za.co.xisystems.itis_rrm.ui.mainview.unsubmitted</ID>
+    <ID>PackageNaming:UploadImageResponse.kt$package za.co.xisystems.itis_rrm.data.network.responses</ID>
+    <ID>PackageNaming:UploadWorksItemResponse.kt$package za.co.xisystems.itis_rrm.data.network.responses</ID>
+    <ID>PackageNaming:UserDTO.kt$package za.co.xisystems.itis_rrm.data.localDB.entities</ID>
+    <ID>PackageNaming:UserDao.kt$package za.co.xisystems.itis_rrm.data.localDB.dao</ID>
+    <ID>PackageNaming:UserRepository.kt$package za.co.xisystems.itis_rrm.data.repositories</ID>
+    <ID>PackageNaming:UserRoleDTO.kt$package za.co.xisystems.itis_rrm.data.localDB.entities</ID>
+    <ID>PackageNaming:UserRoleDao.kt$package za.co.xisystems.itis_rrm.data.localDB.dao</ID>
+    <ID>PackageNaming:UserRoleResponse.kt$package za.co.xisystems.itis_rrm.data.network.responses</ID>
+    <ID>PackageNaming:Util.kt$package za.co.xisystems.itis_rrm.utils</ID>
+    <ID>PackageNaming:Utils.kt$package za.co.xisystems.itis_rrm.services</ID>
+    <ID>PackageNaming:VeiledRecyclerFragment.kt$package za.co.xisystems.itis_rrm.base</ID>
+    <ID>PackageNaming:VeiledRecyclerViewExtensions.kt$package za.co.xisystems.itis_rrm.ui.extensions</ID>
+    <ID>PackageNaming:VerySafeApiRequest.kt$package za.co.xisystems.itis_rrm.data.network</ID>
+    <ID>PackageNaming:ViewModelAssistedFactory.kt$package za.co.xisystems.itis_rrm.ui.base</ID>
+    <ID>PackageNaming:ViewUtils.kt$package za.co.xisystems.itis_rrm.utils</ID>
+    <ID>PackageNaming:VoItemDTO.kt$package za.co.xisystems.itis_rrm.data.localDB.entities</ID>
+    <ID>PackageNaming:VoItemDao.kt$package za.co.xisystems.itis_rrm.data.localDB.dao</ID>
+    <ID>PackageNaming:VoItemsRepository.kt$package za.co.xisystems.itis_rrm.data.repositories</ID>
+    <ID>PackageNaming:VoItemsResponse.kt$package za.co.xisystems.itis_rrm.data.network.responses</ID>
+    <ID>PackageNaming:WfWorkStepDTO.kt$package za.co.xisystems.itis_rrm.data.localDB.entities</ID>
+    <ID>PackageNaming:WorkDataRepository.kt$package za.co.xisystems.itis_rrm.data.repositories</ID>
+    <ID>PackageNaming:WorkFlowDTO.kt$package za.co.xisystems.itis_rrm.data.localDB.entities</ID>
+    <ID>PackageNaming:WorkFlowDao.kt$package za.co.xisystems.itis_rrm.data.localDB.dao</ID>
+    <ID>PackageNaming:WorkFlowRouteDTO.kt$package za.co.xisystems.itis_rrm.data.localDB.entities</ID>
+    <ID>PackageNaming:WorkFlowRouteDao.kt$package za.co.xisystems.itis_rrm.data.localDB.dao</ID>
+    <ID>PackageNaming:WorkFlowsDTO.kt$package za.co.xisystems.itis_rrm.data.localDB.entities</ID>
+    <ID>PackageNaming:WorkFragment.kt$package za.co.xisystems.itis_rrm.ui.mainview.work</ID>
+    <ID>PackageNaming:WorkStateItem.kt$package za.co.xisystems.itis_rrm.ui.mainview.work.workstate_item</ID>
+    <ID>PackageNaming:WorkStepDao.kt$package za.co.xisystems.itis_rrm.data.localDB.dao</ID>
+    <ID>PackageNaming:WorkViewModel.kt$package za.co.xisystems.itis_rrm.ui.mainview.work</ID>
+    <ID>PackageNaming:WorkViewModelFactory.kt$package za.co.xisystems.itis_rrm.ui.mainview.work</ID>
+    <ID>PackageNaming:WorkflowEstimateWorkDTO.kt$package za.co.xisystems.itis_rrm.data.localDB.entities</ID>
+    <ID>PackageNaming:WorkflowItemEstimateDTO.kt$package za.co.xisystems.itis_rrm.data.localDB.entities</ID>
+    <ID>PackageNaming:WorkflowItemMeasureDTO.kt$package za.co.xisystems.itis_rrm.data.localDB.entities</ID>
+    <ID>PackageNaming:WorkflowJobDTO.kt$package za.co.xisystems.itis_rrm.data.localDB.entities</ID>
+    <ID>PackageNaming:WorkflowJobSectionDTO.kt$package za.co.xisystems.itis_rrm.data.localDB.entities</ID>
+    <ID>PackageNaming:WorkflowMoveResponse.kt$package za.co.xisystems.itis_rrm.data.network.responses</ID>
+    <ID>PackageNaming:WorkflowResponse.kt$package za.co.xisystems.itis_rrm.data.network.responses</ID>
+    <ID>PackageNaming:WorkflowsDao.kt$package za.co.xisystems.itis_rrm.data.localDB.dao</ID>
+    <ID>PackageNaming:WorksGalleryUIState.kt$package za.co.xisystems.itis_rrm.ui.custom</ID>
+    <ID>PackageNaming:XIErrorHandler.kt$package za.co.xisystems.itis_rrm.custom.errors</ID>
+    <ID>PackageNaming:XIEvent.kt$package za.co.xisystems.itis_rrm.custom.events</ID>
+    <ID>PackageNaming:XIResult.kt$package za.co.xisystems.itis_rrm.custom.results</ID>
+    <ID>SpreadOperator:AppDatabase.kt$AppDatabase.Companion$(*AppDatabase_Migrations.build())</ID>
+    <ID>ThrowsCount:WorkDataRepository.kt$WorkDataRepository$private suspend fun moveJobToNextWorkflowStep( jobEstimateWorks: JobEstimateWorksDTO, userId: Int )</ID>
+    <ID>TooGenericExceptionCaught:ApproveJobsFragment.kt$ApproveJobsFragment$t: Throwable</ID>
+    <ID>TooGenericExceptionCaught:ApproveJobsFragment.kt$ApproveJobsFragment$throwable: Throwable</ID>
+    <ID>TooGenericExceptionCaught:ApproveJobsViewModel.kt$ApproveJobsViewModel$t: Throwable</ID>
+    <ID>TooGenericExceptionCaught:ApproveMeasureFragment.kt$ApproveMeasureFragment$t: Throwable</ID>
+    <ID>TooGenericExceptionCaught:ApproveMeasureViewModel.kt$ApproveMeasureViewModel$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:ApproveMeasureViewModel.kt$ApproveMeasureViewModel$t: Throwable</ID>
+    <ID>TooGenericExceptionCaught:AuthViewModel.kt$AuthViewModel$t: Throwable</ID>
+    <ID>TooGenericExceptionCaught:CaptureWorkFragment.kt$CaptureWorkFragment$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:CaptureWorkFragment.kt$CaptureWorkFragment$t: Throwable</ID>
+    <ID>TooGenericExceptionCaught:CreateFragment.kt$CreateFragment$t: Throwable</ID>
+    <ID>TooGenericExceptionCaught:EstimatePhotoFragment.kt$EstimatePhotoFragment$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:EstimatePhotoFragment.kt$EstimatePhotoFragment$t: Throwable</ID>
+    <ID>TooGenericExceptionCaught:EstimatesItem.kt$EstimatesItem$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:EstimatesItem.kt$EstimatesItem$e: NullPointerException</ID>
+    <ID>TooGenericExceptionCaught:HomeFragment.kt$HomeFragment$t: Throwable</ID>
+    <ID>TooGenericExceptionCaught:HomeViewModel.kt$HomeViewModel$exception: Exception</ID>
+    <ID>TooGenericExceptionCaught:HomeViewModel.kt$HomeViewModel$t: Throwable</ID>
+    <ID>TooGenericExceptionCaught:JobApprovalDataRepository.kt$JobApprovalDataRepository$t: Throwable</ID>
+    <ID>TooGenericExceptionCaught:JobApprovalDataRepository.kt$JobApprovalDataRepository$throwable: Throwable</ID>
+    <ID>TooGenericExceptionCaught:JobInfoFragment.kt$JobInfoFragment$t: Throwable</ID>
+    <ID>TooGenericExceptionCaught:LoginActivity.kt$LoginActivity$t: Throwable</ID>
+    <ID>TooGenericExceptionCaught:MainActivity.kt$MainActivity$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:MeasureApprovalDataRepository.kt$MeasureApprovalDataRepository$t: Throwable</ID>
+    <ID>TooGenericExceptionCaught:MeasureCreationDataRepository.kt$MeasureCreationDataRepository$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:MeasureCreationDataRepository.kt$MeasureCreationDataRepository$t: Throwable</ID>
+    <ID>TooGenericExceptionCaught:MeasureFragment.kt$MeasureFragment$t: Throwable</ID>
+    <ID>TooGenericExceptionCaught:MeasureViewModel.kt$MeasureViewModel$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:MeasureViewModel.kt$MeasureViewModel$ex: Exception</ID>
+    <ID>TooGenericExceptionCaught:MeasurementsItem.kt$MeasurementsItem$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:OfflineDataRepository.kt$OfflineDataRepository$ex: Exception</ID>
+    <ID>TooGenericExceptionCaught:OfflineDataRepository.kt$OfflineDataRepository$ex: NullPointerException</ID>
+    <ID>TooGenericExceptionCaught:OfflineDataRepository.kt$OfflineDataRepository$t: Throwable</ID>
+    <ID>TooGenericExceptionCaught:OfflineDataRepository.kt$OfflineDataRepository$throwable: Throwable</ID>
+    <ID>TooGenericExceptionCaught:PhotoUtil.kt$PhotoUtil$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:PhotoUtil.kt$PhotoUtil$t: Throwable</ID>
+    <ID>TooGenericExceptionCaught:ServiceUtil.kt$ServiceUtil$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:UnSubmittedFragment.kt$UnSubmittedFragment$t: Throwable</ID>
+    <ID>TooGenericExceptionCaught:UnSubmittedJobItem.kt$UnSubmittedJobItem$t: Throwable</ID>
+    <ID>TooGenericExceptionCaught:Util.kt$Util$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:VeiledRecyclerFragment.kt$VeiledRecyclerFragment$t: Throwable</ID>
+    <ID>TooGenericExceptionCaught:VerySafeApiRequest.kt$VerySafeApiRequest$throwable: Throwable</ID>
+    <ID>TooGenericExceptionCaught:WorkDataRepository.kt$WorkDataRepository$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:WorkDataRepository.kt$WorkDataRepository$ex: Exception</ID>
+    <ID>TooGenericExceptionCaught:WorkDataRepository.kt$WorkDataRepository$t: Throwable</ID>
+    <ID>TooGenericExceptionCaught:WorkDataRepository.kt$WorkDataRepository$throwable: Throwable</ID>
+    <ID>TooGenericExceptionCaught:WorkFragment.kt$WorkFragment$t: Throwable</ID>
+    <ID>TooGenericExceptionThrown:AddProjectFragment.kt$AddProjectFragment$throw Exception("Invalid Activity")</ID>
+    <ID>TooGenericExceptionThrown:ApproveJobsFragment.kt$ApproveJobsFragment$throw Exception("Invalid Activity")</ID>
+    <ID>TooGenericExceptionThrown:ApproveMeasureFragment.kt$ApproveMeasureFragment$throw Exception("Invalid Activity")</ID>
+    <ID>TooGenericExceptionThrown:BaseFragment.kt$BaseFragment$throw Exception("Invalid Activity")</ID>
+    <ID>TooGenericExceptionThrown:CaptureItemMeasurePhotoFragment.kt$CaptureItemMeasurePhotoFragment$throw Exception("Invalid Activity")</ID>
+    <ID>TooGenericExceptionThrown:CaptureWorkFragment.kt$CaptureWorkFragment$throw Exception("Invalid Activity")</ID>
+    <ID>TooGenericExceptionThrown:Coroutines.kt$Coroutines$throw Exception(exception)</ID>
+    <ID>TooGenericExceptionThrown:CorrectionsFragment.kt$CorrectionsFragment$throw Exception("Invalid Activity")</ID>
+    <ID>TooGenericExceptionThrown:CreateFragment.kt$CreateFragment$throw Exception("Invalid Activity")</ID>
+    <ID>TooGenericExceptionThrown:EstimatePhotoFragment.kt$EstimatePhotoFragment$throw Exception("Invalid Activity")</ID>
+    <ID>TooGenericExceptionThrown:JobInfoFragment.kt$JobInfoFragment$throw Exception("Invalid Activity")</ID>
+    <ID>TooGenericExceptionThrown:LocationFragment.kt$LocationFragment$throw Exception("Invalid Activity")</ID>
+    <ID>TooGenericExceptionThrown:MeasureApprovalFragment.kt$MeasureApprovalFragment$throw Exception("Invalid Activity")</ID>
+    <ID>TooGenericExceptionThrown:MeasureFragment.kt$MeasureFragment$throw Exception("Invalid Activity")</ID>
+    <ID>TooGenericExceptionThrown:MeasureGalleryFragment.kt$MeasureGalleryFragment$throw Exception("Invalid Activity")</ID>
+    <ID>TooGenericExceptionThrown:SelectItemFragment.kt$SelectItemFragment$throw Exception("Invalid Activity")</ID>
+    <ID>TooGenericExceptionThrown:SubmitMeasureFragment.kt$SubmitMeasureFragment$throw Exception("Invalid Activity")</ID>
+    <ID>TooGenericExceptionThrown:UnSubmittedFragment.kt$UnSubmittedFragment$throw Exception("Invalid Activity")</ID>
+    <ID>TooGenericExceptionThrown:WorkFragment.kt$WorkFragment$throw Exception("Invalid Activity")</ID>
+    <ID>TooManyFunctions:AddProjectFragment.kt$AddProjectFragment : BaseFragmentKodeinAware</ID>
+    <ID>TooManyFunctions:AppDatabase.kt$AppDatabase : RoomDatabase</ID>
+    <ID>TooManyFunctions:ApproveJobsFragment.kt$ApproveJobsFragment : BaseFragmentKodeinAware</ID>
+    <ID>TooManyFunctions:ApproveJobsViewModel.kt$ApproveJobsViewModel : AndroidViewModel</ID>
+    <ID>TooManyFunctions:ApproveMeasureFragment.kt$ApproveMeasureFragment : BaseFragmentKodeinAware</ID>
+    <ID>TooManyFunctions:ApproveMeasureViewModel.kt$ApproveMeasureViewModel : AndroidViewModel</ID>
+    <ID>TooManyFunctions:BaseConnectionApi.kt$BaseConnectionApi</ID>
+    <ID>TooManyFunctions:BaseFragment.kt$BaseFragment : FragmentIProgressViewKodeinAware</ID>
+    <ID>TooManyFunctions:CaptureItemMeasurePhotoFragment.kt$CaptureItemMeasurePhotoFragment : LocationFragmentKodeinAware</ID>
+    <ID>TooManyFunctions:CaptureWorkFragment.kt$CaptureWorkFragment : LocationFragmentKodeinAware</ID>
+    <ID>TooManyFunctions:Converters.kt$Converters</ID>
+    <ID>TooManyFunctions:CreateFragment.kt$CreateFragment : BaseFragmentOfflineListenerKodeinAware</ID>
+    <ID>TooManyFunctions:CreateViewModel.kt$CreateViewModel : ViewModel</ID>
+    <ID>TooManyFunctions:EstimatePhotoFragment.kt$EstimatePhotoFragment : LocationFragmentKodeinAware</ID>
+    <ID>TooManyFunctions:HomeFragment.kt$HomeFragment : BaseFragmentKodeinAware</ID>
+    <ID>TooManyFunctions:JobApprovalDataRepository.kt$JobApprovalDataRepository : SafeApiRequest</ID>
+    <ID>TooManyFunctions:JobCreationDataRepository.kt$JobCreationDataRepository : SafeApiRequest</ID>
+    <ID>TooManyFunctions:JobDao.kt$JobDao</ID>
+    <ID>TooManyFunctions:JobDaoTemp.kt$JobDaoTemp</ID>
+    <ID>TooManyFunctions:JobDataController.kt$za.co.xisystems.itis_rrm.data.localDB.JobDataController.kt</ID>
+    <ID>TooManyFunctions:JobInfoFragment.kt$JobInfoFragment : BaseFragmentKodeinAware</ID>
+    <ID>TooManyFunctions:JobItemEstimateDao.kt$JobItemEstimateDao</ID>
+    <ID>TooManyFunctions:JobItemMeasureDao.kt$JobItemMeasureDao</ID>
+    <ID>TooManyFunctions:LoginActivity.kt$LoginActivity : AppCompatActivityOnClickListenerAuthListenerKodeinAware</ID>
+    <ID>TooManyFunctions:MainActivity.kt$MainActivity : AppCompatActivityOnNavigationItemSelectedListenerKodeinAware</ID>
+    <ID>TooManyFunctions:MeasureApprovalDataRepository.kt$MeasureApprovalDataRepository : SafeApiRequest</ID>
+    <ID>TooManyFunctions:MeasureApprovalFragment.kt$MeasureApprovalFragment : BaseFragmentKodeinAware</ID>
+    <ID>TooManyFunctions:MeasureCreationDataRepository.kt$MeasureCreationDataRepository : SafeApiRequest</ID>
+    <ID>TooManyFunctions:MeasureFragment.kt$MeasureFragment : BaseFragmentKodeinAware</ID>
+    <ID>TooManyFunctions:MeasureViewModel.kt$MeasureViewModel : AndroidViewModel</ID>
+    <ID>TooManyFunctions:OfflineDataRepository.kt$OfflineDataRepository : SafeApiRequest</ID>
+    <ID>TooManyFunctions:PhotoUtil.kt$PhotoUtil$PhotoUtil</ID>
+    <ID>TooManyFunctions:ProjectDao.kt$ProjectDao</ID>
+    <ID>TooManyFunctions:ProjectItemDao.kt$ProjectItemDao</ID>
+    <ID>TooManyFunctions:ProjectSectionDao.kt$ProjectSectionDao</ID>
+    <ID>TooManyFunctions:RegisterActivity.kt$RegisterActivity : AppCompatActivityAuthListenerKodeinAware</ID>
+    <ID>TooManyFunctions:SelectItemFragment.kt$SelectItemFragment : BaseFragmentKodeinAware</ID>
+    <ID>TooManyFunctions:SubmitMeasureFragment.kt$SubmitMeasureFragment : BaseFragmentKodeinAware</ID>
+    <ID>TooManyFunctions:UserDao.kt$UserDao</ID>
+    <ID>TooManyFunctions:WorkDataRepository.kt$WorkDataRepository : SafeApiRequest</ID>
+    <ID>TooManyFunctions:WorkFragment.kt$WorkFragment : BaseFragmentKodeinAware</ID>
+    <ID>TooManyFunctions:WorkViewModel.kt$WorkViewModel : ViewModel</ID>
+    <ID>TopLevelPropertyNaming:WfWorkStepDTO.kt$/** * Created by Francis Mahlava on 2020/02/12. */ const val WorkStep_TABLE = "WorkStep_TABLE"</ID>
+    <ID>TopLevelPropertyNaming:WorkFlowsDTO.kt$const val WORKFLOWs_TABLE = "WORKFLOWs_TABLE"</ID>
+    <ID>UnnecessaryAbstractClass:AbstractIntent.kt$AbstractIntent</ID>
+    <ID>VariableNaming:Animations.kt$Animations$@JvmField val bounce_1000: Animation</ID>
+    <ID>VariableNaming:Animations.kt$Animations$@JvmField val bounce_250: Animation</ID>
+    <ID>VariableNaming:Animations.kt$Animations$@JvmField val bounce_500: Animation</ID>
+    <ID>VariableNaming:Animations.kt$Animations$@JvmField val bounce_750: Animation</ID>
+    <ID>VariableNaming:Animations.kt$Animations$@JvmField val bounce_long: Animation</ID>
+    <ID>VariableNaming:Animations.kt$Animations$@JvmField val bounce_short: Animation</ID>
+    <ID>VariableNaming:Animations.kt$Animations$@JvmField val bounce_soft: Animation</ID>
+    <ID>VariableNaming:Animations.kt$Animations$@JvmField val scale_light: Animation</ID>
+    <ID>VariableNaming:Animations.kt$Animations$@JvmField val shake_delay: Animation</ID>
+    <ID>VariableNaming:Animations.kt$Animations$@JvmField val shake_long: Animation</ID>
+    <ID>VariableNaming:Animations.kt$Animations$@JvmField val shake_longer: Animation</ID>
+    <ID>VariableNaming:AppExecutor.kt$AppExecutor$private val LOCK = Any()</ID>
+    <ID>VariableNaming:MainActivityViewModel.kt$MainActivityViewModel$val measureapproval_Item = MutableLiveData&lt;ApproveMeasureItem&gt;()</ID>
+    <ID>VariableNaming:SettingsViewModel.kt$SettingsViewModel$val measureapproval_Item = MutableLiveData&lt;ApproveMeasureItem&gt;()</ID>
+    <ID>VariableNaming:ToastUtils.kt$ToastUtils$val versionName_flavor = "Version " + BuildConfig.VERSION_NAME + " - " + BuildConfig.FLAVOR + "\n"</ID>
+    <ID>VariableNaming:UnSubmittedViewModel.kt$UnSubmittedViewModel$val jobtoEdit_Item = MutableLiveData&lt;JobDTO&gt;()</ID>
+  </CurrentIssues>
+</SmellBaseline>

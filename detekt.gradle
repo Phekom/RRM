@@ -1,0 +1,46 @@
+/*
+ * Created by Shaun McDonald on 2021/05/15
+ * Last modified on 2021/05/15, 01:44
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
+/*
+ * Updated by Shaun McDonald on 2021/05/17
+ * Last modified on 2021/05/17, 09:38
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
+
+apply plugin: 'io.gitlab.arturbosch.detekt'
+
+detekt {
+    toolVersion = "1.14.1"
+    config = files("$rootDir/config/detekt/detekt.yml")
+    //Optional baseline, uncomment & run gradle command detektBaseline to exclude existing issues
+    baseline = file("baseline.xml")
+    input = files("src/main/java")
+    buildUponDefaultConfig = true
+    reports {
+        xml {
+            enabled = true // Enable/Disable XML report (default: true)
+            destination = file("$buildDir/reports/detekt.xml")
+            // Path where XML report will be stored (default: `build/reports/detekt/detekt.xml`)
+        }
+        html {
+            enabled = true // Enable/Disable HTML report (default: true)
+            destination = file("$buildDir/reports/detekt.html")
+            // Path where HTML report will be stored (default: `build/reports/detekt/detekt.html`)
+        }
+        txt {
+            enabled = true // Enable/Disable TXT report (default: true)
+            destination = file("$buildDir/reports/detekt.txt")
+            // Path where TXT report will be stored (default: `build/reports/detekt/detekt.txt`)
+        }
+        custom {
+            reportId = "CustomJsonReport"
+            // The simple class name of your custom report.
+            destination = file("$buildDir/reports/detekt.json")
+            // Path where report will be stored//
+        }
+    }
+}
+

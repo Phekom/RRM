@@ -3,8 +3,8 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 /*
- * Updated by Shaun McDonald on 2021/05/15
- * Last modified on 2021/05/15, 00:21
+ * Updated by Shaun McDonald on 2021/05/17
+ * Last modified on 2021/05/15, 02:29
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  */
 
@@ -42,8 +42,9 @@ buildscript {
         classpath "org.jlleitschuh.gradle:ktlint-gradle:$ktlint_gradle_version"
         classpath "com.autonomousapps:dependency-analysis-gradle-plugin:0.72.0"
         classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:3.1.1"
-        // classpath "io.gitlab.arturbosch.detekt:detekt-gradle-plugin:1.14.2"
+        classpath "io.gitlab.arturbosch.detekt:detekt-gradle-plugin:1.14.1"
     }
+
 
 
 }
@@ -51,11 +52,10 @@ buildscript {
 allprojects {
 
     apply plugin: "org.jlleitschuh.gradle.ktlint"
-    // apply plugin: "io.gitlab.arturbosch.detekt"
     apply plugin: "com.autonomousapps.dependency-analysis"
     apply plugin: "org.sonarqube"
     apply plugin: "com.didiglobal.booster"
-    // apply plugin: 'com.novoda.static-analysis'
+    apply from: "$rootDir/detekt.gradle"
 
     repositories {
         google()
@@ -89,4 +89,18 @@ allprojects {
 
 task clean(type: Delete) {
     delete rootProject.buildDir
+}
+
+task detektProjectBaseline(type: io.gitlab.arturbosch.detekt.DetektCreateBaselineTask) {
+    description = "Overrides current baseline."
+    ignoreFailures.set(true)
+    parallel.set(true)
+    buildUponDefaultConfig.set(true)
+    setSource(files(rootDir))
+    config.setFrom(files("$rootDir/config/detekt/detekt.yml"))
+    baseline.set(file("$rootDir/config/detekt/baseline.xml"))
+    include("**/*.kt")
+    include("**/*.kts")
+    exclude("**/resources/**")
+    exclude("**/build/**")
 }
