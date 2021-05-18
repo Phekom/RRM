@@ -1,6 +1,6 @@
 /*
- * Updated by Shaun McDonald on 2021/05/17
- * Last modified on 2021/05/17, 09:49
+ * Updated by Shaun McDonald on 2021/05/18
+ * Last modified on 2021/05/18, 11:09
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  */
 
@@ -65,8 +65,8 @@ android {
         buildConfig = true
     }
 
-    def versionLabel = "1.5.93.37"
-    def versionBuild = 37
+    def versionLabel = "1.5.94.1"
+    def versionBuild = 1
     def versionBuildDate = getDate()
     def appId = "za.co.xisystems.itismaintenance"
 
