@@ -1,4 +1,10 @@
 /**
+ * Updated by Shaun McDonald on 2021/05/18
+ * Last modified on 2021/05/18, 10:26
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ **/
+
+/**
  * Updated by Shaun McDonald on 2021/05/15
  * Last modified on 2021/05/14, 23:50
  * Copyright (c) 2021.  XI Systems  - All rights reserved
@@ -697,16 +703,24 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
                 val result = getRouteSectionPoint(
                     estimateLocation
                 )
-                if (result.isNullOrBlank() || result.contains(other = "xxx" as CharSequence, ignoreCase = true)) {
-                    this@EstimatePhotoFragment.disableGlide = true
-                    showLocationWarning()
-                    resetPhotos()
-                } else if (result.startsWith("Error:")) {
-                    sharpToast(
-                        message = result, style = ERROR,
-                        position = BOTTOM, duration = LONG
-                    )
-                    resetPhotos()
+
+                when {
+                    result.isNullOrBlank() || result.contains(other = "xxx" as CharSequence, ignoreCase = true) -> {
+                        this@EstimatePhotoFragment.disableGlide = true
+                        showLocationWarning()
+                        resetPhotos()
+                    }
+                    result.contains(other = "error" as CharSequence, ignoreCase = true) -> {
+                        this@EstimatePhotoFragment.disableGlide = true
+                        sharpToast(
+                            message = result, style = ERROR,
+                            position = BOTTOM, duration = LONG
+                        )
+                        resetPhotos()
+                    }
+                    else -> {
+                        this@EstimatePhotoFragment.disableGlide = false
+                    }
                 }
             }
             withContext(uiScope.coroutineContext) {

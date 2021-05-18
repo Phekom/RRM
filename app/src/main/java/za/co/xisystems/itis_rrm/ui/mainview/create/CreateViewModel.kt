@@ -1,24 +1,12 @@
 /**
+ * Updated by Shaun McDonald on 2021/05/18
+ * Last modified on 2021/05/18, 10:09
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ **/
+
+/**
  * Updated by Shaun McDonald on 2021/05/15
  * Last modified on 2021/05/14, 20:32
- * Copyright (c) 2021.  XI Systems  - All rights reserved
- **/
-
-/**
- * Updated by Shaun McDonald on 2021/05/14
- * Last modified on 2021/05/14, 19:43
- * Copyright (c) 2021.  XI Systems  - All rights reserved
- **/
-
-/**
- * Updated by Shaun McDonald on 2021/05/14
- * Last modified on 2021/05/14, 16:39
- * Copyright (c) 2021.  XI Systems  - All rights reserved
- **/
-
-/**
- * Updated by Shaun McDonald on 2021/05/14
- * Last modified on 2021/05/14, 15:47
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  **/
 
@@ -30,8 +18,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.liveData
 import androidx.lifecycle.viewModelScope
-import java.util.ArrayList
-import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
@@ -56,6 +42,8 @@ import za.co.xisystems.itis_rrm.ui.mainview.create.select_item.SectionProj_Item
 import za.co.xisystems.itis_rrm.utils.JobUtils
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
 import za.co.xisystems.itis_rrm.utils.uncaughtExceptionHandler
+import java.util.ArrayList
+import kotlin.coroutines.CoroutineContext
 
 /**
  * Created by Francis Mahlava on 2019/10/18.
@@ -69,8 +57,8 @@ class CreateViewModel(
 
     private val superJob = SupervisorJob()
     val currentJob: MutableLiveData<JobDTO?> = MutableLiveData()
-    private var ioContext: CoroutineContext
-    private var mainContext: CoroutineContext
+    private var ioContext: CoroutineContext = Job(superJob) + Dispatchers.IO + uncaughtExceptionHandler
+    private var mainContext: CoroutineContext = Job(superJob) + Dispatchers.Main + uncaughtExceptionHandler
     private val estimateQty = MutableLiveData<Double>()
     val estimateLineRate = MutableLiveData<Double>()
     val sectionId = MutableLiveData<String>()
@@ -88,11 +76,6 @@ class CreateViewModel(
     val jobItem = MutableLiveData<JobDTO?>()
     val projectItemTemp = MutableLiveData<ItemDTOTemp>()
     val jobId: MutableLiveData<String?> = MutableLiveData()
-
-    init {
-        ioContext = Job(superJob) + Dispatchers.IO + uncaughtExceptionHandler
-        mainContext = Job(superJob) + Dispatchers.Main + uncaughtExceptionHandler
-    }
 
     fun setCurrentJob(inJobItemToEdit: JobDTO?) {
         currentJob.value = inJobItemToEdit

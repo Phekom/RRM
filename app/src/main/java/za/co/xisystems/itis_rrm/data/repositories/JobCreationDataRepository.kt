@@ -1,4 +1,10 @@
 /**
+ * Updated by Shaun McDonald on 2021/05/18
+ * Last modified on 2021/05/18, 10:27
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ **/
+
+/**
  * Updated by Shaun McDonald on 2021/05/15
  * Last modified on 2021/05/14, 20:32
  * Copyright (c) 2021.  XI Systems  - All rights reserved
@@ -28,8 +34,6 @@ import com.google.gson.Gson
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
-import java.io.IOException
-import java.util.ArrayList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -59,6 +63,8 @@ import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.PhotoUtil.getPhotoPathFromExternalDirectory
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
+import java.io.IOException
+import java.util.ArrayList
 
 /**
  * Created by Francis Mahlava on 2019/11/28.
@@ -239,10 +245,12 @@ class JobCreationDataRepository(
 
             return if (!errorMessage.isNullOrBlank()) {
                 Timber.d(errorMessage.toString())
-                "Error: $errorMessage"
+                errorMessage
             } else {
-                return if (linearId.contains("xxx" as CharSequence, ignoreCase = true)) {
-                    this.bufferLocation
+                return if (linearId.contains("xxx" as CharSequence, ignoreCase = true) ||
+                    bufferLocation.contains("xxx" as CharSequence, ignoreCase = true)
+                ) {
+                    "xxx"
                 } else {
                     postRouteSection(
                         direction = direction,
