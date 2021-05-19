@@ -1,8 +1,8 @@
-/*
- * Updated by Shaun McDonald on 2021/02/08
- * Last modified on 2021/02/08 3:05 PM
+/**
+ * Updated by Shaun McDonald on 2021/05/18
+ * Last modified on 2021/05/18, 10:26
  * Copyright (c) 2021.  XI Systems  - All rights reserved
- */
+ **/
 
 package za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates
 
@@ -209,12 +209,12 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
 
     private fun readNavArgs() = uiScope.launch(uiScope.coroutineContext) {
         val args: EstimatePhotoFragmentArgs? by navArgs()
-        if (args != null) {
-            if (!args?.estimateId.isNullOrEmpty()) {
-                estimateId = args!!.estimateId
+        args?.let { navArgs ->
+            if (!navArgs.estimateId.isNullOrEmpty()) {
+                estimateId = navArgs.estimateId
             }
-            if (!args?.jobId.isNullOrEmpty()) {
-                createViewModel.setJobToEdit(args?.jobId!!)
+            if (!navArgs.jobId.isNullOrEmpty()) {
+                createViewModel.setJobToEdit(navArgs.jobId!!)
             }
         }
     }
@@ -368,17 +368,16 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
                 R.id.cancelButton -> {
                     Coroutines.main {
                         // Deep six this item and estimate
-                        estimateId?.let {
-                            createViewModel.deleteItemFromList(item!!.itemId, it)
+                        item?.let {
+                            createViewModel.deleteItemFromList(it.itemId, it.estimateId)
                             createViewModel.jobItem.value = null
-                            newJob?.removeJobEstimateByItemId(item!!.itemId)
+                            newJob?.removeJobEstimateByItemId(it.itemId)
                             createViewModel.backupJob(newJob!!)
                             createViewModel.setJobToEdit(newJob?.jobId!!)
-                            fragmentManager?.beginTransaction()?.remove(this)?.commit()
-                            fragmentManager?.beginTransaction()?.detach(this)?.commit()
+                            parentFragmentManager.beginTransaction().remove(this).commit()
+                            parentFragmentManager.beginTransaction().detach(this).commit()
                             navToAddProject(view)
                         }
-
                     }
                 }
 
@@ -692,30 +691,26 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
                 val result = getRouteSectionPoint(
                     estimateLocation
                 )
-                if (result.isNullOrBlank() || result.contains(other = "xxx" as CharSequence, ignoreCase = true)) {
-                    this@EstimatePhotoFragment.disableGlide = true
-                    showLocationWarning()
-                    resetPhotos()
-                }
-            }
-            withContext(uiScope.coroutineContext) {
-                if (!this@EstimatePhotoFragment.disableGlide) {
-                    validateRouteSection(newJob?.projectId!!)
-                } else {
-                    resetPhotos()
-                }
-            }
 
-            withContext(uiScope.coroutineContext) {
-                if (!this@EstimatePhotoFragment.disableGlide) {
-                    placeEstimatePhotoInRouteSection(
-                        filePath,
-                        estimateLocation,
-                        itemidPhototype
-                    )
-                }
+                when {
+                    result.isNullOrBlank() || result.contains(other = "xxx" as CharSequence, ignoreCase = true) -> {
+                        this@EstimatePhotoFragment.disableGlide = true
+                        showLocationWarning()
+                    }
+                    else -> {
+                        if (!this@EstimatePhotoFragment.disableGlide) {
+                            validateRouteSection(newJob?.projectId!!)
+                        }
 
-                resetPhotos()
+                        if (!this@EstimatePhotoFragment.disableGlide) {
+                            placeEstimatePhotoInRouteSection(
+                                filePath,
+                                estimateLocation,
+                                itemidPhototype
+                            )
+                        }
+                    }
+                }
             }
         } catch (t: Throwable) {
             val message = "Failed to verify photo location: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
@@ -733,6 +728,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
                 })
         } finally {
             toggleLongRunning(false)
+            resetPhotos()
         }
     }
 
@@ -774,11 +770,18 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
         sectionPoint: SectionPointDTO
     ) {
 
-        val projectSectionId = createViewModel.getSectionByRouteSectionProject(
-            sectionPoint.sectionId,
+        var projectSectionId = createViewModel.getSectionByRouteSectionProject(
+            sectionPoint.sectionId.toString(),
             sectionPoint.linearId,
             newJob?.projectId
         )
+        if (projectSectionId.isNullOrBlank()) {
+            projectSectionId = createViewModel.getSectionByRouteSectionProject(
+                sectionPoint.sectionId.toString().plus(sectionPoint.direction),
+                sectionPoint.linearId,
+                newJob?.projectId
+            )
+        }
 
         onProjectSectionIdFound(projectSectionId)
     }

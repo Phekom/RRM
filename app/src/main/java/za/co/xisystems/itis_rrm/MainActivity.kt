@@ -1,8 +1,14 @@
-/*
- * Updated by Shaun McDonald on 2021/02/08
- * Last modified on 2021/02/08 3:05 PM
+/**
+ * Updated by Shaun McDonald on 2021/05/15
+ * Last modified on 2021/05/14, 23:58
  * Copyright (c) 2021.  XI Systems  - All rights reserved
- */
+ **/
+
+/**
+ * Updated by Shaun McDonald on 2021/05/14
+ * Last modified on 2021/05/14, 19:57
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ **/
 
 package za.co.xisystems.itis_rrm
 
@@ -92,7 +98,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private val appBarConfiguration by lazy {
         AppBarConfiguration(
             setOf(
-                R.id.nav_home,
+                R.id.nav_home
             ),
             ui.drawerLayout
         )
@@ -121,11 +127,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             supportFragmentManager.findFragmentById(R.id.nav_host_fragment_container) as NavHostFragment
         navController = navHostFragment.navController
 
-
         navigationView = ui.navView
         NavigationUI.setupActionBarWithNavController(this, navController)
         NavigationUI.setupWithNavController(ui.toolbar, navController, appBarConfiguration)
-
 
         Coroutines.io {
             RaygunClient.init(application)
@@ -557,10 +561,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             style = colorToast.style.getValue(),
             position = colorToast.gravity.getValue(),
             duration = colorToast.duration.getValue(),
-            font = ResourcesCompat.getFont(this, R.font.helvetica_regular)
+            font = ResourcesCompat.getFont(this.applicationContext, R.font.helvetica_regular)
         )
     }
 
+    @Suppress("ControlFlowWithEmptyBody")
     override fun onResume() {
         super.onResume()
         if (this.delegate.localNightMode == AppCompatDelegate.MODE_NIGHT_YES) {

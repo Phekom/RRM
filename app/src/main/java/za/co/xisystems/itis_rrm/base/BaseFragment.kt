@@ -276,7 +276,7 @@ abstract class BaseFragment : Fragment(), IProgressView, KodeinAware {
     protected fun noConnectionWarning() {
         sharpToast(
             message = "Please ensure that you have a valid data or wifi connection",
-            style = WARNING,
+            style = NO_INTERNET,
             position = BOTTOM,
             duration = LONG
         )

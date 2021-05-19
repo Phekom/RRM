@@ -1,8 +1,14 @@
-/*
- * Updated by Shaun McDonald on 2021/02/15
- * Last modified on 2021/02/14 10:37 AM
+/**
+ * Updated by Shaun McDonald on 2021/05/15
+ * Last modified on 2021/05/14, 20:32
  * Copyright (c) 2021.  XI Systems  - All rights reserved
- */
+ **/
+
+/**
+ * Updated by Shaun McDonald on 2021/05/14
+ * Last modified on 2021/05/14, 19:43
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ **/
 
 package za.co.xisystems.itis_rrm.ui.extensions
 
@@ -40,7 +46,6 @@ fun ImageCollectionView.scaleForSize(imageCount: Int) {
         }
     }
 }
-
 
 fun ImageCollectionView.addZoomedImages(
     photoPaths: List<Pair<Uri, Bitmap?>>,

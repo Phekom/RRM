@@ -1,8 +1,8 @@
-/*
- * Updated by Shaun McDonald on 2021/02/08
- * Last modified on 2021/02/07 1:56 PM
+/**
+ * Updated by Shaun McDonald on 2021/05/19
+ * Last modified on 2021/05/18, 16:31
  * Copyright (c) 2021.  XI Systems  - All rights reserved
- */
+ **/
 
 @file:Suppress("SpellCheckingInspection")
 
@@ -102,7 +102,7 @@ import za.co.xisystems.itis_rrm.utils.DatetimeConverters
         WorkFlowsDTO::class, WfWorkStepDTO::class
     ],
     views = [ContractSelectorView::class],
-    version = 15
+    version = 17
 )
 @TypeConverters(Converters::class, DatetimeConverters::class)
 @GenerateRoomMigrations

@@ -1,8 +1,14 @@
-/*
- * Updated by Shaun McDonald on 2021/02/08
- * Last modified on 2021/02/08 3:05 PM
+/**
+ * Updated by Shaun McDonald on 2021/05/15
+ * Last modified on 2021/05/14, 20:32
  * Copyright (c) 2021.  XI Systems  - All rights reserved
- */
+ **/
+
+/**
+ * Updated by Shaun McDonald on 2021/05/14
+ * Last modified on 2021/05/14, 19:57
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ **/
 
 package za.co.xisystems.itis_rrm.ui.mainview.create.select_item
 
@@ -52,6 +58,7 @@ import java.util.concurrent.CancellationException
  * Created by Francis Mahlava on 2019/12/29.
  */
 
+@Suppress("KDocUnresolvedReference")
 class SelectItemFragment : BaseFragment(), KodeinAware {
     override val kodein by kodein()
     private lateinit var createViewModel: CreateViewModel
@@ -138,7 +145,7 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
 
         val args by navArgs<SelectItemFragmentArgs>()
 
-        if(!args.jobId.isNullOrBlank()){
+        if (!args.jobId.isNullOrBlank()) {
             onRestoreSavedState(args.toBundle())
             stateRestored = true
         }
@@ -170,7 +177,6 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
                     initUI()
                 }
             }
-
         }
     }
 

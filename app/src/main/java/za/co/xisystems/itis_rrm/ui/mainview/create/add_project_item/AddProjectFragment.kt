@@ -1,10 +1,8 @@
-/*
- * Updated by Shaun McDonald on 2021/02/08
- * Last modified on 2021/02/08 3:05 PM
+/**
+ * Updated by Shaun McDonald on 2021/05/19
+ * Last modified on 2021/05/19, 07:49
  * Copyright (c) 2021.  XI Systems  - All rights reserved
- */
-
-@file:Suppress("RemoveExplicitTypeArguments")
+ **/
 
 package za.co.xisystems.itis_rrm.ui.mainview.create.add_project_item
 
@@ -74,8 +72,8 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
     override val kodein by kodein()
     private lateinit var createViewModel: CreateViewModel
     private lateinit var unsubmittedViewModel: UnSubmittedViewModel
-    private val unsubFactory: UnSubmittedViewModelFactory by instance<UnSubmittedViewModelFactory>()
-    private val createFactory: CreateViewModelFactory by instance<CreateViewModelFactory>()
+    private val unsubFactory: UnSubmittedViewModelFactory by instance()
+    private val createFactory: CreateViewModelFactory by instance()
     private var dueDateDialog: DatePickerDialog? = null
     private var startDateDialog: DatePickerDialog? = null
     private lateinit var jobDataController: JobDataController
@@ -90,9 +88,14 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
     private val ui get() = _ui!!
     private var uiScope = UiLifecycleScope()
 
-    private var job: JobDTO? = null
+    private lateinit var job: JobDTO
 
     private var items: List<ItemDTOTemp> = ArrayList()
+
+    companion object {
+        private const val JOB_KEY = "jobId"
+        private const val PROJECT_KEY = "projectId"
+    }
 
     init {
         lifecycleScope.launch {
@@ -143,17 +146,17 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
                 viewLifecycleOwner,
                 { currentJob ->
                     currentJob?.let { jobToEdit ->
-                        if (createViewModel.jobDesc != jobToEdit.descr) {
-                            toast("Editing ${jobToEdit.descr}")
-                            createViewModel.jobDesc = jobToEdit.descr
+                        job = jobToEdit
+                        if (createViewModel.jobDesc != job.descr) {
+                            toast("Editing ${job.descr}")
+                            createViewModel.jobDesc = job.descr
                         }
                         Coroutines.main {
-                            projectID = jobToEdit.projectId
-                            job = jobToEdit
+                            projectID = job.projectId
                             val contractNo =
-                                createViewModel.getContractNoForId(jobToEdit.contractVoId)
+                                createViewModel.getContractNoForId(job.contractVoId)
                             val projectCode =
-                                createViewModel.getProjectCodeForId(jobToEdit.projectId)
+                                createViewModel.getProjectCodeForId(job.projectId)
                             ui.selectedContractTextView.text = contractNo
                             ui.selectedProjectTextView.text = projectCode
 
@@ -166,20 +169,20 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
 
                             // Set Job Start & Completion Dates
 
-                            jobToEdit.dueDate?.let {
+                            job.dueDate?.let {
                                 ui.dueDateTextView.text = DateUtil.toStringReadable(DateUtil.stringToDate(it))
                                 dueDate = DateUtil.stringToDate(it)!!
                             }
 
-                            jobToEdit.startDate?.let {
+                            job.startDate?.let {
                                 ui.startDateTextView.text = DateUtil.toStringReadable(DateUtil.stringToDate(it))
                                 startDate = DateUtil.stringToDate(it)!!
                             }
+
                             bindProjectItems()
                         }
                     }
                 })
-
             createViewModel.sectionProjectItem.observe(viewLifecycleOwner, {
                 ui.infoTextView.visibility = View.GONE
                 ui.lastLin.visibility = View.VISIBLE
@@ -193,45 +196,22 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
         }
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        initViewModels()
-        val args: AddProjectFragmentArgs? by navArgs()
-        args?.let {
-            if (!it.projectId.isNullOrBlank()) {
-                projectID = it.projectId
-            }
-            if (it.jobId != null) {
-                Coroutines.io {
-                    createViewModel.setJobToEdit(it.jobId)
-                    withContext(Dispatchers.Main.immediate) {
-                        uiUpdate()
-                    }
-                }
-            }
-        }
-    }
-
     private suspend fun bindProjectItems() {
         uiScope.launch(uiScope.coroutineContext) {
             val projectItems =
-                createViewModel.getAllProjectItems(projectID!!, job!!.jobId)
+                createViewModel.getAllProjectItems(projectID!!, job.jobId)
             projectItems.observe(viewLifecycleOwner, { itemList ->
                 when {
                     itemList.isEmpty() -> {
                         clearProjectItems()
                     }
                     else -> {
-                        items = itemList
-
-                        val legitItems =
-                            itemList.filter { itemDTOTemp ->
-                                itemDTOTemp.jobId == job!!.jobId
-                            }.toProjecListItems()
-
+                        items = itemList.filter { itemDTOTemp ->
+                            itemDTOTemp.jobId == job.jobId
+                        }
                         when {
-                            legitItems.isNotEmpty() -> {
-                                initRecyclerView(legitItems)
+                            items.isNotEmpty() -> {
+                                initRecyclerView(items.toProjecListItems())
                                 calculateTotalCost()
                             }
                             else -> {
@@ -268,6 +248,22 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
         setHasOptionsMenu(true)
         groupAdapter = GroupAdapter<GroupieViewHolder>()
         jobDataController = JobDataController
+
+        initViewModels()
+        val args: AddProjectFragmentArgs? by navArgs()
+        args?.let {
+            if (!it.projectId.isNullOrBlank()) {
+                projectID = it.projectId
+            }
+            if (it.jobId != null) {
+                Coroutines.io {
+                    createViewModel.setJobToEdit(it.jobId!!)
+                    withContext(Dispatchers.Main.immediate) {
+                        uiUpdate()
+                    }
+                }
+            }
+        }
 
         if (savedInstanceState != null) {
             onRestoreInstanceState(savedInstanceState)
@@ -312,8 +308,6 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
         return ui.root
     }
 
-
-
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         if (savedInstanceState != null) {
@@ -328,21 +322,14 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
             dueDate = DateUtil.currentDateTime!!
         }
 
-        Coroutines.main {
-            val contractNo = createViewModel.getContractNoForId(job?.contractVoId)
-            val projectCode = createViewModel.getProjectCodeForId(job?.projectId)
-            ui.selectedContractTextView.text = contractNo
-            ui.selectedProjectTextView.text = projectCode
-        }
-
         ItemTouchHelper(touchCallback).attachToRecyclerView(ui.projectRecyclerView)
         setmyClickListener()
     }
 
     private fun onRestoreInstanceState(savedInstanceState: Bundle) {
         savedInstanceState.run {
-            val jobId = getSerializable("jobId") as String?
-            val projectId = getSerializable("projectId") as String?
+            val jobId = getSerializable(JOB_KEY) as String?
+            val projectId = getSerializable(PROJECT_KEY) as String?
             Coroutines.main {
                 projectId?.let { restoredProjectId ->
                     projectID = restoredProjectId
@@ -428,7 +415,7 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
 
     private fun validateJob() {
 
-        if (job != null && validateCalendar()) {
+        if (job.jobId.isNotEmpty() && validateCalendar()) {
 
             Coroutines.main {
                 if (!JobUtils.areQuantitiesValid(job)) {
@@ -446,8 +433,8 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
                         ui.submitButton.initProgress(viewLifecycleOwner)
                         ui.submitButton.startProgress("Submitting data ...")
 
-                        job!!.issueDate = DateUtil.dateToString(Date())
-                        submitJob(job!!)
+                        job.issueDate = DateUtil.dateToString(Date())
+                        submitJob(job)
                     }
                 }
             }
@@ -463,27 +450,27 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
         var startResult = false
         var dueResult = false
 
-        if (job?.dueDate != null) {
+        if (job.dueDate != null) {
 
             if (dueDate < startDate || dueDate < yesterday || dueDate == yesterday
             ) {
                 sharpToast(message = "Please select a valid due date", style = WARNING)
                 ui.dueDateCardView.startAnimation(shake_long)
             } else {
-                job?.dueDate
+                job.dueDate
                 dueResult = true
             }
         } else {
             sharpToast(message = "Please select a Due Date", style = WARNING)
             ui.dueDateCardView.startAnimation(shake_long)
         }
-        if (job!!.startDate != null) {
+        if (job.startDate != null) {
             if (startDate < yesterday || dueDate == yesterday
             ) {
                 sharpToast(message = "Please select a valid Start Date", style = WARNING)
                 ui.dueDateCardView.startAnimation(shake_long)
             } else {
-                job!!.startDate
+                job.startDate
                 startResult = true
             }
         } else {
@@ -580,7 +567,7 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
         ui.dueDateCardView.startAnimation(bounce_500)
         val calendar = Calendar.getInstance()
         calendar[year, month] = dayOfMonth
-        job?.dueDate = DateUtil.dateToString(Date.from(calendar.toInstant()))
+        job.dueDate = DateUtil.dateToString(Date.from(calendar.toInstant()))
         backupJobInProgress(job)
     }
 
@@ -589,7 +576,7 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
         ui.startDateCardView.startAnimation(bounce_500)
         val calendar = Calendar.getInstance()
         calendar[year, month] = dayOfMonth
-        job?.startDate = DateUtil.dateToString(Date.from(calendar.toInstant()))
+        job.startDate = DateUtil.dateToString(Date.from(calendar.toInstant()))
         backupJobInProgress(job)
     }
 
@@ -601,23 +588,22 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
 
     private fun onResetClicked(view: View) {
         Coroutines.main {
-            createViewModel.deleteItemList(job!!.jobId)
-            createViewModel.deleteJobFromList(job!!.jobId)
+            createViewModel.deleteItemList(job.jobId)
+            createViewModel.deleteJobFromList(job.jobId)
             createViewModel.setCurrentJob(null)
         }
         resetContractAndProjectSelection(view)
-
     }
 
     private fun calculateTotalCost() {
         Coroutines.main {
-            // ui.totalCostTextView.text = createViewModel.formatTotalCost(job!!.jobId, ActivityIdConstants.ESTIMATE_INCOMPLETE)
             ui.totalCostTextView.text = JobUtils.formatTotalCost(job)
         }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        outState.putSerializable("jobId", job!!.jobId)
+        outState.putSerializable(JOB_KEY, job.jobId)
+        outState.putSerializable(PROJECT_KEY, projectID)
         super.onSaveInstanceState(outState)
     }
 

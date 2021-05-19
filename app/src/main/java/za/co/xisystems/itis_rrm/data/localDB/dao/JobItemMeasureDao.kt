@@ -1,3 +1,15 @@
+/**
+ * Updated by Shaun McDonald on 2021/05/15
+ * Last modified on 2021/05/14, 20:32
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ **/
+
+/**
+ * Updated by Shaun McDonald on 2021/05/14
+ * Last modified on 2021/05/14, 19:43
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ **/
+
 package za.co.xisystems.itis_rrm.data.localDB.dao
 
 import androidx.lifecycle.LiveData
@@ -5,9 +17,9 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import java.util.ArrayList
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasurePhotoDTO
-import java.util.ArrayList
 
 /**
  * Created by Francis Mahlava on 2019/11/21.

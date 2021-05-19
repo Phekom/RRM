@@ -1,6 +1,6 @@
 /*
- * Updated by Shaun McDonald on 2021/02/08
- * Last modified on 2021/02/07 9:43 PM
+ * Updated by Shaun McDonald on 2021/05/18
+ * Last modified on 2021/05/18, 11:09
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  */
 
@@ -20,7 +20,7 @@ versioning {
     major 1
     minor 5
     // Optional, force custom patch (number)
-    // patch 56
+    patch 93
     // Optional (any string)
     // preRelease ""
     // Optional, custom task name to trigger the increase of the versio
@@ -65,8 +65,8 @@ android {
         buildConfig = true
     }
 
-    def versionLabel = versioning.name
-    def versionBuild = versioning.build
+    def versionLabel = "1.5.94.1"
+    def versionBuild = 1
     def versionBuildDate = getDate()
     def appId = "za.co.xisystems.itismaintenance"
 
@@ -107,7 +107,7 @@ android {
     defaultConfig {
         applicationId appId
         minSdkVersion 23
-        targetSdkVersion 29
+        targetSdkVersion 30
         versionName "$versionLabel"
         versionCode 1
         vectorDrawables.useSupportLibrary = false
@@ -289,6 +289,11 @@ android {
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_1_8.toString()
     }
+    dependenciesInfo {
+        includeInApk true
+        includeInBundle true
+    }
+    buildToolsVersion '29.0.2'
 
 }
 
@@ -304,21 +309,21 @@ dependencies {
     // LeakCanary
     // debugImplementation because LeakCanary should only run in debug builds.
     debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.4'
-    debugImplementation 'com.squareup.leakcanary:leakcanary-object-watcher-android-androidx:2.5'
-    implementation 'com.squareup.leakcanary:plumber-android:2.5'
+    debugImplementation 'com.squareup.leakcanary:leakcanary-object-watcher-android-androidx:2.6'
+    implementation 'com.squareup.leakcanary:plumber-android:2.6'
 
-    implementation 'com.google.android.gms:play-services-maps:17.0.0'
+    implementation 'com.google.android.gms:play-services-maps:17.0.1'
     implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
-    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.1'
 
     // Activity
-    def activity_version = "1.1.0"
+    def activity_version = '1.2.3'
 
     // Kotlin
     implementation "androidx.activity:activity-ktx:$activity_version"
 
     // Desugar
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.1.1'
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.1.5'
 
 
     // Kotlin
@@ -327,7 +332,7 @@ dependencies {
 
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'androidx.core:core-ktx:1.3.2'
-    implementation "androidx.fragment:fragment-ktx:1.2.5"
+    implementation "androidx.fragment:fragment-ktx:1.3.3"
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
 
     // OkHttpProfiler
@@ -337,24 +342,24 @@ dependencies {
     implementation 'com.deploygate:sdk:4.3.0'
 
     // Argon2Kt - security pass 1
-    implementation 'com.lambdapioneer.argon2kt:argon2kt:1.2.0'
+    implementation 'com.lambdapioneer.argon2kt:argon2kt:1.3.0'
 
     // JetSec - security pass 1
     implementation 'androidx.security:security-crypto:1.1.0-alpha03'
 
     // Material
-    implementation 'com.google.android.material:material:1.3.0-rc01'
+    implementation 'com.google.android.material:material:1.4.0-beta01'
 
     // Testing
     // Core library
     testImplementation 'androidx.test:core-ktx:1.3.0'
 
     // Robolectric allows device test to run on the JVM
-    testImplementation 'junit:junit:4.13.1'
+    testImplementation 'junit:junit:4.13.2'
     testImplementation 'androidx.test:core-ktx:1.3.0'
     testImplementation 'androidx.test.ext:junit-ktx:1.1.2'
     testImplementation 'org.robolectric:robolectric:4.5.1'
-    testImplementation 'io.mockk:mockk:1.10.5'
+    testImplementation 'io.mockk:mockk:1.10.6'
     testImplementation "androidx.test.espresso:espresso-core:3.3.0"
 
     // TODO: Mock api response unit tests
@@ -378,7 +383,7 @@ dependencies {
     implementation "androidx.coordinatorlayout:coordinatorlayout:1.1.0"
 
     // Navigation
-    def nav_version = '2.3.3'
+    def nav_version = '2.3.5'
 
     // Kotlin
     implementation "androidx.navigation:navigation-fragment-ktx:$nav_version"
@@ -394,7 +399,7 @@ dependencies {
     // sanselan
     implementation 'org.apache.sanselan:sanselan:0.97-incubator'
 
-    def lifecycle_version = "2.2.0"
+    def lifecycle_version = '2.3.1'
     def arch_version = "2.1.0"
 
     // ViewModel
@@ -403,8 +408,8 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version"
     // Lifecycles only (without ViewModel or LiveData)
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version"
-
     // Saved state module for ViewModel
+
     implementation "androidx.lifecycle:lifecycle-viewmodel-savedstate:$lifecycle_version"
 
     // Annotation processor
@@ -426,7 +431,7 @@ dependencies {
 
 
     // Recyclerview
-    implementation 'androidx.recyclerview:recyclerview:1.2.0-beta01'
+    implementation 'androidx.recyclerview:recyclerview:1.2.0'
 
     // Cardview
     implementation 'androidx.cardview:cardview:1.0.0'
@@ -440,7 +445,7 @@ dependencies {
     kapt "com.github.bumptech.glide:compiler:$glideVersion"
 
     //Paging
-    implementation 'androidx.paging:paging-runtime-ktx:2.1.2'
+    implementation 'androidx.paging:paging-runtime-ktx:3.0.0'
 
     //Retrofit2
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
@@ -452,7 +457,7 @@ dependencies {
     implementation 'com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.2'
 
     // Rx
-    implementation "io.reactivex.rxjava2:rxjava:2.2.17"
+    implementation "io.reactivex.rxjava2:rxjava:2.2.21"
     implementation "io.reactivex.rxjava2:rxandroid:2.1.1"
 
     // Picasso & CropMe
@@ -460,7 +465,7 @@ dependencies {
     implementation 'com.github.takusemba:cropme:1.0.6'
 
     //Location
-    implementation 'com.google.android.gms:play-services-location:17.1.0'
+    implementation 'com.google.android.gms:play-services-location:18.0.0'
 
 
     // Icepick
@@ -468,11 +473,11 @@ dependencies {
     annotationProcessor 'frankiesardo:icepick-processor:3.2.0'
 
     //Kotlin Coroutines
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.4.0"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.0"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlin_version"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlin_version"
 
     // Better Date-time
-    implementation 'com.jakewharton.threetenabp:threetenabp:1.3.0'
+    implementation 'com.jakewharton.threetenabp:threetenabp:1.3.1'
     // implementation 'org.threeten:threetenbp:1.5.0'
 
     //Kodein Dependency Injection
@@ -488,18 +493,19 @@ dependencies {
     implementation 'com.github.tntkhang:full-screen-image-view-library:1.1.0'
 
     //Android  Room
-    def room_version = '2.2.6' // align with Roomigrant
+    def room_version = '2.3.0' // align with Roomigrant
 
     implementation "androidx.room:room-runtime:$room_version"
     implementation "androidx.room:room-ktx:$room_version"
     // implementation "androidx.room:room-rxjava2:$room_version"
     kapt "androidx.room:room-compiler:$room_version"
+
     // optional - Test helpers
     testImplementation "androidx.room:room-testing:$room_version"
 
     // Roomigrant
-    implementation 'com.github.MatrixDev.Roomigrant:RoomigrantLib:0.2.0'
-    kapt 'com.github.MatrixDev.Roomigrant:RoomigrantCompiler:0.2.0'
+    implementation 'com.github.MatrixDev.Roomigrant:RoomigrantLib:0.3.4'
+    kapt 'com.github.MatrixDev.Roomigrant:RoomigrantCompiler:0.3.4'
 
 
     // Groupie
@@ -519,7 +525,7 @@ dependencies {
     // implementation 'com.amitshekhar.android:jackson-android-networking:1.0.2'
 
     // Jackson
-    def jackson_version = '2.12.1'
+    def jackson_version = '2.12.2'
     implementation "com.fasterxml.jackson.core:jackson-databind:$jackson_version"
     implementation "com.fasterxml.jackson.core:jackson-core:$jackson_version"
     implementation "com.fasterxml.jackson.core:jackson-annotations:$jackson_version"
@@ -560,7 +566,7 @@ dependencies {
     implementation 'com.github.razir.progressbutton:progressbutton:2.1.0'
 
     // Lottie Animations
-    def lottieVersion = '3.6.0'
+    def lottieVersion = '3.6.1'
     implementation "com.airbnb.android:lottie:$lottieVersion"
 
     // Motion Toast
@@ -579,9 +585,18 @@ dependencies {
 
     implementation "com.ToxicBakery.library.bcrypt:bcrypt:1.0.9"
 
+    // Jetpack Security
+    implementation "androidx.security:security-crypto:1.1.0-alpha03"
 
-    // SQLCipher
-    implementation 'net.zetetic:android-database-sqlcipher:4.4.2'
+    // Argon2Kt - security pass 1
+    implementation 'com.lambdapioneer.argon2kt:argon2kt:1.3.0'
+    implementation 'com.getkeepsafe.relinker:relinker:1.4.3'
+
+    // Password4J - security pass 2
+    implementation 'com.password4j:password4j:1.5.2'
+
+    // SQLCipher - Encrypts database at rest
+    implementation 'net.zetetic:android-database-sqlcipher:4.4.3'
     implementation "androidx.sqlite:sqlite-ktx:2.1.0"
 
     // Apache Commons Text - for generating random pass phrases
@@ -592,6 +607,9 @@ dependencies {
 
     // TooLargeTool
     debugImplementation 'com.gu.android:toolargetool:0.3.0@aar'
+
+    // Kotlin style Timber
+    implementation 'com.github.ajalt:timberkt:1.5.1'
 
 
 }

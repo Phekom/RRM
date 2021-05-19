@@ -1,3 +1,15 @@
+/**
+ * Updated by Shaun McDonald on 2021/05/15
+ * Last modified on 2021/05/15, 00:49
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ **/
+
+/**
+ * Updated by Shaun McDonald on 2021/05/14
+ * Last modified on 2021/05/14, 19:43
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ **/
+
 @file:Suppress("KDocUnresolvedReference")
 
 package za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.measure_approval
@@ -281,19 +293,7 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
                     initRecyclerView(it.toMeasureItems())
                 }
             })
-
         }
-    }
-
-    private fun delayedUnveil() {
-        Handler(Looper.getMainLooper()).postDelayed(
-            {
-                if (!activity?.isFinishing!!) {
-                    ui.viewMeasuredItems.unVeil()
-                }
-            },
-            Constants.ONE_SECOND
-        )
     }
 
     private fun initRecyclerView(measureListItems: List<MeasurementsItem>) {
