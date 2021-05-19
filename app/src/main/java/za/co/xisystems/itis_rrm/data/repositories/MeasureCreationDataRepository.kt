@@ -1,12 +1,6 @@
 /**
- * Updated by Shaun McDonald on 2021/05/15
- * Last modified on 2021/05/14, 20:32
- * Copyright (c) 2021.  XI Systems  - All rights reserved
- **/
-
-/**
- * Updated by Shaun McDonald on 2021/05/14
- * Last modified on 2021/05/14, 19:43
+ * Updated by Shaun McDonald on 2021/05/19
+ * Last modified on 2021/05/18, 20:28
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  **/
 
@@ -21,7 +15,6 @@ import com.google.gson.Gson
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
-import java.util.ArrayList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -51,10 +44,10 @@ import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
-import za.co.xisystems.itis_rrm.utils.PhotoUtil.getPhotoPathFromExternalDirectory
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import za.co.xisystems.itis_rrm.utils.uncaughtExceptionHandler
+import java.util.ArrayList
 
 /**
  * Created by Francis Mahlava on 2019/11/28.
@@ -101,7 +94,7 @@ class MeasureCreationDataRepository(
         itemMeasureJob: JobDTO
     ) {
 
-        return withContext(Dispatchers.IO) {
+        withContext(Dispatchers.IO) {
             postWorkflowStatus(XIProgress(true))
             val measureData = JsonObject()
             val gson = Gson()
@@ -201,7 +194,7 @@ class MeasureCreationDataRepository(
         photoQuality: PhotoQuality,
         activity: FragmentActivity
     ): ByteArray {
-        val uri = getPhotoPathFromExternalDirectory(filename)
+        val uri = PhotoUtil.getPhotoPathFromExternalDirectory(filename)
         val bitmap =
             PhotoUtil.getPhotoBitmapFromFile(activity.applicationContext, uri, photoQuality)
         return PhotoUtil.getCompressedPhotoWithExifInfo(
@@ -418,9 +411,9 @@ class MeasureCreationDataRepository(
         Coroutines.io {
             if (!appDb.getJobItemMeasureDao()
                     .checkIfJobItemMeasureExists(selectedJobItemMeasure.itemMeasureId)
-            )
-                appDb.getJobItemMeasureDao()
-                    .insertJobItemMeasure(selectedJobItemMeasure)
+            ) {
+                appDb.getJobItemMeasureDao().insertJobItemMeasure(selectedJobItemMeasure)
+            }
 
             appDb.getJobItemEstimateDao()
                 .setMeasureActId(selectedJobItemMeasure.actId, estimateId!!)
@@ -430,15 +423,9 @@ class MeasureCreationDataRepository(
                 selectedJobItemMeasure.itemMeasureId
             )
 
-            for (jobItemMeasurePhoto in jobItemMeasurePhotoList.iterator()) {
-                if (!appDb.getJobItemMeasurePhotoDao()
-                        .checkIfJobItemMeasurePhotoExists(jobItemMeasurePhoto.filename!!)
-                ) {
-
-                    appDb.getJobItemMeasurePhotoDao()
-                        .insertJobItemMeasurePhoto(jobItemMeasurePhoto)
-                    jobItemMeasurePhoto.setEstimateId(estimateId)
-                }
+            jobItemMeasurePhotoList.forEach { jobItemMeasurePhoto ->
+                jobItemMeasurePhoto.setEstimateId(estimateId)
+                appDb.getJobItemMeasurePhotoDao().insertJobItemMeasurePhoto(jobItemMeasurePhoto)
             }
         }
     }
@@ -451,15 +438,8 @@ class MeasureCreationDataRepository(
         }
     }
 
-    suspend fun getJobItemMeasurePhotosForItemEstimateID(estimateId: String): LiveData<List<JobItemMeasurePhotoDTO>> {
-        return withContext(Dispatchers.IO) {
-            appDb.getJobItemMeasurePhotoDao()
-                .getJobItemMeasurePhotosForItemEstimateID(estimateId)
-        }
-    }
-
     private fun JobItemMeasurePhotoDTO.setEstimateId(estimateId: String?) {
-        this.estimateId = estimateId
+        this.estimateId = estimateId!!
     }
 
     suspend fun getItemDescription(jobId: String): String {

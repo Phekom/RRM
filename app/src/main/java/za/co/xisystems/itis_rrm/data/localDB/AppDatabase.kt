@@ -1,6 +1,6 @@
 /**
- * Updated by Shaun McDonald on 2021/05/15
- * Last modified on 2021/05/14, 22:21
+ * Updated by Shaun McDonald on 2021/05/19
+ * Last modified on 2021/05/18, 16:31
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  **/
 
@@ -102,7 +102,7 @@ import za.co.xisystems.itis_rrm.utils.DatetimeConverters
         WorkFlowsDTO::class, WfWorkStepDTO::class
     ],
     views = [ContractSelectorView::class],
-    version = 16
+    version = 17
 )
 @TypeConverters(Converters::class, DatetimeConverters::class)
 @GenerateRoomMigrations

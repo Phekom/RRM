@@ -1,26 +1,3 @@
-/**
- * Updated by Shaun McDonald on 2021/05/18
- * Last modified on 2021/05/18, 10:27
- * Copyright (c) 2021.  XI Systems  - All rights reserved
- **/
-
-/**
- * Updated by Shaun McDonald on 2021/05/15
- * Last modified on 2021/05/14, 20:32
- * Copyright (c) 2021.  XI Systems  - All rights reserved
- **/
-
-/**
- * Updated by Shaun McDonald on 2021/05/14
- * Last modified on 2021/05/14, 19:43
- * Copyright (c) 2021.  XI Systems  - All rights reserved
- **/
-
-/**
- * Updated by Shaun McDonald on 2021/05/14
- * Last modified on 2021/05/14, 16:39
- * Copyright (c) 2021.  XI Systems  - All rights reserved
- **/
 
 package za.co.xisystems.itis_rrm.data.repositories
 
@@ -38,6 +15,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.custom.errors.ServiceException
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.localDB.JobDataController
 import za.co.xisystems.itis_rrm.data.localDB.entities.ContractDTO
@@ -69,6 +47,12 @@ import java.util.ArrayList
 /**
  * Created by Francis Mahlava on 2019/11/28.
  */
+
+/**
+ * Updated by Shaun McDonald on 2021/05/19
+ * Last modified on 2021/05/19, 19:05
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ **/
 
 class JobCreationDataRepository(
     private val api: BaseConnectionApi,
@@ -243,24 +227,24 @@ class JobCreationDataRepository(
         with(routeSectionPointResponse) {
             Timber.d("$routeSectionPointResponse")
 
-            return if (!errorMessage.isNullOrBlank()) {
+            if (!errorMessage.isNullOrBlank()) {
                 Timber.d(errorMessage.toString())
-                errorMessage
+                throw ServiceException(errorMessage)
+            }
+
+            return if (linearId.contains("xxx" as CharSequence, ignoreCase = true) ||
+                bufferLocation.contains("xxx" as CharSequence, ignoreCase = true)
+            ) {
+                "xxx"
             } else {
-                return if (linearId.contains("xxx" as CharSequence, ignoreCase = true) ||
-                    bufferLocation.contains("xxx" as CharSequence, ignoreCase = true)
-                ) {
-                    "xxx"
-                } else {
-                    postRouteSection(
-                        direction = direction,
-                        linearId = linearId,
-                        pointLocation = pointLocation,
-                        sectionId = sectionId,
-                        projectId = projectId,
-                        jobId = jobId
-                    )
-                }
+                postRouteSection(
+                    direction = direction,
+                    linearId = linearId,
+                    pointLocation = pointLocation,
+                    sectionId = sectionId,
+                    projectId = projectId,
+                    jobId = jobId
+                )
             }
         }
     }

@@ -1,12 +1,6 @@
 /**
- * Updated by Shaun McDonald on 2021/05/15
- * Last modified on 2021/05/14, 21:54
- * Copyright (c) 2021.  XI Systems  - All rights reserved
- **/
-
-/**
- * Updated by Shaun McDonald on 2021/05/14
- * Last modified on 2021/05/14, 19:43
+ * Updated by Shaun McDonald on 2021/05/19
+ * Last modified on 2021/05/18, 16:50
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  **/
 
@@ -77,6 +71,7 @@ class OfflineDataRepository(
     private val api: BaseConnectionApi,
     private val appDb: AppDatabase
 ) : SafeApiRequest() {
+
     private var entitiesFetched = false
     private val conTracts = MutableLiveData<List<ContractDTO>>()
     private val sectionItems = MutableLiveData<ArrayList<String>>()
@@ -88,6 +83,16 @@ class OfflineDataRepository(
     private val workflowJ = MutableLiveData<WorkflowJobDTO>()
     private val workflowJ2 = MutableLiveData<WorkflowJobDTO>()
     private val photoUpload = MutableLiveData<String>()
+    val bigSyncDone: MutableLiveData<Boolean> = MutableLiveData()
+    var databaseStatus: MutableLiveData<XIEvent<XIResult<Boolean>>> = MutableLiveData()
+    private var tasksMax: Int = 0
+    private var tasksCount: Int = 0
+    private var contractCount: Int = 0
+    private var contractMax: Int = 0
+    private var projectCount: Int = 0
+    private var projectMax: Int = 0
+    private var newContracts: Boolean = false
+    private var newProjects: Boolean = false
 
     init {
         conTracts.observeForever {
@@ -140,15 +145,15 @@ class OfflineDataRepository(
         }
     }
 
-    val bigSyncDone: MutableLiveData<Boolean> = MutableLiveData()
+    companion object {
+        val TAG: String = OfflineDataRepository::class.java.simpleName
+    }
 
     suspend fun bigSyncCheck() {
         withContext(Dispatchers.IO) {
             bigSyncDone.postValue(appDb.getContractDao().countContracts() >= 1)
         }
     }
-
-    var databaseStatus: MutableLiveData<XIEvent<XIResult<Boolean>>> = MutableLiveData()
 
     suspend fun getContracts(): LiveData<List<ContractDTO>> {
         return withContext(Dispatchers.IO) {
@@ -402,13 +407,14 @@ class OfflineDataRepository(
         withContext(Dispatchers.IO) {
             projectMax += validProjects.size
             validProjects.forEach { project ->
-
-                if (appDb.getProjectDao().checkProjectExists(project.projectId)) {
-                    Timber.i("Contract: ${contract.shortDescr} (${contract.contractId}) ProjectId: ${project.descr} (${project.projectId}) -> Duplicated"
-                    )
-                    projectMax--
-                } else {
-                    try {
+                try {
+                    if (appDb.getProjectDao().checkProjectExists(project.projectId)) {
+                        Timber.i(
+                            "Contract: ${contract.shortDescr} (${contract.contractId}) "
+                                .plus("ProjectId: ${project.descr} (${project.projectId}) -> Duplicated")
+                        )
+                        projectMax--
+                    } else {
 
                         appDb.getProjectDao().insertProject(
                             project.projectId,
@@ -422,38 +428,41 @@ class OfflineDataRepository(
                             project.voItems,
                             contract.contractId
                         )
-
-                        updateProjectItems(project.items, project)
-
-                        updateProjectSections(project.projectSections, project)
-
-                        updateVOItems(project.voItems, project)
                         projectCount++
                         newProjects = true
-
-                        Timber.d("pr**: $contractCount / $contractMax contracts")
-                        Timber.d("pr**: $projectCount / $projectMax projects")
-
-                        postEvent(
-                            XIProgressUpdate(
-                                "projects", (projectCount.toFloat() * contractCount.toFloat()) /
-                                    (projectMax.toFloat() * contractMax.toFloat())
-                            )
-                        )
-                        if (contractCount >= contractMax && projectCount >= projectMax) {
-                            postEvent(XIProgressUpdate("projects", 1.0f))
-                        }
-                    } catch (ex: Exception) {
-                        Timber.e(
-                            ex,
-                            "Contract: ${contract.shortDescr} (${contract.contractId}) ProjectId: ${project.descr} (${project.projectId}) -> ${ex.message}"
-                        )
                     }
+
+                    updateProjectItems(project.items, project)
+
+                    updateProjectSections(project.projectSections, project)
+
+                    updateVOItems(project.voItems, project)
+
+                    Timber.d("pr**: $contractCount / $contractMax contracts")
+                    Timber.d("pr**: $projectCount / $projectMax projects")
+
+                    postEvent(
+                        XIProgressUpdate(
+                            "projects", (projectCount.toFloat() * contractCount.toFloat()) /
+                                (projectMax.toFloat() * contractMax.toFloat())
+                        )
+                    )
+                    if (contractCount >= contractMax && projectCount >= projectMax) {
+                        postEvent(XIProgressUpdate("projects", 1.0f))
+                    }
+                } catch (ex: Exception) {
+                    Timber.e(
+                        ex,
+                        ("Contract: ${contract.shortDescr} (${contract.contractId}) ProjectId: ${project.descr}")
+                            .plus(" ${project.projectId}) -> ${ex.message}")
+
+                    )
                 }
             }
         }
     }
 
+    @Transaction
     private fun updateProjectItems(
         distinctItems: List<ProjectItemDTO>,
         project: ProjectDTO
@@ -497,6 +506,7 @@ class OfflineDataRepository(
         }
     }
 
+    @Transaction
     private fun updateProjectSections(
         projectSections: ArrayList<ProjectSectionDTO>,
         project: ProjectDTO
@@ -908,20 +918,24 @@ class OfflineDataRepository(
                     .checkIfJobItemMeasurePhotoExists(
                         jobItemMeasurePhoto.filename!!
                     )
-            ) jobItemMeasurePhoto.setPhotoPath(
-                Environment.getExternalStorageDirectory()
-                    .toString() + File.separator +
-                    PhotoUtil.FOLDER + File.separator + jobItemMeasurePhoto.filename
-            )
+            ) {
+                jobItemMeasurePhoto.setPhotoPath(
+                    Environment.getExternalStorageDirectory()
+                        .toString() + File.separator +
+                        PhotoUtil.FOLDER + File.separator + jobItemMeasurePhoto.filename
+                )
+            }
             jobItemMeasurePhoto.setPhotoId(
                 DataConversion.toBigEndian(
                     jobItemMeasurePhoto.photoId
                 )
             )
             jobItemMeasurePhoto.setItemMeasureId(
-                DataConversion.toBigEndian(
-                    jobItemMeasurePhoto.itemMeasureId
-                )
+                jobItemMeasure.itemMeasureId
+            )
+
+            jobItemMeasurePhoto.setEstimateId(
+                jobItemMeasure.estimateId
             )
 
             if (!PhotoUtil.photoExist(jobItemMeasurePhoto.filename)) {
@@ -983,9 +997,6 @@ class OfflineDataRepository(
             }
         }
     }
-
-    private var tasksMax: Int = 0
-    private var tasksCount: Int = 0
 
     private suspend fun saveUserTaskList(toDoListGroups: ArrayList<ToDoGroupsDTO>) {
         withContext(Dispatchers.IO) {
@@ -1068,13 +1079,6 @@ class OfflineDataRepository(
         val jobResponse = apiRequest { api.getJobsForApproval(jobId) }
         job.postValue(jobResponse.job)
     }
-
-    private var contractCount: Int = 0
-    private var contractMax: Int = 0
-    private var projectCount: Int = 0
-    private var projectMax: Int = 0
-    private var newContracts: Boolean = false
-    private var newProjects: Boolean = false
 
     suspend fun loadActivitySections(userId: String) {
         postStatus("Fetching Activity Sections")
@@ -1388,6 +1392,10 @@ class OfflineDataRepository(
         this.estimateId = toBigEndian
     }
 
+    private fun JobItemMeasurePhotoDTO.setEstimateId(toBigEndian: String?) {
+        this.estimateId = toBigEndian!!
+    }
+
     private fun JobItemMeasureDTO.setProjectVoId(toBigEndian: String?) {
         this.projectVoId = toBigEndian
     }
@@ -1446,10 +1454,6 @@ class OfflineDataRepository(
             postEvent(healthError)
             false
         }
-    }
-
-    companion object {
-        val TAG: String = OfflineDataRepository::class.java.simpleName
     }
 }
 
