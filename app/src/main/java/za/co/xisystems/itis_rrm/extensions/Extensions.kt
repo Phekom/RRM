@@ -1,7 +1,6 @@
 package za.co.xisystems.itis_rrm.extensions
 
-import android.app.Activity
-import android.os.Build
+import android.location.Location
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.lifecycle.LifecycleOwner
@@ -55,18 +54,13 @@ fun <T> LiveData<T>.getDistinct(): LiveData<T> {
     return distinctLiveData
 }
 
-fun Activity.checkIsMaterialVersion() =
-    Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
-
 fun AppCompatActivity.applyToolbarMargin(toolbar: Toolbar) {
-    if (checkIsMaterialVersion()) {
-        toolbar.layoutParams = (
-            toolbar.layoutParams
-                as CollapsingToolbarLayout.LayoutParams
-            ).apply {
-                topMargin = getStatusBarSize()
-            }
-    }
+    toolbar.layoutParams = (
+        toolbar.layoutParams
+            as CollapsingToolbarLayout.LayoutParams
+        ).apply {
+            topMargin = getStatusBarSize()
+        }
 }
 
 private fun AppCompatActivity.getStatusBarSize(): Int {
@@ -76,5 +70,13 @@ private fun AppCompatActivity.getStatusBarSize(): Int {
         resources.getDimensionPixelSize(idStatusBarHeight)
     } else {
         0
+    }
+}
+
+fun Location?.toText(): String {
+    return if (this != null) {
+        "($latitude, $longitude)"
+    } else {
+        "Unknown location"
     }
 }

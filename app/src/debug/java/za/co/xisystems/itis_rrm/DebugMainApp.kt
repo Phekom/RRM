@@ -1,18 +1,9 @@
 /**
- * Updated by Shaun McDonald on 2021/05/15
- * Last modified on 2021/05/14, 20:32
+ * Updated by Shaun McDonald on 2021/05/19
+ * Last modified on 2021/05/19, 08:57
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  **/
 
-/**
- * Updated by Shaun McDonald on 2021/05/14
- * Last modified on 2021/05/14, 19:43
- * Copyright (c) 2021.  XI Systems  - All rights reserved
- **/
-
-/**
- * Created by Francis Mahlava on 2019/10/23.
- */
 package za.co.xisystems.itis_rrm
 
 import android.os.StrictMode
@@ -42,13 +33,13 @@ open class DebugMainApp : MainApp(), KodeinAware {
             // Shaun McDonald - 2021/01/30 - Added TooLargeTool to track bundle sizes
             TooLargeTool.startLogging(this)
             // Shaun McDonald - 2021/02/09 - Added StrictMode to help with optimization
-            SetStrictMode()
+            setStrictMode()
         }
         super.onCreate()
     }
 
-    // Strict mode halps us catch leaks and bad practices super quick
-    private fun SetStrictMode() {
+    // Strict mode helps us catch leaks and bad practices super quick
+    private fun setStrictMode() {
 
         StrictMode.setThreadPolicy(
             ThreadPolicy.Builder()

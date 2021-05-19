@@ -4,18 +4,6 @@
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  **/
 
-/**
- * Updated by Shaun McDonald on 2021/05/15
- * Last modified on 2021/05/14, 23:50
- * Copyright (c) 2021.  XI Systems  - All rights reserved
- **/
-
-/**
- * Updated by Shaun McDonald on 2021/05/14
- * Last modified on 2021/05/14, 19:43
- * Copyright (c) 2021.  XI Systems  - All rights reserved
- **/
-
 package za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates
 
 import android.Manifest
@@ -708,39 +696,21 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
                     result.isNullOrBlank() || result.contains(other = "xxx" as CharSequence, ignoreCase = true) -> {
                         this@EstimatePhotoFragment.disableGlide = true
                         showLocationWarning()
-                        resetPhotos()
-                    }
-                    result.contains(other = "error" as CharSequence, ignoreCase = true) -> {
-                        this@EstimatePhotoFragment.disableGlide = true
-                        sharpToast(
-                            message = result, style = ERROR,
-                            position = BOTTOM, duration = LONG
-                        )
-                        resetPhotos()
                     }
                     else -> {
-                        this@EstimatePhotoFragment.disableGlide = false
+                        if (!this@EstimatePhotoFragment.disableGlide) {
+                            validateRouteSection(newJob?.projectId!!)
+                        }
+
+                        if (!this@EstimatePhotoFragment.disableGlide) {
+                            placeEstimatePhotoInRouteSection(
+                                filePath,
+                                estimateLocation,
+                                itemidPhototype
+                            )
+                        }
                     }
                 }
-            }
-            withContext(uiScope.coroutineContext) {
-                if (!this@EstimatePhotoFragment.disableGlide) {
-                    validateRouteSection(newJob?.projectId!!)
-                } else {
-                    resetPhotos()
-                }
-            }
-
-            withContext(uiScope.coroutineContext) {
-                if (!this@EstimatePhotoFragment.disableGlide) {
-                    placeEstimatePhotoInRouteSection(
-                        filePath,
-                        estimateLocation,
-                        itemidPhototype
-                    )
-                }
-
-                resetPhotos()
             }
         } catch (t: Throwable) {
             val message = "Failed to verify photo location: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
@@ -758,6 +728,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
                 })
         } finally {
             toggleLongRunning(false)
+            resetPhotos()
         }
     }
 
