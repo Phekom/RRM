@@ -211,6 +211,7 @@ class JobCreationDataRepository(
         }
     }
 
+    @Suppress("MagicNumber")
     suspend fun getRouteSectionPoint(
         latitude: Double,
         longitude: Double,
@@ -219,7 +220,7 @@ class JobCreationDataRepository(
         jobId: String
     ): String? {
 
-        val distance = 0.5
+        val distance = 0.05
         val buffer = -1.0
         val routeSectionPointResponse =
             apiRequest { api.getRouteSectionPoint(distance, buffer, latitude, longitude, useR) }

@@ -253,11 +253,6 @@ class HomeFragment : BaseFragment(), KodeinAware {
         homeViewModel.databaseState.removeObservers(viewLifecycleOwner)
     }
 
-    @ExperimentalStdlibApi
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-    }
-
     private fun initProgressViews() {
 
         ui.pvContracts.setOnProgressChangeListener {

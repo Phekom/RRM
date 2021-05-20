@@ -713,6 +713,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
                 }
             }
         } catch (t: Throwable) {
+            disableGlide = true
             val message = "Failed to verify photo location: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
             Timber.e(t, message)
             val xiErr = XIError(t, message)
@@ -739,6 +740,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
     ) {
         IndefiniteSnackbar.hide()
         Coroutines.main {
+            disableGlide = false
             processPhotoLocation(estimateLocation, filePath, itemidPhototype)
         }
     }

@@ -68,6 +68,7 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
 
     private lateinit var newJobItemEstimatesList: ArrayList<JobItemEstimateDTO>
     private lateinit var itemSections: ArrayList<ItemSectionDTO>
+    private var groupAdapter: GroupAdapter<GroupieViewHolder>? = null
 
     // viewBinding implementation
     private var _ui: FragmentSelectItemBinding? = null
@@ -133,8 +134,8 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
         return ui.root
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         var stateRestored = false
         createViewModel = activity?.run {
             ViewModelProvider(this, factory).get(CreateViewModel::class.java)
@@ -190,7 +191,8 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
      * [.onActivityCreated].
      *
      *
-     * This corresponds to [ Activity.onSaveInstanceState(Bundle)][Activity.onSaveInstanceState] and most of the discussion there
+     * This corresponds to [ Activity.onSaveInstanceState(Bundle)]
+     * [Activity.onSaveInstanceState] and most of the discussion there
      * applies here as well.  Note however: *this method may be called
      * at any time before [.onDestroy]*.  There are many situations
      * where a fragment may be mostly torn down (such as when placed on the
@@ -268,7 +270,7 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
     }
 
     private fun initRecyclerView(items: List<SectionProj_Item>) {
-        val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
+        groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
             addAll(items)
             notifyDataSetChanged()
         }
@@ -280,7 +282,7 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
                 RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
         }
 
-        groupAdapter.setOnItemClickListener { item, view ->
+        groupAdapter!!.setOnItemClickListener { item, view ->
 
             (item as? SectionProj_Item)?.let {
 
@@ -341,6 +343,7 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
         super.onDestroyView()
         // Prevents RecyclerView Memory leak
         ui.itemRecyclerView.adapter = null
+        groupAdapter = null
         uiScope.destroy()
         viewLifecycleOwner.lifecycleScope.cancel(CancellationException("onDestroyView"))
         _ui = null
