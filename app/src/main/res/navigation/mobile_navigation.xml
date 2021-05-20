@@ -301,7 +301,11 @@
     <action
         android:id="@+id/action_global_nav_home"
         app:destination="@id/nav_home"
-        app:popUpTo="@id/nav_home" />
+        app:popUpTo="@id/nav_home"
+        app:enterAnim="@anim/animate_swipe_right_enter"
+        app:exitAnim="@anim/animate_swipe_right_exit"
+        app:popEnterAnim="@anim/nav_default_pop_enter_anim"
+        app:popExitAnim="@anim/nav_default_pop_exit_anim" />
     <activity
         android:id="@+id/registerActivity"
         android:name="za.co.xisystems.itis_rrm.ui.auth.RegisterActivity"
