@@ -141,7 +141,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         MotionToast.setSuccessColor(R.color.sanral_dark_green)
         MotionToast.setWarningColor(R.color.colorPrimaryYellow)
         MotionToast.setInfoColor(R.color.dark_bg_color)
-        MotionToast.setDeleteColor(R.color.sanral_orange_red)
+        MotionToast.setDeleteColor(R.color.dark_bg_color)
 
         this.mainActivityViewModel = this.run {
             ViewModelProvider(this, factory).get(MainActivityViewModel::class.java)
@@ -308,14 +308,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        when (item.itemId) {
+        return when (item.itemId) {
             R.id.action_search -> {
-
-                return true
+                true
             }
             R.id.action_settings -> {
                 startActivity(Intent(this, SettingsActivity::class.java))
-                return true
+                true
             }
             R.id.action_logout -> {
                 Intent(this, LoginActivity::class.java).also { home ->
@@ -323,10 +322,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                         Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
                     startActivity(home)
                 }
-                return true
+                true
             }
 
-            else -> return super.onOptionsItemSelected(item)
+            else -> super.onOptionsItemSelected(item)
         }
     }
 
@@ -561,7 +560,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             style = colorToast.style.getValue(),
             position = colorToast.gravity.getValue(),
             duration = colorToast.duration.getValue(),
-            font = ResourcesCompat.getFont(this.applicationContext, R.font.helvetica_regular)
+            font = ResourcesCompat.getFont(this, R.font.helvetica_regular)
         )
     }
 

@@ -157,11 +157,11 @@
         android:id="@+id/addProjectFragment"
         android:name="za.co.xisystems.itis_rrm.ui.mainview.create.add_project_item.AddProjectFragment"
         tools:layout="@layout/fragment_add_project_items"
-        android:label="Add Project Items">
+        android:label="AddProjectFragment">
         <argument
             android:name="projectId"
             app:argType="string"
-            app:nullable="true"/>
+            app:nullable="true" />
         <argument
             android:name="jobId"
             app:argType="string"
@@ -302,20 +302,4 @@
         android:id="@+id/action_global_nav_home"
         app:destination="@id/nav_home"
         app:popUpTo="@id/nav_home" />
-    <activity
-        android:id="@+id/registerActivity"
-        android:name="za.co.xisystems.itis_rrm.ui.auth.RegisterActivity"
-        android:label="RegisterActivity" />
-    <activity
-        android:id="@+id/loginActivity"
-        android:name="za.co.xisystems.itis_rrm.ui.auth.LoginActivity"
-        android:label="LoginActivity" />
-    <activity
-        android:id="@+id/resetPinActivity"
-        android:name="za.co.xisystems.itis_rrm.ui.auth.ResetPinActivity"
-        android:label="ResetPinActivity" />
-    <activity
-        android:id="@+id/settingsActivity"
-        android:name="za.co.xisystems.itis_rrm.ui.mainview.activities.SettingsActivity"
-        android:label="SettingsActivity" />
 </navigation>

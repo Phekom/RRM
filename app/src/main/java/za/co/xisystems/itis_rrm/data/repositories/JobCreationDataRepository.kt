@@ -15,7 +15,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
-import za.co.xisystems.itis_rrm.custom.errors.ServiceException
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.localDB.JobDataController
 import za.co.xisystems.itis_rrm.data.localDB.entities.ContractDTO
@@ -211,6 +210,7 @@ class JobCreationDataRepository(
         }
     }
 
+    @Suppress("MagicNumber")
     suspend fun getRouteSectionPoint(
         latitude: Double,
         longitude: Double,
@@ -219,23 +219,23 @@ class JobCreationDataRepository(
         jobId: String
     ): String? {
 
-        val distance = 0.5
-        val buffer = -1.0
+        val distance = 0.05
+        val inBuffer = -1.0
         val routeSectionPointResponse =
-            apiRequest { api.getRouteSectionPoint(distance, buffer, latitude, longitude, useR) }
+            apiRequest { api.getRouteSectionPoint(distance, inBuffer, latitude, longitude, useR) }
 
         with(routeSectionPointResponse) {
             Timber.d("$routeSectionPointResponse")
 
             if (!errorMessage.isNullOrBlank()) {
-                Timber.d(errorMessage.toString())
-                throw ServiceException(errorMessage)
+                Timber.e("Could not validate photo location: $errorMessage")
             }
 
             return if (linearId.contains("xxx" as CharSequence, ignoreCase = true) ||
-                bufferLocation.contains("xxx" as CharSequence, ignoreCase = true)
+                bufferLocation.contains("xxx" as CharSequence, ignoreCase = true) ||
+                !errorMessage.isNullOrBlank()
             ) {
-                "xxx"
+                "xxxxxx"
             } else {
                 postRouteSection(
                     direction = direction,

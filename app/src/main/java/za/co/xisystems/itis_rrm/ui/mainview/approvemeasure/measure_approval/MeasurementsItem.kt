@@ -10,7 +10,6 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.Navigation
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import com.xwray.groupie.kotlinandroidextensions.Item
-import java.io.File
 import kotlinx.android.synthetic.main.measurements_item.*
 import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.R
@@ -20,6 +19,7 @@ import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureViewMod
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.GlideApp
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
+import java.io.File
 
 /**
  * Created by Francis Mahlava on 2020/01/02.
@@ -96,25 +96,7 @@ class MeasurementsItem(
         alert.setPositiveButton(
             R.string.save
         ) { _, _ ->
-            if (ServiceUtil.isNetworkAvailable(activity.applicationContext)) {
-                Coroutines.main {
-                    if (editQuantity.text.toString() == "" || nanCheck(editQuantity.text.toString())) {
-                        activity.extensionToast("Please Enter a valid Quantity", MotionToast.TOAST_WARNING)
-                    } else {
-                        val updated = approveViewModel.upDateMeasure(
-                            editQuantity.text.toString(),
-                            jobItemMeasureDTO.itemMeasureId
-                        )
-                        if (updated.isBlank()) {
-                            activity.extensionToast("Data Updated", MotionToast.TOAST_SUCCESS)
-                        } else {
-                            activity.extensionToast("Error on update: $updated.", MotionToast.TOAST_ERROR)
-                        }
-                    }
-                }
-            } else {
-                activity.extensionToast("No connection detected.", MotionToast.TOAST_NO_INTERNET)
-            }
+            pushEdit(activity, editQuantity.text.toString(), jobItemMeasureDTO.itemMeasureId)
         }
         // No button
         alert.setNegativeButton(
@@ -125,6 +107,39 @@ class MeasurementsItem(
         }
         val declineAlert = alert.create()
         declineAlert.show()
+    }
+
+    @Suppress("MagicNumber")
+    private fun pushEdit(
+        activity: FragmentActivity,
+        editQuantity: String,
+        itemMeasureId: String
+    ) {
+        if (ServiceUtil.isNetworkAvailable(activity.applicationContext)) {
+            Coroutines.main {
+                when {
+                    editQuantity == "" || nanCheck(editQuantity) -> {
+                        activity.extensionToast("Please Enter a valid Quantity", MotionToast.TOAST_WARNING)
+                    }
+                    editQuantity.length > 9 -> {
+                        activity.extensionToast("You have exceeded the quantity allowed", MotionToast.TOAST_WARNING)
+                    }
+                    else -> {
+                        val updated = approveViewModel.upDateMeasure(
+                            editQuantity,
+                            itemMeasureId
+                        )
+                        if (updated.isBlank()) {
+                            activity.extensionToast("Data Updated", MotionToast.TOAST_SUCCESS)
+                        } else {
+                            activity.extensionToast("Error on update: $updated.", MotionToast.TOAST_ERROR)
+                        }
+                    }
+                }
+            }
+        } else {
+            activity.extensionToast("No connection detected.", MotionToast.TOAST_NO_INTERNET)
+        }
     }
 
     private fun nanCheck(toString: String): Boolean {

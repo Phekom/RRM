@@ -4,12 +4,6 @@
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  **/
 
-/**
- * Updated by Shaun McDonald on 2021/05/15
- * Last modified on 2021/05/14, 20:32
- * Copyright (c) 2021.  XI Systems  - All rights reserved
- **/
-
 package za.co.xisystems.itis_rrm.ui.mainview.create
 
 import androidx.fragment.app.FragmentActivity
@@ -38,7 +32,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.SectionPointDTO
 import za.co.xisystems.itis_rrm.data.repositories.JobCreationDataRepository
 import za.co.xisystems.itis_rrm.domain.ContractSelector
 import za.co.xisystems.itis_rrm.domain.ProjectSelector
-import za.co.xisystems.itis_rrm.ui.mainview.create.select_item.SectionProj_Item
+import za.co.xisystems.itis_rrm.ui.mainview.create.select_item.SectionProjectItem
 import za.co.xisystems.itis_rrm.utils.JobUtils
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
 import za.co.xisystems.itis_rrm.utils.uncaughtExceptionHandler
@@ -56,7 +50,7 @@ class CreateViewModel(
     var jobDesc: String? = null
 
     private val superJob = SupervisorJob()
-    val currentJob: MutableLiveData<JobDTO?> = MutableLiveData()
+    val currentJob: MutableLiveData<JobDTO> = MutableLiveData()
     private var ioContext: CoroutineContext = Job(superJob) + Dispatchers.IO + uncaughtExceptionHandler
     private var mainContext: CoroutineContext = Job(superJob) + Dispatchers.Main + uncaughtExceptionHandler
     private val estimateQty = MutableLiveData<Double>()
@@ -72,12 +66,13 @@ class CreateViewModel(
     val contractId = MutableLiveData<String>()
     val projectId = MutableLiveData<String>()
     val projectCode = MutableLiveData<String>()
-    val sectionProjectItem = MutableLiveData<SectionProj_Item>()
+    val sectionProjectItem = MutableLiveData<SectionProjectItem>()
     val jobItem = MutableLiveData<JobDTO?>()
     val projectItemTemp = MutableLiveData<ItemDTOTemp>()
     val jobId: MutableLiveData<String?> = MutableLiveData()
+    val tempProjectItem: MutableLiveData<ItemDTOTemp> = MutableLiveData()
 
-    fun setCurrentJob(inJobItemToEdit: JobDTO?) {
+    fun setCurrentJob(inJobItemToEdit: JobDTO) {
         currentJob.value = inJobItemToEdit
     }
 
@@ -113,8 +108,8 @@ class CreateViewModel(
         projectCode.value = inProjectCode
     }
 
-    fun setSectionProjectItem(inSectionProjectItem: SectionProj_Item) {
-        sectionProjectItem.value = inSectionProjectItem
+    fun setTempProjectItem(inSectionProjectItem: ItemDTOTemp) {
+        tempProjectItem.value = inSectionProjectItem
     }
 
     suspend fun getJob(inJobId: String) {
@@ -156,6 +151,7 @@ class CreateViewModel(
     suspend fun saveNewItem(tempItem: ItemDTOTemp) {
         return withContext(Dispatchers.IO) {
             jobCreationDataRepository.saveNewItem(tempItem)
+
         }
     }
 

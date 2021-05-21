@@ -25,8 +25,8 @@ class Scribe {
     private lateinit var securePrefs: SharedPreferences
 
     companion object {
-        const val DIRECTORY = "ADT_COUNT_PIX"
-        const val PASS_KEY = "za.co.xisystems.traffic_count.forge.Scribe.Passphrase"
+        const val DIRECTORY = "ITIS_RRM_PIX"
+        const val PASS_KEY = "za.co.xisystems.itis_rmm.forge.Scribe.Passphrase"
         const val NOT_SET = "NoPassphraseSet"
     }
 

@@ -4,12 +4,6 @@
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  **/
 
-/**
- * Updated by Shaun McDonald on 2021/05/14
- * Last modified on 2021/05/14, 19:57
- * Copyright (c) 2021.  XI Systems  - All rights reserved
- **/
-
 /*
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  */
@@ -89,8 +83,14 @@ enum class PasswordStrength(internal var resId: Int, color: Int) {
                 }
             }
 
-
-            currentScore += scoreForLength(password, sawSpecial, sawUpper, sawLower, sawDigit, currentScore)
+            currentScore += scoreForLength(
+                password,
+                sawSpecial,
+                sawUpper,
+                sawLower,
+                sawDigit,
+                currentScore
+            )
 
             when (currentScore) {
                 0 -> return WEAK
@@ -113,7 +113,10 @@ enum class PasswordStrength(internal var resId: Int, color: Int) {
             var currentScore1 = currentScore
             if (password.length > REQUIRED_LENGTH) {
                 when {
-                    REQUIRE_SPECIAL_CHARACTERS && !sawSpecial || REQUIRE_UPPER_CASE && !sawUpper || REQUIRE_LOWER_CASE && !sawLower || REQUIRE_DIGITS && !sawDigit -> {
+                    REQUIRE_SPECIAL_CHARACTERS && !sawSpecial ||
+                        REQUIRE_UPPER_CASE && !sawUpper ||
+                        REQUIRE_LOWER_CASE && !sawLower ||
+                        REQUIRE_DIGITS && !sawDigit -> {
                         currentScore1 = 1
                     }
                     else -> {
