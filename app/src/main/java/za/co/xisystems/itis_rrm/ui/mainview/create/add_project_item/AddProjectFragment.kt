@@ -46,6 +46,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentAddProjectItemsBinding
+import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.ui.extensions.initProgress
 import za.co.xisystems.itis_rrm.ui.extensions.startProgress
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModel
@@ -66,7 +67,7 @@ import java.util.Date
 /**
  * Created by Francis Mahlava on 2019/12/29.
  */
-//
+
 class AddProjectFragment : BaseFragment(), KodeinAware {
 
     override val kodein by kodein()
@@ -87,39 +88,9 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
     private var _ui: FragmentAddProjectItemsBinding? = null
     private val ui get() = _ui!!
     private var uiScope = UiLifecycleScope()
-
     private lateinit var job: JobDTO
-
     private var items: List<ItemDTOTemp> = ArrayList()
-
-    companion object {
-        private const val JOB_KEY = "jobId"
-        private const val PROJECT_KEY = "projectId"
-    }
-
-    init {
-        lifecycleScope.launch {
-            whenCreated {
-                uiScope.onCreate()
-            }
-            whenStarted {
-                lifecycle.addObserver(uiScope)
-                initViewModels()
-                uiUpdate()
-            }
-        }
-    }
-
-    private fun initViewModels() {
-        createViewModel = activity?.run {
-            ViewModelProvider(this, createFactory).get(CreateViewModel::class.java)
-        } ?: throw Exception("Invalid Activity")
-
-        unsubmittedViewModel = activity?.run {
-            ViewModelProvider(this, unsubFactory).get(UnSubmittedViewModel::class.java)
-        } ?: throw Exception("Invalid Activity")
-    }
-
+    private var stateRestored: Boolean = false
     private val touchCallback: SwipeTouchCallback by lazy {
         object : SwipeTouchCallback() {
             override fun onMove(
@@ -140,18 +111,75 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
         }
     }
 
+    init {
+        lifecycleScope.launch {
+            whenCreated {
+                uiScope.onCreate()
+            }
+            whenStarted {
+                lifecycle.addObserver(uiScope)
+                initViewModels()
+                uiUpdate()
+            }
+        }
+    }
+
+    companion object {
+        private const val JOB_KEY = "jobId"
+        private const val PROJECT_KEY = "projectId"
+    }
+
+    private fun initViewModels() {
+        createViewModel = activity?.run {
+            ViewModelProvider(this, createFactory).get(CreateViewModel::class.java)
+        } ?: throw Exception("Invalid Activity")
+
+        unsubmittedViewModel = activity?.run {
+            ViewModelProvider(this, unsubFactory).get(UnSubmittedViewModel::class.java)
+        } ?: throw Exception("Invalid Activity")
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        val args: AddProjectFragmentArgs by navArgs()
+        when {
+            !args.jobId.isNullOrBlank() -> {
+                onRestoreInstanceState(args.toBundle())
+            }
+            savedInstanceState != null && !stateRestored -> {
+                onRestoreInstanceState(savedInstanceState)
+            }
+            else -> {
+                stateRestored = false
+                (activity as MainActivity).supportActionBar?.title = getString(R.string.new_job)
+                newJobItemEstimatesList = ArrayList<JobItemEstimateDTO>()
+                // Generic new job layout
+                ui.lastLin.visibility = View.GONE
+                ui.totalCostTextView.visibility = View.GONE
+                ui.dueDateTextView.text = DateUtil.toStringReadable(DateUtil.currentDateTime)
+                ui.startDateTextView.text = DateUtil.toStringReadable(DateUtil.currentDateTime)
+                startDate = DateUtil.currentDateTime!!
+                dueDate = DateUtil.currentDateTime!!
+            }
+        }
+
+        ItemTouchHelper(touchCallback).attachToRecyclerView(ui.projectRecyclerView)
+        setmyClickListener()
+    }
+
     fun uiUpdate() {
+        var jobBound = false
         uiScope.launch(uiScope.coroutineContext) {
-            createViewModel.currentJob.observe(
+            createViewModel.currentJob.observeOnce(
                 viewLifecycleOwner,
                 { currentJob ->
                     currentJob?.let { jobToEdit ->
                         job = jobToEdit
-                        if (createViewModel.jobDesc != job.descr) {
-                            toast("Editing ${job.descr}")
-                            createViewModel.jobDesc = job.descr
-                        }
                         Coroutines.main {
+                            if (createViewModel.jobDesc != job.descr) {
+                                toast("Editing ${job.descr}")
+                                createViewModel.jobDesc = job.descr
+                            }
                             projectID = job.projectId
                             val contractNo =
                                 createViewModel.getContractNoForId(job.contractVoId)
@@ -178,19 +206,21 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
                                 ui.startDateTextView.text = DateUtil.toStringReadable(DateUtil.stringToDate(it))
                                 startDate = DateUtil.stringToDate(it)!!
                             }
-
+                            jobBound = true
                             bindProjectItems()
                         }
                     }
                 })
-            createViewModel.sectionProjectItem.observe(viewLifecycleOwner, {
+            createViewModel.sectionProjectItem.observeOnce(viewLifecycleOwner, {
                 ui.infoTextView.visibility = View.GONE
                 ui.lastLin.visibility = View.VISIBLE
                 ui.totalCostTextView.visibility = View.VISIBLE
 
                 Coroutines.main {
-                    bindProjectItems()
-                    bindCosting()
+                    if (jobBound) {
+                        bindProjectItems()
+                        bindCosting()
+                    }
                 }
             })
         }
@@ -250,27 +280,6 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
         jobDataController = JobDataController
 
         initViewModels()
-        val args: AddProjectFragmentArgs? by navArgs()
-        args?.let {
-            if (!it.projectId.isNullOrBlank()) {
-                projectID = it.projectId
-            }
-            if (it.jobId != null) {
-                Coroutines.io {
-                    createViewModel.setJobToEdit(it.jobId!!)
-                    withContext(Dispatchers.Main.immediate) {
-                        uiUpdate()
-                    }
-                }
-            }
-        }
-
-        if (savedInstanceState != null) {
-            onRestoreInstanceState(savedInstanceState)
-        } else {
-            (activity as MainActivity).supportActionBar?.title = getString(R.string.new_job)
-            newJobItemEstimatesList = ArrayList<JobItemEstimateDTO>()
-        }
     }
 
     override fun onPrepareOptionsMenu(menu: Menu) {
@@ -308,24 +317,6 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
         return ui.root
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        if (savedInstanceState != null) {
-            onRestoreInstanceState(savedInstanceState)
-        } else {
-            // Generic new job layout
-            ui.lastLin.visibility = View.GONE
-            ui.totalCostTextView.visibility = View.GONE
-            ui.dueDateTextView.text = DateUtil.toStringReadable(DateUtil.currentDateTime)
-            ui.startDateTextView.text = DateUtil.toStringReadable(DateUtil.currentDateTime)
-            startDate = DateUtil.currentDateTime!!
-            dueDate = DateUtil.currentDateTime!!
-        }
-
-        ItemTouchHelper(touchCallback).attachToRecyclerView(ui.projectRecyclerView)
-        setmyClickListener()
-    }
-
     private fun onRestoreInstanceState(savedInstanceState: Bundle) {
         savedInstanceState.run {
             val jobId = getSerializable(JOB_KEY) as String?
@@ -335,10 +326,15 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
                     projectID = restoredProjectId
                 }
                 jobId?.let { restoredId ->
-                    createViewModel.setJobToEdit(restoredId)
-                    uiUpdate()
+                    Coroutines.main {
+                        createViewModel.setJobToEdit(restoredId)
+                        withContext(Dispatchers.Main.immediate) {
+                            uiUpdate()
+                        }
+                    }
                 }
             }
+            stateRestored = true
         }
     }
 
@@ -405,6 +401,7 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
     }
 
     private fun openSelectItemFragment(view: View) {
+        backupJobInProgress(job)
         val navDirection =
             AddProjectFragmentDirections.actionAddProjectFragmentToSelectItemFragment(
                 projectID
@@ -553,7 +550,7 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
     private fun popViewOnJobSubmit() {
         // Delete Items data from the database after success upload
         onResetClicked(this.requireView())
-        createViewModel.setCurrentJob(null)
+        // createViewModel.setCurrentJob(null)
         // Conduct user back to home fragment
         HandlerCompat.postDelayed(Handler(Looper.getMainLooper()), {
             Intent(context?.applicationContext, MainActivity::class.java).also { home ->
@@ -590,7 +587,7 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
         Coroutines.main {
             createViewModel.deleteItemList(job.jobId)
             createViewModel.deleteJobFromList(job.jobId)
-            createViewModel.setCurrentJob(null)
+            // createViewModel.setCurrentJob(null)
         }
         resetContractAndProjectSelection(view)
     }

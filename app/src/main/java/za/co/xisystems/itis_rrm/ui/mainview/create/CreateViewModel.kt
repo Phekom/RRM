@@ -4,12 +4,6 @@
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  **/
 
-/**
- * Updated by Shaun McDonald on 2021/05/15
- * Last modified on 2021/05/14, 20:32
- * Copyright (c) 2021.  XI Systems  - All rights reserved
- **/
-
 package za.co.xisystems.itis_rrm.ui.mainview.create
 
 import androidx.fragment.app.FragmentActivity
@@ -56,7 +50,7 @@ class CreateViewModel(
     var jobDesc: String? = null
 
     private val superJob = SupervisorJob()
-    val currentJob: MutableLiveData<JobDTO?> = MutableLiveData()
+    val currentJob: MutableLiveData<JobDTO> = MutableLiveData()
     private var ioContext: CoroutineContext = Job(superJob) + Dispatchers.IO + uncaughtExceptionHandler
     private var mainContext: CoroutineContext = Job(superJob) + Dispatchers.Main + uncaughtExceptionHandler
     private val estimateQty = MutableLiveData<Double>()
@@ -77,7 +71,7 @@ class CreateViewModel(
     val projectItemTemp = MutableLiveData<ItemDTOTemp>()
     val jobId: MutableLiveData<String?> = MutableLiveData()
 
-    fun setCurrentJob(inJobItemToEdit: JobDTO?) {
+    fun setCurrentJob(inJobItemToEdit: JobDTO) {
         currentJob.value = inJobItemToEdit
     }
 

@@ -220,8 +220,8 @@ class JobCreationDataRepository(
         jobId: String
     ): String? {
 
-        val distance = 0.05
-        val buffer = -1.0
+        val distance = 0.5
+        val buffer = 1.0
         val routeSectionPointResponse =
             apiRequest { api.getRouteSectionPoint(distance, buffer, latitude, longitude, useR) }
 
@@ -229,14 +229,14 @@ class JobCreationDataRepository(
             Timber.d("$routeSectionPointResponse")
 
             if (!errorMessage.isNullOrBlank()) {
-                Timber.d(errorMessage.toString())
+                Timber.e(errorMessage.toString())
                 throw ServiceException(errorMessage)
             }
 
             return if (linearId.contains("xxx" as CharSequence, ignoreCase = true) ||
                 bufferLocation.contains("xxx" as CharSequence, ignoreCase = true)
             ) {
-                "xxx"
+                "xxxxxx"
             } else {
                 postRouteSection(
                     direction = direction,
