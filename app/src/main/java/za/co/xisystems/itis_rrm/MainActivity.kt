@@ -1,8 +1,14 @@
-/*
- * Updated by Shaun McDonald on 2021/02/08
- * Last modified on 2021/02/08 3:05 PM
+/**
+ * Updated by Shaun McDonald on 2021/05/15
+ * Last modified on 2021/05/14, 23:58
  * Copyright (c) 2021.  XI Systems  - All rights reserved
- */
+ **/
+
+/**
+ * Updated by Shaun McDonald on 2021/05/14
+ * Last modified on 2021/05/14, 19:57
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ **/
 
 package za.co.xisystems.itis_rrm
 
@@ -92,7 +98,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private val appBarConfiguration by lazy {
         AppBarConfiguration(
             setOf(
-                R.id.nav_home,
+                R.id.nav_home
             ),
             ui.drawerLayout
         )
@@ -121,11 +127,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             supportFragmentManager.findFragmentById(R.id.nav_host_fragment_container) as NavHostFragment
         navController = navHostFragment.navController
 
-
         navigationView = ui.navView
         NavigationUI.setupActionBarWithNavController(this, navController)
         NavigationUI.setupWithNavController(ui.toolbar, navController, appBarConfiguration)
-
 
         Coroutines.io {
             RaygunClient.init(application)
@@ -137,7 +141,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         MotionToast.setSuccessColor(R.color.sanral_dark_green)
         MotionToast.setWarningColor(R.color.colorPrimaryYellow)
         MotionToast.setInfoColor(R.color.dark_bg_color)
-        MotionToast.setDeleteColor(R.color.sanral_orange_red)
+        MotionToast.setDeleteColor(R.color.dark_bg_color)
 
         this.mainActivityViewModel = this.run {
             ViewModelProvider(this, factory).get(MainActivityViewModel::class.java)
@@ -304,14 +308,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        when (item.itemId) {
+        return when (item.itemId) {
             R.id.action_search -> {
-
-                return true
+                true
             }
             R.id.action_settings -> {
                 startActivity(Intent(this, SettingsActivity::class.java))
-                return true
+                true
             }
             R.id.action_logout -> {
                 Intent(this, LoginActivity::class.java).also { home ->
@@ -319,10 +322,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                         Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
                     startActivity(home)
                 }
-                return true
+                true
             }
 
-            else -> return super.onOptionsItemSelected(item)
+            else -> super.onOptionsItemSelected(item)
         }
     }
 
@@ -561,6 +564,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         )
     }
 
+    @Suppress("ControlFlowWithEmptyBody")
     override fun onResume() {
         super.onResume()
         if (this.delegate.localNightMode == AppCompatDelegate.MODE_NIGHT_YES) {

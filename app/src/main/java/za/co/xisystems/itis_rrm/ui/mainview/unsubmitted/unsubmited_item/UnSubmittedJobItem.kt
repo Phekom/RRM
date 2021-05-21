@@ -72,14 +72,14 @@ class UnSubmittedJobItem(
 
     private fun sendJobToEdit(jobDTO: JobDTO, view: View) {
 
-        val job = jobDTO
+
         Coroutines.main {
-            createModel.setJobToEdit(job.jobId)
+            createModel.setJobToEdit(jobDTO.jobId)
         }
         val navDirection =
             UnSubmittedFragmentDirections.actionNavUnSubmittedToAddProjectFragment(
-                job.projectId,
-                job.jobId
+                jobDTO.projectId,
+                jobDTO.jobId
             )
 
         Navigation.findNavController(view)

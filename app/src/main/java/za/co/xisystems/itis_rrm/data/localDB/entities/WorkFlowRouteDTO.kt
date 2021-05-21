@@ -1,8 +1,14 @@
-/*
- * Updated by Shaun McDonald on 2021/02/08
- * Last modified on 2021/02/07 12:13 AM
+/**
+ * Updated by Shaun McDonald on 2021/05/15
+ * Last modified on 2021/05/14, 20:32
  * Copyright (c) 2021.  XI Systems  - All rights reserved
- */
+ **/
+
+/**
+ * Updated by Shaun McDonald on 2021/05/14
+ * Last modified on 2021/05/14, 19:43
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ **/
 
 package za.co.xisystems.itis_rrm.data.localDB.entities
 
@@ -56,7 +62,7 @@ data class WorkFlowRouteDTO(
     @SerializedName("WorkflowId")
     @ColumnInfo(name = "workflowId", index = true)
     var workflowId: Long?
-): Serializable, Parcelable {
+) : Serializable, Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.readInt(),
         parcel.readLong(),

@@ -1,8 +1,14 @@
-/*
- * Updated by Shaun McDonald on 2021/02/08
- * Last modified on 2021/02/08 10:45 AM
+/**
+ * Updated by Shaun McDonald on 2021/05/15
+ * Last modified on 2021/05/14, 20:32
  * Copyright (c) 2021.  XI Systems  - All rights reserved
- */
+ **/
+
+/**
+ * Updated by Shaun McDonald on 2021/05/14
+ * Last modified on 2021/05/14, 19:43
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ **/
 
 @file:Suppress("KDocUnresolvedReference", "Annotator")
 
@@ -23,6 +29,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenStarted
 import com.skydoves.progressview.ProgressView
+import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -54,7 +61,6 @@ import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.BOTTOM
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.ERROR
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.INFO
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.SUCCESS
-import kotlin.coroutines.cancellation.CancellationException
 
 class HomeFragment : BaseFragment(), KodeinAware {
 
@@ -245,16 +251,6 @@ class HomeFragment : BaseFragment(), KodeinAware {
         _ui = null
         uiScope.destroy()
         homeViewModel.databaseState.removeObservers(viewLifecycleOwner)
-    }
-
-    @ExperimentalStdlibApi
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-
-
-
-
-
     }
 
     private fun initProgressViews() {
@@ -460,7 +456,7 @@ class HomeFragment : BaseFragment(), KodeinAware {
         }
     }
 
-    private fun bigSync() = uiScope.launch(uiScope.coroutineContext){
+    private fun bigSync() = uiScope.launch(uiScope.coroutineContext) {
         if (networkEnabled) {
             try {
 

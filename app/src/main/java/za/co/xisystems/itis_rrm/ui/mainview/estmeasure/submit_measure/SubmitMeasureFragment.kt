@@ -1,8 +1,8 @@
-/*
- * Updated by Shaun McDonald on 2021/01/25
- * Last modified on 2021/01/25 6:30 PM
+/**
+ * Updated by Shaun McDonald on 2021/05/19
+ * Last modified on 2021/05/18, 19:02
  * Copyright (c) 2021.  XI Systems  - All rights reserved
- */
+ **/
 
 package za.co.xisystems.itis_rrm.ui.mainview.estmeasure.submit_measure
 
@@ -26,9 +26,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.ExpandableGroup
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
-import java.util.ArrayList
-import java.util.HashMap
-import kotlinx.android.synthetic.main.fragment_submit_measure.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -50,6 +47,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasurePhotoDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
+import za.co.xisystems.itis_rrm.databinding.FragmentSubmitMeasureBinding
 import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.ui.extensions.doneProgress
 import za.co.xisystems.itis_rrm.ui.extensions.failProgress
@@ -68,6 +66,8 @@ import za.co.xisystems.itis_rrm.utils.enums.ToastStyle
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.ERROR
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.NO_INTERNET
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.WARNING
+import java.util.ArrayList
+import java.util.HashMap
 
 class SubmitMeasureFragment : BaseFragment(), KodeinAware {
     override val kodein by kodein()
@@ -85,8 +85,9 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
     private lateinit var progressButton: Button
     private lateinit var originalCaption: String
     private var measurementObserver = Observer<XIResult<String>?> { handleMeasureSubmission(it) }
-    private lateinit var measureJob: Job
-
+    private var measureJob: Job? = null
+    private var _ui: FragmentSubmitMeasureBinding? = null
+    private val ui get() = _ui!!
     init {
         lifecycleScope.launch {
             whenStarted {
@@ -121,7 +122,7 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
                 }
                 is XIError -> {
                     progressButton.failProgress("Workflow failed ...")
-                    measureJob.cancel(CancellationException(outcome.message))
+                    measureJob?.cancel(CancellationException(outcome.message))
 
                     sharpToast(
                         message = "Submission failed: ${outcome.message}",
@@ -177,12 +178,12 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         // Inflate the layout for this fragment
         (activity as MainActivity).supportActionBar?.title =
             getString(R.string.submit_measure_title)
-
-        return inflater.inflate(R.layout.fragment_submit_measure, container, false)
+        _ui = FragmentSubmitMeasureBinding.inflate(inflater, container, false)
+        return ui.root
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -194,31 +195,30 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
                 ViewModelProvider(this, factory).get(MeasureViewModel::class.java)
             } ?: throw Exception("Invalid Activity")
 
-            submit_measurements_button.setOnClickListener {
-                progressButton = submit_measurements_button
-                originalCaption = submit_measurements_button.text.toString()
+            ui.submitMeasurementsButton.setOnClickListener {
+                progressButton = ui.submitMeasurementsButton
+                originalCaption = ui.submitMeasurementsButton.text.toString()
                 progressButton.initProgress(viewLifecycleOwner)
                 submitMeasurements(
                     jobItemEstimate.jobId
                 )
             }
 
-            items_swipe_to_refresh.setProgressBackgroundColorSchemeColor(
+            ui.itemsSwipeToRefresh.setProgressBackgroundColorSchemeColor(
                 ContextCompat.getColor(
                     requireContext().applicationContext,
                     R.color.colorPrimary
                 )
             )
+            ui.itemsSwipeToRefresh.setColorSchemeColors(Color.WHITE)
 
-            items_swipe_to_refresh.setColorSchemeColors(Color.WHITE)
-
-            items_swipe_to_refresh.setOnRefreshListener {
+            ui.itemsSwipeToRefresh.setOnRefreshListener {
                 Coroutines.main {
                     measureViewModel.estimateMeasureItem.observeOnce(
                         viewLifecycleOwner,
                         { measureItem ->
                             getWorkItems(measureItem.jobItemEstimateDTO.jobId)
-                            items_swipe_to_refresh.isRefreshing = false
+                            ui.itemsSwipeToRefresh.isRefreshing = false
                         })
                 }
             }
@@ -248,8 +248,8 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
                     )
 
                     val itemMeasures = validMeasures as ArrayList
-                    for (jim in itemMeasures) {
-                        val newJim = setJobMeasureLittleEndianGuids(jim)!!
+                    itemMeasures.forEach { jim ->
+                        val newJim = setJobMeasureLittleEndianGuids(jim)
                         jobItemMeasureList.add(newJim)
                     }
                     submitJobToMeasurements(jobForItemEstimate, jobItemMeasureList)
@@ -274,10 +274,10 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
 
     ) {
 
-        val logoutBuilder = AlertDialog.Builder(
+        val workflowDialog = AlertDialog.Builder(
             requireActivity() // , android.R.style.Theme_DeviceDefault_Dialog
         )
-        logoutBuilder.run {
+        workflowDialog.run {
             setTitle(R.string.confirm)
             setIcon(R.drawable.ic_approve)
             setMessage(R.string.are_you_sure_you_want_to_submit_measurements)
@@ -322,7 +322,7 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
                         showSubmissionError("Selected job is invalid")
                     }
                     else -> {
-                        // beware littleEndian conversion for transport to backend
+                        // littleEndian conversion for transport to backend
                         val contractVoId: String =
                             DataConversion.toLittleEndian(itemMeasureJob.contractVoId)!!
                         val jobId: String = DataConversion.toLittleEndian(itemMeasureJob.jobId)!!
@@ -383,31 +383,28 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
         }
     }
 
-    private fun setJobMeasureLittleEndianGuids(jim: JobItemMeasureDTO?): JobItemMeasureDTO? {
-        jim?.let { jobMeasure ->
-            jobMeasure.setEstimateId(DataConversion.toLittleEndian(jobMeasure.estimateId))
-            jobMeasure.setJobId(DataConversion.toLittleEndian(jobMeasure.jobId))
-            jobMeasure.setProjectItemId(DataConversion.toLittleEndian(jobMeasure.projectItemId))
-            jobMeasure.setItemMeasureId(DataConversion.toLittleEndian(jobMeasure.itemMeasureId))
+    private fun setJobMeasureLittleEndianGuids(jobMeasure: JobItemMeasureDTO): JobItemMeasureDTO {
+        jobMeasure.setEstimateId(DataConversion.toLittleEndian(jobMeasure.estimateId))
+        jobMeasure.setJobId(DataConversion.toLittleEndian(jobMeasure.jobId))
+        jobMeasure.setProjectItemId(DataConversion.toLittleEndian(jobMeasure.projectItemId))
+        jobMeasure.setItemMeasureId(DataConversion.toLittleEndian(jobMeasure.itemMeasureId))
 
-            if (jobMeasure.trackRouteId != null) {
-                jobMeasure.setTrackRouteId(DataConversion.toLittleEndian(jobMeasure.trackRouteId))
-            } else {
-                jobMeasure.trackRouteId = null
-            }
-
-            if (jobMeasure.measureGroupId != null) {
-                jobMeasure.setMeasureGroupId(DataConversion.toLittleEndian(jobMeasure.measureGroupId))
-            }
-
-            jobMeasure.jobItemMeasurePhotos.forEach { jmep ->
-                jmep.setPhotoId(DataConversion.toLittleEndian(jmep.photoId))
-                jmep.setEstimateId(DataConversion.toLittleEndian(jmep.estimateId))
-                jmep.setItemMeasureId(DataConversion.toLittleEndian(jmep.itemMeasureId))
-            }
+        if (jobMeasure.trackRouteId != null) {
+            jobMeasure.setTrackRouteId(DataConversion.toLittleEndian(jobMeasure.trackRouteId))
+        } else {
+            jobMeasure.trackRouteId = null
         }
 
-        return jim
+        if (jobMeasure.measureGroupId != null) {
+            jobMeasure.setMeasureGroupId(DataConversion.toLittleEndian(jobMeasure.measureGroupId))
+        }
+
+        jobMeasure.jobItemMeasurePhotos.forEach { jmep ->
+            jmep.setPhotoId(DataConversion.toLittleEndian(jmep.photoId))
+            jmep.setEstimateId(jobMeasure.estimateId)
+            jmep.setItemMeasureId(jobMeasure.itemMeasureId)
+        }
+        return jobMeasure
     }
 
     private fun popViewOnJobSubmit() {
@@ -457,7 +454,7 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
             addAll(measureItems)
         }
 
-        measure_listView.apply {
+        ui.measureListView.apply {
             layoutManager = LinearLayoutManager(this.context)
             adapter = groupAdapter
         }
@@ -467,7 +464,8 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
         super.onDestroyView()
         uiScope.destroy()
         // measureViewModel.workflowState.removeObservers(viewLifecycleOwner)
-        measure_listView.adapter = null
+        ui.measureListView.adapter = null
+        _ui = null
     }
 
     private fun List<JobItemEstimateDTO>.toMeasureItems(): List<ExpandableGroup> {
@@ -551,7 +549,7 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
     }
 
     private fun JobItemMeasurePhotoDTO.setItemMeasureId(toLittleEndian: String?) {
-        this.itemMeasureId = toLittleEndian
+        this.itemMeasureId = toLittleEndian!!
     }
 
     private fun JobItemMeasureDTO.setJobId(toLittleEndian: String?) {

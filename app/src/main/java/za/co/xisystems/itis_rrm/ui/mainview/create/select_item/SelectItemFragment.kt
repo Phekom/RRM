@@ -1,8 +1,8 @@
-/*
- * Updated by Shaun McDonald on 2021/02/08
- * Last modified on 2021/02/08 3:05 PM
+/**
+ * Updated by Shaun McDonald on 2021/05/14
+ * Last modified on 2021/05/14, 19:57
  * Copyright (c) 2021.  XI Systems  - All rights reserved
- */
+ **/
 
 package za.co.xisystems.itis_rrm.ui.mainview.create.select_item
 
@@ -138,7 +138,7 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
 
         val args by navArgs<SelectItemFragmentArgs>()
 
-        if(!args.jobId.isNullOrBlank()){
+        if (!args.jobId.isNullOrBlank()) {
             onRestoreSavedState(args.toBundle())
             stateRestored = true
         }
@@ -170,7 +170,6 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
                     initUI()
                 }
             }
-
         }
     }
 
@@ -184,7 +183,8 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
      * [.onActivityCreated].
      *
      *
-     * This corresponds to [ Activity.onSaveInstanceState(Bundle)][Activity.onSaveInstanceState] and most of the discussion there
+     * This corresponds to [ Activity.onSaveInstanceState(Bundle)]
+     * [Activity.onSaveInstanceState] and most of the discussion there
      * applies here as well.  Note however: *this method may be called
      * at any time before [.onDestroy]*.  There are many situations
      * where a fragment may be mostly torn down (such as when placed on the
@@ -255,13 +255,13 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
         }
     }
 
-    private fun List<ProjectItemDTO>.toProjectItems(): List<SectionProj_Item> {
+    private fun List<ProjectItemDTO>.toProjectItems(): List<SectionProjectItem> {
         return this.map { projectItem ->
-            SectionProj_Item(projectItem)
+            SectionProjectItem(projectItem)
         }
     }
 
-    private fun initRecyclerView(items: List<SectionProj_Item>) {
+    private fun initRecyclerView(items: List<SectionProjectItem>) {
         val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
             addAll(items)
             notifyDataSetChanged()
@@ -276,11 +276,11 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
 
         groupAdapter.setOnItemClickListener { item, view ->
 
-            (item as? SectionProj_Item)?.let {
+            (item as? SectionProjectItem)?.let {
 
                 val tempItem = createItemList(it.itemDTO, itemSections)
                 saveNewItem(tempItem)
-                sendSelectedItem((it), view)
+                sendSelectedItem(tempItem, view)
             }
         }
     }
@@ -315,12 +315,12 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
     }
 
     private fun sendSelectedItem(
-        item: SectionProj_Item,
+        item: ItemDTOTemp,
         view: View
     ) {
 
         Coroutines.main {
-            createViewModel.setSectionProjectItem(item)
+            createViewModel.setTempProjectItem(item)
         }
 
         val directions = SelectItemFragmentDirections.actionSelectItemFragmentToAddProjectFragment2(

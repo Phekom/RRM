@@ -1,3 +1,9 @@
+/**
+ * Updated by Shaun McDonald on 2021/05/19
+ * Last modified on 2021/05/18, 15:06
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ **/
+
 /*
  * Updated by Shaun McDonald on 2021/01/25
  * Last modified on 2021/01/25 6:30 PM
@@ -12,6 +18,7 @@ import android.os.Parcelable.Creator
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
+import org.jetbrains.annotations.NotNull
 import java.io.Serializable
 
 const val JOB_ITEM_MEASURE_PHOTO = "JOB_ITEM_MEASURE_PHOTO"
@@ -25,7 +32,8 @@ data class JobItemMeasurePhotoDTO(
     @SerializedName("Filename")
     val filename: String?,
     @SerializedName("EstimateId")
-    var estimateId: String?,
+    @NotNull
+    var estimateId: String,
     @SerializedName("ItemMeasureId")
     var itemMeasureId: String?,
     @SerializedName("PhotoDate")
@@ -47,7 +55,7 @@ data class JobItemMeasurePhotoDTO(
         id = parcel.readInt(),
         descr = parcel.readString(),
         filename = parcel.readString(),
-        estimateId = parcel.readString(),
+        estimateId = parcel.readString()!!,
         itemMeasureId = parcel.readString(),
         photoDate = parcel.readString(),
         photoId = parcel.readString()!!,

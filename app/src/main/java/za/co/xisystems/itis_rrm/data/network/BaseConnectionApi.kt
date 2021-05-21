@@ -1,3 +1,27 @@
+/**
+ * Updated by Shaun McDonald on 2021/05/15
+ * Last modified on 2021/05/14, 20:32
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ **/
+
+/**
+ * Updated by Shaun McDonald on 2021/05/14
+ * Last modified on 2021/05/14, 19:43
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ **/
+
+/**
+ * Updated by Shaun McDonald on 2021/05/14
+ * Last modified on 2021/05/14, 16:39
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ **/
+
+/**
+ * Updated by Shaun McDonald on 2021/05/14
+ * Last modified on 2021/05/14, 16:38
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ **/
+
 package za.co.xisystems.itis_rrm.data.network
 
 import com.google.gson.JsonObject
@@ -52,7 +76,7 @@ interface BaseConnectionApi {
 
     @POST("HealthCheck")
     suspend fun healthCheck(
-        @Field("UserLogon") UserLogon: String
+        @Field("UserLogon") userLogon: String
     ): Response<HealthCheckResponse>
 
     @FormUrlEncoded
@@ -73,55 +97,51 @@ interface BaseConnectionApi {
     @FormUrlEncoded
     @POST("RrmActivitySectionsRefresh")
     suspend fun activitySectionsRefresh(
-        @Field("UserId") UserId: String
+        @Field("UserId") userId: String
     ): Response<ActivitySectionsResponse>
 
     @FormUrlEncoded
     @POST("GetAllContractsByUserId")
     suspend fun getAllContractsByUserId(
-        @Field("UserId") UserId: String
+        @Field("UserId") userId: String
     ): Response<ContractsResponse>
 
     @FormUrlEncoded
-
     @POST("WorkflowsRefresh")
     suspend fun workflowsRefresh(
-        @Field("UserId") UserId: String
+        @Field("UserId") userId: String
     ): Response<WorkflowResponse>
 
     @FormUrlEncoded
-
     @POST("MobileLookupsRefresh")
     suspend fun lookupsRefresh(
-        @Field("UserId") UserId: String
+        @Field("UserId") userId: String
     ): Response<LookupResponse>
 
     @FormUrlEncoded
-
     @POST("GetUserTaskList")
     suspend fun getUserTaskList(
-        @Field("UserId") UserId: String
+        @Field("UserId") userId: String
     ): Response<ToDoListGroupsResponse>
 
     @FormUrlEncoded
 
     @POST("GetRRMJob")
     suspend fun getJobsForApproval(
-        @Field("JobId") JobId: String
+        @Field("JobId") jobId: String
     ): Response<JobResponse>
 
     @FormUrlEncoded
 
     @POST("GetRrmJobPhotoEstimate")
     suspend fun getPhotoEstimate(
-        @Field("FileName") FileName: String
+        @Field("FileName") fileName: String
     ): Response<PhotoEstimateResponse>
 
     @FormUrlEncoded
-
     @POST("GetRrmJobPhoto")
     suspend fun getPhotoMeasure(
-        @Field("FileName") FileName: String
+        @Field("FileName") fileName: String
     ): Response<PhotoMeasureResponse>
 
     @FormUrlEncoded
@@ -146,11 +166,11 @@ interface BaseConnectionApi {
     @FormUrlEncoded
     @POST("GetRouteSectionPoint")
     suspend fun getRouteSectionPoint(
-        @Field("Distance") distance: Int,
-        @Field("MustBeInBuffer") buffer: Int,
+        @Field("Distance") distance: Double,
+        @Field("MustBeInBuffer") buffer: Double,
         @Field("Latitude") latitude: Double,
         @Field("Longitude") longitude: Double,
-        @Field("UserId") UserId: String
+        @Field("UserId") userId: String
     ): Response<RouteSectionPointResponse>
 
     @POST("SaveRrmJob")

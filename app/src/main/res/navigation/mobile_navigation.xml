@@ -1,6 +1,7 @@
-<?xml version="1.0" encoding="utf-8"?><!--
-  * Updated by Shaun McDonald on 2021/02/08
-  * Last modified on 2021/02/08 3:05 PM
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  * Updated by Shaun McDonald on 2021/05/15
+  * Last modified on 2021/05/14, 20:32
   * Copyright (c) 2021.  XI Systems  - All rights reserved
   -->
 
@@ -25,12 +26,12 @@
         <action
             android:id="@+id/action_nav_create_to_addProjectFragment"
             app:destination="@id/addProjectFragment"
-            app:enterAnim="@anim/fragment_open_enter"
-            app:popEnterAnim="@anim/fragment_open_enter"
+            app:enterAnim="@anim/animate_swipe_right_enter"
+            app:popEnterAnim="@anim/animate_fade_enter"
             app:popUpTo="@id/nav_create"
             app:popUpToInclusive="true"
-            app:exitAnim="@anim/fragment_open_exit"
-            app:popExitAnim="@anim/fragment_open_exit" />
+            app:exitAnim="@anim/animate_swipe_right_exit"
+            app:popExitAnim="@anim/animate_fade_exit" />
     </fragment>
 
     <fragment
@@ -117,8 +118,8 @@
             app:popUpTo="@id/nav_approveMeasure"
             app:enterAnim="@anim/animate_in_out_enter"
             app:exitAnim="@anim/animate_in_out_exit"
-            app:popEnterAnim="@anim/fragment_fade_enter"
-            app:popExitAnim="@anim/fragment_fade_exit" />
+            app:popEnterAnim="@anim/animate_fade_enter"
+            app:popExitAnim="@anim/animate_fade_exit" />
     </fragment>
     <fragment
         android:id="@+id/selectItemFragment"
@@ -157,6 +158,14 @@
         android:name="za.co.xisystems.itis_rrm.ui.mainview.create.add_project_item.AddProjectFragment"
         tools:layout="@layout/fragment_add_project_items"
         android:label="AddProjectFragment">
+        <argument
+            android:name="projectId"
+            app:argType="string"
+            app:nullable="true" />
+        <argument
+            android:name="jobId"
+            app:argType="string"
+            app:nullable="true" />
         <action
             android:id="@+id/action_addProjectFragment_to_selectItemFragment"
             app:destination="@id/selectItemFragment"
@@ -169,19 +178,10 @@
             android:id="@+id/action_addProjectFragment_to_estimatePhotoFragment"
             app:destination="@id/estimatePhotoFragment"
             app:enterAnim="@anim/nav_default_enter_anim"
-            app:launchSingleTop="false"
             app:popUpTo="@id/addProjectFragment"
             app:exitAnim="@anim/nav_default_exit_anim"
             app:popEnterAnim="@anim/nav_default_pop_enter_anim"
             app:popExitAnim="@anim/nav_default_pop_exit_anim" />
-        <argument
-            android:name="projectId"
-            app:argType="string"
-            app:nullable="true" />
-        <argument
-            android:name="jobId"
-            app:argType="string"
-            app:nullable="true" />
     </fragment>
     <fragment
         android:id="@+id/jobInfoFragment"
@@ -228,9 +228,9 @@
         <action
             android:id="@+id/action_submitMeasureFragment_to_captureItemMeasurePhotoFragment"
             app:destination="@id/captureItemMeasurePhotoFragment"
-            app:enterAnim="@anim/fragment_open_enter"
-            app:exitAnim="@anim/fragment_open_exit"
-            app:popEnterAnim="@anim/fragment_fade_enter"
+            app:enterAnim="@anim/animate_swipe_right_enter"
+            app:exitAnim="@anim/animate_swipe_right_exit"
+            app:popEnterAnim="@anim/animate_fade_enter"
             app:popExitAnim="@anim/animate_fade_exit"
             tools:layout="@layout/fragment_capture_item_measure_photo"
             app:popUpTo="@id/submitMeasureFragment"
@@ -302,20 +302,4 @@
         android:id="@+id/action_global_nav_home"
         app:destination="@id/nav_home"
         app:popUpTo="@id/nav_home" />
-    <activity
-        android:id="@+id/registerActivity"
-        android:name="za.co.xisystems.itis_rrm.ui.auth.RegisterActivity"
-        android:label="RegisterActivity" />
-    <activity
-        android:id="@+id/loginActivity"
-        android:name="za.co.xisystems.itis_rrm.ui.auth.LoginActivity"
-        android:label="LoginActivity" />
-    <activity
-        android:id="@+id/resetPinActivity"
-        android:name="za.co.xisystems.itis_rrm.ui.auth.ResetPinActivity"
-        android:label="ResetPinActivity" />
-    <activity
-        android:id="@+id/settingsActivity"
-        android:name="za.co.xisystems.itis_rrm.ui.mainview.activities.SettingsActivity"
-        android:label="SettingsActivity" />
 </navigation>

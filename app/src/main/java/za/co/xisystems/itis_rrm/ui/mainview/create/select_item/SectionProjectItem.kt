@@ -10,7 +10,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
  * Created by Francis Mahlava on 2019/12/22.
  */
 
-class SectionProj_Item(
+class SectionProjectItem(
     val itemDTO: ProjectItemDTO
 ) : Item() {
     override fun bind(viewHolder: GroupieViewHolder, position: Int) {
