@@ -255,13 +255,13 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
         }
     }
 
-    private fun List<ProjectItemDTO>.toProjectItems(): List<SectionProj_Item> {
+    private fun List<ProjectItemDTO>.toProjectItems(): List<SectionProjectItem> {
         return this.map { projectItem ->
-            SectionProj_Item(projectItem)
+            SectionProjectItem(projectItem)
         }
     }
 
-    private fun initRecyclerView(items: List<SectionProj_Item>) {
+    private fun initRecyclerView(items: List<SectionProjectItem>) {
         val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
             addAll(items)
             notifyDataSetChanged()
@@ -276,11 +276,11 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
 
         groupAdapter.setOnItemClickListener { item, view ->
 
-            (item as? SectionProj_Item)?.let {
+            (item as? SectionProjectItem)?.let {
 
                 val tempItem = createItemList(it.itemDTO, itemSections)
                 saveNewItem(tempItem)
-                sendSelectedItem((it), view)
+                sendSelectedItem(tempItem, view)
             }
         }
     }
@@ -315,12 +315,12 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
     }
 
     private fun sendSelectedItem(
-        item: SectionProj_Item,
+        item: ItemDTOTemp,
         view: View
     ) {
 
         Coroutines.main {
-            createViewModel.setSectionProjectItem(item)
+            createViewModel.setTempProjectItem(item)
         }
 
         val directions = SelectItemFragmentDirections.actionSelectItemFragmentToAddProjectFragment2(

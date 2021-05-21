@@ -18,6 +18,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.os.HandlerCompat
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenCreated
 import androidx.lifecycle.whenStarted
@@ -46,7 +47,6 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentAddProjectItemsBinding
-import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.ui.extensions.initProgress
 import za.co.xisystems.itis_rrm.ui.extensions.startProgress
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModel
@@ -91,6 +91,7 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
     private lateinit var job: JobDTO
     private var items: List<ItemDTOTemp> = ArrayList()
     private var stateRestored: Boolean = false
+    private var jobBound: Boolean = false
     private val touchCallback: SwipeTouchCallback by lazy {
         object : SwipeTouchCallback() {
             override fun onMove(
@@ -168,13 +169,14 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
     }
 
     fun uiUpdate() {
-        var jobBound = false
+        jobBound = false
         uiScope.launch(uiScope.coroutineContext) {
-            createViewModel.currentJob.observeOnce(
+            createViewModel.currentJob.distinctUntilChanged().observe(
                 viewLifecycleOwner,
                 { currentJob ->
                     currentJob?.let { jobToEdit ->
                         job = jobToEdit
+                        jobBound = true
                         Coroutines.main {
                             if (createViewModel.jobDesc != job.descr) {
                                 toast("Editing ${job.descr}")
@@ -206,23 +208,25 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
                                 ui.startDateTextView.text = DateUtil.toStringReadable(DateUtil.stringToDate(it))
                                 startDate = DateUtil.stringToDate(it)!!
                             }
-                            jobBound = true
-                            bindProjectItems()
+
+                            createViewModel.tempProjectItem.distinctUntilChanged()
+                                .observe(viewLifecycleOwner, {
+                                    it?.let {
+                                        ui.infoTextView.visibility = View.GONE
+                                        ui.lastLin.visibility = View.VISIBLE
+                                        ui.totalCostTextView.visibility = View.VISIBLE
+                                    }
+                                })
+
+                            withContext(Dispatchers.Main.immediate) {
+                                if (this@AddProjectFragment::job.isInitialized) {
+                                    bindProjectItems()
+                                    bindCosting()
+                                }
+                            }
                         }
                     }
                 })
-            createViewModel.sectionProjectItem.observeOnce(viewLifecycleOwner, {
-                ui.infoTextView.visibility = View.GONE
-                ui.lastLin.visibility = View.VISIBLE
-                ui.totalCostTextView.visibility = View.VISIBLE
-
-                Coroutines.main {
-                    if (jobBound) {
-                        bindProjectItems()
-                        bindCosting()
-                    }
-                }
-            })
         }
     }
 
@@ -401,7 +405,9 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
     }
 
     private fun openSelectItemFragment(view: View) {
-        backupJobInProgress(job)
+        if (jobBound) {
+            backupJobInProgress(job)
+        }
         val navDirection =
             AddProjectFragmentDirections.actionAddProjectFragmentToSelectItemFragment(
                 projectID

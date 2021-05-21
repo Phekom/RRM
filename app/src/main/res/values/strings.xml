@@ -223,4 +223,7 @@
     <string name="password_strength_medium">Medium</string>
     <string name="password_strength_strong">Strong</string>
     <string name="password_strength_very_strong">Very Strong</string>
+    <string name="uom">UOM</string>
+    <string name="start_photo_preview">Start Photo Preview</string>
+    <string name="end_photo_preview">End Photo Preview</string>
 </resources>

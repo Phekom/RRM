@@ -32,7 +32,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.SectionPointDTO
 import za.co.xisystems.itis_rrm.data.repositories.JobCreationDataRepository
 import za.co.xisystems.itis_rrm.domain.ContractSelector
 import za.co.xisystems.itis_rrm.domain.ProjectSelector
-import za.co.xisystems.itis_rrm.ui.mainview.create.select_item.SectionProj_Item
+import za.co.xisystems.itis_rrm.ui.mainview.create.select_item.SectionProjectItem
 import za.co.xisystems.itis_rrm.utils.JobUtils
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
 import za.co.xisystems.itis_rrm.utils.uncaughtExceptionHandler
@@ -66,10 +66,11 @@ class CreateViewModel(
     val contractId = MutableLiveData<String>()
     val projectId = MutableLiveData<String>()
     val projectCode = MutableLiveData<String>()
-    val sectionProjectItem = MutableLiveData<SectionProj_Item>()
+    val sectionProjectItem = MutableLiveData<SectionProjectItem>()
     val jobItem = MutableLiveData<JobDTO?>()
     val projectItemTemp = MutableLiveData<ItemDTOTemp>()
     val jobId: MutableLiveData<String?> = MutableLiveData()
+    val tempProjectItem: MutableLiveData<ItemDTOTemp> = MutableLiveData()
 
     fun setCurrentJob(inJobItemToEdit: JobDTO) {
         currentJob.value = inJobItemToEdit
@@ -107,8 +108,8 @@ class CreateViewModel(
         projectCode.value = inProjectCode
     }
 
-    fun setSectionProjectItem(inSectionProjectItem: SectionProj_Item) {
-        sectionProjectItem.value = inSectionProjectItem
+    fun setTempProjectItem(inSectionProjectItem: ItemDTOTemp) {
+        tempProjectItem.value = inSectionProjectItem
     }
 
     suspend fun getJob(inJobId: String) {
@@ -150,6 +151,7 @@ class CreateViewModel(
     suspend fun saveNewItem(tempItem: ItemDTOTemp) {
         return withContext(Dispatchers.IO) {
             jobCreationDataRepository.saveNewItem(tempItem)
+
         }
     }
 

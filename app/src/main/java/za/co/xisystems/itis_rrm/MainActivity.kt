@@ -141,7 +141,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         MotionToast.setSuccessColor(R.color.sanral_dark_green)
         MotionToast.setWarningColor(R.color.colorPrimaryYellow)
         MotionToast.setInfoColor(R.color.dark_bg_color)
-        MotionToast.setDeleteColor(R.color.sanral_orange_red)
+        MotionToast.setDeleteColor(R.color.dark_bg_color)
 
         this.mainActivityViewModel = this.run {
             ViewModelProvider(this, factory).get(MainActivityViewModel::class.java)

@@ -1416,6 +1416,9 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
         super.onDestroyView()
         _ui = null
         uiScope.destroy()
+        createViewModel.currentJob.removeObservers(viewLifecycleOwner)
+        createViewModel.projectItemTemp.removeObservers(viewLifecycleOwner)
+        createViewModel.loggedUser.removeObservers(viewLifecycleOwner)
     }
 
     companion object {
