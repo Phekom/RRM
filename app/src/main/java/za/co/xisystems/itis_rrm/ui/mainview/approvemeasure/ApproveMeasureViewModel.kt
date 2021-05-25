@@ -17,6 +17,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
+import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.viewModelScope
 import java.util.concurrent.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -35,7 +36,6 @@ import za.co.xisystems.itis_rrm.custom.results.XISuccess
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.data.repositories.MeasureApprovalDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
-import za.co.xisystems.itis_rrm.extensions.getDistinct
 import za.co.xisystems.itis_rrm.ui.custom.MeasureGalleryUIState
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
@@ -94,7 +94,7 @@ class ApproveMeasureViewModel(
 
     suspend fun getJobApproveMeasureForActivityId(activityId: Int): LiveData<List<JobItemMeasureDTO>> {
         return withContext(contextIO) {
-            measureApprovalDataRepository.getJobApproveMeasureForActivityId(activityId).getDistinct()
+            measureApprovalDataRepository.getJobApproveMeasureForActivityId(activityId).distinctUntilChanged()
         }
     }
 
@@ -133,7 +133,7 @@ class ApproveMeasureViewModel(
         actId: Int
     ): LiveData<List<JobItemMeasureDTO>> {
         return withContext(contextIO) {
-            measureApprovalDataRepository.getJobMeasureItemsForJobId(jobID, actId).getDistinct()
+            measureApprovalDataRepository.getJobMeasureItemsForJobId(jobID, actId).distinctUntilChanged()
         }
     }
 
@@ -262,7 +262,7 @@ class ApproveMeasureViewModel(
 
     private suspend fun getJobItemMeasureByItemMeasureId(itemMeasureId: String): LiveData<JobItemMeasureDTO> {
         return withContext(contextIO) {
-            measureApprovalDataRepository.getJobItemMeasureByItemMeasureId(itemMeasureId).getDistinct()
+            measureApprovalDataRepository.getJobItemMeasureByItemMeasureId(itemMeasureId).distinctUntilChanged()
         }
     }
 
