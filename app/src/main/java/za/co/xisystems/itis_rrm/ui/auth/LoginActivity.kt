@@ -42,7 +42,6 @@ import za.co.xisystems.itis_rrm.utils.toast
 class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, KodeinAware {
     private var binding: ActivityLoginBinding? = null
 
-    private var hash: String? = null
     private var pinInput = ""
     private var index = 0
 
