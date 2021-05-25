@@ -76,7 +76,7 @@ class RegisterActivity : AppCompatActivity(), AuthListener, KodeinAware {
             loggedInUser.observe(this, { user ->
                 // Register the user
                 if (user != null) {
-                    if (user.pin == null) {
+                    if (user.pinHash == null) {
                         registerPinOrNot()
                     } else {
                         Intent(this, MainActivity::class.java).also { home ->
@@ -129,8 +129,7 @@ class RegisterActivity : AppCompatActivity(), AuthListener, KodeinAware {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == PERMISSION_REQUEST) {
             val allAllowed = requestAgain(permissions, grantResults)
-            if (allAllowed)
-                toast("Permissions Granted")
+            if (allAllowed) toast("Permissions Granted")
         }
     }
 
@@ -205,6 +204,10 @@ class RegisterActivity : AppCompatActivity(), AuthListener, KodeinAware {
 
     override fun onSignOut(userDTO: UserDTO) {
         userDTO.authd = false
+    }
+
+    override fun onWarn(message: String) {
+        onFailure(message)
     }
 
     companion object {

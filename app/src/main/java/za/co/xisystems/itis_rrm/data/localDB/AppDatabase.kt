@@ -103,7 +103,7 @@ import za.co.xisystems.itis_rrm.utils.DatetimeConverters
         WorkFlowsDTO::class, WfWorkStepDTO::class
     ],
     views = [ContractSelectorView::class],
-    version = 17
+    version = 18
 )
 @TypeConverters(Converters::class, DatetimeConverters::class)
 @GenerateRoomMigrations

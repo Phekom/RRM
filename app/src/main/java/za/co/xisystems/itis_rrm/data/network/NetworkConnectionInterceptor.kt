@@ -3,10 +3,10 @@ package za.co.xisystems.itis_rrm.data.network
 import android.content.Context
 import okhttp3.Interceptor
 import okhttp3.Response
-import za.co.xisystems.itis_rrm.BuildConfig
 import za.co.xisystems.itis_rrm.custom.errors.NoConnectivityException
 import za.co.xisystems.itis_rrm.custom.errors.NoInternetException
 import za.co.xisystems.itis_rrm.custom.errors.ServiceHostUnreachableException
+import za.co.xisystems.itis_rrm.utils.ServiceUriUtil
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
 
 /**
@@ -16,7 +16,7 @@ class NetworkConnectionInterceptor(
     context: Context
 ) : Interceptor {
     private val testConnection = "www.nra.co.za"
-    private val serviceURL = BuildConfig.BASE_HOST
+    private val serviceHost = ServiceUriUtil.getInstance()?.webServiceHost
     private val applicationContext = context.applicationContext
     override fun intercept(chain: Interceptor.Chain): Response {
 
@@ -30,7 +30,7 @@ class NetworkConnectionInterceptor(
             )
         }
 
-        if (!ServiceUtil.isHostAvailable(host = serviceURL, port = 443, timeout = 5000)) {
+        if (!ServiceUtil.isHostAvailable(host = serviceHost, port = 443, timeout = 5000)) {
             throw ServiceHostUnreachableException(
                 "Service Host for RRM is down, please try again later."
             )

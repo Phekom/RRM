@@ -65,7 +65,7 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, KodeinAware {
             DataBindingUtil.setContentView(this, R.layout.activity_reset_pin)
         viewModel = ViewModelProvider(this, factory).get(AuthViewModel::class.java)
         binding.viewmodel = viewModel
-        viewModel.authListener = this
+        viewModel.setupAuthListener(this)
 
         Coroutines.main {
             val loggedInUser = viewModel.user.await()
@@ -79,8 +79,8 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, KodeinAware {
                         }
                     }
 
-                    viewModel.newPinRegistered.observeOnce(this, {
-                        it.let {
+                    viewModel.validPin.observeOnce(this) {
+                        it?.let {
                             when (it) {
                                 true -> {
                                     MotionToast.createColorToast(
@@ -91,7 +91,7 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, KodeinAware {
                                         duration = MotionToast.LONG_DURATION,
                                         font = ResourcesCompat.getFont(this@ResetPinActivity, R.font.helvetica_regular)
                                     )
-                                    viewModel.newPinRegistered.value = false
+                                    viewModel.validPin.value = false
                                     getToLogin()
                                 }
                                 else -> {
@@ -99,7 +99,7 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, KodeinAware {
                                 }
                             }
                         }
-                    })
+                    }
                     serverTextView.setOnClickListener {
                         ToastUtils().toastServerAddress(appContext)
                     }
@@ -139,8 +139,9 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, KodeinAware {
                     }
                 }
             }
-            if (allAllowed)
+            if (allAllowed) {
                 toast("Permissions Granted")
+            }
         }
     }
 
@@ -160,7 +161,12 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, KodeinAware {
         val resultCode = apiAvailability.isGooglePlayServicesAvailable(this)
         if (resultCode != ConnectionResult.SUCCESS) {
             // This dialog will help the user update to the latest GooglePlayServices
-            val dialog = apiAvailability.getErrorDialog(this, resultCode, RegisterPinActivity.GOOGLE_PLAY_SERVICES_RESOLUTION_REQUEST)
+            val dialog =
+                apiAvailability.getErrorDialog(
+                    this,
+                    resultCode,
+                    RegisterPinActivity.GOOGLE_PLAY_SERVICES_RESOLUTION_REQUEST
+                )
             dialog?.show()
         }
     }
@@ -174,6 +180,10 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, KodeinAware {
         loading.hide()
         hideKeyboard()
         toast("You are logged in as ${userDTO.userName}")
+    }
+
+    override fun onWarn(message: String) {
+        onFailure(message)
     }
 
     override fun onFailure(message: String) {

@@ -1,22 +1,4 @@
 /**
- * Updated by Shaun McDonald on 2021/05/15
- * Last modified on 2021/05/14, 20:32
- * Copyright (c) 2021.  XI Systems  - All rights reserved
- **/
-
-/**
- * Updated by Shaun McDonald on 2021/05/14
- * Last modified on 2021/05/14, 19:43
- * Copyright (c) 2021.  XI Systems  - All rights reserved
- **/
-
-/**
- * Updated by Shaun McDonald on 2021/05/14
- * Last modified on 2021/05/14, 16:39
- * Copyright (c) 2021.  XI Systems  - All rights reserved
- **/
-
-/**
  * Updated by Shaun McDonald on 2021/05/14
  * Last modified on 2021/05/14, 16:38
  * Copyright (c) 2021.  XI Systems  - All rights reserved

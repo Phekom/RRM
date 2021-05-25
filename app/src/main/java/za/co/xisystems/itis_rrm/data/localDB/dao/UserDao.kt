@@ -21,8 +21,8 @@ interface UserDao {
     @Query("SELECT * FROM USER_TABLE WHERE userId = :userId")
     fun checkUserExists(userId: String): Boolean
 
-    @Query("UPDATE USER_TABLE SET pin =:binHash,  phoneNumber = :phoneNumber, imei=:imei, device=:device ")
-    fun updateUser(binHash: ByteArray?, phoneNumber: String?, imei: String?, device: String?)
+    @Query("UPDATE USER_TABLE SET pinHash = :pinHash,  phoneNumber = :phoneNumber, imei=:imei, device=:device ")
+    suspend fun updateUser(pinHash: String?, phoneNumber: String?, imei: String?, device: String?)
 
     @Query("SELECT * FROM USER_TABLE WHERE userId = userId")
     fun getUser(): LiveData<UserDTO>
@@ -36,21 +36,31 @@ interface UserDao {
     @Delete
     suspend fun removeUser(userDTO: UserDTO)
 
-    @Query("DELETE FROM USER_TABLE WHERE userId = userId")
+    @Query("DELETE FROM USER_TABLE")
     fun deleteUser()
 
-    @Query("SELECT PIN FROM USER_TABLE WHERE userId = userId LIMIT 1")
-    fun getPin(): ByteArray?
+    @Query("SELECT pinHash FROM USER_TABLE LIMIT 1")
+    fun getPinHash(): String?
 
-    @Query("SELECT pin FROM USER_TABLE LIMIT 1")
-    fun getHash(): ByteArray?
+    fun getHash(): String? {
+        return getPinHash()
+    }
 
-    @Query("UPDATE USER_TABLE SET pin = :binHash WHERE userId = :userId")
+    @Query("UPDATE USER_TABLE SET pinHash = :binHash WHERE userId = :userId")
     fun putHash(userId: String, binHash: ByteArray)
 
     @Query("DELETE FROM USER_TABLE")
     fun deleteAll()
 
-    @Query("UPDATE USER_TABLE SET pin = :newHash WHERE pin = :oldHash")
-    fun updateUserHash(newHash: ByteArray, oldHash: ByteArray)
+    @Query("UPDATE USER_TABLE SET pinHash = :newHash WHERE pinHash = :oldHash")
+    fun updateUserHash(newHash: String, oldHash: String)
+
+    @Query("UPDATE USER_TABLE SET authd = :yayNay WHERE userId = :userId")
+    fun toggleAuthd(userId: String, yayNay: Boolean)
+
+    @Query("UPDATE USER_TABLE SET authd = 1")
+    suspend fun pinAuthenticated()
+
+    @Query("UPDATE USER_TABLE SET authd = 0")
+    suspend fun pinExpired()
 }
