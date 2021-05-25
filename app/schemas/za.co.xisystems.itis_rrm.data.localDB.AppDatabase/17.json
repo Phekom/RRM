@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 17,
-    "identityHash": "24427c5984d2dbb605c271d1e57fed70",
+    "identityHash": "338e37b47fd9b8ddda9762ecde35647a",
     "entities": [
       {
         "tableName": "JOB_TABLE",
@@ -318,7 +318,7 @@
       },
       {
         "tableName": "USER_TABLE",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`registrationId` TEXT NOT NULL, `userId` TEXT NOT NULL, `userName` TEXT NOT NULL, `userRoles` TEXT NOT NULL, `userStatus` TEXT NOT NULL, `phoneNumber` TEXT, `imei` TEXT, `device` TEXT, `pinHash` TEXT, `authd` INTEGER NOT NULL, PRIMARY KEY(`userId`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`registrationId` TEXT NOT NULL, `userId` TEXT NOT NULL, `userName` TEXT NOT NULL, `userRoles` TEXT NOT NULL, `userStatus` TEXT NOT NULL, `phoneNumber` TEXT, `imei` TEXT, `device` TEXT, `pin` BLOB, `authd` INTEGER NOT NULL, PRIMARY KEY(`userId`))",
         "fields": [
           {
             "fieldPath": "registrationId",
@@ -369,9 +369,9 @@
             "notNull": false
           },
           {
-            "fieldPath": "pinHash",
-            "columnName": "pinHash",
-            "affinity": "TEXT",
+            "fieldPath": "pin",
+            "columnName": "pin",
+            "affinity": "BLOB",
             "notNull": false
           },
           {
@@ -2701,7 +2701,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '24427c5984d2dbb605c271d1e57fed70')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '338e37b47fd9b8ddda9762ecde35647a')"
     ]
   }
 }
