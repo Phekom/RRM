@@ -9,11 +9,12 @@ package za.co.xisystems.itis_rrm.ui.auth
 /**
  * Updated by Shaun McDonald 2020/04/15
  */
+import android.R.style
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
-import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AlertDialog.Builder
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
@@ -59,10 +60,20 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
             val loggedInUser = viewModel.user.await()
             loggedInUser.observe(this, { user ->
                 // Register the user
-                if (user != null && !user.authd) {
-                    usernameTextView.text = user.userName
-                    initPin()
-                    initListener()
+                if (user != null) {
+                    if (user.pinHash != null) {
+                        when (user.authd) {
+                            true -> {
+                                gotoMainActivity()
+                            }
+                            else -> {
+                                usernameTextView.text = user.userName
+                                initListener()
+                            }
+                        }
+                    } else {
+                        registerUserPin()
+                    }
                 } else {
                     registerUser()
                 }
@@ -79,40 +90,24 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
     }
 
     private fun registerUser() {
-        Intent(this, RegisterActivity::class.java).also { home ->
-            home.flags =
+        Intent(this, RegisterActivity::class.java).also { registerUser ->
+            registerUser.flags =
                 Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-            startActivity(home)
+            startActivity(registerUser)
         }
     }
 
-    private fun initPin() {
-        Coroutines.main {
-            val loggedInUser = viewModel.user.await()
-            loggedInUser.observe(this, { user ->
-                if (user.pinHash != null) {
-                    Coroutines.main {
-                        hash = user.pinHash
-                    }
-                }
-            })
-        }
+    private fun checkPinlights() {
+        checkDisabledPinlights()
+        checkPinColor()
     }
 
     private fun checkPinColor() {
         when (index) {
-            1 -> {
-                binding!!.pin1.setImageResource(R.drawable.oval_pin_green)
-            }
-            2 -> {
-                binding!!.pin2.setImageResource(R.drawable.oval_pin_green)
-            }
-            3 -> {
-                binding!!.pin3.setImageResource(R.drawable.oval_pin_green)
-            }
-            4 -> {
-                binding!!.pin4.setImageResource(R.drawable.oval_pin_green)
-            }
+            1 -> binding!!.pin1.setImageResource(R.drawable.oval_pin_green)
+            2 -> binding!!.pin2.setImageResource(R.drawable.oval_pin_green)
+            3 -> binding!!.pin3.setImageResource(R.drawable.oval_pin_green)
+            4 -> binding!!.pin4.setImageResource(R.drawable.oval_pin_green)
         }
     }
 
@@ -132,25 +127,11 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
     }
 
     override fun onClick(v: View) {
-        when (v) {
-            binding!!.btnCancel -> {
+        when (v.id) {
+            binding!!.btnCancel.id -> {
                 reset()
             }
-            binding!!.btnDelete -> {
-                when (index) {
-                    1 -> {
-                        binding!!.pin1.setImageResource(R.drawable.oval_pin_grey)
-                    }
-                    2 -> {
-                        binding!!.pin2.setImageResource(R.drawable.oval_pin_grey)
-                    }
-                    3 -> {
-                        binding!!.pin3.setImageResource(R.drawable.oval_pin_grey)
-                    }
-                    4 -> {
-                        binding!!.pin4.setImageResource(R.drawable.oval_pin_grey)
-                    }
-                }
+            binding!!.btnDelete.id -> {
                 if (index > 0) {
                     pinInput = pinInput.substring(0, pinInput.length - 1)
                     index--
@@ -160,53 +141,51 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
                 if (v is Button) {
                     val pinValue = v.text.toString().toIntOrNull()
                     pinValue?.let {
-                        pinInput.plus(it.toString())
+                        pinInput = pinInput.plus(it.toString())
                         index++
                     }
                 }
             }
         }
         Timber.d("<TEST> -> Masuk$index")
-        checkPin()
-        checkPinColor()
+        checkPinlights()
+        if (index == 4) {
+            Coroutines.main {
+                viewModel.validatePin(pinInput)
+            }
+        }
     }
 
-    private fun checkPin() {
-        Coroutines.main {
-            val loggedInUser = viewModel.user.await()
-            loggedInUser.observe(this, { user ->
-                if (user.pinHash == null) {
-
-                    val builder =
-                        AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog)
-                    builder.setTitle(R.string.set_pin)
-                    builder.setIcon(R.drawable.ic_baseline_lock_24px)
-                    builder.setMessage(R.string.set_pin_msg)
-                    builder.setCancelable(false)
-                    // Yes button
-                    builder.setPositiveButton(R.string.ok) { _, _ ->
-                        if (ServiceUtil.isNetworkAvailable(this.applicationContext)) {
-                            Intent(this, RegisterPinActivity::class.java).also { pin ->
-                                pin.flags =
-                                    Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-                                startActivity(pin)
-                            }
-                        } else {
-                            toast("No internet connection detected")
-                        }
-                    }
-                    val setPinDialog = builder.create()
-                    setPinDialog.show()
-                } else {
-
-                    if (index == 4) {
-                        Coroutines.main {
-                            viewModel.validatePin(pinInput)
-                        }
-                    }
-                }
-            })
+    private fun checkDisabledPinlights() {
+        when (index) {
+            1 -> binding!!.pin1.setImageResource(R.drawable.oval_pin_grey)
+            2 -> binding!!.pin2.setImageResource(R.drawable.oval_pin_grey)
+            3 -> binding!!.pin3.setImageResource(R.drawable.oval_pin_grey)
+            4 -> binding!!.pin4.setImageResource(R.drawable.oval_pin_grey)
         }
+    }
+
+    private fun registerUserPin() {
+        val builder =
+            Builder(this, style.Theme_DeviceDefault_Dialog)
+        builder.setTitle(R.string.set_pin)
+        builder.setIcon(R.drawable.ic_baseline_lock_24px)
+        builder.setMessage(R.string.set_pin_msg)
+        builder.setCancelable(false)
+        // Yes button
+        builder.setPositiveButton(R.string.ok) { _, _ ->
+            if (ServiceUtil.isNetworkAvailable(this.applicationContext)) {
+                Intent(this, RegisterPinActivity::class.java).also { pin ->
+                    pin.flags =
+                        Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                    startActivity(pin)
+                }
+            } else {
+                toast("No internet connection detected")
+            }
+        }
+        val setPinDialog = builder.create()
+        setPinDialog.show()
     }
 
     override fun onResume() {
@@ -254,12 +233,6 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
         binding!!.pin2.setImageResource(R.drawable.oval_pin_grey)
         binding!!.pin3.setImageResource(R.drawable.oval_pin_grey)
         binding!!.pin4.setImageResource(R.drawable.oval_pin_grey)
-    }
-
-    private fun showMessage() {
-        onFailure("Pin is incorrect")
-        resetAllPinColor()
-        pinInput = ""
     }
 
     override fun onStarted() {

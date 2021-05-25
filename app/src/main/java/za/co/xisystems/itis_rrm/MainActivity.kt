@@ -259,6 +259,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             } else {
                 navController
                 if (doubleBackToExitPressed == 2) {
+                    sharedViewModel.logOut()
                     finishAffinity()
                     // Take user back to the Registration screen
                     Intent(this, LoginActivity::class.java).also { home ->
@@ -317,6 +318,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 true
             }
             R.id.action_logout -> {
+                sharedViewModel.logOut()
                 Intent(this, LoginActivity::class.java).also { home ->
                     home.flags =
                         Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK

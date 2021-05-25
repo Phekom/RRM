@@ -21,7 +21,6 @@ import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.R
-import za.co.xisystems.itis_rrm.R.string
 import za.co.xisystems.itis_rrm.custom.errors.AuthException
 import za.co.xisystems.itis_rrm.custom.errors.NoConnectivityException
 import za.co.xisystems.itis_rrm.custom.errors.NoInternetException
@@ -139,8 +138,10 @@ class AuthViewModel(
                     if (oldTokenGood) {
                         registerUserPin(currentUser, confirmNewPin!!)
                         repository.authenticatePin()
-                        validPin.value = true
-                    } else {
+                        listenerNotify {
+                            validPin.value = true
+                        }
+                   } else {
                         listenerNotify {
                             authListener?.onFailure("Old Pin is incorrect. Please enter the correct Pin")
                         }
@@ -225,7 +226,7 @@ class AuthViewModel(
             loggedInUser?.let { it ->
                 val imie = "45678"
                 val androidDevice =
-                    "${string.android_sdk} ${VERSION.SDK_INT} " +
+                    "${R.string.android_sdk} ${VERSION.SDK_INT} " +
                         "${Build.BRAND} ${Build.MODEL} ${Build.DEVICE}"
 
                 val hashInput = it.userName.plus(androidDevice).plus(confirmPin!!)
@@ -288,7 +289,7 @@ class AuthViewModel(
                 val phoneNumber = "12345457"
                 val imie = "45678"
                 val androidDevice =
-                    "${R.string.android_sdk} ${Build.VERSION.SDK_INT} " +
+                    "${R.string.android_sdk} ${VERSION.SDK_INT} " +
                         "${Build.BRAND} ${Build.MODEL} ${Build.DEVICE}"
 
                 repository.userRegister(
@@ -331,13 +332,14 @@ class AuthViewModel(
         withContext(Dispatchers.IO) {
             val inputHash = SecureString(
                 loggedInUser!!.userName
-                    .plus(loggedInUser.device).plus(pin).toCharArray(), true
+                    .plus(loggedInUser.device).plus(pin).toCharArray(), false
             )
             val result = XIArmoury.validateFutureToken(
                 inputHash, loggedInUser.pinHash!!
             )
             if (!result) {
                 repository.expirePin()
+                listenerNotify { authListener?.onFailure("Invalid PIN entered") }
             } else {
                 repository.authenticatePin()
                 viewModelScope.launch(ioContext) {

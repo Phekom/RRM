@@ -23,6 +23,7 @@ import org.kodein.di.android.kodein
 import org.kodein.di.generic.instance
 import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.R.font
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.databinding.ActivityResetPinBinding
@@ -72,34 +73,7 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, KodeinAware {
             loggedInUser.observe(this, { user ->
                 // Register the user
                 if (user != null) {
-                    Coroutines.main {
-
-                        if (viewModel.enterOldPin != viewModel.confirmNewPin) {
-                            getToLogin()
-                        }
-                    }
-
-                    viewModel.validPin.observeOnce(this) {
-                        it?.let {
-                            when (it) {
-                                true -> {
-                                    MotionToast.createColorToast(
-                                        context = this@ResetPinActivity,
-                                        message = "PIN updated successfully",
-                                        style = MotionToast.TOAST_SUCCESS,
-                                        position = MotionToast.GRAVITY_BOTTOM,
-                                        duration = MotionToast.LONG_DURATION,
-                                        font = ResourcesCompat.getFont(this@ResetPinActivity, R.font.helvetica_regular)
-                                    )
-                                    viewModel.validPin.value = false
-                                    getToLogin()
-                                }
-                                else -> {
-                                    getToLogin()
-                                }
-                            }
-                        }
-                    }
+                    scanForPinUpdate()
                     serverTextView.setOnClickListener {
                         ToastUtils().toastServerAddress(appContext)
                     }
@@ -109,6 +83,30 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, KodeinAware {
                     }
                 }
             })
+        }
+    }
+
+    private fun scanForPinUpdate() {
+        viewModel.validPin.observeOnce(this) {
+            it?.let {
+                when (it) {
+                    true -> {
+                        MotionToast.createColorToast(
+                            context = this@ResetPinActivity,
+                            message = "PIN updated successfully",
+                            style = MotionToast.TOAST_SUCCESS,
+                            position = MotionToast.GRAVITY_BOTTOM,
+                            duration = MotionToast.LONG_DURATION,
+                            font = ResourcesCompat.getFont(this@ResetPinActivity, font.helvetica_regular)
+                        )
+                        viewModel.validPin.value = false
+                        getToLogin()
+                    }
+                    else -> {
+                        getToLogin()
+                    }
+                }
+            }
         }
     }
 
@@ -201,6 +199,8 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, KodeinAware {
     }
 
     override fun onSignOut(userDTO: UserDTO) {
-        // Not interested in this
+        Coroutines.io {
+            viewModel.expirePin()
+        }
     }
 }
