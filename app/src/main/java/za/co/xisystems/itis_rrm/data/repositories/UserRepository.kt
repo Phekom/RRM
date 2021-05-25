@@ -40,7 +40,7 @@ class UserRepository(
         }
     }
 
-    suspend fun getHash(): ByteArray? {
+    suspend fun getHash(): String? {
         return withContext(Dispatchers.IO) {
             appDb.getUserDao().getHash()
         }
@@ -67,15 +67,17 @@ class UserRepository(
                 AuthException(authResponse.errorMessage)
             throw authException
         } else {
-            users.postValue(authResponse.user)
+            authResponse.user?.let { concreteUser ->
+                users.postValue(concreteUser)
+            }
         }
     }
 
-    fun upDateUser(
+    suspend fun updateUser(
         phoneNumber: String,
         imei: String,
         androidDevice: String,
-        binHash: ByteArray
+        binHash: String
     ) {
         Coroutines.io {
 
@@ -88,7 +90,7 @@ class UserRepository(
         }
     }
 
-    fun updateHash(newHash: ByteArray, oldHash: ByteArray) {
+    fun updateHash(newHash: String, oldHash: String) {
         Coroutines.io {
             appDb.getUserDao().updateUserHash(newHash, oldHash) // userId,
         }
@@ -107,5 +109,13 @@ class UserRepository(
                 }
             }
         }
+    }
+
+    suspend fun authenticatePin() {
+        appDb.getUserDao().pinAuthenticated()
+    }
+
+    suspend fun expirePin() {
+        appDb.getUserDao().pinExpired()
     }
 }

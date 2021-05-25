@@ -58,7 +58,7 @@ class WorkFragment : BaseFragment(), KodeinAware {
     private val factory: WorkViewModelFactory by instance()
     private var uiScope = UiLifecycleScope()
     private lateinit var layoutManager: LinearLayoutManager
-    private var groupAdapter = GroupAdapter<GroupieViewHolder>()
+    private var groupAdapter: GroupAdapter<GroupieViewHolder>? = GroupAdapter<GroupieViewHolder>()
     private var veiled: Boolean = false
     private var _ui: FragmentWorkBinding? = null
     private val ui get() = _ui!!
@@ -243,6 +243,7 @@ class WorkFragment : BaseFragment(), KodeinAware {
         super.onDestroyView()
         uiScope.destroy()
         ui.veiledWorkListView.setAdapter(null)
+        groupAdapter = null
         layoutManager.detachAndScrapAttachedViews(ui.veiledWorkListView.getVeiledRecyclerView().Recycler())
         _ui = null
     }
@@ -319,6 +320,6 @@ class WorkFragment : BaseFragment(), KodeinAware {
     }
 
     private fun scrollToTop(toggledGroup: ExpandableGroup) {
-        layoutManager.scrollToPositionWithOffset(toggledGroup.getPosition(toggledGroup.getItem(0)), 20)
+        layoutManager.scrollToPositionWithOffset(toggledGroup.getPosition(toggledGroup.getItem(0)), -20)
     }
 }
