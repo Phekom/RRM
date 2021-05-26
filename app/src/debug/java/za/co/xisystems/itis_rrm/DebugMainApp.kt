@@ -27,7 +27,7 @@ open class DebugMainApp : MainApp(), KodeinAware {
         if (BuildConfig.DEBUG) {
             Timber.plant(HyperlinkDebugTree())
             LeakCanary.config = LeakCanary.config.copy(retainedVisibleThreshold = 5)
-            AppWatcher.config = AppWatcher.config.copy(watchFragmentViews = true)
+            AppWatcher.config = AppWatcher.config.copy(watchFragmentViews = false)
             // Shaun McDonald - 2020/05/01 - Have coroutines log out state changes
             System.setProperty("kotlinx.coroutines.debug", "on")
             // Shaun McDonald - 2021/01/30 - Added TooLargeTool to track bundle sizes
