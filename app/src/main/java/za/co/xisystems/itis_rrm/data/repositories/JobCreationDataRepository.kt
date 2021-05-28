@@ -219,8 +219,8 @@ class JobCreationDataRepository(
         jobId: String
     ): String? {
 
-        val distance = 0.05
-        val inBuffer = 1.0
+        val distance = 0.5
+        val inBuffer = -1.0
         val routeSectionPointResponse =
             apiRequest { api.getRouteSectionPoint(distance, inBuffer, latitude, longitude, useR) }
 

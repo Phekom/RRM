@@ -214,7 +214,8 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
                 estimateId = navArgs.estimateId
             }
             if (!navArgs.jobId.isNullOrEmpty()) {
-                createViewModel.setJobToEdit(navArgs.jobId!!)
+                val jobId = navArgs.jobId!!
+                createViewModel.setJobToEdit(jobId)
             }
         }
     }
@@ -1175,7 +1176,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
         try {
             qty = value.toDouble()
         } catch (e: NumberFormatException) {
-            e.printStackTrace()
+           Timber.d(e)
         }
 
         when (item!!.uom) {
@@ -1201,7 +1202,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
                     lineRate = qty * tenderRate!!
                 } catch (e: NumberFormatException) {
                     requireActivity().hideKeyboard()
-                    e.printStackTrace()
+                    Timber.d(e)
                     toast("Please enter the Quantity.")
                 }
             }
@@ -1231,7 +1232,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
                     inlineRate = length * tenderRate!!
                 } catch (e: NumberFormatException) {
                     requireActivity().hideKeyboard()
-                    e.printStackTrace()
+                    Timber.d(e)
                     toast("Please enter the m.")
                 }
         }
@@ -1249,7 +1250,6 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
             inlineRate = qty * tenderRate!!
         } catch (e: NumberFormatException) {
             requireActivity().hideKeyboard()
-            e.printStackTrace()
             toast(getString(string.warning_estimate_enter_prov_sum))
         }
         return inlineRate
@@ -1265,7 +1265,6 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
             inlineRate = qty * tenderRate!!
         } catch (e: NumberFormatException) {
             requireActivity().hideKeyboard()
-            e.printStackTrace()
             inlineRate = null
             toast(getString(string.warning_estimate_enter_volume))
         }
@@ -1283,7 +1282,6 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
             inlineRate = qty * tenderRate!!
         } catch (e: NumberFormatException) {
             requireActivity().hideKeyboard()
-            e.printStackTrace()
             toast("Please place the Area.")
         }
         return inlineRate
@@ -1300,7 +1298,6 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
             inlineRate = qty * tenderRate!!
         } catch (e: NumberFormatException) {
             requireActivity().hideKeyboard()
-            e.printStackTrace()
             toast("Please place the Quantity.")
         }
         return inlineRate

@@ -64,15 +64,16 @@
                         android:layout_marginRight="52dp"
                         android:background="@drawable/round_corner_orange"
                         android:hint="Create Pin Code"
-                        app:hintTextAppearance="@style/TextAppearance.AppCompat">
+                        app:hintTextAppearance="@style/TextAppearance.AppCompat"
+                        tools:ignore="HardcodedText">
 
-                        <EditText
+                        <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/enterPinEditText"
                             android:layout_width="fill_parent"
                             android:layout_height="wrap_content"
                             android:background="@null"
                             android:digits="0123456789"
-                            android:drawableLeft="@android:drawable/ic_lock_idle_lock"
+                            android:drawableStart="@android:drawable/ic_lock_idle_lock"
                             android:imeOptions="actionNext"
                             android:inputType="numberPassword"
                             android:padding="4dp"
@@ -91,15 +92,16 @@
                         android:background="@drawable/round_corner_orange"
                         android:hint="Confirm Pin Code"
                         android:imeOptions="actionDone"
-                        app:hintTextAppearance="@style/TextAppearance.AppCompat">
+                        app:hintTextAppearance="@style/TextAppearance.AppCompat"
+                        tools:ignore="HardcodedText">
 
-                        <EditText
+                        <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/confirmPinEditText"
                             android:layout_width="fill_parent"
                             android:layout_height="wrap_content"
                             android:background="@null"
                             android:digits="0123456789"
-                            android:drawableLeft="@android:drawable/ic_lock_idle_lock"
+                            android:drawableStart="@android:drawable/ic_lock_idle_lock"
                             android:imeOptions="actionDone"
                             android:inputType="numberPassword"
                             android:padding="4dp"
@@ -177,7 +179,8 @@
                 android:layout_marginStart="30dp"
                 android:alpha="0.5"
                 android:text="Server"
-                android:textColor="@color/black" />
+                android:textColor="@color/black"
+                tools:ignore="HardcodedText" />
 
             <TextView
                 android:id="@+id/buildFlavorTextView"
@@ -188,7 +191,8 @@
 
                 android:alpha="0.5"
                 android:text="Demo"
-                android:textColor="@color/black" />
+                android:textColor="@color/black"
+                tools:ignore="HardcodedText" />
 
 
         </RelativeLayout>
@@ -201,7 +205,8 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:srcCompat="@drawable/logo_new_large" />
+            app:srcCompat="@drawable/logo_new_large"
+            tools:ignore="ContentDescription" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

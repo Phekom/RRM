@@ -62,7 +62,6 @@ class WorkFragment : BaseFragment(), KodeinAware {
     private var veiled: Boolean = false
     private var _ui: FragmentWorkBinding? = null
     private val ui get() = _ui!!
-    private var selectedJobId: String? = null
 
     init {
 
@@ -271,7 +270,7 @@ class WorkFragment : BaseFragment(), KodeinAware {
                     }
                 }
                 // scrollToPositionWithOffset it to the top
-                scrollToTop(toggledGroup)
+                scrollToTop(expandableGroups, toggledGroup)
             }
 
             ExpandableGroup(expandableHeaderItem, false).apply {
@@ -319,7 +318,9 @@ class WorkFragment : BaseFragment(), KodeinAware {
         }
     }
 
-    private fun scrollToTop(toggledGroup: ExpandableGroup) {
-        layoutManager.scrollToPositionWithOffset(toggledGroup.getPosition(toggledGroup.getItem(0)), -20)
+    private fun scrollToTop(expandableGroups: MutableList<ExpandableGroup>, toggledGroup: ExpandableGroup) {
+        val groupPosition = expandableGroups.indexOf(toggledGroup)
+        (ui.veiledWorkListView.getRecyclerView().layoutManager as LinearLayoutManager)
+            .scrollToPositionWithOffset(groupPosition, -20)
     }
 }

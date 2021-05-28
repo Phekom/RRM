@@ -15,21 +15,18 @@
         android:layout_height="wrap_content"
         tools:text="9999"
         android:padding="5dp"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:textColor="@android:color/black"
-        android:layout_marginStart="@dimen/dimen_10dp"
-        android:layout_marginEnd="@dimen/dimen_10dp" />
+        android:textAppearance="@style/ItisText.Secondary"
+        android:layout_marginStart="@dimen/dimen_8dp"
+        android:layout_marginEnd="@dimen/dimen_8dp" />
 
     <TextView
         android:id="@+id/text"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:textAllCaps="true"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:textColor="?android:attr/textColorSecondary"
-        android:padding="5dp"
-        android:layout_marginStart="@dimen/dimen_10dp"
-        android:layout_marginEnd="@dimen/dimen_10dp"
+        android:textAppearance="@style/ItisText"
+        android:layout_marginStart="@dimen/dimen_8dp"
+        android:layout_marginEnd="@dimen/dimen_8dp"
         tools:text="ALL ABOUT" />
 
 </LinearLayout>

@@ -389,7 +389,7 @@ class JobInfoFragment : BaseFragment(), KodeinAware {
             progressButton.text = getString(string.decline_job)
             sharpToast(
                 message = getString(string.job_declined),
-                style = ToastStyle.INFO
+                style = ToastStyle.DELETE
             )
         }
 

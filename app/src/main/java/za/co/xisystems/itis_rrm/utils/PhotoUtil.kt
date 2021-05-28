@@ -46,6 +46,8 @@ import kotlin.math.roundToLong
 
 object PhotoUtil {
     const val FOLDER = "ITIS_RRM_Photos"
+    private const val BMP_LOAD_FAILED = "Failed to load bitmap"
+
 
     fun getPhotoBitMapFromFile(
         context: Context,
@@ -118,20 +120,23 @@ object PhotoUtil {
         File(
             Environment.getExternalStorageDirectory().toString() +
                 File.separator + FOLDER
-        ).walkTopDown().filter { file -> file.isFile }.sortedByDescending { file -> file.lastModified() }.forEach { file ->
-            val diff = presentTime - file.lastModified()
-            if (diff > daysToKeepThreshold && file.isFile) {
-                Timber.d("${file.name} was deleted, it was $diff old.")
-                file.delete()
-            } else {
-                /**
-                 * Call off the search - sorting means the first file
-                 * younger than our criteria and it's sorted siblings are
-                 * safe to keep.
-                 */
-                return@io
+        ).walkTopDown()
+            .filter { file -> file.isFile }
+            .sortedByDescending { file -> file.lastModified() }
+            .forEach { file ->
+                val diff = presentTime - file.lastModified()
+                if (diff > daysToKeepThreshold && file.isFile) {
+                    Timber.d("${file.name} was deleted, it was $diff old.")
+                    file.delete()
+                } else {
+                    /**
+                     * Call off the search - sorting means the first file
+                     * younger than our criteria and it's sorted siblings are
+                     * safe to keep.
+                     */
+                    return@io
+                }
             }
-        }
     }
 
     fun photoExist(fileName: String): Boolean {
@@ -145,7 +150,7 @@ object PhotoUtil {
     ): Uri {
         var pictureName = photoName
         pictureName =
-            if (!pictureName.toLowerCase(Locale.ROOT)
+            if (!pictureName.lowercase(Locale.ROOT)
                     .contains(".jpg")
             ) "$pictureName.jpg" else pictureName
         var fileName =
@@ -164,6 +169,7 @@ object PhotoUtil {
         return Uri.fromFile(file)
     }
 
+
     fun getPhotoBitmapFromFile(
         context: Context,
         selectedImage: Uri?,
@@ -179,7 +185,7 @@ object PhotoUtil {
                     fileDescriptor =
                         context.contentResolver.openAssetFileDescriptor(selectedImage, "r")
                 } catch (e: FileNotFoundException) {
-                    e.printStackTrace()
+                    Timber.e(e, BMP_LOAD_FAILED)
                 } finally {
                     try {
                         if (BuildConfig.DEBUG && fileDescriptor == null) {
@@ -192,13 +198,13 @@ object PhotoUtil {
                         )
                         fileDescriptor.close()
                     } catch (e: IOException) {
+                        Timber.e(e, BMP_LOAD_FAILED)
                         bm = null
-                        e.printStackTrace()
                     }
                 }
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            Timber.e(e, BMP_LOAD_FAILED)
         }
         return bm
     }
@@ -221,9 +227,9 @@ object PhotoUtil {
                 )
             )
         } catch (e: ImageReadException) {
-            e.printStackTrace()
+            Timber.e(e, BMP_LOAD_FAILED)
         } catch (e: IOException) {
-            e.printStackTrace()
+            Timber.e(e, BMP_LOAD_FAILED)
         }
         outputSet = extractJpegData(metadata, outputSet)
         if (null != outputSet) {
@@ -289,12 +295,13 @@ object PhotoUtil {
                 val cursor =
                     context.contentResolver.query(scaledUri, null, null, null, null)
 
-                cursor?.let {
+                cursor?.run {
                     try {
                         if (cursor.moveToFirst()) { // local filesystem
                             var index = cursor.getColumnIndex("_data")
-                            if (index == -1) // google drive
+                            if (index == -1) { // google drive
                                 index = cursor.getColumnIndex("_display_name")
+                            }
                             result = cursor.getString(index)
                             scaledUri = if (result.isNotBlank()) Uri.parse(result) else return null
                         }
@@ -332,8 +339,8 @@ object PhotoUtil {
             //      this options allow android to claim the bitmap memory if it runs low on memory
 
             // these aren't much use for decodeFile operations
-            options.inPurgeable = true
-            options.inInputShareable = true
+            // options.inPurgeable = true
+            // options.inInputShareable = true
 
             options.inTempStorage = ByteArray(16 * 1024)
             try { //          load the bitmap from its path
@@ -342,7 +349,7 @@ object PhotoUtil {
                 scaledBitmap =
                     Bitmap.createBitmap(actualWidth, actualHeight, Bitmap.Config.ARGB_8888)
             } catch (exception: OutOfMemoryError) {
-                exception.printStackTrace()
+                Timber.e(exception, "Failed to create bitmap")
             }
 
             val ratioX = actualWidth / options.outWidth.toFloat()
@@ -503,16 +510,15 @@ object PhotoUtil {
     @Throws(IOException::class)
     private fun createImageFile(): File {
 
-            val uuid = UUID.randomUUID()
-            val imageFileName = uuid.toString()
+        val uuid = UUID.randomUUID()
+        val imageFileName = uuid.toString()
 
-            val storageDir = File(Environment.getExternalStorageDirectory().toString() + File.separator + FOLDER)
-            if (!storageDir.exists()) {
-                storageDir.mkdirs()
-            }
+        val storageDir = File(Environment.getExternalStorageDirectory().toString() + File.separator + FOLDER)
+        if (!storageDir.exists()) {
+            storageDir.mkdirs()
+        }
 
-            return File(storageDir, "$imageFileName.jpg")
-
+        return File(storageDir, "$imageFileName.jpg")
     }
 
     fun createPhotoFolder(photo: String, fileName: String) {

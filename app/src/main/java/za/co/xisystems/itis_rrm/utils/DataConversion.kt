@@ -32,9 +32,9 @@ object DataConversion {
     fun bigEndianToString(bigEndian: ByteArray): String {
         val stringBuilder = StringBuilder()
         for (b in bigEndian) {
-            stringBuilder.append(String.format("%02x", b))
+            stringBuilder.append(String.format(Locale.ROOT, "%02x", b))
         }
-        return stringBuilder.toString().toUpperCase(Locale.ROOT)
+        return stringBuilder.toString().uppercase(Locale.ROOT)
     }
 
     // Actually one of Mauritz' methods.  I've moved it here because I need to make sure no
@@ -42,7 +42,7 @@ object DataConversion {
 // The parameter should be a DB Hex GUID (Big Endian).
 // There should be NO dashes to start off with!
     fun removeDashesAndUppercaseString(shouldBeABigEndianGuid: String?): String? {
-        return shouldBeABigEndianGuid?.toUpperCase(Locale.ROOT)?.replace("-", "")
+        return shouldBeABigEndianGuid?.uppercase(Locale.ROOT)?.replace("-", "")
     }
 
     // endregion (Public Static Methods)
@@ -82,9 +82,9 @@ object DataConversion {
         val stringBuilder = StringBuilder()
         for ((i, b) in littleEndian.withIndex()) {
             if (listOf(4, 6, 8, 10).contains(i)) stringBuilder.append("-")
-            stringBuilder.append(String.format("%02x", b))
+            stringBuilder.append(String.format(Locale.ROOT, "%02x", b))
         }
-        return stringBuilder.toString().toLowerCase(Locale.ROOT)
+        return stringBuilder.toString().lowercase(Locale.ROOT)
     }
 
     private fun littleEndianToByteArray(littleEndian: String): ByteArray {
@@ -107,8 +107,8 @@ object DataConversion {
         val bigEndian = swapBytes(littleEndian)
         val stringBuilder = StringBuilder()
         for (b in bigEndian) {
-            stringBuilder.append(String.format("%02x", b))
+            stringBuilder.append(String.format(Locale.ROOT, "%02x", b))
         }
-        return stringBuilder.toString().toUpperCase(Locale.ROOT)
-    } // endregion (Private Static Methods)
+        return stringBuilder.toString().uppercase(Locale.ROOT)
+    }
 }

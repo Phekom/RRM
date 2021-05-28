@@ -50,6 +50,7 @@ import org.kodein.di.android.kodein
 import org.kodein.di.generic.instance
 import timber.log.Timber
 import www.sanju.motiontoast.MotionToast
+import za.co.xisystems.itis_rrm.constants.Constants.TWO_SECONDS
 import za.co.xisystems.itis_rrm.custom.notifications.ColorToast
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.databinding.ActivityMainBinding
@@ -139,9 +140,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         // Set MotionToast to use Sanral colours
         MotionToast.setErrorColor(R.color.sanral_dark_red)
         MotionToast.setSuccessColor(R.color.sanral_dark_green)
-        MotionToast.setWarningColor(R.color.colorPrimaryYellow)
-        MotionToast.setInfoColor(R.color.dark_bg_color)
-        MotionToast.setDeleteColor(R.color.dark_bg_color)
+        MotionToast.setWarningColor(R.color.warning_color)
+        MotionToast.setInfoColor(R.color.dark_slate_gray)
+        MotionToast.setDeleteColor(R.color.dark_slate_gray)
 
         this.mainActivityViewModel = this.run {
             ViewModelProvider(this, factory).get(MainActivityViewModel::class.java)
@@ -219,13 +220,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         try {
             gpsEnabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
         } catch (e: Exception) {
-            e.printStackTrace()
+            Timber.e(e, "GPS-related error")
         }
 
         try {
             networkEnabled = ServiceUtil.isNetworkAvailable(applicationContext)
         } catch (e: Exception) {
-            e.printStackTrace()
+            Timber.e(e, "Network-related error")
         }
 
         if (!gpsEnabled) { // notify user
@@ -272,9 +273,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     toast("Please press Back again to exit")
                 }
 
-                Handler().postDelayed({
+                Handler(mainLooper).postDelayed({
                     doubleBackToExitPressed = 1
-                }, 2000)
+                }, TWO_SECONDS)
             }
         }
     }
