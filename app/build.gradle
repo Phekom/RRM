@@ -300,6 +300,7 @@ androidExtensions {
 dependencies {
 
     implementation fileTree(dir: 'libs', include: ['*.jar'])
+    androidTestImplementation 'androidx.test.espresso:espresso-contrib:3.4.0-beta01'
 
     // LeakCanary
     // debugImplementation because LeakCanary should only run in debug builds.
