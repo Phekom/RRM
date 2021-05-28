@@ -11,6 +11,7 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Activity.RESULT_OK
 import android.app.AlertDialog
+import android.app.AlertDialog.Builder
 import android.app.Dialog
 import android.content.Context
 import android.content.Intent
@@ -50,7 +51,6 @@ import timber.log.Timber
 import za.co.xisystems.itis_rrm.BuildConfig
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
-import za.co.xisystems.itis_rrm.R.string
 import za.co.xisystems.itis_rrm.base.LocationFragment
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.results.XIError
@@ -81,6 +81,7 @@ import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import za.co.xisystems.itis_rrm.utils.enums.ToastDuration.LONG
 import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.BOTTOM
+import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.DELETE
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.ERROR
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.INFO
 import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
@@ -244,7 +245,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
 
         if (item != null) {
             ui.titleTextView.text =
-                getString(string.pair, item!!.itemCode, item!!.descr)
+                getString(R.string.pair, item!!.itemCode, item!!.descr)
         } else {
             toast(
                 "item is null in " + javaClass.simpleName
@@ -271,7 +272,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        (activity as MainActivity).supportActionBar?.title = getString(string.edit_estimate)
+        (activity as MainActivity).supportActionBar?.title = getString(R.string.edit_estimate)
         locationWarning = false
     }
 
@@ -297,7 +298,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
         }
         lifecycle.addObserver(uiScope)
         setHasOptionsMenu(true)
-        (activity as MainActivity).supportActionBar?.title = getString(string.edit_estimate)
+        (activity as MainActivity).supportActionBar?.title = getString(R.string.edit_estimate)
 
         itemSections = ArrayList()
         jobArrayList = ArrayList()
@@ -367,17 +368,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
 
                 R.id.cancelButton -> {
                     Coroutines.main {
-                        // Deep six this item and estimate
-                        item?.let {
-                            createViewModel.deleteItemFromList(it.itemId, it.estimateId)
-                            createViewModel.jobItem.value = null
-                            newJob?.removeJobEstimateByItemId(it.itemId)
-                            createViewModel.backupJob(newJob!!)
-                            createViewModel.setJobToEdit(newJob?.jobId!!)
-                            parentFragmentManager.beginTransaction().remove(this).commit()
-                            parentFragmentManager.beginTransaction().detach(this).commit()
-                            navToAddProject(view)
-                        }
+                        buildDeleteDialog(this@EstimatePhotoFragment.requireView())
                     }
                 }
 
@@ -475,7 +466,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
         activity: Activity
     ) {
 
-        val builder: AlertDialog.Builder = AlertDialog.Builder(activity)
+        val builder = Builder(activity)
         builder.setCancelable(false)
         val action = Settings.ACTION_LOCATION_SOURCE_SETTINGS
         val message = ("Your GPS seems to be disabled, Please enable it to continue")
@@ -635,7 +626,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
                 toast("Error: Current location is null!")
             }
         } catch (e: Exception) {
-            toast(string.error_getting_image)
+            toast(R.string.error_getting_image)
             Timber.e(e)
             throw e
         }
@@ -838,7 +829,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
 
         if (!locationWarning) {
             sharpToast(
-                message = getString(string.no_section_for_project),
+                message = getString(R.string.no_section_for_project),
                 style = ERROR,
                 position = BOTTOM,
                 duration = LONG
@@ -1141,7 +1132,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
             ui.costTextView.visibility = View.VISIBLE
             ui.costTextView.startAnimation(animations!!.bounce_soft)
         } else {
-            ui.labelTextView.text = getString(string.warning_estimate_incomplete)
+            ui.labelTextView.text = getString(R.string.warning_estimate_incomplete)
             ui.labelTextView.startAnimation(animations!!.shake_long)
             ui.valueEditText.visibility = View.GONE
             ui.costTextView.visibility = View.GONE
@@ -1175,7 +1166,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
         try {
             qty = value.toDouble()
         } catch (e: NumberFormatException) {
-           Timber.d(e)
+            Timber.d(e)
         }
 
         when (item!!.uom) {
@@ -1196,7 +1187,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
                     validateLengthCosting(currentEndKm, currentStartKm, lineRate, tenderRate)
             }
             else -> {
-                ui.labelTextView.text = getString(string.label_quantity)
+                ui.labelTextView.text = getString(R.string.label_quantity)
                 try { //  Default Calculation
                     lineRate = qty * tenderRate!!
                 } catch (e: NumberFormatException) {
@@ -1225,7 +1216,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
     ): Double? {
         var inlineRate = lineRate
         when (ui.labelTextView.text) {
-            getString(string.label_length_m) ->
+            getString(R.string.label_length_m) ->
                 try { //  Set the Area to the QTY
                     val length = (currentEndKm - currentStartKm) * 1000
                     inlineRate = length * tenderRate!!
@@ -1244,12 +1235,12 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
         tenderRate: Double?
     ): Double? {
         var inlineRate = lineRate
-        ui.labelTextView.text = getString(string.label_amount)
+        ui.labelTextView.text = getString(R.string.label_amount)
         try {
             inlineRate = qty * tenderRate!!
         } catch (e: NumberFormatException) {
             requireActivity().hideKeyboard()
-            toast(getString(string.warning_estimate_enter_prov_sum))
+            toast(getString(R.string.warning_estimate_enter_prov_sum))
         }
         return inlineRate
     }
@@ -1259,13 +1250,13 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
         tenderRate: Double?
     ): Double? {
         var inlineRate: Double?
-        ui.labelTextView.text = getString(string.label_volume_m3)
+        ui.labelTextView.text = getString(R.string.label_volume_m3)
         try {
             inlineRate = qty * tenderRate!!
         } catch (e: NumberFormatException) {
             requireActivity().hideKeyboard()
             inlineRate = null
-            toast(getString(string.warning_estimate_enter_volume))
+            toast(getString(R.string.warning_estimate_enter_volume))
         }
         return inlineRate
     }
@@ -1276,7 +1267,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
         tenderRate: Double?
     ): Double? {
         var inlineRate = lineRate
-        ui.labelTextView.text = getString(string.label_area_m2)
+        ui.labelTextView.text = getString(R.string.label_area_m2)
         try {
             inlineRate = qty * tenderRate!!
         } catch (e: NumberFormatException) {
@@ -1292,7 +1283,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
         tenderRate: Double?
     ): Double? {
         var inlineRate = lineRate
-        ui.labelTextView.text = getString(string.label_quantity)
+        ui.labelTextView.text = getString(R.string.label_quantity)
         try { //  make the change in the array and update view
             inlineRate = qty * tenderRate!!
         } catch (e: NumberFormatException) {
@@ -1421,4 +1412,42 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
         private const val REQUEST_IMAGE_CAPTURE = 1
         private const val REQUEST_STORAGE_PERMISSION = 1
     }
+
+    private suspend fun buildDeleteDialog(view: View) {
+        val itemDeleteBuilder =
+            AlertDialog.Builder(
+                view.context // , android.R.style
+                // .Theme_DeviceDefault_Dialog
+            )
+        itemDeleteBuilder.setTitle(R.string.confirm)
+        itemDeleteBuilder.setIcon(R.drawable.ic_warning)
+        itemDeleteBuilder.setMessage("Delete this project item?")
+        // Yes button
+        itemDeleteBuilder.setPositiveButton(
+            R.string.yes
+        ) { _, _ ->
+            Coroutines.main {
+                item?.let {
+                    sharpToast("Deleting ...", "${it.descr} removed.", DELETE, BOTTOM, LONG)
+                    createViewModel.deleteItemFromList(it.itemId, it.estimateId)
+                    newJob?.removeJobEstimateByItemId(it.itemId)
+                    createViewModel.backupJob(newJob!!)
+                    createViewModel.setJobToEdit(newJob?.jobId!!)
+                    parentFragmentManager.beginTransaction().remove(this).commit()
+                    parentFragmentManager.beginTransaction().detach(this).commit()
+                    navToAddProject(view)
+                }
+            }
+        }
+        // No button
+        itemDeleteBuilder.setNegativeButton(
+            R.string.no
+        ) { dialog, _ ->
+            // Do nothing but close dialog
+            dialog.dismiss()
+        }
+        val deleteAlert = itemDeleteBuilder.create()
+        deleteAlert.show()
+    }
 }
+
