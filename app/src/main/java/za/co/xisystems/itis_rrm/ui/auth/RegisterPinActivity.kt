@@ -65,7 +65,7 @@ class RegisterPinActivity : AppCompatActivity(), AuthListener, KodeinAware {
             val loggedInUser = viewModel.user.await()
             loggedInUser.observe(this, { user ->
                 // Register the user
-                if (user?.pin != null) {
+                if (user?.pinHash != null && user.authd) {
                     Intent(this, MainActivity::class.java).also { home ->
                         home.flags =
                             Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
@@ -135,6 +135,10 @@ class RegisterPinActivity : AppCompatActivity(), AuthListener, KodeinAware {
     override fun onSuccess(userDTO: UserDTO) {
         loading.hide()
         toast("You are Logged in as ${userDTO.userName}")
+    }
+
+    override fun onWarn(message: String) {
+        onFailure(message)
     }
 
     override fun onFailure(message: String) {

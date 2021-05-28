@@ -113,8 +113,8 @@ open class MainApp : Application(), KodeinAware {
         bind() from provider { MainActivityViewModelFactory(instance()) }
         bind() from provider { LocationViewModelFactory(this@MainApp) }
 
-        bind() from provider { SharedViewModelFactory() }
-        bind() from provider { SharedViewModel() }
+        bind() from provider { SharedViewModelFactory(instance()) }
+        bind() from provider { SharedViewModel(instance()) }
     }
 
     override fun onCreate() {

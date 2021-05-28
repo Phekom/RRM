@@ -159,7 +159,7 @@ class JobApprovalDataRepository(
 
                 val errorMessage: String = workflowMoveResponse.errorMessage ?: ""
                 when {
-                    errorMessage.toLowerCase(Locale.ENGLISH).contains("no job found")
+                    errorMessage.lowercase(Locale.ENGLISH).contains("no job found")
                         && direction == WorkflowDirection.FAIL.value -> {
                         appDb.getJobDao().softDeleteJobForJobId(jobId)
                         postWorkflowStatus(XISuccess("DECLINED"))

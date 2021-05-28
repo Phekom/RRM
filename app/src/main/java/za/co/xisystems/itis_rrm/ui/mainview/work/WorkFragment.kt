@@ -57,12 +57,10 @@ class WorkFragment : BaseFragment(), KodeinAware {
     private lateinit var expandableGroups: MutableList<ExpandableGroup>
     private val factory: WorkViewModelFactory by instance()
     private var uiScope = UiLifecycleScope()
-    private lateinit var layoutManager: LinearLayoutManager
-    private var groupAdapter = GroupAdapter<GroupieViewHolder>()
+    private var groupAdapter: GroupAdapter<GroupieViewHolder>? = GroupAdapter<GroupieViewHolder>()
     private var veiled: Boolean = false
     private var _ui: FragmentWorkBinding? = null
     private val ui get() = _ui!!
-    private var selectedJobId: String? = null
 
     init {
 
@@ -117,9 +115,6 @@ class WorkFragment : BaseFragment(), KodeinAware {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
 
         super.onActivityCreated(savedInstanceState)
-
-        layoutManager = LinearLayoutManager(this.context)
-
         workViewModel = activity?.run {
             ViewModelProvider(this, factory).get(WorkViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
@@ -220,7 +215,7 @@ class WorkFragment : BaseFragment(), KodeinAware {
             addAll(workListItems)
             notifyDataSetChanged()
         }
-
+        val layoutManager = LinearLayoutManager(this.requireContext())
         ui.veiledWorkListView.setLayoutManager(layoutManager)
         ui.veiledWorkListView.setAdapter(groupAdapter)
         ui.veiledWorkListView.doOnNextLayout { ui.veiledWorkListView.unVeil() }
@@ -242,8 +237,8 @@ class WorkFragment : BaseFragment(), KodeinAware {
     override fun onDestroyView() {
         super.onDestroyView()
         uiScope.destroy()
-        ui.veiledWorkListView.setAdapter(null)
-        layoutManager.detachAndScrapAttachedViews(ui.veiledWorkListView.getVeiledRecyclerView().Recycler())
+        ui.veiledWorkListView.getRecyclerView().adapter = null
+        groupAdapter = null
         _ui = null
     }
 
@@ -270,7 +265,7 @@ class WorkFragment : BaseFragment(), KodeinAware {
                     }
                 }
                 // scrollToPositionWithOffset it to the top
-                scrollToTop(toggledGroup)
+                scrollToTop(expandableGroups, toggledGroup)
             }
 
             ExpandableGroup(expandableHeaderItem, false).apply {
@@ -318,7 +313,9 @@ class WorkFragment : BaseFragment(), KodeinAware {
         }
     }
 
-    private fun scrollToTop(toggledGroup: ExpandableGroup) {
-        layoutManager.scrollToPositionWithOffset(toggledGroup.getPosition(toggledGroup.getItem(0)), 20)
+    private fun scrollToTop(expandableGroups: MutableList<ExpandableGroup>, toggledGroup: ExpandableGroup) {
+        val groupPosition = expandableGroups.indexOf(toggledGroup)
+        (ui.veiledWorkListView.getRecyclerView().layoutManager as LinearLayoutManager)
+            .scrollToPositionWithOffset(groupPosition, -20)
     }
 }

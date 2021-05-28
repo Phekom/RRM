@@ -6,19 +6,25 @@
 
 package za.co.xisystems.itis_rrm.forge
 
-import com.github.ajalt.timberkt.Timber
 import com.password4j.Argon2Function
 import com.password4j.Password
 import com.password4j.SecureString
 import com.password4j.types.Argon2
+import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
+import za.co.xisystems.itis_rrm.custom.results.XIError
+import za.co.xisystems.itis_rrm.custom.results.XIResult
+import za.co.xisystems.itis_rrm.custom.results.XISuccess
+import za.co.xisystems.itis_rrm.utils.DefaultDispatcherProvider
+import za.co.xisystems.itis_rrm.utils.DispatcherProvider
 import java.security.SecureRandom
 
 /**
  * Wizard generates and validates tokens
  * along with random pass phrases of variable lengths
  */
-class Wizard {
+class Wizard(private val dispatchers: DispatcherProvider = DefaultDispatcherProvider()) {
+
     companion object {
         // Argon2 implementation improvement
         private const val wizardSaltPile = 64
@@ -46,6 +52,12 @@ class Wizard {
      * @param passphrase SecureString
      * @return String
      */
+    suspend fun generateFutureToken(passphrase: SecureString): String {
+        return withContext(dispatchers.default()) {
+            return@withContext generateToken(passphrase)
+        }
+    }
+
     fun generateToken(passphrase: SecureString): String {
         val hash = Password.hash(passphrase).addRandomSalt(wizardSaltPile).with(argon2Function)
         return hash.result
@@ -58,13 +70,20 @@ class Wizard {
      * @param hash String
      * @return Boolean
      */
-    fun validateToken(passphrase: SecureString, hash: String): Boolean {
-        return try {
-            Password.check(passphrase, hash).with(Argon2Function.getInstanceFromHash(hash))
-        } catch (t: Throwable) {
-            Timber.e(t) { t.message ?: XIErrorHandler.UNKNOWN_ERROR }
-            false
+    suspend fun validateFutureToken(passphrase: SecureString, hash: String): XIResult<Boolean> {
+        return withContext(dispatchers.default()) {
+            return@withContext try {
+                val result = validateToken(passphrase, hash)
+                XISuccess(result)
+            } catch (t: Throwable) {
+                val message = "*^* ${ t.message ?: XIErrorHandler.UNKNOWN_ERROR } *^*"
+                XIError(t, message)
+            }
         }
+    }
+
+    fun validateToken(passphrase: SecureString, hash: String): Boolean {
+            return Password.check(passphrase, hash).with(Argon2Function.getInstanceFromHash(hash))
     }
 
     /**
@@ -72,6 +91,13 @@ class Wizard {
      * @param size Int
      * @return String
      */
+
+    suspend fun generateFutureRandomPassphrase(size: Int): String {
+        return withContext(dispatchers.default()) {
+            return@withContext generateRandomPassphrase(size)
+        }
+    }
+
     fun generateRandomPassphrase(size: Int): String {
 
         val charPool: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9').shuffled()

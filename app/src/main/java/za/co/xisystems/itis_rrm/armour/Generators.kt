@@ -60,7 +60,12 @@ class Generators {
 
     @RequiresApi(VERSION_CODES.N)
     fun generateCommonTextPassword(): String {
-        val pwString = generateRandomSpecialCharacters(4) + generateRandomNumbers(4) + generateRandomAlphabet(4, true) + generateRandomAlphabet(4, false) + generateRandomNumbers(2)
+        val pwString =
+            generateRandomSpecialCharacters(4) +
+                generateRandomNumbers(4) +
+                generateRandomAlphabet(4, true) +
+                generateRandomAlphabet(4, false) +
+                generateRandomNumbers(2)
         val pwChars = pwString.chars()
             .mapToObj { data: Int -> data.toChar() }
             .collect(Collectors.toList())
@@ -89,11 +94,26 @@ class Generators {
 
     @RequiresApi(VERSION_CODES.N)
     fun generateSecureRandomPassword(): String {
-        val pwdStream = Stream.concat(getRandomNumbers(4), Stream.concat(getRandomSpecialChars(4), Stream.concat(getRandomAlphabets(4, true), getRandomAlphabets(8, false))))
+        val pwdStream =
+            Stream.concat(
+                getRandomNumbers(4),
+                Stream.concat(
+                    getRandomSpecialChars(4),
+                    Stream.concat(
+                        getRandomAlphabets(4, true),
+                        getRandomAlphabets(8, false)
+                    )
+                )
+            )
         val charList = pwdStream.collect(Collectors.toList())
         charList.shuffle()
         return charList.stream()
-            .collect({ StringBuilder() }, { builder: java.lang.StringBuilder?, obj: Char? -> builder?.append(obj) }) { obj: java.lang.StringBuilder, s: java.lang.StringBuilder? -> obj.append(s) }
+            .collect({ StringBuilder() },
+                { builder: java.lang.StringBuilder?,
+                    obj: Char? ->
+                    builder?.append(obj)
+                })
+            { obj: java.lang.StringBuilder, s: java.lang.StringBuilder? -> obj.append(s) }
             .toString()
     }
 

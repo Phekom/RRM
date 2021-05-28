@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools">
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".ui.auth.ResetPinActivity">
 
     <data>
 
@@ -45,7 +46,7 @@
                         android:background="@drawable/round_corner_orange"
                         app:hintTextAppearance="@style/TextAppearance.AppCompat">
 
-                        <EditText
+                        <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/enterPinEditText"
                             android:hint="@string/enter_old_pin_code"
                             android:autofillHints="password"
@@ -72,7 +73,7 @@
                         android:background="@drawable/round_corner_orange"
                         app:hintTextAppearance="@style/TextAppearance.AppCompat">
 
-                        <EditText
+                        <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/enterNewPinEditText"
                             android:hint="@string/enter_new_pin_code"
                             android:autofillHints="newPassword"
@@ -100,7 +101,7 @@
                         android:imeOptions="actionDone"
                         app:hintTextAppearance="@style/TextAppearance.AppCompat">
 
-                        <EditText
+                        <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/confirmPinEditText"
                             android:hint="@string/hint_confirm_new_pin_code"
                             android:autofillHints="newPassword"
