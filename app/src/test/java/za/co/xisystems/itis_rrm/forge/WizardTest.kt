@@ -10,15 +10,14 @@ import com.github.ajalt.timberkt.Timber
 import com.password4j.SecureString
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
-import org.junit.Assert
+import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertTrue
+import org.junit.Assert.fail
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.testutils.CoroutineTestRule
-
-@RunWith(RobolectricTestRunner::class)
 
 class WizardTest {
 
@@ -27,39 +26,54 @@ class WizardTest {
     var coroutinesTestRule = CoroutineTestRule()
 
     @ExperimentalCoroutinesApi
-    private val sut: Wizard = Wizard(coroutinesTestRule.testDispatcherProvider)
+    private var sut: Wizard = Wizard()
+
+    @ExperimentalCoroutinesApi
+    @Before
+    fun setUp() {
+        System.setProperty("kotlinx.coroutines.debug", "on")
+        sut = Wizard(coroutinesTestRule.testDispatcherProvider)
+    }
 
     @Test
-    fun `it Can Secure Strings`() {
-        val goodPassphrase = SecureString("mysterydirector9999".toCharArray())
+        /**
+         * SecureStrings don't reveal anything to log-hounds and  ram-snatchers
+         * @return Unit
+         */
+    fun `it Can Secure Strings`() = runBlocking {
+        val goodPassphrase = SecureString("mysteryDirector9999".toCharArray())
 
         try {
             println("Secure string: $goodPassphrase")
             assert(goodPassphrase.toString().contains("***"))
         } catch (t: Throwable) {
             Timber.e(t) { t.message ?: XIErrorHandler.UNKNOWN_ERROR }
-            Assert.fail("It should not have thrown an exception")
+            fail("It should not have thrown this exception: ${t.message}")
         }
     }
 
     @Test
+        /**
+         *
+         * @return Unit
+         */
     fun `it Can Erase Sources`() = runBlocking {
         try {
             val secretString = "MySecretString".toCharArray()
             val secureString = SecureString(secretString, true)
             secureString.clear()
-            println("Secret string: $secretString")
+            println("Secret string after erasure: $secretString")
             println("Secure string: $secureString")
-            Assert.assertNotEquals(secretString, "MySecretString".toCharArray())
+            assertNotEquals(secretString, "MySecretString".toCharArray())
         } catch (t: Throwable) {
             Timber.e(t) { t.message ?: XIErrorHandler.UNKNOWN_ERROR }
-            Assert.fail("It should not have thrown an exception")
+            fail("It should not have thrown this exception: ${t.message}")
         }
     }
 
     @ExperimentalCoroutinesApi
     @Test
-    fun `it Can Generate Tokens`() {
+    fun `it Can Generate Tokens`() = runBlocking {
 
         try {
             val securityToken = sut.generateToken(SecureString("XiSystems@1972!".toCharArray()))
@@ -67,7 +81,7 @@ class WizardTest {
             assert(securityToken.isNotBlank())
         } catch (t: Throwable) {
             Timber.e(t) { t.message ?: XIErrorHandler.UNKNOWN_ERROR }
-            Assert.fail("It should not have thrown an exception")
+            fail("It should not have thrown this exception: ${t.message}")
         }
     }
 
@@ -76,44 +90,82 @@ class WizardTest {
     /**
     @ExperimentalCoroutinesApi
     @Test
-    fun `it Can Validate Tokens`(): Unit = runBlocking {
-        try {
-            val goodPassphrase = SecureString("mysterydirector9999".toCharArray(), false)
-            val failPassphrase = SecureString("mysteriousorange7777".toCharArray(), false)
-            sut.generateToken(goodPassphrase).also { securityToken ->
+    fun `it Can Validate Tokens`(): Unit = coroutinesTestRule.testDispatcher.runBlockingTest {
+        withContext(coroutinesTestRule.testDispatcherProvider.default()) {
+            try {
+                val goodPassphrase = "XiSystems@2021!"
+                val failPassphrase = "mysteriousOrange7777"
+                val securityToken = sut.generateFutureToken(SecureString(goodPassphrase.toCharArray(), false))
 
-                println("Security Token: $securityToken")
+                sut.validateFutureToken(
+                    SecureString(
+                        goodPassphrase.toCharArray(),
+                        false
+                    ),
+                    securityToken
+                ).also { result ->
+                    when (result) {
+                        is XISuccess<Boolean> -> {
+                            assertEquals(true, result.data)
+                            println("Legit cmp passed")
+                        }
+                        is XIError -> {
+                            fail(result.message)
+                        }
+                        else -> {
+                            fail("$result")
+                        }
+                    }
+                }
 
-                sut.validateToken(failPassphrase, securityToken).also { isBogus ->
-                    Assert.assertEquals(false, isBogus)
-                    println("Bogus cmp passed")
+                sut.validateFutureToken(
+                    SecureString(
+                        failPassphrase.toCharArray(),
+                        false
+                    ),
+                    securityToken
+                ).also { result ->
+
+                    when (result) {
+                        is XISuccess<Boolean> -> {
+                            assertEquals(false, result.data)
+                            println("Bogus cmp passed")
+                        }
+                        is XIError -> {
+                            fail(result.message)
+                        }
+                        else -> {
+                            fail("$result")
+                        }
+                    }
                 }
-                sut.validateToken(goodPassphrase, securityToken).also { isLegit ->
-                    Assert.assertEquals(true, isLegit)
-                    println("Legit cmp passed")
-                }
-                assertTrue(securityToken.length > 0)
+
+                assertTrue(securityToken.isNotEmpty())
+            } catch (t: Throwable) {
+                val message = t.message ?: XIErrorHandler.UNKNOWN_ERROR
+                Timber.e(t) { t.message ?: XIErrorHandler.UNKNOWN_ERROR }
+                fail("It should not have thrown this exception: $message")
             }
-        } catch (t: Throwable) {
-            Timber.e(t) { t.message ?: XIErrorHandler.UNKNOWN_ERROR }
-            assertTrue(t.message != null)
-            // Assert.fail("It should not have thrown this exception: $t")
         }
     }
     */
 
+    @ExperimentalCoroutinesApi
     @Test
+        /**
+         * Unique random passphrases are used to secure data at rest
+         * @return Unit
+         */
     fun `it Can Generate Random Passphrase`() {
 
         try {
             val randomPhrase = sut.generateRandomPassphrase(64)
-            Assert.assertTrue(randomPhrase.length == 64)
-            println(randomPhrase)
+            assertTrue(randomPhrase.length == 64)
             // Regex to check alphanumeric string
-            Assert.assertTrue(randomPhrase.matches("^[a-zA-Z0-9]*$".toRegex()))
+            assertTrue(randomPhrase.matches("^[a-zA-Z0-9]*$".toRegex()))
         } catch (t: Throwable) {
             Timber.e(t) { t.message ?: XIErrorHandler.UNKNOWN_ERROR }
-            Assert.fail("It should not have thrown this exception: ${t.message}")
+            fail("It should not have thrown this exception: ${t.message}")
         }
     }
 }

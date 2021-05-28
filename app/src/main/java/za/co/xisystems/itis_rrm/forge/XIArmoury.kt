@@ -9,8 +9,7 @@ package za.co.xisystems.itis_rrm.forge
 import android.content.Context
 import androidx.security.crypto.MasterKey
 import com.password4j.SecureString
-import kotlinx.coroutines.withContext
-import za.co.xisystems.itis_rrm.utils.DispatcherProvider
+import za.co.xisystems.itis_rrm.custom.results.XIResult
 
 object XIArmoury {
     private const val PREFS_FILE = "colors_and_styles"
@@ -22,7 +21,7 @@ object XIArmoury {
     private val sageInstance: Sage = Sage()
 
     // Generate Random Passphrase
-    private fun generatePassphrase(length: Int): String {
+    private fun generatePassphrase(length: Int = PASS_LENGTH): String {
         return wizardInstance.generateRandomPassphrase(length)
     }
 
@@ -32,7 +31,7 @@ object XIArmoury {
     }
 
     // Validate Token
-    suspend fun validateFutureToken(passphrase: SecureString, hash: String): Boolean {
+    suspend fun validateFutureToken(passphrase: SecureString, hash: String): XIResult<Boolean> {
         return wizardInstance.validateFutureToken(passphrase, hash)
     }
 
@@ -73,20 +72,12 @@ object XIArmoury {
        return scribeInstance.writeEncryptedFile(context, masterKey, fileName, fileContent)
     }
 
-    suspend fun readEncryptedFile(dispatchers: DispatcherProvider, context: Context, fileName: String): ByteArray {
+    suspend fun readEncryptedFile(context: Context, fileName: String): ByteArray {
         val masterKey = generateMasterKey(context)
         return scribeInstance.readEncryptedFile(context, masterKey, fileName)
     }
 
-    suspend fun generateFutureToken(dispatchers: DispatcherProvider, passphrase: SecureString): String {
-        return withContext(dispatchers.default()) {
-            return@withContext wizardInstance.generateToken(passphrase)
-        }
-    }
-
-    suspend fun validateFutureToken(dispatchers: DispatcherProvider, passphrase: SecureString, hash: String): Boolean {
-        return withContext(dispatchers.default()) {
-            return@withContext wizardInstance.validateToken(passphrase, hash)
-        }
+    fun validateToken(oldTokenString: SecureString, hash: String): Boolean {
+        return wizardInstance.validateToken(oldTokenString, hash)
     }
 }
