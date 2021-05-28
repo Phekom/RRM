@@ -1,93 +1,87 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal">
+    android:orientation="horizontal"
+    android:padding="@dimen/dimen_8dp">
 
-    <RelativeLayout
-        android:layout_width="match_parent"
+    <TextView
+        android:id="@+id/measure_item_description_textView"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="@dimen/small">
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:layout_toStartOf="@id/view_captured_item_photo"
+        android:maxWidth="@dimen/dimen_160dp"
+        android:text="@string/some_super_long_item_name_in_case_it_gets_cut_off"
+        android:textAppearance="@style/ItisText.OrangeLabel"
+        android:layout_marginStart="@dimen/dimen_8dp"
+        android:layout_marginEnd="@dimen/dimen_8dp"/>
 
-        <TextView
-            android:id="@+id/measure_item_description_textView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentStart="true"
+    <TextView
+        android:id="@+id/measure_item_quantity_textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/measure_item_description_textView"
+        android:layout_alignParentStart="true"
 
-            android:layout_alignParentTop="true"
-            android:maxWidth="@dimen/dimen_160dp"
-            android:layout_marginStart="10dp"
-            android:text="@string/some_super_long_item_name_in_case_it_gets_cut_off"
-            android:textColor="@color/sanral_burnt_orange"
-            android:textSize="18sp" />
+        android:maxWidth="160dp"
+        android:layout_marginStart="10dp"
+        android:text="@string/qty_123"
+        android:textAppearance="@style/ItisText" />
 
-        <TextView
-            android:id="@+id/measure_item_quantity_textView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/measure_item_description_textView"
-            android:layout_alignParentStart="true"
+    <TextView
+        android:id="@+id/measure_item_uom_textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/measure_item_quantity_textView"
+        android:layout_alignParentStart="true"
 
-            android:maxWidth="160dp"
-            android:layout_marginStart="10dp"
-            android:text="@string/qty_123"
-            android:textColor="@android:color/black"
-            android:textSize="14sp" />
+        android:maxWidth="160dp"
+        android:layout_marginStart="10dp"
+        android:hint="UOM"
+        android:textAppearance="@style/ItisText"
+        tools:ignore="HardcodedText" />
 
-        <TextView
-            android:id="@+id/measure_item_uom_textView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/measure_item_quantity_textView"
-            android:layout_alignParentStart="true"
+    <TextView
+        android:id="@+id/measure_item_price_textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/measure_item_uom_textView"
+        android:layout_alignParentStart="true"
 
-            android:maxWidth="160dp"
-            android:layout_marginStart="10dp"
-            android:hint="UOM"
-            android:textColor="@android:color/black"
-            android:textSize="14sp" />
-
-        <TextView
-            android:id="@+id/measure_item_price_textView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/measure_item_uom_textView"
-            android:layout_alignParentStart="true"
-
-            android:hint="R 0.00"
-            android:layout_marginStart="10dp"
-            android:textColor="@android:color/black"
-            android:textSize="14sp" />
+        android:hint="R 0.00"
+        android:layout_marginStart="10dp"
+        android:textAppearance="@style/ItisText"
+        tools:ignore="HardcodedText" />
 
 
-        <ImageView
-            android:id="@+id/view_captured_item_photo"
-            android:layout_width="99dp"
-            android:layout_height="97dp"
-            android:layout_alignParentEnd="true"
-            android:layout_marginStart="@dimen/xsmall"
-            android:layout_marginEnd="15dp"
-            tools:src="@drawable/logo_new_medium" />
+    <ImageView
+        android:id="@+id/view_captured_item_photo"
+        android:layout_width="99dp"
+        android:layout_height="97dp"
+        android:layout_alignParentEnd="true"
+        android:layout_toStartOf="@id/view_captured_item_photo"
+        android:layout_marginStart="@dimen/xsmall"
+        android:layout_marginEnd="15dp"
+        tools:src="@drawable/logo_new_medium"
+        android:contentDescription="@string/measurement_gallery" />
 
-        <ImageButton
-            android:id="@+id/correctButton"
-            android:layout_width="50dp"
-            android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:layout_gravity="center"
-            android:layout_marginStart="@dimen/dimen_10dp"
-            android:layout_marginTop="54dp"
-            android:layout_marginEnd="10dp"
-            android:layout_toStartOf="@+id/view_captured_item_photo"
-            android:layout_toEndOf="@+id/measure_item_description_textView"
-            android:background="@drawable/buttonshape"
-            app:srcCompat="@drawable/ic_edit" />
+    <ImageButton
+        android:id="@+id/correctButton"
+        android:layout_width="32dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_alignBottom="@id/measure_item_price_textView"
+        android:layout_marginStart="@dimen/dimen_8dp"
+        android:layout_marginTop="@dimen/dimen_8dp"
+        android:layout_marginEnd="@dimen/dimen_8dp"
+        android:layout_toStartOf="@id/view_captured_item_photo"
+        android:background="@drawable/buttonshape"
+        app:srcCompat="@drawable/ic_edit"
+        android:layout_below="@+id/measure_item_description_textView"
+        android:contentDescription="@string/adjust_estimate_button" />
 
-    </RelativeLayout>
-
-
-</LinearLayout>
+</RelativeLayout>

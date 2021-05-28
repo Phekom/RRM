@@ -17,6 +17,7 @@ import za.co.xisystems.itis_rrm.BuildConfig
 
 class ServiceUriUtil {
     var webServiceUri: String? = null
+    var webServiceHost: String? = null
 
     companion object {
         private val TAG = ServiceUriUtil::class.java.simpleName
@@ -24,13 +25,13 @@ class ServiceUriUtil {
         private fun initInstance() {
             instance = ServiceUriUtil()
             instance!!.webServiceUri = webServiceRootUri
+            instance!!.webServiceHost = serverUriFriendlyString
         }
 
         fun getInstance(): ServiceUriUtil? {
             if (null == instance) {
                 Timber.d("Initializing ServiceUriUtil")
                 initInstance()
-                instance!!.webServiceUri = webServiceRootUri
             }
             return instance
         }
@@ -38,10 +39,10 @@ class ServiceUriUtil {
         private val webServiceRootUri: String
             get() = BuildConfig.API_HOST
 
-        val serverUriFriendlyString: String
+        private val serverUriFriendlyString: String
             get() {
                 var url = BuildConfig.API_HOST
-                url = url.replace("http://", "")
+                url = url.replace("https://", "")
                 val x = url.indexOf("/")
                 return if (x > -1) url.substring(0, x) else url
             }

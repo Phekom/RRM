@@ -40,7 +40,7 @@ data class UserDTO(
     var imei: String?,
     @SerializedName("DEVICE")
     var device: String?,
-    var pin: ByteArray?,
+    var pinHash: String?,
     var authd: Boolean = true
 
 ) : Serializable, Parcelable {
@@ -56,7 +56,7 @@ data class UserDTO(
         phoneNumber = parcel.readString(),
         imei = parcel.readString(),
         device = parcel.readString(),
-        pin = parcel.createByteArray(),
+        pinHash = parcel.readString(),
         authd = parcel.readByte() != 0.toByte()
     )
 
@@ -96,7 +96,7 @@ data class UserDTO(
         parcel.writeString(phoneNumber)
         parcel.writeString(imei)
         parcel.writeString(device)
-        parcel.writeByteArray(pin)
+        parcel.writeString(pinHash)
         parcel.writeList(userRoles.toList())
         parcel.writeByte(if (authd) 1 else 0)
     }

@@ -81,6 +81,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.WorkFlowDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.WorkFlowRouteDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.WorkFlowsDTO
 import za.co.xisystems.itis_rrm.data.localDB.views.ContractSelectorView
+import za.co.xisystems.itis_rrm.forge.XIArmoury
 import za.co.xisystems.itis_rrm.utils.Converters
 import za.co.xisystems.itis_rrm.utils.DatetimeConverters
 
@@ -102,7 +103,7 @@ import za.co.xisystems.itis_rrm.utils.DatetimeConverters
         WorkFlowsDTO::class, WfWorkStepDTO::class
     ],
     views = [ContractSelectorView::class],
-    version = 17
+    version = 18
 )
 @TypeConverters(Converters::class, DatetimeConverters::class)
 @GenerateRoomMigrations
@@ -141,7 +142,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun getWorkStepDao(): WorkStepDao
 
     companion object {
-
+        const val MAX_DB_VERSIONS = 999_999_999
         @Volatile
         private var instance: AppDatabase? = null
         private val LOCK = Any()
@@ -154,17 +155,20 @@ abstract class AppDatabase : RoomDatabase() {
         private fun buildDatabase(context: Context) =
             when {
                 BuildConfig.DEBUG -> {
-                    // Unecrypted DB for Dev, Tracing and Testing
+                    // Unencrypted DB for Dev, Tracing and Testing
                     Room.databaseBuilder(
                         context.applicationContext,
                         AppDatabase::class.java,
                         "myRRM_Development.db"
                     ).addMigrations(*AppDatabase_Migrations.build())
-                        .fallbackToDestructiveMigrationFrom(20).build()
+                        .fallbackToDestructiveMigrationFrom(MAX_DB_VERSIONS).build()
                 }
                 else -> {
-                    // Encrypyed DB with one-time generated passphrase
-                    val passphrase: ByteArray = SQLiteDatabase.getBytes("sillypassphrase".toCharArray())
+                    // Encrypted DB with one-time generated passphrase
+                    val passphrase: ByteArray =
+                        SQLiteDatabase.getBytes(
+                            XIArmoury.readSecretPassphrase(context).toCharArray()
+                        )
                     val factory = SupportFactory(passphrase, null, false)
                     Room.databaseBuilder(
                         context.applicationContext,
@@ -172,7 +176,7 @@ abstract class AppDatabase : RoomDatabase() {
                         "myRRM_Release.db"
                     ).openHelperFactory(factory)
                         .addMigrations(*AppDatabase_Migrations.build())
-                        .fallbackToDestructiveMigrationFrom(20).build()
+                        .fallbackToDestructiveMigrationFrom(MAX_DB_VERSIONS).build()
                 }
             }
     }

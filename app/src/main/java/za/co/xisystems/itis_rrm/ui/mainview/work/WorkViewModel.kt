@@ -36,7 +36,6 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.WfWorkStepDTO
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.WorkDataRepository
-import za.co.xisystems.itis_rrm.extensions.getDistinct
 import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
 
@@ -92,7 +91,7 @@ class WorkViewModel(
 
     suspend fun getJobsForActivityId(activityId1: Int, activityId2: Int): LiveData<List<JobDTO>> {
         return withContext(ioContext) {
-            workDataRepository.getJobsForActivityIds(activityId1, activityId2).getDistinct()
+            workDataRepository.getJobsForActivityIds(activityId1, activityId2).distinctUntilChanged()
         }
     }
 
