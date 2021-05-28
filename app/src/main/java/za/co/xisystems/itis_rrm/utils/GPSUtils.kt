@@ -21,7 +21,7 @@ import za.co.xisystems.itis_rrm.services.LocationLiveData
 class GPSUtils(private val context: Context) {
 
     private val settingsClient: SettingsClient = LocationServices.getSettingsClient(context)
-    private val locationSettingsRequest: LocationSettingsRequest?
+    private val locationSettingsRequest: LocationSettingsRequest
     private val locationManager =
         context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
 
@@ -36,16 +36,16 @@ class GPSUtils(private val context: Context) {
         builder.setAlwaysShow(true)
     }
 
-    fun activateGPS(OnGpsListener: OnGpsListener?) {
+    fun activateGPS(onGpsListener: OnGpsListener?) {
 
         if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-            OnGpsListener?.gpsStatus(true)
+            onGpsListener?.gpsStatus(true)
         } else {
             settingsClient
                 .checkLocationSettings(locationSettingsRequest)
                 .addOnSuccessListener(context as FragmentActivity) {
                     //  GPS is already enable, callback GPS status through listener
-                    OnGpsListener?.gpsStatus(true)
+                    onGpsListener?.gpsStatus(true)
                 }
                 .addOnFailureListener(context) { e ->
                     when ((e as ApiException).statusCode) {

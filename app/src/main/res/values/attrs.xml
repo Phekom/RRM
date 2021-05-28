@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
 
     Copyright 2016 Jeffrey Sibbold
 
@@ -17,7 +16,7 @@
 
 -->
 <resources>
-    
+
     <declare-styleable name="ZoomageView">
         <attr name="zoomage_zoomable" format="boolean" />
         <attr name="zoomage_translatable" format="boolean" />
@@ -36,5 +35,46 @@
         </attr>
     </declare-styleable>
 
+    <!--Common attributes-->
+    <attr name="colorFillColor" format="color" />
+    <attr name="colorStrokeColor" format="color" />
+
+    <!--Label view attributes-->
+    <declare-styleable name="LabelLinkView">
+        <attr name="android:text" />
+        <attr name="leadingIcon" format="integer" />
+        <attr name="linkUrl" format="string" />
+    </declare-styleable>
+
+    <!--Color attribute view attributes-->
+    <declare-styleable name="ColorAttributeView">
+        <attr name="android:text" />
+        <attr name="colorFillColor" />
+        <attr name="colorStrokeColor" />
+    </declare-styleable>
+
+    <!--Color dot view attributes-->
+    <declare-styleable name="ColorDotView">
+        <attr name="colorFillColor" />
+        <attr name="colorStrokeColor" />
+    </declare-styleable>
+
+    <!--Type attribute view attributes-->
+    <declare-styleable name="TypeAttributeView">
+        <attr name="android:text" />
+        <attr name="previewText" format="string" />
+        <attr name="previewTextAppearance" format="reference" />
+        <attr name="previewTextColor" format="reference" />
+    </declare-styleable>
+
+    <!--Shape attribute view attributes-->
+    <declare-styleable name="ShapeAttributeView">
+        <attr name="android:text" />
+        <attr name="shapeSizeLetter" format="string" />
+        <attr name="shapeFillColor" format="color" />
+        <attr name="shapeStrokeColor" format="color" />
+        <attr name="shapeAppearanceAttr" format="reference" />
+    </declare-styleable>
 
 </resources>
+

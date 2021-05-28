@@ -42,7 +42,8 @@
                     android:layout_marginStart="50dp"
                     android:layout_marginEnd="50dp"
                     android:layout_marginTop="120dp"
-                    android:orientation="vertical">
+                    android:orientation="vertical"
+                    tools:ignore="RelativeOverlap">
 
                     <TextView
                         android:id="@+id/textV"
@@ -67,13 +68,14 @@
                         android:hint="@string/enter_username"
                         app:hintTextAppearance="@style/TextAppearance.AppCompat">
 
-                        <EditText
+                        <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/register_username_editText"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_gravity="center"
                             android:background="@null"
                             android:drawableStart="@drawable/ic_baseline_person_white_24px"
+                            android:drawableTint="@color/primaryColor"
                             android:gravity="start"
                             android:imeOptions="actionNext"
                             android:inputType="text"
@@ -95,13 +97,14 @@
                         android:hint="@string/enter_password"
                         app:hintTextAppearance="@style/TextAppearance.AppCompat">
 
-                        <EditText
+                        <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/register_password_editText"
                             android:layout_width="fill_parent"
                             android:layout_height="wrap_content"
                             android:layout_gravity="center"
                             android:background="@null"
                             android:drawableStart="@drawable/ic_baseline_lock_white_24px"
+                            android:drawableTint="@color/primaryColor"
                             android:ems="10"
                             android:gravity="start"
                             android:inputType="textPassword"
@@ -136,7 +139,7 @@
                     android:layout_marginEnd="20dp"
 
                     android:background="@drawable/ic_action_settings"
-                    android:contentDescription="TODO"
+                    android:contentDescription="@string/application_settings"
                     app:layout_constraintBottom_toBottomOf="@+id/layout"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintHorizontal_bias="0.956"
@@ -181,21 +184,25 @@
                 android:id="@+id/serverTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
                 android:layout_marginStart="30dp"
+                android:layout_marginEnd="@dimen/dimen_30dp"
                 android:alpha="0.5"
-                android:text="Server"
-                android:textColor="@color/black" />
+                android:gravity="start"
+                android:text="@string/server"
+                android:textColor="@color/black"/>
 
             <TextView
                 android:id="@+id/buildFlavorTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true"
+                android:layout_marginStart="30dp"
                 android:layout_marginEnd="30dp"
-
+                android:gravity="end"
+                android:layout_toEndOf="@id/serverTextView"
                 android:alpha="0.5"
-                android:text="Demo"
+                android:text="@string/version"
                 android:textColor="@color/black" />
 
 
@@ -209,7 +216,8 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:srcCompat="@drawable/logo_new_large" />
+            app:srcCompat="@drawable/logo_new_large"
+            android:contentDescription="@string/sanral_logo" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

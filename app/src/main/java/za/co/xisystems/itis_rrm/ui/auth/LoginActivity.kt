@@ -12,6 +12,7 @@ package za.co.xisystems.itis_rrm.ui.auth
 import android.R.style
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
 import android.view.View
 import android.widget.Button
 import androidx.appcompat.app.AlertDialog.Builder
@@ -25,6 +26,7 @@ import org.kodein.di.generic.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.constants.Constants.TWO_SECONDS
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.results.XIError
 import za.co.xisystems.itis_rrm.custom.results.isRecoverableException
@@ -38,6 +40,8 @@ import za.co.xisystems.itis_rrm.utils.hide
 import za.co.xisystems.itis_rrm.utils.hideKeyboard
 import za.co.xisystems.itis_rrm.utils.snackbar
 import za.co.xisystems.itis_rrm.utils.toast
+import java.util.concurrent.TimeUnit
+import javax.xml.datatype.DatatypeConstants.SECONDS
 
 class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, KodeinAware {
     private var binding: ActivityLoginBinding? = null
@@ -48,6 +52,8 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
     override val kodein by kodein()
     private val factory: AuthViewModelFactory by instance()
     private lateinit var viewModel: AuthViewModel
+    private var doubleBackToExitPressed = 0
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -185,6 +191,20 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
         }
         val setPinDialog = builder.create()
         setPinDialog.show()
+    }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+        if (doubleBackToExitPressed == 2) {
+            finishAffinity()
+        } else {
+            doubleBackToExitPressed++
+            toast("Please press Back again to exit")
+        }
+
+        Handler(mainLooper).postDelayed({
+            doubleBackToExitPressed = 1
+        }, TWO_SECONDS)
     }
 
     override fun onResume() {

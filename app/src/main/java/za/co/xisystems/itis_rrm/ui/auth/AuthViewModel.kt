@@ -141,7 +141,7 @@ class AuthViewModel(
                         listenerNotify {
                             validPin.value = true
                         }
-                   } else {
+                    } else {
                         listenerNotify {
                             authListener?.onFailure("Old Pin is incorrect. Please enter the correct Pin")
                         }
@@ -181,7 +181,7 @@ class AuthViewModel(
                 .plus(userPin).toCharArray(),
             false
         )
-        return XIArmoury.validateFutureToken(oldTokenString, repository.getHash().toString())
+        return XIArmoury.validateToken(oldTokenString, repository.getHash().toString())
     }
 
     fun onRegPinButtonClick(view: View) {
@@ -192,116 +192,68 @@ class AuthViewModel(
                 view.isClickable = false
             }
 
-            when {
-                enterPin.isNullOrEmpty() -> {
-                    listenerNotify {
-                        authListener?.onWarn("Please Enter PIN")
-                    }
-                }
-                confirmPin.isNullOrEmpty() -> {
-                    listenerNotify {
-                        authListener?.onWarn("Please Confirm PIN")
-                    }
-                }
-                enterPin != confirmPin -> {
-                    listenerNotify {
-                        authListener?.onWarn("PINs do not match")
-                    }
-                }
-                confirmPin!!.length != PIN_SIZE -> {
-                    listenerNotify {
-                        authListener?.onWarn("PIN should be 4 (four) digits long")
-                    }
-                }
-                else -> {
-                    registerUserPin(view)
-                }
-            }
-        }
-    }
-
-    private suspend fun registerUserPin(view: View) {
-        try {
-            val loggedInUser = user.await().value
-            loggedInUser?.let { it ->
-                val imie = "45678"
-                val androidDevice =
-                    "${R.string.android_sdk} ${VERSION.SDK_INT} " +
-                        "${Build.BRAND} ${Build.MODEL} ${Build.DEVICE}"
-
-                val hashInput = it.userName.plus(androidDevice).plus(confirmPin!!)
-                repository.updateUser(
-                    it.phoneNumber.toString(),
-                    imie,
-                    androidDevice,
-                    XIArmoury.generateFutureToken(
-                        SecureString(hashInput.toCharArray(), true)
-                    )
-                )
-                repository.authenticatePin()
-                val updatedUser = user.await().value
-                listenerNotify {
-                    authListener?.onSuccess(updatedUser!!)
-                }
-            }
-        } catch (e: ServiceException) {
-            listenerNotify {
-                postError(e)
-            }
-        } catch (e: NoInternetException) {
-            listenerNotify {
-                postError(e)
-            }
-        } catch (e: NoConnectivityException) {
-            listenerNotify {
-                postError(e)
-            }
-        } finally {
-            listenerNotify {
-                view.isClickable = true
-            }
-        }
-    }
-
-    fun onRegButtonClick(view: View) {
-        viewModelScope.launch(mainContext) {
-
-            authListener?.onStarted()
-
-            when {
-                username.isNullOrEmpty() -> {
-                    authListener?.onWarn("UserName is required")
-                }
-                password.isNullOrEmpty() -> {
-                    authListener?.onWarn("Password is required")
-                }
-                else -> {
-                    registerNewUser(username, password)
-                }
-            }
-        }
-    }
-
-    private suspend fun registerNewUser(userName: String?, password: String?) {
-        withContext(ioContext) {
             try {
 
-                val phoneNumber = "12345457"
-                val imie = "45678"
-                val androidDevice =
-                    "${R.string.android_sdk} ${VERSION.SDK_INT} " +
-                        "${Build.BRAND} ${Build.MODEL} ${Build.DEVICE}"
-
-                repository.userRegister(
-                    userName!!,
-                    password!!,
-                    phoneNumber,
-                    imie,
-                    androidDevice
-                )
-            } catch (e: AuthException) {
+                when {
+                    enterPin.isNullOrEmpty() -> {
+                        listenerNotify {
+                            authListener?.onWarn("Please Enter PIN")
+                        }
+                    }
+                    confirmPin.isNullOrEmpty() -> {
+                        listenerNotify {
+                            authListener?.onWarn("Please Confirm PIN")
+                        }
+                    }
+                    enterPin != confirmPin -> {
+                        listenerNotify {
+                            authListener?.onWarn("PINs do not match")
+                        }
+                    }
+                    confirmPin!!.length != PIN_SIZE -> {
+                        listenerNotify {
+                            authListener?.onWarn("PIN should be 4 (four) digits long")
+                        }
+                    }
+                    else -> {
+                        registerUserPin(view)
+                    }
+                }
+            } catch (t: Throwable) {
                 listenerNotify {
-                    postError(e)
+                    postError(t)
+                }
+            } finally {
+                listenerNotify {
+                    view.isClickable = true
+                }
+            }
+        }
+    }
+
+        private suspend fun registerUserPin(view: View) {
+            try {
+                val loggedInUser = user.await().value
+                loggedInUser?.let { it ->
+                    val imie = "45678"
+                    val androidDevice =
+                        "${R.string.android_sdk} ${VERSION.SDK_INT} " +
+                            "${Build.BRAND} ${Build.MODEL} ${Build.DEVICE}"
+
+                    val hashInput = it.userName.plus(androidDevice).plus(confirmPin!!)
+                    repository.updateUser(
+                        it.phoneNumber.toString(),
+                        imie,
+                        androidDevice,
+                        XIArmoury.generateFutureToken(
+                            SecureString(hashInput.toCharArray(), true)
+                        )
+                    )
+                    repository.authenticatePin()
+                    val updatedUser = user.await().value
+                    listenerNotify {
+                        authListener?.onSuccess(updatedUser!!)
+                    }
                 }
             } catch (e: ServiceException) {
                 listenerNotify {
@@ -315,59 +267,118 @@ class AuthViewModel(
                 listenerNotify {
                     postError(e)
                 }
-            }
-        }
-    }
-
-    private fun postError(t: Throwable) {
-        authListener?.onFailure(t.message ?: XIErrorHandler.UNKNOWN_ERROR)
-    }
-
-    suspend fun expirePin() {
-        repository.expirePin()
-    }
-
-    suspend fun validatePin(pin: String) = viewModelScope.launch(mainContext) {
-        val loggedInUser = user.await().value
-        withContext(Dispatchers.IO) {
-            val inputHash = SecureString(
-                loggedInUser!!.userName
-                    .plus(loggedInUser.device).plus(pin).toCharArray(), false
-            )
-            val result = XIArmoury.validateFutureToken(
-                inputHash, loggedInUser.pinHash!!
-            )
-            if (!result) {
-                repository.expirePin()
-                listenerNotify { authListener?.onFailure("Invalid PIN entered") }
-            } else {
-                repository.authenticatePin()
-                viewModelScope.launch(ioContext) {
-                    PhotoUtil.cleanupDevice()
+            } finally {
+                listenerNotify {
+                    view.isClickable = true
                 }
-                listenerNotify { authListener?.onSuccess(loggedInUser) }
-            }
-            withContext(Dispatchers.Main) {
-                validPin.value = result
             }
         }
-    }
 
-    fun setupAuthListener(mAuthListener: AuthListener) {
-        authListener = mAuthListener
-    }
+        fun onRegButtonClick(view: View) {
+            viewModelScope.launch(mainContext) {
 
-    fun teardownAuthListener() {
-        authListener = null
-    }
+                authListener?.onStarted()
 
-    /**
-     *
-     * @return Unit
-     */
-    override fun onCleared() {
-        super.onCleared()
-        teardownAuthListener()
-        supervisorJob.cancelChildren()
+                when {
+                    username.isNullOrEmpty() -> {
+                        authListener?.onWarn("UserName is required")
+                    }
+                    password.isNullOrEmpty() -> {
+                        authListener?.onWarn("Password is required")
+                    }
+                    else -> {
+                        registerNewUser(username, password)
+                    }
+                }
+            }
+        }
+
+        private suspend fun registerNewUser(userName: String?, password: String?) {
+            withContext(ioContext) {
+                try {
+
+                    val phoneNumber = "12345457"
+                    val imie = "45678"
+                    val androidDevice =
+                        "${R.string.android_sdk} ${VERSION.SDK_INT} " +
+                            "${Build.BRAND} ${Build.MODEL} ${Build.DEVICE}"
+
+                    repository.userRegister(
+                        userName!!,
+                        password!!,
+                        phoneNumber,
+                        imie,
+                        androidDevice
+                    )
+                } catch (e: AuthException) {
+                    listenerNotify {
+                        postError(e)
+                    }
+                } catch (e: ServiceException) {
+                    listenerNotify {
+                        postError(e)
+                    }
+                } catch (e: NoInternetException) {
+                    listenerNotify {
+                        postError(e)
+                    }
+                } catch (e: NoConnectivityException) {
+                    listenerNotify {
+                        postError(e)
+                    }
+                }
+            }
+        }
+
+        private fun postError(t: Throwable) {
+            authListener?.onFailure(t.message ?: XIErrorHandler.UNKNOWN_ERROR)
+        }
+
+        suspend fun expirePin() {
+            repository.expirePin()
+        }
+
+        suspend fun validatePin(pin: String) = viewModelScope.launch(mainContext) {
+            val loggedInUser = user.await().value
+            withContext(Dispatchers.IO) {
+                val inputHash = SecureString(
+                    loggedInUser!!.userName
+                        .plus(loggedInUser.device).plus(pin).toCharArray(), false
+                )
+                val result = XIArmoury.validateToken(
+                    inputHash, loggedInUser.pinHash!!
+                )
+                if (!result) {
+                    repository.expirePin()
+                    listenerNotify { authListener?.onFailure("Invalid PIN entered") }
+                } else {
+                    repository.authenticatePin()
+                    viewModelScope.launch(ioContext) {
+                        PhotoUtil.cleanupDevice()
+                    }
+                    listenerNotify { authListener?.onSuccess(loggedInUser) }
+                }
+                withContext(Dispatchers.Main) {
+                    validPin.value = result
+                }
+            }
+        }
+
+        fun setupAuthListener(mAuthListener: AuthListener) {
+            authListener = mAuthListener
+        }
+
+        fun teardownAuthListener() {
+            authListener = null
+        }
+
+        /**
+         *
+         * @return Unit
+         */
+        override fun onCleared() {
+            super.onCleared()
+            teardownAuthListener()
+            supervisorJob.cancelChildren()
+        }
     }
-}

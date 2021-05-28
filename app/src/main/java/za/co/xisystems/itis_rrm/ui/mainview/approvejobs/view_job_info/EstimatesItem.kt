@@ -25,7 +25,6 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import com.xwray.groupie.kotlinandroidextensions.Item
-import java.io.File
 import kotlinx.android.synthetic.main.estimates_item.*
 import timber.log.Timber
 import www.sanju.motiontoast.MotionToast
@@ -37,9 +36,10 @@ import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.ApproveJobsViewModel
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.GlideApp
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
-import za.co.xisystems.itis_rrm.utils.Util.nanCheck
-import za.co.xisystems.itis_rrm.utils.Util.round
+import za.co.xisystems.itis_rrm.utils.Utils.nanCheck
+import za.co.xisystems.itis_rrm.utils.Utils.round
 import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
+import java.io.File
 
 /**
  * Created by Francis Mahlava on 2020/01/02.
@@ -76,7 +76,7 @@ class EstimatesItem(
                 val uom =
                     approveViewModel.getUOMForProjectItemId(jobItemEstimateDTO.projectItemId!!)
                 measure_item_description_textView.text = descr
-                // estimation_item_uom_textView.text = "Unit of Measure: $uom"
+
                 if (uom == "NONE" || uom == "") {
                     estimation_item_uom_textView.text = ""
                 } else {
@@ -235,6 +235,7 @@ class EstimatesItem(
                 }
             } catch (e: NullPointerException) {
                 photoPreviewStart.setOnClickListener(null)
+                Timber.d(e, "Start photo missing from job!")
             } catch (e: Exception) {
                 Timber.e(e)
             }
@@ -259,6 +260,7 @@ class EstimatesItem(
                 }
             } catch (e: NullPointerException) {
                 photoPreviewEnd.setOnClickListener(null)
+                Timber.d(e, "End photo missing from job!")
             } catch (e: Exception) {
                 Timber.e(e)
             }

@@ -216,7 +216,7 @@
     <string name="contract_placeholder">N.002–036–2017/1 DEMO</string>
     <string name="edit_quantity_button">Edit quantity button</string>
     <string name="rrm_placeholder_text">N.002–036–2017/1 DEMO</string>
-    <string name="incomplete_estimate">Incomplete Estimate...</string>
+    <string name="incomplete_estimate">Incomplete Estimate…</string>
     <string name="engineering_section_title">Engineering Section</string>
 
     <string name="password_strength_weak">Weak</string>
@@ -226,4 +226,8 @@
     <string name="uom">UOM</string>
     <string name="start_photo_preview">Start Photo Preview</string>
     <string name="end_photo_preview">End Photo Preview</string>
+    <string name="adjust_estimate_button">adjust estimate button</string>
+    <string name="estimate_chevron">estimate chevron</string>
+    <string name="click_to_edit_estimate">(Click to )</string>
+    <string name="application_settings">application settings</string>
 </resources>

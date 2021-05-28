@@ -6,14 +6,15 @@
 
 package za.co.xisystems.itis_rrm.forge
 
-import com.github.ajalt.timberkt.Timber
 import com.password4j.Argon2Function
-import com.password4j.BadParametersException
 import com.password4j.Password
 import com.password4j.SecureString
 import com.password4j.types.Argon2
 import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
+import za.co.xisystems.itis_rrm.custom.results.XIError
+import za.co.xisystems.itis_rrm.custom.results.XIResult
+import za.co.xisystems.itis_rrm.custom.results.XISuccess
 import za.co.xisystems.itis_rrm.utils.DefaultDispatcherProvider
 import za.co.xisystems.itis_rrm.utils.DispatcherProvider
 import java.security.SecureRandom
@@ -69,20 +70,22 @@ class Wizard(private val dispatchers: DispatcherProvider = DefaultDispatcherProv
      * @param hash String
      * @return Boolean
      */
-    suspend fun validateFutureToken(passphrase: SecureString, hash: String): Boolean {
+    suspend fun validateFutureToken(passphrase: SecureString, hash: String): XIResult<Boolean> {
         return withContext(dispatchers.default()) {
-            return@withContext validateToken(passphrase, hash)
+            return@withContext try {
+                val result = validateToken(passphrase, hash)
+                XISuccess(result)
+            } catch (t: Throwable) {
+                val message = "*^* ${ t.message ?: XIErrorHandler.UNKNOWN_ERROR } *^*"
+                XIError(t, message)
+            }
         }
     }
 
     fun validateToken(passphrase: SecureString, hash: String): Boolean {
-        return try {
-            Password.check(passphrase, hash).with(Argon2Function.getInstanceFromHash(hash))
-        } catch (t: BadParametersException) {
-            Timber.e(t) { t.message ?: XIErrorHandler.UNKNOWN_ERROR }
-            false
-        }
+            return Password.check(passphrase, hash).with(Argon2Function.getInstanceFromHash(hash))
     }
+
     /**
      * Randmon alphanumeric passphrase
      * @param size Int

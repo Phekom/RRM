@@ -49,9 +49,10 @@
                         android:hint="@string/user_name"
 
                         android:textColor="@color/itis_gray"
-                        android:textStyle="bold"
                         app:drawableStartCompat="@drawable/ic_baseline_person_white_24px"
-                        app:drawableTint="@color/sanral_burnt_orange" />
+                        app:drawableTint="@color/sanral_burnt_orange"
+                        android:fontFamily="More Fonts..."
+                        android:textStyle="bold" />
 
                     <View
                         android:layout_width="match_parent"
@@ -156,8 +157,6 @@
                                 android:layout_marginBottom="25dp"
                                 android:background="@drawable/round_corner_orange"
                                 android:text="1"
-
-                                android:textColor="@color/white"
                                 android:textSize="30sp"
                                 app:layout_constraintBottom_toBottomOf="parent"
                                 app:layout_constraintLeft_toLeftOf="parent"
@@ -173,7 +172,6 @@
                                 android:layout_marginBottom="25dp"
                                 android:background="@drawable/round_corner_orange"
                                 android:text="2"
-                                android:textColor="@color/white"
                                 android:textSize="30sp"
                                 app:layout_constraintBottom_toBottomOf="parent"
                                 app:layout_constraintLeft_toRightOf="@id/btn_1"
