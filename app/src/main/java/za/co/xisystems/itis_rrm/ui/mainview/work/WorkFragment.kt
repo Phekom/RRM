@@ -57,7 +57,6 @@ class WorkFragment : BaseFragment(), KodeinAware {
     private lateinit var expandableGroups: MutableList<ExpandableGroup>
     private val factory: WorkViewModelFactory by instance()
     private var uiScope = UiLifecycleScope()
-    private lateinit var layoutManager: LinearLayoutManager
     private var groupAdapter: GroupAdapter<GroupieViewHolder>? = GroupAdapter<GroupieViewHolder>()
     private var veiled: Boolean = false
     private var _ui: FragmentWorkBinding? = null
@@ -116,9 +115,6 @@ class WorkFragment : BaseFragment(), KodeinAware {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
 
         super.onActivityCreated(savedInstanceState)
-
-        layoutManager = LinearLayoutManager(this.context)
-
         workViewModel = activity?.run {
             ViewModelProvider(this, factory).get(WorkViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
@@ -241,7 +237,7 @@ class WorkFragment : BaseFragment(), KodeinAware {
     override fun onDestroyView() {
         super.onDestroyView()
         uiScope.destroy()
-        ui.veiledWorkListView.setAdapter(null)
+        ui.veiledWorkListView.getRecyclerView().adapter = null
         groupAdapter = null
         layoutManager.detachAndScrapAttachedViews(ui.veiledWorkListView.getVeiledRecyclerView().Recycler())
         _ui = null
