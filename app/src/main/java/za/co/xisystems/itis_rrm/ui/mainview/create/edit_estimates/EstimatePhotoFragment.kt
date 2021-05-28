@@ -214,8 +214,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
                 estimateId = navArgs.estimateId
             }
             if (!navArgs.jobId.isNullOrEmpty()) {
-                val jobId = navArgs.jobId!!
-                createViewModel.setJobToEdit(jobId)
+                createViewModel.setJobToEdit(navArgs.jobId.toString())
             }
         }
     }

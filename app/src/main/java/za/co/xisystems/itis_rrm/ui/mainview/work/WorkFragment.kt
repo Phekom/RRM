@@ -215,7 +215,7 @@ class WorkFragment : BaseFragment(), KodeinAware {
             addAll(workListItems)
             notifyDataSetChanged()
         }
-
+        val layoutManager = LinearLayoutManager(this.requireContext())
         ui.veiledWorkListView.setLayoutManager(layoutManager)
         ui.veiledWorkListView.setAdapter(groupAdapter)
         ui.veiledWorkListView.doOnNextLayout { ui.veiledWorkListView.unVeil() }
@@ -239,7 +239,6 @@ class WorkFragment : BaseFragment(), KodeinAware {
         uiScope.destroy()
         ui.veiledWorkListView.getRecyclerView().adapter = null
         groupAdapter = null
-        layoutManager.detachAndScrapAttachedViews(ui.veiledWorkListView.getVeiledRecyclerView().Recycler())
         _ui = null
     }
 
