@@ -107,7 +107,7 @@
             android:process=":rumpostservice" />
 
         <meta-data android:name="com.raygun.raygun4android.apikey"
-            android:value="0eFN1yjmWyt7gPdLP0Dg" />
+            android:value="5PNGNzzi8PjKJcnYf23Vw" />
         <meta-data
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />

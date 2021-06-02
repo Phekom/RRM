@@ -1,10 +1,16 @@
+/**
+ * Created by Shaun McDonald on 2021/06/02
+ * Last modified on 28/05/2021, 09:08
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ **/
+
 /*
  * Updated by Shaun McDonald on 2021/01/25
  * Last modified on 2021/01/25 6:30 PM
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  */
 
-package za.co.xisystems.itis_rrm.ui.auth
+package za.co.xisystems.itis_rrm.ui.auth.model
 
 import android.os.Build
 import android.os.Build.VERSION
@@ -29,6 +35,7 @@ import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
 import za.co.xisystems.itis_rrm.forge.XIArmoury
+import za.co.xisystems.itis_rrm.ui.auth.AuthListener
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
 

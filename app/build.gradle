@@ -160,6 +160,7 @@ android {
             crunchPngs true
             ext.enableCrashlytics = false
             ext.alwaysUpdateBuildId = false
+            signingConfig signingConfigs.debug
         }
     }
 
@@ -200,6 +201,11 @@ android {
             buildConfigField("String", "API_HOST", dev_api)
             buildConfigField("String", "BASE_HOST", dev_host)
             buildConfigField "String", "HOCKEYAPP_APP_ID", "\"\""
+            versionName 'versioning.name'
+            targetSdkVersion 30
+            minSdkVersion 23
+            testFunctionalTest true
+            testHandleProfiling true
         }
 
         /*xi {
@@ -243,6 +249,8 @@ android {
             buildConfigField("String", "API_HOST", qa_api)
             buildConfigField("String", "BASE_HOST", qa_host)
             buildConfigField "String", "HOCKEYAPP_APP_ID", "\"7b77445b888a411b83ae27491a5bd7c9\""
+            testFunctionalTest true
+            testHandleProfiling true
         }
 
         prod {
@@ -587,7 +595,7 @@ dependencies {
     implementation "org.springframework.android:spring-android-core:2.0.0.M3"
     // implementation 'org.springframework.android:spring-android-auth:1.0.1.RELEASE'
 
-    implementation "com.ToxicBakery.library.bcrypt:bcrypt:1.0.9"
+    // implementation "com.ToxicBakery.library.bcrypt:bcrypt:1.0.9"
 
     // Jetpack Security
     implementation "androidx.security:security-crypto:1.1.0-alpha03"

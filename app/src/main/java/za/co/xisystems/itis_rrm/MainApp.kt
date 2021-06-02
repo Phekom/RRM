@@ -15,6 +15,7 @@
  */
 package za.co.xisystems.itis_rrm
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Application
 import android.content.pm.ActivityInfo
@@ -42,7 +43,7 @@ import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
 import za.co.xisystems.itis_rrm.data.repositories.WorkDataRepository
 import za.co.xisystems.itis_rrm.logging.LameCrashLibrary
-import za.co.xisystems.itis_rrm.ui.auth.AuthViewModelFactory
+import za.co.xisystems.itis_rrm.ui.auth.model.AuthViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.activities.LocationViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.activities.MainActivityViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SettingsViewModelFactory
@@ -82,7 +83,7 @@ open class MainApp : Application(), KodeinAware {
         bind() from singleton { MeasureCreationDataRepository(instance(), instance()) }
         bind() from singleton { MeasureApprovalDataRepository(instance(), instance()) }
 
-        bind() from provider { AuthViewModelFactory(instance(), instance()) }
+        bind() from provider { AuthViewModelFactory(instance()) }
         bind() from provider {
             HomeViewModelFactory(
                 instance(),
@@ -124,6 +125,7 @@ open class MainApp : Application(), KodeinAware {
         AndroidThreeTen.init(this)
 
         registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {
+            @SuppressLint("SourceLockedOrientationActivity")
             override fun onActivityCreated(p0: Activity, p1: Bundle?) {
                 p0.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
             }
