@@ -6,21 +6,17 @@
 
 package za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates
 
-import android.Manifest
+import android.Manifest.permission
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.app.Activity.RESULT_OK
-import android.app.AlertDialog
 import android.app.AlertDialog.Builder
 import android.app.Dialog
 import android.content.Context
 import android.content.Intent
-import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.location.LocationManager
 import android.net.Uri
 import android.os.Bundle
-import android.provider.MediaStore
 import android.provider.Settings
 import android.view.KeyEvent
 import android.view.LayoutInflater
@@ -29,6 +25,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.widget.doOnTextChanged
@@ -70,7 +67,6 @@ import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.services.LocationModel
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModelFactory
-import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.intents.AbstractIntent
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.models.PhotoType
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.Coroutines
@@ -148,7 +144,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
     private var endImageUri: Uri? = null
     private var imageUri: Uri? = null
     private val uiScope = UiLifecycleScope()
-
+    private lateinit var photoUtil: PhotoUtil
     init {
         System.setProperty("kotlinx.coroutines.debug", if (BuildConfig.DEBUG) "on" else "off")
         lifecycleScope.launch {
@@ -320,7 +316,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
         super.onActivityCreated(savedInstanceState)
 
         viewLifecycleOwner.lifecycle.addObserver(uiScope)
-
+        photoUtil = PhotoUtil.getInstance(this.requireContext().applicationContext)
         ui.group13Loading.visibility = View.GONE
         mAppExecutor = AppExecutor()
         lm = requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager
@@ -447,14 +443,22 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
     private fun takePhoto(picType: PhotoType) {
 
         photoType = picType
+        initLaunchCamera()
+    }
+
+    private fun initLaunchCamera() {
         if (ContextCompat.checkSelfPermission(
                 requireActivity().applicationContext,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE
+                permission.CAMERA
             ) != PackageManager.PERMISSION_GRANTED
         ) {
             ActivityCompat.requestPermissions(
                 requireActivity(),
-                arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                arrayOf(
+                    permission.CAMERA,
+                    permission.WRITE_EXTERNAL_STORAGE,
+                    permission.READ_EXTERNAL_STORAGE
+                ),
                 REQUEST_STORAGE_PERMISSION
             )
         } else {
@@ -484,24 +488,23 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
             itemIdPhotoType["itemId"] = item!!.itemId
             itemIdPhotoType["type"] = photoType.name
         }
+        imageUri = photoUtil.getUri()
+        takePicture.launch(imageUri)
+    }
 
-        val targetUri = when (photoType) {
-            PhotoType.END -> endImageUri
-            PhotoType.START -> startImageUri
-        }
-
-        imageUri = PhotoUtil.getUri(this)
-        val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-        if (this.activity?.packageManager?.let { takePictureIntent.resolveActivity(it) } != null) {
-            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri)
-            takePictureIntent.putExtra(
-                MediaStore.EXTRA_SCREEN_ORIENTATION,
-                ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-            )
-            takePictureIntent.putExtra("photoType", itemIdPhotoType["type"])
-            takePictureIntent.putExtra("itemId", itemIdPhotoType["itemId"])
-            takePictureIntent.putExtra("targetUri", targetUri.toString())
-            startActivityForResult(takePictureIntent, AbstractIntent.REQUEST_TAKE_PHOTO)
+    /**
+     * ActivityResultContract for taking a photograph
+     */
+    private val takePicture = registerForActivityResult(
+        ActivityResultContracts.TakePicture()
+    ) { isSaved ->
+        if (isSaved) {
+            processAndSetImage()
+        } else {
+            photoUtil.deleteImageFile(filenamePath.toString())
+            haltAnimation()
+            ui.startImageView.visibility = View.VISIBLE
+            ui.endImageView.visibility = View.VISIBLE
         }
     }
 
@@ -566,23 +569,6 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
         return null
     }
 
-    override fun onActivityResult(
-        requestCode: Int,
-        resultCode: Int,
-        data: Intent?
-    ) { // image capture activity successful
-        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
-            // Process the image and set it to the TextView
-
-            processAndSetImage()
-        } else { // Otherwise, delete the temporary image file
-            PhotoUtil.deleteImageFile(filenamePath.toString())
-            haltAnimation()
-            ui.startImageView.visibility = View.VISIBLE
-            ui.endImageView.visibility = View.VISIBLE
-        }
-    }
-
     @SuppressLint("RestrictedApi")
     private fun processAndSetImage(
         // item: ItemDTOTemp?,
@@ -596,8 +582,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
             if (estimateLocation != null) {
 
                 //  Save Image to Internal Storage
-                filenamePath = PhotoUtil.saveImageToInternalStorage(
-                    requireActivity(),
+                filenamePath = photoUtil.saveImageToInternalStorage(
                     imageUri!!
                 ) as HashMap<String, String>
 
@@ -1033,7 +1018,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
         Timber.e(e)
     } finally {
 
-        this.isEstimateDone = newJobItemEstimate?.isEstimateComplete() ?: false
+        this.isEstimateDone = createViewModel.estimateComplete(newJobItemEstimate)
 
         if (isEstimateDone) {
             ui.costCard.visibility = View.VISIBLE
@@ -1357,7 +1342,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
             uiScope.launch(uiScope.coroutineContext) {
                 try {
                     quantity = newJobItemEstimate!!.qty
-                    isEstimateDone = newJobItemEstimate!!.isEstimateComplete()
+                    isEstimateDone = createViewModel.estimateComplete(newJobItemEstimate)
                     newJobItemEstimate?.jobItemEstimatePhotos?.forEach { photo ->
                         restoreEstimatePhoto(
                             photo.isPhotostart
@@ -1401,21 +1386,20 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
      */
     override fun onDestroyView() {
         super.onDestroyView()
-        _ui = null
         uiScope.destroy()
         createViewModel.currentJob.removeObservers(viewLifecycleOwner)
         createViewModel.projectItemTemp.removeObservers(viewLifecycleOwner)
         createViewModel.loggedUser.removeObservers(viewLifecycleOwner)
+        _ui = null
     }
 
     companion object {
-        private const val REQUEST_IMAGE_CAPTURE = 1
         private const val REQUEST_STORAGE_PERMISSION = 1
     }
 
     private suspend fun buildDeleteDialog(view: View) {
         val itemDeleteBuilder =
-            AlertDialog.Builder(
+            Builder(
                 view.context // , android.R.style
                 // .Theme_DeviceDefault_Dialog
             )
@@ -1450,4 +1434,3 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
         deleteAlert.show()
     }
 }
-

@@ -6,6 +6,8 @@
 
 package za.co.xisystems.itis_rrm.ui.mainview.home
 
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
@@ -13,11 +15,11 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import za.co.xisystems.itis_rrm.base.BaseViewModel
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.custom.results.XIError
@@ -30,9 +32,10 @@ import za.co.xisystems.itis_rrm.utils.uncaughtExceptionHandler
 
 class HomeViewModel(
     private val repository: UserRepository,
-    private val offlineDataRepository: OfflineDataRepository
-) : BaseViewModel() {
-
+    private val offlineDataRepository: OfflineDataRepository,
+    application: Application
+) : AndroidViewModel(application) {
+    private val superJob = SupervisorJob()
     private var databaseStatus: LiveData<XIEvent<XIResult<Boolean>>> = MutableLiveData()
     private var homeIoContext = Dispatchers.IO + Job(superJob)
     private var homeMainContext = Dispatchers.Main + Job(superJob)

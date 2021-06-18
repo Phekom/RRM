@@ -8,29 +8,24 @@
 
 package za.co.xisystems.itis_rrm.ui.mainview.estmeasure.submit_measure
 
-import android.Manifest
-import android.app.Activity.RESULT_OK
+import android.Manifest.permission
 import android.content.Context
-import android.content.Intent
-import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
-import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.coroutineScope
 import androidx.navigation.Navigation
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
@@ -55,7 +50,6 @@ import za.co.xisystems.itis_rrm.ui.custom.MeasureGalleryUIState
 import za.co.xisystems.itis_rrm.ui.extensions.addZoomedImages
 import za.co.xisystems.itis_rrm.ui.extensions.scaleForSize
 import za.co.xisystems.itis_rrm.ui.extensions.showZoomedImage
-import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.intents.AbstractIntent
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModelFactory
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
@@ -79,7 +73,6 @@ class CaptureItemMeasurePhotoFragment :
     private val factory: MeasureViewModelFactory by instance()
     private val galleryObserver = Observer<XIResult<MeasureGalleryUIState>> { handleResponse(it) }
     private lateinit var jobItemMeasurePhotoArrayList: ArrayList<JobItemMeasurePhotoDTO>
-    private var mTempPhotoPath: String? = null
     private lateinit var selectedJobItemMeasure: JobItemMeasureDTO
     private lateinit var imageUri: Uri
     private var filenamePath = HashMap<String, String>()
@@ -87,10 +80,10 @@ class CaptureItemMeasurePhotoFragment :
     private var uiScope = UiLifecycleScope()
     private var _ui: FragmentCaptureItemMeasurePhotoBinding? = null
     private val ui get() = _ui!!
+    private lateinit var photoUtil: PhotoUtil
 
     companion object {
         val TAG: String = CaptureItemMeasurePhotoFragment::class.java.simpleName
-        private const val REQUEST_IMAGE_CAPTURE = 1
         private const val REQUEST_STORAGE_PERMISSION = 1
     }
 
@@ -108,6 +101,7 @@ class CaptureItemMeasurePhotoFragment :
         super.onCreate(savedInstanceState)
         uiScope.onCreate()
         lifecycle.addObserver(uiScope)
+        photoUtil = PhotoUtil.getInstance(this.requireContext().applicationContext)
     }
 
     override fun onCreateView(
@@ -222,7 +216,6 @@ class CaptureItemMeasurePhotoFragment :
     override fun onDestroyView() {
         super.onDestroyView()
         uiScope.destroy()
-        viewLifecycleOwner.lifecycle.coroutineScope.cancel()
         _ui = null
     }
 
@@ -234,8 +227,7 @@ class CaptureItemMeasurePhotoFragment :
         if (measurementLocation != null) {
             //  Save Image to Internal Storage
             filenamePath =
-                PhotoUtil.saveImageToInternalStorage(
-                    requireContext(),
+                photoUtil.saveImageToInternalStorage(
                     imageUri
                 ) as HashMap<String, String>
 
@@ -272,48 +264,51 @@ class CaptureItemMeasurePhotoFragment :
         builder.setCancelable(false)
         // Yes button
         builder.setPositiveButton(R.string.ok) { _, _ ->
-            if (ContextCompat.checkSelfPermission(
-                    requireActivity(),
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                ActivityCompat.requestPermissions(
-                    requireActivity(),
-                    arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-                    REQUEST_STORAGE_PERMISSION
-                )
-            } else {
-                launchCamera()
-            }
+            initLaunchCamera()
         }
-        val declineAlert = builder.create()
-        declineAlert.show()
+        val photoAlert = builder.create()
+        photoAlert.show()
+    }
+
+    private fun initLaunchCamera() {
+        if (ContextCompat.checkSelfPermission(
+                requireActivity().applicationContext,
+                permission.CAMERA
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                requireActivity(),
+                arrayOf(
+                    permission.CAMERA,
+                    permission.WRITE_EXTERNAL_STORAGE,
+                    permission.READ_EXTERNAL_STORAGE
+                ),
+                REQUEST_STORAGE_PERMISSION
+            )
+        } else {
+            launchCamera()
+        }
     }
 
     private fun launchCamera() {
-
-        imageUri = PhotoUtil.getUri3(requireActivity().applicationContext)!!
-        val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-        if (takePictureIntent.resolveActivity(requireActivity().packageManager) != null) {
-            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri)
-            takePictureIntent.putExtra(
-                MediaStore.EXTRA_SCREEN_ORIENTATION,
-                ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-            )
-            startActivityForResult(takePictureIntent, AbstractIntent.REQUEST_TAKE_PHOTO)
-        }
+        imageUri = photoUtil.getUri()!!
+        takePicture.launch(imageUri)
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
-
+    /**
+     * ActivityResultContract for taking a photograph
+     */
+    private val takePicture = registerForActivityResult(
+        ActivityResultContracts.TakePicture()
+    ) { isSaved ->
+        if (isSaved) {
             val photo = saveImage()
-            photo?.let {
+            photo?.let { it ->
                 jobItemMeasurePhotoArrayList.add(it)
                 processAndSetImage()
             }
-        } else { // Otherwise, delete the temporary image file
-            PhotoUtil.deleteImageFile(mTempPhotoPath)
+        } else {
+            photoUtil.deleteImageFile(filenamePath.toString())
         }
     }
 
@@ -323,8 +318,7 @@ class CaptureItemMeasurePhotoFragment :
             jobItemMeasurePhotoArrayList.size
         )
 
-        PhotoUtil.getPhotoBitmapFromFile(
-            requireActivity(),
+        photoUtil.getPhotoBitmapFromFile(
             imageUri,
             PhotoQuality.HIGH
         ).also { bmp ->

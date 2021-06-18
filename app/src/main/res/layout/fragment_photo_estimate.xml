@@ -22,7 +22,8 @@
             android:layout_margin="@dimen/small"
             android:layout_weight="1"
             android:hint="M020.01(A): TYPE 1 (LAR...)"
-            android:textSize="@dimen/text_medium" />
+            android:textSize="@dimen/text_medium"
+            tools:ignore="HardcodedText" />
 
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
@@ -47,21 +48,23 @@
                         style="@style/_button"
                         android:layout_width="match_parent"
                         android:layout_height="@dimen/button_size"
-                        android:drawableLeft="@drawable/ic_baseline_photo_camera_24px"
+                        android:drawableStart="@drawable/ic_baseline_photo_camera_24px"
                         android:text="@string/start" />
 
                     <TextView
                         android:id="@+id/startSectionTextView"
                         style="@style/_default"
                         android:gravity="center"
-                        android:hint="Click for Start Photo" />
+                        android:hint="Click for Start Photo"
+                        tools:ignore="HardcodedText" />
 
                     <ImageView
                         android:id="@+id/startImageView"
                         android:layout_width="match_parent"
                         android:layout_height="@dimen/image_xlarge"
                         android:layout_marginTop="@dimen/small"
-                        android:src="@drawable/logo_new_medium" />
+                        android:src="@drawable/logo_new_medium"
+                        tools:ignore="ContentDescription" />
 
                     <com.airbnb.lottie.LottieAnimationView
                         android:id="@+id/startAnimationView"
@@ -71,7 +74,7 @@
                         android:visibility="gone"
                         app:lottie_autoPlay="true"
                         app:lottie_loop="true"
-                        app:lottie_rawRes="@raw/imageloading" />
+                        app:lottie_rawRes="@raw/image_loading" />
 
                 </LinearLayout>
 
@@ -87,21 +90,23 @@
                         style="@style/_button"
                         android:layout_width="match_parent"
                         android:layout_height="@dimen/button_size"
-                        android:drawableLeft="@drawable/ic_baseline_photo_camera_24px"
+                        android:drawableStart="@drawable/ic_baseline_photo_camera_24px"
                         android:text="@string/end" />
 
                     <TextView
                         android:id="@+id/endSectionTextView"
                         style="@style/_default"
                         android:gravity="center"
-                        android:hint="Click for End Photo" />
+                        android:hint="Click for End Photo"
+                        tools:ignore="HardcodedText" />
 
                     <ImageView
                         android:id="@+id/endImageView"
                         android:layout_width="match_parent"
                         android:layout_height="@dimen/image_xlarge"
                         android:layout_marginTop="@dimen/small"
-                        android:src="@drawable/logo_new_medium" />
+                        android:src="@drawable/logo_new_medium"
+                        tools:ignore="ContentDescription" />
 
                     <com.airbnb.lottie.LottieAnimationView
                         android:id="@+id/endAnimationView"
@@ -111,7 +116,7 @@
                         android:visibility="gone"
                         app:lottie_autoPlay="true"
                         app:lottie_loop="true"
-                        app:lottie_rawRes="@raw/imageloading" />
+                        app:lottie_rawRes="@raw/image_loading" />
 
                 </LinearLayout>
             </LinearLayout>
@@ -121,7 +126,8 @@
             style="@style/_default"
             android:layout_marginTop="@dimen/small"
             android:gravity="center"
-            android:hint="Calculate Cost" />
+            android:hint="Calculate Cost"
+            tools:ignore="HardcodedText" />
 
         <androidx.cardview.widget.CardView
             android:id="@+id/costCard"
@@ -131,8 +137,9 @@
 
             <LinearLayout
                 style="@style/_linear_layout_horiz"
-                android:gravity="center_vertical|right"
-                android:paddingRight="@dimen/small">
+                android:gravity="center_vertical|end"
+                android:paddingEnd="@dimen/small"
+                tools:ignore="RtlSymmetry">
 
                 <TextView
                     android:id="@+id/labelTextView"
@@ -140,8 +147,10 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/small"
                     android:layout_marginBottom="@dimen/small"
-                    android:gravity="right"
-                    android:text="Quantity" />
+                    android:gravity="end"
+                    android:text="Quantity"
+                    android:labelFor="@id/valueEditText"
+                    tools:ignore="HardcodedText" />
 
                 <EditText
                     android:id="@+id/valueEditText"
@@ -152,8 +161,8 @@
                     android:gravity="center"
                     android:inputType="numberDecimal"
                     android:minWidth="48dp"
-                    android:text="1"
-                    android:visibility="visible" />
+                    android:visibility="visible"
+                    android:importantForAutofill="no" />
 
                 <NumberPicker
                     android:id="@+id/numberPicker"
@@ -168,16 +177,17 @@
                     android:id="@+id/costTextView"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:gravity="right"
+                    android:gravity="end"
                     android:hint="  *  500  =  1500"
                     android:textSize="@dimen/text_medium"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    tools:ignore="HardcodedText" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
         <LinearLayout
             style="@style/_linear_layout_horiz"
-            android:gravity="center_vertical|right">
+            android:gravity="center_vertical|end">
 
             <Button
                 android:id="@+id/cancelButton"
@@ -186,7 +196,8 @@
                 android:layout_height="@dimen/button_size"
                 android:layout_margin="@dimen/small"
                 android:layout_weight="1"
-                android:text="CANCEL" />
+                android:text="CANCEL"
+                tools:ignore="HardcodedText" />
 
             <Button
                 android:id="@+id/updateButton"
@@ -195,7 +206,8 @@
                 android:layout_height="@dimen/button_size"
                 android:layout_margin="@dimen/small"
                 android:layout_weight="1"
-                android:text="UPDATE" />
+                android:text="UPDATE"
+                tools:ignore="HardcodedText" />
         </LinearLayout>
 
     </LinearLayout>

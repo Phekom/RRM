@@ -17,9 +17,9 @@ import android.os.Parcelable
 import android.os.Parcelable.Creator
 import androidx.room.Entity
 import com.google.gson.annotations.SerializedName
-import java.io.Serializable
 import za.co.xisystems.itis_rrm.domain.MeasurementTrack
 import za.co.xisystems.itis_rrm.utils.DataConversion
+import java.io.Serializable
 
 @Entity
 data class WorkflowItemMeasureDTO(
@@ -62,6 +62,8 @@ data class WorkflowItemMeasureDTO(
     }
 
     companion object CREATOR : Creator<WorkflowItemMeasureDTO> {
+        const val serialVersionUID: Long = 31L
+
         override fun createFromParcel(parcel: Parcel): WorkflowItemMeasureDTO {
             return WorkflowItemMeasureDTO(parcel)
         }

@@ -34,6 +34,8 @@ import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.databinding.ActivityLoginBinding
+import za.co.xisystems.itis_rrm.ui.auth.model.AuthViewModel
+import za.co.xisystems.itis_rrm.ui.auth.model.AuthViewModelFactory
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.hide

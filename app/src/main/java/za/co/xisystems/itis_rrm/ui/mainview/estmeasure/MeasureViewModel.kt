@@ -71,7 +71,7 @@ class MeasureViewModel(
     private val superJob = SupervisorJob()
     private val mainContext = (Job(superJob) + Dispatchers.Main + uncaughtExceptionHandler)
     private val ioContext = (Job(superJob) + Dispatchers.IO + uncaughtExceptionHandler)
-
+    private val photoUtil = PhotoUtil.getInstance(getApplication())
     init {
         viewModelScope.launch(viewModelContext) {
             workflowStatus = measureCreationDataRepository.workflowStatus
@@ -110,11 +110,10 @@ class MeasureViewModel(
 
                 try {
                     val uri = photo.filename?.let { fileName ->
-                        PhotoUtil.getPhotoPathFromExternalDirectory(fileName)
+                        photoUtil.getPhotoPathFromExternalDirectory(fileName)
                     }
                     val bitmap = uri?.let { qualifiedUri ->
-                        PhotoUtil.getPhotoBitMapFromFile(
-                            this@MeasureViewModel.getApplication(),
+                        photoUtil.getPhotoBitMapFromFile(
                             qualifiedUri,
                             photoQuality
                         )
@@ -173,7 +172,11 @@ class MeasureViewModel(
         activityId3: Int
     ): LiveData<List<JobItemEstimateDTO>> {
         return withContext(Dispatchers.IO + uncaughtExceptionHandler) {
-            measureCreationDataRepository.getJobMeasureForActivityId(activityId, activityId2, activityId3).distinctUntilChanged()
+            measureCreationDataRepository.getJobMeasureForActivityId(
+                activityId,
+                activityId2,
+                activityId3
+            ).distinctUntilChanged()
         }
     }
 

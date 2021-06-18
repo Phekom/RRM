@@ -18,8 +18,8 @@ import android.os.Parcelable.Creator
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
-import java.io.Serializable
 import org.jetbrains.annotations.NotNull
+import java.io.Serializable
 
 /**
  * Created by Francis Mahlava on 2019/11/19.
@@ -70,6 +70,7 @@ data class ContractDTO(
     }
 
     companion object CREATOR : Creator<ContractDTO> {
+        const val serialVersionUID = 2L
         override fun createFromParcel(parcel: Parcel): ContractDTO {
             return ContractDTO(parcel)
         }

@@ -64,6 +64,7 @@ class WorkflowJobSectionDTO(
     }
 
     companion object CREATOR : Creator<WorkflowJobSectionDTO> {
+        const val serialVersionUID: Long = 33L
         override fun createFromParcel(parcel: Parcel): WorkflowJobSectionDTO {
             return WorkflowJobSectionDTO(parcel)
         }

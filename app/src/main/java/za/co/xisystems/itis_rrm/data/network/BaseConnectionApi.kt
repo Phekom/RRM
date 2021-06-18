@@ -2,12 +2,11 @@
  * Updated by Shaun McDonald on 2021/05/14
  * Last modified on 2021/05/14, 16:38
  * Copyright (c) 2021.  XI Systems  - All rights reserved
- **/
+ */
 
 package za.co.xisystems.itis_rrm.data.network
 
 import com.google.gson.JsonObject
-import java.util.concurrent.TimeUnit
 import okhttp3.OkHttpClient
 import okhttp3.Protocol
 import okhttp3.logging.HttpLoggingInterceptor
@@ -35,6 +34,7 @@ import za.co.xisystems.itis_rrm.data.network.responses.UploadImageResponse
 import za.co.xisystems.itis_rrm.data.network.responses.UploadWorksItemResponse
 import za.co.xisystems.itis_rrm.data.network.responses.WorkflowMoveResponse
 import za.co.xisystems.itis_rrm.data.network.responses.WorkflowResponse
+import java.util.concurrent.TimeUnit
 
 /**
  * Created by Francis Mahlava on 2019/10/23.
@@ -169,8 +169,6 @@ interface BaseConnectionApi {
         operator fun invoke(
             networkConnectionInterceptor: NetworkConnectionInterceptor
         ): BaseConnectionApi {
-            val interceptor = HttpLoggingInterceptor()
-            interceptor.level = HttpLoggingInterceptor.Level.BODY
             val okkHttpclient = OkHttpClient
                 .Builder().apply {
                     readTimeout(5, TimeUnit.MINUTES)
@@ -191,8 +189,11 @@ interface BaseConnectionApi {
              * Add the http logging interceptor.
              * Debug build only.
              */
-            if (BuildConfig.DEBUG)
+            if (BuildConfig.DEBUG){
+                val interceptor = HttpLoggingInterceptor()
+                interceptor.level = HttpLoggingInterceptor.Level.BODY
                 okkHttpclient.addInterceptor(interceptor)
+            }
 
             return Retrofit.Builder()
                 // .addCallAdapterFactory(NetworkResponseAdapterFactory())

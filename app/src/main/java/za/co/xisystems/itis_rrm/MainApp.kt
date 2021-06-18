@@ -5,16 +5,11 @@
  **/
 
 /**
- * Updated by Shaun McDonald on 2021/05/14
- * Last modified on 2021/05/14, 19:43
- * Copyright (c) 2021.  XI Systems  - All rights reserved
- **/
-
-/**
  * Created by Francis Mahlava on 2019/10/23.
  */
 package za.co.xisystems.itis_rrm
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Application
 import android.content.pm.ActivityInfo
@@ -42,7 +37,7 @@ import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
 import za.co.xisystems.itis_rrm.data.repositories.WorkDataRepository
 import za.co.xisystems.itis_rrm.logging.LameCrashLibrary
-import za.co.xisystems.itis_rrm.ui.auth.AuthViewModelFactory
+import za.co.xisystems.itis_rrm.ui.auth.model.AuthViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.activities.LocationViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.activities.MainActivityViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SettingsViewModelFactory
@@ -56,16 +51,21 @@ import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.home.HomeViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModelFactory
+import za.co.xisystems.itis_rrm.utils.PhotoUtil
 
 /**
  * Created by Francis Mahlava on 2019/10/23.
  */
+
+lateinit var photoUtil: PhotoUtil
+
 open class MainApp : Application(), KodeinAware {
 
     override val kodein = Kodein.lazy {
 
         import(androidXModule(this@MainApp))
 
+        bind() from singleton { PhotoUtil.getInstance(this@MainApp) }
         bind() from singleton { NetworkConnectionInterceptor(instance()) }
         bind() from singleton { BaseConnectionApi(instance()) }
 
@@ -74,22 +74,22 @@ open class MainApp : Application(), KodeinAware {
 
         bind() from singleton { UserRepository(instance(), instance()) }
 
-        bind() from singleton { OfflineDataRepository(instance(), instance()) }
+        bind() from singleton { OfflineDataRepository(instance(), instance(), instance()) }
 
-        bind() from singleton { JobCreationDataRepository(instance(), instance()) }
+        bind() from singleton { JobCreationDataRepository(instance(), instance(), instance()) }
         bind() from singleton { JobApprovalDataRepository(instance(), instance()) }
-        bind() from singleton { WorkDataRepository(instance(), instance()) }
-        bind() from singleton { MeasureCreationDataRepository(instance(), instance()) }
+        bind() from singleton { WorkDataRepository(instance(), instance(), instance()) }
+        bind() from singleton { MeasureCreationDataRepository(instance(), instance(), instance()) }
         bind() from singleton { MeasureApprovalDataRepository(instance(), instance()) }
-
-        bind() from provider { AuthViewModelFactory(instance(), instance()) }
+        bind() from provider { AuthViewModelFactory(instance(), this@MainApp) }
         bind() from provider {
             HomeViewModelFactory(
                 instance(),
-                instance()
+                instance(),
+                this@MainApp
             )
         }
-        bind() from provider { CreateViewModelFactory(instance()) }
+        bind() from provider { CreateViewModelFactory(instance(),this@MainApp) }
         bind() from provider {
             ApproveMeasureViewModelFactory(
                 this@MainApp,
@@ -107,7 +107,7 @@ open class MainApp : Application(), KodeinAware {
 
         bind() from provider { MeasureViewModelFactory(this@MainApp, instance(), instance()) }
         bind() from provider { UnSubmittedViewModelFactory(instance()) }
-        bind() from provider { WorkViewModelFactory(instance(), instance()) }
+        bind() from provider { WorkViewModelFactory(instance(), instance(), this@MainApp) }
         bind() from provider { CorrectionsViewModelFactory(instance()) }
         bind() from provider { SettingsViewModelFactory(instance()) }
         bind() from provider { MainActivityViewModelFactory(instance()) }
@@ -119,11 +119,12 @@ open class MainApp : Application(), KodeinAware {
 
     override fun onCreate() {
         super.onCreate()
-
+        photoUtil = PhotoUtil.getInstance(this.applicationContext)
         // Time-zone support for better times with Room
         AndroidThreeTen.init(this)
 
         registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {
+            @SuppressLint("SourceLockedOrientationActivity")
             override fun onActivityCreated(p0: Activity, p1: Bundle?) {
                 p0.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
             }

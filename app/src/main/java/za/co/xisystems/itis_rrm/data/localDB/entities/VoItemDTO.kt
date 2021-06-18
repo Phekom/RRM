@@ -89,6 +89,7 @@ data class VoItemDTO(
     }
 
     companion object CREATOR : Creator<VoItemDTO> {
+        const val serialVersionUID: Long = 27L
         override fun createFromParcel(parcel: Parcel): VoItemDTO {
             return VoItemDTO(parcel)
         }

@@ -50,13 +50,13 @@ import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 
 class WorkDataRepository(
     private val api: BaseConnectionApi,
-    private val appDb: AppDatabase
+    private val appDb: AppDatabase,
+    private val photoUtil: PhotoUtil
 ) : SafeApiRequest() {
+
     companion object {
         val TAG: String = WorkDataRepository::class.java.simpleName
     }
-
-    private val photoUpload = MutableLiveData<String?>()
 
     val workStatus: MutableLiveData<XIEvent<XIResult<String>>> = MutableLiveData()
 
@@ -160,6 +160,7 @@ class WorkDataRepository(
         useR: Int
     ) {
         withContext(Dispatchers.IO) {
+
             uploadWorksImages(jobEstimateWorks, photos, activity)
             moveJobToNextWorkflowStep(jobEstimateWorks, useR)
         }
@@ -178,7 +179,7 @@ class WorkDataRepository(
             } else {
                 val totalImages = worksPhotos.size
                 for (jobItemPhoto in worksPhotos) {
-                    if (PhotoUtil.photoExist(jobItemPhoto.filename)) {
+                    if (photoUtil.photoExist(jobItemPhoto.filename)) {
                         Timber.d("x -> UploadRrImage $imageCounter")
                         uploadRrmImage(
                             jobItemPhoto.filename,
@@ -207,7 +208,7 @@ class WorkDataRepository(
         totalImages: Int,
         activity: FragmentActivity
     ) {
-        val data: ByteArray = getData(filename, photoQuality, activity)
+        val data: ByteArray = getData(filename, photoQuality)
         processImageUpload(
             filename,
             activity.getString(R.string.jpg),
@@ -228,7 +229,7 @@ class WorkDataRepository(
             try {
                 val imagedata = JsonObject()
                 imagedata.addProperty("Filename", filename)
-                imagedata.addProperty("ImageByteArray", PhotoUtil.encode64Pic(photo))
+                imagedata.addProperty("ImageByteArray", photoUtil.encode64Pic(photo))
                 imagedata.addProperty("ImageFileExtension", extension)
                 Timber.d("ImageData: $imagedata")
 
@@ -252,13 +253,12 @@ class WorkDataRepository(
 
     private fun getData(
         filename: String,
-        photoQuality: PhotoQuality,
-        activity: FragmentActivity
+        photoQuality: PhotoQuality
     ): ByteArray {
-        val uri = PhotoUtil.getPhotoPathFromExternalDirectory(filename)
+        val uri = photoUtil.getPhotoPathFromExternalDirectory(filename)
         val bitmap =
-            PhotoUtil.getPhotoBitmapFromFile(activity.applicationContext, uri, photoQuality)
-        return PhotoUtil.getCompressedPhotoWithExifInfo(
+            photoUtil.getPhotoBitmapFromFile(uri, photoQuality)
+        return photoUtil.getCompressedPhotoWithExifInfo(
             bitmap!!,
             filename
         )

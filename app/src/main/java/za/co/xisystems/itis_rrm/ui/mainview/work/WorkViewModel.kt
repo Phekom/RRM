@@ -12,11 +12,12 @@
 
 package za.co.xisystems.itis_rrm.ui.mainview.work
 
+import android.app.Application
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
@@ -40,9 +41,10 @@ import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
 
 class WorkViewModel(
+    application: Application,
     private val workDataRepository: WorkDataRepository,
-    private val offlineDataRepository: OfflineDataRepository
-) : ViewModel() {
+    private val offlineDataRepository: OfflineDataRepository,
+) : AndroidViewModel(application) {
 
     val user by lazyDeferred {
         workDataRepository.getUser()
