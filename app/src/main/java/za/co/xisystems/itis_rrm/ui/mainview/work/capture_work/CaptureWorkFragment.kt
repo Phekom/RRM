@@ -36,6 +36,7 @@ import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -206,7 +207,6 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
             })
         }
 
-        ui.imageCollectionView.visibility = View.GONE
         ui.imageCollectionView.clearImages()
         estimateWorksPhotoArrayList = ArrayList()
 
@@ -357,6 +357,7 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
                     }
                 }
                 is XIError -> {
+                    ui.moveWorkflowButton.failProgress("Job submission failed")
                     crashGuard(
                         view = this.requireView(),
                         throwable = result,
@@ -372,7 +373,10 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
                 }
                 is XIProgress -> {
                     when (result.isLoading) {
-                        true -> ui.moveWorkflowButton.startProgress(ui.moveWorkflowButton.text.toString())
+                        true -> {
+                            ui.moveWorkflowButton.initProgress(viewLifecycleOwner)
+                            ui.moveWorkflowButton.startProgress(ui.moveWorkflowButton.text.toString())
+                        }
                         else -> ui.moveWorkflowButton.doneProgress(ui.moveWorkflowButton.text.toString())
                     }
                 }
@@ -405,6 +409,7 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
                     }
                 }
                 is XIError -> {
+                    ui.moveWorkflowButton.failProgress("Work submission failed")
                     crashGuard(
                         view = this@CaptureWorkFragment.requireView(),
                         throwable = result,
@@ -502,13 +507,19 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
         if (isSaved) {
             processAndSetImage(itemEstiWorks)
         } else {
-            photoUtil.deleteImageFile(filenamePath.toString())
+            Coroutines.io {
+                photoUtil.deleteImageFile(filenamePath.toString())
+            }
         }
     }
 
     private fun launchCamera() {
-        imageUri = photoUtil.getUri()!!
-        takePicture.launch(imageUri)
+        Coroutines.io {
+            imageUri = photoUtil.getUri()!!
+            withContext(Dispatchers.Main.immediate) {
+                takePicture.launch(imageUri)
+            }
+        }
     }
 
     private fun processAndSetImage(itemEstiWorks: JobEstimateWorksDTO) {
@@ -518,20 +529,24 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
             Timber.d("$currentLocation")
             when (currentLocation != null) {
                 true -> {
-                    filenamePath = photoUtil.saveImageToInternalStorage(
-                        imageUri!!
-                    ) as HashMap<String, String>
+                    Coroutines.io {
+                        filenamePath = photoUtil.saveImageToInternalStorage(
+                            imageUri!!
+                        ) as HashMap<String, String>
 
-                    val photo = createItemWorksPhoto(
-                        filenamePath,
-                        currentLocation
-                    )
+                        val photo = createItemWorksPhoto(
+                            filenamePath,
+                            currentLocation
+                        )
 
-                    estimateWorksPhotoArrayList.add(photo)
+                        withContext(Dispatchers.Main.immediate) {
+                            estimateWorksPhotoArrayList.add(photo)
 
-                    processPhotoWorks(currentLocation, filenamePath, itemEstiWorks)
+                            processPhotoWorks(currentLocation, filenamePath, itemEstiWorks)
 
-                    groupAdapter.notifyItemChanged(0)
+                            groupAdapter.notifyItemChanged(0)
+                        }
+                    }
                 }
                 else -> sharpToast(
                     message = getString(R.string.please_enable_location_services),
@@ -564,14 +579,12 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
             // Launch Dialog
         } else {
 
-            // unlock mutex
-            uiScope.launch(uiScope.coroutineContext) {
-
+            Coroutines.io {
                 try {
 
                     Timber.d("^*^ Photo Bug ^*^ Photos in array: ${estimateWorksPhotoArrayList.size}")
 
-                    itemEstiWorks.jobEstimateWorksPhotos = estimateWorksPhotoArrayList
+                    // itemEstiWorks.jobEstimateWorksPhotos = estimateWorksPhotoArrayList
 
                     workViewModel.createSaveWorksPhotos(
                         estimateWorksPhotoArrayList,
@@ -590,23 +603,25 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
                             PhotoQuality.HIGH
                         )
 
-                    // Prepare gallery for new size
-                    ui.imageCollectionView.scaleForSize(
-                        estimateWorksPhotoArrayList.size
-                    )
-
-                    // Push photo into ImageCollectionView
-                    bitmap?.run {
-                        ui.imageCollectionView.addImage(
-                            this,
-                            object : ImageCollectionView.OnImageClickListener {
-                                override fun onClick(bitmap: Bitmap, imageView: ImageView) {
-                                    showZoomedImage(imageUrl, this@CaptureWorkFragment.requireActivity())
-                                }
-                            }
+                    withContext(Dispatchers.Main.immediate) {
+                        // Prepare gallery for new size
+                        ui.imageCollectionView.scaleForSize(
+                            estimateWorksPhotoArrayList.size
                         )
+
+                        // Push photo into ImageCollectionView
+                        bitmap?.run {
+                            ui.imageCollectionView.addImage(
+                                this,
+                                object : ImageCollectionView.OnImageClickListener {
+                                    override fun onClick(bitmap: Bitmap, imageView: ImageView) {
+                                        showZoomedImage(imageUrl, this@CaptureWorkFragment.requireActivity())
+                                    }
+                                }
+                            )
+                        }
+                        ui.imageCollectionView.visibility = View.VISIBLE
                     }
-                    ui.imageCollectionView.visibility = View.VISIBLE
 
                     Timber.d("*^* PhotoBug *^* Photos in gallery: ${ui.imageCollectionView.childCount}")
                 } catch (t: Throwable) {

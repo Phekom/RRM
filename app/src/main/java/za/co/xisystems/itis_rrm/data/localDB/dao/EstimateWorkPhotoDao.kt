@@ -14,7 +14,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksPhotoDTO
 interface EstimateWorkPhotoDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertEstimateWorksPhoto(estimateworksphoto: JobEstimateWorksPhotoDTO)
+    suspend fun insertEstimateWorksPhoto(estimateWorksPhoto: JobEstimateWorksPhotoDTO)
 
     @Query("SELECT EXISTS (SELECT * FROM JOB_ESTIMATE_WORKS_PHOTO WHERE filename = :filename)")
     fun checkIfEstimateWorksPhotoExist(filename: String): Boolean
