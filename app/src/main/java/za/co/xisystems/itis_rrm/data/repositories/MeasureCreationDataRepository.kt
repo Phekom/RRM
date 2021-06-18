@@ -55,7 +55,8 @@ import java.util.ArrayList
 
 class MeasureCreationDataRepository(
     private val api: BaseConnectionApi,
-    private val appDb: AppDatabase
+    private val appDb: AppDatabase,
+    private val photoUtil: PhotoUtil
 ) : SafeApiRequest() {
     companion object {
         val TAG: String = MeasureCreationDataRepository::class.java.simpleName
@@ -162,7 +163,7 @@ class MeasureCreationDataRepository(
 
     private fun uploadMeasurementImages(
         jobItemMeasures: ArrayList<JobItemMeasureDTO>,
-        activity: FragmentActivity?
+        activity: FragmentActivity
     ) {
         var imageCounter = 1
         var totalImages = 0
@@ -171,9 +172,9 @@ class MeasureCreationDataRepository(
                 val photos = jobItemMeasure.jobItemMeasurePhotos
                 totalImages += photos.size
                 for (photo in photos) {
-                    if (PhotoUtil.photoExist(photo.filename!!)) {
+                    if (photoUtil.photoExist(photo.filename!!)) {
                         val data: ByteArray =
-                            getData(photo.filename, PhotoQuality.HIGH, activity!!)
+                            getData(photo.filename, PhotoQuality.HIGH)
                         processImageUpload(
                             photo.filename,
                             activity.getString(R.string.jpg),
@@ -191,13 +192,12 @@ class MeasureCreationDataRepository(
 
     private fun getData(
         filename: String,
-        photoQuality: PhotoQuality,
-        activity: FragmentActivity
+        photoQuality: PhotoQuality
     ): ByteArray {
-        val uri = PhotoUtil.getPhotoPathFromExternalDirectory(filename)
+        val uri = photoUtil.getPhotoPathFromExternalDirectory(filename)
         val bitmap =
-            PhotoUtil.getPhotoBitmapFromFile(activity.applicationContext, uri, photoQuality)
-        return PhotoUtil.getCompressedPhotoWithExifInfo(
+            photoUtil.getPhotoBitmapFromFile(uri, photoQuality)
+        return photoUtil.getCompressedPhotoWithExifInfo(
             bitmap!!,
             filename
         )
@@ -214,7 +214,7 @@ class MeasureCreationDataRepository(
         Coroutines.io {
             val imageData = JsonObject()
             imageData.addProperty("Filename", filename)
-            imageData.addProperty("ImageByteArray", PhotoUtil.encode64Pic(photo))
+            imageData.addProperty("ImageByteArray", photoUtil.encode64Pic(photo))
             imageData.addProperty("ImageFileExtension", extension)
             Timber.d("imageData: $imageData")
 

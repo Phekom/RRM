@@ -6,6 +6,7 @@
 
 package za.co.xisystems.itis_rrm.ui.auth.model
 
+import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
@@ -16,9 +17,10 @@ import za.co.xisystems.itis_rrm.data.repositories.UserRepository
 
 @Suppress("UNCHECKED_CAST")
 class AuthViewModelFactory(
-    private val repository: UserRepository
-) : ViewModelProvider.NewInstanceFactory() {
+    private val repository: UserRepository,
+    private val application: Application
+) : ViewModelProvider.AndroidViewModelFactory(application) {
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-        return AuthViewModel(repository) as T
+        return AuthViewModel(repository, application) as T
     }
 }

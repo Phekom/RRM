@@ -45,6 +45,7 @@ data class UserRoleDTO(
     }
 
     companion object CREATOR : Creator<UserRoleDTO> {
+        const val serialVersionUID: Long = 26L
         override fun createFromParcel(parcel: Parcel): UserRoleDTO {
             return UserRoleDTO(parcel)
         }

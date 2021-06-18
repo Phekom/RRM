@@ -16,7 +16,7 @@ interface EstimateWorkPhotoDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertEstimateWorksPhoto(estimateworksphoto: JobEstimateWorksPhotoDTO)
 
-    @Query("SELECT * FROM JOB_ESTIMATE_WORKS_PHOTO WHERE filename = :filename")
+    @Query("SELECT EXISTS (SELECT * FROM JOB_ESTIMATE_WORKS_PHOTO WHERE filename = :filename)")
     fun checkIfEstimateWorksPhotoExist(filename: String): Boolean
 
     @Query("SELECT * FROM JOB_ESTIMATE_WORKS_PHOTO WHERE worksId = :worksId")

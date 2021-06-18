@@ -18,7 +18,6 @@ import android.os.Build
 import android.os.Environment
 import androidx.core.content.FileProvider
 import androidx.exifinterface.media.ExifInterface
-import androidx.fragment.app.Fragment
 import org.apache.sanselan.ImageReadException
 import org.apache.sanselan.ImageWriteException
 import org.apache.sanselan.Sanselan
@@ -44,13 +43,35 @@ import java.util.Locale
 import java.util.UUID
 import kotlin.math.roundToLong
 
-object PhotoUtil {
-    const val FOLDER = "ITIS_RRM_Photos"
-    private const val BMP_LOAD_FAILED = "Failed to load bitmap"
+class PhotoUtil private constructor(private var appContext: Context) {
+
+    lateinit var pictureFolder: File
+
+    companion object {
+        private lateinit var instance: PhotoUtil
+        private const val BMP_LOAD_FAILED = "Failed to load bitmap"
+
+        private fun initInstance(appContext: Context): PhotoUtil {
+                instance = PhotoUtil(appContext)
+                instance.pictureFolder = appContext.getExternalFilesDir(Environment.DIRECTORY_PICTURES)!!
+                if (!instance.pictureFolder.exists()) {
+                    instance.pictureFolder.mkdirs()
+                }
+                return instance
+        }
+
+        fun getInstance(appContext: Context): PhotoUtil {
+            return if (!this::instance.isInitialized) {
+                Timber.d("Initializing PhotoUtil")
+                initInstance(appContext)
+            } else {
+                instance
+            }
+        }
+    }
 
 
     fun getPhotoBitMapFromFile(
-        context: Context,
         selectedImage: Uri?,
         photoQuality: PhotoQuality
     ): Bitmap? {
@@ -62,7 +83,7 @@ object PhotoUtil {
         try {
             fileDescriptor =
                 selectedImage?.let {
-                    return@let context.contentResolver.openAssetFileDescriptor(
+                    return@let appContext.contentResolver.openAssetFileDescriptor(
                         it, "r"
                     )
                 }
@@ -117,12 +138,10 @@ object PhotoUtil {
         }
 
         val presentTime: Long = (Date().time)
-        File(
-            Environment.getExternalStorageDirectory().toString() +
-                File.separator + FOLDER
-        ).walkTopDown()
+
+        pictureFolder.walkTopDown()
             .filter { file -> file.isFile }
-            .sortedByDescending { file -> file.lastModified() }
+            .sortedBy { file -> file.lastModified() }
             .forEach { file ->
                 val diff = presentTime - file.lastModified()
                 if (diff > daysToKeepThreshold && file.isFile) {
@@ -153,25 +172,14 @@ object PhotoUtil {
             if (!pictureName.lowercase(Locale.ROOT)
                     .contains(".jpg")
             ) "$pictureName.jpg" else pictureName
-        var fileName =
-            Environment.getExternalStorageDirectory()
-                .toString() + File.separator + FOLDER + File.separator + pictureName
-        var file = File(fileName)
-        if (!file.exists()) {
-            /**
-             * if not in the folder then go to the
-             * PhotosDirectory to check if in their.
-             **/
-            fileName =
-                Environment.getExternalStorageDirectory().toString() + File.separator + pictureName
-            file = File(fileName)
-        }
+        val fileName =
+            pictureFolder.toString().plus(File.separator)
+                .plus(pictureName)
+        val file = File(fileName)
         return Uri.fromFile(file)
     }
 
-
     fun getPhotoBitmapFromFile(
-        context: Context,
         selectedImage: Uri?,
         photoQuality: PhotoQuality
     ): Bitmap? {
@@ -183,7 +191,8 @@ object PhotoUtil {
                 var fileDescriptor: AssetFileDescriptor? = null
                 try {
                     fileDescriptor =
-                        context.contentResolver.openAssetFileDescriptor(selectedImage, "r")
+                        appContext.contentResolver.openAssetFileDescriptor(
+                            selectedImage, "r")
                 } catch (e: FileNotFoundException) {
                     Timber.e(e, BMP_LOAD_FAILED)
                 } finally {
@@ -282,7 +291,6 @@ object PhotoUtil {
      */
 //    public static Map<String, String> saveImageToInternalStorage(Context context, Bitmap bitmap) {
     fun saveImageToInternalStorage(
-        context: Context,
         imageUri: Uri
     ): Map<String, String>? {
         var scaledUri = imageUri
@@ -293,7 +301,7 @@ object PhotoUtil {
             // if uri is content
             if (scaledUri.scheme == "content") {
                 val cursor =
-                    context.contentResolver.query(scaledUri, null, null, null, null)
+                    appContext.contentResolver.query(scaledUri, null, null, null, null)
 
                 cursor?.run {
                     try {
@@ -318,7 +326,7 @@ object PhotoUtil {
             if (cut != -1) result = result.substring(cut + 1)
             val imageFileName = result
             val direct =
-                File(Environment.getExternalStorageDirectory().toString() + File.separator + FOLDER)
+                File(pictureFolder.toString())
             if (!direct.exists()) {
                 direct.mkdirs()
             }
@@ -477,19 +485,6 @@ object PhotoUtil {
         return inSampleSize
     }
 
-    fun getUri(fragment: Fragment?): Uri? {
-        try {
-            return FileProvider.getUriForFile(
-                fragment?.requireContext()?.applicationContext!!,
-                BuildConfig.APPLICATION_ID + ".provider",
-                createImageFile()
-            )
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
-        return null
-    }
-
     fun deleteImageFile(
         imagePath: String?
     ): Boolean { // Get the file
@@ -507,39 +502,9 @@ object PhotoUtil {
         }
     }
 
-    @Throws(IOException::class)
-    private fun createImageFile(): File {
-
-        val uuid = UUID.randomUUID()
-        val imageFileName = uuid.toString()
-
-        val storageDir = File(Environment.getExternalStorageDirectory().toString() + File.separator + FOLDER)
-        if (!storageDir.exists()) {
-            storageDir.mkdirs()
-        }
-
-        return File(storageDir, "$imageFileName.jpg")
-    }
-
-    fun createPhotoFolder(photo: String, fileName: String) {
-
-        val storageDir =
-            File(Environment.getExternalStorageDirectory().toString() + File.separator + FOLDER)
-        if (!storageDir.exists()) {
-            storageDir.mkdirs()
-        }
-
+    fun persistImageToLocal(photo: String, fileName: String) {
         val imageByteArray: ByteArray = decode64Pic(photo)
-        File(storageDir.path + "/" + fileName).writeBytes(imageByteArray)
-    }
-
-    fun createPhotoFolder() {
-
-        val storageDir =
-            File(Environment.getExternalStorageDirectory().toString() + File.separator + FOLDER)
-        if (!storageDir.exists()) {
-            storageDir.mkdirs()
-        }
+        File(pictureFolder.path + "/" + fileName).writeBytes(imageByteArray)
     }
 
     /**
@@ -563,13 +528,15 @@ object PhotoUtil {
         }
     }
 
-    fun getUri3(context: Context): Uri? {
+    private val authority = BuildConfig.APPLICATION_ID + ".provider"
+
+    fun getUri3(): Uri? {
         return try {
             FileProvider.getUriForFile(
-                context, BuildConfig.APPLICATION_ID + ".provider",
-                createImageFile()
+                appContext, authority,
+                createImageFile()!!
             )
-        } catch (e: IOException) {
+        } catch (e: IllegalArgumentException) {
             e.printStackTrace()
             null
         }
@@ -586,7 +553,7 @@ object PhotoUtil {
         }
     }
 
-    fun prepareGalleryPairs(filenames: List<String>, context: Context): List<Pair<Uri, Bitmap>> {
+    fun prepareGalleryPairs(filenames: List<String>): List<Pair<Uri, Bitmap>> {
         val photoQuality = when (filenames.size) {
             in 1..4 -> PhotoQuality.HIGH
             in 5..16 -> PhotoQuality.MEDIUM
@@ -598,7 +565,6 @@ object PhotoUtil {
 
                 val bmp = uri?.let {
                     getPhotoBitMapFromFile(
-                        context,
                         it,
                         photoQuality
                     )
@@ -609,6 +575,30 @@ object PhotoUtil {
                 Timber.e(t, message)
                 null
             }
+        }
+    }
+
+    fun getUri(): Uri? {
+        try {
+            return FileProvider.getUriForFile(
+                appContext,
+                authority,
+                createImageFile()!!
+            )
+        } catch (e: IllegalArgumentException) {
+            Timber.e(e, "Failed to create URI: ${e.message}")
+        }
+        return null
+    }
+
+    @Throws(IOException::class)
+    private fun createImageFile(): File? {
+        val imageFileName = SqlLitUtils.generateUuid()
+        return try {
+            File(pictureFolder, "$imageFileName.jpg")
+        } catch (ex: IOException) {
+            Timber.e(ex, "Failed to create image file $imageFileName.jpg")
+            null
         }
     }
 }

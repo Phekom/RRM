@@ -51,7 +51,7 @@ open class ProjectItem(
         viewHolder.apply {
             textViewItem.text = (itemDesc.itemCode + "  " + itemDesc.descr)
             val jobItemEstimate: JobItemEstimateDTO? = getJobItemEstimate(itemDesc.itemId)
-            if (jobItemEstimate != null && jobItemEstimate.isEstimateComplete()) {
+            if (jobItemEstimate != null && createViewModel.estimateComplete(jobItemEstimate)) {
                 val lineRate: Double = jobItemEstimate.lineRate
                 val tenderRate: Double = itemDesc.tenderRate
                 val qty: Double = jobItemEstimate.qty
@@ -59,7 +59,7 @@ open class ProjectItem(
                     ("$qty  *   R $tenderRate = " + JobUtils.formatCost(lineRate))
                 subTextView.visibility = View.GONE
             } else {
-                costTextView.text = viewHolder.itemView.context.getString(R.string.incomplete_estimate)
+                costTextView.text = viewHolder.itemView.context.getString(string.incomplete_estimate)
                 subTextView.visibility = View.VISIBLE
             }
 

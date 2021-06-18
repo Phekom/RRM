@@ -83,6 +83,7 @@ data class ProjectSectionDTO(
     }
 
     companion object CREATOR : Creator<ProjectSectionDTO> {
+        const val serialVersionUID: Long = 20L
         override fun createFromParcel(parcel: Parcel): ProjectSectionDTO {
             return ProjectSectionDTO(parcel)
         }
