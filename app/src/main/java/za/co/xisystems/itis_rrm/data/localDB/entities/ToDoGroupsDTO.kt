@@ -66,6 +66,8 @@ data class ToDoGroupsDTO(
     }
 
     companion object CREATOR : Creator<ToDoGroupsDTO> {
+        const val serialVersionUID: Long = 23L
+
         override fun createFromParcel(parcel: Parcel): ToDoGroupsDTO {
             return ToDoGroupsDTO(parcel)
         }

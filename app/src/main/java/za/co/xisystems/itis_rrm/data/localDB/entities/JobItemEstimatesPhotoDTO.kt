@@ -130,6 +130,8 @@ data class JobItemEstimatesPhotoDTO(
     }
 
     companion object CREATOR : Creator<JobItemEstimatesPhotoDTO> {
+        const val serialVersionUID: Long = 11L
+
         override fun createFromParcel(parcel: Parcel): JobItemEstimatesPhotoDTO {
             return JobItemEstimatesPhotoDTO(parcel)
         }

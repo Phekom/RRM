@@ -103,8 +103,9 @@ import za.co.xisystems.itis_rrm.utils.DatetimeConverters
         WorkFlowsDTO::class, WfWorkStepDTO::class
     ],
     views = [ContractSelectorView::class],
-    version = 18
+    version = 19
 )
+
 @TypeConverters(Converters::class, DatetimeConverters::class)
 @GenerateRoomMigrations
 abstract class AppDatabase : RoomDatabase() {
@@ -142,7 +143,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun getWorkStepDao(): WorkStepDao
 
     companion object {
-        const val MAX_DB_VERSIONS = 999_999_999
+        private const val MAX_DB_VERSIONS = 999_999_999
         @Volatile
         private var instance: AppDatabase? = null
         private val LOCK = Any()

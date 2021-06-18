@@ -28,6 +28,8 @@ import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.databinding.ActivityResetPinBinding
 import za.co.xisystems.itis_rrm.extensions.observeOnce
+import za.co.xisystems.itis_rrm.ui.auth.model.AuthViewModel
+import za.co.xisystems.itis_rrm.ui.auth.model.AuthViewModelFactory
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.hide
 import za.co.xisystems.itis_rrm.utils.hideKeyboard
@@ -38,7 +40,6 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, KodeinAware {
     companion object {
         val TAG: String = ResetPinActivity::class.java.simpleName
         private const val PERMISSION_REQUEST = 10
-        const val GOOGLE_PLAY_SERVICES_RESOLUTION_REQUEST = 1
     }
 
     override val kodein by kodein()
@@ -193,9 +194,8 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, KodeinAware {
             style = MotionToast.TOAST_ERROR,
             position = MotionToast.GRAVITY_BOTTOM,
             duration = MotionToast.LONG_DURATION,
-            font = ResourcesCompat.getFont(this, R.font.helvetica_regular)
+            font = ResourcesCompat.getFont(this, font.helvetica_regular)
         )
-        // reg_container.snackbar(message)
     }
 
     override fun onSignOut(userDTO: UserDTO) {

@@ -19,8 +19,8 @@ import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
-import java.io.Serializable
 import org.jetbrains.annotations.NotNull
+import java.io.Serializable
 
 /**
  * Created by Francis Mahlava on 2019/11/21.
@@ -303,6 +303,7 @@ class JobDTO(
     }
 
     companion object CREATOR : Creator<JobDTO> {
+        const val serialVersionUID = 6L
         override fun createFromParcel(parcel: Parcel): JobDTO {
             return JobDTO(parcel)
         }

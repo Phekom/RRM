@@ -18,19 +18,18 @@ interface UserDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(user: UserDTO): Long
 
-    @Query("SELECT * FROM USER_TABLE WHERE userId = :userId")
+   @Query("SELECT EXISTS (SELECT * FROM USER_TABLE WHERE userId = :userId)")
     fun checkUserExists(userId: String): Boolean
-
     @Query("UPDATE USER_TABLE SET pinHash = :pinHash,  phoneNumber = :phoneNumber, imei=:imei, device=:device ")
     suspend fun updateUser(pinHash: String?, phoneNumber: String?, imei: String?, device: String?)
 
-    @Query("SELECT * FROM USER_TABLE WHERE userId = userId")
+    @Query("SELECT * FROM USER_TABLE LIMIT 1")
     fun getUser(): LiveData<UserDTO>
 
-    @Query("SELECT UserId FROM USER_TABLE WHERE userId = userId")
+    @Query("SELECT UserId FROM USER_TABLE LIMIT 1")
     fun getUserID(): String
 
-    @Query("SELECT UserName FROM USER_TABLE WHERE userId = userId")
+    @Query("SELECT UserName FROM USER_TABLE LIMIT 1")
     fun getUserName(): String
 
     @Delete

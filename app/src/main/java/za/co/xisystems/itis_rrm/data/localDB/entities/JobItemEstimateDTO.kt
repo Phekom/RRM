@@ -13,10 +13,9 @@ import androidx.core.util.Pair
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
+import za.co.xisystems.itis_rrm.utils.JobUtils
 import java.io.Serializable
 import java.util.ArrayList
-import za.co.xisystems.itis_rrm.utils.JobUtils
-import za.co.xisystems.itis_rrm.utils.PhotoUtil
 
 /**
  * Created by Francis Mahlava on 2019/11/21.
@@ -64,9 +63,8 @@ data class JobItemEstimateDTO(
     var measureActId: Int = 0,
 
     @SerializedName("SelectedItemUOM")
-    val selectedItemUom: String?
-
-) : Serializable, Parcelable {
+    val selectedItemUom: String?,
+) : Parcelable, Serializable {
 
     constructor(parcel: Parcel) : this(
         actId = parcel.readInt(),
@@ -141,16 +139,6 @@ data class JobItemEstimateDTO(
         JobUtils.sort(jobItemEstimatePhotos)
     }
 
-    fun isEstimateComplete(): Boolean {
-        return if (size() < 2) {
-            false
-        } else {
-            val photoStart = jobItemEstimatePhotos[0]
-            val photoEnd = jobItemEstimatePhotos[1]
-            PhotoUtil.photoExist(photoStart.filename) && PhotoUtil.photoExist(photoEnd.filename)
-        }
-    }
-
     fun size(): Int {
         return jobItemEstimatePhotos.size
     }
@@ -181,6 +169,7 @@ data class JobItemEstimateDTO(
     }
 
     companion object CREATOR : Creator<JobItemEstimateDTO> {
+        const val serialVersionUID: Long = 10L
         override fun createFromParcel(parcel: Parcel): JobItemEstimateDTO {
             return JobItemEstimateDTO(parcel)
         }

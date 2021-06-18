@@ -1,9 +1,3 @@
-/*
- * Updated by Shaun McDonald on 2021/02/08
- * Last modified on 2021/02/07 4:41 PM
- * Copyright (c) 2021.  XI Systems  - All rights reserved
- */
-
 package za.co.xisystems.itis_rrm.ui.auth
 
 /**
@@ -31,6 +25,8 @@ import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.data.network.PermissionController
 import za.co.xisystems.itis_rrm.databinding.ActivityRegisterBinding
+import za.co.xisystems.itis_rrm.ui.auth.model.AuthViewModel
+import za.co.xisystems.itis_rrm.ui.auth.model.AuthViewModelFactory
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.hide

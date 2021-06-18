@@ -48,6 +48,8 @@ class LookupDTO(
     }
 
     companion object CREATOR : Creator<LookupDTO> {
+        const val serialVersionUID: Long = 15L
+
         override fun createFromParcel(parcel: Parcel): LookupDTO {
             return LookupDTO(parcel)
         }

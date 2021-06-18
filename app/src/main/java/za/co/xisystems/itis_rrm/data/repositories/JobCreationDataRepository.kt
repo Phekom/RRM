@@ -37,7 +37,6 @@ import za.co.xisystems.itis_rrm.domain.ProjectSelector
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
-import za.co.xisystems.itis_rrm.utils.PhotoUtil.getPhotoPathFromExternalDirectory
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import java.io.IOException
@@ -55,7 +54,8 @@ import java.util.ArrayList
 
 class JobCreationDataRepository(
     private val api: BaseConnectionApi,
-    private val appDb: AppDatabase
+    private val appDb: AppDatabase,
+    private val photoUtil: PhotoUtil
 ) : SafeApiRequest() {
 
     private val workflowJobs = MutableLiveData<WorkflowJobDTO>()
@@ -285,7 +285,7 @@ class JobCreationDataRepository(
         Timber.i("Json Job: $jobData")
 
         val jobResponse = apiRequest { api.sendJobsForApproval(jobData) }
-        postValue(jobResponse.workflowJob, job, activity)
+        postWorkflowJob(jobResponse.workflowJob, job, activity)
 
         val messages = jobResponse.errorMessage
 
@@ -294,7 +294,7 @@ class JobCreationDataRepository(
         }
     }
 
-    private fun postValue(
+    private fun postWorkflowJob(
         workflowJob: WorkflowJobDTO?,
         job: JobDTO,
         activity: FragmentActivity
@@ -415,12 +415,11 @@ class JobCreationDataRepository(
 
         var jobCounter = 1
         val totalJobs = packageJob.jobItemEstimates.size
-
         packageJob.jobItemEstimates.map { jobItemEstimate ->
             val totalImages = jobItemEstimate.jobItemEstimatePhotos.size
             var imageCounter = 1
             jobItemEstimate.jobItemEstimatePhotos.map { estimatePhoto ->
-                if (PhotoUtil.photoExist(estimatePhoto.filename)) {
+                if (photoUtil.photoExist(estimatePhoto.filename)) {
 
                     uploadRrmImage(
                         activity = activity,
@@ -453,7 +452,7 @@ class JobCreationDataRepository(
         totalImages: Int
     ) {
 
-        val data: ByteArray = getData(filename, photoQuality, activity)
+        val data: ByteArray = getData(filename, photoQuality)
         processImageUpload(
             filename,
             activity.getString(R.string.jpg),
@@ -465,13 +464,12 @@ class JobCreationDataRepository(
 
     private fun getData(
         filename: String,
-        photoQuality: PhotoQuality,
-        activity: FragmentActivity
+        photoQuality: PhotoQuality
     ): ByteArray {
-        val uri = getPhotoPathFromExternalDirectory(filename)
+        val uri = photoUtil.getPhotoPathFromExternalDirectory(filename)
         val bitmap =
-            PhotoUtil.getPhotoBitmapFromFile(activity.applicationContext, uri, photoQuality)
-        return PhotoUtil.getCompressedPhotoWithExifInfo(
+            photoUtil.getPhotoBitmapFromFile(uri, photoQuality)
+        return photoUtil.getCompressedPhotoWithExifInfo(
             bitmap!!,
             filename
         )
@@ -487,7 +485,7 @@ class JobCreationDataRepository(
         Coroutines.api {
             val imageData = JsonObject()
             imageData.addProperty("Filename", filename)
-            imageData.addProperty("ImageByteArray", PhotoUtil.encode64Pic(photo))
+            imageData.addProperty("ImageByteArray", photoUtil.encode64Pic(photo))
             imageData.addProperty("ImageFileExtension", extension)
             Timber.d("Json Image: $imageData")
 

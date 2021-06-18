@@ -106,6 +106,8 @@ data class UserDTO(
     }
 
     companion object CREATOR : Creator<UserDTO> {
+        const val serialVersionUID: Long = 25L
+
         override fun createFromParcel(parcel: Parcel): UserDTO {
             return UserDTO(parcel)
         }

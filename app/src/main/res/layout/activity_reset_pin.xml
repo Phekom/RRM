@@ -8,7 +8,7 @@
 
         <variable
             name="viewmodel"
-            type="za.co.xisystems.itis_rrm.ui.auth.AuthViewModel" />
+            type="za.co.xisystems.itis_rrm.ui.auth.model.AuthViewModel" />
 
     </data>
 

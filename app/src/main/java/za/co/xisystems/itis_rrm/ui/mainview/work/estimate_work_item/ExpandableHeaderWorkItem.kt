@@ -75,7 +75,13 @@ class ExpandableHeaderWorkItem(
     private fun bindIcon(viewHolder: GroupieViewHolder) {
         viewHolder.icon.apply {
             visibility = View.VISIBLE
-            setImageResource(if (expandableGroup.isExpanded) R.drawable.collapse_animated else R.drawable.expand_animated)
+            setImageResource(
+                if (expandableGroup.isExpanded) {
+                    R.drawable.collapse_animated
+                } else {
+                    R.drawable.expand_animated
+                }
+            )
             (drawable as Animatable).start()
         }
     }

@@ -6,11 +6,9 @@
 
 package za.co.xisystems.itis_rrm.ui.mainview.work.capture_work
 
-import android.Manifest
-import android.app.Activity
+import android.Manifest.permission
 import android.content.Context
 import android.content.Intent
-import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.net.Uri
@@ -18,7 +16,6 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.provider.MediaStore
 import android.text.method.KeyListener
 import android.view.LayoutInflater
 import android.view.Menu
@@ -26,6 +23,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -38,6 +36,7 @@ import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -73,7 +72,6 @@ import za.co.xisystems.itis_rrm.ui.extensions.initProgress
 import za.co.xisystems.itis_rrm.ui.extensions.scaleForSize
 import za.co.xisystems.itis_rrm.ui.extensions.showZoomedImage
 import za.co.xisystems.itis_rrm.ui.extensions.startProgress
-import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.intents.AbstractIntent
 import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.work.workstate_item.WorkStateItem
@@ -128,6 +126,7 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
     private var estimateCount = 0
     private var errorState = false
     private var selectedJobId: String = ""
+    private lateinit var photoUtil: PhotoUtil
 
     init {
         lifecycleScope.launch {
@@ -135,15 +134,16 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
                 workViewModel = activity?.run {
                     ViewModelProvider(this, factory).get(WorkViewModel::class.java)
                 } ?: throw Exception("Invalid Activity")
-            }
-            // CONTINUE HERE !!
-            val args: CaptureWorkFragmentArgs by navArgs()
-            args.jobId?.let {
-                selectedJobId = it
-                workViewModel.setWorkItemJob(it)
-            }
-            args.estimateId?.let {
-                workViewModel.setWorkItem(it)
+
+                // CONTINUE HERE !!
+                val args: CaptureWorkFragmentArgs by navArgs()
+                args.jobId?.let {
+                    selectedJobId = it
+                    workViewModel.setWorkItemJob(it)
+                }
+                args.estimateId?.let {
+                    workViewModel.setWorkItem(it)
+                }
             }
         }
     }
@@ -158,6 +158,7 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
         estimateWorksList = ArrayList()
         estimateWorksArrayList = ArrayList()
         jobWorkStep = ArrayList()
+        photoUtil = PhotoUtil.getInstance(this.requireContext().applicationContext)
     }
 
     override fun onCreateView(
@@ -180,9 +181,8 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
         _ui = null
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         uiScope.launch(uiScope.coroutineContext) {
 
             val user = workViewModel.user.await()
@@ -207,12 +207,11 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
             })
         }
 
-        ui.imageCollectionView.visibility = View.GONE
         ui.imageCollectionView.clearImages()
         estimateWorksPhotoArrayList = ArrayList()
 
         ui.takePhotoButton.setOnClickListener {
-            initCameraLaunch()
+            initLaunchCamera()
         }
         ui.moveWorkflowButton.setOnClickListener {
             validateUploadWorks()
@@ -228,7 +227,7 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
                 }
 
                 val photoPairs = filenames.let {
-                    PhotoUtil.prepareGalleryPairs(it, requireActivity().applicationContext)
+                    photoUtil.prepareGalleryPairs(it)
                 }
                 photoPairs.let {
                     ui.imageCollectionView.clearImages()
@@ -310,15 +309,19 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
         )
     }
 
-    private fun initCameraLaunch() {
+    private fun initLaunchCamera() {
         if (ContextCompat.checkSelfPermission(
                 requireActivity().applicationContext,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE
+                permission.CAMERA
             ) != PackageManager.PERMISSION_GRANTED
         ) {
             ActivityCompat.requestPermissions(
-                Activity(),
-                arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                requireActivity(),
+                arrayOf(
+                    permission.CAMERA,
+                    permission.WRITE_EXTERNAL_STORAGE,
+                    permission.READ_EXTERNAL_STORAGE
+                ),
                 REQUEST_STORAGE_PERMISSION
             )
         } else {
@@ -354,6 +357,7 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
                     }
                 }
                 is XIError -> {
+                    ui.moveWorkflowButton.failProgress("Job submission failed")
                     crashGuard(
                         view = this.requireView(),
                         throwable = result,
@@ -369,7 +373,10 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
                 }
                 is XIProgress -> {
                     when (result.isLoading) {
-                        true -> ui.moveWorkflowButton.startProgress(ui.moveWorkflowButton.text.toString())
+                        true -> {
+                            ui.moveWorkflowButton.initProgress(viewLifecycleOwner)
+                            ui.moveWorkflowButton.startProgress(ui.moveWorkflowButton.text.toString())
+                        }
                         else -> ui.moveWorkflowButton.doneProgress(ui.moveWorkflowButton.text.toString())
                     }
                 }
@@ -402,6 +409,7 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
                     }
                 }
                 is XIError -> {
+                    ui.moveWorkflowButton.failProgress("Work submission failed")
                     crashGuard(
                         view = this@CaptureWorkFragment.requireView(),
                         throwable = result,
@@ -490,27 +498,27 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
         }
     }
 
-    private fun launchCamera() {
-
-        imageUri = PhotoUtil.getUri3(requireActivity().applicationContext)!!
-        val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-        if (takePictureIntent.resolveActivity(requireActivity().packageManager) != null) {
-            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri)
-            takePictureIntent.putExtra(
-                MediaStore.EXTRA_SCREEN_ORIENTATION,
-                ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-            )
-            startActivityForResult(takePictureIntent, AbstractIntent.REQUEST_TAKE_PHOTO)
+    /**
+     * ActivityResultContract for taking a photograph
+     */
+    private val takePicture = registerForActivityResult(
+        ActivityResultContracts.TakePicture()
+    ) { isSaved ->
+        if (isSaved) {
+            processAndSetImage(itemEstiWorks)
+        } else {
+            Coroutines.io {
+                photoUtil.deleteImageFile(filenamePath.toString())
+            }
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == Activity.RESULT_OK) {
-            // Process the image and set it to the TextView
-            processAndSetImage(itemEstiWorks)
-            ui.imageCollectionView.visibility = View.VISIBLE
+    private fun launchCamera() {
+        Coroutines.io {
+            imageUri = photoUtil.getUri()!!
+            withContext(Dispatchers.Main.immediate) {
+                takePicture.launch(imageUri)
+            }
         }
     }
 
@@ -521,14 +529,24 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
             Timber.d("$currentLocation")
             when (currentLocation != null) {
                 true -> {
-                    filenamePath = PhotoUtil.saveImageToInternalStorage(
-                        requireActivity(),
-                        imageUri!!
-                    ) as HashMap<String, String>
+                    Coroutines.io {
+                        filenamePath = photoUtil.saveImageToInternalStorage(
+                            imageUri!!
+                        ) as HashMap<String, String>
 
-                    processPhotoWorks(currentLocation, filenamePath, itemEstiWorks)
+                        val photo = createItemWorksPhoto(
+                            filenamePath,
+                            currentLocation
+                        )
 
-                    groupAdapter.notifyItemChanged(0)
+                        withContext(Dispatchers.Main.immediate) {
+                            estimateWorksPhotoArrayList.add(photo)
+
+                            processPhotoWorks(currentLocation, filenamePath, itemEstiWorks)
+
+                            groupAdapter.notifyItemChanged(0)
+                        }
+                    }
                 }
                 else -> sharpToast(
                     message = getString(R.string.please_enable_location_services),
@@ -542,8 +560,7 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
                 position = CENTER,
                 duration = LONG
             )
-
-            e.printStackTrace()
+            Timber.e(e, getString(R.string.error_getting_image))
         }
     }
 
@@ -562,19 +579,12 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
             // Launch Dialog
         } else {
 
-            // unlock mutex
-            uiScope.launch(uiScope.coroutineContext) {
-
+            Coroutines.io {
                 try {
-                    val photo = createItemWorksPhoto(
-                        filenamePath,
-                        currentLocation
-                    )
 
-                    estimateWorksPhotoArrayList.add(photo)
                     Timber.d("^*^ Photo Bug ^*^ Photos in array: ${estimateWorksPhotoArrayList.size}")
 
-                    itemEstiWorks.jobEstimateWorksPhotos = estimateWorksPhotoArrayList
+                    // itemEstiWorks.jobEstimateWorksPhotos = estimateWorksPhotoArrayList
 
                     workViewModel.createSaveWorksPhotos(
                         estimateWorksPhotoArrayList,
@@ -582,33 +592,36 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
                     )
 
                     // Get imageUri from filename
-                    val imageUrl = PhotoUtil.getPhotoPathFromExternalDirectory(
-                        photo.filename
+                    val imageUrl = photoUtil.getPhotoPathFromExternalDirectory(
+                        filenamePath["filename"]!!
                     )
 
                     // Generate Bitmap from file
                     val bitmap =
-                        PhotoUtil.getPhotoBitmapFromFile(
-                            requireActivity(),
+                        photoUtil.getPhotoBitmapFromFile(
                             imageUrl,
                             PhotoQuality.HIGH
                         )
 
-                    // Prepare gallery for new size
-                    ui.imageCollectionView.scaleForSize(
-                        estimateWorksPhotoArrayList.size
-                    )
+                    withContext(Dispatchers.Main.immediate) {
+                        // Prepare gallery for new size
+                        ui.imageCollectionView.scaleForSize(
+                            estimateWorksPhotoArrayList.size
+                        )
 
-                    // Push photo into ImageCollectionView
-                    ui.imageCollectionView.addImage(
-                        bitmap!!,
-                        object : ImageCollectionView.OnImageClickListener {
-                            override fun onClick(bitmap: Bitmap, imageView: ImageView) {
-                                showZoomedImage(imageUrl, this@CaptureWorkFragment.requireActivity())
-                            }
+                        // Push photo into ImageCollectionView
+                        bitmap?.run {
+                            ui.imageCollectionView.addImage(
+                                this,
+                                object : ImageCollectionView.OnImageClickListener {
+                                    override fun onClick(bitmap: Bitmap, imageView: ImageView) {
+                                        showZoomedImage(imageUrl, this@CaptureWorkFragment.requireActivity())
+                                    }
+                                }
+                            )
                         }
-                    )
-                    ui.imageCollectionView.visibility = View.VISIBLE
+                        ui.imageCollectionView.visibility = View.VISIBLE
+                    }
 
                     Timber.d("*^* PhotoBug *^* Photos in gallery: ${ui.imageCollectionView.childCount}")
                 } catch (t: Throwable) {
@@ -916,7 +929,6 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
     }
 
     companion object {
-        private const val REQUEST_IMAGE_CAPTURE = 1
         private const val REQUEST_STORAGE_PERMISSION = 1
         private const val STANDARD_WORKFLOW_STEPS = 3
     }

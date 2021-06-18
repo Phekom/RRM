@@ -6,10 +6,11 @@
 
 package za.co.xisystems.itis_rrm.ui.mainview.create
 
+import android.app.Application
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.liveData
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
@@ -34,6 +35,7 @@ import za.co.xisystems.itis_rrm.domain.ContractSelector
 import za.co.xisystems.itis_rrm.domain.ProjectSelector
 import za.co.xisystems.itis_rrm.ui.mainview.create.select_item.SectionProjectItem
 import za.co.xisystems.itis_rrm.utils.JobUtils
+import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
 import za.co.xisystems.itis_rrm.utils.uncaughtExceptionHandler
 import java.util.ArrayList
@@ -44,8 +46,9 @@ import kotlin.coroutines.CoroutineContext
  */
 
 class CreateViewModel(
-    private val jobCreationDataRepository: JobCreationDataRepository
-) : ViewModel() {
+    private val jobCreationDataRepository: JobCreationDataRepository,
+    application: Application
+) : AndroidViewModel(application) {
 
     var jobDesc: String? = null
 
@@ -71,6 +74,7 @@ class CreateViewModel(
     val projectItemTemp = MutableLiveData<ItemDTOTemp>()
     val jobId: MutableLiveData<String?> = MutableLiveData()
     val tempProjectItem: MutableLiveData<ItemDTOTemp> = MutableLiveData()
+    val photoUtil = PhotoUtil.getInstance(getApplication())
 
     fun setCurrentJob(inJobItemToEdit: JobDTO) {
         currentJob.value = inJobItemToEdit
@@ -151,7 +155,6 @@ class CreateViewModel(
     suspend fun saveNewItem(tempItem: ItemDTOTemp) {
         return withContext(Dispatchers.IO) {
             jobCreationDataRepository.saveNewItem(tempItem)
-
         }
     }
 
@@ -331,5 +334,19 @@ class CreateViewModel(
                 emit(data)
             }
         }
+    }
+
+    fun JobItemEstimateDTO.isEstimateComplete(): Boolean {
+        return if (this.size() < 2) {
+            false
+        } else {
+            val photoStart = this.jobItemEstimatePhotos[0]
+            val photoEnd = this.jobItemEstimatePhotos[1]
+            photoUtil.photoExist(photoStart.filename) && photoUtil.photoExist(photoEnd.filename)
+        }
+    }
+
+    fun estimateComplete(newJobItemEstimate: JobItemEstimateDTO?): Boolean {
+       return newJobItemEstimate?.isEstimateComplete() ?: false
     }
 }

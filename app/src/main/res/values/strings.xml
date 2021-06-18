@@ -230,4 +230,6 @@
     <string name="estimate_chevron">estimate chevron</string>
     <string name="click_to_edit_estimate">(Click to )</string>
     <string name="application_settings">application settings</string>
+    <string name="tender_rate">Tender Rate</string>
+    <string name="image_kb">$1%d KB</string>
 </resources>

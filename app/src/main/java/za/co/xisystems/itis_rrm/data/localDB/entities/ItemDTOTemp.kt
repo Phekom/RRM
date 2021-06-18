@@ -105,6 +105,7 @@ data class ItemDTOTemp(
     }
 
     companion object CREATOR : Creator<ItemDTOTemp> {
+        const val serialVersionUID = 4L
         override fun createFromParcel(parcel: Parcel): ItemDTOTemp {
             return ItemDTOTemp(parcel)
         }

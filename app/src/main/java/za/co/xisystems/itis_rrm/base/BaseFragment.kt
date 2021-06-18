@@ -339,7 +339,7 @@ abstract class BaseFragment : Fragment(), IProgressView, KodeinAware {
                         view = view,
                         throwable = throwable,
                         shouldShowSnackBar = true,
-                        refreshAction = refreshAction
+                        refreshAction = { refreshAction() }
                     )
                 }
             }
