@@ -57,6 +57,7 @@ class WfWorkStepDTO(
     }
 
     companion object CREATOR : Creator<WfWorkStepDTO> {
+        const val serialVersionUID: Long = 27L
         override fun createFromParcel(parcel: Parcel): WfWorkStepDTO {
             return WfWorkStepDTO(parcel)
         }

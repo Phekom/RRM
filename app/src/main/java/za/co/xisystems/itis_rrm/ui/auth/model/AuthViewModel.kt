@@ -1,22 +1,11 @@
-/**
- * Created by Shaun McDonald on 2021/06/02
- * Last modified on 28/05/2021, 09:08
- * Copyright (c) 2021.  XI Systems  - All rights reserved
- **/
-
-/*
- * Updated by Shaun McDonald on 2021/01/25
- * Last modified on 2021/01/25 6:30 PM
- * Copyright (c) 2021.  XI Systems  - All rights reserved
- */
-
 package za.co.xisystems.itis_rrm.ui.auth.model
 
+import android.app.Application
 import android.os.Build
 import android.os.Build.VERSION
 import android.view.View
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.viewModelScope
 import com.github.ajalt.timberkt.Timber
@@ -45,8 +34,9 @@ import za.co.xisystems.itis_rrm.utils.lazyDeferred
  */
 
 class AuthViewModel(
-    private val repository: UserRepository
-) : ViewModel() {
+    private val repository: UserRepository,
+    application: Application
+) : AndroidViewModel(application) {
 
     private val supervisorJob: Job = Job()
     private val mainContext = Dispatchers.Main + Job(supervisorJob)
@@ -60,6 +50,7 @@ class AuthViewModel(
     var enterNewPin: String? = null
     var confirmNewPin: String? = null
     var authListener: AuthListener? = null
+    private val photoUtil: PhotoUtil = PhotoUtil.getInstance(this.getApplication())
 
     val user by lazyDeferred {
         repository.getUser().distinctUntilChanged()
@@ -282,20 +273,29 @@ class AuthViewModel(
         }
 
         fun onRegButtonClick(view: View) {
-            viewModelScope.launch(mainContext) {
+            viewModelScope.launch(ioContext) {
 
-                authListener?.onStarted()
-
+                listenerNotify {
+                    authListener?.onStarted()
+                    view.isClickable = false
+                }
                 when {
                     username.isNullOrEmpty() -> {
-                        authListener?.onWarn("UserName is required")
+                        listenerNotify {
+                            authListener?.onWarn("UserName is required")
+                        }
                     }
                     password.isNullOrEmpty() -> {
-                        authListener?.onWarn("Password is required")
+                        listenerNotify {
+                            authListener?.onWarn("Password is required")
+                        }
                     }
                     else -> {
                         registerNewUser(username, password)
                     }
+                }
+                listenerNotify {
+                    view.isClickable = true
                 }
             }
         }
@@ -361,7 +361,7 @@ class AuthViewModel(
                 } else {
                     repository.authenticatePin()
                     viewModelScope.launch(ioContext) {
-                        PhotoUtil.cleanupDevice()
+                        photoUtil.cleanupDevice()
                     }
                     listenerNotify { authListener?.onSuccess(loggedInUser) }
                 }

@@ -96,6 +96,8 @@ data class PrimaryKeyValueDTO(
     }
 
     companion object CREATOR : Creator<PrimaryKeyValueDTO> {
+        const val serialVersionUID: Long = 17L
+
         override fun createFromParcel(parcel: Parcel): PrimaryKeyValueDTO {
             return PrimaryKeyValueDTO(parcel)
         }

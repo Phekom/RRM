@@ -62,6 +62,7 @@ data class ActivityDTO(
     }
 
     companion object CREATOR : Creator<ActivityDTO> {
+        const val serialVersionUID = 1L
         override fun createFromParcel(parcel: Parcel): ActivityDTO {
             return ActivityDTO(parcel)
         }

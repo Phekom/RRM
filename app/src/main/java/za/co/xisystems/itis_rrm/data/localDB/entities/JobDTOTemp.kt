@@ -224,6 +224,7 @@ data class JobDTOTemp(
     }
 
     companion object CREATOR : Creator<JobDTOTemp> {
+        const val serialVersionUID = 7L
         override fun createFromParcel(parcel: Parcel): JobDTOTemp {
             return JobDTOTemp(parcel)
         }

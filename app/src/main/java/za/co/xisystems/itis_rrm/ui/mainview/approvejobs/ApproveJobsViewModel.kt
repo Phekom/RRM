@@ -33,7 +33,7 @@ import za.co.xisystems.itis_rrm.utils.lazyDeferred
 class ApproveJobsViewModel(
     application: Application,
     private val jobApprovalDataRepository: JobApprovalDataRepository,
-    private val offlineDataRepository: OfflineDataRepository
+    private val offlineDataRepository: OfflineDataRepository,
 ) : AndroidViewModel(application) {
 
     private val superJob = SupervisorJob()

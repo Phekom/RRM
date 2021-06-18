@@ -90,6 +90,7 @@ data class WorkFlowRouteDTO(
     }
 
     companion object CREATOR : Creator<WorkFlowRouteDTO> {
+        const val serialVersionUID: Long = 34L
         override fun createFromParcel(parcel: Parcel): WorkFlowRouteDTO {
             return WorkFlowRouteDTO(parcel)
         }

@@ -47,6 +47,7 @@ open class DebugMainApp : MainApp(), KodeinAware {
                 .detectDiskWrites()
                 .detectNetwork() // or .detectAll() for all detectable problems
                 .penaltyLog()
+                .penaltyFlashScreen()
                 .build()
         )
         StrictMode.setVmPolicy(
@@ -54,7 +55,6 @@ open class DebugMainApp : MainApp(), KodeinAware {
                 .detectLeakedSqlLiteObjects()
                 .detectLeakedClosableObjects()
                 .penaltyLog()
-                .penaltyDeath()
                 .build()
         )
     }

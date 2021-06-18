@@ -132,6 +132,8 @@ data class JobItemMeasureDTO(
     }
 
     companion object CREATOR : Creator<JobItemMeasureDTO> {
+        const val serialVersionUID: Long = 12L
+
         override fun createFromParcel(parcel: Parcel): JobItemMeasureDTO {
             return JobItemMeasureDTO(parcel)
         }

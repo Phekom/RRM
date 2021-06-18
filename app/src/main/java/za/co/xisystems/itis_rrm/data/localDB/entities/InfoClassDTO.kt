@@ -18,8 +18,8 @@ import android.os.Parcelable.Creator
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
-import java.io.Serializable
 import org.jetbrains.annotations.NotNull
+import java.io.Serializable
 
 const val INFO_CLASS_TABLE = "INFO_CLASS_TABLE"
 
@@ -51,6 +51,7 @@ data class InfoClassDTO(
     }
 
     companion object CREATOR : Creator<InfoClassDTO> {
+        const val serialVersionUID = 3L
         override fun createFromParcel(parcel: Parcel): InfoClassDTO {
             return InfoClassDTO(parcel)
         }

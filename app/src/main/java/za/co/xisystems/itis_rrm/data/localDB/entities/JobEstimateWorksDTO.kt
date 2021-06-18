@@ -65,6 +65,7 @@ class JobEstimateWorksDTO(
     }
 
     companion object CREATOR : Creator<JobEstimateWorksDTO> {
+        const val serialVersionUID = 8L
         override fun createFromParcel(parcel: Parcel): JobEstimateWorksDTO {
             return JobEstimateWorksDTO(parcel)
         }

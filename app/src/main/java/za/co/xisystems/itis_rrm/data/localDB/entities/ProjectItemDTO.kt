@@ -20,9 +20,9 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
-import java.io.Serializable
 import org.jetbrains.annotations.NotNull
 import org.jetbrains.annotations.Nullable
+import java.io.Serializable
 
 /**
  * Created by Francis Mahlava on 2019/11/21.
@@ -109,6 +109,8 @@ data class ProjectItemDTO(
     }
 
     companion object CREATOR : Creator<ProjectItemDTO> {
+        const val serialVersionUID: Long = 19L
+
         override fun createFromParcel(parcel: Parcel): ProjectItemDTO {
             return ProjectItemDTO(parcel)
         }

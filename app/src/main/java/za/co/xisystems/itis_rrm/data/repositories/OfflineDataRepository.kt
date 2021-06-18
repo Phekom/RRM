@@ -9,7 +9,6 @@ package za.co.xisystems.itis_rrm.data.repositories
 // import sun.security.krb5.Confounder.bytes
 
 // import android.app.Activity
-import android.os.Environment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.distinctUntilChanged
@@ -69,7 +68,8 @@ private val jobDataController: JobDataController? = null
  */
 class OfflineDataRepository(
     private val api: BaseConnectionApi,
-    private val appDb: AppDatabase
+    private val appDb: AppDatabase,
+    private val photoUtil: PhotoUtil
 ) : SafeApiRequest() {
 
     private var entitiesFetched = false
@@ -130,7 +130,7 @@ class OfflineDataRepository(
         }
 
         job.observeForever {
-            saveJobs(it)
+            saveJob(it)
         }
 
         workflowJ.observeForever {
@@ -344,33 +344,36 @@ class OfflineDataRepository(
         projectMax = 0
         withContext(Dispatchers.IO) {
 
-            val validContracts = contracts.filter { contract ->
-                contract.projects.isNotEmpty() && contract.contractId.isNotBlank()
-            }
-                .distinctBy { contract -> contract.contractId }
-            contractMax += validContracts.count()
-            validContracts.forEach { contract ->
-                if (!appDb.getContractDao().checkIfContractExists(contract.contractId)) {
-                    appDb.getContractDao().insertContract(contract)
-                    contractCount++
-                    newContracts = true
-
-                    val validProjects =
-                        contract.projects.filter { project ->
-                            project.projectId.isNotBlank()
-                        }.distinctBy { project -> project.projectId }
-
-                    if (!validProjects.isNullOrEmpty()) {
-                        saveProjects(validProjects, contract)
-                    }
-                } else {
-                    contractMax--
+            try {
+                val validContracts = contracts.filter { contract ->
+                    contract.projects.isNotEmpty() && contract.contractId.isNotBlank()
                 }
+                    .distinctBy { contract -> contract.contractId }
+                contractMax += validContracts.count()
+                validContracts.forEach { contract ->
+                    if (!appDb.getContractDao().checkIfContractExists(contract.contractId)) {
+                        appDb.getContractDao().insertContract(contract)
+                        contractCount++
+                        newContracts = true
 
-                Timber.d("cr**: $contractCount / $contractMax contracts")
-                Timber.d("cr**: $projectCount / $projectMax projects")
-            }
-            if (contractCount >= contractMax && !newProjects) {
+                        val validProjects =
+                            contract.projects.filter { project ->
+                                project.projectId.isNotBlank()
+                            }.distinctBy { project -> project.projectId }
+
+                        if (!validProjects.isNullOrEmpty()) {
+                            saveProjects(validProjects, contract)
+                        }
+                    } else {
+                        contractMax--
+                    }
+
+                    Timber.d("cr**: $contractCount / $contractMax contracts")
+                    Timber.d("cr**: $projectCount / $projectMax projects")
+                }
+            } catch (ex: Exception) {
+                Timber.e(ex, "Error saving contracts: ${ex.message ?: XIErrorHandler.UNKNOWN_ERROR}")
+            } finally {
                 postEvent(XIProgressUpdate("projects", 1.0f))
             }
         }
@@ -447,9 +450,6 @@ class OfflineDataRepository(
                                 (projectMax.toFloat() * contractMax.toFloat())
                         )
                     )
-                    if (contractCount >= contractMax && projectCount >= projectMax) {
-                        postEvent(XIProgressUpdate("projects", 1.0f))
-                    }
                 } catch (ex: Exception) {
                     Timber.e(
                         ex,
@@ -459,6 +459,7 @@ class OfflineDataRepository(
                     )
                 }
             }
+            postEvent(XIProgressUpdate("projects", 1.0f))
         }
     }
 
@@ -606,9 +607,9 @@ class OfflineDataRepository(
     }
 
     @Transaction
-    private fun saveJobs(job: JobDTO?) {
+    private fun saveJob(jobDTO: JobDTO?) {
         Coroutines.io {
-            job?.let {
+            jobDTO?.let { job ->
 
                 if (!appDb.getJobDao().checkIfJobExist(job.jobId)) {
                     job.run {
@@ -619,9 +620,9 @@ class OfflineDataRepository(
                         }
                         setTrackRouteId(DataConversion.toBigEndian(trackRouteId))
                     }
-                    job.perfitemGroupId = DataConversion.toBigEndian(job.perfitemGroupId)
-                    job.projectVoId = DataConversion.toBigEndian(job.projectVoId)
-                    appDb.getJobDao().insertOrUpdateJob(job)
+                    jobDTO.perfitemGroupId = DataConversion.toBigEndian(jobDTO.perfitemGroupId)
+                    jobDTO.projectVoId = DataConversion.toBigEndian(jobDTO.projectVoId)
+                    appDb.getJobDao().insertOrUpdateJob(jobDTO)
                 }
 
                 saveJobSections(job)
@@ -636,7 +637,7 @@ class OfflineDataRepository(
     }
 
     private suspend fun saveJobItemMeasuresForJob(
-        job: JobDTO
+        job: JobDTO,
     ) {
         job.jobItemMeasures.forEach { jobItemMeasure ->
             if (!appDb.getJobItemMeasureDao()
@@ -703,7 +704,7 @@ class OfflineDataRepository(
     }
 
     private suspend fun saveJobItemEstimates(
-        job: JobDTO
+        job: JobDTO,
     ) {
         job.jobItemEstimates.forEach { jobItemEstimate ->
             if (!appDb.getJobItemEstimateDao()
@@ -743,18 +744,17 @@ class OfflineDataRepository(
     }
 
     private suspend fun saveJobItemEstimatePhotos(
-        jobItemEstimate: JobItemEstimateDTO
+        jobItemEstimate: JobItemEstimateDTO,
     ) {
-        for (jobItemEstimatePhoto in jobItemEstimate.jobItemEstimatePhotos) {
+        jobItemEstimate.jobItemEstimatePhotos.forEach { jobItemEstimatePhoto ->
             if (!appDb.getJobItemEstimatePhotoDao()
                     .checkIfJobItemEstimatePhotoExistsByPhotoId(
                         jobItemEstimatePhoto.photoId
                     )
             ) {
                 jobItemEstimatePhoto.setPhotoPath(
-                    Environment.getExternalStorageDirectory()
-                        .toString() + File.separator +
-                        PhotoUtil.FOLDER + File.separator + jobItemEstimatePhoto.filename
+                    photoUtil.pictureFolder.toString()
+                        .plus(File.separator).plus(jobItemEstimatePhoto.filename)
                 )
             }
 
@@ -775,7 +775,7 @@ class OfflineDataRepository(
             appDb.getJobItemEstimatePhotoDao().insertJobItemEstimatePhoto(
                 jobItemEstimatePhoto
             )
-            if (!PhotoUtil.photoExist(jobItemEstimatePhoto.filename)) {
+            if (!photoUtil.photoExist(jobItemEstimatePhoto.filename)) {
                 getPhotoForJobItemEstimate(jobItemEstimatePhoto.filename)
             }
         }
@@ -920,9 +920,7 @@ class OfflineDataRepository(
                     )
             ) {
                 jobItemMeasurePhoto.setPhotoPath(
-                    Environment.getExternalStorageDirectory()
-                        .toString() + File.separator +
-                        PhotoUtil.FOLDER + File.separator + jobItemMeasurePhoto.filename
+                    photoUtil.pictureFolder.toString().plus(File.separator).plus(jobItemMeasurePhoto.filename)
                 )
             }
             jobItemMeasurePhoto.setPhotoId(
@@ -938,14 +936,13 @@ class OfflineDataRepository(
                 jobItemMeasure.estimateId
             )
 
-            if (!PhotoUtil.photoExist(jobItemMeasurePhoto.filename)) {
+            if (!photoUtil.photoExist(jobItemMeasurePhoto.filename)) {
                 getPhotoForJobItemMeasure(jobItemMeasurePhoto.filename)
             }
 
             jobItemMeasurePhoto.setPhotoPath(
-                Environment.getExternalStorageDirectory()
-                    .toString() + File.separator +
-                    PhotoUtil.FOLDER + File.separator + jobItemMeasurePhoto.filename
+                photoUtil.pictureFolder.toString().plus(File.separator)
+                    .plus(jobItemMeasurePhoto.filename)
             )
 
             appDb.getJobItemMeasurePhotoDao()
@@ -963,7 +960,7 @@ class OfflineDataRepository(
 
     private suspend fun getPhotoForJobItemEstimate(filename: String) {
         val photoEstimate = apiRequest { api.getPhotoEstimate(filename) }
-        postValue(photoEstimate.photo, filename)
+        savePhoto(photoEstimate.photo, filename)
     }
 
     private fun sendMSg(uploadResponse: String?) {
@@ -1260,15 +1257,13 @@ class OfflineDataRepository(
     }
 
     private fun postValue(photo: String?, fileName: String) {
-        saveEstimatePhoto(photo, fileName)
+        savePhoto(photo, fileName)
     }
 
-    private fun saveEstimatePhoto(estimatePhoto: String?, fileName: String) {
+    private fun savePhoto(encodedPhoto: String?, fileName: String) {
         Coroutines.io {
-            if (estimatePhoto != null && fileName.isNotBlank()) {
-                PhotoUtil.createPhotoFolder(estimatePhoto, fileName)
-            } else {
-                PhotoUtil.createPhotoFolder()
+            if (encodedPhoto != null && fileName.isNotBlank()) {
+                photoUtil.persistImageToLocal(encodedPhoto, fileName)
             }
         }
     }

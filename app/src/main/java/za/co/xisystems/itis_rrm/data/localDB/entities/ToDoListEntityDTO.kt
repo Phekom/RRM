@@ -12,8 +12,8 @@ import android.os.Parcelable.Creator
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
-import java.io.Serializable
 import org.springframework.util.Base64Utils
+import java.io.Serializable
 
 const val TODO_ENTITY_TABLE = "TODO_ENTITY_TABLE"
 
@@ -126,6 +126,8 @@ data class ToDoListEntityDTO(
     }
 
     companion object CREATOR : Creator<ToDoListEntityDTO> {
+        const val serialVersionUID: Long = 24L
+
         override fun createFromParcel(parcel: Parcel): ToDoListEntityDTO {
             return ToDoListEntityDTO(parcel)
         }

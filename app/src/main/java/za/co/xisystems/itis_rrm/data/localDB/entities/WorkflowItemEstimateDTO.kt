@@ -45,6 +45,7 @@ data class WorkflowItemEstimateDTO(
     }
 
     companion object CREATOR : Creator<WorkflowItemEstimateDTO> {
+        const val serialVersionUID: Long = 30L
         override fun createFromParcel(parcel: Parcel): WorkflowItemEstimateDTO {
             return WorkflowItemEstimateDTO(parcel)
         }
