@@ -42,6 +42,8 @@ import za.co.xisystems.itis_rrm.utils.hide
 import za.co.xisystems.itis_rrm.utils.hideKeyboard
 import za.co.xisystems.itis_rrm.utils.snackbar
 import za.co.xisystems.itis_rrm.utils.toast
+import java.util.concurrent.TimeUnit
+import javax.xml.datatype.DatatypeConstants.SECONDS
 
 class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, KodeinAware {
     private var binding: ActivityLoginBinding? = null
