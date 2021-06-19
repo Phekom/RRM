@@ -379,10 +379,6 @@ class AuthViewModel(
             authListener = null
         }
 
-        /**
-         *
-         * @return Unit
-         */
         override fun onCleared() {
             super.onCleared()
             teardownAuthListener()
