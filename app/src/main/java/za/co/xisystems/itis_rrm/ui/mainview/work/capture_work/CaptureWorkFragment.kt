@@ -36,6 +36,7 @@ import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
+import kotlinx.android.synthetic.main.item_header.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -89,6 +90,7 @@ import za.co.xisystems.itis_rrm.utils.enums.ToastDuration.SHORT
 import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.BOTTOM
 import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.CENTER
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle
+import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.DELETE
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.ERROR
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.INFO
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.NO_INTERNET
@@ -504,11 +506,20 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
     private val takePicture = registerForActivityResult(
         ActivityResultContracts.TakePicture()
     ) { isSaved ->
-        if (isSaved) {
+        if (isSaved && this@CaptureWorkFragment::itemEstiWorks.isInitialized) {
             processAndSetImage(itemEstiWorks)
         } else {
             Coroutines.io {
                 photoUtil.deleteImageFile(filenamePath.toString())
+                withContext(Dispatchers.Main.immediate) {
+                    sharpToast(
+                        title = "Work data is incomplete",
+                        message = "Please contact support about this job, and have them restore or remove it",
+                        style = DELETE,
+                        duration = LONG,
+                        position = CENTER
+                    )
+                }
             }
         }
     }

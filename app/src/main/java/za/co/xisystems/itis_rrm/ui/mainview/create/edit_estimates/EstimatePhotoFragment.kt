@@ -38,6 +38,7 @@ import androidx.navigation.Navigation
 import androidx.navigation.fragment.navArgs
 import com.airbnb.lottie.LottieAnimationView
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -488,8 +489,12 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
             itemIdPhotoType["itemId"] = item!!.itemId
             itemIdPhotoType["type"] = photoType.name
         }
-        imageUri = photoUtil.getUri()
-        takePicture.launch(imageUri)
+        Coroutines.io {
+            imageUri = photoUtil.getUri()
+            withContext(Dispatchers.Main.immediate) {
+                takePicture.launch(imageUri)
+            }
+        }
     }
 
     /**
@@ -501,10 +506,14 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
         if (isSaved) {
             processAndSetImage()
         } else {
-            photoUtil.deleteImageFile(filenamePath.toString())
-            haltAnimation()
-            ui.startImageView.visibility = View.VISIBLE
-            ui.endImageView.visibility = View.VISIBLE
+            Coroutines.io {
+                photoUtil.deleteImageFile(filenamePath.toString())
+                withContext(Dispatchers.Main.immediate) {
+                    haltAnimation()
+                    ui.startImageView.visibility = View.VISIBLE
+                    ui.endImageView.visibility = View.VISIBLE
+                }
+            }
         }
     }
 
