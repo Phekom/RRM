@@ -16,6 +16,10 @@ import org.kodein.di.android.kodein
 import org.kodein.di.generic.instance
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
+import za.co.xisystems.itis_rrm.custom.results.XIError
+import za.co.xisystems.itis_rrm.custom.results.isRecoverableException
+import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.databinding.ActivityRegisterPinBinding
@@ -129,6 +133,34 @@ class RegisterPinActivity : AppCompatActivity(), AuthListener, KodeinAware {
         }
     }
 
+    private fun gotoMainActivity() {
+        try {
+            val intent = Intent(this, MainActivity::class.java)
+            startActivity(intent)
+        } catch (t: Throwable) {
+            val xiErr = XIError(t, "Failed to login")
+            if (xiErr.isRecoverableException()) {
+                XIErrorHandler.handleError(
+                    view = findViewById(R.id.reg_container),
+                    throwable = xiErr,
+                    shouldShowSnackBar = true,
+                    refreshAction = { this.retryGotoMain() }
+                )
+            } else {
+                XIErrorHandler.handleError(
+                    view = findViewById(R.id.reg_container),
+                    throwable = xiErr,
+                    shouldToast = true
+                )
+            }
+        }
+    }
+
+    private fun retryGotoMain() {
+        IndefiniteSnackbar.hide()
+        gotoMainActivity()
+    }
+
     override fun onStarted() {
         loading.show()
         hideKeyboard()
@@ -137,6 +169,7 @@ class RegisterPinActivity : AppCompatActivity(), AuthListener, KodeinAware {
     override fun onSuccess(userDTO: UserDTO) {
         loading.hide()
         toast("You are Logged in as ${userDTO.userName}")
+        gotoMainActivity()
     }
 
     override fun onWarn(message: String) {
