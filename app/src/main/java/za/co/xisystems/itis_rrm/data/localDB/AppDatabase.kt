@@ -103,11 +103,13 @@ import za.co.xisystems.itis_rrm.utils.DatetimeConverters
         WorkFlowsDTO::class, WfWorkStepDTO::class
     ],
     views = [ContractSelectorView::class],
+    exportSchema = true,
     version = 19
 )
 
 @TypeConverters(Converters::class, DatetimeConverters::class)
 @GenerateRoomMigrations
+
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun getJobDao(): JobDao

@@ -31,8 +31,8 @@ open class DebugMainApp : MainApp(), KodeinAware {
             // Shaun McDonald - 2020/04/02 - Added LeakCanary and AppWatcher to debug build.
             LeakCanary.config = LeakCanary.config.copy(retainedVisibleThreshold = 10)
             AppWatcher.config = AppWatcher.config.copy(
-                watchFragmentViews = false,
-                watchFragments = false,
+                watchFragmentViews = true,
+                watchFragments = true,
                 watchViewModels = true,
                 watchActivities = true
             )

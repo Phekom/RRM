@@ -13,13 +13,13 @@ import android.R.style
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
-import android.view.View
-import android.widget.Button
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog.Builder
 import androidx.appcompat.app.AppCompatActivity
-import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
-import kotlinx.android.synthetic.main.activity_login.*
+import com.poovam.pinedittextfield.PinField
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.kodein
 import org.kodein.di.generic.instance
@@ -40,58 +40,74 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.hide
 import za.co.xisystems.itis_rrm.utils.hideKeyboard
+import za.co.xisystems.itis_rrm.utils.show
 import za.co.xisystems.itis_rrm.utils.snackbar
 import za.co.xisystems.itis_rrm.utils.toast
-import java.util.concurrent.TimeUnit
-import javax.xml.datatype.DatatypeConstants.SECONDS
+import za.co.xisystems.traffic_count.delegates.viewBinding
 
-class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, KodeinAware {
-    private var binding: ActivityLoginBinding? = null
-
-    private var pinInput = ""
-    private var index = 0
+class LoginActivity : AppCompatActivity(), AuthListener, KodeinAware {
 
     override val kodein by kodein()
     private val factory: AuthViewModelFactory by instance()
-    private lateinit var viewModel: AuthViewModel
+    private lateinit var authViewModel: AuthViewModel
+    private val binding by viewBinding(ActivityLoginBinding::inflate)
+    private lateinit var enteredPin: String
     private var doubleBackToExitPressed = 0
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding =
-            DataBindingUtil.setContentView(this, R.layout.activity_login)
-        viewModel = ViewModelProvider(this, factory).get(AuthViewModel::class.java)
-        viewModel.setupAuthListener(this)
+        authViewModel = ViewModelProvider(this, factory).get(AuthViewModel::class.java)
+        authViewModel.setupAuthListener(this)
+
+        val pinListener = object : PinField.OnTextCompleteListener {
+            override fun onTextComplete(enteredText: String): Boolean {
+                Toast.makeText(this@LoginActivity, enteredText, Toast.LENGTH_LONG).show()
+                // enteredPin = SecureString(enteredText.toCharArray())
+                validatePin(enteredText)
+                return true
+            }
+        }
+
+        binding.pinField.onTextCompleteListener = pinListener
+
         Coroutines.main {
-            val loggedInUser = viewModel.user.await()
-            loggedInUser.observe(this, { user ->
+            val loggedInUser = authViewModel.user.await()
+            loggedInUser.observe(this) { user ->
                 // Register the user
                 if (user != null) {
                     if (user.pinHash != null) {
-                        when (user.authd) {
-                            true -> {
-                                gotoMainActivity()
-                            }
-                            else -> {
-                                usernameTextView.text = user.userName
-                                initListener()
-                            }
-                        }
+                        isPinAuthorized(user)
                     } else {
                         registerUserPin()
                     }
                 } else {
                     registerUser()
                 }
-            })
+            }
 
-            serverTextView.setOnClickListener {
+            binding.serverTextView.setOnClickListener {
                 ToastUtils().toastServerAddress(this.applicationContext)
             }
 
-            buildFlavorTextView.setOnClickListener {
+            binding.buildFlavorTextView.setOnClickListener {
                 ToastUtils().toastVersion(this.applicationContext)
+            }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        reset()
+    }
+
+    private fun isPinAuthorized(user: UserDTO) {
+        when (user.authd) {
+            true -> {
+                gotoMainActivity()
+            }
+            else -> {
+                binding.usernameTextView.text = user.userName
+                initListener()
             }
         }
     }
@@ -104,71 +120,14 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
         }
     }
 
-    private fun checkPinlights() {
-        checkDisabledPinlights()
-        checkPinColor()
-    }
-
-    private fun checkPinColor() {
-        when (index) {
-            1 -> binding!!.pin1.setImageResource(R.drawable.oval_pin_green)
-            2 -> binding!!.pin2.setImageResource(R.drawable.oval_pin_green)
-            3 -> binding!!.pin3.setImageResource(R.drawable.oval_pin_green)
-            4 -> binding!!.pin4.setImageResource(R.drawable.oval_pin_green)
-        }
-    }
-
     private fun initListener() {
-        binding!!.btn0.setOnClickListener(this)
-        binding!!.btn1.setOnClickListener(this)
-        binding!!.btn2.setOnClickListener(this)
-        binding!!.btn3.setOnClickListener(this)
-        binding!!.btn4.setOnClickListener(this)
-        binding!!.btn5.setOnClickListener(this)
-        binding!!.btn6.setOnClickListener(this)
-        binding!!.btn7.setOnClickListener(this)
-        binding!!.btn8.setOnClickListener(this)
-        binding!!.btn9.setOnClickListener(this)
-        binding!!.btnCancel.setOnClickListener(this)
-        binding!!.btnDelete.setOnClickListener(this)
+        reset()
     }
 
-    override fun onClick(v: View) {
-        when (v.id) {
-            binding!!.btnCancel.id -> {
-                reset()
-            }
-            binding!!.btnDelete.id -> {
-                if (index > 0) {
-                    pinInput = pinInput.substring(0, pinInput.length - 1)
-                    index--
-                }
-            }
-            else -> {
-                if (v is Button) {
-                    val pinValue = v.text.toString().toIntOrNull()
-                    pinValue?.let {
-                        pinInput = pinInput.plus(it.toString())
-                        index++
-                    }
-                }
-            }
-        }
-        Timber.d("<TEST> -> Masuk$index")
-        checkPinlights()
-        if (index == 4) {
-            Coroutines.main {
-                viewModel.validatePin(pinInput)
-            }
-        }
-    }
-
-    private fun checkDisabledPinlights() {
-        when (index) {
-            1 -> binding!!.pin1.setImageResource(R.drawable.oval_pin_grey)
-            2 -> binding!!.pin2.setImageResource(R.drawable.oval_pin_grey)
-            3 -> binding!!.pin3.setImageResource(R.drawable.oval_pin_grey)
-            4 -> binding!!.pin4.setImageResource(R.drawable.oval_pin_grey)
+    private fun validatePin(pin: String) {
+        Timber.d("Pin: $pin")
+        Coroutines.io {
+            authViewModel.validatePin(pin)
         }
     }
 
@@ -182,10 +141,10 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
         // Yes button
         builder.setPositiveButton(R.string.ok) { _, _ ->
             if (ServiceUtil.isNetworkAvailable(this.applicationContext)) {
-                Intent(this, RegisterPinActivity::class.java).also { pin ->
-                    pin.flags =
+                Intent(this, RegisterPinActivity::class.java).also { registerPinAct ->
+                    registerPinAct.flags =
                         Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-                    startActivity(pin)
+                    startActivity(registerPinAct)
                 }
             } else {
                 toast("No internet connection detected")
@@ -196,22 +155,16 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
     }
 
     override fun onBackPressed() {
-        super.onBackPressed()
+        doubleBackToExitPressed++
         if (doubleBackToExitPressed == 2) {
-            finishAffinity()
+            super.onBackPressed()
+            closeApp()
         } else {
-            doubleBackToExitPressed++
             toast("Please press Back again to exit")
+            Handler(mainLooper).postDelayed({
+                doubleBackToExitPressed = 1
+            }, TWO_SECONDS)
         }
-
-        Handler(mainLooper).postDelayed({
-            doubleBackToExitPressed = 1
-        }, TWO_SECONDS)
-    }
-
-    override fun onResume() {
-        super.onResume()
-        reset()
     }
 
     private fun gotoMainActivity() {
@@ -244,39 +197,48 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, AuthListener, K
     }
 
     private fun reset() {
-        index = 0
-        pinInput = ""
-        resetAllPinColor()
-    }
-
-    private fun resetAllPinColor() {
-        binding!!.pin1.setImageResource(R.drawable.oval_pin_grey)
-        binding!!.pin2.setImageResource(R.drawable.oval_pin_grey)
-        binding!!.pin3.setImageResource(R.drawable.oval_pin_grey)
-        binding!!.pin4.setImageResource(R.drawable.oval_pin_grey)
+        enteredPin = ""
+        binding.pinField.text?.clear()
     }
 
     override fun onStarted() {
         Timber.d("AuthInit")
+        hideKeyboard()
+        binding.loading.show()
     }
 
     override fun onSuccess(userDTO: UserDTO) {
+        binding.loading.hide()
+        hideKeyboard()
         toast("You are Logged in as ${userDTO.userName}")
         gotoMainActivity()
     }
 
     override fun onSignOut(userDTO: UserDTO) {
-        finishAffinity()
+        binding.loading.hide()
+        hideKeyboard()
+        closeApp()
+    }
+
+    private fun closeApp() {
+        Coroutines.io {
+            authViewModel.expirePin()
+            withContext(Dispatchers.Main.immediate) {
+                finishAffinity()
+            }
+        }
     }
 
     override fun onWarn(message: String) {
-        onFailure(message)
+        binding.loading.hide()
+        hideKeyboard()
+        toast(message)
     }
 
     override fun onFailure(message: String) {
-        loading.hide()
+        binding.loading.hide()
         hideKeyboard()
         reset()
-        reg_container.snackbar(message)
+        binding.regContainer.snackbar(message)
     }
 }

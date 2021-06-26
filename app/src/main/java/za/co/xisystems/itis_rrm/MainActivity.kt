@@ -66,6 +66,7 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.hideKeyboard
 import za.co.xisystems.itis_rrm.utils.toast
+import java.lang.ref.WeakReference
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener,
     KodeinAware {
@@ -556,14 +557,15 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private fun toastMessage(
         colorToast: ColorToast
     ) {
+        val weakContext: WeakReference<Activity> = WeakReference(this)
         MotionToast.createColorToast(
-            context = this,
+            context = weakContext.get()!!,
             title = colorToast.title,
             message = colorToast.message,
             style = colorToast.style.getValue(),
             position = colorToast.gravity.getValue(),
             duration = colorToast.duration.getValue(),
-            font = ResourcesCompat.getFont(this, R.font.helvetica_regular)
+            font = ResourcesCompat.getFont(weakContext.get()!!, R.font.helvetica_regular)
         )
     }
 
@@ -584,14 +586,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     companion object {
-        const val PROJECT_USER_ROLE_IDENTIFIER = "RRM Job Mobile User" // "29DB5C213D034EDB88DEC54109EE1711"
+        const val PROJECT_USER_ROLE_IDENTIFIER =
+            "RRM Job Mobile User" // "29DB5C213D034EDB88DEC54109EE1711"
         const val PROJECT_SITE_ENGINEER_ROLE_IDENTIFIER =
             "RRM Job Mobile - Site Engineer" // "3F9A15DF5D464EC5A5D954134A7F32BE"
         const val PROJECT_ENGINEER_ROLE_IDENTIFIER =
             "RRM Job Mobile - Engineer" // "D9E16C2A31FA4CC28961E20B652B292C"
         const val PROJECT_SUB_CONTRACTOR_ROLE_IDENTIFIER =
             "RRM Job Mobile - Sub Contractor" // "03F493BDD6D68944A94BE038B6C1C3D2"
-
         // "F836F6BF14404E749E6748A31A0262AD"
         const val PROJECT_CONTRACTOR_ROLE_IDENTIFIER =
             "RRM Job Mobile - Contractor" // "E398A3EF1C18431DBAEE4A4AC5D6F07D"

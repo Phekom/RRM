@@ -1,6 +1,8 @@
+
+
+
 package za.co.xisystems.itis_rrm.base
 
-// import android.app.ProgressDialog
 import android.app.Activity
 import android.content.Context
 import android.graphics.Color
@@ -13,7 +15,7 @@ import android.view.inputmethod.InputMethodManager
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.snackbar.Snackbar
-import kotlin.coroutines.CoroutineContext
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.kodein.di.KodeinAware
 import org.kodein.di.generic.instance
@@ -31,6 +33,7 @@ import za.co.xisystems.itis_rrm.data._commons.Animations
 import za.co.xisystems.itis_rrm.data._commons.views.IProgressView
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModelFactory
+import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.ViewLogger
 import za.co.xisystems.itis_rrm.utils.enums.ToastDuration
@@ -42,13 +45,15 @@ import za.co.xisystems.itis_rrm.utils.enums.ToastStyle
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.ERROR
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.INFO
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.NO_INTERNET
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.WARNING
+import kotlin.coroutines.CoroutineContext
 
 /**
  * Created by Francis Mahlava on 03,October,2019
+ * Updated by Shaun McDonald on 2021/06/26
+ * Last modified on 26/06/2021, 05:50
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
  */
-// R.layout.fragment_home
-//
+
 abstract class BaseFragment : Fragment(), IProgressView, KodeinAware {
 
     private lateinit var sharedViewModel: SharedViewModel
@@ -123,27 +128,8 @@ abstract class BaseFragment : Fragment(), IProgressView, KodeinAware {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         animations = Animations(requireContext().applicationContext)
+        sharedViewModel = ViewModelProvider(this, shareFactory).get(SharedViewModel::class.java)
         initAnimations()
-    }
-
-    /**
-     * Called when the fragment's activity has been created and this
-     * fragment's view hierarchy instantiated.  It can be used to do final
-     * initialization once these pieces are in place, such as retrieving
-     * views or restoring state.  It is also useful for fragments that use
-     * [.setRetainInstance] to retain their instance,
-     * as this callback tells the fragment when it is fully associated with
-     * the new activity instance.  This is called after [.onCreateView]
-     * and before [.onViewStateRestored].
-     *
-     * @param savedInstanceState If the fragment is being re-created from
-     * a previous saved state, this is the state.
-     */
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        sharedViewModel = activity?.run {
-            ViewModelProvider(this, shareFactory).get(SharedViewModel::class.java)
-        } ?: throw Exception("Invalid Activity")
     }
 
     private fun initAnimations() {
@@ -259,13 +245,18 @@ abstract class BaseFragment : Fragment(), IProgressView, KodeinAware {
         duration: ToastDuration = SHORT
     ) {
         if (!activity?.isFinishing!!) {
-            sharedViewModel.setColorMessage(
-                title = title,
-                message = message,
-                style = style,
-                position = position,
-                duration = duration
-            )
+            Coroutines.main {
+                withContext(Dispatchers.Main.immediate) {
+                    sharedViewModel.setColorMessage(
+                        title = title,
+                        message = message,
+                        style = style,
+                        position = position,
+                        duration = duration
+
+                    )
+                }
+            }
         }
     }
 

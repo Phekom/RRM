@@ -53,11 +53,12 @@ class PhotoUtil private constructor(private var appContext: Context) {
 
         private fun initInstance(appContext: Context): PhotoUtil {
                 instance = PhotoUtil(appContext)
-                instance.pictureFolder = appContext.getExternalFilesDir(Environment.DIRECTORY_PICTURES)!!
-                if (!instance.pictureFolder.exists()) {
-                    instance.pictureFolder.mkdirs()
-                }
-                return instance
+                Coroutines.io {
+                    instance.pictureFolder = appContext.getExternalFilesDir(Environment.DIRECTORY_PICTURES)!!
+                    if (!instance.pictureFolder.exists()) {
+                        instance.pictureFolder.mkdirs()
+                    }
+                }.also { return instance }
         }
 
         fun getInstance(appContext: Context): PhotoUtil {

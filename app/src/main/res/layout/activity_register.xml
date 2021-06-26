@@ -66,6 +66,7 @@
                         android:layout_marginTop="4dp"
                         android:background="@drawable/round_corner_orange"
                         android:hint="@string/enter_username"
+                        android:importantForAutofill="noExcludeDescendants"
                         app:hintTextAppearance="@style/TextAppearance.AppCompat">
 
                         <com.google.android.material.textfield.TextInputEditText

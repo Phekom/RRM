@@ -39,7 +39,6 @@ class AuthViewModel(
 ) : AndroidViewModel(application) {
 
     private val supervisorJob: Job = Job()
-    private val mainContext = Dispatchers.Main + Job(supervisorJob)
     private val ioContext = Dispatchers.IO + Job(supervisorJob)
 
     var username: String? = null
@@ -345,7 +344,10 @@ class AuthViewModel(
             repository.expirePin()
         }
 
-        suspend fun validatePin(pin: String) = viewModelScope.launch(mainContext) {
+        suspend fun validatePin(pin: String) = viewModelScope.launch(ioContext) {
+            listenerNotify {
+                authListener!!.onStarted()
+            }
             val loggedInUser = user.await().value
             withContext(Dispatchers.IO) {
                 val inputHash = SecureString(

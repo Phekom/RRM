@@ -1,14 +1,3 @@
-/**
- * Updated by Shaun McDonald on 2021/05/15
- * Last modified on 2021/05/14, 20:32
- * Copyright (c) 2021.  XI Systems  - All rights reserved
- **/
-
-/**
- * Updated by Shaun McDonald on 2021/05/14
- * Last modified on 2021/05/14, 19:43
- * Copyright (c) 2021.  XI Systems  - All rights reserved
- **/
 
 package za.co.xisystems.itis_rrm.ui.extensions
 
@@ -16,6 +5,7 @@ import android.app.Dialog
 import android.graphics.Bitmap
 import android.net.Uri
 import android.widget.ImageView
+import androidx.core.graphics.scale
 import androidx.fragment.app.FragmentActivity
 import pereira.agnaldo.previewimgcol.ImageCollectionView
 import za.co.xisystems.itis_rrm.R
@@ -25,7 +15,9 @@ import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
 /**
  * Created by Shaun McDonald on 2020/06/08.
  * Copyright (c) 2020 XI Systems. All rights reserved.
- **/
+ * Last modified on 26/06/2021, 05:52
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
 
 fun ImageCollectionView.scaleForSize(imageCount: Int) {
     when (imageCount) {
@@ -51,16 +43,20 @@ fun ImageCollectionView.addZoomedImages(
     photoPaths: List<Pair<Uri, Bitmap?>>,
     activity: FragmentActivity
 ) {
-
+    val controlView = this
     photoPaths.forEach { pair ->
-        this.addImage(pair.second!!, object : ImageCollectionView.OnImageClickListener {
-            override fun onClick(bitmap: Bitmap, imageView: ImageView) {
-                showZoomedImage(
-                    pair.first,
-                    activity
-                )
-            }
-        })
+
+        pair.second?.let {
+            val bmp = it.scale(height = this.baseImageHeight, width = it.width * (this.baseImageHeight / it.height))
+            controlView.addImage(bmp, object : ImageCollectionView.OnImageClickListener {
+                override fun onClick(bitmap: Bitmap, imageView: ImageView) {
+                    showZoomedImage(
+                        pair.first,
+                        activity
+                    )
+                }
+            })
+        }
     }
 }
 
