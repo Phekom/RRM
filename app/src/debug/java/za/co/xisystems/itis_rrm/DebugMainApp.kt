@@ -23,13 +23,19 @@ open class DebugMainApp : MainApp(), KodeinAware {
 
     override fun onCreate() {
 
-        // Shaun McDonald - 2020/04/02 - Added LeakCanary and AppWatcher to debug build.
         if (BuildConfig.DEBUG) {
-            Timber.plant(HyperlinkDebugTree())
-            LeakCanary.config = LeakCanary.config.copy(retainedVisibleThreshold = 5)
-            AppWatcher.config = AppWatcher.config.copy(watchFragmentViews = false)
             // Shaun McDonald - 2020/05/01 - Have coroutines log out state changes
             System.setProperty("kotlinx.coroutines.debug", "on")
+            // See explanation for HyperlinkDebugTree
+            Timber.plant(HyperlinkDebugTree())
+            // Shaun McDonald - 2020/04/02 - Added LeakCanary and AppWatcher to debug build.
+            LeakCanary.config = LeakCanary.config.copy(retainedVisibleThreshold = 10)
+            AppWatcher.config = AppWatcher.config.copy(
+                watchFragmentViews = false,
+                watchFragments = false,
+                watchViewModels = true,
+                watchActivities = true
+            )
             // Shaun McDonald - 2021/01/30 - Added TooLargeTool to track bundle sizes
             TooLargeTool.startLogging(this)
             // Shaun McDonald - 2021/02/09 - Added StrictMode to help with optimization
