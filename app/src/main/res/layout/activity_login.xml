@@ -37,7 +37,7 @@
                     android:id="@+id/usernameTextView"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:gravity="center"
+                    android:gravity="start|center"
                     android:padding="10dp"
                     android:hint="@string/user_name"
                     android:layout_margin="@dimen/dimen_16"
@@ -45,6 +45,7 @@
                     app:drawableStartCompat="@drawable/ic_baseline_person_white_24px"
                     app:drawableTint="@color/sanral_burnt_orange"
                     android:drawablePadding="@dimen/dimen_8"
+                    android:textAppearance="@style/TextAppearance.MaterialComponents.Headline5"
                     android:textStyle="bold" />
 
                 <TextView
@@ -54,9 +55,8 @@
                     android:layout_margin="@dimen/dimen_16"
                     android:gravity="center"
                     android:text="@string/please_enter_your_unique_code"
-                    android:textAlignment="center"
-                    android:textColor="@color/pin_color_text_two"
-                    android:textSize="16sp" />
+                    android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"
+                    android:visibility="visible" />
 
                 <com.poovam.pinedittextfield.CirclePinField
                     android:layout_width="wrap_content"
@@ -122,7 +122,9 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentStart="true"
                 android:layout_marginStart="30dp"
-                android:alpha="0.5"
+                android:layout_marginBottom="30dp"
+                android:textAppearance="@style/TextAppearance.MaterialComponents.Button"
+                android:alpha="0.8"
                 android:text="@string/server" />
 
             <TextView
@@ -131,8 +133,9 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
                 android:layout_marginEnd="30dp"
-
-                android:alpha="0.5"
+                android:layout_marginBottom="30dp"
+                android:textAppearance="@style/TextAppearance.MaterialComponents.Button"
+                android:alpha="0.8"
                 android:text="@string/version"
                 tools:ignore="RelativeOverlap" />
 

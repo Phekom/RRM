@@ -1,6 +1,3 @@
-
-
-
 package za.co.xisystems.itis_rrm.base
 
 import android.app.Activity
@@ -15,7 +12,6 @@ import android.view.inputmethod.InputMethodManager
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.kodein.di.KodeinAware
 import org.kodein.di.generic.instance
@@ -33,7 +29,6 @@ import za.co.xisystems.itis_rrm.data._commons.Animations
 import za.co.xisystems.itis_rrm.data._commons.views.IProgressView
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModelFactory
-import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.ViewLogger
 import za.co.xisystems.itis_rrm.utils.enums.ToastDuration
@@ -128,8 +123,6 @@ abstract class BaseFragment : Fragment(), IProgressView, KodeinAware {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         animations = Animations(requireContext().applicationContext)
-        sharedViewModel = ViewModelProvider(this, shareFactory).get(SharedViewModel::class.java)
-        initAnimations()
     }
 
     private fun initAnimations() {
@@ -176,6 +169,8 @@ abstract class BaseFragment : Fragment(), IProgressView, KodeinAware {
     ) {
         super.onViewCreated(view, savedInstanceState)
         coordinator = view.findViewById(R.id.coordinator)
+        sharedViewModel = ViewModelProvider(this.requireActivity(), shareFactory).get(SharedViewModel::class.java)
+        initAnimations()
     }
 
     /**
@@ -245,18 +240,14 @@ abstract class BaseFragment : Fragment(), IProgressView, KodeinAware {
         duration: ToastDuration = SHORT
     ) {
         if (!activity?.isFinishing!!) {
-            Coroutines.main {
-                withContext(Dispatchers.Main.immediate) {
-                    sharedViewModel.setColorMessage(
-                        title = title,
-                        message = message,
-                        style = style,
-                        position = position,
-                        duration = duration
+            sharedViewModel.setColorMessage(
+                title = title,
+                message = message,
+                style = style,
+                position = position,
+                duration = duration
 
-                    )
-                }
-            }
+            )
         }
     }
 

@@ -49,11 +49,13 @@ object XIArmoury {
         return scribeInstance.getPassphrase()
     }
 
+    @Suppress("MagicNumber")
     fun readSecretPassphrase(context: Context): String {
         val masterKey = sageInstance.generateMasterKey(context)
         scribeInstance.initPreferences(context.applicationContext, masterKey, PREFS_FILE)
         if (scribeInstance.getPassphrase() == NOT_SET) {
-            val passphrase = generatePassphrase(PASS_LENGTH)
+            val passphrase = generatePassphrase(16)
+            // val passphrase = generatePassphrase(PASS_LENGTH)
             scribeInstance.writePassphrase(passphrase)
         }
         return scribeInstance.getPassphrase()

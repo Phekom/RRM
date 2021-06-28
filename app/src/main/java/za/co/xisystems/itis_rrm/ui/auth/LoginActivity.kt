@@ -107,7 +107,6 @@ class LoginActivity : AppCompatActivity(), AuthListener, KodeinAware {
             }
             else -> {
                 binding.usernameTextView.text = user.userName
-                initListener()
             }
         }
     }
@@ -118,10 +117,6 @@ class LoginActivity : AppCompatActivity(), AuthListener, KodeinAware {
                 Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
             startActivity(registerUser)
         }
-    }
-
-    private fun initListener() {
-        reset()
     }
 
     private fun validatePin(pin: String) {
@@ -154,6 +149,7 @@ class LoginActivity : AppCompatActivity(), AuthListener, KodeinAware {
         setPinDialog.show()
     }
 
+    // Double-backpress to exit application
     override fun onBackPressed() {
         doubleBackToExitPressed++
         if (doubleBackToExitPressed == 2) {
@@ -199,6 +195,7 @@ class LoginActivity : AppCompatActivity(), AuthListener, KodeinAware {
     private fun reset() {
         enteredPin = ""
         binding.pinField.text?.clear()
+        binding.pinField.requestFocus()
     }
 
     override fun onStarted() {

@@ -119,5 +119,6 @@ class UserRepository(
 
     suspend fun expirePin() {
         appDb.getUserDao().pinExpired()
+        // AppDatabase.onAppClose()
     }
 }

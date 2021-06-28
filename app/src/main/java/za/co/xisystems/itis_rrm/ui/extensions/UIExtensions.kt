@@ -5,7 +5,6 @@ import android.app.Dialog
 import android.graphics.Bitmap
 import android.net.Uri
 import android.widget.ImageView
-import androidx.core.graphics.scale
 import androidx.fragment.app.FragmentActivity
 import pereira.agnaldo.previewimgcol.ImageCollectionView
 import za.co.xisystems.itis_rrm.R
@@ -43,12 +42,9 @@ fun ImageCollectionView.addZoomedImages(
     photoPaths: List<Pair<Uri, Bitmap?>>,
     activity: FragmentActivity
 ) {
-    val controlView = this
-    photoPaths.forEach { pair ->
 
-        pair.second?.let {
-            val bmp = it.scale(height = this.baseImageHeight, width = it.width * (this.baseImageHeight / it.height))
-            controlView.addImage(bmp, object : ImageCollectionView.OnImageClickListener {
+    photoPaths.forEach { pair ->
+        this.addImage(pair.second!!, object : ImageCollectionView.OnImageClickListener {
                 override fun onClick(bitmap: Bitmap, imageView: ImageView) {
                     showZoomedImage(
                         pair.first,
@@ -58,7 +54,6 @@ fun ImageCollectionView.addZoomedImages(
             })
         }
     }
-}
 
 fun showZoomedImage(imageUrl: Uri, activity: FragmentActivity) {
     val dialog = Dialog(activity, R.style.dialog_full_screen)

@@ -66,7 +66,6 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.hideKeyboard
 import za.co.xisystems.itis_rrm.utils.toast
-import java.lang.ref.WeakReference
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener,
     KodeinAware {
@@ -557,15 +556,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private fun toastMessage(
         colorToast: ColorToast
     ) {
-        val weakContext: WeakReference<Activity> = WeakReference(this)
         MotionToast.createColorToast(
-            context = weakContext.get()!!,
+            context = this,
             title = colorToast.title,
             message = colorToast.message,
             style = colorToast.style.getValue(),
             position = colorToast.gravity.getValue(),
             duration = colorToast.duration.getValue(),
-            font = ResourcesCompat.getFont(weakContext.get()!!, R.font.helvetica_regular)
+            font = ResourcesCompat.getFont(this, R.font.helvetica_regular)
         )
     }
 
