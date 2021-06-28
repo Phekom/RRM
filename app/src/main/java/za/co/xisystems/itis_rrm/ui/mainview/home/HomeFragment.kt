@@ -19,6 +19,8 @@ import android.content.Context
 import android.graphics.Color
 import android.location.LocationManager
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
@@ -29,7 +31,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenStarted
 import com.skydoves.progressview.ProgressView
-import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -40,10 +41,12 @@ import timber.log.Timber
 import za.co.xisystems.itis_rrm.BuildConfig
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
+import za.co.xisystems.itis_rrm.constants.Constants.ONE_SECOND
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.results.XIError
 import za.co.xisystems.itis_rrm.custom.results.XIProgress
 import za.co.xisystems.itis_rrm.custom.results.XIProgressUpdate
+import za.co.xisystems.itis_rrm.custom.results.XIRestException
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.results.XIStatus
 import za.co.xisystems.itis_rrm.custom.results.XISuccess
@@ -61,6 +64,7 @@ import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.BOTTOM
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.ERROR
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.INFO
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.SUCCESS
+import kotlin.coroutines.cancellation.CancellationException
 
 class HomeFragment : BaseFragment(), KodeinAware {
 
@@ -88,8 +92,12 @@ class HomeFragment : BaseFragment(), KodeinAware {
         }
     }
 
-    init {
+    companion object {
+        val TAG: String = HomeFragment::class.java.simpleName
+        private const val progressComplete = -100.0f
+    }
 
+    init {
         lifecycleScope.launch {
             whenStarted {
                 lifecycle.addObserver(uiScope)
@@ -135,15 +143,6 @@ class HomeFragment : BaseFragment(), KodeinAware {
                 ui.group2Loading.visibility = View.GONE
             }
         })
-    }
-
-    /**
-     * Called when the Fragment is visible to the user.  This is generally
-     * tied to [Activity.onStart] of the containing
-     * Activity's lifecycle.
-     */
-    override fun onStart() {
-        super.onStart()
     }
 
     private suspend fun acquireUser() {
@@ -215,7 +214,7 @@ class HomeFragment : BaseFragment(), KodeinAware {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        homeViewModel = ViewModelProvider(this, factory).get(HomeViewModel::class.java)
+        homeViewModel = ViewModelProvider(this.requireActivity(), factory).get(HomeViewModel::class.java)
         checkConnectivity()
         homeDiagnostic()
         // Configure progressView
@@ -256,13 +255,44 @@ class HomeFragment : BaseFragment(), KodeinAware {
     private fun initProgressViews() {
 
         ui.pvContracts.setOnProgressChangeListener {
-            ui.pvContracts.labelText = "projects ${it.toInt()}%"
+            when {
+                it >= 0f -> ui.pvContracts.labelText = "projects ${it.toInt()}%"
+                it == progressComplete -> {
+                    maxOutPv(ui.pvContracts, "projects synched")
+                }
+            }
+            ui.pvSections.visibility = View.GONE
+            ui.pvTasks.visibility = View.GONE
         }
         ui.pvTasks.setOnProgressChangeListener {
-            ui.pvTasks.labelText = "tasks ${it.toInt()}%"
+            when {
+                it >= 0f -> ui.pvTasks.labelText = "tasks ${it.toInt()}%"
+                it == progressComplete -> {
+                    maxOutPv(ui.pvTasks, "tasks synched")
+                }
+            }
+            ui.pvContracts.visibility = View.GONE
+            ui.pvSections.visibility = View.GONE
         }
         ui.pvSections.setOnProgressChangeListener {
-            ui.pvSections.labelText = "sections ${it.toInt()}%"
+            when {
+                it >= 0 -> ui.pvSections.labelText = "services ${it.toInt()}%"
+                it == progressComplete -> {
+                    maxOutPv(ui.pvSections, "goods synched")
+                }
+            }
+            ui.pvSections.visibility = View.GONE
+            ui.pvTasks.visibility = View.GONE
+        }
+    }
+
+    private fun maxOutPv(progressView: ProgressView, completionMessage: String) {
+        if (progressView.progress >= 0) {
+            progressView.progress = progressView.max
+            progressView.labelText = completionMessage
+            Handler(Looper.getMainLooper()).postDelayed({
+                progressView.visibility = View.GONE
+            }, ONE_SECOND)
         }
     }
 
@@ -414,6 +444,7 @@ class HomeFragment : BaseFragment(), KodeinAware {
                 is XIProgressUpdate -> {
                     handleProgressUpdate(result)
                 }
+                is XIRestException -> TODO()
             }
         }
     }
@@ -541,9 +572,5 @@ class HomeFragment : BaseFragment(), KodeinAware {
     private fun retryHealthCheck() {
         IndefiniteSnackbar.hide()
         servicesHealthCheck()
-    }
-
-    companion object {
-        val TAG: String = HomeFragment::class.java.simpleName
     }
 }

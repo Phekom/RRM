@@ -62,8 +62,8 @@ class LoginActivity : AppCompatActivity(), AuthListener, KodeinAware {
         val pinListener = object : PinField.OnTextCompleteListener {
             override fun onTextComplete(enteredText: String): Boolean {
                 Toast.makeText(this@LoginActivity, enteredText, Toast.LENGTH_LONG).show()
-                // enteredPin = SecureString(enteredText.toCharArray())
-                validatePin(enteredText)
+                enteredPin = enteredText
+                validatePin(enteredPin)
                 return true
             }
         }
@@ -120,7 +120,6 @@ class LoginActivity : AppCompatActivity(), AuthListener, KodeinAware {
     }
 
     private fun validatePin(pin: String) {
-        Timber.d("Pin: $pin")
         Coroutines.io {
             authViewModel.validatePin(pin)
         }
