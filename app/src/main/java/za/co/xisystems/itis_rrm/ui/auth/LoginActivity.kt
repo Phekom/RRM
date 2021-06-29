@@ -13,7 +13,7 @@ import android.R.style
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
-import android.widget.Toast
+import android.view.View
 import androidx.appcompat.app.AlertDialog.Builder
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
@@ -61,7 +61,6 @@ class LoginActivity : AppCompatActivity(), AuthListener, KodeinAware {
 
         val pinListener = object : PinField.OnTextCompleteListener {
             override fun onTextComplete(enteredText: String): Boolean {
-                Toast.makeText(this@LoginActivity, enteredText, Toast.LENGTH_LONG).show()
                 enteredPin = enteredText
                 validatePin(enteredPin)
                 return true
@@ -148,7 +147,7 @@ class LoginActivity : AppCompatActivity(), AuthListener, KodeinAware {
         setPinDialog.show()
     }
 
-    // Double-backpress to exit application
+    // Double-back press to exit application
     override fun onBackPressed() {
         doubleBackToExitPressed++
         if (doubleBackToExitPressed == 2) {
@@ -157,7 +156,7 @@ class LoginActivity : AppCompatActivity(), AuthListener, KodeinAware {
         } else {
             toast("Please press Back again to exit")
             Handler(mainLooper).postDelayed({
-                doubleBackToExitPressed = 1
+                doubleBackToExitPressed = 0
             }, TWO_SECONDS)
         }
     }

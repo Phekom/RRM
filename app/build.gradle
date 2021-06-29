@@ -14,18 +14,11 @@ plugins {
     id "eu.davidea.grabver"
 }
 
-
 versioning {
-    // Required (number)
     major 1
-    minor 5
-    // Optional, force custom patch (number)
-    patch 95
-    // Optional (any string)
-    // preRelease ""
-    // Optional, custom task name to trigger the increase of the versio
+    minor 6
+    patch 0
 }
-
 
 static def getDate() {
     return new Date().format('yyyy-MM-dd HH-mm-ss')
