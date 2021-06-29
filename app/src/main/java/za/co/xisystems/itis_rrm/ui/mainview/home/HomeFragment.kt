@@ -444,7 +444,9 @@ class HomeFragment : BaseFragment(), KodeinAware {
                 is XIProgressUpdate -> {
                     handleProgressUpdate(result)
                 }
-                is XIRestException -> TODO()
+                is XIRestException -> {
+                    Timber.e("$result")
+                }
             }
         }
     }
