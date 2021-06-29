@@ -147,11 +147,11 @@ abstract class AppDatabase : RoomDatabase() {
 
     companion object {
         private const val MAX_DB_VERSIONS = 999_999_999
-
-        @Volatile
-        private var instance: AppDatabase? = null
+        @Volatile private var instance: AppDatabase? = null
         private val LOCK = Any()
-        operator fun invoke(context: Context) = instance ?: synchronized(LOCK) {
+        private var secretphrase: String? = null
+        operator fun invoke(context: Context, armoury: XIArmoury) = instance ?: synchronized(LOCK) {
+            secretphrase = armoury.readSecretPassphrase()
             instance ?: buildDatabase(context.applicationContext).also {
                 instance = it
             }
@@ -172,7 +172,7 @@ abstract class AppDatabase : RoomDatabase() {
                     // Encrypted DB with one-time generated passphrase
                     val passphrase: ByteArray =
                         SQLiteDatabase.getBytes(
-                            XIArmoury.readSecretPassphrase(context.applicationContext).toCharArray()
+                            secretphrase!!.toCharArray()
                         )
                     Timber.d("^*^ DB Pass: $passphrase")
                     val factory = SupportFactory(passphrase, null, false)

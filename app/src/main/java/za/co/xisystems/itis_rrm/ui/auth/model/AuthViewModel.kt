@@ -12,6 +12,7 @@ import com.github.ajalt.timberkt.Timber
 import com.password4j.SecureString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -35,10 +36,10 @@ import za.co.xisystems.itis_rrm.utils.lazyDeferred
 
 class AuthViewModel(
     private val repository: UserRepository,
+    private val armoury: XIArmoury,
     application: Application
 ) : AndroidViewModel(application) {
-
-    private val supervisorJob: Job = Job()
+    private val supervisorJob = SupervisorJob()
     private val ioContext = Dispatchers.IO + Job(supervisorJob)
 
     var username: String? = null
@@ -160,7 +161,7 @@ class AuthViewModel(
             false
         )
 
-        val newToken = XIArmoury.generateFutureToken(newTokenString)
+        val newToken = armoury.generateFutureToken(newTokenString)
         repository.updateHash(
             newToken,
             currentUser.pinHash!!
@@ -178,7 +179,7 @@ class AuthViewModel(
                 .plus(userPin).toCharArray(),
             false
         )
-        return XIArmoury.validateToken(oldTokenString, repository.getHash().toString())
+        return armoury.validateToken(oldTokenString, repository.getHash().toString())
     }
 
     fun onRegPinButtonClick(view: View) {
@@ -242,7 +243,7 @@ class AuthViewModel(
                     it.phoneNumber.toString(),
                     imie,
                     androidDevice,
-                    XIArmoury.generateFutureToken(
+                    armoury.generateFutureToken(
                         SecureString(hashInput.toCharArray(), true)
                     )
                 )
@@ -353,7 +354,7 @@ class AuthViewModel(
             loggedInUser!!.userName
                 .plus(loggedInUser.device).plus(pin).toCharArray(), false
         )
-        val result = XIArmoury.validateToken(
+        val result = armoury.validateToken(
             inputHash, loggedInUser.pinHash!!
         )
         if (!result) {
