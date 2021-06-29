@@ -1,9 +1,3 @@
-/**
- * Updated by Shaun McDonald on 2021/05/19
- * Last modified on 2021/05/19, 00:11
- * Copyright (c) 2021.  XI Systems  - All rights reserved
- **/
-
 package za.co.xisystems.itis_rrm.ui.mainview.work.capture_work
 
 import android.Manifest.permission
@@ -36,7 +30,6 @@ import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
-import kotlinx.android.synthetic.main.item_header.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch

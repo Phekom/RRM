@@ -9,6 +9,7 @@ object Constants {
     const val ONE_SECOND = 1_000L
     const val TWO_SECONDS = 2_000L
     const val FIVE_SECONDS = 5_000L
+    const val FIVE_MINUTES = 5_000_000L
     const val THIRTY_DAYS = 2_592_000_000L
     const val NINETY_DAYS = 7_776_000_000L
 

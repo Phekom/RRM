@@ -58,7 +58,7 @@
     <string name="please_provide_a_comment">Please provide a short comment.</string>
     <string name="please_make_sure_you_have_captured_photos">Please make sure you\'ve captured photos for all measurement items.</string>
     <string name="please_enter_a_unique_pin">Please enter a Four Digit unique pin code and keep it in a safe place. You will use this pin to login in the future.</string>
-    <string name="please_enter_your_unique_code">Please enter your unique pin code.</string>
+    <string name="please_enter_your_unique_code">Please enter your unique, four digit pin code.</string>
     <string name="select_project">Select Project</string>
     <string name="select_contract">Select Contract</string>
     <string name="project">Project</string>

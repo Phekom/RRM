@@ -44,16 +44,20 @@ import androidx.navigation.ui.NavigationUI
 import com.google.android.material.navigation.NavigationView
 import com.raygun.raygun4android.RaygunClient
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.kodein
 import org.kodein.di.generic.instance
 import timber.log.Timber
 import www.sanju.motiontoast.MotionToast
+import za.co.xisystems.itis_rrm.constants.Constants.FIVE_MINUTES
 import za.co.xisystems.itis_rrm.constants.Constants.TWO_SECONDS
 import za.co.xisystems.itis_rrm.custom.notifications.ColorToast
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.databinding.ActivityMainBinding
+import za.co.xisystems.itis_rrm.forge.XIArmoury
 import za.co.xisystems.itis_rrm.ui.auth.LoginActivity
 import za.co.xisystems.itis_rrm.ui.mainview.activities.MainActivityViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.activities.MainActivityViewModelFactory
@@ -75,9 +79,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private val factory: MainActivityViewModelFactory by instance()
     private lateinit var sharedViewModel: SharedViewModel
     private val shareFactory: SharedViewModelFactory by instance()
+    private val armoury: XIArmoury by instance()
     private lateinit var navController: NavController
     private lateinit var navHostFragment: NavHostFragment
-
     private var toggle: ActionBarDrawerToggle? = null
     private lateinit var navigationView: NavigationView
     private var badgeUnSubmitted: TextView? = null
@@ -85,17 +89,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private var badgeApproveJobs: TextView? = null
     private var badgeEstMeasure: TextView? = null
     private var badgeApprovMeasure: TextView? = null
-
     private lateinit var lm: LocationManager
     private var gpsEnabled = false
     private var networkEnabled = false
-
     private var progressBar: ProgressBar? = null
     private var uiScope = UiLifecycleScope()
-
     private lateinit var ui: ActivityMainBinding
     private var doubleBackToExitPressed = 0
-
     private val appBarConfiguration by lazy {
         AppBarConfiguration(
             setOf(
@@ -103,6 +103,20 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             ),
             ui.drawerLayout
         )
+    }
+
+    companion object {
+        const val PROJECT_USER_ROLE_IDENTIFIER =
+            "RRM Job Mobile User" // "29DB5C213D034EDB88DEC54109EE1711"
+        const val PROJECT_SITE_ENGINEER_ROLE_IDENTIFIER =
+            "RRM Job Mobile - Site Engineer" // "3F9A15DF5D464EC5A5D954134A7F32BE"
+        const val PROJECT_ENGINEER_ROLE_IDENTIFIER =
+            "RRM Job Mobile - Engineer" // "D9E16C2A31FA4CC28961E20B652B292C"
+        const val PROJECT_SUB_CONTRACTOR_ROLE_IDENTIFIER =
+            "RRM Job Mobile - Sub Contractor" // "03F493BDD6D68944A94BE038B6C1C3D2"
+        // "F836F6BF14404E749E6748A31A0262AD"
+        const val PROJECT_CONTRACTOR_ROLE_IDENTIFIER =
+            "RRM Job Mobile - Contractor" // "E398A3EF1C18431DBAEE4A4AC5D6F07D"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -274,7 +288,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 }
 
                 Handler(mainLooper).postDelayed({
-                    doubleBackToExitPressed = 1
+                    doubleBackToExitPressed = 0
                 }, TWO_SECONDS)
             }
         }
@@ -576,24 +590,33 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             // initializeCountDrawer()
             // refreshData()
         }
+
+        // Time out after five minutes
+        val timeInMillis = System.currentTimeMillis()
+        val timeDiff = timeInMillis - armoury.getTimestamp()
+        if (timeDiff >= FIVE_MINUTES) {
+            Coroutines.io {
+                sharedViewModel.logOut()
+                withContext(Dispatchers.Main.immediate) {
+                    finishAffinity()
+                }
+            }
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        armoury.writeFutureTimestamp()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        sharedViewModel.logOut()
+        finishAffinity()
     }
 
     override fun onDestroy() {
         super.onDestroy()
         uiScope.destroy()
-    }
-
-    companion object {
-        const val PROJECT_USER_ROLE_IDENTIFIER = "RRM Job Mobile User" // "29DB5C213D034EDB88DEC54109EE1711"
-        const val PROJECT_SITE_ENGINEER_ROLE_IDENTIFIER =
-            "RRM Job Mobile - Site Engineer" // "3F9A15DF5D464EC5A5D954134A7F32BE"
-        const val PROJECT_ENGINEER_ROLE_IDENTIFIER =
-            "RRM Job Mobile - Engineer" // "D9E16C2A31FA4CC28961E20B652B292C"
-        const val PROJECT_SUB_CONTRACTOR_ROLE_IDENTIFIER =
-            "RRM Job Mobile - Sub Contractor" // "03F493BDD6D68944A94BE038B6C1C3D2"
-
-        // "F836F6BF14404E749E6748A31A0262AD"
-        const val PROJECT_CONTRACTOR_ROLE_IDENTIFIER =
-            "RRM Job Mobile - Contractor" // "E398A3EF1C18431DBAEE4A4AC5D6F07D"
     }
 }

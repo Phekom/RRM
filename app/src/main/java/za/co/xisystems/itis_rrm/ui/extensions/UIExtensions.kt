@@ -1,14 +1,3 @@
-/**
- * Updated by Shaun McDonald on 2021/05/15
- * Last modified on 2021/05/14, 20:32
- * Copyright (c) 2021.  XI Systems  - All rights reserved
- **/
-
-/**
- * Updated by Shaun McDonald on 2021/05/14
- * Last modified on 2021/05/14, 19:43
- * Copyright (c) 2021.  XI Systems  - All rights reserved
- **/
 
 package za.co.xisystems.itis_rrm.ui.extensions
 
@@ -25,7 +14,9 @@ import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
 /**
  * Created by Shaun McDonald on 2020/06/08.
  * Copyright (c) 2020 XI Systems. All rights reserved.
- **/
+ * Last modified on 26/06/2021, 05:52
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
 
 fun ImageCollectionView.scaleForSize(imageCount: Int) {
     when (imageCount) {
@@ -54,15 +45,15 @@ fun ImageCollectionView.addZoomedImages(
 
     photoPaths.forEach { pair ->
         this.addImage(pair.second!!, object : ImageCollectionView.OnImageClickListener {
-            override fun onClick(bitmap: Bitmap, imageView: ImageView) {
-                showZoomedImage(
-                    pair.first,
-                    activity
-                )
-            }
-        })
+                override fun onClick(bitmap: Bitmap, imageView: ImageView) {
+                    showZoomedImage(
+                        pair.first,
+                        activity
+                    )
+                }
+            })
+        }
     }
-}
 
 fun showZoomedImage(imageUrl: Uri, activity: FragmentActivity) {
     val dialog = Dialog(activity, R.style.dialog_full_screen)
@@ -74,3 +65,4 @@ fun showZoomedImage(imageUrl: Uri, activity: FragmentActivity) {
         .into(zoomageView!!)
     dialog.show()
 }
+
