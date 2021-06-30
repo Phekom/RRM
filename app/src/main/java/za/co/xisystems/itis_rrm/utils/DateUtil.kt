@@ -24,7 +24,7 @@ object DateUtil {
     private val iso8601Format: DateFormat =
         SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.ROOT)
 
-    private val readableDateForm: DateFormat = SimpleDateFormat("dd LLL yyyy", Locale.ROOT)
+    private val readableDateForm: DateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.ROOT)
 
     fun stringToDate(stringDate: String?): Date? {
         return if (null == stringDate) null else try {
