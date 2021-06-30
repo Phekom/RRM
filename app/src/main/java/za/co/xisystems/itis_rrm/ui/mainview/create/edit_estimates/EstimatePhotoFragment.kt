@@ -492,6 +492,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
         Coroutines.io {
             imageUri = photoUtil.getUri()
             withContext(Dispatchers.Main.immediate) {
+                this@EstimatePhotoFragment.takingPhotos()
                 takePicture.launch(imageUri)
             }
         }
@@ -515,6 +516,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
                 }
             }
         }
+        this@EstimatePhotoFragment.photosDone()
     }
 
     private fun restoreEstimatePhoto(

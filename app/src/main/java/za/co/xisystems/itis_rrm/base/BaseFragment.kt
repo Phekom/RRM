@@ -344,5 +344,13 @@ abstract class BaseFragment : Fragment(), IProgressView, KodeinAware {
         }
     }
 
+    fun takingPhotos() {
+        sharedViewModel.takingPhotos = true
+    }
+
+    fun photosDone() {
+        sharedViewModel.takingPhotos = false
+    }
+
     abstract fun onCreateOptionsMenu(menu: Menu): Boolean
 }

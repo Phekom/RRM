@@ -515,9 +515,11 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
                 }
             }
         }
+        this.photosDone()
     }
 
     private fun launchCamera() {
+        this@CaptureWorkFragment.takingPhotos()
         Coroutines.io {
             imageUri = photoUtil.getUri()!!
             withContext(Dispatchers.Main.immediate) {

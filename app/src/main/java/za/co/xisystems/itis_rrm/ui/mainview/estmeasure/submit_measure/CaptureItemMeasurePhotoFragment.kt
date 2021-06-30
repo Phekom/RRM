@@ -291,6 +291,7 @@ class CaptureItemMeasurePhotoFragment :
     }
 
     private fun launchCamera() {
+        this.takingPhotos()
         imageUri = photoUtil.getUri()!!
         takePicture.launch(imageUri)
     }
@@ -310,6 +311,7 @@ class CaptureItemMeasurePhotoFragment :
         } else {
             photoUtil.deleteImageFile(filenamePath.toString())
         }
+        this.photosDone()
     }
 
     private fun processAndSetImage() {

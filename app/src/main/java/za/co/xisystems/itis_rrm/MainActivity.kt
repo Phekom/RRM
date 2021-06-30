@@ -4,12 +4,6 @@
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  **/
 
-/**
- * Updated by Shaun McDonald on 2021/05/14
- * Last modified on 2021/05/14, 19:57
- * Copyright (c) 2021.  XI Systems  - All rights reserved
- **/
-
 package za.co.xisystems.itis_rrm
 
 import android.app.Activity
@@ -104,6 +98,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             ui.drawerLayout
         )
     }
+
+    private var takingPhotos: Boolean = false
 
     companion object {
         const val PROJECT_USER_ROLE_IDENTIFIER =
@@ -607,6 +603,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onPause() {
         super.onPause()
         armoury.writeFutureTimestamp()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        if (!sharedViewModel.takingPhotos) {
+            sharedViewModel.logOut()
+            finishAffinity()
+        }
     }
 
     override fun onDestroy() {
