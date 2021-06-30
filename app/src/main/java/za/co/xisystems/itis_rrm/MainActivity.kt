@@ -594,7 +594,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         // Time out after five minutes
         val timeInMillis = System.currentTimeMillis()
         val timeDiff = timeInMillis - armoury.getTimestamp()
-        if (timeDiff >= FIVE_MINUTES) {
+        if (timeDiff >= FIVE_MINUTES * 2) {
             Coroutines.io {
                 sharedViewModel.logOut()
                 withContext(Dispatchers.Main.immediate) {
@@ -607,12 +607,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onPause() {
         super.onPause()
         armoury.writeFutureTimestamp()
-    }
-
-    override fun onStop() {
-        super.onStop()
-        sharedViewModel.logOut()
-        finishAffinity()
     }
 
     override fun onDestroy() {
