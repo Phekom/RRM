@@ -10,15 +10,37 @@ import android.content.Context
 import androidx.security.crypto.MasterKey
 import com.password4j.SecureString
 import za.co.xisystems.itis_rrm.custom.results.XIResult
+import za.co.xisystems.itis_rrm.utils.Coroutines
 
-object XIArmoury {
-    private const val PREFS_FILE = "colors_and_styles"
-    private const val NOT_SET = "NoPassphraseSet"
-    private const val PASS_LENGTH = 64
+class XIArmoury private constructor(context: Context) {
 
-    private val wizardInstance: Wizard = Wizard()
-    private val scribeInstance: Scribe = Scribe()
-    private val sageInstance: Sage = Sage()
+    private var wizardInstance: Wizard
+    private var scribeInstance: Scribe
+    private var sageInstance: Sage = Sage()
+    private var masterKey: MasterKey
+
+    companion object {
+        @Volatile private var instance: XIArmoury? = null
+        private const val PREFS_FILE = "colors_and_styles"
+        private const val NOT_SET = "NoPassphraseSet"
+        private const val PASS_LENGTH = 64
+
+        fun getInstance(appContext: Context): XIArmoury {
+            return instance ?: synchronized(this) {
+                XIArmoury(appContext)
+            }.also {
+                instance = it
+                instance!!
+            }
+        }
+    }
+
+    init {
+        masterKey = sageInstance.generateMasterKey(context)
+        wizardInstance = Wizard()
+        scribeInstance = Scribe()
+        scribeInstance.initPreferences(context, masterKey, PREFS_FILE)
+    }
 
     // Generate Random Passphrase
     private fun generatePassphrase(length: Int = PASS_LENGTH): String {
@@ -39,19 +61,7 @@ object XIArmoury {
      * Generate random secret passphrase if not set,
      * read existing if set
      */
-    suspend fun readFutureSecretPassphrase(context: Context): String {
-        val masterKey = sageInstance.generateFutureMasterKey(context)
-        scribeInstance.initPreferences(context.applicationContext, masterKey, PREFS_FILE)
-        if (scribeInstance.getPassphrase() == NOT_SET) {
-            val passphrase = generatePassphrase(PASS_LENGTH)
-            scribeInstance.writePassphrase(passphrase)
-        }
-        return scribeInstance.getPassphrase()
-    }
-
-    fun readSecretPassphrase(context: Context): String {
-        val masterKey = sageInstance.generateMasterKey(context)
-        scribeInstance.initPreferences(context.applicationContext, masterKey, PREFS_FILE)
+    fun readSecretPassphrase(): String {
         if (scribeInstance.getPassphrase() == NOT_SET) {
             val passphrase = generatePassphrase(PASS_LENGTH)
             scribeInstance.writePassphrase(passphrase)
@@ -63,13 +73,21 @@ object XIArmoury {
         return sageInstance.generateMasterKey(context)
     }
 
-   suspend fun writeEncryptedFile(
-       context: Context,
-       fileName: String,
-       fileContent: ByteArray
-   ): Boolean {
-       val masterKey = generateMasterKey(context)
-       return scribeInstance.writeEncryptedFile(context, masterKey, fileName, fileContent)
+    fun writeFutureTimestamp() = Coroutines.io {
+        scribeInstance.writeFutureTimestamp()
+    }
+
+    fun getTimestamp(): Long {
+        return scribeInstance.getTimestamp()
+    }
+
+    suspend fun writeEncryptedFile(
+        context: Context,
+        fileName: String,
+        fileContent: ByteArray
+    ): Boolean {
+        val masterKey = generateMasterKey(context)
+        return scribeInstance.writeEncryptedFile(context, masterKey, fileName, fileContent)
     }
 
     suspend fun readEncryptedFile(context: Context, fileName: String): ByteArray {

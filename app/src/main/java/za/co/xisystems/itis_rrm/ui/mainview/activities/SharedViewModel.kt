@@ -25,6 +25,7 @@ class SharedViewModel(private val userRepository: UserRepository) : ViewModel() 
     val actionCaption: MutableLiveData<String> = MutableLiveData()
     var originalCaption: String = ""
     val colorMessage: MutableLiveData<ColorToast> = MutableLiveData()
+    var takingPhotos: Boolean = false
     fun setMessage(msg: String?) {
         message.value = msg
     }

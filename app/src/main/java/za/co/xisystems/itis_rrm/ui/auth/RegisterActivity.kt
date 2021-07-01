@@ -44,13 +44,12 @@ class RegisterActivity : AppCompatActivity(), AuthListener, KodeinAware {
     private lateinit var viewModel: AuthViewModel
     private lateinit var appContext: Context
     private var permissions = arrayOf(
-        Manifest.permission.WRITE_EXTERNAL_STORAGE,
         Manifest.permission.CAMERA,
         Manifest.permission.READ_EXTERNAL_STORAGE,
         Manifest.permission.ACCESS_FINE_LOCATION,
-        Manifest.permission.READ_SMS
-
-    )
+        Manifest.permission.READ_SMS,
+        Manifest.permission.WRITE_EXTERNAL_STORAGE
+        )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

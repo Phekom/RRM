@@ -355,12 +355,14 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
                     ui.startImageView.visibility = View.GONE
                     ui.startAnimationView.visibility = View.VISIBLE
                     takePhoto(PhotoType.START)
+                    this@EstimatePhotoFragment.takingPhotos()
                 }
                 R.id.endPhotoButton -> {
                     locationWarning = false
                     ui.endImageView.visibility = View.GONE
                     ui.endAnimationView.visibility = View.VISIBLE
                     takePhoto(PhotoType.END)
+                    this@EstimatePhotoFragment.takingPhotos()
                 }
 
                 R.id.cancelButton -> {
@@ -374,6 +376,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
                         toast("Please Make Sure you have Captured Both Images To Continue")
                         ui.labelTextView.startAnimation(animations!!.shake_long)
                     } else {
+                        this@EstimatePhotoFragment.toggleLongRunning(true)
                         saveValidEstimate(view)
                     }
                 }
@@ -432,6 +435,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
     }
 
     private fun updateData(view: View) {
+        this.toggleLongRunning(false)
         uiScope.destroy()
         viewLifecycleOwner.lifecycle.coroutineScope.coroutineContext.cancel(
             CancellationException("updating estimates ...")
@@ -492,6 +496,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
         Coroutines.io {
             imageUri = photoUtil.getUri()
             withContext(Dispatchers.Main.immediate) {
+                this@EstimatePhotoFragment.takingPhotos()
                 takePicture.launch(imageUri)
             }
         }
@@ -515,6 +520,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
                 }
             }
         }
+        this@EstimatePhotoFragment.photosDone()
     }
 
     private fun restoreEstimatePhoto(
@@ -760,13 +766,15 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
         var projectSectionId = createViewModel.getSectionByRouteSectionProject(
             sectionPoint.sectionId.toString(),
             sectionPoint.linearId,
-            newJob?.projectId
+            newJob?.projectId,
+            sectionPoint.pointLocation
         )
         if (projectSectionId.isNullOrBlank()) {
             projectSectionId = createViewModel.getSectionByRouteSectionProject(
                 sectionPoint.sectionId.toString().plus(sectionPoint.direction),
                 sectionPoint.linearId,
-                newJob?.projectId
+                newJob?.projectId,
+                sectionPoint.pointLocation
             )
         }
 

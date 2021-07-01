@@ -36,6 +36,7 @@ import za.co.xisystems.itis_rrm.data.repositories.MeasureCreationDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
 import za.co.xisystems.itis_rrm.data.repositories.WorkDataRepository
+import za.co.xisystems.itis_rrm.forge.XIArmoury
 import za.co.xisystems.itis_rrm.logging.LameCrashLibrary
 import za.co.xisystems.itis_rrm.ui.auth.model.AuthViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.activities.LocationViewModelFactory
@@ -57,19 +58,18 @@ import za.co.xisystems.itis_rrm.utils.PhotoUtil
  * Created by Francis Mahlava on 2019/10/23.
  */
 
-lateinit var photoUtil: PhotoUtil
-
 open class MainApp : Application(), KodeinAware {
 
     override val kodein = Kodein.lazy {
 
         import(androidXModule(this@MainApp))
 
+        bind() from singleton { XIArmoury.getInstance(this@MainApp) }
         bind() from singleton { PhotoUtil.getInstance(this@MainApp) }
         bind() from singleton { NetworkConnectionInterceptor(instance()) }
         bind() from singleton { BaseConnectionApi(instance()) }
 
-        bind() from singleton { AppDatabase(instance()) }
+        bind() from singleton { AppDatabase(instance(), instance()) }
         bind() from singleton { PreferenceProvider(instance()) }
 
         bind() from singleton { UserRepository(instance(), instance()) }
@@ -81,7 +81,7 @@ open class MainApp : Application(), KodeinAware {
         bind() from singleton { WorkDataRepository(instance(), instance(), instance()) }
         bind() from singleton { MeasureCreationDataRepository(instance(), instance(), instance()) }
         bind() from singleton { MeasureApprovalDataRepository(instance(), instance()) }
-        bind() from provider { AuthViewModelFactory(instance(), this@MainApp) }
+        bind() from provider { AuthViewModelFactory(instance(), instance(), this@MainApp) }
         bind() from provider {
             HomeViewModelFactory(
                 instance(),
@@ -89,7 +89,13 @@ open class MainApp : Application(), KodeinAware {
                 this@MainApp
             )
         }
-        bind() from provider { CreateViewModelFactory(instance(),this@MainApp) }
+        bind() from provider {
+            CreateViewModelFactory(
+                instance(),
+                this@MainApp
+            )
+        }
+
         bind() from provider {
             ApproveMeasureViewModelFactory(
                 this@MainApp,
@@ -119,7 +125,6 @@ open class MainApp : Application(), KodeinAware {
 
     override fun onCreate() {
         super.onCreate()
-        photoUtil = PhotoUtil.getInstance(this.applicationContext)
         // Time-zone support for better times with Room
         AndroidThreeTen.init(this)
 

@@ -291,6 +291,7 @@ class CaptureItemMeasurePhotoFragment :
     }
 
     private fun launchCamera() {
+        this.takingPhotos()
         imageUri = photoUtil.getUri()!!
         takePicture.launch(imageUri)
     }
@@ -333,6 +334,7 @@ class CaptureItemMeasurePhotoFragment :
                         }
                     })
             }
+            this@CaptureItemMeasurePhotoFragment.photosDone()
         }
     }
 

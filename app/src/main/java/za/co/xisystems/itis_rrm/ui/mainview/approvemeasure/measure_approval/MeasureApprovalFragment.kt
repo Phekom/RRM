@@ -95,6 +95,7 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
                 is XISuccess -> {
                     if (result.data == "WORK_COMPLETE") {
                         measurementsToApprove.clear()
+                        this@MeasureApprovalFragment.toggleLongRunning(false)
                         initRecyclerView(measurementsToApprove.toMeasureItems())
                         progressButton.doneProgress(progressButton.text.toString())
                         popViewOnJobSubmit(flowDirection)
@@ -102,6 +103,7 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
                 }
                 is XIError -> {
                     progressButton.failProgress("Failed")
+                    this@MeasureApprovalFragment.toggleLongRunning(false)
                     crashGuard(
                         view = this.requireView(),
                         throwable = result,
@@ -118,7 +120,10 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
                 }
                 is XIProgress -> {
                     when (result.isLoading) {
-                        true -> progressButton.startProgress("Submitting ...")
+                        true -> {
+                            progressButton.startProgress("Submitting ...")
+                            this@MeasureApprovalFragment.toggleLongRunning(true)
+                        }
                         else -> progressButton.doneProgress(progressButton.text.toString())
                     }
                 }
