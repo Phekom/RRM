@@ -588,13 +588,22 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
 
         // Time out after five minutes
+        checkTimeout()
+    }
+
+    private fun checkTimeout() {
         val timeInMillis = System.currentTimeMillis()
         val timeDiff = timeInMillis - armoury.getTimestamp()
         if (timeDiff >= FIVE_MINUTES * 2 && !sharedViewModel.takingPhotos && progressBar?.visibility == View.GONE) {
             Coroutines.io {
                 sharedViewModel.logOut()
                 withContext(Dispatchers.Main.immediate) {
-                    finishAffinity()
+                    Intent(this@MainActivity, LoginActivity::class.java).also { login ->
+                        login.flags =
+                            Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                        startActivity(login)
+                    }
+                    finish()
                 }
             }
         }
@@ -607,18 +616,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onStop() {
         super.onStop()
-        if (!sharedViewModel.takingPhotos && progressBar?.visibility == View.GONE) {
-            Coroutines.io {
-                sharedViewModel.logOut()
-                withContext(Dispatchers.Main.immediate) {
-                    finishAffinity()
-                }
-            }
-        }
+        checkTimeout()
     }
 
     override fun onDestroy() {
         super.onDestroy()
         uiScope.destroy()
+        finish()
     }
 }

@@ -46,11 +46,16 @@ interface ProjectSectionDao {
     @Query("SELECT section FROM PROJECT_SECTION_TABLE WHERE sectionId = :sectionId")
     fun getSectionForProjectSectionId(sectionId: String): String
 
-    @Query("SELECT sectionId FROM PROJECT_SECTION_TABLE WHERE section = :section  AND route = :linearId AND projectId = :projectId")
+    @Query("SELECT sectionId FROM PROJECT_SECTION_TABLE " +
+        "WHERE section = :section  AND route = :linearId AND projectId = :projectId " +
+        "AND cast(:pointLocation as real) <= endKm " +
+        "ORDER BY endKm LIMIT 1"
+    )
     fun getSectionByRouteSectionProject(
         section: String,
         linearId: String?,
-        projectId: String?
+        projectId: String?,
+        pointLocation: Double
     ): String?
 
     @Query("SELECT * FROM PROJECT_SECTION_TABLE WHERE sectionId LIKE :sectionId")

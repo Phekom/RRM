@@ -61,7 +61,7 @@
                 <com.poovam.pinedittextfield.CirclePinField
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:inputType="number"
+                    android:inputType="numberPassword"
                     app:fieldBgColor="@color/dark_bg_color"
                     app:fieldColor="@color/sanral_burnt_green"
                     app:highlightColor="@color/sanral_burnt_green"

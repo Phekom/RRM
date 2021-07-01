@@ -196,11 +196,12 @@ class JobCreationDataRepository(
     suspend fun getSectionByRouteSectionProject(
         sectionId: String,
         linearId: String?,
-        projectId: String?
+        projectId: String?,
+        pointLocation: Double
     ): String? {
         return withContext(Dispatchers.IO) {
             appDb.getProjectSectionDao()
-                .getSectionByRouteSectionProject(sectionId, linearId!!, projectId!!)
+                .getSectionByRouteSectionProject(sectionId, linearId!!, projectId!!, pointLocation)
         }
     }
 
@@ -219,7 +220,7 @@ class JobCreationDataRepository(
         jobId: String
     ): String? {
 
-        val distance = 0.5
+        val distance = 0.05
         val inBuffer = -1.0
         val routeSectionPointResponse =
             apiRequest { api.getRouteSectionPoint(distance, inBuffer, latitude, longitude, useR) }
@@ -566,7 +567,7 @@ class JobCreationDataRepository(
         }
 
         var projectSectionId = appDb.getProjectSectionDao()
-            .getSectionByRouteSectionProject(sectionId.toString(), linearId, projectId)
+            .getSectionByRouteSectionProject(sectionId.toString(), linearId, projectId, pointLocation)
 
         // Deal with SectionDirection combinations.
         // S.McDonald 2021/05/14
@@ -574,7 +575,8 @@ class JobCreationDataRepository(
             projectSectionId = appDb.getProjectSectionDao().getSectionByRouteSectionProject(
                 sectionId.toString().plus(direction),
                 linearId,
-                projectId
+                projectId,
+                pointLocation
             )
         }
         Timber.d("ProjectSectionId: $projectSectionId")

@@ -766,13 +766,15 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
         var projectSectionId = createViewModel.getSectionByRouteSectionProject(
             sectionPoint.sectionId.toString(),
             sectionPoint.linearId,
-            newJob?.projectId
+            newJob?.projectId,
+            sectionPoint.pointLocation
         )
         if (projectSectionId.isNullOrBlank()) {
             projectSectionId = createViewModel.getSectionByRouteSectionProject(
                 sectionPoint.sectionId.toString().plus(sectionPoint.direction),
                 sectionPoint.linearId,
-                newJob?.projectId
+                newJob?.projectId,
+                sectionPoint.pointLocation
             )
         }
 

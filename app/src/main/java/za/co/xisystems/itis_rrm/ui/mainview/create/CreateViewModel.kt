@@ -191,13 +191,15 @@ class CreateViewModel(
     suspend fun getSectionByRouteSectionProject(
         sectionId: String,
         linearId: String?,
-        projectId: String?
+        projectId: String?,
+        pointLocation: Double
     ): String? {
         return withContext(ioContext) {
             jobCreationDataRepository.getSectionByRouteSectionProject(
                 sectionId,
                 linearId,
-                projectId
+                projectId,
+                pointLocation
             )
         }
     }

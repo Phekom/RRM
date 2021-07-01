@@ -11,6 +11,7 @@ import kotlinx.android.synthetic.main.settings_activity.*
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.kodein
 import org.kodein.di.generic.instance
+import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.ui.auth.RegisterActivity
 import za.co.xisystems.itis_rrm.ui.auth.ResetPinActivity
@@ -90,6 +91,7 @@ class SettingsActivity : AppCompatActivity(), KodeinAware {
             finish()
         }
     }
+
 
     var isChecked = false
 }
