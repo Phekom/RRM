@@ -212,11 +212,12 @@ class HomeFragment : BaseFragment(), KodeinAware {
         return ui.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        homeViewModel = ViewModelProvider(this.requireActivity(), factory).get(HomeViewModel::class.java)
+    override fun onStart() {
+
+        super.onStart()
         checkConnectivity()
         homeDiagnostic()
+
         // Configure progressView
         initProgressViews()
 
@@ -233,6 +234,11 @@ class HomeFragment : BaseFragment(), KodeinAware {
 
         // Check if database is synched and prompt user if necessary
         isAppDbSynched()
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        homeViewModel = ViewModelProvider(this, factory).get(HomeViewModel::class.java)
     }
 
     /**

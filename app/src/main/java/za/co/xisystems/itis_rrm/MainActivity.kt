@@ -590,7 +590,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         // Time out after five minutes
         val timeInMillis = System.currentTimeMillis()
         val timeDiff = timeInMillis - armoury.getTimestamp()
-        if (timeDiff >= FIVE_MINUTES * 2) {
+        if (timeDiff >= FIVE_MINUTES * 2 && !sharedViewModel.takingPhotos && progressBar?.visibility == View.GONE) {
             Coroutines.io {
                 sharedViewModel.logOut()
                 withContext(Dispatchers.Main.immediate) {
@@ -607,9 +607,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onStop() {
         super.onStop()
-        if (!sharedViewModel.takingPhotos) {
-            sharedViewModel.logOut()
-            finishAffinity()
+        if (!sharedViewModel.takingPhotos && progressBar?.visibility == View.GONE) {
+            Coroutines.io {
+                sharedViewModel.logOut()
+                withContext(Dispatchers.Main.immediate) {
+                    finishAffinity()
+                }
+            }
         }
     }
 

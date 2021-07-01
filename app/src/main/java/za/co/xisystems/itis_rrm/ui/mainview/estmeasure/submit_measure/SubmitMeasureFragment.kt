@@ -117,10 +117,13 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
                         style = ToastStyle.SUCCESS
                     )
                     progressButton.doneProgress(originalCaption)
+                    this@SubmitMeasureFragment.toggleLongRunning(false)
                     jobItemMeasureList.clear()
                     popViewOnJobSubmit()
                 }
                 is XIError -> {
+                    this@SubmitMeasureFragment.toggleLongRunning(false)
+
                     progressButton.failProgress("Workflow failed ...")
                     measureJob?.cancel(CancellationException(outcome.message))
 
@@ -284,6 +287,7 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
             // Yes button
             setPositiveButton(R.string.yes) { _, _ ->
                 if (ServiceUtil.isNetworkAvailable(requireContext().applicationContext)) {
+                    toggleLongRunning(true)
                     submitMeasures(itemMeasureJob, mSures)
                 } else {
                     sharpToast(

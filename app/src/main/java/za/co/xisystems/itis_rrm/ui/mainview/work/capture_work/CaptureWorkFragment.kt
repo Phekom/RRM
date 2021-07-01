@@ -327,6 +327,7 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
     private fun sendWorkToService(
         estimateWorksItem: JobEstimateWorksDTO
     ) {
+        this.toggleLongRunning(true)
         uiScope.launch(uiScope.coroutineContext) {
             workViewModel.workflowState.removeObserver(jobObserver)
             workViewModel.workflowState.observe(viewLifecycleOwner, workObserver)
@@ -350,8 +351,11 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
                     if (result.data == "WORK_COMPLETE") {
                         popViewOnJobSubmit(WorkflowDirection.NEXT.value)
                     }
+                    this@CaptureWorkFragment.toggleLongRunning(false)
+
                 }
                 is XIError -> {
+                    this@CaptureWorkFragment.toggleLongRunning(false)
                     ui.moveWorkflowButton.failProgress("Job submission failed")
                     crashGuard(
                         view = this.requireView(),
@@ -402,8 +406,10 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
                             refreshView()
                         }
                     }
+                    this@CaptureWorkFragment.toggleLongRunning(false)
                 }
                 is XIError -> {
+                    this@CaptureWorkFragment.toggleLongRunning(false)
                     ui.moveWorkflowButton.failProgress("Work submission failed")
                     crashGuard(
                         view = this@CaptureWorkFragment.requireView(),
@@ -710,6 +716,7 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
     }
 
     private suspend fun collectCompletedEstimates(estimateJob: JobDTO) {
+        this@CaptureWorkFragment.toggleLongRunning(true)
         val iItems = workViewModel.getJobEstimationItemsForJobId(
             estimateJob.jobId,
             ActivityIdConstants.ESTIMATE_WORK_PART_COMPLETE

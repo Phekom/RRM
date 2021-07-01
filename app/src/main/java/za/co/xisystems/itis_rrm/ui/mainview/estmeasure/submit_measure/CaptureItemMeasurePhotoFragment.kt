@@ -311,7 +311,6 @@ class CaptureItemMeasurePhotoFragment :
         } else {
             photoUtil.deleteImageFile(filenamePath.toString())
         }
-        this.photosDone()
     }
 
     private fun processAndSetImage() {
@@ -335,6 +334,7 @@ class CaptureItemMeasurePhotoFragment :
                         }
                     })
             }
+            this@CaptureItemMeasurePhotoFragment.photosDone()
         }
     }
 
