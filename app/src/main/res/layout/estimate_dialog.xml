@@ -18,7 +18,7 @@
                 android:layout_gravity="center"
                 android:text="@string/tender_rate"
                 android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textColor="@android:color/black" />
+                android:textColor="@color/primaryTextColor" />
 
         <TextView
                 android:id="@+id/current_rate"
@@ -51,10 +51,10 @@
                 android:id="@+id/new_qty"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:digits="-.0123456789"
+                android:digits=".0123456789"
                 android:layout_marginStart="@dimen/dimen_20dp"
                 android:backgroundTint="@color/itis_burnt_orange"
-                android:inputType="numberDecimal"
+                android:inputType="numberSigned|numberDecimal"
                 android:minWidth="@dimen/dimen_50dp"
                 android:visibility="visible"
             android:importantForAutofill="no"/>
@@ -75,7 +75,7 @@
                 android:text="@string/total_amount"
                 android:layout_gravity="center"
                 android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textColor="@android:color/black" />
+                android:textColor="@color/primaryTextColor" />
 
         <TextView
                 android:id="@+id/new_total"
@@ -84,7 +84,7 @@
                 android:layout_gravity="center"
                 android:hint="@string/total"
                 android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textColor="@android:color/black" />
+                android:textColor="@color/primaryTextColor" />
 
 
     </LinearLayout>

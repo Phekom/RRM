@@ -2,11 +2,12 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/small"
-        android:layout_marginEnd="@dimen/small"
+    android:layout_marginStart="@dimen/small"
+    android:layout_marginEnd="@dimen/small"
     android:orientation="vertical"
     android:padding="8dp"
     android:background="@drawable/my_custom_background">
+
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="fill_parent"
@@ -22,7 +23,8 @@
             android:textSize="17sp"
             android:paddingTop="5dp"
             android:paddingBottom="5dp"
-            android:paddingLeft="?android:attr/expandableListPreferredChildPaddingLeft"
+            android:paddingStart="?android:attr/expandableListPreferredChildPaddingLeft"
+            android:paddingEnd="?android:attr/expandableListPreferredChildPaddingLeft"
             android:textColor="@color/itis_gray"
             android:layout_weight="1" />
 
@@ -37,6 +39,7 @@
             android:textSize="16sp" />
 
     </LinearLayout>
+
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="fill_parent"
@@ -52,7 +55,7 @@
             android:textSize="17sp"
             android:paddingTop="5dp"
             android:paddingBottom="5dp"
-            android:paddingLeft="?android:attr/expandableListPreferredChildPaddingLeft"
+            android:paddingStart="?android:attr/expandableListPreferredChildPaddingLeft"
             android:textColor="@color/itis_gray"
             android:layout_weight="1" />
 
@@ -60,18 +63,20 @@
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:id="@+id/measurements_photo_image"
-            android:layout_marginRight="10dp"
+            android:layout_marginEnd="10dp"
             android:focusable="false"
             android:focusableInTouchMode="false"
             android:src="@drawable/ic_photo"
             android:background="@android:color/transparent"
-            android:layout_gravity="center_vertical" />
+            android:layout_gravity="center_vertical"
+            android:contentDescription="@string/measurements_photo_image" />
 
     </LinearLayout>
+
     <View
         android:layout_width="match_parent"
-        android:layout_marginLeft="35dp"
-        android:layout_marginRight="55dp"
+        android:layout_marginStart="35dp"
+        android:layout_marginEnd="55dp"
         android:layout_height="1dp"
         android:background="@color/itis_divider" />
 
@@ -79,49 +84,49 @@
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:orientation="horizontal"
-        android:paddingLeft="?android:attr/expandableListPreferredChildPaddingLeft">
+        android:paddingLeft="?android:attr/expandableListPreferredChildPaddingLeft"
+        android:paddingRight="?android:attr/expandableListPreferredChildPaddingLeft" />
 
-        <TextView
-            android:id="@+id/measure_estimation_qty_description_textView"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/qty"
-            android:textColor="@color/itis_gray"
-            android:textSize="16sp" />
-
-        <TextView
-            android:id="@+id/measure_estimation_qty_textView"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/no_21"
-            android:textColor="@color/itis_gray"
-            android:textSize="16sp" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:orientation="horizontal"
+    <TextView
+        android:id="@+id/measure_estimation_qty_description_textView"
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:paddingLeft="?android:attr/expandableListPreferredChildPaddingLeft">
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="@string/qty"
+        android:textColor="@color/itis_gray"
+        android:textSize="16sp" />
 
-        <TextView
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/line_amount"
-            android:id="@+id/measure_estimation_line_amount_description_textView"
-            android:layout_weight="1"
-            android:textColor="@color/itis_gray"
-            android:textSize="16sp"/>
-
-        <TextView
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/r5400"
-            android:id="@+id/measure_estimation_line_amount"
-            android:layout_weight="1"
-            android:textColor="@color/itis_gray"
-            android:textSize="16sp" />
-    </LinearLayout>
+    <TextView
+        android:id="@+id/measure_estimation_qty_textView"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="@string/no_21"
+        android:textColor="@color/itis_gray"
+        android:textSize="16sp" />
 </LinearLayout>
+
+<LinearLayout
+android:orientation="horizontal"
+android:layout_width="fill_parent"
+android:layout_height="fill_parent"
+android:paddingLeft="?android:attr/expandableListPreferredChildPaddingLeft">
+
+<TextView
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:text="@string/line_amount"
+    android:id="@+id/measure_estimation_line_amount_description_textView"
+    android:layout_weight="1"
+    android:textColor="@color/itis_gray"
+    android:textSize="16sp" />
+
+<TextView
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:text="@string/r5400"
+    android:id="@+id/measure_estimation_line_amount"
+    android:layout_weight="1"
+    android:textColor="@color/itis_gray"
+    android:textSize="16sp" />
+</LinearLayout></LinearLayout>

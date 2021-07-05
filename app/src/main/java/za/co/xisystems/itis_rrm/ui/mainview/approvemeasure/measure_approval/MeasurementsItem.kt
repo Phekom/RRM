@@ -2,6 +2,8 @@ package za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.measure_approval
 
 import android.net.Uri
 import android.text.Editable
+import android.text.InputType
+import android.text.method.DigitsKeyListener
 import android.view.View
 import android.widget.EditText
 import androidx.appcompat.app.AlertDialog
@@ -14,6 +16,7 @@ import kotlinx.android.synthetic.main.measurements_item.*
 import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
+import za.co.xisystems.itis_rrm.ui.extensions.DecimalSignedDigitsKeyListener
 import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureViewModel
 import za.co.xisystems.itis_rrm.utils.Coroutines
@@ -83,6 +86,9 @@ class MeasurementsItem(
     private fun alertdialog(jobItemMeasureDTO: JobItemMeasureDTO) {
         val textEntryView: View = activity!!.layoutInflater.inflate(R.layout.measure_dialog, null)
         val editQuantity = textEntryView.findViewById<View>(R.id.new_qty) as EditText
+        editQuantity.inputType = InputType.TYPE_NUMBER_VARIATION_NORMAL and InputType.TYPE_NUMBER_FLAG_DECIMAL
+        val digitsKeyListener = DigitsKeyListener.getInstance("-1234567890.")
+        editQuantity.keyListener = DecimalSignedDigitsKeyListener(digitsKeyListener)
 
         val alert = AlertDialog.Builder(activity) // ,android.R.style.Theme_DeviceDefault_Dialog
         alert.setView(textEntryView)
@@ -105,8 +111,8 @@ class MeasurementsItem(
             // Do nothing but close dialog
             dialog.dismiss()
         }
-        val declineAlert = alert.create()
-        declineAlert.show()
+        val editAlert = alert.create()
+        editAlert.show()
     }
 
     @Suppress("MagicNumber")

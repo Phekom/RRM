@@ -61,6 +61,10 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
     private var groupAdapter = GroupAdapter<GroupieViewHolder>()
     private var queryObserver = Observer<XIResult<String>?> { handleQueryErrors(it) }
 
+    companion object {
+        val TAG: String = ApproveJobsFragment::class.java.simpleName
+    }
+
     init {
         lifecycleScope.launch {
             whenStarted {
@@ -261,9 +265,5 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
         ui.approveJobVeiledRecycler.setAdapter(null)
         uiScope.destroy()
         _ui = null
-    }
-
-    companion object {
-        val TAG: String = ApproveJobsFragment::class.java.simpleName
     }
 }

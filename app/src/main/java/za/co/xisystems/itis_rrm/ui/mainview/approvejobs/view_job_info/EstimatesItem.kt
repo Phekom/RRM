@@ -15,6 +15,8 @@ package za.co.xisystems.itis_rrm.ui.mainview.approvejobs.view_job_info
 import android.app.Dialog
 import android.net.Uri
 import android.text.Editable
+import android.text.InputType
+import android.text.method.DigitsKeyListener
 import android.view.View
 import android.widget.EditText
 import android.widget.TextView
@@ -31,6 +33,7 @@ import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
+import za.co.xisystems.itis_rrm.ui.extensions.DecimalSignedDigitsKeyListener
 import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.ApproveJobsViewModel
 import za.co.xisystems.itis_rrm.utils.Coroutines
@@ -50,7 +53,6 @@ class EstimatesItem(
     private val activity: FragmentActivity?,
     private val viewLifecycleOwner: LifecycleOwner,
     private val updateObserver: Observer<XIResult<String>?>
-
 ) : Item() {
 
     override fun bind(viewHolder: GroupieViewHolder, position: Int) {
@@ -125,7 +127,10 @@ class EstimatesItem(
             val newQuantity = jobItemEstimateDTO.qty
             val defaultQty = 0.0
 
+            quantityEntry.inputType = InputType.TYPE_NUMBER_FLAG_DECIMAL and InputType.TYPE_NUMBER_VARIATION_NORMAL
             quantityEntry.text = Editable.Factory.getInstance().newEditable("$newQuantity")
+            val digitsKeyListener = DigitsKeyListener.getInstance("-1234567890.")
+            quantityEntry.keyListener = DecimalSignedDigitsKeyListener(digitsKeyListener)
 
             quantityEntry.doOnTextChanged { text, _, _, _ ->
                 updated = true
