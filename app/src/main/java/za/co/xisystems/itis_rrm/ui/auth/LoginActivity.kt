@@ -218,7 +218,7 @@ class LoginActivity : AppCompatActivity(), AuthListener, KodeinAware {
         Coroutines.io {
             authViewModel.expirePin()
             withContext(Dispatchers.Main.immediate) {
-                finishAffinity()
+                finish()
             }
         }
     }

@@ -27,6 +27,7 @@ import za.co.xisystems.itis_rrm.custom.results.isRecoverableException
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data._commons.Animations
 import za.co.xisystems.itis_rrm.data._commons.views.IProgressView
+import za.co.xisystems.itis_rrm.forge.XIArmoury
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModelFactory
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
@@ -53,6 +54,7 @@ abstract class BaseFragment : Fragment(), IProgressView, KodeinAware {
 
     private lateinit var sharedViewModel: SharedViewModel
     private val shareFactory: SharedViewModelFactory by instance()
+    private val armoury: XIArmoury by instance()
     protected var coordinator: View? = null
 
     companion object {
@@ -107,6 +109,7 @@ abstract class BaseFragment : Fragment(), IProgressView, KodeinAware {
 
     override fun onResume() {
         super.onResume()
+        armoury.writeFutureTimestamp()
         ViewLogger.logView(this)
     }
 

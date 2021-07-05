@@ -95,7 +95,7 @@ data class JobItemEstimateDTO(
         selectedItemUom = parcel.readString()
     )
 
-    private fun getJobItemEstimatePhoto(lookForStartPhoto: Boolean): Pair<Int, JobItemEstimatesPhotoDTO> {
+    fun getJobItemEstimatePhoto(lookForStartPhoto: Boolean): Pair<Int, JobItemEstimatesPhotoDTO> {
         val photos = jobItemEstimatePhotos
         var i = 0
         while (photos.isNotEmpty() && i < photos.size - 1) {

@@ -47,13 +47,16 @@ class RegisterActivity : AppCompatActivity(), AuthListener, KodeinAware {
         Manifest.permission.CAMERA,
         Manifest.permission.READ_EXTERNAL_STORAGE,
         Manifest.permission.ACCESS_FINE_LOCATION,
-        Manifest.permission.READ_SMS,
-        Manifest.permission.WRITE_EXTERNAL_STORAGE
-        )
+        Manifest.permission.ACCESS_NETWORK_STATE,
+        Manifest.permission.ACCESS_WIFI_STATE,
+    )
+
+    companion object {
+        val TAG: String = RegisterActivity::class.java.simpleName
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        appContext = this
         if (startPermissionRequest(permissions)) {
             toast("Permissions already provided.")
         } else {
@@ -72,25 +75,39 @@ class RegisterActivity : AppCompatActivity(), AuthListener, KodeinAware {
                 // Register the user
                 if (user != null) {
                     if (user.pinHash == null) {
-                        registerPinOrNot()
-                    } else {
-                        Intent(this, MainActivity::class.java).also { home ->
-                            home.flags =
-                                Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-                            startActivity(home)
+                        Coroutines.main {
+                            registerPinOrNot()
                         }
+                    } else {
+                        checkPinAuth(user)
                     }
                 }
             })
             serverTextView.setOnClickListener {
-                ToastUtils().toastServerAddress(appContext)
+                ToastUtils().toastServerAddress(this.applicationContext)
             }
 
             buildFlavorTextView.setOnClickListener {
-                ToastUtils().toastVersion(appContext)
+                ToastUtils().toastVersion(this.applicationContext)
             }
         }
         isOnline()
+    }
+
+    private fun checkPinAuth(user: UserDTO) {
+        if (user.authd) {
+            Intent(this, MainActivity::class.java).also { main ->
+                main.flags =
+                    Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                startActivity(main)
+            }
+        } else {
+            Intent(this, LoginActivity::class.java).also { login ->
+                login.flags =
+                    Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                startActivity(login)
+            }
+        }
     }
 
     private fun registerPinOrNot() {
@@ -203,9 +220,5 @@ class RegisterActivity : AppCompatActivity(), AuthListener, KodeinAware {
 
     override fun onWarn(message: String) {
         onFailure(message)
-    }
-
-    companion object {
-        val TAG: String = RegisterActivity::class.java.simpleName
     }
 }

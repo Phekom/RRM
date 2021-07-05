@@ -31,6 +31,7 @@ class Scribe(private val dispatchers: DispatcherProvider = DefaultDispatcherProv
     private lateinit var securePrefs: SharedPreferences
     private var _open = false
     val openForBusiness get() = _open
+
     companion object {
         val DIRECTORY: String = Environment.DIRECTORY_PICTURES
         const val PASS_KEY = "za.co.xisystems.itis_rmm.forge.Scribe.Passphrase"
@@ -71,12 +72,12 @@ class Scribe(private val dispatchers: DispatcherProvider = DefaultDispatcherProv
      */
     suspend fun writeFuturePassphrase(passphrase: String) {
         withContext(dispatchers.io()) {
-           writePassphrase(passphrase)
+            writePassphrase(passphrase)
         }
     }
 
     fun getTimestamp(): Long {
-        return securePrefs.getLong(TIMESTAMP_KEY, 0L)
+        return securePrefs.getLong(TIMESTAMP_KEY, System.currentTimeMillis())
     }
 
     fun writePassphrase(passphrase: String) {
@@ -85,15 +86,16 @@ class Scribe(private val dispatchers: DispatcherProvider = DefaultDispatcherProv
         }
     }
 
-    suspend fun writeFutureTimestamp() {
+    suspend fun writeFutureTimestamp(timeInMillis: Long = System.currentTimeMillis()) {
         withContext(dispatchers.io()) {
-            writeTimestamp(System.currentTimeMillis())
+            writeTimestamp(timeInMillis)
         }
     }
 
     fun writeTimestamp(timeInMillis: Long) {
         with(securePrefs.edit()) {
             putLong(TIMESTAMP_KEY, timeInMillis).apply()
+            Timber.d("Wrote Timestamp: $timeInMillis")
         }
     }
 

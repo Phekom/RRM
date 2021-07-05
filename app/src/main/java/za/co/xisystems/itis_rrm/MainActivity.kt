@@ -46,7 +46,7 @@ import org.kodein.di.android.kodein
 import org.kodein.di.generic.instance
 import timber.log.Timber
 import www.sanju.motiontoast.MotionToast
-import za.co.xisystems.itis_rrm.constants.Constants.FIVE_MINUTES
+import za.co.xisystems.itis_rrm.constants.Constants.TEN_MINUTES
 import za.co.xisystems.itis_rrm.constants.Constants.TWO_SECONDS
 import za.co.xisystems.itis_rrm.custom.notifications.ColorToast
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
@@ -99,8 +99,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         )
     }
 
-    private var takingPhotos: Boolean = false
-
     companion object {
         const val PROJECT_USER_ROLE_IDENTIFIER =
             "RRM Job Mobile User" // "29DB5C213D034EDB88DEC54109EE1711"
@@ -110,6 +108,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             "RRM Job Mobile - Engineer" // "D9E16C2A31FA4CC28961E20B652B292C"
         const val PROJECT_SUB_CONTRACTOR_ROLE_IDENTIFIER =
             "RRM Job Mobile - Sub Contractor" // "03F493BDD6D68944A94BE038B6C1C3D2"
+
         // "F836F6BF14404E749E6748A31A0262AD"
         const val PROJECT_CONTRACTOR_ROLE_IDENTIFIER =
             "RRM Job Mobile - Contractor" // "E398A3EF1C18431DBAEE4A4AC5D6F07D"
@@ -219,7 +218,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         })
 
         if (savedInstanceState == null) {
-
+            armoury.writeFutureTimestamp()
             navController.navigate(R.id.action_global_nav_home)
         }
     }
@@ -269,14 +268,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 toggle?.syncState()
             } else {
                 navController
-                if (doubleBackToExitPressed == 2) {
+                if (doubleBackToExitPressed >= 2) {
                     sharedViewModel.logOut()
                     finishAffinity()
                     // Take user back to the Registration screen
-                    Intent(this, LoginActivity::class.java).also { home ->
-                        home.flags =
+                    Intent(this, LoginActivity::class.java).also { login ->
+                        login.flags =
                             Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-                        startActivity(home)
+                        startActivity(login)
                     }
                 } else {
                     doubleBackToExitPressed++
@@ -284,7 +283,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 }
 
                 Handler(mainLooper).postDelayed({
-                    doubleBackToExitPressed = 0
+                    doubleBackToExitPressed--
                 }, TWO_SECONDS)
             }
         }
@@ -394,7 +393,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private fun startLongRunningTask() {
         Timber.i("starting task...")
         progressBar?.visibility = View.VISIBLE
-
+        armoury.writeFutureTimestamp()
         // Make UI untouchable for duration of big synch
         window.setFlags(
             WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
@@ -586,25 +585,28 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             // initializeCountDrawer()
             // refreshData()
         }
-
-        // Time out after five minutes
         checkTimeout()
     }
 
     private fun checkTimeout() {
         val timeInMillis = System.currentTimeMillis()
         val timeDiff = timeInMillis - armoury.getTimestamp()
-        if (timeDiff >= FIVE_MINUTES * 2 && !sharedViewModel.takingPhotos && progressBar?.visibility == View.GONE) {
-            Coroutines.io {
-                sharedViewModel.logOut()
-                withContext(Dispatchers.Main.immediate) {
-                    Intent(this@MainActivity, LoginActivity::class.java).also { login ->
-                        login.flags =
-                            Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-                        startActivity(login)
-                    }
-                    finish()
+        Timber.d("TimeDiff: $timeDiff")
+        if (timeDiff >= TEN_MINUTES && !sharedViewModel.takingPhotos && progressBar?.visibility == View.GONE) {
+            closeAppAndReturnToLogin()
+        }
+    }
+
+    private fun closeAppAndReturnToLogin() {
+        Coroutines.main {
+            sharedViewModel.logOut()
+            withContext(Dispatchers.Main.immediate) {
+                Intent(this@MainActivity, LoginActivity::class.java).also { login ->
+                    login.flags =
+                        Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                    startActivity(login)
                 }
+                finish()
             }
         }
     }
@@ -622,6 +624,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onDestroy() {
         super.onDestroy()
         uiScope.destroy()
-        finish()
+        checkTimeout()
+    }
+
+    override fun onUserInteraction() {
+        Timber.d("User interaction!!")
+        super.onUserInteraction()
+        armoury.writeFutureTimestamp()
     }
 }
