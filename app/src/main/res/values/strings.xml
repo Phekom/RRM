@@ -232,4 +232,5 @@
     <string name="application_settings">application settings</string>
     <string name="tender_rate">Tender Rate</string>
     <string name="image_kb">$1%d KB</string>
+    <string name="user_blocked">The account $1%s is locked out. Please call Sanral Support for enquiries.</string>
 </resources>

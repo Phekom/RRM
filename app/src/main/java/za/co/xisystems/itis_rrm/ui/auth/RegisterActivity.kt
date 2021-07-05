@@ -74,12 +74,18 @@ class RegisterActivity : AppCompatActivity(), AuthListener, KodeinAware {
             loggedInUser.observe(this, { user ->
                 // Register the user
                 if (user != null) {
-                    if (user.pinHash == null) {
-                        Coroutines.main {
-                            registerPinOrNot()
+                    when {
+                        user.userStatus != "Y" -> {
+                            onFailure(getString(R.string.user_blocked, user.userName))
                         }
-                    } else {
-                        checkPinAuth(user)
+                        user.pinHash == null -> {
+                            Coroutines.main {
+                                registerPinOrNot()
+                            }
+                        }
+                        else -> {
+                            checkPinAuth(user)
+                        }
                     }
                 }
             })

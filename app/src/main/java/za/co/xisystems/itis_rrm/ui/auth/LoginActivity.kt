@@ -13,8 +13,8 @@ import android.R.style
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
+import android.view.WindowManager
 import androidx.appcompat.app.AlertDialog.Builder
-import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.poovam.pinedittextfield.PinField
 import kotlinx.coroutines.Dispatchers
@@ -35,6 +35,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.databinding.ActivityLoginBinding
 import za.co.xisystems.itis_rrm.ui.auth.model.AuthViewModel
 import za.co.xisystems.itis_rrm.ui.auth.model.AuthViewModelFactory
+import za.co.xisystems.itis_rrm.ui.base.BaseActivity
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.hide
@@ -44,7 +45,7 @@ import za.co.xisystems.itis_rrm.utils.snackbar
 import za.co.xisystems.itis_rrm.utils.toast
 import za.co.xisystems.traffic_count.delegates.viewBinding
 
-class LoginActivity : AppCompatActivity(), AuthListener, KodeinAware {
+class LoginActivity : BaseActivity(), AuthListener, KodeinAware {
 
     override val kodein by kodein()
     private val factory: AuthViewModelFactory by instance()
@@ -73,10 +74,17 @@ class LoginActivity : AppCompatActivity(), AuthListener, KodeinAware {
             loggedInUser.observe(this) { user ->
                 // Register the user
                 if (user != null) {
-                    if (user.pinHash != null) {
-                        isPinAuthorized(user)
-                    } else {
-                        registerUserPin()
+                    when {
+                        user.userStatus != "Y" -> {
+                            onFailure(getString(R.string.user_blocked, user.userName))
+                            binding.pinField.isEnabled = false
+                        }
+                        user.pinHash != null -> {
+                            isPinAuthorized(user)
+                        }
+                        else -> {
+                            registerUserPin()
+                        }
                     }
                 } else {
                     registerUser()
@@ -150,13 +158,14 @@ class LoginActivity : AppCompatActivity(), AuthListener, KodeinAware {
     override fun onBackPressed() {
         doubleBackToExitPressed++
         if (doubleBackToExitPressed == 2) {
-            super.onBackPressed()
-            closeApp()
+            exitApplication()
         } else {
             toast("Please press Back again to exit")
-            Handler(mainLooper).postDelayed({
-                doubleBackToExitPressed = 0
-            }, TWO_SECONDS)
+            if(doubleBackToExitPressed > 0) {
+                Handler(mainLooper).postDelayed({
+                    doubleBackToExitPressed--
+                }, TWO_SECONDS)
+            }
         }
     }
 
@@ -212,6 +221,31 @@ class LoginActivity : AppCompatActivity(), AuthListener, KodeinAware {
         binding.loading.hide()
         hideKeyboard()
         closeApp()
+    }
+
+    override fun startLongRunningTask() {
+        Timber.i("starting task...")
+        hideKeyboard()
+        binding.loading.show()
+        // Make UI untouchable for duration of task
+        window.setFlags(
+            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+        )
+        window.setFlags(
+            WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
+            WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+        )
+    }
+
+    override fun endLongRunningTask() {
+        Timber.i("stopping task...")
+        hideKeyboard()
+        binding.loading.hide()
+
+        // Re-enable UI touches
+        window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+        window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     }
 
     private fun closeApp() {

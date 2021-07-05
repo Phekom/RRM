@@ -24,11 +24,9 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.app.ActionBar
 import androidx.appcompat.app.ActionBarDrawerToggle
-import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.SearchView
 import androidx.core.content.ContextCompat
-import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.GravityCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
@@ -38,26 +36,17 @@ import androidx.navigation.ui.NavigationUI
 import com.google.android.material.navigation.NavigationView
 import com.raygun.raygun4android.RaygunClient
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.kodein
 import org.kodein.di.generic.instance
 import timber.log.Timber
-import www.sanju.motiontoast.MotionToast
-import za.co.xisystems.itis_rrm.constants.Constants.TEN_MINUTES
 import za.co.xisystems.itis_rrm.constants.Constants.TWO_SECONDS
-import za.co.xisystems.itis_rrm.custom.notifications.ColorToast
-import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.databinding.ActivityMainBinding
-import za.co.xisystems.itis_rrm.forge.XIArmoury
-import za.co.xisystems.itis_rrm.ui.auth.LoginActivity
+import za.co.xisystems.itis_rrm.ui.base.BaseActivity
 import za.co.xisystems.itis_rrm.ui.mainview.activities.MainActivityViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.activities.MainActivityViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SettingsActivity
-import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModel
-import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModelFactory
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
@@ -65,15 +54,12 @@ import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.hideKeyboard
 import za.co.xisystems.itis_rrm.utils.toast
 
-class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener,
+class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedListener,
     KodeinAware {
 
     override val kodein by kodein()
     private lateinit var mainActivityViewModel: MainActivityViewModel
     private val factory: MainActivityViewModelFactory by instance()
-    private lateinit var sharedViewModel: SharedViewModel
-    private val shareFactory: SharedViewModelFactory by instance()
-    private val armoury: XIArmoury by instance()
     private lateinit var navController: NavController
     private lateinit var navHostFragment: NavHostFragment
     private var toggle: ActionBarDrawerToggle? = null
@@ -86,10 +72,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private lateinit var lm: LocationManager
     private var gpsEnabled = false
     private var networkEnabled = false
-    private var progressBar: ProgressBar? = null
     private var uiScope = UiLifecycleScope()
     private lateinit var ui: ActivityMainBinding
     private var doubleBackToExitPressed = 0
+    private var progressBar: ProgressBar? = null
     private val appBarConfiguration by lazy {
         AppBarConfiguration(
             setOf(
@@ -146,20 +132,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             RaygunClient.enableCrashReporting()
         }
 
-        // Set MotionToast to use Sanral colours
-        MotionToast.setErrorColor(R.color.sanral_dark_red)
-        MotionToast.setSuccessColor(R.color.sanral_dark_green)
-        MotionToast.setWarningColor(R.color.warning_color)
-        MotionToast.setInfoColor(R.color.dark_slate_gray)
-        MotionToast.setDeleteColor(R.color.dark_slate_gray)
-
-        this.mainActivityViewModel = this.run {
-            ViewModelProvider(this, factory).get(MainActivityViewModel::class.java)
-        }
-
-        this.sharedViewModel = this.run {
-            ViewModelProvider(this, shareFactory).get(SharedViewModel::class.java)
-        }
+        this.mainActivityViewModel = ViewModelProvider(this, factory).get(MainActivityViewModel::class.java)
 
         initializeCountDrawer()
 
@@ -194,31 +167,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             navigationView.menu.findItem(R.id.nav_approveMeasure).actionView as TextView
         badgeEstMeasure =
             navigationView.menu.findItem(R.id.nav_estMeasure).actionView as TextView
+
         progressBar = findViewById(R.id.progressbar)
 
-        sharedViewModel.longRunning.observe(this, {
-            when (it) {
-                true -> this.startLongRunningTask()
-                false -> this.endLongRunningTask()
-            }
-        })
-
-        sharedViewModel.message.observe(this, {
-            toastMessage(it.toString())
-        })
-
-        sharedViewModel.colorMessage.observe(this, {
-            it?.let {
-                toastMessage(it)
-            }
-        })
-
-        sharedViewModel.actionCaption.observe(this@MainActivity, {
-            setCaption(it)
-        })
-
         if (savedInstanceState == null) {
-            armoury.writeFutureTimestamp()
             navController.navigate(R.id.action_global_nav_home)
         }
     }
@@ -268,23 +220,19 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 toggle?.syncState()
             } else {
                 navController
+                doubleBackToExitPressed++
                 if (doubleBackToExitPressed >= 2) {
-                    sharedViewModel.logOut()
-                    finishAffinity()
-                    // Take user back to the Registration screen
-                    Intent(this, LoginActivity::class.java).also { login ->
-                        login.flags =
-                            Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-                        startActivity(login)
-                    }
+                    logoutApplication()
+                    finish()
                 } else {
-                    doubleBackToExitPressed++
                     toast("Please press Back again to exit")
-                }
 
-                Handler(mainLooper).postDelayed({
-                    doubleBackToExitPressed--
-                }, TWO_SECONDS)
+                    if (doubleBackToExitPressed > 0) {
+                        Handler(mainLooper).postDelayed({
+                            doubleBackToExitPressed--
+                        }, TWO_SECONDS)
+                    }
+                }
             }
         }
     }
@@ -328,12 +276,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 true
             }
             R.id.action_logout -> {
-                sharedViewModel.logOut()
-                Intent(this, LoginActivity::class.java).also { home ->
-                    home.flags =
-                        Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-                    startActivity(home)
-                }
+                logoutApplication()
                 true
             }
 
@@ -388,39 +331,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         drawer_layout.closeDrawer(GravityCompat.START)
         return true
-    }
-
-    private fun startLongRunningTask() {
-        Timber.i("starting task...")
-        progressBar?.visibility = View.VISIBLE
-        armoury.writeFutureTimestamp()
-        // Make UI untouchable for duration of big synch
-        window.setFlags(
-            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
-            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
-        )
-        window.setFlags(
-            WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
-            WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
-        )
-    }
-
-    private fun endLongRunningTask() {
-        Timber.i("stopping task...")
-        progressBar?.visibility = View.GONE
-
-        // Re-enable UI touches
-        window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-        window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-    }
-
-    private fun toastMessage(message: String) {
-        ToastUtils().toastShort(applicationContext, message)
-    }
-
-    private fun setCaption(caption: String) {
-        sharedViewModel.originalCaption = supportActionBar?.title.toString()
-        supportActionBar?.title = caption
     }
 
     // Control Menu drawer View Access Based on who is logged in
@@ -548,6 +458,29 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
+    override fun startLongRunningTask() {
+        Timber.i("starting task...")
+        progressBar?.visibility = View.VISIBLE
+        // Make UI untouchable for duration of task
+        window.setFlags(
+            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+        )
+        window.setFlags(
+            WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
+            WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+        )
+    }
+
+    override fun endLongRunningTask() {
+        Timber.i("stopping task...")
+        progressBar?.visibility = View.GONE
+
+        // Re-enable UI touches
+        window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+        window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+    }
+
     // Common routine to create badges
     private fun writeBadge(textView: TextView?, tasks: Int = 0) {
         if (tasks == 0) {
@@ -562,20 +495,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
-    private fun toastMessage(
-        colorToast: ColorToast
-    ) {
-        MotionToast.createColorToast(
-            context = this,
-            title = colorToast.title,
-            message = colorToast.message,
-            style = colorToast.style.getValue(),
-            position = colorToast.gravity.getValue(),
-            duration = colorToast.duration.getValue(),
-            font = ResourcesCompat.getFont(this, R.font.helvetica_regular)
-        )
-    }
-
     @Suppress("ControlFlowWithEmptyBody")
     override fun onResume() {
         super.onResume()
@@ -585,51 +504,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             // initializeCountDrawer()
             // refreshData()
         }
-        checkTimeout()
-    }
-
-    private fun checkTimeout() {
-        val timeInMillis = System.currentTimeMillis()
-        val timeDiff = timeInMillis - armoury.getTimestamp()
-        Timber.d("TimeDiff: $timeDiff")
-        if (timeDiff >= TEN_MINUTES && !sharedViewModel.takingPhotos && progressBar?.visibility == View.GONE) {
-            closeAppAndReturnToLogin()
-        }
-    }
-
-    private fun closeAppAndReturnToLogin() {
-        Coroutines.main {
-            sharedViewModel.logOut()
-            withContext(Dispatchers.Main.immediate) {
-                Intent(this@MainActivity, LoginActivity::class.java).also { login ->
-                    login.flags =
-                        Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-                    startActivity(login)
-                }
-                finish()
-            }
-        }
-    }
-
-    override fun onPause() {
-        super.onPause()
-        armoury.writeFutureTimestamp()
-    }
-
-    override fun onStop() {
-        super.onStop()
-        checkTimeout()
     }
 
     override fun onDestroy() {
         super.onDestroy()
         uiScope.destroy()
-        checkTimeout()
-    }
-
-    override fun onUserInteraction() {
-        Timber.d("User interaction!!")
-        super.onUserInteraction()
-        armoury.writeFutureTimestamp()
     }
 }
