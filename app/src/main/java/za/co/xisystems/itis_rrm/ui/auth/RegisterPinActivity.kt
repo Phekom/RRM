@@ -71,11 +71,11 @@ class RegisterPinActivity : AppCompatActivity(), AuthListener, KodeinAware {
             val loggedInUser = viewModel.user.await()
             loggedInUser.observe(this, { user ->
                 // Register the user
-                if (user?.pinHash != null && user.authd) {
-                    Intent(this, MainActivity::class.java).also { home ->
-                        home.flags =
+                if (user?.pinHash != null) {
+                    Intent(this, LoginActivity::class.java).also { login ->
+                        login.flags =
                             Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-                        startActivity(home)
+                        startActivity(login)
                     }
                 }
             })

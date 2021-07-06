@@ -1,4 +1,3 @@
-
 package za.co.xisystems.itis_rrm.data.repositories
 
 import android.os.Looper
@@ -29,6 +28,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.SectionItemDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.SectionPointDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.WorkflowJobDTO
+import za.co.xisystems.itis_rrm.data.localDB.views.SectionMarker
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
 import za.co.xisystems.itis_rrm.data.network.responses.UploadImageResponse
@@ -586,6 +586,30 @@ class JobCreationDataRepository(
     suspend fun getContractNoForId(contractVoId: String?): String {
         return withContext(Dispatchers.IO) {
             appDb.getContractDao().getContractNoForId(contractVoId)
+        }
+    }
+
+    suspend fun findRealSectionStartKm(
+        projectSectionDTO: ProjectSectionDTO,
+        pointLocation: Double
+    ): SectionMarker {
+        val data = appDb.getProjectSectionDao().findRealSectionStartKm(
+            projectSectionDTO.route,
+            pointLocation
+        )
+
+        return data ?: SectionMarker("Start", 0.0)
+    }
+
+    suspend fun findRealSectionEndKm(
+        projectSectionDTO: ProjectSectionDTO,
+        pointLocation: Double
+    ): SectionMarker {
+        return withContext(Dispatchers.Default) {
+            appDb.getProjectSectionDao().findRealSectionEndKm(
+                projectSectionDTO.route,
+                pointLocation
+            )
         }
     }
 

@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectSectionDTO
+import za.co.xisystems.itis_rrm.data.localDB.views.SectionMarker
 
 /**
  * Created by Francis Mahlava on 2019/11/21.
@@ -23,7 +24,9 @@ interface ProjectSectionDao {
     @Query("SELECT * FROM PROJECT_SECTION_TABLE WHERE section = :section AND projectId LIKE :projectId")
     fun checkSectionNewExists(section: Int, projectId: String?): Boolean
 
-    @Query("INSERT INTO PROJECT_SECTION_TABLE (sectionId, route ,section ,startKm ,  endKm ,direction ,projectId ) VALUES (:sectionId ,:route ,:section ,:startKm ,:endKm ,:direction ,:projectId)")
+    @Query("INSERT INTO PROJECT_SECTION_TABLE " +
+        "(sectionId, route ,section ,startKm ,  endKm ,direction ,projectId )" +
+        " VALUES (:sectionId ,:route ,:section ,:startKm ,:endKm ,:direction ,:projectId)")
     fun insertSection(
         sectionId: String,
         route: String,
@@ -33,6 +36,22 @@ interface ProjectSectionDao {
         direction: String?,
         projectId: String
     ): Long
+
+    @Query("SELECT sectionId, " +
+        ":kmMarker - (endKm + 0.0001) as pointLocation FROM PROJECT_SECTION_TABLE " +
+        "WHERE route = :route AND pointLocation > 0 ORDER BY pointLocation LIMIT 1")
+    suspend fun findRealSectionStartKm(
+        route: String,
+        kmMarker: Double
+    ): SectionMarker?
+
+    @Query("SELECT sectionId, endKm as pointLocation " +
+        "FROM PROJECT_SECTION_TABLE WHERE route = :route AND endKm - :kmMarker > 0 " +
+        "ORDER BY (endkm - :kmMarker) LIMIT 1")
+    suspend fun findRealSectionEndKm(
+        route: String,
+        kmMarker: Double
+    ): SectionMarker
 
     @Query("UPDATE PROJECT_SECTION_TABLE SET direction =:direction WHERE projectId = :projectId")
     fun updateSectionDirection(direction: String?, projectId: String?): Int
@@ -48,7 +67,7 @@ interface ProjectSectionDao {
 
     @Query("SELECT sectionId FROM PROJECT_SECTION_TABLE " +
         "WHERE section = :section  AND route = :linearId AND projectId = :projectId " +
-        "AND cast(:pointLocation as real) <= endKm " +
+        "AND :pointLocation BETWEEN startKm AND endKm " +
         "ORDER BY endKm LIMIT 1"
     )
     fun getSectionByRouteSectionProject(

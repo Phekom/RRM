@@ -186,7 +186,7 @@ class HomeFragment : BaseFragment(), KodeinAware {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         uiScope.onCreate()
-
+        homeViewModel = ViewModelProvider(this, factory).get(HomeViewModel::class.java)
         setHasOptionsMenu(true)
     }
 

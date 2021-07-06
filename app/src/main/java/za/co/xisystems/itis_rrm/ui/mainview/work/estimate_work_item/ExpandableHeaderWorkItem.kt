@@ -30,9 +30,12 @@ class ExpandableHeaderWorkItem(
             appListID.text = getItemId(position + 1).toString()
             icon.apply {
                 visibility = View.VISIBLE
-                setImageResource(if (expandableGroup.isExpanded) R.drawable.collapse else R.drawable.expand)
+                if (expandableGroup.isExpanded) {
+                    setImageResource(R.drawable.collapse)
+                } else {
+                    setImageResource(R.drawable.expand)
+                }
                 setOnClickListener {
-
                     bindIcon(viewHolder)
                     expandableGroup.onToggleExpanded()
                     onExpandListener?.invoke(expandableGroup)

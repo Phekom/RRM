@@ -26,7 +26,9 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
@@ -53,6 +55,7 @@ import za.co.xisystems.itis_rrm.ui.extensions.showZoomedImage
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModelFactory
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
+import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DateUtil
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
@@ -303,10 +306,14 @@ class CaptureItemMeasurePhotoFragment :
         ActivityResultContracts.TakePicture()
     ) { isSaved ->
         if (isSaved) {
-            val photo = saveImage()
-            photo?.let { it ->
-                jobItemMeasurePhotoArrayList.add(it)
-                processAndSetImage()
+            Coroutines.io {
+                val photo = saveImage()
+                photo?.let { it ->
+                    withContext(Dispatchers.Main.immediate) {
+                        jobItemMeasurePhotoArrayList.add(it)
+                        processAndSetImage()
+                    }
+                }
             }
         } else {
             photoUtil.deleteImageFile(filenamePath.toString())

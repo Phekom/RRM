@@ -52,7 +52,7 @@ class ApproveMeasureViewModel(
 ) : AndroidViewModel(application) {
 
     val offlineUserTaskList by lazyDeferred {
-        offlineDataRepository.getUserTaskList()
+        offlineDataRepository.getUserTaskList().distinctUntilChanged()
     }
 
     val user by lazyDeferred {
@@ -167,7 +167,9 @@ class ApproveMeasureViewModel(
 
                 // workflowState.postValue(XISuccess("WORK_COMPLETE"))
             } catch (t: Throwable) {
-                workflowState.postValue(XIError(t, t.message ?: UNKNOWN_ERROR))
+                withContext(contextMain) {
+                    workflowState.postValue(XIError(t, t.message ?: UNKNOWN_ERROR))
+                }
             }
         }
     }

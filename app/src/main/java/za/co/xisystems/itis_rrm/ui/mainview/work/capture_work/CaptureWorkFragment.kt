@@ -351,11 +351,10 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
                     if (result.data == "WORK_COMPLETE") {
                         popViewOnJobSubmit(WorkflowDirection.NEXT.value)
                     }
-                    this@CaptureWorkFragment.toggleLongRunning(false)
-
+                    toggleLongRunning(false)
                 }
                 is XIError -> {
-                    this@CaptureWorkFragment.toggleLongRunning(false)
+                    toggleLongRunning(false)
                     ui.moveWorkflowButton.failProgress("Job submission failed")
                     crashGuard(
                         view = this.requireView(),
@@ -373,10 +372,14 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
                 is XIProgress -> {
                     when (result.isLoading) {
                         true -> {
+                            toggleLongRunning(true)
                             ui.moveWorkflowButton.initProgress(viewLifecycleOwner)
                             ui.moveWorkflowButton.startProgress(ui.moveWorkflowButton.text.toString())
                         }
-                        else -> ui.moveWorkflowButton.doneProgress(ui.moveWorkflowButton.text.toString())
+                        else -> {
+                            toggleLongRunning(false)
+                            ui.moveWorkflowButton.doneProgress(ui.moveWorkflowButton.text.toString())
+                        }
                     }
                 }
                 else -> Timber.d("$result")
@@ -391,11 +394,8 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
         outcome?.let { result ->
             when (result) {
                 is XISuccess -> {
-                    when (result.data == "WORK_COMPLETE") {
+                    when (result.data != "WORK_COMPLETE") {
                         true -> {
-                            popViewOnJobSubmit(WorkflowDirection.NEXT.value)
-                        }
-                        else -> {
                             sharpToast(
                                 message = "Work captured",
                                 style = ToastStyle.SUCCESS,
@@ -404,9 +404,9 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
                             )
                             ui.moveWorkflowButton.doneProgress("Workflow complete")
                             refreshView()
+                            toggleLongRunning(false)
                         }
                     }
-                    this@CaptureWorkFragment.toggleLongRunning(false)
                 }
                 is XIError -> {
                     this@CaptureWorkFragment.toggleLongRunning(false)

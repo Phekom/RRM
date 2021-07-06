@@ -105,7 +105,7 @@ import za.co.xisystems.itis_rrm.utils.DatetimeConverters
     ],
     views = [ContractSelectorView::class],
     exportSchema = true,
-    version = 19
+    version = 20
 )
 
 @TypeConverters(Converters::class, DatetimeConverters::class)
