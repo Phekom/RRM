@@ -40,6 +40,7 @@ import za.co.xisystems.itis_rrm.extensions.exitApplication
 import za.co.xisystems.itis_rrm.forge.XIArmoury
 import za.co.xisystems.itis_rrm.logging.LameCrashLibrary
 import za.co.xisystems.itis_rrm.ui.auth.model.AuthViewModelFactory
+import za.co.xisystems.itis_rrm.ui.base.BaseActivity
 import za.co.xisystems.itis_rrm.ui.mainview.activities.LocationViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.activities.MainActivityViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SettingsViewModelFactory
@@ -141,7 +142,7 @@ open class MainApp : Application(), KodeinAware {
             override fun onActivityStarted(p0: Activity) {
                 if (++activityReferences == 1 && !isActivityChangingConfigurations) {
                     // Application has entered foreground
-                    toast("App in foreground.")
+                    Timber.d("App in foreground.")
                 }
             }
 
@@ -157,7 +158,11 @@ open class MainApp : Application(), KodeinAware {
                 // Count activity references
                 isActivityChangingConfigurations = p0.isChangingConfigurations
                 if (--activityReferences == 0 && !isActivityChangingConfigurations) {
-                    exitApplication()
+                    Timber.d("App in background.")
+                    when (p0 is BaseActivity && p0.takingPhotos) {
+                        true -> Timber.i("Taking photographs")
+                        else -> exitApplication()
+                    }
                 }
             }
 
