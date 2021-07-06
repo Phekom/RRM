@@ -37,6 +37,7 @@ import androidx.lifecycle.whenStarted
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.navArgs
 import com.airbnb.lottie.LottieAnimationView
+import kotlinx.android.synthetic.main.item_header.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
@@ -1108,16 +1109,25 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
         section: ProjectSectionDTO,
         isStart: Boolean,
         textView: TextView,
-        animate: Boolean
+        animate: Boolean,
     ) {
         val direction = section.direction
         if (direction != null) {
 
             Coroutines.main {
                 withContext(Dispatchers.Main.immediate) {
-
-                    textView.text = getRealSection(isStart, section, pointLocation!!)
-                    if (animate) textView.startAnimation(animations?.bounce_long)
+                    if (pointLocation != null) {
+                        textView.text = getRealSection(isStart, section, pointLocation!!)
+                        if (animate) textView.startAnimation(animations?.bounce_long)
+                    } else {
+                        sharpToast(
+                            title = "Estimates",
+                            "No km marker reading for this photograph. Please retake it.",
+                            style = ERROR,
+                            duration = LONG,
+                            position = BOTTOM
+                        )
+                    }
                 }
             }
         }

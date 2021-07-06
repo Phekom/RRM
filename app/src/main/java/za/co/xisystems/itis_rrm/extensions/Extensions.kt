@@ -3,14 +3,13 @@ package za.co.xisystems.itis_rrm.extensions
 import android.content.Context
 import android.content.Intent
 import android.location.Location
-import android.os.Process.myPid
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
-import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import com.google.android.material.appbar.CollapsingToolbarLayout
+import za.co.xisystems.itis_rrm.R
 
 /**
  * Created by Shaun McDonald on 2020/06/05.
@@ -65,5 +64,22 @@ fun Context.exitApplication() {
         val intent = Intent(Intent.ACTION_MAIN)
         intent.addCategory(Intent.CATEGORY_HOME)
         this.startActivity(intent)
+    }
+}
+
+fun Context.uomForUI(uom: String): String {
+    return when (uom.lowercase()) {
+        "m2" -> {
+            this.getString(R.string.uom_m2)
+        }
+        "m3" -> {
+            this.getString(R.string.uom_m3)
+        }
+        "hour" -> {
+            this.getString(R.string.uom_hour)
+        }
+        else -> {
+            "per ${uom.lowercase()}"
+        }
     }
 }
