@@ -36,7 +36,7 @@ import za.co.xisystems.itis_rrm.data.repositories.MeasureCreationDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
 import za.co.xisystems.itis_rrm.data.repositories.WorkDataRepository
-import za.co.xisystems.itis_rrm.extensions.logoutApplication
+import za.co.xisystems.itis_rrm.extensions.exitApplication
 import za.co.xisystems.itis_rrm.forge.XIArmoury
 import za.co.xisystems.itis_rrm.logging.LameCrashLibrary
 import za.co.xisystems.itis_rrm.ui.auth.model.AuthViewModelFactory
@@ -157,7 +157,7 @@ open class MainApp : Application(), KodeinAware {
                 // Count activity references
                 isActivityChangingConfigurations = p0.isChangingConfigurations
                 if (--activityReferences == 0 && !isActivityChangingConfigurations) {
-                    p0.logoutApplication()
+                    exitApplication()
                 }
             }
 

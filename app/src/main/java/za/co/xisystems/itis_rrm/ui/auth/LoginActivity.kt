@@ -80,7 +80,7 @@ class LoginActivity : BaseActivity(), AuthListener, KodeinAware {
                             binding.pinField.isEnabled = false
                         }
                         user.pinHash != null -> {
-                            isPinAuthorized(user)
+                            authorizeUser(user)
                         }
                         else -> {
                             registerUserPin()
@@ -106,15 +106,8 @@ class LoginActivity : BaseActivity(), AuthListener, KodeinAware {
         reset()
     }
 
-    private fun isPinAuthorized(user: UserDTO) {
-        when (user.authd) {
-            true -> {
-                gotoMainActivity()
-            }
-            else -> {
-                binding.usernameTextView.text = user.userName
-            }
-        }
+    private fun authorizeUser(user: UserDTO) {
+        binding.usernameTextView.text = user.userName
     }
 
     private fun registerUser() {
@@ -161,7 +154,7 @@ class LoginActivity : BaseActivity(), AuthListener, KodeinAware {
             exitApplication()
         } else {
             toast("Please press Back again to exit")
-            if(doubleBackToExitPressed > 0) {
+            if (doubleBackToExitPressed > 0) {
                 Handler(mainLooper).postDelayed({
                     doubleBackToExitPressed--
                 }, TWO_SECONDS)

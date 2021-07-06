@@ -19,7 +19,6 @@ import kotlinx.android.synthetic.main.activity_register.*
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.kodein
 import org.kodein.di.generic.instance
-import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
@@ -84,7 +83,7 @@ class RegisterActivity : AppCompatActivity(), AuthListener, KodeinAware {
                             }
                         }
                         else -> {
-                            checkPinAuth(user)
+                            authorizeUser()
                         }
                     }
                 }
@@ -100,19 +99,11 @@ class RegisterActivity : AppCompatActivity(), AuthListener, KodeinAware {
         isOnline()
     }
 
-    private fun checkPinAuth(user: UserDTO) {
-        if (user.authd) {
-            Intent(this, MainActivity::class.java).also { main ->
-                main.flags =
-                    Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-                startActivity(main)
-            }
-        } else {
-            Intent(this, LoginActivity::class.java).also { login ->
-                login.flags =
-                    Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-                startActivity(login)
-            }
+    private fun authorizeUser() {
+        Intent(this, LoginActivity::class.java).also { login ->
+            login.flags =
+                Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+            startActivity(login)
         }
     }
 

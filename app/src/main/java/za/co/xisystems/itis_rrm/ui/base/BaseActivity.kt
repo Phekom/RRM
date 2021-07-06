@@ -29,7 +29,6 @@ abstract class BaseActivity : AppCompatActivity(), KodeinAware {
     private val shareFactory: SharedViewModelFactory by instance()
     private val armoury: XIArmoury by instance()
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -67,7 +66,6 @@ abstract class BaseActivity : AppCompatActivity(), KodeinAware {
             setCaption(it)
         })
 
-
         if (savedInstanceState == null) {
             armoury.writeFutureTimestamp()
         }
@@ -96,7 +94,8 @@ abstract class BaseActivity : AppCompatActivity(), KodeinAware {
         val timeDiff = timeInMillis - armoury.getTimestamp()
         Timber.d("TimeDiff: $timeDiff")
         if (timeDiff >= Constants.TEN_MINUTES &&
-            !sharedViewModel.takingPhotos) {
+            !sharedViewModel.takingPhotos
+        ) {
             logoutApplication()
         }
     }
