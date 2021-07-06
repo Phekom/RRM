@@ -26,7 +26,6 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/measure_item_description_textView"
         android:layout_alignParentStart="true"
-
         android:maxWidth="160dp"
         android:layout_marginStart="10dp"
         android:text="@string/qty_123"
@@ -38,7 +37,6 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/measure_item_quantity_textView"
         android:layout_alignParentStart="true"
-
         android:maxWidth="160dp"
         android:layout_marginStart="10dp"
         android:hint="UOM"

@@ -36,6 +36,7 @@ import za.co.xisystems.itis_rrm.data.repositories.MeasureCreationDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
 import za.co.xisystems.itis_rrm.data.repositories.WorkDataRepository
+import za.co.xisystems.itis_rrm.extensions.exitApplication
 import za.co.xisystems.itis_rrm.forge.XIArmoury
 import za.co.xisystems.itis_rrm.logging.LameCrashLibrary
 import za.co.xisystems.itis_rrm.ui.auth.model.AuthViewModelFactory
@@ -53,6 +54,7 @@ import za.co.xisystems.itis_rrm.ui.mainview.home.HomeViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModelFactory
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
+import za.co.xisystems.itis_rrm.utils.toast
 
 /**
  * Created by Francis Mahlava on 2019/10/23.
@@ -60,6 +62,8 @@ import za.co.xisystems.itis_rrm.utils.PhotoUtil
 
 open class MainApp : Application(), KodeinAware {
 
+    private var activityReferences = 0
+    private var isActivityChangingConfigurations = false
     override val kodein = Kodein.lazy {
 
         import(androidXModule(this@MainApp))
@@ -135,7 +139,10 @@ open class MainApp : Application(), KodeinAware {
             }
 
             override fun onActivityStarted(p0: Activity) {
-                // Not interested in this
+                if (++activityReferences == 1 && !isActivityChangingConfigurations) {
+                    // Application has entered foreground
+                    toast("App in foreground.")
+                }
             }
 
             override fun onActivityResumed(p0: Activity) {
@@ -147,7 +154,11 @@ open class MainApp : Application(), KodeinAware {
             }
 
             override fun onActivityStopped(p0: Activity) {
-                // Not interested in this
+                // Count activity references
+                isActivityChangingConfigurations = p0.isChangingConfigurations
+                if (--activityReferences == 0 && !isActivityChangingConfigurations) {
+                    exitApplication()
+                }
             }
 
             override fun onActivitySaveInstanceState(p0: Activity, p1: Bundle) {

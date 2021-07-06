@@ -107,6 +107,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
     private var endKm: Double? = null
     private var disableGlide: Boolean = false
     private var locationWarning: Boolean = false
+    private var pointLocation: Double? = null
 
     private var _ui: FragmentPhotoEstimateBinding? = null
     private val ui get() = _ui!!
@@ -114,7 +115,6 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
     private var photoType: PhotoType = PhotoType.START
 
     private var itemIdPhotoType: HashMap<String, String> = HashMap()
-    internal var job: JobDTO? = null
 
     private var filenamePath: HashMap<String, String> = HashMap()
 
@@ -146,6 +146,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
     private var imageUri: Uri? = null
     private val uiScope = UiLifecycleScope()
     private lateinit var photoUtil: PhotoUtil
+
     init {
         System.setProperty("kotlinx.coroutines.debug", if (BuildConfig.DEBUG) "on" else "off")
         lifecycleScope.launch {
@@ -423,8 +424,8 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
 
             createViewModel.updateNewJob(
                 newJob!!.jobId,
-                startKm!!,
-                endKm!!,
+                newJob!!.startKm,
+                newJob?.endKm!!,
                 newJob?.sectionId!!,
                 newJob?.jobItemEstimates!!,
                 newJob?.jobSections!!
@@ -590,45 +591,48 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
         // newJobDTO: JobDTO?,
         // estimate: JobItemEstimateDTO?
     ) {
+        Coroutines.main {
+            try { //  Location of picture
+                val estimateLocation: LocationModel? = this.getCurrentLocation()
+                Timber.d("$estimateLocation")
+                if (estimateLocation != null) {
 
-        try { //  Location of picture
-            val estimateLocation: LocationModel? = this.getCurrentLocation()
-            Timber.d("$estimateLocation")
-            if (estimateLocation != null) {
+                    //  Save Image to Internal Storage
+                    withContext(Dispatchers.IO) {
+                        filenamePath = photoUtil.saveImageToInternalStorage(
+                            imageUri!!
+                        ) as HashMap<String, String>
+                    }
 
-                //  Save Image to Internal Storage
-                filenamePath = photoUtil.saveImageToInternalStorage(
-                    imageUri!!
-                ) as HashMap<String, String>
-
-                processPhotoEstimate(
-                    estimateLocation = estimateLocation,
-                    filePath = filenamePath,
-                    itemidPhototype = itemIdPhotoType
-                )
-
-                when (photoType) {
-                    PhotoType.START -> updatePhotos(
-                        imageUri = imageUri.also { startImageUri = it },
-                        animate = true,
-                        textView = ui.startSectionTextView,
-                        isStart = true
+                    processPhotoEstimate(
+                        estimateLocation = estimateLocation,
+                        filePath = filenamePath,
+                        itemidPhototype = itemIdPhotoType
                     )
 
-                    PhotoType.END -> updatePhotos(
-                        imageUri = imageUri.also { endImageUri = it },
-                        animate = true,
-                        textView = ui.endSectionTextView,
-                        isStart = false
-                    )
+                    when (photoType) {
+                        PhotoType.START -> updatePhotos(
+                            imageUri = imageUri.also { startImageUri = it },
+                            animate = true,
+                            textView = ui.startSectionTextView,
+                            isStart = true
+                        )
+
+                        PhotoType.END -> updatePhotos(
+                            imageUri = imageUri.also { endImageUri = it },
+                            animate = true,
+                            textView = ui.endSectionTextView,
+                            isStart = false
+                        )
+                    }
+                } else {
+                    toast("Error: Current location is null!")
                 }
-            } else {
-                toast("Error: Current location is null!")
+            } catch (e: Exception) {
+                toast(R.string.error_getting_image)
+                Timber.e(e)
+                throw e
             }
-        } catch (e: Exception) {
-            toast(R.string.error_getting_image)
-            Timber.e(e)
-            throw e
         }
     }
 
@@ -858,9 +862,12 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
                 itemIdPhotoType = itemidPhototype,
                 pointLocation = sectionPointData.pointLocation
             )
+
             this@EstimatePhotoFragment.newJobItemEstimate!!.setJobItemEstimatePhoto(
                 photo
             )
+
+            pointLocation = sectionPointData.pointLocation
 
             this@EstimatePhotoFragment.disableGlide = false
 
@@ -1058,22 +1065,24 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
     ) {
         Coroutines.main {
             try {
-                createViewModel.sectionId.observe(viewLifecycleOwner, { sectId ->
-                    Coroutines.main {
-                        val section = createViewModel.getSection(sectId)
-                        section.observe(viewLifecycleOwner, { projectSectionDTO ->
-                            if (projectSectionDTO != null) {
+                withContext(Dispatchers.Main) {
+                    createViewModel.sectionId.observe(viewLifecycleOwner, { sectId ->
+                        Coroutines.main {
+                            val section = createViewModel.getSection(sectId)
 
-                                captionEstimateItemPhoto(
-                                    projectSectionDTO,
-                                    isStart,
-                                    textView,
-                                    animate
-                                )
-                            }
-                        })
-                    }
-                })
+                            section.observe(viewLifecycleOwner, { projectSectionDTO ->
+                                if (projectSectionDTO != null) {
+                                    captionEstimateItemPhoto(
+                                        projectSectionDTO,
+                                        isStart,
+                                        textView,
+                                        animate
+                                    )
+                                }
+                            })
+                        }
+                    })
+                }
             } catch (t: Throwable) {
                 val secErr = XIError(t, "Failed to caption photo: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}")
                 Timber.e(t, secErr.message)
@@ -1101,16 +1110,34 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
         textView: TextView,
         animate: Boolean
     ) {
-
         val direction = section.direction
         if (direction != null) {
 
-            val sectionText =
-                section.route + " " + section.section + " " + section.direction + " " +
-                    if (isStart) section.startKm else section.endKm
+            Coroutines.main {
+                withContext(Dispatchers.Main.immediate) {
 
-            textView.text = sectionText
-            if (animate) textView.startAnimation(animations?.bounce_long)
+                    textView.text = getRealSection(isStart, section, pointLocation!!)
+                    if (animate) textView.startAnimation(animations?.bounce_long)
+                }
+            }
+        }
+    }
+
+    private suspend fun getRealSection(
+        isStart: Boolean,
+        section: ProjectSectionDTO,
+        pointLocation: Double
+    ): String {
+        val sectionText =
+            section.route + " " + section.section + " " + section.direction + " "
+
+        return when (isStart) {
+            true -> {
+                "$sectionText ${createViewModel.getRealSectionStartKm(section, pointLocation)}"
+            }
+            else -> {
+                "$sectionText ${createViewModel.getRealSectionEndKm(section, pointLocation)}"
+            }
         }
     }
 

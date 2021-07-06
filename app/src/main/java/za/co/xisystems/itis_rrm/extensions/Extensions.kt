@@ -1,11 +1,14 @@
 package za.co.xisystems.itis_rrm.extensions
 
+import android.content.Context
+import android.content.Intent
 import android.location.Location
+import android.os.Process.myPid
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.Observer
 import com.google.android.material.appbar.CollapsingToolbarLayout
 
@@ -54,5 +57,13 @@ fun Location?.toText(): String {
         "($latitude, $longitude)"
     } else {
         "Unknown location"
+    }
+}
+
+fun Context.exitApplication() {
+    this.run {
+        val intent = Intent(Intent.ACTION_MAIN)
+        intent.addCategory(Intent.CATEGORY_HOME)
+        this.startActivity(intent)
     }
 }
