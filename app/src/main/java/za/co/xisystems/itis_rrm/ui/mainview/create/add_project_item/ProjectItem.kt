@@ -56,7 +56,7 @@ open class ProjectItem(
                 val tenderRate: Double = itemDesc.tenderRate
                 val qty: Double = jobItemEstimate.qty
                 costTextView.text =
-                    ("$qty  *   R $tenderRate = " + JobUtils.formatCost(lineRate))
+                    ("$qty  *   R $lineRate = ${JobUtils.formatCost(qty * lineRate)}")
                 subTextView.visibility = View.GONE
             } else {
                 costTextView.text = viewHolder.itemView.context.getString(string.incomplete_estimate)
@@ -76,6 +76,7 @@ open class ProjectItem(
             }
             it.isLongClickable
         }
+
     }
 
     private fun sendSelectedItem(
@@ -152,4 +153,9 @@ open class ProjectItem(
         val deleteAlert = itemDeleteBuilder.create()
         deleteAlert.show()
     }
+
+
+
+
+
 }
