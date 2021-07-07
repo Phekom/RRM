@@ -41,7 +41,7 @@ import timber.log.Timber
 import za.co.xisystems.itis_rrm.BuildConfig
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
-import za.co.xisystems.itis_rrm.constants.Constants.ONE_SECOND
+import za.co.xisystems.itis_rrm.constants.Constants.TWO_SECONDS
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.results.XIError
 import za.co.xisystems.itis_rrm.custom.results.XIProgress
@@ -298,7 +298,7 @@ class HomeFragment : BaseFragment(), KodeinAware {
             progressView.labelText = completionMessage
             Handler(Looper.getMainLooper()).postDelayed({
                 progressView.visibility = View.GONE
-            }, ONE_SECOND)
+            }, TWO_SECONDS)
         }
     }
 
