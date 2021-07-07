@@ -119,6 +119,7 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
                     )
                 }
                 is XIProgress -> {
+                    toggleLongRunning(result.isLoading)
                     when (result.isLoading) {
                         true -> {
                             progressButton.startProgress("Submitting ...")
