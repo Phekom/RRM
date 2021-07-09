@@ -29,6 +29,8 @@ abstract class BaseActivity : AppCompatActivity(), KodeinAware {
     private val shareFactory: SharedViewModelFactory by instance()
     private val armoury: XIArmoury by instance()
 
+    val takingPhotos get() = sharedViewModel.takingPhotos
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 

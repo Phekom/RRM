@@ -153,6 +153,24 @@
 
     <!-- Exception Strings -->
 
+    <!-- UOM translations-->
+    <string name="uom_quantity">each</string>
+    <string name="uom_m2">Area(m²)</string>
+    <string name="uom_m3">Volume(m³)</string>
+    <string name="uom_amount">each</string>
+    <string name="uom_length_m">Length(m)</string>
+    <string name="uom_m3_km">m³ per km</string>
+    <string name="uom_kg">kg</string>
+    <string name="uom_t">ton</string>
+    <string name="uom_hour">per hour</string>
+    <string name="uom_prov_sum">provisional sum</string>
+    <string name="uom_lump_sum">lump sum</string>
+    <string name="uom_l">per liter</string>
+    <string name="uom_km">per km</string>
+    <string name="uom_kl">per kiloliter</string>
+    <string name="uom_ha">per hectare</string>
+    <string name="uom_percentage">%</string>
+
     <!-- Estimate Photo Gallery Fragment -->
     <string name="label_quantity">Quantity</string>
     <string name="label_area_m2">Area(m²): </string>

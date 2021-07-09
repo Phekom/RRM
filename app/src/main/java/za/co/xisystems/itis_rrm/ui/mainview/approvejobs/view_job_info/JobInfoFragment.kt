@@ -119,6 +119,7 @@ class JobInfoFragment : BaseFragment(), KodeinAware {
                 sharpToast(result.message)
             }
             is XIProgress -> {
+                toggleLongRunning(result.isLoading)
                 when (result.isLoading) {
                     true -> {
                         activity?.hideKeyboard()
