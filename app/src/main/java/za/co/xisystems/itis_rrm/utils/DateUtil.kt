@@ -6,13 +6,13 @@
 
 package za.co.xisystems.itis_rrm.utils
 
+import timber.log.Timber
 import java.text.DateFormat
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
-import timber.log.Timber
 
 /**
  * Created by Mauritz Mollentze on 2014/12/19.
@@ -24,7 +24,7 @@ object DateUtil {
     private val iso8601Format: DateFormat =
         SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.ROOT)
 
-    private val readableDateForm: DateFormat = SimpleDateFormat("dd MMMM yyyy", Locale.ROOT)
+    private val readableDateForm: DateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.ROOT)
 
     fun stringToDate(stringDate: String?): Date? {
         return if (null == stringDate) null else try {

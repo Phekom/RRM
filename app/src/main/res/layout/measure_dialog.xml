@@ -19,12 +19,12 @@
 
     <EditText
         android:id="@+id/new_qty"
-        android:layout_width="297dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:inputType="numberDecimal"
+        android:inputType="numberSigned|numberDecimal"
         android:textAppearance="?android:attr/textAppearanceSmall"
-        android:textColor="@android:color/black"
+        android:textColor="@color/primaryTextColor"
         android:importantForAutofill="no"/>
 
 

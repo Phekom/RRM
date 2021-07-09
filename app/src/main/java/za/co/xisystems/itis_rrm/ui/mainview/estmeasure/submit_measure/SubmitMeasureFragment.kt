@@ -117,10 +117,13 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
                         style = ToastStyle.SUCCESS
                     )
                     progressButton.doneProgress(originalCaption)
+                    toggleLongRunning(false)
                     jobItemMeasureList.clear()
                     popViewOnJobSubmit()
                 }
                 is XIError -> {
+                    toggleLongRunning(false)
+
                     progressButton.failProgress("Workflow failed ...")
                     measureJob?.cancel(CancellationException(outcome.message))
 
@@ -143,6 +146,7 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
                 }
 
                 is XIProgress -> {
+                    toggleLongRunning(outcome.isLoading)
                     when (outcome.isLoading) {
                         true -> {
                             progressButton.initProgress(viewLifecycleOwner)
@@ -199,9 +203,7 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
                 progressButton = ui.submitMeasurementsButton
                 originalCaption = ui.submitMeasurementsButton.text.toString()
                 progressButton.initProgress(viewLifecycleOwner)
-                submitMeasurements(
-                    jobItemEstimate.jobId
-                )
+                measurementPrompt(jobForItemEstimate.jobId)
             }
 
             ui.itemsSwipeToRefresh.setProgressBackgroundColorSchemeColor(
@@ -222,6 +224,41 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
                         })
                 }
             }
+        }
+    }
+
+    private fun measurementPrompt(jobId: String) {
+        val workflowDialog = AlertDialog.Builder(
+            requireActivity() // , android.R.style.Theme_DeviceDefault_Dialog
+        )
+        workflowDialog.run {
+            setTitle(R.string.confirm)
+            setIcon(R.drawable.ic_approve)
+            setMessage(R.string.are_you_sure_you_want_to_submit_measurements)
+            // Yes button
+            setPositiveButton(R.string.yes) { _, _ ->
+                if (ServiceUtil.isNetworkAvailable(requireContext().applicationContext)) {
+                    toggleLongRunning(true)
+                    submitMeasurements(jobId)
+                } else {
+                    sharpToast(
+                        message = getString(R.string.no_connection_detected),
+                        style = NO_INTERNET,
+                        position = ToastGravity.CENTER
+                    )
+                    progressButton.failProgress(originalCaption)
+                }
+            }
+            // No button
+            setNegativeButton(
+                R.string.no
+            ) { dialog, _ ->
+                // Do nothing but close dialog
+                dialog.dismiss()
+                progressButton.doneProgress(originalCaption)
+            }
+            create()
+            show()
         }
     }
 
@@ -252,7 +289,7 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
                         val newJim = setJobMeasureLittleEndianGuids(jim)
                         jobItemMeasureList.add(newJim)
                     }
-                    submitJobToMeasurements(jobForItemEstimate, jobItemMeasureList)
+                    submitMeasures(jobForItemEstimate, jobItemMeasureList)
                 }
             })
         }
@@ -266,45 +303,6 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
                 submitMeasurements(jobId)
             }
         })
-    }
-
-    private fun submitJobToMeasurements(
-        itemMeasureJob: JobDTO,
-        mSures: ArrayList<JobItemMeasureDTO>
-
-    ) {
-
-        val workflowDialog = AlertDialog.Builder(
-            requireActivity() // , android.R.style.Theme_DeviceDefault_Dialog
-        )
-        workflowDialog.run {
-            setTitle(R.string.confirm)
-            setIcon(R.drawable.ic_approve)
-            setMessage(R.string.are_you_sure_you_want_to_submit_measurements)
-            // Yes button
-            setPositiveButton(R.string.yes) { _, _ ->
-                if (ServiceUtil.isNetworkAvailable(requireContext().applicationContext)) {
-                    submitMeasures(itemMeasureJob, mSures)
-                } else {
-                    sharpToast(
-                        message = getString(R.string.no_connection_detected),
-                        style = NO_INTERNET,
-                        position = ToastGravity.CENTER
-                    )
-                    progressButton.failProgress(originalCaption)
-                }
-            }
-            // No button
-            setNegativeButton(
-                R.string.no
-            ) { dialog, _ ->
-                // Do nothing but close dialog
-                dialog.dismiss()
-                progressButton.doneProgress(originalCaption)
-            }
-            create()
-            show()
-        }
     }
 
     private fun submitMeasures(
@@ -491,7 +489,7 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
                 Coroutines.main {
                     val jobForJobItemEstimate = measureViewModel.getJobFromJobId(jobItemEstimateDTO.jobId)
                     jobForJobItemEstimate.observeOnce(
-                        requireActivity(),
+                        viewLifecycleOwner,
                         { job ->
                             //                        for (measure_i in jobItemMeasureArrayList) {
                             jobForItemEstimate = job
@@ -501,7 +499,7 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
                                         job.jobId,
                                         jobItemEstimateDTO.estimateId
                                     )
-                                jobItemMeasure.observeOnce(requireActivity(), { measureList ->
+                                jobItemMeasure.observeOnce(viewLifecycleOwner, { measureList ->
                                     Coroutines.main {
                                         for (jobItemM in measureList) {
                                             Coroutines.main {

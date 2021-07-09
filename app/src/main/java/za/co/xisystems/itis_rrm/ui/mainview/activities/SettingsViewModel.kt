@@ -1,13 +1,11 @@
 package za.co.xisystems.itis_rrm.ui.mainview.activities
 
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
-import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.approveMeasure_Item.ApproveMeasureItem
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
 
 /**
@@ -17,25 +15,10 @@ class SettingsViewModel(
     private val offlineDataRepository: OfflineDataRepository
 ) : ViewModel() {
 
-//    val offlinedata by lazyDeferred {
-//        offlineDataRepository.getSectionItems()
-//        offlineDataRepository.getContracts()
-//    }
-
     val user by lazyDeferred {
         offlineDataRepository.getUser()
     }
 
-    val measureapproval_Item = MutableLiveData<ApproveMeasureItem>()
-    fun Item5(measureapproval: ApproveMeasureItem) {
-        measureapproval_Item.value = measureapproval
-    }
-
-    //    suspend fun getJobApproveMeasureForActivityId(activityId: Int): LiveData<List<JobItemMeasureDTO>> {
-//        return withContext(Dispatchers.IO) {
-//            offlineDataRepository.getJobApproveMeasureForActivityId(activityId)
-//        }
-//    }
     suspend fun getProjectSectionIdForJobId(jobId: String): String {
         return withContext(Dispatchers.IO) {
             offlineDataRepository.getProjectSectionIdForJobId(jobId)
@@ -78,12 +61,6 @@ class SettingsViewModel(
     suspend fun getUOMForProjectItemId(projectItemId: String): String {
         return withContext(Dispatchers.IO) {
             offlineDataRepository.getUOMForProjectItemId(projectItemId)
-        }
-    }
-
-    suspend fun getJobMeasureItemsPhotoPath(itemMeasureId: String): List<String> {
-        return withContext(Dispatchers.IO) {
-            offlineDataRepository.getJobMeasureItemsPhotoPath(itemMeasureId)
         }
     }
 

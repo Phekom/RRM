@@ -1,127 +1,140 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/small"
-        android:layout_marginEnd="@dimen/small"
+    android:layout_marginStart="@dimen/small"
+    android:layout_marginEnd="@dimen/small"
     android:orientation="vertical"
     android:padding="8dp"
-    android:background="@drawable/my_custom_background">
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:layout_marginTop="5dp">
+    android:background="@drawable/my_custom_background"
+    tools:ignore="HardcodedText"
+    android:id="@+id/linearLayout7">
+
+
 
 
         <TextView
-            android:layout_width="fill_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Job No:"
             android:id="@+id/jobNumber"
             android:textSize="17sp"
             android:paddingTop="5dp"
             android:paddingBottom="5dp"
-            android:paddingLeft="?android:attr/expandableListPreferredChildPaddingLeft"
+            android:paddingStart="?android:attr/expandableListPreferredChildPaddingLeft"
             android:textColor="@color/itis_gray"
-            android:layout_weight="1" />
+            tools:layout_conversion_absoluteHeight="33dp"
+            tools:layout_editor_absoluteY="13dp"
+            tools:layout_editor_absoluteX="8dp"
+            tools:layout_conversion_absoluteWidth="190dp" />
 
         <TextView
 
             android:id="@+id/jobNo"
-            android:layout_width="fill_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:text="@string/no_21"
             android:textColor="@color/itis_gray"
-            android:textSize="16sp" />
+            android:textSize="16sp"
+            tools:layout_conversion_absoluteHeight="22dp"
+            tools:layout_editor_absoluteY="19dp"
+            tools:layout_editor_absoluteX="198dp"
+            tools:layout_conversion_absoluteWidth="190dp" />
 
-    </LinearLayout>
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:layout_marginTop="5dp">
+
+
 
 
         <TextView
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/measurement"
             android:id="@+id/measure_estimation_expandable_child_textView"
             android:textSize="17sp"
             android:paddingTop="5dp"
             android:paddingBottom="5dp"
-            android:paddingLeft="?android:attr/expandableListPreferredChildPaddingLeft"
+            android:paddingStart="?android:attr/expandableListPreferredChildPaddingLeft"
             android:textColor="@color/itis_gray"
-            android:layout_weight="1" />
+            tools:layout_conversion_absoluteHeight="33dp"
+            tools:layout_editor_absoluteY="51dp"
+            tools:layout_editor_absoluteX="8dp"
+            tools:layout_conversion_absoluteWidth="320dp" />
 
         <ImageView
-            android:layout_width="50dp"
-            android:layout_height="50dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:id="@+id/measurements_photo_image"
-            android:layout_marginRight="10dp"
             android:focusable="false"
             android:focusableInTouchMode="false"
             android:src="@drawable/ic_photo"
             android:background="@android:color/transparent"
-            android:layout_gravity="center_vertical" />
+            tools:layout_conversion_absoluteHeight="50dp"
+            tools:layout_editor_absoluteY="51dp"
+            tools:layout_editor_absoluteX="328dp"
+            tools:layout_conversion_absoluteWidth="50dp" />
 
-    </LinearLayout>
+
     <View
-        android:layout_width="match_parent"
-        android:layout_marginLeft="35dp"
-        android:layout_marginRight="55dp"
-        android:layout_height="1dp"
-        android:background="@color/itis_divider" />
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@color/itis_divider"
+        tools:layout_conversion_absoluteHeight="1dp"
+        tools:layout_editor_absoluteY="101dp"
+        tools:layout_editor_absoluteX="43dp"
+        tools:layout_conversion_absoluteWidth="290dp" />
 
-    <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:orientation="horizontal"
-        android:paddingLeft="?android:attr/expandableListPreferredChildPaddingLeft">
+
+
+    <TextView
+        android:id="@+id/measure_estimation_qty_description_textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/qty"
+        android:textColor="@color/itis_gray"
+        android:textSize="16sp"
+        tools:layout_conversion_absoluteHeight="22dp"
+        tools:layout_editor_absoluteY="102dp"
+        tools:layout_editor_absoluteX="48dp"
+        tools:layout_conversion_absoluteWidth="170dp" />
+
+    <TextView
+        android:id="@+id/measure_estimation_qty_textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/no_21"
+        android:textColor="@color/itis_gray"
+        android:textSize="16sp"
+        tools:layout_conversion_absoluteHeight="22dp"
+        tools:layout_editor_absoluteY="102dp"
+        tools:layout_editor_absoluteX="218dp"
+        tools:layout_conversion_absoluteWidth="170dp" />
+
+
+
 
         <TextView
-            android:id="@+id/measure_estimation_qty_description_textView"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/qty"
-            android:textColor="@color/itis_gray"
-            android:textSize="16sp" />
-
-        <TextView
-            android:id="@+id/measure_estimation_qty_textView"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/no_21"
-            android:textColor="@color/itis_gray"
-            android:textSize="16sp" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:paddingLeft="?android:attr/expandableListPreferredChildPaddingLeft">
-
-        <TextView
-            android:layout_width="fill_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/line_amount"
             android:id="@+id/measure_estimation_line_amount_description_textView"
-            android:layout_weight="1"
             android:textColor="@color/itis_gray"
-            android:textSize="16sp"/>
+            android:textSize="16sp"
+            tools:layout_conversion_absoluteHeight="22dp"
+            tools:layout_editor_absoluteY="124dp"
+            tools:layout_editor_absoluteX="48dp"
+            tools:layout_conversion_absoluteWidth="170dp" />
 
         <TextView
-            android:layout_width="fill_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/r5400"
             android:id="@+id/measure_estimation_line_amount"
-            android:layout_weight="1"
             android:textColor="@color/itis_gray"
-            android:textSize="16sp" />
-    </LinearLayout>
+            android:textSize="16sp"
+            tools:layout_conversion_absoluteHeight="22dp"
+            tools:layout_editor_absoluteY="124dp"
+            tools:layout_editor_absoluteX="218dp"
+            tools:layout_conversion_absoluteWidth="170dp" />
+
 </LinearLayout>

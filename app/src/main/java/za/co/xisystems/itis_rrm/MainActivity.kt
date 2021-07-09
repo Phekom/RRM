@@ -4,12 +4,6 @@
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  **/
 
-/**
- * Updated by Shaun McDonald on 2021/05/14
- * Last modified on 2021/05/14, 19:57
- * Copyright (c) 2021.  XI Systems  - All rights reserved
- **/
-
 package za.co.xisystems.itis_rrm
 
 import android.app.Activity
@@ -30,11 +24,9 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.app.ActionBar
 import androidx.appcompat.app.ActionBarDrawerToggle
-import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.SearchView
 import androidx.core.content.ContextCompat
-import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.GravityCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
@@ -49,17 +41,12 @@ import org.kodein.di.KodeinAware
 import org.kodein.di.android.kodein
 import org.kodein.di.generic.instance
 import timber.log.Timber
-import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.constants.Constants.TWO_SECONDS
-import za.co.xisystems.itis_rrm.custom.notifications.ColorToast
-import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.databinding.ActivityMainBinding
-import za.co.xisystems.itis_rrm.ui.auth.LoginActivity
+import za.co.xisystems.itis_rrm.ui.base.BaseActivity
 import za.co.xisystems.itis_rrm.ui.mainview.activities.MainActivityViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.activities.MainActivityViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SettingsActivity
-import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModel
-import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModelFactory
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
@@ -67,17 +54,14 @@ import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.hideKeyboard
 import za.co.xisystems.itis_rrm.utils.toast
 
-class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener,
+class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedListener,
     KodeinAware {
 
     override val kodein by kodein()
     private lateinit var mainActivityViewModel: MainActivityViewModel
     private val factory: MainActivityViewModelFactory by instance()
-    private lateinit var sharedViewModel: SharedViewModel
-    private val shareFactory: SharedViewModelFactory by instance()
     private lateinit var navController: NavController
     private lateinit var navHostFragment: NavHostFragment
-
     private var toggle: ActionBarDrawerToggle? = null
     private lateinit var navigationView: NavigationView
     private var badgeUnSubmitted: TextView? = null
@@ -85,17 +69,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private var badgeApproveJobs: TextView? = null
     private var badgeEstMeasure: TextView? = null
     private var badgeApprovMeasure: TextView? = null
-
     private lateinit var lm: LocationManager
     private var gpsEnabled = false
     private var networkEnabled = false
-
-    private var progressBar: ProgressBar? = null
     private var uiScope = UiLifecycleScope()
-
     private lateinit var ui: ActivityMainBinding
     private var doubleBackToExitPressed = 0
-
+    private var progressBar: ProgressBar? = null
     private val appBarConfiguration by lazy {
         AppBarConfiguration(
             setOf(
@@ -103,6 +83,21 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             ),
             ui.drawerLayout
         )
+    }
+
+    companion object {
+        const val PROJECT_USER_ROLE_IDENTIFIER =
+            "RRM Job Mobile User" // "29DB5C213D034EDB88DEC54109EE1711"
+        const val PROJECT_SITE_ENGINEER_ROLE_IDENTIFIER =
+            "RRM Job Mobile - Site Engineer" // "3F9A15DF5D464EC5A5D954134A7F32BE"
+        const val PROJECT_ENGINEER_ROLE_IDENTIFIER =
+            "RRM Job Mobile - Engineer" // "D9E16C2A31FA4CC28961E20B652B292C"
+        const val PROJECT_SUB_CONTRACTOR_ROLE_IDENTIFIER =
+            "RRM Job Mobile - Sub Contractor" // "03F493BDD6D68944A94BE038B6C1C3D2"
+
+        // "F836F6BF14404E749E6748A31A0262AD"
+        const val PROJECT_CONTRACTOR_ROLE_IDENTIFIER =
+            "RRM Job Mobile - Contractor" // "E398A3EF1C18431DBAEE4A4AC5D6F07D"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -137,20 +132,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             RaygunClient.enableCrashReporting()
         }
 
-        // Set MotionToast to use Sanral colours
-        MotionToast.setErrorColor(R.color.sanral_dark_red)
-        MotionToast.setSuccessColor(R.color.sanral_dark_green)
-        MotionToast.setWarningColor(R.color.warning_color)
-        MotionToast.setInfoColor(R.color.dark_slate_gray)
-        MotionToast.setDeleteColor(R.color.dark_slate_gray)
-
-        this.mainActivityViewModel = this.run {
-            ViewModelProvider(this, factory).get(MainActivityViewModel::class.java)
-        }
-
-        this.sharedViewModel = this.run {
-            ViewModelProvider(this, shareFactory).get(SharedViewModel::class.java)
-        }
+        this.mainActivityViewModel = ViewModelProvider(this, factory).get(MainActivityViewModel::class.java)
 
         initializeCountDrawer()
 
@@ -185,31 +167,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             navigationView.menu.findItem(R.id.nav_approveMeasure).actionView as TextView
         badgeEstMeasure =
             navigationView.menu.findItem(R.id.nav_estMeasure).actionView as TextView
+
         progressBar = findViewById(R.id.progressbar)
 
-        sharedViewModel.longRunning.observe(this, {
-            when (it) {
-                true -> this.startLongRunningTask()
-                false -> this.endLongRunningTask()
-            }
-        })
-
-        sharedViewModel.message.observe(this, {
-            toastMessage(it.toString())
-        })
-
-        sharedViewModel.colorMessage.observe(this, {
-            it?.let {
-                toastMessage(it)
-            }
-        })
-
-        sharedViewModel.actionCaption.observe(this@MainActivity, {
-            setCaption(it)
-        })
-
         if (savedInstanceState == null) {
-
             navController.navigate(R.id.action_global_nav_home)
         }
     }
@@ -259,23 +220,19 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 toggle?.syncState()
             } else {
                 navController
-                if (doubleBackToExitPressed == 2) {
-                    sharedViewModel.logOut()
-                    finishAffinity()
-                    // Take user back to the Registration screen
-                    Intent(this, LoginActivity::class.java).also { home ->
-                        home.flags =
-                            Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-                        startActivity(home)
-                    }
+                doubleBackToExitPressed++
+                if (doubleBackToExitPressed >= 2) {
+                    logoutApplication()
+                    finish()
                 } else {
-                    doubleBackToExitPressed++
                     toast("Please press Back again to exit")
-                }
 
-                Handler(mainLooper).postDelayed({
-                    doubleBackToExitPressed = 1
-                }, TWO_SECONDS)
+                    if (doubleBackToExitPressed > 0) {
+                        Handler(mainLooper).postDelayed({
+                            doubleBackToExitPressed--
+                        }, TWO_SECONDS)
+                    }
+                }
             }
         }
     }
@@ -319,12 +276,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 true
             }
             R.id.action_logout -> {
-                sharedViewModel.logOut()
-                Intent(this, LoginActivity::class.java).also { home ->
-                    home.flags =
-                        Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-                    startActivity(home)
-                }
+                logoutApplication()
                 true
             }
 
@@ -379,39 +331,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         drawer_layout.closeDrawer(GravityCompat.START)
         return true
-    }
-
-    private fun startLongRunningTask() {
-        Timber.i("starting task...")
-        progressBar?.visibility = View.VISIBLE
-
-        // Make UI untouchable for duration of big synch
-        window.setFlags(
-            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
-            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
-        )
-        window.setFlags(
-            WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
-            WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
-        )
-    }
-
-    private fun endLongRunningTask() {
-        Timber.i("stopping task...")
-        progressBar?.visibility = View.GONE
-
-        // Re-enable UI touches
-        window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-        window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-    }
-
-    private fun toastMessage(message: String) {
-        ToastUtils().toastShort(applicationContext, message)
-    }
-
-    private fun setCaption(caption: String) {
-        sharedViewModel.originalCaption = supportActionBar?.title.toString()
-        supportActionBar?.title = caption
     }
 
     // Control Menu drawer View Access Based on who is logged in
@@ -539,6 +458,29 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
+    override fun startLongRunningTask() {
+        Timber.i("starting task...")
+        progressBar?.visibility = View.VISIBLE
+        // Make UI untouchable for duration of task
+        window.setFlags(
+            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+        )
+        window.setFlags(
+            WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
+            WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+        )
+    }
+
+    override fun endLongRunningTask() {
+        Timber.i("stopping task...")
+        progressBar?.visibility = View.GONE
+
+        // Re-enable UI touches
+        window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+        window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+    }
+
     // Common routine to create badges
     private fun writeBadge(textView: TextView?, tasks: Int = 0) {
         if (tasks == 0) {
@@ -551,20 +493,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             )
             textView?.text = this.getString(R.string.badge, tasks.toString())
         }
-    }
-
-    private fun toastMessage(
-        colorToast: ColorToast
-    ) {
-        MotionToast.createColorToast(
-            context = this,
-            title = colorToast.title,
-            message = colorToast.message,
-            style = colorToast.style.getValue(),
-            position = colorToast.gravity.getValue(),
-            duration = colorToast.duration.getValue(),
-            font = ResourcesCompat.getFont(this, R.font.helvetica_regular)
-        )
     }
 
     @Suppress("ControlFlowWithEmptyBody")
@@ -581,19 +509,5 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onDestroy() {
         super.onDestroy()
         uiScope.destroy()
-    }
-
-    companion object {
-        const val PROJECT_USER_ROLE_IDENTIFIER = "RRM Job Mobile User" // "29DB5C213D034EDB88DEC54109EE1711"
-        const val PROJECT_SITE_ENGINEER_ROLE_IDENTIFIER =
-            "RRM Job Mobile - Site Engineer" // "3F9A15DF5D464EC5A5D954134A7F32BE"
-        const val PROJECT_ENGINEER_ROLE_IDENTIFIER =
-            "RRM Job Mobile - Engineer" // "D9E16C2A31FA4CC28961E20B652B292C"
-        const val PROJECT_SUB_CONTRACTOR_ROLE_IDENTIFIER =
-            "RRM Job Mobile - Sub Contractor" // "03F493BDD6D68944A94BE038B6C1C3D2"
-
-        // "F836F6BF14404E749E6748A31A0262AD"
-        const val PROJECT_CONTRACTOR_ROLE_IDENTIFIER =
-            "RRM Job Mobile - Contractor" // "E398A3EF1C18431DBAEE4A4AC5D6F07D"
     }
 }

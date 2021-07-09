@@ -327,7 +327,7 @@ class OfflineDataRepository(
             } catch (throwable: Throwable) {
                 Timber.e(throwable, "Exception caught saving section items: ${throwable.message}")
             } finally {
-                postEvent(XIProgressUpdate("sections", 1.0f))
+                postEvent(XIProgressUpdate("sections", -1.0f))
             }
         }
     }
@@ -373,8 +373,6 @@ class OfflineDataRepository(
                 }
             } catch (ex: Exception) {
                 Timber.e(ex, "Error saving contracts: ${ex.message ?: XIErrorHandler.UNKNOWN_ERROR}")
-            } finally {
-                postEvent(XIProgressUpdate("projects", 1.0f))
             }
         }
     }
@@ -459,7 +457,7 @@ class OfflineDataRepository(
                     )
                 }
             }
-            postEvent(XIProgressUpdate("projects", 1.0f))
+            postEvent(XIProgressUpdate("projects", -1.0f))
         }
     }
 
@@ -1020,12 +1018,13 @@ class OfflineDataRepository(
                     tasksCount++
                     postEvent(XIProgressUpdate("tasks", tasksCount.toFloat() / tasksMax.toFloat()))
                 }
-                postEvent(XIProgressUpdate("tasks", 1.0f))
             } catch (throwable: Throwable) {
                 val message = "Failed to save task list locally: ${throwable.message ?: XIErrorHandler.UNKNOWN_ERROR}"
                 Timber.e(throwable, message)
                 val dbError = XIError(throwable, message)
                 postEvent(dbError)
+            } finally {
+                postEvent(XIProgressUpdate("tasks", -1.0f))
             }
         }
     }

@@ -1,4 +1,3 @@
-
 package za.co.xisystems.itis_rrm.data.repositories
 
 import android.os.Looper
@@ -29,6 +28,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.SectionItemDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.SectionPointDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.WorkflowJobDTO
+import za.co.xisystems.itis_rrm.data.localDB.views.SectionMarker
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
 import za.co.xisystems.itis_rrm.data.network.responses.UploadImageResponse
@@ -196,11 +196,12 @@ class JobCreationDataRepository(
     suspend fun getSectionByRouteSectionProject(
         sectionId: String,
         linearId: String?,
-        projectId: String?
+        projectId: String?,
+        pointLocation: Double
     ): String? {
         return withContext(Dispatchers.IO) {
             appDb.getProjectSectionDao()
-                .getSectionByRouteSectionProject(sectionId, linearId!!, projectId!!)
+                .getSectionByRouteSectionProject(sectionId, linearId!!, projectId!!, pointLocation)
         }
     }
 
@@ -219,7 +220,7 @@ class JobCreationDataRepository(
         jobId: String
     ): String? {
 
-        val distance = 0.5
+        val distance = 0.05
         val inBuffer = -1.0
         val routeSectionPointResponse =
             apiRequest { api.getRouteSectionPoint(distance, inBuffer, latitude, longitude, useR) }
@@ -566,7 +567,7 @@ class JobCreationDataRepository(
         }
 
         var projectSectionId = appDb.getProjectSectionDao()
-            .getSectionByRouteSectionProject(sectionId.toString(), linearId, projectId)
+            .getSectionByRouteSectionProject(sectionId.toString(), linearId, projectId, pointLocation)
 
         // Deal with SectionDirection combinations.
         // S.McDonald 2021/05/14
@@ -574,7 +575,8 @@ class JobCreationDataRepository(
             projectSectionId = appDb.getProjectSectionDao().getSectionByRouteSectionProject(
                 sectionId.toString().plus(direction),
                 linearId,
-                projectId
+                projectId,
+                pointLocation
             )
         }
         Timber.d("ProjectSectionId: $projectSectionId")
@@ -584,6 +586,30 @@ class JobCreationDataRepository(
     suspend fun getContractNoForId(contractVoId: String?): String {
         return withContext(Dispatchers.IO) {
             appDb.getContractDao().getContractNoForId(contractVoId)
+        }
+    }
+
+    suspend fun findRealSectionStartKm(
+        projectSectionDTO: ProjectSectionDTO,
+        pointLocation: Double
+    ): SectionMarker {
+        val data = appDb.getProjectSectionDao().findRealSectionStartKm(
+            projectSectionDTO.route,
+            pointLocation
+        )
+
+        return data ?: SectionMarker("Start", 0.0)
+    }
+
+    suspend fun findRealSectionEndKm(
+        projectSectionDTO: ProjectSectionDTO,
+        pointLocation: Double
+    ): SectionMarker {
+        return withContext(Dispatchers.Default) {
+            appDb.getProjectSectionDao().findRealSectionEndKm(
+                projectSectionDTO.route,
+                pointLocation
+            )
         }
     }
 

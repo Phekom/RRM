@@ -58,7 +58,7 @@ class CreateViewModel(
     private var mainContext: CoroutineContext = Job(superJob) + Dispatchers.Main + uncaughtExceptionHandler
     private val estimateQty = MutableLiveData<Double>()
     val estimateLineRate = MutableLiveData<Double>()
-    val sectionId = MutableLiveData<String>()
+    val sectionId: MutableLiveData<String> = MutableLiveData()
     val user by lazyDeferred {
         jobCreationDataRepository.getUser()
     }
@@ -191,13 +191,15 @@ class CreateViewModel(
     suspend fun getSectionByRouteSectionProject(
         sectionId: String,
         linearId: String?,
-        projectId: String?
+        projectId: String?,
+        pointLocation: Double
     ): String? {
         return withContext(ioContext) {
             jobCreationDataRepository.getSectionByRouteSectionProject(
                 sectionId,
                 linearId,
-                projectId
+                projectId,
+                pointLocation
             )
         }
     }
@@ -347,6 +349,16 @@ class CreateViewModel(
     }
 
     fun estimateComplete(newJobItemEstimate: JobItemEstimateDTO?): Boolean {
-       return newJobItemEstimate?.isEstimateComplete() ?: false
+        return newJobItemEstimate?.isEstimateComplete() ?: false
     }
+
+    suspend fun getRealSectionStartKm(
+        projectSectionDTO: ProjectSectionDTO,
+        pointLocation: Double
+    ) = jobCreationDataRepository.findRealSectionStartKm(projectSectionDTO, pointLocation).pointLocation
+
+    suspend fun getRealSectionEndKm(
+        projectSectionDTO: ProjectSectionDTO,
+        pointLocation: Double
+    ) = jobCreationDataRepository.findRealSectionEndKm(projectSectionDTO, pointLocation).pointLocation
 }

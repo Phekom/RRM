@@ -1,9 +1,3 @@
-/**
- * Updated by Shaun McDonald on 2021/05/19
- * Last modified on 2021/05/19, 00:11
- * Copyright (c) 2021.  XI Systems  - All rights reserved
- **/
-
 package za.co.xisystems.itis_rrm.ui.mainview.work.capture_work
 
 import android.Manifest.permission
@@ -36,7 +30,6 @@ import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
-import kotlinx.android.synthetic.main.item_header.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -334,6 +327,7 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
     private fun sendWorkToService(
         estimateWorksItem: JobEstimateWorksDTO
     ) {
+        this.toggleLongRunning(true)
         uiScope.launch(uiScope.coroutineContext) {
             workViewModel.workflowState.removeObserver(jobObserver)
             workViewModel.workflowState.observe(viewLifecycleOwner, workObserver)
@@ -357,8 +351,10 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
                     if (result.data == "WORK_COMPLETE") {
                         popViewOnJobSubmit(WorkflowDirection.NEXT.value)
                     }
+                    toggleLongRunning(false)
                 }
                 is XIError -> {
+                    toggleLongRunning(false)
                     ui.moveWorkflowButton.failProgress("Job submission failed")
                     crashGuard(
                         view = this.requireView(),
@@ -376,10 +372,14 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
                 is XIProgress -> {
                     when (result.isLoading) {
                         true -> {
+                            toggleLongRunning(true)
                             ui.moveWorkflowButton.initProgress(viewLifecycleOwner)
                             ui.moveWorkflowButton.startProgress(ui.moveWorkflowButton.text.toString())
                         }
-                        else -> ui.moveWorkflowButton.doneProgress(ui.moveWorkflowButton.text.toString())
+                        else -> {
+                            toggleLongRunning(false)
+                            ui.moveWorkflowButton.doneProgress(ui.moveWorkflowButton.text.toString())
+                        }
                     }
                 }
                 else -> Timber.d("$result")
@@ -394,11 +394,8 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
         outcome?.let { result ->
             when (result) {
                 is XISuccess -> {
-                    when (result.data == "WORK_COMPLETE") {
+                    when (result.data != "WORK_COMPLETE") {
                         true -> {
-                            popViewOnJobSubmit(WorkflowDirection.NEXT.value)
-                        }
-                        else -> {
                             sharpToast(
                                 message = "Work captured",
                                 style = ToastStyle.SUCCESS,
@@ -407,10 +404,12 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
                             )
                             ui.moveWorkflowButton.doneProgress("Workflow complete")
                             refreshView()
+                            toggleLongRunning(false)
                         }
                     }
                 }
                 is XIError -> {
+                    this@CaptureWorkFragment.toggleLongRunning(false)
                     ui.moveWorkflowButton.failProgress("Work submission failed")
                     crashGuard(
                         view = this@CaptureWorkFragment.requireView(),
@@ -522,9 +521,11 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
                 }
             }
         }
+        this.photosDone()
     }
 
     private fun launchCamera() {
+        this@CaptureWorkFragment.takingPhotos()
         Coroutines.io {
             imageUri = photoUtil.getUri()!!
             withContext(Dispatchers.Main.immediate) {
@@ -715,6 +716,7 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
     }
 
     private suspend fun collectCompletedEstimates(estimateJob: JobDTO) {
+        this@CaptureWorkFragment.toggleLongRunning(true)
         val iItems = workViewModel.getJobEstimationItemsForJobId(
             estimateJob.jobId,
             ActivityIdConstants.ESTIMATE_WORK_PART_COMPLETE

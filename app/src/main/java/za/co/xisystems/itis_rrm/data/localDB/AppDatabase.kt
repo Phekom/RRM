@@ -16,6 +16,7 @@ import androidx.room.TypeConverters
 import dev.matrix.roomigrant.GenerateRoomMigrations
 import net.sqlcipher.database.SQLiteDatabase
 import net.sqlcipher.database.SupportFactory
+import timber.log.Timber
 import za.co.xisystems.itis_rrm.BuildConfig
 import za.co.xisystems.itis_rrm.data.localDB.dao.ActivityDao
 import za.co.xisystems.itis_rrm.data.localDB.dao.ContractDao
@@ -103,11 +104,13 @@ import za.co.xisystems.itis_rrm.utils.DatetimeConverters
         WorkFlowsDTO::class, WfWorkStepDTO::class
     ],
     views = [ContractSelectorView::class],
-    version = 19
+    exportSchema = true,
+    version = 20
 )
 
 @TypeConverters(Converters::class, DatetimeConverters::class)
 @GenerateRoomMigrations
+
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun getJobDao(): JobDao
@@ -144,18 +147,19 @@ abstract class AppDatabase : RoomDatabase() {
 
     companion object {
         private const val MAX_DB_VERSIONS = 999_999_999
-        @Volatile
-        private var instance: AppDatabase? = null
+        @Volatile private var instance: AppDatabase? = null
         private val LOCK = Any()
-        operator fun invoke(context: Context) = instance ?: synchronized(LOCK) {
-            instance ?: buildDatabase(context).also {
+        private var secretphrase: String? = null
+        operator fun invoke(context: Context, armoury: XIArmoury) = instance ?: synchronized(LOCK) {
+            secretphrase = armoury.readSecretPassphrase()
+            instance ?: buildDatabase(context.applicationContext).also {
                 instance = it
             }
         }
 
         private fun buildDatabase(context: Context) =
-            when {
-                BuildConfig.DEBUG -> {
+            when (BuildConfig.DEBUG) {
+                true -> {
                     // Unencrypted DB for Dev, Tracing and Testing
                     Room.databaseBuilder(
                         context.applicationContext,
@@ -168,8 +172,9 @@ abstract class AppDatabase : RoomDatabase() {
                     // Encrypted DB with one-time generated passphrase
                     val passphrase: ByteArray =
                         SQLiteDatabase.getBytes(
-                            XIArmoury.readSecretPassphrase(context).toCharArray()
+                            secretphrase!!.toCharArray()
                         )
+                    Timber.d("^*^ DB Pass: $passphrase")
                     val factory = SupportFactory(passphrase, null, false)
                     Room.databaseBuilder(
                         context.applicationContext,

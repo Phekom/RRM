@@ -24,8 +24,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenStarted
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.skydoves.androidveil.VeilRecyclerFrameView
-import com.skydoves.androidveil.VeiledItemOnClickListener
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.GroupieViewHolder
 import kotlinx.coroutines.launch
@@ -62,6 +60,10 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
     private val ui get() = _ui!!
     private var groupAdapter = GroupAdapter<GroupieViewHolder>()
     private var queryObserver = Observer<XIResult<String>?> { handleQueryErrors(it) }
+
+    companion object {
+        val TAG: String = ApproveJobsFragment::class.java.simpleName
+    }
 
     init {
         lifecycleScope.launch {
@@ -124,12 +126,12 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
 
     private fun initVeiledRecyclerView() {
         ui.approveJobVeiledRecycler.run {
-            setVeilLayout(R.layout.item_velied_slug, object : VeiledItemOnClickListener {
-                /** will be invoked when the item on the [VeilRecyclerFrameView] clicked. */
-                override fun onItemClicked(pos: Int) {
-                    Toast.makeText(this@ApproveJobsFragment.requireContext(), "Loading ...", Toast.LENGTH_SHORT).show()
-                }
-            })
+            setVeilLayout(R.layout.item_velied_slug) {
+                Toast.makeText(
+                    this@ApproveJobsFragment.requireContext(),
+                    "Loading ...", Toast.LENGTH_SHORT
+                ).show()
+            }
             setAdapter(groupAdapter)
             setLayoutManager(LinearLayoutManager(this.context))
             addVeiledItems(15)
@@ -263,9 +265,5 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
         ui.approveJobVeiledRecycler.setAdapter(null)
         uiScope.destroy()
         _ui = null
-    }
-
-    companion object {
-        val TAG: String = ApproveJobsFragment::class.java.simpleName
     }
 }

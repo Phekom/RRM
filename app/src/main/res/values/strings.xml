@@ -58,7 +58,7 @@
     <string name="please_provide_a_comment">Please provide a short comment.</string>
     <string name="please_make_sure_you_have_captured_photos">Please make sure you\'ve captured photos for all measurement items.</string>
     <string name="please_enter_a_unique_pin">Please enter a Four Digit unique pin code and keep it in a safe place. You will use this pin to login in the future.</string>
-    <string name="please_enter_your_unique_code">Please enter your unique pin code.</string>
+    <string name="please_enter_your_unique_code">Please enter your unique, four digit pin code.</string>
     <string name="select_project">Select Project</string>
     <string name="select_contract">Select Contract</string>
     <string name="project">Project</string>
@@ -153,6 +153,24 @@
 
     <!-- Exception Strings -->
 
+    <!-- UOM translations-->
+    <string name="uom_quantity">each</string>
+    <string name="uom_m2">Area(m²)</string>
+    <string name="uom_m3">Volume(m³)</string>
+    <string name="uom_amount">each</string>
+    <string name="uom_length_m">Length(m)</string>
+    <string name="uom_m3_km">m³ per km</string>
+    <string name="uom_kg">kg</string>
+    <string name="uom_t">ton</string>
+    <string name="uom_hour">per hour</string>
+    <string name="uom_prov_sum">provisional sum</string>
+    <string name="uom_lump_sum">lump sum</string>
+    <string name="uom_l">per liter</string>
+    <string name="uom_km">per km</string>
+    <string name="uom_kl">per kiloliter</string>
+    <string name="uom_ha">per hectare</string>
+    <string name="uom_percentage">%</string>
+
     <!-- Estimate Photo Gallery Fragment -->
     <string name="label_quantity">Quantity</string>
     <string name="label_area_m2">Area(m²): </string>
@@ -232,4 +250,6 @@
     <string name="application_settings">application settings</string>
     <string name="tender_rate">Tender Rate</string>
     <string name="image_kb">$1%d KB</string>
+    <string name="user_blocked">The account $1%s is locked out. Please call Sanral Support for enquiries.</string>
+    <string name="measurements_photo_image">Measurement Image</string>
 </resources>

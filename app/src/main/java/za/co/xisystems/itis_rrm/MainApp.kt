@@ -36,8 +36,11 @@ import za.co.xisystems.itis_rrm.data.repositories.MeasureCreationDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
 import za.co.xisystems.itis_rrm.data.repositories.WorkDataRepository
+import za.co.xisystems.itis_rrm.extensions.exitApplication
+import za.co.xisystems.itis_rrm.forge.XIArmoury
 import za.co.xisystems.itis_rrm.logging.LameCrashLibrary
 import za.co.xisystems.itis_rrm.ui.auth.model.AuthViewModelFactory
+import za.co.xisystems.itis_rrm.ui.base.BaseActivity
 import za.co.xisystems.itis_rrm.ui.mainview.activities.LocationViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.activities.MainActivityViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SettingsViewModelFactory
@@ -52,24 +55,26 @@ import za.co.xisystems.itis_rrm.ui.mainview.home.HomeViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModelFactory
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
+import za.co.xisystems.itis_rrm.utils.toast
 
 /**
  * Created by Francis Mahlava on 2019/10/23.
  */
 
-lateinit var photoUtil: PhotoUtil
-
 open class MainApp : Application(), KodeinAware {
 
+    private var activityReferences = 0
+    private var isActivityChangingConfigurations = false
     override val kodein = Kodein.lazy {
 
         import(androidXModule(this@MainApp))
 
+        bind() from singleton { XIArmoury.getInstance(this@MainApp) }
         bind() from singleton { PhotoUtil.getInstance(this@MainApp) }
         bind() from singleton { NetworkConnectionInterceptor(instance()) }
         bind() from singleton { BaseConnectionApi(instance()) }
 
-        bind() from singleton { AppDatabase(instance()) }
+        bind() from singleton { AppDatabase(instance(), instance()) }
         bind() from singleton { PreferenceProvider(instance()) }
 
         bind() from singleton { UserRepository(instance(), instance()) }
@@ -81,7 +86,7 @@ open class MainApp : Application(), KodeinAware {
         bind() from singleton { WorkDataRepository(instance(), instance(), instance()) }
         bind() from singleton { MeasureCreationDataRepository(instance(), instance(), instance()) }
         bind() from singleton { MeasureApprovalDataRepository(instance(), instance()) }
-        bind() from provider { AuthViewModelFactory(instance(), this@MainApp) }
+        bind() from provider { AuthViewModelFactory(instance(), instance(), this@MainApp) }
         bind() from provider {
             HomeViewModelFactory(
                 instance(),
@@ -89,7 +94,13 @@ open class MainApp : Application(), KodeinAware {
                 this@MainApp
             )
         }
-        bind() from provider { CreateViewModelFactory(instance(),this@MainApp) }
+        bind() from provider {
+            CreateViewModelFactory(
+                instance(),
+                this@MainApp
+            )
+        }
+
         bind() from provider {
             ApproveMeasureViewModelFactory(
                 this@MainApp,
@@ -119,7 +130,6 @@ open class MainApp : Application(), KodeinAware {
 
     override fun onCreate() {
         super.onCreate()
-        photoUtil = PhotoUtil.getInstance(this.applicationContext)
         // Time-zone support for better times with Room
         AndroidThreeTen.init(this)
 
@@ -130,7 +140,10 @@ open class MainApp : Application(), KodeinAware {
             }
 
             override fun onActivityStarted(p0: Activity) {
-                // Not interested in this
+                if (++activityReferences == 1 && !isActivityChangingConfigurations) {
+                    // Application has entered foreground
+                    Timber.d("App in foreground.")
+                }
             }
 
             override fun onActivityResumed(p0: Activity) {
@@ -142,7 +155,15 @@ open class MainApp : Application(), KodeinAware {
             }
 
             override fun onActivityStopped(p0: Activity) {
-                // Not interested in this
+                // Count activity references
+                isActivityChangingConfigurations = p0.isChangingConfigurations
+                if (--activityReferences == 0 && !isActivityChangingConfigurations) {
+                    Timber.d("App in background.")
+                    when (p0 is BaseActivity && p0.takingPhotos) {
+                        true -> Timber.i("Taking photographs")
+                        else -> exitApplication()
+                    }
+                }
             }
 
             override fun onActivitySaveInstanceState(p0: Activity, p1: Bundle) {

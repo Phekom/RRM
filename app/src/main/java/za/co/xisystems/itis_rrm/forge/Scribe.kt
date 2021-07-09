@@ -8,6 +8,7 @@ package za.co.xisystems.itis_rrm.forge
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.os.Environment
 import androidx.security.crypto.EncryptedFile
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
@@ -28,10 +29,13 @@ import java.io.IOException
 class Scribe(private val dispatchers: DispatcherProvider = DefaultDispatcherProvider()) {
 
     private lateinit var securePrefs: SharedPreferences
+    private var _open = false
+    val openForBusiness get() = _open
 
     companion object {
-        const val DIRECTORY = "ITIS_RRM_PIX"
+        val DIRECTORY: String = Environment.DIRECTORY_PICTURES
         const val PASS_KEY = "za.co.xisystems.itis_rmm.forge.Scribe.Passphrase"
+        const val TIMESTAMP_KEY = "za.co.xisystems.itis_rmm.forge.Scribe.Timestamp"
         const val NOT_SET = "NoPassphraseSet"
     }
 
@@ -44,12 +48,13 @@ class Scribe(private val dispatchers: DispatcherProvider = DefaultDispatcherProv
      */
     fun initPreferences(context: Context, masterKey: MasterKey, prefsFile: String) {
         securePrefs = EncryptedSharedPreferences.create(
-            context.applicationContext,
+            context,
             prefsFile,
             masterKey,
             EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
             EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
         )
+        _open = true
     }
 
     /**
@@ -67,13 +72,30 @@ class Scribe(private val dispatchers: DispatcherProvider = DefaultDispatcherProv
      */
     suspend fun writeFuturePassphrase(passphrase: String) {
         withContext(dispatchers.io()) {
-           writePassphrase(passphrase)
+            writePassphrase(passphrase)
         }
+    }
+
+    fun getTimestamp(): Long {
+        return securePrefs.getLong(TIMESTAMP_KEY, System.currentTimeMillis())
     }
 
     fun writePassphrase(passphrase: String) {
         with(securePrefs.edit()) {
             putString(PASS_KEY, passphrase.trim()).apply()
+        }
+    }
+
+    suspend fun writeFutureTimestamp(timeInMillis: Long = System.currentTimeMillis()) {
+        withContext(dispatchers.io()) {
+            writeTimestamp(timeInMillis)
+        }
+    }
+
+    fun writeTimestamp(timeInMillis: Long) {
+        with(securePrefs.edit()) {
+            putLong(TIMESTAMP_KEY, timeInMillis).apply()
+            Timber.d("Wrote Timestamp: $timeInMillis")
         }
     }
 

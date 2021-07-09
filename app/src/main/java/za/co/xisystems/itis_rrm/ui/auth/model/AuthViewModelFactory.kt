@@ -10,6 +10,7 @@ import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
+import za.co.xisystems.itis_rrm.forge.XIArmoury
 
 /**
  * Created by Francis Mahlava on 2019/10/23.
@@ -18,9 +19,10 @@ import za.co.xisystems.itis_rrm.data.repositories.UserRepository
 @Suppress("UNCHECKED_CAST")
 class AuthViewModelFactory(
     private val repository: UserRepository,
+    private val xiArmoury: XIArmoury,
     private val application: Application
 ) : ViewModelProvider.AndroidViewModelFactory(application) {
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-        return AuthViewModel(repository, application) as T
+        return AuthViewModel(repository, xiArmoury, application) as T
     }
 }

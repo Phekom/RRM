@@ -18,6 +18,8 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.RewriteQueriesToDropUnusedColumns
+import androidx.room.RoomWarnings
 import java.util.ArrayList
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
@@ -28,7 +30,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobSectionDTO
  */
 
 @Dao
-
+@SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
 interface JobDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -98,9 +100,13 @@ interface JobDao {
         jobApproved: Int
     ): LiveData<List<JobDTO>>
 
-    @Query("SELECT * FROM JOB_TABLE WHERE actId = :actId AND deleted = 0 ORDER BY jiNo ASC")
+    @RewriteQueriesToDropUnusedColumns
+    @Query("SELECT * FROM JOB_TABLE WHERE " +
+        "actId = :actId AND deleted = 0 " +
+        "ORDER BY jiNo ASC")
     fun getJobsForActivityId(actId: Int): LiveData<List<JobDTO>>
 
+    @RewriteQueriesToDropUnusedColumns
     @Query(
         " SELECT j.*, e.* FROM JOB_TABLE AS j JOIN " +
         "JOB_ITEM_ESTIMATE AS e ON e.JobId = j.jobId " +
@@ -114,6 +120,7 @@ interface JobDao {
         "ON e.JobId = j.jobId WHERE j.actId Like :actId " +
             "AND e.ActId Like :actId2 AND j.deleted = 0 ORDER BY jiNo ASC "
     )
+    @RewriteQueriesToDropUnusedColumns
     fun getJobsForActivityIds1(actId: Int, actId2: Int): LiveData<List<JobDTO>>
 
     //    LiveData<List<JobDTO>>
