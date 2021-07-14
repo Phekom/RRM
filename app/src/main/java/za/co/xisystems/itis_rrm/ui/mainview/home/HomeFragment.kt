@@ -31,6 +31,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenStarted
 import com.skydoves.progressview.ProgressView
+import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -43,6 +44,11 @@ import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.constants.Constants.TWO_SECONDS
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
+import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration.LONG
+import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity.BOTTOM
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.ERROR
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.INFO
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.SUCCESS
 import za.co.xisystems.itis_rrm.custom.results.XIError
 import za.co.xisystems.itis_rrm.custom.results.XIProgress
 import za.co.xisystems.itis_rrm.custom.results.XIProgressUpdate
@@ -59,12 +65,6 @@ import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
-import za.co.xisystems.itis_rrm.utils.enums.ToastDuration.LONG
-import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.BOTTOM
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.ERROR
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.INFO
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.SUCCESS
-import kotlin.coroutines.cancellation.CancellationException
 
 class HomeFragment : BaseFragment(), KodeinAware {
 
@@ -137,12 +137,15 @@ class HomeFragment : BaseFragment(), KodeinAware {
 
     private suspend fun getOfflineSectionItems() = withContext(uiScope.coroutineContext) {
         val sectionQuery = homeViewModel.offlineSectionItems.await()
-        sectionQuery.observe(viewLifecycleOwner, { mSectionItem ->
-            val allData = mSectionItem.count()
-            if (mSectionItem.size == allData) {
-                ui.group2Loading.visibility = View.GONE
+        sectionQuery.observe(
+            viewLifecycleOwner,
+            { mSectionItem ->
+                val allData = mSectionItem.count()
+                if (mSectionItem.size == allData) {
+                    ui.group2Loading.visibility = View.GONE
+                }
             }
-        })
+        )
     }
 
     private suspend fun acquireUser() {
@@ -150,16 +153,19 @@ class HomeFragment : BaseFragment(), KodeinAware {
             val userJob = uiScope.launch(uiScope.coroutineContext) {
 
                 val user = homeViewModel.user.await()
-                user.observe(viewLifecycleOwner, { userInstance ->
-                    userInstance.let {
-                        userDTO = it
-                        ui.welcome.text = getString(R.string.welcome_greeting, it.userName)
-                        checkConnectivity()
-                        if (networkEnabled) {
-                            servicesHealthCheck()
+                user.observe(
+                    viewLifecycleOwner,
+                    { userInstance ->
+                        userInstance.let {
+                            userDTO = it
+                            ui.welcome.text = getString(R.string.welcome_greeting, it.userName)
+                            checkConnectivity()
+                            if (networkEnabled) {
+                                servicesHealthCheck()
+                            }
                         }
                     }
-                })
+                )
             }
             userJob.join()
         } catch (t: Throwable) {
@@ -169,7 +175,8 @@ class HomeFragment : BaseFragment(), KodeinAware {
             crashGuard(
                 view = this@HomeFragment.requireView(),
                 throwable = connectErr,
-                refreshAction = { retryAcquireUser() })
+                refreshAction = { retryAcquireUser() }
+            )
         }
     }
 
@@ -296,9 +303,12 @@ class HomeFragment : BaseFragment(), KodeinAware {
         if (progressView.progress >= 0) {
             progressView.progress = progressView.max
             progressView.labelText = completionMessage
-            Handler(Looper.getMainLooper()).postDelayed({
-                progressView.visibility = View.GONE
-            }, TWO_SECONDS)
+            Handler(Looper.getMainLooper()).postDelayed(
+                {
+                    progressView.visibility = View.GONE
+                },
+                TWO_SECONDS
+            )
         }
     }
 
@@ -311,12 +321,15 @@ class HomeFragment : BaseFragment(), KodeinAware {
     private fun isAppDbSynched() {
         uiScope.launch(uiScope.coroutineContext) {
             homeViewModel.bigSyncCheck()
-            homeViewModel.bigSyncDone.observeOnce(viewLifecycleOwner, {
-                Timber.d("Synced: $it")
-                if (!it) {
-                    promptUserToSync()
+            homeViewModel.bigSyncDone.observeOnce(
+                viewLifecycleOwner,
+                {
+                    Timber.d("Synced: $it")
+                    if (!it) {
+                        promptUserToSync()
+                    }
                 }
-            })
+            )
         }
     }
 

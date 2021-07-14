@@ -31,6 +31,8 @@ import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.SUCCESS
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.WARNING
 import za.co.xisystems.itis_rrm.custom.results.XIError
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.ItemSectionDTO
@@ -51,8 +53,6 @@ import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper.s
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DateUtil
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.SUCCESS
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.WARNING
 import za.co.xisystems.itis_rrm.utils.hide
 import za.co.xisystems.itis_rrm.utils.show
 
@@ -141,9 +141,12 @@ class CreateFragment : BaseFragment(), OfflineListener, KodeinAware {
 
         Coroutines.main {
             val user = createViewModel.user.await()
-            user.observe(viewLifecycleOwner, { userDTO ->
-                useR = userDTO
-            })
+            user.observe(
+                viewLifecycleOwner,
+                { userDTO ->
+                    useR = userDTO
+                }
+            )
         }
 
         val myClickListener = View.OnClickListener { view ->
@@ -190,9 +193,12 @@ class CreateFragment : BaseFragment(), OfflineListener, KodeinAware {
                 descri
             )
             createViewModel.backupJob(newJob!!)
-            createViewModel.jobId.observe(viewLifecycleOwner, {
-                Timber.d("Job PK: $it")
-            })
+            createViewModel.jobId.observe(
+                viewLifecycleOwner,
+                {
+                    Timber.d("Job PK: $it")
+                }
+            )
         }
     }
 
@@ -302,32 +308,36 @@ class CreateFragment : BaseFragment(), OfflineListener, KodeinAware {
 
                 val contractData = createViewModel.getContractSelectors()
 
-                contractData.observe(viewLifecycleOwner, { contractList ->
-                    val allData = contractList.count()
-                    if (contractList.size == allData) {
-                        val contractIndices = arrayOfNulls<String>(contractList.size)
-                        for (contract in contractList.indices) {
-                            contractIndices[contract] = contractList[contract].contractNo
-                        }
+                contractData.observe(
+                    viewLifecycleOwner,
+                    { contractList ->
+                        val allData = contractList.count()
+                        if (contractList.size == allData) {
+                            val contractIndices = arrayOfNulls<String>(contractList.size)
+                            for (contract in contractList.indices) {
+                                contractIndices[contract] = contractList[contract].contractNo
+                            }
 
-                        Timber.d("Thread completed.")
-                        setSpinner(
-                            requireContext().applicationContext,
-                            ui.contractSpinner,
-                            contractList,
-                            contractIndices,
-                            object : SpinnerHelper.SelectionListener<ContractSelector> {
-                                override fun onItemSelected(position: Int, item: ContractSelector) {
-                                    selectedContract = item
-                                    setProjects(item.contractId)
-                                    Coroutines.main {
-                                        createViewModel.setContractId(item.contractId)
+                            Timber.d("Thread completed.")
+                            setSpinner(
+                                requireContext().applicationContext,
+                                ui.contractSpinner,
+                                contractList,
+                                contractIndices,
+                                object : SpinnerHelper.SelectionListener<ContractSelector> {
+                                    override fun onItemSelected(position: Int, item: ContractSelector) {
+                                        selectedContract = item
+                                        setProjects(item.contractId)
+                                        Coroutines.main {
+                                            createViewModel.setContractId(item.contractId)
+                                        }
                                     }
                                 }
-                            })
+                            )
+                        }
+                        ui.dataLoading.hide()
                     }
-                    ui.dataLoading.hide()
-                })
+                )
             }
         } catch (t: Throwable) {
             val contractErr = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
@@ -351,31 +361,35 @@ class CreateFragment : BaseFragment(), OfflineListener, KodeinAware {
         Coroutines.main {
             val projects = createViewModel.getProjectSelectors(contractId!!)
             ui.dataLoading.show()
-            projects.observe(viewLifecycleOwner, { projectList ->
-                val allData = projectList.count()
-                if (projectList.size == allData) {
+            projects.observe(
+                viewLifecycleOwner,
+                { projectList ->
+                    val allData = projectList.count()
+                    if (projectList.size == allData) {
 
-                    val projectNmbr = arrayOfNulls<String>(projectList.size)
-                    for (project in projectList.indices) {
-                        projectNmbr[project] = projectList[project].projectCode
-                    }
-                    setSpinner(
-                        requireContext().applicationContext,
-                        ui.projectSpinner,
-                        projectList,
-                        projectNmbr, // null)
-                        object : SpinnerHelper.SelectionListener<ProjectSelector> {
-                            override fun onItemSelected(position: Int, item: ProjectSelector) {
-                                selectedProject = item
-                                Coroutines.main {
-                                    createViewModel.setProjectId(item.projectId)
+                        val projectNmbr = arrayOfNulls<String>(projectList.size)
+                        for (project in projectList.indices) {
+                            projectNmbr[project] = projectList[project].projectCode
+                        }
+                        setSpinner(
+                            requireContext().applicationContext,
+                            ui.projectSpinner,
+                            projectList,
+                            projectNmbr, // null)
+                            object : SpinnerHelper.SelectionListener<ProjectSelector> {
+                                override fun onItemSelected(position: Int, item: ProjectSelector) {
+                                    selectedProject = item
+                                    Coroutines.main {
+                                        createViewModel.setProjectId(item.projectId)
+                                    }
                                 }
                             }
-                        })
+                        )
 
-                    ui.dataLoading.hide()
+                        ui.dataLoading.hide()
+                    }
                 }
-            })
+            )
         }
     }
 

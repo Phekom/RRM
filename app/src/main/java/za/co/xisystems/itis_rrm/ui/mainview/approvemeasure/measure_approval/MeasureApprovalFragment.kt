@@ -45,6 +45,13 @@ import za.co.xisystems.itis_rrm.R.layout
 import za.co.xisystems.itis_rrm.R.string
 import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.constants.Constants
+import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration.SHORT
+import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity.BOTTOM
+import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity.CENTER
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.ERROR
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.INFO
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.NO_INTERNET
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.SUCCESS
 import za.co.xisystems.itis_rrm.custom.results.XIError
 import za.co.xisystems.itis_rrm.custom.results.XIProgress
 import za.co.xisystems.itis_rrm.custom.results.XIResult
@@ -63,13 +70,6 @@ import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
-import za.co.xisystems.itis_rrm.utils.enums.ToastDuration.SHORT
-import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.BOTTOM
-import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.CENTER
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.ERROR
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.INFO
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.NO_INTERNET
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.SUCCESS
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection.NEXT
 
@@ -173,9 +173,12 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
             initVeiledRecycler()
 
             ui.viewMeasuredItems.veil()
-            approveViewModel.jobIdForApproval.observe(viewLifecycleOwner, { jobId ->
-                getMeasureItems(jobId)
-            })
+            approveViewModel.jobIdForApproval.observe(
+                viewLifecycleOwner,
+                { jobId ->
+                    getMeasureItems(jobId)
+                }
+            )
 
             ui.approveMeasureButton.setOnClickListener {
                 val approveBuilder = AlertDialog.Builder(
@@ -208,12 +211,15 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
 
     private fun initVeiledRecycler() {
         ui.viewMeasuredItems.run {
-            setVeilLayout(layout.measurements_item, object : VeiledItemOnClickListener {
-                /** will be invoked when the item on the [VeilRecyclerFrameView] clicked. */
-                override fun onItemClicked(pos: Int) {
-                    toast("Loading ...")
+            setVeilLayout(
+                layout.measurements_item,
+                object : VeiledItemOnClickListener {
+                    /** will be invoked when the item on the [VeilRecyclerFrameView] clicked. */
+                    override fun onItemClicked(pos: Int) {
+                        toast("Loading ...")
+                    }
                 }
-            })
+            )
             setAdapter(groupAdapter)
             setLayoutManager(LinearLayoutManager(this.context))
             addVeiledItems(10)
@@ -241,25 +247,28 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
             progressButton.startProgress("Submitting ...")
 
             val user = approveViewModel.user.await()
-            user.observe(viewLifecycleOwner, { userDTO ->
+            user.observe(
+                viewLifecycleOwner,
+                { userDTO ->
 
-                measuresProcessed = 0
-                flowDirection = workflowDirection.value
+                    measuresProcessed = 0
+                    flowDirection = workflowDirection.value
 
-                if (userDTO.userId.isBlank()) {
-                    showSubmissionError("User lacks permissions", "Invalid User")
-                } else {
-                    Coroutines.main {
-                        withContext(uiScope.coroutineContext) {
-                            approveViewModel.approveMeasurements(
-                                userDTO.userId,
-                                workflowDirection,
-                                measurementsToApprove
-                            )
+                    if (userDTO.userId.isBlank()) {
+                        showSubmissionError("User lacks permissions", "Invalid User")
+                    } else {
+                        Coroutines.main {
+                            withContext(uiScope.coroutineContext) {
+                                approveViewModel.approveMeasurements(
+                                    userDTO.userId,
+                                    workflowDirection,
+                                    measurementsToApprove
+                                )
+                            }
                         }
                     }
                 }
-            })
+            )
         }
         approvalJob.join()
     }
@@ -279,11 +288,14 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
         } else if (direction == WorkflowDirection.FAIL.value) {
             sharpToast(resId = string.measurement_declined, style = INFO, duration = SHORT)
         }
-        Handler(Looper.getMainLooper()).postDelayed({
-            Intent(context?.applicationContext, MainActivity::class.java).also { home ->
-                startActivity(home)
-            }
-        }, Constants.TWO_SECONDS)
+        Handler(Looper.getMainLooper()).postDelayed(
+            {
+                Intent(context?.applicationContext, MainActivity::class.java).also { home ->
+                    startActivity(home)
+                }
+            },
+            Constants.TWO_SECONDS
+        )
     }
 
     private fun getMeasureItems(jobId: String) {
@@ -292,13 +304,16 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
                 jobId,
                 ActivityIdConstants.MEASURE_COMPLETE
             )
-            measurements.observe(viewLifecycleOwner, { jobItemMeasures ->
-                jobItemMeasures?.let {
-                    measurementsToApprove = ArrayList()
-                    measurementsToApprove.addAll(it)
-                    initRecyclerView(it.toMeasureItems())
+            measurements.observe(
+                viewLifecycleOwner,
+                { jobItemMeasures ->
+                    jobItemMeasures?.let {
+                        measurementsToApprove = ArrayList()
+                        measurementsToApprove.addAll(it)
+                        initRecyclerView(it.toMeasureItems())
+                    }
                 }
-            })
+            )
         }
     }
 

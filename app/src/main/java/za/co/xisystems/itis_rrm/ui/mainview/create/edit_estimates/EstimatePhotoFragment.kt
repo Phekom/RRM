@@ -37,6 +37,10 @@ import androidx.lifecycle.whenStarted
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.navArgs
 import com.airbnb.lottie.LottieAnimationView
+import java.io.File
+import java.text.DecimalFormat
+import java.util.Date
+import kotlin.collections.set
 import kotlinx.android.synthetic.main.item_header.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -52,6 +56,11 @@ import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.LocationFragment
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
+import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration.LONG
+import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity.BOTTOM
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.DELETE
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.ERROR
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.INFO
 import za.co.xisystems.itis_rrm.custom.results.XIError
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
@@ -77,16 +86,7 @@ import za.co.xisystems.itis_rrm.utils.GlideApp
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
-import za.co.xisystems.itis_rrm.utils.enums.ToastDuration.LONG
-import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.BOTTOM
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.DELETE
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.ERROR
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.INFO
 import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
-import java.io.File
-import java.text.DecimalFormat
-import java.util.Date
-import kotlin.collections.set
 
 /**
  * Created by Francis Mahlava on 2019/12/29.
@@ -171,7 +171,8 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
                                     myUserId = it
                                     onUserFound(myUserId)
                                 }
-                            })
+                            }
+                        )
                     }
 
                     withContext(uiScope.coroutineContext) {
@@ -183,7 +184,8 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
                                     myJobDTO = jobDTO
                                     onJobFound(myJobDTO!!)
                                 }
-                            })
+                            }
+                        )
                     }
 
                     withContext(uiScope.coroutineContext) {
@@ -196,7 +198,8 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
                                 itemDTO?.let {
                                     onItemFound(it)
                                 }
-                            })
+                            }
+                        )
                     }
                 }
             }
@@ -722,7 +725,8 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
                         filePath,
                         itemidPhototype
                     )
-                })
+                }
+            )
         } finally {
             toggleLongRunning(false)
             resetPhotos()
@@ -798,37 +802,40 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
 
             createViewModel.sectionId.value = projectSectionId
             val projectSection = createViewModel.getSection(projectSectionId)
-            projectSection.observe(viewLifecycleOwner, {
-                it?.let {
-                    val localProjectSection = it
-                    startKm = localProjectSection.startKm
-                    endKm = localProjectSection.endKm
-                    Timber.d("ProjectSection: $it")
-                    Coroutines.main {
-                        if (newJob!!.sectionId.isNullOrEmpty() &&
-                            !createViewModel.checkIfJobSectionExists(
-                                newJob!!.jobId,
-                                projectSectionId
-                            )
-                        ) {
-                            createRouteSection(
-                                secId = projectSectionId,
-                                jobId = newJob!!.jobId,
-                                startKm = startKm!!,
-                                endKm = endKm!!
-                            ).apply {
-                                val sectionList = newJob!!.jobSections as MutableList<JobSectionDTO>
-                                sectionList.add(this)
-                                newJob!!.sectionId = jobSectionId
-                                newJob!!.startKm = this.startKm
-                                newJob!!.endKm = this.endKm
-                                newJob!!.jobSections = sectionList as ArrayList<JobSectionDTO>
-                                isRouteSectionPoint = true
+            projectSection.observe(
+                viewLifecycleOwner,
+                {
+                    it?.let {
+                        val localProjectSection = it
+                        startKm = localProjectSection.startKm
+                        endKm = localProjectSection.endKm
+                        Timber.d("ProjectSection: $it")
+                        Coroutines.main {
+                            if (newJob!!.sectionId.isNullOrEmpty() &&
+                                !createViewModel.checkIfJobSectionExists(
+                                        newJob!!.jobId,
+                                        projectSectionId
+                                    )
+                            ) {
+                                createRouteSection(
+                                    secId = projectSectionId,
+                                    jobId = newJob!!.jobId,
+                                    startKm = startKm!!,
+                                    endKm = endKm!!
+                                ).apply {
+                                    val sectionList = newJob!!.jobSections as MutableList<JobSectionDTO>
+                                    sectionList.add(this)
+                                    newJob!!.sectionId = jobSectionId
+                                    newJob!!.startKm = this.startKm
+                                    newJob!!.endKm = this.endKm
+                                    newJob!!.jobSections = sectionList as ArrayList<JobSectionDTO>
+                                    isRouteSectionPoint = true
+                                }
                             }
                         }
                     }
                 }
-            })
+            )
         }
     }
 
@@ -1067,22 +1074,28 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
         Coroutines.main {
             try {
                 withContext(Dispatchers.Main) {
-                    createViewModel.sectionId.observe(viewLifecycleOwner, { sectId ->
-                        Coroutines.main {
-                            val section = createViewModel.getSection(sectId)
+                    createViewModel.sectionId.observe(
+                        viewLifecycleOwner,
+                        { sectId ->
+                            Coroutines.main {
+                                val section = createViewModel.getSection(sectId)
 
-                            section.observe(viewLifecycleOwner, { projectSectionDTO ->
-                                if (projectSectionDTO != null) {
-                                    captionEstimateItemPhoto(
-                                        projectSectionDTO,
-                                        isStart,
-                                        textView,
-                                        animate
-                                    )
-                                }
-                            })
+                                section.observe(
+                                    viewLifecycleOwner,
+                                    { projectSectionDTO ->
+                                        if (projectSectionDTO != null) {
+                                            captionEstimateItemPhoto(
+                                                projectSectionDTO,
+                                                isStart,
+                                                textView,
+                                                animate
+                                            )
+                                        }
+                                    }
+                                )
+                            }
                         }
-                    })
+                    )
                 }
             } catch (t: Throwable) {
                 val secErr = XIError(t, "Failed to caption photo: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}")
@@ -1238,9 +1251,11 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
         }
 
         ui.costTextView.text =
-            ("  *   R " + tenderRate.toString() + " =  R " + DecimalFormat("##.##").format(
-                lineRate
-            ))
+            (
+                "  *   R " + tenderRate.toString() + " =  R " + DecimalFormat("##.##").format(
+                    lineRate
+                )
+                )
 
         newJobItemEstimate?.qty = qty
         createViewModel.setEstimateQuantity(qty)
@@ -1423,7 +1438,8 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
                     crashGuard(
                         view = this@EstimatePhotoFragment.requireView(),
                         throwable = estError,
-                        refreshAction = { restoreEstimateViewState() })
+                        refreshAction = { restoreEstimateViewState() }
+                    )
                 }
             }
         }

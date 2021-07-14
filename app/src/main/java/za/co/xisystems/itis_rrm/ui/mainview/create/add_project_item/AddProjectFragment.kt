@@ -30,6 +30,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.Section
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
+import java.util.ArrayList
+import java.util.Calendar
+import java.util.Date
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -42,6 +45,8 @@ import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.constants.Constants.ONE_SECOND
 import za.co.xisystems.itis_rrm.constants.Constants.TWO_SECONDS
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.WARNING
 import za.co.xisystems.itis_rrm.data.localDB.JobDataController
 import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
@@ -58,11 +63,6 @@ import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DateUtil
 import za.co.xisystems.itis_rrm.utils.JobUtils
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.WARNING
-import java.util.ArrayList
-import java.util.Calendar
-import java.util.Date
 
 /**
  * Created by Francis Mahlava on 2019/12/29.
@@ -210,13 +210,16 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
                             }
 
                             createViewModel.tempProjectItem.distinctUntilChanged()
-                                .observe(viewLifecycleOwner, {
-                                    it?.let {
-                                        ui.infoTextView.visibility = View.GONE
-                                        ui.lastLin.visibility = View.VISIBLE
-                                        ui.totalCostTextView.visibility = View.VISIBLE
+                                .observe(
+                                    viewLifecycleOwner,
+                                    {
+                                        it?.let {
+                                            ui.infoTextView.visibility = View.GONE
+                                            ui.lastLin.visibility = View.VISIBLE
+                                            ui.totalCostTextView.visibility = View.VISIBLE
+                                        }
                                     }
-                                })
+                                )
 
                             withContext(Dispatchers.Main.immediate) {
                                 if (this@AddProjectFragment::job.isInitialized) {
@@ -226,7 +229,8 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
                             }
                         }
                     }
-                })
+                }
+            )
         }
     }
 
@@ -234,27 +238,30 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
         uiScope.launch(uiScope.coroutineContext) {
             val projectItems =
                 createViewModel.getAllProjectItems(projectID!!, job.jobId)
-            projectItems.observe(viewLifecycleOwner, { itemList ->
-                when {
-                    itemList.isEmpty() -> {
-                        clearProjectItems()
-                    }
-                    else -> {
-                        items = itemList.filter { itemDTOTemp ->
-                            itemDTOTemp.jobId == job.jobId
+            projectItems.observe(
+                viewLifecycleOwner,
+                { itemList ->
+                    when {
+                        itemList.isEmpty() -> {
+                            clearProjectItems()
                         }
-                        when {
-                            items.isNotEmpty() -> {
-                                initRecyclerView(items.toProjecListItems())
-                                calculateTotalCost()
+                        else -> {
+                            items = itemList.filter { itemDTOTemp ->
+                                itemDTOTemp.jobId == job.jobId
                             }
-                            else -> {
-                                clearProjectItems()
+                            when {
+                                items.isNotEmpty() -> {
+                                    initRecyclerView(items.toProjecListItems())
+                                    calculateTotalCost()
+                                }
+                                else -> {
+                                    clearProjectItems()
+                                }
                             }
                         }
                     }
                 }
-            })
+            )
         }
     }
 
@@ -496,7 +503,8 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
                 { _, year, month, dayOfMonth ->
                     setDueDateTextView(year, month, dayOfMonth)
                     dueDate = Date.from(c.toInstant())
-                }, year, month, day
+                },
+                year, month, day
             )
         }
         dueDateDialog!!.datePicker.minDate = System.currentTimeMillis() - ONE_SECOND
@@ -515,7 +523,8 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
                 it,
                 { _, year, month, dayOfMonth ->
                     setStartDateTextView(year, month, dayOfMonth)
-                }, startYear, startMonth, startDay
+                },
+                startYear, startMonth, startDay
             )
         }
         startDateDialog!!.datePicker.minDate = System.currentTimeMillis() - ONE_SECOND
@@ -558,11 +567,15 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
         onResetClicked(this.requireView())
         // createViewModel.setCurrentJob(null)
         // Conduct user back to home fragment
-        HandlerCompat.postDelayed(Handler(Looper.getMainLooper()), {
-            Intent(context?.applicationContext, MainActivity::class.java).also { home ->
-                startActivity(home)
-            }
-        }, null, TWO_SECONDS)
+        HandlerCompat.postDelayed(
+            Handler(Looper.getMainLooper()),
+            {
+                Intent(context?.applicationContext, MainActivity::class.java).also { home ->
+                    startActivity(home)
+                }
+            },
+            null, TWO_SECONDS
+        )
     }
 
     private fun setDueDateTextView(year: Int, month: Int, dayOfMonth: Int) {

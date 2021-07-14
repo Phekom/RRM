@@ -26,6 +26,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.ExpandableGroup
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
+import java.util.ArrayList
+import java.util.HashMap
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -36,6 +38,13 @@ import timber.log.Timber
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
+import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration
+import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity
+import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity.BOTTOM
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.ERROR
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.NO_INTERNET
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.WARNING
 import za.co.xisystems.itis_rrm.custom.results.XIError
 import za.co.xisystems.itis_rrm.custom.results.XIProgress
 import za.co.xisystems.itis_rrm.custom.results.XIResult
@@ -59,15 +68,6 @@ import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
-import za.co.xisystems.itis_rrm.utils.enums.ToastDuration
-import za.co.xisystems.itis_rrm.utils.enums.ToastGravity
-import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.BOTTOM
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.ERROR
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.NO_INTERNET
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.WARNING
-import java.util.ArrayList
-import java.util.HashMap
 
 class SubmitMeasureFragment : BaseFragment(), KodeinAware {
     override val kodein by kodein()
@@ -97,10 +97,13 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
                 uiScope.launch(uiScope.coroutineContext) {
 
                     val estimateData = measureViewModel.estimateMeasureItem
-                    estimateData.observe(viewLifecycleOwner, { estimateMeasureItem ->
-                        jobItemEstimate = estimateMeasureItem.jobItemEstimateDTO
-                        getWorkItems(jobItemEstimate.jobId)
-                    })
+                    estimateData.observe(
+                        viewLifecycleOwner,
+                        { estimateMeasureItem ->
+                            jobItemEstimate = estimateMeasureItem.jobItemEstimateDTO
+                            getWorkItems(jobItemEstimate.jobId)
+                        }
+                    )
                 }
             }
         }
@@ -135,7 +138,8 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
                     crashGuard(
                         this@SubmitMeasureFragment.requireView(),
                         outcome,
-                        refreshAction = { this@SubmitMeasureFragment.retryMeasurements() })
+                        refreshAction = { this@SubmitMeasureFragment.retryMeasurements() }
+                    )
                 }
                 is XIStatus -> {
                     sharpToast(
@@ -221,7 +225,8 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
                         { measureItem ->
                             getWorkItems(measureItem.jobItemEstimateDTO.jobId)
                             ui.itemsSwipeToRefresh.isRefreshing = false
-                        })
+                        }
+                    )
                 }
             }
         }
@@ -268,41 +273,47 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
             measureViewModel.setBackupJobId(jobId!!)
             val jobItemMeasure =
                 measureViewModel.getJobItemMeasuresForJobIdAndEstimateId(jobId) // estimateId
-            jobItemMeasure.observeOnce(viewLifecycleOwner, { measureList ->
-                val validMeasures = measureList.filter { msure ->
-                    msure.qty > 0 && !msure.jobItemMeasurePhotos.isNullOrEmpty()
-                }
-                if (validMeasures.isNullOrEmpty()) {
-                    sharpToast(
-                        resId = R.string.please_make_sure_you_have_captured_photos,
-                        style = WARNING
-                    )
-                    progressButton.failProgress(originalCaption)
-                } else {
-                    sharpToast(
-                        message = "You have Done " + validMeasures.size.toString() + " Measurements on this Estimate",
-                        style = ToastStyle.INFO
-                    )
-
-                    val itemMeasures = validMeasures as ArrayList
-                    itemMeasures.forEach { jim ->
-                        val newJim = setJobMeasureLittleEndianGuids(jim)
-                        jobItemMeasureList.add(newJim)
+            jobItemMeasure.observeOnce(
+                viewLifecycleOwner,
+                { measureList ->
+                    val validMeasures = measureList.filter { msure ->
+                        msure.qty > 0 && !msure.jobItemMeasurePhotos.isNullOrEmpty()
                     }
-                    submitMeasures(jobForItemEstimate, jobItemMeasureList)
+                    if (validMeasures.isNullOrEmpty()) {
+                        sharpToast(
+                            resId = R.string.please_make_sure_you_have_captured_photos,
+                            style = WARNING
+                        )
+                        progressButton.failProgress(originalCaption)
+                    } else {
+                        sharpToast(
+                            message = "You have Done " + validMeasures.size.toString() + " Measurements on this Estimate",
+                            style = ToastStyle.INFO
+                        )
+
+                        val itemMeasures = validMeasures as ArrayList
+                        itemMeasures.forEach { jim ->
+                            val newJim = setJobMeasureLittleEndianGuids(jim)
+                            jobItemMeasureList.add(newJim)
+                        }
+                        submitMeasures(jobForItemEstimate, jobItemMeasureList)
+                    }
                 }
-            })
+            )
         }
     }
 
     private fun retryMeasurements() {
         IndefiniteSnackbar.hide()
         val backupJob = measureViewModel.backupJobId
-        backupJob.observeOnce(viewLifecycleOwner, { response ->
-            response?.let { jobId ->
-                submitMeasurements(jobId)
+        backupJob.observeOnce(
+            viewLifecycleOwner,
+            { response ->
+                response?.let { jobId ->
+                    submitMeasurements(jobId)
+                }
             }
-        })
+        )
     }
 
     private fun submitMeasures(
@@ -311,37 +322,40 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
     ) {
         Coroutines.main {
             val user = measureViewModel.user.await()
-            user.observe(viewLifecycleOwner, { userDTO ->
-                when {
-                    userDTO.userId.isBlank() -> {
-                        showSubmissionError("Current user lacks permissions")
-                    }
-                    itemMeasureJob.jobId.isBlank() -> {
-                        showSubmissionError("Selected job is invalid")
-                    }
-                    else -> {
-                        // littleEndian conversion for transport to backend
-                        val contractVoId: String =
-                            DataConversion.toLittleEndian(itemMeasureJob.contractVoId)!!
-                        val jobId: String = DataConversion.toLittleEndian(itemMeasureJob.jobId)!!
+            user.observe(
+                viewLifecycleOwner,
+                { userDTO ->
+                    when {
+                        userDTO.userId.isBlank() -> {
+                            showSubmissionError("Current user lacks permissions")
+                        }
+                        itemMeasureJob.jobId.isBlank() -> {
+                            showSubmissionError("Selected job is invalid")
+                        }
+                        else -> {
+                            // littleEndian conversion for transport to backend
+                            val contractVoId: String =
+                                DataConversion.toLittleEndian(itemMeasureJob.contractVoId)!!
+                            val jobId: String = DataConversion.toLittleEndian(itemMeasureJob.jobId)!!
 
-                        Coroutines.main {
+                            Coroutines.main {
 
-                            activity?.let {
+                                activity?.let {
 
-                                processMeasurementWorkflow(
-                                    userDTO,
-                                    jobId,
-                                    itemMeasureJob,
-                                    contractVoId,
-                                    mSures,
-                                    it
-                                )
+                                    processMeasurementWorkflow(
+                                        userDTO,
+                                        jobId,
+                                        itemMeasureJob,
+                                        contractVoId,
+                                        mSures,
+                                        it
+                                    )
+                                }
                             }
                         }
                     }
                 }
-            })
+            )
         }
     }
 
@@ -441,9 +455,12 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
     private fun getWorkItems(jobID: String?) {
         Coroutines.main {
             val measurements = measureViewModel.getJobItemsToMeasureForJobId(jobID)
-            measurements.observe(viewLifecycleOwner, { estimateList ->
-                initRecyclerView(estimateList.toMeasureItems())
-            })
+            measurements.observe(
+                viewLifecycleOwner,
+                { estimateList ->
+                    initRecyclerView(estimateList.toMeasureItems())
+                }
+            )
         }
     }
 
@@ -499,29 +516,32 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
                                         job.jobId,
                                         jobItemEstimateDTO.estimateId
                                     )
-                                jobItemMeasure.observeOnce(viewLifecycleOwner, { measureList ->
-                                    Coroutines.main {
-                                        for (jobItemM in measureList) {
-                                            Coroutines.main {
-                                                val itemMeasureId = jobItemM.itemMeasureId
-                                                val qty = jobItemM.qty.toString()
-                                                val rate = jobItemM.lineRate.toString()
-                                                val jNo = jobItemM.jimNo.toString()
-                                                add(
-                                                    CardMeasureItem(
-                                                        activity = activity,
-                                                        itemMeasureId = itemMeasureId,
-                                                        qty = qty,
-                                                        rate = rate,
-                                                        text = jNo,
-                                                        measureViewModel = measureViewModel,
-                                                        uiScope = uiScope
+                                jobItemMeasure.observeOnce(
+                                    viewLifecycleOwner,
+                                    { measureList ->
+                                        Coroutines.main {
+                                            for (jobItemM in measureList) {
+                                                Coroutines.main {
+                                                    val itemMeasureId = jobItemM.itemMeasureId
+                                                    val qty = jobItemM.qty.toString()
+                                                    val rate = jobItemM.lineRate.toString()
+                                                    val jNo = jobItemM.jimNo.toString()
+                                                    add(
+                                                        CardMeasureItem(
+                                                            activity = activity,
+                                                            itemMeasureId = itemMeasureId,
+                                                            qty = qty,
+                                                            rate = rate,
+                                                            text = jNo,
+                                                            measureViewModel = measureViewModel,
+                                                            uiScope = uiScope
+                                                        )
                                                     )
-                                                )
+                                                }
                                             }
                                         }
                                     }
-                                })
+                                )
                             }
                         }
                     )
