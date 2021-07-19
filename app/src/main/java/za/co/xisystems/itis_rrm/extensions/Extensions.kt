@@ -85,7 +85,18 @@ fun Context.uomForUI(uom: String): String {
         "l" -> {
             this.getString(R.string.uom_l)
         }
-
+        "t" -> {
+            this.getString(R.string.uom_t)
+        }
+        "no." -> {
+            this.getString(R.string.uom_quantity)
+        }
+        "quantity" -> {
+            this.getString(R.string.uom_quantity)
+        }
+        "prpv sum" -> {
+            this.getString(R.string.uom_prov_sum)
+        }
         else -> {
             "per ${uom.lowercase()}"
         }
