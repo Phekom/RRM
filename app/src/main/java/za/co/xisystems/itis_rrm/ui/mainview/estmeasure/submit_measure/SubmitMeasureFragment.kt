@@ -57,6 +57,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasurePhotoDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentSubmitMeasureBinding
+import za.co.xisystems.itis_rrm.extensions.isConnected
 import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.ui.extensions.doneProgress
 import za.co.xisystems.itis_rrm.ui.extensions.failProgress
@@ -67,7 +68,6 @@ import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModelFactory
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DataConversion
-import za.co.xisystems.itis_rrm.utils.ServiceUtil
 
 class SubmitMeasureFragment : BaseFragment(), KodeinAware {
     override val kodein by kodein()
@@ -153,8 +153,8 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
                     toggleLongRunning(outcome.isLoading)
                     when (outcome.isLoading) {
                         true -> {
-                            progressButton.initProgress(viewLifecycleOwner)
-                            progressButton.startProgress("Submitting ...")
+                            progressButton.initProgress(viewLifecycleOwner, this@SubmitMeasureFragment.requireContext())
+                            progressButton.startProgress("Submitting ...", this@SubmitMeasureFragment.requireContext())
                         }
                         else -> {
                             progressButton.doneProgress(originalCaption)
@@ -206,7 +206,7 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
             ui.submitMeasurementsButton.setOnClickListener {
                 progressButton = ui.submitMeasurementsButton
                 originalCaption = ui.submitMeasurementsButton.text.toString()
-                progressButton.initProgress(viewLifecycleOwner)
+                progressButton.initProgress(viewLifecycleOwner, this@SubmitMeasureFragment.requireContext())
                 measurementPrompt(jobForItemEstimate.jobId)
             }
 
@@ -242,7 +242,7 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
             setMessage(R.string.are_you_sure_you_want_to_submit_measurements)
             // Yes button
             setPositiveButton(R.string.yes) { _, _ ->
-                if (ServiceUtil.isNetworkAvailable(requireContext().applicationContext)) {
+                if (this@SubmitMeasureFragment.requireContext().isConnected) {
                     toggleLongRunning(true)
                     submitMeasurements(jobId)
                 } else {
@@ -269,7 +269,7 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
 
     private fun submitMeasurements(jobId: String?) {
         Coroutines.main {
-            progressButton.startProgress("Submitting ...")
+            progressButton.startProgress("Submitting ...", this@SubmitMeasureFragment.requireContext())
             measureViewModel.setBackupJobId(jobId!!)
             val jobItemMeasure =
                 measureViewModel.getJobItemMeasuresForJobIdAndEstimateId(jobId) // estimateId
@@ -287,7 +287,7 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
                         progressButton.failProgress(originalCaption)
                     } else {
                         sharpToast(
-                            message = "You have Done " + validMeasures.size.toString() + " Measurements on this Estimate",
+                            message = "You have Done ${validMeasures.size} Measurements on this Estimate",
                             style = ToastStyle.INFO
                         )
 

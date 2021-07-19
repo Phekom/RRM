@@ -15,8 +15,6 @@ import android.widget.Toast
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.skydoves.androidveil.VeilRecyclerFrameView
-import com.skydoves.androidveil.VeiledItemOnClickListener
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import org.kodein.di.KodeinAware
@@ -45,6 +43,7 @@ import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentJobInfoBinding
+import za.co.xisystems.itis_rrm.extensions.isConnected
 import za.co.xisystems.itis_rrm.ui.extensions.ShimmerUtils
 import za.co.xisystems.itis_rrm.ui.extensions.doneProgress
 import za.co.xisystems.itis_rrm.ui.extensions.failProgress
@@ -55,7 +54,6 @@ import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.ApproveJobsViewModelFact
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.approve_job_item.ApproveJobItem
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DataConversion
-import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection.FAIL
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection.NEXT
@@ -123,10 +121,11 @@ class JobInfoFragment : BaseFragment(), KodeinAware {
                 when (result.isLoading) {
                     true -> {
                         activity?.hideKeyboard()
-                        progressButton.startProgress()
-                        toggleLongRunning(true)
+                        progressButton.startProgress(context = this.requireContext())
                     }
-                    else -> progressButton.doneProgress()
+                    else -> {
+                        progressButton.doneProgress()
+                    }
                 }
                 Timber.d("Loading ${result.isLoading}")
             }
@@ -196,7 +195,7 @@ class JobInfoFragment : BaseFragment(), KodeinAware {
             declineBuilder.setPositiveButton(
                 string.yes
             ) { _, _ ->
-                if (ServiceUtil.isNetworkAvailable(requireContext().applicationContext)) {
+                if (requireContext().isConnected) {
                     progressButton = ui.declineJobButton
                     moveJobToNextWorkflow(FAIL)
                 } else {
@@ -231,9 +230,9 @@ class JobInfoFragment : BaseFragment(), KodeinAware {
             approvalBuilder.setPositiveButton(
                 string.yes
             ) { _, _ ->
-                if (ServiceUtil.isNetworkAvailable(requireContext().applicationContext)) {
+                if (requireContext().isConnected) {
                     progressButton = ui.approveJobButton
-                    progressButton.initProgress(viewLifecycleOwner)
+                    progressButton.initProgress(viewLifecycleOwner, this@JobInfoFragment.requireContext())
                     moveJobToNextWorkflow(NEXT)
                 } else {
                     sharpToast(
@@ -278,14 +277,8 @@ class JobInfoFragment : BaseFragment(), KodeinAware {
     private fun initVeiledRecyclerView() {
         ui.viewEstimationItemsListView.run {
             setVeilLayout(
-                layout.estimates_item,
-                object : VeiledItemOnClickListener {
-                    /** will be invoked when the item on the [VeilRecyclerFrameView] clicked. */
-                    override fun onItemClicked(pos: Int) {
-                        Toast.makeText(this@JobInfoFragment.requireContext(), "Loading ...", Toast.LENGTH_SHORT).show()
-                    }
-                }
-            )
+                layout.estimates_item
+            ) { Toast.makeText(this@JobInfoFragment.requireContext(), "Loading ...", Toast.LENGTH_SHORT).show() }
             setAdapter(groupAdapter)
             setLayoutManager(LinearLayoutManager(this.context))
             addVeiledItems(3)
@@ -300,20 +293,7 @@ class JobInfoFragment : BaseFragment(), KodeinAware {
 
     private fun moveJobToNextWorkflow(workflowDirection: WorkflowDirection) {
         Coroutines.main {
-            flowDirection = workflowDirection
-
-            when (progressButton == ui.approveJobButton) {
-                true -> {
-                    progressButton.text = getString(string.approve_job_in_progress)
-                    ui.declineJobButton.visibility = View.GONE
-                }
-                else -> {
-                    progressButton.text = getString(string.decline_job_in_progress)
-                    ui.approveJobButton.visibility = View.GONE
-                }
-            }
-            progressButton.initProgress(viewLifecycleOwner)
-            progressButton.startProgress()
+            updateUI(workflowDirection)
             val user = approveViewModel.user.await()
             user.observe(
                 viewLifecycleOwner,
@@ -361,6 +341,23 @@ class JobInfoFragment : BaseFragment(), KodeinAware {
                 }
             )
         }
+    }
+
+    private fun updateUI(workflowDirection: WorkflowDirection) {
+        flowDirection = workflowDirection
+
+        when (progressButton == ui.approveJobButton) {
+            true -> {
+                progressButton.text = getString(string.approve_job_in_progress)
+                ui.declineJobButton.visibility = View.GONE
+            }
+            else -> {
+                progressButton.text = getString(string.decline_job_in_progress)
+                ui.approveJobButton.visibility = View.GONE
+            }
+        }
+        progressButton.initProgress(viewLifecycleOwner, this@JobInfoFragment.requireContext())
+        progressButton.startProgress(context = this@JobInfoFragment.requireContext())
     }
 
     private fun initJobWorkflow(

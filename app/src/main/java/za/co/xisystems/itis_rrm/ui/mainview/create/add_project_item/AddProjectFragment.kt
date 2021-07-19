@@ -440,8 +440,8 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
                     if (!valid) {
                         onInvalidJob()
                     } else {
-                        ui.submitButton.initProgress(viewLifecycleOwner)
-                        ui.submitButton.startProgress("Submitting data ...")
+                        ui.submitButton.initProgress(viewLifecycleOwner, this@AddProjectFragment.requireContext())
+                        ui.submitButton.startProgress("Submitting data ...", this@AddProjectFragment.requireContext())
 
                         job.issueDate = DateUtil.dateToString(Date())
                         submitJob(job)

@@ -27,22 +27,22 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import com.xwray.groupie.kotlinandroidextensions.Item
+import java.io.File
 import kotlinx.android.synthetic.main.estimates_item.*
 import timber.log.Timber
 import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
+import za.co.xisystems.itis_rrm.extensions.isConnected
 import za.co.xisystems.itis_rrm.ui.extensions.DecimalSignedDigitsKeyListener
 import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.ApproveJobsViewModel
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.GlideApp
-import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.Utils.nanCheck
 import za.co.xisystems.itis_rrm.utils.Utils.round
 import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
-import java.io.File
 
 /**
  * Created by Francis Mahlava on 2020/01/02.
@@ -60,16 +60,22 @@ class EstimatesItem(
             Coroutines.main {
                 val quantity =
                     approveViewModel.getQuantityForEstimationItemId(jobItemEstimateDTO.estimateId)
-                quantity.observe(viewLifecycleOwner, { qty ->
+                quantity.observe(
+                    viewLifecycleOwner,
+                    { qty ->
 
-                    estimation_item_quantity_textView.text = activity?.getString(R.string.pair, "Qty:", qty.toString())
-                })
+                        estimation_item_quantity_textView.text = activity?.getString(R.string.pair, "Qty:", qty.toString())
+                    }
+                )
                 val lineRate =
                     approveViewModel.getLineRateForEstimationItemId(jobItemEstimateDTO.estimateId)
-                lineRate.observe(viewLifecycleOwner, {
-                    estimation_item_price_textView.text = activity?.getString(R.string.pair, "R", it.toString())
-                    // dialog.dismiss()
-                })
+                lineRate.observe(
+                    viewLifecycleOwner,
+                    {
+                        estimation_item_price_textView.text = activity?.getString(R.string.pair, "R", it.toString())
+                        // dialog.dismiss()
+                    }
+                )
 //                estimation_item_quantity_textView.text = "Qty: " + quantity //jobItemEstimateDTO.qty.toString()
 //                 estimation_item_price_textView.text = "R " +  lineRate //jobItemEstimateDTO.lineRate.toString()
 
@@ -184,7 +190,7 @@ class EstimatesItem(
         totalEntry: TextView,
         jobItemEstimateDTO: JobItemEstimateDTO
     ) {
-        if (ServiceUtil.isNetworkAvailable(activity.applicationContext)) {
+        if (activity.isConnected) {
             Coroutines.main {
                 when {
                     quantityEntry.text.toString() == "" ||

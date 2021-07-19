@@ -74,6 +74,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobSectionDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectSectionDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.SectionPointDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentPhotoEstimateBinding
+import za.co.xisystems.itis_rrm.extensions.isConnected
 import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.services.LocationModel
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModel
@@ -84,7 +85,6 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DateUtil
 import za.co.xisystems.itis_rrm.utils.GlideApp
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
-import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
 
@@ -668,7 +668,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
             newJob?.jobItemEstimates!!.add(newJobItemEstimate!!)
         }
 
-        if (ServiceUtil.isNetworkAvailable(requireActivity().applicationContext)) {
+        if (requireActivity().isConnected) {
             uiScope.launch(context = uiScope.coroutineContext) {
                 processPhotoLocation(estimateLocation, filePath, itemidPhototype)
             }

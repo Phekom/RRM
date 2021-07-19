@@ -30,7 +30,6 @@ import androidx.core.view.doOnNextLayout
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.skydoves.androidveil.VeiledItemOnClickListener
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import kotlinx.coroutines.launch
@@ -60,6 +59,7 @@ import za.co.xisystems.itis_rrm.custom.results.XISuccess
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentMeasureApprovalBinding
+import za.co.xisystems.itis_rrm.extensions.isConnected
 import za.co.xisystems.itis_rrm.ui.extensions.doneProgress
 import za.co.xisystems.itis_rrm.ui.extensions.failProgress
 import za.co.xisystems.itis_rrm.ui.extensions.initProgress
@@ -69,7 +69,6 @@ import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureViewMod
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
-import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection.NEXT
 
@@ -122,7 +121,10 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
                     toggleLongRunning(result.isLoading)
                     when (result.isLoading) {
                         true -> {
-                            progressButton.startProgress("Submitting ...")
+                            progressButton.startProgress(
+                                "Submitting ...",
+                                this@MeasureApprovalFragment.requireContext()
+                            )
                             this@MeasureApprovalFragment.toggleLongRunning(true)
                         }
                         else -> progressButton.doneProgress(progressButton.text.toString())
@@ -192,7 +194,7 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
                     string.yes
                 ) { _, _ ->
                     progressButton = ui.approveMeasureButton
-                    progressButton.initProgress(viewLifecycleOwner)
+                    progressButton.initProgress(viewLifecycleOwner, this@MeasureApprovalFragment.requireContext())
                     processMeasurementWorkflow(NEXT)
                 }
 
@@ -212,14 +214,8 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
     private fun initVeiledRecycler() {
         ui.viewMeasuredItems.run {
             setVeilLayout(
-                layout.measurements_item,
-                object : VeiledItemOnClickListener {
-                    /** will be invoked when the item on the [VeilRecyclerFrameView] clicked. */
-                    override fun onItemClicked(pos: Int) {
-                        toast("Loading ...")
-                    }
-                }
-            )
+                layout.measurements_item
+            ) { toast("Loading ...") }
             setAdapter(groupAdapter)
             setLayoutManager(LinearLayoutManager(this.context))
             addVeiledItems(10)
@@ -227,7 +223,7 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
     }
 
     private fun processMeasurementWorkflow(workflowDirection: WorkflowDirection) {
-        if (ServiceUtil.isNetworkAvailable(this.requireContext().applicationContext)) {
+        if (this.requireContext().isConnected) {
             Coroutines.main {
                 workflowMeasurements(workflowDirection)
             }
@@ -244,7 +240,7 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
         approveViewModel.workflowState.observe(viewLifecycleOwner, workObserver)
 
         val approvalJob = uiScope.launch(uiScope.coroutineContext) {
-            progressButton.startProgress("Submitting ...")
+            progressButton.startProgress("Submitting ...", this@MeasureApprovalFragment.requireContext())
 
             val user = approveViewModel.user.await()
             user.observe(

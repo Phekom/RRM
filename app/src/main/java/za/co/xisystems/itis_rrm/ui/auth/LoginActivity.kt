@@ -33,11 +33,11 @@ import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.databinding.ActivityLoginBinding
+import za.co.xisystems.itis_rrm.extensions.isConnected
 import za.co.xisystems.itis_rrm.ui.auth.model.AuthViewModel
 import za.co.xisystems.itis_rrm.ui.auth.model.AuthViewModelFactory
 import za.co.xisystems.itis_rrm.ui.base.BaseActivity
 import za.co.xisystems.itis_rrm.utils.Coroutines
-import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.hide
 import za.co.xisystems.itis_rrm.utils.hideKeyboard
 import za.co.xisystems.itis_rrm.utils.show
@@ -133,7 +133,7 @@ class LoginActivity : BaseActivity(), AuthListener, KodeinAware {
         builder.setCancelable(false)
         // Yes button
         builder.setPositiveButton(R.string.ok) { _, _ ->
-            if (ServiceUtil.isNetworkAvailable(this.applicationContext)) {
+            if (this.isConnected) {
                 Intent(this, RegisterPinActivity::class.java).also { registerPinAct ->
                     registerPinAct.flags =
                         Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
@@ -155,9 +155,12 @@ class LoginActivity : BaseActivity(), AuthListener, KodeinAware {
         } else {
             toast("Please press Back again to exit")
             if (doubleBackToExitPressed > 0) {
-                Handler(mainLooper).postDelayed({
-                    doubleBackToExitPressed--
-                }, TWO_SECONDS)
+                Handler(mainLooper).postDelayed(
+                    {
+                        doubleBackToExitPressed--
+                    },
+                    TWO_SECONDS
+                )
             }
         }
     }

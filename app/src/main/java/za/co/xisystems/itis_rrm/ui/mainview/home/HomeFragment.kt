@@ -61,10 +61,10 @@ import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentHomeBinding
+import za.co.xisystems.itis_rrm.extensions.isConnected
 import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.Coroutines
-import za.co.xisystems.itis_rrm.utils.ServiceUtil
 
 class HomeFragment : BaseFragment(), KodeinAware {
 
@@ -354,7 +354,7 @@ class HomeFragment : BaseFragment(), KodeinAware {
         var result = true
         val lm = requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager
         gpsEnabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
-        networkEnabled = ServiceUtil.isNetworkAvailable(requireActivity().applicationContext)
+        networkEnabled = requireActivity().isConnected
         //  Check if Network Enabled
         if (!networkEnabled) {
             ui.dataEnabled.setText(R.string.mobile_data_not_connected)
