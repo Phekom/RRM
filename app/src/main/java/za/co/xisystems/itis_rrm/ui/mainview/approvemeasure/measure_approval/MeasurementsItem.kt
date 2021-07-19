@@ -18,6 +18,7 @@ import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.extensions.isConnected
+import za.co.xisystems.itis_rrm.extensions.uomForUI
 import za.co.xisystems.itis_rrm.ui.extensions.DecimalSignedDigitsKeyListener
 import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureViewModel
@@ -62,7 +63,7 @@ class MeasurementsItem(
                 if (uom == "NONE") {
                     measure_item_uom_textView.text = ""
                 } else {
-                    measure_item_uom_textView.text = activity?.getString(R.string.pair, "Unit of Measure:", uom)
+                    measure_item_uom_textView.text = itemView.context.uomForUI(uom)
                 }
             }
             correctButton.setOnClickListener {

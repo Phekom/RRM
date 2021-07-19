@@ -69,16 +69,19 @@ class RegisterPinActivity : AppCompatActivity(), AuthListener, KodeinAware {
 
         Coroutines.main {
             val loggedInUser = viewModel.user.await()
-            loggedInUser.observe(this, { user ->
-                // Register the user
-                if (user?.pinHash != null) {
-                    Intent(this, LoginActivity::class.java).also { login ->
-                        login.flags =
-                            Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-                        startActivity(login)
+            loggedInUser.observe(
+                this,
+                { user ->
+                    // Register the user
+                    if (user?.pinHash != null) {
+                        Intent(this, LoginActivity::class.java).also { login ->
+                            login.flags =
+                                Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                            startActivity(login)
+                        }
                     }
                 }
-            })
+            )
             serverTextView.setOnClickListener {
                 ToastUtils().toastServerAddress(appContext)
             }
@@ -168,7 +171,7 @@ class RegisterPinActivity : AppCompatActivity(), AuthListener, KodeinAware {
 
     override fun onSuccess(userDTO: UserDTO) {
         loading.hide()
-        toast("You are Logged in as ${userDTO.userName}")
+        toast("Pin registered for ${userDTO.userName}")
         gotoMainActivity()
     }
 
