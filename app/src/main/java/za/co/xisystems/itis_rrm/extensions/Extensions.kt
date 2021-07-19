@@ -10,6 +10,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import com.google.android.material.appbar.CollapsingToolbarLayout
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.utils.ServiceUtil
 
 /**
  * Created by Shaun McDonald on 2020/06/05.
@@ -24,12 +25,15 @@ import za.co.xisystems.itis_rrm.R
  * @param observer Observer<T>
  */
 fun <T> LiveData<T>.observeOnce(lifecycleOwner: LifecycleOwner, observer: Observer<T>) {
-    observe(lifecycleOwner, object : Observer<T> {
-        override fun onChanged(t: T?) {
-            observer.onChanged(t)
-            removeObserver(this)
+    observe(
+        lifecycleOwner,
+        object : Observer<T> {
+            override fun onChanged(t: T?) {
+                observer.onChanged(t)
+                removeObserver(this)
+            }
         }
-    })
+    )
 }
 
 fun AppCompatActivity.applyToolbarMargin(toolbar: Toolbar) {
@@ -37,8 +41,8 @@ fun AppCompatActivity.applyToolbarMargin(toolbar: Toolbar) {
         toolbar.layoutParams
             as CollapsingToolbarLayout.LayoutParams
         ).apply {
-            topMargin = getStatusBarSize()
-        }
+        topMargin = getStatusBarSize()
+    }
 }
 
 private fun AppCompatActivity.getStatusBarSize(): Int {
@@ -78,8 +82,14 @@ fun Context.uomForUI(uom: String): String {
         "hour" -> {
             this.getString(R.string.uom_hour)
         }
+        "l" -> {
+            this.getString(R.string.uom_l)
+        }
+
         else -> {
             "per ${uom.lowercase()}"
         }
     }
 }
+
+val Context.isConnected: Boolean get() = ServiceUtil.isNetworkConnected(this.applicationContext)

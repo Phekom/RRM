@@ -13,8 +13,15 @@ import android.os.Build
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.Socket
+import timber.log.Timber
+import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 
 object ServiceUtil {
+
+    fun isNetworkConnected(context: Context): Boolean {
+        return isNetworkAvailable(context)
+    }
+
     fun isNetworkAvailable(context: Context): Boolean {
         var result = false
         val connectivityManager =
@@ -58,9 +65,9 @@ object ServiceUtil {
             socket.close()
             result = true
         } catch (e: Exception) {
-            e.printStackTrace()
+            Timber.e("Connection to $host failed: ${e.message ?: XIErrorHandler.UNKNOWN_ERROR}")
         } finally {
-            socket.close()
+            if (!socket.isClosed) socket.close()
         }
         return result
     }

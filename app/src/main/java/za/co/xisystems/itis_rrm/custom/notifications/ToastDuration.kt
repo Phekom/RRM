@@ -1,4 +1,4 @@
-package za.co.xisystems.itis_rrm.utils.enums
+package za.co.xisystems.itis_rrm.custom.notifications
 
 import www.sanju.motiontoast.MotionToast
 

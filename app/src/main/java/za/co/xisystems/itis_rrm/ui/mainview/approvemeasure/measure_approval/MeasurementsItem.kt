@@ -12,17 +12,17 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.Navigation
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import com.xwray.groupie.kotlinandroidextensions.Item
+import java.io.File
 import kotlinx.android.synthetic.main.measurements_item.*
 import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
+import za.co.xisystems.itis_rrm.extensions.isConnected
 import za.co.xisystems.itis_rrm.ui.extensions.DecimalSignedDigitsKeyListener
 import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureViewModel
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.GlideApp
-import za.co.xisystems.itis_rrm.utils.ServiceUtil
-import java.io.File
 
 /**
  * Created by Francis Mahlava on 2020/01/02.
@@ -40,14 +40,20 @@ class MeasurementsItem(
             Coroutines.main {
 
                 val quantity = approveViewModel.getQuantityForMeasureItemId(jobItemMeasureDTO.itemMeasureId)
-                quantity.observe(viewLifecycleOwner, {
-                    measure_item_quantity_textView.text = activity?.getString(R.string.pair, "Qty:", it.toString())
-                })
+                quantity.observe(
+                    viewLifecycleOwner,
+                    {
+                        measure_item_quantity_textView.text = activity?.getString(R.string.pair, "Qty:", it.toString())
+                    }
+                )
 
                 val lineRate = approveViewModel.getLineRateForMeasureItemId(jobItemMeasureDTO.itemMeasureId)
-                lineRate.observe(viewLifecycleOwner, {
-                    measure_item_price_textView.text = activity?.getString(R.string.pair, "R", it.toString())
-                })
+                lineRate.observe(
+                    viewLifecycleOwner,
+                    {
+                        measure_item_price_textView.text = activity?.getString(R.string.pair, "R", it.toString())
+                    }
+                )
 
                 val descri = approveViewModel.getDescForProjectId(jobItemMeasureDTO.projectItemId!!)
                 val uom =
@@ -121,7 +127,7 @@ class MeasurementsItem(
         editQuantity: String,
         itemMeasureId: String
     ) {
-        if (ServiceUtil.isNetworkAvailable(activity.applicationContext)) {
+        if (activity.isConnected) {
             Coroutines.main {
                 when {
                     editQuantity == "" || nanCheck(editQuantity) -> {

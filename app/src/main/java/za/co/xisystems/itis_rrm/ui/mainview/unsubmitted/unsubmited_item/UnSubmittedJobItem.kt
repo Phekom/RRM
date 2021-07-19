@@ -18,15 +18,15 @@ import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.R.drawable
 import za.co.xisystems.itis_rrm.R.string
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
+import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration.LONG
+import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity.BOTTOM
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.DELETE
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedFragment
 import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedFragmentDirections
 import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedViewModel
 import za.co.xisystems.itis_rrm.utils.Coroutines
-import za.co.xisystems.itis_rrm.utils.enums.ToastDuration.LONG
-import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.BOTTOM
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.DELETE
 
 /**
  * Created by Francis Mahlava on 2019/12/22.
@@ -103,17 +103,17 @@ class UnSubmittedJobItem(
             string.yes
         ) { _, _ ->
             fragment.sharpToast("Deleting ...", "${this.jobDTO.jiNo} removed.", DELETE, BOTTOM, LONG)
-                Coroutines.main {
-                    try {
-                        viewModel.deleJobfromList(jobDTO.jobId)
-                        viewModel.deleteItemList(jobDTO.jobId)
-                        groupAdapter.clear()
-                        groupAdapter.notifyDataSetChanged()
-                        notifyChanged()
-                    } catch (t: Throwable) {
-                        Timber.e("Failed to delete unsubmitted job: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}")
-                    }
+            Coroutines.main {
+                try {
+                    viewModel.deleJobfromList(jobDTO.jobId)
+                    viewModel.deleteItemList(jobDTO.jobId)
+                    groupAdapter.clear()
+                    groupAdapter.notifyDataSetChanged()
+                    notifyChanged()
+                } catch (t: Throwable) {
+                    Timber.e("Failed to delete unsubmitted job: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}")
                 }
+            }
         }
         // No button
         itemDeleteBuilder.setNegativeButton(

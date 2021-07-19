@@ -7,6 +7,7 @@ import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelChildren
 import timber.log.Timber
@@ -35,7 +36,7 @@ class UiLifecycleScope : CoroutineScope, LifecycleObserver {
     private var job = SupervisorJob()
 
     override val coroutineContext: CoroutineContext
-        get() = job.plus(Dispatchers.Main).plus(handler)
+        get() = Job(job).plus(Dispatchers.Main).plus(handler)
 
     @OnLifecycleEvent(Lifecycle.Event.ON_START)
     fun onCreate() {
@@ -43,5 +44,5 @@ class UiLifecycleScope : CoroutineScope, LifecycleObserver {
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
-    fun destroy() = coroutineContext.cancelChildren()
+    fun destroy() = job.cancelChildren()
 }

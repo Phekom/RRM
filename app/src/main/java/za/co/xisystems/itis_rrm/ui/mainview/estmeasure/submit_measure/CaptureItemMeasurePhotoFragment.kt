@@ -26,6 +26,9 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
+import java.util.ArrayList
+import java.util.Date
+import java.util.HashMap
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -37,6 +40,8 @@ import timber.log.Timber
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.LocationFragment
+import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.INFO
 import za.co.xisystems.itis_rrm.custom.results.XIError
 import za.co.xisystems.itis_rrm.custom.results.XIProgress
 import za.co.xisystems.itis_rrm.custom.results.XIResult
@@ -60,11 +65,6 @@ import za.co.xisystems.itis_rrm.utils.DateUtil
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
-import za.co.xisystems.itis_rrm.utils.enums.ToastGravity
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.INFO
-import java.util.ArrayList
-import java.util.Date
-import java.util.HashMap
 
 //
 class CaptureItemMeasurePhotoFragment :
@@ -147,7 +147,8 @@ class CaptureItemMeasurePhotoFragment :
                         selectedJobItemMeasure = it
                         checkForPhotos(selectedJobItemMeasure)
                     }
-                })
+                }
+            )
 
             measureViewModel.measureGalleryUIState.observe(viewLifecycleOwner, galleryObserver)
         }
@@ -187,17 +188,20 @@ class CaptureItemMeasurePhotoFragment :
             ui.estimateImageCollectionView.clearImages()
             val photoFetch =
                 measureViewModel.getMeasureItemPhotos(selectedJobItemMeasure.itemMeasureId)
-            photoFetch.observe(viewLifecycleOwner, {
-                it?.let {
-                    if (it.isEmpty()) {
-                        takeMeasurePhoto()
-                        viewPhotosOnly = false
-                        setupControls()
-                    } else {
-                        jobItemMeasurePhotoArrayList = it as ArrayList<JobItemMeasurePhotoDTO>
+            photoFetch.observe(
+                viewLifecycleOwner,
+                {
+                    it?.let {
+                        if (it.isEmpty()) {
+                            takeMeasurePhoto()
+                            viewPhotosOnly = false
+                            setupControls()
+                        } else {
+                            jobItemMeasurePhotoArrayList = it as ArrayList<JobItemMeasurePhotoDTO>
+                        }
                     }
                 }
-            })
+            )
         }
     }
 
@@ -231,8 +235,8 @@ class CaptureItemMeasurePhotoFragment :
             //  Save Image to Internal Storage
             filenamePath =
                 photoUtil.saveImageToInternalStorage(
-                    imageUri
-                ) as HashMap<String, String>
+                imageUri
+            ) as HashMap<String, String>
 
             Timber.d("location: ${measurementLocation.longitude}, ${measurementLocation.latitude}")
             Timber.d("accuracy: ${measurementLocation.accuracy}")
@@ -331,7 +335,8 @@ class CaptureItemMeasurePhotoFragment :
             PhotoQuality.HIGH
         ).also { bmp ->
             bmp?.run {
-                ui.estimateImageCollectionView.addImage(this,
+                ui.estimateImageCollectionView.addImage(
+                    this,
                     object : ImageCollectionView.OnImageClickListener {
                         override fun onClick(bitmap: Bitmap, imageView: ImageView) {
                             showZoomedImage(
@@ -339,7 +344,8 @@ class CaptureItemMeasurePhotoFragment :
                                 this@CaptureItemMeasurePhotoFragment.requireActivity()
                             )
                         }
-                    })
+                    }
+                )
             }
             this@CaptureItemMeasurePhotoFragment.photosDone()
         }
@@ -409,8 +415,11 @@ class CaptureItemMeasurePhotoFragment :
 
     private fun retryGallery() {
         IndefiniteSnackbar.hide()
-        measureViewModel.galleryBackup.observeOnce(viewLifecycleOwner, {
-            it?.let { measureViewModel.generateGalleryUI(it) }
-        })
+        measureViewModel.galleryBackup.observeOnce(
+            viewLifecycleOwner,
+            {
+                it?.let { measureViewModel.generateGalleryUI(it) }
+            }
+        )
     }
 }

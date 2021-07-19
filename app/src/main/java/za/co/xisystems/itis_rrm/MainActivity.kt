@@ -43,6 +43,7 @@ import org.kodein.di.generic.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.constants.Constants.TWO_SECONDS
 import za.co.xisystems.itis_rrm.databinding.ActivityMainBinding
+import za.co.xisystems.itis_rrm.extensions.isConnected
 import za.co.xisystems.itis_rrm.ui.base.BaseActivity
 import za.co.xisystems.itis_rrm.ui.mainview.activities.MainActivityViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.activities.MainActivityViewModelFactory
@@ -50,11 +51,12 @@ import za.co.xisystems.itis_rrm.ui.mainview.activities.SettingsActivity
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
-import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.hideKeyboard
 import za.co.xisystems.itis_rrm.utils.toast
 
-class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedListener,
+class MainActivity :
+    BaseActivity(),
+    NavigationView.OnNavigationItemSelectedListener,
     KodeinAware {
 
     override val kodein by kodein()
@@ -185,7 +187,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         }
 
         try {
-            networkEnabled = ServiceUtil.isNetworkAvailable(applicationContext)
+            networkEnabled = this.isConnected
         } catch (e: Exception) {
             Timber.e(e, "Network-related error")
         }
@@ -228,9 +230,12 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                     toast("Please press Back again to exit")
 
                     if (doubleBackToExitPressed > 0) {
-                        Handler(mainLooper).postDelayed({
-                            doubleBackToExitPressed--
-                        }, TWO_SECONDS)
+                        Handler(mainLooper).postDelayed(
+                            {
+                                doubleBackToExitPressed--
+                            },
+                            TWO_SECONDS
+                        )
                     }
                 }
             }
@@ -360,49 +365,52 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
             navApproveMeasures.isEnabled = false
 
             val userRoles = mainActivityViewModel.getRoles()
-            userRoles.observe(this, { roleList ->
+            userRoles.observe(
+                this,
+                { roleList ->
 
-                for (role in roleList) {
-                    val roleID = role.roleDescription
-                    // Only enable what is needed for each role description.
-                    // Users with multiple roles get 'best permissions'
-                    when {
-                        roleID.equals(PROJECT_USER_ROLE_IDENTIFIER, ignoreCase = true) -> {
-                            navCreate.isEnabled = true
-                            navUnsubmitted.isEnabled = true
-                        }
+                    for (role in roleList) {
+                        val roleID = role.roleDescription
+                        // Only enable what is needed for each role description.
+                        // Users with multiple roles get 'best permissions'
+                        when {
+                            roleID.equals(PROJECT_USER_ROLE_IDENTIFIER, ignoreCase = true) -> {
+                                navCreate.isEnabled = true
+                                navUnsubmitted.isEnabled = true
+                            }
 
-                        roleID.equals(PROJECT_SUB_CONTRACTOR_ROLE_IDENTIFIER, ignoreCase = true) -> {
+                            roleID.equals(PROJECT_SUB_CONTRACTOR_ROLE_IDENTIFIER, ignoreCase = true) -> {
 
-                            navWork.isEnabled = true
-                        }
+                                navWork.isEnabled = true
+                            }
 
-                        roleID.equals(PROJECT_CONTRACTOR_ROLE_IDENTIFIER, ignoreCase = true) -> {
+                            roleID.equals(PROJECT_CONTRACTOR_ROLE_IDENTIFIER, ignoreCase = true) -> {
 
-                            navCreate.isEnabled = true
-                            navUnsubmitted.isEnabled = true
-                            navWork.isEnabled = true
-                            navEstMeasures.isEnabled = true
-                        }
+                                navCreate.isEnabled = true
+                                navUnsubmitted.isEnabled = true
+                                navWork.isEnabled = true
+                                navEstMeasures.isEnabled = true
+                            }
 
-                        roleID.equals(PROJECT_SITE_ENGINEER_ROLE_IDENTIFIER, ignoreCase = true) -> {
+                            roleID.equals(PROJECT_SITE_ENGINEER_ROLE_IDENTIFIER, ignoreCase = true) -> {
 
-                            navCreate.isEnabled = true
-                            navUnsubmitted.isEnabled = true
-                            navEstMeasures.isEnabled = true
-                        }
+                                navCreate.isEnabled = true
+                                navUnsubmitted.isEnabled = true
+                                navEstMeasures.isEnabled = true
+                            }
 
-                        roleID.equals(PROJECT_ENGINEER_ROLE_IDENTIFIER, ignoreCase = true) -> {
-                            navCreate.isEnabled = true
-                            navUnsubmitted.isEnabled = true
-                            navWork.isEnabled = true
-                            navEstMeasures.isEnabled = true
-                            navApproveMeasures.isEnabled = true
-                            navApproveJobs.isEnabled = true
+                            roleID.equals(PROJECT_ENGINEER_ROLE_IDENTIFIER, ignoreCase = true) -> {
+                                navCreate.isEnabled = true
+                                navUnsubmitted.isEnabled = true
+                                navWork.isEnabled = true
+                                navEstMeasures.isEnabled = true
+                                navApproveMeasures.isEnabled = true
+                                navApproveJobs.isEnabled = true
+                            }
                         }
                     }
                 }
-            })
+            )
         }
     }
 
@@ -414,10 +422,13 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
             // Unsubmitted jobs are collected here
             mainActivityViewModel.getJobsForActivityId(
                 ActivityIdConstants.JOB_ESTIMATE
-            ).observe(this@MainActivity, { newJobData ->
-                val tasks = newJobData.distinctBy { job -> job.jobId }.count()
-                writeBadge(badgeUnSubmitted, tasks)
-            })
+            ).observe(
+                this@MainActivity,
+                { newJobData ->
+                    val tasks = newJobData.distinctBy { job -> job.jobId }.count()
+                    writeBadge(badgeUnSubmitted, tasks)
+                }
+            )
 
             // Corrections section is for Phase 2
 
@@ -425,36 +436,48 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
             mainActivityViewModel.getJobsForActivityId2(
                 ActivityIdConstants.JOB_APPROVED,
                 ActivityIdConstants.ESTIMATE_INCOMPLETE
-            ).observe(this@MainActivity, { workList ->
-                val tasks = workList.distinctBy { job -> job.jobId }.count()
-                writeBadge(badgeWork, tasks)
-            })
+            ).observe(
+                this@MainActivity,
+                { workList ->
+                    val tasks = workList.distinctBy { job -> job.jobId }.count()
+                    writeBadge(badgeWork, tasks)
+                }
+            )
 
             // Estimate measurements
             mainActivityViewModel.getJobMeasureForActivityId(
                 ActivityIdConstants.ESTIMATE_MEASURE,
                 ActivityIdConstants.JOB_ESTIMATE,
                 ActivityIdConstants.MEASURE_PART_COMPLETE
-            ).observe(this@MainActivity, { measurementJobs ->
-                val tasks = measurementJobs.distinctBy { job -> job.jobId }.count()
-                writeBadge(badgeEstMeasure, tasks)
-            })
+            ).observe(
+                this@MainActivity,
+                { measurementJobs ->
+                    val tasks = measurementJobs.distinctBy { job -> job.jobId }.count()
+                    writeBadge(badgeEstMeasure, tasks)
+                }
+            )
 
             // Jobs awaiting approval
             mainActivityViewModel.getJobsForActivityId(
                 ActivityIdConstants.JOB_APPROVE
-            ).observe(this@MainActivity, { jobApprovalData ->
-                val tasks = jobApprovalData.count()
-                writeBadge(badgeApproveJobs, tasks)
-            })
+            ).observe(
+                this@MainActivity,
+                { jobApprovalData ->
+                    val tasks = jobApprovalData.count()
+                    writeBadge(badgeApproveJobs, tasks)
+                }
+            )
 
             // Measurements are completed needs approval for payment
             mainActivityViewModel.getJobApproveMeasureForActivityId(
                 ActivityIdConstants.MEASURE_COMPLETE
-            ).observe(this@MainActivity, {
-                val tasks = it.distinctBy { job -> job.jobId }.count()
-                writeBadge(badgeApprovMeasure, tasks)
-            })
+            ).observe(
+                this@MainActivity,
+                {
+                    val tasks = it.distinctBy { job -> job.jobId }.count()
+                    writeBadge(badgeApprovMeasure, tasks)
+                }
+            )
         }
     }
 

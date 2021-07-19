@@ -6,6 +6,7 @@ import okhttp3.Response
 import za.co.xisystems.itis_rrm.custom.errors.NoConnectivityException
 import za.co.xisystems.itis_rrm.custom.errors.NoInternetException
 import za.co.xisystems.itis_rrm.custom.errors.ServiceHostUnreachableException
+import za.co.xisystems.itis_rrm.extensions.isConnected
 import za.co.xisystems.itis_rrm.utils.ServiceUriUtil
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
 
@@ -13,14 +14,13 @@ import za.co.xisystems.itis_rrm.utils.ServiceUtil
  * Created by Francis Mahlava on 2019/10/18.
  */
 class NetworkConnectionInterceptor(
-    context: Context
+    private var context: Context
 ) : Interceptor {
     private val testConnection = "www.nra.co.za"
     private val serviceHost = ServiceUriUtil.getInstance()?.webServiceHost
-    private val applicationContext = context.applicationContext
     override fun intercept(chain: Interceptor.Chain): Response {
 
-        if (!ServiceUtil.isNetworkAvailable(applicationContext)) {
+        if (!context.isConnected) {
             throw NoInternetException("Please ensure you have an active data connection")
         }
 

@@ -12,7 +12,7 @@ buildscript {
 
     ext {
         kotlin_version = '1.5.10'
-        ktlint_gradle_version = "9.2.1"
+        ktlint_gradle_version = '10.0.0'
         dependency_evaluation_version = '0.52.0'
         booster_version = '2.4.0'
         navigation_version = '2.3.2'
@@ -20,12 +20,12 @@ buildscript {
 
     repositories {
         google()
-        jcenter()
         mavenCentral()
         maven { url "https://maven.google.com" }
         maven { url "https://repo.spring.io/milestone" }
         maven { url "https://plugins.gradle.org/m2/" }
     }
+
     dependencies {
         classpath 'com.android.tools.build:gradle:4.2.2'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
@@ -41,7 +41,7 @@ buildscript {
         classpath "eu.davidea:grabver:2.0.2"
         classpath "org.jlleitschuh.gradle:ktlint-gradle:$ktlint_gradle_version"
         classpath "com.autonomousapps:dependency-analysis-gradle-plugin:0.72.0"
-        classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:3.1.1"
+        classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:3.3"
         classpath "io.gitlab.arturbosch.detekt:detekt-gradle-plugin:1.14.1"
     }
 
@@ -59,7 +59,6 @@ allprojects {
 
     repositories {
         google()
-        jcenter()
         mavenCentral()
         maven { url "https://plugins.gradle.org/m2/" }
         maven { url "https://clojars.org/repo/" }
@@ -72,7 +71,10 @@ allprojects {
         resolutionStrategy.force "org.antlr:antlr4-tool:4.7.1"
     }
 
-
+    ktlint {
+        android.set(true)
+        outputColorName.set("RED")
+    }
 
     ext {
         daggerVersion = "2.15"
