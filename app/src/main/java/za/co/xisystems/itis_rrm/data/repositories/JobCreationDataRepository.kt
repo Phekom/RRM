@@ -10,6 +10,8 @@ import com.google.gson.Gson
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
+import java.io.IOException
+import java.util.ArrayList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -39,8 +41,6 @@ import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
-import java.io.IOException
-import java.util.ArrayList
 
 /**
  * Created by Francis Mahlava on 2019/11/28.
@@ -145,7 +145,7 @@ class JobCreationDataRepository(
     suspend fun saveNewItem(newJobItem: ItemDTOTemp?) {
         Coroutines.io {
             if (newJobItem != null && !appDb.getItemDaoTemp()
-                    .checkItemExistsItemId(newJobItem.itemId)
+                .checkItemExistsItemId(newJobItem.itemId)
             ) {
 
                 appDb.getItemDaoTemp().insertItems(newJobItem)
@@ -639,5 +639,9 @@ class JobCreationDataRepository(
 
     fun getValidEstimatesForJobId(jobId: String, actId: Int): List<JobItemEstimateDTO> {
         return appDb.getJobItemEstimateDao().getJobEstimationItemsForJobId(jobId, actId).value.orEmpty()
+    }
+
+    suspend fun backupEstimate(jobItemEstimateDTO: JobItemEstimateDTO): Any {
+        return appDb.getJobItemEstimateDao().insertOrUpdateJobItemEstimate(jobItemEstimateDTO)
     }
 }

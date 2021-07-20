@@ -95,7 +95,7 @@ open class ProjectItem(
             AddProjectFragmentDirections
                 .actionAddProjectFragmentToEstimatePhotoFragment(
                     jobId = newJob?.jobId,
-                    estimateId = getJobItemEstimate(itemId = item.itemId)?.estimateId
+                    itemId = item.itemId
                 )
 
         Navigation.findNavController(view)

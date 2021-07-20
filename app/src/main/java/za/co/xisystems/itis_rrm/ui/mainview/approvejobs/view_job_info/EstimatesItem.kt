@@ -35,6 +35,7 @@ import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.extensions.isConnected
+import za.co.xisystems.itis_rrm.extensions.uomForUI
 import za.co.xisystems.itis_rrm.ui.extensions.DecimalSignedDigitsKeyListener
 import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.ApproveJobsViewModel
@@ -63,8 +64,8 @@ class EstimatesItem(
                 quantity.observe(
                     viewLifecycleOwner,
                     { qty ->
-
-                        estimation_item_quantity_textView.text = activity?.getString(R.string.pair, "Qty:", qty.toString())
+                        activity?.getString(R.string.pair, "Qty:", qty.toString())
+                            .also { estimation_item_quantity_textView.text = it }
                     }
                 )
                 val lineRate =
@@ -73,22 +74,18 @@ class EstimatesItem(
                     viewLifecycleOwner,
                     {
                         estimation_item_price_textView.text = activity?.getString(R.string.pair, "R", it.toString())
-                        // dialog.dismiss()
                     }
                 )
-//                estimation_item_quantity_textView.text = "Qty: " + quantity //jobItemEstimateDTO.qty.toString()
-//                 estimation_item_price_textView.text = "R " +  lineRate //jobItemEstimateDTO.lineRate.toString()
-
                 val descr =
                     approveViewModel.getDescForProjectItemId(jobItemEstimateDTO.projectItemId!!)
                 val uom =
                     approveViewModel.getUOMForProjectItemId(jobItemEstimateDTO.projectItemId!!)
                 measure_item_description_textView.text = descr
 
-                if (uom == "NONE" || uom == "") {
+                if (uom.isEmpty().or(uom == "None")) {
                     estimation_item_uom_textView.text = ""
                 } else {
-                    estimation_item_uom_textView.text = activity?.getString(R.string.pair, "Unit of Measure:", uom)
+                    estimation_item_uom_textView.text = activity?.uomForUI(uom)
                 }
                 correctButton.setOnClickListener {
                     sendItemType(jobItemEstimateDTO)

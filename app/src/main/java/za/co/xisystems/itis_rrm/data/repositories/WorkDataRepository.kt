@@ -319,7 +319,7 @@ class WorkDataRepository(
         Coroutines.io {
             estimateWorksPhotos.forEach { estimateWorksPhoto ->
                 if (!appDb.getEstimateWorkPhotoDao()
-                        .checkIfEstimateWorksPhotoExist(estimateWorksPhoto.filename)
+                    .checkIfEstimateWorksPhotoExist(estimateWorksPhoto.filename)
                 ) {
                     appDb.getEstimateWorkPhotoDao().insertEstimateWorksPhoto(estimateWorksPhoto)
                 } else {
@@ -475,7 +475,7 @@ class WorkDataRepository(
 
     suspend fun getUOMForProjectItemId(projectItemId: String): String {
         return withContext(Dispatchers.IO) {
-            appDb.getProjectItemDao().getUOMForProjectItemId(projectItemId)
+            appDb.getProjectItemDao().getUOMForProjectItemId(projectItemId) ?: ""
         }
     }
 

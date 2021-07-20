@@ -124,20 +124,11 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
     private val takePicture = registerForActivityResult(
         ActivityResultContracts.TakePicture()
     ) { isSaved ->
-        if (isSaved && this@CaptureWorkFragment::itemEstiWorks.isInitialized) {
+        if (isSaved) {
             processAndSetImage(itemEstiWorks)
         } else {
             Coroutines.io {
                 photoUtil.deleteImageFile(filenamePath.toString())
-                withContext(Dispatchers.Main.immediate) {
-                    sharpToast(
-                        title = "Work data is incomplete",
-                        message = "Please contact support about this job, and have them restore or remove it",
-                        style = DELETE,
-                        duration = LONG,
-                        position = CENTER
-                    )
-                }
             }
         }
         this.photosDone()
@@ -288,7 +279,7 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
             ContextCompat.getDrawable(requireContext(), R.drawable.round_corner_gray)
     }
 
-    private fun loadPictures(result: XISuccess<JobEstimateWorksDTO>) {
+    private fun loadPictures(result: XISuccess<JobEstimateWorksDTO>) = Coroutines.io {
         val worksData = result.data
         val filenames = worksData.jobEstimateWorksPhotos.filter { photo ->
             photo.photoActivityId == worksData.actId
@@ -300,10 +291,12 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
             photoUtil.prepareGalleryPairs(it)
         }
         if (photoPairs.isNotEmpty()) {
-            ui.imageCollectionView.clearImages()
-            ui.imageCollectionView.scaleForSize(photoPairs.size)
-            ui.imageCollectionView.addZoomedImages(photoPairs, requireActivity())
-            ui.imageCollectionView.visibility = View.VISIBLE
+            withContext(Dispatchers.Main.immediate) {
+                ui.imageCollectionView.clearImages()
+                ui.imageCollectionView.scaleForSize(photoPairs.size)
+                ui.imageCollectionView.addZoomedImages(photoPairs, requireActivity())
+                ui.imageCollectionView.visibility = View.VISIBLE
+            }
         }
     }
 
@@ -703,13 +696,37 @@ class CaptureWorkFragment : LocationFragment(), KodeinAware {
                             }
                             itemEstiWorks = workItem
                         }
-                        ui.imageCollectionView.clearImages()
-                        estimateWorksPhotoArrayList = itemEstiWorks.jobEstimateWorksPhotos
-                        if (estimateWorksPhotoArrayList.size > 0) {
-                            loadPictures(XISuccess(itemEstiWorks))
+                        if (this@CaptureWorkFragment::itemEstiWorks.isInitialized) {
+                            ui.imageCollectionView.clearImages()
+                            estimateWorksPhotoArrayList = itemEstiWorks.jobEstimateWorksPhotos
+                            if (estimateWorksPhotoArrayList.size > 0) {
+                                loadPictures(XISuccess(itemEstiWorks))
+                            }
+                            estimateWorksArrayList = estimateWorksList as ArrayList<JobEstimateWorksDTO>
+                        } else {
+                            showWorkDataIncomplete()
                         }
-                        estimateWorksArrayList = estimateWorksList as ArrayList<JobEstimateWorksDTO>
                     }
+                )
+            }
+        }
+    }
+
+    private fun showWorkDataIncomplete() {
+        Coroutines.main {
+            withContext(Dispatchers.Main.immediate) {
+                sharpToast(
+                    title = "Work data is incomplete",
+                    message = getString(R.string.work_data_incomplete),
+                    style = DELETE,
+                    duration = LONG,
+                    position = CENTER
+                )
+                Handler(Looper.getMainLooper()).postDelayed(
+                    {
+                        requireActivity().onBackPressed()
+                    },
+                    Constants.TWO_SECONDS
                 )
             }
         }

@@ -13,9 +13,9 @@ import androidx.core.util.Pair
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
-import za.co.xisystems.itis_rrm.utils.JobUtils
 import java.io.Serializable
 import java.util.ArrayList
+import za.co.xisystems.itis_rrm.utils.JobUtils
 
 /**
  * Created by Francis Mahlava on 2019/11/21.
@@ -64,6 +64,8 @@ data class JobItemEstimateDTO(
 
     @SerializedName("SelectedItemUOM")
     val selectedItemUom: String?,
+    var startKmMarker: String? = null,
+    var endKmMarker: String? = null
 ) : Parcelable, Serializable {
 
     constructor(parcel: Parcel) : this(
@@ -92,30 +94,18 @@ data class JobItemEstimateDTO(
             as? JobItemEstimatesPhotoDTO,
         estimateComplete = parcel.readString(),
         measureActId = parcel.readInt(),
-        selectedItemUom = parcel.readString()
+        selectedItemUom = parcel.readString(),
+        startKmMarker = parcel.readString(),
+        endKmMarker = parcel.readString()
     )
 
-    fun getJobItemEstimatePhoto(lookForStartPhoto: Boolean): Pair<Int, JobItemEstimatesPhotoDTO> {
-        val photos = jobItemEstimatePhotos
-        var i = 0
-        while (photos.isNotEmpty() && i < photos.size - 1) {
-            val isPhotoStart = photos[i].isPhotoStart()
-            if (lookForStartPhoto) {
-                if (isPhotoStart) {
-                    println("look: $lookForStartPhoto is:$isPhotoStart")
-                    val pair = Pair(i, photos[i])
-                    println("pair[" + pair.first + "]" + pair)
-                    return pair
-                }
-            } else {
-                if (!isPhotoStart) {
-                    println("look: $lookForStartPhoto is:$isPhotoStart")
-                    return Pair<Int, JobItemEstimatesPhotoDTO>(i, photos[i])
-                }
-            }
-            i++
+    private fun getJobItemEstimatePhoto(lookForStartPhoto: Boolean): Pair<Int, JobItemEstimatesPhotoDTO>? {
+        return jobItemEstimatePhotos.filter { photo ->
+            photo.isPhotostart == lookForStartPhoto
         }
-        return Pair<Int, JobItemEstimatesPhotoDTO>(-1, null)
+            .mapIndexed { index, photo ->
+                Pair(index, photo)
+            }.first()
     }
 
     fun getPhoto(x: Int): JobItemEstimatesPhotoDTO? {
@@ -162,6 +152,8 @@ data class JobItemEstimateDTO(
         parcel.writeList(jobItemEstimatePhotos.toList())
         parcel.writeValue(jobItemEstimatePhotoStart)
         parcel.writeValue(jobItemEstimatePhotoEnd)
+        parcel.writeString(startKmMarker)
+        parcel.writeString(endKmMarker)
     }
 
     override fun describeContents(): Int {

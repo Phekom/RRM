@@ -67,7 +67,7 @@ class JobApprovalDataRepository(
 
     suspend fun getUOMForProjectItemId(projectItemId: String): String {
         return withContext(Dispatchers.IO) {
-            appDb.getProjectItemDao().getUOMForProjectItemId(projectItemId)
+            appDb.getProjectItemDao().getUOMForProjectItemId(projectItemId) ?: ""
         }
     }
 
@@ -242,7 +242,7 @@ class JobApprovalDataRepository(
 
                 jobItemEstimate.workflowEstimateWorks.forEach { jobEstimateWorks ->
                     if (!appDb.getEstimateWorkDao()
-                            .checkIfJobEstimateWorksExist(jobEstimateWorks.worksId)
+                        .checkIfJobEstimateWorksExist(jobEstimateWorks.worksId)
                     ) {
                         // Create Bare Bones
                         val estimateWorks = JobEstimateWorksDTO(

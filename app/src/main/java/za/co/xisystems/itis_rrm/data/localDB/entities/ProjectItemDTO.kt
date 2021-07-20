@@ -1,15 +1,3 @@
-/**
- * Updated by Shaun McDonald on 2021/05/15
- * Last modified on 2021/05/14, 20:32
- * Copyright (c) 2021.  XI Systems  - All rights reserved
- **/
-
-/**
- * Updated by Shaun McDonald on 2021/05/14
- * Last modified on 2021/05/14, 19:43
- * Copyright (c) 2021.  XI Systems  - All rights reserved
- **/
-
 package za.co.xisystems.itis_rrm.data.localDB.entities
 
 import android.os.Parcel
@@ -20,9 +8,9 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
+import java.io.Serializable
 import org.jetbrains.annotations.NotNull
 import org.jetbrains.annotations.Nullable
-import java.io.Serializable
 
 /**
  * Created by Francis Mahlava on 2019/11/21.
@@ -31,7 +19,8 @@ import java.io.Serializable
 const val PROJECT_ITEM_TABLE = "PROJECT_ITEM_TABLE"
 
 @Entity(
-    tableName = PROJECT_ITEM_TABLE, foreignKeys = [
+    tableName = PROJECT_ITEM_TABLE,
+    foreignKeys = [
         ForeignKey(
             entity = ProjectDTO::class,
             parentColumns = arrayOf("projectId"),
@@ -56,7 +45,7 @@ data class ProjectItemDTO(
     @SerializedName("TenderRate")
     val tenderRate: Double = 0.0,
     @SerializedName("Uom")
-    val uom: String?,
+    var uom: String = "None",
     @SerializedName("WorkflowId")
     val workflowId: Int?,
 
@@ -81,7 +70,7 @@ data class ProjectItemDTO(
             parcel.readList(this.toList(), ItemSectionDTO::class.java.classLoader)
         },
         tenderRate = parcel.readDouble(),
-        uom = parcel.readString(),
+        uom = parcel.readString()!!,
         workflowId = parcel.readValue(Int::class.java.classLoader) as? Int,
         sectionItemId = parcel.readString(),
         quantity = parcel.readDouble(),

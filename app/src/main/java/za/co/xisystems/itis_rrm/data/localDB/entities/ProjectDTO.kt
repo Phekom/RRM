@@ -1,15 +1,3 @@
-/**
- * Updated by Shaun McDonald on 2021/05/15
- * Last modified on 2021/05/14, 20:32
- * Copyright (c) 2021.  XI Systems  - All rights reserved
- **/
-
-/**
- * Updated by Shaun McDonald on 2021/05/14
- * Last modified on 2021/05/14, 19:43
- * Copyright (c) 2021.  XI Systems  - All rights reserved
- **/
-
 package za.co.xisystems.itis_rrm.data.localDB.entities
 
 import android.os.Parcel
@@ -21,8 +9,8 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
-import org.jetbrains.annotations.NotNull
 import java.io.Serializable
+import org.jetbrains.annotations.NotNull
 
 /**
  * Created by Francis Mahlava on 2019/11/22.
@@ -31,13 +19,17 @@ import java.io.Serializable
 const val PROJECT_TABLE = "PROJECT_TABLE"
 
 @Entity(
-    tableName = PROJECT_TABLE, foreignKeys = [ForeignKey(
-        entity = ContractDTO::class,
-        parentColumns = arrayOf("contractId"),
-        childColumns = arrayOf("contractId"),
-        onDelete = ForeignKey.CASCADE,
-        onUpdate = ForeignKey.CASCADE
-    )], indices = [Index(value = ["projectId"], unique = true, name = "")]
+    tableName = PROJECT_TABLE,
+    foreignKeys = [
+        ForeignKey(
+            entity = ContractDTO::class,
+            parentColumns = arrayOf("contractId"),
+            childColumns = arrayOf("contractId"),
+            onDelete = ForeignKey.CASCADE,
+            onUpdate = ForeignKey.CASCADE
+        )
+    ],
+    indices = [Index(value = ["projectId"], unique = true, name = "")]
 )
 
 data class ProjectDTO(

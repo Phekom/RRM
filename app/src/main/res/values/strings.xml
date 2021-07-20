@@ -252,4 +252,5 @@
     <string name="image_kb">$1%d KB</string>
     <string name="user_blocked">The account $1%s is locked out. Please call Sanral Support for enquiries.</string>
     <string name="measurements_photo_image">Measurement Image</string>
+    <string name="work_data_incomplete">Please contact support about this job, and have them restore or remove it</string>
 </resources>

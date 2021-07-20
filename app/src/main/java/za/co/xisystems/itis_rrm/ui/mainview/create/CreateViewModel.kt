@@ -13,6 +13,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.liveData
 import androidx.lifecycle.viewModelScope
+import java.util.ArrayList
+import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
@@ -33,13 +35,10 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.SectionPointDTO
 import za.co.xisystems.itis_rrm.data.repositories.JobCreationDataRepository
 import za.co.xisystems.itis_rrm.domain.ContractSelector
 import za.co.xisystems.itis_rrm.domain.ProjectSelector
-import za.co.xisystems.itis_rrm.ui.mainview.create.select_item.SectionProjectItem
 import za.co.xisystems.itis_rrm.utils.JobUtils
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
 import za.co.xisystems.itis_rrm.utils.uncaughtExceptionHandler
-import java.util.ArrayList
-import kotlin.coroutines.CoroutineContext
 
 /**
  * Created by Francis Mahlava on 2019/10/18.
@@ -50,12 +49,15 @@ class CreateViewModel(
     application: Application
 ) : AndroidViewModel(application) {
 
+    val locationPoint: MutableLiveData<Double> = MutableLiveData()
     var jobDesc: String? = null
 
     private val superJob = SupervisorJob()
     val currentJob: MutableLiveData<JobDTO> = MutableLiveData()
-    private var ioContext: CoroutineContext = Job(superJob) + Dispatchers.IO + uncaughtExceptionHandler
-    private var mainContext: CoroutineContext = Job(superJob) + Dispatchers.Main + uncaughtExceptionHandler
+    private var ioContext: CoroutineContext =
+        Job(superJob) + Dispatchers.IO + uncaughtExceptionHandler
+    private var mainContext: CoroutineContext =
+        Job(superJob) + Dispatchers.Main + uncaughtExceptionHandler
     private val estimateQty = MutableLiveData<Double>()
     val estimateLineRate = MutableLiveData<Double>()
     val sectionId: MutableLiveData<String> = MutableLiveData()
@@ -69,13 +71,15 @@ class CreateViewModel(
     val contractId = MutableLiveData<String>()
     val projectId = MutableLiveData<String>()
     val projectCode = MutableLiveData<String>()
-    val sectionProjectItem = MutableLiveData<SectionProjectItem>()
     val jobItem = MutableLiveData<JobDTO?>()
     val projectItemTemp = MutableLiveData<ItemDTOTemp>()
     val jobId: MutableLiveData<String?> = MutableLiveData()
     val tempProjectItem: MutableLiveData<ItemDTOTemp> = MutableLiveData()
     val photoUtil = PhotoUtil.getInstance(getApplication())
 
+    fun setLocationPoint(newLocation: Double) {
+        locationPoint.value = newLocation
+    }
     fun setCurrentJob(inJobItemToEdit: JobDTO) {
         currentJob.value = inJobItemToEdit
     }
@@ -314,9 +318,16 @@ class CreateViewModel(
         }
     }
 
+    fun backupEstimate(jobItemEstimateDTO: JobItemEstimateDTO) = viewModelScope.launch(ioContext) {
+        jobCreationDataRepository.backupEstimate(jobItemEstimateDTO)
+    }
+
     suspend fun checkIfJobSectionExists(jobId: String?, projectSectionId: String?): Boolean {
         return withContext(Dispatchers.IO) {
-            jobCreationDataRepository.checkIfJobSectionExistForJobAndProjectSection(jobId, projectSectionId)
+            jobCreationDataRepository.checkIfJobSectionExistForJobAndProjectSection(
+                jobId,
+                projectSectionId
+            )
         }
     }
 
@@ -329,14 +340,15 @@ class CreateViewModel(
         }
     }
 
-    suspend fun getProjectSelectors(contractId: String): LiveData<List<ProjectSelector>> = liveData {
-        withContext(ioContext) {
-            val data = jobCreationDataRepository.getProjectSelectors(contractId)
-            withContext(mainContext) {
-                emit(data)
+    suspend fun getProjectSelectors(contractId: String): LiveData<List<ProjectSelector>> =
+        liveData {
+            withContext(ioContext) {
+                val data = jobCreationDataRepository.getProjectSelectors(contractId)
+                withContext(mainContext) {
+                    emit(data)
+                }
             }
         }
-    }
 
     fun JobItemEstimateDTO.isEstimateComplete(): Boolean {
         return if (this.size() < 2) {
@@ -355,10 +367,16 @@ class CreateViewModel(
     suspend fun getRealSectionStartKm(
         projectSectionDTO: ProjectSectionDTO,
         pointLocation: Double
-    ) = jobCreationDataRepository.findRealSectionStartKm(projectSectionDTO, pointLocation).pointLocation
+    ) = jobCreationDataRepository.findRealSectionStartKm(
+        projectSectionDTO,
+        pointLocation
+    ).pointLocation
 
     suspend fun getRealSectionEndKm(
         projectSectionDTO: ProjectSectionDTO,
         pointLocation: Double
-    ) = jobCreationDataRepository.findRealSectionEndKm(projectSectionDTO, pointLocation).pointLocation
+    ) = jobCreationDataRepository.findRealSectionEndKm(
+        projectSectionDTO,
+        pointLocation
+    ).pointLocation
 }

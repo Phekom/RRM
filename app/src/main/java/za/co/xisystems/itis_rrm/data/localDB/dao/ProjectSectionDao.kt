@@ -41,8 +41,8 @@ interface ProjectSectionDao {
 
     @Query(
         "SELECT sectionId, " +
-            "endKm as pointLocation FROM PROJECT_SECTION_TABLE " +
-            "WHERE route = :route AND :kmMarker - endKm > 0 ORDER BY (:kmMarker - endKm) LIMIT 1"
+            "startKm as pointLocation FROM PROJECT_SECTION_TABLE " +
+            "WHERE route = :route AND :kmMarker - startKm > 0 ORDER BY (:kmMarker - startKm) LIMIT 1"
     )
     suspend fun findRealSectionStartKm(
         route: String,
