@@ -119,7 +119,7 @@ data class JobItemEstimateDTO(
             jobItemEstimatePhotos.add(photo)
         } else {
             val photoToChange = getJobItemEstimatePhoto(photo.isPhotoStart())
-            val index = photoToChange.first!!
+            val index = photoToChange?.first ?: -1
             if (index == -1) {
                 jobItemEstimatePhotos.add(photo)
             } else {
