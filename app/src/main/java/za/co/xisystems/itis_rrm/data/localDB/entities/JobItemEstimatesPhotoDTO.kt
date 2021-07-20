@@ -54,7 +54,8 @@ data class JobItemEstimatesPhotoDTO(
     @SerializedName("RecordVersion")
     val recordVersion: Int,
     @SerializedName("IsPhotoStart")
-    var isPhotostart: Boolean
+    var isPhotostart: Boolean,
+    var kmMarkerTag: String? = null
 ) : Serializable, Parcelable {
 
     constructor(parcel: Parcel) : this(
@@ -74,7 +75,8 @@ data class JobItemEstimatesPhotoDTO(
         photoPath = parcel.readString()!!,
         recordSynchStateId = parcel.readInt(),
         recordVersion = parcel.readInt(),
-        isPhotostart = parcel.readByte() != 0.toByte()
+        isPhotostart = parcel.readByte() != 0.toByte(),
+        kmMarkerTag = parcel.readString()
     )
 
     fun isPhotoStart(): Boolean {
@@ -123,6 +125,7 @@ data class JobItemEstimatesPhotoDTO(
         parcel.writeInt(recordSynchStateId)
         parcel.writeInt(recordVersion)
         parcel.writeByte(if (isPhotostart) 1 else 0)
+        parcel.writeString(kmMarkerTag)
     }
 
     override fun describeContents(): Int {

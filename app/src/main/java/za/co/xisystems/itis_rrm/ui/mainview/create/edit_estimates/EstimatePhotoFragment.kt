@@ -556,6 +556,8 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
                     )
                 )
 
+        targetTextView.text = this.newJobItemEstimate?.jobItemEstimatePhotos?.get(targetIndex)?.kmMarkerTag ?: ""
+
         when (isStart) {
             true -> {
                 startImageUri = targetUri
@@ -1130,7 +1132,11 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
             Coroutines.main {
                 withContext(Dispatchers.Main.immediate) {
                     if (pointLocation != null) {
-                        textView.text = getRealSection(isStart, section, pointLocation!!)
+                        val photo = newJobItemEstimate!!.getJobItemEstimatePhoto(isStart).second
+                        photo?.let {
+                            it.kmMarkerTag = getRealSection(isStart, section, pointLocation!!)
+                            textView.text = it.kmMarkerTag
+                        }
                         if (animate) textView.startAnimation(animations?.bounce_long)
                     } else {
                         sharpToast(
@@ -1502,5 +1508,13 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
         }
         val deleteAlert = itemDeleteBuilder.create()
         deleteAlert.show()
+    }
+
+    // Save the currently estimate
+    override fun onStop() {
+        super.onStop()
+        Coroutines.main {
+            createViewModel.backupJob(newJob!!)
+        }
     }
 }
