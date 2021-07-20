@@ -91,7 +91,8 @@ import za.co.xisystems.itis_rrm.utils.DatetimeConverters
  */
 
 @Database(
-    entities = [JobDTO::class, UserDTO::class, UserRoleDTO::class,
+    entities = [
+        JobDTO::class, UserDTO::class, UserRoleDTO::class,
         ProjectItemDTO::class, ItemDTOTemp::class, JobDTOTemp::class,
         ContractDTO::class, VoItemDTO::class, ProjectDTO::class,
         ProjectSectionDTO::class, PrimaryKeyValueDTO::class, LookupOptionDTO::class,
@@ -105,7 +106,7 @@ import za.co.xisystems.itis_rrm.utils.DatetimeConverters
     ],
     views = [ContractSelectorView::class],
     exportSchema = true,
-    version = 20
+    version = 21
 )
 
 @TypeConverters(Converters::class, DatetimeConverters::class)
