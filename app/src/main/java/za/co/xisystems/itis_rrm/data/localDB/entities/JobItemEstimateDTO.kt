@@ -99,13 +99,17 @@ data class JobItemEstimateDTO(
         endKmMarker = parcel.readString()
     )
 
-    private fun getJobItemEstimatePhoto(lookForStartPhoto: Boolean): Pair<Int, JobItemEstimatesPhotoDTO>? {
-        return jobItemEstimatePhotos.filter { photo ->
-            photo.isPhotostart == lookForStartPhoto
+    private fun getJobItemEstimatePhoto(lookForStartPhoto: Boolean): Pair<Int, JobItemEstimatesPhotoDTO> {
+        return when (this.jobItemEstimatePhotos.isNullOrEmpty()) {
+            true -> Pair<Int, JobItemEstimatesPhotoDTO>(-1, null)
+            else -> {
+                this.jobItemEstimatePhotos.filter { photo ->
+                    photo.isPhotostart == lookForStartPhoto
+                }.mapIndexed { index, photo ->
+                    Pair(index, photo)
+                }.first()
+            }
         }
-            .mapIndexed { index, photo ->
-                Pair(index, photo)
-            }.first()
     }
 
     fun getPhoto(x: Int): JobItemEstimatesPhotoDTO? {
@@ -119,7 +123,7 @@ data class JobItemEstimateDTO(
             jobItemEstimatePhotos.add(photo)
         } else {
             val photoToChange = getJobItemEstimatePhoto(photo.isPhotoStart())
-            val index = photoToChange?.first ?: -1
+            val index = photoToChange.first ?: -1
             if (index == -1) {
                 jobItemEstimatePhotos.add(photo)
             } else {
