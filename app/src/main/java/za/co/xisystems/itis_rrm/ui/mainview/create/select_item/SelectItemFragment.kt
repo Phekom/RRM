@@ -23,6 +23,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
+import java.util.ArrayList
+import java.util.concurrent.CancellationException
 import kotlinx.coroutines.CoroutineStart.DEFAULT
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
@@ -45,8 +47,6 @@ import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper.setSpinner
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.Coroutines
-import java.util.ArrayList
-import java.util.concurrent.CancellationException
 
 /**
  * Created by Francis Mahlava on 2019/12/29.
@@ -93,16 +93,22 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
 
     private fun initUI() {
         uiScope.launch(context = uiScope.coroutineContext, start = DEFAULT) {
-            createViewModel.loggedUser.observe(viewLifecycleOwner, { user ->
-                useR = user
-            })
-
-            createViewModel.currentJob.observe(viewLifecycleOwner, { newJ ->
-                newJ?.let {
-                    editJob = it
-                    setItemsBySections(it.projectId!!)
+            createViewModel.loggedUser.observe(
+                viewLifecycleOwner,
+                { user ->
+                    useR = user
                 }
-            })
+            )
+
+            createViewModel.currentJob.observe(
+                viewLifecycleOwner,
+                { newJ ->
+                    newJ?.let {
+                        editJob = it
+                        setItemsBySections(it.projectId!!)
+                    }
+                }
+            )
         }
     }
 
@@ -207,34 +213,38 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
             val sectionItems = createViewModel.getSectionItemsForProject(projectId)
             ui.dataLoading2.visibility = View.VISIBLE
 
-            sectionItems.observe(viewLifecycleOwner, { sectionData ->
-                val sectionSelections = arrayOfNulls<String?>(sectionData.size)
-                ui.dataLoading2.visibility = View.GONE
-                for (item in sectionData.indices) {
-                    sectionSelections[item] = sectionData[item].description
-                }
+            sectionItems.observe(
+                viewLifecycleOwner,
+                { sectionData ->
+                    val sectionSelections = arrayOfNulls<String?>(sectionData.size)
+                    ui.dataLoading2.visibility = View.GONE
+                    for (item in sectionData.indices) {
+                        sectionSelections[item] = sectionData[item].description
+                    }
 
-                setSpinner(
-                    requireContext().applicationContext,
-                    ui.sectionItemSpinner,
-                    sectionData,
-                    sectionSelections,
-                    object : SpinnerHelper.SelectionListener<SectionItemDTO> {
+                    setSpinner(
+                        requireContext().applicationContext,
+                        ui.sectionItemSpinner,
+                        sectionData,
+                        sectionSelections,
+                        object : SpinnerHelper.SelectionListener<SectionItemDTO> {
 
-                        override fun onItemSelected(position: Int, item: SectionItemDTO) {
-                            if (animate) {
-                                ui.sectionItemSpinner.startAnimation(bounce_750)
-                                ui.itemRecyclerView.startAnimation(bounce_1000)
+                            override fun onItemSelected(position: Int, item: SectionItemDTO) {
+                                if (animate) {
+                                    ui.sectionItemSpinner.startAnimation(bounce_750)
+                                    ui.itemRecyclerView.startAnimation(bounce_1000)
+                                }
+                                selectedSectionItem = item
+                                setRecyclerItems(projectId, item.sectionItemId)
                             }
-                            selectedSectionItem = item
-                            setRecyclerItems(projectId, item.sectionItemId)
                         }
-                    })
-                ui.sectionItemSpinner.setOnTouchListener { _, _ ->
-                    animate = true
-                    false
+                    )
+                    ui.sectionItemSpinner.setOnTouchListener { _, _ ->
+                        animate = true
+                        false
+                    }
                 }
-            })
+            )
         }
     }
 
@@ -248,10 +258,13 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
         uiScope.launch(context = uiScope.coroutineContext) {
             val projectsItems =
                 createViewModel.getAllItemsForSectionItemByProjectId(sectionItemId, projectId)
-            projectsItems.observe(viewLifecycleOwner, { projectItemList ->
-                ui.groupLoading.visibility = View.GONE
-                initRecyclerView(projectItemList.toProjectItems())
-            })
+            projectsItems.observe(
+                viewLifecycleOwner,
+                { projectItemList ->
+                    ui.groupLoading.visibility = View.GONE
+                    initRecyclerView(projectItemList.toProjectItems())
+                }
+            )
         }
     }
 

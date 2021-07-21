@@ -86,9 +86,12 @@ abstract class LocationFragment : BaseFragment(), KodeinAware {
     }
 
     private fun startLocationUpdate() {
-        locationViewModel.getLocationData().observe(this, Observer { it ->
-            currentLocation = it
-        })
+        locationViewModel.getLocationData().observe(
+            this,
+            Observer { it ->
+                currentLocation = it
+            }
+        )
     }
 
     private fun isPermissionsGranted() =
@@ -97,9 +100,9 @@ abstract class LocationFragment : BaseFragment(), KodeinAware {
             Manifest.permission.ACCESS_FINE_LOCATION
         ) == PackageManager.PERMISSION_GRANTED &&
             ActivityCompat.checkSelfPermission(
-                this.requireContext(),
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED
+            this.requireContext(),
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
 
     private fun shouldShowRequestPermissionRationale() =
         ActivityCompat.shouldShowRequestPermissionRationale(

@@ -20,10 +20,10 @@ import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
 import androidx.annotation.RequiresApi
+import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.R
-import java.io.File
 
 private const val QUALITY = 100
 
@@ -33,14 +33,16 @@ object FileOperations {
         val images = mutableListOf<Media>()
 
         withContext(Dispatchers.IO) {
-            var projection = arrayOf(MediaStore.Images.Media._ID,
+            var projection = arrayOf(
+                MediaStore.Images.Media._ID,
                 MediaStore.Images.Media.RELATIVE_PATH,
                 MediaStore.Images.Media.DISPLAY_NAME,
                 MediaStore.Images.Media.SIZE,
                 MediaStore.Images.Media.MIME_TYPE,
                 MediaStore.Images.Media.WIDTH,
                 MediaStore.Images.Media.HEIGHT,
-                MediaStore.Images.Media.DATE_MODIFIED)
+                MediaStore.Images.Media.DATE_MODIFIED
+            )
 
             if (hasSdkHigherThan(Build.VERSION_CODES.Q)) {
                 projection += arrayOf(MediaStore.Images.Media.IS_FAVORITE)
@@ -48,11 +50,13 @@ object FileOperations {
 
             val sortOrder = "${MediaStore.Images.Media.DATE_MODIFIED} DESC"
 
-            context.contentResolver.query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+            context.contentResolver.query(
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
                 projection,
                 selection,
                 null,
-                sortOrder)?.use { cursor ->
+                sortOrder
+            )?.use { cursor ->
 
                 while (cursor.moveToNext()) {
                     val id = cursor.getLong(cursor.getColumnIndex(MediaStore.Images.Media._ID))
@@ -92,14 +96,16 @@ object FileOperations {
         val videos = mutableListOf<Media>()
 
         withContext(Dispatchers.IO) {
-            var projection = arrayOf(MediaStore.Video.Media._ID,
+            var projection = arrayOf(
+                MediaStore.Video.Media._ID,
                 MediaStore.Video.Media.RELATIVE_PATH,
                 MediaStore.Video.Media.DISPLAY_NAME,
                 MediaStore.Video.Media.SIZE,
                 MediaStore.Video.Media.MIME_TYPE,
                 MediaStore.Video.Media.WIDTH,
                 MediaStore.Video.Media.HEIGHT,
-                MediaStore.Video.Media.DATE_MODIFIED)
+                MediaStore.Video.Media.DATE_MODIFIED
+            )
 
             if (hasSdkHigherThan(Build.VERSION_CODES.Q)) {
                 projection += arrayOf(MediaStore.Images.Media.IS_FAVORITE)
@@ -107,11 +113,13 @@ object FileOperations {
 
             val sortOrder = "${MediaStore.Video.Media.DATE_MODIFIED} DESC"
 
-            context.contentResolver.query(MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
+            context.contentResolver.query(
+                MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
                 projection,
                 selection,
                 null,
-                sortOrder)?.use { cursor ->
+                sortOrder
+            )?.use { cursor ->
 
                 while (cursor.moveToNext()) {
                     val id = cursor.getLong(cursor.getColumnIndex(MediaStore.Video.Media._ID))
@@ -152,7 +160,8 @@ object FileOperations {
         val media = mutableListOf<Media>()
 
         withContext(Dispatchers.IO) {
-            val projection = arrayOf(MediaStore.MediaColumns._ID,
+            val projection = arrayOf(
+                MediaStore.MediaColumns._ID,
                 MediaStore.MediaColumns.RELATIVE_PATH,
                 MediaStore.MediaColumns.DISPLAY_NAME,
                 MediaStore.MediaColumns.SIZE,
@@ -161,7 +170,8 @@ object FileOperations {
                 MediaStore.MediaColumns.HEIGHT,
                 MediaStore.MediaColumns.DATE_MODIFIED,
                 MediaStore.MediaColumns.IS_FAVORITE,
-                MediaStore.MediaColumns.IS_TRASHED)
+                MediaStore.MediaColumns.IS_TRASHED
+            )
 
             val bundle = Bundle()
             bundle.putInt("android:query-arg-match-trashed", 1)
@@ -300,8 +310,10 @@ object FileOperations {
         var result: IntentSender? = null
         withContext(Dispatchers.IO) {
             try {
-                context.contentResolver.delete(media.uri, "${MediaStore.Images.Media._ID} = ?",
-                    arrayOf(media.id.toString()))
+                context.contentResolver.delete(
+                    media.uri, "${MediaStore.Images.Media._ID} = ?",
+                    arrayOf(media.id.toString())
+                )
             } catch (securityException: SecurityException) {
                 if (hasSdkHigherThan(Build.VERSION_CODES.P)) {
                     val recoverableSecurityException =

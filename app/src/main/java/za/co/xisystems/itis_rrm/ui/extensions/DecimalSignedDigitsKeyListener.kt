@@ -20,5 +20,4 @@ class DecimalSignedDigitsKeyListener(digitsKeyListener: DigitsKeyListener) :
             InputType.TYPE_NUMBER_FLAG_SIGNED
 
     val separator = DecimalFormatSymbols.getInstance().decimalSeparator
-
 }

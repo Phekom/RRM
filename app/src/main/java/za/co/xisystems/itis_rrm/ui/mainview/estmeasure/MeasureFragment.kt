@@ -96,22 +96,25 @@ class MeasureFragment : BaseFragment(), KodeinAware {
             ActivityIdConstants.JOB_ESTIMATE
         )
 
-        itemEstimateData.observeOnce(viewLifecycleOwner, { itemEstimateList ->
+        itemEstimateData.observeOnce(
+            viewLifecycleOwner,
+            { itemEstimateList ->
 
-            if (itemEstimateList.isNullOrEmpty()) {
-                ui.noData.visibility = View.VISIBLE
-                ui.estimationsToBeMeasuredListView.visibility = View.GONE
-                fetchJobMeasures()
-            } else {
-                val jobHeaders = itemEstimateList.distinctBy { item ->
-                    item.jobId
+                if (itemEstimateList.isNullOrEmpty()) {
+                    ui.noData.visibility = View.VISIBLE
+                    ui.estimationsToBeMeasuredListView.visibility = View.GONE
+                    fetchJobMeasures()
+                } else {
+                    val jobHeaders = itemEstimateList.distinctBy { item ->
+                        item.jobId
+                    }
+                    Timber.d("Estimate measures detected: ${jobHeaders.size}")
+                    ui.estimationsToBeMeasuredListView.visibility = View.VISIBLE
+                    ui.noData.visibility = View.GONE
+                    initRecyclerView(jobHeaders.toMeasureListItems())
                 }
-                Timber.d("Estimate measures detected: ${jobHeaders.size}")
-                ui.estimationsToBeMeasuredListView.visibility = View.VISIBLE
-                ui.noData.visibility = View.GONE
-                initRecyclerView(jobHeaders.toMeasureListItems())
             }
-        })
+        )
     }
 
     private fun swipeToRefreshInit() {
@@ -136,18 +139,21 @@ class MeasureFragment : BaseFragment(), KodeinAware {
             try {
                 withContext(Dispatchers.Main) {
                     val jobs = measureViewModel.offlineUserTaskList.await()
-                    jobs.observeOnce(viewLifecycleOwner, { works ->
-                        if (works.isNullOrEmpty()) {
-                            ui.noData.visibility = View.VISIBLE
-                            ui.estimationsToBeMeasuredListView.visibility = View.GONE
-                        } else {
-                            ui.noData.visibility = View.GONE
-                            ui.estimationsToBeMeasuredListView.visibility = View.VISIBLE
-                            Coroutines.main {
-                                fetchEstimateMeasures()
+                    jobs.observeOnce(
+                        viewLifecycleOwner,
+                        { works ->
+                            if (works.isNullOrEmpty()) {
+                                ui.noData.visibility = View.VISIBLE
+                                ui.estimationsToBeMeasuredListView.visibility = View.GONE
+                            } else {
+                                ui.noData.visibility = View.GONE
+                                ui.estimationsToBeMeasuredListView.visibility = View.VISIBLE
+                                Coroutines.main {
+                                    fetchEstimateMeasures()
+                                }
                             }
                         }
-                    })
+                    )
                 }
             } catch (t: Throwable) {
                 val fetchError = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
@@ -177,20 +183,23 @@ class MeasureFragment : BaseFragment(), KodeinAware {
                 ActivityIdConstants.MEASURE_PART_COMPLETE
             )
 
-            jobEstimateData.observeOnce(viewLifecycleOwner, { jos ->
-                if (jos.isNullOrEmpty()) {
-                    ui.noData.visibility = View.VISIBLE
-                    ui.estimationsToBeMeasuredListView.visibility = View.GONE
-                } else {
-                    ui.noData.visibility = View.GONE
-                    ui.estimationsToBeMeasuredListView.visibility = View.VISIBLE
-                    val measureItems = jos.distinctBy {
-                        it.jobId
+            jobEstimateData.observeOnce(
+                viewLifecycleOwner,
+                { jos ->
+                    if (jos.isNullOrEmpty()) {
+                        ui.noData.visibility = View.VISIBLE
+                        ui.estimationsToBeMeasuredListView.visibility = View.GONE
+                    } else {
+                        ui.noData.visibility = View.GONE
+                        ui.estimationsToBeMeasuredListView.visibility = View.VISIBLE
+                        val measureItems = jos.distinctBy {
+                            it.jobId
+                        }
+                        Timber.d("Job measures detected: ${measureItems.size}")
+                        initRecyclerView(measureItems.toMeasureListItems())
                     }
-                    Timber.d("Job measures detected: ${measureItems.size}")
-                    initRecyclerView(measureItems.toMeasureListItems())
                 }
-            })
+            )
         }
     }
 
@@ -235,12 +244,15 @@ class MeasureFragment : BaseFragment(), KodeinAware {
 
     private fun initVeiledRecycler() {
         ui.estimationsToBeMeasuredListView.run {
-            setVeilLayout(R.layout.item_velied_slug, object : VeiledItemOnClickListener {
-                /** will be invoked when the item on the [VeilRecyclerFrameView] clicked. */
-                override fun onItemClicked(pos: Int) {
-                    Toast.makeText(this@MeasureFragment.requireContext(), "Loading ...", Toast.LENGTH_SHORT).show()
+            setVeilLayout(
+                R.layout.item_velied_slug,
+                object : VeiledItemOnClickListener {
+                    /** will be invoked when the item on the [VeilRecyclerFrameView] clicked. */
+                    override fun onItemClicked(pos: Int) {
+                        Toast.makeText(this@MeasureFragment.requireContext(), "Loading ...", Toast.LENGTH_SHORT).show()
+                    }
                 }
-            })
+            )
             setAdapter(groupAdapter)
             setLayoutManager(LinearLayoutManager(this.context))
             addVeiledItems(15)

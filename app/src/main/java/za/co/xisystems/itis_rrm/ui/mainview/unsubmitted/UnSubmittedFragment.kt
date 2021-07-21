@@ -74,17 +74,20 @@ class UnSubmittedFragment : BaseFragment(), KodeinAware {
                 val measurements =
                     unSubmittedViewModel.getJobsForActivityId(ActivityIdConstants.JOB_ESTIMATE)
 
-                measurements.observe(viewLifecycleOwner, { jobList ->
-                    if (jobList.isNullOrEmpty()) {
-                        groupAdapter.clear()
-                        noData.visibility = View.VISIBLE
-                        incomplete_job_listView.visibility = View.GONE
-                    } else {
-                        noData.visibility = View.GONE
-                        incomplete_job_listView.visibility = View.VISIBLE
-                        initRecyclerView(jobList.toApproveListItems())
+                measurements.observe(
+                    viewLifecycleOwner,
+                    { jobList ->
+                        if (jobList.isNullOrEmpty()) {
+                            groupAdapter.clear()
+                            noData.visibility = View.VISIBLE
+                            incomplete_job_listView.visibility = View.GONE
+                        } else {
+                            noData.visibility = View.GONE
+                            incomplete_job_listView.visibility = View.VISIBLE
+                            initRecyclerView(jobList.toApproveListItems())
+                        }
                     }
-                })
+                )
             } catch (t: Throwable) {
                 Timber.e(t, "Failed to fetch unsubmitted jobs!")
                 val unsubError = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)

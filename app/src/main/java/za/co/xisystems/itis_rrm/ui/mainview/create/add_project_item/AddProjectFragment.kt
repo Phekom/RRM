@@ -126,8 +126,8 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
     }
 
     companion object {
-        private const val JOB_KEY = "jobId"
-        private const val PROJECT_KEY = "projectId"
+        private const val JOB_KEY = "add_project_item.jobId"
+        private const val PROJECT_KEY = "add_project_item.projectId"
     }
 
     private fun initViewModels() {
@@ -618,8 +618,10 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        outState.putSerializable(JOB_KEY, job.jobId)
-        outState.putSerializable(PROJECT_KEY, projectID)
+        if (this::job.isInitialized) {
+            outState.putString(JOB_KEY, job.jobId)
+        }
+        outState.putString(PROJECT_KEY, projectID)
         super.onSaveInstanceState(outState)
     }
 

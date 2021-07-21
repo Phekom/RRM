@@ -71,19 +71,22 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, KodeinAware {
 
         Coroutines.main {
             val loggedInUser = viewModel.user.await()
-            loggedInUser.observe(this, { user ->
-                // Register the user
-                if (user != null) {
-                    scanForPinUpdate()
-                    serverTextView.setOnClickListener {
-                        ToastUtils().toastServerAddress(appContext)
-                    }
+            loggedInUser.observe(
+                this,
+                { user ->
+                    // Register the user
+                    if (user != null) {
+                        scanForPinUpdate()
+                        serverTextView.setOnClickListener {
+                            ToastUtils().toastServerAddress(appContext)
+                        }
 
-                    buildFlavorTextView.setOnClickListener {
-                        ToastUtils().toastVersion(appContext)
+                        buildFlavorTextView.setOnClickListener {
+                            ToastUtils().toastVersion(appContext)
+                        }
                     }
                 }
-            })
+            )
         }
     }
 

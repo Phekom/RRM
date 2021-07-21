@@ -165,21 +165,24 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
     private suspend fun fetchLocalJobs() {
 
         val jobs = approveViewModel.getJobsForActivityId(ActivityIdConstants.JOB_APPROVE)
-        jobs.observe(viewLifecycleOwner, { jobList ->
+        jobs.observe(
+            viewLifecycleOwner,
+            { jobList ->
 
-            if (jobList.isNullOrEmpty()) {
-                ui.approveJobVeiledRecycler.unVeil()
-                ui.approveJobVeiledRecycler.visibility = View.GONE
-                ui.noData.visibility = View.VISIBLE
-            } else {
-                ui.noData.visibility = View.GONE
-                ui.approveJobVeiledRecycler.visibility = View.VISIBLE
-                val jItems = jobList.distinctBy {
-                    it.jobId
+                if (jobList.isNullOrEmpty()) {
+                    ui.approveJobVeiledRecycler.unVeil()
+                    ui.approveJobVeiledRecycler.visibility = View.GONE
+                    ui.noData.visibility = View.VISIBLE
+                } else {
+                    ui.noData.visibility = View.GONE
+                    ui.approveJobVeiledRecycler.visibility = View.VISIBLE
+                    val jItems = jobList.distinctBy {
+                        it.jobId
+                    }
+                    initRecyclerView(jItems.toApproveListItems())
                 }
-                initRecyclerView(jItems.toApproveListItems())
             }
-        })
+        )
     }
 
     private fun swipeToRefreshInit() {
@@ -194,7 +197,8 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
 
         ui.jobsSwipeToRefresh.setOnRefreshListener {
             uiScope.launch(uiScope.coroutineContext) {
-                protectedFetch(veiled = true, { fetchJobsFromServices() },
+                protectedFetch(
+                    veiled = true, { fetchJobsFromServices() },
                     { retryFetchRemoteJobs() }
                 )
             }
@@ -204,10 +208,13 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
     private suspend fun fetchJobsFromServices() {
         try {
             val freshJobs = approveViewModel.offlineUserTaskList.await()
-            freshJobs.observeOnce(viewLifecycleOwner, {
-                ui.jobsSwipeToRefresh.isRefreshing = false
-                protectedFetch(veiled = true, { fetchLocalJobs() }, { retryFetchRemoteJobs() })
-            })
+            freshJobs.observeOnce(
+                viewLifecycleOwner,
+                {
+                    ui.jobsSwipeToRefresh.isRefreshing = false
+                    protectedFetch(veiled = true, { fetchLocalJobs() }, { retryFetchRemoteJobs() })
+                }
+            )
         } catch (throwable: Throwable) {
             val message = "Failed to retrieve remote jobs: ${throwable.message ?: XIErrorHandler.UNKNOWN_ERROR}"
             Timber.e(throwable, message)

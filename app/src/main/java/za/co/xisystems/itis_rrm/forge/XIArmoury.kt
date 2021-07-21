@@ -17,7 +17,7 @@ class XIArmoury private constructor(context: Context) {
     private var wizardInstance: Wizard
     private var scribeInstance: Scribe
     private var sageInstance: Sage = Sage()
-    private var masterKey: MasterKey
+    private var masterKey: MasterKey = sageInstance.generateMasterKey(context)
 
     companion object {
         @Volatile private var instance: XIArmoury? = null
@@ -36,7 +36,6 @@ class XIArmoury private constructor(context: Context) {
     }
 
     init {
-        masterKey = sageInstance.generateMasterKey(context)
         wizardInstance = Wizard()
         scribeInstance = Scribe()
         scribeInstance.initPreferences(context, masterKey, PREFS_FILE)
@@ -97,5 +96,9 @@ class XIArmoury private constructor(context: Context) {
 
     fun validateToken(oldTokenString: SecureString, hash: String): Boolean {
         return wizardInstance.validateToken(oldTokenString, hash)
+    }
+
+    fun writeMaxTimestamp() {
+        scribeInstance.writeMaxTimestamp()
     }
 }

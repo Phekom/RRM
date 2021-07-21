@@ -46,27 +46,39 @@ abstract class BaseActivity : AppCompatActivity(), KodeinAware {
         MotionToast.setInfoColor(R.color.dark_slate_gray)
         MotionToast.setDeleteColor(R.color.dark_slate_gray)
 
-        sharedViewModel.longRunning.observe(this, {
-            armoury.writeFutureTimestamp()
-            when (it) {
-                true -> this.startLongRunningTask()
-                false -> this.endLongRunningTask()
+        sharedViewModel.longRunning.observe(
+            this,
+            {
+                armoury.writeFutureTimestamp()
+                when (it) {
+                    true -> this.startLongRunningTask()
+                    false -> this.endLongRunningTask()
+                }
             }
-        })
+        )
 
-        sharedViewModel.message.observe(this, {
-            toastMessage(it.toString())
-        })
-
-        sharedViewModel.colorMessage.observe(this, {
-            it?.let {
-                toastMessage(it)
+        sharedViewModel.message.observe(
+            this,
+            {
+                toastMessage(it.toString())
             }
-        })
+        )
 
-        sharedViewModel.actionCaption.observe(this, {
-            setCaption(it)
-        })
+        sharedViewModel.colorMessage.observe(
+            this,
+            {
+                it?.let {
+                    toastMessage(it)
+                }
+            }
+        )
+
+        sharedViewModel.actionCaption.observe(
+            this,
+            {
+                setCaption(it)
+            }
+        )
 
         if (savedInstanceState == null) {
             armoury.writeFutureTimestamp()
@@ -92,13 +104,17 @@ abstract class BaseActivity : AppCompatActivity(), KodeinAware {
     }
 
     private fun checkTimeout() {
-        val timeInMillis = System.currentTimeMillis()
-        val timeDiff = timeInMillis - armoury.getTimestamp()
-        Timber.d("TimeDiff: $timeDiff")
-        if (timeDiff >= Constants.TEN_MINUTES &&
-            !sharedViewModel.takingPhotos
-        ) {
-            logoutApplication()
+        if (sharedViewModel.loggedIn) {
+            val timeInMillis = System.currentTimeMillis()
+            val timeDiff = timeInMillis - armoury.getTimestamp()
+            Timber.d("TimeDiff: $timeDiff")
+            if (timeDiff >= Constants.TEN_MINUTES &&
+                !sharedViewModel.takingPhotos
+            ) {
+                logoutApplication()
+                armoury.writeFutureTimestamp()
+                sharedViewModel.logOut()
+            }
         }
     }
 
@@ -126,12 +142,15 @@ abstract class BaseActivity : AppCompatActivity(), KodeinAware {
 
     override fun onPause() {
         super.onPause()
-        armoury.writeFutureTimestamp()
+        armoury.writeMaxTimestamp()
     }
 
     override fun onUserInteraction() {
-        Timber.d("User interaction!!")
         super.onUserInteraction()
+        Timber.d("User interaction!!")
+        if (!sharedViewModel.loggedIn) {
+            sharedViewModel.loggedIn = true
+        }
         armoury.writeFutureTimestamp()
     }
 

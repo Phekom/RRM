@@ -70,24 +70,27 @@ class RegisterActivity : AppCompatActivity(), AuthListener, KodeinAware {
 
         Coroutines.main {
             val loggedInUser = viewModel.user.await()
-            loggedInUser.observe(this, { user ->
-                // Register the user
-                if (user != null) {
-                    when {
-                        user.userStatus != "Y" -> {
-                            onFailure(getString(R.string.user_blocked, user.userName))
-                        }
-                        user.pinHash == null -> {
-                            Coroutines.main {
-                                registerPinOrNot()
+            loggedInUser.observe(
+                this,
+                { user ->
+                    // Register the user
+                    if (user != null) {
+                        when {
+                            user.userStatus != "Y" -> {
+                                onFailure(getString(R.string.user_blocked, user.userName))
                             }
-                        }
-                        else -> {
-                            authorizeUser()
+                            user.pinHash == null -> {
+                                Coroutines.main {
+                                    registerPinOrNot()
+                                }
+                            }
+                            else -> {
+                                authorizeUser()
+                            }
                         }
                     }
                 }
-            })
+            )
             serverTextView.setOnClickListener {
                 ToastUtils().toastServerAddress(this.applicationContext)
             }

@@ -83,12 +83,15 @@ class ApproveMeasureFragment : BaseFragment(), KodeinAware {
 
     private fun initVeiledRecyclerView() {
         ui.approveMeasurementsList.run {
-            setVeilLayout(layout.item_velied_slug, object : VeiledItemOnClickListener {
-                /** will be invoked when the item on the [VeilRecyclerFrameView] clicked. */
-                override fun onItemClicked(pos: Int) {
-                    toast("Loading ...")
+            setVeilLayout(
+                layout.item_velied_slug,
+                object : VeiledItemOnClickListener {
+                    /** will be invoked when the item on the [VeilRecyclerFrameView] clicked. */
+                    override fun onItemClicked(pos: Int) {
+                        toast("Loading ...")
+                    }
                 }
-            })
+            )
             setAdapter(groupAdapter)
             setLayoutManager(LinearLayoutManager(this.context))
             addVeiledItems(15)
@@ -110,22 +113,25 @@ class ApproveMeasureFragment : BaseFragment(), KodeinAware {
                 val measurementsSubscription =
                     approveViewModel.getJobApproveMeasureForActivityId(ActivityIdConstants.MEASURE_COMPLETE)
 
-                measurementsSubscription.observe(viewLifecycleOwner, { measurementData ->
+                measurementsSubscription.observe(
+                    viewLifecycleOwner,
+                    { measurementData ->
 
-                    if (measurementData.isNullOrEmpty()) {
-                        ui.noData.visibility = View.VISIBLE
-                        ui.approveMeasurementsList.visibility = View.GONE
-                        ui.approveMeasurementsList.unVeil()
-                    } else {
-                        ui.noData.visibility = View.GONE
-                        ui.approveMeasurementsList.visibility = View.VISIBLE
+                        if (measurementData.isNullOrEmpty()) {
+                            ui.noData.visibility = View.VISIBLE
+                            ui.approveMeasurementsList.visibility = View.GONE
+                            ui.approveMeasurementsList.unVeil()
+                        } else {
+                            ui.noData.visibility = View.GONE
+                            ui.approveMeasurementsList.visibility = View.VISIBLE
 
-                        val jobHeaders = measurementData.distinctBy {
-                            it.jobId
+                            val jobHeaders = measurementData.distinctBy {
+                                it.jobId
+                            }
+                            initRecyclerView(jobHeaders.toApproveListItems())
                         }
-                        initRecyclerView(jobHeaders.toApproveListItems())
                     }
-                })
+                )
             } catch (t: Throwable) {
                 Timber.e(t, "Unable to fetch Measurements")
                 val measureErr = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
@@ -158,15 +164,18 @@ class ApproveMeasureFragment : BaseFragment(), KodeinAware {
         Coroutines.main {
             try {
                 val freshJobs = approveViewModel.offlineUserTaskList.await()
-                freshJobs.observe(viewLifecycleOwner, {
-                    if (it.isNullOrEmpty()) {
+                freshJobs.observe(
+                    viewLifecycleOwner,
+                    {
+                        if (it.isNullOrEmpty()) {
 
-                        ui.noData.visibility = View.VISIBLE
-                        ui.approveMeasurementsList.visibility = View.GONE
-                    } else {
-                        loadJobHeaders()
+                            ui.noData.visibility = View.VISIBLE
+                            ui.approveMeasurementsList.visibility = View.GONE
+                        } else {
+                            loadJobHeaders()
+                        }
                     }
-                })
+                )
             } catch (t: Throwable) {
                 Timber.e(t, "Unable to fetch remote jobs")
                 val measureErr = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)

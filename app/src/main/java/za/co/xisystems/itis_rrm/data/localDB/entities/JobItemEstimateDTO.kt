@@ -103,11 +103,11 @@ data class JobItemEstimateDTO(
         return when (this.jobItemEstimatePhotos.isNullOrEmpty()) {
             true -> Pair<Int, JobItemEstimatesPhotoDTO>(-1, null)
             else -> {
-                this.jobItemEstimatePhotos.filter { photo ->
+                jobItemEstimatePhotos.filter { photo ->
                     photo.isPhotostart == lookForStartPhoto
-                }.mapIndexed { index, photo ->
-                    Pair(index, photo)
-                }.first()
+                }.mapIndexed { index, jobItemEstimatesPhotoDTO ->
+                    Pair(index, jobItemEstimatesPhotoDTO)
+                }.firstOrNull() ?: Pair<Int, JobItemEstimatesPhotoDTO>(-1, null)
             }
         }
     }

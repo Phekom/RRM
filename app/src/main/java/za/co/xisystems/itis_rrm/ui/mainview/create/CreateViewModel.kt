@@ -80,6 +80,7 @@ class CreateViewModel(
     fun setLocationPoint(newLocation: Double) {
         locationPoint.value = newLocation
     }
+
     fun setCurrentJob(inJobItemToEdit: JobDTO) {
         currentJob.value = inJobItemToEdit
     }

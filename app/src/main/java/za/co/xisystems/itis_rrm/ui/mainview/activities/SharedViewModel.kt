@@ -26,6 +26,8 @@ class SharedViewModel(private val userRepository: UserRepository) : ViewModel() 
     var originalCaption: String = ""
     val colorMessage: MutableLiveData<ColorToast> = MutableLiveData()
     var takingPhotos: Boolean = false
+    var loggedIn: Boolean = false
+
     fun setMessage(msg: String?) {
         message.value = msg
     }
@@ -59,5 +61,6 @@ class SharedViewModel(private val userRepository: UserRepository) : ViewModel() 
 
     fun logOut() = viewModelScope.launch(Dispatchers.IO) {
         userRepository.expirePin()
+        loggedIn = false
     }
 }

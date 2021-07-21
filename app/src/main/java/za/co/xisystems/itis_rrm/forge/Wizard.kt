@@ -10,6 +10,7 @@ import com.password4j.Argon2Function
 import com.password4j.Password
 import com.password4j.SecureString
 import com.password4j.types.Argon2
+import java.security.SecureRandom
 import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.results.XIError
@@ -17,7 +18,6 @@ import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.results.XISuccess
 import za.co.xisystems.itis_rrm.utils.DefaultDispatcherProvider
 import za.co.xisystems.itis_rrm.utils.DispatcherProvider
-import java.security.SecureRandom
 
 /**
  * Wizard generates and validates tokens
@@ -41,10 +41,12 @@ class Wizard(private val dispatchers: DispatcherProvider = DefaultDispatcherProv
      * and time-based attacks
      */
     private val argon2Function: Argon2Function by lazy {
-        Argon2Function.getInstance(memory,
+        Argon2Function.getInstance(
+            memory,
             iterations, threads,
             outputLength,
-            type, version)
+            type, version
+        )
     }
 
     /**
@@ -83,7 +85,7 @@ class Wizard(private val dispatchers: DispatcherProvider = DefaultDispatcherProv
     }
 
     fun validateToken(passphrase: SecureString, hash: String): Boolean {
-            return Password.check(passphrase, hash).with(Argon2Function.getInstanceFromHash(hash))
+        return Password.check(passphrase, hash).with(Argon2Function.getInstanceFromHash(hash))
     }
 
     /**

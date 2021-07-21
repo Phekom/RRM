@@ -23,12 +23,15 @@ import java.io.Serializable
 const val LOOKUP_OPTION_TABLE = "LOOKUP_OPTION_TABLE"
 
 @Entity(
-    tableName = LOOKUP_OPTION_TABLE, foreignKeys = [ForeignKey(
-        entity = LookupDTO::class,
-        parentColumns = arrayOf("lookupName"),
-        childColumns = arrayOf("lookupName"),
-        onDelete = ForeignKey.CASCADE
-    )]
+    tableName = LOOKUP_OPTION_TABLE,
+    foreignKeys = [
+        ForeignKey(
+            entity = LookupDTO::class,
+            parentColumns = arrayOf("lookupName"),
+            childColumns = arrayOf("lookupName"),
+            onDelete = ForeignKey.CASCADE
+        )
+    ]
 )
 class LookupOptionDTO(
 

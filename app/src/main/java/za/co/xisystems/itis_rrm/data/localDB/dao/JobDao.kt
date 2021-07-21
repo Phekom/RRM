@@ -89,8 +89,8 @@ interface JobDao {
 
     @Query(
         "SELECT * FROM JOB_TABLE WHERE " +
-        "actId = :jobApproved  AND estimatesActId LIKE :estimateComplete " +
-        "AND  worksActId LIKE :estWorksComplete AND " +
+            "actId = :jobApproved  AND estimatesActId LIKE :estimateComplete " +
+            "AND  worksActId LIKE :estWorksComplete AND " +
             "measureActId LIKE :measureComplete AND deleted = 0 ORDER BY jiNo ASC"
     )
     fun getJobsMeasureForActivityIds(
@@ -101,23 +101,25 @@ interface JobDao {
     ): LiveData<List<JobDTO>>
 
     @RewriteQueriesToDropUnusedColumns
-    @Query("SELECT * FROM JOB_TABLE WHERE " +
-        "actId = :actId AND deleted = 0 " +
-        "ORDER BY jiNo ASC")
+    @Query(
+        "SELECT * FROM JOB_TABLE WHERE " +
+            "actId = :actId AND deleted = 0 " +
+            "ORDER BY jiNo ASC"
+    )
     fun getJobsForActivityId(actId: Int): LiveData<List<JobDTO>>
 
     @RewriteQueriesToDropUnusedColumns
     @Query(
         " SELECT j.*, e.* FROM JOB_TABLE AS j JOIN " +
-        "JOB_ITEM_ESTIMATE AS e ON e.JobId = j.jobId " +
-        "WHERE j.actId Like :actId and e.ActId Like :actId2 " +
+            "JOB_ITEM_ESTIMATE AS e ON e.JobId = j.jobId " +
+            "WHERE j.actId Like :actId and e.ActId Like :actId2 " +
             "AND j.deleted = 0 ORDER BY jiNo ASC "
     )
     fun getJobsForActivityIds(actId: Int, actId2: Int): List<JobDTO>
 
     @Query(
         " SELECT j.*, e.* FROM JOB_TABLE AS j JOIN JOB_ITEM_ESTIMATE AS e " +
-        "ON e.JobId = j.jobId WHERE j.actId Like :actId " +
+            "ON e.JobId = j.jobId WHERE j.actId Like :actId " +
             "AND e.ActId Like :actId2 AND j.deleted = 0 ORDER BY jiNo ASC "
     )
     @RewriteQueriesToDropUnusedColumns
@@ -127,7 +129,7 @@ interface JobDao {
 // OR e.ActId Like 8
     @Query(
         "UPDATE JOB_TABLE SET sectionId =:sectionId ,startKm =:startKM , endKm =:endKM ," +
-        "jobItemEstimates =:newJobItemEstimatesList, jobSections =:jobItemSectionArrayList" +
+            "jobItemEstimates =:newJobItemEstimatesList, jobSections =:jobItemSectionArrayList" +
             "  WHERE jobId = :newJobId AND deleted = 0"
     )
     fun updateJoSecId(

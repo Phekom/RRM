@@ -17,11 +17,11 @@ import android.os.Build.VERSION_CODES
 import androidx.core.app.ActivityCompat
 import androidx.core.os.BuildCompat
 import androidx.fragment.app.Fragment
-import za.co.xisystems.itis_rrm.R
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import kotlin.math.roundToInt
+import za.co.xisystems.itis_rrm.R
 
 const val EXTRA_IMAGE = "extra.image"
 const val MIME_TYPE_IMAGE_REGEX = "image/[-\\w.]+\$"
@@ -48,8 +48,10 @@ fun requestStoragePermission(fragment: Fragment, requestCode: Int) {
     fragment.requestPermissions(
         arrayOf(
             Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE),
-        requestCode)
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+        ),
+        requestCode
+    )
 }
 
 fun hasMediaLocationPermission(context: Context): Boolean {
@@ -67,8 +69,10 @@ fun requestMediaLocationPermission(activity: Activity, requestCode: Int) {
 }
 
 private fun hasPermission(context: Context, permission: String): Boolean {
-    return ActivityCompat.checkSelfPermission(context,
-        permission) == PackageManager.PERMISSION_GRANTED
+    return ActivityCompat.checkSelfPermission(
+        context,
+        permission
+    ) == PackageManager.PERMISSION_GRANTED
 }
 
 private fun requestPermissions(activity: Activity, list: Array<String>, code: Int) {

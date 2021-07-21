@@ -148,13 +148,23 @@ abstract class AppDatabase : RoomDatabase() {
 
     companion object {
         private const val MAX_DB_VERSIONS = 999_999_999
-        @Volatile private var instance: AppDatabase? = null
+        @Volatile
+        private var instance: AppDatabase? = null
         private val LOCK = Any()
         private var secretphrase: String? = null
         operator fun invoke(context: Context, armoury: XIArmoury) = instance ?: synchronized(LOCK) {
             secretphrase = armoury.readSecretPassphrase()
             instance ?: buildDatabase(context.applicationContext).also {
                 instance = it
+            }
+        }
+
+        fun onAppClose() {
+            if (instance != null) {
+                if (instance!!.isOpen) {
+                    instance!!.close()
+                }
+                instance = null
             }
         }
 

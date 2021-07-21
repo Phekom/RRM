@@ -88,15 +88,18 @@ class ExpandableHeaderMeasureItem(
     private fun measureJobItemEstimate() {
         Coroutines.main {
             val jobForJobItemEstimate = measureViewModel.getJobFromJobId(measureItem.jobId)
-            jobForJobItemEstimate.observeOnce(fragment.requireActivity(), { job ->
-                if (measureItem.jobId != null && job.jobId == measureItem.jobId!!) {
-                    showAddMeasurementQuantityDialog(
-                        measureItem,
-                        job,
-                        jobItemMeasurePhotoDTOArrayList
-                    )
+            jobForJobItemEstimate.observeOnce(
+                fragment.requireActivity(),
+                { job ->
+                    if (measureItem.jobId != null && job.jobId == measureItem.jobId!!) {
+                        showAddMeasurementQuantityDialog(
+                            measureItem,
+                            job,
+                            jobItemMeasurePhotoDTOArrayList
+                        )
+                    }
                 }
-            })
+            )
         }
     }
 
@@ -114,55 +117,58 @@ class ExpandableHeaderMeasureItem(
             quantityInputEditText.setSingleLine()
 
             val selectedItemMeasure = measureViewModel.getItemForItemId(measureItem.projectItemId)
-            selectedItemMeasure.observeOnce(fragment.requireActivity(), { selected ->
+            selectedItemMeasure.observeOnce(
+                fragment.requireActivity(),
+                { selected ->
 
-                if (selected != null) {
-                    var message: String = fragment.requireActivity().getString(R.string.enter_quantity_measured)
-                    quantityInputEditText.textAlignment = View.TEXT_ALIGNMENT_CENTER
-                    if (!selected.uom.equals(fragment.requireActivity().getString(R.string.none))) {
-                        quantityInputEditText.hint = selected.uom
-                        message += fragment.requireActivity().getString(R.string.badge, selected.uom)
-                    }
-                    Coroutines.main {
-                        val desc = measureViewModel.getDescForProjectItemId(projectItemIdz!!)
+                    if (selected != null) {
+                        var message: String = fragment.requireActivity().getString(R.string.enter_quantity_measured)
+                        quantityInputEditText.textAlignment = View.TEXT_ALIGNMENT_CENTER
+                        if (!selected.uom.equals(fragment.requireActivity().getString(R.string.none))) {
+                            quantityInputEditText.hint = selected.uom
+                            message += fragment.requireActivity().getString(R.string.badge, selected.uom)
+                        }
+                        Coroutines.main {
+                            val desc = measureViewModel.getDescForProjectItemId(projectItemIdz!!)
 
-                        val enterQuantityDialog: AlertDialog =
-                            AlertDialog.Builder(fragment.requireActivity()) // android.R.style.Theme_DeviceDefault_Dialog
-                                .setTitle(
-                                    "Estimate - " + desc + System.lineSeparator() + "Quantity : " + measureItem.qty.toString()
-                                        .dropLast(
-                                            2
+                            val enterQuantityDialog: AlertDialog =
+                                AlertDialog.Builder(fragment.requireActivity()) // android.R.style.Theme_DeviceDefault_Dialog
+                                    .setTitle(
+                                        "Estimate - " + desc + System.lineSeparator() + "Quantity : " + measureItem.qty.toString()
+                                            .dropLast(
+                                                2
+                                            )
+                                    )
+                                    .setMessage(message)
+                                    .setCancelable(false)
+                                    .setIcon(R.drawable.ic_border_)
+                                    .setView(quantityInputEditText)
+                                    .setPositiveButton(
+                                        R.string.ok
+                                    ) { _, _ ->
+                                        updateMeasureQuantity(
+                                            quantityInputEditText,
+                                            selected,
+                                            jobForJobItemEstimate,
+                                            measureItem,
+                                            jobItemMeasurePhotoDTO
                                         )
-                                )
-                                .setMessage(message)
-                                .setCancelable(false)
-                                .setIcon(R.drawable.ic_border_)
-                                .setView(quantityInputEditText)
-                                .setPositiveButton(
-                                    R.string.ok
-                                ) { _, _ ->
-                                    updateMeasureQuantity(
-                                        quantityInputEditText,
-                                        selected,
-                                        jobForJobItemEstimate,
-                                        measureItem,
-                                        jobItemMeasurePhotoDTO
+                                    }
+
+                                    .setNegativeButton(
+                                        R.string.cancel
+                                    ) { _, _ -> }.show()
+                            quantityInputEditText.onFocusChangeListener =
+                                OnFocusChangeListener { _, hasFocus ->
+                                    if (hasFocus) enterQuantityDialog.window?.setSoftInputMode(
+                                        WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE
                                     )
                                 }
-
-                                .setNegativeButton(
-                                    R.string.cancel
-                                ) { _, _ -> }.show()
-                        quantityInputEditText.onFocusChangeListener =
-                            OnFocusChangeListener { _, hasFocus ->
-                                if (hasFocus) enterQuantityDialog.window?.setSoftInputMode(
-                                    WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE
-                                )
-                            }
-                        quantityInputEditText.requestFocus()
+                            quantityInputEditText.requestFocus()
+                        }
                     }
                 }
-            })
+            )
         }
     }
 
@@ -181,7 +187,7 @@ class ExpandableHeaderMeasureItem(
             ).show()
         } else {
             if (quantityInputEditText.text.toString()
-                    .isNotEmpty()
+                .isNotEmpty()
             ) {
                 Coroutines.main {
                     val jobItemMeasure = setJobItemMeasure(

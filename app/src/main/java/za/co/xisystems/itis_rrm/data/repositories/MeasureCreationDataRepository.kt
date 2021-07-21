@@ -15,6 +15,7 @@ import com.google.gson.Gson
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
+import java.util.ArrayList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -47,7 +48,6 @@ import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import za.co.xisystems.itis_rrm.utils.uncaughtExceptionHandler
-import java.util.ArrayList
 
 /**
  * Created by Francis Mahlava on 2019/11/28.
@@ -316,14 +316,14 @@ class MeasureCreationDataRepository(
 
     private fun getErrorMsg():
         String {
-        getErrorState()
-        return "Error: WorkFlow Job is null"
-    }
+            getErrorState()
+            return "Error: WorkFlow Job is null"
+        }
 
     private fun getErrorState():
         Boolean {
-        return true
-    }
+            return true
+        }
 
     private suspend fun saveWorkflowJob(
         workflowJob: WorkflowJobDTO,
@@ -339,10 +339,10 @@ class MeasureCreationDataRepository(
         jobID: String?
     ):
         LiveData<List<JobItemEstimateDTO>> {
-        return withContext(Dispatchers.IO) {
-            appDb.getJobItemEstimateDao().getJobItemsToMeasureForJobId(jobID!!)
+            return withContext(Dispatchers.IO) {
+                appDb.getJobItemEstimateDao().getJobItemsToMeasureForJobId(jobID!!)
+            }
         }
-    }
 
     suspend fun getSingleJobFromJobId(
         jobId: String?
@@ -357,26 +357,26 @@ class MeasureCreationDataRepository(
         estimateId: String
     ):
         LiveData<List<JobItemMeasureDTO>> {
-        return withContext(Dispatchers.IO) {
-            appDb.getJobItemMeasureDao()
-                .getJobItemMeasuresForJobIdAndEstimateId2(jobId, estimateId)
+            return withContext(Dispatchers.IO) {
+                appDb.getJobItemMeasureDao()
+                    .getJobItemMeasuresForJobIdAndEstimateId2(jobId, estimateId)
+            }
         }
-    }
 
     suspend fun getItemForItemId(
         projectItemId: String?
     ):
         LiveData<ProjectItemDTO> {
-        return withContext(Dispatchers.IO) {
-            appDb.getProjectItemDao().getItemForItemId(projectItemId!!)
+            return withContext(Dispatchers.IO) {
+                appDb.getProjectItemDao().getItemForItemId(projectItemId!!)
+            }
         }
-    }
 
     fun saveJobItemMeasureItems(jobItemMeasures: ArrayList<JobItemMeasureDTO>) {
         Coroutines.io {
             for (jobItemMeasure in jobItemMeasures.iterator()) {
                 if (!appDb.getJobItemMeasureDao()
-                        .checkIfJobItemMeasureExists(jobItemMeasure.itemMeasureId)
+                    .checkIfJobItemMeasureExists(jobItemMeasure.itemMeasureId)
                 ) {
                     appDb.getJobItemMeasureDao().insertJobItemMeasure(jobItemMeasure)
                 }
@@ -410,7 +410,7 @@ class MeasureCreationDataRepository(
     ) {
         Coroutines.io {
             if (!appDb.getJobItemMeasureDao()
-                    .checkIfJobItemMeasureExists(selectedJobItemMeasure.itemMeasureId)
+                .checkIfJobItemMeasureExists(selectedJobItemMeasure.itemMeasureId)
             ) {
                 appDb.getJobItemMeasureDao().insertJobItemMeasure(selectedJobItemMeasure)
             }
@@ -484,7 +484,7 @@ class MeasureCreationDataRepository(
 
                 jobItemEstimate.workflowEstimateWorks.forEach { jobEstimateWorks ->
                     if (appDb.getEstimateWorkDao()
-                            .checkIfJobEstimateWorksExist(jobEstimateWorks.worksId)
+                        .checkIfJobEstimateWorksExist(jobEstimateWorks.worksId)
                     ) {
                         appDb.getEstimateWorkDao().updateJobEstimateWorksWorkflow(
                             jobEstimateWorks.worksId,
@@ -527,7 +527,7 @@ class MeasureCreationDataRepository(
 
             job.workflowJobSections.forEach { jobSection ->
                 if (!appDb.getJobSectionDao()
-                        .checkIfJobSectionExist(jobSection.jobSectionId)
+                    .checkIfJobSectionExist(jobSection.jobSectionId)
                 ) {
                     appDb.getJobSectionDao().insertJobSection(jobSection)
                 } else {

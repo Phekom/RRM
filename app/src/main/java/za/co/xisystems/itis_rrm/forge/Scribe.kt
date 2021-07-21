@@ -12,14 +12,14 @@ import android.os.Environment
 import androidx.security.crypto.EncryptedFile
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.IOException
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.utils.DefaultDispatcherProvider
 import za.co.xisystems.itis_rrm.utils.DispatcherProvider
-import java.io.ByteArrayOutputStream
-import java.io.File
-import java.io.IOException
 
 /**
  * Create, read and write Encrypted shared preferences.
@@ -92,7 +92,7 @@ class Scribe(private val dispatchers: DispatcherProvider = DefaultDispatcherProv
         }
     }
 
-    fun writeTimestamp(timeInMillis: Long) {
+    private fun writeTimestamp(timeInMillis: Long) {
         with(securePrefs.edit()) {
             putLong(TIMESTAMP_KEY, timeInMillis).apply()
             Timber.d("Wrote Timestamp: $timeInMillis")
@@ -171,5 +171,13 @@ class Scribe(private val dispatchers: DispatcherProvider = DefaultDispatcherProv
 
             return@withContext byteArrayOutputStream.toByteArray()
         }
+    }
+
+    /**
+     * User is being logged out,
+     * Application will cease Timer activity
+     */
+    fun writeMaxTimestamp() {
+        writeTimestamp(Long.MAX_VALUE)
     }
 }

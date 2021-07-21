@@ -83,23 +83,26 @@ class WorkFragment : BaseFragment(), KodeinAware {
                 ActivityIdConstants.ESTIMATE_INCOMPLETE
             )
 
-            localJobs.observeOnce(viewLifecycleOwner, { jobsList ->
-                ui.group7Loading.visibility = View.GONE
-                if (jobsList.isNullOrEmpty()) {
-                    ui.veiledWorkListView.visibility = View.GONE
-                    ui.noData.visibility = View.VISIBLE
-                } else {
-                    Coroutines.main {
-                        ui.veiledWorkListView.visibility = View.VISIBLE
-                        ui.noData.visibility = View.GONE
-                        val headerItems = jobsList.distinctBy {
-                            it.jobId
-                        }
+            localJobs.observeOnce(
+                viewLifecycleOwner,
+                { jobsList ->
+                    ui.group7Loading.visibility = View.GONE
+                    if (jobsList.isNullOrEmpty()) {
+                        ui.veiledWorkListView.visibility = View.GONE
+                        ui.noData.visibility = View.VISIBLE
+                    } else {
+                        Coroutines.main {
+                            ui.veiledWorkListView.visibility = View.VISIBLE
+                            ui.noData.visibility = View.GONE
+                            val headerItems = jobsList.distinctBy {
+                                it.jobId
+                            }
 
-                        this@WorkFragment.initRecyclerView(headerItems.toWorkListItems())
+                            this@WorkFragment.initRecyclerView(headerItems.toWorkListItems())
+                        }
                     }
                 }
-            })
+            )
         }
     }
 
@@ -130,19 +133,23 @@ class WorkFragment : BaseFragment(), KodeinAware {
                 crashGuard(
                     view = this@WorkFragment.requireView(),
                     throwable = xiFail,
-                    refreshAction = { retryFetchingJobs() })
+                    refreshAction = { retryFetchingJobs() }
+                )
             }
         }
     }
 
     private fun initVeiledRecycler() {
         ui.veiledWorkListView.run {
-            setVeilLayout(R.layout.item_velied_slug, object : VeiledItemOnClickListener {
-                /* will be invoked when the item on the [VeilRecyclerFrameView] clicked. */
-                override fun onItemClicked(pos: Int) {
-                    Toast.makeText(this@WorkFragment.requireContext(), "Loading ...", Toast.LENGTH_SHORT).show()
+            setVeilLayout(
+                R.layout.item_velied_slug,
+                object : VeiledItemOnClickListener {
+                    /* will be invoked when the item on the [VeilRecyclerFrameView] clicked. */
+                    override fun onItemClicked(pos: Int) {
+                        Toast.makeText(this@WorkFragment.requireContext(), "Loading ...", Toast.LENGTH_SHORT).show()
+                    }
                 }
-            })
+            )
             setAdapter(groupAdapter)
             setLayoutManager(LinearLayoutManager(this.context))
             addVeiledItems(15)
@@ -196,9 +203,12 @@ class WorkFragment : BaseFragment(), KodeinAware {
         withContext(Dispatchers.Main) {
             try {
                 val jobs = workViewModel.offlineUserTaskList.await()
-                jobs.observeOnce(viewLifecycleOwner, { works ->
-                    Timber.d("${works.size} / ${works.count()} loaded.")
-                })
+                jobs.observeOnce(
+                    viewLifecycleOwner,
+                    { works ->
+                        Timber.d("${works.size} / ${works.count()} loaded.")
+                    }
+                )
             } catch (t: Throwable) {
                 val message = "Failed to fetch jobs from service: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
                 Timber.e(t, message)
@@ -273,41 +283,44 @@ class WorkFragment : BaseFragment(), KodeinAware {
                     jobDTO.jobId,
                     ActivityIdConstants.ESTIMATE_INCOMPLETE
                 )
-                estimates.observeOnce(viewLifecycleOwner, { estimateItems ->
-                    estimateItems.forEach { item ->
+                estimates.observeOnce(
+                    viewLifecycleOwner,
+                    { estimateItems ->
+                        estimateItems.forEach { item ->
 
-                        uiScope.launch(uiScope.coroutineContext) {
-                            try {
-                                val desc =
-                                    workViewModel.getDescForProjectItemId(item.projectItemId!!)
-                                val qty = item.qty.toString()
-                                val rate = item.lineRate.toString()
-                                val estimateId = item.estimateId
+                            uiScope.launch(uiScope.coroutineContext) {
+                                try {
+                                    val desc =
+                                        workViewModel.getDescForProjectItemId(item.projectItemId!!)
+                                    val qty = item.qty.toString()
+                                    val rate = item.lineRate.toString()
+                                    val estimateId = item.estimateId
 
-                                add(
-                                    CardItem(
-                                        activity = activity,
-                                        text = desc,
-                                        qty = qty,
-                                        rate = rate,
-                                        estimateId = estimateId,
-                                        workViewModel = workViewModel,
-                                        jobItemEstimate = item,
-                                        job = jobDTO
+                                    add(
+                                        CardItem(
+                                            activity = activity,
+                                            text = desc,
+                                            qty = qty,
+                                            rate = rate,
+                                            estimateId = estimateId,
+                                            workViewModel = workViewModel,
+                                            jobItemEstimate = item,
+                                            job = jobDTO
+                                        )
                                     )
-                                )
-                            } catch (t: Throwable) {
-                                Timber.e(t, "Failed to create work-item")
-                                val workError = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
-                                XIErrorHandler.handleError(
-                                    view = this@WorkFragment.requireView(),
-                                    throwable = workError,
-                                    shouldToast = true
-                                )
+                                } catch (t: Throwable) {
+                                    Timber.e(t, "Failed to create work-item")
+                                    val workError = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
+                                    XIErrorHandler.handleError(
+                                        view = this@WorkFragment.requireView(),
+                                        throwable = workError,
+                                        shouldToast = true
+                                    )
+                                }
                             }
                         }
                     }
-                })
+                )
                 expandableGroups.add(this)
             }
         }
