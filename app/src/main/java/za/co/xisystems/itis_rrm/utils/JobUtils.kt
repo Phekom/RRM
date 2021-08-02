@@ -37,7 +37,7 @@ object JobUtils {
         var cost = 0.0
         job?.jobItemEstimates?.forEach { estimate ->
             quantity += estimate.qty
-            cost += estimate.lineRate
+            cost += estimate.lineRate * estimate.qty
         }
         return formatTotalCost(cost)
     }

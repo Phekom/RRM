@@ -181,11 +181,11 @@ class ApproveJobsViewModel(
 
     suspend fun upDateEstimate(
         updatedQty: String,
-        updatedTotal: String,
+        updatedRate: String,
         estimateId: String
     ) {
         withContext(Dispatchers.IO) {
-            jobApprovalDataRepository.upDateEstimate(updatedQty, updatedTotal, estimateId)
+            jobApprovalDataRepository.upDateEstimate(updatedQty, updatedRate, estimateId)
         }
     }
 
@@ -200,6 +200,11 @@ class ApproveJobsViewModel(
             jobApprovalDataRepository.getLineRateForEstimationItemId(estimateId)
         }
     }
+
+    suspend fun getJobEstimationItemByEstimateId(estimateId: String): LiveData<JobItemEstimateDTO> =
+        withContext(ioContext) {
+            return@withContext jobApprovalDataRepository.getJobEstimationItemByEstimateId(estimateId)
+        }
 
     /**
      * This method will be called when this ViewModel is no longer used and will be destroyed.

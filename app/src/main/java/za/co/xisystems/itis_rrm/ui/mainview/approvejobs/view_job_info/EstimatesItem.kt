@@ -15,8 +15,6 @@ package za.co.xisystems.itis_rrm.ui.mainview.approvejobs.view_job_info
 import android.app.Dialog
 import android.net.Uri
 import android.text.Editable
-import android.text.InputType
-import android.text.method.DigitsKeyListener
 import android.view.View
 import android.widget.EditText
 import android.widget.TextView
@@ -33,7 +31,7 @@ import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
-import za.co.xisystems.itis_rrm.ui.extensions.DecimalSignedDigitsKeyListener
+import za.co.xisystems.itis_rrm.extensions.uomForUI
 import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.ApproveJobsViewModel
 import za.co.xisystems.itis_rrm.utils.Coroutines
@@ -82,7 +80,12 @@ class EstimatesItem(
                 if (uom == "NONE" || uom == "") {
                     estimation_item_uom_textView.text = ""
                 } else {
-                    estimation_item_uom_textView.text = activity?.getString(R.string.pair, "Unit of Measure:", uom)
+                    estimation_item_uom_textView.text =
+                        activity?.getString(
+                            R.string.pair,
+                            jobItemEstimateDTO.lineRate.toString(),
+                            activity.uomForUI(uom)
+                        )
                 }
                 correctButton.setOnClickListener {
                     sendItemType(jobItemEstimateDTO)
@@ -108,8 +111,9 @@ class EstimatesItem(
         val textEntryView: View =
             activity!!.layoutInflater.inflate(R.layout.estimate_dialog, null)
         val quantityEntry = textEntryView.findViewById<View>(R.id.new_qty) as EditText
-        val totalEntry = textEntryView.findViewById<View>(R.id.new_total) as TextView
         val rate = textEntryView.findViewById<View>(R.id.current_rate) as TextView
+        val totalEntry = textEntryView.findViewById<View>(R.id.new_total) as TextView
+
         var updated = false
         val alert = AlertDialog.Builder(activity) // ,android.R.style.Theme_DeviceDefault_Dialog
         alert.setView(textEntryView)
@@ -120,39 +124,34 @@ class EstimatesItem(
         Coroutines.main {
             val tenderRate =
                 approveViewModel.getTenderRateForProjectItemId(jobItemEstimateDTO.projectItemId!!)
-            totalEntry.text = activity.getString(R.string.pair, "R", jobItemEstimateDTO.lineRate.toString())
+            val total = (jobItemEstimateDTO.qty * jobItemEstimateDTO.lineRate)
+            totalEntry.text = activity.getString(R.string.pair, "R", total.toString())
 
             rate.text = activity.getString(R.string.pair, "R", tenderRate.toString())
             var cost: Double
             val newQuantity = jobItemEstimateDTO.qty
+            val rate = jobItemEstimateDTO.lineRate
             val defaultQty = 0.0
 
-            quantityEntry.inputType = InputType.TYPE_NUMBER_FLAG_DECIMAL and InputType.TYPE_NUMBER_VARIATION_NORMAL
+
+
+
             quantityEntry.text = Editable.Factory.getInstance().newEditable("$newQuantity")
-            val digitsKeyListener = DigitsKeyListener.getInstance("-1234567890.")
-            quantityEntry.keyListener = DecimalSignedDigitsKeyListener(digitsKeyListener)
+
 
             quantityEntry.doOnTextChanged { text, _, _, _ ->
                 updated = true
                 val input = text.toString()
-                when {
-                    nanCheck(input) || input.toDouble() == 0.0 -> {
-                        cost = 0.0
-                        totalEntry.text = activity.getString(R.string.pair, "R", cost.toString())
-                    }
-                    input.length > 9 -> {
-                        quantityEntry.text =
-                            Editable.Factory.getInstance().newEditable("$defaultQty")
-                        activity.extensionToast(
-                            message = "You Have exceeded the amount of Quantity allowed",
-                            motionType = MotionToast.TOAST_WARNING
-                        )
-                    }
-                    else -> {
-                        val qty = input.toDouble()
-                        cost = (tenderRate * qty).round(2)
-                        totalEntry.text = activity.getString(R.string.pair, "R", cost.toString())
-                    }
+                val newQty = validateDouble(
+                    input,
+                    editText = quantityEntry,
+                    default = jobItemEstimateDTO.qty.toString(),
+                    activity = activity
+                )
+
+                if (newQty != 0.0) {
+                    val cost = (rate * newQty).round(2)
+                    totalEntry.text = activity.getString(R.string.pair, "R", cost.toString())
                 }
             }
         }
@@ -162,7 +161,12 @@ class EstimatesItem(
             R.string.save
         ) { dialog, _ ->
             if (updated) {
-                validateUpdateQty(activity, quantityEntry, totalEntry, jobItemEstimateDTO)
+                Coroutines.io {
+                    val tenderRate =
+                        approveViewModel.getTenderRateForProjectItemId(jobItemEstimateDTO.projectItemId!!)
+
+                    validateUpdateQty(activity, quantityEntry, tenderRate, jobItemEstimateDTO)
+                }
             } else {
                 dialog.dismiss()
             }
@@ -181,22 +185,22 @@ class EstimatesItem(
     private fun validateUpdateQty(
         activity: FragmentActivity,
         quantityEntry: EditText,
-        totalEntry: TextView,
+        tenderRate: Double,
         jobItemEstimateDTO: JobItemEstimateDTO
     ) {
         if (ServiceUtil.isNetworkAvailable(activity.applicationContext)) {
             Coroutines.main {
                 when {
                     quantityEntry.text.toString() == "" ||
-                        nanCheck(quantityEntry.text.toString()) ||
-                        quantityEntry.text.toString().toDouble() < 0.0 -> {
+                            nanCheck(quantityEntry.text.toString()) ||
+                            quantityEntry.text.toString().toDouble() < 0.0 -> {
                         activity.extensionToast("Please Enter a valid Quantity", MotionToast.TOAST_WARNING)
                     }
                     else -> {
                         approveViewModel.updateState.observe(viewLifecycleOwner, updateObserver)
                         approveViewModel.upDateEstimate(
                             quantityEntry.text.toString(),
-                            totalEntry.text.split(" ", ignoreCase = true)[1],
+                            tenderRate.toString(),
                             jobItemEstimateDTO.estimateId
                         )
                     }
@@ -268,6 +272,26 @@ class EstimatesItem(
                 Timber.d(e, "End photo missing from job!")
             } catch (e: Exception) {
                 Timber.e(e)
+            }
+        }
+    }
+
+    private fun validateDouble(input: String, editText: EditText, default: String, activity: FragmentActivity): Double {
+        return when {
+            nanCheck(input) || input.toDouble() == 0.0 -> {
+                0.0
+            }
+            input.length > 9 -> {
+                editText.text =
+                    Editable.Factory.getInstance().newEditable(default)
+                activity.extensionToast(
+                    message = "You Have exceeded the allowable maximum",
+                    motionType = MotionToast.TOAST_WARNING
+                )
+                0.0
+            }
+            else -> {
+                input.toDouble()
             }
         }
     }
