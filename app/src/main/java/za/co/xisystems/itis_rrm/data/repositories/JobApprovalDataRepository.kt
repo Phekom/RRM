@@ -10,6 +10,7 @@ package za.co.xisystems.itis_rrm.data.repositories
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.liveData
 import java.util.Locale
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -95,7 +96,7 @@ class JobApprovalDataRepository(
         }
     }
 
-    suspend fun upDateEstimate(newQuantity: String, newTotal: String, estimateId: String) {
+    suspend fun upDateEstimate(newQuantity: String, newRate: String, estimateId: String) {
 
         try {
             val newEstimateId = DataConversion.toLittleEndian(estimateId)
@@ -104,7 +105,7 @@ class JobApprovalDataRepository(
                 api.updateEstimateQty(
                     newEstimateId,
                     newQuantity.toDouble(),
-                    newTotal.toDouble()
+                    newRate.toDouble()
                 )
             }
 
@@ -113,7 +114,7 @@ class JobApprovalDataRepository(
                 postNewQty(
                     estimateId,
                     newQuantity.toDouble(),
-                    newTotal.toDouble()
+                    newRate.toDouble()
                 )
             } else {
                 throw ServiceException(messages)
@@ -133,10 +134,10 @@ class JobApprovalDataRepository(
     private fun postNewQty(
         newEstimateId: String?,
         newQuantity: Double,
-        newTotal: Double
+        newRate: Double
     ) {
         try {
-            appDb.getJobItemEstimateDao().upDateLineRate(newEstimateId!!, newQuantity, newTotal)
+            appDb.getJobItemEstimateDao().upDateLineRate(newEstimateId!!, newQuantity, newRate)
             postUpdateStatus(XISuccess("Quantity updated"))
         } catch (throwable: Throwable) {
             val message = "Failed to update local quantity: ${throwable.message ?: XIErrorHandler.UNKNOWN_ERROR}"
@@ -341,5 +342,10 @@ class JobApprovalDataRepository(
             postWorkflowStatus(XIError(LocalDataException(message), message))
             return null
         }
+    }
+
+    suspend fun getJobEstimationItemByEstimateId(estimateId: String) = withContext(Dispatchers.IO){
+        return@withContext appDb.getJobItemEstimateDao().getJobItemEstimateForEstimateId(estimateId)
+
     }
 }

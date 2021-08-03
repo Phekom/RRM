@@ -1,19 +1,8 @@
 package za.co.xisystems.itis_rrm.ui.mainview.approvejobs
 
 import android.app.Application
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Transformations
-import androidx.lifecycle.distinctUntilChanged
-import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancelChildren
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import androidx.lifecycle.*
+import kotlinx.coroutines.*
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
@@ -181,11 +170,11 @@ class ApproveJobsViewModel(
 
     suspend fun upDateEstimate(
         updatedQty: String,
-        updatedTotal: String,
+        updatedRate: String,
         estimateId: String
     ) {
         withContext(Dispatchers.IO) {
-            jobApprovalDataRepository.upDateEstimate(updatedQty, updatedTotal, estimateId)
+            jobApprovalDataRepository.upDateEstimate(updatedQty, updatedRate, estimateId)
         }
     }
 
@@ -200,6 +189,12 @@ class ApproveJobsViewModel(
             jobApprovalDataRepository.getLineRateForEstimationItemId(estimateId)
         }
     }
+
+    suspend fun getJobEstimationItemByEstimateId(estimateId: String) = liveData {
+        val estimate = jobApprovalDataRepository.getJobEstimationItemByEstimateId(estimateId)
+        emit(estimate)
+    }
+
 
     /**
      * This method will be called when this ViewModel is no longer used and will be destroyed.

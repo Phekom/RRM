@@ -91,7 +91,7 @@ android {
     defaultConfig {
         applicationId appId
         minSdkVersion 23
-        targetSdkVersion 30
+        targetSdkVersion 31
         versionName "$versionLabel"
         versionCode 1
         vectorDrawables.useSupportLibrary = false
@@ -289,7 +289,7 @@ androidExtensions {
 dependencies {
 
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    androidTestImplementation 'androidx.test.espresso:espresso-contrib:3.3.0'
+    androidTestImplementation 'androidx.test.espresso:espresso-contrib:3.4.0'
 
     // LeakCanary
     // debugImplementation because LeakCanary should only run in debug builds.

@@ -119,17 +119,21 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
                     )
                 }
                 is XIProgress -> {
-                    toggleLongRunning(result.isLoading)
-                    when (result.isLoading) {
-                        true -> {
-                            progressButton.startProgress("Submitting ...")
-                            this@MeasureApprovalFragment.toggleLongRunning(true)
-                        }
-                        else -> progressButton.doneProgress(progressButton.text.toString())
-                    }
+                    showWorkProgress(result)
                 }
                 else -> Timber.d("$result")
             }
+        }
+    }
+
+    private fun showWorkProgress(result: XIProgress) {
+        toggleLongRunning(result.isLoading)
+        when (result.isLoading) {
+            true -> {
+                progressButton.startProgress("Submitting ...")
+                this@MeasureApprovalFragment.toggleLongRunning(true)
+            }
+            else -> progressButton.doneProgress(progressButton.text.toString())
         }
     }
 
@@ -143,6 +147,7 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
+
         (activity as MainActivity).supportActionBar?.title =
             getString(string.measure_approval_title)
     }
