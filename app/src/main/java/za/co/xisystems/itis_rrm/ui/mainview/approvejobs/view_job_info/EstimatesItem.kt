@@ -23,14 +23,13 @@ import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
-import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
-import com.xwray.groupie.kotlinandroidextensions.Item
-import kotlinx.android.synthetic.main.estimates_item.*
+import com.xwray.groupie.viewbinding.BindableItem
 import timber.log.Timber
 import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
+import za.co.xisystems.itis_rrm.databinding.EstimatesItemBinding
 import za.co.xisystems.itis_rrm.extensions.uomForUI
 import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.ApproveJobsViewModel
@@ -51,22 +50,34 @@ class EstimatesItem(
     private val activity: FragmentActivity?,
     private val viewLifecycleOwner: LifecycleOwner,
     private val updateObserver: Observer<XIResult<String>?>
-) : Item() {
+) : BindableItem<EstimatesItemBinding>() {
 
-    override fun bind(viewHolder: GroupieViewHolder, position: Int) {
-        viewHolder.apply {
+    override fun initializeViewBinding(view: View): EstimatesItemBinding {
+        return EstimatesItemBinding.bind(view)
+    }
+
+    /**
+     * Perform any actions required to set up the view for display.
+     *
+     * @param viewBinding The ViewDataBinding to bind
+     * @param position The adapter position
+     */
+    override fun bind(viewBinding: EstimatesItemBinding, position: Int) {
+        viewBinding.apply {
             Coroutines.main {
                 val quantity =
                     approveViewModel.getQuantityForEstimationItemId(jobItemEstimateDTO.estimateId)
                 quantity.observe(viewLifecycleOwner, { qty ->
 
-                    estimation_item_quantity_textView.text = activity?.getString(R.string.pair, "Qty:", qty.toString())
                 })
-                val lineRate =
-                    approveViewModel.getLineRateForEstimationItemId(jobItemEstimateDTO.estimateId)
-                lineRate.observe(viewLifecycleOwner, {
-                    estimation_item_price_textView.text = activity?.getString(R.string.pair, "R", it.toString())
-                    // dialog.dismiss()
+                val estimate = approveViewModel.getJobEstimationItemByEstimateId(jobItemEstimateDTO.estimateId)
+                estimate.observe(viewLifecycleOwner, {
+                    it?.let {
+                        viewBinding.estimationItemPriceTextView.text = activity?.getString(R.string.pair, "R", (it.qty * it.lineRate).round(2).toString())
+                        viewBinding.estimationItemQuantityTextView.text = activity?.getString(R.string.pair, "Qty:", it.qty.toString())
+
+                        // dialog.dismiss()
+                    }
                 })
 //                estimation_item_quantity_textView.text = "Qty: " + quantity //jobItemEstimateDTO.qty.toString()
 //                 estimation_item_price_textView.text = "R " +  lineRate //jobItemEstimateDTO.lineRate.toString()
@@ -75,12 +86,12 @@ class EstimatesItem(
                     approveViewModel.getDescForProjectItemId(jobItemEstimateDTO.projectItemId!!)
                 val uom =
                     approveViewModel.getUOMForProjectItemId(jobItemEstimateDTO.projectItemId!!)
-                measure_item_description_textView.text = descr
+                viewBinding.measureItemDescriptionTextView.text = descr
 
                 if (uom == "NONE" || uom == "") {
-                    estimation_item_uom_textView.text = ""
+                    estimationItemUomTextView.text = ""
                 } else {
-                    estimation_item_uom_textView.text =
+                    estimationItemUomTextView.text =
                         activity?.getString(
                             R.string.pair,
                             jobItemEstimateDTO.lineRate.toString(),
@@ -130,7 +141,7 @@ class EstimatesItem(
             rate.text = activity.getString(R.string.pair, "R", tenderRate.toString())
             var cost: Double
             val newQuantity = jobItemEstimateDTO.qty
-            val rate = jobItemEstimateDTO.lineRate
+            val rate = tenderRate
             val defaultQty = 0.0
 
 
@@ -224,7 +235,7 @@ class EstimatesItem(
 
     override fun getLayout(): Int = R.layout.estimates_item
 
-    private fun GroupieViewHolder.updateStartImage() {
+    private fun EstimatesItemBinding.updateStartImage() {
         Coroutines.main {
 
             try {
@@ -232,7 +243,7 @@ class EstimatesItem(
                 val startPhoto =
                     approveViewModel.getJobEstimationItemsPhotoStartPath(jobItemEstimateDTO.estimateId)
 
-                GlideApp.with(this.containerView)
+                GlideApp.with(this.root)
                     .load(Uri.fromFile(File(startPhoto)))
                     .centerCrop()
                     .error(R.drawable.no_image)
@@ -251,13 +262,13 @@ class EstimatesItem(
         }
     }
 
-    private fun GroupieViewHolder.updateEndImage() {
+    private fun EstimatesItemBinding.updateEndImage() {
         Coroutines.main {
             try {
                 val endPhoto =
                     approveViewModel.getJobEstimationItemsPhotoEndPath(jobItemEstimateDTO.estimateId)
 
-                GlideApp.with(this.containerView)
+                GlideApp.with(this.root)
                     .load(Uri.fromFile(File(endPhoto)))
                     .centerCrop()
                     .error(R.drawable.no_image)

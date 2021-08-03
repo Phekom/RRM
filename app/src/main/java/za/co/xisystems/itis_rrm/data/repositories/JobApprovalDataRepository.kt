@@ -344,10 +344,8 @@ class JobApprovalDataRepository(
         }
     }
 
-    suspend fun getJobEstimationItemByEstimateId(estimateId: String) = liveData {
-        val data = appDb.getJobItemEstimateDao().getJobItemEstimateForEstimateId(estimateId)
-        emit(data)
+    suspend fun getJobEstimationItemByEstimateId(estimateId: String) = withContext(Dispatchers.IO){
+        return@withContext appDb.getJobItemEstimateDao().getJobItemEstimateForEstimateId(estimateId)
+
     }
-
-
 }
