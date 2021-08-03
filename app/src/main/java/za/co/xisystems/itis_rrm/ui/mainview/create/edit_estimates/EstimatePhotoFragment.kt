@@ -37,7 +37,6 @@ import androidx.lifecycle.whenStarted
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.navArgs
 import com.airbnb.lottie.LottieAnimationView
-import kotlinx.android.synthetic.main.item_header.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
@@ -418,7 +417,8 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
             val qty = newJobItemEstimate?.qty
             if (qty != null && item?.tenderRate != null) {
                 createViewModel.setEstimateQuantity(qty)
-                newJobItemEstimate?.lineRate = (qty * item!!.tenderRate)
+                newJobItemEstimate?.lineRate = (item!!.tenderRate)
+
             }
 
             createViewModel.saveNewJob(newJob!!)
@@ -527,33 +527,20 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
 
     private fun restoreEstimatePhoto(
         // jobItemEstimate: JobItemEstimateDTO,
-        isStart: Boolean
+        photo: JobItemEstimatesPhotoDTO
     ) {
 
-        val targetIndex = when (isStart) {
-            true -> 0
-            else -> 1
+        var targetImageView = ui.startImageView
+        var targetTextView = ui.startSectionTextView
+
+        if (!photo.isPhotostart) {
+            targetImageView = ui.endImageView
+            targetTextView = ui.endSectionTextView
         }
 
-        val targetImageView = when (isStart) {
-            true -> ui.startImageView
-            else -> ui.endImageView
-        }
+        val targetUri = null ?: extractImageUri(photo)
 
-        val targetTextView = when (isStart) {
-            true -> ui.startSectionTextView
-            else -> ui.endSectionTextView
-        }
-
-        val targetUri =
-            null
-                ?: extractImageUri(
-                    this.newJobItemEstimate?.jobItemEstimatePhotos?.get(
-                        targetIndex
-                    )
-                )
-
-        when (isStart) {
+        when (photo.isPhotostart) {
             true -> {
                 startImageUri = targetUri
                 photoType = PhotoType.START
@@ -568,7 +555,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
                 imageUri = targetUri,
                 animate = false,
                 textView = targetTextView,
-                isStart = isStart
+                isStart = photo.isPhotostart
             )
             loadEstimateItemPhoto(targetUri, targetImageView, false)
         }
@@ -767,7 +754,9 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
     private suspend fun validateRouteSectionByProject(
         sectionPoint: SectionPointDTO
     ) {
-
+        withContext(Dispatchers.Main.immediate){
+            this@EstimatePhotoFragment.pointLocation = sectionPoint.pointLocation
+        }
         var projectSectionId = createViewModel.getSectionByRouteSectionProject(
             sectionPoint.sectionId.toString(),
             sectionPoint.linearId,
@@ -867,8 +856,9 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
             this@EstimatePhotoFragment.newJobItemEstimate!!.setJobItemEstimatePhoto(
                 photo
             )
-
-            pointLocation = sectionPointData.pointLocation
+            withContext(Dispatchers.Main.immediate) {
+                this@EstimatePhotoFragment.pointLocation = sectionPointData.pointLocation
+            }
 
             this@EstimatePhotoFragment.disableGlide = false
 
@@ -952,7 +942,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
             actId = 0,
             estimateId = estimateId,
             jobId = newJob?.jobId,
-            lineRate = item!!.tenderRate * item.quantity,
+            lineRate = item!!.tenderRate,
             jobEstimateWorks = arrayListOf(),
             jobItemEstimatePhotos = arrayListOf(),
             jobItemMeasure = arrayListOf(),
@@ -1116,39 +1106,18 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
 
             Coroutines.main {
                 withContext(Dispatchers.Main.immediate) {
-                    if (pointLocation != null) {
-                        textView.text = getRealSection(isStart, section, pointLocation!!)
+                    textView.text = getRealSection(section, pointLocation!!)
                         if (animate) textView.startAnimation(animations?.bounce_long)
-                    } else {
-                        sharpToast(
-                            title = "Estimates",
-                            "No km marker reading for this photograph. Please retake it.",
-                            style = ERROR,
-                            duration = LONG,
-                            position = BOTTOM
-                        )
-                    }
                 }
             }
         }
     }
 
-    private suspend fun getRealSection(
-        isStart: Boolean,
+    private fun getRealSection(
         section: ProjectSectionDTO,
         pointLocation: Double
     ): String {
-        val sectionText =
-            section.route + " " + section.section + " " + section.direction + " "
-
-        return when (isStart) {
-            true -> {
-                "$sectionText ${createViewModel.getRealSectionStartKm(section, pointLocation)}"
-            }
-            else -> {
-                "$sectionText ${createViewModel.getRealSectionEndKm(section, pointLocation)}"
-            }
-        }
+        return "${section.route} ${section.section} ${section.direction} at $pointLocation km"
     }
 
     private fun setValueEditText(qty: Double) {
@@ -1197,7 +1166,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
         //  Lose focus on fields
         //  valueEditText.clearFocus()
 
-        var lineRate: Double? = null
+        var lineAmount: Double? = null
         val tenderRate = item?.tenderRate
 
         var qty = 0.0
@@ -1210,25 +1179,25 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
 
         when (item!!.uom) {
             "No" -> {
-                lineRate = validateNumberCosting(lineRate, qty, tenderRate)
+                lineAmount = validateNumberCosting(lineAmount, qty, tenderRate)
             }
             "m²" -> {
-                lineRate = validateAreaCosting(lineRate, qty, tenderRate)
+                lineAmount = validateAreaCosting(lineAmount, qty, tenderRate)
             }
             "m³" -> {
-                lineRate = validateVolumeCosting(qty, tenderRate)
+                lineAmount = validateVolumeCosting(qty, tenderRate)
             }
             "Prov Sum" -> {
-                lineRate = validateProvSumCosting(lineRate, qty, tenderRate)
+                lineAmount = validateProvSumCosting(lineAmount, qty, tenderRate)
             }
             "m" -> {
-                lineRate =
-                    validateLengthCosting(currentEndKm, currentStartKm, lineRate, tenderRate)
+                lineAmount =
+                    validateLengthCosting(currentEndKm, currentStartKm, lineAmount, tenderRate)
             }
             else -> {
                 ui.labelTextView.text = getString(R.string.label_quantity)
                 try { //  Default Calculation
-                    lineRate = qty * tenderRate!!
+                    lineAmount = qty * tenderRate!!
                 } catch (e: NumberFormatException) {
                     requireActivity().hideKeyboard()
                     Timber.d(e)
@@ -1239,41 +1208,41 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
 
         ui.costTextView.text =
             ("  *   R " + tenderRate.toString() + " =  R " + DecimalFormat("##.##").format(
-                lineRate
+                lineAmount
             ))
 
         newJobItemEstimate?.qty = qty
         createViewModel.setEstimateQuantity(qty)
-        newJobItemEstimate?.lineRate = lineRate!!
+        newJobItemEstimate?.lineRate = tenderRate!!
     }
 
     private fun validateLengthCosting(
         currentEndKm: Double,
         currentStartKm: Double,
-        lineRate: Double?,
+        lineAmount: Double?,
         tenderRate: Double?
     ): Double? {
-        var inlineRate = lineRate
+        var inLineAmount = lineAmount
         when (ui.labelTextView.text) {
             getString(R.string.label_length_m) ->
                 try { //  Set the Area to the QTY
                     val length = (currentEndKm - currentStartKm) * 1000
-                    inlineRate = length * tenderRate!!
+                    inLineAmount = length * tenderRate!!
                 } catch (e: NumberFormatException) {
                     requireActivity().hideKeyboard()
                     Timber.d(e)
                     toast("Please enter the m.")
                 }
         }
-        return inlineRate
+        return inLineAmount
     }
 
     private fun validateProvSumCosting(
-        lineRate: Double?,
+        lineAmount: Double?,
         qty: Double,
         tenderRate: Double?
     ): Double? {
-        var inlineRate = lineRate
+        var inlineRate = lineAmount
         ui.labelTextView.text = getString(R.string.label_amount)
         try {
             inlineRate = qty * tenderRate!!
@@ -1288,40 +1257,40 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
         qty: Double,
         tenderRate: Double?
     ): Double? {
-        var inlineRate: Double?
+        var inlineAmount: Double?
         ui.labelTextView.text = getString(R.string.label_volume_m3)
         try {
-            inlineRate = qty * tenderRate!!
+            inlineAmount = qty * tenderRate!!
         } catch (e: NumberFormatException) {
             requireActivity().hideKeyboard()
-            inlineRate = null
+            inlineAmount = null
             toast(getString(R.string.warning_estimate_enter_volume))
         }
-        return inlineRate
+        return inlineAmount
     }
 
     private fun validateAreaCosting(
-        lineRate: Double?,
+        lineAmount: Double?,
         qty: Double,
         tenderRate: Double?
     ): Double? {
-        var inlineRate = lineRate
+        var inLineAmount = lineAmount
         ui.labelTextView.text = getString(R.string.label_area_m2)
         try {
-            inlineRate = qty * tenderRate!!
+            inLineAmount = qty * tenderRate!!
         } catch (e: NumberFormatException) {
             requireActivity().hideKeyboard()
             toast("Please place the Area.")
         }
-        return inlineRate
+        return inLineAmount
     }
 
     private fun validateNumberCosting(
-        lineRate: Double?,
+        iineAmount: Double?,
         qty: Double,
         tenderRate: Double?
     ): Double? {
-        var inlineRate = lineRate
+        var inlineRate = iineAmount
         ui.labelTextView.text = getString(R.string.label_quantity)
         try { //  make the change in the array and update view
             inlineRate = qty * tenderRate!!
@@ -1399,7 +1368,7 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
                     isEstimateDone = createViewModel.estimateComplete(newJobItemEstimate)
                     newJobItemEstimate?.jobItemEstimatePhotos?.forEach { photo ->
                         restoreEstimatePhoto(
-                            photo.isPhotostart
+                            photo
                         )
 
                         val targetTextView = when (photo.isPhotostart) {

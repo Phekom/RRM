@@ -18,7 +18,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.skydoves.androidveil.VeilRecyclerFrameView
 import com.skydoves.androidveil.VeiledItemOnClickListener
 import com.xwray.groupie.GroupAdapter
-import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
+import com.xwray.groupie.viewbinding.GroupieViewHolder
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.x.kodein
 import org.kodein.di.generic.instance
@@ -38,6 +38,7 @@ import za.co.xisystems.itis_rrm.custom.results.XISuccess
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
+import za.co.xisystems.itis_rrm.databinding.EstimatesItemBinding
 import za.co.xisystems.itis_rrm.databinding.FragmentJobInfoBinding
 import za.co.xisystems.itis_rrm.ui.extensions.ShimmerUtils
 import za.co.xisystems.itis_rrm.ui.extensions.doneProgress
@@ -70,7 +71,7 @@ class JobInfoFragment : BaseFragment(), KodeinAware {
     private lateinit var flowDirection: WorkflowDirection
     private var _ui: FragmentJobInfoBinding? = null
     private val ui get() = _ui!!
-    private var groupAdapter = GroupAdapter<GroupieViewHolder>()
+    private var groupAdapter = GroupAdapter<GroupieViewHolder<EstimatesItemBinding>>()
 
     private fun handleUpdateProcess(outcome: XIResult<String>?) {
         outcome?.let { result ->
@@ -415,7 +416,7 @@ class JobInfoFragment : BaseFragment(), KodeinAware {
     }
 
     private fun initRecyclerView(estimatesListItems: List<EstimatesItem>) {
-        groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
+        groupAdapter = GroupAdapter<GroupieViewHolder<EstimatesItemBinding>>().apply {
             clear()
             addAll(estimatesListItems)
             notifyDataSetChanged()

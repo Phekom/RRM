@@ -395,7 +395,6 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                         roleID.equals(PROJECT_ENGINEER_ROLE_IDENTIFIER, ignoreCase = true) -> {
                             navCreate.isEnabled = true
                             navUnsubmitted.isEnabled = true
-                            navWork.isEnabled = true
                             navEstMeasures.isEnabled = true
                             navApproveMeasures.isEnabled = true
                             navApproveJobs.isEnabled = true

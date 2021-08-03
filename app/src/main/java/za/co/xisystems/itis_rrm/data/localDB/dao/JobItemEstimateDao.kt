@@ -50,8 +50,8 @@ interface JobItemEstimateDao {
     @Query("SELECT lineRate FROM JOB_ITEM_ESTIMATE WHERE estimateId = :estimateId")
     fun getLineRateForEstimationItemId(estimateId: String): LiveData<Double>
 
-    @Query("UPDATE JOB_ITEM_ESTIMATE SET qty =:newQuantity, lineRate =:newTotal  WHERE estimateId = :newEstimateId")
-    fun upDateLineRate(newEstimateId: String, newQuantity: Double, newTotal: Double)
+    @Query("UPDATE JOB_ITEM_ESTIMATE SET qty =:newQuantity, lineRate = :newRate  WHERE estimateId = :newEstimateId")
+    fun upDateLineRate(newEstimateId: String, newQuantity: Double, newRate: Double)
 
     @Query("SELECT * FROM JOB_ITEM_ESTIMATE WHERE actId LIKE :actId  ORDER BY jobId ASC ")
     fun getJobsForActivityId(actId: Int): LiveData<List<JobItemEstimateDTO>>
