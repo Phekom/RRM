@@ -6,8 +6,8 @@ import kotlinx.coroutines.*
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
-import za.co.xisystems.itis_rrm.custom.results.XIError
-import za.co.xisystems.itis_rrm.custom.results.XIProgress
+import za.co.xisystems.itis_rrm.custom.results. XIResult.Error
+import za.co.xisystems.itis_rrm.custom.results.XIResult.Progress
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
@@ -30,9 +30,9 @@ class ApproveJobsViewModel(
     private lateinit var updateStatus: LiveData<XIEvent<XIResult<String>>>
 
     private val workExceptionHandler = CoroutineExceptionHandler { _, throwable ->
-        val message = "Caught during workflow: ${throwable.message ?: XIErrorHandler.UNKNOWN_ERROR}"
+        val message = "Caught during workflow: ${throwable.message ?:   XIErrorHandler.UNKNOWN_ERROR}"
         Timber.e(throwable)
-        val caughtException = XIError(
+        val caughtException =  Error(
             throwable, message
         )
         workflowState.postValue(caughtException)
@@ -112,7 +112,7 @@ class ApproveJobsViewModel(
     ) = viewModelScope.launch(viewModelScope.coroutineContext) {
         withContext(ioContext) {
             try {
-                workflowState.postValue(XIProgress(true))
+                workflowState.postValue(Progress(true))
 
                 jobApprovalDataRepository.processWorkflowMove(
                     userId,
@@ -122,10 +122,10 @@ class ApproveJobsViewModel(
                     direction
                 )
             } catch (t: Throwable) {
-                val message = "Failed to process workflow: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
-                workflowState.postValue(XIError(t, message))
+                val message = "Failed to process workflow: ${t.message ?:  XIErrorHandler.UNKNOWN_ERROR}"
+                workflowState.postValue( Error(t, message))
             } finally {
-                workflowState.postValue(XIProgress(false))
+                workflowState.postValue(Progress(false))
             }
         }
     }

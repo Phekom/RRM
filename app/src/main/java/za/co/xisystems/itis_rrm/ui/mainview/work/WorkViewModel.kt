@@ -28,8 +28,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.custom.results.XIResult
-import za.co.xisystems.itis_rrm.custom.results.XIStatus
-import za.co.xisystems.itis_rrm.custom.results.XISuccess
+import za.co.xisystems.itis_rrm.custom.results.XIResult.Status
+import za.co.xisystems.itis_rrm.custom.results.XIResult.Success
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksPhotoDTO
@@ -227,12 +227,12 @@ class WorkViewModel(
             val worksPhotos = workDataRepository.getEstimateWorksPhotosForWorksId(worksDTO.worksId)
             if (!worksPhotos.isNullOrEmpty()) {
                 worksDTO.jobEstimateWorksPhotos = worksPhotos as java.util.ArrayList<JobEstimateWorksPhotoDTO>
-                historicalWorks.postValue(XISuccess(worksDTO))
+                historicalWorks.postValue(Success(worksDTO))
             } else {
-                historicalWorks.postValue(XIStatus("Photos failed to load"))
+                historicalWorks.postValue(Status("Photos failed to load"))
             }
         } else {
-            historicalWorks.postValue(XIStatus("Works failed to load"))
+            historicalWorks.postValue(Status("Works failed to load"))
         }
     }
 

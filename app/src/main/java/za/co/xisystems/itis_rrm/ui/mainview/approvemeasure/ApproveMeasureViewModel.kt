@@ -28,10 +28,10 @@ import kotlinx.coroutines.withContext
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler.UNKNOWN_ERROR
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
-import za.co.xisystems.itis_rrm.custom.results.XIError
-import za.co.xisystems.itis_rrm.custom.results.XIProgress
+import za.co.xisystems.itis_rrm.custom.results.XIResult.Error
+import za.co.xisystems.itis_rrm.custom.results.XIResult.Progress
 import za.co.xisystems.itis_rrm.custom.results.XIResult
-import za.co.xisystems.itis_rrm.custom.results.XISuccess
+import za.co.xisystems.itis_rrm.custom.results.XIResult.Success
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.data.repositories.MeasureApprovalDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
@@ -159,16 +159,16 @@ class ApproveMeasureViewModel(
         workflowDirection: WorkflowDirection,
         measurements: List<JobItemMeasureDTO>
     ) = viewModelScope.launch {
-        workflowState.postValue(XIProgress(true))
+        workflowState.postValue(Progress(true))
 
         withContext(contextIO) {
             try {
                 measureApprovalDataRepository.processWorkflowMove(userId, measurements, workflowDirection.value)
 
-                // workflowState.postValue(XISuccess("WORK_COMPLETE"))
+                // workflowState.postValue(XIResult.Success("WORK_COMPLETE"))
             } catch (t: Throwable) {
                 withContext(contextMain) {
-                    workflowState.postValue(XIError(t, t.message ?: UNKNOWN_ERROR))
+                    workflowState.postValue( Error(t, t.message ?: UNKNOWN_ERROR))
                 }
             }
         }
@@ -199,7 +199,7 @@ class ApproveMeasureViewModel(
                 }
             } catch (e: Exception) {
                 Timber.e(e, galleryError)
-                val galleryFail = XIError(e, galleryError)
+                val galleryFail =  Error(e, galleryError)
                 measureGalleryUIState.postValue(galleryFail)
             }
         }
@@ -250,12 +250,12 @@ class ApproveMeasureViewModel(
                 )
 
                 withContext(contextMain) {
-                    measureGalleryUIState.postValue(XISuccess(uiState))
+                    measureGalleryUIState.postValue(Success(uiState))
                 }
             } catch (t: Throwable) {
                 val message = "$galleryError: ${t.message ?: UNKNOWN_ERROR}"
                 Timber.e(t, message)
-                val galleryFail = XIError(t, message)
+                val galleryFail =  Error(t, message)
                 withContext(contextMain) {
                     measureGalleryUIState.postValue(galleryFail)
                 }

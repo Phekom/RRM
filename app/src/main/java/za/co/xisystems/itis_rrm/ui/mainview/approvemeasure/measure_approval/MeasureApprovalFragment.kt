@@ -84,7 +84,7 @@ class MeasureApprovalFragment : BaseFragment(), DIAware {
     private fun handleMeasureProcessing(outcome: XIResult<String>?) {
         outcome?.let { result ->
             when (result) {
-                is XISuccess -> {
+                is XIResult.Success -> {
                     if (result.data == "WORK_COMPLETE") {
                         measurementsToApprove.clear()
                         this@MeasureApprovalFragment.toggleLongRunning(false)
@@ -93,7 +93,7 @@ class MeasureApprovalFragment : BaseFragment(), DIAware {
                         popViewOnJobSubmit(flowDirection)
                     }
                 }
-                is XIError -> {
+                is  XIResult.Error -> {
                     progressButton.failProgress("Failed")
                     this@MeasureApprovalFragment.toggleLongRunning(false)
                     crashGuard(
@@ -102,7 +102,7 @@ class MeasureApprovalFragment : BaseFragment(), DIAware {
                         refreshAction = { this.retryMeasurements() }
                     )
                 }
-                is XIStatus -> {
+                is XIResult.Status -> {
                     sharpToast(
                         message = result.message,
                         style = INFO,
@@ -110,7 +110,7 @@ class MeasureApprovalFragment : BaseFragment(), DIAware {
                         duration = SHORT
                     )
                 }
-                is XIProgress -> {
+                is XIResult.Progress -> {
                     showWorkProgress(result)
                 }
                 else -> Timber.d("$result")
@@ -118,7 +118,7 @@ class MeasureApprovalFragment : BaseFragment(), DIAware {
         }
     }
 
-    private fun showWorkProgress(result: XIProgress) {
+    private fun showWorkProgress(result: XIResult.Progress) {
         toggleLongRunning(result.isLoading)
         when (result.isLoading) {
             true -> {

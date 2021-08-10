@@ -22,10 +22,10 @@ import org.kodein.di.instance
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
-import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler.handleError
-import za.co.xisystems.itis_rrm.custom.results.XIError
+import za.co.xisystems.itis_rrm.custom.errors.  XIErrorHandler.handleError
+import za.co.xisystems.itis_rrm.custom.results. XIResult.Error
 import za.co.xisystems.itis_rrm.custom.results.XIResult
-import za.co.xisystems.itis_rrm.custom.results.XISuccess
+import za.co.xisystems.itis_rrm.custom.results.XIResult.Success
 import za.co.xisystems.itis_rrm.ui.custom.MeasureGalleryUIState
 import za.co.xisystems.itis_rrm.ui.extensions.addZoomedImages
 import za.co.xisystems.itis_rrm.ui.extensions.scaleForSize
@@ -85,7 +85,7 @@ class MeasureGalleryFragment : BaseFragment(), DIAware {
 
     private fun handleResponse(response: XIResult<MeasureGalleryUIState>) {
         when (response) {
-            is XISuccess -> {
+            is Success -> {
                 val uiState = response.data
                 measurement_description.text = uiState.description
                 val costing = "Approved Qty: ${uiState.qty}"
@@ -100,7 +100,7 @@ class MeasureGalleryFragment : BaseFragment(), DIAware {
                 )
                 galleryJobId = uiState.jobItemMeasureDTO?.jobId!!
             }
-            is XIError ->
+            is  Error ->
                 handleError(
                     fragment = this@MeasureGalleryFragment,
                     view = this@MeasureGalleryFragment.requireView(),

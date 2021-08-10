@@ -44,11 +44,11 @@ import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.LocationFragment
 import za.co.xisystems.itis_rrm.constants.Constants
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
-import za.co.xisystems.itis_rrm.custom.results.XIError
-import za.co.xisystems.itis_rrm.custom.results.XIProgress
+import za.co.xisystems.itis_rrm.custom.results.XIResult.Error
+import za.co.xisystems.itis_rrm.custom.results.XIResult.Progress
 import za.co.xisystems.itis_rrm.custom.results.XIResult
-import za.co.xisystems.itis_rrm.custom.results.XIStatus
-import za.co.xisystems.itis_rrm.custom.results.XISuccess
+import za.co.xisystems.itis_rrm.custom.results.XIResult.Status
+import za.co.xisystems.itis_rrm.custom.results.XIResult.Success
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksDTO
@@ -215,23 +215,23 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
 
     private fun populateHistoricalWorkEstimate(result: XIResult<JobEstimateWorksDTO>) {
         when (result) {
-            is XISuccess -> {
+            is Success -> {
                 handleLoadingSuccess(result)
             }
-            is XIError -> {
+            is Error -> {
                 sharpToast(message = result.message, style = ERROR, position = BOTTOM, duration = LONG)
             }
-            is XIStatus -> {
+            is Status -> {
                 ui.moveWorkflowButton.text = result.message
             }
-            is XIProgress -> {
+            is Progress -> {
                 showLoadingProgress(result)
             }
             else -> Timber.d("$result")
         }
     }
 
-    private fun handleLoadingSuccess(result: XISuccess<JobEstimateWorksDTO>) {
+    private fun handleLoadingSuccess(result: Success<JobEstimateWorksDTO>) {
         val worksData = result.data
         val filenames = worksData.jobEstimateWorksPhotos.map { photo ->
             photo.filename
@@ -259,7 +259,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
             ContextCompat.getDrawable(requireContext(), R.drawable.round_corner_gray)
     }
 
-    private fun showLoadingProgress(result: XIProgress) {
+    private fun showLoadingProgress(result: Progress) {
         when (result.isLoading) {
             true -> ui.moveWorkflowButton.startProgress(handleHistoricalProgress())
             else -> ui.moveWorkflowButton.doneProgress(ui.moveWorkflowButton.text.toString())
@@ -356,13 +356,13 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
     private fun handleJobSubmission(outcome: XIResult<String>?) {
         outcome?.let { result ->
             when (result) {
-                is XISuccess<String> -> {
+                is Success<String> -> {
                     if (result.data == "WORK_COMPLETE") {
                         popViewOnJobSubmit(WorkflowDirection.NEXT.value)
                     }
                     toggleLongRunning(false)
                 }
-                is XIError -> {
+                is Error -> {
                     toggleLongRunning(false)
                     ui.moveWorkflowButton.failProgress("Job submission failed")
                     crashGuard(
@@ -370,7 +370,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
                         throwable = result,
                         refreshAction = { retryJobSubmission() })
                 }
-                is XIStatus -> {
+                is Status -> {
                     sharpToast(
                         message = result.message,
                         style = INFO,
@@ -378,7 +378,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
                         duration = SHORT
                     )
                 }
-                is XIProgress -> {
+                is Progress -> {
                     handleJobProgress(result)
                 }
                 else -> Timber.d("$result")
@@ -386,7 +386,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
         }
     }
 
-    private fun handleJobProgress(result: XIProgress) {
+    private fun handleJobProgress(result: Progress) {
         when (result.isLoading) {
             true -> {
                 toggleLongRunning(true)
@@ -406,10 +406,10 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
     private fun handleWorkSubmission(outcome: XIResult<String>?) {
         outcome?.let { result ->
             when (result) {
-                is XISuccess -> {
+                is Success -> {
                     handleWorkSuccess(result)
                 }
-                is XIError -> {
+                is Error -> {
                     this@CaptureWorkFragment.toggleLongRunning(false)
                     ui.moveWorkflowButton.failProgress("Work submission failed")
                     crashGuard(
@@ -418,7 +418,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
                         refreshAction = { this@CaptureWorkFragment.retryWorkSubmission() }
                     )
                 }
-                is XIStatus -> {
+                is Status -> {
                     sharpToast(
                         message = result.message,
                         style = INFO,
@@ -426,7 +426,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
                         duration = SHORT
                     )
                 }
-                is XIProgress -> {
+                is Progress -> {
                     handleWorkProgress(result)
                 }
 
@@ -435,7 +435,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
         }
     }
 
-    private fun handleWorkProgress(result: XIProgress) {
+    private fun handleWorkProgress(result: Progress) {
         when (result.isLoading) {
 
             true -> {
@@ -448,7 +448,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
 
     private fun handleHistoricalProgress() = ui.moveWorkflowButton.text.toString()
 
-    private fun handleWorkSuccess(result: XISuccess<String>) {
+    private fun handleWorkSuccess(result: Success<String>) {
         when (result.data != "WORK_COMPLETE") {
             true -> {
                 sharpToast(
@@ -669,7 +669,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
                 } catch (t: Throwable) {
                     val message = "Gallery update failed: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
                     Timber.e(t, message)
-                    crashGuard(this@CaptureWorkFragment.requireView(), XIError(t, message))
+                    crashGuard(this@CaptureWorkFragment.requireView(), Error(t, message))
                 }
             }
         }
@@ -833,7 +833,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
         jobSubmission = uiScope.launch(uiScope.coroutineContext) {
             workViewModel.workflowState.removeObserver(workObserver)
             workViewModel.workflowState.observe(viewLifecycleOwner, jobObserver)
-            workViewModel.workflowState.postValue(XIProgress(true))
+            workViewModel.workflowState.postValue(Progress(true))
             withContext(uiScope.coroutineContext) {
                 for (jobEstimate in estimates) {
 
@@ -853,7 +853,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
         }
 
         jobSubmission.join()
-        handleJobSubmission(XISuccess("WORK_COMPLETE"))
+        handleJobSubmission(Success("WORK_COMPLETE"))
     }
 
     private suspend fun moveJobItemEstimateToNextWorkflow(

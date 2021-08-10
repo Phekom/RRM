@@ -31,7 +31,7 @@ import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.R.layout
 import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
-import za.co.xisystems.itis_rrm.custom.results.XIError
+import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentApprovemeasureBinding
@@ -123,7 +123,7 @@ class ApproveMeasureFragment : BaseFragment(), DIAware {
                 })
             } catch (t: Throwable) {
                 Timber.e(t, "Unable to fetch Measurements")
-                val measureErr = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
+                val measureErr = XIResult.Error(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
                 crashGuard(
                     view = this@ApproveMeasureFragment.requireView(),
                     throwable = measureErr,
@@ -164,7 +164,7 @@ class ApproveMeasureFragment : BaseFragment(), DIAware {
                 })
             } catch (t: Throwable) {
                 Timber.e(t, "Unable to fetch remote jobs")
-                val measureErr = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
+                val measureErr = XIResult.Error(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
                 crashGuard(
                     view = this@ApproveMeasureFragment.requireView(),
                     throwable = measureErr,
@@ -181,7 +181,7 @@ class ApproveMeasureFragment : BaseFragment(), DIAware {
         val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
             clear()
             addAll(approveMeasureListItems)
-            notifyItemRangeChanged(0,approveMeasureListItems.size)
+            notifyItemRangeChanged(0, approveMeasureListItems.size)
         }
 
         ui.approveMeasurementsList.run {

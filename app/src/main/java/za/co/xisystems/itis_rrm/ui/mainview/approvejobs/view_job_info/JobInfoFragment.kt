@@ -15,8 +15,6 @@ import android.widget.Toast
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.skydoves.androidveil.VeilRecyclerFrameView
-import com.skydoves.androidveil.VeiledItemOnClickListener
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.viewbinding.GroupieViewHolder
 import org.kodein.di.DIAware
@@ -68,7 +66,7 @@ class JobInfoFragment : BaseFragment(), DIAware {
     private fun handleUpdateProcess(outcome: XIResult<String>?) {
         outcome?.let { result ->
             when (result) {
-                is XISuccess -> {
+                is XIResult.Success -> {
                     sharpToast(
                         message = "Estimate updated",
                         style = SUCCESS,
@@ -84,7 +82,7 @@ class JobInfoFragment : BaseFragment(), DIAware {
     private fun handleWorkSubmission(outcome: XIResult<String>?) {
         outcome?.let { result ->
             when (result) {
-                is XISuccess<String> -> {
+                is XIResult.Success<String> -> {
                     val jiNo = result.data
                     progressButton.doneProgress()
                     toggleLongRunning(false)
@@ -99,7 +97,7 @@ class JobInfoFragment : BaseFragment(), DIAware {
 
     private fun handleOthers(result: XIResult<String>, retryAction: () -> Unit = {}) {
         when (result) {
-            is XIError -> {
+            is  XIResult.Error -> {
                 toggleLongRunning(false)
                 progressButton.failProgress("Failed")
                 crashGuard(
@@ -108,10 +106,10 @@ class JobInfoFragment : BaseFragment(), DIAware {
                     refreshAction = { retryAction() }
                 )
             }
-            is XIStatus -> {
+            is XIResult.Status -> {
                 sharpToast(result.message)
             }
-            is XIProgress -> {
+            is XIResult.Progress -> {
                 showWorkflowProgress(result)
             }
             else -> {
@@ -120,7 +118,7 @@ class JobInfoFragment : BaseFragment(), DIAware {
         }
     }
 
-    private fun showWorkflowProgress(result: XIProgress) {
+    private fun showWorkflowProgress(result: XIResult.Progress) {
         toggleLongRunning(result.isLoading)
         when (result.isLoading) {
             true -> {
@@ -364,8 +362,8 @@ class JobInfoFragment : BaseFragment(), DIAware {
                 )
                 task.join()
             } catch (t: Throwable) {
-                val message = t.message ?: XIErrorHandler.UNKNOWN_ERROR
-                val xiErr = XIError(t, "Failed to complete workflow: $message")
+                val message = t.message ?:  XIErrorHandler.UNKNOWN_ERROR
+                val xiErr =  XIResult.Error(t, "Failed to complete workflow: $message")
                 handleWorkSubmission(xiErr)
             }
         }

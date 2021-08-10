@@ -35,7 +35,7 @@ import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
-import za.co.xisystems.itis_rrm.custom.results.XIError
+import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentWorkBinding
@@ -125,7 +125,7 @@ class WorkFragment : BaseFragment(), DIAware {
                 refreshEstimateJobsFromLocal()
             } catch (t: Throwable) {
                 Timber.e(t, "Failed to fetch local jobs")
-                val xiFail = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
+                val xiFail = XIResult.Error(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
                 crashGuard(
                     view = this@WorkFragment.requireView(),
                     throwable = xiFail,
@@ -169,7 +169,7 @@ class WorkFragment : BaseFragment(), DIAware {
             }
         } catch (t: Throwable) {
             Timber.e(t, t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR)
-            val jobErr = XIError(t, "Failed to fetch jobs from service")
+            val jobErr = XIResult.Error(t, "Failed to fetch jobs from service")
             crashGuard(
                 view = this@WorkFragment.requireView(),
                 throwable = jobErr,
@@ -292,8 +292,8 @@ class WorkFragment : BaseFragment(), DIAware {
                                 )
                             } catch (t: Throwable) {
                                 Timber.e(t, "Failed to create work-item")
-                                val workError = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
-                                XIErrorHandler.handleError(
+                                val workError = XIResult.Error(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
+                                  XIErrorHandler.handleError(
                                     view = this@WorkFragment.requireView(),
                                     throwable = workError,
                                     shouldToast = true
