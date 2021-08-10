@@ -7,7 +7,7 @@ import androidx.fragment.app.Fragment
 import retrofit2.HttpException
 import timber.log.Timber
 import www.sanju.motiontoast.MotionToast
-import za.co.xisystems.itis_rrm.custom.results.XIError
+import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 
@@ -33,7 +33,7 @@ object XIErrorHandler {
     fun handleError(
         fragment: Fragment? = null,
         view: View,
-        throwable: XIError,
+        throwable: XIResult.Error,
         shouldToast: Boolean = false,
         shouldShowSnackBar: Boolean = false,
         refreshAction: () -> Unit = {}
