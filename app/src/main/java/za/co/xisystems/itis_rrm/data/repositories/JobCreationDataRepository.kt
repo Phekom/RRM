@@ -220,8 +220,8 @@ class JobCreationDataRepository(
         jobId: String
     ): String? {
 
-        val distance = 0.05
-        val inBuffer = -1.0
+        val distance = 0.5
+        val inBuffer = 1.0
         val routeSectionPointResponse =
             apiRequest { api.getRouteSectionPoint(distance, inBuffer, latitude, longitude, useR) }
 
@@ -412,7 +412,7 @@ class JobCreationDataRepository(
         }
     }
 
-    private fun uploadCreateJobImages(packageJob: JobDTO, activity: FragmentActivity) {
+    private suspend fun uploadCreateJobImages(packageJob: JobDTO, activity: FragmentActivity) = withContext(Dispatchers.IO) {
 
         var jobCounter = 1
         val totalJobs = packageJob.jobItemEstimates.size

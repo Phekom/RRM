@@ -34,9 +34,9 @@ import com.skydoves.progressview.ProgressView
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.kodein.di.KodeinAware
-import org.kodein.di.android.x.kodein
-import org.kodein.di.generic.instance
+import org.kodein.di.DIAware
+import org.kodein.di.android.x.closestDI
+import org.kodein.di.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.BuildConfig
 import za.co.xisystems.itis_rrm.R
@@ -66,9 +66,9 @@ import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.INFO
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.SUCCESS
 import kotlin.coroutines.cancellation.CancellationException
 
-class HomeFragment : BaseFragment(), KodeinAware {
+class HomeFragment : BaseFragment(), DIAware {
 
-    override val kodein by kodein()
+    override val di by closestDI()
     private lateinit var homeViewModel: HomeViewModel
     private val factory: HomeViewModelFactory by instance()
     private var gpsEnabled: Boolean = false

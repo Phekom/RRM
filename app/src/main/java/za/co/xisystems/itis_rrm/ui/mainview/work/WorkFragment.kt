@@ -21,7 +21,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenStarted
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.skydoves.androidveil.VeiledItemOnClickListener
 import com.xwray.groupie.ExpandableGroup
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.GroupieViewHolder
@@ -29,9 +28,9 @@ import kotlinx.android.synthetic.main.fragment_work.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.kodein.di.KodeinAware
-import org.kodein.di.android.x.kodein
-import org.kodein.di.generic.instance
+import org.kodein.di.DIAware
+import org.kodein.di.android.x.closestDI
+import org.kodein.di.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
@@ -50,9 +49,9 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
 const val INSET_TYPE_KEY = "inset_type"
 const val INSET = "inset"
 
-class WorkFragment : BaseFragment(), KodeinAware {
+class WorkFragment : BaseFragment(), DIAware {
 
-    override val kodein by kodein()
+    override val di by closestDI()
     private lateinit var workViewModel: WorkViewModel
     private lateinit var expandableGroups: MutableList<ExpandableGroup>
     private val factory: WorkViewModelFactory by instance()
@@ -137,12 +136,7 @@ class WorkFragment : BaseFragment(), KodeinAware {
 
     private fun initVeiledRecycler() {
         ui.veiledWorkListView.run {
-            setVeilLayout(R.layout.item_velied_slug, object : VeiledItemOnClickListener {
-                /* will be invoked when the item on the [VeilRecyclerFrameView] clicked. */
-                override fun onItemClicked(pos: Int) {
-                    Toast.makeText(this@WorkFragment.requireContext(), "Loading ...", Toast.LENGTH_SHORT).show()
-                }
-            })
+            setVeilLayout(R.layout.item_velied_slug) { Toast.makeText(this@WorkFragment.requireContext(), "Loading ...", Toast.LENGTH_SHORT).show() }
             setAdapter(groupAdapter)
             setLayoutManager(LinearLayoutManager(this.context))
             addVeiledItems(15)
@@ -213,7 +207,7 @@ class WorkFragment : BaseFragment(), KodeinAware {
         val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
             clear()
             addAll(workListItems)
-            notifyDataSetChanged()
+            notifyItemRangeChanged(0, workListItems.size)
         }
         val layoutManager = LinearLayoutManager(this.requireContext())
         ui.veiledWorkListView.setLayoutManager(layoutManager)

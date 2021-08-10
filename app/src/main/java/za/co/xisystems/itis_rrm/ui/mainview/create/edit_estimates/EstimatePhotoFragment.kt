@@ -18,11 +18,7 @@ import android.location.LocationManager
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
-import android.view.KeyEvent
-import android.view.LayoutInflater
-import android.view.Menu
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
@@ -37,14 +33,10 @@ import androidx.lifecycle.whenStarted
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.navArgs
 import com.airbnb.lottie.LottieAnimationView
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import org.kodein.di.KodeinAware
-import org.kodein.di.android.x.kodein
-import org.kodein.di.generic.instance
+import kotlinx.coroutines.*
+import org.kodein.di.DIAware
+import org.kodein.di.android.x.closestDI
+import org.kodein.di.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.BuildConfig
 import za.co.xisystems.itis_rrm.MainActivity
@@ -53,16 +45,7 @@ import za.co.xisystems.itis_rrm.base.LocationFragment
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.results.XIError
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
-import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
-import za.co.xisystems.itis_rrm.data.localDB.entities.ItemSectionDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimatesPhotoDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobSectionDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectSectionDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.SectionPointDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.databinding.FragmentPhotoEstimateBinding
 import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.services.LocationModel
@@ -70,31 +53,31 @@ import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.models.PhotoType
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
-import za.co.xisystems.itis_rrm.utils.Coroutines
-import za.co.xisystems.itis_rrm.utils.DateUtil
-import za.co.xisystems.itis_rrm.utils.GlideApp
-import za.co.xisystems.itis_rrm.utils.PhotoUtil
-import za.co.xisystems.itis_rrm.utils.ServiceUtil
-import za.co.xisystems.itis_rrm.utils.SqlLitUtils
+import za.co.xisystems.itis_rrm.utils.*
 import za.co.xisystems.itis_rrm.utils.enums.ToastDuration.LONG
 import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.BOTTOM
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.DELETE
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.ERROR
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.INFO
+import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.*
 import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
 import java.io.File
 import java.text.DecimalFormat
-import java.util.Date
+import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
+import kotlin.collections.Map
+import kotlin.collections.MutableList
+import kotlin.collections.arrayListOf
+import kotlin.collections.find
+import kotlin.collections.forEach
 import kotlin.collections.set
 
 /**
  * Created by Francis Mahlava on 2019/12/29.
  */
 
-class EstimatePhotoFragment : LocationFragment(), KodeinAware {
+class EstimatePhotoFragment : LocationFragment(), DIAware {
 
     private var sectionId: String? = null
-    override val kodein by kodein()
+    override val di by closestDI()
     private lateinit var createViewModel: CreateViewModel
     private val factory: CreateViewModelFactory by instance()
     private var mAppExecutor: AppExecutor? = null
@@ -1032,20 +1015,21 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
     } catch (e: Exception) {
         Timber.e(e)
     } finally {
+        Coroutines.main {
+            this.isEstimateDone = createViewModel.estimateComplete(newJobItemEstimate)
 
-        this.isEstimateDone = createViewModel.estimateComplete(newJobItemEstimate)
-
-        if (isEstimateDone) {
-            ui.costCard.visibility = View.VISIBLE
-            ui.updateButton.visibility = View.VISIBLE
-            setCost()
-        } else {
-            sharpToast(
-                message = "Please take both photographs ...",
-                style = INFO,
-                position = BOTTOM
-            )
-            hideCostCard()
+            if (isEstimateDone) {
+                ui.costCard.visibility = View.VISIBLE
+                ui.updateButton.visibility = View.VISIBLE
+                setCost()
+            } else {
+                sharpToast(
+                    message = "Please take both photographs ...",
+                    style = INFO,
+                    position = BOTTOM
+                )
+                hideCostCard()
+            }
         }
     }
 
@@ -1286,19 +1270,19 @@ class EstimatePhotoFragment : LocationFragment(), KodeinAware {
     }
 
     private fun validateNumberCosting(
-        iineAmount: Double?,
+        lineAmount: Double?,
         qty: Double,
         tenderRate: Double?
     ): Double? {
-        var inlineRate = iineAmount
+        var inlineAmount = lineAmount
         ui.labelTextView.text = getString(R.string.label_quantity)
         try { //  make the change in the array and update view
-            inlineRate = qty * tenderRate!!
+            inlineAmount = qty * tenderRate!!
         } catch (e: NumberFormatException) {
             requireActivity().hideKeyboard()
             toast("Please place the Quantity.")
         }
-        return inlineRate
+        return inlineAmount
     }
 
     private fun getStoredValue(): Double {

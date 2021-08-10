@@ -13,8 +13,8 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.withContext
-import org.kodein.di.KodeinAware
-import org.kodein.di.generic.instance
+import org.kodein.di.DIAware
+import org.kodein.di.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.BuildConfig
 import za.co.xisystems.itis_rrm.R
@@ -50,7 +50,7 @@ import kotlin.coroutines.CoroutineContext
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  */
 
-abstract class BaseFragment : Fragment(), IProgressView, KodeinAware {
+abstract class BaseFragment : Fragment(), IProgressView, DIAware {
 
     private lateinit var sharedViewModel: SharedViewModel
     private val shareFactory: SharedViewModelFactory by instance()

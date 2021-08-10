@@ -33,9 +33,9 @@ import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.kodein.di.KodeinAware
-import org.kodein.di.android.x.kodein
-import org.kodein.di.generic.instance
+import org.kodein.di.DIAware
+import org.kodein.di.android.x.closestDI
+import org.kodein.di.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
@@ -68,9 +68,9 @@ import java.util.Date
  * Created by Francis Mahlava on 2019/12/29.
  */
 
-class AddProjectFragment : BaseFragment(), KodeinAware {
+class AddProjectFragment : BaseFragment(), DIAware {
 
-    override val kodein by kodein()
+    override val di by closestDI()
     private lateinit var createViewModel: CreateViewModel
     private lateinit var unsubmittedViewModel: UnSubmittedViewModel
     private val unsubFactory: UnSubmittedViewModelFactory by instance()
@@ -240,21 +240,25 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
                         clearProjectItems()
                     }
                     else -> {
-                        items = itemList.filter { itemDTOTemp ->
-                            itemDTOTemp.jobId == job.jobId
-                        }
-                        when {
-                            items.isNotEmpty() -> {
-                                initRecyclerView(items.toProjecListItems())
-                                calculateTotalCost()
-                            }
-                            else -> {
-                                clearProjectItems()
-                            }
-                        }
+                        populateProjectItemView(itemList)
                     }
                 }
             })
+        }
+    }
+
+    private fun populateProjectItemView(itemList: List<ItemDTOTemp>) {
+        items = itemList.filter { itemDTOTemp ->
+            itemDTOTemp.jobId == job.jobId
+        }
+        when {
+            items.isNotEmpty() -> {
+                initRecyclerView(items.toProjecListItems())
+                calculateTotalCost()
+            }
+            else -> {
+                clearProjectItems()
+            }
         }
     }
 

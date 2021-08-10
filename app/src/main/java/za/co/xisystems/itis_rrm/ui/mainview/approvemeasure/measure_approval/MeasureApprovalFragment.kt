@@ -30,14 +30,13 @@ import androidx.core.view.doOnNextLayout
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.skydoves.androidveil.VeiledItemOnClickListener
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.kodein.di.KodeinAware
-import org.kodein.di.android.x.kodein
-import org.kodein.di.generic.instance
+import org.kodein.di.DIAware
+import org.kodein.di.android.x.closestDI
+import org.kodein.di.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
@@ -45,11 +44,7 @@ import za.co.xisystems.itis_rrm.R.layout
 import za.co.xisystems.itis_rrm.R.string
 import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.constants.Constants
-import za.co.xisystems.itis_rrm.custom.results.XIError
-import za.co.xisystems.itis_rrm.custom.results.XIProgress
-import za.co.xisystems.itis_rrm.custom.results.XIResult
-import za.co.xisystems.itis_rrm.custom.results.XIStatus
-import za.co.xisystems.itis_rrm.custom.results.XISuccess
+import za.co.xisystems.itis_rrm.custom.results.*
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentMeasureApprovalBinding
@@ -66,15 +61,12 @@ import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.enums.ToastDuration.SHORT
 import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.BOTTOM
 import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.CENTER
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.ERROR
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.INFO
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.NO_INTERNET
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.SUCCESS
+import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.*
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection.NEXT
 
-class MeasureApprovalFragment : BaseFragment(), KodeinAware {
-    override val kodein by kodein()
+class MeasureApprovalFragment : BaseFragment(), DIAware {
+    override val di by closestDI()
     private lateinit var approveViewModel: ApproveMeasureViewModel
     private val factory: ApproveMeasureViewModelFactory by instance()
     private lateinit var measurementsToApprove: ArrayList<JobItemMeasureDTO>
@@ -213,12 +205,7 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
 
     private fun initVeiledRecycler() {
         ui.viewMeasuredItems.run {
-            setVeilLayout(layout.measurements_item, object : VeiledItemOnClickListener {
-                /** will be invoked when the item on the [VeilRecyclerFrameView] clicked. */
-                override fun onItemClicked(pos: Int) {
-                    toast("Loading ...")
-                }
-            })
+            setVeilLayout(layout.measurements_item) { toast("Loading ...") }
             setAdapter(groupAdapter)
             setLayoutManager(LinearLayoutManager(this.context))
             addVeiledItems(10)
@@ -279,10 +266,13 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
     }
 
     private fun popViewOnJobSubmit(direction: Int) {
-        if (direction == NEXT.value) {
-            sharpToast(resId = string.measurement_approved, style = SUCCESS, duration = SHORT)
-        } else if (direction == WorkflowDirection.FAIL.value) {
-            sharpToast(resId = string.measurement_declined, style = INFO, duration = SHORT)
+        when (direction) {
+            NEXT.value -> {
+                sharpToast(resId = string.measurement_approved, style = SUCCESS, duration = SHORT)
+            }
+            WorkflowDirection.FAIL.value -> {
+                sharpToast(resId = string.measurement_declined, style = INFO, duration = SHORT)
+            }
         }
         Handler(Looper.getMainLooper()).postDelayed({
             Intent(context?.applicationContext, MainActivity::class.java).also { home ->
@@ -311,7 +301,7 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
         groupAdapter.apply {
             clear()
             update(measureListItems)
-            notifyDataSetChanged()
+            notifyItemRangeChanged(0, measureListItems.size)
         }
         ui.viewMeasuredItems.run {
             setAdapter(groupAdapter, layoutManager = LinearLayoutManager(context))

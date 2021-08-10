@@ -19,9 +19,9 @@ import androidx.lifecycle.ViewModelProvider
 import com.poovam.pinedittextfield.PinField
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.kodein.di.KodeinAware
-import org.kodein.di.android.kodein
-import org.kodein.di.generic.instance
+import org.kodein.di.DIAware
+import org.kodein.di.android.closestDI
+import org.kodein.di.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
@@ -36,18 +36,12 @@ import za.co.xisystems.itis_rrm.databinding.ActivityLoginBinding
 import za.co.xisystems.itis_rrm.ui.auth.model.AuthViewModel
 import za.co.xisystems.itis_rrm.ui.auth.model.AuthViewModelFactory
 import za.co.xisystems.itis_rrm.ui.base.BaseActivity
-import za.co.xisystems.itis_rrm.utils.Coroutines
-import za.co.xisystems.itis_rrm.utils.ServiceUtil
-import za.co.xisystems.itis_rrm.utils.hide
-import za.co.xisystems.itis_rrm.utils.hideKeyboard
-import za.co.xisystems.itis_rrm.utils.show
-import za.co.xisystems.itis_rrm.utils.snackbar
-import za.co.xisystems.itis_rrm.utils.toast
+import za.co.xisystems.itis_rrm.utils.*
 import za.co.xisystems.traffic_count.delegates.viewBinding
 
-class LoginActivity : BaseActivity(), AuthListener, KodeinAware {
+class LoginActivity : BaseActivity(), AuthListener, DIAware {
 
-    override val kodein by kodein()
+    override val di by closestDI()
     private val factory: AuthViewModelFactory by instance()
     private lateinit var authViewModel: AuthViewModel
     private val binding by viewBinding(ActivityLoginBinding::inflate)

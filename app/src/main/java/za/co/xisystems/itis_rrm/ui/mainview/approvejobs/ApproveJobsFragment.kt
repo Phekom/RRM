@@ -27,9 +27,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.GroupieViewHolder
 import kotlinx.coroutines.launch
-import org.kodein.di.KodeinAware
-import org.kodein.di.android.x.kodein
-import org.kodein.di.generic.instance
+import org.kodein.di.DIAware
+import org.kodein.di.android.x.closestDI
+import org.kodein.di.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
@@ -49,9 +49,9 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
  * Created by Francis Mahlava on 03,October,2019
  */
 
-class ApproveJobsFragment : BaseFragment(), KodeinAware {
+class ApproveJobsFragment : BaseFragment(), DIAware {
 
-    override val kodein by kodein()
+    override val di by closestDI()
     private lateinit var approveViewModel: ApproveJobsViewModel
     private val factory: ApproveJobsViewModelFactory by instance<ApproveJobsViewModelFactory>()
     lateinit var dialog: Dialog
@@ -225,7 +225,7 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
     ) {
         groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
             addAll(approveJobListItems)
-            notifyDataSetChanged()
+            notifyItemRangeChanged(0, approveJobListItems.size)
         }
 
         ui.approveJobVeiledRecycler.setLayoutManager(LinearLayoutManager(this.context))

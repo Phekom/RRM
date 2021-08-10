@@ -29,9 +29,9 @@ import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import org.kodein.di.KodeinAware
-import org.kodein.di.android.x.kodein
-import org.kodein.di.generic.instance
+import org.kodein.di.DIAware
+import org.kodein.di.android.x.closestDI
+import org.kodein.di.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
@@ -69,8 +69,8 @@ import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.WARNING
 import java.util.ArrayList
 import java.util.HashMap
 
-class SubmitMeasureFragment : BaseFragment(), KodeinAware {
-    override val kodein by kodein()
+class SubmitMeasureFragment : BaseFragment(), DIAware {
+    override val di by closestDI()
     private lateinit var measureViewModel: MeasureViewModel
     private val factory: MeasureViewModelFactory by instance()
     private lateinit var jobItemMeasurePhotoDTO: ArrayList<JobItemMeasurePhotoDTO>
@@ -146,18 +146,22 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
                 }
 
                 is XIProgress -> {
-                    toggleLongRunning(outcome.isLoading)
-                    when (outcome.isLoading) {
-                        true -> {
-                            progressButton.initProgress(viewLifecycleOwner)
-                            progressButton.startProgress("Submitting ...")
-                        }
-                        else -> {
-                            progressButton.doneProgress(originalCaption)
-                        }
-                    }
+                    handleMeasurementProgress(outcome)
                 }
                 else -> Timber.d("$event")
+            }
+        }
+    }
+
+    private fun handleMeasurementProgress(outcome: XIProgress) {
+        toggleLongRunning(outcome.isLoading)
+        when (outcome.isLoading) {
+            true -> {
+                progressButton.initProgress(viewLifecycleOwner)
+                progressButton.startProgress("Submitting ...")
+            }
+            else -> {
+                progressButton.doneProgress(originalCaption)
             }
         }
     }
@@ -320,28 +324,36 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
                         showSubmissionError("Selected job is invalid")
                     }
                     else -> {
-                        // littleEndian conversion for transport to backend
-                        val contractVoId: String =
-                            DataConversion.toLittleEndian(itemMeasureJob.contractVoId)!!
-                        val jobId: String = DataConversion.toLittleEndian(itemMeasureJob.jobId)!!
-
-                        Coroutines.main {
-
-                            activity?.let {
-
-                                processMeasurementWorkflow(
-                                    userDTO,
-                                    jobId,
-                                    itemMeasureJob,
-                                    contractVoId,
-                                    mSures,
-                                    it
-                                )
-                            }
-                        }
+                        prepareMeasurementWorkflow(itemMeasureJob, userDTO, mSures)
                     }
                 }
             })
+        }
+    }
+
+    private fun prepareMeasurementWorkflow(
+        itemMeasureJob: JobDTO,
+        userDTO: UserDTO,
+        mSures: ArrayList<JobItemMeasureDTO>
+    ) {
+        // littleEndian conversion for transport to backend
+        val contractVoId: String =
+            DataConversion.toLittleEndian(itemMeasureJob.contractVoId)!!
+        val jobId: String = DataConversion.toLittleEndian(itemMeasureJob.jobId)!!
+
+        Coroutines.main {
+
+            activity?.let {
+
+                processMeasurementWorkflow(
+                    userDTO,
+                    jobId,
+                    itemMeasureJob,
+                    contractVoId,
+                    mSures,
+                    it
+                )
+            }
         }
     }
 

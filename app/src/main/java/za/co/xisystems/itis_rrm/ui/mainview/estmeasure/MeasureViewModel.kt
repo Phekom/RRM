@@ -8,31 +8,14 @@ package za.co.xisystems.itis_rrm.ui.mainview.estmeasure
 
 import android.app.Application
 import androidx.fragment.app.FragmentActivity
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Transformations
-import androidx.lifecycle.distinctUntilChanged
-import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancelChildren
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import androidx.lifecycle.*
+import kotlinx.coroutines.*
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.custom.results.XIError
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.results.XISuccess
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasurePhotoDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.ToDoListEntityDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.data.repositories.MeasureCreationDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.ui.custom.MeasureGalleryUIState
@@ -72,6 +55,7 @@ class MeasureViewModel(
     private val mainContext = (Job(superJob) + Dispatchers.Main + uncaughtExceptionHandler)
     private val ioContext = (Job(superJob) + Dispatchers.IO + uncaughtExceptionHandler)
     private val photoUtil = PhotoUtil.getInstance(getApplication())
+
     init {
         viewModelScope.launch(viewModelContext) {
             workflowStatus = measureCreationDataRepository.workflowStatus
@@ -247,7 +231,6 @@ class MeasureViewModel(
 
     suspend fun getJobItemMeasuresForJobIdAndEstimateId(
         jobId: String?
-//        ,estimateId: String
     ): LiveData<List<JobItemMeasureDTO>> {
         return withContext(Dispatchers.IO) {
             measureCreationDataRepository.getJobItemMeasuresForJobIdAndEstimateId(jobId)
@@ -257,27 +240,23 @@ class MeasureViewModel(
     suspend fun getJobItemMeasuresForJobIdAndEstimateId2(
         jobId: String?,
         estimateId: String
-        //   ,jobItemMeasureArrayList: ArrayList<JobItemMeasureDTO>
-    ): LiveData<List<JobItemMeasureDTO>> {
-        return withContext(Dispatchers.IO + uncaughtExceptionHandler) {
-            measureCreationDataRepository.getJobItemMeasuresForJobIdAndEstimateId2(
-                jobId,
-                estimateId
-            )
-        }
+    ): LiveData<List<JobItemMeasureDTO>> = withContext(Dispatchers.IO + uncaughtExceptionHandler) {
+        return@withContext measureCreationDataRepository.getJobItemMeasuresForJobIdAndEstimateId2(
+            jobId,
+            estimateId
+        )
     }
 
-    suspend fun getJobItemsToMeasureForJobId(jobID: String?): LiveData<List<JobItemEstimateDTO>> {
-        return withContext(Dispatchers.IO) {
-            measureCreationDataRepository.getJobItemsToMeasureForJobId(jobID)
-        }
+
+    suspend fun getJobItemsToMeasureForJobId(jobID: String?): LiveData<List<JobItemEstimateDTO>> = withContext(Dispatchers.IO) {
+        return@withContext measureCreationDataRepository.getJobItemsToMeasureForJobId(jobID)
     }
 
-    suspend fun getItemForItemId(projectItemId: String?): LiveData<ProjectItemDTO> {
-        return withContext(Dispatchers.IO) {
-            measureCreationDataRepository.getItemForItemId(projectItemId)
-        }
+
+    suspend fun getItemForItemId(projectItemId: String?): LiveData<ProjectItemDTO> = withContext(Dispatchers.IO) {
+        return@withContext measureCreationDataRepository.getItemForItemId(projectItemId)
     }
+
 
     suspend fun getJobFromJobId(jobId: String?): LiveData<JobDTO> {
         return withContext(Dispatchers.IO) {

@@ -166,11 +166,11 @@ class WorkDataRepository(
         }
     }
 
-    private fun uploadWorksImages(
+    private suspend fun uploadWorksImages(
         workEstimate: JobEstimateWorksDTO,
         worksPhotos: ArrayList<JobEstimateWorksPhotoDTO>?,
         activity: FragmentActivity
-    ) {
+    ) = withContext(Dispatchers.IO) {
         var imageCounter = 1
 
         try {
@@ -179,18 +179,21 @@ class WorkDataRepository(
             } else {
                 val totalImages = worksPhotos.size
                 for (jobItemPhoto in worksPhotos) {
-                    if (photoUtil.photoExist(jobItemPhoto.filename)) {
-                        Timber.d("x -> UploadRrImage $imageCounter")
-                        uploadRrmImage(
-                            jobItemPhoto.filename,
-                            PhotoQuality.HIGH,
-                            imageCounter,
-                            totalImages,
-                            activity
-                        )
-                        imageCounter++
-                    } else {
-                        throw NoDataException("Photo ${jobItemPhoto.filename} could not be loaded.")
+                    when {
+                        photoUtil.photoExist(jobItemPhoto.filename) -> {
+                            Timber.d("x -> UploadRrImage $imageCounter")
+                            uploadRrmImage(
+                                jobItemPhoto.filename,
+                                PhotoQuality.HIGH,
+                                imageCounter,
+                                totalImages,
+                                activity
+                            )
+                            imageCounter++
+                        }
+                        else -> {
+                            throw NoDataException("Photo ${jobItemPhoto.filename} could not be loaded.")
+                        }
                     }
                 }
             }

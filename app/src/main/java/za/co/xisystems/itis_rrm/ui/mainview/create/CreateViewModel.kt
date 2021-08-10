@@ -8,28 +8,10 @@ package za.co.xisystems.itis_rrm.ui.mainview.create
 
 import android.app.Application
 import androidx.fragment.app.FragmentActivity
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.liveData
-import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancelChildren
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import androidx.lifecycle.*
+import kotlinx.coroutines.*
 import timber.log.Timber
-import za.co.xisystems.itis_rrm.data.localDB.entities.ContractDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobSectionDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectSectionDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.SectionItemDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.SectionPointDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.data.repositories.JobCreationDataRepository
 import za.co.xisystems.itis_rrm.domain.ContractSelector
 import za.co.xisystems.itis_rrm.domain.ProjectSelector
@@ -38,7 +20,7 @@ import za.co.xisystems.itis_rrm.utils.JobUtils
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
 import za.co.xisystems.itis_rrm.utils.uncaughtExceptionHandler
-import java.util.ArrayList
+import java.util.*
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -234,28 +216,27 @@ class CreateViewModel(
         }
     }
 
-    suspend fun areEstimatesValid(job: JobDTO?, items: ArrayList<Any?>?): Boolean {
+    suspend fun areEstimatesValid(job: JobDTO?, items: ArrayList<Any?>?): Boolean = withContext(Dispatchers.IO) {
         var isValid = true
         when {
             !JobUtils.areQuantitiesValid(job) -> {
                 isValid = false
             }
             job == null || items == null || job.jobItemEstimates.isNullOrEmpty()
-                || items.size != job.jobItemEstimates.size -> {
+                    || items.size != job.jobItemEstimates.size -> {
                 isValid = false
             }
             else -> {
                 job.jobItemEstimates.forEach { estimate ->
-                    if (!estimate.isEstimateComplete()) {
+                    if (!isEstimateComplete(estimate)) {
                         isValid = false
                     }
                 }
             }
         }
-        return withContext(Dispatchers.IO) {
-            isValid
-        }
+        return@withContext isValid
     }
+
 
     suspend fun submitJob(
         userId: Int,
@@ -338,18 +319,18 @@ class CreateViewModel(
         }
     }
 
-    fun JobItemEstimateDTO.isEstimateComplete(): Boolean {
-        return if (this.size() < 2) {
+    suspend fun isEstimateComplete(estimate: JobItemEstimateDTO): Boolean = withContext(Dispatchers.IO) {
+        return@withContext if (estimate.size() < 2) {
             false
         } else {
-            val photoStart = this.jobItemEstimatePhotos[0]
-            val photoEnd = this.jobItemEstimatePhotos[1]
+            val photoStart = estimate.jobItemEstimatePhotos[0]
+            val photoEnd = estimate.jobItemEstimatePhotos[1]
             photoUtil.photoExist(photoStart.filename) && photoUtil.photoExist(photoEnd.filename)
         }
     }
 
-    fun estimateComplete(newJobItemEstimate: JobItemEstimateDTO?): Boolean {
-        return newJobItemEstimate?.isEstimateComplete() ?: false
+    suspend fun estimateComplete(newJobItemEstimate: JobItemEstimateDTO?): Boolean {
+        return newJobItemEstimate?.let { isEstimateComplete(it) } ?: false
     }
 
     suspend fun getRealSectionStartKm(

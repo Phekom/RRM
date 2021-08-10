@@ -41,8 +41,8 @@
     <ID>FunctionParameterNaming:ActivityDao.kt$ActivityDao$DESCRIPTION: String?</ID>
     <ID>FunctionParameterNaming:GPSUtils.kt$GPSUtils$OnGpsListener: OnGpsListener?</ID>
     <ID>FunctionParameterNaming:PrimaryKeyValueDao.kt$PrimaryKeyValueDao$primary_key: String?</ID>
-    <ID>LargeClass:CaptureWorkFragment.kt$CaptureWorkFragment : LocationFragmentKodeinAware</ID>
-    <ID>LargeClass:EstimatePhotoFragment.kt$EstimatePhotoFragment : LocationFragmentKodeinAware</ID>
+    <ID>LargeClass:CaptureWorkFragment.kt$CaptureWorkFragment : LocationFragmentDIAware</ID>
+    <ID>LargeClass:EstimatePhotoFragment.kt$EstimatePhotoFragment : LocationFragmentDIAware</ID>
     <ID>LargeClass:OfflineDataRepository.kt$OfflineDataRepository : SafeApiRequest</ID>
     <ID>LongMethod:EstimatesItem.kt$EstimatesItem$private fun alertdialog( jobItemEstimateDTO: JobItemEstimateDTO )</ID>
     <ID>LongMethod:JobApprovalDataRepository.kt$JobApprovalDataRepository$private suspend fun updateWorkflowJobValuesAndInsertWhenNeeded(job: WorkflowJobDTO)</ID>
@@ -506,47 +506,47 @@
     <ID>TooGenericExceptionThrown:SubmitMeasureFragment.kt$SubmitMeasureFragment$throw Exception("Invalid Activity")</ID>
     <ID>TooGenericExceptionThrown:UnSubmittedFragment.kt$UnSubmittedFragment$throw Exception("Invalid Activity")</ID>
     <ID>TooGenericExceptionThrown:WorkFragment.kt$WorkFragment$throw Exception("Invalid Activity")</ID>
-    <ID>TooManyFunctions:AddProjectFragment.kt$AddProjectFragment : BaseFragmentKodeinAware</ID>
+    <ID>TooManyFunctions:AddProjectFragment.kt$AddProjectFragment : BaseFragmentDIAware</ID>
     <ID>TooManyFunctions:AppDatabase.kt$AppDatabase : RoomDatabase</ID>
-    <ID>TooManyFunctions:ApproveJobsFragment.kt$ApproveJobsFragment : BaseFragmentKodeinAware</ID>
+    <ID>TooManyFunctions:ApproveJobsFragment.kt$ApproveJobsFragment : BaseFragmentDIAware</ID>
     <ID>TooManyFunctions:ApproveJobsViewModel.kt$ApproveJobsViewModel : AndroidViewModel</ID>
-    <ID>TooManyFunctions:ApproveMeasureFragment.kt$ApproveMeasureFragment : BaseFragmentKodeinAware</ID>
+    <ID>TooManyFunctions:ApproveMeasureFragment.kt$ApproveMeasureFragment : BaseFragmentDIAware</ID>
     <ID>TooManyFunctions:ApproveMeasureViewModel.kt$ApproveMeasureViewModel : AndroidViewModel</ID>
     <ID>TooManyFunctions:BaseConnectionApi.kt$BaseConnectionApi</ID>
-    <ID>TooManyFunctions:BaseFragment.kt$BaseFragment : FragmentIProgressViewKodeinAware</ID>
-    <ID>TooManyFunctions:CaptureItemMeasurePhotoFragment.kt$CaptureItemMeasurePhotoFragment : LocationFragmentKodeinAware</ID>
-    <ID>TooManyFunctions:CaptureWorkFragment.kt$CaptureWorkFragment : LocationFragmentKodeinAware</ID>
+    <ID>TooManyFunctions:BaseFragment.kt$BaseFragment : FragmentIProgressViewDIAware</ID>
+    <ID>TooManyFunctions:CaptureItemMeasurePhotoFragment.kt$CaptureItemMeasurePhotoFragment : LocationFragmentDIAware</ID>
+    <ID>TooManyFunctions:CaptureWorkFragment.kt$CaptureWorkFragment : LocationFragmentDIAware</ID>
     <ID>TooManyFunctions:Converters.kt$Converters</ID>
-    <ID>TooManyFunctions:CreateFragment.kt$CreateFragment : BaseFragmentOfflineListenerKodeinAware</ID>
+    <ID>TooManyFunctions:CreateFragment.kt$CreateFragment : BaseFragmentOfflineListenerDIAware</ID>
     <ID>TooManyFunctions:CreateViewModel.kt$CreateViewModel : ViewModel</ID>
-    <ID>TooManyFunctions:EstimatePhotoFragment.kt$EstimatePhotoFragment : LocationFragmentKodeinAware</ID>
-    <ID>TooManyFunctions:HomeFragment.kt$HomeFragment : BaseFragmentKodeinAware</ID>
+    <ID>TooManyFunctions:EstimatePhotoFragment.kt$EstimatePhotoFragment : LocationFragmentDIAware</ID>
+    <ID>TooManyFunctions:HomeFragment.kt$HomeFragment : BaseFragmentDIAware</ID>
     <ID>TooManyFunctions:JobApprovalDataRepository.kt$JobApprovalDataRepository : SafeApiRequest</ID>
     <ID>TooManyFunctions:JobCreationDataRepository.kt$JobCreationDataRepository : SafeApiRequest</ID>
     <ID>TooManyFunctions:JobDao.kt$JobDao</ID>
     <ID>TooManyFunctions:JobDaoTemp.kt$JobDaoTemp</ID>
     <ID>TooManyFunctions:JobDataController.kt$za.co.xisystems.itis_rrm.data.localDB.JobDataController.kt</ID>
-    <ID>TooManyFunctions:JobInfoFragment.kt$JobInfoFragment : BaseFragmentKodeinAware</ID>
+    <ID>TooManyFunctions:JobInfoFragment.kt$JobInfoFragment : BaseFragmentDIAware</ID>
     <ID>TooManyFunctions:JobItemEstimateDao.kt$JobItemEstimateDao</ID>
     <ID>TooManyFunctions:JobItemMeasureDao.kt$JobItemMeasureDao</ID>
-    <ID>TooManyFunctions:LoginActivity.kt$LoginActivity : AppCompatActivityOnClickListenerAuthListenerKodeinAware</ID>
-    <ID>TooManyFunctions:MainActivity.kt$MainActivity : AppCompatActivityOnNavigationItemSelectedListenerKodeinAware</ID>
+    <ID>TooManyFunctions:LoginActivity.kt$LoginActivity : AppCompatActivityOnClickListenerAuthListenerDIAware</ID>
+    <ID>TooManyFunctions:MainActivity.kt$MainActivity : AppCompatActivityOnNavigationItemSelectedListenerDIAware</ID>
     <ID>TooManyFunctions:MeasureApprovalDataRepository.kt$MeasureApprovalDataRepository : SafeApiRequest</ID>
-    <ID>TooManyFunctions:MeasureApprovalFragment.kt$MeasureApprovalFragment : BaseFragmentKodeinAware</ID>
+    <ID>TooManyFunctions:MeasureApprovalFragment.kt$MeasureApprovalFragment : BaseFragmentDIAware</ID>
     <ID>TooManyFunctions:MeasureCreationDataRepository.kt$MeasureCreationDataRepository : SafeApiRequest</ID>
-    <ID>TooManyFunctions:MeasureFragment.kt$MeasureFragment : BaseFragmentKodeinAware</ID>
+    <ID>TooManyFunctions:MeasureFragment.kt$MeasureFragment : BaseFragmentDIAware</ID>
     <ID>TooManyFunctions:MeasureViewModel.kt$MeasureViewModel : AndroidViewModel</ID>
     <ID>TooManyFunctions:OfflineDataRepository.kt$OfflineDataRepository : SafeApiRequest</ID>
     <ID>TooManyFunctions:PhotoUtil.kt$PhotoUtil$PhotoUtil</ID>
     <ID>TooManyFunctions:ProjectDao.kt$ProjectDao</ID>
     <ID>TooManyFunctions:ProjectItemDao.kt$ProjectItemDao</ID>
     <ID>TooManyFunctions:ProjectSectionDao.kt$ProjectSectionDao</ID>
-    <ID>TooManyFunctions:RegisterActivity.kt$RegisterActivity : AppCompatActivityAuthListenerKodeinAware</ID>
-    <ID>TooManyFunctions:SelectItemFragment.kt$SelectItemFragment : BaseFragmentKodeinAware</ID>
-    <ID>TooManyFunctions:SubmitMeasureFragment.kt$SubmitMeasureFragment : BaseFragmentKodeinAware</ID>
+    <ID>TooManyFunctions:RegisterActivity.kt$RegisterActivity : AppCompatActivityAuthListenerDIAware</ID>
+    <ID>TooManyFunctions:SelectItemFragment.kt$SelectItemFragment : BaseFragmentDIAware</ID>
+    <ID>TooManyFunctions:SubmitMeasureFragment.kt$SubmitMeasureFragment : BaseFragmentDIAware</ID>
     <ID>TooManyFunctions:UserDao.kt$UserDao</ID>
     <ID>TooManyFunctions:WorkDataRepository.kt$WorkDataRepository : SafeApiRequest</ID>
-    <ID>TooManyFunctions:WorkFragment.kt$WorkFragment : BaseFragmentKodeinAware</ID>
+    <ID>TooManyFunctions:WorkFragment.kt$WorkFragment : BaseFragmentDIAware</ID>
     <ID>TooManyFunctions:WorkViewModel.kt$WorkViewModel : ViewModel</ID>
     <ID>TopLevelPropertyNaming:WfWorkStepDTO.kt$/** * Created by Francis Mahlava on 2020/02/12. */ const val WorkStep_TABLE = "WorkStep_TABLE"</ID>
     <ID>TopLevelPropertyNaming:WorkFlowsDTO.kt$const val WORKFLOWs_TABLE = "WORKFLOWs_TABLE"</ID>

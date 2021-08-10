@@ -18,6 +18,8 @@ import android.os.Build
 import android.os.Environment
 import androidx.core.content.FileProvider
 import androidx.exifinterface.media.ExifInterface
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.apache.sanselan.ImageReadException
 import org.apache.sanselan.ImageWriteException
 import org.apache.sanselan.Sanselan
@@ -159,10 +161,10 @@ class PhotoUtil private constructor(private var appContext: Context) {
             }
     }
 
-    fun photoExist(fileName: String): Boolean {
+    suspend fun photoExist(fileName: String): Boolean = withContext(Dispatchers.IO) {
         val image =
             File(getPhotoPathFromExternalDirectory(fileName).path!!)
-        return image.exists()
+        return@withContext image.exists()
     }
 
     fun getPhotoPathFromExternalDirectory(
@@ -198,8 +200,10 @@ class PhotoUtil private constructor(private var appContext: Context) {
                     Timber.e(e, BMP_LOAD_FAILED)
                 } finally {
                     try {
-                        if (BuildConfig.DEBUG && fileDescriptor == null) {
-                            error("Assertion failed")
+                        when {
+                            BuildConfig.DEBUG && fileDescriptor == null -> {
+                                error("Assertion failed")
+                            }
                         }
                         bm = BitmapFactory.decodeFileDescriptor(
                             fileDescriptor!!.fileDescriptor,
@@ -306,13 +310,15 @@ class PhotoUtil private constructor(private var appContext: Context) {
 
                 cursor?.run {
                     try {
-                        if (cursor.moveToFirst()) { // local filesystem
-                            var index = cursor.getColumnIndex("_data")
-                            if (index == -1) { // google drive
-                                index = cursor.getColumnIndex("_display_name")
+                        when {
+                            cursor.moveToFirst() -> { // local filesystem
+                                var index = cursor.getColumnIndex("_data")
+                                if (index == -1) { // google drive
+                                    index = cursor.getColumnIndex("_display_name")
+                                }
+                                result = cursor.getString(index)
+                                scaledUri = if (result.isBlank()) return null else Uri.parse(result)
                             }
-                            result = cursor.getString(index)
-                            scaledUri = if (result.isNotBlank()) Uri.parse(result) else return null
                         }
                     } catch (e: Exception) {
                         Timber.e(e, "Ërror loading photo $scaledUri")

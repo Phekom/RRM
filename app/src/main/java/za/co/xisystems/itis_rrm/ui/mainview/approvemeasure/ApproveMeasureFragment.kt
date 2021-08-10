@@ -21,12 +21,11 @@ import androidx.core.view.doOnNextLayout
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.skydoves.androidveil.VeiledItemOnClickListener
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
-import org.kodein.di.KodeinAware
-import org.kodein.di.android.x.kodein
-import org.kodein.di.generic.instance
+import org.kodein.di.DIAware
+import org.kodein.di.android.x.closestDI
+import org.kodein.di.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.R.layout
@@ -44,9 +43,10 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
  * Created by Francis Mahlava on 03,October,2019
  */
 
-class ApproveMeasureFragment : BaseFragment(), KodeinAware {
+@Suppress("KDocUnresolvedReference")
+class ApproveMeasureFragment : BaseFragment(), DIAware {
 
-    override val kodein by kodein()
+    override val di by closestDI()
     private lateinit var approveViewModel: ApproveMeasureViewModel
     private val factory: ApproveMeasureViewModelFactory by instance<ApproveMeasureViewModelFactory>()
 
@@ -83,12 +83,7 @@ class ApproveMeasureFragment : BaseFragment(), KodeinAware {
 
     private fun initVeiledRecyclerView() {
         ui.approveMeasurementsList.run {
-            setVeilLayout(layout.item_velied_slug, object : VeiledItemOnClickListener {
-                /** will be invoked when the item on the [VeilRecyclerFrameView] clicked. */
-                override fun onItemClicked(pos: Int) {
-                    toast("Loading ...")
-                }
-            })
+            setVeilLayout(layout.item_velied_slug) { toast("Loading ...") }
             setAdapter(groupAdapter)
             setLayoutManager(LinearLayoutManager(this.context))
             addVeiledItems(15)
@@ -186,7 +181,7 @@ class ApproveMeasureFragment : BaseFragment(), KodeinAware {
         val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
             clear()
             addAll(approveMeasureListItems)
-            notifyDataSetChanged()
+            notifyItemRangeChanged(0,approveMeasureListItems.size)
         }
 
         ui.approveMeasurementsList.run {

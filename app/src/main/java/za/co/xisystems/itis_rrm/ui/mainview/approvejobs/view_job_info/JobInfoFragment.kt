@@ -19,9 +19,9 @@ import com.skydoves.androidveil.VeilRecyclerFrameView
 import com.skydoves.androidveil.VeiledItemOnClickListener
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.viewbinding.GroupieViewHolder
-import org.kodein.di.KodeinAware
-import org.kodein.di.android.x.kodein
-import org.kodein.di.generic.instance
+import org.kodein.di.DIAware
+import org.kodein.di.android.x.closestDI
+import org.kodein.di.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R.drawable
@@ -30,21 +30,13 @@ import za.co.xisystems.itis_rrm.R.string
 import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.constants.Constants
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
-import za.co.xisystems.itis_rrm.custom.results.XIError
-import za.co.xisystems.itis_rrm.custom.results.XIProgress
-import za.co.xisystems.itis_rrm.custom.results.XIResult
-import za.co.xisystems.itis_rrm.custom.results.XIStatus
-import za.co.xisystems.itis_rrm.custom.results.XISuccess
+import za.co.xisystems.itis_rrm.custom.results.*
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.databinding.EstimatesItemBinding
 import za.co.xisystems.itis_rrm.databinding.FragmentJobInfoBinding
-import za.co.xisystems.itis_rrm.ui.extensions.ShimmerUtils
-import za.co.xisystems.itis_rrm.ui.extensions.doneProgress
-import za.co.xisystems.itis_rrm.ui.extensions.failProgress
-import za.co.xisystems.itis_rrm.ui.extensions.initProgress
-import za.co.xisystems.itis_rrm.ui.extensions.startProgress
+import za.co.xisystems.itis_rrm.ui.extensions.*
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.ApproveJobsViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.ApproveJobsViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.approve_job_item.ApproveJobItem
@@ -61,8 +53,8 @@ import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection.FAIL
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection.NEXT
 
-class JobInfoFragment : BaseFragment(), KodeinAware {
-    override val kodein by kodein()
+class JobInfoFragment : BaseFragment(), DIAware {
+    override val di by closestDI()
     private lateinit var approveViewModel: ApproveJobsViewModel
     private val factory: ApproveJobsViewModelFactory by instance()
     private var workObserver = Observer<XIResult<String>?> { handleWorkSubmission(it) }
@@ -120,21 +112,25 @@ class JobInfoFragment : BaseFragment(), KodeinAware {
                 sharpToast(result.message)
             }
             is XIProgress -> {
-                toggleLongRunning(result.isLoading)
-                when (result.isLoading) {
-                    true -> {
-                        activity?.hideKeyboard()
-                        progressButton.startProgress()
-                        toggleLongRunning(true)
-                    }
-                    else -> progressButton.doneProgress()
-                }
-                Timber.d("Loading ${result.isLoading}")
+                showWorkflowProgress(result)
             }
             else -> {
                 Timber.d("$result")
             }
         }
+    }
+
+    private fun showWorkflowProgress(result: XIProgress) {
+        toggleLongRunning(result.isLoading)
+        when (result.isLoading) {
+            true -> {
+                activity?.hideKeyboard()
+                progressButton.startProgress()
+                toggleLongRunning(true)
+            }
+            else -> progressButton.doneProgress()
+        }
+        Timber.d("Loading ${result.isLoading}")
     }
 
     private fun retryWork() {
@@ -275,12 +271,7 @@ class JobInfoFragment : BaseFragment(), KodeinAware {
 
     private fun initVeiledRecyclerView() {
         ui.viewEstimationItemsListView.run {
-            setVeilLayout(layout.estimates_item, object : VeiledItemOnClickListener {
-                /** will be invoked when the item on the [VeilRecyclerFrameView] clicked. */
-                override fun onItemClicked(pos: Int) {
-                    Toast.makeText(this@JobInfoFragment.requireContext(), "Loading ...", Toast.LENGTH_SHORT).show()
-                }
-            })
+            setVeilLayout(layout.estimates_item) { Toast.makeText(this@JobInfoFragment.requireContext(), "Loading ...", Toast.LENGTH_SHORT).show() }
             setAdapter(groupAdapter)
             setLayoutManager(LinearLayoutManager(this.context))
             addVeiledItems(3)
@@ -381,18 +372,21 @@ class JobInfoFragment : BaseFragment(), KodeinAware {
     }
 
     private fun popViewOnJobSubmit(direction: Int, jiNo: String?) {
-        if (direction == NEXT.value) {
-            progressButton.text = getString(string.approve_job)
-            sharpToast(
-                message = getString(string.job_no_approved, jiNo!!),
-                style = SUCCESS
-            )
-        } else if (direction == FAIL.value) {
-            progressButton.text = getString(string.decline_job)
-            sharpToast(
-                message = getString(string.job_declined),
-                style = ToastStyle.DELETE
-            )
+        when (direction) {
+            NEXT.value -> {
+                progressButton.text = getString(string.approve_job)
+                sharpToast(
+                    message = getString(string.job_no_approved, jiNo!!),
+                    style = SUCCESS
+                )
+            }
+            FAIL.value -> {
+                progressButton.text = getString(string.decline_job)
+                sharpToast(
+                    message = getString(string.job_declined),
+                    style = ToastStyle.DELETE
+                )
+            }
         }
 
         Handler(Looper.getMainLooper()).postDelayed(
@@ -419,7 +413,7 @@ class JobInfoFragment : BaseFragment(), KodeinAware {
         groupAdapter = GroupAdapter<GroupieViewHolder<EstimatesItemBinding>>().apply {
             clear()
             addAll(estimatesListItems)
-            notifyDataSetChanged()
+            notifyItemRangeChanged(0, estimatesListItems.size)
         }
         ui.viewEstimationItemsListView.run {
             setLayoutManager(LinearLayoutManager(this.context))

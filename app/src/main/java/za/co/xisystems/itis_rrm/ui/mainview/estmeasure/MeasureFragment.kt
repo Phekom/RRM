@@ -18,15 +18,14 @@ import androidx.core.view.doOnNextLayout
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.skydoves.androidveil.VeiledItemOnClickListener
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import kotlinx.android.synthetic.main.fragment_work.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.kodein.di.KodeinAware
-import org.kodein.di.android.x.kodein
-import org.kodein.di.generic.instance
+import org.kodein.di.DIAware
+import org.kodein.di.android.x.closestDI
+import org.kodein.di.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
@@ -40,9 +39,10 @@ import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.estimate_measure_item.Est
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
 
-class MeasureFragment : BaseFragment(), KodeinAware {
+@Suppress("KDocUnresolvedReference")
+class MeasureFragment : BaseFragment(), DIAware {
 
-    override val kodein by kodein()
+    override val di by closestDI()
     private lateinit var measureViewModel: MeasureViewModel
     private val factory: MeasureViewModelFactory by instance()
     private var _ui: FragmentEstmeasureBinding? = null
@@ -198,7 +198,7 @@ class MeasureFragment : BaseFragment(), KodeinAware {
         groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
             clear()
             update(measureList)
-            notifyDataSetChanged()
+            notifyItemRangeChanged(0,measureList.size)
         }
         ui.estimationsToBeMeasuredListView.run {
             setAdapter(adapter = groupAdapter, layoutManager = LinearLayoutManager(this.context))
@@ -235,12 +235,7 @@ class MeasureFragment : BaseFragment(), KodeinAware {
 
     private fun initVeiledRecycler() {
         ui.estimationsToBeMeasuredListView.run {
-            setVeilLayout(R.layout.item_velied_slug, object : VeiledItemOnClickListener {
-                /** will be invoked when the item on the [VeilRecyclerFrameView] clicked. */
-                override fun onItemClicked(pos: Int) {
-                    Toast.makeText(this@MeasureFragment.requireContext(), "Loading ...", Toast.LENGTH_SHORT).show()
-                }
-            })
+            setVeilLayout(R.layout.item_velied_slug) { Toast.makeText(this@MeasureFragment.requireContext(), "Loading ...", Toast.LENGTH_SHORT).show() }
             setAdapter(groupAdapter)
             setLayoutManager(LinearLayoutManager(this.context))
             addVeiledItems(15)

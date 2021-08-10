@@ -37,9 +37,9 @@ import com.google.android.material.navigation.NavigationView
 import com.raygun.raygun4android.RaygunClient
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.launch
-import org.kodein.di.KodeinAware
-import org.kodein.di.android.kodein
-import org.kodein.di.generic.instance
+import org.kodein.di.DIAware
+import org.kodein.di.android.closestDI
+import org.kodein.di.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.constants.Constants.TWO_SECONDS
 import za.co.xisystems.itis_rrm.databinding.ActivityMainBinding
@@ -55,9 +55,9 @@ import za.co.xisystems.itis_rrm.utils.hideKeyboard
 import za.co.xisystems.itis_rrm.utils.toast
 
 class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedListener,
-    KodeinAware {
+    DIAware {
 
-    override val kodein by kodein()
+    override val di by closestDI()
     private lateinit var mainActivityViewModel: MainActivityViewModel
     private val factory: MainActivityViewModelFactory by instance()
     private lateinit var navController: NavController
@@ -219,19 +219,17 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                 super.onBackPressed()
                 toggle?.syncState()
             } else {
-                navController
                 doubleBackToExitPressed++
-                if (doubleBackToExitPressed >= 2) {
+                if (doubleBackToExitPressed == 2) {
                     logoutApplication()
                     finish()
                 } else {
+
                     toast("Please press Back again to exit")
 
-                    if (doubleBackToExitPressed > 0) {
-                        Handler(mainLooper).postDelayed({
-                            doubleBackToExitPressed--
-                        }, TWO_SECONDS)
-                    }
+                    Handler(mainLooper).postDelayed({
+                        doubleBackToExitPressed = 0
+                    }, TWO_SECONDS)
                 }
             }
         }

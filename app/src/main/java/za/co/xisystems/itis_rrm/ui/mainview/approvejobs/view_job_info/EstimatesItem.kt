@@ -141,14 +141,9 @@ class EstimatesItem(
             rate.text = activity.getString(R.string.pair, "R", tenderRate.toString())
             var cost: Double
             val newQuantity = jobItemEstimateDTO.qty
-            val rate = tenderRate
             val defaultQty = 0.0
 
-
-
-
             quantityEntry.text = Editable.Factory.getInstance().newEditable("$newQuantity")
-
 
             quantityEntry.doOnTextChanged { text, _, _, _ ->
                 updated = true
@@ -161,7 +156,7 @@ class EstimatesItem(
                 )
 
                 if (newQty != 0.0) {
-                    val cost = (rate * newQty).round(2)
+                    cost = (tenderRate * newQty).round(2)
                     totalEntry.text = activity.getString(R.string.pair, "R", cost.toString())
                 }
             }

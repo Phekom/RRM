@@ -29,9 +29,9 @@ import androidx.navigation.Navigation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.kodein.di.KodeinAware
-import org.kodein.di.android.x.kodein
-import org.kodein.di.generic.instance
+import org.kodein.di.DIAware
+import org.kodein.di.android.x.closestDI
+import org.kodein.di.instance
 import pereira.agnaldo.previewimgcol.ImageCollectionView
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.MainActivity
@@ -69,9 +69,9 @@ import java.util.HashMap
 //
 class CaptureItemMeasurePhotoFragment :
     LocationFragment(),
-    KodeinAware {
+    DIAware {
 
-    override val kodein by kodein()
+    override val di by closestDI()
     private lateinit var measureViewModel: MeasureViewModel
     private val factory: MeasureViewModelFactory by instance()
     private val galleryObserver = Observer<XIResult<MeasureGalleryUIState>> { handleResponse(it) }
@@ -367,23 +367,7 @@ class CaptureItemMeasurePhotoFragment :
     private fun handleResponse(response: XIResult<MeasureGalleryUIState>) {
         when (response) {
             is XISuccess -> {
-                toggleLongRunning(false)
-                val uiState = response.data
-                ui.estimateImageCollectionView.clearImages()
-
-                if (uiState.photoPairs.isNotEmpty()) {
-
-                    ui.estimateImageCollectionView.scaleForSize(
-                        uiState.photoPairs.size
-                    )
-                    ui.estimateImageCollectionView.addZoomedImages(
-                        uiState.photoPairs,
-                        this@CaptureItemMeasurePhotoFragment.requireActivity()
-                    )
-
-                    viewPhotosOnly = true
-                    setupControls()
-                }
+                handleGallerySuccess(response)
             }
 
             is XIError -> {
@@ -404,6 +388,26 @@ class CaptureItemMeasurePhotoFragment :
             else -> {
                 Timber.d("Unexpected result: $response")
             }
+        }
+    }
+
+    private fun handleGallerySuccess(response: XISuccess<MeasureGalleryUIState>) {
+        toggleLongRunning(false)
+        val uiState = response.data
+        ui.estimateImageCollectionView.clearImages()
+
+        if (uiState.photoPairs.isNotEmpty()) {
+
+            ui.estimateImageCollectionView.scaleForSize(
+                uiState.photoPairs.size
+            )
+            ui.estimateImageCollectionView.addZoomedImages(
+                uiState.photoPairs,
+                this@CaptureItemMeasurePhotoFragment.requireActivity()
+            )
+
+            viewPhotosOnly = true
+            setupControls()
         }
     }
 

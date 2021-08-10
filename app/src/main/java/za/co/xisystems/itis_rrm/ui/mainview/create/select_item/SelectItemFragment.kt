@@ -26,9 +26,9 @@ import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import kotlinx.coroutines.CoroutineStart.DEFAULT
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import org.kodein.di.KodeinAware
-import org.kodein.di.android.x.kodein
-import org.kodein.di.generic.instance
+import org.kodein.di.DIAware
+import org.kodein.di.android.x.closestDI
+import org.kodein.di.instance
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
@@ -52,8 +52,8 @@ import java.util.concurrent.CancellationException
  * Created by Francis Mahlava on 2019/12/29.
  */
 
-class SelectItemFragment : BaseFragment(), KodeinAware {
-    override val kodein by kodein()
+class SelectItemFragment : BaseFragment(), DIAware {
+    override val di by closestDI()
     private lateinit var createViewModel: CreateViewModel
     private val factory: CreateViewModelFactory by instance()
     private var items: MutableList<ItemDTOTemp> = ArrayList()
@@ -173,26 +173,7 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
         }
     }
 
-    /**
-     * Called to ask the fragment to save its current dynamic state, so it
-     * can later be reconstructed in a new instance of its process is
-     * restarted.  If a new instance of the fragment later needs to be
-     * created, the data you place in the Bundle here will be available
-     * in the Bundle given to [.onCreate],
-     * [.onCreateView], and
-     * [.onActivityCreated].
-     *
-     *
-     * This corresponds to [ Activity.onSaveInstanceState(Bundle)]
-     * [Activity.onSaveInstanceState] and most of the discussion there
-     * applies here as well.  Note however: *this method may be called
-     * at any time before [.onDestroy]*.  There are many situations
-     * where a fragment may be mostly torn down (such as when placed on the
-     * back stack with no UI showing), but its state will not be saved until
-     * its owning activity actually needs to save its state.
-     *
-     * @param outState Bundle in which to place your saved state.
-     */
+
     override fun onSaveInstanceState(outState: Bundle) {
         outState.run {
             putString("jobId", editJob.jobId)
@@ -202,8 +183,6 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
 
     private fun setItemsBySections(projectId: String) {
         uiScope.launch(context = uiScope.coroutineContext) {
-
-            // SectionItems filtered by projectId
             val sectionItems = createViewModel.getSectionItemsForProject(projectId)
             ui.dataLoading2.visibility = View.VISIBLE
 
