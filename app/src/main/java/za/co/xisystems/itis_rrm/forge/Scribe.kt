@@ -8,15 +8,15 @@ package za.co.xisystems.itis_rrm.forge
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.os.Environment
+import androidx.annotation.WorkerThread
 import androidx.security.crypto.EncryptedFile
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
+import com.password4j.SecureString
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
-import za.co.xisystems.itis_rrm.utils.DefaultDispatcherProvider
-import za.co.xisystems.itis_rrm.utils.DispatcherProvider
+import za.co.xisystems.itis_rrm.forge.XIArmoury.Companion.PREFS_FILE
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
@@ -26,17 +26,26 @@ import java.io.IOException
  * Read and write encrypted files
  */
 
-class Scribe(private val dispatchers: DispatcherProvider = DefaultDispatcherProvider()) {
+class Scribe(
+    private val dispatchers: DispatcherProvider = DefaultDispatcherProvider(),
+    masterKey: MasterKey,
+    context: Context
+) {
 
-    private lateinit var securePrefs: SharedPreferences
-    private var _open = false
-    val openForBusiness get() = _open
+    var securePrefs: SharedPreferences
+    private var armouryScope = ArmouryScope()
+    val operational get() = true
+
+    init {
+        this.securePrefs = createPreferences(context = context, masterKey = masterKey)
+    }
 
     companion object {
-        val DIRECTORY: String = Environment.DIRECTORY_PICTURES
         const val PASS_KEY = "za.co.xisystems.itis_rmm.forge.Scribe.Passphrase"
-        const val TIMESTAMP_KEY = "za.co.xisystems.itis_rmm.forge.Scribe.Timestamp"
+        const val SESSION_KEY = "za.co.xisystems.itis_rrm.forge.Scribe.SessionKey"
+        const val USER_KEY = "za.co.xisystems.itis_rrm.forge.Scribe.UserKey"
         const val NOT_SET = "NoPassphraseSet"
+        const val NOT_INITIALIZED: String = "NoInitialization"
     }
 
     /**
@@ -46,22 +55,48 @@ class Scribe(private val dispatchers: DispatcherProvider = DefaultDispatcherProv
      * @param prefsFile String
      * @return Unit
      */
-    fun initPreferences(context: Context, masterKey: MasterKey, prefsFile: String) {
-        securePrefs = EncryptedSharedPreferences.create(
-            context,
+    suspend fun initPreferences(
+        context: Context,
+        masterKey: MasterKey,
+        prefsFile: String = "specialstylesandcolours"
+    ): SharedPreferences = withContext(dispatchers.io()) {
+        return@withContext createPreferences(context, prefsFile, masterKey)
+    }
+
+    suspend fun latePreferences(
+        context: Context,
+        masterKey: MasterKey,
+        prefsFile: String = PREFS_FILE
+    ): Scribe = withContext(dispatchers.io()) {
+        this@Scribe.securePrefs = initPreferences(context, masterKey, prefsFile)
+        return@withContext this@Scribe
+    }
+
+    @WorkerThread
+    fun createPreferences(
+        context: Context,
+        prefsFile: String = "specialstylesandcolours",
+        masterKey: MasterKey
+    ): SharedPreferences {
+        return EncryptedSharedPreferences.create(
+            context.applicationContext,
             prefsFile,
             masterKey,
             EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
             EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
         )
-        _open = true
     }
 
     /**
      * Read / check if passphrase has been set
      * @return String
      */
-    fun getPassphrase(): String {
+    suspend fun getPassphrase(): String = withContext(dispatchers.io()) {
+        return@withContext readPassphrase()
+    }
+
+    @WorkerThread
+    fun readPassphrase(): String {
         return securePrefs.getString(PASS_KEY, NOT_SET)!!
     }
 
@@ -76,27 +111,21 @@ class Scribe(private val dispatchers: DispatcherProvider = DefaultDispatcherProv
         }
     }
 
-    fun getTimestamp(): Long {
-        return securePrefs.getLong(TIMESTAMP_KEY, System.currentTimeMillis())
-    }
-
     fun writePassphrase(passphrase: String) {
         with(securePrefs.edit()) {
             putString(PASS_KEY, passphrase.trim()).apply()
         }
     }
 
-    suspend fun writeFutureTimestamp(timeInMillis: Long = System.currentTimeMillis()) {
-        withContext(dispatchers.io()) {
-            writeTimestamp(timeInMillis)
+    fun writeSessionKey(sessionKey: String) {
+        with(securePrefs.edit()) {
+            putString(SESSION_KEY, sessionKey).apply()
         }
     }
 
-    fun writeTimestamp(timeInMillis: Long) {
-        with(securePrefs.edit()) {
-            putLong(TIMESTAMP_KEY, timeInMillis).apply()
-            Timber.d("Wrote Timestamp: $timeInMillis")
-        }
+    fun readSessionKey(): SecureString {
+        val nakedKey = securePrefs.getString(SESSION_KEY, "UNAUTHORIZED")
+        return SecureString(nakedKey!!.toCharArray())
     }
 
     /**
@@ -110,6 +139,7 @@ class Scribe(private val dispatchers: DispatcherProvider = DefaultDispatcherProv
     suspend fun writeEncryptedFile(
         context: Context,
         masterKey: MasterKey,
+        directory: File,
         fileName: String,
         fileContent: ByteArray
     ): Boolean {
@@ -117,8 +147,19 @@ class Scribe(private val dispatchers: DispatcherProvider = DefaultDispatcherProv
             // Creates a file with this name, or replaces an existing file
             // that has the same name. Note that the file name cannot contain
             // path separators.
-            return@withContext try {
-                val fileToWrite = File(DIRECTORY, fileName)
+            return@withContext writeFile(directory, fileName, context, masterKey, fileContent)
+        }
+    }
+
+    @WorkerThread
+    private fun writeFile(
+        directory: File,
+        fileName: String,
+        context: Context,
+        masterKey: MasterKey,
+        fileContent: ByteArray
+    ) = try {
+        val fileToWrite = File(directory, fileName)
                 val encryptedFile = EncryptedFile.Builder(
                     context.applicationContext,
                     fileToWrite,
@@ -142,8 +183,6 @@ class Scribe(private val dispatchers: DispatcherProvider = DefaultDispatcherProv
                 Timber.e(t, cause)
                 false
             }
-        }
-    }
 
     /**
      * Read encrypted file from disk
@@ -152,11 +191,27 @@ class Scribe(private val dispatchers: DispatcherProvider = DefaultDispatcherProv
      * @param fileToRead String
      * @return ByteArray
      */
-    suspend fun readEncryptedFile(context: Context, masterKey: MasterKey, fileToRead: String): ByteArray {
+    suspend fun readEncryptedFile(
+        context: Context,
+        masterKey: MasterKey,
+        directory: File,
+        fileToRead: String
+    ): ByteArray {
         return withContext(dispatchers.io()) {
+            return@withContext readFile(context, directory, fileToRead, masterKey)
+        }
+    }
+
+    @WorkerThread
+    private fun readFile(
+        context: Context,
+        directory: File,
+        fileToRead: String,
+        masterKey: MasterKey
+    ): ByteArray {
             val encryptedFile = EncryptedFile.Builder(
-                context,
-                File(DIRECTORY, fileToRead),
+            context.applicationContext,
+            File(directory, fileToRead),
                 masterKey,
                 EncryptedFile.FileEncryptionScheme.AES256_GCM_HKDF_4KB
             ).build()
@@ -169,7 +224,16 @@ class Scribe(private val dispatchers: DispatcherProvider = DefaultDispatcherProv
                 nextByte = inputStream.read()
             }
 
-            return@withContext byteArrayOutputStream.toByteArray()
+        return byteArrayOutputStream.toByteArray()
+    }
+
+    fun writeUserObject(userObject: String) {
+        with(securePrefs.edit()) {
+            putString(USER_KEY, userObject).apply()
         }
+    }
+
+    fun readUserObject(): String {
+        return securePrefs.getString(USER_KEY, "UNAUTHORIZED")!!
     }
 }
