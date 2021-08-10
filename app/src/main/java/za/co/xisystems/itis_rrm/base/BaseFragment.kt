@@ -22,7 +22,7 @@ import za.co.xisystems.itis_rrm.constants.Constants.DNS_PORT
 import za.co.xisystems.itis_rrm.constants.Constants.FIVE_SECONDS
 import za.co.xisystems.itis_rrm.constants.Constants.SSL_PORT
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
-import za.co.xisystems.itis_rrm.custom.results.XIError
+import za.co.xisystems.itis_rrm.custom.results.XIResult.Error
 import za.co.xisystems.itis_rrm.custom.results.isRecoverableException
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data._commons.Animations
@@ -314,7 +314,7 @@ abstract class BaseFragment : Fragment(), IProgressView, DIAware {
      * if the exception is connectivity-related, give the user the option to retry.
      * Shaun McDonald - 2020/06/01
      */
-    protected fun crashGuard(view: View, throwable: XIError, refreshAction: (() -> Unit)? = null) {
+    protected fun crashGuard(view: View, throwable: Error, refreshAction: (() -> Unit)? = null) {
 
         when (throwable.isRecoverableException()) {
 

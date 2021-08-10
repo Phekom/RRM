@@ -412,7 +412,7 @@ class JobCreationDataRepository(
         }
     }
 
-    private suspend fun uploadCreateJobImages(packageJob: JobDTO, activity: FragmentActivity) = withContext(Dispatchers.IO) {
+    suspend fun uploadCreateJobImages(packageJob: JobDTO, activity: FragmentActivity) = withContext(Dispatchers.IO) {
 
         var jobCounter = 1
         val totalJobs = packageJob.jobItemEstimates.size

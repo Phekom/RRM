@@ -24,10 +24,10 @@ import za.co.xisystems.itis_rrm.custom.errors.NoDataException
 import za.co.xisystems.itis_rrm.custom.errors.ServiceException
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
-import za.co.xisystems.itis_rrm.custom.results.XIError
-import za.co.xisystems.itis_rrm.custom.results.XIProgress
+import za.co.xisystems.itis_rrm.custom.results.XIResult.Error
+import za.co.xisystems.itis_rrm.custom.results.XIResult.Progress
 import za.co.xisystems.itis_rrm.custom.results.XIResult
-import za.co.xisystems.itis_rrm.custom.results.XISuccess
+import za.co.xisystems.itis_rrm.custom.results.XIResult.Success
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksDTO
@@ -119,7 +119,7 @@ class WorkDataRepository(
         activity: FragmentActivity,
         estimateJob: JobDTO
     ) {
-        postWorkStatus(XIProgress(true))
+        postWorkStatus(Progress(true))
         val worksPhotos = estimateWorksItem.jobEstimateWorksPhotos
         val worksData = JsonObject()
         val gson = Gson()
@@ -148,7 +148,7 @@ class WorkDataRepository(
         } catch (t: Throwable) {
             val message = "Failed to upload job ${estimateJob.jiNo}: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
             Timber.e(t, message)
-            val uploadException = XIError(t, message)
+            val uploadException = Error(t, message)
             postWorkStatus(uploadException)
         }
     }
@@ -200,7 +200,7 @@ class WorkDataRepository(
         } catch (throwable: Throwable) {
             val errMessage = "Failed to stage image: ${throwable.message ?: XIErrorHandler.UNKNOWN_ERROR}"
             Timber.e(throwable, errMessage)
-            postWorkStatus(XIError(throwable, errMessage))
+            postWorkStatus(Error(throwable, errMessage))
         }
     }
 
@@ -249,7 +249,7 @@ class WorkDataRepository(
             } catch (throwable: Throwable) {
                 val errMessage = "Failed to upload image: ${throwable.message ?: XIErrorHandler.UNKNOWN_ERROR}"
                 Timber.e(throwable, errMessage)
-                postWorkStatus(XIError(throwable, errMessage))
+                postWorkStatus(Error(throwable, errMessage))
             }
         }
     }
@@ -299,11 +299,11 @@ class WorkDataRepository(
                     }
                 }
 
-                postWorkStatus(XISuccess(jobEstimateWorks.worksId))
+                postWorkStatus(Success(jobEstimateWorks.worksId))
             } catch (t: Throwable) {
                 val message = "Failed to update workflow: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
                 Timber.e(t, message)
-                val workflowFail = XIError(t, message)
+                val workflowFail = Error(t, message)
                 postWorkStatus(workflowFail)
             }
         }
@@ -370,7 +370,7 @@ class WorkDataRepository(
         } catch (ex: Exception) {
             val message = "Failed to save updated job: ${ex.message ?: XIErrorHandler.UNKNOWN_ERROR}"
             Timber.e(message)
-            val saveFail = XIError(ex, message)
+            val saveFail = Error(ex, message)
             postWorkStatus(saveFail)
         }
     }
@@ -424,12 +424,12 @@ class WorkDataRepository(
                 }
             }
             if (!inWorkflow) {
-                postWorkStatus(XISuccess(job.jiNo!!))
+                postWorkStatus(Success(job.jiNo!!))
             }
         } catch (t: Throwable) {
             val message = "Unable to update workflow job: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
             Timber.e(t, message)
-            postWorkStatus(XIError(LocalDataException(message), message))
+            postWorkStatus(Error(LocalDataException(message), message))
         }
     }
 
@@ -465,7 +465,7 @@ class WorkDataRepository(
             return job
         } catch (t: Throwable) {
             val message = "Failed to set BigEndian Guids: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
-            postWorkStatus(XIError(t, message))
+            postWorkStatus(Error(t, message))
             return null
         }
     }
@@ -528,7 +528,7 @@ class WorkDataRepository(
             val prefix = "Failed to process workflow move"
             val message = "$prefix: ${e.message ?: XIErrorHandler.UNKNOWN_ERROR}"
             Timber.e(e, message)
-            val uploadFail = XIError(e, message)
+            val uploadFail = Error(e, message)
             postWorkStatus(uploadFail)
         }
     }

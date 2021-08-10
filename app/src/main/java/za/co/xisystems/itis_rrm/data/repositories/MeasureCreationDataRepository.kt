@@ -19,17 +19,30 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
-import za.co.xisystems.itis_rrm.custom.errors.*
+import za.co.xisystems.itis_rrm.custom.errors.LocalDataException
+import za.co.xisystems.itis_rrm.custom.errors.NoDataException
+import za.co.xisystems.itis_rrm.custom.errors.RecoverableException
+import za.co.xisystems.itis_rrm.custom.errors.ServiceException
+import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
-import za.co.xisystems.itis_rrm.custom.results.*
+import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
-import za.co.xisystems.itis_rrm.data.localDB.entities.*
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasurePhotoDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.WorkflowJobDTO
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
-import za.co.xisystems.itis_rrm.utils.*
+import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
+import za.co.xisystems.itis_rrm.utils.Coroutines
+import za.co.xisystems.itis_rrm.utils.DataConversion
+import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
-import java.util.*
+import za.co.xisystems.itis_rrm.utils.uncaughtExceptionHandler
 
 /**
  * Created by Francis Mahlava on 2019/11/28.
@@ -78,7 +91,7 @@ class MeasureCreationDataRepository(
     ) {
 
         withContext(Dispatchers.IO) {
-            postWorkflowStatus(XIProgress(true))
+            postWorkflowStatus(XIResult.Progress(true))
             val measureData = JsonObject()
             val gson = Gson()
             val newMeasure = gson.toJson(mSures)
@@ -105,7 +118,7 @@ class MeasureCreationDataRepository(
             } else {
                 val message = "Failed to save measurements: $messages"
                 postWorkflowStatus(
-                    XIError(
+                     XIResult.Error(
                         ServiceException(message),
                         message
                     )
@@ -131,10 +144,9 @@ class MeasureCreationDataRepository(
         } catch (t: Throwable) {
             val message = "Failed to process workflow move: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
             Timber.e(t, message)
-            workflowStatus.postValue(XIEvent(XIError(t, message)))
+            workflowStatus.postValue(XIEvent(XIResult.Error(t, message)))
         }
     }
-
 
     private suspend fun getUpdatedJob(jobId: String): JobDTO {
         return withContext(Dispatchers.IO) {
@@ -233,7 +245,7 @@ class MeasureCreationDataRepository(
 
         if (myJob?.workflowItemMeasures == null) {
             val errorMessage = "No measurements to process. Please send them when you have some."
-            postWorkflowStatus(XIError(RecoverableException(errorMessage), errorMessage))
+            postWorkflowStatus(XIResult.Error(RecoverableException(errorMessage), errorMessage))
         } else {
             val description = activity.resources.getString(R.string.submit_for_approval)
 
@@ -251,8 +263,10 @@ class MeasureCreationDataRepository(
                     }
                 }
 
-                measurementTracks.forEachIndexed { index, measurementTrack ->
-                    postWorkflowStatus(XIStatus("Processing ${index + 1} of ${measurementTracks.size} measurements"))
+                measurementTracks.forEachIndexed {
+                        index, measurementTrack ->
+                    postWorkflowStatus(
+                        XIResult.Status("Processing ${index + 1} of ${measurementTracks.size} measurements"))
                     val workflowMoveResponse = apiRequest {
                         api.getWorkflowMove(
                             measurementTrack.userId,
@@ -282,13 +296,13 @@ class MeasureCreationDataRepository(
                     }
                 }
 
-                postWorkflowStatus(XISuccess(job.jiNo!!))
+                postWorkflowStatus(XIResult.Success(job.jiNo!!))
                 workComplete = true
             } catch (t: Throwable) {
                 val prefix = "Workflow failed:"
                 val errorMessage = "$prefix ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
                 Timber.e(t)
-                postWorkflowStatus(XIError(t, errorMessage))
+                postWorkflowStatus(XIResult.Error(t, errorMessage))
             }
         }
     }
@@ -526,7 +540,7 @@ class MeasureCreationDataRepository(
                 }
             }
         } catch (e: Exception) {
-            val saveFail = XIError(e, "Failed to save updates: ${e.message}")
+            val saveFail = XIResult.Error(e, "Failed to save updates: ${e.message}")
             postWorkflowStatus(saveFail)
             Timber.e(e, "Failed to save updates: ${e.message}")
         }
@@ -569,8 +583,8 @@ class MeasureCreationDataRepository(
             return job
         } catch (t: Throwable) {
             val message = "Failed to convert to BigEndian: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
-            postWorkflowStatus(XIError(LocalDataException(message), message))
-            postWorkflowStatus(XIProgress(false))
+            postWorkflowStatus(XIResult.Error(LocalDataException(message), message))
+            postWorkflowStatus(XIResult.Progress(false))
             return null
         }
     }

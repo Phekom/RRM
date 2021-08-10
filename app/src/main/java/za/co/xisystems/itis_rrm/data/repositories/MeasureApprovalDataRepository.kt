@@ -15,10 +15,10 @@ import za.co.xisystems.itis_rrm.custom.errors.LocalDataException
 import za.co.xisystems.itis_rrm.custom.errors.ServiceException
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
-import za.co.xisystems.itis_rrm.custom.results.XIError
+import za.co.xisystems.itis_rrm.custom.results.XIResult.Error
 import za.co.xisystems.itis_rrm.custom.results.XIResult
-import za.co.xisystems.itis_rrm.custom.results.XIStatus
-import za.co.xisystems.itis_rrm.custom.results.XISuccess
+import za.co.xisystems.itis_rrm.custom.results.XIResult.Status
+import za.co.xisystems.itis_rrm.custom.results.XIResult.Success
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
@@ -114,7 +114,7 @@ class MeasureApprovalDataRepository(
                     val measureTrackId = DataConversion.toLittleEndian(measure.trackRouteId)
                     measureTrackId?.let {
                         withContext(Dispatchers.IO) {
-                            postWorkflowStatus(XIStatus("Processing ${index + 1} of ${measurements.size} measurements"))
+                            postWorkflowStatus(Status("Processing ${index + 1} of ${measurements.size} measurements"))
                             val workflowMoveResponse =
                                 apiRequest { api.getWorkflowMove(userId, measureTrackId, description, direction) }
                             workflowMoveResponse.workflowJob?.let { job ->
@@ -137,10 +137,10 @@ class MeasureApprovalDataRepository(
                     }
                 }
                 saveWorkflowJob(flowJob!!)
-                postWorkflowStatus(XISuccess("WORK_COMPLETE"))
+                postWorkflowStatus(Success("WORK_COMPLETE"))
             } catch (t: Throwable) {
                 val message = "Failed to Approve Measurement: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
-                postWorkflowStatus(XIError(t, message))
+                postWorkflowStatus(Error(t, message))
             }
         }
     }
@@ -247,11 +247,11 @@ class MeasureApprovalDataRepository(
                 appDb.getJobDao().updateJob(job.trackRouteId, job.actId, job.jiNo, job.jobId)
 
                 Timber.d("Updated Workflow: $job")
-                postWorkflowStatus(XISuccess("WORK_COMPLETE"))
+                postWorkflowStatus(Success("WORK_COMPLETE"))
             } catch (t: Throwable) {
                 val message = "Could not save updated workflow: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
                 Timber.e(t, message)
-                postWorkflowStatus(XIError(LocalDataException(message), message))
+                postWorkflowStatus(Error(LocalDataException(message), message))
             }
         }
     }
@@ -287,7 +287,7 @@ class MeasureApprovalDataRepository(
         } catch (t: Throwable) {
             Coroutines.io {
                 postWorkflowStatus(
-                    XIError(
+                     Error(
                         LocalDataException(t.message ?: XIErrorHandler.UNKNOWN_ERROR),
                         t.message ?: XIErrorHandler.UNKNOWN_ERROR
                     )
@@ -328,7 +328,7 @@ class MeasureApprovalDataRepository(
             val serviceException = ServiceException(message)
             Timber.e(serviceException)
             Coroutines.main {
-                postWorkflowStatus(XIError(serviceException, message))
+                postWorkflowStatus(Error(serviceException, message))
             }
         }
     }
