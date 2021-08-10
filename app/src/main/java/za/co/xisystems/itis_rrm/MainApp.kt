@@ -39,6 +39,8 @@ import za.co.xisystems.itis_rrm.data.repositories.WorkDataRepository
 import za.co.xisystems.itis_rrm.extensions.exitApplication
 import za.co.xisystems.itis_rrm.forge.XIArmoury
 import za.co.xisystems.itis_rrm.logging.LameCrashLibrary
+import za.co.xisystems.itis_rrm.services.DeferredLocationRepository
+import za.co.xisystems.itis_rrm.services.DeferredLocationViewModelFactory
 import za.co.xisystems.itis_rrm.ui.auth.model.AuthViewModelFactory
 import za.co.xisystems.itis_rrm.ui.base.BaseActivity
 import za.co.xisystems.itis_rrm.ui.mainview.activities.LocationViewModelFactory
@@ -81,6 +83,7 @@ open class MainApp : Application(), DIAware {
         bind { singleton { WorkDataRepository(instance(), instance(), instance()) } }
         bind { singleton { MeasureCreationDataRepository(instance(), instance(), instance()) } }
         bind { singleton { MeasureApprovalDataRepository(instance(), instance()) } }
+        bind { singleton { DeferredLocationRepository(instance(), instance()) } }
         bind { provider { AuthViewModelFactory(instance(), instance(), this@MainApp) } }
 
         bind {
@@ -122,6 +125,7 @@ open class MainApp : Application(), DIAware {
             }
         }
 
+        bind { provider { DeferredLocationViewModelFactory(instance()) } }
         bind { provider { MeasureViewModelFactory(this@MainApp, instance(), instance()) } }
         bind { provider { UnSubmittedViewModelFactory(instance()) } }
         bind { provider { WorkViewModelFactory(instance(), instance(), this@MainApp) } }
