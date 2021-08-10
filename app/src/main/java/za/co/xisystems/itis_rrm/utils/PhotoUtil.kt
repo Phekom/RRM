@@ -31,7 +31,7 @@ import timber.log.Timber
 import za.co.xisystems.itis_rrm.BuildConfig
 import za.co.xisystems.itis_rrm.constants.Constants.NINETY_DAYS
 import za.co.xisystems.itis_rrm.constants.Constants.THIRTY_DAYS
-import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
+import za.co.xisystems.itis_rrm.custom.errors.  XIErrorHandler
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -578,7 +578,7 @@ class PhotoUtil private constructor(private var appContext: Context) {
                 }
                 Pair(uri!!, bmp!!)
             } catch (t: Throwable) {
-                val message = "Failed to create gallery image: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
+                val message = "Failed to create gallery image: ${t.message ?:   XIErrorHandler.UNKNOWN_ERROR}"
                 Timber.e(t, message)
                 null
             }

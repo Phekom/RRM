@@ -32,4 +32,14 @@ object Coroutines {
         CoroutineScope(Dispatchers.IO + connectivityHandler).launch {
             work()
         }
+
+    fun default(work: suspend (() -> Unit)) =
+        CoroutineScope(Dispatchers.Default + connectivityHandler).launch {
+            work()
+        }
+
+    fun ui(work: suspend (() -> Unit)) =
+        CoroutineScope(Dispatchers.Main.immediate).launch {
+            work()
+        }
 }

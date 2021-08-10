@@ -78,7 +78,7 @@
     <ID>LongParameterList:WorkFlowRouteDao.kt$WorkFlowRouteDao$( routeId: Long, actId: Long, nextRouteId: Long, failRouteId: Long, errorRouteId: Long, canStart: Long, workflowId: Long? )</ID>
     <ID>LongParameterList:WorkflowJobDTO.kt$WorkflowJobDTO$( @PrimaryKey @SerializedName("JobId") var jobId: String? = null, @SerializedName("ActId") var actId: Int = 0, @SerializedName("TrackRouteId") var trackRouteId: String? = null, @SerializedName("JiNo") var jiNo: String? = null, @SerializedName("WorkflowItemEstimates") val workflowItemEstimates: ArrayList&lt;WorkflowItemEstimateDTO&gt; = ArrayList(), @SerializedName("WorkflowItemMeasures") val workflowItemMeasures: ArrayList&lt;WorkflowItemMeasureDTO&gt; = ArrayList(), @SerializedName("WorkflowJobSections") val workflowJobSections: ArrayList&lt;JobSectionDTO&gt; = ArrayList() )</ID>
     <ID>LongParameterList:WorkflowJobSectionDTO.kt$WorkflowJobSectionDTO$( @SerializedName("JobId") var jobId: String? = null, @SerializedName("JobSectionId") val jobSectionId: String? = null, @SerializedName("ProjectSectionId") val projectSectionId: String? = null, @SerializedName("RecordVersion") val recordVersion: Int = 0, @SerializedName("RecordSynchStateId") val recordSynchStateId: Int = 0, @SerializedName("StartKm") val startKm: Double = 0.0, @SerializedName("EndKm") val endKm: Double = 0.0 )</ID>
-    <ID>LongParameterList:XIErrorHandler.kt$XIErrorHandler$( fragment: Fragment? = null, view: View, throwable: XIError, shouldToast: Boolean = false, shouldShowSnackBar: Boolean = false, refreshAction: () -&gt; Unit = {} )</ID>
+    <ID>LongParameterList:  XIErrorHandler.kt$  XIErrorHandler$( fragment: Fragment? = null, view: View, throwable:  XIResult.Error, shouldToast: Boolean = false, shouldShowSnackBar: Boolean = false, refreshAction: () -&gt; Unit = {} )</ID>
     <ID>MagicNumber:AppDatabase.kt$AppDatabase.Companion$20</ID>
     <ID>MagicNumber:AppExecutor.kt$AppExecutor$3</ID>
     <ID>MagicNumber:ApproveJobsFragment.kt$ApproveJobsFragment$15</ID>
@@ -436,7 +436,7 @@
     <ID>PackageNaming:WorkflowResponse.kt$package za.co.xisystems.itis_rrm.data.network.responses</ID>
     <ID>PackageNaming:WorkflowsDao.kt$package za.co.xisystems.itis_rrm.data.localDB.dao</ID>
     <ID>PackageNaming:WorksGalleryUIState.kt$package za.co.xisystems.itis_rrm.ui.custom</ID>
-    <ID>PackageNaming:XIErrorHandler.kt$package za.co.xisystems.itis_rrm.custom.errors</ID>
+    <ID>PackageNaming:  XIErrorHandler.kt$package za.co.xisystems.itis_rrm.custom.errors</ID>
     <ID>PackageNaming:XIEvent.kt$package za.co.xisystems.itis_rrm.custom.events</ID>
     <ID>PackageNaming:XIResult.kt$package za.co.xisystems.itis_rrm.custom.results</ID>
     <ID>SpreadOperator:AppDatabase.kt$AppDatabase.Companion$(*AppDatabase_Migrations.build())</ID>
