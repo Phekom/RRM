@@ -105,7 +105,7 @@ import za.co.xisystems.itis_rrm.utils.DatetimeConverters
     ],
     views = [ContractSelectorView::class],
     exportSchema = true,
-    version = 20
+    version = 21
 )
 
 @TypeConverters(Converters::class, DatetimeConverters::class)
@@ -151,7 +151,7 @@ abstract class AppDatabase : RoomDatabase() {
         private val LOCK = Any()
         private var secretphrase: String? = null
         operator fun invoke(context: Context, armoury: XIArmoury) = instance ?: synchronized(LOCK) {
-            secretphrase = armoury.readSecretPassphrase()
+            secretphrase = armoury.readPassphrase()
             instance ?: buildDatabase(context.applicationContext).also {
                 instance = it
             }
@@ -174,7 +174,7 @@ abstract class AppDatabase : RoomDatabase() {
                         SQLiteDatabase.getBytes(
                             secretphrase!!.toCharArray()
                         )
-                    Timber.d("^*^ DB Pass: $passphrase")
+                    Timber.e("^*^ DB Pass: $passphrase")
                     val factory = SupportFactory(passphrase, null, false)
                     Room.databaseBuilder(
                         context.applicationContext,
