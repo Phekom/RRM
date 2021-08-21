@@ -64,6 +64,7 @@ data class JobItemEstimateDTO(
 
     @SerializedName("SelectedItemUOM")
     val selectedItemUom: String?,
+    var geoCoded: Boolean = false
 ) : Parcelable, Serializable {
 
     constructor(parcel: Parcel) : this(
@@ -99,7 +100,7 @@ data class JobItemEstimateDTO(
         val photos = jobItemEstimatePhotos
         var i = 0
         while (photos.isNotEmpty() && i < photos.size - 1) {
-            val isPhotoStart = photos[i].isPhotoStart()
+            val isPhotoStart = photos[i].isStartPhoto()
             if (lookForStartPhoto) {
                 if (isPhotoStart) {
                     println("look: $lookForStartPhoto is:$isPhotoStart")
@@ -128,7 +129,7 @@ data class JobItemEstimateDTO(
         if (jobItemEstimatePhotos.isEmpty()) {
             jobItemEstimatePhotos.add(photo)
         } else {
-            val photoToChange = getJobItemEstimatePhoto(photo.isPhotoStart())
+            val photoToChange = getJobItemEstimatePhoto(photo.isStartPhoto())
             val index = photoToChange.first!!
             if (index == -1) {
                 jobItemEstimatePhotos.add(photo)
@@ -136,7 +137,7 @@ data class JobItemEstimateDTO(
                 jobItemEstimatePhotos[index] = photo
             }
         }
-        JobUtils.sort(jobItemEstimatePhotos)
+        jobItemEstimatePhotos = JobUtils.sort(jobItemEstimatePhotos)!!
     }
 
     fun size(): Int {

@@ -20,6 +20,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.ContractDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimatesPhotoDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobSectionDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
@@ -639,5 +640,29 @@ class JobCreationDataRepository(
 
     fun getValidEstimatesForJobId(jobId: String, actId: Int): List<JobItemEstimateDTO> {
         return appDb.getJobItemEstimateDao().getJobEstimationItemsForJobId(jobId, actId).value.orEmpty()
+    }
+
+    suspend fun getProjectItemById(projectItemId: String?): ItemDTOTemp? {
+        return appDb.getItemDaoTemp().getProjectItemById(projectItemId!!)
+    }
+
+    suspend fun getEstimateById(estimateId: String): JobItemEstimateDTO = withContext(Dispatchers.IO) {
+        return@withContext appDb.getJobItemEstimateDao().getJobItemEstimateForEstimateId(estimateId)
+    }
+
+    @Transaction
+    suspend fun backupEstimate(estimate: JobItemEstimateDTO) = withContext(Dispatchers.IO) {
+        appDb.getJobItemEstimateDao().insertJobItemEstimate(estimate)
+        return@withContext getEstimateById(estimate.estimateId)
+    }
+
+    suspend fun backupProjectItem(item: ItemDTOTemp): Long = withContext(Dispatchers.IO) {
+        return@withContext appDb.getItemDaoTemp().insertItems(item)
+    }
+
+    suspend fun backupEstimatePhoto(photoDTO: JobItemEstimatesPhotoDTO):
+        LiveData<List<JobItemEstimatesPhotoDTO>> = withContext(Dispatchers.IO) {
+        appDb.getJobItemEstimatePhotoDao().insertJobItemEstimatePhoto(photoDTO)
+        return@withContext appDb.getJobItemEstimatePhotoDao().getJobEstimationItemsPhoto(photoDTO.estimateId)
     }
 }

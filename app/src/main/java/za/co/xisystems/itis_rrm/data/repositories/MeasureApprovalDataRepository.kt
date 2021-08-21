@@ -15,8 +15,8 @@ import za.co.xisystems.itis_rrm.custom.errors.LocalDataException
 import za.co.xisystems.itis_rrm.custom.errors.ServiceException
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
-import za.co.xisystems.itis_rrm.custom.results.XIResult.Error
 import za.co.xisystems.itis_rrm.custom.results.XIResult
+import za.co.xisystems.itis_rrm.custom.results.XIResult.Error
 import za.co.xisystems.itis_rrm.custom.results.XIResult.Status
 import za.co.xisystems.itis_rrm.custom.results.XIResult.Success
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
@@ -94,10 +94,9 @@ class MeasureApprovalDataRepository(
         }
     }
 
-    suspend fun getUOMForProjectItemId(projectItemId: String): String {
-        return withContext(Dispatchers.IO) {
-            appDb.getProjectItemDao().getUOMForProjectItemId(projectItemId)
-        }
+    suspend fun getUOMForProjectItemId(projectItemId: String): String = withContext(Dispatchers.IO) {
+        return@withContext appDb.getProjectItemDao()
+            .getUOMForProjectItemId(projectItemId) ?: ""
     }
 
     suspend fun processWorkflowMove(
@@ -287,7 +286,7 @@ class MeasureApprovalDataRepository(
         } catch (t: Throwable) {
             Coroutines.io {
                 postWorkflowStatus(
-                     Error(
+                    Error(
                         LocalDataException(t.message ?: XIErrorHandler.UNKNOWN_ERROR),
                         t.message ?: XIErrorHandler.UNKNOWN_ERROR
                     )

@@ -63,10 +63,8 @@ class JobApprovalDataRepository(
         }
     }
 
-    suspend fun getUOMForProjectItemId(projectItemId: String): String {
-        return withContext(Dispatchers.IO) {
-            appDb.getProjectItemDao().getUOMForProjectItemId(projectItemId)
-        }
+    suspend fun getUOMForProjectItemId(projectItemId: String): String? = withContext(Dispatchers.IO) {
+        return@withContext appDb.getProjectItemDao().getUOMForProjectItemId(projectItemId)
     }
 
     suspend fun getRouteForProjectSectionId(sectionId: String?): String {

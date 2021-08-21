@@ -54,7 +54,8 @@ data class JobItemEstimatesPhotoDTO(
     @SerializedName("RecordVersion")
     val recordVersion: Int,
     @SerializedName("IsPhotoStart")
-    var isPhotostart: Boolean
+    var isPhotostart: Boolean,
+    var sectionMarker: String?
 ) : Serializable, Parcelable {
 
     constructor(parcel: Parcel) : this(
@@ -74,12 +75,9 @@ data class JobItemEstimatesPhotoDTO(
         photoPath = parcel.readString()!!,
         recordSynchStateId = parcel.readInt(),
         recordVersion = parcel.readInt(),
-        isPhotostart = parcel.readByte() != 0.toByte()
+        isPhotostart = parcel.readByte() != 0.toByte(),
+        sectionMarker = parcel.readString()
     )
-
-    fun isPhotoStart(): Boolean {
-        return isPhotostart
-    }
 
     override fun equals(other: Any?): Boolean {
         return when {
@@ -87,16 +85,18 @@ data class JobItemEstimatesPhotoDTO(
             javaClass != other?.javaClass -> false
             else -> {
                 other as JobItemEstimatesPhotoDTO
-                when {
-                    descr != other.descr -> false
-                    estimateId != other.estimateId -> false
-                    filename != other.filename -> false
-                    photoDate != other.photoDate -> false
-                    photoId != other.photoId -> false
-                    else -> true
-                }
+                isOtherEqual(other)
             }
         }
+    }
+
+    private fun isOtherEqual(other: JobItemEstimatesPhotoDTO) = when {
+        descr != other.descr -> false
+        estimateId != other.estimateId -> false
+        filename != other.filename -> false
+        photoDate != other.photoDate -> false
+        photoId != other.photoId -> false
+        else -> true
     }
 
     override fun hashCode(): Int {
@@ -123,10 +123,15 @@ data class JobItemEstimatesPhotoDTO(
         parcel.writeInt(recordSynchStateId)
         parcel.writeInt(recordVersion)
         parcel.writeByte(if (isPhotostart) 1 else 0)
+        parcel.writeString(sectionMarker)
     }
 
     override fun describeContents(): Int {
         return 0
+    }
+
+    fun isStartPhoto(): Boolean {
+        return this.isPhotostart
     }
 
     companion object CREATOR : Creator<JobItemEstimatesPhotoDTO> {
