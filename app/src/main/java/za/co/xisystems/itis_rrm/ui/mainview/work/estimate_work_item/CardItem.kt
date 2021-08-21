@@ -15,14 +15,13 @@ package za.co.xisystems.itis_rrm.ui.mainview.work.estimate_work_item
 import android.view.View
 import androidx.fragment.app.FragmentActivity
 import androidx.navigation.Navigation
-import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
-import com.xwray.groupie.kotlinandroidextensions.Item
-import kotlinx.android.synthetic.main.work_list_item.*
+import com.xwray.groupie.viewbinding.BindableItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
+import za.co.xisystems.itis_rrm.databinding.WorkListItemBinding
 import za.co.xisystems.itis_rrm.ui.mainview.work.INSET
 import za.co.xisystems.itis_rrm.ui.mainview.work.INSET_TYPE_KEY
 import za.co.xisystems.itis_rrm.ui.mainview.work.WorkFragmentDirections
@@ -38,27 +37,13 @@ open class CardItem(
     private val workViewModel: WorkViewModel,
     private val jobItemEstimate: JobItemEstimateDTO,
     private val job: JobDTO
-) : Item() {
+) : BindableItem<WorkListItemBinding>() {
 
     init {
         extras[INSET_TYPE_KEY] = INSET
     }
 
     override fun getLayout() = R.layout.work_list_item
-
-    override fun bind(viewHolder: GroupieViewHolder, position: Int) {
-        viewHolder.apply {
-            Coroutines.main {
-                expandable_child_textView.text = text
-                qty_textView.text = qty
-                line_amount_textView.text = rate
-            }
-
-            startWork_Btn.setOnClickListener {
-                sendJobToWork(workViewModel, jobItemEstimate, it, job)
-            }
-        }
-    }
 
     private fun sendJobToWork(
         workViewModel: WorkViewModel,
@@ -77,5 +62,29 @@ open class CardItem(
                 Navigation.findNavController(view!!).navigate(navDirection)
             }
         }
+    }
+
+    /**
+     * Perform any actions required to set up the view for display.
+     *
+     * @param viewBinding The ViewBinding to bind
+     * @param position The adapter position
+     */
+    override fun bind(viewBinding: WorkListItemBinding, position: Int) {
+        viewBinding.apply {
+            Coroutines.main {
+                expandableChildTextView.text = text
+                qtyTextView.text = qty
+                lineAmountTextView.text = rate
+            }
+
+            startWorkBtn.setOnClickListener {
+                sendJobToWork(workViewModel, jobItemEstimate, root, job)
+            }
+        }
+    }
+
+    override fun initializeViewBinding(view: View): WorkListItemBinding {
+        return WorkListItemBinding.bind(view)
     }
 }

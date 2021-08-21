@@ -157,11 +157,10 @@ class WorkViewModel(
         }
     }
 
-    suspend fun getJobEstiItemForEstimateId(estimateId: String?): LiveData<List<JobEstimateWorksDTO>> {
-        return withContext(ioContext) {
-            workDataRepository.getJobEstiItemForEstimateId(estimateId)
+    suspend fun getJobEstiItemForEstimateId(estimateId: String?): LiveData<JobEstimateWorksDTO> =
+        withContext(ioContext) {
+            return@withContext workDataRepository.getJobEstiItemForEstimateId(estimateId)
         }
-    }
 
     suspend fun getWorkFlowCodes(eId: Int): LiveData<List<WfWorkStepDTO>> {
         return withContext(ioContext) {
@@ -183,10 +182,8 @@ class WorkViewModel(
         activity: FragmentActivity,
         itemEstiJob: JobDTO
 
-    ) {
-        viewModelScope.launch(ioContext) {
-            workDataRepository.submitWorks(itemEstiWorks, activity, itemEstiJob)
-        }
+    ) = viewModelScope.launch(ioContext) {
+        workDataRepository.submitWorks(itemEstiWorks, activity, itemEstiJob)
     }
 
     suspend fun getJobItemEstimateForEstimateId(estimateId: String): JobItemEstimateDTO {
@@ -210,14 +207,12 @@ class WorkViewModel(
         jobId: String?,
         estimateWorkPartComplete: Int,
         estWorksComplete: Int
-    ): Int {
-        return withContext(ioContext) {
-            workDataRepository.getJobItemsEstimatesDoneForJobId(
-                jobId,
-                estimateWorkPartComplete,
-                estWorksComplete
-            )
-        }
+    ): Int = withContext(ioContext) {
+        return@withContext workDataRepository.getJobItemsEstimatesDoneForJobId(
+            jobId,
+            estimateWorkPartComplete,
+            estWorksComplete
+        )
     }
 
     suspend fun populateWorkTab(estimateId: String, actId: Int) {
@@ -248,5 +243,9 @@ class WorkViewModel(
         superJob.cancelChildren()
         workflowState = MutableLiveData()
         workflowStatus = MutableLiveData()
+    }
+
+    suspend fun getUOMForProjectItemId(projectItemId: String): String? = withContext(ioContext) {
+        return@withContext workDataRepository.getUOMForProjectItemId(projectItemId)
     }
 }

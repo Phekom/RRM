@@ -10,6 +10,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import com.google.android.material.appbar.CollapsingToolbarLayout
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.utils.ServiceUtil
 
 /**
  * Created by Shaun McDonald on 2020/06/05.
@@ -78,8 +79,31 @@ fun Context.uomForUI(uom: String): String {
         "hour" -> {
             this.getString(R.string.uom_hour)
         }
+        "l" -> {
+            this.getString(R.string.uom_l)
+        }
+        "t" -> {
+            this.getString(R.string.uom_t)
+        }
+        "no." -> {
+            this.getString(R.string.uom_quantity)
+        }
+        "quantity" -> {
+            this.getString(R.string.uom_quantity)
+        }
+        "prov sum" -> {
+            this.getString(R.string.uom_prov_sum)
+        }
+        "lump sum" -> {
+            this.getString(R.string.uom_lump_sum)
+        }
+        "none" -> {
+            ""
+        }
         else -> {
             "per ${uom.lowercase()}"
         }
     }
 }
+
+val Context.isConnected: Boolean get() = ServiceUtil.isNetworkConnected(this.applicationContext)

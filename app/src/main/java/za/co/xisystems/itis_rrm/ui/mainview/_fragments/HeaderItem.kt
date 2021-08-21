@@ -2,11 +2,10 @@ package za.co.xisystems.itis_rrm.ui.mainview._fragments
 
 import android.view.View
 import androidx.annotation.DrawableRes
-import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
-import com.xwray.groupie.kotlinandroidextensions.Item
-import kotlinx.android.synthetic.main.item_header.*
+import com.xwray.groupie.viewbinding.BindableItem
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
+import za.co.xisystems.itis_rrm.databinding.ItemHeaderBinding
 import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModel
 import za.co.xisystems.itis_rrm.utils.Coroutines
 
@@ -15,7 +14,7 @@ open class HeaderItem(
     workItems: JobDTO,
     var workViewModel: WorkViewModel,
     private val onIconClickListener: View.OnClickListener? = null
-) : Item() {
+) : BindableItem<ItemHeaderBinding>() {
 
     var jobId = workItems.jobId
     var sectionId: String? = null
@@ -24,12 +23,18 @@ open class HeaderItem(
         return R.layout.item_header
     }
 
-    override fun bind(viewHolder: GroupieViewHolder, position: Int) {
-        viewHolder.apply {
+    /**
+     * Perform any actions required to set up the view for display.
+     *
+     * @param viewBinding The ViewBinding to bind
+     * @param position The adapter position
+     */
+    override fun bind(viewBinding: ItemHeaderBinding, position: Int) {
+        viewBinding.apply {
             Coroutines.main {
                 val jobNumber = workViewModel.getItemJobNo(jobId)
                 title.apply {
-                    text = context.applicationContext.getString(R.string.pair, "JI:", jobNumber)
+                    text = root.context.getString(R.string.pair, "JI:", jobNumber)
                     subtitle.apply {
                         val sectionId = workViewModel.getProjectSectionIdForJobId(jobId)
                         val route = workViewModel.getRouteForProjectSectionId(sectionId)
@@ -39,12 +44,12 @@ open class HeaderItem(
                         visibility = View.GONE
                         subtitleResId.let {
                             visibility = View.VISIBLE
-                            text = context.applicationContext.getString(R.string.pair, it, sectionRoute)
+                            text = root.context.getString(R.string.pair, it, sectionRoute)
                         }
                     }
                 }
             }
-            viewHolder.icon.apply {
+            viewBinding.icon.apply {
                 visibility = View.GONE
                 iconResId?.let {
                     visibility = View.VISIBLE
@@ -53,5 +58,9 @@ open class HeaderItem(
                 }
             }
         }
+    }
+
+    override fun initializeViewBinding(view: View): ItemHeaderBinding {
+        return ItemHeaderBinding.bind(view)
     }
 }

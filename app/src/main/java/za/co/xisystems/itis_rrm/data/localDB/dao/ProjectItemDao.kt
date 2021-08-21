@@ -18,13 +18,19 @@ interface ProjectItemDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertItems(item: ProjectItemDTO)
 
-    @Query("SELECT EXiSTS (SELECT * FROM PROJECT_ITEM_TABLE WHERE itemId = :itemId)")
+    @Query("SELECT EXiSTS (SELECT * FROM PROJECT_ITEM_TABLE " +
+        "WHERE itemId = :itemId)")
     fun checkItemExistsItemId(itemId: String): Boolean
 
-    @Query("SELECT sectionItemId FROM PROJECT_ITEM_TABLE WHERE itemId = :itemId")
+    @Query("SELECT sectionItemId FROM PROJECT_ITEM_TABLE " +
+        "WHERE itemId = :itemId")
     fun getSectionItemId(itemId: String): String
 
-    @Query("INSERT INTO PROJECT_ITEM_TABLE (itemId ,itemCode,descr, itemSections, tenderRate, uom, workflowId,sectionItemId, quantity, estimateId, projectId) VALUES (:itemId, :itemCode,:descr, :itemSections, :tenderRate, :uom, :workflowId, :sectionItemId, :quantity, :estimateId, :projectId)")
+    @Query("INSERT INTO PROJECT_ITEM_TABLE " +
+        "(itemId ,itemCode,descr, itemSections, tenderRate, uom, " +
+        "workflowId,sectionItemId, quantity, estimateId, projectId) " +
+        "VALUES (:itemId, :itemCode,:descr, :itemSections, :tenderRate, " +
+        ":uom, :workflowId, :sectionItemId, :quantity, :estimateId, :projectId)")
     fun insertItem(
         itemId: String,
         itemCode: String?,
@@ -43,7 +49,7 @@ interface ProjectItemDao {
     fun getProjectItemDescription(itemId: String): String
 
     @Query("SELECT uom FROM PROJECT_ITEM_TABLE WHERE itemId = :itemId")
-    fun getUOMForProjectItemId(itemId: String): String
+    fun getUOMForProjectItemId(itemId: String): String?
 
     @Query("SELECT tenderRate FROM PROJECT_ITEM_TABLE WHERE itemId = :itemId")
     fun getTenderRateForProjectItemId(itemId: String): Double

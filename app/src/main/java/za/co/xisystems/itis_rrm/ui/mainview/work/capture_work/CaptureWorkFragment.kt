@@ -15,21 +15,18 @@ import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.TextView
+import android.widget.TextView.BufferType.NORMAL
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.whenStarted
-import androidx.navigation.Navigation
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
-import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
+import com.xwray.groupie.viewbinding.GroupieViewHolder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -37,16 +34,15 @@ import kotlinx.coroutines.withContext
 import org.kodein.di.DIAware
 import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
-import pereira.agnaldo.previewimgcol.ImageCollectionView
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.LocationFragment
 import za.co.xisystems.itis_rrm.constants.Constants
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
+import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.results.XIResult.Error
 import za.co.xisystems.itis_rrm.custom.results.XIResult.Progress
-import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.results.XIResult.Status
 import za.co.xisystems.itis_rrm.custom.results.XIResult.Success
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
@@ -57,6 +53,8 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.WfWorkStepDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentCaptureWorkBinding
+import za.co.xisystems.itis_rrm.databinding.ListSelectorBinding
+import za.co.xisystems.itis_rrm.extensions.isConnected
 import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.services.LocationModel
 import za.co.xisystems.itis_rrm.ui.extensions.addZoomedImages
@@ -64,7 +62,6 @@ import za.co.xisystems.itis_rrm.ui.extensions.doneProgress
 import za.co.xisystems.itis_rrm.ui.extensions.failProgress
 import za.co.xisystems.itis_rrm.ui.extensions.initProgress
 import za.co.xisystems.itis_rrm.ui.extensions.scaleForSize
-import za.co.xisystems.itis_rrm.ui.extensions.showZoomedImage
 import za.co.xisystems.itis_rrm.ui.extensions.startProgress
 import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModelFactory
@@ -75,18 +72,16 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.DateUtil
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
-import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
-import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.enums.ToastDuration.LONG
 import za.co.xisystems.itis_rrm.utils.enums.ToastDuration.SHORT
 import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.BOTTOM
 import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.CENTER
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.DELETE
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.ERROR
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.INFO
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.NO_INTERNET
+import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.SUCCESS
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.WARNING
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import java.util.Date
@@ -99,17 +94,15 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
     private val factory: WorkViewModelFactory by instance()
     private var imageUri: Uri? = null
     private lateinit var workFlowMenuTitles: ArrayList<String>
-    private lateinit var groupAdapter: GroupAdapter<GroupieViewHolder>
+    private lateinit var groupAdapter: GroupAdapter<GroupieViewHolder<ListSelectorBinding>>
     private lateinit var estimateWorksPhotoArrayList: ArrayList<JobEstimateWorksPhotoDTO>
     private lateinit var estimateWorksArrayList: ArrayList<JobEstimateWorksDTO>
     private lateinit var estimateWorksList: ArrayList<JobEstimateWorksDTO>
     private lateinit var itemEstimate: JobItemEstimateDTO
     private lateinit var itemEstimateJob: JobDTO
-    private var jobitemEsti: JobItemEstimateDTO? = null
-    private lateinit var itemEstiWorks: JobEstimateWorksDTO
+    private lateinit var activeWorks: JobEstimateWorksDTO
     private lateinit var jobWorkStep: ArrayList<WfWorkStepDTO>
     private lateinit var keyListener: KeyListener
-    private var uiScope = UiLifecycleScope()
     private var workObserver = Observer<XIResult<String>?> { handleWorkSubmission(it) }
     private var jobObserver = Observer<XIResult<String>?> { handleJobSubmission(it) }
     private var filenamePath = HashMap<String, String>()
@@ -122,38 +115,60 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
     private var errorState = false
     private var selectedJobId: String = ""
     private lateinit var photoUtil: PhotoUtil
+    private var uiScope = UiLifecycleScope()
 
-    init {
-        lifecycleScope.launch {
-            whenStarted {
-                workViewModel = activity?.run {
-                    ViewModelProvider(this, factory).get(WorkViewModel::class.java)
-                } ?: throw Exception("Invalid Activity")
-
-                // CONTINUE HERE !!
-                val args: CaptureWorkFragmentArgs by navArgs()
-                args.jobId?.let {
-                    selectedJobId = it
-                    workViewModel.setWorkItemJob(it)
-                }
-                args.estimateId?.let {
-                    workViewModel.setWorkItem(it)
-                }
+    /**
+     * ActivityResultContract for taking a photograph
+     */
+    private val takePicture = registerForActivityResult(
+        ActivityResultContracts.TakePicture()
+    ) { isSaved ->
+        if (isSaved && this@CaptureWorkFragment::activeWorks.isInitialized) {
+            imageUri?.let { realUri ->
+                processAndSetImage(activeWorks, realUri)
+            }
+        } else {
+            Coroutines.io {
+                photoUtil.deleteImageFile(filenamePath.toString())
+                showWorkIncomplete()
             }
         }
+        this.photosDone()
+    }
+
+    private suspend fun showWorkIncomplete() = withContext(Dispatchers.Main.immediate) {
+        sharpToast(
+            title = "Work data is incomplete",
+            message = "Please contact support about this job, and have them restore or remove it",
+            style = DELETE,
+            duration = LONG,
+            position = CENTER
+        )
+    }
+
+    var stateRestored: Boolean = false
+
+    companion object {
+        private const val REQUEST_STORAGE_PERMISSION = 1
+        private const val STANDARD_WORKFLOW_STEPS = 3
+        const val JOB_KEY = "jobId"
+        const val ESTIMATE_KEY = "estimateId"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        lifecycle.addObserver(uiScope)
-        (activity as MainActivity).supportActionBar?.title = getString(R.string.capture_work_title)
         workFlowMenuTitles = ArrayList()
-        groupAdapter = GroupAdapter()
         estimateWorksPhotoArrayList = ArrayList()
         estimateWorksList = ArrayList()
         estimateWorksArrayList = ArrayList()
         jobWorkStep = ArrayList()
+        groupAdapter = GroupAdapter<GroupieViewHolder<ListSelectorBinding>>()
+        uiScope.onCreate()
         photoUtil = PhotoUtil.getInstance(this.requireContext().applicationContext)
+        workViewModel = activity?.run {
+            ViewModelProvider(this, factory).get(WorkViewModel::class.java)
+        } ?: throw Exception("Invalid Activity")
+        (activity as MainActivity).supportActionBar?.title = getString(R.string.capture_work_title)
     }
 
     override fun onCreateView(
@@ -178,6 +193,39 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        stateRestored = false
+
+        val args: CaptureWorkFragmentArgs by navArgs()
+
+        args.jobId?.let {
+            onRestoreInstanceState(args.toBundle())
+        }
+
+        if (!stateRestored && savedInstanceState != null) {
+            onRestoreInstanceState(savedInstanceState)
+        }
+    }
+
+    private fun bindUI() {
+        ui.imageCollectionView.clearImages()
+        estimateWorksPhotoArrayList = ArrayList()
+
+        ui.takePhotoButton.setOnClickListener {
+            initLaunchCamera()
+        }
+        ui.moveWorkflowButton.setOnClickListener {
+            validateUploadWorks()
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        bindUI()
+        pullData()
+    }
+
+    private fun pullData() {
         uiScope.launch(uiScope.coroutineContext) {
 
             val user = workViewModel.user.await()
@@ -201,15 +249,19 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
                 it?.let { populateHistoricalWorkEstimate(it) }
             })
         }
+    }
 
-        ui.imageCollectionView.clearImages()
-        estimateWorksPhotoArrayList = ArrayList()
-
-        ui.takePhotoButton.setOnClickListener {
-            initLaunchCamera()
-        }
-        ui.moveWorkflowButton.setOnClickListener {
-            validateUploadWorks()
+    private fun onRestoreInstanceState(inState: Bundle) {
+        inState.run {
+            val jobId = getString(JOB_KEY, "")
+            val estimateId = getString(ESTIMATE_KEY, "")
+            if (jobId.isNotBlank() && estimateId.isNotBlank()) {
+                Coroutines.main {
+                    workViewModel.setWorkItemJob(jobId)
+                    workViewModel.setWorkItem(estimateId)
+                }
+                stateRestored = true
+            }
         }
     }
 
@@ -225,13 +277,13 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
                 ui.moveWorkflowButton.text = result.message
             }
             is Progress -> {
-                showLoadingProgress(result)
+                handleProgress(result)
             }
             else -> Timber.d("$result")
         }
     }
 
-    private fun handleLoadingSuccess(result: Success<JobEstimateWorksDTO>) {
+    private fun handleLoadingSuccess(result: Success<JobEstimateWorksDTO>) = uiScope.launch(uiScope.coroutineContext) {
         val worksData = result.data
         val filenames = worksData.jobEstimateWorksPhotos.map { photo ->
             photo.filename
@@ -250,7 +302,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
         ui.imageCollectionView.addZoomedImages(photoPairs, requireActivity())
         keyListener = ui.commentsEditText.keyListener
         ui.commentsEditText.keyListener = null
-        ui.commentsEditText.setText(getString(R.string.comment_placeholder), TextView.BufferType.NORMAL)
+        ui.commentsEditText.setText(getString(R.string.comment_placeholder), NORMAL)
         ui.takePhotoButton.isClickable = false
         ui.takePhotoButton.background =
             ContextCompat.getDrawable(requireContext(), R.drawable.round_corner_gray)
@@ -259,10 +311,33 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
             ContextCompat.getDrawable(requireContext(), R.drawable.round_corner_gray)
     }
 
-    private fun showLoadingProgress(result: Progress) {
-        when (result.isLoading) {
-            true -> ui.moveWorkflowButton.startProgress(handleHistoricalProgress())
-            else -> ui.moveWorkflowButton.doneProgress(ui.moveWorkflowButton.text.toString())
+    private fun disableEdits() {
+        var keyListener = ui.commentsEditText.keyListener
+        ui.commentsEditText.keyListener = null
+        ui.commentsEditText.setText(getString(R.string.comment_placeholder), NORMAL)
+        ui.takePhotoButton.isClickable = false
+        ui.takePhotoButton.background =
+            ContextCompat.getDrawable(requireContext(), R.drawable.round_corner_gray)
+        ui.moveWorkflowButton.isClickable = false
+        ui.moveWorkflowButton.background =
+            ContextCompat.getDrawable(requireContext(), R.drawable.round_corner_gray)
+    }
+
+    private fun loadPictures(result: Success<JobEstimateWorksDTO>) = uiScope.launch(uiScope.coroutineContext) {
+        val worksData = result.data
+        val filenames = worksData.jobEstimateWorksPhotos.filter { photo ->
+            photo.photoActivityId == worksData.actId
+        }.map { photo ->
+            photo.photoPath
+        }
+
+        val photoPairs = photoUtil.prepareGalleryPairs(filenames)
+
+        if (photoPairs.isNotEmpty()) {
+            ui.imageCollectionView.clearImages()
+            ui.imageCollectionView.scaleForSize(photoPairs.size)
+            ui.imageCollectionView.addZoomedImages(photoPairs, requireActivity())
+            ui.imageCollectionView.visibility = View.VISIBLE
         }
     }
 
@@ -277,7 +352,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
             }
             else -> {
                 ui.moveWorkflowButton.isClickable = false
-                uploadEstimateWorksItem(estimateWorksPhotoArrayList, jobitemEsti)
+                uploadEstimateWorksItem(estimateWorksPhotoArrayList, itemEstimate)
                 ui.moveWorkflowButton.isClickable = true
             }
         }
@@ -287,12 +362,12 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
         estimatePhotos: ArrayList<JobEstimateWorksPhotoDTO>,
         estimateItem: JobItemEstimateDTO?
     ) {
-        if (ServiceUtil.isNetworkAvailable(requireActivity().applicationContext)) {
+        if (requireActivity().isConnected) {
             //  Lets Send to Service
-            itemEstiWorks.jobEstimateWorksPhotos = estimatePhotos
-            itemEstiWorks.estimateId = estimateItem?.estimateId
+            activeWorks.jobEstimateWorksPhotos = estimatePhotos
+            activeWorks.estimateId = estimateItem?.estimateId
 
-            sendWorkToService(itemEstiWorks)
+            sendWorkToService(activeWorks)
         } else {
             sharpToast(
                 message = getString(R.string.no_connection_detected),
@@ -357,7 +432,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
         outcome?.let { result ->
             when (result) {
                 is Success<String> -> {
-                    if (result.data == "WORK_COMPLETE") {
+                    if (result.data == "JOB_COMPLETE") {
                         popViewOnJobSubmit(WorkflowDirection.NEXT.value)
                     }
                     toggleLongRunning(false)
@@ -379,14 +454,14 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
                     )
                 }
                 is Progress -> {
-                    handleJobProgress(result)
+                    handleProgress(result)
                 }
                 else -> Timber.d("$result")
             }
         }
     }
 
-    private fun handleJobProgress(result: Progress) {
+    private fun handleProgress(result: Progress) {
         when (result.isLoading) {
             true -> {
                 toggleLongRunning(true)
@@ -427,7 +502,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
                     )
                 }
                 is Progress -> {
-                    handleWorkProgress(result)
+                    handleProgress(result)
                 }
 
                 else -> Timber.d("$result")
@@ -435,33 +510,30 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
         }
     }
 
-    private fun handleWorkProgress(result: Progress) {
-        when (result.isLoading) {
-
-            true -> {
-                ui.moveWorkflowButton.initProgress(viewLifecycleOwner)
-                ui.moveWorkflowButton.startProgress(ui.moveWorkflowButton.text.toString())
-            }
-            else -> ui.moveWorkflowButton.doneProgress(ui.moveWorkflowButton.text.toString())
-        }
-    }
-
-    private fun handleHistoricalProgress() = ui.moveWorkflowButton.text.toString()
-
     private fun handleWorkSuccess(result: Success<String>) {
-        when (result.data != "WORK_COMPLETE") {
+        when (result.data != "JOB_COMPLETE") {
             true -> {
+                ui.imageCollectionView.clearImages()
                 sharpToast(
                     message = "Work captured",
-                    style = ToastStyle.SUCCESS,
+                    style = SUCCESS,
                     position = CENTER,
                     duration = SHORT
                 )
                 ui.moveWorkflowButton.doneProgress("Workflow complete")
                 refreshView()
                 toggleLongRunning(false)
+                navToSelf()
             }
         }
+    }
+
+    private fun navToSelf() {
+        val navDirections = CaptureWorkFragmentDirections.actionCaptureWorkFragmentSelf(
+            itemEstimateJob.jobId,
+            itemEstimate.estimateId
+        )
+        this.findNavController().navigate(navDirections)
     }
 
     private fun retryWorkSubmission() {
@@ -469,8 +541,8 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
         val backupWorkSubmission = workViewModel.backupWorkSubmission
         backupWorkSubmission.observeOnce(viewLifecycleOwner, {
             it?.let {
-                itemEstiWorks = it
-                sendWorkToService(itemEstiWorks)
+                activeWorks = it
+                sendWorkToService(activeWorks)
             }
         })
     }
@@ -505,13 +577,13 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
 
         // Await the updated estimate record
         uiScope.launch(uiScope.coroutineContext) {
-            workViewModel.workItem.observeOnce(viewLifecycleOwner, {
+            workViewModel.workItem.observe(viewLifecycleOwner, {
                 Timber.d("$it")
                 val id = STANDARD_WORKFLOW_STEPS
                 // This part must be Deleted when the Dynamic workflow is complete.
                 uiScope.launch(uiScope.coroutineContext) {
                     val workCodeData = workViewModel.getWorkFlowCodes(id)
-                    workCodeData.observeOnce(viewLifecycleOwner, {
+                    workCodeData.observe(viewLifecycleOwner, {
                         groupAdapter.notifyItemChanged(2)
 
                         ui.commentsEditText.setText("")
@@ -520,31 +592,6 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
                 }
             })
         }
-    }
-
-    /**
-     * ActivityResultContract for taking a photograph
-     */
-    private val takePicture = registerForActivityResult(
-        ActivityResultContracts.TakePicture()
-    ) { isSaved ->
-        if (isSaved && this@CaptureWorkFragment::itemEstiWorks.isInitialized) {
-            processAndSetImage(itemEstiWorks)
-        } else {
-            Coroutines.io {
-                photoUtil.deleteImageFile(filenamePath.toString())
-                withContext(Dispatchers.Main.immediate) {
-                    sharpToast(
-                        title = "Work data is incomplete",
-                        message = "Please contact support about this job, and have them restore or remove it",
-                        style = DELETE,
-                        duration = LONG,
-                        position = CENTER
-                    )
-                }
-            }
-        }
-        this.photosDone()
     }
 
     private fun launchCamera() {
@@ -557,14 +604,14 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
         }
     }
 
-    private fun processAndSetImage(itemEstiWorks: JobEstimateWorksDTO) {
+    private fun processAndSetImage(itemEstiWorks: JobEstimateWorksDTO, imageUri: Uri) {
         try {
             //  Location of picture
             val currentLocation: LocationModel? = this.getCurrentLocation()
             Timber.d("$currentLocation")
             when (currentLocation != null) {
                 true -> {
-                    persistGeolocatedPhoto(currentLocation, itemEstiWorks)
+                    persistLocatedPhoto(currentLocation, itemEstiWorks, imageUri)
                 }
                 else -> sharpToast(
                     message = getString(R.string.please_enable_location_services),
@@ -582,91 +629,48 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
         }
     }
 
-    private fun persistGeolocatedPhoto(
-        currentLocation: LocationModel?,
-        itemEstiWorks: JobEstimateWorksDTO
+    private fun persistLocatedPhoto(
+        currentLocation: LocationModel,
+        itemEstiWorks: JobEstimateWorksDTO,
+        imageUri: Uri
     ) {
         Coroutines.io {
             filenamePath = photoUtil.saveImageToInternalStorage(
-                imageUri!!
+                imageUri
             ) as HashMap<String, String>
 
             val photo = createItemWorksPhoto(
+                itemEstiWorks,
                 filenamePath,
-                currentLocation!!
+                currentLocation
             )
 
             withContext(Dispatchers.Main.immediate) {
                 estimateWorksPhotoArrayList.add(photo)
-
-                processPhotoWorks(currentLocation, filenamePath, itemEstiWorks)
+                withContext(Dispatchers.IO) {
+                    savePhotoMetadata(
+                        estimateWorksPhotoArrayList,
+                        itemEstiWorks
+                    )
+                }
 
                 groupAdapter.notifyItemChanged(0)
             }
         }
     }
 
-    private fun processPhotoWorks(
-        currentLocation: LocationModel?,
-        filenamePath: HashMap<String, String>,
-        itemEstiWorks: JobEstimateWorksDTO
+    private fun savePhotoMetadata(
+        workPortfolio: ArrayList<JobEstimateWorksPhotoDTO>,
+        activeWorks: JobEstimateWorksDTO
     ) {
-
-        if (currentLocation == null) {
-            // Check network availability / connectivity
-            sharpToast(
-                message = getString(R.string.please_enable_location_services),
-                style = ERROR, position = CENTER, duration = LONG
-            )
-            // Launch Dialog
-        } else {
-
-            Coroutines.io {
-                try {
-
-                    Timber.d("^*^ Photo Bug ^*^ Photos in array: ${estimateWorksPhotoArrayList.size}")
-
-                    // itemEstiWorks.jobEstimateWorksPhotos = estimateWorksPhotoArrayList
-
-                    workViewModel.createSaveWorksPhotos(
-                        estimateWorksPhotoArrayList,
-                        itemEstiWorks
-                    )
-
-                    // Get imageUri from filename
-                    val imageUrl = photoUtil.getPhotoPathFromExternalDirectory(
-                        filenamePath["filename"]!!
-                    )
-
-                    // Generate Bitmap from file
-                    val bitmap =
-                        photoUtil.getPhotoBitmapFromFile(
-                            imageUrl,
-                            PhotoQuality.HIGH
-                        )
-
-                    withContext(Dispatchers.Main.immediate) {
-                        // Prepare gallery for new size
-                        ui.imageCollectionView.scaleForSize(
-                            estimateWorksPhotoArrayList.size
-                        )
-
-                        // Push photo into ImageCollectionView
-                        bitmap?.run {
-                            ui.imageCollectionView.addImage(
-                                this,
-                                object : ImageCollectionView.OnImageClickListener {
-                                    override fun onClick(bitmap: Bitmap, imageView: ImageView) {
-                                        showZoomedImage(imageUrl, this@CaptureWorkFragment.requireActivity())
-                                    }
-                                }
-                            )
-                        }
-                        ui.imageCollectionView.visibility = View.VISIBLE
-                    }
-
-                    Timber.d("*^* PhotoBug *^* Photos in gallery: ${ui.imageCollectionView.childCount}")
-                } catch (t: Throwable) {
+        Coroutines.io {
+            try {
+                workViewModel.createSaveWorksPhotos(
+                    workPortfolio,
+                    activeWorks
+                )
+            } catch (t: Throwable) {
+                withContext(Dispatchers.Main.immediate) {
                     val message = "Gallery update failed: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
                     Timber.e(t, message)
                     crashGuard(this@CaptureWorkFragment.requireView(), Error(t, message))
@@ -676,6 +680,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
     }
 
     private fun createItemWorksPhoto(
+        worksEstimate: JobEstimateWorksDTO,
         filenamePath: HashMap<String, String>,
         currentLocation: LocationModel
     ): JobEstimateWorksPhotoDTO {
@@ -685,7 +690,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
             id = 0,
             descr = "",
             filename = filenamePath["filename"]!!,
-            photoActivityId = itemEstiWorks.actId,
+            photoActivityId = worksEstimate.actId,
             photoDate = DateUtil.dateToString(Date())!!,
             photoId = photoId,
             photoLongitude = currentLocation.latitude,
@@ -693,7 +698,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
             photoPath = filenamePath["path"]!!,
             recordVersion = 0,
             recordSynchStateId = 0,
-            worksId = itemEstiWorks.worksId
+            worksId = worksEstimate.worksId
         )
     }
 
@@ -703,52 +708,72 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
     ) {
         uiScope.launch(uiScope.coroutineContext) {
 
-            val workDone: Int = getEstimatesCompleted(estimateJob)
+            val workDone: Int = getEstimatesCompleted(estimateJob.jobId)
 
             if (workDone == estimateJob.jobItemEstimates.size) {
-                collectCompletedEstimates(estimateJob)
+                collectCompletedEstimates(estimateJob.jobId)
             } else {
 
-                val estimateWorksData =
-                    workViewModel.getJobEstiItemForEstimateId(estimateItem.estimateId)
-                estimateWorksData.observe(viewLifecycleOwner, { estimateWorksList ->
-
-                    for (workItem in estimateWorksList) {
-                        if (workItem.actId == ActivityIdConstants.EST_WORKS_COMPLETE) {
-                            uiScope.launch(uiScope.coroutineContext) {
-                                val estWorkDone: Int =
-                                    getEstimatesCompleted(estimateJob)
-                                submitEstimatesOrPop(estWorkDone, estimateJob)
-                            }
-                        } else {
-
-                            generateWorkflowSteps(estimateWorksList)
-                        }
-                        itemEstiWorks = workItem
-                    }
-                    estimateWorksArrayList = estimateWorksList as ArrayList<JobEstimateWorksDTO>
-                })
+                loadWorkEstimate(estimateItem.estimateId, estimateJob.jobId)
             }
         }
     }
 
-    private fun submitEstimatesOrPop(
-        estWorkDone: Int,
-        estimateJob: JobDTO
+    private suspend fun loadWorkEstimate(
+        estimateItemId: String,
+        estimateJobId: String
     ) {
-        if (estWorkDone == estimateJob.jobItemEstimates.size) {
-            Coroutines.main {
-                collectCompletedEstimates(estimateJob)
+        val estimateWorksData =
+            workViewModel.getJobEstiItemForEstimateId(estimateItemId)
+        estimateWorksData.observe(viewLifecycleOwner, { estimateWorks ->
+
+            estimateWorks?.let { workItem ->
+                if (workItem.actId == ActivityIdConstants.EST_WORKS_COMPLETE) {
+                    uiScope.launch(uiScope.coroutineContext) {
+                        val estWorkDone: Int =
+                            getEstimatesCompleted(estimateJobId)
+                        submitEstimatesOrPop(estWorkDone, estimateJobId)
+                    }
+                } else {
+                    estimateWorksArrayList = arrayListOf(estimateWorks)
+
+                    generateWorkflowSteps(estimateWorksArrayList)
+                }
+                activeWorks = workItem
+
+                ui.imageCollectionView.clearImages()
+                estimateWorksPhotoArrayList = activeWorks.jobEstimateWorksPhotos
+                if (estimateWorksPhotoArrayList.size > 0) {
+                    loadPictures(Success(activeWorks))
+                }
             }
-        } else {
-            popViewOnWorkSubmit()
-        }
+        })
     }
 
-    private suspend fun collectCompletedEstimates(estimateJob: JobDTO) {
+    private suspend fun submitEstimatesOrPop(
+        estWorkDone: Int,
+        estimateJobId: String
+    ) {
+        workViewModel.setWorkItemJob(estimateJobId)
+        val estimateJobData = workViewModel.workItemJob
+
+        estimateJobData.observeOnce(viewLifecycleOwner, { estimateJob ->
+            estimateJob?.let { workItemJob ->
+                if (estWorkDone == workItemJob.jobItemEstimates.size) {
+                    Coroutines.main {
+                        collectCompletedEstimates(estimateJob.jobId)
+                    }
+                } else {
+                    popViewOnWorkSubmit()
+                }
+            }
+        })
+    }
+
+    private suspend fun collectCompletedEstimates(estimateJobId: String) {
         this@CaptureWorkFragment.toggleLongRunning(true)
         val iItems = workViewModel.getJobEstimationItemsForJobId(
-            estimateJob.jobId,
+            estimateJobId,
             ActivityIdConstants.ESTIMATE_WORK_PART_COMPLETE
         )
         iItems.observe(viewLifecycleOwner, {
@@ -776,9 +801,9 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
         }
     }
 
-    private suspend fun getEstimatesCompleted(estimateJob: JobDTO): Int {
+    private suspend fun getEstimatesCompleted(estimateJobId: String): Int {
         return workViewModel.getJobItemsEstimatesDoneForJobId(
-            estimateJob.jobId,
+            estimateJobId,
             ActivityIdConstants.ESTIMATE_WORK_PART_COMPLETE,
             ActivityIdConstants.EST_WORKS_COMPLETE
         )
@@ -787,7 +812,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
     private fun popViewOnWorkSubmit() {
         val navDirections = CaptureWorkFragmentDirections.actionCaptureWorkFragmentToNavWork(selectedJobId)
 
-        Navigation.findNavController(this.requireView()).navigate(navDirections)
+        this.findNavController().navigate(navDirections)
     }
 
     private fun submitAllOutStandingEstimates(estimates: ArrayList<JobItemEstimateDTO>?) {
@@ -853,7 +878,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
         }
 
         jobSubmission.join()
-        handleJobSubmission(Success("WORK_COMPLETE"))
+        handleJobSubmission(Success("JOB_COMPLETE"))
     }
 
     private suspend fun moveJobItemEstimateToNextWorkflow(
@@ -916,16 +941,18 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
         when (direction) {
             WorkflowDirection.NEXT.value -> {
                 sharpToast(
+                    title = "Workflow update",
                     resId = R.string.work_complete,
-                    style = ToastStyle.SUCCESS,
+                    style = SUCCESS,
                     position = CENTER,
                     duration = LONG
                 )
             }
             WorkflowDirection.FAIL.value -> {
                 sharpToast(
+                    title = "Workflow Update",
                     message = getString(R.string.work_declined),
-                    style = INFO,
+                    style = DELETE,
                     position = CENTER,
                     duration = LONG
                 )
@@ -942,19 +969,27 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
         )
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.run {
+            putString(JOB_KEY, itemEstimateJob.jobId)
+            putString(ESTIMATE_KEY, itemEstimate.estimateId)
+        }
+
+        super.onSaveInstanceState(outState)
+    }
+
     private fun initRecyclerView(
         stateItems: List<WorkStateItem>,
         workCodes: List<WfWorkStepDTO>
     ) {
-        groupAdapter.apply {
-            Coroutines.main {
-                groupAdapter.clear()
-                for (i in workCodes.indices) { // stateItems.indices
-                    add(stateItems[0])
-                    groupAdapter.notifyItemRangeChanged(0, workCodes.size)
-                }
+        groupAdapter.run {
+            clear()
+            for (i in workCodes.indices) {
+                add(stateItems[0])
+                notifyItemChanged(i)
             }
         }
+
         ui.workActionsListView.apply {
             layoutManager = LinearLayoutManager(this.context)
             adapter = groupAdapter
@@ -980,11 +1015,6 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
 
     private fun getCurrentLocation(): LocationModel? {
         return super.getLocation()
-    }
-
-    companion object {
-        private const val REQUEST_STORAGE_PERMISSION = 1
-        private const val STANDARD_WORKFLOW_STEPS = 3
     }
 }
 

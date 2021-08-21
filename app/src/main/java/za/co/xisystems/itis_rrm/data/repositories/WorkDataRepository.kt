@@ -24,11 +24,12 @@ import za.co.xisystems.itis_rrm.custom.errors.NoDataException
 import za.co.xisystems.itis_rrm.custom.errors.ServiceException
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
+import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.results.XIResult.Error
 import za.co.xisystems.itis_rrm.custom.results.XIResult.Progress
-import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.results.XIResult.Success
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
+import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksPhotoDTO
@@ -60,10 +61,8 @@ class WorkDataRepository(
 
     val workStatus: MutableLiveData<XIEvent<XIResult<String>>> = MutableLiveData()
 
-    private fun postWorkStatus(result: XIResult<String>) {
-        Coroutines.main {
+    private suspend fun postWorkStatus(result: XIResult<String>) = withContext(Dispatchers.Main) {
             workStatus.postValue(XIEvent(result))
-        }
     }
 
     suspend fun getUser(): LiveData<UserDTO> {
@@ -120,7 +119,11 @@ class WorkDataRepository(
         estimateJob: JobDTO
     ) {
         postWorkStatus(Progress(true))
-        val worksPhotos = estimateWorksItem.jobEstimateWorksPhotos
+        val currentWorksPhotos =
+            estimateWorksItem.jobEstimateWorksPhotos.filter { photo ->
+                photo.photoActivityId == estimateWorksItem.actId
+            } as ArrayList<JobEstimateWorksPhotoDTO>
+
         val worksData = JsonObject()
         val gson = Gson()
         val newMeasure = gson.toJson(estimateWorksItem)
@@ -137,7 +140,7 @@ class WorkDataRepository(
             if (messages.isBlank()) {
 
                 postEstimateWorks(
-                    worksPhotos,
+                    currentWorksPhotos,
                     estimateWorksItem,
                     activity,
                     estimateJob.userId
@@ -160,9 +163,14 @@ class WorkDataRepository(
         useR: Int
     ) {
         withContext(Dispatchers.IO) {
-
-            uploadWorksImages(jobEstimateWorks, photos, activity)
-            moveJobToNextWorkflowStep(jobEstimateWorks, useR)
+            try {
+                uploadWorksImages(jobEstimateWorks, photos, activity)
+                moveJobToNextWorkflowStep(jobEstimateWorks, useR)
+            } catch (ex: Exception) {
+                val message = "Failed to upload works estimate: ${ex.message ?: XIErrorHandler.UNKNOWN_ERROR}"
+                Timber.e(ex, message)
+                postWorkStatus(Error(ex, message))
+            }
         }
     }
 
@@ -178,7 +186,7 @@ class WorkDataRepository(
                 throw java.lang.NullPointerException("WorkEstimate ${workEstimate.estimateId} has no photos.")
             } else {
                 val totalImages = worksPhotos.size
-                for (jobItemPhoto in worksPhotos) {
+                worksPhotos.forEach { jobItemPhoto ->
                     when {
                         photoUtil.photoExist(jobItemPhoto.filename) -> {
                             Timber.d("x -> UploadRrImage $imageCounter")
@@ -329,8 +337,11 @@ class WorkDataRepository(
                     Timber.d("${estimateWorksPhoto.filename} was already in the database")
                 }
             }
+            val allEstimateWorksPhotos =
+                appDb.getEstimateWorkPhotoDao()
+                    .getEstimateWorksPhotoForWorksId(estimateWorksItem.worksId) as ArrayList<JobEstimateWorksPhotoDTO>
             appDb.getEstimateWorkDao().updateJobEstimateWorkForEstimateID(
-                estimateWorksItem.jobEstimateWorksPhotos,
+                allEstimateWorksPhotos,
                 estimateWorksItem.estimateId
             )
         }
@@ -340,14 +351,12 @@ class WorkDataRepository(
         jobId: String?,
         estimateWorkPartComplete: Int,
         estWorksComplete: Int
-    ): Int {
-        return withContext(Dispatchers.IO) {
-            appDb.getJobItemEstimateDao()
+    ): Int = withContext(Dispatchers.IO) {
+            return@withContext appDb.getJobItemEstimateDao()
                 .getJobItemsEstimatesDoneForJobId(jobId, estimateWorkPartComplete, estWorksComplete)
-        }
     }
 
-    suspend fun getJobEstiItemForEstimateId(estimateId: String?): LiveData<List<JobEstimateWorksDTO>> {
+    suspend fun getJobEstiItemForEstimateId(estimateId: String?): LiveData<JobEstimateWorksDTO> {
         return withContext(Dispatchers.IO) {
             appDb.getEstimateWorkDao().getJobMeasureItemsForJobId(estimateId)
         }
@@ -389,7 +398,7 @@ class WorkDataRepository(
                 jobItemEstimate.workflowEstimateWorks.forEach { jobEstimateWorks ->
                     appDb.getEstimateWorkDao().updateJobEstimateWorksWorkflow(
                         jobEstimateWorks.worksId,
-                        jobEstimateWorks.estimateId,
+                        jobItemEstimate.estimateId,
                         jobEstimateWorks.recordVersion,
                         jobEstimateWorks.recordSynchStateId,
                         jobEstimateWorks.actId,
@@ -465,7 +474,7 @@ class WorkDataRepository(
             return job
         } catch (t: Throwable) {
             val message = "Failed to set BigEndian Guids: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
-            postWorkStatus(Error(t, message))
+            Coroutines.main { postWorkStatus(Error(t, message)) }
             return null
         }
     }
@@ -476,10 +485,8 @@ class WorkDataRepository(
         }
     }
 
-    suspend fun getUOMForProjectItemId(projectItemId: String): String {
-        return withContext(Dispatchers.IO) {
-            appDb.getProjectItemDao().getUOMForProjectItemId(projectItemId)
-        }
+    suspend fun getUOMForProjectItemId(projectItemId: String): String? = withContext(Dispatchers.IO) {
+        return@withContext appDb.getProjectItemDao().getUOMForProjectItemId(projectItemId)
     }
 
     suspend fun getRouteForProjectSectionId(sectionId: String?): String {
@@ -544,4 +551,8 @@ class WorkDataRepository(
 
     suspend fun getEstimateWorksPhotosForWorksId(worksId: String): List<JobEstimateWorksPhotoDTO> =
         appDb.getEstimateWorkPhotoDao().getEstimateWorksPhotoForWorksId(worksId)
+
+    suspend fun getProjectItemById(projectItemId: String): ItemDTOTemp = withContext(Dispatchers.IO) {
+        return@withContext appDb.getItemDaoTemp().getProjectItemById(projectItemId)
+    }
 }
