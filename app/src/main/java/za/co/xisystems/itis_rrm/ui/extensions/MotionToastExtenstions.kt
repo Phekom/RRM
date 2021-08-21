@@ -5,43 +5,43 @@ import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
 import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.utils.enums.ToastDuration
+import za.co.xisystems.itis_rrm.utils.enums.ToastGravity
+import za.co.xisystems.itis_rrm.utils.enums.ToastStyle
 
-fun Activity.extensionToast(message: String, motionType: String) {
+fun Activity.extensionToast(
+    title: String? = null,
+    message: String,
+    style: ToastStyle = ToastStyle.INFO,
+    position: ToastGravity = ToastGravity.BOTTOM,
+    duration: ToastDuration = ToastDuration.LONG
+) {
 
     MotionToast.createColorToast(
         context = this,
+        title = title,
         message = message,
-        style = motionType,
-        position = MotionToast.GRAVITY_BOTTOM,
-        duration = MotionToast.LONG_DURATION,
+        style = style.getValue(),
+        position = position.getValue(),
+        duration = duration.getValue(),
         font = ResourcesCompat.getFont(this, R.font.helvetica_regular)
     )
 }
 
 fun Fragment.extensionToast(
     message: String,
-    motionType: String = MotionToast.TOAST_INFO,
-    position: Int = MotionToast.GRAVITY_BOTTOM,
-    title: String?
+    style: ToastStyle = ToastStyle.INFO,
+    position: ToastGravity = ToastGravity.BOTTOM,
+    title: String?,
+    duration: ToastDuration = ToastDuration.LONG
 ) {
-    if (title.isNullOrBlank()) {
-        MotionToast.createColorToast(
-            context = this.requireActivity(),
-            message = message,
-            style = motionType,
-            position = position,
-            duration = MotionToast.LONG_DURATION,
-            font = ResourcesCompat.getFont(this.requireContext(), R.font.helvetica_regular)
-        )
-    } else {
-        MotionToast.createColorToast(
-            context = this.requireActivity(),
-            title = title,
-            message = message,
-            style = motionType,
-            position = position,
-            duration = MotionToast.LONG_DURATION,
-            font = ResourcesCompat.getFont(this.requireContext(), R.font.helvetica_regular)
-        )
-    }
+    MotionToast.createColorToast(
+        title = title,
+        context = this.requireActivity(),
+        message = message,
+        style = style.getValue(),
+        position = position.getValue(),
+        duration = duration.getValue(),
+        font = ResourcesCompat.getFont(this.requireContext(), R.font.helvetica_regular)
+    )
 }

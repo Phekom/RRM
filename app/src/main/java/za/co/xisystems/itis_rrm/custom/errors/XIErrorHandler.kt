@@ -6,10 +6,11 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import retrofit2.HttpException
 import timber.log.Timber
-import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
+import za.co.xisystems.itis_rrm.utils.enums.ToastStyle
+import java.lang.ref.WeakReference
 
 /**
  * Created by Shaun McDonald on 2020/04/14.
@@ -19,6 +20,15 @@ import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 /**
  * Singleton error handler for RRM
  */
+
+data class XIErrorAction(
+    val fragmentReference: WeakReference<Fragment>? = null,
+    val view: View,
+    val throwable: XIResult.Error,
+    val shouldToast: Boolean = false,
+    val shouldShowSnackBar: Boolean = false,
+    val refreshAction: () -> Unit = {}
+)
 object XIErrorHandler {
     private const val NO_INTERNET_RESPONSE =
         "Make sure you have an active data / wifi connection"
@@ -30,6 +40,16 @@ object XIErrorHandler {
     const val NO_SUCH_DATA = "Data not found in the database"
     const val UNKNOWN_ERROR = "An unknown error occurred!"
 
+    fun handleError(errorAction: XIErrorAction) {
+        this.handleError(
+            fragment = errorAction.fragmentReference?.get(),
+            view = errorAction.view,
+            throwable = errorAction.throwable,
+            shouldToast = errorAction.shouldToast,
+            shouldShowSnackBar = errorAction.shouldShowSnackBar,
+            refreshAction = errorAction.refreshAction
+        )
+    }
     fun handleError(
         fragment: Fragment? = null,
         view: View,
@@ -44,7 +64,7 @@ object XIErrorHandler {
             if (shouldToast) {
                 // If we don't have a fragment, fallback to dry toast'
                 if (fragment != null) {
-                    fragment.extensionToast(throwable.message, MotionToast.TOAST_ERROR, title = null)
+                    fragment.extensionToast(throwable.message, ToastStyle.ERROR, title = null)
                 } else {
                     showMessage(view, throwable.message)
                 }
