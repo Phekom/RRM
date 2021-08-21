@@ -1,12 +1,10 @@
 package za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.approveMeasure_Item
 
 import android.view.View
-import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
-import com.xwray.groupie.kotlinandroidextensions.Item
-import kotlinx.android.synthetic.main.single_job_listing.*
-import kotlinx.android.synthetic.main.single_listview_item.appListID
+import com.xwray.groupie.viewbinding.BindableItem
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
+import za.co.xisystems.itis_rrm.databinding.ItemHeaderBinding
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureViewModel
 import za.co.xisystems.itis_rrm.utils.Coroutines
 
@@ -17,12 +15,21 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
 class ApproveMeasureItem(
     private val jobItemMeasureDTO: JobItemMeasureDTO,
     private val approveViewModel: ApproveMeasureViewModel
-) : Item() {
+) : BindableItem<ItemHeaderBinding>() {
     val jobId = jobItemMeasureDTO.jobId
-    override fun bind(viewHolder: GroupieViewHolder, position: Int) {
-        viewHolder.apply {
+
+    override fun getLayout() = R.layout.item_header
+
+    /**
+     * Perform any actions required to set up the view for display.
+     *
+     * @param viewBinding The ViewBinding to bind
+     * @param position The adapter position
+     */
+    override fun bind(viewBinding: ItemHeaderBinding, position: Int) {
+        viewBinding.apply {
             appListID.text = getItemId(position + 1).toString()
-            title.text = itemView.context.getString(
+            title.text = root.context.getString(
                 R.string.pair,
                 "JI:",
                 jobItemMeasureDTO.jimNo
@@ -32,7 +39,7 @@ class ApproveMeasureItem(
                     approveViewModel.getProjectSectionIdForJobId(jobItemMeasureDTO.jobId!!)
                 val route = approveViewModel.getRouteForProjectSectionId(sectionId)
                 val section = approveViewModel.getSectionForProjectSectionId(sectionId)
-                val routeSection = itemView.context.getString(R.string.route_section_badge, route, section)
+                val routeSection = root.context.getString(R.string.route_section_badge, route, section)
                 val description = approveViewModel.getItemDesc(jobItemMeasureDTO.jobId!!)
                 subtitle.run {
                     text = context.getString(R.string.pair, routeSection, description)
@@ -42,9 +49,10 @@ class ApproveMeasureItem(
         }
     }
 
-    override fun getLayout() = R.layout.item_header
-}
-
-private fun getItemId(position: Int): Long {
-    return position.toLong()
+    override fun initializeViewBinding(view: View): ItemHeaderBinding {
+        return ItemHeaderBinding.bind(view)
+    }
+    private fun getItemId(position: Int): Long {
+        return position.toLong()
+    }
 }

@@ -31,7 +31,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
-import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
+import com.xwray.groupie.viewbinding.GroupieViewHolder
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.kodein.di.DIAware
@@ -44,10 +44,11 @@ import za.co.xisystems.itis_rrm.R.layout
 import za.co.xisystems.itis_rrm.R.string
 import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.constants.Constants
-import za.co.xisystems.itis_rrm.custom.results.*
+import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentMeasureApprovalBinding
+import za.co.xisystems.itis_rrm.databinding.MeasurementsItemBinding
 import za.co.xisystems.itis_rrm.ui.extensions.doneProgress
 import za.co.xisystems.itis_rrm.ui.extensions.failProgress
 import za.co.xisystems.itis_rrm.ui.extensions.initProgress
@@ -58,12 +59,12 @@ import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
-import za.co.xisystems.itis_rrm.utils.enums.ToastDuration.SHORT
-import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.BOTTOM
-import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.CENTER
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.*
+import za.co.xisystems.itis_rrm.utils.enums.ToastDuration
+import za.co.xisystems.itis_rrm.utils.enums.ToastGravity
+import za.co.xisystems.itis_rrm.utils.enums.ToastStyle
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection.NEXT
+import java.lang.ref.WeakReference
 
 class MeasureApprovalFragment : BaseFragment(), DIAware {
     override val di by closestDI()
@@ -79,7 +80,7 @@ class MeasureApprovalFragment : BaseFragment(), DIAware {
     private var uiScope = UiLifecycleScope()
     private var _ui: FragmentMeasureApprovalBinding? = null
     private val ui get() = _ui!!
-    private var groupAdapter = GroupAdapter<GroupieViewHolder>()
+    private var groupAdapter = GroupAdapter<GroupieViewHolder<MeasurementsItemBinding>>()
 
     private fun handleMeasureProcessing(outcome: XIResult<String>?) {
         outcome?.let { result ->
@@ -93,7 +94,7 @@ class MeasureApprovalFragment : BaseFragment(), DIAware {
                         popViewOnJobSubmit(flowDirection)
                     }
                 }
-                is  XIResult.Error -> {
+                is XIResult.Error -> {
                     progressButton.failProgress("Failed")
                     this@MeasureApprovalFragment.toggleLongRunning(false)
                     crashGuard(
@@ -105,9 +106,9 @@ class MeasureApprovalFragment : BaseFragment(), DIAware {
                 is XIResult.Status -> {
                     sharpToast(
                         message = result.message,
-                        style = INFO,
-                        position = BOTTOM,
-                        duration = SHORT
+                        style = ToastStyle.INFO,
+                        position = ToastGravity.BOTTOM,
+                        duration = ToastDuration.SHORT
                     )
                 }
                 is XIResult.Progress -> {
@@ -220,7 +221,7 @@ class MeasureApprovalFragment : BaseFragment(), DIAware {
         } else {
             sharpToast(
                 message = getString(string.no_connection_detected),
-                style = NO_INTERNET
+                style = ToastStyle.NO_INTERNET
             )
             progressButton.failProgress("No internet")
         }
@@ -259,8 +260,8 @@ class MeasureApprovalFragment : BaseFragment(), DIAware {
     private fun showSubmissionError(errMessage: String, progFailCaption: String) {
         sharpToast(
             message = errMessage,
-            style = ERROR,
-            position = CENTER
+            style = ToastStyle.ERROR,
+            position = ToastGravity.CENTER
         )
         progressButton.failProgress(progFailCaption)
     }
@@ -268,10 +269,18 @@ class MeasureApprovalFragment : BaseFragment(), DIAware {
     private fun popViewOnJobSubmit(direction: Int) {
         when (direction) {
             NEXT.value -> {
-                sharpToast(resId = string.measurement_approved, style = SUCCESS, duration = SHORT)
+                sharpToast(
+                    resId = string.measurement_approved,
+                    style = ToastStyle.SUCCESS,
+                    duration = ToastDuration.SHORT
+                )
             }
             WorkflowDirection.FAIL.value -> {
-                sharpToast(resId = string.measurement_declined, style = INFO, duration = SHORT)
+                sharpToast(
+                    resId = string.measurement_declined,
+                    style = ToastStyle.INFO,
+                    duration = ToastDuration.SHORT
+                )
             }
         }
         Handler(Looper.getMainLooper()).postDelayed({
@@ -303,8 +312,9 @@ class MeasureApprovalFragment : BaseFragment(), DIAware {
             update(measureListItems)
             notifyItemRangeChanged(0, measureListItems.size)
         }
-        ui.viewMeasuredItems.run {
-            setAdapter(groupAdapter, layoutManager = LinearLayoutManager(context))
+        ui.viewMeasuredItems.getRecyclerView().run {
+            adapter = groupAdapter
+            layoutManager = LinearLayoutManager(context)
             doOnNextLayout { ui.viewMeasuredItems.unVeil() }
         }
     }
@@ -323,7 +333,7 @@ class MeasureApprovalFragment : BaseFragment(), DIAware {
             MeasurementsItem(
                 it,
                 approveViewModel,
-                activity,
+                WeakReference(this@MeasureApprovalFragment),
                 viewLifecycleOwner
             )
         }

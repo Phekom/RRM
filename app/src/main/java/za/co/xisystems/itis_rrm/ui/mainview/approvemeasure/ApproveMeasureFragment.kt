@@ -22,7 +22,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
-import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
+import com.xwray.groupie.viewbinding.GroupieViewHolder
 import org.kodein.di.DIAware
 import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
@@ -35,6 +35,7 @@ import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentApprovemeasureBinding
+import za.co.xisystems.itis_rrm.databinding.ItemHeaderBinding
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.approveMeasure_Item.ApproveMeasureItem
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
@@ -52,7 +53,7 @@ class ApproveMeasureFragment : BaseFragment(), DIAware {
 
     private var _ui: FragmentApprovemeasureBinding? = null
     private val ui get() = _ui!!
-    private var groupAdapter = GroupAdapter<GroupieViewHolder>()
+    private var groupAdapter = GroupAdapter<GroupieViewHolder<ItemHeaderBinding>>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -178,7 +179,7 @@ class ApproveMeasureFragment : BaseFragment(), DIAware {
 
     private fun initRecyclerView(approveMeasureListItems: List<ApproveMeasureItem>) {
 
-        val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
+        val groupAdapter = GroupAdapter<GroupieViewHolder<ItemHeaderBinding>>().apply {
             clear()
             addAll(approveMeasureListItems)
             notifyItemRangeChanged(0, approveMeasureListItems.size)

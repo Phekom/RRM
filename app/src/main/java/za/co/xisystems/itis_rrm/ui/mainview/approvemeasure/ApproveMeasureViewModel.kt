@@ -28,9 +28,9 @@ import kotlinx.coroutines.withContext
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler.UNKNOWN_ERROR
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
+import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.results.XIResult.Error
 import za.co.xisystems.itis_rrm.custom.results.XIResult.Progress
-import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.results.XIResult.Success
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.data.repositories.MeasureApprovalDataRepository
@@ -168,7 +168,7 @@ class ApproveMeasureViewModel(
                 // workflowState.postValue(XIResult.Success("WORK_COMPLETE"))
             } catch (t: Throwable) {
                 withContext(contextMain) {
-                    workflowState.postValue( Error(t, t.message ?: UNKNOWN_ERROR))
+                    workflowState.postValue(Error(t, t.message ?: UNKNOWN_ERROR))
                 }
             }
         }
@@ -199,7 +199,7 @@ class ApproveMeasureViewModel(
                 }
             } catch (e: Exception) {
                 Timber.e(e, galleryError)
-                val galleryFail =  Error(e, galleryError)
+                val galleryFail = Error(e, galleryError)
                 measureGalleryUIState.postValue(galleryFail)
             }
         }
@@ -231,7 +231,7 @@ class ApproveMeasureViewModel(
                         photoUtil.getPhotoPathFromExternalDirectory(fileName)
                     }
                     val bmap = uri?.let { mUri ->
-                        photoUtil.getPhotoBitMapFromFile(
+                        photoUtil.getPhotoBitmapFromFile(
                             mUri,
                             photoQuality
                         )
@@ -255,7 +255,7 @@ class ApproveMeasureViewModel(
             } catch (t: Throwable) {
                 val message = "$galleryError: ${t.message ?: UNKNOWN_ERROR}"
                 Timber.e(t, message)
-                val galleryFail =  Error(t, message)
+                val galleryFail = Error(t, message)
                 withContext(contextMain) {
                     measureGalleryUIState.postValue(galleryFail)
                 }

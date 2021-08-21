@@ -10,12 +10,12 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.Navigation
-import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
-import com.xwray.groupie.kotlinandroidextensions.Item
-import kotlinx.android.synthetic.main.measurements_item.*
+import com.xwray.groupie.viewbinding.BindableItem
 import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
+import za.co.xisystems.itis_rrm.databinding.MeasurementsItemBinding
+import za.co.xisystems.itis_rrm.extensions.uomForUI
 import za.co.xisystems.itis_rrm.ui.extensions.DecimalSignedDigitsKeyListener
 import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureViewModel
@@ -23,6 +23,7 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.GlideApp
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import java.io.File
+import java.lang.ref.WeakReference
 
 /**
  * Created by Francis Mahlava on 2020/01/02.
@@ -30,51 +31,11 @@ import java.io.File
 class MeasurementsItem(
     private val jobItemMeasureDTO: JobItemMeasureDTO,
     private val approveViewModel: ApproveMeasureViewModel,
-    private val activity: FragmentActivity?,
+    private val fragmentReference: WeakReference<MeasureApprovalFragment>,
     private val viewLifecycleOwner: LifecycleOwner
-) : Item() {
+) : BindableItem<MeasurementsItemBinding>() {
 
-    override fun bind(viewHolder: GroupieViewHolder, position: Int) {
-        viewHolder.apply {
-
-            Coroutines.main {
-
-                val quantity = approveViewModel.getQuantityForMeasureItemId(jobItemMeasureDTO.itemMeasureId)
-                quantity.observe(viewLifecycleOwner, {
-                    measure_item_quantity_textView.text = activity?.getString(R.string.pair, "Qty:", it.toString())
-                })
-
-                val lineRate = approveViewModel.getLineRateForMeasureItemId(jobItemMeasureDTO.itemMeasureId)
-                lineRate.observe(viewLifecycleOwner, {
-                    measure_item_price_textView.text = activity?.getString(R.string.pair, "R", it.toString())
-                })
-
-                val descri = approveViewModel.getDescForProjectId(jobItemMeasureDTO.projectItemId!!)
-                val uom =
-                    approveViewModel.getUOMForProjectItemId(jobItemMeasureDTO.projectItemId!!)
-                measure_item_description_textView.text = activity?.getString(R.string.pair, "Estimate -", descri)
-                if (uom == "NONE") {
-                    measure_item_uom_textView.text = ""
-                } else {
-                    measure_item_uom_textView.text = activity?.getString(R.string.pair, "Unit of Measure:", uom)
-                }
-            }
-            correctButton.setOnClickListener {
-                sendItemType(jobItemMeasureDTO)
-            }
-            view_captured_item_photo.setOnClickListener {
-                Coroutines.main {
-                    approveViewModel.generateGalleryUI(jobItemMeasureDTO.itemMeasureId)
-                    Navigation.findNavController(it)
-                        .navigate(R.id.action_measureApprovalFragment_to_measureGalleryFragment)
-                }
-            }
-            Coroutines.main {
-                updateMeasureImage()
-            }
-        }
-    }
-
+    val activity = fragmentReference.get()?.requireActivity()
     private fun sendItemType(
         jobItemMeasureDTO: JobItemMeasureDTO
     ) {
@@ -84,7 +45,8 @@ class MeasurementsItem(
     }
 
     private fun alertdialog(jobItemMeasureDTO: JobItemMeasureDTO) {
-        val textEntryView: View = activity!!.layoutInflater.inflate(R.layout.measure_dialog, null)
+
+        val textEntryView: View = activity?.layoutInflater?.inflate(R.layout.measure_dialog, null)!!
         val editQuantity = textEntryView.findViewById<View>(R.id.new_qty) as EditText
         editQuantity.inputType = InputType.TYPE_NUMBER_VARIATION_NORMAL and InputType.TYPE_NUMBER_FLAG_DECIMAL
         val digitsKeyListener = DigitsKeyListener.getInstance("-1234567890.")
@@ -131,6 +93,7 @@ class MeasurementsItem(
                         activity.extensionToast("You have exceeded the quantity allowed", MotionToast.TOAST_WARNING)
                     }
                     else -> {
+                        fragmentReference.get()?.toggleLongRunning(true)
                         val updated = approveViewModel.upDateMeasure(
                             editQuantity,
                             itemMeasureId
@@ -140,6 +103,7 @@ class MeasurementsItem(
                         } else {
                             activity.extensionToast("Error on update: $updated.", MotionToast.TOAST_ERROR)
                         }
+                        fragmentReference.get()?.toggleLongRunning(false)
                     }
                 }
             }
@@ -159,24 +123,78 @@ class MeasurementsItem(
 
     override fun getLayout() = R.layout.measurements_item
 
-    private suspend fun GroupieViewHolder.updateMeasureImage() {
+    private suspend fun MeasurementsItemBinding.updateMeasureImage() {
         Coroutines.main {
 
             val photoPaths = approveViewModel.getJobMeasureItemsPhotoPath(jobItemMeasureDTO.itemMeasureId)
             if (photoPaths.isNotEmpty()) {
                 val measurePhoto = photoPaths.first()
                 if (measurePhoto.isNotBlank()) {
-                    GlideApp.with(this.containerView)
+                    GlideApp.with(this.root.context)
                         .load(Uri.fromFile(File(measurePhoto)))
                         .placeholder(R.drawable.logo_new_medium)
-                        .into(view_captured_item_photo)
+                        .into(viewCapturedItemPhoto)
                 }
             } else {
-                GlideApp.with(this.containerView)
+                GlideApp.with(this.root.context)
                     .load(R.drawable.no_image)
                     .placeholder(R.drawable.logo_new_medium)
-                    .into(view_captured_item_photo)
+                    .into(viewCapturedItemPhoto)
             }
         }
+    }
+
+    /**
+     * Perform any actions required to set up the view for display.
+     *
+     * @param viewBinding The ViewBinding to bind
+     * @param position The adapter position
+     */
+    override fun bind(viewBinding: MeasurementsItemBinding, position: Int) {
+        viewBinding.apply {
+
+            Coroutines.main {
+
+                val quantity = approveViewModel.getQuantityForMeasureItemId(jobItemMeasureDTO.itemMeasureId)
+                quantity.observe(viewLifecycleOwner, {
+                    measureItemQuantityTextView.text = activity?.getString(R.string.pair, "Qty:", it.toString())
+                })
+
+                val descri = approveViewModel.getDescForProjectId(jobItemMeasureDTO.projectItemId!!)
+                val uom =
+                    approveViewModel.getUOMForProjectItemId(jobItemMeasureDTO.projectItemId!!)
+                measureItemDescriptionTextView.text = activity?.getString(R.string.pair, "Estimate -", descri)
+
+                val uomString = if (uom.isBlank() || uom.lowercase() == "none") {
+                    ""
+                } else {
+                    activity?.uomForUI(uom)
+                }
+
+                val lineRate = approveViewModel.getLineRateForMeasureItemId(jobItemMeasureDTO.itemMeasureId)
+                lineRate.observe(viewLifecycleOwner, {
+                    val itemPrice = activity?.getString(R.string.pair, "R", it.toString())
+                    measureItemUomTextView.text = activity?.getString(R.string.pair, itemPrice, uomString)
+                })
+                measureItemPriceTextView.visibility = View.GONE
+            }
+            correctButton.setOnClickListener {
+                sendItemType(jobItemMeasureDTO)
+            }
+            viewCapturedItemPhoto.setOnClickListener {
+                Coroutines.main {
+                    approveViewModel.generateGalleryUI(jobItemMeasureDTO.itemMeasureId)
+                    Navigation.findNavController(it)
+                        .navigate(R.id.action_measureApprovalFragment_to_measureGalleryFragment)
+                }
+            }
+            Coroutines.main {
+                updateMeasureImage()
+            }
+        }
+    }
+
+    override fun initializeViewBinding(view: View): MeasurementsItemBinding {
+        return MeasurementsItemBinding.bind(view)
     }
 }
