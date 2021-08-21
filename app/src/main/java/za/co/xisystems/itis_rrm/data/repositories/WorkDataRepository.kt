@@ -356,9 +356,9 @@ class WorkDataRepository(
                 .getJobItemsEstimatesDoneForJobId(jobId, estimateWorkPartComplete, estWorksComplete)
     }
 
-    suspend fun getJobEstiItemForEstimateId(estimateId: String?): LiveData<JobEstimateWorksDTO> {
+    suspend fun getLiveJobEstimateWorksByEstimateId(estimateId: String?): LiveData<JobEstimateWorksDTO> {
         return withContext(Dispatchers.IO) {
-            appDb.getEstimateWorkDao().getJobMeasureItemsForJobId(estimateId)
+            appDb.getEstimateWorkDao().getLiveJobEstimateWorksForEstimateId(estimateId)
         }
     }
 

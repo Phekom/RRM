@@ -15,7 +15,7 @@ import za.co.xisystems.itis_rrm.utils.ServiceUtil
 class NetworkConnectionInterceptor(
     context: Context
 ) : Interceptor {
-    private val testConnection = "www.nra.co.za"
+    private val testConnection = "www.mg.co.za"
     private val serviceHost = ServiceUriUtil.getInstance()?.webServiceHost
     private val applicationContext = context.applicationContext
     override fun intercept(chain: Interceptor.Chain): Response {

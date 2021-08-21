@@ -157,9 +157,9 @@ class WorkViewModel(
         }
     }
 
-    suspend fun getJobEstiItemForEstimateId(estimateId: String?): LiveData<JobEstimateWorksDTO> =
+    suspend fun getLiveJobEstimateWorksByEstimateId(estimateId: String?): LiveData<JobEstimateWorksDTO> =
         withContext(ioContext) {
-            return@withContext workDataRepository.getJobEstiItemForEstimateId(estimateId)
+            return@withContext workDataRepository.getLiveJobEstimateWorksByEstimateId(estimateId)
         }
 
     suspend fun getWorkFlowCodes(eId: Int): LiveData<List<WfWorkStepDTO>> {

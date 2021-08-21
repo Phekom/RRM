@@ -18,9 +18,9 @@ import kotlinx.coroutines.withContext
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
+import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.results.XIResult.Error
 import za.co.xisystems.itis_rrm.custom.results.XIResult.ProgressUpdate
-import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.results.XIResult.Status
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.localDB.JobDataController
@@ -237,10 +237,8 @@ class OfflineDataRepository(
         }
     }
 
-    suspend fun getUOMForProjectItemId(projectItemId: String): String {
-        return withContext(Dispatchers.IO) {
-            appDb.getProjectItemDao().getUOMForProjectItemId(projectItemId)
-        }
+    suspend fun getUOMForProjectItemId(projectItemId: String): String = withContext(Dispatchers.IO) {
+        return@withContext appDb.getProjectItemDao().getUOMForProjectItemId(projectItemId) ?: ""
     }
 
     suspend fun getJobMeasureItemsForJobId(
@@ -443,7 +441,7 @@ class OfflineDataRepository(
                     Timber.d("pr**: $projectCount / $projectMax projects")
 
                     postEvent(
-                         ProgressUpdate(
+                        ProgressUpdate(
                             "projects", (projectCount.toFloat() * contractCount.toFloat()) /
                                 (projectMax.toFloat() * contractMax.toFloat())
                         )

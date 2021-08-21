@@ -76,4 +76,7 @@ data class LocationModel(
     val longitude: Double,
     val latitude: Double,
     val accuracy: Float
-)
+) {
+
+    override fun toString(): String = "(lng: ${this.longitude}, lat: ${this.latitude} )"
+}

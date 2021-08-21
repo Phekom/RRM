@@ -47,8 +47,7 @@ class DeferredLocationRepository(
                 }
 
                 if (linearId.contains("xxx" as CharSequence, ignoreCase = true) ||
-                    bufferLocation.contains("xxx" as CharSequence, ignoreCase = true) ||
-                    !errorMessage.isNullOrBlank()
+                    bufferLocation.contains("xxx" as CharSequence, ignoreCase = true)
                 ) {
                     throw NoDataException("This photograph was not taken within 50 metres of a national road")
                 } else {
@@ -63,7 +62,7 @@ class DeferredLocationRepository(
                 }
             }
         } catch (e: Throwable) {
-            result = XIResult.error(e, "There was a problem processing this photograph: ${e.message}")
+            result = XIResult.Error(e, "There was a problem processing this photograph: ${e.message}")
         }
 
         return@withContext result

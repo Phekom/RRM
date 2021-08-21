@@ -724,7 +724,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
         estimateJobId: String
     ) {
         val estimateWorksData =
-            workViewModel.getJobEstiItemForEstimateId(estimateItemId)
+            workViewModel.getLiveJobEstimateWorksByEstimateId(estimateItemId)
         estimateWorksData.observe(viewLifecycleOwner, { estimateWorks ->
 
             estimateWorks?.let { workItem ->

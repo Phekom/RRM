@@ -21,7 +21,7 @@ interface EstimateWorkDao {
     fun checkIfJobEstimateWorksExist(worksId: String): Boolean
 
     @Query("SELECT * FROM JOB_ESTIMATE_WORKS WHERE estimateId = :estimateId")
-    fun getJobMeasureItemsForJobId(estimateId: String?): LiveData<List<JobEstimateWorksDTO>>
+    fun getLiveJobEstimateWorksForEstimateId(estimateId: String?): LiveData<JobEstimateWorksDTO>
 
     @Query("UPDATE JOB_ESTIMATE_WORKS " +
         "SET jobEstimateWorksPhotos =:jobEstimateWorksPhotos " +
