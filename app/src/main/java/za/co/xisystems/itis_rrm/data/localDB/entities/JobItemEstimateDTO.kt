@@ -88,12 +88,13 @@ data class JobItemEstimateDTO(
         recordVersion = parcel.readInt(),
         trackRouteId = parcel.readString(),
         jobItemEstimatePhotoStart = parcel.readValue(JobItemEstimatesPhotoDTO::class.java.classLoader)
-            as? JobItemEstimatesPhotoDTO,
+                as? JobItemEstimatesPhotoDTO,
         jobItemEstimatePhotoEnd = parcel.readValue(JobItemEstimatesPhotoDTO::class.java.classLoader)
-            as? JobItemEstimatesPhotoDTO,
+                as? JobItemEstimatesPhotoDTO,
         estimateComplete = parcel.readString(),
         measureActId = parcel.readInt(),
-        selectedItemUom = parcel.readString()
+        selectedItemUom = parcel.readString(),
+        geoCoded = parcel.readByte() != 0.toByte()
     )
 
     fun getJobItemEstimatePhoto(lookForStartPhoto: Boolean): Pair<Int, JobItemEstimatesPhotoDTO> {
@@ -163,6 +164,7 @@ data class JobItemEstimateDTO(
         parcel.writeList(jobItemEstimatePhotos.toList())
         parcel.writeValue(jobItemEstimatePhotoStart)
         parcel.writeValue(jobItemEstimatePhotoEnd)
+        parcel.writeByte(if (geoCoded) 1 else 0)
     }
 
     override fun describeContents(): Int {

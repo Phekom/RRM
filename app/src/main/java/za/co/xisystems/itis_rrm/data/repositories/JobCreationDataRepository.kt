@@ -16,19 +16,7 @@ import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.localDB.JobDataController
-import za.co.xisystems.itis_rrm.data.localDB.entities.ContractDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimatesPhotoDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobSectionDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectSectionDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.SectionItemDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.SectionPointDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.WorkflowJobDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.data.localDB.views.SectionMarker
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
@@ -41,7 +29,7 @@ import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import java.io.IOException
-import java.util.ArrayList
+import java.util.*
 
 /**
  * Created by Francis Mahlava on 2019/11/28.
@@ -446,13 +434,13 @@ class JobCreationDataRepository(
         }
     }
 
-    private fun uploadRrmImage(
+    private suspend fun uploadRrmImage(
         activity: FragmentActivity,
         filename: String,
         photoQuality: PhotoQuality,
         imageCounter: Int,
         totalImages: Int
-    ) {
+    ) = Coroutines.io {
 
         val data: ByteArray = getData(filename, photoQuality)
         processImageUpload(
@@ -464,14 +452,14 @@ class JobCreationDataRepository(
         )
     }
 
-    private fun getData(
+    private suspend fun getData(
         filename: String,
         photoQuality: PhotoQuality
-    ): ByteArray {
+    ): ByteArray = withContext(Dispatchers.IO) {
         val uri = photoUtil.getPhotoPathFromExternalDirectory(filename)
         val bitmap =
             photoUtil.getPhotoBitmapFromFile(uri, photoQuality)
-        return photoUtil.getCompressedPhotoWithExifInfo(
+        return@withContext photoUtil.getCompressedPhotoWithExifInfo(
             bitmap!!,
             filename
         )
@@ -560,7 +548,7 @@ class JobCreationDataRepository(
         val name = object {}.javaClass.enclosingMethod?.name
         Timber.d("x -> $name")
         if (linearId != null) {
-            if (!appDb.getSectionPointDao().checkSectionExists(sectionId, projectId, jobId)) {
+            if (!appDb.getSectionPointDao().checkSectionExists(sectionId, projectId, jobId, pointLocation)) {
                 appDb.getSectionPointDao()
                     .insertSection(direction, linearId, pointLocation, sectionId, projectId, jobId)
             }
@@ -642,8 +630,8 @@ class JobCreationDataRepository(
         return appDb.getJobItemEstimateDao().getJobEstimationItemsForJobId(jobId, actId).value.orEmpty()
     }
 
-    suspend fun getProjectItemById(projectItemId: String?): ItemDTOTemp? {
-        return appDb.getItemDaoTemp().getProjectItemById(projectItemId!!)
+    suspend fun getProjectItemById(itemId: String?): ItemDTOTemp? {
+        return appDb.getItemDaoTemp().getProjectItemById(itemId!!)
     }
 
     suspend fun getEstimateById(estimateId: String): JobItemEstimateDTO = withContext(Dispatchers.IO) {
@@ -660,9 +648,14 @@ class JobCreationDataRepository(
         return@withContext appDb.getItemDaoTemp().insertItems(item)
     }
 
+    @Transaction
     suspend fun backupEstimatePhoto(photoDTO: JobItemEstimatesPhotoDTO):
-        LiveData<List<JobItemEstimatesPhotoDTO>> = withContext(Dispatchers.IO) {
+            LiveData<List<JobItemEstimatesPhotoDTO>> = withContext(Dispatchers.IO) {
         appDb.getJobItemEstimatePhotoDao().insertJobItemEstimatePhoto(photoDTO)
         return@withContext appDb.getJobItemEstimatePhotoDao().getJobEstimationItemsPhoto(photoDTO.estimateId)
+    }
+
+    suspend fun saveJobSection(jobSection: JobSectionDTO) = withContext(Dispatchers.IO) {
+        return@withContext appDb.getJobSectionDao().insertJobSection(jobSection)
     }
 }

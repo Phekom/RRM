@@ -25,18 +25,9 @@ import za.co.xisystems.itis_rrm.custom.errors.ServiceException
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.custom.results.XIResult
-import za.co.xisystems.itis_rrm.custom.results.XIResult.Error
-import za.co.xisystems.itis_rrm.custom.results.XIResult.Progress
-import za.co.xisystems.itis_rrm.custom.results.XIResult.Success
+import za.co.xisystems.itis_rrm.custom.results.XIResult.*
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
-import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksPhotoDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.WfWorkStepDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.WorkflowJobDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
 import za.co.xisystems.itis_rrm.utils.Coroutines
@@ -62,7 +53,7 @@ class WorkDataRepository(
     val workStatus: MutableLiveData<XIEvent<XIResult<String>>> = MutableLiveData()
 
     private suspend fun postWorkStatus(result: XIResult<String>) = withContext(Dispatchers.Main) {
-            workStatus.postValue(XIEvent(result))
+        workStatus.postValue(XIEvent(result))
     }
 
     suspend fun getUser(): LiveData<UserDTO> {
@@ -212,13 +203,13 @@ class WorkDataRepository(
         }
     }
 
-    private fun uploadRrmImage(
+    suspend fun uploadRrmImage(
         filename: String,
         photoQuality: PhotoQuality,
         imageCounter: Int,
         totalImages: Int,
         activity: FragmentActivity
-    ) {
+    ) = Coroutines.io {
         val data: ByteArray = getData(filename, photoQuality)
         processImageUpload(
             filename,
@@ -235,41 +226,40 @@ class WorkDataRepository(
         photo: ByteArray,
         totalImages: Int,
         imageCounter: Int
-    ) {
-        Coroutines.io {
-            try {
-                val imagedata = JsonObject()
-                imagedata.addProperty("Filename", filename)
-                imagedata.addProperty("ImageByteArray", photoUtil.encode64Pic(photo))
-                imagedata.addProperty("ImageFileExtension", extension)
-                Timber.d("ImageData: $imagedata")
+    ) = Coroutines.io {
+        try {
+            val imagedata = JsonObject()
+            imagedata.addProperty("Filename", filename)
+            imagedata.addProperty("ImageByteArray", photoUtil.encode64Pic(photo))
+            imagedata.addProperty("ImageFileExtension", extension)
+            Timber.d("ImageData: $imagedata")
 
-                val uploadImageResponse = apiRequest { api.uploadRrmImage(imagedata) }
-                val apiMessage = uploadImageResponse.errorMessage ?: ""
+            val uploadImageResponse = apiRequest { api.uploadRrmImage(imagedata) }
+            val apiMessage = uploadImageResponse.errorMessage ?: ""
 
-                if (apiMessage.trim().isNotBlank()) {
-                    throw ServiceException(apiMessage)
-                }
-
-                if (totalImages <= imageCounter) {
-                    Timber.d("Total Images: $totalImages")
-                }
-            } catch (throwable: Throwable) {
-                val errMessage = "Failed to upload image: ${throwable.message ?: XIErrorHandler.UNKNOWN_ERROR}"
-                Timber.e(throwable, errMessage)
-                postWorkStatus(Error(throwable, errMessage))
+            if (apiMessage.trim().isNotBlank()) {
+                throw ServiceException(apiMessage)
             }
+
+            if (totalImages <= imageCounter) {
+                Timber.d("Total Images: $totalImages")
+            }
+        } catch (throwable: Throwable) {
+            val errMessage = "Failed to upload image: ${throwable.message ?: XIErrorHandler.UNKNOWN_ERROR}"
+            Timber.e(throwable, errMessage)
+            postWorkStatus(Error(throwable, errMessage))
         }
     }
 
-    private fun getData(
+
+    private suspend fun getData(
         filename: String,
         photoQuality: PhotoQuality
-    ): ByteArray {
+    ): ByteArray = withContext(Dispatchers.IO) {
         val uri = photoUtil.getPhotoPathFromExternalDirectory(filename)
         val bitmap =
             photoUtil.getPhotoBitmapFromFile(uri, photoQuality)
-        return photoUtil.getCompressedPhotoWithExifInfo(
+        return@withContext photoUtil.getCompressedPhotoWithExifInfo(
             bitmap!!,
             filename
         )
@@ -352,8 +342,8 @@ class WorkDataRepository(
         estimateWorkPartComplete: Int,
         estWorksComplete: Int
     ): Int = withContext(Dispatchers.IO) {
-            return@withContext appDb.getJobItemEstimateDao()
-                .getJobItemsEstimatesDoneForJobId(jobId, estimateWorkPartComplete, estWorksComplete)
+        return@withContext appDb.getJobItemEstimateDao()
+            .getJobItemsEstimatesDoneForJobId(jobId, estimateWorkPartComplete, estWorksComplete)
     }
 
     suspend fun getLiveJobEstimateWorksByEstimateId(estimateId: String?): LiveData<JobEstimateWorksDTO> {

@@ -105,7 +105,7 @@ import za.co.xisystems.itis_rrm.utils.DatetimeConverters
     ],
     views = [ContractSelectorView::class],
     exportSchema = true,
-    version = 22
+    version = 23
 )
 
 @TypeConverters(Converters::class, DatetimeConverters::class)
@@ -174,7 +174,6 @@ abstract class AppDatabase : RoomDatabase() {
                         SQLiteDatabase.getBytes(
                             secretphrase!!.toCharArray()
                         )
-                    Timber.e("^*^ DB Pass: $passphrase")
                     val factory = SupportFactory(passphrase, null, false)
                     Room.databaseBuilder(
                         context.applicationContext,

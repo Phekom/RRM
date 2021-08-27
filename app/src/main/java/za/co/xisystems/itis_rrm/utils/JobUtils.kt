@@ -37,13 +37,13 @@ object JobUtils {
     }
 
     fun areQuantitiesValid(job: JobDTO?): Boolean {
-        when {
-            job?.jobItemEstimates.isNullOrEmpty() -> return false
+        return when {
+            job?.jobItemEstimates.isNullOrEmpty() -> false
             else -> {
                 job?.jobItemEstimates?.forEach { estimate ->
                     if (estimate.qty < 0.01) return false
                 }
-                return true
+                true
             }
         }
     }
@@ -53,8 +53,8 @@ object JobUtils {
         if (photos != null) {
             Collections.sort(photos, Comparator { o1, o2 ->
                 if (o1 == null || o2 == null) return@Comparator 0 // this case should never happen
-                if (o1.isPhotoStart()) return@Comparator -1
-                if (!o2.isPhotoStart()) {
+                if (o1.isStartPhoto()) return@Comparator -1
+                if (!o2.isStartPhoto()) {
                     0
                 } else {
                     1
