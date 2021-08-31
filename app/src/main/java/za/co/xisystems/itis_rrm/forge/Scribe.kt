@@ -13,10 +13,12 @@ import androidx.security.crypto.EncryptedFile
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import com.password4j.SecureString
+import kotlinx.coroutines.asExecutor
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
-import za.co.xisystems.itis_rrm.forge.XIArmoury.Companion.PREFS_FILE
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
@@ -26,18 +28,30 @@ import java.io.IOException
  * Read and write encrypted files
  */
 
-class Scribe(
+class Scribe private constructor(
     private val dispatchers: DispatcherProvider = DefaultDispatcherProvider(),
-    masterKey: MasterKey,
-    context: Context
+    sageInstance: Sage,
+    context: Context,
 ) {
 
-    var securePrefs: SharedPreferences
+    lateinit var securePrefs: SharedPreferences
     private var armouryScope = ArmouryScope()
-    val operational get() = true
+    private lateinit var masterKey: MasterKey
+    var mOperational: Boolean = this::securePrefs.isInitialized
+
+    val operational get() = mOperational
 
     init {
-        this.securePrefs = createPreferences(context = context, masterKey = masterKey)
+        armouryScope.onCreate()
+        armouryScope.launch {
+            initPreferences(context = context, masterKey = sageInstance.masterKeyAlias).also { cryptoPrefs ->
+                this@Scribe.securePrefs = cryptoPrefs
+            }
+            while (!this@Scribe::securePrefs.isInitialized) {
+                delay(500)
+            }
+            this
+        }
     }
 
     companion object {
@@ -46,6 +60,23 @@ class Scribe(
         const val USER_KEY = "za.co.xisystems.itis_rrm.forge.Scribe.UserKey"
         const val NOT_SET = "NoPassphraseSet"
         const val NOT_INITIALIZED: String = "NoInitialization"
+        const val PREFS_FILE = "specialstylesandcolours"
+        fun getInstance(
+            context: Context,
+            sageInstance: Sage,
+            prefsFile: String = PREFS_FILE
+        ): Scribe {
+            val instance = Scribe(context = context, sageInstance = sageInstance)
+            instance.securePrefs = instance.createPreferences(
+                context = context,
+                masterKey = sageInstance.masterKeyAlias,
+                prefsFile = prefsFile
+            ).also { securePrefs ->
+                val passphrase = securePrefs.getString(PASS_KEY, "NOT_SET")
+            }
+
+            return instance
+        }
     }
 
     /**
@@ -78,20 +109,22 @@ class Scribe(
         prefsFile: String = "specialstylesandcolours",
         masterKey: MasterKey
     ): SharedPreferences {
-        return EncryptedSharedPreferences.create(
+        val preferences = EncryptedSharedPreferences.create(
             context.applicationContext,
             prefsFile,
             masterKey,
             EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
             EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
         )
+        mOperational = true
+        return preferences
     }
 
     /**
      * Read / check if passphrase has been set
      * @return String
      */
-    suspend fun getPassphrase(): String = withContext(dispatchers.io()) {
+    suspend fun getFuturePassphrase(): String = withContext(dispatchers.io()) {
         return@withContext readPassphrase()
     }
 
@@ -105,27 +138,31 @@ class Scribe(
      * @param passphrase String
      * @return Unit
      */
-    suspend fun writeFuturePassphrase(passphrase: String) {
-        withContext(dispatchers.io()) {
-            writePassphrase(passphrase)
-        }
+    suspend fun writeFuturePassphrase(passphrase: String) = withContext(dispatchers.io()) {
+        writePassphrase(passphrase)
     }
 
-    fun writePassphrase(passphrase: String) {
+    private fun writePassphrase(passphrase: String) = with(securePrefs.edit()) {
+        putString(PASS_KEY, passphrase.trim()).apply()
+    }
+
+    fun writeSessionKey(sessionKey: String) = with(securePrefs.edit()) {
+        putString(SESSION_KEY, sessionKey).commit()
+    }
+
+    fun readSessionKey(): String {
+        return securePrefs.getString(SESSION_KEY, "").orEmpty()
+    }
+
+    fun writeUserObject(userObject: String) = dispatchers.io().asExecutor().execute {
         with(securePrefs.edit()) {
-            putString(PASS_KEY, passphrase.trim()).apply()
+            putString(USER_KEY, userObject).apply()
         }
     }
 
-    fun writeSessionKey(sessionKey: String) {
-        with(securePrefs.edit()) {
-            putString(SESSION_KEY, sessionKey).apply()
-        }
-    }
-
-    fun readSessionKey(): SecureString {
-        val nakedKey = securePrefs.getString(SESSION_KEY, "UNAUTHORIZED")
-        return SecureString(nakedKey!!.toCharArray())
+    suspend fun readUserObject(): SecureString = withContext(dispatchers.io()) {
+        val nakedObject = securePrefs.getString(USER_KEY, "")!!
+        return@withContext SecureString(nakedObject.toCharArray())
     }
 
     /**
@@ -227,13 +264,9 @@ class Scribe(
         return byteArrayOutputStream.toByteArray()
     }
 
-    fun writeUserObject(userObject: String) {
+    fun eraseSessionKey() {
         with(securePrefs.edit()) {
-            putString(USER_KEY, userObject).apply()
+            remove(SESSION_KEY).apply()
         }
-    }
-
-    fun readUserObject(): String {
-        return securePrefs.getString(USER_KEY, "UNAUTHORIZED")!!
     }
 }

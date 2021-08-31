@@ -10,12 +10,12 @@ import com.password4j.Argon2Function
 import com.password4j.Password
 import com.password4j.SecureString
 import com.password4j.types.Argon2
+import java.security.SecureRandom
 import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.results.XIResult.Error
 import za.co.xisystems.itis_rrm.custom.results.XIResult.Success
-import java.security.SecureRandom
 
 /**
  * Wizard generates and validates tokens
