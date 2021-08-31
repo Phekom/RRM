@@ -312,4 +312,15 @@ class JobDTO(
             return arrayOfNulls(size)
         }
     }
+
+    fun isGeoCoded(): Boolean {
+        var result = true
+        for (estimate in this.jobItemEstimates) {
+            if (!estimate.arePhotosGeoCoded()) {
+                result = false
+                break
+            }
+        }
+        return result
+    }
 }

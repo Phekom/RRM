@@ -251,7 +251,6 @@ class WorkDataRepository(
         }
     }
 
-
     private suspend fun getData(
         filename: String,
         photoQuality: PhotoQuality

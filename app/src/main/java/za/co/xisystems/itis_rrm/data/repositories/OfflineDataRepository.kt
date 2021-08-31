@@ -215,7 +215,7 @@ class OfflineDataRepository(
 
     suspend fun getProjectSection(sectionId: String?): LiveData<ProjectSectionDTO> {
         return withContext(Dispatchers.IO) {
-            appDb.getProjectSectionDao().getSection(sectionId!!)
+            appDb.getProjectSectionDao().getLiveSection(sectionId!!)
         }
     }
 

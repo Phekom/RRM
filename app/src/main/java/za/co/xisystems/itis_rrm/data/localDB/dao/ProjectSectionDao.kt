@@ -86,15 +86,18 @@ interface ProjectSectionDao {
     ): String?
 
     @Query("SELECT * FROM PROJECT_SECTION_TABLE WHERE sectionId LIKE :sectionId")
-    fun getSection(sectionId: String): LiveData<ProjectSectionDTO>
+    fun getLiveSection(sectionId: String): LiveData<ProjectSectionDTO>
+
+    @Query("SELECT * FROM PROJECT_SECTION_TABLE WHERE sectionId LIKE :sectionId")
+    fun getSection(sectionId: String): ProjectSectionDTO
 
     @Query("DELETE FROM PROJECT_SECTION_TABLE")
     fun deleteAll()
 
     @Query(
         "SELECT section, endKm as kmMarker FROM PROJECT_SECTION_TABLE " +
-                "WHERE route = :linearId AND direction = :direction AND " +
-                ":pointLocation > endKm ORDER BY (:pointLocation - endKm) LIMIT 1"
+            "WHERE route = :linearId AND direction = :direction AND " +
+            ":pointLocation > endKm ORDER BY (:pointLocation - endKm) LIMIT 1"
     )
     fun findClosestEndKm(linearId: String, pointLocation: Double, direction: String): SectionBorder?
 

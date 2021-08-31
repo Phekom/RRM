@@ -171,6 +171,18 @@ data class JobItemEstimateDTO(
         return 0
     }
 
+    fun arePhotosGeoCoded(): Boolean {
+        var result = true
+        if (jobItemEstimatePhotos.size < 2) return false
+        for (photo in jobItemEstimatePhotos) {
+            if (!photo.geoCoded) {
+                result = false
+                break
+            }
+        }
+        return result
+    }
+
     companion object CREATOR : Creator<JobItemEstimateDTO> {
         const val serialVersionUID: Long = 10L
         override fun createFromParcel(parcel: Parcel): JobItemEstimateDTO {

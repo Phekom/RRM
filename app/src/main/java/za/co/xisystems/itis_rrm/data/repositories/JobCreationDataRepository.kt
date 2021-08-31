@@ -194,10 +194,14 @@ class JobCreationDataRepository(
         }
     }
 
-    suspend fun getSection(sectionId: String): LiveData<ProjectSectionDTO> {
+    suspend fun getLiveSection(sectionId: String): LiveData<ProjectSectionDTO> {
         return withContext(Dispatchers.IO) {
-            appDb.getProjectSectionDao().getSection(sectionId)
+            appDb.getProjectSectionDao().getLiveSection(sectionId)
         }
+    }
+
+    suspend fun getSection(sectionId: String): ProjectSectionDTO = withContext(Dispatchers.IO) {
+        return@withContext appDb.getProjectSectionDao().getSection(sectionId)
     }
 
     @Suppress("MagicNumber")
@@ -608,9 +612,11 @@ class JobCreationDataRepository(
         }
     }
 
+    @Transaction
     suspend fun backupJob(job: JobDTO) {
         return withContext(Dispatchers.IO) {
             appDb.getJobDao().insertOrUpdateJob(job)
+            appDb.getJobDao().getJobForJobId(job.jobId)
         }
     }
 
@@ -639,9 +645,9 @@ class JobCreationDataRepository(
     }
 
     @Transaction
-    suspend fun backupEstimate(estimate: JobItemEstimateDTO) = withContext(Dispatchers.IO) {
+    suspend fun backupEstimate(estimate: JobItemEstimateDTO): JobItemEstimateDTO = withContext(Dispatchers.IO) {
         appDb.getJobItemEstimateDao().insertJobItemEstimate(estimate)
-        return@withContext getEstimateById(estimate.estimateId)
+        return@withContext appDb.getJobItemEstimateDao().getJobItemEstimateForEstimateId(estimate.estimateId)
     }
 
     suspend fun backupProjectItem(item: ItemDTOTemp): Long = withContext(Dispatchers.IO) {
@@ -650,12 +656,13 @@ class JobCreationDataRepository(
 
     @Transaction
     suspend fun backupEstimatePhoto(photoDTO: JobItemEstimatesPhotoDTO):
-            LiveData<List<JobItemEstimatesPhotoDTO>> = withContext(Dispatchers.IO) {
+        JobItemEstimatesPhotoDTO = withContext(Dispatchers.IO) {
         appDb.getJobItemEstimatePhotoDao().insertJobItemEstimatePhoto(photoDTO)
-        return@withContext appDb.getJobItemEstimatePhotoDao().getJobEstimationItemsPhoto(photoDTO.estimateId)
+        return@withContext appDb.getJobItemEstimatePhotoDao().getJobItemEstimatePhoto(photoDTO.photoId)
     }
 
-    suspend fun saveJobSection(jobSection: JobSectionDTO) = withContext(Dispatchers.IO) {
-        return@withContext appDb.getJobSectionDao().insertJobSection(jobSection)
+    suspend fun saveJobSection(jobSection: JobSectionDTO): JobSectionDTO? = withContext(Dispatchers.IO) {
+        appDb.getJobSectionDao().insertJobSection(jobSection)
+        return@withContext appDb.getJobSectionDao().getJobSectionFromJobId(jobSection.jobId!!)
     }
 }
