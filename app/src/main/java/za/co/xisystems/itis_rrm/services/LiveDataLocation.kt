@@ -15,6 +15,7 @@ import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
+import za.co.xisystems.itis_rrm.utils.Utils.round
 
 class LocationLiveData(context: Context) : LiveData<LocationModel>() {
 
@@ -78,5 +79,5 @@ data class LocationModel(
     val accuracy: Float
 ) {
 
-    override fun toString(): String = "(lng: ${this.longitude}, lat: ${this.latitude} )"
+    override fun toString(): String = "(lat: ${this.latitude.round(6)} ,lng: ${this.longitude.round(6)})"
 }

@@ -10,6 +10,7 @@ import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
+import za.co.xisystems.itis_rrm.data.network.responses.RouteSectionPointResponse
 import za.co.xisystems.itis_rrm.domain.SectionBorder
 import za.co.xisystems.itis_rrm.utils.Utils.round
 
@@ -24,12 +25,8 @@ class DeferredLocationRepository(
     }
 
     @Suppress("MagicNumber")
-    suspend fun validateLocation(
-        latitude: Double,
-        longitude: Double,
-        useR: String,
-        projectId: String?,
-        jobId: String
+    suspend fun getRouteSectionPoint(
+        locationQuery: LocationValidation
     ): XIResult<LocationValidation> = withContext(Dispatchers.IO) {
         var result: XIResult<LocationValidation> =
             XIResult.Error(
@@ -37,8 +34,17 @@ class DeferredLocationRepository(
                 "The service is down, please try again later."
             )
         try {
-            val routeSectionPointResponse =
-                apiRequest { api.getRouteSectionPoint(DISTANCE, IN_BUFFER, latitude, longitude, useR) }
+
+            val routeSectionPointResponse: RouteSectionPointResponse =
+                apiRequest {
+                    api.getRouteSectionPoint(
+                        distance = DISTANCE,
+                        buffer = IN_BUFFER,
+                        latitude = locationQuery.latitude,
+                        longitude = locationQuery.longitude,
+                        userId = locationQuery.userId
+                    )
+                }
             with(routeSectionPointResponse) {
                 Timber.d("$routeSectionPointResponse")
 
@@ -46,79 +52,95 @@ class DeferredLocationRepository(
                     throw ServiceException(errorMessage)
                 }
 
-                if (linearId.contains("xxx" as CharSequence, ignoreCase = true) ||
-                    bufferLocation.contains("xxx" as CharSequence, ignoreCase = true)
+                if (linearId.contains("xxx" as CharSequence, ignoreCase = true).or(linearId.isBlank()) ||
+                    bufferLocation.contains("xxx" as CharSequence, ignoreCase = true).or(bufferLocation.isBlank())
+
                 ) {
-                    throw NoDataException("This photograph was not taken within 50 metres of a national road")
+
+                    throw LocationException("Captured coordinates (lat: ${locationQuery.latitude}, lng: ${locationQuery.longitude}) are not in Sanral territory.")
                 } else {
-                    result = saveRouteSectionPoint(
-                        direction = direction,
-                        linearId = linearId,
-                        pointLocation = pointLocation,
-                        sectionId = sectionId,
-                        projectId = projectId!!,
-                        jobId = jobId
-                    )
+                    routeSectionPointResponse.apply {
+                        val routeSectionPointResult = locationQuery.copy(
+                            direction = this.direction, route = this.linearId, pointLocation = this.pointLocation,
+                            sectionId = this.sectionId.toString()
+                        ).setBufferLocation(this.bufferLocation)
+                        result = XIResult.Success(routeSectionPointResult)
+                    }
                 }
             }
         } catch (e: Throwable) {
-            result = XIResult.Error(e, "There was a problem processing this photograph: ${e.message}")
+            result = XIResult.Error(e, "${e.message}")
         }
 
         return@withContext result
     }
 
     @Suppress("MagicNumber")
-    fun saveRouteSectionPoint(
-        direction: String,
-        linearId: String,
-        pointLocation: Double,
-        sectionId: Int,
-        projectId: String,
-        jobId: String
-    ): XIResult<LocationValidation> {
+    suspend fun saveRouteSectionPoint(
+        routeSectionQuery: LocationValidation
+    ): XIResult<LocationValidation> = withContext(Dispatchers.IO) {
         val name = object {}.javaClass.enclosingMethod?.name
         Timber.d("x -> $name")
-        if (linearId.isNotBlank()) {
-            if (!appDb.getSectionPointDao().checkSectionExists(sectionId, projectId, jobId)) {
-                appDb.getSectionPointDao()
-                    .insertSection(direction, linearId, pointLocation, sectionId, projectId, jobId)
+        var projectSectionId: String? = null
+
+        routeSectionQuery.apply {
+            if (!route.isNullOrBlank()) {
+                if (!appDb.getSectionPointDao().checkSectionExists(
+                        sectionId!!.toInt(),
+                        projectId,
+                        jobId,
+                        pointLocation!!
+                    )
+                ) {
+                    appDb.getSectionPointDao()
+                        .insertSection(
+                            direction!!,
+                            route!!,
+                            pointLocation!!,
+                            sectionId!!.toInt(),
+                            projectId,
+                            jobId
+                        )
+                }
+                appDb.getProjectSectionDao().updateSectionDirection(direction, projectId)
+                projectSectionId = appDb.getProjectSectionDao()
+                    .getSectionByRouteSectionProject(sectionId.toString(), route!!, projectId, pointLocation!!)
+
+                // Deal with SectionDirection combinations.
+                // S.McDonald 2021/05/14
+                if (projectSectionId.isNullOrBlank()) {
+                    projectSectionId = appDb.getProjectSectionDao().getSectionByRouteSectionProject(
+                        sectionId.toString().plus(direction),
+                        route!!,
+                        projectId,
+                        pointLocation!!
+                    )
+                }
             }
-            appDb.getProjectSectionDao().updateSectionDirection(direction, projectId)
         }
 
-        var projectSectionId = appDb.getProjectSectionDao()
-            .getSectionByRouteSectionProject(sectionId.toString(), linearId, projectId, pointLocation)
-
-        // Deal with SectionDirection combinations.
-        // S.McDonald 2021/05/14
-        if (projectSectionId.isNullOrBlank()) {
-            projectSectionId = appDb.getProjectSectionDao().getSectionByRouteSectionProject(
-                sectionId.toString().plus(direction),
-                linearId,
-                projectId,
-                pointLocation
+        Timber.d("^*^ ProjectSectionId: $projectSectionId")
+        if (!projectSectionId.isNullOrBlank()) {
+            return@withContext validateRouteSection(
+                routeSectionQuery.projectId,
+                routeSectionQuery
             )
-        }
-        Timber.d("ProjectSectionId: $projectSectionId")
-
-        return if (!projectSectionId.isNullOrBlank()) {
-            val data = LocationValidation(
-                routeMarker = "$linearId $sectionId $direction at ${pointLocation.round(3)} km",
-                pointLocation = pointLocation,
-                projectSectionId = projectSectionId,
-                messages = arrayListOf()
-            )
-
-            XIResult.Success(data)
         } else {
-            findNearestSection(linearId, pointLocation, direction)
+            return@withContext findNearestSection(
+                routeSectionQuery.route!!,
+                routeSectionQuery.pointLocation!!,
+                routeSectionQuery.direction!!
+            )
         }
     }
 
     @Suppress("MagicNumber")
-    fun findNearestSection(linearId: String, pointLocation: Double, direction: String): XIResult<LocationValidation> {
-        var result = "This photograph was not taken within 50 metres of a national road"
+    suspend fun findNearestSection(
+        linearId: String,
+        pointLocation: Double,
+        direction: String
+    ): XIResult<LocationValidation> = withContext(Dispatchers.IO) {
+        var result = "Photo falls outside of the active project scope."
 
         val closestEndKm =
             appDb.getProjectSectionDao().findClosestEndKm(linearId, pointLocation, direction)
@@ -146,6 +168,40 @@ class DeferredLocationRepository(
             }
         }
 
-        return XIResult.Error(LocationException(result), "This photograph was out of bounds")
+        return@withContext XIResult.Error(LocationException(result), result)
+    }
+
+    private suspend fun validateRouteSection(
+        projectId: String,
+        locationValidationData: LocationValidation
+    ): XIResult<LocationValidation> = withContext(Dispatchers.IO) {
+
+        val message = "This photograph was not taken within 50 metres of a national road"
+        var result: XIResult<LocationValidation> =
+            XIResult.Error(LocationException(message), message)
+
+        val sectionPoint = appDb.getSectionPointDao().getPointSectionData(projectId)
+
+        if (!sectionPoint.projectId.isNullOrBlank()) {
+            val sectionResult = locationValidationData.setSectionPoint(sectionPoint)
+            val projectSectionId = appDb.getProjectSectionDao().getSectionByRouteSectionProject(
+                sectionPoint.sectionId.toString(),
+                sectionPoint.linearId!!,
+                sectionPoint.projectId,
+                sectionPoint.pointLocation
+            )
+
+            if (!projectSectionId.isNullOrBlank()) {
+                val projectSection = appDb.getProjectSectionDao().getProjectSection(projectSectionId)
+                projectSection.let {
+                    val projectResult = sectionResult.setProjectSection(projectSection)
+                    result = XIResult.Success(data = projectResult)
+                }
+            } else {
+                result = findNearestSection(sectionPoint.linearId, sectionPoint.pointLocation, sectionPoint.direction!!)
+            }
+        }
+
+        return@withContext result
     }
 }
