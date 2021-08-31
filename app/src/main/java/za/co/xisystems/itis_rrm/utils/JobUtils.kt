@@ -63,4 +63,16 @@ object JobUtils {
         }
         return photos
     }
+
+    fun isGeoCoded(job: JobDTO): Boolean {
+        var result = true
+        for (estimate in job.jobItemEstimates) {
+            if (!estimate.geoCoded) {
+                result = false
+                break
+            }
+        }
+
+        return result
+    }
 }

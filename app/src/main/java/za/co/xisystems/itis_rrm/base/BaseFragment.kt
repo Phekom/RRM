@@ -14,6 +14,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.withContext
 import org.kodein.di.DIAware
+import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.BuildConfig
@@ -28,6 +29,7 @@ import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data._commons.Animations
 import za.co.xisystems.itis_rrm.data._commons.views.IProgressView
 import za.co.xisystems.itis_rrm.forge.XIArmoury
+import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModelFactory
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
@@ -53,6 +55,7 @@ import kotlin.coroutines.CoroutineContext
 abstract class BaseFragment : Fragment(), IProgressView, DIAware {
 
     private lateinit var sharedViewModel: SharedViewModel
+    override val di by closestDI()
     private val shareFactory: SharedViewModelFactory by instance()
     private val armoury: XIArmoury by instance()
     protected var coordinator: View? = null
@@ -293,7 +296,7 @@ abstract class BaseFragment : Fragment(), IProgressView, DIAware {
         )
     }
 
-    protected fun toggleLongRunning(toggle: Boolean) {
+    fun toggleLongRunning(toggle: Boolean) {
         sharedViewModel.toggleLongRunning(toggle)
     }
 
@@ -330,7 +333,7 @@ abstract class BaseFragment : Fragment(), IProgressView, DIAware {
             }
             else -> {
 
-                sharpToast(
+                extensionToast(
                     message = throwable.message,
                     style = ERROR,
                     position = BOTTOM,
