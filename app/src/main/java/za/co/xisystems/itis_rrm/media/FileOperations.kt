@@ -59,21 +59,21 @@ object FileOperations {
                 selection,
                 null,
                 sortOrder
-            )?.use {
+            )?.use { cursor ->
 
-                while (it.moveToNext()) {
-                    val id = it.getLong(it.getColumnIndex(MediaStore.Images.Media._ID))
-                    val path = it.getString(it.getColumnIndex(MediaStore.Images.Media.RELATIVE_PATH))
-                    val name = it.getString(it.getColumnIndex(MediaStore.Images.Media.DISPLAY_NAME))
-                    val size = it.getString(it.getColumnIndex(MediaStore.Images.Media.SIZE))
-                    val mimeType = it.getString(it.getColumnIndex(MediaStore.Images.Media.MIME_TYPE))
-                    val width = it.getString(it.getColumnIndex(MediaStore.Images.Media.WIDTH))
-                    val height = it.getString(it.getColumnIndex(MediaStore.Images.Media.HEIGHT))
-                    val date = it.getString(it.getColumnIndex(MediaStore.Images.Media.DATE_MODIFIED))
+                while (cursor.moveToNext()) {
+                    val id = cursor.getLong(cursor.getColumnIndex(MediaStore.Images.Media._ID))
+                    val path = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.RELATIVE_PATH))
+                    val name = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DISPLAY_NAME))
+                    val size = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.SIZE))
+                    val mimeType = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.MIME_TYPE))
+                    val width = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.WIDTH))
+                    val height = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.HEIGHT))
+                    val date = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATE_MODIFIED))
 
                     val favorite =
                         if (hasSdkHigherThan(Build.VERSION_CODES.Q)) {
-                            it.getString(it.getColumnIndex(MediaStore.Images.Media.IS_FAVORITE))
+                            cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.IS_FAVORITE))
                         } else {
                             "0"
                         }
@@ -88,7 +88,7 @@ object FileOperations {
                     images += Media(id, uri, path, name, size, mimeType, width, height, date, favorite == "1")
                 }
 
-                it.close()
+                cursor.close()
             }
         }
 
