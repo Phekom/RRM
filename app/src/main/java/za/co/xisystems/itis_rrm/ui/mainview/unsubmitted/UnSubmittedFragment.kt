@@ -17,7 +17,7 @@ import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
-import za.co.xisystems.itis_rrm.custom.results.XIError
+import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModel
@@ -87,7 +87,7 @@ class UnSubmittedFragment : BaseFragment(), DIAware {
                 })
             } catch (t: Throwable) {
                 Timber.e(t, "Failed to fetch unsubmitted jobs!")
-                val unsubError = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
+                val unsubError = XIResult.Error(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
 
                 crashGuard(
                     this@UnSubmittedFragment.requireView(),

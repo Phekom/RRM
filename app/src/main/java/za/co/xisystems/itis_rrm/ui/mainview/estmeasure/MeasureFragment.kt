@@ -19,7 +19,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
-import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
+import com.xwray.groupie.viewbinding.GroupieViewHolder
 import kotlinx.android.synthetic.main.fragment_work.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -30,10 +30,11 @@ import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
-import za.co.xisystems.itis_rrm.custom.results.XIError
+import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentEstmeasureBinding
+import za.co.xisystems.itis_rrm.databinding.ItemHeaderBinding
 import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.estimate_measure_item.EstimateMeasureItem
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
@@ -47,7 +48,7 @@ class MeasureFragment : BaseFragment(), DIAware {
     private val factory: MeasureViewModelFactory by instance()
     private var _ui: FragmentEstmeasureBinding? = null
     private val ui get() = _ui!!
-    private var groupAdapter = GroupAdapter<GroupieViewHolder>()
+    private var groupAdapter = GroupAdapter<GroupieViewHolder<ItemHeaderBinding>>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -150,7 +151,7 @@ class MeasureFragment : BaseFragment(), DIAware {
                     })
                 }
             } catch (t: Throwable) {
-                val fetchError = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
+                val fetchError = XIResult.Error(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
                 crashGuard(
                     view = this@MeasureFragment.requireView(),
                     throwable = fetchError,
@@ -195,10 +196,10 @@ class MeasureFragment : BaseFragment(), DIAware {
     }
 
     private fun initRecyclerView(measureList: List<EstimateMeasureItem>) {
-        groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
+        groupAdapter = GroupAdapter<GroupieViewHolder<ItemHeaderBinding>>().apply {
             clear()
             update(measureList)
-            notifyItemRangeChanged(0,measureList.size)
+            notifyItemRangeChanged(0, measureList.size)
         }
         ui.estimationsToBeMeasuredListView.run {
             setAdapter(adapter = groupAdapter, layoutManager = LinearLayoutManager(this.context))
@@ -235,7 +236,13 @@ class MeasureFragment : BaseFragment(), DIAware {
 
     private fun initVeiledRecycler() {
         ui.estimationsToBeMeasuredListView.run {
-            setVeilLayout(R.layout.item_velied_slug) { Toast.makeText(this@MeasureFragment.requireContext(), "Loading ...", Toast.LENGTH_SHORT).show() }
+            setVeilLayout(R.layout.item_velied_slug) {
+                Toast.makeText(
+                    this@MeasureFragment.requireContext(),
+                    "Loading ...",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
             setAdapter(groupAdapter)
             setLayoutManager(LinearLayoutManager(this.context))
             addVeiledItems(15)

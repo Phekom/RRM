@@ -1,13 +1,23 @@
 package za.co.xisystems.itis_rrm.ui.mainview.approvejobs
 
 import android.app.Application
-import androidx.lifecycle.*
-import kotlinx.coroutines.*
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Transformations
+import androidx.lifecycle.distinctUntilChanged
+import androidx.lifecycle.liveData
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancelChildren
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
-import za.co.xisystems.itis_rrm.custom.results. XIResult.Error
-import za.co.xisystems.itis_rrm.custom.results.XIResult.Progress
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
@@ -32,7 +42,7 @@ class ApproveJobsViewModel(
     private val workExceptionHandler = CoroutineExceptionHandler { _, throwable ->
         val message = "Caught during workflow: ${throwable.message ?:   XIErrorHandler.UNKNOWN_ERROR}"
         Timber.e(throwable)
-        val caughtException =  Error(
+        val caughtException = XIResult.Error(
             throwable, message
         )
         workflowState.postValue(caughtException)
@@ -68,7 +78,7 @@ class ApproveJobsViewModel(
         offlineDataRepository.getUserTaskList()
     }
 
-    suspend fun getUOMForProjectItemId(projectItemId: String): String {
+    suspend fun getUOMForProjectItemId(projectItemId: String): String? {
         return withContext(Dispatchers.IO) {
             jobApprovalDataRepository.getUOMForProjectItemId(projectItemId)
         }
@@ -112,7 +122,7 @@ class ApproveJobsViewModel(
     ) = viewModelScope.launch(viewModelScope.coroutineContext) {
         withContext(ioContext) {
             try {
-                workflowState.postValue(Progress(true))
+                workflowState.postValue(XIResult.Progress(true))
 
                 jobApprovalDataRepository.processWorkflowMove(
                     userId,
@@ -123,9 +133,9 @@ class ApproveJobsViewModel(
                 )
             } catch (t: Throwable) {
                 val message = "Failed to process workflow: ${t.message ?:  XIErrorHandler.UNKNOWN_ERROR}"
-                workflowState.postValue( Error(t, message))
+                workflowState.postValue(XIResult.Error(t, message))
             } finally {
-                workflowState.postValue(Progress(false))
+                workflowState.postValue(XIResult.Progress(false))
             }
         }
     }
@@ -194,7 +204,6 @@ class ApproveJobsViewModel(
         val estimate = jobApprovalDataRepository.getJobEstimationItemByEstimateId(estimateId)
         emit(estimate)
     }
-
 
     /**
      * This method will be called when this ViewModel is no longer used and will be destroyed.

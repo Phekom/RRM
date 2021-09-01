@@ -21,6 +21,9 @@
     <color name="sanral_dark_red">#941212</color>
 
     <color name="colorPrimary">#de4f32</color>
+    <color name="colorPrimaryDark">#000000</color>
+    <color name="colorAccent">#A8260B</color>
+    <color name="colorPrimaryYellow">#F7982E</color>
 
     <color name="white">#FFFFFF</color>
     <color name="cornsilk">#FFF8DC</color>

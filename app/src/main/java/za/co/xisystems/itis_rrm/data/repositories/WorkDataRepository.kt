@@ -541,6 +541,9 @@ class WorkDataRepository(
     suspend fun getEstimateWorksPhotosForWorksId(worksId: String): List<JobEstimateWorksPhotoDTO> =
         appDb.getEstimateWorkPhotoDao().getEstimateWorksPhotoForWorksId(worksId)
 
+    suspend fun getEstimateWorksPhotoForWorksIdAndActID(worksId: String, actId: Int): List<JobEstimateWorksPhotoDTO> =
+        appDb.getEstimateWorkPhotoDao().getEstimateWorksPhotoForWorksIdAndActID(worksId, actId)
+
     suspend fun getProjectItemById(projectItemId: String): ItemDTOTemp = withContext(Dispatchers.IO) {
         return@withContext appDb.getItemDaoTemp().getProjectItemById(projectItemId)
     }

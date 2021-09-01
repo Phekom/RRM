@@ -173,7 +173,6 @@ class SelectItemFragment : BaseFragment(), DIAware {
         }
     }
 
-
     override fun onSaveInstanceState(outState: Bundle) {
         outState.run {
             putString("jobId", editJob.jobId)

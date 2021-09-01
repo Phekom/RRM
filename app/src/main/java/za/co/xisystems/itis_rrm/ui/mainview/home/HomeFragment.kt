@@ -43,13 +43,7 @@ import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.constants.Constants.TWO_SECONDS
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
-import za.co.xisystems.itis_rrm.custom.results.XIError
-import za.co.xisystems.itis_rrm.custom.results.XIProgress
-import za.co.xisystems.itis_rrm.custom.results.XIProgressUpdate
-import za.co.xisystems.itis_rrm.custom.results.XIRestException
 import za.co.xisystems.itis_rrm.custom.results.XIResult
-import za.co.xisystems.itis_rrm.custom.results.XIStatus
-import za.co.xisystems.itis_rrm.custom.results.XISuccess
 import za.co.xisystems.itis_rrm.custom.results.getPercentageComplete
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
@@ -115,7 +109,7 @@ class HomeFragment : BaseFragment(), DIAware {
                     getOfflineSectionItems()
                 } catch (t: Throwable) {
                     Timber.e(t, "Failed to fetch Section Items.")
-                    val xiErr = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
+                    val xiErr = XIResult.Error(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
                     crashGuard(this@HomeFragment.requireView(), xiErr, refreshAction = { retrySections() })
                 } finally {
                     ui.group2Loading.visibility = View.GONE
@@ -165,7 +159,7 @@ class HomeFragment : BaseFragment(), DIAware {
         } catch (t: Throwable) {
             val errorMessage = "Failed to load user: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
             Timber.e(t, errorMessage)
-            val connectErr = XIError(t, errorMessage)
+            val connectErr = XIResult.Error(t, errorMessage)
             crashGuard(
                 view = this@HomeFragment.requireView(),
                 throwable = connectErr,
@@ -402,7 +396,7 @@ class HomeFragment : BaseFragment(), DIAware {
                     synchJob.cancel(CancellationException("Connectivity lost ... please try again later"))
                 }
             } catch (t: Throwable) {
-                val pingEx = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
+                val pingEx = XIResult.Error(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
                 crashGuard(
                     view = this@HomeFragment.requireView(),
                     throwable = pingEx,
@@ -416,7 +410,7 @@ class HomeFragment : BaseFragment(), DIAware {
         Timber.d("$signal")
         signal?.let { result ->
             when (result) {
-                is XISuccess -> {
+                is XIResult.Success -> {
                     showProgress()
                     sharpToast(
                         message = "Sync Complete",
@@ -425,10 +419,10 @@ class HomeFragment : BaseFragment(), DIAware {
                         duration = LONG
                     )
                 }
-                is XIStatus -> {
+                is XIResult.Status -> {
                     sharpToast(message = result.message, style = INFO, position = BOTTOM)
                 }
-                is XIError -> {
+                is XIResult.Error -> {
                     synchJob.cancel(CancellationException(result.message))
                     showProgress()
 
@@ -444,13 +438,13 @@ class HomeFragment : BaseFragment(), DIAware {
                         refreshAction = { this@HomeFragment.retrySync() }
                     )
                 }
-                is XIProgress -> {
+                is XIResult.Progress -> {
                     showProgress(result.isLoading)
                 }
-                is XIProgressUpdate -> {
+                is XIResult.ProgressUpdate -> {
                     handleProgressUpdate(result)
                 }
-                is XIRestException -> {
+                is XIResult.RestException -> {
                     Timber.e("$result")
                 }
             }
@@ -472,7 +466,7 @@ class HomeFragment : BaseFragment(), DIAware {
         }
     }
 
-    private fun handleProgressUpdate(update: XIProgressUpdate) {
+    private fun handleProgressUpdate(update: XIResult.ProgressUpdate) {
         when (update.key) {
             "projects" -> {
                 updateProgress(update, ui.pvContracts)
@@ -486,13 +480,11 @@ class HomeFragment : BaseFragment(), DIAware {
         }
     }
 
-    private fun updateProgress(update: XIProgressUpdate, progressView: ProgressView) {
+    private fun updateProgress(update: XIResult.ProgressUpdate, progressView: ProgressView) {
         if (progressView.visibility != View.VISIBLE) {
             progressView.visibility = View.VISIBLE
         }
-        if (update.getPercentageComplete() > progressView.progress) {
-            progressView.progress = update.getPercentageComplete()
-        }
+        progressView.progress = update.getPercentageComplete()
     }
 
     private fun bigSync() = uiScope.launch(uiScope.coroutineContext) {
@@ -511,7 +503,7 @@ class HomeFragment : BaseFragment(), DIAware {
                 Timber.e(t, errorMessage)
                 crashGuard(
                     this@HomeFragment.requireView(),
-                    XIError(t, errorMessage),
+                    XIResult.Error(t, errorMessage),
                     refreshAction = { retrySync() }
                 )
             }
@@ -566,7 +558,7 @@ class HomeFragment : BaseFragment(), DIAware {
                 val message = "Could not check service health: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
                 Timber.e(t, message)
                 this@HomeFragment.view?.let {
-                    val fetchError = XIError(t, message)
+                    val fetchError = XIResult.Error(t, message)
                     crashGuard(
                         this@HomeFragment.requireView(),
                         fetchError,

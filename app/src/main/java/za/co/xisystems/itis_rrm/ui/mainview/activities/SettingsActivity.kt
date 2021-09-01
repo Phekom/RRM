@@ -91,6 +91,5 @@ class SettingsActivity : AppCompatActivity(), DIAware {
         }
     }
 
-
     var isChecked = false
 }

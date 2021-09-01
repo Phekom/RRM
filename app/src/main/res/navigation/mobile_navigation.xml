@@ -16,7 +16,16 @@
         android:id="@+id/nav_home"
         android:name="za.co.xisystems.itis_rrm.ui.mainview.home.HomeFragment"
         tools:layout="@layout/fragment_home"
-        android:label="@string/menu_home" />
+        android:label="@string/menu_home">
+        <action
+            android:id="@+id/action_nav_home_to_nav_approveJobs"
+            app:destination="@id/nav_approveJobs"
+            app:enterAnim="@anim/animate_slide_left_enter"
+            app:exitAnim="@anim/animate_slide_out_right"
+            app:popUpTo="@id/nav_home"
+            app:popEnterAnim="@anim/animate_fade_enter"
+            app:popExitAnim="@anim/animate_fade_exit" />
+    </fragment>
 
     <fragment
         android:id="@+id/nav_create"
@@ -152,6 +161,10 @@
             android:name="itemId"
             app:argType="string"
             app:nullable="true" />
+        <argument
+            android:name="locationErrorMessage"
+            app:argType="string"
+            app:nullable="true" />
         <action
             android:id="@+id/action_estimatePhotoFragment_to_addProjectFragment2"
             app:destination="@id/addProjectFragment"
@@ -179,12 +192,17 @@
             app:popEnterAnim="@anim/nav_default_pop_enter_anim"
             app:popExitAnim="@anim/nav_default_pop_exit_anim" />
         <action
-            android:id="@+id/action_addProjectFragment_to_deferredEstimateFragment"
+            android:id="@+id/action_addProjectFragment_to_estimatePhotoFragment"
             app:destination="@id/estimatePhotoFragment"
             app:enterAnim="@anim/animate_in_out_enter"
             app:exitAnim="@anim/animate_in_out_exit"
             app:popEnterAnim="@anim/animate_fade_enter"
             app:popExitAnim="@anim/animate_fade_exit" />
+        <action
+            android:id="@+id/action_addProjectFragment_self"
+            app:destination="@id/addProjectFragment"
+            app:enterAnim="@anim/animate_fade_enter"
+            app:exitAnim="@anim/animate_fade_exit" />
     </fragment>
     <fragment
         android:id="@+id/jobInfoFragment"
@@ -309,30 +327,4 @@
         android:id="@+id/action_global_nav_home"
         app:destination="@id/nav_home"
         app:popUpTo="@id/nav_home" />
-    <fragment
-        android:id="@+id/deferredEstimateFragment"
-        android:name="za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates.DeferredEstimateFragment"
-        android:label="Deferred Estimate"
-        tools:layout="@layout/fragment_deferred_estimate">
-        <argument
-            android:name="jobId"
-            app:argType="string"
-            app:nullable="true" />
-        <argument
-            android:name="estimateId"
-            app:argType="string"
-            app:nullable="true" />
-        <argument
-            android:name="projectItemId"
-            app:argType="string"
-            app:nullable="true" />
-        <action
-            android:id="@+id/action_deferredEstimateFragment_to_addProjectFragment"
-            app:destination="@id/addProjectFragment"
-            app:enterAnim="@anim/animate_in_out_enter"
-            app:exitAnim="@anim/animate_in_out_exit"
-            app:popUpTo="@id/addProjectFragment"
-            app:popEnterAnim="@anim/animate_fade_enter"
-            app:popExitAnim="@anim/animate_fade_exit" />
-    </fragment>
 </navigation>

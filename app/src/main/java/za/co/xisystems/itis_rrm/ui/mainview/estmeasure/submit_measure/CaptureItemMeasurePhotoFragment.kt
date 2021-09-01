@@ -37,11 +37,7 @@ import timber.log.Timber
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.LocationFragment
-import za.co.xisystems.itis_rrm.custom.results.XIError
-import za.co.xisystems.itis_rrm.custom.results.XIProgress
 import za.co.xisystems.itis_rrm.custom.results.XIResult
-import za.co.xisystems.itis_rrm.custom.results.XIStatus
-import za.co.xisystems.itis_rrm.custom.results.XISuccess
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasurePhotoDTO
@@ -62,9 +58,7 @@ import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.enums.ToastGravity
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.INFO
-import java.util.ArrayList
 import java.util.Date
-import java.util.HashMap
 
 //
 class CaptureItemMeasurePhotoFragment :
@@ -123,7 +117,7 @@ class CaptureItemMeasurePhotoFragment :
             ViewModelProvider(this, factory).get(MeasureViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
 
-        jobItemMeasurePhotoArrayList = ArrayList<JobItemMeasurePhotoDTO>()
+        jobItemMeasurePhotoArrayList = ArrayList()
         ui.galleryLayout.visibility = View.INVISIBLE
         ui.photoButtons.visibility = View.GONE
 
@@ -224,7 +218,7 @@ class CaptureItemMeasurePhotoFragment :
 
     // TODO: Have location validated here
     // TODO: Check earlier and get user to switch Location on.
-    private fun saveImage(): JobItemMeasurePhotoDTO? {
+    private suspend fun saveImage(): JobItemMeasurePhotoDTO? = withContext(Dispatchers.IO) {
         //  Location of picture
         val measurementLocation = getCurrentLocation()
         if (measurementLocation != null) {
@@ -237,7 +231,7 @@ class CaptureItemMeasurePhotoFragment :
             Timber.d("location: ${measurementLocation.longitude}, ${measurementLocation.latitude}")
             Timber.d("accuracy: ${measurementLocation.accuracy}")
 
-            return JobItemMeasurePhotoDTO(
+            return@withContext JobItemMeasurePhotoDTO(
                 id = 0,
                 descr = null,
                 filename = filenamePath["filename"],
@@ -253,7 +247,7 @@ class CaptureItemMeasurePhotoFragment :
             )
         } else {
             toast("Error: Current location is null!")
-            return null
+            return@withContext null
         }
     }
 
@@ -293,7 +287,7 @@ class CaptureItemMeasurePhotoFragment :
         }
     }
 
-    private fun launchCamera() {
+    private fun launchCamera() = Coroutines.main {
         this.takingPhotos()
         imageUri = photoUtil.getUri()!!
         takePicture.launch(imageUri)
@@ -316,11 +310,13 @@ class CaptureItemMeasurePhotoFragment :
                 }
             }
         } else {
-            photoUtil.deleteImageFile(filenamePath.toString())
+            Coroutines.io {
+                photoUtil.deleteImageFile(filenamePath.toString())
+            }
         }
     }
 
-    private fun processAndSetImage() {
+    private suspend fun processAndSetImage() = Coroutines.main {
 
         ui.estimateImageCollectionView.scaleForSize(
             jobItemMeasurePhotoArrayList.size
@@ -366,21 +362,21 @@ class CaptureItemMeasurePhotoFragment :
 
     private fun handleResponse(response: XIResult<MeasureGalleryUIState>) {
         when (response) {
-            is XISuccess -> {
+            is XIResult.Success -> {
                 handleGallerySuccess(response)
             }
 
-            is XIError -> {
+            is XIResult.Error -> {
                 crashGuard(
                     view = this@CaptureItemMeasurePhotoFragment.requireView(),
                     throwable = response,
                     refreshAction = { retryGallery() }
                 )
             }
-            is XIProgress -> {
+            is XIResult.Progress -> {
                 toggleLongRunning(response.isLoading)
             }
-            is XIStatus -> {
+            is XIResult.Status -> {
                 sharpToast(
                     message = response.message
                 )
@@ -391,7 +387,7 @@ class CaptureItemMeasurePhotoFragment :
         }
     }
 
-    private fun handleGallerySuccess(response: XISuccess<MeasureGalleryUIState>) {
+    private fun handleGallerySuccess(response: XIResult.Success<MeasureGalleryUIState>) {
         toggleLongRunning(false)
         val uiState = response.data
         ui.estimateImageCollectionView.clearImages()

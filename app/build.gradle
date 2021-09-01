@@ -450,7 +450,7 @@ dependencies {
     implementation 'com.github.takusemba:cropme:2.0.8'
 
     //Location
-    implementation 'com.google.android.gms:play-services-location:18.0.0'
+    implementation 'com.google.android.gms:play-services-location:17.1.0'
 
 
     // Icepick

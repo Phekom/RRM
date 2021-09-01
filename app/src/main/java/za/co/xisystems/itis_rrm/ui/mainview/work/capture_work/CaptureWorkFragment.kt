@@ -26,7 +26,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
-import com.xwray.groupie.viewbinding.GroupieViewHolder
+import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -53,12 +53,12 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.WfWorkStepDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentCaptureWorkBinding
-import za.co.xisystems.itis_rrm.databinding.ListSelectorBinding
 import za.co.xisystems.itis_rrm.extensions.isConnected
 import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.services.LocationModel
 import za.co.xisystems.itis_rrm.ui.extensions.addZoomedImages
 import za.co.xisystems.itis_rrm.ui.extensions.doneProgress
+import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.extensions.failProgress
 import za.co.xisystems.itis_rrm.ui.extensions.initProgress
 import za.co.xisystems.itis_rrm.ui.extensions.scaleForSize
@@ -84,6 +84,7 @@ import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.NO_INTERNET
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.SUCCESS
 import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.WARNING
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
+import java.lang.ref.WeakReference
 import java.util.Date
 import java.util.HashMap
 
@@ -94,7 +95,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
     private val factory: WorkViewModelFactory by instance()
     private var imageUri: Uri? = null
     private lateinit var workFlowMenuTitles: ArrayList<String>
-    private lateinit var groupAdapter: GroupAdapter<GroupieViewHolder<ListSelectorBinding>>
+    private lateinit var groupAdapter: GroupAdapter<GroupieViewHolder>
     private lateinit var estimateWorksPhotoArrayList: ArrayList<JobEstimateWorksPhotoDTO>
     private lateinit var estimateWorksArrayList: ArrayList<JobEstimateWorksDTO>
     private lateinit var estimateWorksList: ArrayList<JobEstimateWorksDTO>
@@ -162,7 +163,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
         estimateWorksList = ArrayList()
         estimateWorksArrayList = ArrayList()
         jobWorkStep = ArrayList()
-        groupAdapter = GroupAdapter<GroupieViewHolder<ListSelectorBinding>>()
+        groupAdapter = GroupAdapter<GroupieViewHolder>()
         uiScope.onCreate()
         photoUtil = PhotoUtil.getInstance(this.requireContext().applicationContext)
         workViewModel = activity?.run {
@@ -312,48 +313,81 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
     }
 
     private fun disableEdits() {
-        var keyListener = ui.commentsEditText.keyListener
-        ui.commentsEditText.keyListener = null
         ui.commentsEditText.setText(getString(R.string.comment_placeholder), NORMAL)
-        ui.takePhotoButton.isClickable = false
-        ui.takePhotoButton.background =
-            ContextCompat.getDrawable(requireContext(), R.drawable.round_corner_gray)
-        ui.moveWorkflowButton.isClickable = false
-        ui.moveWorkflowButton.background =
-            ContextCompat.getDrawable(requireContext(), R.drawable.round_corner_gray)
+        ui.commentsEditText.isEnabled = false
+        ui.takePhotoButton.visibility = View.GONE
+        ui.moveWorkflowButton.visibility = View.GONE
     }
 
-    private fun loadPictures(result: Success<JobEstimateWorksDTO>) = uiScope.launch(uiScope.coroutineContext) {
+    private fun enableEdits() {
+        ui.commentsEditText.isEnabled = true
+        ui.takePhotoButton.visibility = View.VISIBLE
+        ui.moveWorkflowButton.visibility = View.VISIBLE
+    }
+
+    private fun loadPictures(result: Success<JobEstimateWorksDTO>) {
         val worksData = result.data
+        loadPictures(worksData, worksData.actId)
+    }
+
+    fun loadPictures(
+        worksData: JobEstimateWorksDTO,
+        actId: Int
+    ) = uiScope.launch(uiScope.coroutineContext) {
+        when {
+            actId == worksData.actId -> {
+                enableEdits()
+            }
+            actId < worksData.actId -> {
+                disableEdits()
+            }
+            else -> {
+                showFutureWarning()
+                return@launch
+            }
+        }
         val filenames = worksData.jobEstimateWorksPhotos.filter { photo ->
-            photo.photoActivityId == worksData.actId
+            photo.photoActivityId == actId
         }.map { photo ->
             photo.photoPath
         }
 
+        ui.imageCollectionView.clearImages()
+
         val photoPairs = photoUtil.prepareGalleryPairs(filenames)
 
         if (photoPairs.isNotEmpty()) {
-            ui.imageCollectionView.clearImages()
             ui.imageCollectionView.scaleForSize(photoPairs.size)
             ui.imageCollectionView.addZoomedImages(photoPairs, requireActivity())
             ui.imageCollectionView.visibility = View.VISIBLE
         }
     }
 
+    fun showFutureWarning() {
+        this@CaptureWorkFragment.extensionToast(
+            title = "Time Travel",
+            message = "We cannot see the future. Plan for a better tomorrow.",
+            style = INFO,
+            position = CENTER,
+            duration = LONG
+        )
+    }
+
     private fun validateUploadWorks() {
 
         when {
-            estimateWorksPhotoArrayList.size == 0 -> {
+            estimateWorksPhotoArrayList.none { photo ->
+                photo.photoActivityId == activeWorks.actId
+            } -> {
                 validationNotice(R.string.please_make_sure_workflow_items_contain_photos)
             }
             ui.commentsEditText.text.trim().isEmpty() -> {
                 validationNotice(R.string.please_provide_a_comment)
             }
             else -> {
-                ui.moveWorkflowButton.isClickable = false
+                toggleLongRunning(true)
                 uploadEstimateWorksItem(estimateWorksPhotoArrayList, itemEstimate)
-                ui.moveWorkflowButton.isClickable = true
+                toggleLongRunning(false)
             }
         }
     }
@@ -999,7 +1033,13 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
     private fun List<JobEstimateWorksDTO>.toWorkStateItems(): List<WorkStateItem> {
 
         return this.map { approveJobItems ->
-            WorkStateItem(approveJobItems, activity, groupAdapter, jobWorkStep, workViewModel)
+            WorkStateItem(
+                jobItemWorks = approveJobItems,
+                fragmentRef = WeakReference(this@CaptureWorkFragment),
+                groupAdapter = groupAdapter,
+                jobWorkStep = jobWorkStep,
+                viewModel = workViewModel
+            )
         }
     }
 

@@ -38,6 +38,7 @@ import za.co.xisystems.itis_rrm.utils.GlideApp
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.Utils.nanCheck
 import za.co.xisystems.itis_rrm.utils.Utils.round
+import za.co.xisystems.itis_rrm.utils.enums.ToastStyle
 import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
 import java.io.File
 
@@ -65,22 +66,16 @@ class EstimatesItem(
     override fun bind(viewBinding: EstimatesItemBinding, position: Int) {
         viewBinding.apply {
             Coroutines.main {
-                val quantity =
-                    approveViewModel.getQuantityForEstimationItemId(jobItemEstimateDTO.estimateId)
-                quantity.observe(viewLifecycleOwner, { qty ->
-
-                })
-                val estimate = approveViewModel.getJobEstimationItemByEstimateId(jobItemEstimateDTO.estimateId)
+                val estimate =
+                    approveViewModel.getJobEstimationItemByEstimateId(jobItemEstimateDTO.estimateId)
                 estimate.observe(viewLifecycleOwner, {
                     it?.let {
-                        viewBinding.estimationItemPriceTextView.text = activity?.getString(R.string.pair, "R", (it.qty * it.lineRate).round(2).toString())
-                        viewBinding.estimationItemQuantityTextView.text = activity?.getString(R.string.pair, "Qty:", it.qty.toString())
-
-                        // dialog.dismiss()
+                        viewBinding.estimationItemPriceTextView.text =
+                            activity?.getString(R.string.pair, "R", (it.qty * it.lineRate).round(2).toString())
+                        viewBinding.estimationItemQuantityTextView.text =
+                            activity?.getString(R.string.pair, "Qty:", it.qty.toString())
                     }
                 })
-//                estimation_item_quantity_textView.text = "Qty: " + quantity //jobItemEstimateDTO.qty.toString()
-//                 estimation_item_price_textView.text = "R " +  lineRate //jobItemEstimateDTO.lineRate.toString()
 
                 val descr =
                     approveViewModel.getDescForProjectItemId(jobItemEstimateDTO.projectItemId!!)
@@ -88,15 +83,18 @@ class EstimatesItem(
                     approveViewModel.getUOMForProjectItemId(jobItemEstimateDTO.projectItemId!!)
                 viewBinding.measureItemDescriptionTextView.text = descr
 
-                if (uom == "NONE" || uom == "") {
-                    estimationItemUomTextView.text = ""
+                estimationItemUomTextView.text = if (uom == "NONE" || uom.isNullOrBlank()) {
+                    activity?.getString(
+                        R.string.pair,
+                        jobItemEstimateDTO.lineRate.toString(),
+                        "each"
+                    )
                 } else {
-                    estimationItemUomTextView.text =
-                        activity?.getString(
-                            R.string.pair,
-                            jobItemEstimateDTO.lineRate.toString(),
-                            activity.uomForUI(uom)
-                        )
+                    activity?.getString(
+                        R.string.pair,
+                        jobItemEstimateDTO.lineRate.toString(),
+                        activity.uomForUI(uom)
+                    )
                 }
                 correctButton.setOnClickListener {
                     sendItemType(jobItemEstimateDTO)
@@ -141,7 +139,6 @@ class EstimatesItem(
             rate.text = activity.getString(R.string.pair, "R", tenderRate.toString())
             var cost: Double
             val newQuantity = jobItemEstimateDTO.qty
-            val defaultQty = 0.0
 
             quantityEntry.text = Editable.Factory.getInstance().newEditable("$newQuantity")
 
@@ -198,8 +195,8 @@ class EstimatesItem(
             Coroutines.main {
                 when {
                     quantityEntry.text.toString() == "" ||
-                            nanCheck(quantityEntry.text.toString()) ||
-                            quantityEntry.text.toString().toDouble() < 0.0 -> {
+                        nanCheck(quantityEntry.text.toString()) ||
+                        quantityEntry.text.toString().toDouble() < 0.0 -> {
                         activity.extensionToast("Please Enter a valid Quantity", MotionToast.TOAST_WARNING)
                     }
                     else -> {
@@ -292,7 +289,7 @@ class EstimatesItem(
                     Editable.Factory.getInstance().newEditable(default)
                 activity.extensionToast(
                     message = "You Have exceeded the allowable maximum",
-                    motionType = MotionToast.TOAST_WARNING
+                    style = ToastStyle.WARNING
                 )
                 0.0
             }

@@ -12,9 +12,7 @@ import androidx.lifecycle.*
 import kotlinx.coroutines.*
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
-import za.co.xisystems.itis_rrm.custom.results.XIError
 import za.co.xisystems.itis_rrm.custom.results.XIResult
-import za.co.xisystems.itis_rrm.custom.results.XISuccess
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.data.repositories.MeasureCreationDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
@@ -97,7 +95,7 @@ class MeasureViewModel(
                         photoUtil.getPhotoPathFromExternalDirectory(fileName)
                     }
                     val bitmap = uri?.let { qualifiedUri ->
-                        photoUtil.getPhotoBitMapFromFile(
+                        photoUtil.getPhotoBitmapFromFile(
                             qualifiedUri,
                             photoQuality
                         )
@@ -118,10 +116,10 @@ class MeasureViewModel(
                 jobItemMeasureDTO = measureItem
             )
 
-            measureGalleryUIState.postValue(XISuccess(uiState))
+            measureGalleryUIState.postValue(XIResult.Success(uiState))
         } catch (e: Exception) {
             Timber.e(e, galleryError)
-            val galleryFail = XIError(e, galleryError)
+            val galleryFail = XIResult.Error(e, galleryError)
             measureGalleryUIState.postValue(galleryFail)
         }
     }
@@ -225,7 +223,7 @@ class MeasureViewModel(
                 itemMeasureJob
             )
         } catch (e: Exception) {
-            workflowState.postValue(XIError(e, e.message!!))
+            workflowState.postValue(XIResult.Error(e, e.message!!))
         }
     }
 
@@ -247,16 +245,13 @@ class MeasureViewModel(
         )
     }
 
-
     suspend fun getJobItemsToMeasureForJobId(jobID: String?): LiveData<List<JobItemEstimateDTO>> = withContext(Dispatchers.IO) {
         return@withContext measureCreationDataRepository.getJobItemsToMeasureForJobId(jobID)
     }
 
-
     suspend fun getItemForItemId(projectItemId: String?): LiveData<ProjectItemDTO> = withContext(Dispatchers.IO) {
         return@withContext measureCreationDataRepository.getItemForItemId(projectItemId)
     }
-
 
     suspend fun getJobFromJobId(jobId: String?): LiveData<JobDTO> {
         return withContext(Dispatchers.IO) {
@@ -292,7 +287,7 @@ class MeasureViewModel(
                 }
             } catch (e: Exception) {
                 Timber.e(e, galleryError)
-                val galleryFail = XIError(e, galleryError)
+                val galleryFail = XIResult.Error(e, galleryError)
                 measureGalleryUIState.postValue(galleryFail)
             }
         }

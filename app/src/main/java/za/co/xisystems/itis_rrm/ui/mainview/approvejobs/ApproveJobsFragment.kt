@@ -33,7 +33,7 @@ import org.kodein.di.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
-import za.co.xisystems.itis_rrm.custom.errors. XIErrorHandler
+import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.results.XIResult.Error
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
@@ -77,7 +77,7 @@ class ApproveJobsFragment : BaseFragment(), DIAware {
     private fun handleQueryErrors(outcome: XIResult<String>?) {
         outcome?.let { result ->
             when (result) {
-                is  Error -> {
+                is Error -> {
                     crashGuard(
                         view = this.requireView(),
                         throwable = result,
@@ -151,7 +151,7 @@ class ApproveJobsFragment : BaseFragment(), DIAware {
             fetchQuery()
         } catch (t: Throwable) {
             ui.approveJobVeiledRecycler.unVeil()
-            val xiFail =  Error(t, t.message ?:   XIErrorHandler.UNKNOWN_ERROR)
+            val xiFail = Error(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
             crashGuard(
                 view = this@ApproveJobsFragment.requireView(),
                 throwable = xiFail,
@@ -209,7 +209,7 @@ class ApproveJobsFragment : BaseFragment(), DIAware {
                 protectedFetch(veiled = true, { fetchLocalJobs() }, { retryFetchRemoteJobs() })
             })
         } catch (throwable: Throwable) {
-            val message = "Failed to retrieve remote jobs: ${throwable.message ?:   XIErrorHandler.UNKNOWN_ERROR}"
+            val message = "Failed to retrieve remote jobs: ${throwable.message ?: XIErrorHandler.UNKNOWN_ERROR}"
             Timber.e(throwable, message)
             throw throwable
         }

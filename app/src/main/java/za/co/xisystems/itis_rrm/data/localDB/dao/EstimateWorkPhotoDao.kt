@@ -27,4 +27,7 @@ interface EstimateWorkPhotoDao {
 
     @Update
     fun updateExistingEstimateWorksPhoto(estimateWorksPhoto: JobEstimateWorksPhotoDTO)
+
+    @Query("SELECT * FROM JOB_ESTIMATE_WORKS_PHOTO WHERE worksId = :worksId AND photoActivityId = :actId")
+    fun getEstimateWorksPhotoForWorksIdAndActID(worksId: String, actId: Int): List<JobEstimateWorksPhotoDTO>
 }

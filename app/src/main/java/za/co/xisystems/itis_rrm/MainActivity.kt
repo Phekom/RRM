@@ -41,12 +41,14 @@ import org.kodein.di.DIAware
 import org.kodein.di.android.closestDI
 import org.kodein.di.instance
 import timber.log.Timber
+import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.constants.Constants.TWO_SECONDS
 import za.co.xisystems.itis_rrm.databinding.ActivityMainBinding
 import za.co.xisystems.itis_rrm.ui.base.BaseActivity
 import za.co.xisystems.itis_rrm.ui.mainview.activities.MainActivityViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.activities.MainActivityViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SettingsActivity
+import za.co.xisystems.itis_rrm.ui.mainview.home.HomeFragmentDirections
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
@@ -116,6 +118,13 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         } else {
             throw NullPointerException("Something went wrong")
         }
+
+        // Set MotionToast to use Sanral colours
+        MotionToast.setErrorColor(R.color.sanral_dark_red)
+        MotionToast.setSuccessColor(R.color.sanral_dark_green)
+        MotionToast.setWarningColor(R.color.sanral_dark_red)
+        MotionToast.setInfoColor(R.color.dark_bg_color)
+        MotionToast.setDeleteColor(R.color.dark_bg_color)
 
         // Because we're creating the NavHostFragment using FragmentContainerView, we must
         // retrieve the NavController directly from the NavHostFragment instead
@@ -318,7 +327,10 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                 toggle?.syncState()
             }
             R.id.nav_approveJobs -> {
-                navController.navigate(R.id.nav_approveJobs)
+                val home = HomeFragmentDirections.actionGlobalNavHome()
+                val approveDirections = HomeFragmentDirections.actionNavHomeToNavApproveJobs()
+                navController.navigate(home)
+                navController.navigate(approveDirections)
                 toggle?.syncState()
             }
             R.id.nav_approveMeasure -> {

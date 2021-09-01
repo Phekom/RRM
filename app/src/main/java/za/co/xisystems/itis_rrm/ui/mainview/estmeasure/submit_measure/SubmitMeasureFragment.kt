@@ -25,7 +25,7 @@ import androidx.lifecycle.whenStarted
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.ExpandableGroup
 import com.xwray.groupie.GroupAdapter
-import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
+import com.xwray.groupie.viewbinding.GroupieViewHolder
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -36,11 +36,7 @@ import timber.log.Timber
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
-import za.co.xisystems.itis_rrm.custom.results.XIError
-import za.co.xisystems.itis_rrm.custom.results.XIProgress
 import za.co.xisystems.itis_rrm.custom.results.XIResult
-import za.co.xisystems.itis_rrm.custom.results.XIStatus
-import za.co.xisystems.itis_rrm.custom.results.XISuccess
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
@@ -48,6 +44,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasurePhotoDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentSubmitMeasureBinding
+import za.co.xisystems.itis_rrm.databinding.ItemMeasureHeaderBinding
 import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.ui.extensions.doneProgress
 import za.co.xisystems.itis_rrm.ui.extensions.failProgress
@@ -110,7 +107,7 @@ class SubmitMeasureFragment : BaseFragment(), DIAware {
         event?.let { outcome ->
 
             when (outcome) {
-                is XISuccess -> {
+                is XIResult.Success -> {
 
                     sharpToast(
                         message = "Measurements submitted for Job ${outcome.data}",
@@ -121,7 +118,7 @@ class SubmitMeasureFragment : BaseFragment(), DIAware {
                     jobItemMeasureList.clear()
                     popViewOnJobSubmit()
                 }
-                is XIError -> {
+                is XIResult.Error -> {
                     toggleLongRunning(false)
 
                     progressButton.failProgress("Workflow failed ...")
@@ -137,7 +134,7 @@ class SubmitMeasureFragment : BaseFragment(), DIAware {
                         outcome,
                         refreshAction = { this@SubmitMeasureFragment.retryMeasurements() })
                 }
-                is XIStatus -> {
+                is XIResult.Status -> {
                     sharpToast(
                         message = outcome.message,
                         duration = ToastDuration.SHORT,
@@ -145,7 +142,7 @@ class SubmitMeasureFragment : BaseFragment(), DIAware {
                     )
                 }
 
-                is XIProgress -> {
+                is XIResult.Progress -> {
                     handleMeasurementProgress(outcome)
                 }
                 else -> Timber.d("$event")
@@ -153,7 +150,7 @@ class SubmitMeasureFragment : BaseFragment(), DIAware {
         }
     }
 
-    private fun handleMeasurementProgress(outcome: XIProgress) {
+    private fun handleMeasurementProgress(outcome: XIResult.Progress) {
         toggleLongRunning(outcome.isLoading)
         when (outcome.isLoading) {
             true -> {
@@ -460,8 +457,9 @@ class SubmitMeasureFragment : BaseFragment(), DIAware {
     }
 
     private fun initRecyclerView(measureItems: List<ExpandableGroup>) {
-        val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
+        val groupAdapter = GroupAdapter<GroupieViewHolder<ItemMeasureHeaderBinding>>().apply {
             addAll(measureItems)
+            notifyItemRangeChanged(0, measureItems.size)
         }
 
         ui.measureListView.apply {

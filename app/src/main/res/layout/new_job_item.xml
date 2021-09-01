@@ -19,18 +19,21 @@
         android:padding="@dimen/xsmall"
         android:gravity="center_vertical"
         android:text="M020.03(A): Advertising Cost"
-        app:layout_constraintEnd_toStartOf="@+id/editImageView"
+        app:layout_constraintEnd_toStartOf="@id/editImageView"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:ignore="HardcodedText" />
+        tools:ignore="HardcodedText"
+        app:drawableStartCompat="@drawable/ic_baseline_location_off_24"
+        app:drawableTint="@color/colorPrimary" />
 
     <ImageView
-            android:id="@+id/editImageView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_baseline_chevron_right_24px"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
+        android:id="@+id/editImageView"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:padding="4dp"
+        android:src="@drawable/ic_baseline_chevron_right_24px"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         android:contentDescription="@string/estimate_chevron" />
 
     <TextView

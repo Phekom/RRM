@@ -37,6 +37,8 @@ import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
 import za.co.xisystems.itis_rrm.data.repositories.WorkDataRepository
 import za.co.xisystems.itis_rrm.extensions.exitApplication
+import za.co.xisystems.itis_rrm.forge.Sage
+import za.co.xisystems.itis_rrm.forge.Scribe
 import za.co.xisystems.itis_rrm.forge.XIArmoury
 import za.co.xisystems.itis_rrm.logging.LameCrashLibrary
 import za.co.xisystems.itis_rrm.services.DeferredLocationRepository
@@ -69,8 +71,9 @@ open class MainApp : Application(), DIAware {
     override val di = DI.lazy {
 
         import(androidXModule(this@MainApp))
-
-        bind { singleton { XIArmoury.getInstance(this@MainApp) } }
+        bind { singleton { Sage.getInstance(this@MainApp) } }
+        bind { singleton { Scribe.getInstance(this@MainApp, instance()) } }
+        bind { singleton { XIArmoury.getInstance(this@MainApp, instance(), instance()) } }
         bind { singleton { PhotoUtil.getInstance(this@MainApp) } }
         bind { singleton { NetworkConnectionInterceptor(instance()) } }
         bind { singleton { BaseConnectionApi(instance()) } }
@@ -100,6 +103,7 @@ open class MainApp : Application(), DIAware {
             provider {
                 CreateViewModelFactory(
                     instance(),
+                    instance(),
                     this@MainApp
                 )
             }
@@ -125,7 +129,7 @@ open class MainApp : Application(), DIAware {
             }
         }
 
-        bind { provider { DeferredLocationViewModelFactory(instance()) } }
+        bind { provider { DeferredLocationViewModelFactory(instance(), instance()) } }
         bind { provider { MeasureViewModelFactory(this@MainApp, instance(), instance()) } }
         bind { provider { UnSubmittedViewModelFactory(instance()) } }
         bind { provider { WorkViewModelFactory(instance(), instance(), this@MainApp) } }

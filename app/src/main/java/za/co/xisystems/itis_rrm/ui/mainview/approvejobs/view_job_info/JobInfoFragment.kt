@@ -97,7 +97,7 @@ class JobInfoFragment : BaseFragment(), DIAware {
 
     private fun handleOthers(result: XIResult<String>, retryAction: () -> Unit = {}) {
         when (result) {
-            is  XIResult.Error -> {
+            is XIResult.Error -> {
                 toggleLongRunning(false)
                 progressButton.failProgress("Failed")
                 crashGuard(
@@ -269,7 +269,8 @@ class JobInfoFragment : BaseFragment(), DIAware {
 
     private fun initVeiledRecyclerView() {
         ui.viewEstimationItemsListView.run {
-            setVeilLayout(layout.estimates_item) { Toast.makeText(this@JobInfoFragment.requireContext(), "Loading ...", Toast.LENGTH_SHORT).show() }
+            setVeilLayout(layout.estimates_item)
+            { Toast.makeText(this@JobInfoFragment.requireContext(), "Loading ...", Toast.LENGTH_SHORT).show() }
             setAdapter(groupAdapter)
             setLayoutManager(LinearLayoutManager(this.context))
             addVeiledItems(3)
@@ -362,8 +363,8 @@ class JobInfoFragment : BaseFragment(), DIAware {
                 )
                 task.join()
             } catch (t: Throwable) {
-                val message = t.message ?:  XIErrorHandler.UNKNOWN_ERROR
-                val xiErr =  XIResult.Error(t, "Failed to complete workflow: $message")
+                val message = t.message ?: XIErrorHandler.UNKNOWN_ERROR
+                val xiErr = XIResult.Error(t, "Failed to complete workflow: $message")
                 handleWorkSubmission(xiErr)
             }
         }

@@ -65,4 +65,3 @@ fun showZoomedImage(imageUrl: Uri, activity: FragmentActivity) {
         .into(zoomageView!!)
     dialog.show()
 }
-

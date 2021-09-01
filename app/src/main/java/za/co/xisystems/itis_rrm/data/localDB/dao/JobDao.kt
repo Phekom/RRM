@@ -113,14 +113,14 @@ interface JobDao {
         " SELECT j.*, e.* FROM JOB_TABLE AS j JOIN " +
             "JOB_ITEM_ESTIMATE AS e ON e.JobId = j.jobId " +
             "WHERE j.actId Like :actId and e.ActId Like :actId2 " +
-            "AND j.deleted = 0 AND j.sectionId IS NOT NULL ORDER BY jiNo ASC "
+            "AND j.deleted = 0 ORDER BY jiNo ASC "
     )
     fun getJobsForActivityIds(actId: Int, actId2: Int): List<JobDTO>
 
     @Query(
         " SELECT j.*, e.* FROM JOB_TABLE AS j JOIN JOB_ITEM_ESTIMATE AS e " +
             "ON e.JobId = j.jobId WHERE j.actId Like :actId " +
-            "AND e.ActId Like :actId2 AND j.deleted = 0 AND j.sectionId IS NOT NULL " +
+            "AND e.ActId Like :actId2 AND j.deleted = 0 " +
             "ORDER BY jiNo ASC "
     )
     @RewriteQueriesToDropUnusedColumns
