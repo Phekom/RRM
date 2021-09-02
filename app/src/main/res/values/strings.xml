@@ -157,7 +157,7 @@
     <string name="uom_m3">per m³</string>
     <string name="uom_t">per ton</string>
     <string name="uom_hour">per hour</string>
-    <string name="uom_prov_sum">provisional sum</string>
+    <string name="uom_prov_sum">prov sum</string>
     <string name="uom_lump_sum">lump sum</string>
     <string name="uom_l">per liter</string>
 
@@ -233,6 +233,7 @@
     <!-- Location Validation -->
     <string name="not_nra_territory">"Captured coordinates (lat: $1%d, lng: $2%d) are outside of Sanral\'s reserve."</string>
     <string name="invalid_route_section">"The section you are working in ($1%s) is not part of the selected project."</string>
-    <string name="invalid_km_marker">The closest active section to this spot ($1%s) is $2%d km away, /n at the $3%d km marker position.</string>"
+    <string name="invalid_km_marker">The closest active section to this spot ($1%s) is $2%d km away, /n at the $3%d km marker position.</string>
+    <string name="for_review_purposes_only">For Review Purposes Only</string>"
 
 </resources>

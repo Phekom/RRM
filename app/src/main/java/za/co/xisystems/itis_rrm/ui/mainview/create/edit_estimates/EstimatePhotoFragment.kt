@@ -60,6 +60,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimatesPhotoDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectSectionDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentPhotoEstimateBinding
+import za.co.xisystems.itis_rrm.extensions.checkLocationProviders
 import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.services.LocationModel
 import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
@@ -79,7 +80,6 @@ import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
 import java.text.DecimalFormat
 import java.util.Date
 import kotlin.collections.set
-import kotlin.coroutines.cancellation.CancellationException
 
 /**
  * Created by Francis Mahlava on 2019/12/29.
@@ -332,20 +332,9 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
         super.onStart()
         ui.group13Loading.visibility = View.GONE
         mAppExecutor = AppExecutor()
-        lm = requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager
-
+        checkLocationProviders()
         setButtonClicks()
 
-        try {
-            networkEnabled = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
-            gpsEnabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
-        } catch (e: Exception) {
-            Timber.e(e)
-        }
-
-        if (!gpsEnabled) { // notify user && !network_enabled
-            displayPromptForEnablingGPS(requireActivity())
-        }
 
         setValueEditText(getStoredValue())
 
@@ -438,9 +427,7 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
     private fun updateData(view: View) {
         this.toggleLongRunning(false)
         uiScope.destroy()
-        viewLifecycleOwner.lifecycle.coroutineScope.coroutineContext.cancel(
-            CancellationException("updating estimates ...")
-        )
+        viewLifecycleOwner.lifecycle.coroutineScope.coroutineContext.cancel()
         newJob?.let {
             navToAddProject(view)
         }
@@ -467,7 +454,12 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
                 REQUEST_STORAGE_PERMISSION
             )
         } else {
-            launchCamera()
+            val currentLocation = getCurrentLocation()
+            if (currentLocation != null) {
+                launchCamera()
+            } else {
+                this.checkLocationProviders()
+            }
         }
     }
 

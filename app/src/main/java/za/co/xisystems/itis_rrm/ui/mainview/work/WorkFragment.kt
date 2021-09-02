@@ -24,7 +24,7 @@ import androidx.lifecycle.whenStarted
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.ExpandableGroup
 import com.xwray.groupie.GroupAdapter
-import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
+import com.xwray.groupie.GroupieViewHolder
 import kotlinx.android.synthetic.main.fragment_work.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -273,12 +273,10 @@ class WorkFragment : BaseFragment(), DIAware {
                     jobDTO.jobId,
                     ActivityIdConstants.ESTIMATE_INCOMPLETE
                 )
-                estimates.observeOnce(viewLifecycleOwner, { estimateItems ->
-                    estimateItems.forEach { item ->
+                estimates.forEach { item ->
 
-                        createCardItem(item, jobDTO)
-                    }
-                })
+                    createCardItem(item, jobDTO)
+                }
                 expandableGroups.add(this)
             }
         }
@@ -314,7 +312,7 @@ class WorkFragment : BaseFragment(), DIAware {
                     job = jobDTO
                 )
                 receiver.add(
-                   cardItem
+                    cardItem
                 )
             } catch (t: Throwable) {
                 val message = "Could not load job ${jobDTO.jiNo}\nPlease report this to tech support."

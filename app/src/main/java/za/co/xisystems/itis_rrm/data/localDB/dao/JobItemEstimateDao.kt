@@ -17,6 +17,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Update
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 
 /**
@@ -33,7 +34,7 @@ interface JobItemEstimateDao {
     fun checkIfJobItemEstimateExist(estimateId: String): Boolean
 
     @Query("SELECT * FROM JOB_ITEM_ESTIMATE WHERE jobId = :jobId AND actId = :actID")
-    fun getJobEstimationItemsForJobId(jobId: String, actID: Int): LiveData<List<JobItemEstimateDTO>>
+    fun getJobEstimationItemsForJobId(jobId: String, actID: Int): List<JobItemEstimateDTO>
 
     @Query("SELECT * FROM JOB_ITEM_ESTIMATE WHERE jobId = :jobId")
     fun getJobEstimationItemsForJobId2(jobId: String): LiveData<List<JobItemEstimateDTO>>
@@ -97,4 +98,10 @@ interface JobItemEstimateDao {
 
     @Query("DELETE FROM JOB_ITEM_ESTIMATE WHERE estimateId = :estimateId")
     suspend fun deleteJobItemEstimateByEstimateId(estimateId: String): Int
+
+    @Update
+    suspend fun updateJobItemEstimate(jobItemEstimate: JobItemEstimateDTO): Int
+
+    @Update
+    suspend fun updateJobItemEstimates(jobItemEstimates: List<JobItemEstimateDTO>): Int
 }

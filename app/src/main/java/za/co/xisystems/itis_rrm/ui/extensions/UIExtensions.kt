@@ -44,15 +44,17 @@ fun ImageCollectionView.addZoomedImages(
 ) {
 
     photoPaths.forEach { pair ->
+
         this.addImage(pair.second!!, object : ImageCollectionView.OnImageClickListener {
-                override fun onClick(bitmap: Bitmap, imageView: ImageView) {
-                    showZoomedImage(
-                        pair.first,
-                        activity
-                    )
-                }
-            })
-        }
+            override fun onClick(bitmap: Bitmap, imageView: ImageView) {
+                showZoomedImage(
+                    pair.first,
+                    activity
+                )
+            }
+        })
+
+    }
     }
 
 fun showZoomedImage(imageUrl: Uri, activity: FragmentActivity) {

@@ -493,7 +493,7 @@ class WorkDataRepository(
     suspend fun getJobEstimationItemsForJobId(
         jobID: String?,
         actID: Int
-    ): LiveData<List<JobItemEstimateDTO>> {
+    ): List<JobItemEstimateDTO> {
         return withContext(Dispatchers.IO) {
             appDb.getJobItemEstimateDao().getJobEstimationItemsForJobId(jobID!!, actID)
         }

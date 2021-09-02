@@ -33,6 +33,7 @@ import org.kodein.di.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
+import za.co.xisystems.itis_rrm.custom.errors.XIErrorAction
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.results.XIResult.Error
@@ -44,6 +45,7 @@ import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.approve_job_item.Approve
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
+import java.lang.ref.WeakReference
 
 /**
  * Created by Francis Mahlava on 03,October,2019
@@ -211,7 +213,16 @@ class ApproveJobsFragment : BaseFragment(), DIAware {
         } catch (throwable: Throwable) {
             val message = "Failed to retrieve remote jobs: ${throwable.message ?: XIErrorHandler.UNKNOWN_ERROR}"
             Timber.e(throwable, message)
-            throw throwable
+            val xiFail = XIResult.Error(throwable, message)
+            val xiAction = XIErrorAction(
+                fragmentReference = WeakReference(this),
+                view = this.requireView(),
+                throwable = xiFail,
+                shouldToast = false,
+                shouldShowSnackBar = true,
+                refreshAction = { retryFetchRemoteJobs() }
+            )
+            XIErrorHandler.handleError(xiAction)
         }
     }
 

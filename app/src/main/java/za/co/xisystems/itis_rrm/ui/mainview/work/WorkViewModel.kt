@@ -97,10 +97,11 @@ class WorkViewModel(
         }
     }
 
-    suspend fun getJobEstimationItemsForJobId(jobID: String?, actID: Int): LiveData<List<JobItemEstimateDTO>> {
-        return withContext(ioContext) {
-            workDataRepository.getJobEstimationItemsForJobId(jobID, actID).distinctUntilChanged()
-        }
+    suspend fun getJobEstimationItemsForJobId(jobID: String?, actID: Int): List<JobItemEstimateDTO> = withContext(ioContext) {
+
+        val data = workDataRepository.getJobEstimationItemsForJobId(jobID, actID)
+
+        return@withContext data
     }
 
     suspend fun getDescForProjectItemId(projectItemId: String): String {

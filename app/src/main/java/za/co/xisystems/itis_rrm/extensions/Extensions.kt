@@ -1,14 +1,20 @@
 package za.co.xisystems.itis_rrm.extensions
 
+import android.app.Activity
+import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.location.Location
+import android.location.LocationManager
+import android.provider.Settings
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import com.google.android.material.appbar.CollapsingToolbarLayout
+import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
 
@@ -107,3 +113,32 @@ fun Context.uomForUI(uom: String): String {
 }
 
 val Context.isConnected: Boolean get() = ServiceUtil.isNetworkConnected(this.applicationContext)
+
+fun Fragment.checkLocationProviders() {
+    val lm = this.requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager
+    try {
+        val networkEnabled = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+        val gpsEnabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
+        if (!gpsEnabled) { // notify user && !network_enabled
+            displayPromptForEnablingGPS(this.requireActivity())
+        }
+    } catch (e: Exception) {
+        Timber.e(e)
+    }
+}
+
+fun displayPromptForEnablingGPS(
+    activity: Activity
+) {
+
+    val builder = AlertDialog.Builder(activity)
+    builder.setCancelable(false)
+    val action = Settings.ACTION_LOCATION_SOURCE_SETTINGS
+    val message = ("Your GPS seems to be disabled, Please enable it to continue")
+    builder.setMessage(message)
+        .setPositiveButton("OK") { d, _ ->
+            activity.startActivity(Intent(action))
+            d.dismiss()
+        }
+    builder.create().show()
+}

@@ -633,7 +633,7 @@ class JobCreationDataRepository(
     }
 
     fun getValidEstimatesForJobId(jobId: String, actId: Int): List<JobItemEstimateDTO> {
-        return appDb.getJobItemEstimateDao().getJobEstimationItemsForJobId(jobId, actId).value.orEmpty()
+        return appDb.getJobItemEstimateDao().getJobEstimationItemsForJobId(jobId, actId)
     }
 
     suspend fun getProjectItemById(itemId: String?): ItemDTOTemp? {

@@ -9,7 +9,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancelChildren
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.BuildConfig
 import kotlin.coroutines.CoroutineContext
@@ -56,7 +55,6 @@ class UiLifecycleScope : CoroutineScope, LifecycleObserver {
 
     @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
     fun destroy() {
-        superJob.cancelChildren(CancellationException("Exiting uiScope"))
         superJob = SupervisorJob()
     }
 }
