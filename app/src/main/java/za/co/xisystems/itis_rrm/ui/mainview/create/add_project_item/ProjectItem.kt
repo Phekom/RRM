@@ -18,6 +18,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.databinding.NewJobItemBinding
+import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.work.INSET
 import za.co.xisystems.itis_rrm.ui.mainview.work.INSET_TYPE_KEY
@@ -141,7 +142,14 @@ open class ProjectItem(
         itemDeleteBuilder.setPositiveButton(
             R.string.yes
         ) { _, _ ->
-            fragment.sharpToast("Deleting ...", "${this.itemDesc.descr} removed.", DELETE, BOTTOM, LONG)
+            fragment.extensionToast(
+                title = "Deleting ...",
+                message = "${this.itemDesc.descr} removed.",
+                style = DELETE,
+                position = BOTTOM,
+                duration = LONG
+            )
+
             Coroutines.main {
                 // Get the JobEstimate
                 val jobItemEstimate = getJobItemEstimate(itemDesc.itemId)

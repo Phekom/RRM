@@ -861,7 +861,7 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
                 ui.updateButton.visibility = View.VISIBLE
                 setCost()
             } else {
-                sharpToast(
+                extensionToast(
                     message = "Please take both photographs ...",
                     style = ToastStyle.INFO,
                     position = ToastGravity.BOTTOM
@@ -1239,7 +1239,7 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
         ) { _, _ ->
             Coroutines.main {
                 item?.let {
-                    sharpToast(
+                    extensionToast(
                         title = "Deleting ...",
                         message = "${it.descr} removed.",
                         style = ToastStyle.DELETE,

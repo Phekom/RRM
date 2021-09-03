@@ -273,7 +273,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
                 handleLoadingSuccess(result)
             }
             is XIResult.Error -> {
-                sharpToast(message = result.message, style = ERROR, position = BOTTOM, duration = LONG)
+                extensionToast(message = result.message, style = ERROR, position = BOTTOM, duration = LONG)
             }
             is XIResult.Status -> {
                 ui.moveWorkflowButton.text = result.message
@@ -451,7 +451,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
                         refreshAction = { retryJobSubmission() })
                 }
                 is XIResult.Status -> {
-                    sharpToast(
+                    extensionToast(
                         message = result.message,
                         style = INFO,
                         position = BOTTOM,
@@ -499,7 +499,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
                     )
                 }
                 is XIResult.Status -> {
-                    sharpToast(
+                    extensionToast(
                         message = result.message,
                         style = INFO,
                         position = CENTER,
@@ -619,7 +619,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
                     persistLocatedPhoto(currentLocation, itemEstiWorks, imageUri)
                 }
                 else -> {
-                    sharpToast(
+                    extensionToast(
                         message = getString(R.string.please_enable_location_services),
                         style = ERROR, position = CENTER, duration = LONG
                     )
@@ -627,7 +627,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
                 }
             }
         } catch (e: Exception) {
-            sharpToast(
+            extensionToast(
                 message = getString(R.string.error_getting_image),
                 style = ERROR,
                 position = CENTER,
@@ -902,7 +902,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
 
             when {
                 userDTO.userId.isBlank() -> {
-                    sharpToast(
+                    extensionToast(
                         message = "Error: current user lacks permissions",
                         style = ERROR,
                         position = CENTER,
@@ -911,7 +911,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
                     ui.moveWorkflowButton.failProgress("Workflow failed ...")
                 }
                 jobItEstimate?.jobId == null -> {
-                    sharpToast(
+                    extensionToast(
                         message = "Error: selected job is invalid",
                         style = ERROR,
                         position = CENTER,
@@ -951,16 +951,16 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
     private fun popViewOnJobSubmit(direction: Int) {
         when (direction) {
             WorkflowDirection.NEXT.value -> {
-                sharpToast(
+                extensionToast(
                     title = "Workflow update",
-                    resId = R.string.work_complete,
+                    message = getString(R.string.work_complete),
                     style = SUCCESS,
                     position = CENTER,
                     duration = LONG
                 )
             }
             WorkflowDirection.FAIL.value -> {
-                sharpToast(
+                extensionToast(
                     title = "Workflow Update",
                     message = getString(R.string.work_declined),
                     style = DELETE,

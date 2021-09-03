@@ -67,7 +67,7 @@ class JobInfoFragment : BaseFragment(), DIAware {
         outcome?.let { result ->
             when (result) {
                 is XIResult.Success -> {
-                    sharpToast(
+                    extensionToast(
                         message = "Estimate updated",
                         style = SUCCESS,
                         position = BOTTOM,
@@ -107,7 +107,7 @@ class JobInfoFragment : BaseFragment(), DIAware {
                 )
             }
             is XIResult.Status -> {
-                sharpToast(result.message)
+                extensionToast(message = result.message)
             }
             is XIResult.Progress -> {
                 showWorkflowProgress(result)
@@ -195,7 +195,7 @@ class JobInfoFragment : BaseFragment(), DIAware {
                     progressButton = ui.declineJobButton
                     moveJobToNextWorkflow(FAIL)
                 } else {
-                    sharpToast(
+                    extensionToast(
                         message = getString(string.no_connection_detected),
                         style = NO_INTERNET
                     )
@@ -231,7 +231,7 @@ class JobInfoFragment : BaseFragment(), DIAware {
                     progressButton.initProgress(viewLifecycleOwner)
                     moveJobToNextWorkflow(NEXT)
                 } else {
-                    sharpToast(
+                    extensionToast(
                         message = getString(string.no_connection_detected),
                         style = NO_INTERNET
                     )
@@ -308,7 +308,7 @@ class JobInfoFragment : BaseFragment(), DIAware {
                             Timber.d("ApproveItem was null")
                         }
                         userDTO.userId.isBlank() -> {
-                            sharpToast(
+                            extensionToast(
                                 message = "The user lacks permissions.",
                                 style = ToastStyle.ERROR,
                                 position = CENTER
@@ -316,7 +316,7 @@ class JobInfoFragment : BaseFragment(), DIAware {
                             progressButton.failProgress("Invalid User")
                         }
                         approveJobItem.jobDTO.jobId.isBlank() -> {
-                            sharpToast(
+                            extensionToast(
                                 message = "The selected job is invalid.",
                                 style = ToastStyle.ERROR,
                                 position = CENTER
@@ -325,7 +325,7 @@ class JobInfoFragment : BaseFragment(), DIAware {
                         }
                         workflowDirection == FAIL &&
                             ui.workflowCommentsEditText.text.trim().isBlank() -> {
-                            sharpToast(
+                            extensionToast(
                                 message = "Please provide a comment / reason for declining this job",
                                 style = ToastStyle.WARNING,
                                 position = CENTER
@@ -374,14 +374,14 @@ class JobInfoFragment : BaseFragment(), DIAware {
         when (direction) {
             NEXT.value -> {
                 progressButton.text = getString(string.approve_job)
-                sharpToast(
+                extensionToast(
                     message = getString(string.job_no_approved, jiNo!!),
                     style = SUCCESS
                 )
             }
             FAIL.value -> {
                 progressButton.text = getString(string.decline_job)
-                sharpToast(
+                extensionToast(
                     message = getString(string.job_declined),
                     style = ToastStyle.DELETE
                 )

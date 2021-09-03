@@ -234,7 +234,13 @@ abstract class BaseFragment : Fragment(), IProgressView, DIAware {
     ) {
         if (!activity?.isFinishing!!) {
             val message = getString(resId)
-            sharpToast(title, message, style, position, duration)
+            extensionToast(
+                title = title,
+                message = message,
+                style = style,
+                position = position,
+                duration = duration
+            )
         }
     }
 
@@ -246,7 +252,7 @@ abstract class BaseFragment : Fragment(), IProgressView, DIAware {
         duration: ToastDuration = SHORT
     ) {
         if (!activity?.isFinishing!!) {
-            sharedViewModel.setColorMessage(
+            extensionToast(
                 title = title,
                 message = message,
                 style = style,
@@ -262,7 +268,7 @@ abstract class BaseFragment : Fragment(), IProgressView, DIAware {
     }
 
     protected fun noConnectionWarning() {
-        sharpToast(
+        extensionToast(
             message = "Please ensure that you have a valid data or wifi connection",
             style = NO_INTERNET,
             position = BOTTOM,
@@ -279,7 +285,7 @@ abstract class BaseFragment : Fragment(), IProgressView, DIAware {
     }
 
     private fun noServicesWarning() {
-        sharpToast(
+        extensionToast(
             message = "RRM services are unreachable, try again later ...",
             style = NO_INTERNET,
             position = BOTTOM,
@@ -288,7 +294,7 @@ abstract class BaseFragment : Fragment(), IProgressView, DIAware {
     }
 
     protected fun noInternetWarning() {
-        sharpToast(
+        extensionToast(
             message = "No internet access, try again later ...",
             style = NO_INTERNET,
             position = BOTTOM,

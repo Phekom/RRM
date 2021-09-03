@@ -631,27 +631,27 @@ class AddProjectFragment : BaseFragment(), DIAware {
 
             if (dueDate < startDate || dueDate < yesterday || dueDate == yesterday
             ) {
-                sharpToast(message = "Please select a valid due date", style = WARNING)
+                extensionToast(message = "Please select a valid due date", style = WARNING)
                 ui.dueDateCardView.startAnimation(shake_long)
             } else {
                 job.dueDate
                 dueResult = true
             }
         } else {
-            sharpToast(message = "Please select a Due Date", style = WARNING)
+            extensionToast(message = "Please select a Due Date", style = WARNING)
             ui.dueDateCardView.startAnimation(shake_long)
         }
         if (job.startDate != null) {
             if (startDate < yesterday || dueDate == yesterday
             ) {
-                sharpToast(message = "Please select a valid Start Date", style = WARNING)
+                extensionToast(message = "Please select a valid Start Date", style = WARNING)
                 ui.dueDateCardView.startAnimation(shake_long)
             } else {
                 job.startDate
                 startResult = true
             }
         } else {
-            sharpToast(message = "Please select Start Date", style = WARNING)
+            extensionToast(message = "Please select Start Date", style = WARNING)
             ui.startDateCardView.startAnimation(shake_long)
         }
 
@@ -795,7 +795,7 @@ class AddProjectFragment : BaseFragment(), DIAware {
 
     private fun onInvalidJob() {
         toggleLongRunning(false)
-        sharpToast(message = "Incomplete estimates!", style = WARNING)
+        extensionToast(message = "Incomplete estimates!", style = WARNING)
         ui.itemsCardView.startAnimation(shake_long)
     }
 

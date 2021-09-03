@@ -50,6 +50,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentMeasureApprovalBinding
 import za.co.xisystems.itis_rrm.databinding.MeasurementsItemBinding
 import za.co.xisystems.itis_rrm.ui.extensions.doneProgress
+import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.extensions.failProgress
 import za.co.xisystems.itis_rrm.ui.extensions.initProgress
 import za.co.xisystems.itis_rrm.ui.extensions.startProgress
@@ -104,7 +105,7 @@ class MeasureApprovalFragment : BaseFragment(), DIAware {
                     )
                 }
                 is XIResult.Status -> {
-                    sharpToast(
+                    extensionToast(
                         message = result.message,
                         style = ToastStyle.INFO,
                         position = ToastGravity.BOTTOM,
@@ -219,7 +220,7 @@ class MeasureApprovalFragment : BaseFragment(), DIAware {
                 workflowMeasurements(workflowDirection)
             }
         } else {
-            sharpToast(
+            extensionToast(
                 message = getString(string.no_connection_detected),
                 style = ToastStyle.NO_INTERNET
             )
@@ -258,7 +259,7 @@ class MeasureApprovalFragment : BaseFragment(), DIAware {
     }
 
     private fun showSubmissionError(errMessage: String, progFailCaption: String) {
-        sharpToast(
+        extensionToast(
             message = errMessage,
             style = ToastStyle.ERROR,
             position = ToastGravity.CENTER
@@ -269,15 +270,15 @@ class MeasureApprovalFragment : BaseFragment(), DIAware {
     private fun popViewOnJobSubmit(direction: Int) {
         when (direction) {
             NEXT.value -> {
-                sharpToast(
-                    resId = string.measurement_approved,
+                extensionToast(
+                    message = getString(R.string.measurement_approved),
                     style = ToastStyle.SUCCESS,
                     duration = ToastDuration.SHORT
                 )
             }
             WorkflowDirection.FAIL.value -> {
-                sharpToast(
-                    resId = string.measurement_declined,
+                extensionToast(
+                    message = getString(R.string.measurement_declined),
                     style = ToastStyle.INFO,
                     duration = ToastDuration.SHORT
                 )

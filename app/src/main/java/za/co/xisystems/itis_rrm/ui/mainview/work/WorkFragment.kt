@@ -315,7 +315,7 @@ class WorkFragment : BaseFragment(), DIAware {
                     cardItem
                 )
             } catch (t: Throwable) {
-                val message = "Could not load job ${jobDTO.jiNo}\nPlease report this to tech support."
+                val message = "Could not load JI ${jobDTO.jiNo}\nPlease report this to tech support."
                 Timber.e(t, message)
                 val workError = XIResult.Error(t, message)
                 XIErrorHandler.handleError(

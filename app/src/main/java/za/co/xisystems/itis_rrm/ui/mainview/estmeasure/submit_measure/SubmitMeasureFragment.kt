@@ -47,6 +47,7 @@ import za.co.xisystems.itis_rrm.databinding.FragmentSubmitMeasureBinding
 import za.co.xisystems.itis_rrm.databinding.ItemMeasureHeaderBinding
 import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.ui.extensions.doneProgress
+import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.extensions.failProgress
 import za.co.xisystems.itis_rrm.ui.extensions.initProgress
 import za.co.xisystems.itis_rrm.ui.extensions.startProgress
@@ -109,7 +110,7 @@ class SubmitMeasureFragment : BaseFragment(), DIAware {
             when (outcome) {
                 is XIResult.Success -> {
 
-                    sharpToast(
+                    extensionToast(
                         message = "Measurements submitted for Job ${outcome.data}",
                         style = ToastStyle.SUCCESS
                     )
@@ -124,7 +125,7 @@ class SubmitMeasureFragment : BaseFragment(), DIAware {
                     progressButton.failProgress("Workflow failed ...")
                     measureJob?.cancel(CancellationException(outcome.message))
 
-                    sharpToast(
+                    extensionToast(
                         message = "Submission failed: ${outcome.message}",
                         style = ERROR
                     )
@@ -135,7 +136,7 @@ class SubmitMeasureFragment : BaseFragment(), DIAware {
                         refreshAction = { this@SubmitMeasureFragment.retryMeasurements() })
                 }
                 is XIResult.Status -> {
-                    sharpToast(
+                    extensionToast(
                         message = outcome.message,
                         duration = ToastDuration.SHORT,
                         position = BOTTOM
@@ -242,7 +243,7 @@ class SubmitMeasureFragment : BaseFragment(), DIAware {
                     toggleLongRunning(true)
                     submitMeasurements(jobId)
                 } else {
-                    sharpToast(
+                    extensionToast(
                         message = getString(R.string.no_connection_detected),
                         style = NO_INTERNET,
                         position = ToastGravity.CENTER
@@ -274,13 +275,13 @@ class SubmitMeasureFragment : BaseFragment(), DIAware {
                     msure.qty > 0 && !msure.jobItemMeasurePhotos.isNullOrEmpty()
                 }
                 if (validMeasures.isNullOrEmpty()) {
-                    sharpToast(
-                        resId = R.string.please_make_sure_you_have_captured_photos,
+                    extensionToast(
+                        message = getString(R.string.please_make_sure_you_have_captured_photos),
                         style = WARNING
                     )
                     progressButton.failProgress(originalCaption)
                 } else {
-                    sharpToast(
+                    extensionToast(
                         message = "You have Done " + validMeasures.size.toString() + " Measurements on this Estimate",
                         style = ToastStyle.INFO
                     )
@@ -355,7 +356,7 @@ class SubmitMeasureFragment : BaseFragment(), DIAware {
     }
 
     private fun showSubmissionError(errorMessage: String) {
-        sharpToast(
+        extensionToast(
             message = errorMessage,
             style = ERROR,
             position = ToastGravity.CENTER

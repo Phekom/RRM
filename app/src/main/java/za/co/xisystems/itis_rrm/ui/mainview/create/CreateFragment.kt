@@ -44,6 +44,7 @@ import za.co.xisystems.itis_rrm.data.network.OfflineListener
 import za.co.xisystems.itis_rrm.databinding.FragmentCreatejobBinding
 import za.co.xisystems.itis_rrm.domain.ContractSelector
 import za.co.xisystems.itis_rrm.domain.ProjectSelector
+import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper.setSpinner
 import za.co.xisystems.itis_rrm.utils.Coroutines
@@ -151,7 +152,7 @@ class CreateFragment : BaseFragment(), OfflineListener, DIAware {
                 R.id.selectContractProjectContinueButton -> {
                     val description = ui.descriptionEditText.text!!.toString().trim { it <= ' ' }
                     if (description.isEmpty()) {
-                        sharpToast(message = "Please Enter Description", style = WARNING)
+                        extensionToast(message = "Please Enter Description", style = WARNING)
                         ui.descriptionEditText.startAnimation(shake)
                     } else {
                         activity?.hideKeyboard()
@@ -258,7 +259,7 @@ class CreateFragment : BaseFragment(), OfflineListener, DIAware {
             isSynced = null
 
         )
-        sharpToast(message = "New job created", style = SUCCESS)
+        extensionToast(message = "New job created", style = SUCCESS)
         return createdJob
     }
 

@@ -19,6 +19,7 @@ import za.co.xisystems.itis_rrm.R.drawable
 import za.co.xisystems.itis_rrm.R.string
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
+import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedFragment
 import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedFragmentDirections
@@ -47,8 +48,6 @@ class UnSubmittedJobItem(
         viewHolder.apply {
 
             iTemID.text = getItemId(position + 1).toString()
-            unsubmitted_project_textView.text = itemView
-                .context.getString(string.pair, "JI:", jobDTO.jiNo)
             Coroutines.main {
                 val descri = viewModel.getDescForProjectId(jobDTO.projectId!!)
                 unsubmitted_project_textView.text = descri
@@ -102,18 +101,24 @@ class UnSubmittedJobItem(
         itemDeleteBuilder.setPositiveButton(
             string.yes
         ) { _, _ ->
-            fragment.sharpToast("Deleting ...", "${this.jobDTO.jiNo} removed.", DELETE, BOTTOM, LONG)
-                Coroutines.main {
-                    try {
-                        viewModel.deleJobfromList(jobDTO.jobId)
-                        viewModel.deleteItemList(jobDTO.jobId)
-                        groupAdapter.clear()
-                        groupAdapter.notifyDataSetChanged()
-                        notifyChanged()
-                    } catch (t: Throwable) {
-                        Timber.e("Failed to delete unsubmitted job: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}")
-                    }
+            fragment.extensionToast(
+                title = "Deleting ...",
+                message = "${this.jobDTO.descr} removed.",
+                style = DELETE,
+                position = BOTTOM,
+                duration = LONG
+            )
+            Coroutines.main {
+                try {
+                    viewModel.deleJobfromList(jobDTO.jobId)
+                    viewModel.deleteItemList(jobDTO.jobId)
+                    groupAdapter.clear()
+                    groupAdapter.notifyDataSetChanged()
+                    notifyChanged()
+                } catch (t: Throwable) {
+                    Timber.e("Failed to delete unsubmitted job: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}")
                 }
+            }
         }
         // No button
         itemDeleteBuilder.setNegativeButton(

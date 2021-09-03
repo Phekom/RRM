@@ -50,6 +50,7 @@ import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentHomeBinding
 import za.co.xisystems.itis_rrm.extensions.observeOnce
+import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
@@ -412,7 +413,7 @@ class HomeFragment : BaseFragment(), DIAware {
             when (result) {
                 is XIResult.Success -> {
                     showProgress()
-                    sharpToast(
+                    extensionToast(
                         message = "Sync Complete",
                         style = SUCCESS,
                         position = BOTTOM,
@@ -420,13 +421,13 @@ class HomeFragment : BaseFragment(), DIAware {
                     )
                 }
                 is XIResult.Status -> {
-                    sharpToast(message = result.message, style = INFO, position = BOTTOM)
+                    extensionToast(message = result.message, style = INFO, position = BOTTOM)
                 }
                 is XIResult.Error -> {
                     synchJob.cancel(CancellationException(result.message))
                     showProgress()
 
-                    sharpToast(
+                    extensionToast(
                         title = "Sync Failed",
                         message = result.message,
                         style = ERROR

@@ -46,6 +46,7 @@ import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.services.LocationModel
 import za.co.xisystems.itis_rrm.ui.custom.MeasureGalleryUIState
 import za.co.xisystems.itis_rrm.ui.extensions.addZoomedImages
+import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.extensions.scaleForSize
 import za.co.xisystems.itis_rrm.ui.extensions.showZoomedImage
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModel
@@ -130,7 +131,7 @@ class CaptureItemMeasurePhotoFragment :
                         viewPhotosOnly = false
 
                         if (measureViewModel.measuredJiNo != it.jimNo) {
-                            this@CaptureItemMeasurePhotoFragment.sharpToast(
+                            this@CaptureItemMeasurePhotoFragment.extensionToast(
                                 message = "Measuring job: ${it.jimNo}",
                                 style = INFO,
                                 position = ToastGravity.BOTTOM
@@ -377,7 +378,7 @@ class CaptureItemMeasurePhotoFragment :
                 toggleLongRunning(response.isLoading)
             }
             is XIResult.Status -> {
-                sharpToast(
+                extensionToast(
                     message = response.message
                 )
             }
