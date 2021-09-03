@@ -16,6 +16,7 @@ import androidx.room.TypeConverters
 import dev.matrix.roomigrant.GenerateRoomMigrations
 import net.sqlcipher.database.SQLiteDatabase
 import net.sqlcipher.database.SupportFactory
+import timber.log.Timber
 import za.co.xisystems.itis_rrm.BuildConfig
 import za.co.xisystems.itis_rrm.data.localDB.dao.ActivityDao
 import za.co.xisystems.itis_rrm.data.localDB.dao.ContractDao
@@ -150,7 +151,8 @@ abstract class AppDatabase : RoomDatabase() {
         private val LOCK = Any()
         private var secretphrase: String? = null
         operator fun invoke(context: Context, armoury: XIArmoury) = instance ?: synchronized(LOCK) {
-            secretphrase = armoury.readPassphrase()
+            // secretphrase = armoury.readPassphrase()
+            Timber.e("Passphrase: $secretphrase")
             instance ?: buildDatabase(context.applicationContext).also {
                 instance = it
             }
@@ -171,7 +173,7 @@ abstract class AppDatabase : RoomDatabase() {
                     // Encrypted DB with one-time generated passphrase
                     val passphrase: ByteArray =
                         SQLiteDatabase.getBytes(
-                            secretphrase!!.toCharArray()
+                            "Av3ryS3cr3tPassphrase".toCharArray()
                         )
                     val factory = SupportFactory(passphrase, null, false)
                     Room.databaseBuilder(

@@ -151,7 +151,7 @@ class LoginActivity : BaseActivity(), AuthListener, DIAware {
     override fun onBackPressed() {
         doubleBackToExitPressed++
         if (doubleBackToExitPressed == 2) {
-            exitApplication()
+            logoutApplication()
         } else {
             toast("Please press Back again to exit")
             if (doubleBackToExitPressed > 0) {
