@@ -592,20 +592,22 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
 
         // Await the updated works record
         Coroutines.main {
-            workViewModel.workItem.observe(viewLifecycleOwner, {
-                Timber.d("$it")
-                val id = STANDARD_WORKFLOW_STEPS
-                // This part must be Deleted when the Dynamic workflow is complete.
-                Coroutines.main {
-                    val workCodeData = workViewModel.getWorkFlowCodes(id)
-                    workCodeData.observe(viewLifecycleOwner, {
-                        groupAdapter.notifyItemChanged(2)
+            if (!this@CaptureWorkFragment.isDetached) {
+                workViewModel.workItem.observeOnce(viewLifecycleOwner, {
+                    Timber.d("$it")
+                    val id = STANDARD_WORKFLOW_STEPS
+                    // This part must be Deleted when the Dynamic workflow is complete.
+                    Coroutines.main {
+                        val workCodeData = workViewModel.getWorkFlowCodes(id)
+                        workCodeData.observeOnce(viewLifecycleOwner, {
+                            groupAdapter.notifyItemChanged(2)
 
-                        ui.commentsEditText.setText("")
-                        Timber.d("IsRefresh -> Yes")
-                    })
-                }
-            })
+                            ui.commentsEditText.setText("")
+                            Timber.d("IsRefresh -> Yes")
+                        })
+                    }
+                })
+            }
         }
     }
 
@@ -984,7 +986,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
                     startActivity(home)
                 }
             },
-            Constants.FIVE_SECONDS
+            Constants.TWO_SECONDS
         )
     }
 
