@@ -43,22 +43,23 @@ import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.constants.Constants.TWO_SECONDS
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
+import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration.LONG
+import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity.BOTTOM
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.ERROR
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.INFO
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.SUCCESS
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.results.getPercentageComplete
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentHomeBinding
+import za.co.xisystems.itis_rrm.extensions.isConnected
 import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
-import za.co.xisystems.itis_rrm.utils.enums.ToastDuration.LONG
-import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.BOTTOM
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.ERROR
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.INFO
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.SUCCESS
 import kotlin.coroutines.cancellation.CancellationException
 
 class HomeFragment : BaseFragment(), DIAware {
@@ -101,10 +102,9 @@ class HomeFragment : BaseFragment(), DIAware {
     }
 
     private fun homeDiagnostic() {
-        if (networkEnabled) {
+        if (requireContext().isConnected) {
             uiScope.launch(uiScope.coroutineContext) {
                 try {
-
                     ui.group2Loading.visibility = View.VISIBLE
                     acquireUser()
                     getOfflineSectionItems()
@@ -181,7 +181,7 @@ class HomeFragment : BaseFragment(), DIAware {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         uiScope.onCreate()
-        homeViewModel = ViewModelProvider(this, factory).get(HomeViewModel::class.java)
+        homeViewModel = ViewModelProvider(this.requireActivity(), factory).get(HomeViewModel::class.java)
         setHasOptionsMenu(true)
     }
 
@@ -233,7 +233,7 @@ class HomeFragment : BaseFragment(), DIAware {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        homeViewModel = ViewModelProvider(this, factory).get(HomeViewModel::class.java)
+        homeViewModel = ViewModelProvider(this.requireActivity(), factory).get(HomeViewModel::class.java)
     }
 
     /**

@@ -27,6 +27,7 @@ import com.xwray.groupie.viewbinding.BindableItem
 import timber.log.Timber
 import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.databinding.EstimatesItemBinding
@@ -38,7 +39,6 @@ import za.co.xisystems.itis_rrm.utils.GlideApp
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.Utils.nanCheck
 import za.co.xisystems.itis_rrm.utils.Utils.round
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle
 import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
 import java.io.File
 

@@ -2,7 +2,6 @@ package za.co.xisystems.itis_rrm.ui.base
 
 import android.content.Intent
 import android.os.Bundle
-import android.os.Process
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import kotlinx.coroutines.Dispatchers
@@ -78,11 +77,13 @@ abstract class BaseActivity : AppCompatActivity(), DIAware {
     }
 
     fun exitApplication() {
-        val pid = Process.myPid()
-        Process.killProcess(pid)
-        val intent = Intent(Intent.ACTION_MAIN)
-        intent.addCategory(Intent.CATEGORY_HOME)
-        startActivity(intent)
+        if (armoury.checkTimeout()) {
+            // val pid = Process.myPid()
+            // Process.killProcess(pid)
+            // val intent = Intent(Intent.ACTION_MAIN)
+            // intent.addCategory(Intent.CATEGORY_HOME)
+            // startActivity(intent)
+        }
     }
 
     override fun onPause() {

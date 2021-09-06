@@ -529,7 +529,20 @@ class CreateViewModel(
 
     val jobForSubmission: MutableLiveData<JobDTO> = MutableLiveData()
 
-    suspend fun setJobForSubmission(inJob: JobDTO) = withContext(mainContext) {
-        jobForSubmission.value = inJob
+    fun setJobForSubmission(inJobId: String) = viewModelScope.launch(mainContext) {
+        jobCreationDataRepository.getUpdatedJob(inJobId).also {
+            jobForSubmission.value = it
+        }
+    }
+
+    val jobForValidation: MutableLiveData<JobDTO> = MutableLiveData()
+
+    fun setJobToValidate(geoCodedJobId: String) = viewModelScope.launch(mainContext) {
+        jobCreationDataRepository.getUpdatedJob(geoCodedJobId).also {
+            jobForValidation.value = it
+        }
+    }
+
+    fun validateEstimates(job: JobDTO?) {
     }
 }

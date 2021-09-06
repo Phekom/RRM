@@ -29,6 +29,8 @@ import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.SUCCESS
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.WARNING
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.ItemSectionDTO
@@ -50,8 +52,6 @@ import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper.s
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DateUtil
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.SUCCESS
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.WARNING
 import za.co.xisystems.itis_rrm.utils.hide
 import za.co.xisystems.itis_rrm.utils.show
 import java.util.ArrayList

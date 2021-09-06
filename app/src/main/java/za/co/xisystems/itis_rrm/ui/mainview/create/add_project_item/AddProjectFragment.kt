@@ -45,6 +45,11 @@ import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.constants.Constants.ONE_SECOND
 import za.co.xisystems.itis_rrm.constants.Constants.TWO_SECONDS
 import za.co.xisystems.itis_rrm.custom.notifications.ColorToast
+import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration
+import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.ERROR
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.WARNING
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.results.isRecoverableException
 import za.co.xisystems.itis_rrm.data.localDB.JobDataController
@@ -70,11 +75,6 @@ import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DateUtil
 import za.co.xisystems.itis_rrm.utils.JobUtils
-import za.co.xisystems.itis_rrm.utils.enums.ToastDuration
-import za.co.xisystems.itis_rrm.utils.enums.ToastGravity
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.ERROR
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.WARNING
 import java.util.Calendar
 import java.util.Date
 
@@ -528,7 +528,6 @@ class AddProjectFragment : BaseFragment(), DIAware {
                     )
                     ui.itemsCardView.startAnimation(shake_long)
                 } else {
-
                     deferredLocationViewModel.geoCodingResult.observe(
                         viewLifecycleOwner, { result ->
                             result?.let { outcome ->
@@ -541,32 +540,49 @@ class AddProjectFragment : BaseFragment(), DIAware {
         }
     }
 
-    private fun processLocationResult(result: XIResult<JobDTO>) {
-        Coroutines.main {
-            when (result) {
-                is XIResult.Success -> {
-                    val updatedJob = result.data
-                    if (!updatedJob.sectionId.isNullOrBlank() &&
-                        JobUtils.isGeoCoded(updatedJob)
-                    ) {
-                        validateEstimates(updatedJob)
-                    } else {
+    private fun processLocationResult(result: XIResult<String>) = uiScope.launch(uiScope.coroutineContext) {
+        when (result) {
+            is XIResult.Success -> {
+                handleGeoSuccess(result)
+            }
+            is XIResult.Error -> {
+                HandleGeoError(result)
+            }
+            else -> geoLocationFailed()
+        }
+
+    }
+
+    private suspend fun AddProjectFragment.HandleGeoError(
+        result: XIResult.Error
+    ) {
+        this@AddProjectFragment.extensionToast(
+            title = "Location Validation",
+            message = result.exception.message.toString(),
+            style = ERROR
+        )
+        crashGuard(this@AddProjectFragment.requireView(), result,
+            refreshAction = { Coroutines.main { this@AddProjectFragment.validateJob() } })
+        geoLocationFailed()
+    }
+
+    private fun handleGeoSuccess(result: XIResult.Success<String>) {
+        val geoCodedJobId = result.data
+        createViewModel.jobForValidation.observe(viewLifecycleOwner, { job ->
+            job?.let { realJob ->
+                if (!job.sectionId.isNullOrBlank() && JobUtils.isGeoCoded(job)) {
+                    uiScope.launch(uiScope.coroutineContext) {
+                        validateEstimates(job)
+                    }
+                } else {
+                    uiScope.launch(uiScope.coroutineContext) {
                         geoLocationFailed()
                     }
                 }
-                is XIResult.Error -> {
-                    this@AddProjectFragment.extensionToast(
-                        title = "Location Validation",
-                        message = result.exception.message.toString(),
-                        style = ToastStyle.ERROR
-                    )
-                    crashGuard(this@AddProjectFragment.requireView(), result,
-                        refreshAction = { Coroutines.main { this@AddProjectFragment.validateJob() } })
-                    geoLocationFailed()
-                }
-                else -> geoLocationFailed()
             }
-        }
+
+        })
+        createViewModel.setJobToValidate(geoCodedJobId)
     }
 
     private suspend fun geoLocationFailed() = withContext(Dispatchers.Main.immediate) {
@@ -577,10 +593,11 @@ class AddProjectFragment : BaseFragment(), DIAware {
     }
 
     private suspend fun validateLocations(job: JobDTO) = withContext(Dispatchers.Main) {
+        createViewModel.backupJob(job)
         toggleLongRunning(true)
         ui.submitButton.initProgress(viewLifecycleOwner)
         ui.submitButton.startProgress("Checking locations ...")
-        deferredLocationViewModel.checkLocations(job)
+        deferredLocationViewModel.checkLocations(job.jobId)
     }
 
     private suspend fun validateEstimates(updatedJob: JobDTO) = withContext(Dispatchers.Main) {
@@ -731,11 +748,13 @@ class AddProjectFragment : BaseFragment(), DIAware {
 
     private fun popViewOnJobSubmit() {
         // Delete Items data from the database after success upload
-        onResetClicked(this.requireView())
-        // createViewModel.setCurrentJob(null)
+        // onResetClicked(this.requireView())
+        createViewModel.setJobToEdit("null")
         // Conduct user back to home fragment
         HandlerCompat.postDelayed(Handler(Looper.getMainLooper()), {
             Intent(context?.applicationContext, MainActivity::class.java).also { home ->
+                home.flags =
+                    Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
                 startActivity(home)
             }
         }, null, TWO_SECONDS)

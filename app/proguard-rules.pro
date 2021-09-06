@@ -46,6 +46,7 @@
 -keep class za.co.xisystems.itis_rrm.data.network.request.** { *; }
 -keep class za.co.xisystems.itis_rrm.services.LocationValidation {*; }
 -keep class za.co.xisystems.itis_rrm.forge.** { *;}
+-keep class za.co.xisystems.itis_rrm.custom.** { *; }
 
 # Keep these for GSON and Jackson
 -keepattributes Signature

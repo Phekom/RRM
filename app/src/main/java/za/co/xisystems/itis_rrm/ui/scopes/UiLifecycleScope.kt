@@ -9,6 +9,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancelChildren
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.BuildConfig
 import kotlin.coroutines.CoroutineContext
@@ -36,7 +37,7 @@ class UiLifecycleScope : CoroutineScope, LifecycleObserver {
             }
             else -> {
                 Timber.e(throwable)
-                throw throwable
+                // throw throwable
             }
         }
     }
@@ -47,14 +48,14 @@ class UiLifecycleScope : CoroutineScope, LifecycleObserver {
     override val coroutineContext: CoroutineContext
         get() = job.plus(Dispatchers.Main).plus(handler)
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_START)
+    @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
     fun onCreate() {
         superJob = SupervisorJob()
         job = Job(superJob)
     }
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
+    @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
     fun destroy() {
-        superJob = SupervisorJob()
+        superJob.cancelChildren()
     }
 }

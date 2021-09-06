@@ -28,6 +28,12 @@ import za.co.xisystems.itis_rrm.R.string
 import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.constants.Constants
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
+import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration.LONG
+import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity.BOTTOM
+import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity.CENTER
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.NO_INTERNET
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.SUCCESS
 import za.co.xisystems.itis_rrm.custom.results.*
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
@@ -41,12 +47,6 @@ import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.approve_job_item.Approve
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
-import za.co.xisystems.itis_rrm.utils.enums.ToastDuration.LONG
-import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.BOTTOM
-import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.CENTER
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.NO_INTERNET
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.SUCCESS
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection.FAIL
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection.NEXT

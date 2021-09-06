@@ -36,6 +36,13 @@ import timber.log.Timber
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
+import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration
+import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity
+import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity.BOTTOM
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.ERROR
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.NO_INTERNET
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.WARNING
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
@@ -57,13 +64,6 @@ import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
-import za.co.xisystems.itis_rrm.utils.enums.ToastDuration
-import za.co.xisystems.itis_rrm.utils.enums.ToastGravity
-import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.BOTTOM
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.ERROR
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.NO_INTERNET
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.WARNING
 import java.util.ArrayList
 import java.util.HashMap
 

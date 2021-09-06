@@ -23,6 +23,15 @@ import za.co.xisystems.itis_rrm.constants.Constants.DNS_PORT
 import za.co.xisystems.itis_rrm.constants.Constants.FIVE_SECONDS
 import za.co.xisystems.itis_rrm.constants.Constants.SSL_PORT
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
+import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration
+import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration.LONG
+import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration.SHORT
+import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity
+import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity.BOTTOM
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.ERROR
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.INFO
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.NO_INTERNET
 import za.co.xisystems.itis_rrm.custom.results.XIResult.Error
 import za.co.xisystems.itis_rrm.custom.results.isRecoverableException
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
@@ -34,15 +43,6 @@ import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModelFactory
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.ViewLogger
-import za.co.xisystems.itis_rrm.utils.enums.ToastDuration
-import za.co.xisystems.itis_rrm.utils.enums.ToastDuration.LONG
-import za.co.xisystems.itis_rrm.utils.enums.ToastDuration.SHORT
-import za.co.xisystems.itis_rrm.utils.enums.ToastGravity
-import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.BOTTOM
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.ERROR
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.INFO
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.NO_INTERNET
 import kotlin.coroutines.CoroutineContext
 
 /**

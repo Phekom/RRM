@@ -52,6 +52,9 @@ import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.LocationFragment
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.notifications.ColorToast
+import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration
+import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
@@ -73,9 +76,6 @@ import za.co.xisystems.itis_rrm.utils.DateUtil
 import za.co.xisystems.itis_rrm.utils.GlideApp
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
-import za.co.xisystems.itis_rrm.utils.enums.ToastDuration
-import za.co.xisystems.itis_rrm.utils.enums.ToastGravity
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle
 import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
 import java.text.DecimalFormat
 import java.util.Date
@@ -139,12 +139,14 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
         if (isSaved) {
             processAndSetImage()
         } else {
-            Coroutines.io {
-                photoUtil.deleteImageFile(filenamePath.toString())
-                withContext(Dispatchers.Main.immediate) {
-                    haltAnimation()
-                    ui.startImageView.visibility = View.VISIBLE
-                    ui.endImageView.visibility = View.VISIBLE
+            uiScope.launch(uiScope.coroutineContext) {
+                withContext(Dispatchers.IO) {
+                    photoUtil.deleteImageFile(filenamePath.toString())
+                    withContext(Dispatchers.Main.immediate) {
+                        haltAnimation()
+                        ui.startImageView.visibility = View.VISIBLE
+                        ui.endImageView.visibility = View.VISIBLE
+                    }
                 }
             }
         }
@@ -334,8 +336,6 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
         mAppExecutor = AppExecutor()
         checkLocationProviders()
         setButtonClicks()
-
-
         setValueEditText(getStoredValue())
 
         ui.valueEditText.doOnTextChanged { _, _, _, _ ->
@@ -997,7 +997,7 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
         }
 
         when (item?.uom) {
-            "NO" -> {
+            in arrayOf("QTY", "NO", null) -> {
                 lineAmount = validateNumberCosting(qty, tenderRate)
             }
             "M2" -> {
@@ -1026,7 +1026,7 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
         }
 
         ui.costTextView.text =
-            (" * R $tenderRate =  R ${DecimalFormat("#0.00").format(lineAmount)}")
+            (" * R $tenderRate =  R ${DecimalFormat("#0.00").format(lineAmount ?: qty * tenderRate)}")
 
         newJobItemEstimate?.qty = qty
         createViewModel.setEstimateQuantity(qty)

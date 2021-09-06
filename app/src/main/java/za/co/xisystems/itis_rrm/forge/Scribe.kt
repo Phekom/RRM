@@ -188,6 +188,15 @@ class Scribe private constructor(
         }
     }
 
+    /**
+     * WorkerThread-bound function to write encrypted file to disk
+     * @param directory File
+     * @param fileName String
+     * @param context Context
+     * @param masterKey MasterKey
+     * @param fileContent ByteArray
+     * @return Boolean
+     */
     @WorkerThread
     private fun writeFile(
         directory: File,
@@ -197,29 +206,29 @@ class Scribe private constructor(
         fileContent: ByteArray
     ) = try {
         val fileToWrite = File(directory, fileName)
-                val encryptedFile = EncryptedFile.Builder(
-                    context.applicationContext,
-                    fileToWrite,
-                    masterKey,
-                    EncryptedFile.FileEncryptionScheme.AES256_GCM_HKDF_4KB
-                ).build()
+        val encryptedFile = EncryptedFile.Builder(
+            context.applicationContext,
+            fileToWrite,
+            masterKey,
+            EncryptedFile.FileEncryptionScheme.AES256_GCM_HKDF_4KB
+        ).build()
 
-                // File cannot exist before using openFileOutput
-                if (fileToWrite.exists()) {
-                    fileToWrite.delete()
-                }
+        // File cannot exist before using openFileOutput
+        if (fileToWrite.exists()) {
+            fileToWrite.delete()
+        }
 
-                encryptedFile.openFileOutput().apply {
-                    write(fileContent)
-                    flush()
-                    close()
-                }
-                true
-            } catch (t: IOException) {
-                val cause = "Failed to write $fileName: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
-                Timber.e(t, cause)
-                false
-            }
+        encryptedFile.openFileOutput().apply {
+            write(fileContent)
+            flush()
+            close()
+        }
+        true
+    } catch (t: IOException) {
+        val cause = "Failed to write $fileName: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
+        Timber.e(t, cause)
+        false
+    }
 
     /**
      * Read encrypted file from disk
@@ -239,6 +248,14 @@ class Scribe private constructor(
         }
     }
 
+    /**
+     * WorkerThread bound function to read encrypted file from disk
+     * @param context Context
+     * @param directory File
+     * @param fileToRead String
+     * @param masterKey MasterKey
+     * @return ByteArray
+     */
     @WorkerThread
     private fun readFile(
         context: Context,
@@ -246,20 +263,20 @@ class Scribe private constructor(
         fileToRead: String,
         masterKey: MasterKey
     ): ByteArray {
-            val encryptedFile = EncryptedFile.Builder(
+        val encryptedFile = EncryptedFile.Builder(
             context.applicationContext,
             File(directory, fileToRead),
-                masterKey,
-                EncryptedFile.FileEncryptionScheme.AES256_GCM_HKDF_4KB
-            ).build()
+            masterKey,
+            EncryptedFile.FileEncryptionScheme.AES256_GCM_HKDF_4KB
+        ).build()
 
-            val inputStream = encryptedFile.openFileInput()
-            val byteArrayOutputStream = ByteArrayOutputStream()
-            var nextByte: Int = inputStream.read()
-            while (nextByte != -1) {
-                byteArrayOutputStream.write(nextByte)
-                nextByte = inputStream.read()
-            }
+        val inputStream = encryptedFile.openFileInput()
+        val byteArrayOutputStream = ByteArrayOutputStream()
+        var nextByte: Int = inputStream.read()
+        while (nextByte != -1) {
+            byteArrayOutputStream.write(nextByte)
+            nextByte = inputStream.read()
+        }
 
         return byteArrayOutputStream.toByteArray()
     }

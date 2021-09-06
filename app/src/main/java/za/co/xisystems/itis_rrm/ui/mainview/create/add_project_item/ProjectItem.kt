@@ -14,6 +14,9 @@ import com.xwray.groupie.viewbinding.BindableItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration.LONG
+import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity.BOTTOM
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.DELETE
 import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
@@ -24,9 +27,6 @@ import za.co.xisystems.itis_rrm.ui.mainview.work.INSET
 import za.co.xisystems.itis_rrm.ui.mainview.work.INSET_TYPE_KEY
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.JobUtils
-import za.co.xisystems.itis_rrm.utils.enums.ToastDuration.LONG
-import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.BOTTOM
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.DELETE
 
 /**
  * Created by Francis Mahlava on 2019/12/29.
@@ -66,6 +66,7 @@ open class ProjectItem(
 
                 val located = ContextCompat.getDrawable(root.context, R.drawable.ic_baseline_location_on_24)
                 val notLocated = ContextCompat.getDrawable(root.context, R.drawable.ic_baseline_location_off_24)
+                located?.setTint(fragment.requireContext().resources.getColor(R.color.sanral_dark_green, null))
                 if (jobItemEstimate?.geoCoded == true) {
                     textViewItem.setCompoundDrawablesWithIntrinsicBounds(located, null, null, null)
                 } else {

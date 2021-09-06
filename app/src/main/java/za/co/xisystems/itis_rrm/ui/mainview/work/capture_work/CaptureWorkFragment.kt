@@ -40,6 +40,16 @@ import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.LocationFragment
 import za.co.xisystems.itis_rrm.constants.Constants
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
+import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration.LONG
+import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration.SHORT
+import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity.BOTTOM
+import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity.CENTER
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.DELETE
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.ERROR
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.INFO
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.NO_INTERNET
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.SUCCESS
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.WARNING
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
@@ -71,16 +81,6 @@ import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.DateUtil
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
-import za.co.xisystems.itis_rrm.utils.enums.ToastDuration.LONG
-import za.co.xisystems.itis_rrm.utils.enums.ToastDuration.SHORT
-import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.BOTTOM
-import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.CENTER
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.DELETE
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.ERROR
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.INFO
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.NO_INTERNET
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.SUCCESS
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.WARNING
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import java.util.Date
 import java.util.HashMap
@@ -723,7 +723,6 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
             if (workDone == estimateJob.jobItemEstimates.size) {
                 collectCompletedEstimates(estimateJob.jobId)
             } else {
-
                 loadWorkEstimate(estimateItem.estimateId, estimateJob.jobId)
             }
         }

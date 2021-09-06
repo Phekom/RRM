@@ -4,6 +4,8 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
+import android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
+import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.location.Location
 import android.location.LocationManager
 import android.provider.Settings
@@ -69,6 +71,7 @@ fun Location?.toText(): String {
 fun Context.exitApplication() {
     this.run {
         val intent = Intent(Intent.ACTION_MAIN)
+        intent.flags = FLAG_ACTIVITY_NEW_TASK or FLAG_ACTIVITY_CLEAR_TASK
         intent.addCategory(Intent.CATEGORY_HOME)
         this.startActivity(intent)
     }

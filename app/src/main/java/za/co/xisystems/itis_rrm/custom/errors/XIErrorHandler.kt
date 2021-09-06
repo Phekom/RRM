@@ -6,10 +6,10 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import retrofit2.HttpException
 import timber.log.Timber
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle
 import java.lang.ref.WeakReference
 
 /**
