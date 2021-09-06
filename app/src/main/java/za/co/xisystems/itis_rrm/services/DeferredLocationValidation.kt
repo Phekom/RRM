@@ -293,7 +293,6 @@ class DeferredLocationViewModel(
             job.sectionId = projectSection.sectionId
             job.startKm = projectSection.startKm
             job.endKm = projectSection.endKm
-            jobCreationDataRepository.backupJob(job)
 
             jobCreationDataRepository.updateNewJob(
                 newJobId = job.jobId,
@@ -322,7 +321,7 @@ class DeferredLocationViewModel(
             startKm = localProjectSection.startKm,
             endKm = localProjectSection.endKm,
             recordSynchStateId = 0,
-            recordVersion = 1
+            recordVersion = 0
         ).also {
             jobCreationDataRepository.saveJobSection(it)
             return@withContext it

@@ -3,6 +3,7 @@ package za.co.xisystems.itis_rrm.ui.mainview._fragments
 import android.view.View
 import androidx.annotation.DrawableRes
 import com.xwray.groupie.viewbinding.BindableItem
+import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.databinding.ItemHeaderBinding
@@ -36,15 +37,19 @@ open class HeaderItem(
                 title.apply {
                     text = root.context.getString(R.string.pair, "JI:", jobNumber)
                     subtitle.apply {
-                        val sectionId = workViewModel.getProjectSectionIdForJobId(jobId)
-                        val route = workViewModel.getRouteForProjectSectionId(sectionId)
-                        val section = workViewModel.getSectionForProjectSectionId(sectionId)
-                        val subtitleResId = workViewModel.getItemDescription(jobId)
-                        val sectionRoute = " ( $route ${"/0$section"} )"
-                        visibility = View.GONE
-                        subtitleResId.let {
-                            visibility = View.VISIBLE
-                            text = root.context.getString(R.string.pair, it, sectionRoute)
+                        try {
+                            val sectionId = workViewModel.getProjectSectionIdForJobId(jobId)
+                            val route = workViewModel.getRouteForProjectSectionId(sectionId)
+                            val section = workViewModel.getSectionForProjectSectionId(sectionId)
+                            val subtitleResId = workViewModel.getItemDescription(jobId)
+                            val sectionRoute = " ( $route ${"/0$section"} )"
+                            visibility = View.GONE
+                            subtitleResId.let {
+                                visibility = View.VISIBLE
+                                text = root.context.getString(R.string.pair, it, sectionRoute)
+                            }
+                        } catch (ex: Exception) {
+                            Timber.e(ex, "Could not render job item")
                         }
                     }
                 }

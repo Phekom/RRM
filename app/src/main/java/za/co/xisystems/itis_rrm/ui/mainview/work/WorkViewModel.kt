@@ -178,12 +178,12 @@ class WorkViewModel(
         }
     }
 
-    fun submitWorks(
+    suspend fun submitWorks(
         itemEstiWorks: JobEstimateWorksDTO,
         activity: FragmentActivity,
         itemEstiJob: JobDTO
 
-    ) = viewModelScope.launch(ioContext) {
+    ) = withContext(ioContext) {
         workDataRepository.submitWorks(itemEstiWorks, activity, itemEstiJob)
     }
 
