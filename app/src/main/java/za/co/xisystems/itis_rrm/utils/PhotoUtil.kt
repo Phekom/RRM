@@ -547,7 +547,7 @@ class PhotoUtil private constructor(private var appContext: Context) {
 
     @Throws(IOException::class)
     private suspend fun createImageFile(): File? = withContext(Dispatchers.IO) {
-        val imageFileName = SqlLitUtils.generateUuid()
+        val imageFileName = UUID.randomUUID()
         return@withContext try {
             File(pictureFolder, "$imageFileName.jpg")
         } catch (ex: IOException) {

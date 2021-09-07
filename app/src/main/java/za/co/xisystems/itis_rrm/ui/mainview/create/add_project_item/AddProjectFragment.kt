@@ -193,7 +193,7 @@ class AddProjectFragment : BaseFragment(), DIAware {
         jobBound = this::job.isInitialized
         uiScope.launch(uiScope.coroutineContext) {
             initErrorMessageObserver()
-            initLocationObserver()
+            initValidationListener()
             initErrorNavigationListener()
             initCurrentUserObserver()
             initCurrentJobListener()
@@ -203,12 +203,13 @@ class AddProjectFragment : BaseFragment(), DIAware {
     private fun initCurrentUserObserver() {
         createViewModel.loggedUser.distinctUntilChanged().observe(viewLifecycleOwner, { userId ->
             userId?.let {
+
                 this@AddProjectFragment.userId = it.toString()
             }
         })
     }
 
-    private fun initLocationObserver() {
+    private fun initValidationListener() {
         deferredLocationViewModel.geoCodingResult.observe(
             viewLifecycleOwner, { result ->
                 result?.let { outcome ->
@@ -218,9 +219,9 @@ class AddProjectFragment : BaseFragment(), DIAware {
 
         createViewModel.jobForValidation.observe(viewLifecycleOwner, { job ->
             job?.let { realJob ->
-                if (!job.sectionId.isNullOrBlank() && JobUtils.isGeoCoded(job)) {
+                if (!realJob.sectionId.isNullOrBlank() && JobUtils.isGeoCoded(realJob)) {
                     uiScope.launch(uiScope.coroutineContext) {
-                        validateEstimates(job)
+                        validateEstimates(realJob)
                     }
                 } else {
                     uiScope.launch(uiScope.coroutineContext) {
@@ -228,7 +229,6 @@ class AddProjectFragment : BaseFragment(), DIAware {
                     }
                 }
             }
-
         })
     }
 
@@ -586,9 +586,9 @@ class AddProjectFragment : BaseFragment(), DIAware {
             withContext(Dispatchers.Main.immediate) {
                 ui.submitButton.initProgress(viewLifecycleOwner)
                 ui.submitButton.startProgress("Submitting data ...")
+                updatedJob.issueDate = DateUtil.dateToString(Date())
+                submitJob(updatedJob)
             }
-            updatedJob.issueDate = DateUtil.dateToString(Date())
-            submitJob(updatedJob)
         }
     }
 

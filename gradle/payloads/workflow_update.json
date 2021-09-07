@@ -1,0 +1,439 @@
+{
+  "ErrorMessage": null,
+  "WorkflowJob": {
+    "ActId": 3,
+    "JiNo": "000000495",
+    "JobId": "184671c1-93ae-7646-b7a1-7d5efb15cb0f",
+    "TrackRouteId": "f3386f24-8e19-fd47-b748-f02bb8f9adc3",
+    "WorkflowItemEstimates": [
+      {
+        "ActId": 7,
+        "EstimateId": "54be31f7-3d04-9944-b804-17287d43963b",
+        "TrackRouteId": "f4676a9f-96f9-2b48-bd89-c949da78f5ba",
+        "WorkflowEstimateWorks": [
+          {
+            "WorksId": "6aa1992c-ca3f-44b6-b178-696709c42ec7",
+            "ActId": 17,
+            "TrackRouteId": "7876503b-9e81-df44-abf8-05161adf02ab",
+            "EstimateId": "54be31f7-3d04-9944-b804-17287d43963b",
+            "RecordVersion": 0,
+            "RecordSynchStateId": 0
+          }
+        ]
+      }
+    ],
+    "WorkflowItemMeasures": [],
+    "WorkflowJobSections": [
+      {
+        "EndKm": 172.0280,
+        "JobId": "184671c1-93ae-7646-b7a1-7d5efb15cb0f",
+        "JobSectionId": "ab49ba07-ec10-314a-9b12-b957e465331c",
+        "ProjectSectionId": "d3e3c12d-8409-49c7-99e8-e2d6008ecda9",
+        "RecordSynchStateId": 0,
+        "RecordVersion": 0,
+        "StartKm": 0.0
+      }
+    ]
+  },
+  "ToDoListGroups": [
+    {
+      "Entities": [],
+      "GroupDescription": "Jobs that are in the process of being established",
+      "GroupId": "JobEstimate",
+      "GroupName": "New Jobs",
+      "SortOrder": 0
+    },
+    {
+      "Entities": [],
+      "GroupDescription": "Jobs where approval is required",
+      "GroupId": "JobApprove",
+      "GroupName": "Unapproved Jobs",
+      "SortOrder": 1
+    },
+    {
+      "Entities": [
+        {
+          "Actionable": false,
+          "ActivityId": 3,
+          "CurrentRouteId": 3,
+          "Data": null,
+          "Description": "000000291 - Tree Felling",
+          "Entities": [
+            {
+              "Actionable": true,
+              "ActivityId": 9,
+              "CurrentRouteId": 9,
+              "Data": "Work complete.",
+              "Description": "Estimate - Girth exceeding 500 mm up to 1 000 mm - Quantity : 19",
+              "Entities": [],
+              "EntityName": "PRJ_JOB_ITEM_ESTIMATE",
+              "Location": null,
+              "PrimaryKeyValues": [
+                {
+                  "Key": "EstimateId",
+                  "Value": "k8cIcyEGRemHCyD3Jpt8ww==",
+                  "ValueType": "System.Byte[]"
+                }
+              ],
+              "RecordVersion": 0,
+              "TrackRouteId": "s2SU/bC7TxWFv7VEJ8Cqkw=="
+            }
+          ],
+          "EntityName": "PRJ_JOB",
+          "Location": null,
+          "PrimaryKeyValues": [
+            {
+              "Key": "JobId",
+              "Value": "JQwCfsysQPqSO+7gg8gRVQ==",
+              "ValueType": "System.Byte[]"
+            }
+          ],
+          "RecordVersion": 0,
+          "TrackRouteId": "YKYCqvpYSauwSTuGiFgc1g=="
+        },
+        {
+          "Actionable": false,
+          "ActivityId": 3,
+          "CurrentRouteId": 3,
+          "Data": null,
+          "Description": "000000486 - Repairing of earthdrain and channels",
+          "Entities": [
+            {
+              "Actionable": true,
+              "ActivityId": 9,
+              "CurrentRouteId": 9,
+              "Data": "Work complete.",
+              "Description": "Estimate - Repairing of earth drains and channels - Quantity : 25",
+              "Entities": [],
+              "EntityName": "PRJ_JOB_ITEM_ESTIMATE",
+              "Location": null,
+              "PrimaryKeyValues": [
+                {
+                  "Key": "EstimateId",
+                  "Value": "WvT/w1hiQjmOTSYJQc/z1g==",
+                  "ValueType": "System.Byte[]"
+                }
+              ],
+              "RecordVersion": 0,
+              "TrackRouteId": "JRphN5VFSYK4xmqAf+vbjw=="
+            }
+          ],
+          "EntityName": "PRJ_JOB",
+          "Location": null,
+          "PrimaryKeyValues": [
+            {
+              "Key": "JobId",
+              "Value": "UGob2JdSQa+WNnvGFVSmxw==",
+              "ValueType": "System.Byte[]"
+            }
+          ],
+          "RecordVersion": 0,
+          "TrackRouteId": "bGTfKUfTQNWM7LchNFsZXw=="
+        },
+        {
+          "Actionable": false,
+          "ActivityId": 3,
+          "CurrentRouteId": 3,
+          "Data": null,
+          "Description": "000000479 - Cleaning of earthdrain and channels",
+          "Entities": [
+            {
+              "Actionable": true,
+              "ActivityId": 9,
+              "CurrentRouteId": 9,
+              "Data": "Work complete.",
+              "Description": "Estimate - Cleaning earth drains and channels - Quantity : 18.54",
+              "Entities": [],
+              "EntityName": "PRJ_JOB_ITEM_ESTIMATE",
+              "Location": null,
+              "PrimaryKeyValues": [
+                {
+                  "Key": "EstimateId",
+                  "Value": "m1IGrK52QiC3gihoSzo+MQ==",
+                  "ValueType": "System.Byte[]"
+                }
+              ],
+              "RecordVersion": 0,
+              "TrackRouteId": "vwKMUJafThW0GAbBW/H7RQ=="
+            }
+          ],
+          "EntityName": "PRJ_JOB",
+          "Location": null,
+          "PrimaryKeyValues": [
+            {
+              "Key": "JobId",
+              "Value": "e82E57zPSDCn9Z1EtYQoXg==",
+              "ValueType": "System.Byte[]"
+            }
+          ],
+          "RecordVersion": 0,
+          "TrackRouteId": "PYx8qaXsTWq75PDnh6fdWw=="
+        },
+        {
+          "Actionable": false,
+          "ActivityId": 3,
+          "CurrentRouteId": 3,
+          "Data": null,
+          "Description": "000000276 - Road Sign Repair",
+          "Entities": [
+            {
+              "Actionable": true,
+              "ActivityId": 9,
+              "CurrentRouteId": 9,
+              "Data": "Work complete.",
+              "Description": "Estimate - Area not exceeding 2 m² - Quantity : 0.72",
+              "Entities": [],
+              "EntityName": "PRJ_JOB_ITEM_ESTIMATE",
+              "Location": null,
+              "PrimaryKeyValues": [
+                {
+                  "Key": "EstimateId",
+                  "Value": "hlvee5h8RzKG7dWlrTSwcA==",
+                  "ValueType": "System.Byte[]"
+                }
+              ],
+              "RecordVersion": 0,
+              "TrackRouteId": "/R5Rk7f0RWiBengq5SFjIQ=="
+            }
+          ],
+          "EntityName": "PRJ_JOB",
+          "Location": null,
+          "PrimaryKeyValues": [
+            {
+              "Key": "JobId",
+              "Value": "o0bBuInTQd2M2tGutApHMg==",
+              "ValueType": "System.Byte[]"
+            }
+          ],
+          "RecordVersion": 0,
+          "TrackRouteId": "Xh0U8fmmTAG1nDiSrO7eVQ=="
+        },
+        {
+          "Actionable": false,
+          "ActivityId": 3,
+          "CurrentRouteId": 3,
+          "Data": null,
+          "Description": "000000290 - Additional Eradication of undesired vegetation",
+          "Entities": [
+            {
+              "Actionable": true,
+              "ActivityId": 9,
+              "CurrentRouteId": 9,
+              "Data": "Work complete.",
+              "Description": "Estimate - Additional eradiction of undesired vegetation  as instructed by the Engineer - Quantity : 24",
+              "Entities": [],
+              "EntityName": "PRJ_JOB_ITEM_ESTIMATE",
+              "Location": null,
+              "PrimaryKeyValues": [
+                {
+                  "Key": "EstimateId",
+                  "Value": "AEKsyWczSP2Qnxf5YcUhew==",
+                  "ValueType": "System.Byte[]"
+                }
+              ],
+              "RecordVersion": 0,
+              "TrackRouteId": "o/ByLpxdT5WeIRUKhOmWdw=="
+            }
+          ],
+          "EntityName": "PRJ_JOB",
+          "Location": null,
+          "PrimaryKeyValues": [
+            {
+              "Key": "JobId",
+              "Value": "2KdkgZfaQ/q+BJKWGIAUKQ==",
+              "ValueType": "System.Byte[]"
+            }
+          ],
+          "RecordVersion": 0,
+          "TrackRouteId": "YkHrIR/eR4qs7hMDxCAkyA=="
+        }
+      ],
+      "GroupDescription": "Estimates where all of the work has been done and measurement is required.",
+      "GroupId": "EstimateComplete",
+      "GroupName": "Estimates to Measure",
+      "SortOrder": 4
+    },
+    {
+      "Entities": [
+        {
+          "Actionable": false,
+          "ActivityId": 3,
+          "CurrentRouteId": 3,
+          "Data": null,
+          "Description": "000000479 - Cleaning of earthdrain and channels",
+          "Entities": [
+            {
+              "Actionable": true,
+              "ActivityId": 11,
+              "CurrentRouteId": 11,
+              "Data": "Submit for Approval",
+              "Description": "Measurement - Cleaning earth drains and channels - Quantity : 1",
+              "Entities": [],
+              "EntityName": "PRJ_JOB_ITEM_MEASURE",
+              "Location": null,
+              "PrimaryKeyValues": [
+                {
+                  "Key": "ItemMeasureId",
+                  "Value": "RZ8zYxIkR7WRUQ5JhQNnVw==",
+                  "ValueType": "System.Byte[]"
+                }
+              ],
+              "RecordVersion": 0,
+              "TrackRouteId": "/Sg8YDAuRfCS/QaX8DpXZg=="
+            },
+            {
+              "Actionable": true,
+              "ActivityId": 11,
+              "CurrentRouteId": 11,
+              "Data": "Submit for Approval",
+              "Description": "Measurement - Cleaning earth drains and channels - Quantity : 9",
+              "Entities": [],
+              "EntityName": "PRJ_JOB_ITEM_MEASURE",
+              "Location": null,
+              "PrimaryKeyValues": [
+                {
+                  "Key": "ItemMeasureId",
+                  "Value": "WQHSHn8hTx2Htt+Na4BMOQ==",
+                  "ValueType": "System.Byte[]"
+                }
+              ],
+              "RecordVersion": 0,
+              "TrackRouteId": "6Tm9MEg1TNGx8Xzfkartxw=="
+            },
+            {
+              "Actionable": true,
+              "ActivityId": 11,
+              "CurrentRouteId": 11,
+              "Data": "Submit for Approval",
+              "Description": "Measurement - Cleaning earth drains and channels - Quantity : 8",
+              "Entities": [],
+              "EntityName": "PRJ_JOB_ITEM_MEASURE",
+              "Location": null,
+              "PrimaryKeyValues": [
+                {
+                  "Key": "ItemMeasureId",
+                  "Value": "1nJcjj79TbS7PiF3UjcQMA==",
+                  "ValueType": "System.Byte[]"
+                }
+              ],
+              "RecordVersion": 0,
+              "TrackRouteId": "2ByhajXYT9i0xPLjWFPSVA=="
+            }
+          ],
+          "EntityName": "PRJ_JOB",
+          "Location": null,
+          "PrimaryKeyValues": [
+            {
+              "Key": "JobId",
+              "Value": "e82E57zPSDCn9Z1EtYQoXg==",
+              "ValueType": "System.Byte[]"
+            }
+          ],
+          "RecordVersion": 0,
+          "TrackRouteId": "PYx8qaXsTWq75PDnh6fdWw=="
+        },
+        {
+          "Actionable": false,
+          "ActivityId": 3,
+          "CurrentRouteId": 3,
+          "Data": null,
+          "Description": "000000276 - Road Sign Repair",
+          "Entities": [
+            {
+              "Actionable": true,
+              "ActivityId": 11,
+              "CurrentRouteId": 11,
+              "Data": "Submit for Approval",
+              "Description": "Measurement - Area not exceeding 2 m² - Quantity : 12",
+              "Entities": [],
+              "EntityName": "PRJ_JOB_ITEM_MEASURE",
+              "Location": null,
+              "PrimaryKeyValues": [
+                {
+                  "Key": "ItemMeasureId",
+                  "Value": "GIEJowogS3eaZhd1tyxbDw==",
+                  "ValueType": "System.Byte[]"
+                }
+              ],
+              "RecordVersion": 0,
+              "TrackRouteId": "DKMQZhK0T/+Imj+WKuBzuQ=="
+            }
+          ],
+          "EntityName": "PRJ_JOB",
+          "Location": null,
+          "PrimaryKeyValues": [
+            {
+              "Key": "JobId",
+              "Value": "o0bBuInTQd2M2tGutApHMg==",
+              "ValueType": "System.Byte[]"
+            }
+          ],
+          "RecordVersion": 0,
+          "TrackRouteId": "Xh0U8fmmTAG1nDiSrO7eVQ=="
+        },
+        {
+          "Actionable": false,
+          "ActivityId": 3,
+          "CurrentRouteId": 3,
+          "Data": null,
+          "Description": "000000290 - Additional Eradication of undesired vegetation",
+          "Entities": [
+            {
+              "Actionable": true,
+              "ActivityId": 11,
+              "CurrentRouteId": 11,
+              "Data": "Submit for Approval",
+              "Description": "Measurement - Additional eradiction of undesired vegetation  as instructed by the Engineer - Quantity : 2",
+              "Entities": [],
+              "EntityName": "PRJ_JOB_ITEM_MEASURE",
+              "Location": null,
+              "PrimaryKeyValues": [
+                {
+                  "Key": "ItemMeasureId",
+                  "Value": "LMKUZNsoR/afvbj1BULBlQ==",
+                  "ValueType": "System.Byte[]"
+                }
+              ],
+              "RecordVersion": 0,
+              "TrackRouteId": "8/eHEnT7S7y69unKzXj8lA=="
+            },
+            {
+              "Actionable": true,
+              "ActivityId": 11,
+              "CurrentRouteId": 11,
+              "Data": "Submit for Approval",
+              "Description": "Measurement - Additional eradiction of undesired vegetation as instructed by theEngineer-Quantity: 22",
+              "Entities": [],
+              "EntityName": "PRJ_JOB_ITEM_MEASURE",
+              "Location": null,
+              "PrimaryKeyValues": [
+                {
+                  "key": "ItemMeasureId",
+                  "Value": "vkFDusRjTBmE5p3DNW+1+A==",
+                  "ValueType": "System.Byte[]"
+                }
+              ],
+              "RecordVersion": 0,
+              "TrackRouteId": "P6GLHFBDTp6v9GEl2qqkmA=="
+            }
+          ],
+          "EntityName": "PRJ_JOB",
+          "Location": null,
+          "PrimaryKeyValues": [
+            {
+              "Key": "JobId",
+              "Value": "2KdkgZfaQ/q+BJKWGIAUKQ==",
+              "ValueType": "System.Byte[]"
+            }
+          ],
+          "RecordVersion": 0,
+          "TrackRouteId": "YkHrIR/eR4qs7hMDxCAkyA=="
+        }
+      ],
+      "GroupDescription": "Measurements that require Approval for payment processing",
+      "GroupId": "MeasureApprove",
+      "GroupName": "Measurements To Approve",
+      "SortOrder": 5
+    }
+  ]
+}

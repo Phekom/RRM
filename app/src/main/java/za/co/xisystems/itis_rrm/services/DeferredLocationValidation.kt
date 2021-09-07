@@ -319,11 +319,11 @@ class DeferredLocationViewModel(
                 val existingJobSection = jobCreationDataRepository.getJobSectionByJobId(jobId = jobToUpdate.jobId)
                 existingJobSection?.let { jobSection ->
                     jobSectionId = jobSection.jobSectionId
-                    if (job.jobSections.isNullOrEmpty()) {
-                        job.jobSections = ArrayList<JobSectionDTO>()
+                    if (jobToUpdate.jobSections.isNullOrEmpty()) {
+                        jobToUpdate.jobSections = ArrayList<JobSectionDTO>()
                     }
-                    if (job.jobSections.isEmpty() || !job.jobSections.contains(existingJobSection)) {
-                        job.jobSections.add(existingJobSection)
+                    if (jobToUpdate.jobSections.isEmpty() || !job.jobSections.contains(existingJobSection)) {
+                        jobToUpdate.jobSections.add(existingJobSection)
                     }
                 }
             }

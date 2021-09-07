@@ -43,6 +43,10 @@ object DateUtil {
         }
     }
 
+    fun dateToLocalString(date: Date?): String? {
+        return if (null == date) null else date.toInstant().toEpochMilli().toString()
+    }
+
     fun dateToString(date: Date?): String? {
         return if (null == date) null else iso8601Format.format(date)
     }

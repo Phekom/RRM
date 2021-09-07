@@ -39,7 +39,6 @@ import androidx.navigation.Navigation
 import androidx.navigation.fragment.navArgs
 import com.airbnb.lottie.LottieAnimationView
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.kodein.di.DIAware
@@ -426,8 +425,6 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
 
     private fun updateData(view: View) {
         this.toggleLongRunning(false)
-        uiScope.destroy()
-        viewLifecycleOwner.lifecycle.coroutineScope.coroutineContext.cancel()
         newJob?.let {
             navToAddProject(view)
         }
