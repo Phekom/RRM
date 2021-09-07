@@ -129,7 +129,7 @@ open class MainApp : Application(), DIAware {
             }
         }
 
-        bind { provider { DeferredLocationViewModelFactory(instance(), instance()) } }
+        bind { provider { DeferredLocationViewModelFactory(instance(), instance(), this@MainApp) } }
         bind { provider { MeasureViewModelFactory(this@MainApp, instance(), instance()) } }
         bind { provider { UnSubmittedViewModelFactory(instance()) } }
         bind { provider { WorkViewModelFactory(instance(), instance(), this@MainApp) } }

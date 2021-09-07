@@ -14,6 +14,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.custom.errors.NoDataException
+import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
+import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.localDB.JobDataController
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
@@ -154,25 +157,48 @@ class JobCreationDataRepository(
         }
     }
 
-    fun updateNewJob(
+    @Transaction
+    suspend fun updateNewJob(
         newJobId: String,
         startKM: Double,
         endKM: Double,
         sectionId: String,
         newJobItemEstimatesList: ArrayList<JobItemEstimateDTO>,
         jobItemSectionArrayList: ArrayList<JobSectionDTO>
-    ) {
-        Coroutines.io {
+    ): XIResult<JobDTO>? = withContext(Dispatchers.IO) {
+        try {
+
+            var resultJob: JobDTO? = null
             if (appDb.getJobDao().checkIfJobExist(newJobId)) {
+                appDb.getJobItemEstimateDao().updateJobItemEstimates(newJobItemEstimatesList)
+                jobItemSectionArrayList.forEach { jobSectionDTO ->
+                    appDb.getJobSectionDao().updateExistingJobSectionWorkflow(
+                        jobSectionId = jobSectionDTO.jobSectionId,
+                        projectSectionId = jobSectionDTO.projectSectionId,
+                        jobId = jobSectionDTO.jobId,
+                        startKm = jobSectionDTO.startKm,
+                        endKm = jobSectionDTO.endKm,
+                        recordVersion = jobSectionDTO.recordVersion,
+                        recordSynchStateId = jobSectionDTO.recordSynchStateId
+                    )
+                }
                 appDb.getJobDao().updateJoSecId(
-                    newJobId,
-                    startKM,
-                    endKM,
-                    sectionId,
-                    newJobItemEstimatesList,
-                    jobItemSectionArrayList
+                    newJobId = newJobId,
+                    startKM = startKM,
+                    endKM = endKM,
+                    sectionId = sectionId,
+                    newJobItemEstimatesList = newJobItemEstimatesList,
+                    jobItemSectionArrayList = jobItemSectionArrayList
                 )
+                val updatedJob = appDb.getJobDao().getJobForJobId(newJobId)
+                return@withContext XIResult.Success(updatedJob)
+            } else {
+                throw NoDataException("Job $newJobId does not exist...")
             }
+        } catch (ex: Exception) {
+            val message = "Failed to update job: ${ex.message ?: XIErrorHandler.UNKNOWN_ERROR}"
+            Timber.e(ex, message)
+            return@withContext XIResult.Error(ex, message)
         }
     }
 
@@ -664,5 +690,9 @@ class JobCreationDataRepository(
     suspend fun saveJobSection(jobSection: JobSectionDTO): JobSectionDTO? = withContext(Dispatchers.IO) {
         appDb.getJobSectionDao().insertJobSection(jobSection)
         return@withContext appDb.getJobSectionDao().getJobSectionFromJobId(jobSection.jobId!!)
+    }
+
+    suspend fun getJobSectionByJobId(jobId: String): JobSectionDTO? = withContext(Dispatchers.IO) {
+        return@withContext appDb.getJobSectionDao().getJobSectionFromJobId(jobId)
     }
 }

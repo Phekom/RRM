@@ -20,6 +20,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.RoomWarnings
+import androidx.room.Update
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobSectionDTO
@@ -36,13 +37,16 @@ interface JobDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertOrUpdateJob(job: JobDTO)
 
+    @Update
+    fun updateJob(job: JobDTO)
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertJobs(jobs: List<JobDTO>)
 
     @Delete
-    fun deleteJob(job: JobDTO): Int
+    fun deleteJob(job: JobDTO)
 
-    @Query("SELECT * FROM JOB_TABLE WHERE jobId = :jobId AND deleted = 0")
+    @Query("SELECT EXISTS (SELECT * FROM JOB_TABLE WHERE jobId = :jobId AND deleted = 0)")
     fun checkIfJobExist(jobId: String): Boolean
 
     @Query("SELECT * FROM JOB_TABLE WHERE actId = null OR actId = 0 and deleted = 0")

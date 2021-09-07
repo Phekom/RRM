@@ -1,10 +1,11 @@
 package za.co.xisystems.itis_rrm.services
 
+import android.app.Application
 import android.os.Parcel
 import android.os.Parcelable
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavDirections
 import kotlinx.coroutines.Dispatchers
@@ -13,6 +14,8 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import za.co.xisystems.itis_rrm.MainApp
+import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.custom.errors.LocalDataException
 import za.co.xisystems.itis_rrm.custom.errors.LocationException
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
@@ -31,15 +34,16 @@ import za.co.xisystems.itis_rrm.utils.Utils.round
 
 class DeferredLocationViewModel(
     private val deferredLocationRepository: DeferredLocationRepository,
-    private val jobCreationDataRepository: JobCreationDataRepository
-) : ViewModel() {
+    private val jobCreationDataRepository: JobCreationDataRepository,
+    application: Application
+) : AndroidViewModel(application) {
 
     private val superJob = SupervisorJob()
     private val ioContext = Job(superJob) + Dispatchers.IO
     private val mainContext = Job(superJob) + Dispatchers.Main
     private var _opsProgress: MutableLiveData<Boolean> = MutableLiveData()
 
-    private val geoCodingUpdate: MutableLiveData<XIEvent<XIResult<String>>> = MutableLiveData()
+    private var geoCodingUpdate: MutableLiveData<XIEvent<XIResult<String>>> = MutableLiveData()
     var geoCodingResult: MutableLiveData<XIResult<String>?> = MutableLiveData()
     private var errorState: Boolean = false
     val errorMessage: MutableLiveData<ColorToast> = MutableLiveData()
@@ -56,6 +60,7 @@ class DeferredLocationViewModel(
 
     init {
         viewModelScope.launch(mainContext) {
+            geoCodingUpdate = MutableLiveData()
             geoCodingResult = Transformations.map(geoCodingUpdate) { input ->
                 input.getContentIfNotHandled()
             } as MutableLiveData<XIResult<String>?>
@@ -84,9 +89,16 @@ class DeferredLocationViewModel(
                 when (routeSectionResponse) {
 
                     is XIResult.Error -> {
-                        processAndPersist(routeSectionResponse, uncheckedPhoto, uncheckedEstimate, locationJob, estIndex, phIndex)
+                        processAndPersist(
+                            routeSectionResponse = routeSectionResponse,
+                            uncheckedPhoto = uncheckedPhoto,
+                            uncheckedEstimate = uncheckedEstimate,
+                            locationJob = locationJob,
+                            estIndex = estIndex,
+                            phIndex = phIndex
+                        )
                         if (routeSectionResponse.exception is LocationException) {
-                            return@photo // Process the next photo
+                            return@photo // Process the next estimate
                         } else {
                             pushNonLocationException(routeSectionResponse)
                         }
@@ -106,12 +118,10 @@ class DeferredLocationViewModel(
                             phIndex = phIndex
                         )
                         if (projectSectionIdResponse is XIResult.Error) {
-                            if (projectSectionIdResponse.exception is LocationException) {
-                                return@photo
-                            } else {
-                                pushNonLocationException(projectSectionIdResponse)
-                            }
-                        } else if (projectSectionIdResponse is XIResult.Success && validProjectSectionId.isNullOrBlank()) {
+                            handleLocationError(projectSectionIdResponse)
+                        } else if (projectSectionIdResponse is XIResult.Success &&
+                            validProjectSectionId.isNullOrBlank()
+                        ) {
                             validProjectSectionId = projectSectionIdResponse.data.projectSectionId!!
                         }
                     }
@@ -145,11 +155,24 @@ class DeferredLocationViewModel(
                         geoCodingUpdate.value = XIEvent(XIResult.Success(checkedJob.jobId))
                     }
                 }
-            } else failLocationValidation("One or more locations could not be verified.\n Please check estimates for details")
+            } else {
+                failLocationValidation(
+                    getApplication<MainApp>()
+                        .getString(R.string.location_general_failure)
+                )
+            }
         } catch (e: Exception) {
             val message = "Failed to save geocoded job: ${e.message ?: XIErrorHandler.UNKNOWN_ERROR}"
             Timber.e(e, message)
             geoCodingUpdate.value = XIEvent(XIResult.Error(e, message))
+        }
+    }
+
+    private fun handleLocationError(projectSectionIdResponse: XIResult.Error) {
+        if (projectSectionIdResponse.exception is LocationException) {
+            return
+        } else {
+            pushNonLocationException(projectSectionIdResponse)
         }
     }
 
@@ -276,46 +299,86 @@ class DeferredLocationViewModel(
         job: JobDTO,
         projectSectionId: String
     ): String? = withContext(mainContext) {
-        return@withContext try {
+        try {
+            var jobSectionId: String? = null
+            jobCreationDataRepository.backupJob(job)
+            var jobToUpdate = jobCreationDataRepository.getUpdatedJob(job.jobId)
             val projectSection = jobCreationDataRepository.getSection(projectSectionId)
             if (!jobCreationDataRepository
                     .checkIfJobSectionExistForJobAndProjectSection(
-                        jobId = job.jobId,
+                        jobId = jobToUpdate.jobId,
                         projectSectionId = projectSection.sectionId
                     )
             ) {
-                val newJobSections = job.jobSections
-                val newJobSection = createJobSection(projectSection, job)
+                val newJobSections = jobToUpdate.jobSections as MutableList<JobSectionDTO>
+                val newJobSection = createJobSection(projectSection, jobToUpdate)
                 newJobSections.add(newJobSection)
-                job.jobSections = newJobSections
+                jobToUpdate.jobSections = newJobSections as ArrayList<JobSectionDTO>
+                jobSectionId = newJobSection.jobSectionId
+            } else {
+                val existingJobSection = jobCreationDataRepository.getJobSectionByJobId(jobId = jobToUpdate.jobId)
+                existingJobSection?.let { jobSection ->
+                    jobSectionId = jobSection.jobSectionId
+                    if (job.jobSections.isNullOrEmpty()) {
+                        job.jobSections = ArrayList<JobSectionDTO>()
+                    }
+                    if (job.jobSections.isEmpty() || !job.jobSections.contains(existingJobSection)) {
+                        job.jobSections.add(existingJobSection)
+                    }
+                }
             }
 
-            job.sectionId = projectSection.sectionId
-            job.startKm = projectSection.startKm
-            job.endKm = projectSection.endKm
+            jobToUpdate.sectionId = jobSectionId!!
+            jobToUpdate.startKm = projectSection.startKm
+            jobToUpdate.endKm = projectSection.endKm
 
-            jobCreationDataRepository.updateNewJob(
-                newJobId = job.jobId,
+            val locationResult = jobCreationDataRepository.updateNewJob(
+                newJobId = jobToUpdate.jobId,
                 startKM = projectSection.startKm,
                 endKM = projectSection.endKm,
-                sectionId = projectSection.sectionId,
-                newJobItemEstimatesList = job.jobItemEstimates,
-                jobItemSectionArrayList = job.jobSections
+                sectionId = jobSectionId!!,
+                newJobItemEstimatesList = jobToUpdate.jobItemEstimates,
+                jobItemSectionArrayList = jobToUpdate.jobSections
             )
-            Timber.d("^*^ Job section written for ${job.descr}")
-            job.jobId
+            if (locationResult != null) {
+                return@withContext handleResult(locationResult)
+            } else {
+                return@withContext null
+            }
         } catch (e: Exception) {
             Timber.e(e, "Could not save updated job.")
-            throw e
+            return@withContext null
         }
+    }
+
+    private fun handleResult(locationResult: XIResult<JobDTO>): String? {
+        var result: String? = null
+
+        when (locationResult) {
+            is XIResult.Success -> {
+                val updatedJob = locationResult.data
+                if (updatedJob.sectionId != null && updatedJob.jobSections.size >= 1) {
+                    result = updatedJob.jobId
+                }
+            }
+            is XIResult.Error -> {
+                geoCodingUpdate.value = XIEvent(locationResult)
+            }
+            else -> {
+                Timber.e("^*^ - 3rd Outcome")
+                Timber.e("$locationResult")
+            }
+        }
+        return result
     }
 
     private suspend fun createJobSection(
         localProjectSection: ProjectSectionDTO,
         localJob: JobDTO
     ) = withContext(ioContext) {
+        val jobSectionId = SqlLitUtils.generateUuid()
         JobSectionDTO(
-            jobSectionId = SqlLitUtils.generateUuid(),
+            jobSectionId = jobSectionId,
             projectSectionId = localProjectSection.sectionId,
             jobId = localJob.jobId,
             startKm = localProjectSection.startKm,

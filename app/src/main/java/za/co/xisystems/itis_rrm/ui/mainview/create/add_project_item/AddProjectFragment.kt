@@ -51,7 +51,6 @@ import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
 import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.ERROR
 import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.WARNING
 import za.co.xisystems.itis_rrm.custom.results.XIResult
-import za.co.xisystems.itis_rrm.custom.results.isRecoverableException
 import za.co.xisystems.itis_rrm.data.localDB.JobDataController
 import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
@@ -194,7 +193,7 @@ class AddProjectFragment : BaseFragment(), DIAware {
         jobBound = this::job.isInitialized
         uiScope.launch(uiScope.coroutineContext) {
             initErrorMessageObserver()
-            initExceptionObserver()
+            initLocationObserver()
             initErrorNavigationListener()
             initCurrentUserObserver()
             initCurrentJobListener()
@@ -209,30 +208,28 @@ class AddProjectFragment : BaseFragment(), DIAware {
         })
     }
 
-    private fun initExceptionObserver() {
-        deferredLocationViewModel.operationalExceptions.distinctUntilChanged().observe(
-            viewLifecycleOwner, { locationException ->
-                locationException?.let { exception ->
-                    val errorToast = when (exception.isRecoverableException()) {
-                        true -> {
-                            ColorToast(
-                                title = "Network transmission failed",
-                                message = "Please try again later", style = ERROR
-                            )
-                        }
-                        else -> {
-                            ColorToast(
-                                title = "Missing / invalid data",
-                                message = "Please check your estimates. ${exception.message}", style = ERROR
-                            )
-                        }
+    private fun initLocationObserver() {
+        deferredLocationViewModel.geoCodingResult.observe(
+            viewLifecycleOwner, { result ->
+                result?.let { outcome ->
+                    processLocationResult(outcome)
+                }
+            })
+
+        createViewModel.jobForValidation.observe(viewLifecycleOwner, { job ->
+            job?.let { realJob ->
+                if (!job.sectionId.isNullOrBlank() && JobUtils.isGeoCoded(job)) {
+                    uiScope.launch(uiScope.coroutineContext) {
+                        validateEstimates(job)
                     }
-                    Coroutines.ui {
-                        this@AddProjectFragment.extensionToast(errorToast)
+                } else {
+                    uiScope.launch(uiScope.coroutineContext) {
+                        geoLocationFailed()
                     }
                 }
             }
-        )
+
+        })
     }
 
     private fun initCurrentJobListener() {
@@ -528,12 +525,6 @@ class AddProjectFragment : BaseFragment(), DIAware {
                     )
                     ui.itemsCardView.startAnimation(shake_long)
                 } else {
-                    deferredLocationViewModel.geoCodingResult.observe(
-                        viewLifecycleOwner, { result ->
-                            result?.let { outcome ->
-                                processLocationResult(outcome)
-                            }
-                        })
                     validateLocations(job)
                 }
             }
@@ -568,20 +559,6 @@ class AddProjectFragment : BaseFragment(), DIAware {
 
     private fun handleGeoSuccess(result: XIResult.Success<String>) {
         val geoCodedJobId = result.data
-        createViewModel.jobForValidation.observe(viewLifecycleOwner, { job ->
-            job?.let { realJob ->
-                if (!job.sectionId.isNullOrBlank() && JobUtils.isGeoCoded(job)) {
-                    uiScope.launch(uiScope.coroutineContext) {
-                        validateEstimates(job)
-                    }
-                } else {
-                    uiScope.launch(uiScope.coroutineContext) {
-                        geoLocationFailed()
-                    }
-                }
-            }
-
-        })
         createViewModel.setJobToValidate(geoCodedJobId)
     }
 
@@ -601,19 +578,17 @@ class AddProjectFragment : BaseFragment(), DIAware {
     }
 
     private suspend fun validateEstimates(updatedJob: JobDTO) = withContext(Dispatchers.Main) {
-        Coroutines.main {
-            val validated = createViewModel.areEstimatesValid(updatedJob, ArrayList(items))
+        val validated = createViewModel.areEstimatesValid(updatedJob, ArrayList(items))
 
-            if (!validated) {
-                onInvalidJob()
-            } else {
-                withContext(Dispatchers.Main.immediate) {
-                    ui.submitButton.initProgress(viewLifecycleOwner)
-                    ui.submitButton.startProgress("Submitting data ...")
-                }
-                updatedJob.issueDate = DateUtil.dateToString(Date())
-                submitJob(updatedJob)
+        if (!validated) {
+            onInvalidJob()
+        } else {
+            withContext(Dispatchers.Main.immediate) {
+                ui.submitButton.initProgress(viewLifecycleOwner)
+                ui.submitButton.startProgress("Submitting data ...")
             }
+            updatedJob.issueDate = DateUtil.dateToString(Date())
+            submitJob(updatedJob)
         }
     }
 

@@ -59,17 +59,17 @@ class JobDTO(
     @SerializedName("TrackRouteId")
     var trackRouteId: String?,
     @SerializedName("Section")
-    val section: String?,
+    var section: String?,
 
     @SerializedName("Cpa")
-    val cpa: Int,
+    var cpa: Int,
     @SerializedName("DayWork")
-    val dayWork: Int,
+    var dayWork: Int,
 
     @SerializedName("ContractorId")
-    val contractorId: Int,
+    var contractorId: Int,
     @SerializedName("M9100")
-    val m9100: Int,
+    var m9100: Int,
 
     @SerializedName("IssueDate")
     var issueDate: String? = null,
@@ -315,12 +315,14 @@ class JobDTO(
 
     fun isGeoCoded(): Boolean {
         var result = true
+
         for (estimate in this.jobItemEstimates) {
             if (!estimate.arePhotosGeoCoded()) {
                 result = false
                 break
             }
         }
+
         return result
     }
 }
