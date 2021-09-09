@@ -641,7 +641,7 @@ class JobCreationDataRepository(
     @Transaction
     suspend fun backupJob(job: JobDTO) {
         return withContext(Dispatchers.IO) {
-            appDb.getJobDao().insertOrUpdateJob(job)
+            appDb.getJobDao().updateJob(job)
             appDb.getJobDao().getJobForJobId(job.jobId)
         }
     }
@@ -672,7 +672,7 @@ class JobCreationDataRepository(
 
     @Transaction
     suspend fun backupEstimate(estimate: JobItemEstimateDTO): JobItemEstimateDTO = withContext(Dispatchers.IO) {
-        appDb.getJobItemEstimateDao().insertJobItemEstimate(estimate)
+        appDb.getJobItemEstimateDao().updateJobItemEstimate(estimate)
         return@withContext appDb.getJobItemEstimateDao().getJobItemEstimateForEstimateId(estimate.estimateId)
     }
 

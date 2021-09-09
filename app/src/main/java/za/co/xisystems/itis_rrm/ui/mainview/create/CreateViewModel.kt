@@ -280,6 +280,7 @@ class CreateViewModel(
     suspend fun backupJob(job: JobDTO) = viewModelScope.launch(ioContext) {
         jobCreationDataRepository.backupJob(job)
         withContext(mainContext) {
+            jobId.value = job.jobId
             setJobToEdit(job.jobId)
         }
     }
@@ -292,6 +293,7 @@ class CreateViewModel(
      * prevent a leak of this ViewModel.
      */
     override fun onCleared() {
+        Timber.d("^*^ Creation ViewModel Cleared!")
         super.onCleared()
         superJob.cancelChildren()
     }
@@ -544,5 +546,9 @@ class CreateViewModel(
     }
 
     fun validateEstimates(job: JobDTO?) {
+    }
+
+    suspend fun backupEstimatePhoto(photo: JobItemEstimatesPhotoDTO) = withContext(ioContext) {
+        return@withContext jobCreationDataRepository.backupEstimatePhoto(photo)
     }
 }

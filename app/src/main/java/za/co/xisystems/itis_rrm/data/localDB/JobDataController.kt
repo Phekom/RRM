@@ -33,7 +33,7 @@ object JobDataController {
         } else {
             job.trackRouteId = null
         }
-        job.setContractVoId("")
+        job.setContractVoId(DataConversion.toLittleEndian(job.contractVoId))
         job.setVoId(DataConversion.toLittleEndian(job.voId))
 
         job.jobSections.forEach { jobSection ->

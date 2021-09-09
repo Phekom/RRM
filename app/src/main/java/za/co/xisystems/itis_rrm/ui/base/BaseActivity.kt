@@ -76,16 +76,6 @@ abstract class BaseActivity : AppCompatActivity(), DIAware {
         }
     }
 
-    fun exitApplication() {
-        if (armoury.checkTimeout()) {
-            // val pid = Process.myPid()
-            // Process.killProcess(pid)
-            // val intent = Intent(Intent.ACTION_MAIN)
-            // intent.addCategory(Intent.CATEGORY_HOME)
-            // startActivity(intent)
-        }
-    }
-
     override fun onPause() {
         super.onPause()
         armoury.writeFutureTimestamp()

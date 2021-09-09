@@ -104,7 +104,7 @@ open class ProjectItem(
                 createViewModel.setJobToEdit(newJob.jobId)
                 createViewModel.contractId.value = contractId
                 createViewModel.tempProjectItem.value = item
-                // createViewModel.setCurrentProjectItem(item.itemId)
+                createViewModel.setCurrentProjectItem(item.itemId)
             }
         }
         val navDirections =

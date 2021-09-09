@@ -21,7 +21,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenCreated
-import androidx.lifecycle.whenResumed
 import androidx.lifecycle.whenStarted
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.navArgs
@@ -58,7 +57,6 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentAddProjectItemsBinding
 import za.co.xisystems.itis_rrm.databinding.NewJobItemBinding
 import za.co.xisystems.itis_rrm.extensions.isConnected
-import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.services.DeferredLocationViewModel
 import za.co.xisystems.itis_rrm.services.DeferredLocationViewModelFactory
 import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
@@ -135,11 +133,7 @@ class AddProjectFragment : BaseFragment(), DIAware {
             }
             whenStarted {
                 lifecycle.addObserver(uiScope)
-                initViewModels()
-            }
-            whenResumed {
                 requireActivity().hideKeyboard()
-                uiUpdate()
             }
         }
     }
@@ -150,15 +144,17 @@ class AddProjectFragment : BaseFragment(), DIAware {
     }
 
     private fun initViewModels() {
+        createViewModel = activity?.run {
+            ViewModelProvider(this, createFactory).get(CreateViewModel::class.java)
+        } ?: throw Exception("Invalid Activity")
 
-        createViewModel = ViewModelProvider(this.requireActivity(), createFactory)
-            .get(CreateViewModel::class.java)
+        unsubmittedViewModel = activity?.run {
+            ViewModelProvider(this, unsubFactory).get(UnSubmittedViewModel::class.java)
+        } ?: throw Exception("Invalid Activity")
 
-        unsubmittedViewModel = ViewModelProvider(this.requireActivity(), unsubFactory)
-            .get(UnSubmittedViewModel::class.java)
-
-        deferredLocationViewModel = ViewModelProvider(this.requireActivity(), deferredLocationFactory)
-            .get(DeferredLocationViewModel::class.java)
+        deferredLocationViewModel = activity?.run {
+            ViewModelProvider(this, deferredLocationFactory).get(DeferredLocationViewModel::class.java)
+        } ?: throw Exception("Invalid Activity")
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -189,19 +185,37 @@ class AddProjectFragment : BaseFragment(), DIAware {
         setmyClickListener()
     }
 
+    /**
+     * Called when the fragment's activity has been created and this
+     * fragment's view hierarchy instantiated.  It can be used to do final
+     * initialization once these pieces are in place, such as retrieving
+     * views or restoring state.  It is also useful for fragments that use
+     * [.setRetainInstance] to retain their instance,
+     * as this callback tells the fragment when it is fully associated with
+     * the new activity instance.  This is called after [.onCreateView]
+     * and before [.onViewStateRestored].
+     *
+     * @param savedInstanceState If the fragment is being re-created from
+     * a previous saved state, this is the state.
+     *
+     */
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
+        initViewModels()
+        uiUpdate()
+    }
+
     fun uiUpdate() {
-        jobBound = this::job.isInitialized
+        jobBound = false
         uiScope.launch(uiScope.coroutineContext) {
-            initErrorMessageObserver()
-            initValidationListener()
-            initErrorNavigationListener()
-            initCurrentUserObserver()
             initCurrentJobListener()
+            initValidationListener()
+            initCurrentUserObserver()
         }
     }
 
     private fun initCurrentUserObserver() {
-        createViewModel.loggedUser.distinctUntilChanged().observe(viewLifecycleOwner, { userId ->
+        createViewModel.loggedUser.observe(viewLifecycleOwner, { userId ->
             userId?.let {
 
                 this@AddProjectFragment.userId = it.toString()
@@ -233,7 +247,8 @@ class AddProjectFragment : BaseFragment(), DIAware {
     }
 
     private fun initCurrentJobListener() {
-        createViewModel.currentJob.distinctUntilChanged().observe(
+        val currentJobQuery = createViewModel.currentJob.distinctUntilChanged()
+        currentJobQuery.observe(
             viewLifecycleOwner, { currentJob ->
                 currentJob?.let { jobToEdit ->
                     job = jobToEdit
@@ -270,13 +285,14 @@ class AddProjectFragment : BaseFragment(), DIAware {
                             startDate = DateUtil.stringToDate(it)!!
                         }
 
-                        createViewModel.tempProjectItem.observe(viewLifecycleOwner, {
-                            it?.let {
-                                ui.infoTextView.visibility = View.GONE
-                                ui.lastLin.visibility = View.VISIBLE
-                                ui.totalCostTextView.visibility = View.VISIBLE
-                            }
-                        })
+                        createViewModel.tempProjectItem.distinctUntilChanged()
+                            .observe(viewLifecycleOwner, {
+                                it?.let {
+                                    ui.infoTextView.visibility = View.GONE
+                                    ui.lastLin.visibility = View.VISIBLE
+                                    ui.totalCostTextView.visibility = View.VISIBLE
+                                }
+                            })
 
                         withContext(Dispatchers.Main.immediate) {
                             if (this@AddProjectFragment::job.isInitialized) {
@@ -287,26 +303,6 @@ class AddProjectFragment : BaseFragment(), DIAware {
                     }
                 }
             })
-    }
-
-    private fun initErrorNavigationListener() {
-        deferredLocationViewModel.errorNavigation.distinctUntilChanged().observeOnce(
-            viewLifecycleOwner, { directions ->
-                directions?.let { realDirections ->
-                    Navigation.findNavController(this.requireView()).navigate(realDirections)
-                }
-            }
-        )
-    }
-
-    private fun initErrorMessageObserver() {
-        deferredLocationViewModel.errorMessage.distinctUntilChanged().observe(
-            viewLifecycleOwner, { errorMessage ->
-                errorMessage?.let { bulletin ->
-                    this@AddProjectFragment.extensionToast(bulletin)
-                }
-            }
-        )
     }
 
     private suspend fun bindProjectItems() {
@@ -360,7 +356,6 @@ class AddProjectFragment : BaseFragment(), DIAware {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
         groupAdapter = GroupAdapter<GroupieViewHolder<NewJobItemBinding>>()
@@ -427,9 +422,7 @@ class AddProjectFragment : BaseFragment(), DIAware {
 
     private fun initRecyclerView(projecListItems: List<ProjectItem>) {
         groupAdapter = GroupAdapter<GroupieViewHolder<NewJobItemBinding>>().apply {
-            clear()
             addAll(projecListItems)
-            notifyItemRangeChanged(0, projecListItems.size)
         }
 
         ui.projectRecyclerView.apply {
@@ -517,7 +510,7 @@ class AddProjectFragment : BaseFragment(), DIAware {
 
         if (job.jobId.isNotEmpty() && validateCalendar()) {
 
-            Coroutines.main {
+            withContext(Dispatchers.Main) {
                 if (!JobUtils.areQuantitiesValid(job)) {
                     this@AddProjectFragment.extensionToast(
                         message = "Error: incomplete estimates.\n Quantity can't be zero!",
@@ -537,14 +530,13 @@ class AddProjectFragment : BaseFragment(), DIAware {
                 handleGeoSuccess(result)
             }
             is XIResult.Error -> {
-                HandleGeoError(result)
+                handleGeoError(result)
             }
             else -> geoLocationFailed()
         }
-
     }
 
-    private suspend fun AddProjectFragment.HandleGeoError(
+    private suspend fun AddProjectFragment.handleGeoError(
         result: XIResult.Error
     ) {
         this@AddProjectFragment.extensionToast(
@@ -596,7 +588,7 @@ class AddProjectFragment : BaseFragment(), DIAware {
         Coroutines.ui {
             val errorToast = ColorToast(
                 title = "Location Verification Failed",
-                message = "One or more work locations could not be verified\n" +
+                message = "One or more work locations could not be verified.\n" +
                     "Check estimates for more information.",
                 style = ERROR,
                 gravity = ToastGravity.CENTER,
@@ -724,12 +716,10 @@ class AddProjectFragment : BaseFragment(), DIAware {
     private fun popViewOnJobSubmit() {
         // Delete Items data from the database after success upload
         // onResetClicked(this.requireView())
-        createViewModel.setJobToEdit("null")
+        // createViewModel.setJobToEdit("null")
         // Conduct user back to home fragment
         HandlerCompat.postDelayed(Handler(Looper.getMainLooper()), {
             Intent(context?.applicationContext, MainActivity::class.java).also { home ->
-                home.flags =
-                    Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
                 startActivity(home)
             }
         }, null, TWO_SECONDS)
@@ -778,8 +768,8 @@ class AddProjectFragment : BaseFragment(), DIAware {
         if (this::job.isInitialized) {
             outState.putString(JOB_KEY, job.jobId)
             outState.putString(PROJECT_KEY, job.projectId)
+            super.onSaveInstanceState(outState)
         }
-        super.onSaveInstanceState(outState)
     }
 
     private fun resetContractAndProjectSelection(view: View) {
@@ -803,10 +793,5 @@ class AddProjectFragment : BaseFragment(), DIAware {
     override fun onStop() {
         super.onStop()
         Timber.d("onStop() has been called.")
-        createViewModel.currentJob.removeObservers(viewLifecycleOwner)
-        deferredLocationViewModel.geoCodingResult.removeObservers(viewLifecycleOwner)
-        deferredLocationViewModel.operationalExceptions.removeObservers(viewLifecycleOwner)
-        deferredLocationViewModel.errorMessage.removeObservers(viewLifecycleOwner)
-        deferredLocationViewModel.errorNavigation.removeObservers(viewLifecycleOwner)
     }
 }

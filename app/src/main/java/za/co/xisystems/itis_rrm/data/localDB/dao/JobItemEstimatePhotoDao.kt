@@ -5,6 +5,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Update
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimatesPhotoDTO
 
 /**
@@ -17,7 +18,10 @@ interface JobItemEstimatePhotoDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertJobItemEstimatePhoto(jobItemEstimatePhoto: JobItemEstimatesPhotoDTO)
 
-    @Query("SELECT * FROM JOB_ITEM_ESTIMATE_PHOTO WHERE photoId = :photoId")
+    @Update
+    suspend fun updateJobItemEstimatePhoto(jobItemEstimatePhoto: JobItemEstimatesPhotoDTO)
+
+    @Query("SELECT EXISTS (SELECT * FROM JOB_ITEM_ESTIMATE_PHOTO WHERE photoId = :photoId)")
     fun checkIfJobItemEstimatePhotoExistsByPhotoId(photoId: String): Boolean
 
     @Query("SELECT photoPath FROM JOB_ITEM_ESTIMATE_PHOTO WHERE estimateId = :estimateId AND isPhotostart LIKE 0 ")
