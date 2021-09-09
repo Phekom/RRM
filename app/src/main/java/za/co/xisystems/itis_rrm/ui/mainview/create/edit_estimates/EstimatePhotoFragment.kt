@@ -425,8 +425,9 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
         viewLifecycleOwner.lifecycle.coroutineScope.launch {
 
             newJobItemEstimate?.qty = ui.valueEditText.text.toString().toDouble()
-            val qty = newJobItemEstimate?.qty
-            if (qty != null && item?.tenderRate != null) {
+            val qty = newJobItemEstimate?.qty.toString().toDouble()
+            val tenderRate = item?.tenderRate ?: 0.0
+            if (qty >= 1 && tenderRate > 0.0) {
                 createViewModel.setEstimateQuantity(qty)
                 newJobItemEstimate?.lineRate = (item!!.tenderRate)
                 createViewModel.backupEstimate(newJobItemEstimate!!)

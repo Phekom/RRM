@@ -641,7 +641,11 @@ class JobCreationDataRepository(
     @Transaction
     suspend fun backupJob(job: JobDTO) {
         return withContext(Dispatchers.IO) {
-            appDb.getJobDao().updateJob(job)
+            if (appDb.getJobDao().checkIfJobExist(job.jobId)) {
+                appDb.getJobDao().updateJob(job)
+            } else {
+                appDb.getJobDao().insertOrUpdateJob(job)
+            }
             appDb.getJobDao().getJobForJobId(job.jobId)
         }
     }
@@ -672,7 +676,11 @@ class JobCreationDataRepository(
 
     @Transaction
     suspend fun backupEstimate(estimate: JobItemEstimateDTO): JobItemEstimateDTO = withContext(Dispatchers.IO) {
-        appDb.getJobItemEstimateDao().updateJobItemEstimate(estimate)
+        if (appDb.getJobItemEstimateDao().checkIfJobItemEstimateExist(estimate.estimateId)) {
+            appDb.getJobItemEstimateDao().updateJobItemEstimate(estimate)
+        } else {
+            appDb.getJobItemEstimateDao().insertJobItemEstimate(estimate)
+        }
         return@withContext appDb.getJobItemEstimateDao().getJobItemEstimateForEstimateId(estimate.estimateId)
     }
 
@@ -683,7 +691,13 @@ class JobCreationDataRepository(
     @Transaction
     suspend fun backupEstimatePhoto(photoDTO: JobItemEstimatesPhotoDTO):
         JobItemEstimatesPhotoDTO = withContext(Dispatchers.IO) {
-        appDb.getJobItemEstimatePhotoDao().insertJobItemEstimatePhoto(photoDTO)
+        if (appDb.getJobItemEstimatePhotoDao()
+                .checkIfJobItemEstimatePhotoExistsByPhotoId(photoDTO.photoId)
+        ) {
+            appDb.getJobItemEstimatePhotoDao().updateJobItemEstimatePhoto(photoDTO)
+        } else {
+            appDb.getJobItemEstimatePhotoDao().insertJobItemEstimatePhoto(photoDTO)
+        }
         return@withContext appDb.getJobItemEstimatePhotoDao().getJobItemEstimatePhoto(photoDTO.photoId)
     }
 

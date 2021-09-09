@@ -18,7 +18,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.os.HandlerCompat
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenCreated
 import androidx.lifecycle.whenStarted
@@ -247,7 +246,7 @@ class AddProjectFragment : BaseFragment(), DIAware {
     }
 
     private fun initCurrentJobListener() {
-        val currentJobQuery = createViewModel.currentJob.distinctUntilChanged()
+        val currentJobQuery = createViewModel.currentJob
         currentJobQuery.observe(
             viewLifecycleOwner, { currentJob ->
                 currentJob?.let { jobToEdit ->
@@ -285,7 +284,7 @@ class AddProjectFragment : BaseFragment(), DIAware {
                             startDate = DateUtil.stringToDate(it)!!
                         }
 
-                        createViewModel.tempProjectItem.distinctUntilChanged()
+                        createViewModel.tempProjectItem
                             .observe(viewLifecycleOwner, {
                                 it?.let {
                                     ui.infoTextView.visibility = View.GONE
@@ -308,7 +307,7 @@ class AddProjectFragment : BaseFragment(), DIAware {
     private suspend fun bindProjectItems() {
         uiScope.launch(uiScope.coroutineContext) {
             val projectItems =
-                createViewModel.getAllProjectItems(projectID!!, job.jobId).distinctUntilChanged()
+                createViewModel.getAllProjectItems(projectID!!, job.jobId)
             projectItems.observe(viewLifecycleOwner, { itemList ->
                 when {
                     itemList.isEmpty() -> {
