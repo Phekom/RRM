@@ -29,7 +29,6 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.widget.doOnTextChanged
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.coroutineScope
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenCreated
 import androidx.lifecycle.whenResumed
@@ -38,7 +37,6 @@ import androidx.navigation.Navigation
 import androidx.navigation.fragment.navArgs
 import com.airbnb.lottie.LottieAnimationView
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.kodein.di.DIAware
@@ -77,7 +75,6 @@ import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
 import java.text.DecimalFormat
 import java.util.Date
 import kotlin.collections.set
-import kotlin.coroutines.cancellation.CancellationException
 
 /**
  * Created by Francis Mahlava on 2019/12/29.
@@ -139,7 +136,7 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
             }
         } else {
             Coroutines.io {
-                photoUtil.deleteImageFile(filenamePath.toString())
+                val filenamePath = photoUtil.deleteImageFile(filenamePath.toString())
                 withContext(Dispatchers.Main.immediate) {
                     haltAnimation()
                     ui.startImageView.visibility = View.VISIBLE
@@ -211,6 +208,17 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
                     }
                 })
         }
+
+        withContext(uiScope.coroutineContext) {
+            var estimateItem: JobItemEstimateDTO?
+            createViewModel.currentEstimate.observe(
+                viewLifecycleOwner,
+                { estimate ->
+                    estimate?.let { estimateItem ->
+                        onEstimateFound(estimateItem)
+                    }
+                })
+        }
     }
 
     companion object {
@@ -274,6 +282,13 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
             restoreEstimateViewState()
         }
         return item
+    }
+
+    private fun onEstimateFound(estimateDTO: JobItemEstimateDTO) {
+        newJobItemEstimate = estimateDTO
+        if (newJob != null) {
+            restoreEstimateViewState()
+        }
     }
 
     override fun onCreateView(
@@ -384,7 +399,7 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
                 }
 
                 R.id.updateButton -> {
-                    if (ui.costTextView.text.isNullOrEmpty() || newJobItemEstimate!!.size() < 2) {
+                    if (ui.costTextView.text.isNullOrEmpty() || newJobItemEstimate!!.size() != 2) {
                         toast("Please Make Sure you have Captured Both Images")
                         ui.labelTextView.startAnimation(animations!!.shake_long)
                     } else {
@@ -421,18 +436,15 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
         Navigation.findNavController(view).navigate(directions)
     }
 
-    private fun saveValidEstimate(view: View) {
-        viewLifecycleOwner.lifecycle.coroutineScope.launch {
+    private fun saveValidEstimate(view: View) = uiScope.launch(uiScope.coroutineContext) {
 
-            newJobItemEstimate?.qty = ui.valueEditText.text.toString().toDouble()
-            val qty = newJobItemEstimate?.qty.toString().toDouble()
-            val tenderRate = item?.tenderRate ?: 0.0
-            if (qty >= 1 && tenderRate > 0.0) {
-                createViewModel.setEstimateQuantity(qty)
-                newJobItemEstimate?.lineRate = (item!!.tenderRate)
-                createViewModel.backupEstimate(newJobItemEstimate!!)
-            }
-
+        newJobItemEstimate?.qty = ui.valueEditText.text.toString().toDouble()
+        val qty = newJobItemEstimate?.qty.toString().toDouble()
+        val tenderRate = item?.tenderRate ?: 0.0
+        if (qty >= 1 && tenderRate > 0.0) {
+            createViewModel.setEstimateQuantity(qty)
+            newJobItemEstimate?.lineRate = (item!!.tenderRate)
+            createViewModel.backupEstimate(newJobItemEstimate!!)
             createViewModel.saveNewJob(newJob!!)
             changesToPreserve = false
             updateData(view)
@@ -441,10 +453,6 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
 
     private fun updateData(view: View) {
         this.toggleLongRunning(false)
-        uiScope.destroy()
-        viewLifecycleOwner.lifecycle.coroutineScope.coroutineContext.cancel(
-            CancellationException("updating estimates ...")
-        )
         newJob?.let {
             navToAddProject(view)
         }
@@ -506,6 +514,7 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
         }
     }
 
+    @Synchronized
     private suspend fun restoreEstimatePhoto(
         // jobItemEstimate: JobItemEstimateDTO,
         photo: JobItemEstimatesPhotoDTO
@@ -642,7 +651,7 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
             }
         } catch (t: Throwable) {
             disableGlide = true
-            val message = "Failed to verify photo location: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
+            val message = "Failed to capture photo: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
             Timber.e(t, message)
             val xiErr = XIResult.Error(t, message)
             crashGuard(
@@ -739,7 +748,12 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
 
         changesToPreserve = true
         val isPhotoStart = itemIdPhotoType["type"] == PhotoType.START.name
-        val photoId: String = SqlLitUtils.generateUuid()
+        val existingPhoto = itemEst.getJobItemEstimatePhoto(isPhotoStart)
+        val photoId = if (existingPhoto.second != null) {
+            existingPhoto.second.photoId
+        } else {
+            SqlLitUtils.generateUuid()
+        }
 
         return JobItemEstimatesPhotoDTO(
             descr = "",
@@ -864,7 +878,7 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
     }
 
     private fun setCost() {
-        if (isEstimateDone) {
+        if (newJobItemEstimate?.size() == 2) {
             calculateCost()
             ui.valueEditText.visibility = View.VISIBLE
             ui.costTextView.visibility = View.VISIBLE

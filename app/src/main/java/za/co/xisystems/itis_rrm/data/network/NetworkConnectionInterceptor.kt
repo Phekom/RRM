@@ -26,13 +26,13 @@ class NetworkConnectionInterceptor(
 
         if (!ServiceUtil.isHostAvailable(host = testConnection, port = 443, timeout = 5000)) {
             throw NoConnectivityException(
-                "Network appears to be down, please try again later."
+                "Network appears to be down, please try again later. Host: $testConnection"
             )
         }
 
         if (!ServiceUtil.isHostAvailable(host = serviceHost, port = 443, timeout = 5000)) {
             throw ServiceHostUnreachableException(
-                "Service Host for RRM is down, please try again later."
+                "Service Host for RRM is down, please try again later. Host: $serviceHost"
             )
         }
 
