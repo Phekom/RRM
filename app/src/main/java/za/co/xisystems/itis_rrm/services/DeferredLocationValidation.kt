@@ -59,12 +59,10 @@ class DeferredLocationViewModel(
     }
 
     init {
-        viewModelScope.launch(mainContext) {
-            geoCodingUpdate = MutableLiveData()
-            geoCodingResult = Transformations.map(geoCodingUpdate) { input ->
-                input.getContentIfNotHandled()
-            } as MutableLiveData<XIResult<String>?>
-        }
+        geoCodingUpdate = MutableLiveData()
+        geoCodingResult = Transformations.map(geoCodingUpdate) { input ->
+            input.getContentIfNotHandled()
+        } as MutableLiveData<XIResult<String>?>
     }
 
     suspend fun checkLocations(jobId: String) = viewModelScope.launch(mainContext) {

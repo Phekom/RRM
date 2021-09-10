@@ -165,17 +165,16 @@ class JobCreationDataRepository(
         sectionId: String,
         newJobItemEstimatesList: ArrayList<JobItemEstimateDTO>,
         jobItemSectionArrayList: ArrayList<JobSectionDTO>
-    ): XIResult<JobDTO>? = withContext(Dispatchers.IO) {
+    ): XIResult<JobDTO> = withContext(Dispatchers.IO) {
         try {
 
-            var resultJob: JobDTO? = null
             if (appDb.getJobDao().checkIfJobExist(newJobId)) {
                 appDb.getJobItemEstimateDao().updateJobItemEstimates(newJobItemEstimatesList)
                 jobItemSectionArrayList.forEach { jobSectionDTO ->
                     appDb.getJobSectionDao().updateExistingJobSectionWorkflow(
                         jobSectionId = jobSectionDTO.jobSectionId,
                         projectSectionId = jobSectionDTO.projectSectionId,
-                        jobId = jobSectionDTO.jobId,
+                        jobId = newJobId,
                         startKm = jobSectionDTO.startKm,
                         endKm = jobSectionDTO.endKm,
                         recordVersion = jobSectionDTO.recordVersion,
@@ -328,6 +327,7 @@ class JobCreationDataRepository(
                     activity = activity
                 )
                 val myJob = getUpdatedJob(DataConversion.toBigEndian(job.jobId)!!)
+
                 moveJobToNextWorkflow(myJob, activity)
             }
         }
@@ -431,7 +431,7 @@ class JobCreationDataRepository(
         }
     }
 
-    suspend fun uploadCreateJobImages(packageJob: JobDTO, activity: FragmentActivity) = withContext(Dispatchers.IO) {
+    private suspend fun uploadCreateJobImages(packageJob: JobDTO, activity: FragmentActivity) = withContext(Dispatchers.IO) {
 
         var jobCounter = 1
         val totalJobs = packageJob.jobItemEstimates.size
@@ -666,7 +666,7 @@ class JobCreationDataRepository(
         return appDb.getJobItemEstimateDao().getJobEstimationItemsForJobId(jobId, actId)
     }
 
-    suspend fun getProjectItemById(itemId: String?): ItemDTOTemp? {
+    suspend fun getProjectItemById(itemId: String?): ItemDTOTemp {
         return appDb.getItemDaoTemp().getProjectItemById(itemId!!)
     }
 

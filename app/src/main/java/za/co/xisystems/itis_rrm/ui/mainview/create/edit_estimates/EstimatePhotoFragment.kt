@@ -28,6 +28,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.widget.doOnTextChanged
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenCreated
@@ -59,7 +60,6 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimatesPhotoDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentPhotoEstimateBinding
-import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.services.LocationModel
 import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModel
@@ -123,6 +123,7 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
     private val uiScope = UiLifecycleScope()
     private lateinit var photoUtil: PhotoUtil
     private var changesToPreserve: Boolean = false
+    private var tenderRate: Double? = null
 
     /**
      * ActivityResultContract for taking a photograph
@@ -136,7 +137,7 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
             }
         } else {
             Coroutines.io {
-                val filenamePath = photoUtil.deleteImageFile(filenamePath.toString())
+                photoUtil.deleteImageFile(filenamePath.toString())
                 withContext(Dispatchers.Main.immediate) {
                     haltAnimation()
                     ui.startImageView.visibility = View.VISIBLE
@@ -186,10 +187,10 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
 
         withContext(uiScope.coroutineContext) {
             var myJobDTO: JobDTO?
-            createViewModel.currentJob.observeOnce(
+            createViewModel.itemJob.observe(
                 viewLifecycleOwner,
-                { jobDto ->
-                    jobDto?.let { jobDTO ->
+                { jobEvent ->
+                    jobEvent.getContentIfNotHandled()?.let { jobDTO ->
                         myJobDTO = jobDTO
                         onJobFound(myJobDTO!!)
                     }
@@ -197,24 +198,20 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
         }
 
         withContext(uiScope.coroutineContext) {
-            var itemDTO: ItemDTOTemp?
             createViewModel.tempProjectItem.observe(
                 viewLifecycleOwner,
-                { itemDTOTemp ->
-
-                    itemDTO = itemDTOTemp
-                    itemDTO?.let {
-                        onItemFound(it)
+                { itemEvent ->
+                    itemEvent.getContentIfNotHandled()?.let { item ->
+                        onItemFound(item)
                     }
                 })
         }
 
         withContext(uiScope.coroutineContext) {
-            var estimateItem: JobItemEstimateDTO?
             createViewModel.currentEstimate.observe(
                 viewLifecycleOwner,
-                { estimate ->
-                    estimate?.let { estimateItem ->
+                { estimateEvent ->
+                    estimateEvent.getContentIfNotHandled()?.let { estimateItem ->
                         onEstimateFound(estimateItem)
                     }
                 })
@@ -228,17 +225,20 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
     private fun readNavArgs() = uiScope.launch(uiScope.coroutineContext) {
         val args: EstimatePhotoFragmentArgs? by navArgs()
         args?.let { navArgs ->
-            if (!navArgs.estimateId.isNullOrEmpty()) {
-                estimateId = navArgs.estimateId
-                estimateId?.let { realEstimateId ->
-                    createViewModel.setEstimateToEdit(realEstimateId)
-                }
-            }
+
             if (!navArgs.jobId.isNullOrEmpty()) {
                 createViewModel.setJobToEdit(navArgs.jobId.toString())
             }
             if (!navArgs.itemId.isNullOrEmpty()) {
                 createViewModel.setCurrentProjectItem(navArgs.itemId.toString())
+            }
+            if (!navArgs.estimateId.isNullOrEmpty()) {
+                estimateId = navArgs.estimateId
+                estimateId?.let { realEstimateId ->
+                    createViewModel.setEstimateToEdit(realEstimateId)
+                }
+            } else {
+                createViewModel.currentEstimate = MutableLiveData()
             }
         }
     }
@@ -264,20 +264,24 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
     }
 
     private fun onItemFound(itemDTO: ItemDTOTemp?): ItemDTOTemp? {
-        item = itemDTO
-
-        if (item != null) {
+        if (itemDTO != null) {
+            item = itemDTO
             ui.titleTextView.text =
                 getString(R.string.pair, item!!.itemCode, item!!.descr)
+            tenderRate = item!!.tenderRate
         } else {
             toast(
                 "item is null in " + javaClass.simpleName
             )
+            return item
         }
 
         if (newJob != null) {
             if (newJobItemEstimate == null && item != null) {
                 newJobItemEstimate = newJob?.getJobEstimateByItemId(item?.itemId)
+                if (newJobItemEstimate != null) {
+                    newJobItemEstimate?.lineRate = item?.tenderRate!!
+                }
             }
             restoreEstimateViewState()
         }
@@ -286,6 +290,7 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
 
     private fun onEstimateFound(estimateDTO: JobItemEstimateDTO) {
         newJobItemEstimate = estimateDTO
+        quantity = newJobItemEstimate?.qty ?: 1.0
         if (newJob != null) {
             restoreEstimateViewState()
         }
@@ -440,12 +445,15 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
 
         newJobItemEstimate?.qty = ui.valueEditText.text.toString().toDouble()
         val qty = newJobItemEstimate?.qty.toString().toDouble()
-        val tenderRate = item?.tenderRate ?: 0.0
+        val tenderRate = item!!.tenderRate
         if (qty >= 1 && tenderRate > 0.0) {
             createViewModel.setEstimateQuantity(qty)
             newJobItemEstimate?.lineRate = (item!!.tenderRate)
             createViewModel.backupEstimate(newJobItemEstimate!!)
+            newJob!!.insertOrUpdateJobItemEstimate(newJobItemEstimate!!)
             createViewModel.saveNewJob(newJob!!)
+            createViewModel.setJobToEdit(newJob!!.jobId)
+            createViewModel.currentEstimate = MutableLiveData()
             changesToPreserve = false
             updateData(view)
         }
@@ -623,8 +631,6 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
             if (newJob?.jobItemEstimates == null) {
                 newJob?.jobItemEstimates = ArrayList()
             }
-
-            newJob?.jobItemEstimates!!.add(newJobItemEstimate!!)
         }
 
         uiScope.launch(context = uiScope.coroutineContext) {
@@ -708,6 +714,9 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
             savedPhoto
         )
         createViewModel.backupEstimate(newJobItemEstimate!!)
+        createViewModel.updateEstimatePhotos(newJobItemEstimate!!.estimateId, newJobItemEstimate!!.jobItemEstimatePhotos)
+        newJob?.insertOrUpdateJobItemEstimate(newJobItemEstimate!!)
+
         this@EstimatePhotoFragment.disableGlide = false
 
         val targetUri: Uri? = extractImageUri(photo)
@@ -909,7 +918,7 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
         //  Lose focus on fields
         //  valueEditText.clearFocus()
 
-        var lineAmount: Double? = null
+        var lineAmount: Double?
         val tenderRate = item?.tenderRate ?: 0.0
 
         var qty = value.toDoubleOrNull() ?: 1.0
@@ -949,7 +958,7 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
             }
         }
 
-        val displayAmount = lineAmount ?: 0.0
+        val displayAmount = lineAmount ?: tenderRate * qty
 
         when (displayAmount > 0.0) {
             true -> {
@@ -985,7 +994,7 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
         qty: Double,
         tenderRate: Double?
     ): Double? {
-        var inlineAmount: Double? = null
+        var inlineAmount: Double?
         ui.labelTextView.text = getString(R.string.label_amount)
         try {
             inlineAmount = qty * tenderRate!!
@@ -1001,7 +1010,7 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
         qty: Double,
         tenderRate: Double?
     ): Double? {
-        var inlineAmount: Double? = null
+        var inlineAmount: Double?
         ui.labelTextView.text = getString(R.string.label_volume_m3)
         try {
             inlineAmount = qty * tenderRate!!
@@ -1017,7 +1026,7 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
         qty: Double,
         tenderRate: Double?
     ): Double? {
-        var inLineAmount: Double? = null
+        var inLineAmount: Double?
         ui.labelTextView.text = getString(R.string.label_area_m2)
         try {
             inLineAmount = qty * tenderRate!!
@@ -1033,7 +1042,7 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
         qty: Double,
         tenderRate: Double?
     ): Double? {
-        var inLineAmount: Double? = null
+        var inLineAmount: Double?
         ui.labelTextView.text = getString(R.string.label_quantity)
         try { //  make the change in the array and update view
             inLineAmount = qty * tenderRate!!
@@ -1108,7 +1117,6 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
         }
         // Load Photographs
         if (newJobItemEstimate != null) {
-
             uiScope.launch(uiScope.coroutineContext) {
                 try {
                     quantity = newJobItemEstimate!!.qty
@@ -1149,7 +1157,7 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
     override fun onDestroyView() {
         super.onDestroyView()
         uiScope.destroy()
-        createViewModel.currentJob.removeObservers(viewLifecycleOwner)
+        createViewModel.itemJob.removeObservers(viewLifecycleOwner)
         createViewModel.tempProjectItem.removeObservers(viewLifecycleOwner)
         createViewModel.loggedUser.removeObservers(viewLifecycleOwner)
         _ui = null
@@ -1203,10 +1211,14 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
             if (changesToPreserve) {
                 newJobItemEstimate?.let {
                     createViewModel.backupEstimate(it)
+                    newJob?.insertOrUpdateJobItemEstimate(it)
+                    createViewModel.setEstimateToEdit(it.estimateId)
                 }
                 newJob?.let {
                     createViewModel.backupJob(it)
+                    createViewModel.setJobToEdit(it.jobId)
                 }
+
                 changesToPreserve = false
             }
         }

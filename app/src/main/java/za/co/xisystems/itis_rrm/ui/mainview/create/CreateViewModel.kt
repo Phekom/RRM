@@ -12,6 +12,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.*
 import kotlinx.coroutines.*
 import timber.log.Timber
+import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.data.repositories.JobCreationDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
@@ -38,7 +39,7 @@ class CreateViewModel(
     var jobDesc: String? = null
 
     private val superJob = SupervisorJob()
-    var currentJob: MutableLiveData<JobDTO> = MutableLiveData()
+    var currentJob: MutableLiveData<XIEvent<JobDTO>> = MutableLiveData()
     private var ioContext: CoroutineContext = Job(superJob) + Dispatchers.IO + uncaughtExceptionHandler
     private var mainContext: CoroutineContext = Job(superJob) + Dispatchers.Main + uncaughtExceptionHandler
     val estimateQty = MutableLiveData<Double>()
@@ -55,16 +56,16 @@ class CreateViewModel(
     val projectId = MutableLiveData<String>()
     val projectCode = MutableLiveData<String>()
     val sectionProjectItem: MutableLiveData<SectionProjectItem> = MutableLiveData()
-    var jobItem = MutableLiveData<JobDTO?>()
+    var itemJob: MutableLiveData<XIEvent<JobDTO>> = MutableLiveData()
     var projectItemTemp: MutableLiveData<ItemDTOTemp> = MutableLiveData()
     val jobId: MutableLiveData<String?> = MutableLiveData()
-    var tempProjectItem: MutableLiveData<ItemDTOTemp> = MutableLiveData()
+    var tempProjectItem: MutableLiveData<XIEvent<ItemDTOTemp>> = MutableLiveData()
     val photoUtil = PhotoUtil.getInstance(getApplication())
-    var currentEstimate: MutableLiveData<JobItemEstimateDTO> = MutableLiveData()
-    val currentImageUri: MutableLiveData<Uri> = MutableLiveData()
+    var currentEstimate: MutableLiveData<XIEvent<JobItemEstimateDTO>> = MutableLiveData()
+    val currentImageUri: MutableLiveData<XIEvent<Uri>> = MutableLiveData()
 
     fun setCurrentJob(inJobItemToEdit: JobDTO) {
-        currentJob.value = inJobItemToEdit
+        currentJob.value = XIEvent(inJobItemToEdit)
     }
 
     val currentUser by lazyDeferred {
@@ -104,11 +105,11 @@ class CreateViewModel(
     }
 
     fun setTempProjectItem(inSectionProjectItem: ItemDTOTemp) {
-        tempProjectItem.value = inSectionProjectItem
+        tempProjectItem.value = XIEvent(inSectionProjectItem)
     }
 
     suspend fun getJob(inJobId: String) {
-        jobItem.value = jobCreationDataRepository.getUpdatedJob(jobId = inJobId)
+        itemJob.value = XIEvent(jobCreationDataRepository.getUpdatedJob(jobId = inJobId))
     }
 
     fun saveNewJob(newJob: JobDTO) {
@@ -301,7 +302,7 @@ class CreateViewModel(
     fun setJobToEdit(jobId: String) = viewModelScope.launch(ioContext) {
         val fetchedJob = jobCreationDataRepository.getUpdatedJob(jobId)
         withContext(mainContext) {
-            currentJob.value = fetchedJob
+            currentJob.value = XIEvent(fetchedJob)
         }
     }
 
@@ -356,14 +357,14 @@ class CreateViewModel(
     suspend fun setCurrentProjectItem(itemId: String?) = viewModelScope.launch(ioContext) {
         val projectItem = jobCreationDataRepository.getProjectItemById(itemId)
         withContext(mainContext) {
-            projectItem?.let { setTempProjectItem(it) }
+            projectItem.let { setTempProjectItem(it) }
         }
     }
 
     suspend fun setEstimateToEdit(estimateId: String) = viewModelScope.launch(ioContext) {
         val estimateItem = jobCreationDataRepository.getEstimateById(estimateId)
         withContext(mainContext) {
-            currentEstimate.value = estimateItem
+            currentEstimate.value = XIEvent(estimateItem)
         }
     }
 
@@ -404,7 +405,7 @@ class CreateViewModel(
     suspend fun backupEstimate(estimate: JobItemEstimateDTO) = withContext(ioContext) {
         val data = jobCreationDataRepository.backupEstimate(estimate)
         withContext(mainContext) {
-            currentEstimate.value = data
+            currentEstimate.value = XIEvent(data)
         }
     }
 
@@ -420,7 +421,7 @@ class CreateViewModel(
             actId = 0,
             estimateId = estimateId,
             jobId = newJob.jobId,
-            lineRate = item!!.tenderRate,
+            lineRate = item.tenderRate,
             jobEstimateWorks = arrayListOf(),
             jobItemEstimatePhotos = arrayListOf(),
             jobItemMeasure = arrayListOf(),
@@ -440,30 +441,20 @@ class CreateViewModel(
             selectedItemUom = item.uom
         )
         backupEstimate(estimate)
-        newJob.jobItemEstimates.add(estimate)
+        newJob.insertOrUpdateJobItemEstimate(estimate)
         backupJob(newJob)
         withContext(mainContext) {
-            setJobToEdit(newJob.jobId)
-            setEstimateToEdit(estimate.estimateId)
-        }
-    }
-
-    fun updateEstimateCosting(estimateId: String, qty: Double, tenderRate: Double) = viewModelScope.launch(ioContext) {
-        val updatedEstimate = currentEstimate.value?.copy(
-            qty = qty, lineRate = tenderRate
-        )
-        updatedEstimate?.let {
-            backupEstimate(it)
-            withContext(mainContext) {
-                setEstimateToEdit(it.estimateId)
-            }
+            setItemJob(newJob.jobId)
+            setEstimateToEdit(estimateId = estimate.estimateId)
         }
     }
 
     fun generatePhotoUri() = viewModelScope.launch(ioContext) {
         val newPhotoUri = photoUtil.getUri()
         withContext(mainContext) {
-            currentImageUri.postValue(newPhotoUri)
+            newPhotoUri?.let {
+                currentImageUri.value = XIEvent(it)
+            }
         }
     }
 
@@ -488,7 +479,7 @@ class CreateViewModel(
 
     fun updateEstimatePhotos(
         estimateId: String,
-        estimatePhotos: ArrayList<JobItemEstimatesPhotoDTO?>
+        estimatePhotos: java.util.ArrayList<JobItemEstimatesPhotoDTO>
     ) = viewModelScope.launch(mainContext) {
         val estimate = jobCreationDataRepository.getEstimateById(estimateId)
         val newPhotos = estimatePhotos.mapNotNull { photo ->
@@ -513,7 +504,7 @@ class CreateViewModel(
         }
         jobCreationDataRepository.backupJob(currentJob)
         withContext(mainContext) {
-            setJobToEdit(currentJob.jobId)
+            setItemJob(currentJob.jobId)
             setCurrentProjectItem(estimate.projectItemId)
             setEstimateToEdit(estimate.estimateId)
         }
@@ -537,18 +528,22 @@ class CreateViewModel(
         }
     }
 
-    val jobForValidation: MutableLiveData<JobDTO> = MutableLiveData()
+    val jobForValidation: MutableLiveData<XIEvent<JobDTO>> = MutableLiveData()
 
     fun setJobToValidate(geoCodedJobId: String) = viewModelScope.launch(mainContext) {
         jobCreationDataRepository.getUpdatedJob(geoCodedJobId).also {
-            jobForValidation.value = it
+            jobForValidation.value = XIEvent(it)
         }
-    }
-
-    fun validateEstimates(job: JobDTO?) {
     }
 
     suspend fun backupEstimatePhoto(photo: JobItemEstimatesPhotoDTO) = withContext(ioContext) {
         return@withContext jobCreationDataRepository.backupEstimatePhoto(photo)
+    }
+
+    fun setItemJob(jobId: String) = viewModelScope.launch(ioContext) {
+        val job = jobCreationDataRepository.getUpdatedJob(jobId)
+        withContext(mainContext) {
+            itemJob.value = XIEvent(job)
+        }
     }
 }

@@ -86,7 +86,7 @@ interface JobItemEstimateDao {
     @Query("UPDATE JOB_ITEM_ESTIMATE SET measureActId =:actId WHERE estimateId = :estimateId")
     fun setMeasureActId(actId: Int, estimateId: String)
 
-    @Query("SELECT COUNT(A.estimateId ) AS 'workDone' FROM JOB_ITEM_ESTIMATE AS A JOIN JOB_ESTIMATE_WORKS  AS B ON B.estimateId = A.estimateId AND B.actId = :estWorksComplete WHERE A.jobId LIKE :jobId AND A.actId = :estimateWorkPartComplete ")
+    @Query("SELECT COUNT(A.estimateId) AS 'workDone' FROM JOB_ITEM_ESTIMATE AS A JOIN JOB_ESTIMATE_WORKS  AS B ON B.estimateId = A.estimateId AND B.actId = :estWorksComplete WHERE A.jobId LIKE :jobId AND A.actId = :estimateWorkPartComplete ")
     fun getJobItemsEstimatesDoneForJobId(
         jobId: String?,
         estimateWorkPartComplete: Int,

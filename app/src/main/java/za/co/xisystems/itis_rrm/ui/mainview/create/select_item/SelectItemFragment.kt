@@ -97,8 +97,8 @@ class SelectItemFragment : BaseFragment(), DIAware {
                 useR = user
             })
 
-            createViewModel.currentJob.observe(viewLifecycleOwner, { newJ ->
-                newJ?.let {
+            createViewModel.itemJob.observe(viewLifecycleOwner, { newJ ->
+                newJ.getContentIfNotHandled()?.let {
                     editJob = it
                     setItemsBySections(it.projectId!!)
                 }
@@ -166,7 +166,7 @@ class SelectItemFragment : BaseFragment(), DIAware {
             it.run {
                 val jobId = getString("jobId", "")
                 if (jobId.isNotBlank()) {
-                    createViewModel.setJobToEdit(jobId)
+                    createViewModel.setItemJob(jobId)
                     initUI()
                 }
             }

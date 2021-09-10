@@ -247,6 +247,17 @@ class JobDTO(
         }
     }
 
+    fun insertOrUpdateJobItemEstimate(estimateItem: JobItemEstimateDTO): Int {
+        val x = getJobEstimateIndexByItemId(estimateItem.projectItemId)
+        if (x != -1) {
+            jobItemEstimates[x] = estimateItem
+        } else {
+            jobItemEstimates.add(estimateItem)
+        }
+
+        return jobItemEstimates.indexOf(estimateItem)
+    }
+
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeInt(actId)
         parcel.writeString(jobId)

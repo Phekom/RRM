@@ -38,7 +38,7 @@ data class JobItemEstimateDTO(
     @SerializedName("MobileEstimateWorks")
     var jobEstimateWorks: ArrayList<JobEstimateWorksDTO> = ArrayList(),
     @SerializedName("MobileJobItemEstimatesPhotos")
-    var jobItemEstimatePhotos: ArrayList<JobItemEstimatesPhotoDTO> = ArrayList(),
+    var jobItemEstimatePhotos: ArrayList<JobItemEstimatesPhotoDTO> = ArrayList(2),
     @SerializedName("MobileJobItemMeasures")
     var jobItemMeasure: ArrayList<JobItemMeasureDTO> = ArrayList(),
     @SerializedName("ProjectItemId")
@@ -88,9 +88,9 @@ data class JobItemEstimateDTO(
         recordVersion = parcel.readInt(),
         trackRouteId = parcel.readString(),
         jobItemEstimatePhotoStart = parcel.readValue(JobItemEstimatesPhotoDTO::class.java.classLoader)
-                as? JobItemEstimatesPhotoDTO,
+            as? JobItemEstimatesPhotoDTO,
         jobItemEstimatePhotoEnd = parcel.readValue(JobItemEstimatesPhotoDTO::class.java.classLoader)
-                as? JobItemEstimatesPhotoDTO,
+            as? JobItemEstimatesPhotoDTO,
         estimateComplete = parcel.readString(),
         measureActId = parcel.readInt(),
         selectedItemUom = parcel.readString(),
@@ -98,26 +98,13 @@ data class JobItemEstimateDTO(
     )
 
     fun getJobItemEstimatePhoto(lookForStartPhoto: Boolean): Pair<Int, JobItemEstimatesPhotoDTO> {
-        val photos = jobItemEstimatePhotos
-        var i = 0
-        while (photos.isNotEmpty() && i < photos.size - 1) {
-            val isPhotoStart = photos[i].isStartPhoto()
-            if (lookForStartPhoto) {
-                if (isPhotoStart) {
-                    println("look: $lookForStartPhoto is:$isPhotoStart")
-                    val pair = Pair(i, photos[i])
-                    println("pair[" + pair.first + "]" + pair)
-                    return pair
-                }
-            } else {
-                if (!isPhotoStart) {
-                    println("look: $lookForStartPhoto is:$isPhotoStart")
-                    return Pair<Int, JobItemEstimatesPhotoDTO>(i, photos[i])
-                }
-            }
-            i++
-        }
-        return Pair<Int, JobItemEstimatesPhotoDTO>(-1, null)
+
+        val photoToReplace =
+            jobItemEstimatePhotos.firstOrNull { photo ->
+                photo.isStartPhoto() == lookForStartPhoto
+            } ?: return Pair(-1, null)
+        val photoIndex = jobItemEstimatePhotos.indexOf(photoToReplace)
+        return Pair(photoIndex, photoToReplace)
     }
 
     fun getPhoto(x: Int): JobItemEstimatesPhotoDTO? {

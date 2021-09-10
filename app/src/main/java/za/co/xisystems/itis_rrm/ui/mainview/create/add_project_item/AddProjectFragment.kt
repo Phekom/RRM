@@ -18,6 +18,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.os.HandlerCompat
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenCreated
 import androidx.lifecycle.whenStarted
@@ -222,16 +223,18 @@ class AddProjectFragment : BaseFragment(), DIAware {
         })
     }
 
-    private fun initValidationListener() {
-        deferredLocationViewModel.geoCodingResult.observe(
+    private suspend fun initValidationListener() = withContext(Dispatchers.Main) {
+        deferredLocationViewModel.geoCodingResult.distinctUntilChanged().observe(
             viewLifecycleOwner, { result ->
                 result?.let { outcome ->
-                    processLocationResult(outcome)
+                    Coroutines.main {
+                        processLocationResult(outcome)
+                    }
                 }
             })
 
-        createViewModel.jobForValidation.observe(viewLifecycleOwner, { job ->
-            job?.let { realJob ->
+        createViewModel.jobForValidation.distinctUntilChanged().observe(viewLifecycleOwner, { job ->
+            job.getContentIfNotHandled()?.let { realJob ->
                 if (!realJob.sectionId.isNullOrBlank() && JobUtils.isGeoCoded(realJob)) {
                     uiScope.launch(uiScope.coroutineContext) {
                         validateEstimates(realJob)
@@ -246,10 +249,10 @@ class AddProjectFragment : BaseFragment(), DIAware {
     }
 
     private fun initCurrentJobListener() {
-        val currentJobQuery = createViewModel.currentJob
+        val currentJobQuery = createViewModel.currentJob.distinctUntilChanged()
         currentJobQuery.observe(
             viewLifecycleOwner, { currentJob ->
-                currentJob?.let { jobToEdit ->
+                currentJob.getContentIfNotHandled()?.let { jobToEdit ->
                     job = jobToEdit
                     jobBound = true
                     Coroutines.main {
@@ -286,7 +289,7 @@ class AddProjectFragment : BaseFragment(), DIAware {
 
                         createViewModel.tempProjectItem
                             .observe(viewLifecycleOwner, {
-                                it?.let {
+                                it.getContentIfNotHandled()?.let {
                                     ui.infoTextView.visibility = View.GONE
                                     ui.lastLin.visibility = View.VISIBLE
                                     ui.totalCostTextView.visibility = View.VISIBLE
@@ -496,7 +499,9 @@ class AddProjectFragment : BaseFragment(), DIAware {
     private fun openSelectItemFragment(view: View) {
         if (jobBound) {
             backupJobInProgress(job)
+            createViewModel.setItemJob(job.jobId)
         }
+
         val navDirection =
             AddProjectFragmentDirections.actionAddProjectFragmentToSelectItemFragment(
                 projectID
@@ -523,7 +528,7 @@ class AddProjectFragment : BaseFragment(), DIAware {
         }
     }
 
-    private fun processLocationResult(result: XIResult<String>) = uiScope.launch(uiScope.coroutineContext) {
+    private suspend fun processLocationResult(result: XIResult<String>) = withContext(Dispatchers.Main) {
         when (result) {
             is XIResult.Success -> {
                 handleGeoSuccess(result)
@@ -537,7 +542,7 @@ class AddProjectFragment : BaseFragment(), DIAware {
 
     private suspend fun AddProjectFragment.handleGeoError(
         result: XIResult.Error
-    ) {
+    ) = withContext(Dispatchers.Main) {
         this@AddProjectFragment.extensionToast(
             title = "Location Validation",
             message = result.exception.message.toString(),

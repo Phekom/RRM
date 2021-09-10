@@ -14,6 +14,7 @@ import com.xwray.groupie.viewbinding.BindableItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration.LONG
 import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity.BOTTOM
 import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.DELETE
@@ -66,8 +67,8 @@ open class ProjectItem(
 
                 val located = ContextCompat.getDrawable(root.context, R.drawable.ic_baseline_location_on_24)
                 val notLocated = ContextCompat.getDrawable(root.context, R.drawable.ic_baseline_location_off_24)
-                located?.setTint(fragment.requireContext().resources.getColor(R.color.sanral_dark_green, null))
                 if (jobItemEstimate?.geoCoded == true) {
+                    located?.setTint(fragment.requireContext().resources.getColor(R.color.sanral_dark_green, null))
                     textViewItem.setCompoundDrawablesWithIntrinsicBounds(located, null, null, null)
                 } else {
                     textViewItem.setCompoundDrawablesWithIntrinsicBounds(notLocated, null, null, null)
@@ -101,9 +102,9 @@ open class ProjectItem(
             createViewModel.backupJob(newJob!!)
             createViewModel.backupProjectItem(item)
             withContext(Dispatchers.Main) {
-                createViewModel.setJobToEdit(newJob.jobId)
+                createViewModel.setItemJob(newJob.jobId)
                 createViewModel.contractId.value = contractId
-                createViewModel.tempProjectItem.value = item
+                createViewModel.tempProjectItem.value = XIEvent(item)
                 createViewModel.setCurrentProjectItem(item.itemId)
             }
         }

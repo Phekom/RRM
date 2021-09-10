@@ -36,7 +36,6 @@ import za.co.xisystems.itis_rrm.data.repositories.MeasureCreationDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
 import za.co.xisystems.itis_rrm.data.repositories.WorkDataRepository
-import za.co.xisystems.itis_rrm.extensions.exitApplication
 import za.co.xisystems.itis_rrm.forge.Sage
 import za.co.xisystems.itis_rrm.forge.Scribe
 import za.co.xisystems.itis_rrm.forge.XIArmoury
@@ -174,7 +173,6 @@ open class MainApp : Application(), DIAware {
                     Timber.d("App in background.")
                     when (p0 is BaseActivity && p0.takingPhotos) {
                         true -> Timber.i("Taking photographs")
-                        else -> exitApplication()
                     }
                 }
             }

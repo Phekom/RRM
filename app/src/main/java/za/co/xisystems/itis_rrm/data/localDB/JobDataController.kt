@@ -27,6 +27,7 @@ object JobDataController {
         job.setProjectId(DataConversion.toLittleEndian(job.projectId))
         job.setPerfitemGroupId(DataConversion.toLittleEndian(job.perfitemGroupId))
         job.setProjectVoId(DataConversion.toLittleEndian(job.projectVoId))
+        job.sectionId = DataConversion.toLittleEndian(job.sectionId)
 
         if (job.trackRouteId != null) {
             job.setTrackRouteId(DataConversion.toLittleEndian(job.trackRouteId))
