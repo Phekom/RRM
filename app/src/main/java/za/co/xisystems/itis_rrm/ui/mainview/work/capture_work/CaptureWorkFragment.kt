@@ -233,26 +233,40 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
     private fun pullData() {
         uiScope.launch(uiScope.coroutineContext) {
 
-            val user = workViewModel.user.await()
-            user.observe(viewLifecycleOwner, { userDTO ->
-                useR = userDTO
-            })
+            withContext(uiScope.coroutineContext) {
+                val user = workViewModel.user.await()
+                user.observe(viewLifecycleOwner, { userDTO ->
+                    useR = userDTO
+                })
+            }
 
-            workViewModel.workItemJob.observe(viewLifecycleOwner, { estimateJob ->
-                estimateJob?.let {
-                    itemEstimateJob = it
-                }
-            })
+            withContext(uiScope.coroutineContext) {
+                workViewModel.workItemJob.observe(viewLifecycleOwner, { estimateJob ->
+                    estimateJob?.let {
+                        itemEstimateJob = it
+                        if (this@CaptureWorkFragment::itemEstimate.isInitialized) {
+                            getWorkItems(itemEstimate, itemEstimateJob)
+                        }
+                    }
+                })
+            }
 
-            workViewModel.workItem.observe(viewLifecycleOwner, { estimate ->
-                estimate?.let {
-                    itemEstimate = it
-                    getWorkItems(itemEstimate, itemEstimateJob)
-                }
-            })
-            workViewModel.historicalWorks.observe(viewLifecycleOwner, {
-                it?.let { populateHistoricalWorkEstimate(it) }
-            })
+            withContext(uiScope.coroutineContext) {
+                workViewModel.workItem.observe(viewLifecycleOwner, { estimate ->
+                    estimate?.let {
+                        itemEstimate = it
+                        if (this@CaptureWorkFragment::itemEstimateJob.isInitialized) {
+                            getWorkItems(itemEstimate, itemEstimateJob)
+                        }
+                    }
+                })
+            }
+
+            withContext(uiScope.coroutineContext) {
+                workViewModel.historicalWorks.observe(viewLifecycleOwner, {
+                    it?.let { populateHistoricalWorkEstimate(it) }
+                })
+            }
         }
     }
 
@@ -372,7 +386,11 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
     ) {
         if (requireActivity().isConnected) {
             //  Lets Send to Service
-            activeWorks.jobEstimateWorksPhotos = estimatePhotos
+            estimatePhotos.filter { photo ->
+                photo.photoActivityId == activeWorks.actId
+            }.also {
+                activeWorks.jobEstimateWorksPhotos = arrayListOf(*it.toTypedArray())
+            }
             activeWorks.estimateId = estimateItem?.estimateId
 
             sendWorkToService(activeWorks)

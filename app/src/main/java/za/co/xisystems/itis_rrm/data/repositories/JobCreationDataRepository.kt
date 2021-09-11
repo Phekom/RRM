@@ -709,4 +709,8 @@ class JobCreationDataRepository(
     suspend fun getJobSectionByJobId(jobId: String): JobSectionDTO? = withContext(Dispatchers.IO) {
         return@withContext appDb.getJobSectionDao().getJobSectionFromJobId(jobId)
     }
+
+    suspend fun getJobEstimateIndexByItemAndJobId(itemId: String, jobId: String): JobItemEstimateDTO? = withContext(Dispatchers.IO) {
+        return@withContext appDb.getJobItemEstimateDao().getJobEstimateIndexByItemAndJobId(itemId, jobId)
+    }
 }

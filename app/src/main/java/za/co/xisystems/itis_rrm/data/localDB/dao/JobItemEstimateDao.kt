@@ -104,4 +104,7 @@ interface JobItemEstimateDao {
 
     @Update
     suspend fun updateJobItemEstimates(jobItemEstimates: List<JobItemEstimateDTO>): Int
+
+    @Query("SELECT * FROM JOB_ITEM_ESTIMATE WHERE projectItemId = :itemId AND jobId = :jobId LIMIT 1")
+    fun getJobEstimateIndexByItemAndJobId(itemId: String, jobId: String): JobItemEstimateDTO?
 }

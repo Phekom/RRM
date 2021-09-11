@@ -1,0 +1,57 @@
+[
+  {
+    "ActId": 0,
+    "EstimateId": "D39A67DB7D5D4117B94773C27C03CE3C",
+    "geoCoded": false,
+    "MobileEstimateWorks": [],
+    "JobId": "389FB8EB66C94C49BADB0F7F11B1D0CE",
+    "MobileJobItemEstimatesPhotos": [
+      {
+        "Descr": "",
+        "Endkm": -1.0,
+        "EstimateId": "D39A67DB7D5D4117B94773C27C03CE3C",
+        "Filename": "c32b1c85-c4bf-476d-8795-c7c2960c0356.jpg",
+        "geoCoded": false,
+        "IsPhotoStart": true,
+        "PhotoDate": "2021-09-11T19:48:16.854+0200",
+        "PhotoId": "95144F24F5634248915EA2E7F4590E00",
+        "PhotoLatitude": -33.4029033,
+        "PhotoLatitudeEnd": -33.4029033,
+        "PhotoLongitude": 19.8879517,
+        "PhotoLongitudeEnd": 19.8879517,
+        "PhotoPath": "/storage/emulated/0/Android/data/za.co.xisystems.itismaintenance.qa/files/Pictures/c32b1c85-c4bf-476d-8795-c7c2960c0356.jpg",
+        "RecordSynchStateId": 0,
+        "RecordVersion": 0,
+        "sectionMarker": "(lat: -33.402903 ,lng: 19.887952)",
+        "Startkm": -1.0
+      },
+      {
+        "Descr": "",
+        "Endkm": -1.0,
+        "EstimateId": "D39A67DB7D5D4117B94773C27C03CE3C",
+        "Filename": "55169435-adf4-4390-b162-b4c347a75d97.jpg",
+        "geoCoded": false,
+        "IsPhotoStart": false,
+        "PhotoDate": "2021-09-11T19:48:34.237+0200",
+        "PhotoId": "6CF574C3A88F45BA8E606E3CF9443B1B",
+        "PhotoLatitude": -33.4029033,
+        "PhotoLatitudeEnd": -33.4029033,
+        "PhotoLongitude": 19.8879517,
+        "PhotoLongitudeEnd": 19.8879517,
+        "PhotoPath": "/storage/emulated/0/Android/data/za.co.xisystems.itismaintenance.qa/files/Pictures/55169435-adf4-4390-b162-b4c347a75d97.jpg",
+        "RecordSynchStateId": 0,
+        "RecordVersion": 0,
+        "sectionMarker": "(lat: -33.402903 ,lng: 19.887952)",
+        "Startkm": -1.0
+      }
+    ],
+    "MobileJobItemMeasures": [],
+    "LineRate": 8000.0,
+    "MEASURE_ACT_ID": 0,
+    "ProjectItemId": "D8F74BAD2AC79042A9D82B4295D1BBF5",
+    "Qty": 1.0,
+    "RecordSynchStateId": 0,
+    "RecordVersion": 0,
+    "SelectedItemUOM": "T"
+  }
+]

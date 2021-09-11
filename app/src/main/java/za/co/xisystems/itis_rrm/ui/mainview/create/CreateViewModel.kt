@@ -104,7 +104,7 @@ class CreateViewModel(
         projectCode.value = inProjectCode
     }
 
-    fun setTempProjectItem(inSectionProjectItem: ItemDTOTemp) {
+    fun setTempProjectItem(inSectionProjectItem: ItemDTOTemp) = viewModelScope.launch(mainContext) {
         tempProjectItem.value = XIEvent(inSectionProjectItem)
     }
 
@@ -545,5 +545,9 @@ class CreateViewModel(
         withContext(mainContext) {
             itemJob.value = XIEvent(job)
         }
+    }
+
+    suspend fun getJobEstimateIndexByItemAndJobId(itemId: String, jobId: String): JobItemEstimateDTO? = withContext(ioContext) {
+        return@withContext jobCreationDataRepository.getJobEstimateIndexByItemAndJobId(itemId, jobId)
     }
 }

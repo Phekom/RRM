@@ -72,6 +72,7 @@ import za.co.xisystems.itis_rrm.utils.GlideApp
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
+import java.io.File
 import java.text.DecimalFormat
 import java.util.Date
 import kotlin.collections.set
@@ -136,12 +137,15 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
                 processAndSetImage(realUri)
             }
         } else {
-            Coroutines.io {
-                photoUtil.deleteImageFile(filenamePath.toString())
-                withContext(Dispatchers.Main.immediate) {
-                    haltAnimation()
-                    ui.startImageView.visibility = View.VISIBLE
-                    ui.endImageView.visibility = View.VISIBLE
+            imageUri?.let { failedUri ->
+                Coroutines.io {
+                    val filenamePath = File(failedUri.path!!)
+                    photoUtil.deleteImageFile(filenamePath.toString())
+                    withContext(Dispatchers.Main.immediate) {
+                        haltAnimation()
+                        ui.startImageView.visibility = View.VISIBLE
+                        ui.endImageView.visibility = View.VISIBLE
+                    }
                 }
             }
         }
@@ -371,9 +375,16 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
 
         setValueEditText(getStoredValue())
 
-        ui.valueEditText.doOnTextChanged { _, _, _, _ ->
+        ui.valueEditText.doOnTextChanged { text, _, _, _ ->
             changesToPreserve = true
-            setCost()
+            try {
+                val quantity = text.toString().toDouble()
+                item!!.quantity = quantity
+                newJobItemEstimate?.qty = quantity
+                setCost()
+            } catch (ex: java.lang.NumberFormatException) {
+                Timber.e(" ")
+            }
         }
     }
 
@@ -404,13 +415,7 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
                 }
 
                 R.id.updateButton -> {
-                    if (ui.costTextView.text.isNullOrEmpty() || newJobItemEstimate!!.size() != 2) {
-                        toast("Please Make Sure you have Captured Both Images")
-                        ui.labelTextView.startAnimation(animations!!.shake_long)
-                    } else {
-                        this@EstimatePhotoFragment.toggleLongRunning(true)
-                        saveValidEstimate(view)
-                    }
+                    validateAndUpdateEstimate(view)
                 }
             }
         }
@@ -433,6 +438,23 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
         }
     }
 
+    private fun validateAndUpdateEstimate(view: View) {
+        if (ui.costTextView.text.isNullOrEmpty() || newJobItemEstimate!!.size() != 2) {
+            toast("Please Make Sure you have Captured Both Images")
+            ui.labelTextView.startAnimation(animations!!.shake_long)
+        } else {
+            Coroutines.main {
+                createViewModel.isEstimateComplete(newJobItemEstimate!!).also { result ->
+                    if (result) {
+                        calculateCost()
+                        this@EstimatePhotoFragment.toggleLongRunning(true)
+                        saveValidEstimate(view)
+                    }
+                }
+            }
+        }
+    }
+
     private fun navToAddProject(view: View) {
         val directions = EstimatePhotoFragmentDirections.actionEstimatePhotoFragmentToAddProjectFragment2(
             newJob?.projectId!!,
@@ -441,21 +463,28 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
         Navigation.findNavController(view).navigate(directions)
     }
 
-    private fun saveValidEstimate(view: View) = uiScope.launch(uiScope.coroutineContext) {
+    private suspend fun saveValidEstimate(view: View) = uiScope.launch(uiScope.coroutineContext) {
 
-        newJobItemEstimate?.qty = ui.valueEditText.text.toString().toDouble()
-        val qty = newJobItemEstimate?.qty.toString().toDouble()
-        val tenderRate = item!!.tenderRate
-        if (qty >= 1 && tenderRate > 0.0) {
-            createViewModel.setEstimateQuantity(qty)
-            newJobItemEstimate?.lineRate = (item!!.tenderRate)
-            createViewModel.backupEstimate(newJobItemEstimate!!)
-            newJob!!.insertOrUpdateJobItemEstimate(newJobItemEstimate!!)
-            createViewModel.saveNewJob(newJob!!)
-            createViewModel.setJobToEdit(newJob!!.jobId)
-            createViewModel.currentEstimate = MutableLiveData()
-            changesToPreserve = false
-            updateData(view)
+        item!!.quantity = ui.valueEditText.text.toString().toDouble()
+        if (item!!.quantity >= 1 && item!!.tenderRate > 0.0 && changesToPreserve) {
+            val saveValidEstimate = newJobItemEstimate!!.copy(
+                qty = item!!.quantity,
+                lineRate = item!!.tenderRate
+            )
+            createViewModel.setEstimateQuantity(item!!.quantity)
+            Coroutines.io {
+                createViewModel.backupProjectItem(item!!)
+                createViewModel.setTempProjectItem(item!!)
+                createViewModel.backupEstimate(saveValidEstimate)
+                newJob!!.insertOrUpdateJobItemEstimate(saveValidEstimate)
+                createViewModel.saveNewJob(newJob!!)
+                createViewModel.setJobToEdit(newJob!!.jobId)
+                createViewModel.currentEstimate = MutableLiveData()
+                changesToPreserve = false
+                withContext(Dispatchers.Main.immediate) {
+                    updateData(view)
+                }
+            }
         }
     }
 
@@ -628,9 +657,13 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
                 item = item
             )
 
+            item = item!!.copy(estimateId = newJobItemEstimate!!.estimateId)
+
             if (newJob?.jobItemEstimates == null) {
                 newJob?.jobItemEstimates = ArrayList()
             }
+
+            newJob?.insertOrUpdateJobItemEstimate(newJobItemEstimate!!)
         }
 
         uiScope.launch(context = uiScope.coroutineContext) {
@@ -831,8 +864,11 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
 
     override fun onResume() {
         super.onResume()
-        if (newJob == null) readNavArgs()
-        setCost()
+        if (newJob == null) {
+            readNavArgs()
+        } else {
+            setCost()
+        }
     }
 
     private fun loadEstimateItemPhoto(
@@ -1185,13 +1221,17 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
                         position = ToastGravity.BOTTOM,
                         duration = ToastDuration.LONG
                     )
-                    createViewModel.deleteItemFromList(it.itemId, it.estimateId)
-                    newJob?.removeJobEstimateByItemId(it.itemId)
-                    createViewModel.backupJob(newJob!!)
-                    createViewModel.setJobToEdit(newJob?.jobId!!)
-                    parentFragmentManager.beginTransaction().remove(this).commit()
-                    parentFragmentManager.beginTransaction().detach(this).commit()
-                    navToAddProject(view)
+                    Coroutines.io {
+                        createViewModel.deleteItemFromList(it.itemId, it.estimateId)
+                        newJob?.removeJobEstimateByItemId(it.itemId)
+                        createViewModel.backupJob(newJob!!)
+                        createViewModel.setJobToEdit(newJob?.jobId!!)
+                        withContext(Dispatchers.Main.immediate) {
+                            parentFragmentManager.beginTransaction().remove(this@EstimatePhotoFragment).commit()
+                            parentFragmentManager.beginTransaction().detach(this@EstimatePhotoFragment).commit()
+                            navToAddProject(view)
+                        }
+                    }
                 }
             }
         }
@@ -1209,6 +1249,9 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
     override fun onStop() {
         Coroutines.main {
             if (changesToPreserve) {
+                item?.let {
+                    createViewModel.backupProjectItem(it)
+                }
                 newJobItemEstimate?.let {
                     createViewModel.backupEstimate(it)
                     newJob?.insertOrUpdateJobItemEstimate(it)
@@ -1222,6 +1265,9 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
                 changesToPreserve = false
             }
         }
+
+        createViewModel.itemJob.removeObservers(viewLifecycleOwner)
+
         super.onStop()
     }
 }

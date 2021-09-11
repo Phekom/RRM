@@ -247,15 +247,20 @@ class JobDTO(
         }
     }
 
-    fun insertOrUpdateJobItemEstimate(estimateItem: JobItemEstimateDTO): Int {
+    fun insertOrUpdateJobItemEstimate(estimateItem: JobItemEstimateDTO) {
+        this.jobItemEstimates = alterEstimates(estimateItem)
+    }
+
+    private fun alterEstimates(estimateItem: JobItemEstimateDTO): ArrayList<JobItemEstimateDTO> {
+        val estimateCopy = this.jobItemEstimates
         val x = getJobEstimateIndexByItemId(estimateItem.projectItemId)
-        if (x != -1) {
-            jobItemEstimates[x] = estimateItem
+        if (x > -1) {
+            estimateCopy[x] = estimateItem
         } else {
-            jobItemEstimates.add(estimateItem)
+            estimateCopy.add(estimateItem)
         }
 
-        return jobItemEstimates.indexOf(estimateItem)
+        return estimateCopy
     }
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
