@@ -64,6 +64,9 @@ class CreateViewModel(
     var currentEstimate: MutableLiveData<XIEvent<JobItemEstimateDTO>> = MutableLiveData()
     val currentImageUri: MutableLiveData<XIEvent<Uri>> = MutableLiveData()
 
+    val backupSubmissionJob: MutableLiveData<XIEvent<JobDTO>> = MutableLiveData()
+    val backupLocationJob: MutableLiveData<XIEvent<JobDTO>> = MutableLiveData()
+
     fun setCurrentJob(inJobItemToEdit: JobDTO) {
         currentJob.value = XIEvent(inJobItemToEdit)
     }
@@ -251,10 +254,8 @@ class CreateViewModel(
         userId: Int,
         job: JobDTO,
         activity: FragmentActivity
-    ): String {
-        return withContext(ioContext) {
-            jobCreationDataRepository.submitJob(userId, job, activity)
-        }
+    ): String = withContext(ioContext) {
+        return@withContext jobCreationDataRepository.submitJob(userId, job, activity)
     }
 
     fun deleteItemList(jobId: String) {
@@ -520,11 +521,11 @@ class CreateViewModel(
         return@withContext jobCreationDataRepository.backupProjectItem(item)
     }
 
-    val jobForSubmission: MutableLiveData<JobDTO> = MutableLiveData()
+    val jobForSubmission: MutableLiveData<XIEvent<JobDTO>> = MutableLiveData()
 
     fun setJobForSubmission(inJobId: String) = viewModelScope.launch(mainContext) {
         jobCreationDataRepository.getUpdatedJob(inJobId).also {
-            jobForSubmission.value = it
+            jobForSubmission.value = XIEvent(it)
         }
     }
 
@@ -549,5 +550,9 @@ class CreateViewModel(
 
     suspend fun getJobEstimateIndexByItemAndJobId(itemId: String, jobId: String): JobItemEstimateDTO? = withContext(ioContext) {
         return@withContext jobCreationDataRepository.getJobEstimateIndexByItemAndJobId(itemId, jobId)
+    }
+
+    fun setEstimateLineRate(tenderRate: Double) = viewModelScope.launch(mainContext) {
+        estimateLineRate.value = tenderRate
     }
 }

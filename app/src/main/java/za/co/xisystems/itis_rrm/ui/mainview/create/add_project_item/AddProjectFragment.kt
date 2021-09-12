@@ -44,6 +44,7 @@ import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.constants.Constants.ONE_SECOND
 import za.co.xisystems.itis_rrm.constants.Constants.TWO_SECONDS
+import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.custom.notifications.ColorToast
 import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration
 import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity
@@ -58,6 +59,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentAddProjectItemsBinding
 import za.co.xisystems.itis_rrm.databinding.NewJobItemBinding
 import za.co.xisystems.itis_rrm.extensions.isConnected
+import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.services.DeferredLocationViewModel
 import za.co.xisystems.itis_rrm.services.DeferredLocationViewModelFactory
 import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
@@ -228,35 +230,47 @@ class AddProjectFragment : BaseFragment(), DIAware {
     }
 
     private suspend fun initValidationListener() = withContext(Dispatchers.Main) {
-        deferredLocationViewModel.geoCodingResult.distinctUntilChanged().observe(
+        deferredLocationViewModel.geoCodingResult.distinctUntilChanged().observeOnce(
             viewLifecycleOwner, { result ->
                 result?.let { outcome ->
-                    Coroutines.main {
+                    uiScope.launch(uiScope.coroutineContext) {
                         processLocationResult(outcome)
                     }
                 }
             })
 
-        createViewModel.jobForValidation.distinctUntilChanged().observe(viewLifecycleOwner, { job ->
-            job.getContentIfNotHandled()?.let { realJob ->
-                if (!realJob.sectionId.isNullOrBlank() && JobUtils.isGeoCoded(realJob)) {
-                    uiScope.launch(uiScope.coroutineContext) {
-                        validateEstimates(realJob)
+        createViewModel.jobForValidation.distinctUntilChanged().observeOnce(
+            viewLifecycleOwner, { job ->
+                job.getContentIfNotHandled()?.let { realJob ->
+                    if (!realJob.sectionId.isNullOrBlank() && JobUtils.isGeoCoded(realJob)) {
+                        uiScope.launch(uiScope.coroutineContext) {
+                            validateEstimates(realJob)
+                        }
+                    } else {
+                        uiScope.launch(uiScope.coroutineContext) {
+                            geoLocationFailed()
+                        }
                     }
-                } else {
+                }
+            })
+
+        createViewModel.jobForSubmission.distinctUntilChanged().observeOnce(
+            viewLifecycleOwner, { unsubmittedEvent ->
+                unsubmittedEvent.getContentIfNotHandled()?.let { submissionJob ->
                     uiScope.launch(uiScope.coroutineContext) {
-                        geoLocationFailed()
+                        createViewModel.backupSubmissionJob.value = XIEvent(submissionJob)
+                        submitJob(submissionJob)
                     }
                 }
             }
-        })
+        )
     }
 
     private fun initCurrentJobListener() {
         var itemsBound = false
         val currentJobQuery = createViewModel.currentJob.distinctUntilChanged()
-        currentJobQuery.observe(viewLifecycleOwner, { currentJob ->
-            currentJob.getContentIfNotHandled()?.let { jobToEdit ->
+        currentJobQuery.observe(viewLifecycleOwner, { jobEvent ->
+            jobEvent.getContentIfNotHandled()?.let { jobToEdit ->
                 job = jobToEdit
                 jobBound = true
                 Coroutines.main {
@@ -291,6 +305,7 @@ class AddProjectFragment : BaseFragment(), DIAware {
                         startDate = DateUtil.stringToDate(it)!!
                     }
 
+                    // Bind projectItems here
                     createViewModel.tempProjectItem.observe(viewLifecycleOwner, {
                         it.getContentIfNotHandled()?.let {
                             ui.infoTextView.visibility = View.GONE
@@ -308,7 +323,7 @@ class AddProjectFragment : BaseFragment(), DIAware {
         })
         if (this@AddProjectFragment::job.isInitialized && !itemsBound) {
             bindProjectItems()
-            bindCosting()
+            // bindCosting()
         }
     }
 
@@ -476,15 +491,10 @@ class AddProjectFragment : BaseFragment(), DIAware {
                 R.id.submitButton -> {
                     Coroutines.main {
                         if (this@AddProjectFragment.requireContext().isConnected) {
+                            initValidationListener()
                             validateJob()
                         } else {
-                            this@AddProjectFragment.extensionToast(
-                                title = "No Connectivity",
-                                message = "Job validation and submission requires an active internet connection.",
-                                style = ToastStyle.NO_INTERNET,
-                                duration = ToastDuration.LONG,
-                                position = ToastGravity.BOTTOM
-                            )
+                            displayConnectionWarning()
                         }
                     }
                 }
@@ -497,6 +507,16 @@ class AddProjectFragment : BaseFragment(), DIAware {
         ui.dueDateCardView.setOnClickListener(myClickListener)
         ui.submitButton.setOnClickListener(myClickListener)
         ui.infoTextView.setOnClickListener(myClickListener)
+    }
+
+    private fun displayConnectionWarning() {
+        this@AddProjectFragment.extensionToast(
+            title = "No Connectivity",
+            message = "Job validation and submission requires an active internet connection.",
+            style = ToastStyle.NO_INTERNET,
+            duration = ToastDuration.LONG,
+            position = ToastGravity.BOTTOM
+        )
     }
 
     private fun openSelectItemFragment(view: View) {
@@ -513,7 +533,7 @@ class AddProjectFragment : BaseFragment(), DIAware {
             .navigate(navDirection)
     }
 
-    private suspend fun validateJob() = Coroutines.main {
+    private suspend fun validateJob() = uiScope.launch(uiScope.coroutineContext) {
 
         if (job.jobId.isNotEmpty() && validateCalendar()) {
 
@@ -586,7 +606,8 @@ class AddProjectFragment : BaseFragment(), DIAware {
                 ui.submitButton.initProgress(viewLifecycleOwner)
                 ui.submitButton.startProgress("Submitting data ...")
                 updatedJob.issueDate = DateUtil.dateToString(Date())
-                submitJob(updatedJob)
+                createViewModel.backupJob(updatedJob)
+                createViewModel.setJobForSubmission(updatedJob.jobId)
             }
         }
     }
@@ -690,7 +711,7 @@ class AddProjectFragment : BaseFragment(), DIAware {
     @Synchronized
     private suspend fun submitJob(
         job: JobDTO
-    ) = withContext(Dispatchers.Main) {
+    ) = withContext(uiScope.coroutineContext) {
         toggleLongRunning(true)
         val jobTemp = jobDataController.setJobLittleEndianGuids(job)
         saveRrmJob(job.userId, jobTemp)
@@ -700,7 +721,7 @@ class AddProjectFragment : BaseFragment(), DIAware {
     private suspend fun saveRrmJob(
         userId: Int,
         job: JobDTO
-    ) = withContext(Dispatchers.Main) {
+    ) = withContext(uiScope.coroutineContext) {
         val submit =
             createViewModel.submitJob(userId, job, requireActivity())
         withContext(Dispatchers.Main.immediate) {
@@ -796,6 +817,7 @@ class AddProjectFragment : BaseFragment(), DIAware {
         createViewModel.tempProjectItem.removeObservers(viewLifecycleOwner)
         deferredLocationViewModel.geoCodingResult.removeObservers(viewLifecycleOwner)
         createViewModel.jobForValidation.removeObservers(viewLifecycleOwner)
+        createViewModel.jobForSubmission.removeObservers(viewLifecycleOwner)
         uiScope.destroy()
         ui.projectRecyclerView.adapter = null
         _ui = null

@@ -67,25 +67,17 @@ open class ProjectItem(
                                 subTextView.visibility = View.VISIBLE
                             }
 
-                            val located = ContextCompat.getDrawable(
-                                root.context,
-                                R.drawable.ic_baseline_location_on_24
-                            )
                             val notLocated = ContextCompat.getDrawable(
                                 root.context,
                                 R.drawable.ic_baseline_location_off_24
                             )
-                            if (jobItemEstimate.geoCoded) {
-                                located?.setTint(
-                                    fragment.requireContext()
-                                        .resources.getColor(R.color.sanral_dark_green, null)
-                                )
+                            if (!jobItemEstimate.geoCoded && jobItemEstimate.size() == 2) {
                                 textViewItem.setCompoundDrawablesWithIntrinsicBounds(
-                                    located, null, null, null
+                                    notLocated, null, null, null
                                 )
                             } else {
                                 textViewItem.setCompoundDrawablesWithIntrinsicBounds(
-                                    notLocated, null, null, null
+                                    null, null, null, null
                                 )
                             }
                         }

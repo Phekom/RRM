@@ -137,7 +137,9 @@
                 android:id="@+id/costCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="@dimen/xsmall">
+                android:layout_margin="@dimen/xsmall"
+                tools:visibility="visible"
+                android:visibility="gone">
 
                 <LinearLayout
                     style="@style/_linear_layout_horizon"
@@ -211,7 +213,9 @@
                     android:layout_margin="@dimen/small"
                     android:layout_weight="1"
                     android:text="UPDATE"
-                    tools:ignore="HardcodedText" />
+                    tools:ignore="HardcodedText"
+                    android:visibility="gone"
+                    tools:visibility="visible" />
             </LinearLayout>
 
         </LinearLayout>

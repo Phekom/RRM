@@ -25,8 +25,7 @@ object JobUtils {
     }
 
     fun formatTotalCost(job: JobDTO?): String {
-        Coroutines.main {
-        }
+
         var quantity = 0.0
         var cost = 0.0
         job?.jobItemEstimates?.forEach { estimate ->

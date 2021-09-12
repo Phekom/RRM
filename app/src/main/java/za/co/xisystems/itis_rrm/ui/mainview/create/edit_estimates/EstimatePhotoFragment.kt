@@ -467,11 +467,13 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
 
         item!!.quantity = ui.valueEditText.text.toString().toDouble()
         if (item!!.quantity >= 1 && item!!.tenderRate > 0.0 && changesToPreserve) {
+
             val saveValidEstimate = newJobItemEstimate!!.copy(
                 qty = item!!.quantity,
                 lineRate = item!!.tenderRate
             )
             createViewModel.setEstimateQuantity(item!!.quantity)
+            createViewModel.setEstimateLineRate(item!!.tenderRate)
             Coroutines.io {
                 createViewModel.backupProjectItem(item!!)
                 createViewModel.setTempProjectItem(item!!)
