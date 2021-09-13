@@ -472,8 +472,6 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
                 qty = item!!.quantity,
                 lineRate = item!!.tenderRate
             )
-            createViewModel.setEstimateQuantity(item!!.quantity)
-            createViewModel.setEstimateLineRate(item!!.tenderRate * item!!.quantity)
             Coroutines.io {
                 createViewModel.backupProjectItem(item!!)
                 createViewModel.setTempProjectItem(item!!)
@@ -484,6 +482,8 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
                 createViewModel.currentEstimate = MutableLiveData()
                 changesToPreserve = false
                 withContext(Dispatchers.Main.immediate) {
+                    createViewModel.setEstimateQuantity(saveValidEstimate.qty)
+                    createViewModel.setEstimateLineRate(saveValidEstimate.lineRate)
                     updateData(view)
                 }
             }

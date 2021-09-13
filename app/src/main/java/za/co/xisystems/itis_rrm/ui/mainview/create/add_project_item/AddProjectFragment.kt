@@ -109,6 +109,8 @@ class AddProjectFragment : BaseFragment(), DIAware {
     private var items: List<ItemDTOTemp> = ArrayList()
     private var stateRestored: Boolean = false
     private var jobBound: Boolean = false
+    val addProjectArgs: AddProjectFragmentArgs by navArgs()
+
     private val touchCallback: SwipeTouchCallback by lazy {
         object : SwipeTouchCallback() {
             override fun onMove(
@@ -135,12 +137,17 @@ class AddProjectFragment : BaseFragment(), DIAware {
                 uiScope.onCreate()
             }
             whenStarted {
-                initViewModels()
                 lifecycle.addObserver(uiScope)
+                initViewModels()
+                uiUpdate()
                 requireActivity().hideKeyboard()
             }
             whenResumed {
-                uiUpdate()
+                if (!this@AddProjectFragment::job.isInitialized && !addProjectArgs.jobId.isNullOrEmpty()) {
+                    onRestoreInstanceState(addProjectArgs.toBundle())
+                    uiUpdate()
+                    stateRestored = true
+                }
             }
         }
     }
@@ -166,10 +173,9 @@ class AddProjectFragment : BaseFragment(), DIAware {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val args: AddProjectFragmentArgs by navArgs()
         when {
-            !args.jobId.isNullOrBlank() -> {
-                onRestoreInstanceState(args.toBundle())
+            !addProjectArgs.jobId.isNullOrBlank() -> {
+                onRestoreInstanceState(addProjectArgs.toBundle())
             }
             savedInstanceState != null && !stateRestored -> {
                 onRestoreInstanceState(savedInstanceState)
@@ -304,26 +310,24 @@ class AddProjectFragment : BaseFragment(), DIAware {
                         ui.startDateTextView.text = DateUtil.toStringReadable(DateUtil.stringToDate(it))
                         startDate = DateUtil.stringToDate(it)!!
                     }
-
-                    // Bind projectItems here
-                    createViewModel.tempProjectItem.observe(viewLifecycleOwner, {
-                        it.getContentIfNotHandled()?.let {
-                            ui.infoTextView.visibility = View.GONE
-                            ui.lastLin.visibility = View.VISIBLE
-                            ui.totalCostTextView.visibility = View.VISIBLE
-                            if (this@AddProjectFragment::job.isInitialized) {
-                                bindProjectItems()
-                                bindCosting()
-                                itemsBound = true
-                            }
-                        }
-                    })
                 }
             }
         })
+
+        createViewModel.tempProjectItem.observe(viewLifecycleOwner, {
+            it.getContentIfNotHandled()?.let {
+                ui.infoTextView.visibility = View.GONE
+                ui.lastLin.visibility = View.VISIBLE
+                ui.totalCostTextView.visibility = View.VISIBLE
+                if (this@AddProjectFragment::job.isInitialized) {
+                    bindProjectItems()
+                    itemsBound = true
+                }
+            }
+        })
+
         if (this@AddProjectFragment::job.isInitialized && !itemsBound) {
             bindProjectItems()
-            // bindCosting()
         }
     }
 

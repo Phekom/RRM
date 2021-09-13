@@ -27,7 +27,7 @@ class NetworkConnectionInterceptor(
 
         if (!ServiceUtil.isHostAvailable(host = testConnection, port = 443, timeout = FIVE_MINUTES)) {
             throw NoConnectivityException(
-                "Network appears to be down, please try again later. Host: $serviceHost"
+                "Network appears to be down, please try again later. Host: $testConnection"
             )
         }
 
