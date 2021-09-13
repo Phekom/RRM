@@ -9,6 +9,8 @@ package za.co.xisystems.itis_rrm.utils
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import timber.log.Timber
+import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.Socket
@@ -43,7 +45,7 @@ object ServiceUtil {
             socket.close()
             result = true
         } catch (e: Exception) {
-            e.printStackTrace()
+            Timber.e("Could not connect to $host::$port: ${e.message ?: XIErrorHandler.UNKNOWN_ERROR}")
         } finally {
             socket.close()
         }

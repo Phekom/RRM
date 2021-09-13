@@ -24,13 +24,13 @@ class NetworkConnectionInterceptor(
             throw NoInternetException("Please ensure you have an active data connection")
         }
 
-        if (!ServiceUtil.isHostAvailable(host = testConnection, port = 443, timeout = 5000)) {
+        if (!ServiceUtil.isHostAvailable(host = testConnection, port = 443, timeout = 50000)) {
             throw NoConnectivityException(
                 "Network appears to be down, please try again later. Host: $testConnection"
             )
         }
 
-        if (!ServiceUtil.isHostAvailable(host = serviceHost, port = 443, timeout = 5000)) {
+        if (!ServiceUtil.isHostAvailable(host = serviceHost, port = 80, timeout = 50000)) {
             throw ServiceHostUnreachableException(
                 "Service Host for RRM is down, please try again later. Host: $serviceHost"
             )
