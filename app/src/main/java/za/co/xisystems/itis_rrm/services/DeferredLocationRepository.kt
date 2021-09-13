@@ -57,7 +57,11 @@ class DeferredLocationRepository(
 
                 ) {
 
-                    throw LocationException("Captured coordinates (lat: ${locationQuery.latitude}, lng: ${locationQuery.longitude}) are not in Sanral territory.")
+                    throw LocationException(
+                        "Coordinate (lat: ${locationQuery.latitude}, " +
+                            "lng: ${locationQuery.longitude}) " +
+                            "is not in Sanral territory."
+                    )
                 } else {
                     routeSectionPointResponse.apply {
                         val routeSectionPointResult = locationQuery.copy(

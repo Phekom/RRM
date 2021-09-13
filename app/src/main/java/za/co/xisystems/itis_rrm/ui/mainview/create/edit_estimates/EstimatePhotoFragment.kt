@@ -473,7 +473,7 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
                 lineRate = item!!.tenderRate
             )
             createViewModel.setEstimateQuantity(item!!.quantity)
-            createViewModel.setEstimateLineRate(item!!.tenderRate)
+            createViewModel.setEstimateLineRate(item!!.tenderRate * item!!.quantity)
             Coroutines.io {
                 createViewModel.backupProjectItem(item!!)
                 createViewModel.setTempProjectItem(item!!)

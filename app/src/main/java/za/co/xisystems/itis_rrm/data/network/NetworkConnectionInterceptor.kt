@@ -3,6 +3,7 @@ package za.co.xisystems.itis_rrm.data.network
 import android.content.Context
 import okhttp3.Interceptor
 import okhttp3.Response
+import za.co.xisystems.itis_rrm.constants.Constants.FIVE_MINUTES
 import za.co.xisystems.itis_rrm.custom.errors.NoConnectivityException
 import za.co.xisystems.itis_rrm.custom.errors.NoInternetException
 import za.co.xisystems.itis_rrm.custom.errors.ServiceHostUnreachableException
@@ -24,13 +25,13 @@ class NetworkConnectionInterceptor(
             throw NoInternetException("Please ensure you have an active data connection")
         }
 
-        if (!ServiceUtil.isHostAvailable(host = testConnection, port = 443, timeout = 50000)) {
+        if (!ServiceUtil.isHostAvailable(host = testConnection, port = 443, timeout = FIVE_MINUTES)) {
             throw NoConnectivityException(
-                "Network appears to be down, please try again later. Host: $testConnection"
+                "Network appears to be down, please try again later. Host: $serviceHost"
             )
         }
 
-        if (!ServiceUtil.isHostAvailable(host = serviceHost, port = 80, timeout = 50000)) {
+        if (!ServiceUtil.isHostAvailable(host = serviceHost, port = 80, timeout = FIVE_MINUTES)) {
             throw ServiceHostUnreachableException(
                 "Service Host for RRM is down, please try again later. Host: $serviceHost"
             )

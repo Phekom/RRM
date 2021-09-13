@@ -26,6 +26,8 @@ object ServiceUtil {
                 result = when {
                     hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
                     hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> true
+                    hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> true
+                    hasTransport(NetworkCapabilities.TRANSPORT_VPN) -> true
                     else -> false
                 }
             }
@@ -42,10 +44,9 @@ object ServiceUtil {
             val inetAddress: InetAddress = InetAddress.getByName(host)
             val inetSocketAddress = InetSocketAddress(inetAddress, port)
             socket.connect(inetSocketAddress, timeout.toInt())
-            socket.close()
             result = true
         } catch (e: Exception) {
-            Timber.e("Could not connect to $host::$port: ${e.message ?: XIErrorHandler.UNKNOWN_ERROR}")
+            Timber.e("Could not connect to $host:$port: ${e.message ?: XIErrorHandler.UNKNOWN_ERROR}")
         } finally {
             socket.close()
         }
