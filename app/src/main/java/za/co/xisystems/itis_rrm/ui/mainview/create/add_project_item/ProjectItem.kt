@@ -69,7 +69,7 @@ open class ProjectItem(
 
                             val notLocated = ContextCompat.getDrawable(
                                 root.context,
-                                R.drawable.ic_baseline_location_off_24
+                                R.drawable.ic_baseline_wrong_location_24
                             )
                             if (!jobItemEstimate.geoCoded && jobItemEstimate.size() == 2) {
                                 textViewItem.setCompoundDrawablesWithIntrinsicBounds(

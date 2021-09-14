@@ -310,25 +310,25 @@ class AddProjectFragment : BaseFragment(), DIAware {
                         ui.startDateTextView.text = DateUtil.toStringReadable(DateUtil.stringToDate(it))
                         startDate = DateUtil.stringToDate(it)!!
                     }
+
+                    createViewModel.tempProjectItem.distinctUntilChanged()
+                        .observe(viewLifecycleOwner, {
+                            it?.let {
+                                ui.infoTextView.visibility = View.GONE
+                                ui.lastLin.visibility = View.VISIBLE
+                                ui.totalCostTextView.visibility = View.VISIBLE
+                            }
+                        })
+
+                    withContext(Dispatchers.Main.immediate) {
+                        if (this@AddProjectFragment::job.isInitialized) {
+                            bindProjectItems()
+                            bindCosting()
+                        }
+                    }
                 }
             }
         })
-
-        createViewModel.tempProjectItem.observe(viewLifecycleOwner, {
-            it.getContentIfNotHandled()?.let {
-                ui.infoTextView.visibility = View.GONE
-                ui.lastLin.visibility = View.VISIBLE
-                ui.totalCostTextView.visibility = View.VISIBLE
-                if (this@AddProjectFragment::job.isInitialized) {
-                    bindProjectItems()
-                    itemsBound = true
-                }
-            }
-        })
-
-        if (this@AddProjectFragment::job.isInitialized && !itemsBound) {
-            bindProjectItems()
-        }
     }
 
     private fun bindProjectItems() = uiScope.launch(uiScope.coroutineContext) {
@@ -427,26 +427,23 @@ class AddProjectFragment : BaseFragment(), DIAware {
         savedInstanceState.run {
             val jobId = getSerializable(JOB_KEY) as String?
             val projectId = getSerializable(PROJECT_KEY) as String?
-            Coroutines.main {
-                projectId?.let { restoredProjectId ->
-                    projectID = restoredProjectId
-                }
-                jobId?.let { restoredId ->
-                    Coroutines.main {
-                        createViewModel.setJobToEdit(restoredId)
-                        withContext(Dispatchers.Main.immediate) {
-                            uiUpdate()
-                        }
-                    }
+            projectId?.let { restoredProjectId ->
+                projectID = restoredProjectId
+            }
+            jobId?.let { restoredId ->
+                uiScope.launch(uiScope.coroutineContext) {
+                    createViewModel.setJobToEdit(restoredId)
+                    uiUpdate()
                 }
             }
-            stateRestored = true
         }
+        stateRestored = true
     }
 
     private fun initRecyclerView(projecListItems: List<ProjectItem>) {
         groupAdapter = GroupAdapter<GroupieViewHolder<NewJobItemBinding>>().apply {
             addAll(projecListItems)
+            notifyDataSetChanged()
         }
 
         ui.projectRecyclerView.apply {
@@ -712,7 +709,6 @@ class AddProjectFragment : BaseFragment(), DIAware {
         startDateDialog!!.show()
     }
 
-    @Synchronized
     private suspend fun submitJob(
         job: JobDTO
     ) = withContext(uiScope.coroutineContext) {
@@ -721,7 +717,6 @@ class AddProjectFragment : BaseFragment(), DIAware {
         saveRrmJob(job.userId, jobTemp)
     }
 
-    @Synchronized
     private suspend fun saveRrmJob(
         userId: Int,
         job: JobDTO

@@ -28,7 +28,10 @@ object JobUtils {
 
         var quantity = 0.0
         var cost = 0.0
-        job?.jobItemEstimates?.forEach { estimate ->
+        job?.jobItemEstimates?.filter { estimate
+            ->
+            estimate.size() == 2 && estimate.qty != 0.0 && estimate.lineRate > 0
+        }?.forEach { estimate ->
             quantity += estimate.qty
             cost += estimate.lineRate * estimate.qty
         }

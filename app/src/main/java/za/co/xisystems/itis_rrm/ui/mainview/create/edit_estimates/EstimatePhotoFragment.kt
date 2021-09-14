@@ -133,8 +133,10 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
         ActivityResultContracts.TakePicture()
     ) { isSaved ->
         if (isSaved) {
-            imageUri?.let { realUri ->
-                processAndSetImage(realUri)
+            Coroutines.io {
+                imageUri?.let { realUri ->
+                    processAndSetImage(realUri)
+                }
             }
         } else {
             imageUri?.let { failedUri ->
