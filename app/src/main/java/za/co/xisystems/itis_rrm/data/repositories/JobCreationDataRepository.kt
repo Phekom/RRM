@@ -713,4 +713,8 @@ class JobCreationDataRepository(
     suspend fun getJobEstimateIndexByItemAndJobId(itemId: String, jobId: String): JobItemEstimateDTO? = withContext(Dispatchers.IO) {
         return@withContext appDb.getJobItemEstimateDao().getJobEstimateIndexByItemAndJobId(itemId, jobId)
     }
+
+    fun eraseExistingPhoto(photoId: String) {
+        appDb.getJobItemEstimatePhotoDao().deletePhotoById(photoId)
+    }
 }

@@ -38,4 +38,7 @@ interface JobItemEstimatePhotoDao {
 
     @Query("DELETE FROM JOB_ITEM_ESTIMATE_PHOTO")
     fun deleteAll()
+
+    @Query("DELETE FROM JOB_ITEM_ESTIMATE_PHOTO WHERE photoId = :photoId")
+    fun deletePhotoById(photoId: String)
 }

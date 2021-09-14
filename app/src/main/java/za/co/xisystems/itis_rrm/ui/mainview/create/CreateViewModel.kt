@@ -10,6 +10,7 @@ import android.app.Application
 import android.net.Uri
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.*
+import androidx.room.Transaction
 import kotlinx.coroutines.*
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
@@ -554,5 +555,13 @@ class CreateViewModel(
 
     fun setEstimateLineRate(tenderRate: Double) = viewModelScope.launch(mainContext) {
         estimateLineRate.value = tenderRate
+    }
+
+    @Transaction
+    fun eraseExistingPhoto(photoId: String, photoPath: String) = viewModelScope.launch(ioContext) {
+        if (photoUtil.photoExist(photoPath)) {
+            photoUtil.deleteImageFile(photoPath)
+            jobCreationDataRepository.eraseExistingPhoto(photoId)
+        }
     }
 }

@@ -220,13 +220,12 @@ class AddProjectFragment : BaseFragment(), DIAware {
     fun uiUpdate() {
         jobBound = false
         uiScope.launch(uiScope.coroutineContext) {
-            initCurrentJobListener()
-            initValidationListener()
             initCurrentUserObserver()
+            initCurrentJobListener()
         }
     }
 
-    private fun initCurrentUserObserver() {
+    private suspend fun initCurrentUserObserver() = withContext(uiScope.coroutineContext) {
         createViewModel.loggedUser.observe(viewLifecycleOwner, { userId ->
             userId?.let {
 
@@ -235,7 +234,7 @@ class AddProjectFragment : BaseFragment(), DIAware {
         })
     }
 
-    private suspend fun initValidationListener() = withContext(Dispatchers.Main) {
+    private suspend fun initValidationListener() = withContext(uiScope.coroutineContext) {
         deferredLocationViewModel.geoCodingResult.distinctUntilChanged().observeOnce(
             viewLifecycleOwner, { result ->
                 result?.let { outcome ->
@@ -273,7 +272,6 @@ class AddProjectFragment : BaseFragment(), DIAware {
     }
 
     private fun initCurrentJobListener() {
-        var itemsBound = false
         val currentJobQuery = createViewModel.currentJob.distinctUntilChanged()
         currentJobQuery.observe(viewLifecycleOwner, { jobEvent ->
             jobEvent.getContentIfNotHandled()?.let { jobToEdit ->

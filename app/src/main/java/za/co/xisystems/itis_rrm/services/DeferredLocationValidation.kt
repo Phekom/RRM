@@ -66,6 +66,8 @@ class DeferredLocationViewModel(
     }
 
     suspend fun checkLocations(jobId: String) = viewModelScope.launch(mainContext) {
+        geoCodingUpdate = MutableLiveData()
+
         val locationJob = jobCreationDataRepository.getUpdatedJob(jobId)
         this@DeferredLocationViewModel.errorState = false
         var validProjectSectionId: String? = null

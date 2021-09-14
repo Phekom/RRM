@@ -794,12 +794,14 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
 
         changesToPreserve = true
         val isPhotoStart = itemIdPhotoType["type"] == PhotoType.START.name
-        val existingPhoto = itemEst.getJobItemEstimatePhoto(isPhotoStart)
-        val photoId = if (existingPhoto.second != null) {
-            existingPhoto.second.photoId
-        } else {
-            SqlLitUtils.generateUuid()
+
+        val existingPhotoPair = itemEst.getJobItemEstimatePhoto(isPhotoStart)
+        existingPhotoPair.second?.let { existingPhoto ->
+            // Delete the existing photo from storage
+            createViewModel.eraseExistingPhoto(existingPhoto.photoId, existingPhoto.photoPath)
         }
+
+        val photoId = SqlLitUtils.generateUuid()
 
         return JobItemEstimatesPhotoDTO(
             descr = "",
