@@ -16,12 +16,14 @@ import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView.BufferType.NORMAL
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -272,6 +274,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
             }
         }
     }
+
 
     private fun populateHistoricalWorkEstimate(result: XIResult<JobEstimateWorksDTO>) {
         when (result) {
@@ -536,7 +539,6 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
                 ui.moveWorkflowButton.doneProgress("Workflow complete")
                 toggleLongRunning(false)
                 refreshUI()
-                // navToSelf()
             }
         }
     }
@@ -838,7 +840,9 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
     }
 
     private fun popViewOnWorkSubmit() {
-        this.findNavController().navigate(R.id.nav_work)
+        val directions = CaptureWorkFragmentDirections
+            .actionCaptureWorkFragmentToNavWork(itemEstimateJob.jobId)
+        Navigation.findNavController(this.requireView()).navigate(directions)
     }
 
     private suspend fun submitAllOutStandingEstimates(
@@ -954,7 +958,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
         val direction: Int = workflowDirection.value
 
         Coroutines.main {
-            val estimateJob = withContext(Dispatchers.IO) {
+            withContext(Dispatchers.IO) {
                 workViewModel.processWorkflowMove(
                     userDTO.userId,
                     trackRouteId,
@@ -1034,6 +1038,16 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
     override fun onAttach(context: Context) {
         super.onAttach(context)
         (activity as MainActivity).supportActionBar?.title = getString(R.string.capture_work_title)
+        val callback: OnBackPressedCallback = object : OnBackPressedCallback(true) {
+            /**
+             * Callback for handling the [OnBackPressedDispatcher.onBackPressed] event.
+             */
+            override fun handleOnBackPressed() {
+                popViewOnWorkSubmit()
+            }
+        }
+        requireActivity().onBackPressedDispatcher
+            .addCallback(this, callback)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

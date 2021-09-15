@@ -53,40 +53,10 @@ open class ProjectItem(
             textViewItem.text = (itemDesc.itemCode + "  " + itemDesc.descr)
             Coroutines.main {
                 getJobItemEstimate(itemDesc.itemId, job!!.jobId).also { jobItemEstimate ->
-                    if (jobItemEstimate != null) {
-                        createViewModel.estimateComplete(jobItemEstimate).also { complete ->
-                            if (complete) {
-                                val lineRate: Double = jobItemEstimate.lineRate
-                                val tenderRate: Double = itemDesc.tenderRate
-                                val qty: Double = jobItemEstimate.qty
-                                costTextView.text =
-                                    ("$qty  *   R $lineRate = ${JobUtils.formatCost(qty * tenderRate)}")
-                                subTextView.visibility = View.GONE
-                            } else {
-                                costTextView.text = viewBinding.root.context.getString(R.string.incomplete_estimate)
-                                subTextView.visibility = View.VISIBLE
-                            }
-
-                            val notLocated = ContextCompat.getDrawable(
-                                root.context,
-                                R.drawable.ic_baseline_wrong_location_24
-                            )
-                            if (!jobItemEstimate.geoCoded && jobItemEstimate.size() == 2) {
-                                textViewItem.setCompoundDrawablesWithIntrinsicBounds(
-                                    notLocated, null, null, null
-                                )
-                            } else {
-                                textViewItem.setCompoundDrawablesWithIntrinsicBounds(
-                                    null, null, null, null
-                                )
-                            }
-                        }
-
-                        bindItem(viewBinding)
-                    }
+                    processEstimate(jobItemEstimate, viewBinding)
                 }
                 viewBinding.root.setOnClickListener {
-                    sendSelectedItem(itemDesc, it, contractID, job)
+                    sendSelectedItem(itemDesc, contractID, job)
                     clickListener?.invoke(this@ProjectItem)
                 }
 
@@ -100,9 +70,45 @@ open class ProjectItem(
         }
     }
 
+    private suspend fun NewJobItemBinding.processEstimate(
+        jobItemEstimate: JobItemEstimateDTO?,
+        viewBinding: NewJobItemBinding
+    ) {
+        if (jobItemEstimate != null) {
+            createViewModel.estimateComplete(jobItemEstimate).also { complete ->
+                if (complete) {
+                    val lineRate: Double = jobItemEstimate.lineRate
+                    val tenderRate: Double = itemDesc.tenderRate
+                    val qty: Double = jobItemEstimate.qty
+                    costTextView.text =
+                        ("$qty  *   R $lineRate = ${JobUtils.formatCost(qty * tenderRate)}")
+                    subTextView.visibility = View.GONE
+                } else {
+                    costTextView.text = viewBinding.root.context.getString(R.string.incomplete_estimate)
+                    subTextView.visibility = View.VISIBLE
+                }
+
+                val notLocated = ContextCompat.getDrawable(
+                    root.context,
+                    R.drawable.ic_baseline_wrong_location_24
+                )
+                if (!jobItemEstimate.geoCoded && jobItemEstimate.size() == 2) {
+                    textViewItem.setCompoundDrawablesWithIntrinsicBounds(
+                        notLocated, null, null, null
+                    )
+                } else {
+                    textViewItem.setCompoundDrawablesWithIntrinsicBounds(
+                        null, null, null, null
+                    )
+                }
+            }
+
+            bindItem(viewBinding)
+        }
+    }
+
     private fun sendSelectedItem(
         item: ItemDTOTemp,
-        view: View,
         contractID: String?,
         job: JobDTO?
     ) {
@@ -129,17 +135,18 @@ open class ProjectItem(
                     locationErrorMessage = null
                 )
 
-        Navigation.findNavController(view)
+        Navigation.findNavController(fragment.requireView())
             .navigate(navDirections)
     }
 
     private fun bindItem(viewBinding: NewJobItemBinding) {
         viewBinding.textViewItem.setOnClickListener {
-            sendSelectedItem(itemDesc, it, contractID, job)
+            sendSelectedItem(itemDesc, contractID, job)
         }
     }
 
-    private suspend fun getJobItemEstimate(itemId: String, jobId: String): JobItemEstimateDTO? = withContext(Dispatchers.Main) {
+    private suspend fun getJobItemEstimate(itemId: String, jobId: String):
+        JobItemEstimateDTO? = withContext(Dispatchers.Main) {
         val updatedEstimate = createViewModel.getJobEstimateIndexByItemAndJobId(itemId, jobId)
         return@withContext if (updatedEstimate != null) {
             job?.insertOrUpdateJobItemEstimate(updatedEstimate)

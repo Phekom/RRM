@@ -298,20 +298,25 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         // Handle navigation view item clicks here.
+        val home = HomeFragmentDirections.actionGlobalNavHome()
 
         when (item.itemId) {
             R.id.nav_home -> {
-                navController.navigate(R.id.nav_home)
+                navController.navigate(home)
                 toggle?.syncState()
                 initializeCountDrawer()
             }
             R.id.nav_create -> {
-                navController.navigate(R.id.nav_create)
+                val createDirections = HomeFragmentDirections.actionNavHomeToNavCreate()
+                navController.navigate(home)
+                navController.navigate(createDirections)
                 toggle?.syncState()
             }
 
             R.id.nav_unSubmitted -> {
-                navController.navigate(R.id.nav_unSubmitted)
+                val unsubDirections = HomeFragmentDirections.actionNavHomeToNavUnSubmitted()
+                navController.navigate(home)
+                navController.navigate(unsubDirections)
                 toggle?.syncState()
             }
             R.id.nav_correction -> {
@@ -319,22 +324,27 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                 toggle?.syncState()
             }
             R.id.nav_work -> {
-                navController.navigate(R.id.nav_work)
+                val workDirections = HomeFragmentDirections.actionNavHomeToNavWork(jobId = null)
+                navController.navigate(home)
+                navController.navigate(workDirections)
                 toggle?.syncState()
             }
             R.id.nav_estMeasure -> {
-                navController.navigate(R.id.nav_estMeasure)
+                val estMeasureDirections = HomeFragmentDirections.actionNavHomeToNavEstMeasure()
+                navController.navigate(home)
+                navController.navigate(estMeasureDirections)
                 toggle?.syncState()
             }
             R.id.nav_approveJobs -> {
-                val home = HomeFragmentDirections.actionGlobalNavHome()
                 val approveDirections = HomeFragmentDirections.actionNavHomeToNavApproveJobs()
                 navController.navigate(home)
                 navController.navigate(approveDirections)
                 toggle?.syncState()
             }
             R.id.nav_approveMeasure -> {
-                navController.navigate(R.id.nav_approveMeasure)
+                val approveMeasureDirections = HomeFragmentDirections.actionNavHomeToNavApproveMeasure()
+                navController.navigate(home)
+                navController.navigate(approveMeasureDirections)
                 toggle?.syncState()
             }
         }

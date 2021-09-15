@@ -21,7 +21,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenCreated
-import androidx.lifecycle.whenResumed
 import androidx.lifecycle.whenStarted
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.navArgs
@@ -141,13 +140,6 @@ class AddProjectFragment : BaseFragment(), DIAware {
                 initViewModels()
                 uiUpdate()
                 requireActivity().hideKeyboard()
-            }
-            whenResumed {
-                if (!stateRestored && !addProjectArgs.jobId.isNullOrEmpty()) {
-                    onRestoreInstanceState(addProjectArgs.toBundle())
-                    uiUpdate()
-                    stateRestored = true
-                }
             }
         }
     }
@@ -308,13 +300,7 @@ class AddProjectFragment : BaseFragment(), DIAware {
                             ui.totalCostTextView.visibility = View.VISIBLE
                         }
                     })
-
-                    withContext(Dispatchers.Main.immediate) {
-                        if (this@AddProjectFragment::job.isInitialized) {
-                            bindProjectItems()
-                            bindCosting()
-                        }
-                    }
+                    bindProjectItems()
                 }
             }
         })
@@ -343,6 +329,7 @@ class AddProjectFragment : BaseFragment(), DIAware {
             items.isNotEmpty() -> {
                 initRecyclerView(items.toProjecListItems())
                 calculateTotalCost()
+                bindCosting()
             }
             else -> {
                 clearProjectItems()
@@ -357,15 +344,13 @@ class AddProjectFragment : BaseFragment(), DIAware {
         ui.totalCostTextView.visibility = View.GONE
     }
 
-    private fun bindCosting() {
-        uiScope.launch(uiScope.coroutineContext) {
-            createViewModel.estimateLineRate.observe(
-                viewLifecycleOwner,
-                {
-                    calculateTotalCost()
-                }
-            )
-        }
+    private fun bindCosting() = uiScope.launch(uiScope.coroutineContext) {
+        createViewModel.estimateLineRate.observe(
+            viewLifecycleOwner,
+            {
+                calculateTotalCost()
+            }
+        )
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -770,7 +755,7 @@ class AddProjectFragment : BaseFragment(), DIAware {
     }
 
     private fun backupJobInProgress(jobDTO: JobDTO?) {
-        Coroutines.main {
+        Coroutines.io {
             createViewModel.backupJob(jobDTO!!)
         }
     }

@@ -25,6 +25,42 @@
             app:popUpTo="@id/nav_home"
             app:popEnterAnim="@anim/animate_fade_enter"
             app:popExitAnim="@anim/animate_fade_exit" />
+        <action
+            android:id="@+id/action_nav_home_to_nav_create"
+            app:destination="@id/nav_create"
+            app:enterAnim="@anim/animate_slide_left_enter"
+            app:exitAnim="@anim/animate_slide_left_exit"
+            app:popUpTo="@id/nav_home"
+            app:popEnterAnim="@anim/animate_fade_enter"
+            app:popExitAnim="@anim/animate_fade_exit" />
+        <action
+            android:id="@+id/action_nav_home_to_nav_work"
+            app:destination="@id/nav_work"
+            app:enterAnim="@anim/animate_split_enter"
+            app:exitAnim="@anim/animate_split_exit"
+            app:popEnterAnim="@anim/animate_fade_enter"
+            app:popExitAnim="@anim/animate_fade_exit" />
+        <action
+            android:id="@+id/action_nav_home_to_nav_approveMeasure"
+            app:destination="@id/nav_approveMeasure"
+            app:enterAnim="@anim/animate_slide_in_left"
+            app:exitAnim="@anim/animate_slide_out_right"
+            app:popEnterAnim="@anim/animate_fade_enter"
+            app:popExitAnim="@anim/animate_fade_exit" />
+        <action
+            android:id="@+id/action_nav_home_to_nav_unSubmitted"
+            app:destination="@id/nav_unSubmitted"
+            app:enterAnim="@anim/animate_diagonal_right_enter"
+            app:exitAnim="@anim/animate_diagonal_right_exit"
+            app:popEnterAnim="@anim/animate_fade_enter"
+            app:popExitAnim="@anim/animate_fade_exit" />
+        <action
+            android:id="@+id/action_nav_home_to_nav_estMeasure"
+            app:destination="@id/nav_estMeasure"
+            app:enterAnim="@anim/animate_slide_in_left"
+            app:exitAnim="@anim/animate_slide_out_right"
+            app:popEnterAnim="@anim/animate_fade_enter"
+            app:popExitAnim="@anim/animate_fade_exit" />
     </fragment>
 
     <fragment
@@ -168,7 +204,10 @@
         <action
             android:id="@+id/action_estimatePhotoFragment_to_addProjectFragment2"
             app:destination="@id/addProjectFragment"
-            app:popUpTo="@id/addProjectFragment" />
+            app:enterAnim="@anim/animate_slide_in_left"
+            app:exitAnim="@anim/animate_slide_out_right"
+            app:popEnterAnim="@anim/animate_fade_enter"
+            app:popExitAnim="@anim/animate_fade_exit" />
     </fragment>
     <fragment
         android:id="@+id/addProjectFragment"
@@ -284,7 +323,8 @@
             app:destination="@id/captureWorkFragment"
             app:popUpTo="@id/nav_work"
             app:popEnterAnim="@anim/animate_fade_enter"
-            app:popExitAnim="@anim/animate_fade_exit" />
+            app:popExitAnim="@anim/animate_fade_exit"
+            app:popUpToInclusive="false" />
     </fragment>
     <fragment
         android:id="@+id/captureItemMeasurePhotoFragment"

@@ -12,8 +12,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.viewbinding.GroupieViewHolder
@@ -123,8 +125,8 @@ class JobInfoFragment : BaseFragment(), DIAware {
         when (result.isLoading) {
             true -> {
                 activity?.hideKeyboard()
+                progressButton.initProgress(viewLifecycleOwner)
                 progressButton.startProgress()
-                toggleLongRunning(true)
             }
             else -> progressButton.doneProgress()
         }
@@ -139,6 +141,19 @@ class JobInfoFragment : BaseFragment(), DIAware {
     override fun onAttach(context: Context) {
         super.onAttach(context)
         (activity as MainActivity).supportActionBar?.title = getString(string.jobinfo_item_title)
+        val callback: OnBackPressedCallback = object : OnBackPressedCallback(true) {
+            /**
+             * Callback for handling the [OnBackPressedDispatcher.onBackPressed] event.
+             */
+            override fun handleOnBackPressed() {
+                val directions =
+                    JobInfoFragmentDirections.actionJobInfoFragmentToNavApproveJbs()
+                Navigation.findNavController(this@JobInfoFragment.requireView())
+                    .navigate(directions)
+            }
+        }
+        requireActivity().onBackPressedDispatcher
+            .addCallback(this, callback)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

@@ -24,6 +24,7 @@ import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -94,24 +95,16 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
     private var isEstimateDone: Boolean = false
     private var disableGlide: Boolean = false
     private var locationWarning: Boolean = false
-
     private var _ui: FragmentPhotoEstimateBinding? = null
     private val ui get() = _ui!!
-
     private var photoType: PhotoType = PhotoType.START
-
     private var itemIdPhotoType: HashMap<String, String> = HashMap()
-
     private var filenamePath: HashMap<String, String> = HashMap()
-
     private var item: ItemDTOTemp? = null
-
     private var newJob: JobDTO? = null
-
     internal var estimate: JobItemEstimateDTO? = null
     var direction: String? = null
     private var newJobItemEstimate: JobItemEstimateDTO? = null
-
     var quantity: Double = 1.0
     private var estimateId: String? = null
     private lateinit var newJobItemEstimatesPhotosList: ArrayList<JobItemEstimatesPhotoDTO>
@@ -177,6 +170,10 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
         }
     }
 
+    companion object {
+        private const val REQUEST_STORAGE_PERMISSION = 505
+    }
+
     private fun pullData() = uiScope.launch(uiScope.coroutineContext) {
 
         withContext(uiScope.coroutineContext) {
@@ -222,10 +219,6 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
                     }
                 })
         }
-    }
-
-    companion object {
-        private const val REQUEST_STORAGE_PERMISSION = 505
     }
 
     private fun readNavArgs() = uiScope.launch(uiScope.coroutineContext) {
@@ -315,6 +308,16 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
         super.onAttach(context)
         (activity as MainActivity).supportActionBar?.title = getString(R.string.edit_estimate)
         locationWarning = false
+        val callback: OnBackPressedCallback = object : OnBackPressedCallback(true) {
+            /**
+             * Callback for handling the [OnBackPressedDispatcher.onBackPressed] event.
+             */
+            override fun handleOnBackPressed() {
+                navToAddProject(this@EstimatePhotoFragment.requireView())
+            }
+        }
+        requireActivity().onBackPressedDispatcher
+            .addCallback(this@EstimatePhotoFragment, callback)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
