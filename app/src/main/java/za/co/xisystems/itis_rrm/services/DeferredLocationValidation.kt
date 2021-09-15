@@ -5,7 +5,6 @@ import android.os.Parcel
 import android.os.Parcelable
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Transformations
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavDirections
 import kotlinx.coroutines.Dispatchers
@@ -43,8 +42,7 @@ class DeferredLocationViewModel(
     private val mainContext = Job(superJob) + Dispatchers.Main
     private var _opsProgress: MutableLiveData<Boolean> = MutableLiveData()
 
-    private var geoCodingUpdate: MutableLiveData<XIEvent<XIResult<String>>> = MutableLiveData()
-    var geoCodingResult: MutableLiveData<XIResult<String>?> = MutableLiveData()
+    var geoCodingResult: MutableLiveData<XIEvent<XIResult<String>>> = MutableLiveData()
     private var errorState: Boolean = false
     val errorMessage: MutableLiveData<ColorToast> = MutableLiveData()
     val errorNavigation: MutableLiveData<NavDirections> = MutableLiveData()
@@ -59,14 +57,11 @@ class DeferredLocationViewModel(
     }
 
     init {
-        geoCodingUpdate = MutableLiveData()
-        geoCodingResult = Transformations.map(geoCodingUpdate) { input ->
-            input.getContentIfNotHandled()
-        } as MutableLiveData<XIResult<String>?>
+        geoCodingResult = MutableLiveData()
     }
 
     suspend fun checkLocations(jobId: String) = viewModelScope.launch(mainContext) {
-        // geoCodingUpdate = MutableLiveData()
+        // geoCodingResult = MutableLiveData()
 
         val locationJob = jobCreationDataRepository.getUpdatedJob(jobId)
         this@DeferredLocationViewModel.errorState = false
@@ -138,7 +133,7 @@ class DeferredLocationViewModel(
             } catch (e: Exception) {
                 val message = "Could not save updated estimate: ${e.message ?: XIErrorHandler.UNKNOWN_ERROR}"
                 Timber.e(e, message)
-                geoCodingUpdate.value = XIEvent(XIResult.Error(e, message))
+                geoCodingResult.value = XIEvent(XIResult.Error(e, message))
             }
         }
         // jobItemEstimates processed
@@ -148,7 +143,7 @@ class DeferredLocationViewModel(
                 if (updatedJobId.isNullOrBlank()) {
                     failLocationValidation("Failed to create job section")
                 } else {
-                    geoCodingUpdate.value = XIEvent(XIResult.Success(updatedJobId))
+                    geoCodingResult.value = XIEvent(XIResult.Success(updatedJobId))
                 }
             } else {
                 failLocationValidation(
@@ -159,7 +154,7 @@ class DeferredLocationViewModel(
         } catch (e: Exception) {
             val message = "Failed to save geocoded job: ${e.message ?: XIErrorHandler.UNKNOWN_ERROR}"
             Timber.e(e, message)
-            geoCodingUpdate.value = XIEvent(XIResult.Error(e, message))
+            geoCodingResult.value = XIEvent(XIResult.Error(e, message))
         }
     }
 
@@ -173,11 +168,11 @@ class DeferredLocationViewModel(
 
     private fun pushNonLocationException(routeSectionResponse: XIResult.Error) {
         Timber.e(routeSectionResponse.exception, routeSectionResponse.message)
-        geoCodingUpdate.value = XIEvent(routeSectionResponse)
+        geoCodingResult.value = XIEvent(routeSectionResponse)
     }
 
     private fun failLocationValidation(message: String) {
-        geoCodingUpdate.value =
+        geoCodingResult.value =
             XIEvent(
                 XIResult.Error(
                     LocationException(
@@ -201,7 +196,7 @@ class DeferredLocationViewModel(
         } catch (e: Exception) {
             Timber.e(e, "Could not save local changes")
             val localDataException = LocalDataException(e.message ?: XIErrorHandler.UNKNOWN_ERROR)
-            geoCodingUpdate.value =
+            geoCodingResult.value =
                 XIEvent(
                     XIResult.Error(
                         exception = localDataException,
@@ -346,6 +341,10 @@ class DeferredLocationViewModel(
         }
     }
 
+    fun resetGeoCodingResult() {
+        geoCodingResult = MutableLiveData()
+    }
+
     private fun handleResult(locationResult: XIResult<JobDTO>): String? {
         var result: String? = null
 
@@ -357,7 +356,7 @@ class DeferredLocationViewModel(
                 }
             }
             is XIResult.Error -> {
-                geoCodingUpdate.value = XIEvent(locationResult)
+                geoCodingResult.value = XIEvent(locationResult)
             }
             else -> {
                 Timber.e("^*^ - 3rd Outcome")

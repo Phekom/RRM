@@ -216,10 +216,20 @@ class AddProjectFragment : BaseFragment(), DIAware {
         })
     }
 
+    private fun resetValidationListener() {
+        deferredLocationViewModel.geoCodingResult.removeObservers(viewLifecycleOwner)
+        deferredLocationViewModel.resetGeoCodingResult()
+        createViewModel.jobForValidation.removeObservers(viewLifecycleOwner)
+        createViewModel.jobForValidation.removeObservers(viewLifecycleOwner)
+        Coroutines.main {
+            initValidationListener()
+        }
+    }
+
     private suspend fun initValidationListener() = withContext(Dispatchers.Main) {
         deferredLocationViewModel.geoCodingResult.observeOnce(
             viewLifecycleOwner, { result ->
-                result?.let { outcome ->
+                result.getContentIfNotHandled()?.let { outcome ->
                     uiScope.launch(uiScope.coroutineContext) {
                         processLocationResult(outcome)
                     }
@@ -475,7 +485,7 @@ class AddProjectFragment : BaseFragment(), DIAware {
                 R.id.submitButton -> {
                     Coroutines.main {
                         if (this@AddProjectFragment.requireContext().isConnected) {
-                            initValidationListener()
+                            resetValidationListener()
                             validateJob()
                         } else {
                             displayConnectionWarning()
@@ -711,15 +721,19 @@ class AddProjectFragment : BaseFragment(), DIAware {
         withContext(Dispatchers.Main.immediate) {
             toggleLongRunning(false)
             if (submit.isNotBlank()) {
-                this@AddProjectFragment.extensionToast(
-                    message = submit,
-                    style = ERROR
-                )
+                withContext(Dispatchers.Main.immediate) {
+                    this@AddProjectFragment.extensionToast(
+                        message = submit,
+                        style = ERROR
+                    )
+                }
             } else {
-                this@AddProjectFragment.extensionToast(
-                    message = getString(R.string.job_submitted),
-                    style = ToastStyle.SUCCESS
-                )
+                withContext(Dispatchers.Main.immediate) {
+                    this@AddProjectFragment.extensionToast(
+                        message = getString(R.string.job_submitted),
+                        style = ToastStyle.SUCCESS
+                    )
+                }
                 popViewOnJobSubmit()
             }
         }

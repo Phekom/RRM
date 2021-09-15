@@ -233,25 +233,17 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
     private fun pullData() {
         uiScope.launch(uiScope.coroutineContext) {
 
-            withContext(uiScope.coroutineContext) {
                 val user = workViewModel.user.await()
                 user.observe(viewLifecycleOwner, { userDTO ->
                     useR = userDTO
                 })
-            }
 
-            withContext(uiScope.coroutineContext) {
                 workViewModel.workItemJob.observe(viewLifecycleOwner, { estimateJob ->
                     estimateJob?.let {
                         itemEstimateJob = it
-                        if (this@CaptureWorkFragment::itemEstimate.isInitialized) {
-                            getWorkItems(itemEstimate, itemEstimateJob)
-                        }
                     }
                 })
-            }
 
-            withContext(uiScope.coroutineContext) {
                 workViewModel.workItem.observe(viewLifecycleOwner, { estimate ->
                     estimate?.let {
                         itemEstimate = it
@@ -260,15 +252,12 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
                         }
                     }
                 })
-            }
 
-            withContext(uiScope.coroutineContext) {
                 workViewModel.historicalWorks.observe(viewLifecycleOwner, {
                     it?.let { populateHistoricalWorkEstimate(it) }
                 })
             }
         }
-    }
 
     private fun onRestoreInstanceState(inState: Bundle) {
         inState.run {
