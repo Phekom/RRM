@@ -60,7 +60,7 @@ captures/
 .cxx/
 
 # Google Services (e.g. APIs or Firebase)
-# google-services.json
+# wrong.google-services.json.old
 
 # Freeline
 freeline.py
@@ -144,7 +144,7 @@ hs_err_pid*
 # External native build folder generated in Android Studio 2.2 and later
 
 # Google Services (e.g. APIs or Firebase)
-# google-services.json
+# wrong.google-services.json.old
 
 # Freeline
 

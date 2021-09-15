@@ -12,7 +12,6 @@ plugins {
     id "androidx.navigation.safeargs.kotlin"
     id "deploygate"
     id "eu.davidea.grabver"
-    id 'com.google.gms.google-services'
 }
 
 versioning {
