@@ -66,7 +66,7 @@ class DeferredLocationViewModel(
     }
 
     suspend fun checkLocations(jobId: String) = viewModelScope.launch(mainContext) {
-        geoCodingUpdate = MutableLiveData()
+        // geoCodingUpdate = MutableLiveData()
 
         val locationJob = jobCreationDataRepository.getUpdatedJob(jobId)
         this@DeferredLocationViewModel.errorState = false
@@ -148,12 +148,7 @@ class DeferredLocationViewModel(
                 if (updatedJobId.isNullOrBlank()) {
                     failLocationValidation("Failed to create job section")
                 } else {
-                    val checkedJob = jobCreationDataRepository.getUpdatedJob(updatedJobId)
-                    if (checkedJob.sectionId.isNullOrBlank()) {
-                        failLocationValidation("Failed to retrieve job section")
-                    } else {
-                        geoCodingUpdate.value = XIEvent(XIResult.Success(checkedJob.jobId))
-                    }
+                    geoCodingUpdate.value = XIEvent(XIResult.Success(updatedJobId))
                 }
             } else {
                 failLocationValidation(
@@ -475,7 +470,7 @@ data class LocationValidation(
     }
 
     private fun setRouteMarker(): LocationValidation {
-        val routeMarker = "${this.route} ${this.section} ${this.direction} at ${pointLocation?.round(3)} km"
+        val routeMarker = "${this.route} ${this.section} ${this.direction}" // at ${pointLocation?.round(3)} km"
         return this.copy(routeMarker = routeMarker)
     }
 
