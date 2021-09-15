@@ -615,7 +615,6 @@ class OfflineDataRepository(
                             setContractVoId(DataConversion.toBigEndian(contractVoId))
                         }
                         setTrackRouteId(DataConversion.toBigEndian(trackRouteId))
-                        sectionId = DataConversion.toBigEndian(sectionId)
                     }
                     jobDTO.perfitemGroupId = DataConversion.toBigEndian(jobDTO.perfitemGroupId)
                     jobDTO.projectVoId = DataConversion.toBigEndian(jobDTO.projectVoId)

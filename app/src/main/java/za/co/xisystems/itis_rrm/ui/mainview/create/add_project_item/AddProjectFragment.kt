@@ -59,7 +59,6 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentAddProjectItemsBinding
 import za.co.xisystems.itis_rrm.databinding.NewJobItemBinding
 import za.co.xisystems.itis_rrm.extensions.isConnected
-import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.services.DeferredLocationViewModel
 import za.co.xisystems.itis_rrm.services.DeferredLocationViewModelFactory
 import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
@@ -143,7 +142,7 @@ class AddProjectFragment : BaseFragment(), DIAware {
                 requireActivity().hideKeyboard()
             }
             whenResumed {
-                if (!this@AddProjectFragment::job.isInitialized && !addProjectArgs.jobId.isNullOrEmpty()) {
+                if (!stateRestored && !addProjectArgs.jobId.isNullOrEmpty()) {
                     onRestoreInstanceState(addProjectArgs.toBundle())
                     uiUpdate()
                     stateRestored = true
@@ -198,30 +197,12 @@ class AddProjectFragment : BaseFragment(), DIAware {
         setmyClickListener()
     }
 
-    /**
-     * Called when the fragment's activity has been created and this
-     * fragment's view hierarchy instantiated.  It can be used to do final
-     * initialization once these pieces are in place, such as retrieving
-     * views or restoring state.  It is also useful for fragments that use
-     * [.setRetainInstance] to retain their instance,
-     * as this callback tells the fragment when it is fully associated with
-     * the new activity instance.  This is called after [.onCreateView]
-     * and before [.onViewStateRestored].
-     *
-     * @param savedInstanceState If the fragment is being re-created from
-     * a previous saved state, this is the state.
-     *
-     */
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        uiUpdate()
-    }
-
     fun uiUpdate() {
         jobBound = false
         uiScope.launch(uiScope.coroutineContext) {
             initCurrentUserObserver()
             initCurrentJobListener()
+            initValidationListener()
         }
     }
 
@@ -234,8 +215,9 @@ class AddProjectFragment : BaseFragment(), DIAware {
         })
     }
 
-    private suspend fun initValidationListener() = withContext(uiScope.coroutineContext) {
-        deferredLocationViewModel.geoCodingResult.distinctUntilChanged().observeOnce(
+    private fun initValidationListener() = uiScope.launch(uiScope.coroutineContext) {
+
+        deferredLocationViewModel.geoCodingResult.distinctUntilChanged().observe(
             viewLifecycleOwner, { result ->
                 result?.let { outcome ->
                     uiScope.launch(uiScope.coroutineContext) {
@@ -244,7 +226,7 @@ class AddProjectFragment : BaseFragment(), DIAware {
                 }
             })
 
-        createViewModel.jobForValidation.distinctUntilChanged().observeOnce(
+        createViewModel.jobForValidation.distinctUntilChanged().observe(
             viewLifecycleOwner, { job ->
                 job.getContentIfNotHandled()?.let { realJob ->
                     if (!realJob.sectionId.isNullOrBlank() && JobUtils.isGeoCoded(realJob)) {
@@ -259,7 +241,7 @@ class AddProjectFragment : BaseFragment(), DIAware {
                 }
             })
 
-        createViewModel.jobForSubmission.distinctUntilChanged().observeOnce(
+        createViewModel.jobForSubmission.distinctUntilChanged().observe(
             viewLifecycleOwner, { unsubmittedEvent ->
                 unsubmittedEvent.getContentIfNotHandled()?.let { submissionJob ->
                     uiScope.launch(uiScope.coroutineContext) {
@@ -269,6 +251,13 @@ class AddProjectFragment : BaseFragment(), DIAware {
                 }
             }
         )
+    }
+
+    private fun resetValidationListeners() {
+        deferredLocationViewModel.geoCodingResult.removeObservers(viewLifecycleOwner)
+        createViewModel.jobForValidation.removeObservers(viewLifecycleOwner)
+        createViewModel.jobForSubmission.removeObservers(viewLifecycleOwner)
+        initValidationListener()
     }
 
     private fun initCurrentJobListener() {
@@ -550,7 +539,7 @@ class AddProjectFragment : BaseFragment(), DIAware {
         }
     }
 
-    private suspend fun processLocationResult(result: XIResult<String>) = withContext(Dispatchers.Main) {
+    private suspend fun processLocationResult(result: XIResult<String>) = withContext(uiScope.coroutineContext) {
         when (result) {
             is XIResult.Success -> {
                 handleGeoSuccess(result)
@@ -564,7 +553,7 @@ class AddProjectFragment : BaseFragment(), DIAware {
 
     private suspend fun AddProjectFragment.handleGeoError(
         result: XIResult.Error
-    ) = withContext(Dispatchers.Main) {
+    ) = withContext(uiScope.coroutineContext) {
         this@AddProjectFragment.extensionToast(
             title = "Location Validation",
             message = result.exception.message.toString(),
@@ -587,7 +576,7 @@ class AddProjectFragment : BaseFragment(), DIAware {
         onGeoLocationFailed()
     }
 
-    private suspend fun validateLocations(job: JobDTO) = withContext(Dispatchers.Main) {
+    private suspend fun validateLocations(job: JobDTO) = withContext(uiScope.coroutineContext) {
         createViewModel.backupJob(job)
         toggleLongRunning(true)
         ui.submitButton.initProgress(viewLifecycleOwner)
