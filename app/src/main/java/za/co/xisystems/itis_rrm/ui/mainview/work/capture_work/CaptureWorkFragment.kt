@@ -24,7 +24,6 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
-import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
@@ -275,7 +274,6 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
         }
     }
 
-
     private fun populateHistoricalWorkEstimate(result: XIResult<JobEstimateWorksDTO>) {
         when (result) {
             is XIResult.Success -> {
@@ -313,18 +311,6 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
         ui.imageCollectionView.scaleForSize(photoPairs.size)
         ui.imageCollectionView.addZoomedImages(photoPairs, requireActivity())
         keyListener = ui.commentsEditText.keyListener
-        ui.commentsEditText.keyListener = null
-        ui.commentsEditText.setText(getString(R.string.comment_placeholder), NORMAL)
-        ui.takePhotoButton.isClickable = false
-        ui.takePhotoButton.background =
-            ContextCompat.getDrawable(requireContext(), R.drawable.round_corner_gray)
-        ui.moveWorkflowButton.isClickable = false
-        ui.moveWorkflowButton.background =
-            ContextCompat.getDrawable(requireContext(), R.drawable.round_corner_gray)
-    }
-
-    private fun disableEdits() {
-        var keyListener = ui.commentsEditText.keyListener
         ui.commentsEditText.keyListener = null
         ui.commentsEditText.setText(getString(R.string.comment_placeholder), NORMAL)
         ui.takePhotoButton.isClickable = false
@@ -552,14 +538,6 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
         }
     }
 
-    private fun navToSelf() {
-        val navDirections = CaptureWorkFragmentDirections.actionCaptureWorkFragmentSelf(
-            itemEstimateJob.jobId,
-            itemEstimate.estimateId
-        )
-        this.findNavController().navigate(navDirections)
-    }
-
     private fun retryWorkSubmission() {
         IndefiniteSnackbar.hide()
         val backupWorkSubmission = workViewModel.backupWorkSubmission
@@ -576,7 +554,9 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
      * @param works JobEstimateWorksDTO
      * @return JobEstimateWorksDTO
      */
-    private suspend fun setJobWorksLittleEndianGuids(works: JobEstimateWorksDTO): JobEstimateWorksDTO = withContext(Dispatchers.IO) {
+    private suspend fun setJobWorksLittleEndianGuids(
+        works: JobEstimateWorksDTO
+    ): JobEstimateWorksDTO = withContext(Dispatchers.IO) {
 
         works.setWorksId(DataConversion.toLittleEndian(works.worksId))
         works.setEstimateId(DataConversion.toLittleEndian(works.estimateId))
@@ -840,9 +820,9 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
     }
 
     private fun popViewOnWorkSubmit() {
-        val directions = CaptureWorkFragmentDirections
+        CaptureWorkFragmentDirections
             .actionCaptureWorkFragmentToNavWork(itemEstimateJob.jobId)
-        Navigation.findNavController(this.requireView()).navigate(directions)
+        Navigation.findNavController(this.requireView()).navigate(R.id.nav_work)
     }
 
     private suspend fun submitAllOutStandingEstimates(
