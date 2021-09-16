@@ -8,15 +8,17 @@ package za.co.xisystems.itis_rrm.forge
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.os.Environment
+import androidx.annotation.WorkerThread
 import androidx.security.crypto.EncryptedFile
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
+import com.password4j.SecureString
+import kotlinx.coroutines.asExecutor
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
-import za.co.xisystems.itis_rrm.utils.DefaultDispatcherProvider
-import za.co.xisystems.itis_rrm.utils.DispatcherProvider
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
@@ -26,17 +28,55 @@ import java.io.IOException
  * Read and write encrypted files
  */
 
-class Scribe(private val dispatchers: DispatcherProvider = DefaultDispatcherProvider()) {
+class Scribe private constructor(
+    private val dispatchers: DispatcherProvider = DefaultDispatcherProvider(),
+    sageInstance: Sage,
+    context: Context,
+) {
 
-    private lateinit var securePrefs: SharedPreferences
-    private var _open = false
-    val openForBusiness get() = _open
+    lateinit var securePrefs: SharedPreferences
+    private var armouryScope = ArmouryScope()
+    private lateinit var masterKey: MasterKey
+    var mOperational: Boolean = this::securePrefs.isInitialized
+
+    val operational get() = mOperational
+
+    init {
+        armouryScope.onCreate()
+        armouryScope.launch {
+            initPreferences(context = context, masterKey = sageInstance.masterKeyAlias).also { cryptoPrefs ->
+                this@Scribe.securePrefs = cryptoPrefs
+            }
+            while (!this@Scribe::securePrefs.isInitialized) {
+                delay(500)
+            }
+            this
+        }
+    }
 
     companion object {
-        val DIRECTORY: String = Environment.DIRECTORY_PICTURES
         const val PASS_KEY = "za.co.xisystems.itis_rmm.forge.Scribe.Passphrase"
-        const val TIMESTAMP_KEY = "za.co.xisystems.itis_rmm.forge.Scribe.Timestamp"
+        const val SESSION_KEY = "za.co.xisystems.itis_rrm.forge.Scribe.SessionKey"
+        const val USER_KEY = "za.co.xisystems.itis_rrm.forge.Scribe.UserKey"
         const val NOT_SET = "NoPassphraseSet"
+        const val NOT_INITIALIZED: String = "NoInitialization"
+        const val PREFS_FILE = "specialstylesandcolours"
+        fun getInstance(
+            context: Context,
+            sageInstance: Sage,
+            prefsFile: String = PREFS_FILE
+        ): Scribe {
+            val instance = Scribe(context = context, sageInstance = sageInstance)
+            instance.securePrefs = instance.createPreferences(
+                context = context,
+                masterKey = sageInstance.masterKeyAlias,
+                prefsFile = prefsFile
+            ).also { securePrefs ->
+                val passphrase = securePrefs.getString(PASS_KEY, "NOT_SET")
+            }
+
+            return instance
+        }
     }
 
     /**
@@ -46,22 +86,50 @@ class Scribe(private val dispatchers: DispatcherProvider = DefaultDispatcherProv
      * @param prefsFile String
      * @return Unit
      */
-    fun initPreferences(context: Context, masterKey: MasterKey, prefsFile: String) {
-        securePrefs = EncryptedSharedPreferences.create(
-            context,
+    suspend fun initPreferences(
+        context: Context,
+        masterKey: MasterKey,
+        prefsFile: String = "specialstylesandcolours"
+    ): SharedPreferences = withContext(dispatchers.io()) {
+        return@withContext createPreferences(context, prefsFile, masterKey)
+    }
+
+    suspend fun latePreferences(
+        context: Context,
+        masterKey: MasterKey,
+        prefsFile: String = PREFS_FILE
+    ): Scribe = withContext(dispatchers.io()) {
+        this@Scribe.securePrefs = initPreferences(context, masterKey, prefsFile)
+        return@withContext this@Scribe
+    }
+
+    @WorkerThread
+    fun createPreferences(
+        context: Context,
+        prefsFile: String = "specialstylesandcolours",
+        masterKey: MasterKey
+    ): SharedPreferences {
+        val preferences = EncryptedSharedPreferences.create(
+            context.applicationContext,
             prefsFile,
             masterKey,
             EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
             EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
         )
-        _open = true
+        mOperational = true
+        return preferences
     }
 
     /**
      * Read / check if passphrase has been set
      * @return String
      */
-    fun getPassphrase(): String {
+    suspend fun getFuturePassphrase(): String = withContext(dispatchers.io()) {
+        return@withContext readPassphrase()
+    }
+
+    @WorkerThread
+    fun readPassphrase(): String {
         return securePrefs.getString(PASS_KEY, NOT_SET)!!
     }
 
@@ -70,33 +138,31 @@ class Scribe(private val dispatchers: DispatcherProvider = DefaultDispatcherProv
      * @param passphrase String
      * @return Unit
      */
-    suspend fun writeFuturePassphrase(passphrase: String) {
-        withContext(dispatchers.io()) {
-            writePassphrase(passphrase)
-        }
+    suspend fun writeFuturePassphrase(passphrase: String) = withContext(dispatchers.io()) {
+        writePassphrase(passphrase)
     }
 
-    fun getTimestamp(): Long {
-        return securePrefs.getLong(TIMESTAMP_KEY, System.currentTimeMillis())
+    private fun writePassphrase(passphrase: String) = with(securePrefs.edit()) {
+        putString(PASS_KEY, passphrase.trim()).apply()
     }
 
-    fun writePassphrase(passphrase: String) {
+    fun writeSessionKey(sessionKey: String) = with(securePrefs.edit()) {
+        putString(SESSION_KEY, sessionKey).commit()
+    }
+
+    fun readSessionKey(): String {
+        return securePrefs.getString(SESSION_KEY, "").orEmpty()
+    }
+
+    fun writeUserObject(userObject: String) = dispatchers.io().asExecutor().execute {
         with(securePrefs.edit()) {
-            putString(PASS_KEY, passphrase.trim()).apply()
+            putString(USER_KEY, userObject).apply()
         }
     }
 
-    suspend fun writeFutureTimestamp(timeInMillis: Long = System.currentTimeMillis()) {
-        withContext(dispatchers.io()) {
-            writeTimestamp(timeInMillis)
-        }
-    }
-
-    fun writeTimestamp(timeInMillis: Long) {
-        with(securePrefs.edit()) {
-            putLong(TIMESTAMP_KEY, timeInMillis).apply()
-            Timber.d("Wrote Timestamp: $timeInMillis")
-        }
+    suspend fun readUserObject(): SecureString = withContext(dispatchers.io()) {
+        val nakedObject = securePrefs.getString(USER_KEY, "")!!
+        return@withContext SecureString(nakedObject.toCharArray())
     }
 
     /**
@@ -110,6 +176,7 @@ class Scribe(private val dispatchers: DispatcherProvider = DefaultDispatcherProv
     suspend fun writeEncryptedFile(
         context: Context,
         masterKey: MasterKey,
+        directory: File,
         fileName: String,
         fileContent: ByteArray
     ): Boolean {
@@ -117,32 +184,50 @@ class Scribe(private val dispatchers: DispatcherProvider = DefaultDispatcherProv
             // Creates a file with this name, or replaces an existing file
             // that has the same name. Note that the file name cannot contain
             // path separators.
-            return@withContext try {
-                val fileToWrite = File(DIRECTORY, fileName)
-                val encryptedFile = EncryptedFile.Builder(
-                    context.applicationContext,
-                    fileToWrite,
-                    masterKey,
-                    EncryptedFile.FileEncryptionScheme.AES256_GCM_HKDF_4KB
-                ).build()
-
-                // File cannot exist before using openFileOutput
-                if (fileToWrite.exists()) {
-                    fileToWrite.delete()
-                }
-
-                encryptedFile.openFileOutput().apply {
-                    write(fileContent)
-                    flush()
-                    close()
-                }
-                true
-            } catch (t: IOException) {
-                val cause = "Failed to write $fileName: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
-                Timber.e(t, cause)
-                false
-            }
+            return@withContext writeFile(directory, fileName, context, masterKey, fileContent)
         }
+    }
+
+    /**
+     * WorkerThread-bound function to write encrypted file to disk
+     * @param directory File
+     * @param fileName String
+     * @param context Context
+     * @param masterKey MasterKey
+     * @param fileContent ByteArray
+     * @return Boolean
+     */
+    @WorkerThread
+    private fun writeFile(
+        directory: File,
+        fileName: String,
+        context: Context,
+        masterKey: MasterKey,
+        fileContent: ByteArray
+    ) = try {
+        val fileToWrite = File(directory, fileName)
+        val encryptedFile = EncryptedFile.Builder(
+            context.applicationContext,
+            fileToWrite,
+            masterKey,
+            EncryptedFile.FileEncryptionScheme.AES256_GCM_HKDF_4KB
+        ).build()
+
+        // File cannot exist before using openFileOutput
+        if (fileToWrite.exists()) {
+            fileToWrite.delete()
+        }
+
+        encryptedFile.openFileOutput().apply {
+            write(fileContent)
+            flush()
+            close()
+        }
+        true
+    } catch (t: IOException) {
+        val cause = "Failed to write $fileName: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
+        Timber.e(t, cause)
+        false
     }
 
     /**
@@ -152,24 +237,53 @@ class Scribe(private val dispatchers: DispatcherProvider = DefaultDispatcherProv
      * @param fileToRead String
      * @return ByteArray
      */
-    suspend fun readEncryptedFile(context: Context, masterKey: MasterKey, fileToRead: String): ByteArray {
+    suspend fun readEncryptedFile(
+        context: Context,
+        masterKey: MasterKey,
+        directory: File,
+        fileToRead: String
+    ): ByteArray {
         return withContext(dispatchers.io()) {
-            val encryptedFile = EncryptedFile.Builder(
-                context,
-                File(DIRECTORY, fileToRead),
-                masterKey,
-                EncryptedFile.FileEncryptionScheme.AES256_GCM_HKDF_4KB
-            ).build()
+            return@withContext readFile(context, directory, fileToRead, masterKey)
+        }
+    }
 
-            val inputStream = encryptedFile.openFileInput()
-            val byteArrayOutputStream = ByteArrayOutputStream()
-            var nextByte: Int = inputStream.read()
-            while (nextByte != -1) {
-                byteArrayOutputStream.write(nextByte)
-                nextByte = inputStream.read()
-            }
+    /**
+     * WorkerThread bound function to read encrypted file from disk
+     * @param context Context
+     * @param directory File
+     * @param fileToRead String
+     * @param masterKey MasterKey
+     * @return ByteArray
+     */
+    @WorkerThread
+    private fun readFile(
+        context: Context,
+        directory: File,
+        fileToRead: String,
+        masterKey: MasterKey
+    ): ByteArray {
+        val encryptedFile = EncryptedFile.Builder(
+            context.applicationContext,
+            File(directory, fileToRead),
+            masterKey,
+            EncryptedFile.FileEncryptionScheme.AES256_GCM_HKDF_4KB
+        ).build()
 
-            return@withContext byteArrayOutputStream.toByteArray()
+        val inputStream = encryptedFile.openFileInput()
+        val byteArrayOutputStream = ByteArrayOutputStream()
+        var nextByte: Int = inputStream.read()
+        while (nextByte != -1) {
+            byteArrayOutputStream.write(nextByte)
+            nextByte = inputStream.read()
+        }
+
+        return byteArrayOutputStream.toByteArray()
+    }
+
+    fun eraseSessionKey() {
+        with(securePrefs.edit()) {
+            remove(SESSION_KEY).apply()
         }
     }
 }

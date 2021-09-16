@@ -25,11 +25,13 @@ object JobUtils {
     }
 
     fun formatTotalCost(job: JobDTO?): String {
-        Coroutines.main {
-        }
+
         var quantity = 0.0
         var cost = 0.0
-        job?.jobItemEstimates?.forEach { estimate ->
+        job?.jobItemEstimates?.filter { estimate
+            ->
+            estimate.size() == 2 && estimate.qty != 0.0 && estimate.lineRate > 0
+        }?.forEach { estimate ->
             quantity += estimate.qty
             cost += estimate.lineRate * estimate.qty
         }
@@ -37,13 +39,13 @@ object JobUtils {
     }
 
     fun areQuantitiesValid(job: JobDTO?): Boolean {
-        when {
-            job?.jobItemEstimates.isNullOrEmpty() -> return false
+        return when {
+            job?.jobItemEstimates.isNullOrEmpty() -> false
             else -> {
                 job?.jobItemEstimates?.forEach { estimate ->
                     if (estimate.qty < 0.01) return false
                 }
-                return true
+                true
             }
         }
     }
@@ -53,8 +55,8 @@ object JobUtils {
         if (photos != null) {
             Collections.sort(photos, Comparator { o1, o2 ->
                 if (o1 == null || o2 == null) return@Comparator 0 // this case should never happen
-                if (o1.isPhotoStart()) return@Comparator -1
-                if (!o2.isPhotoStart()) {
+                if (o1.isStartPhoto()) return@Comparator -1
+                if (!o2.isStartPhoto()) {
                     0
                 } else {
                     1
@@ -62,5 +64,17 @@ object JobUtils {
             })
         }
         return photos
+    }
+
+    fun isGeoCoded(job: JobDTO): Boolean {
+        var result = true
+        for (estimate in job.jobItemEstimates) {
+            if (!estimate.geoCoded) {
+                result = false
+                break
+            }
+        }
+
+        return result
     }
 }

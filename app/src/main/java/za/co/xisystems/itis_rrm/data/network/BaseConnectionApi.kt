@@ -189,7 +189,7 @@ interface BaseConnectionApi {
              * Add the http logging interceptor.
              * Debug build only.
              */
-            if (BuildConfig.DEBUG){
+            if (BuildConfig.DEBUG) {
                 val interceptor = HttpLoggingInterceptor()
                 interceptor.level = HttpLoggingInterceptor.Level.BODY
                 okkHttpclient.addInterceptor(interceptor)

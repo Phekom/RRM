@@ -14,20 +14,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.custom.errors.NoDataException
+import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
+import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.localDB.JobDataController
-import za.co.xisystems.itis_rrm.data.localDB.entities.ContractDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobSectionDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectSectionDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.SectionItemDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.SectionPointDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.WorkflowJobDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.data.localDB.views.SectionMarker
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
@@ -40,7 +32,7 @@ import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import java.io.IOException
-import java.util.ArrayList
+import java.util.*
 
 /**
  * Created by Francis Mahlava on 2019/11/28.
@@ -165,25 +157,47 @@ class JobCreationDataRepository(
         }
     }
 
-    fun updateNewJob(
+    @Transaction
+    suspend fun updateNewJob(
         newJobId: String,
         startKM: Double,
         endKM: Double,
         sectionId: String,
         newJobItemEstimatesList: ArrayList<JobItemEstimateDTO>,
         jobItemSectionArrayList: ArrayList<JobSectionDTO>
-    ) {
-        Coroutines.io {
+    ): XIResult<JobDTO> = withContext(Dispatchers.IO) {
+        try {
+
             if (appDb.getJobDao().checkIfJobExist(newJobId)) {
+                appDb.getJobItemEstimateDao().updateJobItemEstimates(newJobItemEstimatesList)
+                jobItemSectionArrayList.forEach { jobSectionDTO ->
+                    appDb.getJobSectionDao().updateExistingJobSectionWorkflow(
+                        jobSectionId = jobSectionDTO.jobSectionId,
+                        projectSectionId = jobSectionDTO.projectSectionId,
+                        jobId = newJobId,
+                        startKm = jobSectionDTO.startKm,
+                        endKm = jobSectionDTO.endKm,
+                        recordVersion = jobSectionDTO.recordVersion,
+                        recordSynchStateId = jobSectionDTO.recordSynchStateId
+                    )
+                }
                 appDb.getJobDao().updateJoSecId(
-                    newJobId,
-                    startKM,
-                    endKM,
-                    sectionId,
-                    newJobItemEstimatesList,
-                    jobItemSectionArrayList
+                    newJobId = newJobId,
+                    startKM = startKM,
+                    endKM = endKM,
+                    sectionId = sectionId,
+                    newJobItemEstimatesList = newJobItemEstimatesList,
+                    jobItemSectionArrayList = jobItemSectionArrayList
                 )
+                val updatedJob = appDb.getJobDao().getJobForJobId(newJobId)
+                return@withContext XIResult.Success(updatedJob)
+            } else {
+                throw NoDataException("Job $newJobId does not exist...")
             }
+        } catch (ex: Exception) {
+            val message = "Failed to update job: ${ex.message ?: XIErrorHandler.UNKNOWN_ERROR}"
+            Timber.e(ex, message)
+            return@withContext XIResult.Error(ex, message)
         }
     }
 
@@ -205,10 +219,14 @@ class JobCreationDataRepository(
         }
     }
 
-    suspend fun getSection(sectionId: String): LiveData<ProjectSectionDTO> {
+    suspend fun getLiveSection(sectionId: String): LiveData<ProjectSectionDTO> {
         return withContext(Dispatchers.IO) {
-            appDb.getProjectSectionDao().getSection(sectionId)
+            appDb.getProjectSectionDao().getLiveSection(sectionId)
         }
+    }
+
+    suspend fun getSection(sectionId: String): ProjectSectionDTO = withContext(Dispatchers.IO) {
+        return@withContext appDb.getProjectSectionDao().getSection(sectionId)
     }
 
     @Suppress("MagicNumber")
@@ -220,8 +238,8 @@ class JobCreationDataRepository(
         jobId: String
     ): String? {
 
-        val distance = 0.05
-        val inBuffer = -1.0
+        val distance = 50.0
+        val inBuffer = 1.0
         val routeSectionPointResponse =
             apiRequest { api.getRouteSectionPoint(distance, inBuffer, latitude, longitude, useR) }
 
@@ -309,6 +327,7 @@ class JobCreationDataRepository(
                     activity = activity
                 )
                 val myJob = getUpdatedJob(DataConversion.toBigEndian(job.jobId)!!)
+
                 moveJobToNextWorkflow(myJob, activity)
             }
         }
@@ -412,7 +431,10 @@ class JobCreationDataRepository(
         }
     }
 
-    private fun uploadCreateJobImages(packageJob: JobDTO, activity: FragmentActivity) {
+    private suspend fun uploadCreateJobImages(
+        packageJob: JobDTO,
+        activity: FragmentActivity
+    ) = withContext(Dispatchers.IO) {
 
         var jobCounter = 1
         val totalJobs = packageJob.jobItemEstimates.size
@@ -445,13 +467,13 @@ class JobCreationDataRepository(
         }
     }
 
-    private fun uploadRrmImage(
+    private suspend fun uploadRrmImage(
         activity: FragmentActivity,
         filename: String,
         photoQuality: PhotoQuality,
         imageCounter: Int,
         totalImages: Int
-    ) {
+    ) = Coroutines.io {
 
         val data: ByteArray = getData(filename, photoQuality)
         processImageUpload(
@@ -463,14 +485,14 @@ class JobCreationDataRepository(
         )
     }
 
-    private fun getData(
+    private suspend fun getData(
         filename: String,
         photoQuality: PhotoQuality
-    ): ByteArray {
+    ): ByteArray = withContext(Dispatchers.IO) {
         val uri = photoUtil.getPhotoPathFromExternalDirectory(filename)
         val bitmap =
             photoUtil.getPhotoBitmapFromFile(uri, photoQuality)
-        return photoUtil.getCompressedPhotoWithExifInfo(
+        return@withContext photoUtil.getCompressedPhotoWithExifInfo(
             bitmap!!,
             filename
         )
@@ -559,7 +581,7 @@ class JobCreationDataRepository(
         val name = object {}.javaClass.enclosingMethod?.name
         Timber.d("x -> $name")
         if (linearId != null) {
-            if (!appDb.getSectionPointDao().checkSectionExists(sectionId, projectId, jobId)) {
+            if (!appDb.getSectionPointDao().checkSectionExists(sectionId, projectId, jobId, pointLocation)) {
                 appDb.getSectionPointDao()
                     .insertSection(direction, linearId, pointLocation, sectionId, projectId, jobId)
             }
@@ -619,9 +641,15 @@ class JobCreationDataRepository(
         }
     }
 
+    @Transaction
     suspend fun backupJob(job: JobDTO) {
         return withContext(Dispatchers.IO) {
-            appDb.getJobDao().insertOrUpdateJob(job)
+            if (appDb.getJobDao().checkIfJobExist(job.jobId)) {
+                appDb.getJobDao().updateJob(job)
+            } else {
+                appDb.getJobDao().insertOrUpdateJob(job)
+            }
+            appDb.getJobDao().getJobForJobId(job.jobId)
         }
     }
 
@@ -638,6 +666,58 @@ class JobCreationDataRepository(
     }
 
     fun getValidEstimatesForJobId(jobId: String, actId: Int): List<JobItemEstimateDTO> {
-        return appDb.getJobItemEstimateDao().getJobEstimationItemsForJobId(jobId, actId).value.orEmpty()
+        return appDb.getJobItemEstimateDao().getJobEstimationItemsForJobId(jobId, actId)
+    }
+
+    suspend fun getProjectItemById(itemId: String?): ItemDTOTemp {
+        return appDb.getItemDaoTemp().getProjectItemById(itemId!!)
+    }
+
+    suspend fun getEstimateById(estimateId: String): JobItemEstimateDTO = withContext(Dispatchers.IO) {
+        return@withContext appDb.getJobItemEstimateDao().getJobItemEstimateForEstimateId(estimateId)
+    }
+
+    @Transaction
+    suspend fun backupEstimate(estimate: JobItemEstimateDTO): JobItemEstimateDTO = withContext(Dispatchers.IO) {
+        if (appDb.getJobItemEstimateDao().checkIfJobItemEstimateExist(estimate.estimateId)) {
+            appDb.getJobItemEstimateDao().updateJobItemEstimate(estimate)
+        } else {
+            appDb.getJobItemEstimateDao().insertJobItemEstimate(estimate)
+        }
+        return@withContext appDb.getJobItemEstimateDao().getJobItemEstimateForEstimateId(estimate.estimateId)
+    }
+
+    suspend fun backupProjectItem(item: ItemDTOTemp): Long = withContext(Dispatchers.IO) {
+        return@withContext appDb.getItemDaoTemp().insertItems(item)
+    }
+
+    @Transaction
+    suspend fun backupEstimatePhoto(photoDTO: JobItemEstimatesPhotoDTO):
+        JobItemEstimatesPhotoDTO = withContext(Dispatchers.IO) {
+        if (appDb.getJobItemEstimatePhotoDao()
+                .checkIfJobItemEstimatePhotoExistsByPhotoId(photoDTO.photoId)
+        ) {
+            appDb.getJobItemEstimatePhotoDao().updateJobItemEstimatePhoto(photoDTO)
+        } else {
+            appDb.getJobItemEstimatePhotoDao().insertJobItemEstimatePhoto(photoDTO)
+        }
+        return@withContext appDb.getJobItemEstimatePhotoDao().getJobItemEstimatePhoto(photoDTO.photoId)
+    }
+
+    suspend fun saveJobSection(jobSection: JobSectionDTO): JobSectionDTO? = withContext(Dispatchers.IO) {
+        appDb.getJobSectionDao().insertJobSection(jobSection)
+        return@withContext appDb.getJobSectionDao().getJobSectionFromJobId(jobSection.jobId!!)
+    }
+
+    suspend fun getJobSectionByJobId(jobId: String): JobSectionDTO? = withContext(Dispatchers.IO) {
+        return@withContext appDb.getJobSectionDao().getJobSectionFromJobId(jobId)
+    }
+
+    suspend fun getJobEstimateIndexByItemAndJobId(itemId: String, jobId: String): JobItemEstimateDTO? = withContext(Dispatchers.IO) {
+        return@withContext appDb.getJobItemEstimateDao().getJobEstimateIndexByItemAndJobId(itemId, jobId)
+    }
+
+    fun eraseExistingPhoto(photoId: String) {
+        appDb.getJobItemEstimatePhotoDao().deletePhotoById(photoId)
     }
 }

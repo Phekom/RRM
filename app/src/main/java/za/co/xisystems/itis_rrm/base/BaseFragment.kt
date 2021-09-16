@@ -13,8 +13,9 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.withContext
-import org.kodein.di.KodeinAware
-import org.kodein.di.generic.instance
+import org.kodein.di.DIAware
+import org.kodein.di.android.x.closestDI
+import org.kodein.di.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.BuildConfig
 import za.co.xisystems.itis_rrm.R
@@ -22,25 +23,26 @@ import za.co.xisystems.itis_rrm.constants.Constants.DNS_PORT
 import za.co.xisystems.itis_rrm.constants.Constants.FIVE_SECONDS
 import za.co.xisystems.itis_rrm.constants.Constants.SSL_PORT
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
-import za.co.xisystems.itis_rrm.custom.results.XIError
+import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration
+import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration.LONG
+import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration.SHORT
+import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity
+import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity.BOTTOM
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.ERROR
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.INFO
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.NO_INTERNET
+import za.co.xisystems.itis_rrm.custom.results.XIResult.Error
 import za.co.xisystems.itis_rrm.custom.results.isRecoverableException
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data._commons.Animations
 import za.co.xisystems.itis_rrm.data._commons.views.IProgressView
 import za.co.xisystems.itis_rrm.forge.XIArmoury
+import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModelFactory
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.ViewLogger
-import za.co.xisystems.itis_rrm.utils.enums.ToastDuration
-import za.co.xisystems.itis_rrm.utils.enums.ToastDuration.LONG
-import za.co.xisystems.itis_rrm.utils.enums.ToastDuration.SHORT
-import za.co.xisystems.itis_rrm.utils.enums.ToastGravity
-import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.BOTTOM
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.ERROR
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.INFO
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.NO_INTERNET
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -50,9 +52,10 @@ import kotlin.coroutines.CoroutineContext
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  */
 
-abstract class BaseFragment : Fragment(), IProgressView, KodeinAware {
+abstract class BaseFragment : Fragment(), IProgressView, DIAware {
 
     private lateinit var sharedViewModel: SharedViewModel
+    override val di by closestDI()
     private val shareFactory: SharedViewModelFactory by instance()
     private val armoury: XIArmoury by instance()
     protected var coordinator: View? = null
@@ -231,7 +234,13 @@ abstract class BaseFragment : Fragment(), IProgressView, KodeinAware {
     ) {
         if (!activity?.isFinishing!!) {
             val message = getString(resId)
-            sharpToast(title, message, style, position, duration)
+            extensionToast(
+                title = title,
+                message = message,
+                style = style,
+                position = position,
+                duration = duration
+            )
         }
     }
 
@@ -243,7 +252,7 @@ abstract class BaseFragment : Fragment(), IProgressView, KodeinAware {
         duration: ToastDuration = SHORT
     ) {
         if (!activity?.isFinishing!!) {
-            sharedViewModel.setColorMessage(
+            extensionToast(
                 title = title,
                 message = message,
                 style = style,
@@ -259,7 +268,7 @@ abstract class BaseFragment : Fragment(), IProgressView, KodeinAware {
     }
 
     protected fun noConnectionWarning() {
-        sharpToast(
+        extensionToast(
             message = "Please ensure that you have a valid data or wifi connection",
             style = NO_INTERNET,
             position = BOTTOM,
@@ -276,7 +285,7 @@ abstract class BaseFragment : Fragment(), IProgressView, KodeinAware {
     }
 
     private fun noServicesWarning() {
-        sharpToast(
+        extensionToast(
             message = "RRM services are unreachable, try again later ...",
             style = NO_INTERNET,
             position = BOTTOM,
@@ -285,7 +294,7 @@ abstract class BaseFragment : Fragment(), IProgressView, KodeinAware {
     }
 
     protected fun noInternetWarning() {
-        sharpToast(
+        extensionToast(
             message = "No internet access, try again later ...",
             style = NO_INTERNET,
             position = BOTTOM,
@@ -293,7 +302,7 @@ abstract class BaseFragment : Fragment(), IProgressView, KodeinAware {
         )
     }
 
-    protected fun toggleLongRunning(toggle: Boolean) {
+    fun toggleLongRunning(toggle: Boolean) {
         sharedViewModel.toggleLongRunning(toggle)
     }
 
@@ -314,7 +323,7 @@ abstract class BaseFragment : Fragment(), IProgressView, KodeinAware {
      * if the exception is connectivity-related, give the user the option to retry.
      * Shaun McDonald - 2020/06/01
      */
-    protected fun crashGuard(view: View, throwable: XIError, refreshAction: (() -> Unit)? = null) {
+    protected fun crashGuard(view: View, throwable: Error, refreshAction: (() -> Unit)? = null) {
 
         when (throwable.isRecoverableException()) {
 
@@ -330,7 +339,7 @@ abstract class BaseFragment : Fragment(), IProgressView, KodeinAware {
             }
             else -> {
 
-                sharpToast(
+                extensionToast(
                     message = throwable.message,
                     style = ERROR,
                     position = BOTTOM,

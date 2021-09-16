@@ -21,21 +21,21 @@ import androidx.core.view.doOnNextLayout
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.skydoves.androidveil.VeiledItemOnClickListener
 import com.xwray.groupie.GroupAdapter
-import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
-import org.kodein.di.KodeinAware
-import org.kodein.di.android.x.kodein
-import org.kodein.di.generic.instance
+import com.xwray.groupie.viewbinding.GroupieViewHolder
+import org.kodein.di.DIAware
+import org.kodein.di.android.x.closestDI
+import org.kodein.di.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.R.layout
 import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
-import za.co.xisystems.itis_rrm.custom.results.XIError
+import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentApprovemeasureBinding
+import za.co.xisystems.itis_rrm.databinding.ItemHeaderBinding
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.approveMeasure_Item.ApproveMeasureItem
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
@@ -44,15 +44,16 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
  * Created by Francis Mahlava on 03,October,2019
  */
 
-class ApproveMeasureFragment : BaseFragment(), KodeinAware {
+@Suppress("KDocUnresolvedReference")
+class ApproveMeasureFragment : BaseFragment(), DIAware {
 
-    override val kodein by kodein()
+    override val di by closestDI()
     private lateinit var approveViewModel: ApproveMeasureViewModel
     private val factory: ApproveMeasureViewModelFactory by instance<ApproveMeasureViewModelFactory>()
 
     private var _ui: FragmentApprovemeasureBinding? = null
     private val ui get() = _ui!!
-    private var groupAdapter = GroupAdapter<GroupieViewHolder>()
+    private var groupAdapter = GroupAdapter<GroupieViewHolder<ItemHeaderBinding>>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -83,12 +84,7 @@ class ApproveMeasureFragment : BaseFragment(), KodeinAware {
 
     private fun initVeiledRecyclerView() {
         ui.approveMeasurementsList.run {
-            setVeilLayout(layout.item_velied_slug, object : VeiledItemOnClickListener {
-                /** will be invoked when the item on the [VeilRecyclerFrameView] clicked. */
-                override fun onItemClicked(pos: Int) {
-                    toast("Loading ...")
-                }
-            })
+            setVeilLayout(layout.item_velied_slug) { toast("Loading ...") }
             setAdapter(groupAdapter)
             setLayoutManager(LinearLayoutManager(this.context))
             addVeiledItems(15)
@@ -128,7 +124,7 @@ class ApproveMeasureFragment : BaseFragment(), KodeinAware {
                 })
             } catch (t: Throwable) {
                 Timber.e(t, "Unable to fetch Measurements")
-                val measureErr = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
+                val measureErr = XIResult.Error(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
                 crashGuard(
                     view = this@ApproveMeasureFragment.requireView(),
                     throwable = measureErr,
@@ -169,7 +165,7 @@ class ApproveMeasureFragment : BaseFragment(), KodeinAware {
                 })
             } catch (t: Throwable) {
                 Timber.e(t, "Unable to fetch remote jobs")
-                val measureErr = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
+                val measureErr = XIResult.Error(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
                 crashGuard(
                     view = this@ApproveMeasureFragment.requireView(),
                     throwable = measureErr,
@@ -183,10 +179,10 @@ class ApproveMeasureFragment : BaseFragment(), KodeinAware {
 
     private fun initRecyclerView(approveMeasureListItems: List<ApproveMeasureItem>) {
 
-        val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
+        val groupAdapter = GroupAdapter<GroupieViewHolder<ItemHeaderBinding>>().apply {
             clear()
             addAll(approveMeasureListItems)
-            notifyDataSetChanged()
+            notifyItemRangeChanged(0, approveMeasureListItems.size)
         }
 
         ui.approveMeasurementsList.run {

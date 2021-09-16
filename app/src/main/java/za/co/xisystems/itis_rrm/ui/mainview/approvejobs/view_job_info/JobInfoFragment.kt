@@ -12,16 +12,16 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.skydoves.androidveil.VeilRecyclerFrameView
-import com.skydoves.androidveil.VeiledItemOnClickListener
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.viewbinding.GroupieViewHolder
-import org.kodein.di.KodeinAware
-import org.kodein.di.android.x.kodein
-import org.kodein.di.generic.instance
+import org.kodein.di.DIAware
+import org.kodein.di.android.x.closestDI
+import org.kodein.di.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R.drawable
@@ -30,39 +30,31 @@ import za.co.xisystems.itis_rrm.R.string
 import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.constants.Constants
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
-import za.co.xisystems.itis_rrm.custom.results.XIError
-import za.co.xisystems.itis_rrm.custom.results.XIProgress
-import za.co.xisystems.itis_rrm.custom.results.XIResult
-import za.co.xisystems.itis_rrm.custom.results.XIStatus
-import za.co.xisystems.itis_rrm.custom.results.XISuccess
+import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration.LONG
+import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity.BOTTOM
+import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity.CENTER
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.NO_INTERNET
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.SUCCESS
+import za.co.xisystems.itis_rrm.custom.results.*
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.databinding.EstimatesItemBinding
 import za.co.xisystems.itis_rrm.databinding.FragmentJobInfoBinding
-import za.co.xisystems.itis_rrm.ui.extensions.ShimmerUtils
-import za.co.xisystems.itis_rrm.ui.extensions.doneProgress
-import za.co.xisystems.itis_rrm.ui.extensions.failProgress
-import za.co.xisystems.itis_rrm.ui.extensions.initProgress
-import za.co.xisystems.itis_rrm.ui.extensions.startProgress
+import za.co.xisystems.itis_rrm.ui.extensions.*
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.ApproveJobsViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.ApproveJobsViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.approve_job_item.ApproveJobItem
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
-import za.co.xisystems.itis_rrm.utils.enums.ToastDuration.LONG
-import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.BOTTOM
-import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.CENTER
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.NO_INTERNET
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.SUCCESS
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection.FAIL
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection.NEXT
 
-class JobInfoFragment : BaseFragment(), KodeinAware {
-    override val kodein by kodein()
+class JobInfoFragment : BaseFragment(), DIAware {
+    override val di by closestDI()
     private lateinit var approveViewModel: ApproveJobsViewModel
     private val factory: ApproveJobsViewModelFactory by instance()
     private var workObserver = Observer<XIResult<String>?> { handleWorkSubmission(it) }
@@ -76,8 +68,8 @@ class JobInfoFragment : BaseFragment(), KodeinAware {
     private fun handleUpdateProcess(outcome: XIResult<String>?) {
         outcome?.let { result ->
             when (result) {
-                is XISuccess -> {
-                    sharpToast(
+                is XIResult.Success -> {
+                    extensionToast(
                         message = "Estimate updated",
                         style = SUCCESS,
                         position = BOTTOM,
@@ -92,7 +84,7 @@ class JobInfoFragment : BaseFragment(), KodeinAware {
     private fun handleWorkSubmission(outcome: XIResult<String>?) {
         outcome?.let { result ->
             when (result) {
-                is XISuccess<String> -> {
+                is XIResult.Success<String> -> {
                     val jiNo = result.data
                     progressButton.doneProgress()
                     toggleLongRunning(false)
@@ -107,7 +99,7 @@ class JobInfoFragment : BaseFragment(), KodeinAware {
 
     private fun handleOthers(result: XIResult<String>, retryAction: () -> Unit = {}) {
         when (result) {
-            is XIError -> {
+            is XIResult.Error -> {
                 toggleLongRunning(false)
                 progressButton.failProgress("Failed")
                 crashGuard(
@@ -116,25 +108,29 @@ class JobInfoFragment : BaseFragment(), KodeinAware {
                     refreshAction = { retryAction() }
                 )
             }
-            is XIStatus -> {
-                sharpToast(result.message)
+            is XIResult.Status -> {
+                extensionToast(message = result.message)
             }
-            is XIProgress -> {
-                toggleLongRunning(result.isLoading)
-                when (result.isLoading) {
-                    true -> {
-                        activity?.hideKeyboard()
-                        progressButton.startProgress()
-                        toggleLongRunning(true)
-                    }
-                    else -> progressButton.doneProgress()
-                }
-                Timber.d("Loading ${result.isLoading}")
+            is XIResult.Progress -> {
+                showWorkflowProgress(result)
             }
             else -> {
                 Timber.d("$result")
             }
         }
+    }
+
+    private fun showWorkflowProgress(result: XIResult.Progress) {
+        toggleLongRunning(result.isLoading)
+        when (result.isLoading) {
+            true -> {
+                activity?.hideKeyboard()
+                progressButton.initProgress(viewLifecycleOwner)
+                progressButton.startProgress()
+            }
+            else -> progressButton.doneProgress()
+        }
+        Timber.d("Loading ${result.isLoading}")
     }
 
     private fun retryWork() {
@@ -145,6 +141,19 @@ class JobInfoFragment : BaseFragment(), KodeinAware {
     override fun onAttach(context: Context) {
         super.onAttach(context)
         (activity as MainActivity).supportActionBar?.title = getString(string.jobinfo_item_title)
+        val callback: OnBackPressedCallback = object : OnBackPressedCallback(true) {
+            /**
+             * Callback for handling the [OnBackPressedDispatcher.onBackPressed] event.
+             */
+            override fun handleOnBackPressed() {
+                val directions =
+                    JobInfoFragmentDirections.actionJobInfoFragmentToNavApproveJbs()
+                Navigation.findNavController(this@JobInfoFragment.requireView())
+                    .navigate(directions)
+            }
+        }
+        requireActivity().onBackPressedDispatcher
+            .addCallback(this, callback)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -201,7 +210,7 @@ class JobInfoFragment : BaseFragment(), KodeinAware {
                     progressButton = ui.declineJobButton
                     moveJobToNextWorkflow(FAIL)
                 } else {
-                    sharpToast(
+                    extensionToast(
                         message = getString(string.no_connection_detected),
                         style = NO_INTERNET
                     )
@@ -237,7 +246,7 @@ class JobInfoFragment : BaseFragment(), KodeinAware {
                     progressButton.initProgress(viewLifecycleOwner)
                     moveJobToNextWorkflow(NEXT)
                 } else {
-                    sharpToast(
+                    extensionToast(
                         message = getString(string.no_connection_detected),
                         style = NO_INTERNET
                     )
@@ -275,12 +284,8 @@ class JobInfoFragment : BaseFragment(), KodeinAware {
 
     private fun initVeiledRecyclerView() {
         ui.viewEstimationItemsListView.run {
-            setVeilLayout(layout.estimates_item, object : VeiledItemOnClickListener {
-                /** will be invoked when the item on the [VeilRecyclerFrameView] clicked. */
-                override fun onItemClicked(pos: Int) {
-                    Toast.makeText(this@JobInfoFragment.requireContext(), "Loading ...", Toast.LENGTH_SHORT).show()
-                }
-            })
+            setVeilLayout(layout.estimates_item)
+            { Toast.makeText(this@JobInfoFragment.requireContext(), "Loading ...", Toast.LENGTH_SHORT).show() }
             setAdapter(groupAdapter)
             setLayoutManager(LinearLayoutManager(this.context))
             addVeiledItems(3)
@@ -318,7 +323,7 @@ class JobInfoFragment : BaseFragment(), KodeinAware {
                             Timber.d("ApproveItem was null")
                         }
                         userDTO.userId.isBlank() -> {
-                            sharpToast(
+                            extensionToast(
                                 message = "The user lacks permissions.",
                                 style = ToastStyle.ERROR,
                                 position = CENTER
@@ -326,7 +331,7 @@ class JobInfoFragment : BaseFragment(), KodeinAware {
                             progressButton.failProgress("Invalid User")
                         }
                         approveJobItem.jobDTO.jobId.isBlank() -> {
-                            sharpToast(
+                            extensionToast(
                                 message = "The selected job is invalid.",
                                 style = ToastStyle.ERROR,
                                 position = CENTER
@@ -335,7 +340,7 @@ class JobInfoFragment : BaseFragment(), KodeinAware {
                         }
                         workflowDirection == FAIL &&
                             ui.workflowCommentsEditText.text.trim().isBlank() -> {
-                            sharpToast(
+                            extensionToast(
                                 message = "Please provide a comment / reason for declining this job",
                                 style = ToastStyle.WARNING,
                                 position = CENTER
@@ -374,25 +379,28 @@ class JobInfoFragment : BaseFragment(), KodeinAware {
                 task.join()
             } catch (t: Throwable) {
                 val message = t.message ?: XIErrorHandler.UNKNOWN_ERROR
-                val xiErr = XIError(t, "Failed to complete workflow: $message")
+                val xiErr = XIResult.Error(t, "Failed to complete workflow: $message")
                 handleWorkSubmission(xiErr)
             }
         }
     }
 
     private fun popViewOnJobSubmit(direction: Int, jiNo: String?) {
-        if (direction == NEXT.value) {
-            progressButton.text = getString(string.approve_job)
-            sharpToast(
-                message = getString(string.job_no_approved, jiNo!!),
-                style = SUCCESS
-            )
-        } else if (direction == FAIL.value) {
-            progressButton.text = getString(string.decline_job)
-            sharpToast(
-                message = getString(string.job_declined),
-                style = ToastStyle.DELETE
-            )
+        when (direction) {
+            NEXT.value -> {
+                progressButton.text = getString(string.approve_job)
+                extensionToast(
+                    message = getString(string.job_no_approved, jiNo!!),
+                    style = SUCCESS
+                )
+            }
+            FAIL.value -> {
+                progressButton.text = getString(string.decline_job)
+                extensionToast(
+                    message = getString(string.job_declined),
+                    style = ToastStyle.DELETE
+                )
+            }
         }
 
         Handler(Looper.getMainLooper()).postDelayed(
@@ -419,7 +427,7 @@ class JobInfoFragment : BaseFragment(), KodeinAware {
         groupAdapter = GroupAdapter<GroupieViewHolder<EstimatesItemBinding>>().apply {
             clear()
             addAll(estimatesListItems)
-            notifyDataSetChanged()
+            notifyItemRangeChanged(0, estimatesListItems.size)
         }
         ui.viewEstimationItemsListView.run {
             setLayoutManager(LinearLayoutManager(this.context))

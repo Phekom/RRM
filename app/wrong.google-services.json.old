@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "951950081004",
+    "firebase_url": "https://rrmmvvm.firebaseio.com",
+    "project_id": "rrmmvvm",
+    "storage_bucket": "rrmmvvm.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:951950081004:android:10cc35cf7bbee0ab3e5ec9",
+        "android_client_info": {
+          "package_name": "za.co.xisystems.itismaintenance.qa"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "951950081004-pm54jsnp4sk70diahn41jn3t1hq6sjpo.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCK8vVpxI7KgOdxdNU0R77Bq2mX74gjBHs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "951950081004-pm54jsnp4sk70diahn41jn3t1hq6sjpo.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

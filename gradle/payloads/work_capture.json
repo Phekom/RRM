@@ -1,0 +1,27 @@
+{
+  "JobEstimateWorksItem": {
+    "ActId": 19,
+    "EstimateId": "1655f68f-cc69-c746-b412-54b1b7dd3dd3",
+    "MobileJobEstimateWorksPhotos": [
+      {
+        "Id": 0,
+        "Descr": "",
+        "PrjEstimateWorksDto": [],
+        "Filename": "849cc675-857e-479c-a174-f9d5c24c2759.jpg",
+        "PhotoActivityId": 19,
+        "PhotoDate": "2020-12-16T20:40:57.220+0200",
+        "PhotoId": "1cfd0e41-c159-254f-a63b-54e07fe30b40",
+        "PhotoLatitude": 28.24276,
+        "PhotoLongitude": -26.10608,
+        "PhotoPath": "/storage/emulated/0/ITIS_RRM_Photos/849cc675-857e-479c-a174-f9d5c24c2759.jpg",
+        "RecordSynchStateId": 0,
+        "RecordVersion": 0,
+        "WorksId": "16995e86-2c67-4cd5-9a0e-cfb609435b43"
+      }
+    ],
+    "RecordSynchStateId": 0,
+    "RecordVersion": 0,
+    "TrackRouteId": "3cea93a2-74aa-5a43-9737-69d9165954b5",
+    "WorksId": "16995e86-2c67-4cd5-9a0e-cfb609435b43"
+  }
+}

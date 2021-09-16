@@ -18,10 +18,10 @@ import kotlinx.coroutines.withContext
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
-import za.co.xisystems.itis_rrm.custom.results.XIError
-import za.co.xisystems.itis_rrm.custom.results.XIProgressUpdate
 import za.co.xisystems.itis_rrm.custom.results.XIResult
-import za.co.xisystems.itis_rrm.custom.results.XIStatus
+import za.co.xisystems.itis_rrm.custom.results.XIResult.Error
+import za.co.xisystems.itis_rrm.custom.results.XIResult.ProgressUpdate
+import za.co.xisystems.itis_rrm.custom.results.XIResult.Status
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.localDB.JobDataController
 import za.co.xisystems.itis_rrm.data.localDB.entities.ContractDTO
@@ -215,7 +215,7 @@ class OfflineDataRepository(
 
     suspend fun getProjectSection(sectionId: String?): LiveData<ProjectSectionDTO> {
         return withContext(Dispatchers.IO) {
-            appDb.getProjectSectionDao().getSection(sectionId!!)
+            appDb.getProjectSectionDao().getLiveSection(sectionId!!)
         }
     }
 
@@ -237,10 +237,8 @@ class OfflineDataRepository(
         }
     }
 
-    suspend fun getUOMForProjectItemId(projectItemId: String): String {
-        return withContext(Dispatchers.IO) {
-            appDb.getProjectItemDao().getUOMForProjectItemId(projectItemId)
-        }
+    suspend fun getUOMForProjectItemId(projectItemId: String): String = withContext(Dispatchers.IO) {
+        return@withContext appDb.getProjectItemDao().getUOMForProjectItemId(projectItemId) ?: ""
     }
 
     suspend fun getJobMeasureItemsForJobId(
@@ -322,12 +320,12 @@ class OfflineDataRepository(
                             }
                         }
                     }
-                    postEvent(XIProgressUpdate("sections", sectionCount.toFloat() / sectionSize.toFloat()))
+                    postEvent(ProgressUpdate("sections", sectionCount.toFloat() / sectionSize.toFloat()))
                 }
             } catch (throwable: Throwable) {
                 Timber.e(throwable, "Exception caught saving section items: ${throwable.message}")
             } finally {
-                postEvent(XIProgressUpdate("sections", -1.0f))
+                postEvent(ProgressUpdate("sections", -1.0f))
             }
         }
     }
@@ -443,7 +441,7 @@ class OfflineDataRepository(
                     Timber.d("pr**: $projectCount / $projectMax projects")
 
                     postEvent(
-                        XIProgressUpdate(
+                        ProgressUpdate(
                             "projects", (projectCount.toFloat() * contractCount.toFloat()) /
                                 (projectMax.toFloat() * contractMax.toFloat())
                         )
@@ -457,7 +455,7 @@ class OfflineDataRepository(
                     )
                 }
             }
-            postEvent(XIProgressUpdate("projects", -1.0f))
+            postEvent(ProgressUpdate("projects", -1.0f))
         }
     }
 
@@ -1016,15 +1014,15 @@ class OfflineDataRepository(
                         }
                     }
                     tasksCount++
-                    postEvent(XIProgressUpdate("tasks", tasksCount.toFloat() / tasksMax.toFloat()))
+                    postEvent(ProgressUpdate("tasks", tasksCount.toFloat() / tasksMax.toFloat()))
                 }
             } catch (throwable: Throwable) {
                 val message = "Failed to save task list locally: ${throwable.message ?: XIErrorHandler.UNKNOWN_ERROR}"
                 Timber.e(throwable, message)
-                val dbError = XIError(throwable, message)
+                val dbError = Error(throwable, message)
                 postEvent(dbError)
             } finally {
-                postEvent(XIProgressUpdate("tasks", -1.0f))
+                postEvent(ProgressUpdate("tasks", -1.0f))
             }
         }
     }
@@ -1124,7 +1122,7 @@ class OfflineDataRepository(
     }
 
     private fun postStatus(message: String) {
-        val status = XIStatus(message)
+        val status = Status(message)
         postEvent(status)
     }
 
@@ -1444,7 +1442,7 @@ class OfflineDataRepository(
             healthCheck.errorMessage.isNullOrBlank() || healthCheck.isAlive == 1
         } catch (t: Throwable) {
             val errorMessage = "Failed to check service health: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
-            val healthError = XIError(t, errorMessage)
+            val healthError = Error(t, errorMessage)
             postEvent(healthError)
             false
         }

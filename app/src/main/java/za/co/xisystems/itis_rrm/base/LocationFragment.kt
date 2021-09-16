@@ -8,12 +8,11 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.Menu
 import androidx.core.app.ActivityCompat
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import org.kodein.di.Kodein
-import org.kodein.di.KodeinAware
-import org.kodein.di.android.x.kodein
-import org.kodein.di.generic.instance
+import org.kodein.di.DI
+import org.kodein.di.DIAware
+import org.kodein.di.android.x.closestDI
+import org.kodein.di.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.services.LocationModel
 import za.co.xisystems.itis_rrm.ui.mainview.activities.LocationViewModelFactory
@@ -23,10 +22,10 @@ import za.co.xisystems.itis_rrm.utils.GPSUtils
  * Created by Shaun McDonald on 2020/06/06.
  * Copyright (c) 2020 XI Systems. All rights reserved.
  **/
-abstract class LocationFragment : BaseFragment(), KodeinAware {
+abstract class LocationFragment : BaseFragment(), DIAware {
 
     private var currentLocation: LocationModel? = null
-    override val kodein: Kodein by kodein()
+    override val di: DI by closestDI()
     private lateinit var locationViewModel: LocationViewModel
     private val locationFactory by instance<LocationViewModelFactory>()
     private var gpsEnabled = false
@@ -86,7 +85,7 @@ abstract class LocationFragment : BaseFragment(), KodeinAware {
     }
 
     private fun startLocationUpdate() {
-        locationViewModel.getLocationData().observe(this, Observer { it ->
+        locationViewModel.getLocationData().observe(this, {
             currentLocation = it
         })
     }

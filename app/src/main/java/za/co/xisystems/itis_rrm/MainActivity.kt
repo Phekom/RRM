@@ -37,16 +37,18 @@ import com.google.android.material.navigation.NavigationView
 import com.raygun.raygun4android.RaygunClient
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.launch
-import org.kodein.di.KodeinAware
-import org.kodein.di.android.kodein
-import org.kodein.di.generic.instance
+import org.kodein.di.DIAware
+import org.kodein.di.android.closestDI
+import org.kodein.di.instance
 import timber.log.Timber
+import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.constants.Constants.TWO_SECONDS
 import za.co.xisystems.itis_rrm.databinding.ActivityMainBinding
 import za.co.xisystems.itis_rrm.ui.base.BaseActivity
 import za.co.xisystems.itis_rrm.ui.mainview.activities.MainActivityViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.activities.MainActivityViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SettingsActivity
+import za.co.xisystems.itis_rrm.ui.mainview.home.HomeFragmentDirections
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
@@ -55,9 +57,9 @@ import za.co.xisystems.itis_rrm.utils.hideKeyboard
 import za.co.xisystems.itis_rrm.utils.toast
 
 class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedListener,
-    KodeinAware {
+    DIAware {
 
-    override val kodein by kodein()
+    override val di by closestDI()
     private lateinit var mainActivityViewModel: MainActivityViewModel
     private val factory: MainActivityViewModelFactory by instance()
     private lateinit var navController: NavController
@@ -116,6 +118,13 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         } else {
             throw NullPointerException("Something went wrong")
         }
+
+        // Set MotionToast to use Sanral colours
+        MotionToast.setErrorColor(R.color.sanral_dark_red)
+        MotionToast.setSuccessColor(R.color.sanral_dark_green)
+        MotionToast.setWarningColor(R.color.sanral_dark_red)
+        MotionToast.setInfoColor(R.color.dark_bg_color)
+        MotionToast.setDeleteColor(R.color.dark_bg_color)
 
         // Because we're creating the NavHostFragment using FragmentContainerView, we must
         // retrieve the NavController directly from the NavHostFragment instead
@@ -219,19 +228,17 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                 super.onBackPressed()
                 toggle?.syncState()
             } else {
-                navController
                 doubleBackToExitPressed++
-                if (doubleBackToExitPressed >= 2) {
+                if (doubleBackToExitPressed == 2) {
                     logoutApplication()
                     finish()
                 } else {
+
                     toast("Please press Back again to exit")
 
-                    if (doubleBackToExitPressed > 0) {
-                        Handler(mainLooper).postDelayed({
-                            doubleBackToExitPressed--
-                        }, TWO_SECONDS)
-                    }
+                    Handler(mainLooper).postDelayed({
+                        doubleBackToExitPressed = 0
+                    }, TWO_SECONDS)
                 }
             }
         }
@@ -291,20 +298,25 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         // Handle navigation view item clicks here.
+        val home = HomeFragmentDirections.actionGlobalNavHome()
 
         when (item.itemId) {
             R.id.nav_home -> {
-                navController.navigate(R.id.nav_home)
+                navController.navigate(home)
                 toggle?.syncState()
                 initializeCountDrawer()
             }
             R.id.nav_create -> {
-                navController.navigate(R.id.nav_create)
+                val createDirections = HomeFragmentDirections.actionNavHomeToNavCreate()
+                navController.navigate(home)
+                navController.navigate(createDirections)
                 toggle?.syncState()
             }
 
             R.id.nav_unSubmitted -> {
-                navController.navigate(R.id.nav_unSubmitted)
+                val unsubDirections = HomeFragmentDirections.actionNavHomeToNavUnSubmitted()
+                navController.navigate(home)
+                navController.navigate(unsubDirections)
                 toggle?.syncState()
             }
             R.id.nav_correction -> {
@@ -312,19 +324,27 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                 toggle?.syncState()
             }
             R.id.nav_work -> {
-                navController.navigate(R.id.nav_work)
+                val workDirections = HomeFragmentDirections.actionNavHomeToNavWork(jobId = null)
+                navController.navigate(home)
+                navController.navigate(workDirections)
                 toggle?.syncState()
             }
             R.id.nav_estMeasure -> {
-                navController.navigate(R.id.nav_estMeasure)
+                val estMeasureDirections = HomeFragmentDirections.actionNavHomeToNavEstMeasure()
+                navController.navigate(home)
+                navController.navigate(estMeasureDirections)
                 toggle?.syncState()
             }
             R.id.nav_approveJobs -> {
-                navController.navigate(R.id.nav_approveJobs)
+                val approveDirections = HomeFragmentDirections.actionNavHomeToNavApproveJobs()
+                navController.navigate(home)
+                navController.navigate(approveDirections)
                 toggle?.syncState()
             }
             R.id.nav_approveMeasure -> {
-                navController.navigate(R.id.nav_approveMeasure)
+                val approveMeasureDirections = HomeFragmentDirections.actionNavHomeToNavApproveMeasure()
+                navController.navigate(home)
+                navController.navigate(approveMeasureDirections)
                 toggle?.syncState()
             }
         }

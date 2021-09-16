@@ -12,7 +12,7 @@ import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.GroupieViewHolder
 import za.co.xisystems.itis_rrm.constants.Constants
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
-import za.co.xisystems.itis_rrm.custom.results.XIError
+import za.co.xisystems.itis_rrm.custom.results.XIResult
 
 abstract class VeiledRecyclerFragment : BaseFragment() {
 
@@ -24,7 +24,12 @@ abstract class VeiledRecyclerFragment : BaseFragment() {
      * @param adapter GroupAdapter<GroupieViewHolder> - groupie adapter
      * @param veiledItemsToLoad Int - number of veiled items to load
      */
-    protected fun VeilRecyclerFrameView.initVeil(layoutResId: Int, context: Context, adapter: GroupAdapter<GroupieViewHolder>, veiledItemsToLoad: Int) {
+    protected fun VeilRecyclerFrameView.initVeil(
+        layoutResId: Int,
+        context: Context,
+        adapter: GroupAdapter<GroupieViewHolder>,
+        veiledItemsToLoad: Int
+    ) {
         this.run {
 
             setVeilLayout(layoutResId, object : VeiledItemOnClickListener {
@@ -64,7 +69,7 @@ abstract class VeiledRecyclerFragment : BaseFragment() {
             fetchQuery()
         } catch (t: Throwable) {
             veilRecyclerFrameView.unVeil()
-            val xiFail = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
+            val xiFail = XIResult.Error(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
             crashGuard(
                 view = requiredView,
                 throwable = xiFail,

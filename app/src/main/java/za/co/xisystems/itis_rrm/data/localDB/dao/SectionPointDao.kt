@@ -17,8 +17,12 @@ interface SectionPointDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertSection(section: SectionPointDTO)
 
-    @Query("SELECT EXISTS(SELECT * FROM SECTION_POINT_TABLE WHERE sectionId = :sectionId AND projectId LIKE :projectId AND jobId LIKE :jobId)")
-    fun checkSectionExists(sectionId: Int, projectId: String?, jobId: String?): Boolean
+    @Query(
+        "SELECT EXISTS(SELECT * FROM SECTION_POINT_TABLE " +
+                "WHERE sectionId = :sectionId AND projectId LIKE :projectId " +
+                "AND jobId LIKE :jobId AND ABS(pointLocation - :pointLocation) <= 0.5)"
+    )
+    fun checkSectionExists(sectionId: Int, projectId: String?, jobId: String?, pointLocation: Double): Boolean
 
     @Query("INSERT INTO SECTION_POINT_TABLE (direction, linearId ,pointLocation,sectionId ,projectId ,  jobId ) VALUES (:direction ,:linearId ,:pointLocation  ,:sectionId ,:projectId ,:jobId)")
     fun insertSection(

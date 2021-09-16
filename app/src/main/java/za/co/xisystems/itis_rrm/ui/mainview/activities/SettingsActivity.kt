@@ -8,20 +8,19 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.switchmaterial.SwitchMaterial
 import kotlinx.android.synthetic.main.settings_activity.*
-import org.kodein.di.KodeinAware
-import org.kodein.di.android.kodein
-import org.kodein.di.generic.instance
-import za.co.xisystems.itis_rrm.MainActivity
+import org.kodein.di.DIAware
+import org.kodein.di.android.closestDI
+import org.kodein.di.instance
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.ui.auth.RegisterActivity
 import za.co.xisystems.itis_rrm.ui.auth.ResetPinActivity
 import za.co.xisystems.itis_rrm.utils.Coroutines
 
-class SettingsActivity : AppCompatActivity(), KodeinAware {
+class SettingsActivity : AppCompatActivity(), DIAware {
 
-    override val kodein by kodein()
+    override val di by closestDI()
     private lateinit var settingsViewModel: SettingsViewModel
-    private val factory: SettingsViewModelFactory by instance<SettingsViewModelFactory>()
+    private val factory: SettingsViewModelFactory by instance()
 
     private var serviceVersionTextView: TextView? = null
     private val errorOccurredDuringRegistration = false
@@ -91,7 +90,6 @@ class SettingsActivity : AppCompatActivity(), KodeinAware {
             finish()
         }
     }
-
 
     var isChecked = false
 }

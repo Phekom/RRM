@@ -16,7 +16,52 @@
         android:id="@+id/nav_home"
         android:name="za.co.xisystems.itis_rrm.ui.mainview.home.HomeFragment"
         tools:layout="@layout/fragment_home"
-        android:label="@string/menu_home" />
+        android:label="@string/menu_home">
+        <action
+            android:id="@+id/action_nav_home_to_nav_approveJobs"
+            app:destination="@id/nav_approveJobs"
+            app:enterAnim="@anim/animate_slide_left_enter"
+            app:exitAnim="@anim/animate_slide_out_right"
+            app:popUpTo="@id/nav_home"
+            app:popEnterAnim="@anim/animate_fade_enter"
+            app:popExitAnim="@anim/animate_fade_exit" />
+        <action
+            android:id="@+id/action_nav_home_to_nav_create"
+            app:destination="@id/nav_create"
+            app:enterAnim="@anim/animate_slide_left_enter"
+            app:exitAnim="@anim/animate_slide_left_exit"
+            app:popUpTo="@id/nav_home"
+            app:popEnterAnim="@anim/animate_fade_enter"
+            app:popExitAnim="@anim/animate_fade_exit" />
+        <action
+            android:id="@+id/action_nav_home_to_nav_work"
+            app:destination="@id/nav_work"
+            app:enterAnim="@anim/animate_split_enter"
+            app:exitAnim="@anim/animate_split_exit"
+            app:popEnterAnim="@anim/animate_fade_enter"
+            app:popExitAnim="@anim/animate_fade_exit" />
+        <action
+            android:id="@+id/action_nav_home_to_nav_approveMeasure"
+            app:destination="@id/nav_approveMeasure"
+            app:enterAnim="@anim/animate_slide_in_left"
+            app:exitAnim="@anim/animate_slide_out_right"
+            app:popEnterAnim="@anim/animate_fade_enter"
+            app:popExitAnim="@anim/animate_fade_exit" />
+        <action
+            android:id="@+id/action_nav_home_to_nav_unSubmitted"
+            app:destination="@id/nav_unSubmitted"
+            app:enterAnim="@anim/animate_diagonal_right_enter"
+            app:exitAnim="@anim/animate_diagonal_right_exit"
+            app:popEnterAnim="@anim/animate_fade_enter"
+            app:popExitAnim="@anim/animate_fade_exit" />
+        <action
+            android:id="@+id/action_nav_home_to_nav_estMeasure"
+            app:destination="@id/nav_estMeasure"
+            app:enterAnim="@anim/animate_slide_in_left"
+            app:exitAnim="@anim/animate_slide_out_right"
+            app:popEnterAnim="@anim/animate_fade_enter"
+            app:popExitAnim="@anim/animate_fade_exit" />
+    </fragment>
 
     <fragment
         android:id="@+id/nav_create"
@@ -148,10 +193,21 @@
             android:name="estimateId"
             app:argType="string"
             app:nullable="true" />
+        <argument
+            android:name="itemId"
+            app:argType="string"
+            app:nullable="true" />
+        <argument
+            android:name="locationErrorMessage"
+            app:argType="string"
+            app:nullable="true" />
         <action
             android:id="@+id/action_estimatePhotoFragment_to_addProjectFragment2"
             app:destination="@id/addProjectFragment"
-            app:popUpTo="@id/addProjectFragment" />
+            app:enterAnim="@anim/animate_slide_in_left"
+            app:exitAnim="@anim/animate_slide_out_right"
+            app:popEnterAnim="@anim/animate_fade_enter"
+            app:popExitAnim="@anim/animate_fade_exit" />
     </fragment>
     <fragment
         android:id="@+id/addProjectFragment"
@@ -177,11 +233,15 @@
         <action
             android:id="@+id/action_addProjectFragment_to_estimatePhotoFragment"
             app:destination="@id/estimatePhotoFragment"
-            app:enterAnim="@anim/nav_default_enter_anim"
-            app:popUpTo="@id/addProjectFragment"
-            app:exitAnim="@anim/nav_default_exit_anim"
-            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
-            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
+            app:enterAnim="@anim/animate_in_out_enter"
+            app:exitAnim="@anim/animate_in_out_exit"
+            app:popEnterAnim="@anim/animate_fade_enter"
+            app:popExitAnim="@anim/animate_fade_exit" />
+        <action
+            android:id="@+id/action_addProjectFragment_self"
+            app:destination="@id/addProjectFragment"
+            app:enterAnim="@anim/animate_fade_enter"
+            app:exitAnim="@anim/animate_fade_exit" />
     </fragment>
     <fragment
         android:id="@+id/jobInfoFragment"
@@ -223,8 +283,6 @@
         android:name="za.co.xisystems.itis_rrm.ui.mainview.estmeasure.submit_measure.SubmitMeasureFragment"
         android:label="fragment_submit_measure"
         tools:layout="@layout/fragment_submit_measure">
-
-
         <action
             android:id="@+id/action_submitMeasureFragment_to_captureItemMeasurePhotoFragment"
             app:destination="@id/captureItemMeasurePhotoFragment"
@@ -260,6 +318,13 @@
             app:exitAnim="@anim/animate_slide_down_exit"
             app:popEnterAnim="@anim/nav_default_pop_enter_anim"
             app:popExitAnim="@anim/nav_default_pop_exit_anim" />
+        <action
+            android:id="@+id/action_captureWorkFragment_self"
+            app:destination="@id/captureWorkFragment"
+            app:popUpTo="@id/nav_work"
+            app:popEnterAnim="@anim/animate_fade_enter"
+            app:popExitAnim="@anim/animate_fade_exit"
+            app:popUpToInclusive="false" />
     </fragment>
     <fragment
         android:id="@+id/captureItemMeasurePhotoFragment"

@@ -21,17 +21,17 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenStarted
 import androidx.navigation.Navigation
-import java.util.ArrayList
-import java.util.Date
 import kotlinx.coroutines.launch
-import org.kodein.di.KodeinAware
-import org.kodein.di.android.x.kodein
-import org.kodein.di.generic.instance
+import org.kodein.di.DIAware
+import org.kodein.di.android.x.closestDI
+import org.kodein.di.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
-import za.co.xisystems.itis_rrm.custom.results.XIError
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.SUCCESS
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.WARNING
+import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.ItemSectionDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
@@ -46,24 +46,25 @@ import za.co.xisystems.itis_rrm.data.network.OfflineListener
 import za.co.xisystems.itis_rrm.databinding.FragmentCreatejobBinding
 import za.co.xisystems.itis_rrm.domain.ContractSelector
 import za.co.xisystems.itis_rrm.domain.ProjectSelector
+import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper.setSpinner
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DateUtil
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.SUCCESS
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.WARNING
 import za.co.xisystems.itis_rrm.utils.hide
 import za.co.xisystems.itis_rrm.utils.show
+import java.util.ArrayList
+import java.util.Date
 
 /**
  * Created by Francis Mahlava on 2019/10/18.
  * Updated by Shaun McDonald on 2020/04/22
  */
 
-class CreateFragment : BaseFragment(), OfflineListener, KodeinAware {
+class CreateFragment : BaseFragment(), OfflineListener, DIAware {
 
-    override val kodein by kodein()
+    override val di by closestDI()
     private lateinit var createViewModel: CreateViewModel
     private val factory: CreateViewModelFactory by instance()
 
@@ -151,7 +152,7 @@ class CreateFragment : BaseFragment(), OfflineListener, KodeinAware {
                 R.id.selectContractProjectContinueButton -> {
                     val description = ui.descriptionEditText.text!!.toString().trim { it <= ' ' }
                     if (description.isEmpty()) {
-                        sharpToast(message = "Please Enter Description", style = WARNING)
+                        extensionToast(message = "Please Enter Description", style = WARNING)
                         ui.descriptionEditText.startAnimation(shake)
                     } else {
                         activity?.hideKeyboard()
@@ -169,7 +170,7 @@ class CreateFragment : BaseFragment(), OfflineListener, KodeinAware {
         try {
             setContract()
         } catch (t: Throwable) {
-            val contractErr = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
+            val contractErr = XIResult.Error(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
             crashGuard(
                 view = this.requireView(),
                 throwable = contractErr,
@@ -258,7 +259,7 @@ class CreateFragment : BaseFragment(), OfflineListener, KodeinAware {
             isSynced = null
 
         )
-        sharpToast(message = "New job created", style = SUCCESS)
+        extensionToast(message = "New job created", style = SUCCESS)
         return createdJob
     }
 
@@ -330,7 +331,7 @@ class CreateFragment : BaseFragment(), OfflineListener, KodeinAware {
                 })
             }
         } catch (t: Throwable) {
-            val contractErr = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
+            val contractErr = XIResult.Error(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
             crashGuard(
                 this.requireView(),
                 contractErr,

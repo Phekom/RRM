@@ -24,6 +24,9 @@ interface ItemDaoTemp {
     @Query("SELECT * FROM PROJECT_ITEM_TABLE_TEMP WHERE projectId = :projectId AND jobId = :jobId")
     fun getAllProjecItems(projectId: String, jobId: String): LiveData<List<ItemDTOTemp>>
 
+    @Query("SELECT * FROM PROJECT_ITEM_TABLE_TEMP WHERE itemId = :itemId")
+    suspend fun getProjectItemById(itemId: String): ItemDTOTemp
+
     @Query("DELETE FROM PROJECT_ITEM_TABLE_TEMP")
     fun deleteAll()
 

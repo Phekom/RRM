@@ -24,18 +24,10 @@ import za.co.xisystems.itis_rrm.custom.errors.NoDataException
 import za.co.xisystems.itis_rrm.custom.errors.ServiceException
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
-import za.co.xisystems.itis_rrm.custom.results.XIError
-import za.co.xisystems.itis_rrm.custom.results.XIProgress
 import za.co.xisystems.itis_rrm.custom.results.XIResult
-import za.co.xisystems.itis_rrm.custom.results.XISuccess
+import za.co.xisystems.itis_rrm.custom.results.XIResult.*
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksPhotoDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.WfWorkStepDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.WorkflowJobDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
 import za.co.xisystems.itis_rrm.utils.Coroutines
@@ -60,10 +52,8 @@ class WorkDataRepository(
 
     val workStatus: MutableLiveData<XIEvent<XIResult<String>>> = MutableLiveData()
 
-    private fun postWorkStatus(result: XIResult<String>) {
-        Coroutines.main {
-            workStatus.postValue(XIEvent(result))
-        }
+    private suspend fun postWorkStatus(result: XIResult<String>) = withContext(Dispatchers.Main) {
+        workStatus.postValue(XIEvent(result))
     }
 
     suspend fun getUser(): LiveData<UserDTO> {
@@ -119,8 +109,12 @@ class WorkDataRepository(
         activity: FragmentActivity,
         estimateJob: JobDTO
     ) {
-        postWorkStatus(XIProgress(true))
-        val worksPhotos = estimateWorksItem.jobEstimateWorksPhotos
+        postWorkStatus(Progress(true))
+        val currentWorksPhotos =
+            estimateWorksItem.jobEstimateWorksPhotos.filter { photo ->
+                photo.photoActivityId == estimateWorksItem.actId
+            } as ArrayList<JobEstimateWorksPhotoDTO>
+
         val worksData = JsonObject()
         val gson = Gson()
         val newMeasure = gson.toJson(estimateWorksItem)
@@ -137,7 +131,7 @@ class WorkDataRepository(
             if (messages.isBlank()) {
 
                 postEstimateWorks(
-                    worksPhotos,
+                    currentWorksPhotos,
                     estimateWorksItem,
                     activity,
                     estimateJob.userId
@@ -148,7 +142,7 @@ class WorkDataRepository(
         } catch (t: Throwable) {
             val message = "Failed to upload job ${estimateJob.jiNo}: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
             Timber.e(t, message)
-            val uploadException = XIError(t, message)
+            val uploadException = Error(t, message)
             postWorkStatus(uploadException)
         }
     }
@@ -160,17 +154,22 @@ class WorkDataRepository(
         useR: Int
     ) {
         withContext(Dispatchers.IO) {
-
-            uploadWorksImages(jobEstimateWorks, photos, activity)
-            moveJobToNextWorkflowStep(jobEstimateWorks, useR)
+            try {
+                uploadWorksImages(jobEstimateWorks, photos, activity)
+                moveJobToNextWorkflowStep(jobEstimateWorks, useR)
+            } catch (ex: Exception) {
+                val message = "Failed to upload works estimate: ${ex.message ?: XIErrorHandler.UNKNOWN_ERROR}"
+                Timber.e(ex, message)
+                postWorkStatus(Error(ex, message))
+            }
         }
     }
 
-    private fun uploadWorksImages(
+    private suspend fun uploadWorksImages(
         workEstimate: JobEstimateWorksDTO,
         worksPhotos: ArrayList<JobEstimateWorksPhotoDTO>?,
         activity: FragmentActivity
-    ) {
+    ) = withContext(Dispatchers.IO) {
         var imageCounter = 1
 
         try {
@@ -178,36 +177,39 @@ class WorkDataRepository(
                 throw java.lang.NullPointerException("WorkEstimate ${workEstimate.estimateId} has no photos.")
             } else {
                 val totalImages = worksPhotos.size
-                for (jobItemPhoto in worksPhotos) {
-                    if (photoUtil.photoExist(jobItemPhoto.filename)) {
-                        Timber.d("x -> UploadRrImage $imageCounter")
-                        uploadRrmImage(
-                            jobItemPhoto.filename,
-                            PhotoQuality.HIGH,
-                            imageCounter,
-                            totalImages,
-                            activity
-                        )
-                        imageCounter++
-                    } else {
-                        throw NoDataException("Photo ${jobItemPhoto.filename} could not be loaded.")
+                worksPhotos.forEach { jobItemPhoto ->
+                    when {
+                        photoUtil.photoExist(jobItemPhoto.filename) -> {
+                            Timber.d("x -> UploadRrImage $imageCounter")
+                            uploadRrmImage(
+                                jobItemPhoto.filename,
+                                PhotoQuality.HIGH,
+                                imageCounter,
+                                totalImages,
+                                activity
+                            )
+                            imageCounter++
+                        }
+                        else -> {
+                            throw NoDataException("Photo ${jobItemPhoto.filename} could not be loaded.")
+                        }
                     }
                 }
             }
         } catch (throwable: Throwable) {
             val errMessage = "Failed to stage image: ${throwable.message ?: XIErrorHandler.UNKNOWN_ERROR}"
             Timber.e(throwable, errMessage)
-            postWorkStatus(XIError(throwable, errMessage))
+            postWorkStatus(Error(throwable, errMessage))
         }
     }
 
-    private fun uploadRrmImage(
+    suspend fun uploadRrmImage(
         filename: String,
         photoQuality: PhotoQuality,
         imageCounter: Int,
         totalImages: Int,
         activity: FragmentActivity
-    ) {
+    ) = Coroutines.io {
         val data: ByteArray = getData(filename, photoQuality)
         processImageUpload(
             filename,
@@ -224,41 +226,39 @@ class WorkDataRepository(
         photo: ByteArray,
         totalImages: Int,
         imageCounter: Int
-    ) {
-        Coroutines.io {
-            try {
-                val imagedata = JsonObject()
-                imagedata.addProperty("Filename", filename)
-                imagedata.addProperty("ImageByteArray", photoUtil.encode64Pic(photo))
-                imagedata.addProperty("ImageFileExtension", extension)
-                Timber.d("ImageData: $imagedata")
+    ) = Coroutines.io {
+        try {
+            val imagedata = JsonObject()
+            imagedata.addProperty("Filename", filename)
+            imagedata.addProperty("ImageByteArray", photoUtil.encode64Pic(photo))
+            imagedata.addProperty("ImageFileExtension", extension)
+            Timber.d("ImageData: $imagedata")
 
-                val uploadImageResponse = apiRequest { api.uploadRrmImage(imagedata) }
-                val apiMessage = uploadImageResponse.errorMessage ?: ""
+            val uploadImageResponse = apiRequest { api.uploadRrmImage(imagedata) }
+            val apiMessage = uploadImageResponse.errorMessage ?: ""
 
-                if (apiMessage.trim().isNotBlank()) {
-                    throw ServiceException(apiMessage)
-                }
-
-                if (totalImages <= imageCounter) {
-                    Timber.d("Total Images: $totalImages")
-                }
-            } catch (throwable: Throwable) {
-                val errMessage = "Failed to upload image: ${throwable.message ?: XIErrorHandler.UNKNOWN_ERROR}"
-                Timber.e(throwable, errMessage)
-                postWorkStatus(XIError(throwable, errMessage))
+            if (apiMessage.trim().isNotBlank()) {
+                throw ServiceException(apiMessage)
             }
+
+            if (totalImages <= imageCounter) {
+                Timber.d("Total Images: $totalImages")
+            }
+        } catch (throwable: Throwable) {
+            val errMessage = "Failed to upload image: ${throwable.message ?: XIErrorHandler.UNKNOWN_ERROR}"
+            Timber.e(throwable, errMessage)
+            postWorkStatus(Error(throwable, errMessage))
         }
     }
 
-    private fun getData(
+    private suspend fun getData(
         filename: String,
         photoQuality: PhotoQuality
-    ): ByteArray {
+    ): ByteArray = withContext(Dispatchers.IO) {
         val uri = photoUtil.getPhotoPathFromExternalDirectory(filename)
         val bitmap =
             photoUtil.getPhotoBitmapFromFile(uri, photoQuality)
-        return photoUtil.getCompressedPhotoWithExifInfo(
+        return@withContext photoUtil.getCompressedPhotoWithExifInfo(
             bitmap!!,
             filename
         )
@@ -296,11 +296,11 @@ class WorkDataRepository(
                     }
                 }
 
-                postWorkStatus(XISuccess(jobEstimateWorks.worksId))
+                postWorkStatus(Success(jobEstimateWorks.worksId))
             } catch (t: Throwable) {
                 val message = "Failed to update workflow: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
                 Timber.e(t, message)
-                val workflowFail = XIError(t, message)
+                val workflowFail = Error(t, message)
                 postWorkStatus(workflowFail)
             }
         }
@@ -326,8 +326,11 @@ class WorkDataRepository(
                     Timber.d("${estimateWorksPhoto.filename} was already in the database")
                 }
             }
+            val allEstimateWorksPhotos =
+                appDb.getEstimateWorkPhotoDao()
+                    .getEstimateWorksPhotoForWorksId(estimateWorksItem.worksId) as ArrayList<JobEstimateWorksPhotoDTO>
             appDb.getEstimateWorkDao().updateJobEstimateWorkForEstimateID(
-                estimateWorksItem.jobEstimateWorksPhotos,
+                allEstimateWorksPhotos,
                 estimateWorksItem.estimateId
             )
         }
@@ -337,16 +340,14 @@ class WorkDataRepository(
         jobId: String?,
         estimateWorkPartComplete: Int,
         estWorksComplete: Int
-    ): Int {
-        return withContext(Dispatchers.IO) {
-            appDb.getJobItemEstimateDao()
-                .getJobItemsEstimatesDoneForJobId(jobId, estimateWorkPartComplete, estWorksComplete)
-        }
+    ): Int = withContext(Dispatchers.IO) {
+        return@withContext appDb.getJobItemEstimateDao()
+            .getJobItemsEstimatesDoneForJobId(jobId, estimateWorkPartComplete, estWorksComplete)
     }
 
-    suspend fun getJobEstiItemForEstimateId(estimateId: String?): LiveData<List<JobEstimateWorksDTO>> {
+    suspend fun getLiveJobEstimateWorksByEstimateId(estimateId: String?): LiveData<JobEstimateWorksDTO> {
         return withContext(Dispatchers.IO) {
-            appDb.getEstimateWorkDao().getJobMeasureItemsForJobId(estimateId)
+            appDb.getEstimateWorkDao().getLiveJobEstimateWorksForEstimateId(estimateId)
         }
     }
 
@@ -367,7 +368,7 @@ class WorkDataRepository(
         } catch (ex: Exception) {
             val message = "Failed to save updated job: ${ex.message ?: XIErrorHandler.UNKNOWN_ERROR}"
             Timber.e(message)
-            val saveFail = XIError(ex, message)
+            val saveFail = Error(ex, message)
             postWorkStatus(saveFail)
         }
     }
@@ -386,7 +387,7 @@ class WorkDataRepository(
                 jobItemEstimate.workflowEstimateWorks.forEach { jobEstimateWorks ->
                     appDb.getEstimateWorkDao().updateJobEstimateWorksWorkflow(
                         jobEstimateWorks.worksId,
-                        jobEstimateWorks.estimateId,
+                        jobItemEstimate.estimateId,
                         jobEstimateWorks.recordVersion,
                         jobEstimateWorks.recordSynchStateId,
                         jobEstimateWorks.actId,
@@ -421,12 +422,12 @@ class WorkDataRepository(
                 }
             }
             if (!inWorkflow) {
-                postWorkStatus(XISuccess(job.jiNo!!))
+                postWorkStatus(Success(job.jiNo!!))
             }
         } catch (t: Throwable) {
             val message = "Unable to update workflow job: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
             Timber.e(t, message)
-            postWorkStatus(XIError(LocalDataException(message), message))
+            postWorkStatus(Error(LocalDataException(message), message))
         }
     }
 
@@ -462,7 +463,7 @@ class WorkDataRepository(
             return job
         } catch (t: Throwable) {
             val message = "Failed to set BigEndian Guids: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
-            postWorkStatus(XIError(t, message))
+            Coroutines.main { postWorkStatus(Error(t, message)) }
             return null
         }
     }
@@ -473,10 +474,8 @@ class WorkDataRepository(
         }
     }
 
-    suspend fun getUOMForProjectItemId(projectItemId: String): String {
-        return withContext(Dispatchers.IO) {
-            appDb.getProjectItemDao().getUOMForProjectItemId(projectItemId)
-        }
+    suspend fun getUOMForProjectItemId(projectItemId: String): String? = withContext(Dispatchers.IO) {
+        return@withContext appDb.getProjectItemDao().getUOMForProjectItemId(projectItemId)
     }
 
     suspend fun getRouteForProjectSectionId(sectionId: String?): String {
@@ -494,7 +493,7 @@ class WorkDataRepository(
     suspend fun getJobEstimationItemsForJobId(
         jobID: String?,
         actID: Int
-    ): LiveData<List<JobItemEstimateDTO>> {
+    ): List<JobItemEstimateDTO> {
         return withContext(Dispatchers.IO) {
             appDb.getJobItemEstimateDao().getJobEstimationItemsForJobId(jobID!!, actID)
         }
@@ -525,7 +524,7 @@ class WorkDataRepository(
             val prefix = "Failed to process workflow move"
             val message = "$prefix: ${e.message ?: XIErrorHandler.UNKNOWN_ERROR}"
             Timber.e(e, message)
-            val uploadFail = XIError(e, message)
+            val uploadFail = Error(e, message)
             postWorkStatus(uploadFail)
         }
     }
@@ -541,4 +540,11 @@ class WorkDataRepository(
 
     suspend fun getEstimateWorksPhotosForWorksId(worksId: String): List<JobEstimateWorksPhotoDTO> =
         appDb.getEstimateWorkPhotoDao().getEstimateWorksPhotoForWorksId(worksId)
+
+    suspend fun getEstimateWorksPhotoForWorksIdAndActID(worksId: String, actId: Int): List<JobEstimateWorksPhotoDTO> =
+        appDb.getEstimateWorkPhotoDao().getEstimateWorksPhotoForWorksIdAndActID(worksId, actId)
+
+    suspend fun getProjectItemById(projectItemId: String): ItemDTOTemp = withContext(Dispatchers.IO) {
+        return@withContext appDb.getItemDaoTemp().getProjectItemById(projectItemId)
+    }
 }

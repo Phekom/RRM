@@ -64,6 +64,7 @@
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <LinearLayout
+                    android:id="@+id/workCaptureFields"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_margin="2dp"
@@ -117,6 +118,28 @@
                         android:text="@string/submit" />
 
                 </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/read_only_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone"
+                    tools:visibility="visible">
+
+                    <TextView
+                        android:id="@+id/for_review_only"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginTop="5dp"
+                        android:layout_marginEnd="15dp"
+                        android:text="@string/for_review_purposes_only"
+                        android:textStyle="bold"
+                        android:gravity="center_horizontal|center_vertical" />
+                </LinearLayout>
+
+
             </LinearLayout>
         </ScrollView>
 

@@ -8,16 +8,14 @@ package za.co.xisystems.itis_rrm.utils
 
 import android.content.Context
 import android.content.res.AssetFileDescriptor
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.Canvas
-import android.graphics.Matrix
-import android.graphics.Paint
+import android.graphics.*
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import androidx.core.content.FileProvider
 import androidx.exifinterface.media.ExifInterface
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.apache.sanselan.ImageReadException
 import org.apache.sanselan.ImageWriteException
 import org.apache.sanselan.Sanselan
@@ -31,16 +29,8 @@ import za.co.xisystems.itis_rrm.constants.Constants.NINETY_DAYS
 import za.co.xisystems.itis_rrm.constants.Constants.THIRTY_DAYS
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
-import java.io.ByteArrayOutputStream
-import java.io.File
-import java.io.FileNotFoundException
-import java.io.FileOutputStream
-import java.io.IOException
-import java.util.Base64
-import java.util.Date
-import java.util.HashMap
-import java.util.Locale
-import java.util.UUID
+import java.io.*
+import java.util.*
 import kotlin.math.roundToLong
 
 class PhotoUtil private constructor(private var appContext: Context) {
@@ -52,13 +42,13 @@ class PhotoUtil private constructor(private var appContext: Context) {
         private const val BMP_LOAD_FAILED = "Failed to load bitmap"
 
         private fun initInstance(appContext: Context): PhotoUtil {
-                instance = PhotoUtil(appContext)
-                Coroutines.io {
-                    instance.pictureFolder = appContext.getExternalFilesDir(Environment.DIRECTORY_PICTURES)!!
-                    if (!instance.pictureFolder.exists()) {
-                        instance.pictureFolder.mkdirs()
-                    }
-                }.also { return instance }
+            instance = PhotoUtil(appContext)
+            Coroutines.io {
+                instance.pictureFolder = appContext.getExternalFilesDir(Environment.DIRECTORY_PICTURES)!!
+                if (!instance.pictureFolder.exists()) {
+                    instance.pictureFolder.mkdirs()
+                }
+            }.also { return instance }
         }
 
         fun getInstance(appContext: Context): PhotoUtil {
@@ -69,42 +59,6 @@ class PhotoUtil private constructor(private var appContext: Context) {
                 instance
             }
         }
-    }
-
-
-    fun getPhotoBitMapFromFile(
-        selectedImage: Uri?,
-        photoQuality: PhotoQuality
-    ): Bitmap? {
-        var bm: Bitmap? = null
-        val options = BitmapFactory.Options()
-        options.inSampleSize = photoQuality.value
-        var fileDescriptor: AssetFileDescriptor? = null
-
-        try {
-            fileDescriptor =
-                selectedImage?.let {
-                    return@let appContext.contentResolver.openAssetFileDescriptor(
-                        it, "r"
-                    )
-                }
-            fileDescriptor?.let {
-                bm = BitmapFactory.decodeFileDescriptor(
-                    fileDescriptor.fileDescriptor,
-                    null,
-                    options
-                )
-            }
-        } catch (e: FileNotFoundException) {
-            e.printStackTrace()
-        } finally {
-            if (fileDescriptor != null) try {
-                fileDescriptor.close()
-            } catch (e: IOException) {
-                e.printStackTrace()
-            }
-        }
-        return bm
     }
 
     private fun exifToDegrees(exifOrientation: Int): Int {
@@ -159,15 +113,15 @@ class PhotoUtil private constructor(private var appContext: Context) {
             }
     }
 
-    fun photoExist(fileName: String): Boolean {
+    suspend fun photoExist(fileName: String): Boolean = withContext(Dispatchers.IO) {
         val image =
             File(getPhotoPathFromExternalDirectory(fileName).path!!)
-        return image.exists()
+        return@withContext image.exists()
     }
 
-    fun getPhotoPathFromExternalDirectory(
+    suspend fun getPhotoPathFromExternalDirectory(
         photoName: String
-    ): Uri {
+    ): Uri = withContext(Dispatchers.IO) {
         var pictureName = photoName
         pictureName =
             if (!pictureName.lowercase(Locale.ROOT)
@@ -177,52 +131,44 @@ class PhotoUtil private constructor(private var appContext: Context) {
             pictureFolder.toString().plus(File.separator)
                 .plus(pictureName)
         val file = File(fileName)
-        return Uri.fromFile(file)
+        return@withContext Uri.fromFile(file)
     }
 
-    fun getPhotoBitmapFromFile(
+    suspend fun getPhotoBitmapFromFile(
         selectedImage: Uri?,
         photoQuality: PhotoQuality
-    ): Bitmap? {
-        var bm: Bitmap? = null
-        try {
+    ): Bitmap? = withContext(Dispatchers.IO) {
+        return@withContext try {
             val options = BitmapFactory.Options()
-            if (selectedImage != null) {
-                options.inSampleSize = photoQuality.value
-                var fileDescriptor: AssetFileDescriptor? = null
-                try {
-                    fileDescriptor =
-                        appContext.contentResolver.openAssetFileDescriptor(
-                            selectedImage, "r")
-                } catch (e: FileNotFoundException) {
-                    Timber.e(e, BMP_LOAD_FAILED)
-                } finally {
-                    try {
-                        if (BuildConfig.DEBUG && fileDescriptor == null) {
-                            error("Assertion failed")
-                        }
-                        bm = BitmapFactory.decodeFileDescriptor(
-                            fileDescriptor!!.fileDescriptor,
-                            null,
-                            options
-                        )
-                        fileDescriptor.close()
-                    } catch (e: IOException) {
-                        Timber.e(e, BMP_LOAD_FAILED)
-                        bm = null
-                    }
-                }
-            }
-        } catch (e: Exception) {
+            options.inSampleSize = photoQuality.value
+            val fileDescriptor: AssetFileDescriptor =
+                selectedImage?.let {
+                    appContext.contentResolver
+                        .openAssetFileDescriptor(it, "r")
+                } ?: throw IllegalArgumentException(BMP_LOAD_FAILED)
+            val bm = BitmapFactory.decodeFileDescriptor(
+                fileDescriptor.fileDescriptor,
+                null,
+                options
+            )
+            fileDescriptor.close()
+            bm
+        } catch (e: IllegalArgumentException) {
             Timber.e(e, BMP_LOAD_FAILED)
+            null
+        } catch (e: FileNotFoundException) {
+            Timber.e(e, BMP_LOAD_FAILED)
+            null
+        } catch (e: IOException) {
+            Timber.e(e, BMP_LOAD_FAILED)
+            null
         }
-        return bm
     }
 
-    fun getCompressedPhotoWithExifInfo(
+    suspend fun getCompressedPhotoWithExifInfo(
         bitmap: Bitmap,
         fileName: String
-    ): ByteArray {
+    ): ByteArray = withContext(Dispatchers.IO) {
         var byteArrayOutputStream = ByteArrayOutputStream()
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream)
         var data = byteArrayOutputStream.toByteArray()
@@ -264,7 +210,7 @@ class PhotoUtil private constructor(private var appContext: Context) {
             byteArrayOutputStream.flush()
             byteArrayOutputStream.close()
         }
-        return data
+        return@withContext data
     }
 
     private fun extractJpegData(
@@ -291,11 +237,11 @@ class PhotoUtil private constructor(private var appContext: Context) {
      * @param imageUri
      */
 //    public static Map<String, String> saveImageToInternalStorage(Context context, Bitmap bitmap) {
-    fun saveImageToInternalStorage(
+    suspend fun saveImageToInternalStorage(
         imageUri: Uri
-    ): Map<String, String>? {
+    ): HashMap<String, String>? = withContext(Dispatchers.IO) {
         var scaledUri = imageUri
-        return try {
+        return@withContext try {
             lateinit var scaledBitmap: Bitmap
             val options = BitmapFactory.Options()
             lateinit var result: String
@@ -306,13 +252,15 @@ class PhotoUtil private constructor(private var appContext: Context) {
 
                 cursor?.run {
                     try {
-                        if (cursor.moveToFirst()) { // local filesystem
-                            var index = cursor.getColumnIndex("_data")
-                            if (index == -1) { // google drive
-                                index = cursor.getColumnIndex("_display_name")
+                        when {
+                            cursor.moveToFirst() -> { // local filesystem
+                                var index = cursor.getColumnIndex("_data")
+                                if (index == -1) { // google drive
+                                    index = cursor.getColumnIndex("_display_name")
+                                }
+                                result = cursor.getString(index)
+                                scaledUri = if (result.isBlank()) return@withContext null else Uri.parse(result)
                             }
-                            result = cursor.getString(index)
-                            scaledUri = if (result.isNotBlank()) Uri.parse(result) else return null
                         }
                     } catch (e: Exception) {
                         Timber.e(e, "Ërror loading photo $scaledUri")
@@ -387,7 +335,7 @@ class PhotoUtil private constructor(private var appContext: Context) {
                 e.printStackTrace()
             }
 
-            val map: MutableMap<String, String> =
+            val map: HashMap<String, String> =
                 HashMap()
             map["filename"] = imageFileName
             map["path"] = path
@@ -486,10 +434,10 @@ class PhotoUtil private constructor(private var appContext: Context) {
         return inSampleSize
     }
 
-    fun deleteImageFile(
+    suspend fun deleteImageFile(
         imagePath: String?
-    ): Boolean { // Get the file
-        return if (imagePath != null) {
+    ): Boolean = withContext(Dispatchers.IO) { // Get the file
+        return@withContext if (imagePath != null) {
             val imageFile = File(imagePath)
             // Delete the image
             val deleted = imageFile.delete()
@@ -503,7 +451,7 @@ class PhotoUtil private constructor(private var appContext: Context) {
         }
     }
 
-    fun persistImageToLocal(photo: String, fileName: String) {
+    fun persistImageToLocal(photo: String, fileName: String) = Coroutines.io {
         val imageByteArray: ByteArray = decode64Pic(photo)
         File(pictureFolder.path + "/" + fileName).writeBytes(imageByteArray)
     }
@@ -531,20 +479,23 @@ class PhotoUtil private constructor(private var appContext: Context) {
 
     private val authority = BuildConfig.APPLICATION_ID + ".provider"
 
-    fun getUri3(): Uri? {
+    fun getUri(photoPath: String): Uri? {
         return try {
             FileProvider.getUriForFile(
                 appContext, authority,
-                createImageFile()!!
+                File(photoPath)
             )
         } catch (e: IllegalArgumentException) {
-            e.printStackTrace()
+            Timber.e(e, "Could not load photo: ${e.message ?: XIErrorHandler.UNKNOWN_ERROR}")
+            null
+        } catch (e: IOException) {
+            Timber.e(e, "Could not load photo: ${e.message ?: XIErrorHandler.UNKNOWN_ERROR}")
             null
         }
     }
 
-    private fun getUriFromPath(filePath: String): Uri? {
-        return try {
+    private suspend fun getUriFromPath(filePath: String): Uri? = withContext(Dispatchers.IO) {
+        return@withContext try {
             val file = File(filePath)
             val uri = Uri.fromFile(file)
             uri
@@ -554,48 +505,50 @@ class PhotoUtil private constructor(private var appContext: Context) {
         }
     }
 
-    fun prepareGalleryPairs(filenames: List<String>): List<Pair<Uri, Bitmap>> {
-        val photoQuality = when (filenames.size) {
-            in 1..4 -> PhotoQuality.HIGH
-            in 5..16 -> PhotoQuality.MEDIUM
-            else -> PhotoQuality.THUMB
-        }
-        return filenames.mapNotNull { path ->
-            try {
-                val uri = getUriFromPath(path)
+    suspend fun prepareGalleryPairs(filenames: List<String>): List<Pair<Uri, Bitmap>> =
+        withContext(Dispatchers.IO) {
+            val photoQuality = when (filenames.size) {
+                in 1..4 -> PhotoQuality.HIGH
+                in 5..16 -> PhotoQuality.MEDIUM
+                else -> PhotoQuality.THUMB
+            }
+            return@withContext filenames.mapNotNull { path ->
+                try {
+                    val uri = getUriFromPath(path)
 
-                val bmp = uri?.let {
-                    getPhotoBitMapFromFile(
-                        it,
-                        photoQuality
-                    )
+                    val bmp = uri?.let {
+                        getPhotoBitmapFromFile(
+                            it,
+                            photoQuality
+                        )
+                    }
+                    Pair(uri!!, bmp!!)
+                } catch (t: Throwable) {
+                    val message = "Failed to create gallery image: " +
+                        (t.message ?: XIErrorHandler.UNKNOWN_ERROR)
+                    Timber.e(t, message)
+                    null
                 }
-                Pair(uri!!, bmp!!)
-            } catch (t: Throwable) {
-                val message = "Failed to create gallery image: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
-                Timber.e(t, message)
-                null
             }
         }
-    }
 
-    fun getUri(): Uri? {
+    suspend fun getUri(): Uri? = withContext(Dispatchers.IO) {
         try {
-            return FileProvider.getUriForFile(
+            return@withContext FileProvider.getUriForFile(
                 appContext,
                 authority,
                 createImageFile()!!
             )
         } catch (e: IllegalArgumentException) {
             Timber.e(e, "Failed to create URI: ${e.message}")
+            return@withContext null
         }
-        return null
     }
 
     @Throws(IOException::class)
-    private fun createImageFile(): File? {
-        val imageFileName = UUID.randomUUID().toString()
-        return try {
+    private suspend fun createImageFile(): File? = withContext(Dispatchers.IO) {
+        val imageFileName = UUID.randomUUID()
+        return@withContext try {
             File(pictureFolder, "$imageFileName.jpg")
         } catch (ex: IOException) {
             Timber.e(ex, "Failed to create image file $imageFileName.jpg")
