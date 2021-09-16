@@ -17,7 +17,6 @@ import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.R
-import za.co.xisystems.itis_rrm.custom.errors.AuthException
 import za.co.xisystems.itis_rrm.custom.errors.NoConnectivityException
 import za.co.xisystems.itis_rrm.custom.errors.NoInternetException
 import za.co.xisystems.itis_rrm.custom.errors.ServiceException
@@ -317,19 +316,7 @@ class AuthViewModel(
                     imie,
                     androidDevice
                 )
-            } catch (e: AuthException) {
-                listenerNotify {
-                    postError(e)
-                }
-            } catch (e: ServiceException) {
-                listenerNotify {
-                    postError(e)
-                }
-            } catch (e: NoInternetException) {
-                listenerNotify {
-                    postError(e)
-                }
-            } catch (e: NoConnectivityException) {
+            } catch (e: Exception) {
                 listenerNotify {
                     postError(e)
                 }

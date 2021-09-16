@@ -48,8 +48,9 @@ class EstimateMeasureItem(
     }
 
     override fun getLayout() = R.layout.item_header
+
+    private fun getItemId(position: Int): Long {
+        return position.toLong()
+    }
 }
 
-private fun GroupieViewHolder.getItemId(position: Int): Long {
-    return position.toLong()
-}

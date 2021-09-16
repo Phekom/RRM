@@ -10,23 +10,24 @@ import android.app.AlertDialog.Builder
 import android.view.View
 import androidx.navigation.Navigation
 import com.xwray.groupie.GroupAdapter
-import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
-import com.xwray.groupie.kotlinandroidextensions.Item
-import kotlinx.android.synthetic.main.unsubmtd_job_list_item.*
+import com.xwray.groupie.viewbinding.BindableItem
+import com.xwray.groupie.viewbinding.GroupieViewHolder
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.R.drawable
 import za.co.xisystems.itis_rrm.R.string
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
+import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration.LONG
+import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity.BOTTOM
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.DELETE
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
+import za.co.xisystems.itis_rrm.databinding.UnsubmtdJobListItemBinding
+import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedFragment
 import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedFragmentDirections
 import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedViewModel
 import za.co.xisystems.itis_rrm.utils.Coroutines
-import za.co.xisystems.itis_rrm.utils.enums.ToastDuration.LONG
-import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.BOTTOM
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.DELETE
 
 /**
  * Created by Francis Mahlava on 2019/12/22.
@@ -36,33 +37,31 @@ class UnSubmittedJobItem(
     private val jobDTO: JobDTO,
     private val viewModel: UnSubmittedViewModel,
     private val createModel: CreateViewModel,
-    private val groupAdapter: GroupAdapter<GroupieViewHolder>,
+    private val groupAdapter: GroupAdapter<GroupieViewHolder<UnsubmtdJobListItemBinding>>,
     private val fragment: UnSubmittedFragment
-) : Item() {
+) : BindableItem<UnsubmtdJobListItemBinding>() {
 
     private var clickListener: ((UnSubmittedJobItem) -> Unit)? = null
 
-    override fun bind(viewHolder: GroupieViewHolder, position: Int) {
+    override fun bind(viewBinding: UnsubmtdJobListItemBinding, position: Int) {
 
-        viewHolder.apply {
+        viewBinding.apply {
 
             iTemID.text = getItemId(position + 1).toString()
-            unsubmitted_project_textView.text = itemView
-                .context.getString(string.pair, "JI:", jobDTO.jiNo)
             Coroutines.main {
                 val descri = viewModel.getDescForProjectId(jobDTO.projectId!!)
-                unsubmitted_project_textView.text = descri
+                unsubmittedProjectTextView.text = descri
             }
-            unsubmitted_description_textView.text = jobDTO.descr
+            unsubmittedDescriptionTextView.text = jobDTO.descr
 
             deleteButton.setOnClickListener {
-                buildDeleteDialog(it)
+                buildDeleteDialog(it, position)
             }
 
-            updateItem()
+            updateItem(position)
         }
 
-        viewHolder.itemView.setOnClickListener { view ->
+        viewBinding.root.setOnClickListener { view ->
             clickListener?.invoke(this)
             sendJobToEdit((jobDTO), view)
         }
@@ -85,11 +84,12 @@ class UnSubmittedJobItem(
 
     override fun getLayout() = R.layout.unsubmtd_job_list_item
 
-    private fun updateItem() {
+    private fun updateItem(position: Int) {
         // Not interested in this
+        groupAdapter.notifyItemChanged(position)
     }
 
-    private fun buildDeleteDialog(view: View) {
+    private fun buildDeleteDialog(view: View, position: Int) {
         val itemDeleteBuilder =
             Builder(
                 view.context // , android.R.style
@@ -102,18 +102,23 @@ class UnSubmittedJobItem(
         itemDeleteBuilder.setPositiveButton(
             string.yes
         ) { _, _ ->
-            fragment.sharpToast("Deleting ...", "${this.jobDTO.jiNo} removed.", DELETE, BOTTOM, LONG)
-                Coroutines.main {
-                    try {
-                        viewModel.deleJobfromList(jobDTO.jobId)
-                        viewModel.deleteItemList(jobDTO.jobId)
-                        groupAdapter.clear()
-                        groupAdapter.notifyDataSetChanged()
-                        notifyChanged()
-                    } catch (t: Throwable) {
-                        Timber.e("Failed to delete unsubmitted job: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}")
-                    }
+            fragment.extensionToast(
+                title = "Deleting ...",
+                message = "${this.jobDTO.descr} removed.",
+                style = DELETE,
+                position = BOTTOM,
+                duration = LONG
+            )
+            Coroutines.main {
+                try {
+                    viewModel.deleJobfromList(jobDTO.jobId)
+                    viewModel.deleteItemList(jobDTO.jobId)
+                    groupAdapter.notifyItemRemoved(position)
+                    notifyChanged()
+                } catch (t: Throwable) {
+                    Timber.e("Failed to delete unsubmitted job: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}")
                 }
+            }
         }
         // No button
         itemDeleteBuilder.setNegativeButton(
@@ -125,8 +130,14 @@ class UnSubmittedJobItem(
         val deleteAlert = itemDeleteBuilder.create()
         deleteAlert.show()
     }
+
+    override fun initializeViewBinding(view: View): UnsubmtdJobListItemBinding {
+        return UnsubmtdJobListItemBinding.bind(view)
+    }
+
+    private fun getItemId(position: Int): Long {
+        return position.toLong()
+    }
 }
 
-private fun getItemId(position: Int): Long {
-    return position.toLong()
-}
+

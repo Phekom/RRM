@@ -8,37 +8,38 @@ package za.co.xisystems.itis_rrm.ui.mainview.create.add_project_item
 
 import android.app.AlertDialog.Builder
 import android.view.View
+import androidx.core.content.ContextCompat
 import androidx.navigation.Navigation
-import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
-import com.xwray.groupie.kotlinandroidextensions.Item
-import kotlinx.android.synthetic.main.new_job_item.*
+import com.xwray.groupie.viewbinding.BindableItem
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.R
-import za.co.xisystems.itis_rrm.R.drawable
-import za.co.xisystems.itis_rrm.R.string
+import za.co.xisystems.itis_rrm.custom.events.XIEvent
+import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration.LONG
+import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity.BOTTOM
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.DELETE
 import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
+import za.co.xisystems.itis_rrm.databinding.NewJobItemBinding
+import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.work.INSET
 import za.co.xisystems.itis_rrm.ui.mainview.work.INSET_TYPE_KEY
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.JobUtils
-import za.co.xisystems.itis_rrm.utils.enums.ToastDuration.LONG
-import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.BOTTOM
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.DELETE
 
 /**
  * Created by Francis Mahlava on 2019/12/29.
  */
 
-// open class Project_Item(private val itemDesc: SectionProj_Item) : Item() {
 open class ProjectItem(
     private val fragment: AddProjectFragment,
     private val itemDesc: ItemDTOTemp,
     private val createViewModel: CreateViewModel,
     private val contractID: String?,
     private var job: JobDTO?
-) : Item() {
+) : BindableItem<NewJobItemBinding>() {
 
     init {
         extras[INSET_TYPE_KEY] = INSET
@@ -46,71 +47,113 @@ open class ProjectItem(
 
     var clickListener: ((ProjectItem) -> Unit)? = null
     override fun getLayout() = R.layout.new_job_item
-
-    override fun bind(viewHolder: GroupieViewHolder, position: Int) {
-        viewHolder.apply {
+    private var jobItemEstimate: JobItemEstimateDTO? = null
+    override fun bind(viewBinding: NewJobItemBinding, position: Int) {
+        viewBinding.apply {
             textViewItem.text = (itemDesc.itemCode + "  " + itemDesc.descr)
-            val jobItemEstimate: JobItemEstimateDTO? = getJobItemEstimate(itemDesc.itemId)
-            if (jobItemEstimate != null && createViewModel.estimateComplete(jobItemEstimate)) {
-                val lineRate: Double = jobItemEstimate.lineRate
-                val tenderRate: Double = itemDesc.tenderRate
-                val qty: Double = jobItemEstimate.qty
-                costTextView.text =
-                    ("$qty  *   R $lineRate = ${JobUtils.formatCost(qty * lineRate)}")
-                subTextView.visibility = View.GONE
-            } else {
-                costTextView.text = viewHolder.itemView.context.getString(string.incomplete_estimate)
-                subTextView.visibility = View.VISIBLE
-            }
-
-            bindItem(viewHolder)
-        }
-        viewHolder.itemView.setOnClickListener {
-            sendSelectedItem(itemDesc, it, contractID, job)
-            clickListener?.invoke(this)
-        }
-
-        viewHolder.itemView.setOnLongClickListener {
             Coroutines.main {
-                buildDeleteDialog(it)
-            }
-            it.isLongClickable
-        }
+                getJobItemEstimate(itemDesc.itemId, job!!.jobId).also { jobItemEstimate ->
+                    processEstimate(jobItemEstimate, viewBinding)
+                }
+                viewBinding.root.setOnClickListener {
+                    sendSelectedItem(itemDesc, contractID, job)
+                    clickListener?.invoke(this@ProjectItem)
+                }
 
+                viewBinding.root.setOnLongClickListener {
+                    Coroutines.main {
+                        buildDeleteDialog(it)
+                    }
+                    it.isLongClickable
+                }
+            }
+        }
+    }
+
+    private suspend fun NewJobItemBinding.processEstimate(
+        jobItemEstimate: JobItemEstimateDTO?,
+        viewBinding: NewJobItemBinding
+    ) {
+        if (jobItemEstimate != null) {
+            createViewModel.estimateComplete(jobItemEstimate).also { complete ->
+                if (complete) {
+                    val lineRate: Double = jobItemEstimate.lineRate
+                    val tenderRate: Double = itemDesc.tenderRate
+                    val qty: Double = jobItemEstimate.qty
+                    costTextView.text =
+                        ("$qty  *   R $lineRate = ${JobUtils.formatCost(qty * tenderRate)}")
+                    subTextView.visibility = View.GONE
+                } else {
+                    costTextView.text = viewBinding.root.context.getString(R.string.incomplete_estimate)
+                    subTextView.visibility = View.VISIBLE
+                }
+
+                val notLocated = ContextCompat.getDrawable(
+                    root.context,
+                    R.drawable.ic_baseline_wrong_location_24
+                )
+                if (!jobItemEstimate.geoCoded && jobItemEstimate.size() == 2) {
+                    textViewItem.setCompoundDrawablesWithIntrinsicBounds(
+                        notLocated, null, null, null
+                    )
+                } else {
+                    textViewItem.setCompoundDrawablesWithIntrinsicBounds(
+                        null, null, null, null
+                    )
+                }
+            }
+
+            bindItem(viewBinding)
+        }
     }
 
     private fun sendSelectedItem(
         item: ItemDTOTemp,
-        view: View,
         contractID: String?,
         job: JobDTO?
     ) {
         val contractId = contractID
         val newJob = job
-        Coroutines.main {
-            createViewModel.jobItem.value = newJob
-            createViewModel.contractId.value = contractId
-            createViewModel.projectItemTemp.value = item
+        Coroutines.io {
+            createViewModel.backupJob(newJob!!)
+            createViewModel.backupProjectItem(item)
+            withContext(Dispatchers.Main) {
+                createViewModel.setItemJob(newJob.jobId)
+                createViewModel.contractId.value = contractId
+                createViewModel.tempProjectItem.value = XIEvent(item)
+                createViewModel.setCurrentProjectItem(item.itemId)
+                jobItemEstimate = getJobItemEstimate(itemId = item.itemId, jobId = newJob.jobId)
+            }
         }
+
         val navDirections =
             AddProjectFragmentDirections
                 .actionAddProjectFragmentToEstimatePhotoFragment(
                     jobId = newJob?.jobId,
-                    estimateId = getJobItemEstimate(itemId = item.itemId)?.estimateId
+                    itemId = item.itemId,
+                    estimateId = jobItemEstimate?.estimateId,
+                    locationErrorMessage = null
                 )
 
-        Navigation.findNavController(view)
+        Navigation.findNavController(fragment.requireView())
             .navigate(navDirections)
     }
 
-    private fun bindItem(viewHolder: GroupieViewHolder) {
-        viewHolder.textViewItem.setOnClickListener {
-            sendSelectedItem(itemDesc, it, contractID, job)
+    private fun bindItem(viewBinding: NewJobItemBinding) {
+        viewBinding.textViewItem.setOnClickListener {
+            sendSelectedItem(itemDesc, contractID, job)
         }
     }
 
-    private fun getJobItemEstimate(itemId: String): JobItemEstimateDTO? {
-        return job?.getJobEstimateByItemId(itemId)
+    private suspend fun getJobItemEstimate(itemId: String, jobId: String):
+        JobItemEstimateDTO? = withContext(Dispatchers.Main) {
+        val updatedEstimate = createViewModel.getJobEstimateIndexByItemAndJobId(itemId, jobId)
+        return@withContext if (updatedEstimate != null) {
+            job?.insertOrUpdateJobItemEstimate(updatedEstimate)
+            job?.getJobEstimateByItemId(itemId)
+        } else {
+            null
+        }
     }
 
     private fun buildDeleteDialog(view: View) {
@@ -119,17 +162,24 @@ open class ProjectItem(
                 view.context // , android.R.style
                 // .Theme_DeviceDefault_Dialog
             )
-        itemDeleteBuilder.setTitle(string.confirm)
-        itemDeleteBuilder.setIcon(drawable.ic_warning)
+        itemDeleteBuilder.setTitle(R.string.confirm)
+        itemDeleteBuilder.setIcon(R.drawable.ic_warning)
         itemDeleteBuilder.setMessage("Delete this project item?")
         // Yes button
         itemDeleteBuilder.setPositiveButton(
-            string.yes
+            R.string.yes
         ) { _, _ ->
-            fragment.sharpToast("Deleting ...", "${this.itemDesc.descr} removed.", DELETE, BOTTOM, LONG)
+            fragment.extensionToast(
+                title = "Deleting ...",
+                message = "${this.itemDesc.descr} removed.",
+                style = DELETE,
+                position = BOTTOM,
+                duration = LONG
+            )
+
             Coroutines.main {
                 // Get the JobEstimate
-                val jobItemEstimate = getJobItemEstimate(itemDesc.itemId)
+                val jobItemEstimate = getJobItemEstimate(itemDesc.itemId, job!!.jobId)
 
                 // Delete the project item.
                 createViewModel.deleteItemFromList(itemDesc.itemId, estimateId = jobItemEstimate?.estimateId)
@@ -145,7 +195,7 @@ open class ProjectItem(
         }
         // No button
         itemDeleteBuilder.setNegativeButton(
-            string.no
+            R.string.no
         ) { dialog, _ ->
             // Do nothing but close dialog
             dialog.dismiss()
@@ -154,8 +204,7 @@ open class ProjectItem(
         deleteAlert.show()
     }
 
-
-
-
-
+    override fun initializeViewBinding(view: View): NewJobItemBinding {
+        return NewJobItemBinding.bind(view)
+    }
 }

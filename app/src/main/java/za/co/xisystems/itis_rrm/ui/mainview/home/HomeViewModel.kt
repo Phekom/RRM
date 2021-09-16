@@ -22,9 +22,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
-import za.co.xisystems.itis_rrm.custom.results.XIError
 import za.co.xisystems.itis_rrm.custom.results.XIResult
-import za.co.xisystems.itis_rrm.custom.results.XISuccess
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
@@ -78,7 +76,7 @@ class HomeViewModel(
                         offlineDataRepository.loadWorkflows(userId)
                     }
                     contractJob.await()
-                    databaseState.postValue(XISuccess(true))
+                    databaseState.postValue(XIResult.Success(true))
                 }
             } catch (exception: Exception) {
                 withContext(homeMainContext) {
@@ -86,7 +84,7 @@ class HomeViewModel(
                         CancellationException(exception.message ?: XIErrorHandler.UNKNOWN_ERROR, exception)
                     )
                     val fetchFail =
-                        XIError(
+                        XIResult.Error(
                             exception, "Failed to fetch contracts:" +
                                 " ${exception.message ?: XIErrorHandler.UNKNOWN_ERROR}"
                         )
@@ -102,7 +100,7 @@ class HomeViewModel(
             } catch (t: Throwable) {
                 withContext(homeMainContext) {
                     val message = "Health check failed: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
-                    healthState.postValue(XIError(t, message))
+                    healthState.postValue(XIResult.Error(t, message))
                 }
                 false
             }

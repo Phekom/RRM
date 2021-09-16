@@ -27,15 +27,16 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.GroupieViewHolder
 import kotlinx.coroutines.launch
-import org.kodein.di.KodeinAware
-import org.kodein.di.android.x.kodein
-import org.kodein.di.generic.instance
+import org.kodein.di.DIAware
+import org.kodein.di.android.x.closestDI
+import org.kodein.di.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
+import za.co.xisystems.itis_rrm.custom.errors.XIErrorAction
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
-import za.co.xisystems.itis_rrm.custom.results.XIError
 import za.co.xisystems.itis_rrm.custom.results.XIResult
+import za.co.xisystems.itis_rrm.custom.results.XIResult.Error
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentApprovejobBinding
@@ -44,14 +45,15 @@ import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.approve_job_item.Approve
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
+import java.lang.ref.WeakReference
 
 /**
  * Created by Francis Mahlava on 03,October,2019
  */
 
-class ApproveJobsFragment : BaseFragment(), KodeinAware {
+class ApproveJobsFragment : BaseFragment(), DIAware {
 
-    override val kodein by kodein()
+    override val di by closestDI()
     private lateinit var approveViewModel: ApproveJobsViewModel
     private val factory: ApproveJobsViewModelFactory by instance<ApproveJobsViewModelFactory>()
     lateinit var dialog: Dialog
@@ -77,7 +79,7 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
     private fun handleQueryErrors(outcome: XIResult<String>?) {
         outcome?.let { result ->
             when (result) {
-                is XIError -> {
+                is Error -> {
                     crashGuard(
                         view = this.requireView(),
                         throwable = result,
@@ -151,7 +153,7 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
             fetchQuery()
         } catch (t: Throwable) {
             ui.approveJobVeiledRecycler.unVeil()
-            val xiFail = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
+            val xiFail = Error(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
             crashGuard(
                 view = this@ApproveJobsFragment.requireView(),
                 throwable = xiFail,
@@ -211,7 +213,16 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
         } catch (throwable: Throwable) {
             val message = "Failed to retrieve remote jobs: ${throwable.message ?: XIErrorHandler.UNKNOWN_ERROR}"
             Timber.e(throwable, message)
-            throw throwable
+            val xiFail = XIResult.Error(throwable, message)
+            val xiAction = XIErrorAction(
+                fragmentReference = WeakReference(this),
+                view = this.requireView(),
+                throwable = xiFail,
+                shouldToast = false,
+                shouldShowSnackBar = true,
+                refreshAction = { retryFetchRemoteJobs() }
+            )
+            XIErrorHandler.handleError(xiAction)
         }
     }
 
@@ -225,7 +236,7 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
     ) {
         groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
             addAll(approveJobListItems)
-            notifyDataSetChanged()
+            notifyItemRangeChanged(0, approveJobListItems.size)
         }
 
         ui.approveJobVeiledRecycler.setLayoutManager(LinearLayoutManager(this.context))

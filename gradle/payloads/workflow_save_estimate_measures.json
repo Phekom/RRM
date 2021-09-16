@@ -1,0 +1,335 @@
+{
+  "ErrorMessage": null,
+  "WorkflowJob": {
+    "ActId": 3,
+    "JiNo": "000000249",
+    "JobId": "8f7ba6be-d1f9-2744-b8a4-3718c55bac3d",
+    "TrackRouteId": "936a787f-0c90-0d4d-a831-1c9d7205c028",
+    "WorkflowItemEstimates": [
+      {
+        "ActId": 9,
+        "EstimateId": "e3cd521e-6bac-6940-8dad-0edca57c3bfd",
+        "TrackRouteId": "2b941ed3-f93b-5148-aaf5-d71c982c4af6",
+        "WorkflowEstimateWorks": [
+          {
+            "WorksId": "53e1e5d5-c4a6-46ff-b513-8485850a6414",
+            "ActId": 21,
+            "TrackRouteId": "875fb7ba-a227-6e43-b319-88651b806ffa",
+            "EstimateId": "e3cd521e-6bac-6940-8dad-0edca57c3bfd",
+            "RecordVersion": 0,
+            "RecordSynchStateId": 0
+          }
+        ]
+      },
+      {
+        "ActId": 9,
+        "EstimateId": "5add144f-ac3f-9441-a458-f5053aeca50c",
+        "TrackRouteId": "9fc47133-3e50-1e4d-9de2-7a61322adb6a",
+        "WorkflowEstimateWorks": [
+          {
+            "WorksId": "b9b69a28-d36f-4895-8348-8a12f43397c4",
+            "ActId": 21,
+            "TrackRouteId": "68e49417-c2d6-4d4c-8a52-ec9aa2a3ebe3",
+            "EstimateId": "5add144f-ac3f-9441-a458-f5053aeca50c",
+            "RecordVersion": 0,
+            "RecordSynchStateId": 0
+          }
+        ]
+      },
+      {
+        "ActId": 9,
+        "EstimateId": "45a7b2d0-1958-e14e-bfce-5ea2d0426ac0",
+        "TrackRouteId": "a1c43a3a-096e-e14e-af7c-6489c91f89f9",
+        "WorkflowEstimateWorks": [
+          {
+            "WorksId": "6b62eeef-a508-4bfc-b3f4-18ef695011fa",
+            "ActId": 21,
+            "TrackRouteId": "c8614788-73c3-c64e-8f5a-87c3d081fcec",
+            "EstimateId": "45a7b2d0-1958-e14e-bfce-5ea2d0426ac0",
+            "RecordVersion": 0,
+            "RecordSynchStateId": 0
+          }
+        ]
+      }
+    ],
+    "WorkflowItemMeasures": [
+      {
+        "ItemMeasureId": "6bdd2281-663c-4147-8756-f89d9388ef57",
+        "ActId": 11,
+        "TrackRouteId": "5a82c7d8-63a4-7a4d-9c3e-70c380f52d68",
+        "MeasureGroupId": "628f2a49-406c-4a54-820e-5e4fc5f1ebd9"
+      },
+      {
+        "ItemMeasureId": "b4a06f22-8865-44dc-8edf-2138fe0dc493",
+        "ActId": 11,
+        "TrackRouteId": "336fdca0-a039-cd49-bb58-8cd13c71a091",
+        "MeasureGroupId": "628f2a49-406c-4a54-820e-5e4fc5f1ebd9"
+      },
+      {
+        "ItemMeasureId": "99ae0329-a2d4-4cb8-9c64-ff5865dd6c8f",
+        "ActId": 11,
+        "TrackRouteId": "e0a596a0-e5c7-2346-be2a-43fcad5f39ff",
+        "MeasureGroupId": "628f2a49-406c-4a54-820e-5e4fc5f1ebd9"
+      },
+      {
+        "ItemMeasureId": "c0a09191-c40c-4262-82f1-d049569501a1",
+        "ActId": 11,
+        "TrackRouteId": "8c93db86-00cf-b648-a5f7-54a822e23e67",
+        "MeasureGroupId": "628f2a49-406c-4a54-820e-5e4fc5f1ebd9"
+      },
+      {
+        "ItemMeasureId": "310c2fb7-5c43-4506-adec-3d02a1fcd788",
+        "ActId": 11,
+        "TrackRouteId": "72fac56b-8b4c-8246-8f21-dfb76ddda074",
+        "MeasureGroupId": "628f2a49-406c-4a54-820e-5e4fc5f1ebd9"
+      },
+      {
+        "ItemMeasureId": "48cee3e4-7996-47b7-9446-90a008c5bfb4",
+        "ActId": 11,
+        "TrackRouteId": "3fb92203-596d-4045-949a-c86285d7078a",
+        "MeasureGroupId": "628f2a49-406c-4a54-820e-5e4fc5f1ebd9"
+      }
+    ],
+    "WorkflowJobSections": [
+      {
+        "EndKm": 26.0,
+        "JobId": "8f7ba6be-d1f9-2744-b8a4-3718c55bac3d",
+        "JobSectionId": "0e0880f8-43b0-6b42-881a-975bc47081d7",
+        "ProjectSectionId": "b55e3969-52f8-3445-9a4c-389c7054398b",
+        "RecordSynchStateId": 0,
+        "RecordVersion": 0,
+        "StartKm": 0.0
+      },
+      {
+        "EndKm": 26.0,
+        "JobId": "8f7ba6be-d1f9-2744-b8a4-3718c55bac3d",
+        "JobSectionId": "17cf2f1a-4b3e-6344-a539-1db3d1d44c87",
+        "ProjectSectionId": "b55e3969-52f8-3445-9a4c-389c7054398b",
+        "RecordSynchStateId": 0,
+        "RecordVersion": 0,
+        "StartKm": 0.0
+      },
+      {
+        "EndKm": 26.0,
+        "JobId": "8f7ba6be-d1f9-2744-b8a4-3718c55bac3d",
+        "JobSectionId": "224ac33d-2cfc-d14f-b1ab-c29c57b69e71",
+        "ProjectSectionId": "b55e3969-52f8-3445-9a4c-389c7054398b",
+        "RecordSynchStateId": 0,
+        "RecordVersion": 0,
+        "StartKm": 0.0
+      },
+      {
+        "EndKm": 26.0,
+        "JobId": "8f7ba6be-d1f9-2744-b8a4-3718c55bac3d",
+        "JobSectionId": "3f780b74-58a0-0a4c-ac7a-81bd3acd7e8b",
+        "ProjectSectionId": "b55e3969-52f8-3445-9a4c-389c7054398b",
+        "RecordSynchStateId": 0,
+        "RecordVersion": 0,
+        "StartKm": 0.0
+      },
+      {
+        "EndKm": 26.0,
+        "JobId": "8f7ba6be-d1f9-2744-b8a4-3718c55bac3d",
+        "JobSectionId": "46c974f7-bc5e-3442-8c8f-f9ad4e8f6c0e",
+        "ProjectSectionId": "b55e3969-52f8-3445-9a4c-389c7054398b",
+        "RecordSynchStateId": 0,
+        "RecordVersion": 0,
+        "StartKm": 0.0
+      },
+      {
+        "EndKm": 26.0,
+        "JobId": "8f7ba6be-d1f9-2744-b8a4-3718c55bac3d",
+        "JobSectionId": "5f1e04d6-9df4-6843-a8f6-338f4cfbb5a1",
+        "ProjectSectionId": "b55e3969-52f8-3445-9a4c-389c7054398b",
+        "RecordSynchStateId": 0,
+        "RecordVersion": 0,
+        "StartKm": 0.0
+      },
+      {
+        "EndKm": 26.0,
+        "JobId": "8f7ba6be-d1f9-2744-b8a4-3718c55bac3d",
+        "JobSectionId": "cda19bd9-67c6-d84c-87d4-7cab6222ff40",
+        "ProjectSectionId": "b55e3969-52f8-3445-9a4c-389c7054398b",
+        "RecordSynchStateId": 0,
+        "RecordVersion": 0,
+        "StartKm": 0.0
+      },
+      {
+        "EndKm": 26.0,
+        "JobId": "8f7ba6be-d1f9-2744-b8a4-3718c55bac3d",
+        "JobSectionId": "c9db2c09-232f-0045-b9fe-6ea5698597ec",
+        "ProjectSectionId": "b55e3969-52f8-3445-9a4c-389c7054398b",
+        "RecordSynchStateId": 0,
+        "RecordVersion": 0,
+        "StartKm": 0.0
+      },
+      {
+        "EndKm": 26.0,
+        "JobId": "8f7ba6be-d1f9-2744-b8a4-3718c55bac3d",
+        "JobSectionId": "622aaa29-35e5-2748-a73a-4bd863275d8d",
+        "ProjectSectionId": "b55e3969-52f8-3445-9a4c-389c7054398b",
+        "RecordSynchStateId": 0,
+        "RecordVersion": 0,
+        "StartKm": 0.0
+      }
+    ]
+  },
+  "ToDoListGroups": [
+    {
+      "Entities": [],
+      "GroupDescription": "Jobs that are in the process of being established",
+      "GroupId": "JobEstimate",
+      "GroupName": "New Jobs",
+      "SortOrder": 0
+    },
+    {
+      "Entities": [],
+      "GroupDescription": "Jobs where approval is required",
+      "GroupId": "JobApprove",
+      "GroupName": "Unapproved Jobs",
+      "SortOrder": 1
+    },
+    {
+      "Entities": [
+        {
+          "Actionable": false,
+          "ActivityId": 3,
+          "CurrentRouteId": 3,
+          "Data": null,
+          "Description": "000000249 - Testing 123",
+          "Entities": [
+            {
+              "Actionable": true,
+              "ActivityId": 11,
+              "CurrentRouteId": 11,
+              "Data": "Submit for Approval",
+              "Description": "Measurement - Fixed obligations - Quantity : 1",
+              "Entities": [],
+              "EntityName": "PRJ_JOB_ITEM_MEASURE",
+              "Location": null,
+              "PrimaryKeyValues": [
+                {
+                  "Key": "ItemMeasureId",
+                  "Value": "kZGgwAzEYkKC8dBJVpUBoQ==",
+                  "ValueType": "System.Byte[]"
+                }
+              ],
+              "RecordVersion": 0,
+              "TrackRouteId": "htuTjM8ASLal91SoIuI+Zw=="
+            },
+            {
+              "Actionable": true,
+              "ActivityId": 11,
+              "CurrentRouteId": 11,
+              "Data": "Submit for Approval",
+              "Description": "Measurement - Fixed obligations - Quantity : 1",
+              "Entities": [],
+              "EntityName": "PRJ_JOB_ITEM_MEASURE",
+              "Location": null,
+              "PrimaryKeyValues": [
+                {
+                  "Key": "ItemMeasureId",
+                  "Value": "ty8MMUNcBkWt7D0CofzXiA==",
+                  "ValueType": "System.Byte[]"
+                }
+              ],
+              "RecordVersion": 0,
+              "TrackRouteId": "a8X6ckyLRoKPId+3bd2gdA=="
+            },
+            {
+              "Actionable": true,
+              "ActivityId": 11,
+              "CurrentRouteId": 11,
+              "Data": "Submit for Approval",
+              "Description": "Measurement - General obligations - Quantity : 2",
+              "Entities": [],
+              "EntityName": "PRJ_JOB_ITEM_MEASURE",
+              "Location": null,
+              "PrimaryKeyValues": [
+                {
+                  "Key": "ItemMeasureId",
+                  "Value": "gSLdazxmR0GHVvidk4jvVw==",
+                  "ValueType": "System.Byte[]"
+                }
+              ],
+              "RecordVersion": 0,
+              "TrackRouteId": "2MeCWqRjTXqcPnDDgPUtaA=="
+            },
+            {
+              "Actionable": true,
+              "ActivityId": 11,
+              "CurrentRouteId": 11,
+              "Data": "Submit for Approval",
+              "Description": "Measurement - General obligations - Quantity : 2",
+              "Entities": [],
+              "EntityName": "PRJ_JOB_ITEM_MEASURE",
+              "Location": null,
+              "PrimaryKeyValues": [
+                {
+                  "Key": "ItemMeasureId",
+                  "Value": "KQOumdSiuEycZP9YZd1sjw==",
+                  "ValueType": "System.Byte[]"
+                }
+              ],
+              "RecordVersion": 0,
+              "TrackRouteId": "oJal4MflRiO+KkP8rV85/w=="
+            },
+            {
+              "Actionable": true,
+              "ActivityId": 11,
+              "CurrentRouteId": 11,
+              "Data": "Submit for Approval",
+              "Description": "Measurement - Occupational health and safety obligation - Quantity : 3",
+              "Entities": [],
+              "EntityName": "PRJ_JOB_ITEM_MEASURE",
+              "Location": null,
+              "PrimaryKeyValues": [
+                {
+                  "Key": "ItemMeasureId",
+                  "Value": "Im+gtGWI3ESO3yE4/g3Ekw==",
+                  "ValueType": "System.Byte[]"
+                }
+              ],
+              "RecordVersion": 0,
+              "TrackRouteId": "oNxvMzmgSc27WIzRPHGgkQ=="
+            },
+            {
+              "Actionable": true,
+              "ActivityId": 11,
+              "CurrentRouteId": 11,
+              "Data": "Submit for Approval",
+              "Description": "Measurement - Occupational health and safety obligation - Quantity : 3",
+              "Entities": [],
+              "EntityName": "PRJ_JOB_ITEM_MEASURE",
+              "Location": null,
+              "PrimaryKeyValues": [
+                {
+                  "Key": "ItemMeasureId",
+                  "Value": "5OPOSJZ5t0eURpCgCMW/tA==",
+                  "ValueType": "System.Byte[]"
+                }
+              ],
+              "RecordVersion": 0,
+              "TrackRouteId": "AyK5P21ZRUCUmshihdcHig=="
+            }
+          ],
+          "EntityName": "PRJ_JOB",
+          "Location": null,
+          "PrimaryKeyValues": [
+            {
+              "Key": "JobId",
+              "Value": "vqZ7j/nRRCe4pDcYxVusPQ==",
+              "ValueType": "System.Byte[]"
+            }
+          ],
+          "RecordVersion": 0,
+          "TrackRouteId": "f3hqk5AMTQ2oMRydcgXAKA=="
+        }
+      ],
+      "GroupDescription": "Measurements that require Approval for payment processing",
+      "GroupId": "MeasureApprove",
+      "GroupName": "Measurements To Approve",
+      "SortOrder": 5
+    }
+  ]
+}

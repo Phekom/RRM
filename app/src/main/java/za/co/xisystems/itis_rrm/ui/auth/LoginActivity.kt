@@ -19,15 +19,15 @@ import androidx.lifecycle.ViewModelProvider
 import com.poovam.pinedittextfield.PinField
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.kodein.di.KodeinAware
-import org.kodein.di.android.kodein
-import org.kodein.di.generic.instance
+import org.kodein.di.DIAware
+import org.kodein.di.android.closestDI
+import org.kodein.di.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.constants.Constants.TWO_SECONDS
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
-import za.co.xisystems.itis_rrm.custom.results.XIError
+import za.co.xisystems.itis_rrm.custom.results.XIResult.Error
 import za.co.xisystems.itis_rrm.custom.results.isRecoverableException
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
@@ -45,9 +45,9 @@ import za.co.xisystems.itis_rrm.utils.snackbar
 import za.co.xisystems.itis_rrm.utils.toast
 import za.co.xisystems.traffic_count.delegates.viewBinding
 
-class LoginActivity : BaseActivity(), AuthListener, KodeinAware {
+class LoginActivity : BaseActivity(), AuthListener, DIAware {
 
-    override val kodein by kodein()
+    override val di by closestDI()
     private val factory: AuthViewModelFactory by instance()
     private lateinit var authViewModel: AuthViewModel
     private val binding by viewBinding(ActivityLoginBinding::inflate)
@@ -151,7 +151,7 @@ class LoginActivity : BaseActivity(), AuthListener, KodeinAware {
     override fun onBackPressed() {
         doubleBackToExitPressed++
         if (doubleBackToExitPressed == 2) {
-            exitApplication()
+            logoutApplication()
         } else {
             toast("Please press Back again to exit")
             if (doubleBackToExitPressed > 0) {
@@ -168,7 +168,7 @@ class LoginActivity : BaseActivity(), AuthListener, KodeinAware {
             startActivity(intent)
             reset()
         } catch (t: Throwable) {
-            val xiErr = XIError(t, "Failed to login")
+            val xiErr = Error(t, "Failed to login")
             if (xiErr.isRecoverableException()) {
                 XIErrorHandler.handleError(
                     view = findViewById(R.id.reg_container),

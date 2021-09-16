@@ -59,17 +59,17 @@ class JobDTO(
     @SerializedName("TrackRouteId")
     var trackRouteId: String?,
     @SerializedName("Section")
-    val section: String?,
+    var section: String?,
 
     @SerializedName("Cpa")
-    val cpa: Int,
+    var cpa: Int,
     @SerializedName("DayWork")
-    val dayWork: Int,
+    var dayWork: Int,
 
     @SerializedName("ContractorId")
-    val contractorId: Int,
+    var contractorId: Int,
     @SerializedName("M9100")
-    val m9100: Int,
+    var m9100: Int,
 
     @SerializedName("IssueDate")
     var issueDate: String? = null,
@@ -247,6 +247,22 @@ class JobDTO(
         }
     }
 
+    fun insertOrUpdateJobItemEstimate(estimateItem: JobItemEstimateDTO) {
+        this.jobItemEstimates = alterEstimates(estimateItem)
+    }
+
+    private fun alterEstimates(estimateItem: JobItemEstimateDTO): ArrayList<JobItemEstimateDTO> {
+        val estimateCopy = this.jobItemEstimates
+        val x = getJobEstimateIndexByItemId(estimateItem.projectItemId)
+        if (x > -1) {
+            estimateCopy[x] = estimateItem
+        } else {
+            estimateCopy.add(estimateItem)
+        }
+
+        return estimateCopy
+    }
+
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeInt(actId)
         parcel.writeString(jobId)
@@ -311,5 +327,18 @@ class JobDTO(
         override fun newArray(size: Int): Array<JobDTO?> {
             return arrayOfNulls(size)
         }
+    }
+
+    fun isGeoCoded(): Boolean {
+        var result = true
+
+        for (estimate in this.jobItemEstimates) {
+            if (!estimate.arePhotosGeoCoded()) {
+                result = false
+                break
+            }
+        }
+
+        return result
     }
 }

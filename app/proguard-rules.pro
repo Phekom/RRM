@@ -44,6 +44,9 @@
 -keep class za.co.xisystems.itis_rrm.data.localDB.views.** { *; }
 -keep class za.co.xisystems.itis_rrm.data.network.responses.** { *; }
 -keep class za.co.xisystems.itis_rrm.data.network.request.** { *; }
+-keep class za.co.xisystems.itis_rrm.services.LocationValidation {*; }
+-keep class za.co.xisystems.itis_rrm.forge.** { *;}
+-keep class za.co.xisystems.itis_rrm.custom.** { *; }
 
 # Keep these for GSON and Jackson
 -keepattributes Signature
@@ -74,3 +77,8 @@
 -keep interface android.view.WindowInsetsController { *; }
 -keep interface android.view.WindowInsetsAnimationControlListener { *; }
 -keep interface android.view.WindowInsetsAnimation { *; }
+
+-dontwarn com.google.errorprone.annotations.Immutable
+-dontwarn java.awt.color.ICC_Profile
+-dontwarn org.w3c.dom.bootstrap.DOMImplementationRegistry
+

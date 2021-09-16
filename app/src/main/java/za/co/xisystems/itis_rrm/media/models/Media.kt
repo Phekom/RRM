@@ -31,4 +31,3 @@ data class Media(
     val trashed: Boolean = false
 ) :
     Parcelable
-

@@ -3,14 +3,16 @@ package za.co.xisystems.itis_rrm.ui.scopes
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
-import kotlin.coroutines.CoroutineContext
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelChildren
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.BuildConfig
+import kotlin.coroutines.CoroutineContext
 
 /**
  * Created by Shaun McDonald on 2020/04/06.
@@ -28,20 +30,32 @@ class UiLifecycleScope : CoroutineScope, LifecycleObserver {
             Timber.d("uiScope throwing: ${throwable.message}")
             println(throwable)
         }
-        Timber.e(throwable)
-        throw throwable
+        // Cancellation exceptions are par for the course when leaving the scope
+        when (throwable) {
+            is CancellationException -> {
+                // No-op
+            }
+            else -> {
+                Timber.e(throwable)
+                // throw throwable
+            }
+        }
     }
 
-    private var job = SupervisorJob()
+    private var superJob = SupervisorJob()
+    private var job = Job(superJob)
 
     override val coroutineContext: CoroutineContext
         get() = job.plus(Dispatchers.Main).plus(handler)
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_START)
+    @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
     fun onCreate() {
-        job = SupervisorJob()
+        superJob = SupervisorJob()
+        job = Job(superJob)
     }
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
-    fun destroy() = coroutineContext.cancelChildren()
+    @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+    fun destroy() {
+        superJob.cancelChildren()
+    }
 }

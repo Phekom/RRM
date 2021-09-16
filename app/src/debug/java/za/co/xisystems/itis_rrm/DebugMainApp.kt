@@ -12,14 +12,14 @@ import android.os.StrictMode.VmPolicy
 import com.gu.toolargetool.TooLargeTool
 import leakcanary.AppWatcher
 import leakcanary.LeakCanary
-import org.kodein.di.KodeinAware
+import org.kodein.di.DIAware
 import timber.log.Timber
 
 /**
  * Created by Francis Mahlava on 2019/10/23.
  *
  */
-open class DebugMainApp : MainApp(), KodeinAware {
+open class DebugMainApp : MainApp(), DIAware {
 
     override fun onCreate() {
 

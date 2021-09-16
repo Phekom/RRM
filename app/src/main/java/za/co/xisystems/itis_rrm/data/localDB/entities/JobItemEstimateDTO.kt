@@ -38,7 +38,7 @@ data class JobItemEstimateDTO(
     @SerializedName("MobileEstimateWorks")
     var jobEstimateWorks: ArrayList<JobEstimateWorksDTO> = ArrayList(),
     @SerializedName("MobileJobItemEstimatesPhotos")
-    var jobItemEstimatePhotos: ArrayList<JobItemEstimatesPhotoDTO> = ArrayList(),
+    var jobItemEstimatePhotos: ArrayList<JobItemEstimatesPhotoDTO> = ArrayList(2),
     @SerializedName("MobileJobItemMeasures")
     var jobItemMeasure: ArrayList<JobItemMeasureDTO> = ArrayList(),
     @SerializedName("ProjectItemId")
@@ -64,6 +64,7 @@ data class JobItemEstimateDTO(
 
     @SerializedName("SelectedItemUOM")
     val selectedItemUom: String?,
+    var geoCoded: Boolean = false
 ) : Parcelable, Serializable {
 
     constructor(parcel: Parcel) : this(
@@ -92,30 +93,18 @@ data class JobItemEstimateDTO(
             as? JobItemEstimatesPhotoDTO,
         estimateComplete = parcel.readString(),
         measureActId = parcel.readInt(),
-        selectedItemUom = parcel.readString()
+        selectedItemUom = parcel.readString(),
+        geoCoded = parcel.readByte() != 0.toByte()
     )
 
     fun getJobItemEstimatePhoto(lookForStartPhoto: Boolean): Pair<Int, JobItemEstimatesPhotoDTO> {
-        val photos = jobItemEstimatePhotos
-        var i = 0
-        while (photos.isNotEmpty() && i < photos.size - 1) {
-            val isPhotoStart = photos[i].isPhotoStart()
-            if (lookForStartPhoto) {
-                if (isPhotoStart) {
-                    println("look: $lookForStartPhoto is:$isPhotoStart")
-                    val pair = Pair(i, photos[i])
-                    println("pair[" + pair.first + "]" + pair)
-                    return pair
-                }
-            } else {
-                if (!isPhotoStart) {
-                    println("look: $lookForStartPhoto is:$isPhotoStart")
-                    return Pair<Int, JobItemEstimatesPhotoDTO>(i, photos[i])
-                }
-            }
-            i++
-        }
-        return Pair<Int, JobItemEstimatesPhotoDTO>(-1, null)
+
+        val photoToReplace =
+            jobItemEstimatePhotos.firstOrNull { photo ->
+                photo.isStartPhoto() == lookForStartPhoto
+            } ?: return Pair(-1, null)
+        val photoIndex = jobItemEstimatePhotos.indexOf(photoToReplace)
+        return Pair(photoIndex, photoToReplace)
     }
 
     fun getPhoto(x: Int): JobItemEstimatesPhotoDTO? {
@@ -128,7 +117,7 @@ data class JobItemEstimateDTO(
         if (jobItemEstimatePhotos.isEmpty()) {
             jobItemEstimatePhotos.add(photo)
         } else {
-            val photoToChange = getJobItemEstimatePhoto(photo.isPhotoStart())
+            val photoToChange = getJobItemEstimatePhoto(photo.isStartPhoto())
             val index = photoToChange.first!!
             if (index == -1) {
                 jobItemEstimatePhotos.add(photo)
@@ -136,7 +125,7 @@ data class JobItemEstimateDTO(
                 jobItemEstimatePhotos[index] = photo
             }
         }
-        JobUtils.sort(jobItemEstimatePhotos)
+        jobItemEstimatePhotos = JobUtils.sort(jobItemEstimatePhotos)!!
     }
 
     fun size(): Int {
@@ -162,10 +151,23 @@ data class JobItemEstimateDTO(
         parcel.writeList(jobItemEstimatePhotos.toList())
         parcel.writeValue(jobItemEstimatePhotoStart)
         parcel.writeValue(jobItemEstimatePhotoEnd)
+        parcel.writeByte(if (geoCoded) 1 else 0)
     }
 
     override fun describeContents(): Int {
         return 0
+    }
+
+    fun arePhotosGeoCoded(): Boolean {
+        var result = true
+        if (jobItemEstimatePhotos.size < 2) return false
+        for (photo in jobItemEstimatePhotos) {
+            if (!photo.geoCoded) {
+                result = false
+                break
+            }
+        }
+        return result
     }
 
     companion object CREATOR : Creator<JobItemEstimateDTO> {

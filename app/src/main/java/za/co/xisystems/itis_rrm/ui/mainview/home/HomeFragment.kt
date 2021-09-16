@@ -34,41 +34,37 @@ import com.skydoves.progressview.ProgressView
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.kodein.di.KodeinAware
-import org.kodein.di.android.x.kodein
-import org.kodein.di.generic.instance
+import org.kodein.di.DIAware
+import org.kodein.di.android.x.closestDI
+import org.kodein.di.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.BuildConfig
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.constants.Constants.TWO_SECONDS
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
-import za.co.xisystems.itis_rrm.custom.results.XIError
-import za.co.xisystems.itis_rrm.custom.results.XIProgress
-import za.co.xisystems.itis_rrm.custom.results.XIProgressUpdate
-import za.co.xisystems.itis_rrm.custom.results.XIRestException
+import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration.LONG
+import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity.BOTTOM
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.ERROR
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.INFO
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.SUCCESS
 import za.co.xisystems.itis_rrm.custom.results.XIResult
-import za.co.xisystems.itis_rrm.custom.results.XIStatus
-import za.co.xisystems.itis_rrm.custom.results.XISuccess
 import za.co.xisystems.itis_rrm.custom.results.getPercentageComplete
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentHomeBinding
+import za.co.xisystems.itis_rrm.extensions.isConnected
 import za.co.xisystems.itis_rrm.extensions.observeOnce
+import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
-import za.co.xisystems.itis_rrm.utils.enums.ToastDuration.LONG
-import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.BOTTOM
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.ERROR
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.INFO
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.SUCCESS
 import kotlin.coroutines.cancellation.CancellationException
 
-class HomeFragment : BaseFragment(), KodeinAware {
+class HomeFragment : BaseFragment(), DIAware {
 
-    override val kodein by kodein()
+    override val di by closestDI()
     private lateinit var homeViewModel: HomeViewModel
     private val factory: HomeViewModelFactory by instance()
     private var gpsEnabled: Boolean = false
@@ -106,16 +102,15 @@ class HomeFragment : BaseFragment(), KodeinAware {
     }
 
     private fun homeDiagnostic() {
-        if (networkEnabled) {
+        if (requireContext().isConnected) {
             uiScope.launch(uiScope.coroutineContext) {
                 try {
-
                     ui.group2Loading.visibility = View.VISIBLE
                     acquireUser()
                     getOfflineSectionItems()
                 } catch (t: Throwable) {
                     Timber.e(t, "Failed to fetch Section Items.")
-                    val xiErr = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
+                    val xiErr = XIResult.Error(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
                     crashGuard(this@HomeFragment.requireView(), xiErr, refreshAction = { retrySections() })
                 } finally {
                     ui.group2Loading.visibility = View.GONE
@@ -165,7 +160,7 @@ class HomeFragment : BaseFragment(), KodeinAware {
         } catch (t: Throwable) {
             val errorMessage = "Failed to load user: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
             Timber.e(t, errorMessage)
-            val connectErr = XIError(t, errorMessage)
+            val connectErr = XIResult.Error(t, errorMessage)
             crashGuard(
                 view = this@HomeFragment.requireView(),
                 throwable = connectErr,
@@ -186,7 +181,7 @@ class HomeFragment : BaseFragment(), KodeinAware {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         uiScope.onCreate()
-        homeViewModel = ViewModelProvider(this, factory).get(HomeViewModel::class.java)
+        homeViewModel = ViewModelProvider(this.requireActivity(), factory).get(HomeViewModel::class.java)
         setHasOptionsMenu(true)
     }
 
@@ -238,7 +233,7 @@ class HomeFragment : BaseFragment(), KodeinAware {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        homeViewModel = ViewModelProvider(this, factory).get(HomeViewModel::class.java)
+        homeViewModel = ViewModelProvider(this.requireActivity(), factory).get(HomeViewModel::class.java)
     }
 
     /**
@@ -402,7 +397,7 @@ class HomeFragment : BaseFragment(), KodeinAware {
                     synchJob.cancel(CancellationException("Connectivity lost ... please try again later"))
                 }
             } catch (t: Throwable) {
-                val pingEx = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
+                val pingEx = XIResult.Error(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
                 crashGuard(
                     view = this@HomeFragment.requireView(),
                     throwable = pingEx,
@@ -416,23 +411,23 @@ class HomeFragment : BaseFragment(), KodeinAware {
         Timber.d("$signal")
         signal?.let { result ->
             when (result) {
-                is XISuccess -> {
+                is XIResult.Success -> {
                     showProgress()
-                    sharpToast(
+                    extensionToast(
                         message = "Sync Complete",
                         style = SUCCESS,
                         position = BOTTOM,
                         duration = LONG
                     )
                 }
-                is XIStatus -> {
-                    sharpToast(message = result.message, style = INFO, position = BOTTOM)
+                is XIResult.Status -> {
+                    extensionToast(message = result.message, style = INFO, position = BOTTOM)
                 }
-                is XIError -> {
+                is XIResult.Error -> {
                     synchJob.cancel(CancellationException(result.message))
                     showProgress()
 
-                    sharpToast(
+                    extensionToast(
                         title = "Sync Failed",
                         message = result.message,
                         style = ERROR
@@ -444,13 +439,13 @@ class HomeFragment : BaseFragment(), KodeinAware {
                         refreshAction = { this@HomeFragment.retrySync() }
                     )
                 }
-                is XIProgress -> {
+                is XIResult.Progress -> {
                     showProgress(result.isLoading)
                 }
-                is XIProgressUpdate -> {
+                is XIResult.ProgressUpdate -> {
                     handleProgressUpdate(result)
                 }
-                is XIRestException -> {
+                is XIResult.RestException -> {
                     Timber.e("$result")
                 }
             }
@@ -472,7 +467,7 @@ class HomeFragment : BaseFragment(), KodeinAware {
         }
     }
 
-    private fun handleProgressUpdate(update: XIProgressUpdate) {
+    private fun handleProgressUpdate(update: XIResult.ProgressUpdate) {
         when (update.key) {
             "projects" -> {
                 updateProgress(update, ui.pvContracts)
@@ -486,13 +481,11 @@ class HomeFragment : BaseFragment(), KodeinAware {
         }
     }
 
-    private fun updateProgress(update: XIProgressUpdate, progressView: ProgressView) {
+    private fun updateProgress(update: XIResult.ProgressUpdate, progressView: ProgressView) {
         if (progressView.visibility != View.VISIBLE) {
             progressView.visibility = View.VISIBLE
         }
-        if (update.getPercentageComplete() > progressView.progress) {
-            progressView.progress = update.getPercentageComplete()
-        }
+        progressView.progress = update.getPercentageComplete()
     }
 
     private fun bigSync() = uiScope.launch(uiScope.coroutineContext) {
@@ -511,7 +504,7 @@ class HomeFragment : BaseFragment(), KodeinAware {
                 Timber.e(t, errorMessage)
                 crashGuard(
                     this@HomeFragment.requireView(),
-                    XIError(t, errorMessage),
+                    XIResult.Error(t, errorMessage),
                     refreshAction = { retrySync() }
                 )
             }
@@ -566,7 +559,7 @@ class HomeFragment : BaseFragment(), KodeinAware {
                 val message = "Could not check service health: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
                 Timber.e(t, message)
                 this@HomeFragment.view?.let {
-                    val fetchError = XIError(t, message)
+                    val fetchError = XIResult.Error(t, message)
                     crashGuard(
                         this@HomeFragment.requireView(),
                         fetchError,

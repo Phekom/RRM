@@ -29,24 +29,40 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.Section
-import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
+import com.xwray.groupie.viewbinding.GroupieViewHolder
+import kotlinx.android.synthetic.main.fragment_add_project_items.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.kodein.di.KodeinAware
-import org.kodein.di.android.x.kodein
-import org.kodein.di.generic.instance
+import org.kodein.di.DIAware
+import org.kodein.di.android.x.closestDI
+import org.kodein.di.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.constants.Constants.ONE_SECOND
 import za.co.xisystems.itis_rrm.constants.Constants.TWO_SECONDS
+import za.co.xisystems.itis_rrm.custom.events.XIEvent
+import za.co.xisystems.itis_rrm.custom.notifications.ColorToast
+import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration
+import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.ERROR
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.WARNING
+import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.data.localDB.JobDataController
 import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentAddProjectItemsBinding
+import za.co.xisystems.itis_rrm.databinding.NewJobItemBinding
+import za.co.xisystems.itis_rrm.extensions.isConnected
+import za.co.xisystems.itis_rrm.extensions.observeOnce
+import za.co.xisystems.itis_rrm.services.DeferredLocationViewModel
+import za.co.xisystems.itis_rrm.services.DeferredLocationViewModelFactory
+import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
+import za.co.xisystems.itis_rrm.ui.extensions.failProgress
 import za.co.xisystems.itis_rrm.ui.extensions.initProgress
 import za.co.xisystems.itis_rrm.ui.extensions.startProgress
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModel
@@ -58,9 +74,6 @@ import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DateUtil
 import za.co.xisystems.itis_rrm.utils.JobUtils
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.WARNING
-import java.util.ArrayList
 import java.util.Calendar
 import java.util.Date
 
@@ -68,20 +81,23 @@ import java.util.Date
  * Created by Francis Mahlava on 2019/12/29.
  */
 
-class AddProjectFragment : BaseFragment(), KodeinAware {
+class AddProjectFragment : BaseFragment(), DIAware {
 
-    override val kodein by kodein()
+    override val di by closestDI()
     private lateinit var createViewModel: CreateViewModel
     private lateinit var unsubmittedViewModel: UnSubmittedViewModel
+    private lateinit var deferredLocationViewModel: DeferredLocationViewModel
     private val unsubFactory: UnSubmittedViewModelFactory by instance()
     private val createFactory: CreateViewModelFactory by instance()
+    private val deferredLocationFactory: DeferredLocationViewModelFactory by instance()
     private var dueDateDialog: DatePickerDialog? = null
     private var startDateDialog: DatePickerDialog? = null
     private lateinit var jobDataController: JobDataController
     private val swipeSection = Section()
     private var contractID: String? = null
     private var projectID: String? = null
-    private lateinit var groupAdapter: GroupAdapter<GroupieViewHolder>
+    private lateinit var userId: String
+    private lateinit var groupAdapter: GroupAdapter<GroupieViewHolder<NewJobItemBinding>>
     private lateinit var newJobItemEstimatesList: ArrayList<JobItemEstimateDTO>
     private lateinit var startDate: Date
     private lateinit var dueDate: Date
@@ -92,6 +108,8 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
     private var items: List<ItemDTOTemp> = ArrayList()
     private var stateRestored: Boolean = false
     private var jobBound: Boolean = false
+    private val addProjectArgs: AddProjectFragmentArgs by navArgs()
+
     private val touchCallback: SwipeTouchCallback by lazy {
         object : SwipeTouchCallback() {
             override fun onMove(
@@ -103,7 +121,7 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
             }
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                val item = GroupAdapter<GroupieViewHolder>().getItem(viewHolder.layoutPosition)
+                val item = GroupAdapter<GroupieViewHolder<NewJobItemBinding>>().getItem(viewHolder.layoutPosition)
                 // Change notification to the adapter happens automatically when the section is
                 // changed.
 
@@ -121,6 +139,7 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
                 lifecycle.addObserver(uiScope)
                 initViewModels()
                 uiUpdate()
+                requireActivity().hideKeyboard()
             }
         }
     }
@@ -138,14 +157,17 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
         unsubmittedViewModel = activity?.run {
             ViewModelProvider(this, unsubFactory).get(UnSubmittedViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
+
+        deferredLocationViewModel = activity?.run {
+            ViewModelProvider(this, deferredLocationFactory).get(DeferredLocationViewModel::class.java)
+        } ?: throw Exception("Invalid Activity")
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val args: AddProjectFragmentArgs by navArgs()
         when {
-            !args.jobId.isNullOrBlank() -> {
-                onRestoreInstanceState(args.toBundle())
+            !addProjectArgs.jobId.isNullOrBlank() -> {
+                onRestoreInstanceState(addProjectArgs.toBundle())
             }
             savedInstanceState != null && !stateRestored -> {
                 onRestoreInstanceState(savedInstanceState)
@@ -153,7 +175,7 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
             else -> {
                 stateRestored = false
                 (activity as MainActivity).supportActionBar?.title = getString(R.string.new_job)
-                newJobItemEstimatesList = ArrayList<JobItemEstimateDTO>()
+                newJobItemEstimatesList = ArrayList()
                 // Generic new job layout
                 ui.lastLin.visibility = View.GONE
                 ui.totalCostTextView.visibility = View.GONE
@@ -171,90 +193,147 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
     fun uiUpdate() {
         jobBound = false
         uiScope.launch(uiScope.coroutineContext) {
-            createViewModel.currentJob.distinctUntilChanged().observe(
-                viewLifecycleOwner,
-                { currentJob ->
-                    currentJob?.let { jobToEdit ->
-                        job = jobToEdit
-                        jobBound = true
-                        Coroutines.main {
-                            if (createViewModel.jobDesc != job.descr) {
-                                toast("Editing ${job.descr}")
-                                createViewModel.jobDesc = job.descr
-                            }
-                            projectID = job.projectId
-                            val contractNo =
-                                createViewModel.getContractNoForId(job.contractVoId)
-                            val projectCode =
-                                createViewModel.getProjectCodeForId(job.projectId)
-                            ui.selectedContractTextView.text = contractNo
-                            ui.selectedProjectTextView.text = projectCode
-
-                            ui.infoTextView.visibility = View.GONE
-                            ui.lastLin.visibility = View.VISIBLE
-                            ui.totalCostTextView.visibility = View.VISIBLE
-
-                            // Set job description init actionBar
-                            (activity as MainActivity).supportActionBar?.title = createViewModel.jobDesc
-
-                            // Set Job Start & Completion Dates
-
-                            job.dueDate?.let {
-                                ui.dueDateTextView.text = DateUtil.toStringReadable(DateUtil.stringToDate(it))
-                                dueDate = DateUtil.stringToDate(it)!!
-                            }
-
-                            job.startDate?.let {
-                                ui.startDateTextView.text = DateUtil.toStringReadable(DateUtil.stringToDate(it))
-                                startDate = DateUtil.stringToDate(it)!!
-                            }
-
-                            createViewModel.tempProjectItem.distinctUntilChanged()
-                                .observe(viewLifecycleOwner, {
-                                    it?.let {
-                                        ui.infoTextView.visibility = View.GONE
-                                        ui.lastLin.visibility = View.VISIBLE
-                                        ui.totalCostTextView.visibility = View.VISIBLE
-                                    }
-                                })
-
-                            withContext(Dispatchers.Main.immediate) {
-                                if (this@AddProjectFragment::job.isInitialized) {
-                                    bindProjectItems()
-                                    bindCosting()
-                                }
-                            }
-                        }
-                    }
-                })
+            initCurrentUserObserver()
+            initCurrentJobListener()
+            initValidationListener()
         }
     }
 
-    private suspend fun bindProjectItems() {
-        uiScope.launch(uiScope.coroutineContext) {
-            val projectItems =
-                createViewModel.getAllProjectItems(projectID!!, job.jobId)
-            projectItems.observe(viewLifecycleOwner, { itemList ->
-                when {
-                    itemList.isEmpty() -> {
-                        clearProjectItems()
+    private fun initCurrentUserObserver() {
+        createViewModel.loggedUser.observe(viewLifecycleOwner, { userId ->
+            userId?.let {
+
+                this@AddProjectFragment.userId = it.toString()
+            }
+        })
+    }
+
+    private fun resetValidationListener() {
+        deferredLocationViewModel.geoCodingResult.removeObservers(viewLifecycleOwner)
+        deferredLocationViewModel.resetGeoCodingResult()
+        createViewModel.jobForValidation.removeObservers(viewLifecycleOwner)
+        createViewModel.jobForValidation.removeObservers(viewLifecycleOwner)
+        Coroutines.main {
+            initValidationListener()
+        }
+    }
+
+    private suspend fun initValidationListener() = withContext(Dispatchers.Main) {
+        deferredLocationViewModel.geoCodingResult.observeOnce(
+            viewLifecycleOwner, { result ->
+                result.getContentIfNotHandled()?.let { outcome ->
+                    uiScope.launch(uiScope.coroutineContext) {
+                        processLocationResult(outcome)
                     }
-                    else -> {
-                        items = itemList.filter { itemDTOTemp ->
-                            itemDTOTemp.jobId == job.jobId
+                }
+            })
+
+        createViewModel.jobForValidation.observeOnce(
+            viewLifecycleOwner, { job ->
+                job.getContentIfNotHandled()?.let { realJob ->
+                    if (!realJob.sectionId.isNullOrBlank() && JobUtils.isGeoCoded(realJob)) {
+                        uiScope.launch(uiScope.coroutineContext) {
+                            validateEstimates(realJob)
                         }
-                        when {
-                            items.isNotEmpty() -> {
-                                initRecyclerView(items.toProjecListItems())
-                                calculateTotalCost()
-                            }
-                            else -> {
-                                clearProjectItems()
-                            }
+                    } else {
+                        uiScope.launch(uiScope.coroutineContext) {
+                            geoLocationFailed()
                         }
                     }
                 }
             })
+
+        createViewModel.jobForSubmission.observeOnce(
+            viewLifecycleOwner, { unsubmittedEvent ->
+                unsubmittedEvent.getContentIfNotHandled()?.let { submissionJob ->
+                    uiScope.launch(uiScope.coroutineContext) {
+                        createViewModel.backupSubmissionJob.value = XIEvent(submissionJob)
+                        submitJob(submissionJob)
+                    }
+                }
+            }
+        )
+    }
+
+    private fun initCurrentJobListener() {
+        val currentJobQuery = createViewModel.currentJob.distinctUntilChanged()
+        currentJobQuery.observe(viewLifecycleOwner, { jobEvent ->
+            jobEvent.getContentIfNotHandled()?.let { jobToEdit ->
+                job = jobToEdit
+                jobBound = true
+                Coroutines.main {
+                    if (createViewModel.jobDesc != job.descr) {
+                        toast("Editing ${job.descr}")
+                        createViewModel.jobDesc = job.descr
+                    }
+                    projectID = job.projectId
+                    val contractNo =
+                        createViewModel.getContractNoForId(job.contractVoId)
+                    val projectCode =
+                        createViewModel.getProjectCodeForId(job.projectId)
+                    ui.selectedContractTextView.text = contractNo
+                    ui.selectedProjectTextView.text = projectCode
+
+                    ui.infoTextView.visibility = View.GONE
+                    ui.lastLin.visibility = View.VISIBLE
+                    ui.totalCostTextView.visibility = View.VISIBLE
+
+                    // Set job description init actionBar
+                    (activity as MainActivity).supportActionBar?.title = createViewModel.jobDesc
+
+                    // Set Job Start & Completion Dates
+
+                    job.dueDate?.let {
+                        ui.dueDateTextView.text = DateUtil.toStringReadable(DateUtil.stringToDate(it))
+                        dueDate = DateUtil.stringToDate(it)!!
+                    }
+
+                    job.startDate?.let {
+                        ui.startDateTextView.text = DateUtil.toStringReadable(DateUtil.stringToDate(it))
+                        startDate = DateUtil.stringToDate(it)!!
+                    }
+
+                    createViewModel.tempProjectItem.observe(viewLifecycleOwner, {
+                        it.getContentIfNotHandled()?.let {
+                            ui.infoTextView.visibility = View.GONE
+                            ui.lastLin.visibility = View.VISIBLE
+                            ui.totalCostTextView.visibility = View.VISIBLE
+                        }
+                    })
+                    bindProjectItems()
+                }
+            }
+        })
+    }
+
+    private fun bindProjectItems() = uiScope.launch(uiScope.coroutineContext) {
+        val projectItems =
+            createViewModel.getAllProjectItems(projectID!!, job.jobId)
+        projectItems.observe(viewLifecycleOwner, { itemList ->
+            when {
+                itemList.isEmpty() -> {
+                    clearProjectItems()
+                }
+                else -> {
+                    populateProjectItemView(itemList)
+                }
+            }
+        })
+    }
+
+    private fun populateProjectItemView(itemList: List<ItemDTOTemp>) {
+        items = itemList.filter { itemDTOTemp ->
+            itemDTOTemp.jobId == job.jobId
+        }
+        when {
+            items.isNotEmpty() -> {
+                initRecyclerView(items.toProjecListItems())
+                calculateTotalCost()
+                bindCosting()
+            }
+            else -> {
+                clearProjectItems()
+            }
         }
     }
 
@@ -265,22 +344,19 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
         ui.totalCostTextView.visibility = View.GONE
     }
 
-    private fun bindCosting() {
-        uiScope.launch(uiScope.coroutineContext) {
-            createViewModel.estimateLineRate.observe(
-                viewLifecycleOwner,
-                {
-                    calculateTotalCost()
-                }
-            )
-        }
+    private fun bindCosting() = uiScope.launch(uiScope.coroutineContext) {
+        createViewModel.estimateLineRate.observe(
+            viewLifecycleOwner,
+            {
+                calculateTotalCost()
+            }
+        )
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
-        groupAdapter = GroupAdapter<GroupieViewHolder>()
+        groupAdapter = GroupAdapter<GroupieViewHolder<NewJobItemBinding>>()
         jobDataController = JobDataController
 
         initViewModels()
@@ -343,8 +419,9 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
     }
 
     private fun initRecyclerView(projecListItems: List<ProjectItem>) {
-        groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
+        groupAdapter = GroupAdapter<GroupieViewHolder<NewJobItemBinding>>().apply {
             addAll(projecListItems)
+            notifyDataSetChanged()
         }
 
         ui.projectRecyclerView.apply {
@@ -391,7 +468,14 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
                 }
 
                 R.id.submitButton -> {
-                    validateJob()
+                    Coroutines.main {
+                        if (this@AddProjectFragment.requireContext().isConnected) {
+                            resetValidationListener()
+                            validateJob()
+                        } else {
+                            displayConnectionWarning()
+                        }
+                    }
                 }
             }
         }
@@ -404,10 +488,22 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
         ui.infoTextView.setOnClickListener(myClickListener)
     }
 
+    private fun displayConnectionWarning() {
+        this@AddProjectFragment.extensionToast(
+            title = "No Connectivity",
+            message = "Job validation and submission requires an active internet connection.",
+            style = ToastStyle.NO_INTERNET,
+            duration = ToastDuration.LONG,
+            position = ToastGravity.BOTTOM
+        )
+    }
+
     private fun openSelectItemFragment(view: View) {
         if (jobBound) {
             backupJobInProgress(job)
+            createViewModel.setItemJob(job.jobId)
         }
+
         val navDirection =
             AddProjectFragmentDirections.actionAddProjectFragmentToSelectItemFragment(
                 projectID
@@ -416,31 +512,100 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
             .navigate(navDirection)
     }
 
-    private fun validateJob() {
+    private suspend fun validateJob() = uiScope.launch(uiScope.coroutineContext) {
 
         if (job.jobId.isNotEmpty() && validateCalendar()) {
 
-            Coroutines.main {
+            withContext(Dispatchers.Main) {
                 if (!JobUtils.areQuantitiesValid(job)) {
-                    this@AddProjectFragment.sharpToast(
+                    this@AddProjectFragment.extensionToast(
                         message = "Error: incomplete estimates.\n Quantity can't be zero!",
                         style = WARNING
                     )
                     ui.itemsCardView.startAnimation(shake_long)
                 } else {
-                    val valid =
-                        createViewModel.areEstimatesValid(job, ArrayList<Any?>(items))
-                    if (!valid) {
-                        onInvalidJob()
-                    } else {
-                        ui.submitButton.initProgress(viewLifecycleOwner)
-                        ui.submitButton.startProgress("Submitting data ...")
-
-                        job.issueDate = DateUtil.dateToString(Date())
-                        submitJob(job)
-                    }
+                    validateLocations(job)
                 }
             }
+        }
+    }
+
+    private suspend fun processLocationResult(result: XIResult<String>) = withContext(Dispatchers.Main) {
+        when (result) {
+            is XIResult.Success -> {
+                handleGeoSuccess(result)
+            }
+            is XIResult.Error -> {
+                handleGeoError(result)
+            }
+            else -> geoLocationFailed()
+        }
+    }
+
+    private suspend fun AddProjectFragment.handleGeoError(
+        result: XIResult.Error
+    ) = withContext(Dispatchers.Main) {
+        this@AddProjectFragment.extensionToast(
+            title = "Location Validation",
+            message = result.exception.message.toString(),
+            style = ERROR
+        )
+        crashGuard(this@AddProjectFragment.requireView(), result,
+            refreshAction = { Coroutines.main { this@AddProjectFragment.validateJob() } })
+        geoLocationFailed()
+    }
+
+    private fun handleGeoSuccess(result: XIResult.Success<String>) {
+        val geoCodedJobId = result.data
+        createViewModel.setJobToValidate(geoCodedJobId)
+    }
+
+    private suspend fun geoLocationFailed() = withContext(Dispatchers.Main.immediate) {
+        ui.submitButton.failProgress("Locations not verified ...")
+        toggleLongRunning(false)
+        ui.itemsCardView.startAnimation(shake_long)
+        onGeoLocationFailed()
+    }
+
+    private suspend fun validateLocations(job: JobDTO) = withContext(Dispatchers.Main) {
+        createViewModel.backupJob(job)
+        toggleLongRunning(true)
+        ui.submitButton.initProgress(viewLifecycleOwner)
+        ui.submitButton.startProgress("Checking locations ...")
+        deferredLocationViewModel.checkLocations(job.jobId)
+    }
+
+    private suspend fun validateEstimates(updatedJob: JobDTO) = withContext(Dispatchers.Main) {
+        val validated = createViewModel.areEstimatesValid(updatedJob, ArrayList(items))
+
+        if (!validated) {
+            onInvalidJob()
+        } else {
+            withContext(Dispatchers.Main.immediate) {
+                ui.submitButton.initProgress(viewLifecycleOwner)
+                ui.submitButton.startProgress("Submitting data ...")
+                updatedJob.issueDate = DateUtil.dateToString(Date())
+                createViewModel.backupJob(updatedJob)
+                createViewModel.setJobForSubmission(updatedJob.jobId)
+            }
+        }
+    }
+
+    private fun onGeoLocationFailed() {
+        Coroutines.ui {
+            val errorToast = ColorToast(
+                title = "Location Verification Failed",
+                message = "One or more work locations could not be verified.\n" +
+                    "Check estimates for more information.",
+                style = ERROR,
+                gravity = ToastGravity.CENTER,
+                duration = ToastDuration.LONG
+            )
+            this@AddProjectFragment.extensionToast(errorToast)
+            HandlerCompat.postDelayed(Handler(Looper.getMainLooper()), {
+                createViewModel.setJobToEdit(job.jobId)
+                initCurrentJobListener()
+            }, null, TWO_SECONDS)
         }
     }
 
@@ -457,27 +622,27 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
 
             if (dueDate < startDate || dueDate < yesterday || dueDate == yesterday
             ) {
-                sharpToast(message = "Please select a valid due date", style = WARNING)
+                extensionToast(message = "Please select a valid due date", style = WARNING)
                 ui.dueDateCardView.startAnimation(shake_long)
             } else {
                 job.dueDate
                 dueResult = true
             }
         } else {
-            sharpToast(message = "Please select a Due Date", style = WARNING)
+            extensionToast(message = "Please select a Due Date", style = WARNING)
             ui.dueDateCardView.startAnimation(shake_long)
         }
         if (job.startDate != null) {
             if (startDate < yesterday || dueDate == yesterday
             ) {
-                sharpToast(message = "Please select a valid Start Date", style = WARNING)
+                extensionToast(message = "Please select a valid Start Date", style = WARNING)
                 ui.dueDateCardView.startAnimation(shake_long)
             } else {
                 job.startDate
                 startResult = true
             }
         } else {
-            sharpToast(message = "Please select Start Date", style = WARNING)
+            extensionToast(message = "Please select Start Date", style = WARNING)
             ui.startDateCardView.startAnimation(shake_long)
         }
 
@@ -522,32 +687,38 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
         startDateDialog!!.show()
     }
 
-    private fun submitJob(
+    @Synchronized
+    private suspend fun submitJob(
         job: JobDTO
-    ) {
+    ) = withContext(uiScope.coroutineContext) {
         toggleLongRunning(true)
         val jobTemp = jobDataController.setJobLittleEndianGuids(job)
         saveRrmJob(job.userId, jobTemp)
     }
 
-    private fun saveRrmJob(
+    @Synchronized
+    private suspend fun saveRrmJob(
         userId: Int,
         job: JobDTO
-    ) {
-        Coroutines.main {
-            val submit =
-                createViewModel.submitJob(userId, job, requireActivity())
+    ) = withContext(uiScope.coroutineContext) {
+        val submit =
+            createViewModel.submitJob(userId, job, requireActivity())
+        withContext(Dispatchers.Main.immediate) {
             toggleLongRunning(false)
             if (submit.isNotBlank()) {
-                this@AddProjectFragment.sharpToast(
-                    message = submit,
-                    style = ToastStyle.ERROR
-                )
+                withContext(Dispatchers.Main.immediate) {
+                    this@AddProjectFragment.extensionToast(
+                        message = submit,
+                        style = ERROR
+                    )
+                }
             } else {
-                this@AddProjectFragment.sharpToast(
-                    message = getString(R.string.job_submitted),
-                    style = ToastStyle.SUCCESS
-                )
+                withContext(Dispatchers.Main.immediate) {
+                    this@AddProjectFragment.extensionToast(
+                        message = getString(R.string.job_submitted),
+                        style = ToastStyle.SUCCESS
+                    )
+                }
                 popViewOnJobSubmit()
             }
         }
@@ -555,8 +726,8 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
 
     private fun popViewOnJobSubmit() {
         // Delete Items data from the database after success upload
-        onResetClicked(this.requireView())
-        // createViewModel.setCurrentJob(null)
+        // onResetClicked(this.requireView())
+        // createViewModel.setJobToEdit("null")
         // Conduct user back to home fragment
         HandlerCompat.postDelayed(Handler(Looper.getMainLooper()), {
             Intent(context?.applicationContext, MainActivity::class.java).also { home ->
@@ -584,7 +755,7 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
     }
 
     private fun backupJobInProgress(jobDTO: JobDTO?) {
-        Coroutines.main {
+        Coroutines.io {
             createViewModel.backupJob(jobDTO!!)
         }
     }
@@ -605,9 +776,11 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        outState.putSerializable(JOB_KEY, job.jobId)
-        outState.putSerializable(PROJECT_KEY, projectID)
-        super.onSaveInstanceState(outState)
+        if (this::job.isInitialized) {
+            outState.putString(JOB_KEY, job.jobId)
+            outState.putString(PROJECT_KEY, job.projectId)
+            super.onSaveInstanceState(outState)
+        }
     }
 
     private fun resetContractAndProjectSelection(view: View) {
@@ -616,12 +789,18 @@ class AddProjectFragment : BaseFragment(), KodeinAware {
     }
 
     private fun onInvalidJob() {
-        sharpToast(message = "Incomplete estimates!", style = WARNING)
+        toggleLongRunning(false)
+        extensionToast(message = "Incomplete estimates!", style = WARNING)
         ui.itemsCardView.startAnimation(shake_long)
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
+        createViewModel.currentJob.removeObservers(viewLifecycleOwner)
+        createViewModel.tempProjectItem.removeObservers(viewLifecycleOwner)
+        deferredLocationViewModel.geoCodingResult.removeObservers(viewLifecycleOwner)
+        createViewModel.jobForValidation.removeObservers(viewLifecycleOwner)
+        createViewModel.jobForSubmission.removeObservers(viewLifecycleOwner)
         uiScope.destroy()
         ui.projectRecyclerView.adapter = null
         _ui = null

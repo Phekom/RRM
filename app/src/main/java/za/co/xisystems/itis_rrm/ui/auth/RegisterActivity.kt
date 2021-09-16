@@ -5,7 +5,6 @@ package za.co.xisystems.itis_rrm.ui.auth
  */
 import android.Manifest
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
@@ -16,9 +15,9 @@ import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import kotlinx.android.synthetic.main.activity_register.*
-import org.kodein.di.KodeinAware
-import org.kodein.di.android.kodein
-import org.kodein.di.generic.instance
+import org.kodein.di.DIAware
+import org.kodein.di.android.closestDI
+import org.kodein.di.instance
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
@@ -36,12 +35,11 @@ import za.co.xisystems.itis_rrm.utils.toast
 
 private const val PERMISSION_REQUEST = 10
 
-class RegisterActivity : AppCompatActivity(), AuthListener, KodeinAware {
+class RegisterActivity : AppCompatActivity(), AuthListener, DIAware {
 
-    override val kodein by kodein()
+    override val di by closestDI()
     private val factory: AuthViewModelFactory by instance()
     private lateinit var viewModel: AuthViewModel
-    private lateinit var appContext: Context
     private var permissions = arrayOf(
         Manifest.permission.CAMERA,
         Manifest.permission.READ_EXTERNAL_STORAGE,

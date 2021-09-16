@@ -16,31 +16,36 @@ import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import androidx.activity.OnBackPressedCallback
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenStarted
+import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.ExpandableGroup
 import com.xwray.groupie.GroupAdapter
-import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
+import com.xwray.groupie.viewbinding.GroupieViewHolder
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import org.kodein.di.KodeinAware
-import org.kodein.di.android.x.kodein
-import org.kodein.di.generic.instance
+import org.kodein.di.DIAware
+import org.kodein.di.android.x.closestDI
+import org.kodein.di.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
-import za.co.xisystems.itis_rrm.custom.results.XIError
-import za.co.xisystems.itis_rrm.custom.results.XIProgress
+import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration
+import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity
+import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity.BOTTOM
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.ERROR
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.NO_INTERNET
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.WARNING
 import za.co.xisystems.itis_rrm.custom.results.XIResult
-import za.co.xisystems.itis_rrm.custom.results.XIStatus
-import za.co.xisystems.itis_rrm.custom.results.XISuccess
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
@@ -48,8 +53,10 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasurePhotoDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentSubmitMeasureBinding
+import za.co.xisystems.itis_rrm.databinding.ItemMeasureHeaderBinding
 import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.ui.extensions.doneProgress
+import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.extensions.failProgress
 import za.co.xisystems.itis_rrm.ui.extensions.initProgress
 import za.co.xisystems.itis_rrm.ui.extensions.startProgress
@@ -59,18 +66,11 @@ import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
-import za.co.xisystems.itis_rrm.utils.enums.ToastDuration
-import za.co.xisystems.itis_rrm.utils.enums.ToastGravity
-import za.co.xisystems.itis_rrm.utils.enums.ToastGravity.BOTTOM
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.ERROR
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.NO_INTERNET
-import za.co.xisystems.itis_rrm.utils.enums.ToastStyle.WARNING
 import java.util.ArrayList
 import java.util.HashMap
 
-class SubmitMeasureFragment : BaseFragment(), KodeinAware {
-    override val kodein by kodein()
+class SubmitMeasureFragment : BaseFragment(), DIAware {
+    override val di by closestDI()
     private lateinit var measureViewModel: MeasureViewModel
     private val factory: MeasureViewModelFactory by instance()
     private lateinit var jobItemMeasurePhotoDTO: ArrayList<JobItemMeasurePhotoDTO>
@@ -110,9 +110,9 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
         event?.let { outcome ->
 
             when (outcome) {
-                is XISuccess -> {
+                is XIResult.Success -> {
 
-                    sharpToast(
+                    extensionToast(
                         message = "Measurements submitted for Job ${outcome.data}",
                         style = ToastStyle.SUCCESS
                     )
@@ -121,13 +121,13 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
                     jobItemMeasureList.clear()
                     popViewOnJobSubmit()
                 }
-                is XIError -> {
+                is XIResult.Error -> {
                     toggleLongRunning(false)
 
                     progressButton.failProgress("Workflow failed ...")
                     measureJob?.cancel(CancellationException(outcome.message))
 
-                    sharpToast(
+                    extensionToast(
                         message = "Submission failed: ${outcome.message}",
                         style = ERROR
                     )
@@ -137,27 +137,31 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
                         outcome,
                         refreshAction = { this@SubmitMeasureFragment.retryMeasurements() })
                 }
-                is XIStatus -> {
-                    sharpToast(
+                is XIResult.Status -> {
+                    extensionToast(
                         message = outcome.message,
                         duration = ToastDuration.SHORT,
                         position = BOTTOM
                     )
                 }
 
-                is XIProgress -> {
-                    toggleLongRunning(outcome.isLoading)
-                    when (outcome.isLoading) {
-                        true -> {
-                            progressButton.initProgress(viewLifecycleOwner)
-                            progressButton.startProgress("Submitting ...")
-                        }
-                        else -> {
-                            progressButton.doneProgress(originalCaption)
-                        }
-                    }
+                is XIResult.Progress -> {
+                    handleMeasurementProgress(outcome)
                 }
                 else -> Timber.d("$event")
+            }
+        }
+    }
+
+    private fun handleMeasurementProgress(outcome: XIResult.Progress) {
+        toggleLongRunning(outcome.isLoading)
+        when (outcome.isLoading) {
+            true -> {
+                progressButton.initProgress(viewLifecycleOwner)
+                progressButton.startProgress("Submitting ...")
+            }
+            else -> {
+                progressButton.doneProgress(originalCaption)
             }
         }
     }
@@ -241,7 +245,7 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
                     toggleLongRunning(true)
                     submitMeasurements(jobId)
                 } else {
-                    sharpToast(
+                    extensionToast(
                         message = getString(R.string.no_connection_detected),
                         style = NO_INTERNET,
                         position = ToastGravity.CENTER
@@ -273,13 +277,13 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
                     msure.qty > 0 && !msure.jobItemMeasurePhotos.isNullOrEmpty()
                 }
                 if (validMeasures.isNullOrEmpty()) {
-                    sharpToast(
-                        resId = R.string.please_make_sure_you_have_captured_photos,
+                    extensionToast(
+                        message = getString(R.string.please_make_sure_you_have_captured_photos),
                         style = WARNING
                     )
                     progressButton.failProgress(originalCaption)
                 } else {
-                    sharpToast(
+                    extensionToast(
                         message = "You have Done " + validMeasures.size.toString() + " Measurements on this Estimate",
                         style = ToastStyle.INFO
                     )
@@ -320,33 +324,41 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
                         showSubmissionError("Selected job is invalid")
                     }
                     else -> {
-                        // littleEndian conversion for transport to backend
-                        val contractVoId: String =
-                            DataConversion.toLittleEndian(itemMeasureJob.contractVoId)!!
-                        val jobId: String = DataConversion.toLittleEndian(itemMeasureJob.jobId)!!
-
-                        Coroutines.main {
-
-                            activity?.let {
-
-                                processMeasurementWorkflow(
-                                    userDTO,
-                                    jobId,
-                                    itemMeasureJob,
-                                    contractVoId,
-                                    mSures,
-                                    it
-                                )
-                            }
-                        }
+                        prepareMeasurementWorkflow(itemMeasureJob, userDTO, mSures)
                     }
                 }
             })
         }
     }
 
+    private fun prepareMeasurementWorkflow(
+        itemMeasureJob: JobDTO,
+        userDTO: UserDTO,
+        mSures: ArrayList<JobItemMeasureDTO>
+    ) {
+        // littleEndian conversion for transport to backend
+        val contractVoId: String =
+            DataConversion.toLittleEndian(itemMeasureJob.contractVoId)!!
+        val jobId: String = DataConversion.toLittleEndian(itemMeasureJob.jobId)!!
+
+        Coroutines.main {
+
+            activity?.let {
+
+                processMeasurementWorkflow(
+                    userDTO,
+                    jobId,
+                    itemMeasureJob,
+                    contractVoId,
+                    mSures,
+                    it
+                )
+            }
+        }
+    }
+
     private fun showSubmissionError(errorMessage: String) {
-        sharpToast(
+        extensionToast(
             message = errorMessage,
             style = ERROR,
             position = ToastGravity.CENTER
@@ -427,6 +439,18 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
         super.onAttach(context)
         (activity as MainActivity).supportActionBar?.title =
             getString(R.string.submit_measure_title)
+
+        val callback: OnBackPressedCallback = object : OnBackPressedCallback(true) {
+            /**
+             * Callback for handling the [OnBackPressedDispatcher.onBackPressed] event.
+             */
+            override fun handleOnBackPressed() {
+                Navigation.findNavController(this@SubmitMeasureFragment.requireView())
+                    .navigate(R.id.nav_estMeasure)
+            }
+        }
+        requireActivity().onBackPressedDispatcher
+            .addCallback(this, callback)
     }
 
     override fun onPrepareOptionsMenu(menu: Menu) {
@@ -448,8 +472,9 @@ class SubmitMeasureFragment : BaseFragment(), KodeinAware {
     }
 
     private fun initRecyclerView(measureItems: List<ExpandableGroup>) {
-        val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
+        val groupAdapter = GroupAdapter<GroupieViewHolder<ItemMeasureHeaderBinding>>().apply {
             addAll(measureItems)
+            notifyItemRangeChanged(0, measureItems.size)
         }
 
         ui.measureListView.apply {

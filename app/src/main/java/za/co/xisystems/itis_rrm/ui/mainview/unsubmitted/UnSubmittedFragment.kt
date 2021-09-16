@@ -8,30 +8,31 @@ import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
-import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
+import com.xwray.groupie.viewbinding.GroupieViewHolder
 import kotlinx.android.synthetic.main.fragment_unsubmittedjobs.*
-import org.kodein.di.KodeinAware
-import org.kodein.di.android.x.kodein
-import org.kodein.di.generic.instance
+import org.kodein.di.DIAware
+import org.kodein.di.android.x.closestDI
+import org.kodein.di.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
-import za.co.xisystems.itis_rrm.custom.results.XIError
+import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
+import za.co.xisystems.itis_rrm.databinding.UnsubmtdJobListItemBinding
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.unsubmited_item.UnSubmittedJobItem
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
 
-class UnSubmittedFragment : BaseFragment(), KodeinAware {
+class UnSubmittedFragment : BaseFragment(), DIAware {
 
-    override val kodein by kodein()
+    override val di by closestDI()
     private lateinit var createViewModel: CreateViewModel
     private val createFactory: CreateViewModelFactory by instance()
-    private lateinit var groupAdapter: GroupAdapter<GroupieViewHolder>
+    private lateinit var groupAdapter: GroupAdapter<GroupieViewHolder<UnsubmtdJobListItemBinding>>
     private lateinit var unSubmittedViewModel: UnSubmittedViewModel
     private val factory: UnSubmittedViewModelFactory by instance()
 
@@ -52,9 +53,7 @@ class UnSubmittedFragment : BaseFragment(), KodeinAware {
         return false
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         unSubmittedViewModel = activity?.run {
             ViewModelProvider(this, factory).get(UnSubmittedViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
@@ -62,7 +61,15 @@ class UnSubmittedFragment : BaseFragment(), KodeinAware {
         createViewModel = activity?.run {
             ViewModelProvider(this, createFactory).get(CreateViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
+    }
 
+    /**
+     * Called when the Fragment is visible to the user.  This is generally
+     * tied to [Activity.onStart] of the containing
+     * Activity's lifecycle.
+     */
+    override fun onStart() {
+        super.onStart()
         fetchUnsubmitted()
     }
 
@@ -87,7 +94,7 @@ class UnSubmittedFragment : BaseFragment(), KodeinAware {
                 })
             } catch (t: Throwable) {
                 Timber.e(t, "Failed to fetch unsubmitted jobs!")
-                val unsubError = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
+                val unsubError = XIResult.Error(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
 
                 crashGuard(
                     this@UnSubmittedFragment.requireView(),
@@ -118,8 +125,8 @@ class UnSubmittedFragment : BaseFragment(), KodeinAware {
     }
 
     private fun initRecyclerView(items: List<UnSubmittedJobItem>) {
-        groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
-            addAll(items)
+        groupAdapter = GroupAdapter<GroupieViewHolder<UnsubmtdJobListItemBinding>>().apply {
+            update(items)
         }
         incomplete_job_listView.apply {
             layoutManager = LinearLayoutManager(this.context)

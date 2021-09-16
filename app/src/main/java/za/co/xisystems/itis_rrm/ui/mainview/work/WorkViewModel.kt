@@ -28,8 +28,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.custom.results.XIResult
-import za.co.xisystems.itis_rrm.custom.results.XIStatus
-import za.co.xisystems.itis_rrm.custom.results.XISuccess
+import za.co.xisystems.itis_rrm.custom.results.XIResult.Status
+import za.co.xisystems.itis_rrm.custom.results.XIResult.Success
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksPhotoDTO
@@ -97,10 +97,11 @@ class WorkViewModel(
         }
     }
 
-    suspend fun getJobEstimationItemsForJobId(jobID: String?, actID: Int): LiveData<List<JobItemEstimateDTO>> {
-        return withContext(ioContext) {
-            workDataRepository.getJobEstimationItemsForJobId(jobID, actID).distinctUntilChanged()
-        }
+    suspend fun getJobEstimationItemsForJobId(jobID: String?, actID: Int): List<JobItemEstimateDTO> = withContext(ioContext) {
+
+        val data = workDataRepository.getJobEstimationItemsForJobId(jobID, actID)
+
+        return@withContext data
     }
 
     suspend fun getDescForProjectItemId(projectItemId: String): String {
@@ -157,11 +158,10 @@ class WorkViewModel(
         }
     }
 
-    suspend fun getJobEstiItemForEstimateId(estimateId: String?): LiveData<List<JobEstimateWorksDTO>> {
-        return withContext(ioContext) {
-            workDataRepository.getJobEstiItemForEstimateId(estimateId)
+    suspend fun getLiveJobEstimateWorksByEstimateId(estimateId: String?): LiveData<JobEstimateWorksDTO> =
+        withContext(ioContext) {
+            return@withContext workDataRepository.getLiveJobEstimateWorksByEstimateId(estimateId)
         }
-    }
 
     suspend fun getWorkFlowCodes(eId: Int): LiveData<List<WfWorkStepDTO>> {
         return withContext(ioContext) {
@@ -178,15 +178,13 @@ class WorkViewModel(
         }
     }
 
-    fun submitWorks(
+    suspend fun submitWorks(
         itemEstiWorks: JobEstimateWorksDTO,
         activity: FragmentActivity,
         itemEstiJob: JobDTO
 
-    ) {
-        viewModelScope.launch(ioContext) {
-            workDataRepository.submitWorks(itemEstiWorks, activity, itemEstiJob)
-        }
+    ) = withContext(ioContext) {
+        workDataRepository.submitWorks(itemEstiWorks, activity, itemEstiJob)
     }
 
     suspend fun getJobItemEstimateForEstimateId(estimateId: String): JobItemEstimateDTO {
@@ -210,14 +208,12 @@ class WorkViewModel(
         jobId: String?,
         estimateWorkPartComplete: Int,
         estWorksComplete: Int
-    ): Int {
-        return withContext(ioContext) {
-            workDataRepository.getJobItemsEstimatesDoneForJobId(
-                jobId,
-                estimateWorkPartComplete,
-                estWorksComplete
-            )
-        }
+    ): Int = withContext(ioContext) {
+        return@withContext workDataRepository.getJobItemsEstimatesDoneForJobId(
+            jobId,
+            estimateWorkPartComplete,
+            estWorksComplete
+        )
     }
 
     suspend fun populateWorkTab(estimateId: String, actId: Int) {
@@ -227,12 +223,12 @@ class WorkViewModel(
             val worksPhotos = workDataRepository.getEstimateWorksPhotosForWorksId(worksDTO.worksId)
             if (!worksPhotos.isNullOrEmpty()) {
                 worksDTO.jobEstimateWorksPhotos = worksPhotos as java.util.ArrayList<JobEstimateWorksPhotoDTO>
-                historicalWorks.postValue(XISuccess(worksDTO))
+                historicalWorks.postValue(Success(worksDTO))
             } else {
-                historicalWorks.postValue(XIStatus("Photos failed to load"))
+                historicalWorks.postValue(Status("Photos failed to load"))
             }
         } else {
-            historicalWorks.postValue(XIStatus("Works failed to load"))
+            historicalWorks.postValue(Status("Works failed to load"))
         }
     }
 
@@ -248,5 +244,9 @@ class WorkViewModel(
         superJob.cancelChildren()
         workflowState = MutableLiveData()
         workflowStatus = MutableLiveData()
+    }
+
+    suspend fun getUOMForProjectItemId(projectItemId: String): String? = withContext(ioContext) {
+        return@withContext workDataRepository.getUOMForProjectItemId(projectItemId)
     }
 }
