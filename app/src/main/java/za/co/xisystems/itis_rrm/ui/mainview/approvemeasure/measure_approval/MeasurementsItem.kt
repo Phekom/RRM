@@ -11,8 +11,8 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.Navigation
 import com.xwray.groupie.viewbinding.BindableItem
-import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.databinding.MeasurementsItemBinding
 import za.co.xisystems.itis_rrm.extensions.uomForUI
@@ -87,29 +87,52 @@ class MeasurementsItem(
             Coroutines.main {
                 when {
                     editQuantity == "" || nanCheck(editQuantity) -> {
-                        activity.extensionToast("Please Enter a valid Quantity", MotionToast.TOAST_WARNING)
+                        activity.extensionToast(
+                            message = "Please Enter a valid Quantity",
+                            style = ToastStyle.WARNING
+                        )
                     }
                     editQuantity.length > 9 -> {
-                        activity.extensionToast("You have exceeded the quantity allowed", MotionToast.TOAST_WARNING)
+                        activity.extensionToast(
+                            message = "You have exceeded the quantity allowed",
+                            style = ToastStyle.WARNING
+                        )
                     }
                     else -> {
-                        fragmentReference.get()?.toggleLongRunning(true)
-                        val updated = approveViewModel.upDateMeasure(
-                            editQuantity,
-                            itemMeasureId
-                        )
-                        if (updated.isBlank()) {
-                            activity.extensionToast("Data Updated", MotionToast.TOAST_SUCCESS)
-                        } else {
-                            activity.extensionToast("Error on update: $updated.", MotionToast.TOAST_ERROR)
-                        }
-                        fragmentReference.get()?.toggleLongRunning(false)
+                        correctMeasurement(editQuantity, itemMeasureId, activity)
                     }
                 }
             }
         } else {
-            activity.extensionToast("No connection detected.", MotionToast.TOAST_NO_INTERNET)
+            activity.extensionToast(
+                message = "No connection detected.",
+                style = ToastStyle.NO_INTERNET
+            )
         }
+    }
+
+    private suspend fun correctMeasurement(
+        editQuantity: String,
+        itemMeasureId: String,
+        activity: FragmentActivity
+    ) {
+        fragmentReference.get()?.toggleLongRunning(true)
+        val updated = approveViewModel.upDateMeasure(
+            editQuantity,
+            itemMeasureId
+        )
+        if (updated.isBlank()) {
+            activity.extensionToast(
+                message = "Data Updated",
+                style = ToastStyle.SUCCESS
+            )
+        } else {
+            activity.extensionToast(
+                message = "Error on update: $updated.",
+                style = ToastStyle.ERROR
+            )
+        }
+        fragmentReference.get()?.toggleLongRunning(false)
     }
 
     private fun nanCheck(toString: String): Boolean {

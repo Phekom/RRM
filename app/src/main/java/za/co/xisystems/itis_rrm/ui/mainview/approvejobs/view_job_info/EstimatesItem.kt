@@ -25,7 +25,6 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
 import com.xwray.groupie.viewbinding.BindableItem
 import timber.log.Timber
-import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
 import za.co.xisystems.itis_rrm.custom.results.XIResult
@@ -197,7 +196,10 @@ class EstimatesItem(
                     quantityEntry.text.toString() == "" ||
                         nanCheck(quantityEntry.text.toString()) ||
                         quantityEntry.text.toString().toDouble() < 0.0 -> {
-                        activity.extensionToast("Please Enter a valid Quantity", MotionToast.TOAST_WARNING)
+                        activity.extensionToast(
+                            message = "Please Enter a valid Quantity",
+                            style = ToastStyle.WARNING
+                        )
                     }
                     else -> {
                         approveViewModel.updateState.observe(viewLifecycleOwner, updateObserver)
@@ -210,7 +212,10 @@ class EstimatesItem(
                 }
             }
         } else {
-            activity.extensionToast("No connection detected.", MotionToast.TOAST_NO_INTERNET)
+            activity.extensionToast(
+                message = "No connection detected.",
+                style = ToastStyle.NO_INTERNET
+            )
         }
     }
 

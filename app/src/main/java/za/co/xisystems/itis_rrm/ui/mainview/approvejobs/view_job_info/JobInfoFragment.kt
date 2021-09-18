@@ -36,13 +36,18 @@ import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity.CENTER
 import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
 import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.NO_INTERNET
 import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.SUCCESS
-import za.co.xisystems.itis_rrm.custom.results.*
+import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.databinding.EstimatesItemBinding
 import za.co.xisystems.itis_rrm.databinding.FragmentJobInfoBinding
-import za.co.xisystems.itis_rrm.ui.extensions.*
+import za.co.xisystems.itis_rrm.ui.extensions.ShimmerUtils
+import za.co.xisystems.itis_rrm.ui.extensions.doneProgress
+import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
+import za.co.xisystems.itis_rrm.ui.extensions.failProgress
+import za.co.xisystems.itis_rrm.ui.extensions.initProgress
+import za.co.xisystems.itis_rrm.ui.extensions.startProgress
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.ApproveJobsViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.ApproveJobsViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.approve_job_item.ApproveJobItem
@@ -284,8 +289,13 @@ class JobInfoFragment : BaseFragment(), DIAware {
 
     private fun initVeiledRecyclerView() {
         ui.viewEstimationItemsListView.run {
-            setVeilLayout(layout.estimates_item)
-            { Toast.makeText(this@JobInfoFragment.requireContext(), "Loading ...", Toast.LENGTH_SHORT).show() }
+            setVeilLayout(layout.estimates_item) {
+                Toast.makeText(
+                    this@JobInfoFragment.requireContext(),
+                    "Loading ...",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
             setAdapter(groupAdapter)
             setLayoutManager(LinearLayoutManager(this.context))
             addVeiledItems(3)
@@ -390,6 +400,7 @@ class JobInfoFragment : BaseFragment(), DIAware {
             NEXT.value -> {
                 progressButton.text = getString(string.approve_job)
                 extensionToast(
+                    title = "Workflow Update",
                     message = getString(string.job_no_approved, jiNo!!),
                     style = SUCCESS
                 )
@@ -397,6 +408,7 @@ class JobInfoFragment : BaseFragment(), DIAware {
             FAIL.value -> {
                 progressButton.text = getString(string.decline_job)
                 extensionToast(
+                    title = "Workflow Update",
                     message = getString(string.job_declined),
                     style = ToastStyle.DELETE
                 )
