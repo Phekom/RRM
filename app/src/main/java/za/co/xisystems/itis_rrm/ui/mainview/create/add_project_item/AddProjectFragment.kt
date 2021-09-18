@@ -418,9 +418,9 @@ class AddProjectFragment : BaseFragment(), DIAware {
         }
     }
 
-    private fun initRecyclerView(projecListItems: List<ProjectItem>) {
+    private fun initRecyclerView(projectListItems: List<ProjectItem>) {
         groupAdapter = GroupAdapter<GroupieViewHolder<NewJobItemBinding>>().apply {
-            addAll(projecListItems)
+            addAll(projectListItems)
             notifyDataSetChanged()
         }
 

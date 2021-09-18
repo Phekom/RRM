@@ -50,7 +50,6 @@ class Scribe private constructor(
             while (!this@Scribe::securePrefs.isInitialized) {
                 delay(500)
             }
-            this
         }
     }
 

@@ -42,7 +42,7 @@ buildscript {
         classpath "com.autonomousapps:dependency-analysis-gradle-plugin:0.72.0"
         classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:3.3"
         classpath "io.gitlab.arturbosch.detekt:detekt-gradle-plugin:1.16.0"
-        classpath 'com.google.gms:google-services:4.3.10'
+        // classpath 'com.google.gms:google-services:4.3.10'
     }
 
 
@@ -80,7 +80,6 @@ allprojects {
         android_target_sdk_versiom = 31
         appcompat_library_version = compile_version + ".0.0"
         support_library_version = "28.0.0"
-        gms_library_version = "9.8.0"
     }
 }
 

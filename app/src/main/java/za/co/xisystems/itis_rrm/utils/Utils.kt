@@ -9,13 +9,11 @@ package za.co.xisystems.itis_rrm.utils
 import com.password4j.SecureString
 import okhttp3.internal.and
 import timber.log.Timber
-import java.math.BigInteger
 import java.nio.ByteBuffer
 import java.nio.CharBuffer
 import java.nio.charset.Charset
 import java.nio.charset.CodingErrorAction
 import java.nio.charset.StandardCharsets
-import java.security.MessageDigest
 import java.util.Arrays
 import kotlin.math.round
 
@@ -48,11 +46,6 @@ object Utils {
         var multiplier = 1.0
         repeat(decimals) { multiplier *= 10 }
         return round(this * multiplier) / multiplier
-    }
-
-    fun String.md5(): String {
-        val md = MessageDigest.getInstance("MD5")
-        return BigInteger(1, md.digest(toByteArray())).toString(16).padStart(32, '0')
     }
 
     private val DEFAULT_CHARSET: Charset = StandardCharsets.UTF_8

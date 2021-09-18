@@ -5,6 +5,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Update
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimatesPhotoDTO
 
@@ -40,5 +41,11 @@ interface JobItemEstimatePhotoDao {
     fun deleteAll()
 
     @Query("DELETE FROM JOB_ITEM_ESTIMATE_PHOTO WHERE photoId = :photoId")
-    fun deletePhotoById(photoId: String)
+    suspend fun deletePhotoById(photoId: String)
+
+    @Transaction
+    suspend fun replaceEstimatePhoto(photoId: String, estimatePhoto: JobItemEstimatesPhotoDTO) {
+        deletePhotoById(photoId)
+        insertJobItemEstimatePhoto(estimatePhoto)
+    }
 }

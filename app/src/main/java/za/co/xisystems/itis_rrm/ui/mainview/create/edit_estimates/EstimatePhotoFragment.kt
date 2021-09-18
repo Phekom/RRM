@@ -31,6 +31,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.widget.doOnTextChanged
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenCreated
 import androidx.lifecycle.whenResumed
@@ -68,14 +69,11 @@ import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.models.PhotoType
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.Coroutines
-import za.co.xisystems.itis_rrm.utils.DateUtil
 import za.co.xisystems.itis_rrm.utils.GlideApp
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
-import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
 import java.io.File
 import java.text.DecimalFormat
-import java.util.Date
 import kotlin.collections.set
 
 /**
@@ -160,12 +158,10 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
 
             whenStarted {
                 viewLifecycleOwner.lifecycle.addObserver(uiScope)
-                readNavArgs()
-                pullData()
             }
 
             whenResumed {
-                if (currentUser == -1) readNavArgs()
+                if (newJob == null) readNavArgs()
             }
         }
     }
@@ -178,7 +174,7 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
 
         withContext(uiScope.coroutineContext) {
             var myUserId: Int?
-            createViewModel.loggedUser.observe(
+            createViewModel.loggedUser.distinctUntilChanged().observe(
                 viewLifecycleOwner,
                 { user ->
                     user?.let {
@@ -190,7 +186,7 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
 
         withContext(uiScope.coroutineContext) {
             var myJobDTO: JobDTO?
-            createViewModel.itemJob.observe(
+            createViewModel.itemJob.distinctUntilChanged().observe(
                 viewLifecycleOwner,
                 { jobEvent ->
                     jobEvent.getContentIfNotHandled()?.let { jobDTO ->
@@ -201,7 +197,7 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
         }
 
         withContext(uiScope.coroutineContext) {
-            createViewModel.tempProjectItem.observe(
+            createViewModel.tempProjectItem.distinctUntilChanged().observe(
                 viewLifecycleOwner,
                 { itemEvent ->
                     itemEvent.getContentIfNotHandled()?.let { item ->
@@ -211,7 +207,7 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
         }
 
         withContext(uiScope.coroutineContext) {
-            createViewModel.currentEstimate.observe(
+            createViewModel.currentEstimate.distinctUntilChanged().observe(
                 viewLifecycleOwner,
                 { estimateEvent ->
                     estimateEvent.getContentIfNotHandled()?.let { estimateItem ->
@@ -497,6 +493,7 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
 
     private fun updateData(view: View) {
         this.toggleLongRunning(false)
+        createViewModel.unbindEstimateView()
         newJob?.let {
             navToAddProject(view)
         }
@@ -561,7 +558,8 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
     @Synchronized
     private suspend fun restoreEstimatePhoto(
         // jobItemEstimate: JobItemEstimateDTO,
-        photo: JobItemEstimatesPhotoDTO
+        photo: JobItemEstimatesPhotoDTO,
+        animate: Boolean = false
     ) = Coroutines.main {
 
         var targetImageView = ui.startImageView
@@ -588,7 +586,7 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
             photo.sectionMarker?.let { mark ->
                 targetTextView.text = mark
             }
-            loadEstimateItemPhoto(targetUri, targetImageView, false)
+            loadEstimateItemPhoto(targetUri, targetImageView, animate)
         }
     }
 
@@ -618,7 +616,7 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
         Coroutines.main {
             try { //  Location of picture
                 val estimateLocation: LocationModel? = this.getCurrentLocation()
-                Timber.d("$estimateLocation")
+                Timber.d("x -> $estimateLocation")
                 if (estimateLocation != null) {
 
                     //  Save Image to Internal Storage
@@ -649,7 +647,7 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
         estimateLocation: LocationModel,
         filePath: Map<String, String>,
         itemidPhototype: Map<String, String>
-    ) {
+    ) = uiScope.launch(uiScope.coroutineContext) {
 
         val itemId = item?.itemId ?: itemidPhototype["itemId"]
 
@@ -658,7 +656,7 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
         }
 
         if (newJobItemEstimate == null) {
-            newJobItemEstimate = createItemEstimate(
+            newJobItemEstimate = createViewModel.createItemEstimate(
                 itemId = itemId,
                 newJob = newJob,
                 item = item
@@ -673,8 +671,10 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
             newJob?.insertOrUpdateJobItemEstimate(newJobItemEstimate!!)
         }
 
-        uiScope.launch(context = uiScope.coroutineContext) {
-            processPhotoLocation(estimateLocation, filePath, itemidPhototype)
+        newJobItemEstimate?.let {
+            uiScope.launch(context = uiScope.coroutineContext) {
+                processPhotoLocation(estimateLocation, filePath, itemidPhototype)
+            }
         }
     }
 
@@ -740,7 +740,7 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
         currentLocation: LocationModel,
         itemidPhototype: Map<String, String>
     ) = Coroutines.main {
-        val photo = createItemEstimatePhoto(
+        val photo = createViewModel.createItemEstimatePhoto(
             itemEst = newJobItemEstimate!!,
             filePath = filePath,
             currentLocation = currentLocation,
@@ -754,110 +754,22 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
             savedPhoto
         )
         createViewModel.backupEstimate(newJobItemEstimate!!)
-        createViewModel.updateEstimatePhotos(newJobItemEstimate!!.estimateId, newJobItemEstimate!!.jobItemEstimatePhotos)
+        newJobItemEstimate = createViewModel.updateEstimatePhotos(
+            newJobItemEstimate!!.estimateId,
+            newJobItemEstimate!!.jobItemEstimatePhotos
+        )
         newJob?.insertOrUpdateJobItemEstimate(newJobItemEstimate!!)
 
         this@EstimatePhotoFragment.disableGlide = false
-
-        val targetUri: Uri? = extractImageUri(photo)
-        val targetView = when (photo.isPhotostart) {
-            true -> ui.startImageView
-            else -> ui.endImageView
-        }
 
         val targetAnimation: LottieAnimationView = when (photo.isPhotostart) {
             true -> ui.startAnimationView
             else -> ui.endAnimationView
         }
 
-        val targetTextView = when (photo.isPhotostart) {
-            true -> ui.startSectionTextView
-            else -> ui.endSectionTextView
-        }
+        targetAnimation.cancelAnimation()
         targetAnimation.visibility = View.GONE
-
-        photo.sectionMarker?.let {
-            targetTextView.text = it
-        }
-
-        loadEstimateItemPhoto(
-            targetUri,
-            targetView,
-            true
-        )
-    }
-
-    private fun createItemEstimatePhoto(
-        itemEst: JobItemEstimateDTO,
-        filePath: Map<String, String>,
-        currentLocation: LocationModel,
-        itemIdPhotoType: Map<String, String>,
-        pointLocation: Double
-    ): JobItemEstimatesPhotoDTO {
-
-        changesToPreserve = true
-        val isPhotoStart = itemIdPhotoType["type"] == PhotoType.START.name
-
-        val existingPhotoPair = itemEst.getJobItemEstimatePhoto(isPhotoStart)
-        existingPhotoPair.second?.let { existingPhoto ->
-            // Delete the existing photo from storage
-            createViewModel.eraseExistingPhoto(existingPhoto.photoId, existingPhoto.photoPath)
-        }
-
-        val photoId = SqlLitUtils.generateUuid()
-
-        return JobItemEstimatesPhotoDTO(
-            descr = "",
-            estimateId = itemEst.estimateId,
-            filename = filePath["filename"] ?: error(""),
-            photoDate = DateUtil.dateToString(Date())!!,
-            photoId = photoId,
-            photoStart = null,
-            photoEnd = null,
-            startKm = pointLocation,
-            endKm = pointLocation,
-            photoLatitude = currentLocation.latitude,
-            photoLongitude = currentLocation.longitude,
-            photoLatitudeEnd = currentLocation.latitude,
-            photoLongitudeEnd = currentLocation.longitude,
-            photoPath = filePath["path"] ?: error(""),
-            recordSynchStateId = 0,
-            recordVersion = 0,
-            isPhotostart = isPhotoStart,
-            sectionMarker = currentLocation.toString()
-        )
-    }
-
-    private fun createItemEstimate(
-        itemId: String?,
-        newJob: JobDTO?,
-        item: ItemDTOTemp?
-
-    ): JobItemEstimateDTO {
-        changesToPreserve = true
-        val estimateId = SqlLitUtils.generateUuid()
-
-        // newJobItemEstimatesList.add(newEstimate)
-        return JobItemEstimateDTO(
-            actId = 0,
-            estimateId = estimateId,
-            jobId = newJob?.jobId,
-            lineRate = item!!.tenderRate,
-            jobEstimateWorks = arrayListOf(),
-            jobItemEstimatePhotos = arrayListOf(),
-            jobItemMeasure = arrayListOf(),
-            projectItemId = itemId,
-            projectVoId = newJob?.projectVoId,
-            qty = quantity,
-            recordSynchStateId = 0,
-            recordVersion = 0,
-            trackRouteId = null,
-            jobItemEstimatePhotoStart = null,
-            jobItemEstimatePhotoEnd = null,
-            estimateComplete = null,
-            measureActId = 0,
-            selectedItemUom = item.uom
-        )
+        restoreEstimatePhoto(savedPhoto, true)
     }
 
     private fun showZoomedImage(imageUrl: Uri?) {
@@ -888,7 +800,6 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
         GlideApp.with(this)
             .load(imageUri)
             .centerCrop()
-            .placeholder(R.drawable.logo_new_medium)
             .error(R.drawable.no_image)
             .into(imageView)
 
@@ -964,7 +875,7 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
         //  valueEditText.clearFocus()
 
         var lineAmount: Double?
-        val tenderRate = item?.tenderRate ?: 0.0
+        val tenderRate = newJobItemEstimate?.lineRate ?: 0.0
 
         var qty = value.toDoubleOrNull() ?: 1.0
 
@@ -1204,6 +1115,7 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
         uiScope.destroy()
         createViewModel.itemJob.removeObservers(viewLifecycleOwner)
         createViewModel.tempProjectItem.removeObservers(viewLifecycleOwner)
+        createViewModel.currentEstimate.removeObservers(viewLifecycleOwner)
         createViewModel.loggedUser.removeObservers(viewLifecycleOwner)
         _ui = null
     }
@@ -1256,6 +1168,8 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
     }
 
     override fun onStop() {
+        super.onStop()
+
         Coroutines.main {
             if (changesToPreserve) {
                 item?.let {
@@ -1263,6 +1177,7 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
                 }
                 newJobItemEstimate?.let {
                     createViewModel.backupEstimate(it)
+                    createViewModel.updateEstimatePhotos(it.estimateId, it.jobItemEstimatePhotos)
                     newJob?.insertOrUpdateJobItemEstimate(it)
                     createViewModel.setEstimateToEdit(it.estimateId)
                 }
@@ -1274,9 +1189,15 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
                 changesToPreserve = false
             }
         }
+    }
 
-        createViewModel.itemJob.removeObservers(viewLifecycleOwner)
-
-        super.onStop()
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        if (savedInstanceState == null) {
+            readNavArgs()
+        } else {
+            onRestoreInstanceState(savedInstanceState)
+        }
+        pullData()
     }
 }

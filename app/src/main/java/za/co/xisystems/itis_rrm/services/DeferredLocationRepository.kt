@@ -13,6 +13,7 @@ import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
 import za.co.xisystems.itis_rrm.data.network.responses.RouteSectionPointResponse
 import za.co.xisystems.itis_rrm.domain.SectionBorder
 import za.co.xisystems.itis_rrm.utils.Utils.round
+import kotlin.math.abs
 
 class DeferredLocationRepository(
     private val api: BaseConnectionApi,
@@ -20,7 +21,7 @@ class DeferredLocationRepository(
 ) : SafeApiRequest() {
 
     companion object {
-        const val DISTANCE = 0.05
+        const val DISTANCE = 50
         const val IN_BUFFER = -1.0
     }
 
@@ -38,7 +39,7 @@ class DeferredLocationRepository(
             val routeSectionPointResponse: RouteSectionPointResponse =
                 apiRequest {
                     api.getRouteSectionPoint(
-                        distance = DISTANCE,
+                        distance = DISTANCE.toDouble(),
                         buffer = IN_BUFFER,
                         latitude = locationQuery.latitude,
                         longitude = locationQuery.longitude,
@@ -155,8 +156,8 @@ class DeferredLocationRepository(
                 ?: SectionBorder("x", -1.0)
 
         if (closestEndKm.kmMarker != -1.0 || closestStartKm.kmMarker != -1.0) {
-            val distanceBack = pointLocation - closestEndKm.kmMarker
-            val distanceForward = closestStartKm.kmMarker - pointLocation
+            val distanceBack = abs(pointLocation - closestEndKm.kmMarker)
+            val distanceForward = abs(closestStartKm.kmMarker - pointLocation)
 
             result = when {
                 distanceBack < distanceForward -> {

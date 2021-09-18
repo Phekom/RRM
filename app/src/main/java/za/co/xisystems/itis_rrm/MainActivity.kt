@@ -178,10 +178,6 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
             navigationView.menu.findItem(R.id.nav_estMeasure).actionView as TextView
 
         progressBar = findViewById(R.id.progressbar)
-
-        if (savedInstanceState == null) {
-            navController.navigate(R.id.action_global_nav_home)
-        }
     }
 
     private fun displayPromptForEnablingGPS(
