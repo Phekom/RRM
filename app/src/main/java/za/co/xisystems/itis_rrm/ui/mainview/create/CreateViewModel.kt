@@ -13,7 +13,9 @@ import androidx.lifecycle.*
 import androidx.room.Transaction
 import kotlinx.coroutines.*
 import timber.log.Timber
+import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
+import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.data.repositories.JobCreationDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
@@ -251,8 +253,23 @@ class CreateViewModel(
         userId: Int,
         job: JobDTO,
         activity: FragmentActivity
-    ): String = withContext(ioContext) {
-        return@withContext jobCreationDataRepository.submitJob(userId, job, activity)
+    ): XIResult<Boolean> = withContext(ioContext) {
+        try {
+            // Initial upload to server
+            val workflowJob = jobCreationDataRepository.submitJob(userId, job, activity)
+            // Workflow updates
+            val updatedJob = jobCreationDataRepository.postWorkflowJob(workflowJob, job, activity)
+            // Final workflow move and local persistence
+            val nextWorkflowJob = jobCreationDataRepository.moveJobToNextWorkflow(updatedJob, activity)
+            // Persist workflow results
+            jobCreationDataRepository.saveWorkflowJob(nextWorkflowJob!!)
+            // Delete tempProjectItems
+            jobCreationDataRepository.deleteItemList(updatedJob.jobId)
+            return@withContext XIResult.Success(true)
+        } catch (ex: Exception) {
+            val message = "Failed to submit job - ${ex.message ?: XIErrorHandler.UNKNOWN_ERROR}"
+            return@withContext XIResult.Error(exception = ex, message = message)
+        }
     }
 
     fun deleteItemList(jobId: String) {

@@ -51,6 +51,7 @@ import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
 import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.ERROR
 import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.WARNING
 import za.co.xisystems.itis_rrm.custom.results.XIResult
+import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.JobDataController
 import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
@@ -701,18 +702,9 @@ class AddProjectFragment : BaseFragment(), DIAware {
         userId: Int,
         job: JobDTO
     ) = withContext(uiScope.coroutineContext) {
-        val submit =
-            createViewModel.submitJob(userId, job, requireActivity())
-        withContext(Dispatchers.Main.immediate) {
-            toggleLongRunning(false)
-            if (submit.isNotBlank()) {
-                withContext(Dispatchers.Main.immediate) {
-                    this@AddProjectFragment.extensionToast(
-                        message = submit,
-                        style = ERROR
-                    )
-                }
-            } else {
+        when (val result = createViewModel.submitJob(userId, job, requireActivity())) {
+            is XIResult.Success -> {
+                toggleLongRunning(false)
                 withContext(Dispatchers.Main.immediate) {
                     this@AddProjectFragment.extensionToast(
                         message = getString(R.string.job_submitted),
@@ -720,6 +712,15 @@ class AddProjectFragment : BaseFragment(), DIAware {
                     )
                 }
                 popViewOnJobSubmit()
+            }
+            is XIResult.Error -> {
+                withContext(Dispatchers.Main.immediate) {
+                    crashGuard(
+                        view = this@AddProjectFragment.requireView(),
+                        throwable = result,
+                        refreshAction = { this@AddProjectFragment.resubmitJob() }
+                    )
+                }
             }
         }
     }
@@ -809,5 +810,16 @@ class AddProjectFragment : BaseFragment(), DIAware {
     override fun onStop() {
         super.onStop()
         Timber.d("onStop() has been called.")
+    }
+
+    private fun resubmitJob() {
+        IndefiniteSnackbar.hide()
+        createViewModel.backupSubmissionJob.observeOnce(viewLifecycleOwner, { retryJobSubmission ->
+            retryJobSubmission.getContentIfNotHandled()?.let { repeatJob ->
+                uiScope.launch(uiScope.coroutineContext) {
+                    submitJob(repeatJob)
+                }
+            }
+        })
     }
 }

@@ -205,7 +205,6 @@ class ApproveMeasureFragment : BaseFragment(), DIAware {
         ui.approveMeasurementsList.setAdapter(null)
         _ui = null
     }
-
     private fun sendJobToApprove(
         job: ApproveMeasureItem?,
         view: View
@@ -226,3 +225,4 @@ class ApproveMeasureFragment : BaseFragment(), DIAware {
         }
     }
 }
+
