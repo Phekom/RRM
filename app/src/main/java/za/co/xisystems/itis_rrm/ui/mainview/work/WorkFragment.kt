@@ -20,7 +20,9 @@ import androidx.core.view.doOnNextLayout
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenCreated
+import androidx.lifecycle.whenResumed
 import androidx.lifecycle.whenStarted
+import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.ExpandableGroup
 import com.xwray.groupie.GroupAdapter
@@ -63,11 +65,16 @@ class WorkFragment : BaseFragment(), DIAware {
     private var veiled: Boolean = false
     private var _ui: FragmentWorkBinding? = null
     private val ui get() = _ui!!
+    private lateinit var currentJobGroup: ExpandableGroup
+    private var selectedJobId: String? = null
+    private var stateRestored = false
+    private val workArgs: WorkFragmentArgs by navArgs()
 
     init {
 
         lifecycleScope.launch {
             whenCreated {
+                stateRestored = false
                 uiScope.onCreate()
                 workViewModel = activity?.run {
                     ViewModelProvider(this, factory).get(WorkViewModel::class.java)
@@ -88,6 +95,14 @@ class WorkFragment : BaseFragment(), DIAware {
                             throwable = xiFail,
                             refreshAction = { retryFetchingJobs() })
                     }
+                }
+            }
+            whenResumed {
+                if (this@WorkFragment::currentJobGroup.isInitialized &&
+                    !currentJobGroup.isExpanded
+                ) {
+                    currentJobGroup.isExpanded = true
+                    scrollToTop(expandableGroups, currentJobGroup)
                 }
             }
         }
@@ -223,6 +238,10 @@ class WorkFragment : BaseFragment(), DIAware {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        if (!stateRestored && !workArgs.jobId.isNullOrBlank()) {
+            selectedJobId = workArgs.jobId
+            stateRestored = true
+        }
         initSwipeToRefresh()
         initVeiledRecycler()
     }
@@ -276,6 +295,11 @@ class WorkFragment : BaseFragment(), DIAware {
                 estimates.forEach { item ->
 
                     createCardItem(item, jobDTO)
+                }
+                selectedJobId?.let {
+                    if (selectedJobId == jobDTO.jobId) {
+                        currentJobGroup = this
+                    }
                 }
                 expandableGroups.add(this)
             }
