@@ -236,5 +236,6 @@
     <string name="invalid_km_marker">The closest active section to this spot ($1%s) is $2%d km away, /n at the $3%d km marker position.</string>
     <string name="for_review_purposes_only">For Review Purposes Only</string>
     <string name="location_general_failure">One or more locations could not be verified.\n Please check estimates for details</string>
+    <string name="item_number">No:..</string>
 
 </resources>

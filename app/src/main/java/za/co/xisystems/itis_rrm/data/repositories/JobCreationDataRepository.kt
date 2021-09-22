@@ -1,7 +1,5 @@
 package za.co.xisystems.itis_rrm.data.repositories
 
-import android.os.Looper
-import android.widget.Toast
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -15,6 +13,7 @@ import kotlinx.coroutines.withContext
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.custom.errors.NoDataException
+import za.co.xisystems.itis_rrm.custom.errors.ServiceException
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
@@ -93,16 +92,14 @@ class JobCreationDataRepository(
         }
     }
 
-    private fun saveWorkflowJob(workflowJob: WorkflowJobDTO?) {
+    fun saveWorkflowJob(workflowJob: WorkflowJobDTO?) {
         if (workflowJob != null) {
             val job = setWorkflowJobBigEndianGuids(workflowJob)
             insertOrUpdateWorkflowJobInSQLite(job)
         } else {
             val message = "Workflow job is null."
-            Timber.e(
-                java.lang.NullPointerException(message),
-                message
-            )
+            Timber.e(java.lang.NullPointerException(message), message)
+            throw NoDataException(message)
         }
     }
 
@@ -304,7 +301,7 @@ class JobCreationDataRepository(
         }
     }
 
-    suspend fun submitJob(userId: Int, job: JobDTO, activity: FragmentActivity): String {
+    suspend fun submitJob(userId: Int, job: JobDTO): WorkflowJobDTO = withContext(Dispatchers.IO) {
 
         val jobData = JsonObject()
         val gson = Gson()
@@ -315,33 +312,32 @@ class JobCreationDataRepository(
         Timber.i("Json Job: $jobData")
 
         val jobResponse = apiRequest { api.sendJobsForApproval(jobData) }
-        postWorkflowJob(jobResponse.workflowJob, job, activity)
 
-        val messages = jobResponse.errorMessage
+        jobResponse.errorMessage?.let {
+            throw ServiceException(jobResponse.errorMessage)
+        }
 
-        return withContext(Dispatchers.IO) {
-            messages ?: ""
+        if (jobResponse.workflowJob != null) {
+            return@withContext jobResponse.workflowJob!!
+        } else {
+            throw NoDataException("Server returned empty workflow response.")
         }
     }
 
-    private fun postWorkflowJob(
-        workflowJob: WorkflowJobDTO?,
+    suspend fun postWorkflowJob(
+        workflowJob: WorkflowJobDTO,
         job: JobDTO,
         activity: FragmentActivity
-    ) {
-        Coroutines.io {
-            if (workflowJob != null) {
-                val createJob = setWorkflowJobBigEndianGuids(workflowJob)
-                insertOrUpdateWorkflowJobInSQLite(createJob)
-                uploadCreateJobImages(
-                    packageJob = job,
-                    activity = activity
-                )
-                val myJob = getUpdatedJob(DataConversion.toBigEndian(job.jobId)!!)
+    ): JobDTO = withContext(Dispatchers.IO) {
 
-                moveJobToNextWorkflow(myJob, activity)
-            }
-        }
+        val createJob = setWorkflowJobBigEndianGuids(workflowJob)
+        insertOrUpdateWorkflowJobInSQLite(createJob)
+        uploadCreateJobImages(
+            packageJob = job,
+            activity = activity
+        )
+
+        return@withContext getUpdatedJob(DataConversion.toBigEndian(job.jobId)!!)
     }
 
     suspend fun getUpdatedJob(jobId: String): JobDTO {
@@ -531,14 +527,13 @@ class JobCreationDataRepository(
         }
     }
 
-    private fun moveJobToNextWorkflow(
+    suspend fun moveJobToNextWorkflow(
         job: JobDTO,
         activity: FragmentActivity
-    ) {
+    ) = withContext(Dispatchers.IO) {
 
         if (job.trackRouteId == null) {
-            Looper.prepare() // to be able to make toast
-            Toast.makeText(activity, "Error: trackRouteId is null", Toast.LENGTH_LONG).show()
+            throw IllegalStateException("Cannot workflow job ${job.jiNo}: TrackRouteId cannot be null")
         } else {
             job.trackRouteId = DataConversion.toLittleEndian(job.trackRouteId)
             val direction: Int = WorkflowDirection.NEXT.value
@@ -546,20 +541,24 @@ class JobCreationDataRepository(
             val description: String =
                 activity.resources.getString(R.string.submit_for_approval)
 
-            Coroutines.io {
-                val workflowMoveResponse = apiRequest {
-                    api.getWorkflowMove(
-                        job.userId.toString(),
-                        trackRouteId,
-                        description,
-                        direction
-                    )
-                }
-                workflowMoveResponse.workflowJob?.let { workflowJob ->
-                    workflowJobs.postValue(workflowJob)
-                    appDb.getItemDaoTemp().deleteItemList(job.jobId)
-                }
+            val workflowMoveResponse = apiRequest {
+                api.getWorkflowMove(
+                    job.userId.toString(),
+                    trackRouteId,
+                    description,
+                    direction
+                )
             }
+
+            workflowMoveResponse.errorMessage?.let {
+                throw ServiceException("Local workflow failed : $it")
+            }
+
+            if (workflowMoveResponse.workflowJob == null) {
+                throw NoDataException("Server returned empty workflow job.")
+            }
+
+            return@withContext workflowMoveResponse.workflowJob
         }
     }
 

@@ -19,9 +19,9 @@ class UnSubmittedViewModel(
         jobtoEdit_Item.postValue(editJob)
     }
 
-    suspend fun getJobsForActivityId(activityId: Int): LiveData<List<JobDTO>> {
+    suspend fun getJobsForActivityIds(vararg activityIds: Int): LiveData<List<JobDTO>> {
         return withContext(Dispatchers.IO) {
-            offlineDataRepository.getJobsForActId(activityId)
+            offlineDataRepository.getJobsForActId(*activityIds)
         }
     }
 
@@ -49,7 +49,7 @@ class UnSubmittedViewModel(
         }
     }
 
-    fun deleJobfromList(jobId: String) {
+    fun deleteJobFromList(jobId: String) {
         offlineDataRepository.deleteJobFromList(jobId)
     }
 

@@ -27,6 +27,7 @@ import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedFragment
 import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedFragmentDirections
 import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedViewModel
+import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
 
 /**
@@ -58,13 +59,39 @@ class UnSubmittedJobItem(
                 buildDeleteDialog(it, position)
             }
 
+            uploadButton.setOnClickListener {
+                buildUploadDialog(it, position)
+            }
+
+            when (jobDTO.actId) {
+                ActivityIdConstants.JOB_PENDING_UPLOAD -> {
+                    uploadButton.visibility = View.VISIBLE
+                    deleteButton.visibility = View.GONE
+                }
+                else -> {
+                    uploadButton.visibility = View.GONE
+                    deleteButton.visibility = View.VISIBLE
+                }
+            }
+
             updateItem(position)
         }
 
         viewBinding.root.setOnClickListener { view ->
             clickListener?.invoke(this)
-            sendJobToEdit((jobDTO), view)
+            when (jobDTO.actId) {
+                0 -> sendJobToEdit((jobDTO), view)
+                1 -> sendForReview(jobDTO, view)
+            }
         }
+    }
+
+    private fun buildUploadDialog(view: View, position: Int) {
+        TODO("Not yet implemented")
+    }
+
+    private fun sendForReview(jobDTO: JobDTO, view: View?) {
+        TODO("Not yet implemented")
     }
 
     private fun sendJobToEdit(jobDTO: JobDTO, view: View) {
@@ -111,7 +138,7 @@ class UnSubmittedJobItem(
             )
             Coroutines.main {
                 try {
-                    viewModel.deleJobfromList(jobDTO.jobId)
+                    viewModel.deleteJobFromList(jobDTO.jobId)
                     viewModel.deleteItemList(jobDTO.jobId)
                     groupAdapter.notifyItemRemoved(position)
                     notifyChanged()
@@ -139,5 +166,3 @@ class UnSubmittedJobItem(
         return position.toLong()
     }
 }
-
-

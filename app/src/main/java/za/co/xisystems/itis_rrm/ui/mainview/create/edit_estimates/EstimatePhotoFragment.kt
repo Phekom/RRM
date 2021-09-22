@@ -479,12 +479,12 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
                 createViewModel.backupEstimate(saveValidEstimate)
                 newJob!!.insertOrUpdateJobItemEstimate(saveValidEstimate)
                 createViewModel.saveNewJob(newJob!!)
-                createViewModel.setJobToEdit(newJob!!.jobId)
-                createViewModel.currentEstimate = MutableLiveData()
                 changesToPreserve = false
                 withContext(Dispatchers.Main.immediate) {
+                    createViewModel.setJobToEdit(newJob!!.jobId)
                     createViewModel.setEstimateQuantity(saveValidEstimate.qty)
                     createViewModel.setEstimateLineRate(saveValidEstimate.lineRate)
+                    createViewModel.currentEstimate = MutableLiveData()
                     updateData(view)
                 }
             }

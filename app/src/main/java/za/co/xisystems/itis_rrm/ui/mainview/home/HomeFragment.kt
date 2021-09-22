@@ -59,7 +59,6 @@ import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.Coroutines
-import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import kotlin.coroutines.cancellation.CancellationException
 
 class HomeFragment : BaseFragment(), DIAware {
@@ -336,7 +335,7 @@ class HomeFragment : BaseFragment(), DIAware {
         var result = true
         val lm = requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager
         gpsEnabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
-        networkEnabled = ServiceUtil.isNetworkAvailable(requireActivity().applicationContext)
+        networkEnabled = this.requireContext().isConnected
         //  Check if Network Enabled
         if (!networkEnabled) {
             ui.dataEnabled.setText(R.string.mobile_data_not_connected)
