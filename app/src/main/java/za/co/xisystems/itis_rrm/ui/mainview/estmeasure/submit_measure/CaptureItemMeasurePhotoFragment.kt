@@ -80,6 +80,29 @@ class CaptureItemMeasurePhotoFragment :
     private val ui get() = _ui!!
     private lateinit var photoUtil: PhotoUtil
 
+    /**
+     * ActivityResultContract for taking a photograph
+     */
+    private val takePicture = registerForActivityResult(
+        ActivityResultContracts.TakePicture()
+    ) { isSaved ->
+        if (isSaved) {
+            Coroutines.io {
+                val photo = saveImage()
+                photo?.let { it ->
+                    withContext(Dispatchers.Main.immediate) {
+                        jobItemMeasurePhotoArrayList.add(it)
+                        processAndSetImage()
+                    }
+                }
+            }
+        } else {
+            Coroutines.io {
+                photoUtil.deleteImageFile(filenamePath.toString())
+            }
+        }
+    }
+
     companion object {
         val TAG: String = CaptureItemMeasurePhotoFragment::class.java.simpleName
         private const val REQUEST_STORAGE_PERMISSION = 1
@@ -247,7 +270,9 @@ class CaptureItemMeasurePhotoFragment :
                 recordVersion = 0
             )
         } else {
-            toast("Error: Current location is null!")
+            withContext(Dispatchers.Main.immediate) {
+                toast("Error: Current location is null!")
+            }
             return@withContext null
         }
     }
@@ -292,29 +317,6 @@ class CaptureItemMeasurePhotoFragment :
         this.takingPhotos()
         imageUri = photoUtil.getUri()!!
         takePicture.launch(imageUri)
-    }
-
-    /**
-     * ActivityResultContract for taking a photograph
-     */
-    private val takePicture = registerForActivityResult(
-        ActivityResultContracts.TakePicture()
-    ) { isSaved ->
-        if (isSaved) {
-            Coroutines.io {
-                val photo = saveImage()
-                photo?.let { it ->
-                    withContext(Dispatchers.Main.immediate) {
-                        jobItemMeasurePhotoArrayList.add(it)
-                        processAndSetImage()
-                    }
-                }
-            }
-        } else {
-            Coroutines.io {
-                photoUtil.deleteImageFile(filenamePath.toString())
-            }
-        }
     }
 
     private suspend fun processAndSetImage() = Coroutines.main {
