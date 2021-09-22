@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:descendantFocusability="blocksDescendants">
@@ -15,29 +16,30 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:orientation="horizontal"
-                        android:id="@+id/stateBack"
-                        android:padding="@dimen/xsmall"
-                        android:gravity="center"
-                        android:focusableInTouchMode="true"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent">
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:id="@+id/stateBack"
+            android:padding="@dimen/xsmall"
+            android:gravity="center"
+            android:focusableInTouchMode="true"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
-                        <TextView
-                                android:id="@+id/state"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:hint="ID :"
-                                android:paddingLeft="5dp"
-                                android:textAppearance="?android:attr/textAppearanceMedium"
-                                android:textSize="15sp" />
+            <TextView
+                android:id="@+id/state"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:hint="ID :"
+                android:paddingStart="5dp"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textSize="15sp"
+                tools:ignore="HardcodedText" />
 
 
-                </LinearLayout>
+        </LinearLayout>
 
-        </com.google.android.material.card.MaterialCardView>
+    </com.google.android.material.card.MaterialCardView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
