@@ -138,9 +138,9 @@ class AddProjectFragment : BaseFragment(), DIAware {
             }
             whenStarted {
                 lifecycle.addObserver(uiScope)
+                requireActivity().hideKeyboard()
                 initViewModels()
                 uiUpdate()
-                requireActivity().hideKeyboard()
             }
         }
     }
@@ -148,20 +148,22 @@ class AddProjectFragment : BaseFragment(), DIAware {
     companion object {
         private const val JOB_KEY = "jobId"
         private const val PROJECT_KEY = "projectId"
+        private const val INVALID_ACTIVITY = "Invalid Activity"
     }
+
 
     private fun initViewModels() {
         createViewModel = activity?.run {
             ViewModelProvider(this, createFactory).get(CreateViewModel::class.java)
-        } ?: throw Exception("Invalid Activity")
+        } ?: throw Exception(INVALID_ACTIVITY)
 
         unsubmittedViewModel = activity?.run {
             ViewModelProvider(this, unsubFactory).get(UnSubmittedViewModel::class.java)
-        } ?: throw Exception("Invalid Activity")
+        } ?: throw Exception(INVALID_ACTIVITY)
 
         deferredLocationViewModel = activity?.run {
             ViewModelProvider(this, deferredLocationFactory).get(DeferredLocationViewModel::class.java)
-        } ?: throw Exception("Invalid Activity")
+        } ?: throw Exception(INVALID_ACTIVITY)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -213,7 +215,7 @@ class AddProjectFragment : BaseFragment(), DIAware {
         deferredLocationViewModel.geoCodingResult.removeObservers(viewLifecycleOwner)
         deferredLocationViewModel.resetGeoCodingResult()
         createViewModel.jobForValidation.removeObservers(viewLifecycleOwner)
-        createViewModel.jobForValidation.removeObservers(viewLifecycleOwner)
+        createViewModel.jobForSubmission.removeObservers(viewLifecycleOwner)
         Coroutines.main {
             initValidationListener()
         }
@@ -702,7 +704,12 @@ class AddProjectFragment : BaseFragment(), DIAware {
         userId: Int,
         job: JobDTO
     ) = withContext(uiScope.coroutineContext) {
-        when (val result = createViewModel.submitJob(userId, job, requireActivity())) {
+        val result = createViewModel.submitJob(userId, job, requireActivity())
+        processSubmission(result)
+    }
+
+    private suspend fun processSubmission(result: XIResult<Boolean>) {
+        when (result) {
             is XIResult.Success -> {
                 toggleLongRunning(false)
                 withContext(Dispatchers.Main.immediate) {
@@ -715,12 +722,16 @@ class AddProjectFragment : BaseFragment(), DIAware {
             }
             is XIResult.Error -> {
                 withContext(Dispatchers.Main.immediate) {
+                    toggleLongRunning(false)
                     crashGuard(
                         view = this@AddProjectFragment.requireView(),
                         throwable = result,
                         refreshAction = { this@AddProjectFragment.resubmitJob() }
                     )
                 }
+            }
+            else -> {
+                Timber.d("x -> $result")
             }
         }
     }

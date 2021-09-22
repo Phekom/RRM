@@ -256,8 +256,8 @@ class CreateViewModel(
     ): XIResult<Boolean> = withContext(ioContext) {
         try {
             // Initial upload to server
-            val workflowJob = jobCreationDataRepository.submitJob(userId, job, activity)
-            // Workflow updates
+            val workflowJob = jobCreationDataRepository.submitJob(userId, job)
+            // Workflow updates, upload images
             val updatedJob = jobCreationDataRepository.postWorkflowJob(workflowJob, job, activity)
             // Final workflow move and local persistence
             val nextWorkflowJob = jobCreationDataRepository.moveJobToNextWorkflow(updatedJob, activity)
@@ -268,6 +268,7 @@ class CreateViewModel(
             return@withContext XIResult.Success(true)
         } catch (ex: Exception) {
             val message = "Failed to submit job - ${ex.message ?: XIErrorHandler.UNKNOWN_ERROR}"
+            Timber.e(ex, message)
             return@withContext XIResult.Error(exception = ex, message = message)
         }
     }
