@@ -74,12 +74,16 @@ class UnSubmittedFragment : BaseFragment(), DIAware {
     }
 
     private fun fetchUnsubmitted() {
+        groupAdapter = GroupAdapter()
+        group12_loading.visibility = View.VISIBLE
+
         Coroutines.main {
             try {
-                groupAdapter = GroupAdapter()
-                group12_loading.visibility = View.VISIBLE
                 val measurements =
-                    unSubmittedViewModel.getJobsForActivityId(ActivityIdConstants.JOB_ESTIMATE)
+                    unSubmittedViewModel.getJobsForActivityIds(
+                        ActivityIdConstants.JOB_ESTIMATE,
+                        ActivityIdConstants.JOB_PENDING_UPLOAD
+                    )
 
                 measurements.observe(viewLifecycleOwner, { jobList ->
                     if (jobList.isNullOrEmpty()) {
