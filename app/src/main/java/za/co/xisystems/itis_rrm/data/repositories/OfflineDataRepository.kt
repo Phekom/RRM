@@ -185,9 +185,9 @@ class OfflineDataRepository(
         }
     }
 
-    suspend fun getJobsForActId(activityId: Int): LiveData<List<JobDTO>> {
+    suspend fun getJobsForActId(vararg activityIds: Int): LiveData<List<JobDTO>> {
         return withContext(Dispatchers.IO) {
-            appDb.getJobDao().getJobsForActivityId(activityId)
+            appDb.getJobDao().getJobsForActivityId(*activityIds)
         }
     }
 

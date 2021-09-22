@@ -98,10 +98,8 @@ class JobCreationDataRepository(
             insertOrUpdateWorkflowJobInSQLite(job)
         } else {
             val message = "Workflow job is null."
-            Timber.e(
-                java.lang.NullPointerException(message),
-                message
-            )
+            Timber.e(java.lang.NullPointerException(message), message)
+            throw NoDataException(message)
         }
     }
 
@@ -303,7 +301,7 @@ class JobCreationDataRepository(
         }
     }
 
-    suspend fun submitJob(userId: Int, job: JobDTO, activity: FragmentActivity): WorkflowJobDTO = withContext(Dispatchers.IO) {
+    suspend fun submitJob(userId: Int, job: JobDTO): WorkflowJobDTO = withContext(Dispatchers.IO) {
 
         val jobData = JsonObject()
         val gson = Gson()

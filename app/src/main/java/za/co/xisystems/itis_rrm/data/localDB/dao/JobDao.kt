@@ -107,10 +107,10 @@ interface JobDao {
     @RewriteQueriesToDropUnusedColumns
     @Query(
         "SELECT * FROM JOB_TABLE WHERE " +
-            "actId = :actId AND deleted = 0 " +
+            "actId IN (:actIds) AND deleted = 0 " +
             "ORDER BY jiNo ASC"
     )
-    fun getJobsForActivityId(actId: Int): LiveData<List<JobDTO>>
+    fun getJobsForActivityId(vararg actIds: Int): LiveData<List<JobDTO>>
 
     @RewriteQueriesToDropUnusedColumns
     @Query(

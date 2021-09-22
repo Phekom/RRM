@@ -67,10 +67,10 @@ interface ProjectSectionDao {
     fun getAllItemsForAllProjects(): LiveData<List<ProjectSectionDTO>>
 
     @Query("SELECT route FROM PROJECT_SECTION_TABLE WHERE sectionId = :sectionId")
-    fun getRouteForProjectSectionId(sectionId: String): String
+    fun getRouteForProjectSectionId(sectionId: String?): String
 
     @Query("SELECT section FROM PROJECT_SECTION_TABLE WHERE sectionId = :sectionId")
-    fun getSectionForProjectSectionId(sectionId: String): String
+    fun getSectionForProjectSectionId(sectionId: String?): String
 
     @Query(
         "SELECT sectionId FROM PROJECT_SECTION_TABLE " +
