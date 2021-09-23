@@ -303,24 +303,30 @@ class JobCreationDataRepository(
 
     suspend fun submitJob(userId: Int, job: JobDTO): WorkflowJobDTO = withContext(Dispatchers.IO) {
 
-        val jobData = JsonObject()
-        val gson = Gson()
-        val newJob = gson.toJson(job)
-        val jsonElement: JsonElement = JsonParser.parseString(newJob)
-        jobData.add("Job", jsonElement)
-        jobData.addProperty("UserId", userId)
-        Timber.i("Json Job: $jobData")
+        try {
+            val jobData = JsonObject()
+            val gson = Gson()
+            val newJob = gson.toJson(job)
+            val jsonElement: JsonElement = JsonParser.parseString(newJob)
+            jobData.add("Job", jsonElement)
+            jobData.addProperty("UserId", userId)
+            Timber.i("Json Job: $jobData")
 
-        val jobResponse = apiRequest { api.sendJobsForApproval(jobData) }
+            val jobResponse = apiRequest { api.sendJobsForApproval(jobData) }
 
-        jobResponse.errorMessage?.let {
-            throw ServiceException(jobResponse.errorMessage)
-        }
+            jobResponse.errorMessage?.let {
+                throw ServiceException(jobResponse.errorMessage)
+            }
 
-        if (jobResponse.workflowJob != null) {
-            return@withContext jobResponse.workflowJob!!
-        } else {
-            throw NoDataException("Server returned empty workflow response.")
+            if (jobResponse.workflowJob != null) {
+                return@withContext jobResponse.workflowJob!!
+            } else {
+                throw NoDataException("Server returned empty workflow response.")
+            }
+        } catch (e: Exception) {
+            val message = e.message ?: XIErrorHandler.UNKNOWN_ERROR
+            Timber.e(e, "Failed to submit job: $message")
+            throw e
         }
     }
 
@@ -448,7 +454,7 @@ class JobCreationDataRepository(
         packageJob.jobItemEstimates.map { jobItemEstimate ->
             val totalImages = jobItemEstimate.jobItemEstimatePhotos.size
             var imageCounter = 1
-            jobItemEstimate.jobItemEstimatePhotos.map { estimatePhoto ->
+            jobItemEstimate.jobItemEstimatePhotos.map nextphoto@{ estimatePhoto ->
                 if (photoUtil.photoExist(estimatePhoto.filename)) {
 
                     uploadRrmImage(
@@ -464,6 +470,7 @@ class JobCreationDataRepository(
                 } else {
                     val message = "${estimatePhoto.filename} could not be loaded"
                     Timber.e(IOException(message), message)
+                    return@nextphoto
                 }
             }
             jobCounter++

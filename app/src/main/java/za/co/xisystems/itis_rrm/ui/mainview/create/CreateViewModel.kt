@@ -273,6 +273,24 @@ class CreateViewModel(
         }
     }
 
+    suspend fun reUploadJob(
+        job: JobDTO,
+        activity: FragmentActivity
+    ): XIResult<Boolean> = withContext(ioContext) {
+        try {
+            val nextWorkflowJob = jobCreationDataRepository.moveJobToNextWorkflow(job, activity)
+            // Persist workflow results
+            jobCreationDataRepository.saveWorkflowJob(nextWorkflowJob!!)
+            // Delete tempProjectItems
+            jobCreationDataRepository.deleteItemList(job.jobId)
+            return@withContext XIResult.Success(true)
+        } catch (ex: Exception) {
+            val message = "Failed to submit job - ${ex.message ?: XIErrorHandler.UNKNOWN_ERROR}"
+            Timber.e(ex, message)
+            return@withContext XIResult.Error(exception = ex, message = message)
+        }
+    }
+
     fun deleteItemList(jobId: String) {
         jobCreationDataRepository.deleteItemList(jobId)
     }
@@ -578,5 +596,18 @@ class CreateViewModel(
             photoUtil.deleteImageFile(photoPath)
         }
         jobCreationDataRepository.eraseExistingPhoto(photoId)
+    }
+
+    var reUploadEvent: MutableLiveData<XIEvent<JobDTO>> = MutableLiveData()
+
+    fun setJobForReUpload(jobId: String) = viewModelScope.launch(ioContext) {
+        val job = jobCreationDataRepository.getUpdatedJob(jobId)
+        withContext(mainContext) {
+            reUploadEvent.value = XIEvent(job)
+        }
+    }
+
+    fun resetUploadState() {
+        reUploadEvent = MutableLiveData()
     }
 }

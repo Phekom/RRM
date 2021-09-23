@@ -19,9 +19,12 @@ import za.co.xisystems.itis_rrm.R.string
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration.LONG
 import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity.BOTTOM
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
 import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.DELETE
+import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.databinding.UnsubmtdJobListItemBinding
+import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedFragment
@@ -39,9 +42,8 @@ class UnSubmittedJobItem(
     private val viewModel: UnSubmittedViewModel,
     private val createModel: CreateViewModel,
     private val groupAdapter: GroupAdapter<GroupieViewHolder<UnsubmtdJobListItemBinding>>,
-    private val fragment: UnSubmittedFragment
+    private val fragment: UnSubmittedFragment,
 ) : BindableItem<UnsubmtdJobListItemBinding>() {
-
     private var clickListener: ((UnSubmittedJobItem) -> Unit)? = null
 
     override fun bind(viewBinding: UnsubmtdJobListItemBinding, position: Int) {
@@ -80,18 +82,62 @@ class UnSubmittedJobItem(
         viewBinding.root.setOnClickListener { view ->
             clickListener?.invoke(this)
             when (jobDTO.actId) {
-                0 -> sendJobToEdit((jobDTO), view)
+                0 -> sendJobToEdit(jobDTO, view)
                 1 -> sendForReview(jobDTO, view)
             }
         }
     }
 
     private fun buildUploadDialog(view: View, position: Int) {
-        TODO("Not yet implemented")
+        val itemDeleteBuilder =
+            Builder(
+                view.context // , android.R.style
+                // .Theme_DeviceDefault_Dialog
+            )
+        itemDeleteBuilder.setTitle(string.confirm)
+        itemDeleteBuilder.setIcon(drawable.ic_baseline_file_upload_24)
+        itemDeleteBuilder.setMessage("Upload this unsubmitted job?")
+        // Yes button
+        itemDeleteBuilder.setPositiveButton(
+            string.yes
+        ) { _, _ ->
+            fragment.extensionToast(
+                title = "Uploading ...",
+                message = "${this.jobDTO.descr} in transit.",
+                style = ToastStyle.INFO,
+                position = BOTTOM,
+                duration = LONG
+            )
+            Coroutines.main {
+                try {
+                    createModel.setJobForReUpload(jobDTO.jobId)
+                    createModel.reUploadEvent.observeOnce(fragment.viewLifecycleOwner, { event ->
+                        event.getContentIfNotHandled()?.let { incompleteJob ->
+                            Coroutines.main {
+                                fragment.toggleLongRunning(true)
+                                val result = createModel.reUploadJob(incompleteJob, fragment.requireActivity())
+                                handleUploadResult(result, position, jobDTO.jobId)
+                            }
+                        }
+                    })
+                } catch (t: Throwable) {
+                    Timber.e("Failed to upload unsubmitted job: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}")
+                }
+            }
+        }
+        // No button
+        itemDeleteBuilder.setNegativeButton(
+            string.no
+        ) { dialog, _ ->
+            // Do nothing but close dialog
+            dialog.dismiss()
+        }
+        val deleteAlert = itemDeleteBuilder.create()
+        deleteAlert.show()
     }
 
     private fun sendForReview(jobDTO: JobDTO, view: View?) {
-        TODO("Not yet implemented")
+        fragment.extensionToast(message = "Not yet implemented")
     }
 
     private fun sendJobToEdit(jobDTO: JobDTO, view: View) {
@@ -107,6 +153,33 @@ class UnSubmittedJobItem(
 
         Navigation.findNavController(view)
             .navigate(navDirection)
+    }
+
+    private fun handleUploadResult(result: XIResult<Boolean>, position: Int, jobId: String) {
+        fragment.toggleLongRunning(false)
+        when (result) {
+            is XIResult.Success -> {
+                fragment.extensionToast(
+                    message = "Job ${jobDTO.jiNo} uploaded successfully",
+                    style = ToastStyle.SUCCESS
+                )
+                viewModel.deleteJobFromList(jobId)
+                viewModel.deleteItemList(jobId)
+                groupAdapter.notifyItemRemoved(position)
+                notifyChanged()
+            }
+            is XIResult.Error -> {
+                fragment.extensionToast(
+                    title = "Upload failed.",
+                    message = "${result.message} - hit upload arrow to retry.",
+                    style = ToastStyle.ERROR
+                )
+                createModel.resetUploadState()
+            }
+            else -> {
+                Timber.e("$result")
+            }
+        }
     }
 
     override fun getLayout() = R.layout.unsubmtd_job_list_item

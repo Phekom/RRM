@@ -303,6 +303,7 @@ abstract class BaseFragment : Fragment(), IProgressView, DIAware {
     }
 
     fun toggleLongRunning(toggle: Boolean) {
+        sharedViewModel.takingPhotos = toggle
         sharedViewModel.toggleLongRunning(toggle)
     }
 

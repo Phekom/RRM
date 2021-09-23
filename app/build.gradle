@@ -112,9 +112,11 @@ android {
 
         javaCompileOptions {
             annotationProcessorOptions {
-                arguments += ["room.schemaLocation"  : "$projectDir/schemas".toString(),
-                             "room.incremental"     : "true",
-                             "room.expandProjection": "false"]
+                arguments += [
+                        "room.schemaLocation"  : "$projectDir/schemas".toString(),
+                        "room.incremental"     : "true",
+                        "room.expandProjection": "false"
+                ]
 
             }
         }
@@ -277,6 +279,8 @@ android {
         includeInApk true
         includeInBundle true
     }
+    buildToolsVersion '31.0.0'
+    ndkVersion '23.0.7599858'
 
 }
 
@@ -469,8 +473,8 @@ dependencies {
 
 
     // Icepick
-    implementation 'frankiesardo:icepick:3.2.0'
-    annotationProcessor 'frankiesardo:icepick-processor:3.2.0'
+    // implementation 'frankiesardo:icepick:3.2.0'
+    // annotationProcessor 'frankiesardo:icepick-processor:3.2.0'
 
 
     def coroutines = '1.5.2'
@@ -622,6 +626,9 @@ dependencies {
 
     // Security pass 3 - pin edit view
     implementation 'com.github.poovamraj:PinEditTextField:1.2.6'
+
+    // NetworkResponseAdapter https://haroldadmin.github.io/NetworkResponseAdapter/
+    implementation "com.github.haroldadmin:NetworkResponseAdapter:(latest-version)"
 
 }
 
