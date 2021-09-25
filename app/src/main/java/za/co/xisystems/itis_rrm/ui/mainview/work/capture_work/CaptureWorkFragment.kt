@@ -820,9 +820,8 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
     }
 
     private fun popViewOnWorkSubmit() {
-        CaptureWorkFragmentDirections
-            .actionCaptureWorkFragmentToNavWork(itemEstimateJob.jobId)
-        Navigation.findNavController(this.requireView()).navigate(R.id.nav_work)
+        val directions = CaptureWorkFragmentDirections.actionCaptureWorkFragmentToNavWork(itemEstimateJob.jobId)
+        Navigation.findNavController(this.requireView()).navigate(directions)
     }
 
     private suspend fun submitAllOutStandingEstimates(
