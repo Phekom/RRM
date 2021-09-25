@@ -72,6 +72,7 @@ import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SwipeTouchCallb
 import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedViewModelFactory
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
+import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DateUtil
 import za.co.xisystems.itis_rrm.utils.JobUtils
@@ -150,7 +151,6 @@ class AddProjectFragment : BaseFragment(), DIAware {
         private const val PROJECT_KEY = "projectId"
         private const val INVALID_ACTIVITY = "Invalid Activity"
     }
-
 
     private fun initViewModels() {
         createViewModel = activity?.run {
@@ -304,6 +304,10 @@ class AddProjectFragment : BaseFragment(), DIAware {
                         }
                     })
                     bindProjectItems()
+                    if (job.actId == 1) {
+                        ui.addItemButton.visibility = View.INVISIBLE
+                        ui.submitButton.text = "Complete Upload"
+                    }
                 }
             }
         })
@@ -473,8 +477,7 @@ class AddProjectFragment : BaseFragment(), DIAware {
                 R.id.submitButton -> {
                     Coroutines.main {
                         if (this@AddProjectFragment.requireContext().isConnected) {
-                            resetValidationListener()
-                            validateJob()
+                            executeWorkflow()
                         } else {
                             displayConnectionWarning()
                         }
@@ -489,6 +492,21 @@ class AddProjectFragment : BaseFragment(), DIAware {
         ui.dueDateCardView.setOnClickListener(myClickListener)
         ui.submitButton.setOnClickListener(myClickListener)
         ui.infoTextView.setOnClickListener(myClickListener)
+    }
+
+    private suspend fun AddProjectFragment.executeWorkflow() {
+        when (job.actId) {
+            ActivityIdConstants.JOB_PENDING_UPLOAD -> {
+                initReUploadListener()
+                if (this@AddProjectFragment::job.isInitialized) {
+                    createViewModel.setJobForReUpload(job.jobId)
+                }
+            }
+            else -> {
+                resetValidationListener()
+                validateJob()
+            }
+        }
     }
 
     private fun displayConnectionWarning() {
@@ -732,6 +750,46 @@ class AddProjectFragment : BaseFragment(), DIAware {
             }
             else -> {
                 Timber.d("x -> $result")
+            }
+        }
+    }
+
+    private fun initReUploadListener() {
+        createViewModel.reUploadEvent.observeOnce(viewLifecycleOwner, { reUploadEvent ->
+            reUploadEvent.getContentIfNotHandled()?.let { reUploadJob ->
+                Coroutines.main {
+                    val result = createViewModel.reUploadJob(
+                        job = reUploadJob,
+                        activity = this@AddProjectFragment.requireActivity()
+                    )
+                    handleUploadResult(result)
+                }
+            }
+        })
+    }
+
+    private fun handleUploadResult(result: XIResult<Boolean>) {
+        toggleLongRunning(false)
+        when (result) {
+            is XIResult.Success -> {
+                extensionToast(
+                    message = "Job: ${job.descr} uploaded successfully",
+                    style = ToastStyle.SUCCESS
+                )
+                createViewModel.deleteItemList(job.jobId)
+                createViewModel.deleteJobFromList(job.jobId)
+                Navigation.findNavController(this.requireView()).popBackStack(R.id.nav_unSubmitted, false)
+            }
+            is XIResult.Error -> {
+                extensionToast(
+                    title = "Upload failed.",
+                    message = "${result.message} - hit upload arrow to retry.",
+                    style = ToastStyle.ERROR
+                )
+                createViewModel.resetUploadState()
+            }
+            else -> {
+                Timber.e("$result")
             }
         }
     }

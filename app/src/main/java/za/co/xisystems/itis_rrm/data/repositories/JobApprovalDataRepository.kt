@@ -10,7 +10,6 @@ package za.co.xisystems.itis_rrm.data.repositories
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.custom.errors.LocalDataException
@@ -26,6 +25,8 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.WorkflowJobDTO
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
+import za.co.xisystems.itis_rrm.forge.DefaultDispatcherProvider
+import za.co.xisystems.itis_rrm.forge.DispatcherProvider
 import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import java.util.Locale
@@ -36,7 +37,8 @@ import java.util.Locale
 
 class JobApprovalDataRepository(
     private val api: BaseConnectionApi,
-    private val appDb: AppDatabase
+    private val appDb: AppDatabase,
+    private val dispatchers: DispatcherProvider = DefaultDispatcherProvider()
 ) : SafeApiRequest() {
     companion object {
         val TAG: String = JobApprovalDataRepository::class.java.simpleName
@@ -46,47 +48,47 @@ class JobApprovalDataRepository(
     var updateStatus: MutableLiveData<XIEvent<XIResult<String>>> = MutableLiveData()
 
     suspend fun getUser(): LiveData<UserDTO> {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getUserDao().getUser()
         }
     }
 
     suspend fun getSectionForProjectSectionId(sectionId: String?): String {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getProjectSectionDao().getSectionForProjectSectionId(sectionId!!)
         }
     }
 
     suspend fun getTenderRateForProjectItemId(projectItemId: String): Double {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getProjectItemDao().getTenderRateForProjectItemId(projectItemId)
         }
     }
 
-    suspend fun getUOMForProjectItemId(projectItemId: String): String? = withContext(Dispatchers.IO) {
+    suspend fun getUOMForProjectItemId(projectItemId: String): String? = withContext(dispatchers.io()) {
         return@withContext appDb.getProjectItemDao().getUOMForProjectItemId(projectItemId)
     }
 
     suspend fun getRouteForProjectSectionId(sectionId: String?): String {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getProjectSectionDao().getRouteForProjectSectionId(sectionId!!)
         }
     }
 
     suspend fun getProjectSectionIdForJobId(jobId: String?): String {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getJobSectionDao().getProjectSectionId(jobId!!)
         }
     }
 
     suspend fun getProjectDescription(projectId: String): String {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getProjectDao().getProjectDescription(projectId)
         }
     }
 
     suspend fun getJobsForActivityId(activityId: Int): LiveData<List<JobDTO>> {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getJobDao().getJobsForActivityId(activityId)
         }
     }
@@ -148,7 +150,7 @@ class JobApprovalDataRepository(
         description: String?,
         direction: Int
     ) {
-        withContext(Dispatchers.IO) {
+        withContext(dispatchers.io()) {
             try {
                 val workflowMoveResponse =
                     apiRequest { api.getWorkflowMove(userId, trackRouteId, description, direction) }
@@ -176,46 +178,46 @@ class JobApprovalDataRepository(
     }
 
     suspend fun getQuantityForEstimationItemId(estimateId: String): LiveData<Double> {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getJobItemEstimateDao().getQuantityForEstimationItemId(estimateId)
         }
     }
 
     suspend fun getLineRateForEstimationItemId(estimateId: String): LiveData<Double> {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getJobItemEstimateDao().getLineRateForEstimationItemId(estimateId)
         }
     }
 
     suspend fun getJobEstimationItemsForJobId(jobID: String?): LiveData<List<JobItemEstimateDTO>> {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getJobItemEstimateDao().getJobEstimationItemsForJobId2(jobID!!)
         }
     }
 
     suspend fun getProjectItemDescription(projectItemId: String): String {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getProjectItemDao().getProjectItemDescription(projectItemId)
         }
     }
 
     suspend fun getJobEstimationItemsPhotoStartPath(estimateId: String): String {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getJobItemEstimatePhotoDao().getJobEstimationItemsPhotoStartPath(estimateId)
         }
     }
 
     suspend fun getJobEstimationItemsPhotoEndPath(estimateId: String): String {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getJobItemEstimatePhotoDao().getJobEstimationItemsPhotoEndPath(estimateId)
         }
     }
 
     private suspend fun saveWorkflowJob(workflowJob: WorkflowJobDTO) {
-        withContext(Dispatchers.IO) {
+        withContext(dispatchers.io()) {
             val job = setWorkflowJobBigEndianGuids(workflowJob)
             job?.let {
-                updateWorkflowJobValuesAndInsertWhenNeeded(job)
+                processWorkflowUpdates(job)
             }
         }
     }
@@ -225,7 +227,7 @@ class JobApprovalDataRepository(
         workflowStatus.postValue(newEvent)
     }
 
-    private suspend fun updateWorkflowJobValuesAndInsertWhenNeeded(job: WorkflowJobDTO) {
+    private suspend fun processWorkflowUpdates(job: WorkflowJobDTO) {
         try {
             appDb.getJobDao().updateJob(job.trackRouteId, job.actId, job.jiNo, job.jobId)
 
@@ -339,7 +341,7 @@ class JobApprovalDataRepository(
         }
     }
 
-    suspend fun getJobEstimationItemByEstimateId(estimateId: String) = withContext(Dispatchers.IO) {
+    suspend fun getJobEstimationItemByEstimateId(estimateId: String) = withContext(dispatchers.io()) {
         return@withContext appDb.getJobItemEstimateDao().getJobItemEstimateForEstimateId(estimateId)
     }
 }

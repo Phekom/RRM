@@ -81,10 +81,7 @@ class UnSubmittedJobItem(
 
         viewBinding.root.setOnClickListener { view ->
             clickListener?.invoke(this)
-            when (jobDTO.actId) {
-                0 -> sendJobToEdit(jobDTO, view)
-                1 -> sendForReview(jobDTO, view)
-            }
+            sendJobToEdit(jobDTO, view)
         }
     }
 
