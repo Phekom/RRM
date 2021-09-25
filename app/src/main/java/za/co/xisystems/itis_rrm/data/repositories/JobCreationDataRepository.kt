@@ -8,7 +8,6 @@ import com.google.gson.Gson
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
@@ -37,6 +36,8 @@ import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
 import za.co.xisystems.itis_rrm.data.network.responses.UploadImageResponse
 import za.co.xisystems.itis_rrm.domain.ContractSelector
 import za.co.xisystems.itis_rrm.domain.ProjectSelector
+import za.co.xisystems.itis_rrm.forge.DefaultDispatcherProvider
+import za.co.xisystems.itis_rrm.forge.DispatcherProvider
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
@@ -57,7 +58,8 @@ import java.io.IOException
 class JobCreationDataRepository(
     private val api: BaseConnectionApi,
     private val appDb: AppDatabase,
-    private val photoUtil: PhotoUtil
+    private val photoUtil: PhotoUtil,
+    private val dispatchers: DispatcherProvider = DefaultDispatcherProvider()
 ) : SafeApiRequest() {
 
     private val workflowJobs = MutableLiveData<WorkflowJobDTO>()
@@ -80,7 +82,7 @@ class JobCreationDataRepository(
     }
 
     suspend fun getUser(): LiveData<UserDTO> {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getUserDao().getUser()
         }
     }
@@ -112,23 +114,23 @@ class JobCreationDataRepository(
     }
 
     suspend fun getSectionItems(): LiveData<List<SectionItemDTO>> {
-        return withContext(Dispatchers.Default) { appDb.getSectionItemDao().getSectionItems() }
+        return withContext(dispatchers.io()) { appDb.getSectionItemDao().getSectionItems() }
     }
 
     suspend fun getContracts(): LiveData<List<ContractDTO>> {
-        return withContext(Dispatchers.Default) {
+        return withContext(dispatchers.io()) {
             appDb.getContractDao().getAllContracts()
         }
     }
 
     suspend fun getContractProjects(contractId: String): LiveData<List<ProjectDTO>> {
-        return withContext(Dispatchers.Default) {
+        return withContext(dispatchers.io()) {
             appDb.getProjectDao().getAllProjectsByContract(contractId)
         }
     }
 
     suspend fun getAllSectionItemsForProject(projectId: String): LiveData<List<SectionItemDTO>> {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getSectionItemDao().getFilteredSectionItems(projectId)
         }
     }
@@ -137,7 +139,7 @@ class JobCreationDataRepository(
         sectionItemId: String,
         projectId: String
     ): LiveData<List<ProjectItemDTO>> {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getProjectItemDao().getAllItemsForSectionItemByProject(sectionItemId, projectId)
         }
     }
@@ -173,7 +175,7 @@ class JobCreationDataRepository(
         sectionId: String,
         newJobItemEstimatesList: ArrayList<JobItemEstimateDTO>,
         jobItemSectionArrayList: ArrayList<JobSectionDTO>
-    ): XIResult<JobDTO> = withContext(Dispatchers.IO) {
+    ): XIResult<JobDTO> = withContext(dispatchers.io()) {
         try {
 
             if (appDb.getJobDao().checkIfJobExist(newJobId)) {
@@ -210,7 +212,7 @@ class JobCreationDataRepository(
     }
 
     suspend fun getPointSectionData(projectId: String): SectionPointDTO {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getSectionPointDao().getPointSectionData(projectId)
         }
     }
@@ -221,19 +223,19 @@ class JobCreationDataRepository(
         projectId: String?,
         pointLocation: Double
     ): String? {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getProjectSectionDao()
                 .getSectionByRouteSectionProject(sectionId, linearId!!, projectId!!, pointLocation)
         }
     }
 
     suspend fun getLiveSection(sectionId: String): LiveData<ProjectSectionDTO> {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getProjectSectionDao().getLiveSection(sectionId)
         }
     }
 
-    suspend fun getSection(sectionId: String): ProjectSectionDTO = withContext(Dispatchers.IO) {
+    suspend fun getSection(sectionId: String): ProjectSectionDTO = withContext(dispatchers.io()) {
         return@withContext appDb.getProjectSectionDao().getSection(sectionId)
     }
 
@@ -277,7 +279,7 @@ class JobCreationDataRepository(
     }
 
     suspend fun getAllProjectItems(projectId: String, jobId: String): LiveData<List<ItemDTOTemp>> {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getItemDaoTemp().getAllProjecItems(projectId, jobId)
         }
     }
@@ -290,7 +292,7 @@ class JobCreationDataRepository(
 
     @Transaction
     suspend fun deleteItemFromList(itemId: String, estimateId: String?): Int {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             val itemsDeleted = appDb.getItemDaoTemp().deleteItemFromList(itemId)
             val estimatesDeleted =
                 estimateId?.let {
@@ -301,7 +303,7 @@ class JobCreationDataRepository(
         }
     }
 
-    suspend fun submitJob(userId: Int, job: JobDTO): WorkflowJobDTO = withContext(Dispatchers.IO) {
+    suspend fun submitJob(userId: Int, job: JobDTO): WorkflowJobDTO = withContext(dispatchers.io()) {
 
         try {
             val jobData = JsonObject()
@@ -310,7 +312,7 @@ class JobCreationDataRepository(
             val jsonElement: JsonElement = JsonParser.parseString(newJob)
             jobData.add("Job", jsonElement)
             jobData.addProperty("UserId", userId)
-            Timber.i("Json Job: $jobData")
+            Timber.d("Json Job: $jobData")
 
             val jobResponse = apiRequest { api.sendJobsForApproval(jobData) }
 
@@ -334,10 +336,10 @@ class JobCreationDataRepository(
         workflowJob: WorkflowJobDTO,
         job: JobDTO,
         activity: FragmentActivity
-    ): JobDTO = withContext(Dispatchers.IO) {
+    ): JobDTO = withContext(dispatchers.io()) {
 
-        val createJob = setWorkflowJobBigEndianGuids(workflowJob)
-        insertOrUpdateWorkflowJobInSQLite(createJob)
+        val translatedJob = setWorkflowJobBigEndianGuids(workflowJob)
+        insertOrUpdateWorkflowJobInSQLite(translatedJob)
         uploadCreateJobImages(
             packageJob = job,
             activity = activity
@@ -347,7 +349,7 @@ class JobCreationDataRepository(
     }
 
     suspend fun getUpdatedJob(jobId: String): JobDTO {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getJobDao().getJobForJobId(jobId)
         }
     }
@@ -447,14 +449,14 @@ class JobCreationDataRepository(
     private suspend fun uploadCreateJobImages(
         packageJob: JobDTO,
         activity: FragmentActivity
-    ) = withContext(Dispatchers.IO) {
+    ) = withContext(dispatchers.io()) {
 
         var jobCounter = 1
         val totalJobs = packageJob.jobItemEstimates.size
         packageJob.jobItemEstimates.map { jobItemEstimate ->
             val totalImages = jobItemEstimate.jobItemEstimatePhotos.size
             var imageCounter = 1
-            jobItemEstimate.jobItemEstimatePhotos.map nextphoto@{ estimatePhoto ->
+            jobItemEstimate.jobItemEstimatePhotos.map nextPhoto@{ estimatePhoto ->
                 if (photoUtil.photoExist(estimatePhoto.filename)) {
 
                     uploadRrmImage(
@@ -470,7 +472,7 @@ class JobCreationDataRepository(
                 } else {
                     val message = "${estimatePhoto.filename} could not be loaded"
                     Timber.e(IOException(message), message)
-                    return@nextphoto
+                    return@nextPhoto
                 }
             }
             jobCounter++
@@ -502,11 +504,11 @@ class JobCreationDataRepository(
     private suspend fun getData(
         filename: String,
         photoQuality: PhotoQuality
-    ): ByteArray = withContext(Dispatchers.IO) {
+    ): ByteArray {
         val uri = photoUtil.getPhotoPathFromExternalDirectory(filename)
         val bitmap =
             photoUtil.getPhotoBitmapFromFile(uri, photoQuality)
-        return@withContext photoUtil.getCompressedPhotoWithExifInfo(
+        return photoUtil.getCompressedPhotoWithExifInfo(
             bitmap!!,
             filename
         )
@@ -518,26 +520,27 @@ class JobCreationDataRepository(
         photo: ByteArray,
         totalImages: Int,
         imageCounter: Int
-    ) {
-        Coroutines.api {
-            val imageData = JsonObject()
-            imageData.addProperty("Filename", filename)
-            imageData.addProperty("ImageByteArray", photoUtil.encode64Pic(photo))
-            imageData.addProperty("ImageFileExtension", extension)
-            Timber.d("Json Image: $imageData")
+    ) = Coroutines.api {
+        val imageData = JsonObject()
+        imageData.addProperty("Filename", filename)
+        imageData.addProperty("ImageByteArray", photoUtil.encode64Pic(photo))
+        imageData.addProperty("ImageFileExtension", extension)
+        Timber.d("Json Image: $imageData")
 
-            val uploadImageResponse = apiRequest { api.uploadRrmImage(imageData) }
-            photoUpload.postValue(uploadImageResponse.errorMessage)
-            if (totalImages <= imageCounter) {
-                Timber.d("Processed $imageCounter of $totalImages images.")
-            }
+        val uploadImageResponse = apiRequest { api.uploadRrmImage(imageData) }
+        uploadImageResponse.errorMessage?.let {
+            val message = "Failed to upload image: $it"
+            throw ServiceException(message)
+        }
+        if (totalImages <= imageCounter) {
+            Timber.d("Processed $imageCounter of $totalImages images.")
         }
     }
 
     suspend fun moveJobToNextWorkflow(
         job: JobDTO,
         activity: FragmentActivity
-    ) = withContext(Dispatchers.IO) {
+    ) = withContext(dispatchers.io()) {
 
         if (job.trackRouteId == null) {
             throw IllegalStateException("Cannot workflow job ${job.jiNo}: TrackRouteId cannot be null")
@@ -623,7 +626,7 @@ class JobCreationDataRepository(
     }
 
     suspend fun getContractNoForId(contractVoId: String?): String {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getContractDao().getContractNoForId(contractVoId)
         }
     }
@@ -644,7 +647,7 @@ class JobCreationDataRepository(
         projectSectionDTO: ProjectSectionDTO,
         pointLocation: Double
     ): SectionMarker {
-        return withContext(Dispatchers.Default) {
+        return withContext(dispatchers.default()) {
             appDb.getProjectSectionDao().findRealSectionEndKm(
                 projectSectionDTO.route,
                 pointLocation
@@ -653,14 +656,14 @@ class JobCreationDataRepository(
     }
 
     suspend fun getProjectCodeForId(projectId: String?): String {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getProjectDao().getProjectCodeForId(projectId)
         }
     }
 
     @Transaction
     suspend fun backupJob(job: JobDTO) {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             if (appDb.getJobDao().checkIfJobExist(job.jobId)) {
                 appDb.getJobDao().updateJob(job)
             } else {
@@ -690,12 +693,12 @@ class JobCreationDataRepository(
         return appDb.getItemDaoTemp().getProjectItemById(itemId!!)
     }
 
-    suspend fun getEstimateById(estimateId: String): JobItemEstimateDTO = withContext(Dispatchers.IO) {
+    suspend fun getEstimateById(estimateId: String): JobItemEstimateDTO = withContext(dispatchers.io()) {
         return@withContext appDb.getJobItemEstimateDao().getJobItemEstimateForEstimateId(estimateId)
     }
 
     @Transaction
-    suspend fun backupEstimate(estimate: JobItemEstimateDTO): JobItemEstimateDTO = withContext(Dispatchers.IO) {
+    suspend fun backupEstimate(estimate: JobItemEstimateDTO): JobItemEstimateDTO = withContext(dispatchers.io()) {
         if (appDb.getJobItemEstimateDao().checkIfJobItemEstimateExist(estimate.estimateId)) {
             appDb.getJobItemEstimateDao().updateJobItemEstimate(estimate)
         } else {
@@ -704,13 +707,13 @@ class JobCreationDataRepository(
         return@withContext appDb.getJobItemEstimateDao().getJobItemEstimateForEstimateId(estimate.estimateId)
     }
 
-    suspend fun backupProjectItem(item: ItemDTOTemp): Long = withContext(Dispatchers.IO) {
+    suspend fun backupProjectItem(item: ItemDTOTemp): Long = withContext(dispatchers.io()) {
         return@withContext appDb.getItemDaoTemp().insertItems(item)
     }
 
     @Transaction
     suspend fun backupEstimatePhoto(photoDTO: JobItemEstimatesPhotoDTO):
-        JobItemEstimatesPhotoDTO = withContext(Dispatchers.IO) {
+        JobItemEstimatesPhotoDTO = withContext(dispatchers.io()) {
         if (appDb.getJobItemEstimatePhotoDao()
                 .checkIfJobItemEstimatePhotoExistsByPhotoId(photoDTO.photoId)
         ) {
@@ -721,23 +724,23 @@ class JobCreationDataRepository(
         return@withContext appDb.getJobItemEstimatePhotoDao().getJobItemEstimatePhoto(photoDTO.photoId)
     }
 
-    suspend fun saveJobSection(jobSection: JobSectionDTO): JobSectionDTO? = withContext(Dispatchers.IO) {
+    suspend fun saveJobSection(jobSection: JobSectionDTO): JobSectionDTO? = withContext(dispatchers.io()) {
         appDb.getJobSectionDao().insertJobSection(jobSection)
         return@withContext appDb.getJobSectionDao().getJobSectionFromJobId(jobSection.jobId!!)
     }
 
-    suspend fun getJobSectionByJobId(jobId: String): JobSectionDTO? = withContext(Dispatchers.IO) {
+    suspend fun getJobSectionByJobId(jobId: String): JobSectionDTO? = withContext(dispatchers.io()) {
         return@withContext appDb.getJobSectionDao().getJobSectionFromJobId(jobId)
     }
 
     suspend fun getJobEstimateIndexByItemAndJobId(
         itemId: String,
         jobId: String
-    ): JobItemEstimateDTO? = withContext(Dispatchers.IO) {
+    ): JobItemEstimateDTO? = withContext(dispatchers.io()) {
         return@withContext appDb.getJobItemEstimateDao().getJobEstimateIndexByItemAndJobId(itemId, jobId)
     }
 
-    suspend fun eraseExistingPhoto(photoId: String) = withContext(Dispatchers.IO) {
+    suspend fun eraseExistingPhoto(photoId: String) = withContext(dispatchers.io()) {
         appDb.getJobItemEstimatePhotoDao().deletePhotoById(photoId)
     }
 }

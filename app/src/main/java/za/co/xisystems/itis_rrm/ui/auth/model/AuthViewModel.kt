@@ -62,7 +62,6 @@ class AuthViewModel(
     }
 
     fun onResetPinButtonClick(view: View) {
-
         viewModelScope.launch(ioContext) {
             listenerNotify {
                 view.isClickable = false
@@ -182,7 +181,6 @@ class AuthViewModel(
     }
 
     fun onRegPinButtonClick(view: View) {
-
         viewModelScope.launch(ioContext) {
 
             listenerNotify {
@@ -300,26 +298,24 @@ class AuthViewModel(
     }
 
     private suspend fun registerNewUser(userName: String?, password: String?) {
-        withContext(ioContext) {
-            try {
+        try {
 
-                val phoneNumber = "12345457"
-                val imie = "45678"
-                val androidDevice =
-                    "${R.string.android_sdk} ${VERSION.SDK_INT} " +
-                        "${Build.BRAND} ${Build.MODEL} ${Build.DEVICE}"
+            val phoneNumber = "12345457"
+            val imie = "45678"
+            val androidDevice =
+                "${R.string.android_sdk} ${VERSION.SDK_INT} " +
+                    "${Build.BRAND} ${Build.MODEL} ${Build.DEVICE}"
 
-                repository.userRegister(
-                    userName!!,
-                    password!!,
-                    phoneNumber,
-                    imie,
-                    androidDevice
-                )
-            } catch (e: Exception) {
-                listenerNotify {
-                    postError(e)
-                }
+            repository.userRegister(
+                userName!!.trim(),
+                password!!,
+                phoneNumber,
+                imie,
+                androidDevice
+            )
+        } catch (e: Exception) {
+            listenerNotify {
+                postError(e)
             }
         }
     }
@@ -332,7 +328,7 @@ class AuthViewModel(
         repository.expirePin()
     }
 
-    suspend fun validatePin(pin: String) = viewModelScope.launch(ioContext) {
+    fun validatePin(pin: String) = viewModelScope.launch(ioContext) {
         listenerNotify {
             authListener!!.onStarted()
         }
@@ -363,7 +359,7 @@ class AuthViewModel(
         authListener = mAuthListener
     }
 
-    fun teardownAuthListener() {
+    private fun teardownAuthListener() {
         authListener = null
     }
 
