@@ -11,10 +11,7 @@ import android.os.Environment
 import androidx.lifecycle.LifecycleObserver
 import androidx.security.crypto.MasterKey
 import com.password4j.SecureString
-import java.io.File
-import java.util.concurrent.atomic.AtomicLong
 import kotlinx.coroutines.CoroutineStart
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -22,9 +19,12 @@ import za.co.xisystems.itis_rrm.constants.Constants.TEN_MINUTES
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.forge.Scribe.Companion.NOT_INITIALIZED
 import za.co.xisystems.itis_rrm.utils.Coroutines
+import java.io.File
+import java.util.concurrent.atomic.AtomicLong
 
 class XIArmoury private constructor(
-    context: Context
+    context: Context,
+    private val dispatchers: DispatcherProvider = DefaultDispatcherProvider()
 ) : LifecycleObserver {
 
     private val wizardInstance: Wizard = Wizard()
@@ -57,7 +57,7 @@ class XIArmoury private constructor(
         }
     }
 
-    private suspend fun initPictureFolder(context: Context): File = withContext(Dispatchers.IO) {
+    private suspend fun initPictureFolder(context: Context): File = withContext(dispatchers.io()) {
         return@withContext setOrCreatePicFolder(context)
     }
 
@@ -108,7 +108,7 @@ class XIArmoury private constructor(
     suspend fun validateFutureToken(
         passphrase: SecureString,
         hash: String
-    ): XIResult<Boolean> = withContext(Dispatchers.Default) {
+    ): XIResult<Boolean> = withContext(dispatchers.default()) {
         return@withContext wizardInstance.validateFutureToken(passphrase, hash)
     }
 
@@ -117,7 +117,7 @@ class XIArmoury private constructor(
         masterKey: MasterKey,
         prefsFile: String
     ): Boolean =
-        withContext(Dispatchers.Default) {
+        withContext(dispatchers.default()) {
             scribeInstance?.initPreferences(context, masterKey, prefsFile)
             return@withContext scribeInstance?.operational ?: false
         }
@@ -128,7 +128,7 @@ class XIArmoury private constructor(
         }
     }
 
-    suspend fun checkPassphrase(context: Context): String = withContext(Dispatchers.IO) {
+    suspend fun checkPassphrase(context: Context): String = withContext(dispatchers.io()) {
         var currentPassphrase = this@XIArmoury.scribeInstance?.getFuturePassphrase() ?: NOT_INITIALIZED
         when (currentPassphrase) {
             NOT_INITIALIZED -> {
@@ -165,7 +165,7 @@ class XIArmoury private constructor(
         fileName: String,
         directory: File,
         fileContent: ByteArray
-    ): Boolean = withContext(Dispatchers.Default) {
+    ): Boolean = withContext(dispatchers.io()) {
         return@withContext scribeInstance!!.writeEncryptedFile(
             context,
             masterKey!!,
@@ -201,6 +201,10 @@ class XIArmoury private constructor(
 
     fun deAuthorize() {
         scribeInstance!!.eraseSessionKey()
+    }
+
+    fun isSessionAuthorized(): Boolean {
+        return !scribeInstance!!.readSessionKey().isEmpty()
     }
 
     suspend fun isAuthorized(userObject: SecureString? = null): Boolean = withContext(armouryScope.coroutineContext) {

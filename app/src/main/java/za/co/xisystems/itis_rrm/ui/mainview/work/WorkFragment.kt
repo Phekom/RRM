@@ -177,6 +177,7 @@ class WorkFragment : BaseFragment(), DIAware {
 
     private fun fetchJobsFromService() = uiScope.launch(uiScope.coroutineContext) {
         try {
+            toggleLongRunning(true)
             ui.veiledWorkListView.veil()
             veiled = true
             withContext(uiScope.coroutineContext) {
@@ -193,6 +194,8 @@ class WorkFragment : BaseFragment(), DIAware {
             )
         } finally {
             ui.worksSwipeToRefresh.isRefreshing = false
+            toggleLongRunning(false)
+            ui.veiledWorkListView.unVeil()
         }
     }
 

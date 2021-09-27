@@ -68,9 +68,9 @@ class SelectItemFragment : BaseFragment(), DIAware {
 
     internal var selectedSectionItem: SectionItemDTO? = null
 
-    internal var useR: Int? = null
+    private var useR: Int? = null
 
-    lateinit var editJob: JobDTO
+    private lateinit var editJob: JobDTO
     private var uiScope = UiLifecycleScope()
 
     init {

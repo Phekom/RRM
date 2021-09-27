@@ -204,24 +204,6 @@ class CreateViewModel(
         }
     }
 
-    suspend fun getRouteSectionPoint(
-        latitude: Double,
-        longitude: Double,
-        useR: String,
-        projectId: String?,
-        jobId: String
-    ): String? {
-        return withContext(Dispatchers.IO) {
-            jobCreationDataRepository.getRouteSectionPoint(
-                latitude,
-                longitude,
-                useR,
-                projectId,
-                jobId
-            )
-        }
-    }
-
     suspend fun getAllProjectItems(projectId: String, jobId: String): LiveData<List<ItemDTOTemp>> {
         return withContext(Dispatchers.IO) {
             jobCreationDataRepository.getAllProjectItems(projectId, jobId)
@@ -545,7 +527,7 @@ class CreateViewModel(
     fun unbindEstimateView() {
         itemJob = MutableLiveData()
         currentEstimate = MutableLiveData()
-        projectItemTemp = MutableLiveData()
+        tempProjectItem = MutableLiveData()
     }
 
     suspend fun backupProjectItem(item: ItemDTOTemp): Long = withContext(Dispatchers.IO) {
@@ -591,12 +573,13 @@ class CreateViewModel(
     }
 
     @Transaction
-    suspend fun eraseExistingPhoto(photoId: String, fileName: String, photoPath: String) = withContext(ioContext) {
-        if (photoUtil.photoExist(fileName)) {
-            photoUtil.deleteImageFile(photoPath)
+    private fun eraseExistingPhoto(photoId: String, fileName: String, photoPath: String) =
+        viewModelScope.launch(ioContext) {
+            if (photoUtil.photoExist(fileName)) {
+                photoUtil.deleteImageFile(photoPath)
+            }
+            jobCreationDataRepository.eraseExistingPhoto(photoId)
         }
-        jobCreationDataRepository.eraseExistingPhoto(photoId)
-    }
 
     var reUploadEvent: MutableLiveData<XIEvent<JobDTO>> = MutableLiveData()
 

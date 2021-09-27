@@ -125,6 +125,8 @@ class ApproveMeasureFragment : BaseFragment(), DIAware {
             } catch (t: Throwable) {
                 Timber.e(t, "Unable to fetch Measurements")
                 val measureErr = XIResult.Error(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
+                toggleLongRunning(false)
+                ui.approveMeasurementsList.unVeil()
                 crashGuard(
                     view = this@ApproveMeasureFragment.requireView(),
                     throwable = measureErr,

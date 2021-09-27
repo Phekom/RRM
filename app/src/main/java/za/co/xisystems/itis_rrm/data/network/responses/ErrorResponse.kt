@@ -8,4 +8,4 @@ package za.co.xisystems.itis_rrm.data.network.responses
 /**
  * Error response class from broken API call
  */
-data class ErrorResponse(val code: Int, val message: String)
+data class ErrorResponse(val message: String)

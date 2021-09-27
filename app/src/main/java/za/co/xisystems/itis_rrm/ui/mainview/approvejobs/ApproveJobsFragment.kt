@@ -80,6 +80,8 @@ class ApproveJobsFragment : BaseFragment(), DIAware {
         outcome?.let { result ->
             when (result) {
                 is Error -> {
+                    toggleLongRunning(false)
+                    ui.approveJobVeiledRecycler.unVeil()
                     crashGuard(
                         view = this.requireView(),
                         throwable = result,
@@ -148,10 +150,12 @@ class ApproveJobsFragment : BaseFragment(), DIAware {
         try {
             if (veiled) {
                 ui.approveJobVeiledRecycler.veil()
+                toggleLongRunning(true)
             }
             approveViewModel.workflowState.observe(viewLifecycleOwner, queryObserver)
             fetchQuery()
         } catch (t: Throwable) {
+            toggleLongRunning(false)
             ui.approveJobVeiledRecycler.unVeil()
             val xiFail = Error(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
             crashGuard(
@@ -214,6 +218,8 @@ class ApproveJobsFragment : BaseFragment(), DIAware {
             val message = "Failed to retrieve remote jobs: ${throwable.message ?: XIErrorHandler.UNKNOWN_ERROR}"
             Timber.e(throwable, message)
             val xiFail = XIResult.Error(throwable, message)
+            toggleLongRunning(false)
+            ui.approveJobVeiledRecycler.unVeil()
             val xiAction = XIErrorAction(
                 fragmentReference = WeakReference(this),
                 view = this.requireView(),

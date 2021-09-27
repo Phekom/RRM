@@ -8,7 +8,6 @@ package za.co.xisystems.itis_rrm.ui.mainview.home
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import androidx.lifecycle.viewModelScope
@@ -20,24 +19,27 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import timber.log.Timber
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
+import za.co.xisystems.itis_rrm.forge.DefaultDispatcherProvider
+import za.co.xisystems.itis_rrm.forge.DispatcherProvider
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
-import za.co.xisystems.itis_rrm.utils.uncaughtExceptionHandler
 
 class HomeViewModel(
     private val repository: UserRepository,
     private val offlineDataRepository: OfflineDataRepository,
+    private val dispatchers: DispatcherProvider = DefaultDispatcherProvider(),
     application: Application
 ) : AndroidViewModel(application) {
     private val superJob = SupervisorJob()
-    private var databaseStatus: LiveData<XIEvent<XIResult<Boolean>>> = MutableLiveData()
-    private var homeIoContext = Dispatchers.IO + Job(superJob)
-    private var homeMainContext = Dispatchers.Main + Job(superJob)
-    private var healthState: MutableLiveData<XIResult<Boolean>> = MutableLiveData()
+    private var databaseStatus: MutableLiveData<XIEvent<XIResult<Boolean>>> = MutableLiveData()
+    private var ioContext = Dispatchers.IO + Job(superJob)
+    private var mainContext = Dispatchers.Main + Job(superJob)
+    var healthState: MutableLiveData<XIResult<Boolean>> = MutableLiveData()
     var databaseState: MutableLiveData<XIResult<Boolean>?> = MutableLiveData()
 
     val user by lazyDeferred {
@@ -49,7 +51,7 @@ class HomeViewModel(
     val bigSyncDone: MutableLiveData<Boolean> = offlineDataRepository.bigSyncDone
 
     init {
-        viewModelScope.launch(homeMainContext) {
+        viewModelScope.launch(mainContext) {
 
             databaseStatus = offlineDataRepository.databaseStatus
 
@@ -59,50 +61,50 @@ class HomeViewModel(
         }
     }
 
-    suspend fun bigSyncCheck() {
+    fun bigSyncCheck() = viewModelScope.launch(ioContext) {
         offlineDataRepository.bigSyncCheck()
     }
 
-    suspend fun fetchAllData(userId: String) =
-        viewModelScope.launch(homeMainContext) {
+    fun fetchAllData(userId: String) = viewModelScope.launch(ioContext) {
 
-            try {
-                withContext(homeIoContext + uncaughtExceptionHandler) {
-                    val contractJob = async(homeIoContext) {
-                        offlineDataRepository.loadActivitySections(userId)
-                        offlineDataRepository.loadLookups(userId)
-                        offlineDataRepository.loadContracts(userId)
-                        offlineDataRepository.loadTaskList(userId)
-                        offlineDataRepository.loadWorkflows(userId)
-                    }
-                    contractJob.await()
-                    databaseState.postValue(XIResult.Success(true))
-                }
-            } catch (exception: Exception) {
-                withContext(homeMainContext) {
-                    homeIoContext.cancelChildren(
-                        CancellationException(exception.message ?: XIErrorHandler.UNKNOWN_ERROR, exception)
+        try {
+            val contractJob = async(dispatchers.default()) {
+                offlineDataRepository.loadActivitySections(userId)
+                offlineDataRepository.loadLookups(userId)
+                offlineDataRepository.loadContracts(userId)
+                offlineDataRepository.loadTaskList(userId)
+                offlineDataRepository.loadWorkflows(userId)
+            }
+            contractJob.await()
+            withContext(mainContext) {
+                databaseState.postValue(XIResult.Success(true))
+            }
+        } catch (exception: Exception) {
+            Timber.e(exception, "Failed to synch contracts")
+            withContext(mainContext) {
+                ioContext.cancelChildren(
+                    CancellationException(exception.message ?: XIErrorHandler.UNKNOWN_ERROR, exception)
+                )
+                val fetchFail =
+                    XIResult.Error(
+                        exception, "Failed to fetch contracts:" +
+                            " ${exception.message ?: XIErrorHandler.UNKNOWN_ERROR}"
                     )
-                    val fetchFail =
-                        XIResult.Error(
-                            exception, "Failed to fetch contracts:" +
-                                " ${exception.message ?: XIErrorHandler.UNKNOWN_ERROR}"
-                        )
-                    databaseState.postValue(fetchFail)
-                }
+                databaseState.postValue(fetchFail)
             }
         }
+    }
 
-    suspend fun healthCheck(userId: String): Boolean {
-        return withContext(homeIoContext) {
-            try {
-                offlineDataRepository.getServiceHealth(userId)
-            } catch (t: Throwable) {
-                withContext(homeMainContext) {
-                    val message = "Health check failed: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
-                    healthState.postValue(XIResult.Error(t, message))
-                }
-                false
+    fun healthCheck(userId: String) = viewModelScope.launch(ioContext) {
+        try {
+            val result = offlineDataRepository.getServiceHealth(userId)
+            withContext(mainContext) {
+                healthState.value = XIResult.Success(result)
+            }
+        } catch (t: Throwable) {
+            val message = "Health check failed: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
+            withContext(mainContext) {
+                healthState.value = XIResult.Error(t, message)
             }
         }
     }

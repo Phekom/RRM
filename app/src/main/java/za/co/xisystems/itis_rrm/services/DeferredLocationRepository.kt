@@ -15,6 +15,7 @@ import za.co.xisystems.itis_rrm.domain.SectionBorder
 import za.co.xisystems.itis_rrm.utils.Utils.round
 import kotlin.math.abs
 
+
 class DeferredLocationRepository(
     private val api: BaseConnectionApi,
     private val appDb: AppDatabase,
@@ -36,7 +37,7 @@ class DeferredLocationRepository(
             )
         try {
 
-            val routeSectionPointResponse: RouteSectionPointResponse =
+            val routeSectionPointResponse: RouteSectionPointResponse? =
                 apiRequest {
                     api.getRouteSectionPoint(
                         distance = DISTANCE.toDouble(),
@@ -46,7 +47,7 @@ class DeferredLocationRepository(
                         userId = locationQuery.userId
                     )
                 }
-            with(routeSectionPointResponse) {
+            with(routeSectionPointResponse!!) {
                 Timber.d("$routeSectionPointResponse")
 
                 if (!errorMessage.isNullOrBlank()) {
