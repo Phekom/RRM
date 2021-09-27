@@ -238,4 +238,6 @@
     <string name="location_general_failure">One or more locations could not be verified.\n Please check estimates for details</string>
     <string name="item_number">No:..</string>
 
+    <!-- Offline Mode -->
+    <string name="complete_upload">Complete Upload</string>
 </resources>

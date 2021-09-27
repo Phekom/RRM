@@ -49,17 +49,14 @@ open class DebugMainApp : MainApp(), DIAware {
 
         StrictMode.setThreadPolicy(
             ThreadPolicy.Builder()
-                .detectDiskReads()
-                .detectDiskWrites()
-                .detectNetwork() // or .detectAll() for all detectable problems
+                .detectAll() // for all detectable problems
                 .penaltyLog()
                 .penaltyFlashScreen()
                 .build()
         )
         StrictMode.setVmPolicy(
             VmPolicy.Builder()
-                .detectLeakedSqlLiteObjects()
-                .detectLeakedClosableObjects()
+                .detectAll() // for all detectable problems
                 .penaltyLog()
                 .build()
         )
