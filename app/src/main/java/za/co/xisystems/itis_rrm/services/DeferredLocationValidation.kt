@@ -27,6 +27,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobSectionDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectSectionDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.SectionPointDTO
 import za.co.xisystems.itis_rrm.data.repositories.JobCreationDataRepository
+import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import za.co.xisystems.itis_rrm.utils.Utils.round
 
@@ -136,6 +137,7 @@ class DeferredLocationViewModel(
         // jobItemEstimates processed
         try {
             if (!validProjectSectionId.isNullOrBlank() && locationJob.isGeoCoded()) {
+
                 val updatedJobId = updateOrCreateJobSection(locationJob, validProjectSectionId!!)
                 if (updatedJobId.isNullOrBlank()) {
                     failLocationValidation("Failed to create job section")
@@ -321,8 +323,8 @@ class DeferredLocationViewModel(
             val projectSection = jobCreationDataRepository.getSection(projectSectionId)
             if (!jobCreationDataRepository
                     .checkIfJobSectionExistForJobAndProjectSection(
-                        jobId = jobToUpdate.jobId,
-                        projectSectionId = projectSection.sectionId
+                        jobId = DataConversion.toLittleEndian(jobToUpdate.jobId),
+                        projectSectionId = DataConversion.toLittleEndian(projectSection.sectionId)
                     )
             ) {
                 val newJobSections = jobToUpdate.jobSections as MutableList<JobSectionDTO>

@@ -318,13 +318,6 @@
             app:exitAnim="@anim/animate_slide_down_exit"
             app:popEnterAnim="@anim/nav_default_pop_enter_anim"
             app:popExitAnim="@anim/nav_default_pop_exit_anim" />
-        <action
-            android:id="@+id/action_captureWorkFragment_self"
-            app:destination="@id/captureWorkFragment"
-            app:popUpTo="@id/nav_work"
-            app:popEnterAnim="@anim/animate_fade_enter"
-            app:popExitAnim="@anim/animate_fade_exit"
-            app:popUpToInclusive="false" />
     </fragment>
     <fragment
         android:id="@+id/captureItemMeasurePhotoFragment"

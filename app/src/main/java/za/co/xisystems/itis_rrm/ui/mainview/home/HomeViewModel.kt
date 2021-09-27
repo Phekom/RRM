@@ -35,6 +35,7 @@ class HomeViewModel(
     private val dispatchers: DispatcherProvider = DefaultDispatcherProvider(),
     application: Application
 ) : AndroidViewModel(application) {
+
     private val superJob = SupervisorJob()
     private var databaseStatus: MutableLiveData<XIEvent<XIResult<Boolean>>> = MutableLiveData()
     private var ioContext = Dispatchers.IO + Job(superJob)
