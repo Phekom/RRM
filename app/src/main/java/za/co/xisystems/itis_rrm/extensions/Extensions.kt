@@ -68,7 +68,7 @@ fun Location?.toText(): String {
     }
 }
 
-fun Context.exitApplication() {
+fun Activity.exitApplication() {
     this.run {
         val intent = Intent(Intent.ACTION_MAIN)
         intent.flags = FLAG_ACTIVITY_NEW_TASK or FLAG_ACTIVITY_CLEAR_TASK

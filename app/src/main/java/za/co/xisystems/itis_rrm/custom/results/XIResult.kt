@@ -2,11 +2,14 @@ package za.co.xisystems.itis_rrm.custom.results
 
 import za.co.xisystems.itis_rrm.custom.errors.NoConnectivityException
 import za.co.xisystems.itis_rrm.custom.errors.NoInternetException
+import za.co.xisystems.itis_rrm.custom.errors.RecoverableException
 import za.co.xisystems.itis_rrm.custom.errors.ServiceHostUnreachableException
 import za.co.xisystems.itis_rrm.data.network.responses.ErrorResponse
 import java.io.IOException
 import java.net.SocketException
 import java.net.SocketTimeoutException
+import javax.net.ssl.SSLHandshakeException
+import javax.net.ssl.SSLProtocolException
 
 // Created by Shaun McDonald on 2020/05/23.
 // Copyright (c) 2020 XI Systems. All rights reserved.
@@ -57,6 +60,9 @@ fun XIResult.Error.isRecoverableException(): Boolean {
         is ServiceHostUnreachableException -> true
         is SocketException -> true
         is SocketTimeoutException -> true
+        is SSLProtocolException -> true
+        is SSLHandshakeException -> true
+        is RecoverableException -> true
         else -> false
     }
 }

@@ -53,6 +53,8 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.WorkflowJobDTO
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
 import za.co.xisystems.itis_rrm.data.network.responses.UploadImageResponse
+import za.co.xisystems.itis_rrm.forge.DefaultDispatcherProvider
+import za.co.xisystems.itis_rrm.forge.DispatcherProvider
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DataConversion
@@ -69,7 +71,8 @@ private val jobDataController: JobDataController? = null
 class OfflineDataRepository(
     private val api: BaseConnectionApi,
     private val appDb: AppDatabase,
-    private val photoUtil: PhotoUtil
+    private val photoUtil: PhotoUtil,
+    private val dispatchers: DispatcherProvider = DefaultDispatcherProvider()
 ) : SafeApiRequest() {
 
     private var entitiesFetched = false
@@ -150,13 +153,16 @@ class OfflineDataRepository(
     }
 
     suspend fun bigSyncCheck() {
-        withContext(Dispatchers.IO) {
-            bigSyncDone.postValue(appDb.getContractDao().countContracts() >= 1)
+        withContext(dispatchers.io()) {
+            val result = appDb.getContractDao().countContracts() >= 1
+            withContext(dispatchers.main()) {
+                bigSyncDone.postValue(result)
+            }
         }
     }
 
     suspend fun getContracts(): LiveData<List<ContractDTO>> {
-        return withContext(Dispatchers.IO) {
+        return withContext(Dispatchers.Default) {
             appDb.getContractDao().getAllContracts()
         }
     }
@@ -181,19 +187,19 @@ class OfflineDataRepository(
 
     suspend fun getJobsForActivityId(activityId: Int): LiveData<List<JobDTO>> {
         return withContext(Dispatchers.IO) {
-            appDb.getJobDao().getJobsForActivityId(activityId)
+            appDb.getJobDao().getJobsForActivityId(activityId).distinctUntilChanged()
         }
     }
 
     suspend fun getJobsForActId(vararg activityIds: Int): LiveData<List<JobDTO>> {
         return withContext(Dispatchers.IO) {
-            appDb.getJobDao().getJobsForActivityId(*activityIds)
+            appDb.getJobDao().getJobsForActivityId(*activityIds).distinctUntilChanged()
         }
     }
 
     suspend fun getJobsForActivityIds1(activityId1: Int, activityId2: Int): LiveData<List<JobDTO>> {
         return withContext(Dispatchers.IO) {
-            appDb.getJobDao().getJobsForActivityIds1(activityId1, activityId2)
+            appDb.getJobDao().getJobsForActivityIds1(activityId1, activityId2).distinctUntilChanged()
         }
     }
 
@@ -203,7 +209,7 @@ class OfflineDataRepository(
         activityId3: Int
     ): LiveData<List<JobItemEstimateDTO>> {
         return withContext(Dispatchers.IO) {
-            appDb.getJobItemEstimateDao().getJobMeasureForActivityId(activityId, activityId2, activityId3)
+            appDb.getJobItemEstimateDao().getJobMeasureForActivityId(activityId, activityId2, activityId3).distinctUntilChanged()
         }
     }
 
@@ -991,12 +997,12 @@ class OfflineDataRepository(
         }
     }
 
-    private suspend fun saveUserTaskList(toDoListGroups: ArrayList<ToDoGroupsDTO>) {
+    private suspend fun saveUserTaskList(toDoListGroups: ArrayList<ToDoGroupsDTO>?) {
         withContext(Dispatchers.IO) {
             try {
-                tasksMax = toDoListGroups.size
+                tasksMax = toDoListGroups?.size ?: 0
                 tasksCount = 0
-                toDoListGroups.forEach { toDoListGroup ->
+                toDoListGroups?.forEach { toDoListGroup ->
                     if (!appDb.getToDoGroupsDao().checkIfGroupCollectionExist(toDoListGroup.groupId)) {
                         appDb.getToDoGroupsDao().insertToDoGroups(toDoListGroup)
                     }
@@ -1117,11 +1123,11 @@ class OfflineDataRepository(
         toDoListGroups.postValue(toDoListGroupsResponse.toDoListGroups)
     }
 
-    private fun postEvent(result: XIResult<Boolean>) {
+    private fun postEvent(result: XIResult<Boolean>) = Coroutines.main {
         databaseStatus.postValue(XIEvent(result))
     }
 
-    private fun postStatus(message: String) {
+    private fun postStatus(message: String) = Coroutines.main {
         val status = Status(message)
         postEvent(status)
     }

@@ -27,6 +27,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobSectionDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectSectionDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.SectionPointDTO
 import za.co.xisystems.itis_rrm.data.repositories.JobCreationDataRepository
+import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import za.co.xisystems.itis_rrm.utils.Utils.round
 
@@ -55,7 +56,7 @@ class DeferredLocationViewModel(
         geoCodingResult = MutableLiveData()
     }
 
-    suspend fun checkLocations(jobId: String) = viewModelScope.launch(ioContext) {
+    fun checkLocations(jobId: String) = viewModelScope.launch(ioContext) {
         // geoCodingResult = MutableLiveData()
 
         val locationJob = jobCreationDataRepository.getUpdatedJob(jobId)
@@ -136,6 +137,7 @@ class DeferredLocationViewModel(
         // jobItemEstimates processed
         try {
             if (!validProjectSectionId.isNullOrBlank() && locationJob.isGeoCoded()) {
+
                 val updatedJobId = updateOrCreateJobSection(locationJob, validProjectSectionId!!)
                 if (updatedJobId.isNullOrBlank()) {
                     failLocationValidation("Failed to create job section")
@@ -150,16 +152,14 @@ class DeferredLocationViewModel(
                         .getString(R.string.location_general_failure)
                 )
             }
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             val message = "Failed to save geocoded job: ${e.message ?: XIErrorHandler.UNKNOWN_ERROR}"
             Timber.e(e, message)
-            withContext(mainContext) {
-                geoCodingResult.value = XIEvent(XIResult.Error(e, message))
-            }
+            handleLocationError(XIResult.Error(e, message))
         }
     }
 
-    private suspend fun DeferredLocationViewModel.processRouteSectionError(
+    private suspend fun processRouteSectionError(
         routeSectionResponse: XIResult.Error,
         uncheckedPhoto: JobItemEstimatesPhotoDTO,
         uncheckedEstimate: JobItemEstimateDTO,
@@ -175,6 +175,7 @@ class DeferredLocationViewModel(
             estIndex = estIndex,
             phIndex = phIndex
         )
+
         if (routeSectionResponse.exception is LocationException) {
             return // Process the next photo
         } else {
@@ -182,17 +183,18 @@ class DeferredLocationViewModel(
         }
     }
 
-    private fun handleLocationError(projectSectionIdResponse: XIResult.Error) {
-        if (projectSectionIdResponse.exception is LocationException) {
+    private fun handleLocationError(validationException: XIResult.Error) {
+
+        if (validationException.exception is LocationException) {
             return
         } else {
-            pushNonLocationException(projectSectionIdResponse)
+            pushNonLocationException(validationException)
         }
     }
 
-    private fun pushNonLocationException(locationError: XIResult.Error) = viewModelScope.launch(mainContext) {
-        Timber.e(locationError.exception, locationError.message)
-        geoCodingResult.value = XIEvent(locationError)
+    private fun pushNonLocationException(operationException: XIResult.Error) = viewModelScope.launch(mainContext) {
+        Timber.e(operationException.exception, operationException.message)
+        geoCodingResult.value = XIEvent(operationException)
     }
 
     private fun failLocationValidation(message: String) = viewModelScope.launch(mainContext) {
@@ -200,9 +202,8 @@ class DeferredLocationViewModel(
             XIEvent(
                 XIResult.Error(
                     LocationException(
-                        "One or more locations could not be validated.\n" +
-                            "Check estimates for details."
-                    ), message
+                        message
+                    ), "One or more locations could not be verified"
                 )
             )
     }
@@ -322,8 +323,8 @@ class DeferredLocationViewModel(
             val projectSection = jobCreationDataRepository.getSection(projectSectionId)
             if (!jobCreationDataRepository
                     .checkIfJobSectionExistForJobAndProjectSection(
-                        jobId = jobToUpdate.jobId,
-                        projectSectionId = projectSection.sectionId
+                        jobId = DataConversion.toLittleEndian(jobToUpdate.jobId),
+                        projectSectionId = DataConversion.toLittleEndian(projectSection.sectionId)
                     )
             ) {
                 val newJobSections = jobToUpdate.jobSections as MutableList<JobSectionDTO>
@@ -356,11 +357,7 @@ class DeferredLocationViewModel(
                 newJobItemEstimatesList = jobToUpdate.jobItemEstimates,
                 jobItemSectionArrayList = jobToUpdate.jobSections
             )
-            if (locationResult != null) {
-                return@withContext handleResult(locationResult)
-            } else {
-                return@withContext null
-            }
+            return@withContext handleResult(locationResult)
         } catch (e: Exception) {
             Timber.e(e, "Could not save updated job.")
             return@withContext null
@@ -371,12 +368,12 @@ class DeferredLocationViewModel(
         geoCodingResult = MutableLiveData()
     }
 
-    private suspend fun handleResult(locationResult: XIResult<JobDTO>): String? = withContext(ioContext) {
+    private suspend fun handleResult(jobResult: XIResult<JobDTO>): String? = withContext(ioContext) {
         var result: String? = null
 
-        when (locationResult) {
+        when (jobResult) {
             is XIResult.Success -> {
-                val updatedJob = locationResult.data
+                val updatedJob = jobResult.data
                 if (updatedJob.sectionId != null && updatedJob.jobSections.size >= 1) {
                     withContext(mainContext) {
                         result = updatedJob.jobId
@@ -385,12 +382,12 @@ class DeferredLocationViewModel(
             }
             is XIResult.Error -> {
                 withContext(mainContext) {
-                    geoCodingResult.value = XIEvent(locationResult)
+                    geoCodingResult.value = XIEvent(jobResult)
                 }
             }
             else -> {
                 Timber.e("^*^ - 3rd Outcome")
-                Timber.e("$locationResult")
+                Timber.e("$jobResult")
             }
         }
         return@withContext result

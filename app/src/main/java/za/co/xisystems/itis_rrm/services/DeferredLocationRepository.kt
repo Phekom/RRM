@@ -1,6 +1,5 @@
 package za.co.xisystems.itis_rrm.services
 
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.custom.errors.LocationException
@@ -12,12 +11,16 @@ import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
 import za.co.xisystems.itis_rrm.data.network.responses.RouteSectionPointResponse
 import za.co.xisystems.itis_rrm.domain.SectionBorder
+import za.co.xisystems.itis_rrm.forge.DefaultDispatcherProvider
+import za.co.xisystems.itis_rrm.forge.DispatcherProvider
 import za.co.xisystems.itis_rrm.utils.Utils.round
 import kotlin.math.abs
+
 
 class DeferredLocationRepository(
     private val api: BaseConnectionApi,
     private val appDb: AppDatabase,
+    private val dispatchers: DispatcherProvider = DefaultDispatcherProvider()
 ) : SafeApiRequest() {
 
     companion object {
@@ -28,7 +31,7 @@ class DeferredLocationRepository(
     @Suppress("MagicNumber")
     suspend fun getRouteSectionPoint(
         locationQuery: LocationValidation
-    ): XIResult<LocationValidation> = withContext(Dispatchers.IO) {
+    ): XIResult<LocationValidation> = withContext(dispatchers.io()) {
         var result: XIResult<LocationValidation> =
             XIResult.Error(
                 NoDataException("No response from the service"),
@@ -36,7 +39,7 @@ class DeferredLocationRepository(
             )
         try {
 
-            val routeSectionPointResponse: RouteSectionPointResponse =
+            val routeSectionPointResponse: RouteSectionPointResponse? =
                 apiRequest {
                     api.getRouteSectionPoint(
                         distance = DISTANCE.toDouble(),
@@ -46,16 +49,22 @@ class DeferredLocationRepository(
                         userId = locationQuery.userId
                     )
                 }
-            with(routeSectionPointResponse) {
+            with(routeSectionPointResponse!!) {
                 Timber.d("$routeSectionPointResponse")
 
                 if (!errorMessage.isNullOrBlank()) {
                     throw ServiceException(errorMessage)
                 }
 
-                if (linearId.contains("xxx" as CharSequence, ignoreCase = true).or(linearId.isBlank()) ||
-                    bufferLocation.contains("xxx" as CharSequence, ignoreCase = true).or(bufferLocation.isBlank())
+                // Interim fix until buffered routes
+                val bufferLocations =
+                    bufferLocation.split(";", ignoreCase = true, limit = 0)
+                        .map { item -> item.trim() }.firstOrNull { item ->
+                            !item.contains("xxx" as CharSequence, ignoreCase = true) && item != ""
+                        }
 
+                if (linearId.contains("xxx" as CharSequence, ignoreCase = true)
+                        .or(linearId.isBlank()).or(bufferLocations.isNullOrEmpty())
                 ) {
 
                     throw LocationException(
@@ -83,7 +92,7 @@ class DeferredLocationRepository(
     @Suppress("MagicNumber")
     suspend fun saveRouteSectionPoint(
         routeSectionQuery: LocationValidation
-    ): XIResult<LocationValidation> = withContext(Dispatchers.IO) {
+    ): XIResult<LocationValidation> = withContext(dispatchers.io()) {
         val name = object {}.javaClass.enclosingMethod?.name
         Timber.d("x -> $name")
         var projectSectionId: String? = null
@@ -144,7 +153,7 @@ class DeferredLocationRepository(
         linearId: String,
         pointLocation: Double,
         direction: String
-    ): XIResult<LocationValidation> = withContext(Dispatchers.IO) {
+    ): XIResult<LocationValidation> = withContext(dispatchers.io()) {
         var result = "Photo falls outside of the active project scope."
 
         val closestEndKm =
@@ -179,7 +188,7 @@ class DeferredLocationRepository(
     private suspend fun validateRouteSection(
         projectId: String,
         locationValidationData: LocationValidation
-    ): XIResult<LocationValidation> = withContext(Dispatchers.IO) {
+    ): XIResult<LocationValidation> = withContext(dispatchers.io()) {
 
         val message = "This photograph was not taken within 50 metres of a national road"
         var result: XIResult<LocationValidation> =

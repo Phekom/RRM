@@ -45,7 +45,7 @@ open class ProjectItem(
         extras[INSET_TYPE_KEY] = INSET
     }
 
-    var clickListener: ((ProjectItem) -> Unit)? = null
+    private var clickListener: ((ProjectItem) -> Unit)? = null
     override fun getLayout() = R.layout.new_job_item
     private var jobItemEstimate: JobItemEstimateDTO? = null
     override fun bind(viewBinding: NewJobItemBinding, position: Int) {

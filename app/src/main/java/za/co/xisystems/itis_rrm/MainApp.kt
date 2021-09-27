@@ -79,7 +79,7 @@ open class MainApp : Application(), DIAware {
         bind { singleton { AppDatabase(instance(), instance()) } }
         bind { singleton { PreferenceProvider(instance()) } }
         bind { singleton { UserRepository(instance(), instance()) } }
-        bind { singleton { OfflineDataRepository(instance(), instance(), instance()) } }
+        bind { singleton { OfflineDataRepository(api = instance(), appDb = instance(), photoUtil = instance()) } }
         bind { singleton { JobCreationDataRepository(instance(), instance(), instance()) } }
         bind { singleton { JobApprovalDataRepository(instance(), instance()) } }
         bind { singleton { WorkDataRepository(instance(), instance(), instance()) } }
@@ -91,9 +91,9 @@ open class MainApp : Application(), DIAware {
         bind {
             provider {
                 HomeViewModelFactory(
-                    instance(),
-                    instance(),
-                    this@MainApp
+                    repository = instance(),
+                    offlineDataRepository = instance(),
+                    application = this@MainApp
                 )
             }
         }

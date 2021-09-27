@@ -5,8 +5,8 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.BuildConfig
@@ -30,16 +30,15 @@ val uncaughtExceptionHandler = CoroutineExceptionHandler { _, exception ->
         }
     }
 }
-
+val defaultContext = Dispatchers.Default + Job()
 /**
  *
  * @param block [@kotlin.ExtensionFunctionType] SuspendFunction1<CoroutineScope, T>
  * @return Lazy<Deferred<T>>
  */
-@DelicateCoroutinesApi
 fun <T> lazyDeferred(block: suspend CoroutineScope.() -> T): Lazy<Deferred<T>> {
     return lazy {
-        GlobalScope.async(start = CoroutineStart.LAZY) {
+        CoroutineScope(defaultContext).async(start = CoroutineStart.LAZY) {
             block.invoke(this)
         }
     }

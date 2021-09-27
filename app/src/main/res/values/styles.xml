@@ -22,7 +22,7 @@
 <!--    </style>-->
 
     <style name="ActionBarTheme"  parent="ThemeOverlay.MaterialComponents.ActionBar">
-<!--        <item name="android:textColorPrimary">@android:color/white</item>-->
+        <item name="android:textColorPrimary">@android:color/white</item>
 <!--        <item name="android:textColorSecondary">@color/itis_silver</item>-->
     </style>
 

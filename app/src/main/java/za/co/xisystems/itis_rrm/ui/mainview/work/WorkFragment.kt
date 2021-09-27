@@ -8,6 +8,7 @@
 
 package za.co.xisystems.itis_rrm.ui.mainview.work
 
+import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -15,6 +16,7 @@ import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.core.content.ContextCompat
 import androidx.core.view.doOnNextLayout
 import androidx.lifecycle.ViewModelProvider
@@ -22,6 +24,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenCreated
 import androidx.lifecycle.whenResumed
 import androidx.lifecycle.whenStarted
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.ExpandableGroup
@@ -108,6 +111,20 @@ class WorkFragment : BaseFragment(), DIAware {
         }
     }
 
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        val callback: OnBackPressedCallback = object : OnBackPressedCallback(true) {
+            /**
+             * Callback for handling the [OnBackPressedDispatcher.onBackPressed] event.
+             */
+            override fun handleOnBackPressed() {
+                this@WorkFragment.findNavController().popBackStack(R.id.nav_home, false)
+            }
+        }
+        requireActivity().onBackPressedDispatcher
+            .addCallback(this, callback)
+    }
+
     private suspend fun refreshEstimateJobsFromLocal() {
         ui.veiledWorkListView.veil()
         withContext(uiScope.coroutineContext) {
@@ -177,6 +194,7 @@ class WorkFragment : BaseFragment(), DIAware {
 
     private fun fetchJobsFromService() = uiScope.launch(uiScope.coroutineContext) {
         try {
+            toggleLongRunning(true)
             ui.veiledWorkListView.veil()
             veiled = true
             withContext(uiScope.coroutineContext) {
@@ -193,6 +211,8 @@ class WorkFragment : BaseFragment(), DIAware {
             )
         } finally {
             ui.worksSwipeToRefresh.isRefreshing = false
+            toggleLongRunning(false)
+            ui.veiledWorkListView.unVeil()
         }
     }
 

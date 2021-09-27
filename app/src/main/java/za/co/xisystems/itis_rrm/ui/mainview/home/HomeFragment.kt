@@ -276,7 +276,7 @@ class HomeFragment : BaseFragment(), DIAware {
         }
         ui.pvSections.setOnProgressChangeListener {
             when {
-                it >= 0 -> ui.pvSections.labelText = "services ${it.toInt()}%"
+                it >= 0 -> ui.pvSections.labelText = "goods and services ${it.toInt()}%"
                 it == progressComplete -> {
                     maxOutPv(ui.pvSections, "goods synched")
                 }
@@ -304,13 +304,13 @@ class HomeFragment : BaseFragment(), DIAware {
 
     private fun isAppDbSynched() {
         uiScope.launch(uiScope.coroutineContext) {
-            homeViewModel.bigSyncCheck()
             homeViewModel.bigSyncDone.observeOnce(viewLifecycleOwner, {
                 Timber.d("Synced: $it")
                 if (!it) {
                     promptUserToSync()
                 }
             })
+            homeViewModel.bigSyncCheck()
         }
     }
 
@@ -532,45 +532,55 @@ class HomeFragment : BaseFragment(), DIAware {
     }
 
     private fun servicesHealthCheck() = uiScope.launch(uiScope.coroutineContext) {
-        if (!activity?.isFinishing!!) {
-            try {
-
-                if (userDTO != null && networkEnabled && homeViewModel.healthCheck(userDTO!!.userId)) {
-                    ui.connectedTo.text = getString(R.string.services_up, BuildConfig.VERSION_NAME)
-                    ui.connectedTo.setTextColor(colorConnected)
-                    ui.ivCloud.setImageDrawable(
-                        ContextCompat.getDrawable(
-                            this@HomeFragment.requireContext(),
-                            R.drawable.ic_baseline_services_up
+        if (!activity?.isFinishing!! && userDTO != null && networkEnabled) {
+            homeViewModel.healthState.observe(viewLifecycleOwner, { result ->
+                when (result) {
+                    is XIResult.Success -> {
+                        updateServiceHealth(result.data)
+                    }
+                    is XIResult.Error -> {
+                        crashGuard(
+                            this@HomeFragment.requireView(),
+                            result,
+                            refreshAction = { this@HomeFragment.retryHealthCheck() }
                         )
-                    )
-                } else {
-                    ui.connectedTo.text = getString(R.string.services_down, BuildConfig.VERSION_NAME)
-                    ui.connectedTo.setTextColor(colorNotConnected)
-                    ui.ivCloud.setImageDrawable(
-                        ContextCompat.getDrawable(
-                            this@HomeFragment.requireContext(),
-                            R.drawable.ic_baseline_services_down
-                        )
-                    )
+                    }
+                    else -> {
+                        Timber.d("$result")
+                    }
                 }
-            } catch (t: Throwable) {
-                val message = "Could not check service health: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
-                Timber.e(t, message)
-                this@HomeFragment.view?.let {
-                    val fetchError = XIResult.Error(t, message)
-                    crashGuard(
-                        this@HomeFragment.requireView(),
-                        fetchError,
-                        refreshAction = { this@HomeFragment.retryHealthCheck() }
-                    )
-                }
-            }
+            })
+            homeViewModel.healthCheck(userDTO!!.userId)
         }
     }
 
     private fun retryHealthCheck() {
         IndefiniteSnackbar.hide()
         servicesHealthCheck()
+    }
+
+    private fun updateServiceHealth(serviceHealthy: Boolean) {
+        when (serviceHealthy) {
+            true -> {
+                ui.connectedTo.text = getString(R.string.services_up, BuildConfig.VERSION_NAME)
+                ui.connectedTo.setTextColor(colorConnected)
+                ui.ivCloud.setImageDrawable(
+                    ContextCompat.getDrawable(
+                        this@HomeFragment.requireContext(),
+                        R.drawable.ic_baseline_services_up
+                    )
+                )
+            }
+            else -> {
+                ui.connectedTo.text = getString(R.string.services_down, BuildConfig.VERSION_NAME)
+                ui.connectedTo.setTextColor(colorNotConnected)
+                ui.ivCloud.setImageDrawable(
+                    ContextCompat.getDrawable(
+                        this@HomeFragment.requireContext(),
+                        R.drawable.ic_baseline_services_down
+                    )
+                )
+            }
+        }
     }
 }
