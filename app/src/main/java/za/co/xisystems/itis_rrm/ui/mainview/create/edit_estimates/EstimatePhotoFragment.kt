@@ -684,14 +684,12 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
     ) {
         try {
             toggleLongRunning(true)
-            withContext(uiScope.coroutineContext) {
-                if (!this@EstimatePhotoFragment.disableGlide) {
-                    placeProvisionalPhoto(
-                        filePath,
-                        estimateLocation,
-                        itemidPhototype
-                    )
-                }
+            if (!this@EstimatePhotoFragment.disableGlide) {
+                placeProvisionalPhoto(
+                    filePath,
+                    estimateLocation,
+                    itemidPhototype
+                )
             }
         } catch (t: Throwable) {
             disableGlide = true

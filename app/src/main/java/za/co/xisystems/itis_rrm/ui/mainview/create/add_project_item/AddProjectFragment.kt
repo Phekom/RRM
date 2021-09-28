@@ -747,7 +747,7 @@ class AddProjectFragment : BaseFragment(), DIAware {
             is XIResult.Success -> {
                 toggleLongRunning(false)
                 withContext(Dispatchers.Main.immediate) {
-                    this@AddProjectFragment.extensionToast(
+                    this@AddProjectFragment.requireActivity().extensionToast(
                         message = getString(R.string.job_submitted),
                         style = ToastStyle.SUCCESS
                     )
