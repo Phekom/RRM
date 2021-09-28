@@ -267,31 +267,24 @@ class JobCreationDataRepository(
 
     @Suppress("TooGenericExceptionCaught")
     suspend fun submitJob(userId: Int, job: JobDTO): WorkflowJobDTO = withContext(dispatchers.io()) {
+        val jobData = JsonObject()
+        val gson = Gson()
+        val newJob = gson.toJson(job)
+        val jsonElement: JsonElement = JsonParser.parseString(newJob)
+        jobData.add("Job", jsonElement)
+        jobData.addProperty("UserId", userId)
+        Timber.d("Json Job: $jobData")
 
-        try {
-            val jobData = JsonObject()
-            val gson = Gson()
-            val newJob = gson.toJson(job)
-            val jsonElement: JsonElement = JsonParser.parseString(newJob)
-            jobData.add("Job", jsonElement)
-            jobData.addProperty("UserId", userId)
-            Timber.d("Json Job: $jobData")
+        val jobResponse = apiRequest { api.sendJobsForApproval(jobData) }
 
-            val jobResponse = apiRequest { api.sendJobsForApproval(jobData) }
+        jobResponse.errorMessage?.let {
+            throw ServiceException(jobResponse.errorMessage)
+        }
 
-            jobResponse.errorMessage?.let {
-                throw ServiceException(jobResponse.errorMessage)
-            }
-
-            if (jobResponse.workflowJob != null) {
-                return@withContext jobResponse.workflowJob!!
-            } else {
-                throw NoDataException("Server returned empty workflow response.")
-            }
-        } catch (e: Exception) {
-            val message = e.message ?: XIErrorHandler.UNKNOWN_ERROR
-            Timber.e(e, "Failed to submit job: $message")
-            throw e
+        if (jobResponse.workflowJob != null) {
+            return@withContext jobResponse.workflowJob!!
+        } else {
+            throw NoDataException("Server returned empty workflow response.")
         }
     }
 
@@ -308,7 +301,7 @@ class JobCreationDataRepository(
             activity = activity
         )
 
-        return@withContext getUpdatedJob(DataConversion.toBigEndian(job.jobId)!!)
+        return@withContext getUpdatedJob(translatedJob.jobId!!)
     }
 
     suspend fun getUpdatedJob(jobId: String): JobDTO {
@@ -412,7 +405,7 @@ class JobCreationDataRepository(
     private suspend fun uploadCreateJobImages(
         packageJob: JobDTO,
         activity: FragmentActivity
-    ) = Coroutines.api {
+    ) {
 
         var jobCounter = 1
         val totalJobs = packageJob.jobItemEstimates.size
@@ -452,7 +445,7 @@ class JobCreationDataRepository(
         photoQuality: PhotoQuality,
         imageCounter: Int,
         totalImages: Int
-    ) = Coroutines.io {
+    ) {
 
         val data: ByteArray = getData(filename, photoQuality)
         processImageUpload(
@@ -477,13 +470,13 @@ class JobCreationDataRepository(
         )
     }
 
-    private fun processImageUpload(
+    private suspend fun processImageUpload(
         filename: String,
         extension: String,
         photo: ByteArray,
         totalImages: Int,
         imageCounter: Int
-    ) = Coroutines.api {
+    ) {
         val imageData = JsonObject()
         imageData.addProperty("Filename", filename)
         imageData.addProperty("ImageByteArray", photoUtil.encode64Pic(photo))

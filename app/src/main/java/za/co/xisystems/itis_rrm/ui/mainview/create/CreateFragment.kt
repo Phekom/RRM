@@ -49,6 +49,7 @@ import za.co.xisystems.itis_rrm.data.network.OfflineListener
 import za.co.xisystems.itis_rrm.databinding.FragmentCreatejobBinding
 import za.co.xisystems.itis_rrm.domain.ContractSelector
 import za.co.xisystems.itis_rrm.domain.ProjectSelector
+import za.co.xisystems.itis_rrm.ui.extensions.crashGuard
 import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper.setSpinner
@@ -175,9 +176,8 @@ class CreateFragment : BaseFragment(), OfflineListener, DIAware {
         } catch (t: Throwable) {
             val contractErr = XIResult.Error(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
             crashGuard(
-                view = this.requireView(),
                 throwable = contractErr,
-                refreshAction = { retryContracts() }
+                refreshAction = { this.retryContracts() }
             )
         }
     }
@@ -336,16 +336,15 @@ class CreateFragment : BaseFragment(), OfflineListener, DIAware {
         } catch (t: Throwable) {
             val contractErr = XIResult.Error(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
             crashGuard(
-                this.requireView(),
-                contractErr,
-                refreshAction = { retryContracts() }
+                throwable = contractErr,
+                refreshAction = { this.retryContracts() }
             )
         } finally {
             ui.dataLoading.hide()
         }
     }
 
-    private fun retryContracts() {
+    fun retryContracts() {
         IndefiniteSnackbar.hide()
         setContract()
     }
@@ -421,9 +420,6 @@ class CreateFragment : BaseFragment(), OfflineListener, DIAware {
     override fun onAttach(context: Context) {
         super.onAttach(context)
         val callback: OnBackPressedCallback = object : OnBackPressedCallback(true) {
-            /**
-             * Callback for handling the [OnBackPressedDispatcher.onBackPressed] event.
-             */
             override fun handleOnBackPressed() {
                 this@CreateFragment.findNavController().popBackStack(R.id.nav_home, false)
             }

@@ -50,6 +50,7 @@ object XIErrorHandler {
             refreshAction = errorAction.refreshAction
         )
     }
+
     fun handleError(
         fragment: Fragment? = null,
         view: View,
@@ -59,12 +60,12 @@ object XIErrorHandler {
         refreshAction: () -> Unit = {}
     ) {
         if (shouldShowSnackBar) {
-            showSnackBar(view, message = throwable.message, refresh = refreshAction)
+            showSnackBar(view, message = humanReadable(throwable), refresh = refreshAction)
         } else {
             if (shouldToast) {
                 // If we don't have a fragment, fallback to dry toast'
                 if (fragment != null) {
-                    fragment.extensionToast(throwable.message, ToastStyle.ERROR, title = null)
+                    fragment.extensionToast(message = humanReadable(throwable), style = ToastStyle.ERROR, title = null)
                 } else {
                     showMessage(view, throwable.message)
                 }
@@ -100,4 +101,39 @@ object XIErrorHandler {
         message,
         Toast.LENGTH_LONG
     ).show()
+
+    fun humanReadable(throwable: XIResult.Error): String {
+        return when (throwable.exception) {
+            is NoInternetException -> {
+                Timber.e(NO_INTERNET_RESPONSE)
+                NO_INTERNET_RESPONSE
+            }
+            is NoConnectivityException -> {
+                Timber.e(NO_CONNECTIVITY_RESPONSE)
+                NO_CONNECTIVITY_RESPONSE
+            }
+            is ServiceHostUnreachableException -> {
+                Timber.e(SERVICE_HOST_UNREACHABLE)
+                SERVICE_HOST_UNREACHABLE
+            }
+            is HttpException -> {
+                Timber.e(
+                    "HTTP Exception: ${throwable.exception.code()}"
+                )
+                "HTTP Exception: ${throwable.exception.code()}"
+            }
+            is NoResponseException -> {
+                Timber.e(EMPTY_RESPONSE)
+                EMPTY_RESPONSE
+            }
+            is NoDataException -> {
+                Timber.e(NO_SUCH_DATA)
+                NO_SUCH_DATA
+            }
+            else -> {
+                Timber.e(throwable.message)
+                throwable.message
+            }
+        }
+    }
 }

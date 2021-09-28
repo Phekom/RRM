@@ -17,10 +17,12 @@ import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.os.HandlerCompat
+import androidx.core.view.isNotEmpty
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenCreated
+import androidx.lifecycle.whenResumed
 import androidx.lifecycle.whenStarted
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.navArgs
@@ -30,6 +32,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.Section
 import com.xwray.groupie.viewbinding.GroupieViewHolder
+import kotlinx.android.synthetic.main.content_main.*
 import kotlinx.android.synthetic.main.fragment_add_project_items.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -44,12 +47,9 @@ import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.constants.Constants.ONE_SECOND
 import za.co.xisystems.itis_rrm.constants.Constants.TWO_SECONDS
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
-import za.co.xisystems.itis_rrm.custom.notifications.ColorToast
 import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration
 import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity
 import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
-import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.ERROR
-import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.WARNING
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.JobDataController
@@ -62,6 +62,8 @@ import za.co.xisystems.itis_rrm.extensions.isConnected
 import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.services.DeferredLocationViewModel
 import za.co.xisystems.itis_rrm.services.DeferredLocationViewModelFactory
+import za.co.xisystems.itis_rrm.ui.extensions.crashGuard
+import za.co.xisystems.itis_rrm.ui.extensions.doneProgress
 import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.extensions.failProgress
 import za.co.xisystems.itis_rrm.ui.extensions.initProgress
@@ -143,6 +145,11 @@ class AddProjectFragment : BaseFragment(), DIAware {
                 initViewModels()
                 uiUpdate()
             }
+            whenResumed {
+                if (ui.projectRecyclerView.isNotEmpty()) {
+                    calculateTotalCost()
+                }
+            }
         }
     }
 
@@ -152,6 +159,7 @@ class AddProjectFragment : BaseFragment(), DIAware {
         private const val INVALID_ACTIVITY = "Invalid Activity"
     }
 
+    @Suppress("TooGenericExceptionThrown", "ThrowsCount")
     private fun initViewModels() {
         createViewModel = activity?.run {
             ViewModelProvider(this, createFactory).get(CreateViewModel::class.java)
@@ -216,12 +224,13 @@ class AddProjectFragment : BaseFragment(), DIAware {
         deferredLocationViewModel.resetGeoCodingResult()
         createViewModel.jobForValidation.removeObservers(viewLifecycleOwner)
         createViewModel.jobForSubmission.removeObservers(viewLifecycleOwner)
+        createViewModel.resetValidationState()
         Coroutines.main {
             initValidationListener()
         }
     }
 
-    private suspend fun initValidationListener() = withContext(Dispatchers.Main) {
+    private suspend fun initValidationListener() = withContext(dispatchers.main()) {
         deferredLocationViewModel.geoCodingResult.observeOnce(
             viewLifecycleOwner, { result ->
                 result.getContentIfNotHandled()?.let { outcome ->
@@ -306,7 +315,7 @@ class AddProjectFragment : BaseFragment(), DIAware {
                     bindProjectItems()
                     if (job.actId == 1) {
                         ui.addItemButton.visibility = View.INVISIBLE
-                        ui.submitButton.text = "Complete Upload"
+                        ui.submitButton.text = getString(R.string.complete_upload)
                     }
                 }
             }
@@ -417,18 +426,19 @@ class AddProjectFragment : BaseFragment(), DIAware {
                         createViewModel.setJobToEdit(restoredId)
                         withContext(Dispatchers.Main.immediate) {
                             uiUpdate()
+                            stateRestored = true
                         }
                     }
                 }
             }
-            stateRestored = true
         }
     }
 
     private fun initRecyclerView(projectListItems: List<ProjectItem>) {
         groupAdapter = GroupAdapter<GroupieViewHolder<NewJobItemBinding>>().apply {
-            addAll(projectListItems)
+            update(projectListItems)
             notifyDataSetChanged()
+            calculateTotalCost()
         }
 
         ui.projectRecyclerView.apply {
@@ -494,17 +504,19 @@ class AddProjectFragment : BaseFragment(), DIAware {
         ui.infoTextView.setOnClickListener(myClickListener)
     }
 
-    private suspend fun AddProjectFragment.executeWorkflow() {
+    private suspend fun executeWorkflow() {
         when (job.actId) {
             ActivityIdConstants.JOB_PENDING_UPLOAD -> {
+                createViewModel.resetUploadState()
                 initReUploadListener()
-                if (this@AddProjectFragment::job.isInitialized) {
-                    createViewModel.setJobForReUpload(job.jobId)
-                }
+                createViewModel.setJobForReUpload(job.jobId)
+                toggleLongRunning(true)
+                ui.submitButton.initProgress(viewLifecycleOwner)
+                ui.submitButton.startProgress("Uploading job ...")
             }
             else -> {
                 resetValidationListener()
-                validateJob()
+                validateJob(job)
             }
         }
     }
@@ -533,25 +545,29 @@ class AddProjectFragment : BaseFragment(), DIAware {
             .navigate(navDirection)
     }
 
-    private suspend fun validateJob() = uiScope.launch(uiScope.coroutineContext) {
+    private suspend fun validateJob(invalidJob: JobDTO) = uiScope.launch(uiScope.coroutineContext) {
 
-        if (job.jobId.isNotEmpty() && validateCalendar()) {
+        if (invalidJob.jobId.isNotEmpty() && validateCalendar()) {
 
-            withContext(Dispatchers.Main) {
-                if (!JobUtils.areQuantitiesValid(job)) {
+            withContext(dispatchers.main()) {
+                if (!JobUtils.areQuantitiesValid(invalidJob)) {
                     this@AddProjectFragment.extensionToast(
                         message = "Error: incomplete estimates.\n Quantity can't be zero!",
-                        style = WARNING
+                        style = ToastStyle.WARNING
                     )
                     ui.itemsCardView.startAnimation(shake_long)
                 } else {
-                    validateLocations(job)
+                    if (!invalidJob.isGeoCoded()) {
+                        validateLocations(invalidJob)
+                    } else {
+                        createViewModel.setJobToValidate(invalidJob.jobId)
+                    }
                 }
             }
         }
     }
 
-    private suspend fun processLocationResult(result: XIResult<String>) = withContext(Dispatchers.Main) {
+    private suspend fun processLocationResult(result: XIResult<String>) = withContext(dispatchers.main()) {
         when (result) {
             is XIResult.Success -> {
                 handleGeoSuccess(result)
@@ -559,20 +575,24 @@ class AddProjectFragment : BaseFragment(), DIAware {
             is XIResult.Error -> {
                 handleGeoError(result)
             }
-            else -> geoLocationFailed()
+            else -> {
+                Timber.d("$result")
+            }
         }
     }
 
     private suspend fun AddProjectFragment.handleGeoError(
         result: XIResult.Error
-    ) = withContext(Dispatchers.Main) {
+    ) = withContext(dispatchers.main()) {
         this@AddProjectFragment.extensionToast(
             title = "Location Validation",
             message = result.exception.message.toString(),
-            style = ERROR
+            style = ToastStyle.ERROR
         )
-        crashGuard(this@AddProjectFragment.requireView(), result,
-            refreshAction = { Coroutines.main { this@AddProjectFragment.validateJob() } })
+        crashGuard(
+            throwable = result,
+            refreshAction = { Coroutines.main { this@AddProjectFragment.validateJob(job) } }
+        )
         geoLocationFailed()
     }
 
@@ -588,41 +608,35 @@ class AddProjectFragment : BaseFragment(), DIAware {
         onGeoLocationFailed()
     }
 
-    private suspend fun validateLocations(job: JobDTO) = withContext(Dispatchers.Main) {
+    private suspend fun validateLocations(job: JobDTO) = withContext(dispatchers.io()) {
         createViewModel.backupJob(job)
-        toggleLongRunning(true)
-        ui.submitButton.initProgress(viewLifecycleOwner)
-        ui.submitButton.startProgress("Checking locations ...")
+        withContext(dispatchers.ui()) {
+            toggleLongRunning(true)
+            ui.submitButton.initProgress(viewLifecycleOwner)
+            ui.submitButton.startProgress("Checking locations ...")
+        }
         deferredLocationViewModel.checkLocations(job.jobId)
     }
 
-    private suspend fun validateEstimates(updatedJob: JobDTO) = withContext(Dispatchers.Main) {
+    private suspend fun validateEstimates(updatedJob: JobDTO) = withContext(dispatchers.io()) {
         val validated = createViewModel.areEstimatesValid(updatedJob, ArrayList(items))
 
-        if (!validated) {
-            onInvalidJob()
-        } else {
-            withContext(Dispatchers.Main.immediate) {
-                ui.submitButton.initProgress(viewLifecycleOwner)
-                ui.submitButton.startProgress("Submitting data ...")
+        withContext(dispatchers.ui()) {
+
+            if (!validated) {
+                onInvalidJob()
+            } else {
                 updatedJob.issueDate = DateUtil.dateToString(Date())
                 createViewModel.backupJob(updatedJob)
                 createViewModel.setJobForSubmission(updatedJob.jobId)
             }
+
         }
     }
 
     private fun onGeoLocationFailed() {
         Coroutines.ui {
-            val errorToast = ColorToast(
-                title = "Location Verification Failed",
-                message = "One or more work locations could not be verified.\n" +
-                    "Check estimates for more information.",
-                style = ERROR,
-                gravity = ToastGravity.CENTER,
-                duration = ToastDuration.LONG
-            )
-            this@AddProjectFragment.extensionToast(errorToast)
+            toggleLongRunning(false)
             HandlerCompat.postDelayed(Handler(Looper.getMainLooper()), {
                 createViewModel.setJobToEdit(job.jobId)
                 initCurrentJobListener()
@@ -643,27 +657,27 @@ class AddProjectFragment : BaseFragment(), DIAware {
 
             if (dueDate < startDate || dueDate < yesterday || dueDate == yesterday
             ) {
-                extensionToast(message = "Please select a valid due date", style = WARNING)
+                extensionToast(message = "Please select a valid due date", style = ToastStyle.WARNING)
                 ui.dueDateCardView.startAnimation(shake_long)
             } else {
                 job.dueDate
                 dueResult = true
             }
         } else {
-            extensionToast(message = "Please select a Due Date", style = WARNING)
+            extensionToast(message = "Please select a Due Date", style = ToastStyle.WARNING)
             ui.dueDateCardView.startAnimation(shake_long)
         }
         if (job.startDate != null) {
             if (startDate < yesterday || dueDate == yesterday
             ) {
-                extensionToast(message = "Please select a valid Start Date", style = WARNING)
+                extensionToast(message = "Please select a valid Start Date", style = ToastStyle.WARNING)
                 ui.dueDateCardView.startAnimation(shake_long)
             } else {
                 job.startDate
                 startResult = true
             }
         } else {
-            extensionToast(message = "Please select Start Date", style = WARNING)
+            extensionToast(message = "Please select Start Date", style = ToastStyle.WARNING)
             ui.startDateCardView.startAnimation(shake_long)
         }
 
@@ -713,6 +727,8 @@ class AddProjectFragment : BaseFragment(), DIAware {
         job: JobDTO
     ) = withContext(uiScope.coroutineContext) {
         toggleLongRunning(true)
+        ui.submitButton.initProgress(viewLifecycleOwner)
+        ui.submitButton.startProgress("Submitting Job ...")
         val jobTemp = jobDataController.setJobLittleEndianGuids(job)
         saveRrmJob(job.userId, jobTemp)
     }
@@ -731,7 +747,7 @@ class AddProjectFragment : BaseFragment(), DIAware {
             is XIResult.Success -> {
                 toggleLongRunning(false)
                 withContext(Dispatchers.Main.immediate) {
-                    this@AddProjectFragment.extensionToast(
+                    this@AddProjectFragment.requireActivity().extensionToast(
                         message = getString(R.string.job_submitted),
                         style = ToastStyle.SUCCESS
                     )
@@ -741,8 +757,8 @@ class AddProjectFragment : BaseFragment(), DIAware {
             is XIResult.Error -> {
                 withContext(Dispatchers.Main.immediate) {
                     toggleLongRunning(false)
+                    ui.submitButton.failProgress("Submission Failed")
                     crashGuard(
-                        view = this@AddProjectFragment.requireView(),
                         throwable = result,
                         refreshAction = { this@AddProjectFragment.resubmitJob() }
                     )
@@ -755,7 +771,7 @@ class AddProjectFragment : BaseFragment(), DIAware {
     }
 
     private fun initReUploadListener() {
-        createViewModel.reUploadEvent.observeOnce(viewLifecycleOwner, { reUploadEvent ->
+        createViewModel.jobForReUpload.observeOnce(viewLifecycleOwner, { reUploadEvent ->
             reUploadEvent.getContentIfNotHandled()?.let { reUploadJob ->
                 Coroutines.main {
                     val result = createViewModel.reUploadJob(
@@ -772,20 +788,23 @@ class AddProjectFragment : BaseFragment(), DIAware {
         toggleLongRunning(false)
         when (result) {
             is XIResult.Success -> {
+                ui.submitButton.doneProgress("Uploaded!")
                 extensionToast(
                     message = "Job: ${job.descr} uploaded successfully",
                     style = ToastStyle.SUCCESS
                 )
                 createViewModel.deleteItemList(job.jobId)
                 createViewModel.deleteJobFromList(job.jobId)
+                toggleLongRunning(false)
                 Navigation.findNavController(this.requireView()).popBackStack(R.id.nav_unSubmitted, false)
             }
             is XIResult.Error -> {
                 extensionToast(
                     title = "Upload failed.",
-                    message = "${result.message} - hit upload arrow to retry.",
+                    message = "${result.message} - please retry again later.",
                     style = ToastStyle.ERROR
                 )
+                ui.submitButton.failProgress("Retry Upload?")
                 createViewModel.resetUploadState()
             }
             else -> {
@@ -849,8 +868,8 @@ class AddProjectFragment : BaseFragment(), DIAware {
         if (this::job.isInitialized) {
             outState.putString(JOB_KEY, job.jobId)
             outState.putString(PROJECT_KEY, job.projectId)
-            super.onSaveInstanceState(outState)
         }
+        super.onSaveInstanceState(outState)
     }
 
     private fun resetContractAndProjectSelection(view: View) {
@@ -860,7 +879,7 @@ class AddProjectFragment : BaseFragment(), DIAware {
 
     private fun onInvalidJob() {
         toggleLongRunning(false)
-        extensionToast(message = "Incomplete estimates!", style = WARNING)
+        extensionToast(message = "Incomplete estimates!", style = ToastStyle.WARNING)
         ui.itemsCardView.startAnimation(shake_long)
     }
 
@@ -871,6 +890,7 @@ class AddProjectFragment : BaseFragment(), DIAware {
         deferredLocationViewModel.geoCodingResult.removeObservers(viewLifecycleOwner)
         createViewModel.jobForValidation.removeObservers(viewLifecycleOwner)
         createViewModel.jobForSubmission.removeObservers(viewLifecycleOwner)
+        createViewModel.jobForReUpload.removeObservers(viewLifecycleOwner)
         uiScope.destroy()
         ui.projectRecyclerView.adapter = null
         _ui = null
@@ -881,12 +901,13 @@ class AddProjectFragment : BaseFragment(), DIAware {
         Timber.d("onStop() has been called.")
     }
 
-    private fun resubmitJob() {
+    fun resubmitJob() {
         IndefiniteSnackbar.hide()
         createViewModel.backupSubmissionJob.observeOnce(viewLifecycleOwner, { retryJobSubmission ->
             retryJobSubmission.getContentIfNotHandled()?.let { repeatJob ->
                 uiScope.launch(uiScope.coroutineContext) {
-                    submitJob(repeatJob)
+                    resetValidationListener()
+                    validateJob(repeatJob)
                 }
             }
         })

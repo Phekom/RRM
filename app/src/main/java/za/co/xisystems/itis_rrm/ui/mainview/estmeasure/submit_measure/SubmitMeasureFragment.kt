@@ -55,6 +55,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentSubmitMeasureBinding
 import za.co.xisystems.itis_rrm.databinding.ItemMeasureHeaderBinding
 import za.co.xisystems.itis_rrm.extensions.observeOnce
+import za.co.xisystems.itis_rrm.ui.extensions.crashGuard
 import za.co.xisystems.itis_rrm.ui.extensions.doneProgress
 import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.extensions.failProgress
@@ -133,8 +134,7 @@ class SubmitMeasureFragment : BaseFragment(), DIAware {
                     )
 
                     crashGuard(
-                        this@SubmitMeasureFragment.requireView(),
-                        outcome,
+                        throwable = outcome,
                         refreshAction = { this@SubmitMeasureFragment.retryMeasurements() })
                 }
                 is XIResult.Status -> {
@@ -441,9 +441,6 @@ class SubmitMeasureFragment : BaseFragment(), DIAware {
             getString(R.string.submit_measure_title)
 
         val callback: OnBackPressedCallback = object : OnBackPressedCallback(true) {
-            /**
-             * Callback for handling the [OnBackPressedDispatcher.onBackPressed] event.
-             */
             override fun handleOnBackPressed() {
                 Navigation.findNavController(this@SubmitMeasureFragment.requireView())
                     .navigate(R.id.nav_estMeasure)

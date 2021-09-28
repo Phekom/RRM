@@ -56,6 +56,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentHomeBinding
 import za.co.xisystems.itis_rrm.extensions.isConnected
 import za.co.xisystems.itis_rrm.extensions.observeOnce
+import za.co.xisystems.itis_rrm.ui.extensions.crashGuard
 import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.Coroutines
@@ -110,7 +111,9 @@ class HomeFragment : BaseFragment(), DIAware {
                 } catch (t: Throwable) {
                     Timber.e(t, "Failed to fetch Section Items.")
                     val xiErr = XIResult.Error(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
-                    crashGuard(this@HomeFragment.requireView(), xiErr, refreshAction = { retrySections() })
+                    crashGuard(
+                        throwable = xiErr,
+                        refreshAction = { this@HomeFragment.retrySections() })
                 } finally {
                     ui.group2Loading.visibility = View.GONE
                 }
@@ -121,7 +124,7 @@ class HomeFragment : BaseFragment(), DIAware {
         }
     }
 
-    private fun retrySections() {
+    fun retrySections() {
         IndefiniteSnackbar.hide()
         uiScope.launch(uiScope.coroutineContext) {
             acquireUser()
@@ -161,13 +164,12 @@ class HomeFragment : BaseFragment(), DIAware {
             Timber.e(t, errorMessage)
             val connectErr = XIResult.Error(t, errorMessage)
             crashGuard(
-                view = this@HomeFragment.requireView(),
                 throwable = connectErr,
-                refreshAction = { retryAcquireUser() })
+                refreshAction = { this.retryAcquireUser() })
         }
     }
 
-    private fun retryAcquireUser() {
+    fun retryAcquireUser() {
         IndefiniteSnackbar.hide()
         uiScope.launch(uiScope.coroutineContext) {
             checkConnectivity()
@@ -382,7 +384,7 @@ class HomeFragment : BaseFragment(), DIAware {
         return result
     }
 
-    private fun retrySync() {
+    fun retrySync() {
         IndefiniteSnackbar.hide()
         bigSync()
     }
@@ -398,7 +400,6 @@ class HomeFragment : BaseFragment(), DIAware {
             } catch (t: Throwable) {
                 val pingEx = XIResult.Error(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
                 crashGuard(
-                    view = this@HomeFragment.requireView(),
                     throwable = pingEx,
                     refreshAction = { this@HomeFragment.retrySync() }
                 )
@@ -433,7 +434,6 @@ class HomeFragment : BaseFragment(), DIAware {
                     )
 
                     crashGuard(
-                        view = this@HomeFragment.requireView(),
                         throwable = result,
                         refreshAction = { this@HomeFragment.retrySync() }
                     )
@@ -502,9 +502,8 @@ class HomeFragment : BaseFragment(), DIAware {
                 val errorMessage = "Failed to download remote data: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
                 Timber.e(t, errorMessage)
                 crashGuard(
-                    this@HomeFragment.requireView(),
-                    XIResult.Error(t, errorMessage),
-                    refreshAction = { retrySync() }
+                    throwable = XIResult.Error(t, errorMessage),
+                    refreshAction = { this@HomeFragment.retrySync() }
                 )
             }
         } else {
@@ -540,8 +539,7 @@ class HomeFragment : BaseFragment(), DIAware {
                     }
                     is XIResult.Error -> {
                         crashGuard(
-                            this@HomeFragment.requireView(),
-                            result,
+                            throwable = result,
                             refreshAction = { this@HomeFragment.retryHealthCheck() }
                         )
                     }
@@ -554,7 +552,7 @@ class HomeFragment : BaseFragment(), DIAware {
         }
     }
 
-    private fun retryHealthCheck() {
+    fun retryHealthCheck() {
         IndefiniteSnackbar.hide()
         servicesHealthCheck()
     }

@@ -3,7 +3,6 @@ package za.co.xisystems.itis_rrm.base
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
-import android.view.View
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.skydoves.androidveil.VeilRecyclerFrameView
@@ -13,6 +12,7 @@ import com.xwray.groupie.GroupieViewHolder
 import za.co.xisystems.itis_rrm.constants.Constants
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.results.XIResult
+import za.co.xisystems.itis_rrm.ui.extensions.crashGuard
 
 abstract class VeiledRecyclerFragment : BaseFragment() {
 
@@ -59,7 +59,6 @@ abstract class VeiledRecyclerFragment : BaseFragment() {
         veiled: Boolean = false,
         fetchQuery: suspend () -> Unit = {},
         retryAction: () -> Unit = {},
-        requiredView: View,
         veilRecyclerFrameView: VeilRecyclerFrameView
     ) {
         try {
@@ -71,7 +70,6 @@ abstract class VeiledRecyclerFragment : BaseFragment() {
             veilRecyclerFrameView.unVeil()
             val xiFail = XIResult.Error(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
             crashGuard(
-                view = requiredView,
                 throwable = xiFail,
                 refreshAction = { retryAction() }
             )

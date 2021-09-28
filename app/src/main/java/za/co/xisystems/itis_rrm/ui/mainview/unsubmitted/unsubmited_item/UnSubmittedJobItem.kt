@@ -108,7 +108,7 @@ class UnSubmittedJobItem(
             Coroutines.main {
                 try {
                     createModel.setJobForReUpload(jobDTO.jobId)
-                    createModel.reUploadEvent.observeOnce(fragment.viewLifecycleOwner, { event ->
+                    createModel.jobForReUpload.observeOnce(fragment.viewLifecycleOwner, { event ->
                         event.getContentIfNotHandled()?.let { incompleteJob ->
                             Coroutines.main {
                                 fragment.toggleLongRunning(true)

@@ -49,10 +49,10 @@ class XIArmoury private constructor(
             return instance ?: synchronized(Lock) {
                 XIArmoury(context = appContext)
             }.also {
+                it.sageInstance = sageInstance
+                it.scribeInstance = scribeInstance
                 it.initArmoury(it, appContext)
                 instance = it
-                instance!!.sageInstance = sageInstance
-                instance!!.scribeInstance = scribeInstance
             }
         }
     }

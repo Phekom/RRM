@@ -39,6 +39,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentEstmeasureBinding
 import za.co.xisystems.itis_rrm.databinding.ItemHeaderBinding
 import za.co.xisystems.itis_rrm.extensions.observeOnce
+import za.co.xisystems.itis_rrm.ui.extensions.crashGuard
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.estimate_measure_item.EstimateMeasureItem
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
@@ -170,9 +171,8 @@ class MeasureFragment : BaseFragment(), DIAware {
             } catch (t: Throwable) {
                 val fetchError = XIResult.Error(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
                 crashGuard(
-                    view = this@MeasureFragment.requireView(),
                     throwable = fetchError,
-                    refreshAction = { retryFetchingJobs() }
+                    refreshAction = { this@MeasureFragment.retryFetchingJobs() }
                 )
             } finally {
                 ui.estimationsSwipeToRefresh.isRefreshing = false
@@ -180,7 +180,7 @@ class MeasureFragment : BaseFragment(), DIAware {
         }
     }
 
-    private fun retryFetchingJobs() {
+    fun retryFetchingJobs() {
         IndefiniteSnackbar.hide()
         Coroutines.main {
             fetchRemoteJobs()

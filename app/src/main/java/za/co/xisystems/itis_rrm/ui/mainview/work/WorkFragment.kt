@@ -47,6 +47,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentWorkBinding
 import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.extensions.uomForUI
+import za.co.xisystems.itis_rrm.ui.extensions.crashGuard
 import za.co.xisystems.itis_rrm.ui.mainview.work.estimate_work_item.CardItem
 import za.co.xisystems.itis_rrm.ui.mainview.work.estimate_work_item.ExpandableHeaderWorkItem
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
@@ -94,7 +95,6 @@ class WorkFragment : BaseFragment(), DIAware {
                         Timber.e(t, "Failed to fetch local jobs")
                         val xiFail = XIResult.Error(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
                         crashGuard(
-                            view = this@WorkFragment.requireView(),
                             throwable = xiFail,
                             refreshAction = { retryFetchingJobs() })
                     }
@@ -205,9 +205,8 @@ class WorkFragment : BaseFragment(), DIAware {
             Timber.e(t, t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR)
             val jobErr = XIResult.Error(t, "Failed to fetch jobs from service")
             crashGuard(
-                view = this@WorkFragment.requireView(),
                 throwable = jobErr,
-                refreshAction = { retryFetchingJobs() }
+                refreshAction = { this@WorkFragment.retryFetchingJobs() }
             )
         } finally {
             ui.worksSwipeToRefresh.isRefreshing = false
@@ -216,7 +215,7 @@ class WorkFragment : BaseFragment(), DIAware {
         }
     }
 
-    private fun retryFetchingJobs() {
+    fun retryFetchingJobs() {
         IndefiniteSnackbar.hide()
         fetchJobsFromService()
     }
