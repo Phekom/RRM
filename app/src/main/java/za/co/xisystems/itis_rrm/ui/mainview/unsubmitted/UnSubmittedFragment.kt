@@ -24,6 +24,7 @@ import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentUnsubmittedjobsBinding
 import za.co.xisystems.itis_rrm.databinding.UnsubmtdJobListItemBinding
+import za.co.xisystems.itis_rrm.ui.extensions.crashGuard
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.unsubmited_item.UnSubmittedJobItem
@@ -48,9 +49,6 @@ class UnSubmittedFragment : BaseFragment(), DIAware {
     override fun onAttach(context: Context) {
         super.onAttach(context)
         val callback: OnBackPressedCallback = object : OnBackPressedCallback(true) {
-            /**
-             * Callback for handling the [OnBackPressedDispatcher.onBackPressed] event.
-             */
             override fun handleOnBackPressed() {
                 this@UnSubmittedFragment.findNavController().popBackStack(R.id.nav_home, false)
             }
@@ -121,9 +119,8 @@ class UnSubmittedFragment : BaseFragment(), DIAware {
                 val unsubError = XIResult.Error(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
 
                 crashGuard(
-                    this@UnSubmittedFragment.requireView(),
-                    unsubError,
-                    refreshAction = { retryUnsubmitted() }
+                    throwable = unsubError,
+                    refreshAction = { this@UnSubmittedFragment.retryUnsubmitted() }
                 )
             } finally {
                 ui.group12Loading.visibility = View.GONE
@@ -131,7 +128,7 @@ class UnSubmittedFragment : BaseFragment(), DIAware {
         }
     }
 
-    private fun retryUnsubmitted() {
+    fun retryUnsubmitted() {
         IndefiniteSnackbar.hide()
         fetchUnsubmitted()
     }

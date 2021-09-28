@@ -63,6 +63,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimatesPhotoDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentPhotoEstimateBinding
 import za.co.xisystems.itis_rrm.services.LocationModel
+import za.co.xisystems.itis_rrm.ui.extensions.crashGuard
 import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModelFactory
@@ -305,9 +306,6 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
         (activity as MainActivity).supportActionBar?.title = getString(R.string.edit_estimate)
         locationWarning = false
         val callback: OnBackPressedCallback = object : OnBackPressedCallback(true) {
-            /**
-             * Callback for handling the [OnBackPressedDispatcher.onBackPressed] event.
-             */
             override fun handleOnBackPressed() {
                 navToAddProject(this@EstimatePhotoFragment.requireView())
             }
@@ -701,10 +699,9 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
             Timber.e(t, message)
             val xiErr = XIResult.Error(t, message)
             crashGuard(
-                view = this.requireView(),
                 throwable = xiErr,
                 refreshAction = {
-                    retryProcessPhotoLocation(
+                    this.retryProcessPhotoLocation(
                         estimateLocation,
                         filePath,
                         itemidPhototype
@@ -1065,7 +1062,7 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
         }
     }
 
-    private fun restoreEstimateViewState() {
+    fun restoreEstimateViewState() {
 
         sectionId = newJob?.sectionId
         if (sectionId != null) {
@@ -1093,12 +1090,16 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
                     Timber.e(t, "Failed to restore estimate view-state.")
                     val estError = XIResult.Error(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
                     crashGuard(
-                        view = this@EstimatePhotoFragment.requireView(),
                         throwable = estError,
-                        refreshAction = { restoreEstimateViewState() })
+                        refreshAction = { this@EstimatePhotoFragment.retryEstimateViewState() })
                 }
             }
         }
+    }
+
+    fun retryEstimateViewState() {
+        IndefiniteSnackbar.hide()
+        restoreEstimateViewState()
     }
 
     /**
@@ -1147,6 +1148,7 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
                         newJob?.removeJobEstimateByItemId(it.itemId)
                         createViewModel.backupJob(newJob!!)
                         createViewModel.setJobToEdit(newJob?.jobId!!)
+                        changesToPreserve = false
                         withContext(Dispatchers.Main.immediate) {
                             parentFragmentManager.beginTransaction().remove(this@EstimatePhotoFragment).commit()
                             parentFragmentManager.beginTransaction().detach(this@EstimatePhotoFragment).commit()

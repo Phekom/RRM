@@ -43,6 +43,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.databinding.EstimatesItemBinding
 import za.co.xisystems.itis_rrm.databinding.FragmentJobInfoBinding
 import za.co.xisystems.itis_rrm.ui.extensions.ShimmerUtils
+import za.co.xisystems.itis_rrm.ui.extensions.crashGuard
 import za.co.xisystems.itis_rrm.ui.extensions.doneProgress
 import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.extensions.failProgress
@@ -108,7 +109,6 @@ class JobInfoFragment : BaseFragment(), DIAware {
                 toggleLongRunning(false)
                 progressButton.failProgress("Failed")
                 crashGuard(
-                    view = this.requireView(),
                     throwable = result,
                     refreshAction = { retryAction() }
                 )
@@ -147,9 +147,6 @@ class JobInfoFragment : BaseFragment(), DIAware {
         super.onAttach(context)
         (activity as MainActivity).supportActionBar?.title = getString(string.jobinfo_item_title)
         val callback: OnBackPressedCallback = object : OnBackPressedCallback(true) {
-            /**
-             * Callback for handling the [OnBackPressedDispatcher.onBackPressed] event.
-             */
             override fun handleOnBackPressed() {
                 val directions =
                     JobInfoFragmentDirections.actionJobInfoFragmentToNavApproveJbs()

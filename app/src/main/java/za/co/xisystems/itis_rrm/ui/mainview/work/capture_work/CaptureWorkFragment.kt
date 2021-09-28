@@ -66,6 +66,7 @@ import za.co.xisystems.itis_rrm.extensions.isConnected
 import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.services.LocationModel
 import za.co.xisystems.itis_rrm.ui.extensions.addZoomedImages
+import za.co.xisystems.itis_rrm.ui.extensions.crashGuard
 import za.co.xisystems.itis_rrm.ui.extensions.doneProgress
 import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.extensions.failProgress
@@ -443,9 +444,8 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
                     toggleLongRunning(false)
                     ui.moveWorkflowButton.failProgress("Job submission failed")
                     crashGuard(
-                        view = this.requireView(),
                         throwable = result,
-                        refreshAction = { retryJobSubmission() })
+                        refreshAction = { this.retryJobSubmission() })
                 }
                 is XIResult.Status -> {
                     extensionToast(
@@ -490,7 +490,6 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
                     this@CaptureWorkFragment.toggleLongRunning(false)
                     ui.moveWorkflowButton.failProgress("Work submission failed")
                     crashGuard(
-                        view = this@CaptureWorkFragment.requireView(),
                         throwable = result,
                         refreshAction = { this@CaptureWorkFragment.retryWorkSubmission() }
                     )
@@ -684,7 +683,9 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
                 withContext(Dispatchers.Main.immediate) {
                     val message = "Gallery update failed: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
                     Timber.e(t, message)
-                    crashGuard(this@CaptureWorkFragment.requireView(), XIResult.Error(t, message))
+                    crashGuard(
+                        throwable = XIResult.Error(t, message)
+                    )
                 }
             }
         }
@@ -1018,9 +1019,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
         super.onAttach(context)
         (activity as MainActivity).supportActionBar?.title = getString(R.string.capture_work_title)
         val callback: OnBackPressedCallback = object : OnBackPressedCallback(true) {
-            /**
-             * Callback for handling the [OnBackPressedDispatcher.onBackPressed] event.
-             */
+
             override fun handleOnBackPressed() {
                 popViewOnWorkSubmit()
             }

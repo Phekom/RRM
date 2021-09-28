@@ -39,11 +39,11 @@ import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorAction
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.results.XIResult
-import za.co.xisystems.itis_rrm.custom.results.XIResult.Error
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentApprovejobBinding
 import za.co.xisystems.itis_rrm.extensions.observeOnce
+import za.co.xisystems.itis_rrm.ui.extensions.crashGuard
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.approve_job_item.ApproveJobItem
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
@@ -82,11 +82,10 @@ class ApproveJobsFragment : BaseFragment(), DIAware {
     private fun handleQueryErrors(outcome: XIResult<String>?) {
         outcome?.let { result ->
             when (result) {
-                is Error -> {
+                is XIResult.Error -> {
                     toggleLongRunning(false)
                     ui.approveJobVeiledRecycler.unVeil()
                     crashGuard(
-                        view = this.requireView(),
                         throwable = result,
                         refreshAction = { retryFetchRemoteJobs() }
                     )
@@ -158,16 +157,15 @@ class ApproveJobsFragment : BaseFragment(), DIAware {
             approveViewModel.workflowState.observe(viewLifecycleOwner, queryObserver)
             fetchQuery()
         } catch (t: Throwable) {
-            toggleLongRunning(false)
-            ui.approveJobVeiledRecycler.unVeil()
-            val xiFail = Error(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
+            val xiFail = XIResult.Error(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
             crashGuard(
-                view = this@ApproveJobsFragment.requireView(),
                 throwable = xiFail,
                 refreshAction = { uiScope.launch { retryAction() } }
             )
         } finally {
             approveViewModel.workflowState.removeObserver(queryObserver)
+            toggleLongRunning(false)
+            ui.approveJobVeiledRecycler.unVeil()
         }
     }
 
@@ -250,7 +248,10 @@ class ApproveJobsFragment : BaseFragment(), DIAware {
 
         ui.approveJobVeiledRecycler.setLayoutManager(LinearLayoutManager(this.context))
         ui.approveJobVeiledRecycler.setAdapter(groupAdapter)
-        ui.approveJobVeiledRecycler.doOnNextLayout { ui.approveJobVeiledRecycler.unVeil() }
+        ui.approveJobVeiledRecycler.doOnNextLayout {
+            ui.approveJobVeiledRecycler.unVeil()
+            toggleLongRunning(false)
+        }
 
         groupAdapter.setOnItemClickListener { item, view ->
             Coroutines.main {
@@ -290,9 +291,6 @@ class ApproveJobsFragment : BaseFragment(), DIAware {
     override fun onAttach(context: Context) {
         super.onAttach(context)
         val callback: OnBackPressedCallback = object : OnBackPressedCallback(true) {
-            /**
-             * Callback for handling the [OnBackPressedDispatcher.onBackPressed] event.
-             */
             override fun handleOnBackPressed() {
                 this@ApproveJobsFragment.findNavController().popBackStack(R.id.nav_home, false)
             }

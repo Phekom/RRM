@@ -48,6 +48,7 @@ import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.services.LocationModel
 import za.co.xisystems.itis_rrm.ui.custom.MeasureGalleryUIState
 import za.co.xisystems.itis_rrm.ui.extensions.addZoomedImages
+import za.co.xisystems.itis_rrm.ui.extensions.crashGuard
 import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.extensions.scaleForSize
 import za.co.xisystems.itis_rrm.ui.extensions.showZoomedImage
@@ -371,9 +372,8 @@ class CaptureItemMeasurePhotoFragment :
 
             is XIResult.Error -> {
                 crashGuard(
-                    view = this@CaptureItemMeasurePhotoFragment.requireView(),
                     throwable = response,
-                    refreshAction = { retryGallery() }
+                    refreshAction = { this.retryGallery() }
                 )
             }
             is XIResult.Progress -> {
@@ -410,7 +410,7 @@ class CaptureItemMeasurePhotoFragment :
         }
     }
 
-    private fun retryGallery() {
+    fun retryGallery() {
         IndefiniteSnackbar.hide()
         measureViewModel.galleryBackup.observeOnce(viewLifecycleOwner, {
             it?.let { measureViewModel.generateGalleryUI(it) }

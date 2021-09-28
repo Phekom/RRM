@@ -42,8 +42,6 @@ import org.kodein.di.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
-import za.co.xisystems.itis_rrm.R.layout
-import za.co.xisystems.itis_rrm.R.string
 import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.constants.Constants
 import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration
@@ -54,6 +52,7 @@ import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentMeasureApprovalBinding
 import za.co.xisystems.itis_rrm.databinding.MeasurementsItemBinding
+import za.co.xisystems.itis_rrm.ui.extensions.crashGuard
 import za.co.xisystems.itis_rrm.ui.extensions.doneProgress
 import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.extensions.failProgress
@@ -101,7 +100,6 @@ class MeasureApprovalFragment : BaseFragment(), DIAware {
                     progressButton.failProgress("Failed")
                     this@MeasureApprovalFragment.toggleLongRunning(false)
                     crashGuard(
-                        view = this.requireView(),
                         throwable = result,
                         refreshAction = { this.retryMeasurements() }
                     )
@@ -145,7 +143,7 @@ class MeasureApprovalFragment : BaseFragment(), DIAware {
         super.onAttach(context)
 
         (activity as MainActivity).supportActionBar?.title =
-            getString(string.measure_approval_title)
+            getString(R.string.measure_approval_title)
 
         val callback: OnBackPressedCallback = object : OnBackPressedCallback(true) {
             /**
@@ -194,12 +192,12 @@ class MeasureApprovalFragment : BaseFragment(), DIAware {
                 val approveBuilder = AlertDialog.Builder(
                     requireActivity()
                 )
-                approveBuilder.setTitle(string.confirm)
+                approveBuilder.setTitle(R.string.confirm)
                 approveBuilder.setIcon(R.drawable.ic_approve)
-                approveBuilder.setMessage(string.are_you_sure_you_want_to_approve2)
+                approveBuilder.setMessage(R.string.are_you_sure_you_want_to_approve2)
                 // Yes button
                 approveBuilder.setPositiveButton(
-                    string.yes
+                    R.string.yes
                 ) { _, _ ->
                     progressButton = ui.approveMeasureButton
                     progressButton.initProgress(viewLifecycleOwner)
@@ -208,7 +206,7 @@ class MeasureApprovalFragment : BaseFragment(), DIAware {
 
                 // No button
                 approveBuilder.setNegativeButton(
-                    string.no
+                    R.string.no
                 ) { dialog, _ ->
                     // Do nothing but close dialog
                     dialog.dismiss()
@@ -221,7 +219,7 @@ class MeasureApprovalFragment : BaseFragment(), DIAware {
 
     private fun initVeiledRecycler() {
         ui.viewMeasuredItems.run {
-            setVeilLayout(layout.measurements_item) { toast("Loading ...") }
+            setVeilLayout(R.layout.measurements_item) { toast("Loading ...") }
             setAdapter(groupAdapter)
             setLayoutManager(LinearLayoutManager(this.context))
             addVeiledItems(10)
@@ -235,7 +233,7 @@ class MeasureApprovalFragment : BaseFragment(), DIAware {
             }
         } else {
             extensionToast(
-                message = getString(string.no_connection_detected),
+                message = getString(R.string.no_connection_detected),
                 style = ToastStyle.NO_INTERNET
             )
             progressButton.failProgress("No internet")

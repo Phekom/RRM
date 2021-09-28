@@ -373,7 +373,7 @@ class CreateViewModel(
     suspend fun setCurrentProjectItem(itemId: String?) = viewModelScope.launch(ioContext) {
         val projectItem = jobCreationDataRepository.getProjectItemById(itemId)
         withContext(mainContext) {
-            projectItem.let { setTempProjectItem(it) }
+            setTempProjectItem(projectItem)
         }
     }
 
@@ -534,7 +534,7 @@ class CreateViewModel(
         return@withContext jobCreationDataRepository.backupProjectItem(item)
     }
 
-    val jobForSubmission: MutableLiveData<XIEvent<JobDTO>> = MutableLiveData()
+    var jobForSubmission: MutableLiveData<XIEvent<JobDTO>> = MutableLiveData()
 
     fun setJobForSubmission(inJobId: String) = viewModelScope.launch(mainContext) {
         jobCreationDataRepository.getUpdatedJob(inJobId).also {
@@ -542,7 +542,7 @@ class CreateViewModel(
         }
     }
 
-    val jobForValidation: MutableLiveData<XIEvent<JobDTO>> = MutableLiveData()
+    var jobForValidation: MutableLiveData<XIEvent<JobDTO>> = MutableLiveData()
 
     fun setJobToValidate(geoCodedJobId: String) = viewModelScope.launch(mainContext) {
         jobCreationDataRepository.getUpdatedJob(geoCodedJobId).also {
@@ -581,16 +581,21 @@ class CreateViewModel(
             jobCreationDataRepository.eraseExistingPhoto(photoId)
         }
 
-    var reUploadEvent: MutableLiveData<XIEvent<JobDTO>> = MutableLiveData()
+    var jobForReUpload: MutableLiveData<XIEvent<JobDTO>> = MutableLiveData()
 
     fun setJobForReUpload(jobId: String) = viewModelScope.launch(ioContext) {
         val job = jobCreationDataRepository.getUpdatedJob(jobId)
         withContext(mainContext) {
-            reUploadEvent.value = XIEvent(job)
+            jobForReUpload.value = XIEvent(job)
         }
     }
 
     fun resetUploadState() {
-        reUploadEvent = MutableLiveData()
+        jobForReUpload = MutableLiveData()
+    }
+
+    fun resetValidationState() {
+        jobForValidation = MutableLiveData()
+        jobForSubmission = MutableLiveData()
     }
 }

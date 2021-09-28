@@ -39,6 +39,7 @@ import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentApprovemeasureBinding
 import za.co.xisystems.itis_rrm.databinding.ItemHeaderBinding
+import za.co.xisystems.itis_rrm.ui.extensions.crashGuard
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.approveMeasure_Item.ApproveMeasureItem
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
@@ -131,9 +132,8 @@ class ApproveMeasureFragment : BaseFragment(), DIAware {
                 toggleLongRunning(false)
                 ui.approveMeasurementsList.unVeil()
                 crashGuard(
-                    view = this@ApproveMeasureFragment.requireView(),
                     throwable = measureErr,
-                    refreshAction = { retryFetchMeasurements() }
+                    refreshAction = { this.retryFetchMeasurements() }
                 )
             }
         }
@@ -172,9 +172,8 @@ class ApproveMeasureFragment : BaseFragment(), DIAware {
                 Timber.e(t, "Unable to fetch remote jobs")
                 val measureErr = XIResult.Error(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
                 crashGuard(
-                    view = this@ApproveMeasureFragment.requireView(),
                     throwable = measureErr,
-                    refreshAction = { retryFetchMeasurements() }
+                    refreshAction = { this.retryFetchMeasurements() }
                 )
             } finally {
                 ui.approvemSwipeToRefresh.isRefreshing = false
@@ -210,6 +209,7 @@ class ApproveMeasureFragment : BaseFragment(), DIAware {
         ui.approveMeasurementsList.setAdapter(null)
         _ui = null
     }
+
     private fun sendJobToApprove(
         job: ApproveMeasureItem?,
         view: View
@@ -244,4 +244,3 @@ class ApproveMeasureFragment : BaseFragment(), DIAware {
             .addCallback(this, callback)
     }
 }
-

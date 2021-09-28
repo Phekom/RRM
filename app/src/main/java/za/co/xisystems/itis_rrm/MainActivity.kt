@@ -428,7 +428,8 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
 
             // Unsubmitted jobs are collected here
             mainActivityViewModel.getJobsForActivityId(
-                ActivityIdConstants.JOB_ESTIMATE
+                ActivityIdConstants.JOB_ESTIMATE,
+                ActivityIdConstants.JOB_PENDING_UPLOAD
             ).observe(this@MainActivity, { newJobData ->
                 val tasks = newJobData.distinctBy { job -> job.jobId }.count()
                 writeBadge(badgeUnSubmitted, tasks)

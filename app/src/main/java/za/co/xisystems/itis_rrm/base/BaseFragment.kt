@@ -12,7 +12,6 @@ import android.view.inputmethod.InputMethodManager
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.coroutines.withContext
 import org.kodein.di.DIAware
 import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
@@ -22,28 +21,25 @@ import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.constants.Constants.DNS_PORT
 import za.co.xisystems.itis_rrm.constants.Constants.FIVE_SECONDS
 import za.co.xisystems.itis_rrm.constants.Constants.SSL_PORT
-import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration
 import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration.LONG
 import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration.SHORT
 import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity
 import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity.BOTTOM
 import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
-import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.ERROR
 import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.INFO
 import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.NO_INTERNET
-import za.co.xisystems.itis_rrm.custom.results.XIResult.Error
-import za.co.xisystems.itis_rrm.custom.results.isRecoverableException
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data._commons.Animations
 import za.co.xisystems.itis_rrm.data._commons.views.IProgressView
+import za.co.xisystems.itis_rrm.forge.DefaultDispatcherProvider
+import za.co.xisystems.itis_rrm.forge.DispatcherProvider
 import za.co.xisystems.itis_rrm.forge.XIArmoury
 import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModelFactory
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.ViewLogger
-import kotlin.coroutines.CoroutineContext
 
 /**
  * Created by Francis Mahlava on 03,October,2019
@@ -52,7 +48,9 @@ import kotlin.coroutines.CoroutineContext
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  */
 
-abstract class BaseFragment : Fragment(), IProgressView, DIAware {
+abstract class BaseFragment(
+    protected val dispatchers: DispatcherProvider = DefaultDispatcherProvider()
+) : Fragment(), IProgressView, DIAware {
 
     private lateinit var sharedViewModel: SharedViewModel
     override val di by closestDI()
@@ -174,7 +172,7 @@ abstract class BaseFragment : Fragment(), IProgressView, DIAware {
         savedInstanceState: Bundle?
     ) {
         super.onViewCreated(view, savedInstanceState)
-        coordinator = view.findViewById(R.id.coordinator)
+        coordinator = view
         sharedViewModel = ViewModelProvider(this.requireActivity(), shareFactory).get(SharedViewModel::class.java)
         initAnimations()
     }
@@ -195,16 +193,13 @@ abstract class BaseFragment : Fragment(), IProgressView, DIAware {
     // before allowing the suspend function to execute
     protected suspend fun connectedCheck(
         call: suspend () -> Unit,
-        coroutineContext: CoroutineContext
     ) {
         when {
             !isOnline() -> noConnectionWarning()
             !hasInternet() -> noInternetWarning()
             !isServiceAvailable() -> noServicesWarning()
             else -> {
-                withContext(coroutineContext) {
-                    call.invoke()
-                }
+                call.invoke()
             }
         }
     }
@@ -318,43 +313,6 @@ abstract class BaseFragment : Fragment(), IProgressView, DIAware {
 
     fun snackError(string: String?) {
         snackError(coordinator, string)
-    }
-
-    /**
-     * if the exception is connectivity-related, give the user the option to retry.
-     * Shaun McDonald - 2020/06/01
-     */
-    protected fun crashGuard(view: View, throwable: Error, refreshAction: (() -> Unit)? = null) {
-
-        when (throwable.isRecoverableException()) {
-
-            true -> {
-                if (refreshAction != null) {
-                    XIErrorHandler.handleError(
-                        view = view,
-                        throwable = throwable,
-                        shouldShowSnackBar = true,
-                        refreshAction = { refreshAction() }
-                    )
-                }
-            }
-            else -> {
-
-                extensionToast(
-                    message = throwable.message,
-                    style = ERROR,
-                    position = BOTTOM,
-                    duration = LONG
-                )
-
-                XIErrorHandler.handleError(
-                    view = view,
-                    throwable = throwable,
-                    shouldToast = false,
-                    shouldShowSnackBar = false
-                )
-            }
-        }
     }
 
     fun takingPhotos() {
