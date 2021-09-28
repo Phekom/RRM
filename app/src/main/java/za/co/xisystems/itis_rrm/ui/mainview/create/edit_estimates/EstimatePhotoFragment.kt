@@ -465,7 +465,7 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
     private suspend fun saveValidEstimate(view: View) = uiScope.launch(uiScope.coroutineContext) {
 
         item!!.quantity = ui.valueEditText.text.toString().toDouble()
-        if (item!!.quantity >= 1 && item!!.tenderRate > 0.0 && changesToPreserve) {
+        if (item!!.quantity > 0 && item!!.tenderRate > 0.0 && changesToPreserve) {
 
             val saveValidEstimate = newJobItemEstimate!!.copy(
                 qty = item!!.quantity,
@@ -920,7 +920,9 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
                     (" * R $tenderRate =  R ${DecimalFormat("#0.00").format(displayAmount)}")
                 newJobItemEstimate?.qty = qty
                 createViewModel.setEstimateQuantity(qty)
+                createViewModel.setEstimateLineRate(tenderRate)
                 newJobItemEstimate?.lineRate = tenderRate
+                changesToPreserve = true
             }
         }
     }

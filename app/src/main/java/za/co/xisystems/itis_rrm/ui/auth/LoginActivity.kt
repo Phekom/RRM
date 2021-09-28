@@ -48,7 +48,7 @@ import za.co.xisystems.traffic_count.delegates.viewBinding
 class LoginActivity : BaseActivity(), AuthListener, DIAware {
 
     override val di by closestDI()
-    private val factory: AuthViewModelFactory by instance()
+    private val factory: AuthViewModelFactory by instance<AuthViewModelFactory>()
     private lateinit var authViewModel: AuthViewModel
     private val binding by viewBinding(ActivityLoginBinding::inflate)
     private lateinit var enteredPin: String

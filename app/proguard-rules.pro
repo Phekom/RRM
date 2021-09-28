@@ -2,7 +2,7 @@
 -optimizationpasses 5
 -repackageclasses ''
 -allowaccessmodification
--optimizations !code/simplification/arithmetic
+-optimizations !code/simplification/arithmetic,!field/*,!class/merging/*
 -keepattributes *Annotation*
 -keepattributes LineNumberTable,SourceFile
 
@@ -47,6 +47,7 @@
 -keep class za.co.xisystems.itis_rrm.services.LocationValidation {*; }
 -keep class za.co.xisystems.itis_rrm.forge.** { *;}
 -keep class za.co.xisystems.itis_rrm.custom.** { *; }
+-keepclasseswithmembers class za.co.xisystems.itis_rrm.domain.** { *; }
 
 # Keep these for GSON and Jackson
 -keepattributes Signature
@@ -82,3 +83,9 @@
 -dontwarn java.awt.color.ICC_Profile
 -dontwarn org.w3c.dom.bootstrap.DOMImplementationRegistry
 
+# kodein requirements
+-keep, allowobfuscation, allowoptimization class org.kodein.type.TypeReference
+-keep, allowobfuscation, allowoptimization class org.kodein.type.JVMAbstractTypeToken$Companion$WrappingTest
+
+-keep, allowobfuscation, allowoptimization class * extends org.kodein.type.TypeReference
+-keep, allowobfuscation, allowoptimization class * extends org.kodein.type.JVMAbstractTypeToken$Companion$WrappingTest

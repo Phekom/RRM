@@ -63,11 +63,11 @@ import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.services.DeferredLocationViewModel
 import za.co.xisystems.itis_rrm.services.DeferredLocationViewModelFactory
 import za.co.xisystems.itis_rrm.ui.extensions.crashGuard
+import za.co.xisystems.itis_rrm.ui.extensions.doneProgress
 import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.extensions.failProgress
 import za.co.xisystems.itis_rrm.ui.extensions.initProgress
 import za.co.xisystems.itis_rrm.ui.extensions.startProgress
-import za.co.xisystems.itis_rrm.ui.extensions.stopProgress
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SwipeTouchCallback
@@ -621,16 +621,16 @@ class AddProjectFragment : BaseFragment(), DIAware {
     private suspend fun validateEstimates(updatedJob: JobDTO) = withContext(dispatchers.io()) {
         val validated = createViewModel.areEstimatesValid(updatedJob, ArrayList(items))
 
-        if (!validated) {
-            onInvalidJob()
-        } else {
-            withContext(Dispatchers.Main.immediate) {
-                ui.submitButton.initProgress(viewLifecycleOwner)
-                ui.submitButton.startProgress("Submitting data ...")
+        withContext(dispatchers.ui()) {
+
+            if (!validated) {
+                onInvalidJob()
+            } else {
                 updatedJob.issueDate = DateUtil.dateToString(Date())
                 createViewModel.backupJob(updatedJob)
                 createViewModel.setJobForSubmission(updatedJob.jobId)
             }
+
         }
     }
 
@@ -728,7 +728,7 @@ class AddProjectFragment : BaseFragment(), DIAware {
     ) = withContext(uiScope.coroutineContext) {
         toggleLongRunning(true)
         ui.submitButton.initProgress(viewLifecycleOwner)
-        ui.submitButton.startProgress("Submitting Job")
+        ui.submitButton.startProgress("Submitting Job ...")
         val jobTemp = jobDataController.setJobLittleEndianGuids(job)
         saveRrmJob(job.userId, jobTemp)
     }
@@ -788,7 +788,7 @@ class AddProjectFragment : BaseFragment(), DIAware {
         toggleLongRunning(false)
         when (result) {
             is XIResult.Success -> {
-                ui.submitButton.stopProgress("Uploaded!")
+                ui.submitButton.doneProgress("Uploaded!")
                 extensionToast(
                     message = "Job: ${job.descr} uploaded successfully",
                     style = ToastStyle.SUCCESS
