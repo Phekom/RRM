@@ -879,7 +879,8 @@ class AddProjectFragment : BaseFragment(), DIAware {
 
     private fun onInvalidJob() {
         toggleLongRunning(false)
-        extensionToast(message = "Incomplete estimates!", style = ToastStyle.WARNING)
+        ui.submitButton.failProgress("Submit")
+        extensionToast(message = "Incomplete estimates!", style = ToastStyle.ERROR)
         ui.itemsCardView.startAnimation(shake_long)
     }
 

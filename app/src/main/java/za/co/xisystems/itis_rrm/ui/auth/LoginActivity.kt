@@ -153,6 +153,7 @@ class LoginActivity : BaseActivity(), AuthListener, DIAware {
         doubleBackToExitPressed++
         if (doubleBackToExitPressed == 2) {
             exitApplication()
+            finish()
         } else {
             toast("Please press Back again to exit")
             Handler(mainLooper).postDelayed({
