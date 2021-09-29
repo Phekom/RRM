@@ -25,16 +25,11 @@ object JobUtils {
     }
 
     fun formatTotalCost(job: JobDTO?): String {
-        var quantity = 0.0
-        var cost = 0.0
-        job?.jobItemEstimates?.filter { estimate
-            ->
-            estimate.size() == 2 && estimate.qty > 0.0 && estimate.lineRate > 0
-        }?.forEach { estimate ->
-            quantity += estimate.qty
-            cost += estimate.lineRate * estimate.qty
-        }
-        return formatTotalCost(cost)
+        val estimateCost = job?.jobItemEstimates?.filter { estimate ->
+            estimate.size() == 2 && estimate.qty > 0.0 && estimate.lineRate > 0.0
+        }?.map { it.qty * it.lineRate }?.fold(0.0, { total, item -> total + item }) ?: 0.0
+
+        return formatTotalCost(estimateCost)
     }
 
     fun areQuantitiesValid(job: JobDTO?): Boolean {

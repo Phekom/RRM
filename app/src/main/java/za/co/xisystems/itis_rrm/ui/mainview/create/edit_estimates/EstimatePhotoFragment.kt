@@ -378,8 +378,8 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
             changesToPreserve = true
             try {
                 val quantity = text.toString().toDouble()
-                item!!.quantity = quantity
                 newJobItemEstimate?.qty = quantity
+                createViewModel.setEstimateQuantity(quantity)
                 setCost()
             } catch (ex: java.lang.NumberFormatException) {
                 Timber.e(" ")
@@ -482,7 +482,7 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
                     createViewModel.setJobToEdit(newJob!!.jobId)
                     createViewModel.setEstimateQuantity(saveValidEstimate.qty)
                     createViewModel.setEstimateLineRate(saveValidEstimate.lineRate)
-                    createViewModel.currentEstimate = MutableLiveData()
+                    createViewModel.setEstimateToEdit(saveValidEstimate.estimateId)
                     updateData(view)
                 }
             }
@@ -814,7 +814,7 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
                 ui.updateButton.visibility = View.VISIBLE
                 setCost()
             } else {
-                sharpToast(
+                extensionToast(
                     message = "Please take both photographs ...",
                     style = ToastStyle.INFO,
                     position = ToastGravity.BOTTOM
@@ -870,9 +870,9 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
         //  valueEditText.clearFocus()
 
         var lineAmount: Double?
-        val tenderRate = newJobItemEstimate?.lineRate ?: 0.0
+        var tenderRate = newJobItemEstimate?.lineRate ?: item?.tenderRate ?: 0.0
 
-        var qty = value.toDoubleOrNull() ?: 1.0
+        var qty = item?.quantity ?: value.toDouble()
 
         try {
             qty = value.toDouble()
@@ -1137,7 +1137,7 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
         ) { _, _ ->
             Coroutines.main {
                 item?.let {
-                    sharpToast(
+                    extensionToast(
                         title = "Deleting ...",
                         message = "${it.descr} removed.",
                         style = ToastStyle.DELETE,

@@ -21,13 +21,8 @@ import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.constants.Constants.DNS_PORT
 import za.co.xisystems.itis_rrm.constants.Constants.FIVE_SECONDS
 import za.co.xisystems.itis_rrm.constants.Constants.SSL_PORT
-import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration
 import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration.LONG
-import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration.SHORT
-import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity
 import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity.BOTTOM
-import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
-import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.INFO
 import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.NO_INTERNET
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data._commons.Animations
@@ -211,50 +206,8 @@ abstract class BaseFragment(
     override fun toast(resid: String?) {
         resid?.let {
             if (!activity?.isFinishing!!) {
-                sharpToast(resource = resid)
+                sharedViewModel.setMessage(resid)
             }
-        }
-    }
-
-    protected fun sharpToast(resource: String) {
-        sharpToast(message = resource)
-    }
-
-    protected fun sharpToast(
-        title: String? = null,
-        resId: Int,
-        style: ToastStyle = INFO,
-        position: ToastGravity = BOTTOM,
-        duration: ToastDuration = SHORT
-    ) {
-        if (!activity?.isFinishing!!) {
-            val message = getString(resId)
-            extensionToast(
-                title = title,
-                message = message,
-                style = style,
-                position = position,
-                duration = duration
-            )
-        }
-    }
-
-    fun sharpToast(
-        title: String? = null,
-        message: String,
-        style: ToastStyle = INFO,
-        position: ToastGravity = BOTTOM,
-        duration: ToastDuration = SHORT
-    ) {
-        if (!activity?.isFinishing!!) {
-            extensionToast(
-                title = title,
-                message = message,
-                style = style,
-                position = position,
-                duration = duration
-
-            )
         }
     }
 
