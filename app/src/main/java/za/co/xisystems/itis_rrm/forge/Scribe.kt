@@ -41,6 +41,8 @@ class Scribe private constructor(
 
     val operational get() = mOperational
 
+    private val QUARTER_SECOND = 250
+
     init {
         armouryScope.onCreate()
         armouryScope.launch {
@@ -48,7 +50,7 @@ class Scribe private constructor(
                 this@Scribe.securePrefs = cryptoPrefs
             }
             while (!this@Scribe::securePrefs.isInitialized) {
-                delay(500)
+                delay(250)
             }
         }
     }
@@ -88,7 +90,7 @@ class Scribe private constructor(
     suspend fun initPreferences(
         context: Context,
         masterKey: MasterKey,
-        prefsFile: String = "specialstylesandcolours"
+        prefsFile: String = "special_styles_and_colours"
     ): SharedPreferences = withContext(dispatchers.io()) {
         return@withContext createPreferences(context, prefsFile, masterKey)
     }

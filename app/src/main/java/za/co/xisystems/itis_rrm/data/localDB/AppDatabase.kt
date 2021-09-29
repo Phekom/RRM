@@ -113,41 +113,11 @@ import za.co.xisystems.itis_rrm.utils.DatetimeConverters
 
 abstract class AppDatabase : RoomDatabase() {
 
-    abstract fun getJobDao(): JobDao
-    abstract fun getJobSectionDao(): JobSectionDao
-    abstract fun getJobItemEstimateDao(): JobItemEstimateDao
-    abstract fun getJobItemMeasureDao(): JobItemMeasureDao
-    abstract fun getJobItemEstimatePhotoDao(): JobItemEstimatePhotoDao
-    abstract fun getJobItemMeasurePhotoDao(): JobItemMeasurePhotoDao
-    abstract fun getUserDao(): UserDao
-    abstract fun getUserRoleDao(): UserRoleDao
-    abstract fun getContractDao(): ContractDao
-    abstract fun getVoItemDao(): VoItemDao
-    abstract fun getProjectDao(): ProjectDao
-    abstract fun getPrimaryKeyValueDao(): PrimaryKeyValueDao
-    abstract fun getLookupOptionDao(): LookupOptionDao
-    abstract fun getLookupDao(): LookupDao
-    abstract fun getEntitiesDao(): EntitiesDao
-    abstract fun getProjectItemDao(): ProjectItemDao
-    abstract fun getItemSectionDao(): ItemSectionDao
-    abstract fun getProjectSectionDao(): ProjectSectionDao
-    abstract fun getWorkFlowDao(): WorkFlowDao
-    abstract fun getWorkFlowRouteDao(): WorkFlowRouteDao
-    abstract fun getWorkflowsDao(): WorkflowsDao
-    abstract fun getInfoClassDao(): InfoClassDao
-    abstract fun getActivityDao(): ActivityDao
-    abstract fun getToDoGroupsDao(): ToDoGroupsDao
-    abstract fun getEstimateWorkDao(): EstimateWorkDao
-    abstract fun getEstimateWorkPhotoDao(): EstimateWorkPhotoDao
-    abstract fun getSectionItemDao(): SectionItemDao
-    abstract fun getJobDaoTemp(): JobDaoTemp
-    abstract fun getItemDaoTemp(): ItemDaoTemp
-    abstract fun getSectionPointDao(): SectionPointDao
-    abstract fun getWorkStepDao(): WorkStepDao
-
     companion object {
         private const val MAX_DB_VERSIONS = 999_999_999
-        @Volatile private var instance: AppDatabase? = null
+
+        @Volatile
+        private var instance: AppDatabase? = null
         private val LOCK = Any()
         private var secretphrase: String? = null
         operator fun invoke(context: Context, armoury: XIArmoury) = instance ?: synchronized(LOCK) {
@@ -185,5 +155,45 @@ abstract class AppDatabase : RoomDatabase() {
                         .fallbackToDestructiveMigrationFrom(MAX_DB_VERSIONS).build()
                 }
             }
+
+        fun closeDown() {
+            if (instance != null && instance!!.isOpen) {
+                instance!!.close()
+                instance = null
+            }
+        }
     }
+
+    abstract fun getJobDao(): JobDao
+    abstract fun getJobSectionDao(): JobSectionDao
+    abstract fun getJobItemEstimateDao(): JobItemEstimateDao
+    abstract fun getJobItemMeasureDao(): JobItemMeasureDao
+    abstract fun getJobItemEstimatePhotoDao(): JobItemEstimatePhotoDao
+    abstract fun getJobItemMeasurePhotoDao(): JobItemMeasurePhotoDao
+    abstract fun getUserDao(): UserDao
+    abstract fun getUserRoleDao(): UserRoleDao
+    abstract fun getContractDao(): ContractDao
+    abstract fun getVoItemDao(): VoItemDao
+    abstract fun getProjectDao(): ProjectDao
+    abstract fun getPrimaryKeyValueDao(): PrimaryKeyValueDao
+    abstract fun getLookupOptionDao(): LookupOptionDao
+    abstract fun getLookupDao(): LookupDao
+    abstract fun getEntitiesDao(): EntitiesDao
+    abstract fun getProjectItemDao(): ProjectItemDao
+    abstract fun getItemSectionDao(): ItemSectionDao
+    abstract fun getProjectSectionDao(): ProjectSectionDao
+    abstract fun getWorkFlowDao(): WorkFlowDao
+    abstract fun getWorkFlowRouteDao(): WorkFlowRouteDao
+    abstract fun getWorkflowsDao(): WorkflowsDao
+    abstract fun getInfoClassDao(): InfoClassDao
+    abstract fun getActivityDao(): ActivityDao
+    abstract fun getToDoGroupsDao(): ToDoGroupsDao
+    abstract fun getEstimateWorkDao(): EstimateWorkDao
+    abstract fun getEstimateWorkPhotoDao(): EstimateWorkPhotoDao
+    abstract fun getSectionItemDao(): SectionItemDao
+    abstract fun getJobDaoTemp(): JobDaoTemp
+    abstract fun getItemDaoTemp(): ItemDaoTemp
+    abstract fun getSectionPointDao(): SectionPointDao
+    abstract fun getWorkStepDao(): WorkStepDao
 }
+

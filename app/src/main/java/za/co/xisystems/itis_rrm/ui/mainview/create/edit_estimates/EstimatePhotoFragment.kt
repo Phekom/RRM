@@ -477,8 +477,8 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
                 createViewModel.backupEstimate(saveValidEstimate)
                 newJob!!.insertOrUpdateJobItemEstimate(saveValidEstimate)
                 createViewModel.saveNewJob(newJob!!)
-                changesToPreserve = false
                 withContext(Dispatchers.Main.immediate) {
+                    changesToPreserve = false
                     createViewModel.setJobToEdit(newJob!!.jobId)
                     createViewModel.setEstimateQuantity(saveValidEstimate.qty)
                     createViewModel.setEstimateLineRate(saveValidEstimate.lineRate)
@@ -839,11 +839,11 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
 
     private fun setCost() {
         if (newJobItemEstimate?.size() == 2) {
-            calculateCost()
             ui.valueEditText.visibility = View.VISIBLE
             ui.costTextView.visibility = View.VISIBLE
             ui.costTextView.startAnimation(animations!!.bounce_soft)
             ui.labelTextView.text = "Quantity"
+            calculateCost()
         } else {
             ui.labelTextView.text = getString(R.string.warning_estimate_incomplete)
             ui.labelTextView.startAnimation(animations!!.shake_long)
@@ -917,9 +917,9 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
                 ui.costTextView.text =
                     (" * R $tenderRate =  R ${DecimalFormat("#0.00").format(displayAmount)}")
                 newJobItemEstimate?.qty = qty
+                newJobItemEstimate?.lineRate = tenderRate
                 createViewModel.setEstimateQuantity(qty)
                 createViewModel.setEstimateLineRate(tenderRate)
-                newJobItemEstimate?.lineRate = tenderRate
                 changesToPreserve = true
             }
         }
@@ -1085,6 +1085,7 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
                         ui.costCard.visibility = View.VISIBLE
                         ui.updateButton.visibility = View.VISIBLE
                         setValueEditText(quantity)
+                        setCost()
                     }
                 } catch (t: Throwable) {
                     Timber.e(t, "Failed to restore estimate view-state.")

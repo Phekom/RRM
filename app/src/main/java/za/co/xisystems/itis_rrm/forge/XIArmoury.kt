@@ -27,7 +27,7 @@ class XIArmoury private constructor(
     private val dispatchers: DispatcherProvider = DefaultDispatcherProvider()
 ) : LifecycleObserver {
 
-    private val wizardInstance: Wizard = Wizard()
+    private var wizardInstance: Wizard = Wizard()
     private var scribeInstance: Scribe? = null
     private var sageInstance: Sage? = null
     private var masterKey: MasterKey? = null
@@ -53,6 +53,15 @@ class XIArmoury private constructor(
                 it.scribeInstance = scribeInstance
                 it.initArmoury(it, appContext)
                 instance = it
+            }
+        }
+
+        fun closeArmoury() {
+            if (instance != null) {
+                instance!!.armouryScope.destroy()
+                instance!!.scribeInstance = null
+                instance!!.sageInstance = null
+                instance = null
             }
         }
     }
@@ -204,7 +213,7 @@ class XIArmoury private constructor(
     }
 
     fun isSessionAuthorized(): Boolean {
-        return !scribeInstance!!.readSessionKey().isEmpty()
+        return scribeInstance!!.readSessionKey().isNotEmpty()
     }
 
     suspend fun isAuthorized(userObject: SecureString? = null): Boolean = withContext(armouryScope.coroutineContext) {

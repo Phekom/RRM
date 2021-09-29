@@ -18,6 +18,8 @@ import androidx.lifecycle.Observer
 import com.google.android.material.appbar.CollapsingToolbarLayout
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
+import za.co.xisystems.itis_rrm.forge.XIArmoury
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
 
 /**
@@ -70,6 +72,8 @@ fun Location?.toText(): String {
 
 fun Activity.exitApplication() {
     this.run {
+        AppDatabase.closeDown()
+        XIArmoury.closeArmoury()
         val intent = Intent(Intent.ACTION_MAIN)
         intent.flags = FLAG_ACTIVITY_NEW_TASK or FLAG_ACTIVITY_CLEAR_TASK
         intent.addCategory(Intent.CATEGORY_HOME)

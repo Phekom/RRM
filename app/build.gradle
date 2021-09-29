@@ -471,12 +471,6 @@ dependencies {
     //Location
     implementation 'com.google.android.gms:play-services-location:18.0.0'
 
-
-    // Icepick
-    // implementation 'frankiesardo:icepick:3.2.0'
-    // annotationProcessor 'frankiesardo:icepick-processor:3.2.0'
-
-
     def coroutines = '1.5.2'
     //Kotlin Coroutines
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutines"

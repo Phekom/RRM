@@ -33,6 +33,7 @@ import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.databinding.ActivityLoginBinding
+import za.co.xisystems.itis_rrm.extensions.exitApplication
 import za.co.xisystems.itis_rrm.ui.auth.model.AuthViewModel
 import za.co.xisystems.itis_rrm.ui.auth.model.AuthViewModelFactory
 import za.co.xisystems.itis_rrm.ui.base.BaseActivity
@@ -151,14 +152,12 @@ class LoginActivity : BaseActivity(), AuthListener, DIAware {
     override fun onBackPressed() {
         doubleBackToExitPressed++
         if (doubleBackToExitPressed == 2) {
-            logoutApplication()
+            exitApplication()
         } else {
             toast("Please press Back again to exit")
-            if (doubleBackToExitPressed > 0) {
-                Handler(mainLooper).postDelayed({
-                    doubleBackToExitPressed--
-                }, TWO_SECONDS)
-            }
+            Handler(mainLooper).postDelayed({
+                doubleBackToExitPressed = 0
+            }, TWO_SECONDS)
         }
     }
 
