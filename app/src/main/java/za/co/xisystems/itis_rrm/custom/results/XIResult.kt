@@ -23,7 +23,12 @@ sealed class XIResult<out T : Any> {
     companion object {
         fun progress(isLoading: Boolean): XIResult<Nothing> = Progress(isLoading)
         fun success(data: Any): XIResult<Any> = Success(data)
-        fun error(exception: Throwable, message: String): XIResult<Nothing> = Error(exception, message)
+        fun error(
+            exception: Throwable,
+            message: String,
+            topic: String? = null
+        ): XIResult<Nothing> = Error(exception, message, topic)
+
         fun status(message: String): XIResult<Nothing> = Status(message)
         fun progressUpdate(key: String, ratio: Float): XIResult<Nothing> = ProgressUpdate(key, ratio)
         fun webException(code: Int, error: ErrorResponse): XIResult<Nothing> = RestException(code, error)
@@ -33,7 +38,8 @@ sealed class XIResult<out T : Any> {
 
     class Error(
         val exception: Throwable,
-        val message: String
+        val message: String,
+        val topic: String? = null
     ) : XIResult<Nothing>()
 
     class RestException(

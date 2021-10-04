@@ -316,8 +316,8 @@
             app:destination="@id/nav_work"
             app:enterAnim="@anim/animate_slide_up_enter"
             app:exitAnim="@anim/animate_slide_down_exit"
-            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
-            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
+            app:popEnterAnim="@anim/animate_fade_enter"
+            app:popExitAnim="@anim/animate_fade_exit" />
     </fragment>
     <fragment
         android:id="@+id/captureItemMeasurePhotoFragment"

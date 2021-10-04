@@ -318,13 +318,7 @@ class CreateViewModel(
     fun setJobToEdit(jobId: String) = viewModelScope.launch(ioContext) {
         val fetchedJob = jobCreationDataRepository.getUpdatedJob(jobId)
         withContext(mainContext) {
-            currentJob.value = XIEvent(fetchedJob)
-        }
-    }
-
-    suspend fun checkIfJobSectionExists(jobId: String?, projectSectionId: String?): Boolean {
-        return withContext(Dispatchers.IO) {
-            jobCreationDataRepository.checkIfJobSectionExistForJobAndProjectSection(jobId, projectSectionId)
+            currentJob.postValue(XIEvent(fetchedJob))
         }
     }
 
@@ -359,16 +353,6 @@ class CreateViewModel(
     suspend fun estimateComplete(newJobItemEstimate: JobItemEstimateDTO?): Boolean {
         return newJobItemEstimate?.let { isEstimateComplete(it) } ?: false
     }
-
-    suspend fun getRealSectionStartKm(
-        projectSectionDTO: ProjectSectionDTO,
-        pointLocation: Double
-    ) = jobCreationDataRepository.findRealSectionStartKm(projectSectionDTO, pointLocation).pointLocation
-
-    suspend fun getRealSectionEndKm(
-        projectSectionDTO: ProjectSectionDTO,
-        pointLocation: Double
-    ) = jobCreationDataRepository.findRealSectionEndKm(projectSectionDTO, pointLocation).pointLocation
 
     suspend fun setCurrentProjectItem(itemId: String?) = viewModelScope.launch(ioContext) {
         val projectItem = jobCreationDataRepository.getProjectItemById(itemId)
@@ -519,9 +503,7 @@ class CreateViewModel(
 
         estimate.jobItemEstimatePhotos.addAll(JobUtils.sort(newPhotos) ?: ArrayList())
 
-        val updatedEstimate = jobCreationDataRepository.backupEstimate(estimate)
-
-        return@withContext updatedEstimate
+        return@withContext jobCreationDataRepository.backupEstimate(estimate)
     }
 
     fun unbindEstimateView() {

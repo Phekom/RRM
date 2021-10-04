@@ -1,8 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><!--
-  * Updated by Shaun McDonald on 2021/02/08
-  * Last modified on 2021/02/07 3:29 PM
-  * Copyright (c) 2021.  XI Systems  - All rights reserved
-  -->
+<?xml version="1.0" encoding="utf-8"?>
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
@@ -18,7 +14,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" /><!-- Compliant -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" /><!-- Compliant -->
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" /><!-- Compliant -->
     <uses-permission android:name="android.permission.CAMERA" /><!-- Compliant -->
     <uses-permission android:name="android.permission.ACCESS_MEDIA_LOCATION" /><!-- Compliant -->
 
@@ -68,6 +64,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".ui.auth.Exiter"
+            android:theme="@android:style/Theme.NoDisplay"
+            android:excludeFromRecents="true" />
         <activity
             android:name=".ui.auth.RegisterPinActivity"
             android:theme="@style/Theme.AppCompat.NoActionBar" />

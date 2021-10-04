@@ -249,4 +249,9 @@ class WorkViewModel(
     suspend fun getUOMForProjectItemId(projectItemId: String): String? = withContext(ioContext) {
         return@withContext workDataRepository.getUOMForProjectItemId(projectItemId)
     }
+
+    fun resetWorkState() {
+        workflowStatus = MutableLiveData()
+        workflowState = MutableLiveData()
+    }
 }

@@ -15,7 +15,6 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.async
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -40,7 +39,7 @@ class HomeViewModel(
     private var databaseStatus: MutableLiveData<XIEvent<XIResult<Boolean>>> = MutableLiveData()
     private var ioContext = Dispatchers.IO + Job(superJob)
     private var mainContext = Dispatchers.Main + Job(superJob)
-    var healthState: MutableLiveData<XIResult<Boolean>> = MutableLiveData()
+    var healthState: MutableLiveData<XIEvent<XIResult<Boolean>>> = MutableLiveData()
     var databaseState: MutableLiveData<XIResult<Boolean>?> = MutableLiveData()
 
     val user by lazyDeferred {
@@ -49,10 +48,12 @@ class HomeViewModel(
     val offlineSectionItems by lazyDeferred {
         offlineDataRepository.getSectionItems()
     }
-    val bigSyncDone: MutableLiveData<Boolean> = offlineDataRepository.bigSyncDone
+    var bigSyncDone: MutableLiveData<Boolean> = MutableLiveData()
 
     init {
         viewModelScope.launch(mainContext) {
+
+            bigSyncDone = offlineDataRepository.bigSyncDone
 
             databaseStatus = offlineDataRepository.databaseStatus
 
@@ -62,21 +63,20 @@ class HomeViewModel(
         }
     }
 
-    fun bigSyncCheck() = viewModelScope.launch(ioContext) {
+    fun bigSyncCheck() = viewModelScope.launch(mainContext) {
         offlineDataRepository.bigSyncCheck()
     }
 
-    fun fetchAllData(userId: String) = viewModelScope.launch(ioContext) {
+    fun fetchAllData(userId: String) = viewModelScope.launch(mainContext) {
 
         try {
-            val contractJob = async(dispatchers.default()) {
+            withContext(dispatchers.default()) {
                 offlineDataRepository.loadActivitySections(userId)
                 offlineDataRepository.loadLookups(userId)
                 offlineDataRepository.loadContracts(userId)
                 offlineDataRepository.loadTaskList(userId)
                 offlineDataRepository.loadWorkflows(userId)
             }
-            contractJob.await()
             withContext(mainContext) {
                 databaseState.postValue(XIResult.Success(true))
             }
@@ -100,12 +100,12 @@ class HomeViewModel(
         try {
             val result = offlineDataRepository.getServiceHealth(userId)
             withContext(mainContext) {
-                healthState.value = XIResult.Success(result)
+                healthState.value = XIEvent(XIResult.Success(result))
             }
         } catch (t: Throwable) {
             val message = "Health check failed: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
             withContext(mainContext) {
-                healthState.value = XIResult.Error(t, message)
+                healthState.value = XIEvent(XIResult.Error(t, message))
             }
         }
     }
@@ -115,5 +115,11 @@ class HomeViewModel(
         superJob.cancelChildren(CancellationException("viewmodel cleared"))
         databaseState = MutableLiveData()
         databaseStatus = MutableLiveData()
+        healthState = MutableLiveData()
+        bigSyncDone = MutableLiveData()
+    }
+
+    fun resetSyncStatus() {
+        bigSyncDone = MutableLiveData()
     }
 }

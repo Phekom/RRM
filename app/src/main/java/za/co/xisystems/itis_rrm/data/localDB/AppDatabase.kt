@@ -25,9 +25,7 @@ import za.co.xisystems.itis_rrm.data.localDB.dao.EstimateWorkDao
 import za.co.xisystems.itis_rrm.data.localDB.dao.EstimateWorkPhotoDao
 import za.co.xisystems.itis_rrm.data.localDB.dao.InfoClassDao
 import za.co.xisystems.itis_rrm.data.localDB.dao.ItemDaoTemp
-import za.co.xisystems.itis_rrm.data.localDB.dao.ItemSectionDao
 import za.co.xisystems.itis_rrm.data.localDB.dao.JobDao
-import za.co.xisystems.itis_rrm.data.localDB.dao.JobDaoTemp
 import za.co.xisystems.itis_rrm.data.localDB.dao.JobItemEstimateDao
 import za.co.xisystems.itis_rrm.data.localDB.dao.JobItemEstimatePhotoDao
 import za.co.xisystems.itis_rrm.data.localDB.dao.JobItemMeasureDao
@@ -121,7 +119,7 @@ abstract class AppDatabase : RoomDatabase() {
         private val LOCK = Any()
         private var secretphrase: String? = null
         operator fun invoke(context: Context, armoury: XIArmoury) = instance ?: synchronized(LOCK) {
-            secretphrase = "H4rdc0dedP4ssPhras3innit?!?" //  armoury.readPassphrase()
+            secretphrase = armoury.readPassphrase()
             Timber.e("Passphrase: $secretphrase")
             instance ?: buildDatabase(context.applicationContext).also {
                 instance = it
@@ -180,7 +178,6 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun getLookupDao(): LookupDao
     abstract fun getEntitiesDao(): EntitiesDao
     abstract fun getProjectItemDao(): ProjectItemDao
-    abstract fun getItemSectionDao(): ItemSectionDao
     abstract fun getProjectSectionDao(): ProjectSectionDao
     abstract fun getWorkFlowDao(): WorkFlowDao
     abstract fun getWorkFlowRouteDao(): WorkFlowRouteDao
@@ -191,7 +188,6 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun getEstimateWorkDao(): EstimateWorkDao
     abstract fun getEstimateWorkPhotoDao(): EstimateWorkPhotoDao
     abstract fun getSectionItemDao(): SectionItemDao
-    abstract fun getJobDaoTemp(): JobDaoTemp
     abstract fun getItemDaoTemp(): ItemDaoTemp
     abstract fun getSectionPointDao(): SectionPointDao
     abstract fun getWorkStepDao(): WorkStepDao

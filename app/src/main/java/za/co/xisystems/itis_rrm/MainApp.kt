@@ -70,10 +70,10 @@ open class MainApp : Application(), DIAware {
     override val di = DI.lazy {
 
         import(androidXModule(this@MainApp))
-        bind { singleton { Sage.getInstance(this@MainApp) } }
-        bind { singleton { Scribe.getInstance(this@MainApp, instance()) } }
-        bind { singleton { XIArmoury.getInstance(this@MainApp, instance(), instance()) } }
-        bind { singleton { PhotoUtil.getInstance(this@MainApp) } }
+        bind { singleton { Sage.getInstance(instance()) } }
+        bind { singleton { Scribe.getInstance(instance(), instance()) } }
+        bind { singleton { XIArmoury.getInstance(instance(), instance(), instance()) } }
+        bind { singleton { PhotoUtil.getInstance(instance()) } }
         bind { singleton { NetworkConnectionInterceptor(instance()) } }
         bind { singleton { BaseConnectionApi(instance()) } }
         bind { singleton { AppDatabase(instance(), instance()) } }

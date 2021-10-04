@@ -39,7 +39,7 @@ class XIArmoury private constructor(
     companion object {
         @Volatile
         internal var instance: XIArmoury? = null
-        const val PREFS_FILE = "specialstylesandcolours"
+        const val PREFS_FILE = "special_styles_and_colours"
         const val NOT_SET = "NoPassphraseSet"
         const val PASS_LENGTH = 64
         private val Lock = Any()
@@ -51,6 +51,7 @@ class XIArmoury private constructor(
             }.also {
                 it.sageInstance = sageInstance
                 it.scribeInstance = scribeInstance
+                it.initArmoury(it, appContext)
                 it.initArmoury(it, appContext)
                 instance = it
             }

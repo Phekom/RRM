@@ -23,6 +23,7 @@ import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.data.network.PermissionController
 import za.co.xisystems.itis_rrm.databinding.ActivityRegisterBinding
+import za.co.xisystems.itis_rrm.extensions.isConnected
 import za.co.xisystems.itis_rrm.ui.auth.model.AuthViewModel
 import za.co.xisystems.itis_rrm.ui.auth.model.AuthViewModelFactory
 import za.co.xisystems.itis_rrm.utils.Coroutines
@@ -63,29 +64,39 @@ class RegisterActivity : AppCompatActivity(), AuthListener, DIAware {
         val binding: ActivityRegisterBinding =
             DataBindingUtil.setContentView(this, R.layout.activity_register)
         viewModel = ViewModelProvider(this, factory).get(AuthViewModel::class.java)
+        viewModel.setupAuthListener(this)
         binding.viewmodel = viewModel
-        viewModel.authListener = this
+
+
 
         Coroutines.main {
-            val loggedInUser = viewModel.user.await()
-            loggedInUser.observe(this, { user ->
-                // Register the user
-                if (user != null) {
-                    when {
-                        user.userStatus != "Y" -> {
-                            onFailure(getString(R.string.user_blocked, user.userName))
-                        }
-                        user.pinHash == null -> {
-                            Coroutines.main {
-                                registerPinOrNot()
+            when (this@RegisterActivity.isConnected) {
+                true -> {
+                    val loggedInUser = viewModel.user.await()
+                    loggedInUser.observe(this, { user ->
+                        // Register the user
+                        if (user != null) {
+                            when {
+                                user.userStatus != "Y" -> {
+                                    onFailure(getString(R.string.user_blocked, user.userName))
+                                }
+                                user.pinHash == null -> {
+                                    Coroutines.main {
+                                        registerPinOrNot()
+                                    }
+                                }
+                                else -> {
+                                    authorizeUser()
+                                }
                             }
                         }
-                        else -> {
-                            authorizeUser()
-                        }
-                    }
+                    })
                 }
-            })
+                else -> {
+                    onFailure("This step requires an active internet connection.")
+                }
+            }
+
             serverTextView.setOnClickListener {
                 ToastUtils().toastServerAddress(this.applicationContext)
             }
@@ -94,7 +105,6 @@ class RegisterActivity : AppCompatActivity(), AuthListener, DIAware {
                 ToastUtils().toastVersion(this.applicationContext)
             }
         }
-        isOnline()
     }
 
     private fun authorizeUser() {
@@ -196,17 +206,13 @@ class RegisterActivity : AppCompatActivity(), AuthListener, DIAware {
 
     override fun onSuccess(userDTO: UserDTO) {
         loading.hide()
-        toast("You are logged in as ${userDTO.userName}")
+        toast("You are registered as ${userDTO.userName}")
     }
 
     override fun onFailure(message: String) {
         loading.hide()
         hideKeyboard()
         reg_container.snackbar(message)
-    }
-
-    private fun isOnline(): Boolean {
-        return ServiceUtil.isNetworkAvailable(this.applicationContext)
     }
 
     override fun onSignOut(userDTO: UserDTO) {
