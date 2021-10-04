@@ -116,6 +116,7 @@ class HomeViewModel(
         databaseState = MutableLiveData()
         databaseStatus = MutableLiveData()
         healthState = MutableLiveData()
+        bigSyncDone = MutableLiveData()
     }
 
     fun resetSyncStatus() {
