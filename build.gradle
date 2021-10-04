@@ -13,8 +13,8 @@ buildscript {
     ext {
         kotlin_version = '1.5.30'
         ktlint_gradle_version = '10.2.0'
-        dependency_evaluation_version = '0.52.0'
-        booster_version = '2.4.0'
+        // dependency_evaluation_version = '0.52.0'
+        booster_version = '4.0.0'
         navigation_version = '2.3.2'
     }
 
@@ -29,19 +29,20 @@ buildscript {
         classpath 'com.android.tools.build:gradle:7.0.2'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "com.didiglobal.booster:booster-gradle-plugin:$booster_version"
+
         // classpath 'com.novoda:gradle-static-analysis-plugin:1.2'
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
         classpath "androidx.navigation:navigation-safe-args-gradle-plugin:$navigation_version"
-        classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.5"
-        classpath "com.github.dcendents:android-maven-gradle-plugin:2.1"
+        // classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.5"
+        // classpath "com.github.dcendents:android-maven-gradle-plugin:2.1"
         classpath "org.jetbrains.dokka:dokka-android-gradle-plugin:0.9.18"
         classpath "com.deploygate:gradle:2.4.0"
         classpath "eu.davidea:grabver:2.0.2"
         classpath "org.jlleitschuh.gradle:ktlint-gradle:$ktlint_gradle_version"
-        classpath "com.autonomousapps:dependency-analysis-gradle-plugin:0.72.0"
+        // classpath "com.autonomousapps:dependency-analysis-gradle-plugin:0.72.0"
         classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:3.3"
-        classpath "io.gitlab.arturbosch.detekt:detekt-gradle-plugin:1.16.0"
+        classpath "io.gitlab.arturbosch.detekt:detekt-gradle-plugin:1.18.0"
         // classpath 'com.google.gms:google-services:4.3.10'
     }
 
@@ -52,9 +53,9 @@ buildscript {
 allprojects {
 
     apply plugin: "org.jlleitschuh.gradle.ktlint"
-    apply plugin: "com.autonomousapps.dependency-analysis"
+    // apply plugin: "com.autonomousapps.dependency-analysis"
     apply plugin: "org.sonarqube"
-    apply plugin: "com.didiglobal.booster"
+    // apply plugin: "com.didiglobal.booster"
     apply from: "$rootDir/detekt.gradle"
 
     repositories {
