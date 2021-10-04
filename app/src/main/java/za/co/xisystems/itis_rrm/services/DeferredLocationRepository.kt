@@ -16,7 +16,6 @@ import za.co.xisystems.itis_rrm.forge.DispatcherProvider
 import za.co.xisystems.itis_rrm.utils.Utils.round
 import kotlin.math.abs
 
-
 class DeferredLocationRepository(
     private val api: BaseConnectionApi,
     private val appDb: AppDatabase,
@@ -28,7 +27,7 @@ class DeferredLocationRepository(
         const val IN_BUFFER = -1.0
     }
 
-    @Suppress("MagicNumber")
+    @Suppress("MagicNumber", "TooGenericExceptionCaught")
     suspend fun getRouteSectionPoint(
         locationQuery: LocationValidation
     ): XIResult<LocationValidation> = withContext(dispatchers.io()) {
@@ -39,7 +38,7 @@ class DeferredLocationRepository(
             )
         try {
 
-            val routeSectionPointResponse: RouteSectionPointResponse? =
+            val routeSectionPointResponse: RouteSectionPointResponse =
                 apiRequest {
                     api.getRouteSectionPoint(
                         distance = DISTANCE.toDouble(),
@@ -49,11 +48,15 @@ class DeferredLocationRepository(
                         userId = locationQuery.userId
                     )
                 }
-            with(routeSectionPointResponse!!) {
+            with(routeSectionPointResponse) {
                 Timber.d("$routeSectionPointResponse")
 
                 if (!errorMessage.isNullOrBlank()) {
-                    throw ServiceException(errorMessage)
+                    if (errorMessage.contains("point not on line" as CharSequence, ignoreCase = true)) {
+                        throw notEvenWrongException(locationQuery)
+                    } else {
+                        throw ServiceException(errorMessage)
+                    }
                 }
 
                 // Interim fix until buffered routes
@@ -66,12 +69,7 @@ class DeferredLocationRepository(
                 if (linearId.contains("xxx" as CharSequence, ignoreCase = true)
                         .or(linearId.isBlank()).or(bufferLocations.isNullOrEmpty())
                 ) {
-
-                    throw LocationException(
-                        "Coordinate (lat: ${locationQuery.latitude}, " +
-                            "lng: ${locationQuery.longitude}) " +
-                            "is not in Sanral territory."
-                    )
+                    notEvenWrongException(locationQuery)
                 } else {
                     routeSectionPointResponse.apply {
                         val routeSectionPointResult = locationQuery.copy(
@@ -87,6 +85,14 @@ class DeferredLocationRepository(
         }
 
         return@withContext result
+    }
+
+    private fun notEvenWrongException(locationQuery: LocationValidation): LocationException {
+        return LocationException(
+            "Coordinate (lat: ${locationQuery.latitude}, " +
+                "lng: ${locationQuery.longitude}) " +
+                "is not in Sanral territory."
+        )
     }
 
     @Suppress("MagicNumber")

@@ -21,6 +21,7 @@ import za.co.xisystems.itis_rrm.custom.errors.NoConnectivityException
 import za.co.xisystems.itis_rrm.custom.errors.NoInternetException
 import za.co.xisystems.itis_rrm.custom.errors.ServiceException
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
+import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
 import za.co.xisystems.itis_rrm.forge.XIArmoury
@@ -271,28 +272,35 @@ class AuthViewModel(
 
     fun onRegButtonClick(view: View) {
         viewModelScope.launch(ioContext) {
+            try {
+                listenerNotify {
+                    authListener?.onStarted()
+                    view.isClickable = false
+                }
+                when {
+                    username.isNullOrEmpty() -> {
+                        listenerNotify {
+                            authListener?.onWarn("UserName is required")
+                        }
+                    }
 
-            listenerNotify {
-                authListener?.onStarted()
-                view.isClickable = false
-            }
-            when {
-                username.isNullOrEmpty() -> {
-                    listenerNotify {
-                        authListener?.onWarn("UserName is required")
+                    password.isNullOrEmpty() -> {
+                        listenerNotify {
+                            authListener?.onWarn("Password is required")
+                        }
+                    }
+                    else -> {
+                        registerNewUser(username, password)
                     }
                 }
-                password.isNullOrEmpty() -> {
-                    listenerNotify {
-                        authListener?.onWarn("Password is required")
-                    }
+            } catch (t: Throwable) {
+                listenerNotify {
+                    postError(t)
                 }
-                else -> {
-                    registerNewUser(username, password)
+            } finally {
+                listenerNotify {
+                    view.isClickable = true
                 }
-            }
-            listenerNotify {
-                view.isClickable = true
             }
         }
     }
@@ -313,6 +321,7 @@ class AuthViewModel(
                 imie,
                 androidDevice
             )
+
         } catch (e: Exception) {
             listenerNotify {
                 postError(e)
@@ -321,7 +330,9 @@ class AuthViewModel(
     }
 
     private fun postError(t: Throwable) {
-        authListener?.onFailure(t.message ?: XIErrorHandler.UNKNOWN_ERROR)
+        val xiError = XIResult.Error(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
+        val readableMessage = XIErrorHandler.humanReadable(xiError)
+        authListener?.onFailure(readableMessage)
     }
 
     suspend fun expirePin() {

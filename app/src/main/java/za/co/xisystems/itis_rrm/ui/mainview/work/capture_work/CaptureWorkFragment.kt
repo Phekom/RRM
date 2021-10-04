@@ -443,6 +443,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
                 is XIResult.Error -> {
                     toggleLongRunning(false)
                     ui.moveWorkflowButton.failProgress("Job submission failed")
+                    workViewModel.resetWorkState()
                     crashGuard(
                         throwable = result,
                         refreshAction = { this.retryJobSubmission() })
@@ -821,7 +822,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
     }
 
     private fun popViewOnWorkSubmit() {
-        val directions = CaptureWorkFragmentDirections.actionCaptureWorkFragmentToNavWork(itemEstimateJob.jobId)
+        val directions = CaptureWorkFragmentDirections.actionCaptureWorkFragmentToNavWork(itemEstimate.jobId)
         Navigation.findNavController(this.requireView()).navigate(directions)
     }
 

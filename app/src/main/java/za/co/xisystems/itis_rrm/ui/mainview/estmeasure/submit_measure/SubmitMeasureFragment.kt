@@ -28,6 +28,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.ExpandableGroup
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.viewbinding.GroupieViewHolder
+import kotlinx.android.synthetic.main.fragment_photo_estimate.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -359,6 +360,7 @@ class SubmitMeasureFragment : BaseFragment(), DIAware {
 
     private fun showSubmissionError(errorMessage: String) {
         extensionToast(
+            title = "Estimate Measurements",
             message = errorMessage,
             style = ERROR,
             position = ToastGravity.CENTER

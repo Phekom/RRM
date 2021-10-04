@@ -75,41 +75,39 @@ class MeasureCreationDataRepository(
         activity: FragmentActivity,
         itemMeasureJob: JobDTO
     ) {
+        val topic = "Saving Measurements"
+        postWorkflowStatus(XIResult.Progress(true))
+        val measureData = JsonObject()
+        val gson = Gson()
+        val newMeasure = gson.toJson(mSures)
+        val jsonElement: JsonElement = JsonParser.parseString(newMeasure)
+        measureData.addProperty("ContractId", contractVoId)
+        measureData.addProperty("JiNo", jimNo)
+        measureData.addProperty("JobId", jobId)
+        measureData.add("MeasurementItems", jsonElement)
+        measureData.addProperty("UserId", userId)
+        Timber.d("$measureData")
 
-        withContext(Dispatchers.IO) {
-            postWorkflowStatus(XIResult.Progress(true))
-            val measureData = JsonObject()
-            val gson = Gson()
-            val newMeasure = gson.toJson(mSures)
-            val jsonElement: JsonElement = JsonParser.parseString(newMeasure)
-            measureData.addProperty("ContractId", contractVoId)
-            measureData.addProperty("JiNo", jimNo)
-            measureData.addProperty("JobId", jobId)
-            measureData.add("MeasurementItems", jsonElement)
-            measureData.addProperty("UserId", userId)
-            Timber.d("$measureData")
+        val measurementItemResponse = apiRequest { api.saveMeasurementItems(measureData) }
 
-            val measurementItemResponse = apiRequest { api.saveMeasurementItems(measureData) }
+        val messages = measurementItemResponse.errorMessage ?: ""
 
-            val messages = measurementItemResponse.errorMessage
-
-            // You're only okay to perform the next step if this succeeded.
-            if (messages.isNullOrBlank()) {
-                persistMeasurementWorkflow(
-                    measurementItemResponse.workflowJob,
-                    mSures,
-                    activity,
-                    itemMeasureJob
+        // You're only okay to perform the next step if this succeeded.
+        if (messages.isBlank()) {
+            persistMeasurementWorkflow(
+                measurementItemResponse.workflowJob,
+                mSures,
+                activity,
+                itemMeasureJob
+            )
+        } else {
+            postWorkflowStatus(
+                XIResult.Error(
+                    topic = topic,
+                    exception = ServiceException(messages),
+                    message = messages
                 )
-            } else {
-                val message = "Failed to save measurements: $messages"
-                postWorkflowStatus(
-                     XIResult.Error(
-                        ServiceException(message),
-                        message
-                    )
-                )
-            }
+            )
         }
     }
 
@@ -118,9 +116,9 @@ class MeasureCreationDataRepository(
         jobItemMeasure: ArrayList<JobItemMeasureDTO>,
         activity: FragmentActivity,
         itemMeasureJob: JobDTO
-    ) = withContext(Dispatchers.IO + uncaughtExceptionHandler) {
+    ) = withContext(Dispatchers.IO) {
+        val topic = "Measurement Workflow"
         try {
-
             // itemMeasureJob.JobItemMeasures = jobItemMeasure
             val measureJob = setWorkflowJobBigEndianGuids(workflowJobDTO)
             insertOrUpdateWorkflowJobInSQLite(measureJob, estimatesPush = false)
@@ -128,9 +126,9 @@ class MeasureCreationDataRepository(
             val myJob = getUpdatedJob(itemMeasureJob.jobId)
             moveJobToNextWorkflow(activity, measureJob, myJob)
         } catch (t: Throwable) {
-            val message = "Failed to process workflow move: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
-            Timber.e(t, message)
-            workflowStatus.postValue(XIEvent(XIResult.Error(t, message)))
+            val message = t.message ?: XIErrorHandler.UNKNOWN_ERROR
+            Timber.e(t)
+            workflowStatus.postValue(XIEvent(XIResult.Error(topic = topic, exception = t, message = message)))
         }
     }
 
@@ -228,10 +226,16 @@ class MeasureCreationDataRepository(
         myJob: WorkflowJobDTO?,
         job: JobDTO
     ) {
-
+        val topic = "Measurements Workflow Updates"
         if (myJob?.workflowItemMeasures == null) {
             val errorMessage = "No measurements to process. Please send them when you have some."
-            postWorkflowStatus(XIResult.Error(RecoverableException(errorMessage), errorMessage))
+            postWorkflowStatus(
+                XIResult.Error(
+                    topic = topic,
+                    exception = RecoverableException(errorMessage),
+                    message = errorMessage
+                )
+            )
         } else {
             val description = activity.resources.getString(R.string.submit_for_approval)
 
@@ -249,10 +253,10 @@ class MeasureCreationDataRepository(
                     }
                 }
 
-                measurementTracks.forEachIndexed {
-                        index, measurementTrack ->
+                measurementTracks.forEachIndexed { index, measurementTrack ->
                     postWorkflowStatus(
-                        XIResult.Status("Processing ${index + 1} of ${measurementTracks.size} measurements"))
+                        XIResult.Status("Processing ${index + 1} of ${measurementTracks.size} measurements")
+                    )
                     val workflowMoveResponse = apiRequest {
                         api.getWorkflowMove(
                             measurementTrack.userId,
@@ -285,10 +289,9 @@ class MeasureCreationDataRepository(
                 postWorkflowStatus(XIResult.Success(job.jiNo!!))
                 workComplete = true
             } catch (t: Throwable) {
-                val prefix = "Workflow failed:"
-                val errorMessage = "$prefix ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
+                val errorMessage = t.message ?: XIErrorHandler.UNKNOWN_ERROR
                 Timber.e(t)
-                postWorkflowStatus(XIResult.Error(t, errorMessage))
+                postWorkflowStatus(XIResult.Error(topic = topic, exception = t, message = errorMessage))
             }
         }
     }
@@ -298,13 +301,13 @@ class MeasureCreationDataRepository(
     }
 
     private fun getErrorMsg():
-            String {
+        String {
         getErrorState()
         return "Error: WorkFlow Job is null"
     }
 
     private fun getErrorState():
-            Boolean {
+        Boolean {
         return true
     }
 
@@ -321,7 +324,7 @@ class MeasureCreationDataRepository(
     suspend fun getJobItemsToMeasureForJobId(
         jobID: String?
     ):
-            LiveData<List<JobItemEstimateDTO>> {
+        LiveData<List<JobItemEstimateDTO>> {
         return withContext(Dispatchers.IO) {
             appDb.getJobItemEstimateDao().getJobItemsToMeasureForJobId(jobID!!)
         }
@@ -339,7 +342,7 @@ class MeasureCreationDataRepository(
         jobId: String?,
         estimateId: String
     ):
-            LiveData<List<JobItemMeasureDTO>> {
+        LiveData<List<JobItemMeasureDTO>> {
         return withContext(Dispatchers.IO) {
             appDb.getJobItemMeasureDao()
                 .getJobItemMeasuresForJobIdAndEstimateId2(jobId, estimateId)
@@ -349,7 +352,7 @@ class MeasureCreationDataRepository(
     suspend fun getItemForItemId(
         projectItemId: String?
     ):
-            LiveData<ProjectItemDTO> {
+        LiveData<ProjectItemDTO> {
         return withContext(Dispatchers.IO) {
             appDb.getProjectItemDao().getItemForItemId(projectItemId!!)
         }
@@ -445,6 +448,7 @@ class MeasureCreationDataRepository(
         job: WorkflowJobDTO,
         pushMeasures: Boolean = false
     ) {
+        val topic = "Workflow updates"
         try {
             var measuresFlag = pushMeasures
             appDb.getJobDao()
@@ -526,15 +530,20 @@ class MeasureCreationDataRepository(
                 }
             }
         } catch (e: Exception) {
-            val saveFail = XIResult.Error(e, "Failed to save updates: ${e.message}")
+            val saveFail = XIResult.Error(
+                topic = topic,
+                exception = e,
+                message = e.message ?: XIErrorHandler.UNKNOWN_ERROR
+            )
+
             postWorkflowStatus(saveFail)
             Timber.e(e, "Failed to save updates: ${e.message}")
         }
     }
 
     private fun setWorkflowJobBigEndianGuids(job: WorkflowJobDTO): WorkflowJobDTO? {
+        val topic = "Measurement Workflow Conversions"
         try {
-
             job.jobId = DataConversion.toBigEndian(job.jobId)
             job.trackRouteId = DataConversion.toBigEndian(job.trackRouteId)
             job.workflowItemEstimates.forEach { jie ->
@@ -569,7 +578,7 @@ class MeasureCreationDataRepository(
             return job
         } catch (t: Throwable) {
             val message = "Failed to convert to BigEndian: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
-            postWorkflowStatus(XIResult.Error(LocalDataException(message), message))
+            postWorkflowStatus(XIResult.Error(topic = topic, exception = LocalDataException(message), message = message))
             postWorkflowStatus(XIResult.Progress(false))
             return null
         }

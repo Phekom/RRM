@@ -95,6 +95,7 @@ class JobApprovalDataRepository(
 
     suspend fun upDateEstimate(newQuantity: String, newRate: String, estimateId: String) {
 
+        val topic = "Estimate Update"
         try {
             val newEstimateId = DataConversion.toLittleEndian(estimateId)
 
@@ -119,7 +120,7 @@ class JobApprovalDataRepository(
         } catch (throwable: Throwable) {
             val message = "Failed to update quantity: ${throwable.message ?: XIErrorHandler.UNKNOWN_ERROR}"
             Timber.e(throwable, message)
-            postUpdateStatus(XIResult.Error(throwable, message))
+            postUpdateStatus(XIResult.Error(topic = topic, exception = throwable, message = message))
         }
     }
 
@@ -133,13 +134,20 @@ class JobApprovalDataRepository(
         newQuantity: Double,
         newRate: Double
     ) {
+        val topic = "Updating Quantity"
         try {
             appDb.getJobItemEstimateDao().upDateLineRate(newEstimateId!!, newQuantity, newRate)
             postUpdateStatus(XIResult.Success("Quantity updated"))
         } catch (throwable: Throwable) {
-            val message = "Failed to update local quantity: ${throwable.message ?: XIErrorHandler.UNKNOWN_ERROR}"
-            Timber.e(throwable, message)
-            postUpdateStatus(XIResult.Error(LocalDataException(message), message))
+            val message = throwable.message ?: XIErrorHandler.UNKNOWN_ERROR
+            Timber.e(throwable)
+            postUpdateStatus(
+                XIResult.Error(
+                    topic = topic,
+                    exception = LocalDataException(message),
+                    message = message
+                )
+            )
         }
     }
 
@@ -151,6 +159,7 @@ class JobApprovalDataRepository(
         direction: Int
     ) {
         withContext(dispatchers.io()) {
+            val topic = "Job Approval Workflow"
             try {
                 val workflowMoveResponse =
                     apiRequest { api.getWorkflowMove(userId, trackRouteId, description, direction) }
@@ -170,9 +179,9 @@ class JobApprovalDataRepository(
                     }
                 }
             } catch (t: Throwable) {
-                val message = "Failed to move workflow: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
-                Timber.e(t, message)
-                postWorkflowStatus(XIResult.Error(t, message))
+                val message = t.message ?: XIErrorHandler.UNKNOWN_ERROR
+                Timber.e(t)
+                postWorkflowStatus(XIResult.Error(topic = topic, exception = t, message = message))
             }
         }
     }
@@ -229,6 +238,7 @@ class JobApprovalDataRepository(
 
     private suspend fun processWorkflowUpdates(job: WorkflowJobDTO) {
         try {
+
             appDb.getJobDao().updateJob(job.trackRouteId, job.actId, job.jiNo, job.jobId)
 
             job.workflowItemEstimates.forEach { jobItemEstimate ->

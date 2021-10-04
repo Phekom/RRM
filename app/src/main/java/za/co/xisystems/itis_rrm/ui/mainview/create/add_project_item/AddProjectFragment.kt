@@ -17,9 +17,7 @@ import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.os.HandlerCompat
-import androidx.core.view.isNotEmpty
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenCreated
 import androidx.lifecycle.whenResumed
@@ -113,6 +111,7 @@ class AddProjectFragment : BaseFragment(), DIAware {
     private var stateRestored: Boolean = false
     private var jobBound: Boolean = false
     private val addProjectArgs: AddProjectFragmentArgs by navArgs()
+    private var jobId: String? = null
 
     private val touchCallback: SwipeTouchCallback by lazy {
         object : SwipeTouchCallback() {
@@ -138,16 +137,16 @@ class AddProjectFragment : BaseFragment(), DIAware {
         lifecycleScope.launch {
             whenCreated {
                 uiScope.onCreate()
+                lifecycle.addObserver(uiScope)
+                initViewModels()
             }
             whenStarted {
-                lifecycle.addObserver(uiScope)
                 requireActivity().hideKeyboard()
-                initViewModels()
                 uiUpdate()
             }
             whenResumed {
-                if (ui.projectRecyclerView.isNotEmpty()) {
-                    calculateTotalCost()
+                if (!this@AddProjectFragment::job.isInitialized) {
+                    uiUpdate()
                 }
             }
         }
@@ -183,8 +182,7 @@ class AddProjectFragment : BaseFragment(), DIAware {
             savedInstanceState != null && !stateRestored -> {
                 onRestoreInstanceState(savedInstanceState)
             }
-            else -> {
-                stateRestored = false
+            !stateRestored -> {
                 (activity as MainActivity).supportActionBar?.title = getString(R.string.new_job)
                 newJobItemEstimatesList = ArrayList()
                 // Generic new job layout
@@ -268,58 +266,60 @@ class AddProjectFragment : BaseFragment(), DIAware {
     }
 
     private fun initCurrentJobListener() {
-        val currentJobQuery = createViewModel.currentJob.distinctUntilChanged()
-        currentJobQuery.observe(viewLifecycleOwner, { jobEvent ->
-            jobEvent.getContentIfNotHandled()?.let { jobToEdit ->
-                job = jobToEdit
-                jobBound = true
-                Coroutines.main {
-                    if (createViewModel.jobDesc != job.descr) {
-                        toast("Editing ${job.descr}")
-                        createViewModel.jobDesc = job.descr
-                    }
-                    projectID = job.projectId
-                    val contractNo =
-                        createViewModel.getContractNoForId(job.contractVoId)
-                    val projectCode =
-                        createViewModel.getProjectCodeForId(job.projectId)
-                    ui.selectedContractTextView.text = contractNo
-                    ui.selectedProjectTextView.text = projectCode
-
-                    ui.infoTextView.visibility = View.GONE
-                    ui.lastLin.visibility = View.VISIBLE
-                    ui.totalCostTextView.visibility = View.VISIBLE
-
-                    // Set job description init actionBar
-                    (activity as MainActivity).supportActionBar?.title = createViewModel.jobDesc
-
-                    // Set Job Start & Completion Dates
-
-                    job.dueDate?.let {
-                        ui.dueDateTextView.text = DateUtil.toStringReadable(DateUtil.stringToDate(it))
-                        dueDate = DateUtil.stringToDate(it)!!
-                    }
-
-                    job.startDate?.let {
-                        ui.startDateTextView.text = DateUtil.toStringReadable(DateUtil.stringToDate(it))
-                        startDate = DateUtil.stringToDate(it)!!
-                    }
-
-                    createViewModel.tempProjectItem.observe(viewLifecycleOwner, {
-                        it.getContentIfNotHandled()?.let {
-                            ui.infoTextView.visibility = View.GONE
-                            ui.lastLin.visibility = View.VISIBLE
-                            ui.totalCostTextView.visibility = View.VISIBLE
+        createViewModel.currentJob.observe(
+            viewLifecycleOwner, { jobEvent ->
+                jobEvent.getContentIfNotHandled()?.let { jobToEdit ->
+                    job = jobToEdit
+                    jobId = job.jobId
+                    jobBound = true
+                    Coroutines.main {
+                        if (createViewModel.jobDesc != job.descr) {
+                            toast("Editing ${job.descr}")
+                            createViewModel.jobDesc = job.descr
                         }
-                    })
-                    bindProjectItems()
-                    if (job.actId == 1) {
-                        ui.addItemButton.visibility = View.INVISIBLE
-                        ui.submitButton.text = getString(R.string.complete_upload)
+                        projectID = job.projectId
+                        val contractNo =
+                            createViewModel.getContractNoForId(job.contractVoId)
+                        val projectCode =
+                            createViewModel.getProjectCodeForId(job.projectId)
+                        ui.selectedContractTextView.text = contractNo
+                        ui.selectedProjectTextView.text = projectCode
+
+                        ui.infoTextView.visibility = View.GONE
+                        ui.lastLin.visibility = View.VISIBLE
+                        ui.totalCostTextView.visibility = View.VISIBLE
+
+                        // Set job description init actionBar
+                        (activity as MainActivity).supportActionBar?.title = createViewModel.jobDesc
+
+                        // Set Job Start & Completion Dates
+
+                        job.dueDate?.let {
+                            ui.dueDateTextView.text = DateUtil.toStringReadable(DateUtil.stringToDate(it))
+                            dueDate = DateUtil.stringToDate(it)!!
+                        }
+
+                        job.startDate?.let {
+                            ui.startDateTextView.text = DateUtil.toStringReadable(DateUtil.stringToDate(it))
+                            startDate = DateUtil.stringToDate(it)!!
+                        }
+
+                        createViewModel.tempProjectItem.observe(viewLifecycleOwner, {
+                            it.getContentIfNotHandled()?.let {
+                                ui.infoTextView.visibility = View.GONE
+                                ui.lastLin.visibility = View.VISIBLE
+                                ui.totalCostTextView.visibility = View.VISIBLE
+                            }
+                        })
+                        bindProjectItems()
+                        if (job.actId == 1) {
+                            ui.addItemButton.visibility = View.INVISIBLE
+                            ui.submitButton.text = getString(R.string.complete_upload)
+                        }
+                        calculateTotalCost(job)
                     }
                 }
-            }
-        })
+            })
     }
 
     private fun bindProjectItems() = uiScope.launch(uiScope.coroutineContext) {
@@ -344,8 +344,6 @@ class AddProjectFragment : BaseFragment(), DIAware {
         when {
             items.isNotEmpty() -> {
                 initRecyclerView(items.toProjecListItems())
-                calculateTotalCost()
-                bindCosting()
             }
             else -> {
                 clearProjectItems()
@@ -358,15 +356,6 @@ class AddProjectFragment : BaseFragment(), DIAware {
         ui.totalCostTextView.text = ""
         ui.lastLin.visibility = View.GONE
         ui.totalCostTextView.visibility = View.GONE
-    }
-
-    private fun bindCosting() = uiScope.launch(uiScope.coroutineContext) {
-        createViewModel.estimateLineRate.observe(
-            viewLifecycleOwner,
-            {
-                calculateTotalCost()
-            }
-        )
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -415,30 +404,20 @@ class AddProjectFragment : BaseFragment(), DIAware {
 
     private fun onRestoreInstanceState(savedInstanceState: Bundle) {
         savedInstanceState.run {
-            val jobId = getSerializable(JOB_KEY) as String?
-            val projectId = getSerializable(PROJECT_KEY) as String?
-            Coroutines.main {
-                projectId?.let { restoredProjectId ->
-                    projectID = restoredProjectId
-                }
-                jobId?.let { restoredId ->
-                    Coroutines.main {
-                        createViewModel.setJobToEdit(restoredId)
-                        withContext(Dispatchers.Main.immediate) {
-                            uiUpdate()
-                            stateRestored = true
-                        }
-                    }
-                }
-            }
+            jobId = getString(JOB_KEY)
+            projectID = getString(PROJECT_KEY)
+        }
+
+        jobId?.let { restoredId ->
+            createViewModel.setJobToEdit(restoredId)
+            uiUpdate()
+            stateRestored = true
         }
     }
 
     private fun initRecyclerView(projectListItems: List<ProjectItem>) {
         groupAdapter = GroupAdapter<GroupieViewHolder<NewJobItemBinding>>().apply {
             update(projectListItems)
-            notifyDataSetChanged()
-            calculateTotalCost()
         }
 
         ui.projectRecyclerView.apply {
@@ -630,7 +609,6 @@ class AddProjectFragment : BaseFragment(), DIAware {
                 createViewModel.backupJob(updatedJob)
                 createViewModel.setJobForSubmission(updatedJob.jobId)
             }
-
         }
     }
 
@@ -638,7 +616,7 @@ class AddProjectFragment : BaseFragment(), DIAware {
         Coroutines.ui {
             toggleLongRunning(false)
             HandlerCompat.postDelayed(Handler(Looper.getMainLooper()), {
-                createViewModel.setJobToEdit(job.jobId)
+                createViewModel.setJobToEdit(jobId!!)
                 initCurrentJobListener()
             }, null, TWO_SECONDS)
         }
@@ -858,9 +836,10 @@ class AddProjectFragment : BaseFragment(), DIAware {
         resetContractAndProjectSelection(view)
     }
 
-    private fun calculateTotalCost() {
-        Coroutines.main {
-            ui.totalCostTextView.text = JobUtils.formatTotalCost(job)
+    @Synchronized
+    private fun calculateTotalCost(costingJob: JobDTO) {
+        Coroutines.ui {
+            ui.totalCostTextView.text = JobUtils.formatTotalCost(costingJob)
         }
     }
 

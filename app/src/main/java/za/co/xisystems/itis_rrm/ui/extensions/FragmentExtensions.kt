@@ -20,7 +20,7 @@ fun Fragment.crashGuard(
 
         true -> {
             this.extensionToast(
-                title = "Network Action Failed",
+                title = throwable.topic ?: "Network Action Failed",
                 message = throwable.exception.message ?: XIErrorHandler.UNKNOWN_ERROR,
                 style = ToastStyle.NO_INTERNET,
                 position = ToastGravity.BOTTOM,
@@ -42,6 +42,7 @@ fun Fragment.crashGuard(
         }
         else -> {
             this.extensionToast(
+                title = throwable.topic,
                 message = XIErrorHandler.humanReadable(throwable),
                 style = ToastStyle.ERROR,
                 position = ToastGravity.BOTTOM,
