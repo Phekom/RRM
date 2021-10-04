@@ -167,7 +167,7 @@ abstract class BaseFragment(
         savedInstanceState: Bundle?
     ) {
         super.onViewCreated(view, savedInstanceState)
-        coordinator = view
+        coordinator = view.findViewById(R.id.coordinator)
         sharedViewModel = ViewModelProvider(this.requireActivity(), shareFactory).get(SharedViewModel::class.java)
         initAnimations()
     }

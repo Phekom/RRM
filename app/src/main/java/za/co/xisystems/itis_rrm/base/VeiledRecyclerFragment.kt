@@ -68,7 +68,7 @@ abstract class VeiledRecyclerFragment : BaseFragment() {
             fetchQuery()
         } catch (t: Throwable) {
             veilRecyclerFrameView.unVeil()
-            val xiFail = XIResult.Error(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
+            val xiFail = XIResult.Error(exception = t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
             crashGuard(
                 throwable = xiFail,
                 refreshAction = { retryAction() }

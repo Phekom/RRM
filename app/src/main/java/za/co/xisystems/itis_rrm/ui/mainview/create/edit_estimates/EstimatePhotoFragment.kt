@@ -491,7 +491,7 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
 
     private fun updateData(view: View) {
         this.toggleLongRunning(false)
-        createViewModel.unbindEstimateView()
+        // createViewModel.unbindEstimateView()
         newJob?.let {
             navToAddProject(view)
         }

@@ -55,7 +55,6 @@ import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentHomeBinding
 import za.co.xisystems.itis_rrm.extensions.isConnected
-import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.ui.extensions.crashGuard
 import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
@@ -124,7 +123,7 @@ class HomeFragment : BaseFragment(), DIAware {
         }
     }
 
-    fun retrySections() {
+    private fun retrySections() {
         IndefiniteSnackbar.hide()
         uiScope.launch(uiScope.coroutineContext) {
             acquireUser()
@@ -169,7 +168,7 @@ class HomeFragment : BaseFragment(), DIAware {
         }
     }
 
-    fun retryAcquireUser() {
+    private fun retryAcquireUser() {
         IndefiniteSnackbar.hide()
         uiScope.launch(uiScope.coroutineContext) {
             checkConnectivity()
@@ -228,6 +227,13 @@ class HomeFragment : BaseFragment(), DIAware {
             ToastUtils().toastVersion(requireContext())
         }
 
+        homeViewModel.bigSyncDone.observe(viewLifecycleOwner, {
+            Timber.d("Synced: $it")
+            if (!it) {
+                promptUserToSync()
+            }
+        })
+
         // Check if database is synched and prompt user if necessary
         isAppDbSynched()
     }
@@ -251,40 +257,39 @@ class HomeFragment : BaseFragment(), DIAware {
         // prevent viewBinding from leaking
         _ui = null
         uiScope.destroy()
-        homeViewModel.databaseState.removeObservers(viewLifecycleOwner)
     }
 
     private fun initProgressViews() {
 
         ui.pvContracts.setOnProgressChangeListener {
             when {
-                it >= 0f -> ui.pvContracts.labelText = "projects ${it.toInt()}%"
+                it > 0f -> ui.pvContracts.labelText = "projects ${it.toInt()}%"
                 it == progressComplete -> {
                     maxOutPv(ui.pvContracts, "projects synched")
                 }
             }
-            ui.pvSections.visibility = View.GONE
-            ui.pvTasks.visibility = View.GONE
+            // ui.pvSections.visibility = View.GONE
+            // ui.pvTasks.visibility = View.GONE
         }
         ui.pvTasks.setOnProgressChangeListener {
             when {
-                it >= 0f -> ui.pvTasks.labelText = "tasks ${it.toInt()}%"
+                it > 0f -> ui.pvTasks.labelText = "tasks ${it.toInt()}%"
                 it == progressComplete -> {
                     maxOutPv(ui.pvTasks, "tasks synched")
                 }
             }
-            ui.pvContracts.visibility = View.GONE
-            ui.pvSections.visibility = View.GONE
+            // ui.pvContracts.visibility = View.GONE
+            // ui.pvSections.visibility = View.GONE
         }
         ui.pvSections.setOnProgressChangeListener {
             when {
-                it >= 0 -> ui.pvSections.labelText = "goods and services ${it.toInt()}%"
+                it > 0 -> ui.pvSections.labelText = "sections ${it.toInt()}%"
                 it == progressComplete -> {
                     maxOutPv(ui.pvSections, "goods synched")
                 }
             }
-            ui.pvSections.visibility = View.GONE
-            ui.pvTasks.visibility = View.GONE
+            // ui.pvSections.visibility = View.GONE
+            // ui.pvTasks.visibility = View.GONE
         }
     }
 
@@ -305,15 +310,7 @@ class HomeFragment : BaseFragment(), DIAware {
     }
 
     private fun isAppDbSynched() {
-        uiScope.launch(uiScope.coroutineContext) {
-            homeViewModel.bigSyncDone.observeOnce(viewLifecycleOwner, {
-                Timber.d("Synced: $it")
-                if (!it) {
-                    promptUserToSync()
-                }
-            })
-            homeViewModel.bigSyncCheck()
-        }
+        homeViewModel.bigSyncCheck()
     }
 
     private fun initSwipeToRefresh() {
@@ -341,50 +338,54 @@ class HomeFragment : BaseFragment(), DIAware {
         //  Check if Network Enabled
         if (!networkEnabled) {
             ui.dataEnabled.setText(R.string.mobile_data_not_connected)
-            ui.dataEnabled.setTextColor(colorNotConnected)
             ui.ivConnection.setImageDrawable(
                 ContextCompat.getDrawable(
                     this.requireContext(),
                     R.drawable.ic_baseline_signal_cellular_connected_no_internet_32
-                )
+                ).also { drawable ->
+                    drawable?.setTint(colorNotConnected)
+                }
             )
             result = false
         } else {
             ui.dataEnabled.setText(R.string.mobile_data_connected)
-            ui.dataEnabled.setTextColor(colorConnected)
             ui.ivConnection.setImageDrawable(
                 ContextCompat.getDrawable(
                     this.requireContext(),
                     R.drawable.ic_baseline_signal_cellular_connected_32
-                )
+                ).also { drawable ->
+                    drawable?.setTint(colorConnected)
+                }
             )
         }
 
         // Check if GPS connected
         if (!gpsEnabled) {
             ui.locationEnabled.text = requireActivity().getString(R.string.gps_not_connected)
-            ui.locationEnabled.setTextColor(colorNotConnected)
             ui.ivLocation.setImageDrawable(
                 ContextCompat.getDrawable(
                     this.requireContext(),
                     R.drawable.ic_baseline_location_off_24
-                )
+                ).also { drawable ->
+                    drawable?.setTint(colorNotConnected)
+                }
             )
         } else {
             ui.locationEnabled.text = requireActivity().getString(R.string.gps_connected)
-            ui.locationEnabled.setTextColor(colorConnected)
             ui.ivLocation.setImageDrawable(
                 ContextCompat.getDrawable(
                     this.requireContext(),
                     R.drawable.ic_baseline_location_on_24
-                )
+                ).also { drawable ->
+                    drawable?.setTint(colorConnected)
+                }
             )
         }
 
         return result
     }
 
-    fun retrySync() {
+    private fun retrySync() {
         IndefiniteSnackbar.hide()
         bigSync()
     }
@@ -505,6 +506,8 @@ class HomeFragment : BaseFragment(), DIAware {
                     throwable = XIResult.Error(t, errorMessage),
                     refreshAction = { this@HomeFragment.retrySync() }
                 )
+            } finally {
+                homeViewModel.resetSyncStatus()
             }
         } else {
             noInternetWarning()
@@ -532,27 +535,33 @@ class HomeFragment : BaseFragment(), DIAware {
 
     private fun servicesHealthCheck() = uiScope.launch(uiScope.coroutineContext) {
         if (!activity?.isFinishing!! && userDTO != null && networkEnabled) {
-            homeViewModel.healthState.observe(viewLifecycleOwner, { result ->
-                when (result) {
-                    is XIResult.Success -> {
-                        updateServiceHealth(result.data)
-                    }
-                    is XIResult.Error -> {
-                        crashGuard(
-                            throwable = result,
-                            refreshAction = { this@HomeFragment.retryHealthCheck() }
-                        )
-                    }
-                    else -> {
-                        Timber.d("$result")
-                    }
+            homeViewModel.healthState.observe(viewLifecycleOwner, { outcome ->
+                outcome.getContentIfNotHandled()?.let { result ->
+                    processHealthCheck(result)
                 }
             })
             homeViewModel.healthCheck(userDTO!!.userId)
         }
     }
 
-    fun retryHealthCheck() {
+    private fun processHealthCheck(result: XIResult<Boolean>) {
+        when (result) {
+            is XIResult.Success<Boolean> -> {
+                updateServiceHealth(result.data)
+            }
+            is XIResult.Error -> {
+                crashGuard(
+                    throwable = result,
+                    refreshAction = { this@HomeFragment.retryHealthCheck() }
+                )
+            }
+            else -> {
+                Timber.d("$result")
+            }
+        }
+    }
+
+    private fun retryHealthCheck() {
         IndefiniteSnackbar.hide()
         servicesHealthCheck()
     }
@@ -566,7 +575,9 @@ class HomeFragment : BaseFragment(), DIAware {
                     ContextCompat.getDrawable(
                         this@HomeFragment.requireContext(),
                         R.drawable.ic_baseline_services_up
-                    )
+                    ).also { drawable ->
+                        drawable?.setTint(colorConnected)
+                    }
                 )
             }
             else -> {
@@ -576,7 +587,9 @@ class HomeFragment : BaseFragment(), DIAware {
                     ContextCompat.getDrawable(
                         this@HomeFragment.requireContext(),
                         R.drawable.ic_baseline_services_down
-                    )
+                    ).also { drawable ->
+                        drawable?.setTint(colorNotConnected)
+                    }
                 )
             }
         }
