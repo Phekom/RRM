@@ -11,6 +11,7 @@ import android.location.LocationManager
 import android.provider.Settings
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
@@ -20,6 +21,7 @@ import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.forge.XIArmoury
+import za.co.xisystems.itis_rrm.ui.auth.Exiter
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
 
 /**
@@ -74,10 +76,14 @@ fun Activity.exitApplication() {
     this.run {
         AppDatabase.closeDown()
         XIArmoury.closeArmoury()
-        val intent = Intent(Intent.ACTION_MAIN)
-        intent.flags = FLAG_ACTIVITY_NEW_TASK or FLAG_ACTIVITY_CLEAR_TASK
-        intent.addCategory(Intent.CATEGORY_HOME)
-        this.startActivity(intent)
+        val relaunch = Intent(this, Exiter::class.java)
+            .addFlags(
+                FLAG_ACTIVITY_NEW_TASK // CLEAR_TASK requires this
+                    or FLAG_ACTIVITY_CLEAR_TASK // finish everything else in the task
+                    or Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS
+            ) // hide (remove, in this case) task from recents
+
+        ContextCompat.startActivity(this, relaunch, null)
     }
 }
 

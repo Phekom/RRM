@@ -153,7 +153,6 @@ class LoginActivity : BaseActivity(), AuthListener, DIAware {
         doubleBackToExitPressed++
         if (doubleBackToExitPressed == 2) {
             exitApplication()
-            finish()
         } else {
             toast("Please press Back again to exit")
             Handler(mainLooper).postDelayed({
@@ -164,8 +163,11 @@ class LoginActivity : BaseActivity(), AuthListener, DIAware {
 
     private fun gotoMainActivity() {
         try {
-            val intent = Intent(this, MainActivity::class.java)
-            startActivity(intent)
+            Intent(this, MainActivity::class.java).also { mainAct ->
+                mainAct.flags =
+                    Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                startActivity(mainAct)
+            }
             reset()
         } catch (t: Throwable) {
             val xiErr = Error(t, "Failed to login")

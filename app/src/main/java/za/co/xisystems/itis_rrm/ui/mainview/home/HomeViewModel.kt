@@ -15,7 +15,6 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.async
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -54,6 +53,8 @@ class HomeViewModel(
     init {
         viewModelScope.launch(mainContext) {
 
+            bigSyncDone = offlineDataRepository.bigSyncDone
+
             databaseStatus = offlineDataRepository.databaseStatus
 
             databaseState = Transformations.map(databaseStatus) {
@@ -62,21 +63,20 @@ class HomeViewModel(
         }
     }
 
-    fun bigSyncCheck() = viewModelScope.launch(ioContext) {
+    fun bigSyncCheck() = viewModelScope.launch(mainContext) {
         offlineDataRepository.bigSyncCheck()
     }
 
-    fun fetchAllData(userId: String) = viewModelScope.launch(ioContext) {
+    fun fetchAllData(userId: String) = viewModelScope.launch(mainContext) {
 
         try {
-            val contractJob = async(dispatchers.default()) {
+            withContext(dispatchers.default()) {
                 offlineDataRepository.loadActivitySections(userId)
                 offlineDataRepository.loadLookups(userId)
                 offlineDataRepository.loadContracts(userId)
                 offlineDataRepository.loadTaskList(userId)
                 offlineDataRepository.loadWorkflows(userId)
             }
-            contractJob.await()
             withContext(mainContext) {
                 databaseState.postValue(XIResult.Success(true))
             }

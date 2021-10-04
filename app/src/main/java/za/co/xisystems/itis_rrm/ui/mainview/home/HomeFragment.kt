@@ -55,6 +55,7 @@ import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentHomeBinding
 import za.co.xisystems.itis_rrm.extensions.isConnected
+import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.ui.extensions.crashGuard
 import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
@@ -219,6 +220,8 @@ class HomeFragment : BaseFragment(), DIAware {
         // Configure SwipeToRefresh
         initSwipeToRefresh()
 
+        isAppDbSynched()
+
         ui.serverTextView.setOnClickListener {
             ToastUtils().toastServerAddress(requireContext())
         }
@@ -226,21 +229,17 @@ class HomeFragment : BaseFragment(), DIAware {
         ui.imageView7.setOnClickListener {
             ToastUtils().toastVersion(requireContext())
         }
+    }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        homeViewModel = ViewModelProvider(this.requireActivity(), factory).get(HomeViewModel::class.java)
         homeViewModel.bigSyncDone.observe(viewLifecycleOwner, {
             Timber.d("Synced: $it")
             if (!it) {
                 promptUserToSync()
             }
         })
-
-        // Check if database is synched and prompt user if necessary
-        isAppDbSynched()
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        homeViewModel = ViewModelProvider(this.requireActivity(), factory).get(HomeViewModel::class.java)
     }
 
     /**
@@ -257,6 +256,7 @@ class HomeFragment : BaseFragment(), DIAware {
         // prevent viewBinding from leaking
         _ui = null
         uiScope.destroy()
+        homeViewModel.databaseState.removeObservers(viewLifecycleOwner)
     }
 
     private fun initProgressViews() {
@@ -268,8 +268,8 @@ class HomeFragment : BaseFragment(), DIAware {
                     maxOutPv(ui.pvContracts, "projects synched")
                 }
             }
-            // ui.pvSections.visibility = View.GONE
-            // ui.pvTasks.visibility = View.GONE
+            ui.pvSections.visibility = View.GONE
+            ui.pvTasks.visibility = View.GONE
         }
         ui.pvTasks.setOnProgressChangeListener {
             when {
@@ -278,8 +278,8 @@ class HomeFragment : BaseFragment(), DIAware {
                     maxOutPv(ui.pvTasks, "tasks synched")
                 }
             }
-            // ui.pvContracts.visibility = View.GONE
-            // ui.pvSections.visibility = View.GONE
+            ui.pvContracts.visibility = View.GONE
+            ui.pvSections.visibility = View.GONE
         }
         ui.pvSections.setOnProgressChangeListener {
             when {
@@ -288,8 +288,8 @@ class HomeFragment : BaseFragment(), DIAware {
                     maxOutPv(ui.pvSections, "goods synched")
                 }
             }
-            // ui.pvSections.visibility = View.GONE
-            // ui.pvTasks.visibility = View.GONE
+            ui.pvContracts.visibility = View.GONE
+            ui.pvTasks.visibility = View.GONE
         }
     }
 
@@ -310,7 +310,15 @@ class HomeFragment : BaseFragment(), DIAware {
     }
 
     private fun isAppDbSynched() {
-        homeViewModel.bigSyncCheck()
+        uiScope.launch(uiScope.coroutineContext) {
+            homeViewModel.bigSyncDone.observeOnce(viewLifecycleOwner, {
+                Timber.d("Synced: $it")
+                if (!it) {
+                    promptUserToSync()
+                }
+            })
+            homeViewModel.bigSyncCheck()
+        }
     }
 
     private fun initSwipeToRefresh() {
@@ -515,7 +523,7 @@ class HomeFragment : BaseFragment(), DIAware {
         }
     }
 
-    private fun promptUserToSync() {
+    private fun promptUserToSync() = Coroutines.ui {
         val syncDialog: AlertDialog.Builder =
             AlertDialog.Builder(activity) // android.R.style.Theme_DeviceDefault_Dialog
                 .setTitle(
@@ -550,6 +558,7 @@ class HomeFragment : BaseFragment(), DIAware {
                 updateServiceHealth(result.data)
             }
             is XIResult.Error -> {
+                updateServiceHealth(false)
                 crashGuard(
                     throwable = result,
                     refreshAction = { this@HomeFragment.retryHealthCheck() }
@@ -570,7 +579,6 @@ class HomeFragment : BaseFragment(), DIAware {
         when (serviceHealthy) {
             true -> {
                 ui.connectedTo.text = getString(R.string.services_up, BuildConfig.VERSION_NAME)
-                ui.connectedTo.setTextColor(colorConnected)
                 ui.ivCloud.setImageDrawable(
                     ContextCompat.getDrawable(
                         this@HomeFragment.requireContext(),
@@ -582,7 +590,6 @@ class HomeFragment : BaseFragment(), DIAware {
             }
             else -> {
                 ui.connectedTo.text = getString(R.string.services_down, BuildConfig.VERSION_NAME)
-                ui.connectedTo.setTextColor(colorNotConnected)
                 ui.ivCloud.setImageDrawable(
                     ContextCompat.getDrawable(
                         this@HomeFragment.requireContext(),
