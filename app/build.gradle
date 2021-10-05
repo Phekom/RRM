@@ -135,7 +135,7 @@ android {
             // Includes the default ProGuard rules files that are packaged with
             // the Android Gradle plugin. To learn more, go to the section about
             // R8 configuration files.
-            // proguardFiles getDefaultProguardFile('proguard-defaults.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-defaults.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.release
             debuggable false
             crunchPngs false
@@ -146,7 +146,7 @@ android {
             // minifyEnabled false
             // useProguard false
             debuggable true
-            crunchPngs true
+            crunchPngs false
             ext.enableCrashlytics = false
             ext.alwaysUpdateBuildId = false
             signingConfig signingConfigs.debug
