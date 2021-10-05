@@ -10,7 +10,6 @@ import android.os.StrictMode
 import android.os.StrictMode.ThreadPolicy
 import android.os.StrictMode.VmPolicy
 import com.gu.toolargetool.TooLargeTool
-import leakcanary.AppWatcher
 import leakcanary.LeakCanary
 import org.kodein.di.DIAware
 import timber.log.Timber
@@ -29,13 +28,7 @@ open class DebugMainApp : MainApp(), DIAware {
             // See explanation for HyperlinkDebugTree
             Timber.plant(HyperlinkDebugTree())
             // Shaun McDonald - 2020/04/02 - Added LeakCanary and AppWatcher to debug build.
-            LeakCanary.config = LeakCanary.config.copy(retainedVisibleThreshold = 10)
-            AppWatcher.config = AppWatcher.config.copy(
-                watchFragmentViews = true,
-                watchFragments = true,
-                watchViewModels = true,
-                watchActivities = true
-            )
+            LeakCanary.config = LeakCanary.config.copy(retainedVisibleThreshold = 5)
             // Shaun McDonald - 2021/01/30 - Added TooLargeTool to track bundle sizes
             TooLargeTool.startLogging(this)
             // Shaun McDonald - 2021/02/09 - Added StrictMode to help with optimization
@@ -49,14 +42,17 @@ open class DebugMainApp : MainApp(), DIAware {
 
         StrictMode.setThreadPolicy(
             ThreadPolicy.Builder()
-                .detectAll() // for all detectable problems
+                .detectDiskReads()
+                .detectDiskWrites()
+                .detectNetwork() // or .detectAll() for all detectable problems
                 .penaltyLog()
                 .penaltyFlashScreen()
                 .build()
         )
         StrictMode.setVmPolicy(
             VmPolicy.Builder()
-                .detectAll() // for all detectable problems
+                .detectLeakedSqlLiteObjects()
+                .detectLeakedClosableObjects()
                 .penaltyLog()
                 .build()
         )

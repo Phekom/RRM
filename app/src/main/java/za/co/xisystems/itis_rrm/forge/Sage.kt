@@ -16,8 +16,8 @@ import kotlinx.coroutines.withContext
  * Sage provides cryptographic keys for master, preferences and files
  */
 class Sage(
-    private val dispatchers: DispatcherProvider = DefaultDispatcherProvider(),
-    context: Context
+    context: Context,
+    private val dispatchers: DispatcherProvider = DefaultDispatcherProvider()
 ) {
     internal val masterKeyAlias: MasterKey
 
