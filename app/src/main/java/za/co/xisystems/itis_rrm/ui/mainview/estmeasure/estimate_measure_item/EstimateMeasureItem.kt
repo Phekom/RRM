@@ -53,4 +53,3 @@ class EstimateMeasureItem(
         return position.toLong()
     }
 }
-

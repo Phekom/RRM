@@ -182,7 +182,8 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
                         myUserId = it
                         onUserFound(myUserId)
                     }
-                })
+                }
+            )
         }
 
         withContext(uiScope.coroutineContext) {
@@ -194,7 +195,8 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
                         myJobDTO = jobDTO
                         onJobFound(myJobDTO!!)
                     }
-                })
+                }
+            )
         }
 
         withContext(uiScope.coroutineContext) {
@@ -204,7 +206,8 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
                     itemEvent.getContentIfNotHandled()?.let { item ->
                         onItemFound(item)
                     }
-                })
+                }
+            )
         }
 
         withContext(uiScope.coroutineContext) {
@@ -214,7 +217,8 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
                     estimateEvent.getContentIfNotHandled()?.let { estimateItem ->
                         onEstimateFound(estimateItem)
                     }
-                })
+                }
+            )
         }
     }
 
@@ -704,7 +708,8 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
                         filePath,
                         itemidPhototype
                     )
-                })
+                }
+            )
         } finally {
             toggleLongRunning(false)
             resetPhotos()
@@ -1092,7 +1097,8 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
                     val estError = XIResult.Error(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
                     crashGuard(
                         throwable = estError,
-                        refreshAction = { this@EstimatePhotoFragment.retryEstimateViewState() })
+                        refreshAction = { this@EstimatePhotoFragment.retryEstimateViewState() }
+                    )
                 }
             }
         }

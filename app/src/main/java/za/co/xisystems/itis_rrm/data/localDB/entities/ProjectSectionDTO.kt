@@ -23,13 +23,15 @@ import java.io.Serializable
 const val PROJECT_SECTION_TABLE = "PROJECT_SECTION_TABLE"
 
 @Entity(
-    tableName = PROJECT_SECTION_TABLE, foreignKeys = [
+    tableName = PROJECT_SECTION_TABLE,
+    foreignKeys = [
         ForeignKey(
             entity = ProjectDTO::class,
             parentColumns = arrayOf("projectId"),
             childColumns = arrayOf("projectId"),
             onDelete = ForeignKey.CASCADE
-        )]
+        )
+    ]
 )
 data class ProjectSectionDTO(
     @PrimaryKey

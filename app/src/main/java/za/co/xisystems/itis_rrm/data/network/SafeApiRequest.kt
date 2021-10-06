@@ -28,7 +28,7 @@ open class SafeApiRequest(
             when (throwable) {
                 is IOException -> {
                     val message = "Network connectivity issue: ${
-                        throwable.message ?: XIErrorHandler.UNKNOWN_ERROR
+                    throwable.message ?: XIErrorHandler.UNKNOWN_ERROR
                     }"
                     throw RecoverableException(message)
                 }
@@ -41,7 +41,7 @@ open class SafeApiRequest(
                 }
                 else -> {
                     val message = "Unclassified Error: ${
-                        throwable.message ?: XIErrorHandler.UNKNOWN_ERROR
+                    throwable.message ?: XIErrorHandler.UNKNOWN_ERROR
                     }"
                     throw ServiceException(message)
                 }

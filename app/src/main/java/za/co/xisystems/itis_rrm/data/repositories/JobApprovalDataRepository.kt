@@ -250,7 +250,7 @@ class JobApprovalDataRepository(
 
                 jobItemEstimate.workflowEstimateWorks.forEach { jobEstimateWorks ->
                     if (!appDb.getEstimateWorkDao()
-                            .checkIfJobEstimateWorksExist(jobEstimateWorks.worksId)
+                        .checkIfJobEstimateWorksExist(jobEstimateWorks.worksId)
                     ) {
                         // Create Bare Bones
                         val estimateWorks = JobEstimateWorksDTO(

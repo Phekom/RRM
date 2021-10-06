@@ -67,10 +67,14 @@ object DataConversion {
         val bytes = ByteArray(stringLength / 2)
         var i = 0
         while (i < stringLength) {
-            bytes[i / 2] = ((Character.digit(
-                bigEndian[i],
-                16
-            ) shl 4) + Character.digit(bigEndian[i + 1], 16)).toByte()
+            bytes[i / 2] = (
+                (
+                    Character.digit(
+                        bigEndian[i],
+                        16
+                    ) shl 4
+                    ) + Character.digit(bigEndian[i + 1], 16)
+                ).toByte()
             i += 2
         }
         return bytes
@@ -93,10 +97,14 @@ object DataConversion {
         val bytes = ByteArray(stringLength / 2)
         var i = 0
         while (i < stringLength) {
-            bytes[i / 2] = ((Character.digit(
-                tmpString[i],
-                16
-            ) shl 4) + Character.digit(tmpString[i + 1], 16)).toByte()
+            bytes[i / 2] = (
+                (
+                    Character.digit(
+                        tmpString[i],
+                        16
+                    ) shl 4
+                    ) + Character.digit(tmpString[i + 1], 16)
+                ).toByte()
             i += 2
         }
         return bytes

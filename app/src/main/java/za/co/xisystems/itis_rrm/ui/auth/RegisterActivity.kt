@@ -67,8 +67,6 @@ class RegisterActivity : AppCompatActivity(), AuthListener, DIAware {
         viewModel.setupAuthListener(this)
         binding.viewmodel = viewModel
 
-
-
         Coroutines.main {
             when (this@RegisterActivity.isConnected) {
                 true -> {

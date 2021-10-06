@@ -103,8 +103,8 @@ interface ProjectSectionDao {
 
     @Query(
         "SELECT section, startKm as kmMarker FROM PROJECT_SECTION_TABLE " +
-                "WHERE route = :linearId AND direction = :direction AND " +
-                ":pointLocation < startKm ORDER BY (startKm - :pointLocation) LIMIT 1"
+            "WHERE route = :linearId AND direction = :direction AND " +
+            ":pointLocation < startKm ORDER BY (startKm - :pointLocation) LIMIT 1"
     )
     fun findClosestStartKm(linearId: String, pointLocation: Double, direction: String): SectionBorder?
 

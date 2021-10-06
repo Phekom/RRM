@@ -20,8 +20,6 @@ import androidx.navigation.fragment.findNavController
 import com.xwray.groupie.ExpandableGroup
 import com.xwray.groupie.ExpandableItem
 import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
-import java.util.ArrayList
-import java.util.Date
 import kotlinx.android.synthetic.main.item_header.appListID
 import kotlinx.android.synthetic.main.item_header.icon
 import kotlinx.android.synthetic.main.item_measure_header.headerLin
@@ -37,6 +35,8 @@ import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.estimate_measure_item.Mea
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DateUtil
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
+import java.util.ArrayList
+import java.util.Date
 
 class ExpandableHeaderMeasureItem(
     private var fragment: Fragment,
@@ -149,7 +149,6 @@ class ExpandableHeaderMeasureItem(
                                         jobItemMeasurePhotoDTO
                                     )
                                 }
-
                                 .setNegativeButton(
                                     R.string.cancel
                                 ) { _, _ -> }.show()
@@ -181,7 +180,7 @@ class ExpandableHeaderMeasureItem(
             ).show()
         } else {
             if (quantityInputEditText.text.toString()
-                    .isNotEmpty()
+                .isNotEmpty()
             ) {
                 Coroutines.main {
                     val jobItemMeasure = setJobItemMeasure(

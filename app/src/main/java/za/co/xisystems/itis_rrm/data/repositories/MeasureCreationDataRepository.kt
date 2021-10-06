@@ -15,18 +15,32 @@ import com.google.gson.Gson
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
-import za.co.xisystems.itis_rrm.custom.errors.*
+import za.co.xisystems.itis_rrm.custom.errors.LocalDataException
+import za.co.xisystems.itis_rrm.custom.errors.NoDataException
+import za.co.xisystems.itis_rrm.custom.errors.RecoverableException
+import za.co.xisystems.itis_rrm.custom.errors.ServiceException
+import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
-import za.co.xisystems.itis_rrm.data.localDB.entities.*
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasurePhotoDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.WorkflowJobDTO
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
-import za.co.xisystems.itis_rrm.utils.*
+import za.co.xisystems.itis_rrm.forge.DefaultDispatcherProvider
+import za.co.xisystems.itis_rrm.forge.DispatcherProvider
+import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
+import za.co.xisystems.itis_rrm.utils.Coroutines
+import za.co.xisystems.itis_rrm.utils.DataConversion
+import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 
@@ -37,7 +51,8 @@ import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 class MeasureCreationDataRepository(
     private val api: BaseConnectionApi,
     private val appDb: AppDatabase,
-    private val photoUtil: PhotoUtil
+    private val photoUtil: PhotoUtil,
+    private val dispatchers: DispatcherProvider = DefaultDispatcherProvider()
 ) : SafeApiRequest() {
     companion object {
         val TAG: String = MeasureCreationDataRepository::class.java.simpleName
@@ -51,7 +66,7 @@ class MeasureCreationDataRepository(
     val workflowStatus: MutableLiveData<XIEvent<XIResult<String>>> = MutableLiveData()
 
     suspend fun getUser(): LiveData<UserDTO> {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getUserDao().getUser()
         }
     }
@@ -61,7 +76,7 @@ class MeasureCreationDataRepository(
         activityId2: Int,
         activityId3: Int
     ): LiveData<List<JobItemEstimateDTO>> {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getJobItemEstimateDao().getJobMeasureForActivityId(activityId, activityId2, activityId3)
         }
     }
@@ -116,7 +131,7 @@ class MeasureCreationDataRepository(
         jobItemMeasure: ArrayList<JobItemMeasureDTO>,
         activity: FragmentActivity,
         itemMeasureJob: JobDTO
-    ) = withContext(Dispatchers.IO) {
+    ) = withContext(dispatchers.io()) {
         val topic = "Measurement Workflow"
         try {
             // itemMeasureJob.JobItemMeasures = jobItemMeasure
@@ -133,7 +148,7 @@ class MeasureCreationDataRepository(
     }
 
     private suspend fun getUpdatedJob(jobId: String): JobDTO {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getJobDao().getJobForJobId(jobId)
         }
     }
@@ -141,7 +156,7 @@ class MeasureCreationDataRepository(
     private suspend fun uploadMeasurementImages(
         jobItemMeasures: ArrayList<JobItemMeasureDTO>,
         activity: FragmentActivity
-    ) = withContext(Dispatchers.IO) {
+    ) = withContext(dispatchers.io()) {
         var imageCounter = 1
         var totalImages = 0
         if (jobItemMeasures.isNotEmpty()) {
@@ -172,7 +187,7 @@ class MeasureCreationDataRepository(
     private suspend fun getData(
         filename: String,
         photoQuality: PhotoQuality
-    ): ByteArray = withContext(Dispatchers.IO) {
+    ): ByteArray = withContext(dispatchers.io()) {
         val uri = photoUtil.getPhotoPathFromExternalDirectory(filename)
         val bitmap =
             photoUtil.getPhotoBitmapFromFile(uri, photoQuality)
@@ -202,20 +217,6 @@ class MeasureCreationDataRepository(
             if (imageCounter <= totalImages) {
                 Timber.d("Processing $imageCounter of $totalImages images")
             }
-        }
-    }
-
-    suspend fun errorMsg(): String {
-        val messages = getErrorMsg()
-        return withContext(Dispatchers.IO) {
-            messages
-        }
-    }
-
-    suspend fun errorState(): Boolean {
-        val state = getErrorState()
-        return withContext(Dispatchers.IO) {
-            state
         }
     }
 
@@ -300,17 +301,6 @@ class MeasureCreationDataRepository(
         workflowStatus.postValue(XIEvent(result))
     }
 
-    private fun getErrorMsg():
-        String {
-        getErrorState()
-        return "Error: WorkFlow Job is null"
-    }
-
-    private fun getErrorState():
-        Boolean {
-        return true
-    }
-
     private suspend fun saveWorkflowJob(
         workflowJob: WorkflowJobDTO,
         pushMeasures: Boolean
@@ -325,7 +315,7 @@ class MeasureCreationDataRepository(
         jobID: String?
     ):
         LiveData<List<JobItemEstimateDTO>> {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getJobItemEstimateDao().getJobItemsToMeasureForJobId(jobID!!)
         }
     }
@@ -333,7 +323,7 @@ class MeasureCreationDataRepository(
     suspend fun getSingleJobFromJobId(
         jobId: String?
     ): LiveData<JobDTO> {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getJobDao().getJobFromJobId(jobId!!)
         }
     }
@@ -343,7 +333,7 @@ class MeasureCreationDataRepository(
         estimateId: String
     ):
         LiveData<List<JobItemMeasureDTO>> {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getJobItemMeasureDao()
                 .getJobItemMeasuresForJobIdAndEstimateId2(jobId, estimateId)
         }
@@ -353,7 +343,7 @@ class MeasureCreationDataRepository(
         projectItemId: String?
     ):
         LiveData<ProjectItemDTO> {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getProjectItemDao().getItemForItemId(projectItemId!!)
         }
     }
@@ -362,7 +352,7 @@ class MeasureCreationDataRepository(
         Coroutines.io {
             for (jobItemMeasure in jobItemMeasures.iterator()) {
                 if (!appDb.getJobItemMeasureDao()
-                        .checkIfJobItemMeasureExists(jobItemMeasure.itemMeasureId)
+                    .checkIfJobItemMeasureExists(jobItemMeasure.itemMeasureId)
                 ) {
                     appDb.getJobItemMeasureDao().insertJobItemMeasure(jobItemMeasure)
                 }
@@ -371,7 +361,7 @@ class MeasureCreationDataRepository(
     }
 
     suspend fun getJobMeasureItemsPhotoPath(itemMeasureId: String): List<String> {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getJobItemMeasurePhotoDao().getJobMeasureItemPhotoPaths(itemMeasureId)
         }
     }
@@ -396,7 +386,7 @@ class MeasureCreationDataRepository(
     ) {
         Coroutines.io {
             if (!appDb.getJobItemMeasureDao()
-                    .checkIfJobItemMeasureExists(selectedJobItemMeasure.itemMeasureId)
+                .checkIfJobItemMeasureExists(selectedJobItemMeasure.itemMeasureId)
             ) {
                 appDb.getJobItemMeasureDao().insertJobItemMeasure(selectedJobItemMeasure)
             }
@@ -419,7 +409,7 @@ class MeasureCreationDataRepository(
     suspend fun getJobItemMeasuresForJobIdAndEstimateId(
         jobId: String?
     ): LiveData<List<JobItemMeasureDTO>> {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getJobItemMeasureDao().getJobItemMeasuresForJobIdAndEstimateId(jobId)
         }
     }
@@ -429,7 +419,7 @@ class MeasureCreationDataRepository(
     }
 
     suspend fun getItemDescription(jobId: String): String {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getJobDao().getItemDescription(jobId)
         }
     }
@@ -471,7 +461,7 @@ class MeasureCreationDataRepository(
 
                 jobItemEstimate.workflowEstimateWorks.forEach { jobEstimateWorks ->
                     if (appDb.getEstimateWorkDao()
-                            .checkIfJobEstimateWorksExist(jobEstimateWorks.worksId)
+                        .checkIfJobEstimateWorksExist(jobEstimateWorks.worksId)
                     ) {
                         appDb.getEstimateWorkDao().updateJobEstimateWorksWorkflow(
                             jobEstimateWorks.worksId,
@@ -514,7 +504,7 @@ class MeasureCreationDataRepository(
 
             job.workflowJobSections.forEach { jobSection ->
                 if (!appDb.getJobSectionDao()
-                        .checkIfJobSectionExist(jobSection.jobSectionId)
+                    .checkIfJobSectionExist(jobSection.jobSectionId)
                 ) {
                     appDb.getJobSectionDao().insertJobSection(jobSection)
                 } else {
@@ -578,44 +568,50 @@ class MeasureCreationDataRepository(
             return job
         } catch (t: Throwable) {
             val message = "Failed to convert to BigEndian: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
-            postWorkflowStatus(XIResult.Error(topic = topic, exception = LocalDataException(message), message = message))
+            postWorkflowStatus(
+                XIResult.Error(
+                    topic = topic,
+                    exception = LocalDataException(message),
+                    message = message
+                )
+            )
             postWorkflowStatus(XIResult.Progress(false))
             return null
         }
     }
 
     suspend fun getSectionForProjectSectionId(sectionId: String?): String {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getProjectSectionDao().getSectionForProjectSectionId(sectionId)
         }
     }
 
     suspend fun getRouteForProjectSectionId(sectionId: String?): String {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getProjectSectionDao().getRouteForProjectSectionId(sectionId)
         }
     }
 
     suspend fun getProjectSectionIdForJobId(jobId: String?): String {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getJobSectionDao().getProjectSectionId(jobId!!)
         }
     }
 
     suspend fun getProjectItemDescription(projectItemId: String): String {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getProjectItemDao().getProjectItemDescription(projectItemId)
         }
     }
 
     suspend fun getJobItemMeasureByItemMeasureId(itemMeasureId: String): LiveData<JobItemMeasureDTO> {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getJobItemMeasureDao().getJobItemMeasureByItemMeasureId(itemMeasureId)
         }
     }
 
     suspend fun getJobItemMeasurePhotosForItemMeasureID(itemMeasureId: String): LiveData<List<JobItemMeasurePhotoDTO>> {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getJobItemMeasurePhotoDao().getJobItemMeasurePhotosForItemMeasureID(itemMeasureId)
         }
     }
@@ -624,7 +620,7 @@ class MeasureCreationDataRepository(
         jobID: String?,
         actId: Int
     ): LiveData<List<JobItemMeasureDTO>> {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getJobItemMeasureDao().getJobItemMeasuresByJobIdAndActId(jobID!!, actId)
         }
     }

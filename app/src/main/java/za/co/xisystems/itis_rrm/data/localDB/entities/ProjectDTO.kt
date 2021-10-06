@@ -31,13 +31,17 @@ import java.io.Serializable
 const val PROJECT_TABLE = "PROJECT_TABLE"
 
 @Entity(
-    tableName = PROJECT_TABLE, foreignKeys = [ForeignKey(
-        entity = ContractDTO::class,
-        parentColumns = arrayOf("contractId"),
-        childColumns = arrayOf("contractId"),
-        onDelete = ForeignKey.CASCADE,
-        onUpdate = ForeignKey.CASCADE
-    )], indices = [Index(value = ["projectId"], unique = true, name = "")]
+    tableName = PROJECT_TABLE,
+    foreignKeys = [
+        ForeignKey(
+            entity = ContractDTO::class,
+            parentColumns = arrayOf("contractId"),
+            childColumns = arrayOf("contractId"),
+            onDelete = ForeignKey.CASCADE,
+            onUpdate = ForeignKey.CASCADE
+        )
+    ],
+    indices = [Index(value = ["projectId"], unique = true, name = "")]
 )
 
 data class ProjectDTO(

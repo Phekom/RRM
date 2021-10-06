@@ -41,7 +41,8 @@ class MediaViewModel(application: Application) : AndroidViewModel(application) {
             val format = getImageFormat(type!!)
 
             val intentSender = FileOperations.updateImage(
-                getApplication(), image.uri, bitmap, format)
+                getApplication(), image.uri, bitmap, format
+            )
 
             if (intentSender == null) {
                 _actions.postValue(ImageDetailAction.ImageUpdated)
