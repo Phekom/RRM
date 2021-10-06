@@ -47,7 +47,6 @@ import za.co.xisystems.itis_rrm.ui.base.BaseActivity
 import za.co.xisystems.itis_rrm.ui.mainview.activities.LocationViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.activities.MainActivityViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SettingsViewModelFactory
-import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.ApproveJobsViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureViewModelFactory
@@ -137,7 +136,6 @@ open class MainApp : Application(), DIAware {
         bind { provider { MainActivityViewModelFactory(instance()) } }
         bind { provider { LocationViewModelFactory(this@MainApp) } }
         bind { provider { SharedViewModelFactory(instance()) } }
-        bind { provider { SharedViewModel(instance()) } }
     }
 
     override fun onCreate() {

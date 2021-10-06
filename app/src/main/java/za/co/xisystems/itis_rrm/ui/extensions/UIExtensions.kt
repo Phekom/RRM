@@ -45,17 +45,19 @@ fun ImageCollectionView.addZoomedImages(
 
     photoPaths.forEach { pair ->
 
-        this.addImage(pair.second!!, object : ImageCollectionView.OnImageClickListener {
-            override fun onClick(bitmap: Bitmap, imageView: ImageView) {
-                showZoomedImage(
-                    pair.first,
-                    activity
-                )
+        this.addImage(
+            pair.second!!,
+            object : ImageCollectionView.OnImageClickListener {
+                override fun onClick(bitmap: Bitmap, imageView: ImageView) {
+                    showZoomedImage(
+                        pair.first,
+                        activity
+                    )
+                }
             }
-        })
-
+        )
     }
-    }
+}
 
 fun showZoomedImage(imageUrl: Uri, activity: FragmentActivity) {
     val dialog = Dialog(activity, R.style.dialog_full_screen)

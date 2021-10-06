@@ -29,9 +29,9 @@ import java.io.IOException
  */
 
 class Scribe private constructor(
-    private val dispatchers: DispatcherProvider = DefaultDispatcherProvider(),
-    sageInstance: Sage,
     context: Context,
+    sageInstance: Sage,
+    private val dispatchers: DispatcherProvider = DefaultDispatcherProvider()
 ) {
 
     lateinit var securePrefs: SharedPreferences
@@ -50,7 +50,7 @@ class Scribe private constructor(
                 this@Scribe.securePrefs = cryptoPrefs
             }
             while (!this@Scribe::securePrefs.isInitialized) {
-                delay(250)
+                delay(100)
             }
         }
     }
@@ -61,7 +61,7 @@ class Scribe private constructor(
         const val USER_KEY = "za.co.xisystems.itis_rrm.forge.Scribe.UserKey"
         const val NOT_SET = "NoPassphraseSet"
         const val NOT_INITIALIZED: String = "NoInitialization"
-        const val PREFS_FILE = "specialstylesandcolours"
+        const val PREFS_FILE = "special_styles_and_colours"
         fun getInstance(
             context: Context,
             sageInstance: Sage,

@@ -19,8 +19,8 @@ interface SectionPointDao {
 
     @Query(
         "SELECT EXISTS(SELECT * FROM SECTION_POINT_TABLE " +
-                "WHERE sectionId = :sectionId AND projectId LIKE :projectId " +
-                "AND jobId LIKE :jobId AND ABS(pointLocation - :pointLocation) <= 0.5)"
+            "WHERE sectionId = :sectionId AND projectId LIKE :projectId " +
+            "AND jobId LIKE :jobId AND ABS(pointLocation - :pointLocation) <= 0.5)"
     )
     fun checkSectionExists(sectionId: Int, projectId: String?, jobId: String?, pointLocation: Double): Boolean
 

@@ -8,7 +8,11 @@ package za.co.xisystems.itis_rrm.utils
 
 import android.content.Context
 import android.content.res.AssetFileDescriptor
-import android.graphics.*
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.Matrix
+import android.graphics.Paint
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
@@ -29,8 +33,15 @@ import za.co.xisystems.itis_rrm.constants.Constants.NINETY_DAYS
 import za.co.xisystems.itis_rrm.constants.Constants.THIRTY_DAYS
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
-import java.io.*
-import java.util.*
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.FileNotFoundException
+import java.io.FileOutputStream
+import java.io.IOException
+import java.util.Base64
+import java.util.Date
+import java.util.Locale
+import java.util.UUID
 import kotlin.math.roundToLong
 
 class PhotoUtil private constructor(private var appContext: Context) {
@@ -125,7 +136,7 @@ class PhotoUtil private constructor(private var appContext: Context) {
         var pictureName = photoName
         pictureName =
             if (!pictureName.lowercase(Locale.ROOT)
-                    .contains(".jpg")
+                .contains(".jpg")
             ) "$pictureName.jpg" else pictureName
         val fileName =
             pictureFolder.toString().plus(File.separator)

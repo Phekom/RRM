@@ -136,7 +136,8 @@ class SubmitMeasureFragment : BaseFragment(), DIAware {
 
                     crashGuard(
                         throwable = outcome,
-                        refreshAction = { this@SubmitMeasureFragment.retryMeasurements() })
+                        refreshAction = { this@SubmitMeasureFragment.retryMeasurements() }
+                    )
                 }
                 is XIResult.Status -> {
                     extensionToast(
@@ -226,7 +227,8 @@ class SubmitMeasureFragment : BaseFragment(), DIAware {
                         { measureItem ->
                             getWorkItems(measureItem.jobItemEstimateDTO.jobId)
                             ui.itemsSwipeToRefresh.isRefreshing = false
-                        })
+                        }
+                    )
                 }
             }
         }

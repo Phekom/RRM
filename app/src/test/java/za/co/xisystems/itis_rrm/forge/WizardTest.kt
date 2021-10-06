@@ -32,14 +32,14 @@ class WizardTest {
     @Before
     fun setUp() {
         System.setProperty("kotlinx.coroutines.debug", "on")
-        sut = Wizard(coroutinesTestRule.testDispatcherProvider as DispatcherProvider)
+        sut = Wizard(coroutinesTestRule.testDispatcherProvider)
     }
 
     @Test
-        /**
-         * SecureStrings don't reveal anything to log-hounds and  ram-snatchers
-         * @return Unit
-         */
+    /**
+     * SecureStrings don't reveal anything to log-hounds and  ram-snatchers
+     * @return Unit
+     */
     fun `it Can Secure Strings`() = runBlocking {
         val goodPassphrase = SecureString("mysteryDirector9999".toCharArray())
 
@@ -53,10 +53,10 @@ class WizardTest {
     }
 
     @Test
-        /**
-         *
-         * @return Unit
-         */
+    /**
+     *
+     * @return Unit
+     */
     fun `it Can Erase Sources`() = runBlocking {
         try {
             val secretString = "MySecretString".toCharArray()
@@ -88,74 +88,74 @@ class WizardTest {
     // This works well within the application, but sometimes fails as a unit test.
     // Needs investigation
     /**
+     @ExperimentalCoroutinesApi
+     @Test
+     fun `it Can Validate Tokens`(): Unit = coroutinesTestRule.testDispatcher.runBlockingTest {
+     withContext(coroutinesTestRule.testDispatcherProvider.default()) {
+     try {
+     val goodPassphrase = "XiSystems@2021!"
+     val failPassphrase = "mysteriousOrange7777"
+     val securityToken = sut.generateFutureToken(SecureString(goodPassphrase.toCharArray(), false))
+
+     sut.validateFutureToken(
+     SecureString(
+     goodPassphrase.toCharArray(),
+     false
+     ),
+     securityToken
+     ).also { result ->
+     when (result) {
+     is XIResult.Success<Boolean> -> {
+     assertEquals(true, result.data)
+     println("Legit cmp passed")
+     }
+     is  XIResult.Error -> {
+     fail(result.message)
+     }
+     else -> {
+     fail("$result")
+     }
+     }
+     }
+
+     sut.validateFutureToken(
+     SecureString(
+     failPassphrase.toCharArray(),
+     false
+     ),
+     securityToken
+     ).also { result ->
+
+     when (result) {
+     is XIResult.Success<Boolean> -> {
+     assertEquals(false, result.data)
+     println("Bogus cmp passed")
+     }
+     is  XIResult.Error -> {
+     fail(result.message)
+     }
+     else -> {
+     fail("$result")
+     }
+     }
+     }
+
+     assertTrue(securityToken.isNotEmpty())
+     } catch (t: Throwable) {
+     val message = t.message ?:   XIErrorHandler.UNKNOWN_ERROR
+     Timber.e(t) { t.message ?:   XIErrorHandler.UNKNOWN_ERROR }
+     fail("It should not have thrown this exception: $message")
+     }
+     }
+     }
+     */
+
     @ExperimentalCoroutinesApi
     @Test
-    fun `it Can Validate Tokens`(): Unit = coroutinesTestRule.testDispatcher.runBlockingTest {
-        withContext(coroutinesTestRule.testDispatcherProvider.default()) {
-            try {
-                val goodPassphrase = "XiSystems@2021!"
-                val failPassphrase = "mysteriousOrange7777"
-                val securityToken = sut.generateFutureToken(SecureString(goodPassphrase.toCharArray(), false))
-
-                sut.validateFutureToken(
-                    SecureString(
-                        goodPassphrase.toCharArray(),
-                        false
-                    ),
-                    securityToken
-                ).also { result ->
-                    when (result) {
-                        is XIResult.Success<Boolean> -> {
-                            assertEquals(true, result.data)
-                            println("Legit cmp passed")
-                        }
-                        is  XIResult.Error -> {
-                            fail(result.message)
-                        }
-                        else -> {
-                            fail("$result")
-                        }
-                    }
-                }
-
-                sut.validateFutureToken(
-                    SecureString(
-                        failPassphrase.toCharArray(),
-                        false
-                    ),
-                    securityToken
-                ).also { result ->
-
-                    when (result) {
-                        is XIResult.Success<Boolean> -> {
-                            assertEquals(false, result.data)
-                            println("Bogus cmp passed")
-                        }
-                        is  XIResult.Error -> {
-                            fail(result.message)
-                        }
-                        else -> {
-                            fail("$result")
-                        }
-                    }
-                }
-
-                assertTrue(securityToken.isNotEmpty())
-            } catch (t: Throwable) {
-                val message = t.message ?:   XIErrorHandler.UNKNOWN_ERROR
-                Timber.e(t) { t.message ?:   XIErrorHandler.UNKNOWN_ERROR }
-                fail("It should not have thrown this exception: $message")
-            }
-        }
-    }
-    */
-
-    @ExperimentalCoroutinesApi
-    @Test
-        /**
-         * Unique random passphrases are used to secure data at rest
-         * @return Unit
-         */
+    /**
+     * Unique random passphrases are used to secure data at rest
+     * @return Unit
+     */
     fun `it Can Generate Random Passphrase`() {
 
         try {

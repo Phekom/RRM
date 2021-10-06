@@ -9,23 +9,49 @@ package za.co.xisystems.itis_rrm.ui.mainview.create
 import android.app.Application
 import android.net.Uri
 import androidx.fragment.app.FragmentActivity
-import androidx.lifecycle.*
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.distinctUntilChanged
+import androidx.lifecycle.liveData
+import androidx.lifecycle.viewModelScope
 import androidx.room.Transaction
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancelChildren
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.custom.results.XIResult
-import za.co.xisystems.itis_rrm.data.localDB.entities.*
+import za.co.xisystems.itis_rrm.data.localDB.entities.ContractDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimatesPhotoDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobSectionDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectSectionDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.SectionItemDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.SectionPointDTO
 import za.co.xisystems.itis_rrm.data.repositories.JobCreationDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
 import za.co.xisystems.itis_rrm.domain.ContractSelector
 import za.co.xisystems.itis_rrm.domain.ProjectSelector
+import za.co.xisystems.itis_rrm.forge.DefaultDispatcherProvider
+import za.co.xisystems.itis_rrm.forge.DispatcherProvider
 import za.co.xisystems.itis_rrm.services.LocationModel
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.models.PhotoType
-import za.co.xisystems.itis_rrm.utils.*
-import java.util.*
-import kotlin.collections.ArrayList
+import za.co.xisystems.itis_rrm.utils.DateUtil
+import za.co.xisystems.itis_rrm.utils.JobUtils
+import za.co.xisystems.itis_rrm.utils.PhotoUtil
+import za.co.xisystems.itis_rrm.utils.SqlLitUtils
+import za.co.xisystems.itis_rrm.utils.lazyDeferred
+import za.co.xisystems.itis_rrm.utils.uncaughtExceptionHandler
+import java.util.Date
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -35,14 +61,15 @@ import kotlin.coroutines.CoroutineContext
 class CreateViewModel(
     private val jobCreationDataRepository: JobCreationDataRepository,
     private val userRepository: UserRepository,
-    application: Application
+    application: Application,
+    private val dispatchers: DispatcherProvider = DefaultDispatcherProvider()
 ) : AndroidViewModel(application) {
 
     var jobDesc: String? = null
 
     private val superJob = SupervisorJob()
     var currentJob: MutableLiveData<XIEvent<JobDTO>> = MutableLiveData()
-    private var ioContext: CoroutineContext = Job(superJob) + Dispatchers.IO + uncaughtExceptionHandler
+    private var ioContext: CoroutineContext = Job(superJob) + dispatchers.io() + uncaughtExceptionHandler
     private var mainContext: CoroutineContext = Job(superJob) + Dispatchers.Main + uncaughtExceptionHandler
     val estimateQty = MutableLiveData<Double>()
     val estimateLineRate = MutableLiveData<Double>()
@@ -119,14 +146,14 @@ class CreateViewModel(
     }
 
     suspend fun getContracts(): LiveData<List<ContractDTO>> {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             jobCreationDataRepository.getSectionItems()
             jobCreationDataRepository.getContracts()
         }
     }
 
     suspend fun getSomeProjects(contractId: String): LiveData<List<ProjectDTO>> {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             jobCreationDataRepository.getContractProjects(contractId)
         }
     }
@@ -135,19 +162,19 @@ class CreateViewModel(
         sectionItemId: String,
         projectId: String
     ): LiveData<List<ProjectItemDTO>> {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             jobCreationDataRepository.getAllItemsForSectionItemByProject(sectionItemId, projectId)
         }
     }
 
     suspend fun getSectionItemsForProject(projectId: String): LiveData<List<SectionItemDTO>> {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             jobCreationDataRepository.getAllSectionItemsForProject(projectId)
         }
     }
 
     suspend fun saveNewItem(tempItem: ItemDTOTemp) {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             jobCreationDataRepository.saveNewItem(tempItem)
         }
     }
@@ -199,25 +226,25 @@ class CreateViewModel(
     }
 
     suspend fun getSection(sectionId: String): LiveData<ProjectSectionDTO> {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             jobCreationDataRepository.getLiveSection(sectionId)
         }
     }
 
     suspend fun getAllProjectItems(projectId: String, jobId: String): LiveData<List<ItemDTOTemp>> {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             jobCreationDataRepository.getAllProjectItems(projectId, jobId)
         }
     }
 
-    suspend fun areEstimatesValid(job: JobDTO?, items: ArrayList<Any?>?): Boolean = withContext(Dispatchers.IO) {
+    suspend fun areEstimatesValid(job: JobDTO?, items: ArrayList<Any?>?): Boolean = withContext(dispatchers.io()) {
         var isValid = true
         when {
             !JobUtils.areQuantitiesValid(job) -> {
                 isValid = false
             }
-            job == null || items == null || job.jobItemEstimates.isNullOrEmpty()
-                || items.size != job.jobItemEstimates.size -> {
+            job == null || items == null || job.jobItemEstimates.isNullOrEmpty() ||
+                items.size != job.jobItemEstimates.size -> {
                 isValid = false
             }
             else -> {
@@ -283,13 +310,13 @@ class CreateViewModel(
     }
 
     suspend fun getContractNoForId(contractVoId: String?): String {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             jobCreationDataRepository.getContractNoForId(contractVoId)
         }
     }
 
     suspend fun getProjectCodeForId(projectId: String?): String {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             jobCreationDataRepository.getProjectCodeForId(projectId)
         }
     }
@@ -340,7 +367,7 @@ class CreateViewModel(
         }
     }
 
-    suspend fun isEstimateComplete(estimate: JobItemEstimateDTO): Boolean = withContext(Dispatchers.IO) {
+    suspend fun isEstimateComplete(estimate: JobItemEstimateDTO): Boolean = withContext(dispatchers.io()) {
         return@withContext if (estimate.size() < 2) {
             false
         } else {
@@ -476,7 +503,7 @@ class CreateViewModel(
         itemIdPhotoType: Map<String, String>,
         photoFilePath: Map<String, String>?,
         estimateLocation: LocationModel
-    ): JobItemEstimatesPhotoDTO = withContext(Dispatchers.IO) {
+    ): JobItemEstimatesPhotoDTO = withContext(dispatchers.io()) {
         val jobEstimate = jobCreationDataRepository.getEstimateById(estimateId)
         val photo = createItemEstimatePhoto(
             itemEst = jobEstimate,
@@ -512,7 +539,7 @@ class CreateViewModel(
         tempProjectItem = MutableLiveData()
     }
 
-    suspend fun backupProjectItem(item: ItemDTOTemp): Long = withContext(Dispatchers.IO) {
+    suspend fun backupProjectItem(item: ItemDTOTemp): Long = withContext(dispatchers.io()) {
         return@withContext jobCreationDataRepository.backupProjectItem(item)
     }
 

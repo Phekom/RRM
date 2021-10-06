@@ -79,7 +79,7 @@ class ApproveMeasureViewModel(
         viewModelScope.launch(contextMain) {
 
             if (!this@ApproveMeasureViewModel::photoUtil.isInitialized) {
-              photoUtil = PhotoUtil.getInstance(getApplication())
+                photoUtil = PhotoUtil.getInstance(getApplication())
             }
             workflowStatus = measureApprovalDataRepository.workflowStatus
 

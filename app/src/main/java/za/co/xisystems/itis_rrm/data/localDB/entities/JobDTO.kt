@@ -92,7 +92,7 @@ class JobDTO(
     val recordVersion: Int,
 
     @SerializedName("Remarks")
-    val remarks: String?,
+    var remarks: String?,
 
     @SerializedName("Route")
     var route: String?,
@@ -101,7 +101,7 @@ class JobDTO(
     val rrmJiNo: String?,
 
     @SerializedName("EngineerId")
-    val engineerId: Int,
+    var engineerId: Int,
 
     @SerializedName("EntireRoute")
     val entireRoute: Int,

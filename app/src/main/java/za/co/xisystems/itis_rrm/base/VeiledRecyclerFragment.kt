@@ -32,12 +32,15 @@ abstract class VeiledRecyclerFragment : BaseFragment() {
     ) {
         this.run {
 
-            setVeilLayout(layoutResId, object : VeiledItemOnClickListener {
-                /** will be invoked when the item on the [VeilRecyclerFrameView] clicked. */
-                override fun onItemClicked(pos: Int) {
-                    Toast.makeText(context, "Loading ...", Toast.LENGTH_SHORT).show()
+            setVeilLayout(
+                layoutResId,
+                object : VeiledItemOnClickListener {
+                    /** will be invoked when the item on the [VeilRecyclerFrameView] clicked. */
+                    override fun onItemClicked(pos: Int) {
+                        Toast.makeText(context, "Loading ...", Toast.LENGTH_SHORT).show()
+                    }
                 }
-            })
+            )
             setAdapter(adapter)
             setLayoutManager(LinearLayoutManager(context))
             addVeiledItems(veiledItemsToLoad)

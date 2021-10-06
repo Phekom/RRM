@@ -166,7 +166,8 @@ class CaptureItemMeasurePhotoFragment :
                         selectedJobItemMeasure = it
                         checkForPhotos(selectedJobItemMeasure)
                     }
-                })
+                }
+            )
 
             measureViewModel.measureGalleryUIState.observe(viewLifecycleOwner, galleryObserver)
         }
@@ -250,8 +251,8 @@ class CaptureItemMeasurePhotoFragment :
             //  Save Image to Internal Storage
             filenamePath =
                 photoUtil.saveImageToInternalStorage(
-                    imageUri
-                ) as HashMap<String, String>
+                imageUri
+            ) as HashMap<String, String>
 
             Timber.d("location: ${measurementLocation.longitude}, ${measurementLocation.latitude}")
             Timber.d("accuracy: ${measurementLocation.accuracy}")
@@ -331,7 +332,8 @@ class CaptureItemMeasurePhotoFragment :
             PhotoQuality.HIGH
         ).also { bmp ->
             bmp?.run {
-                ui.estimateImageCollectionView.addImage(this,
+                ui.estimateImageCollectionView.addImage(
+                    this,
                     object : ImageCollectionView.OnImageClickListener {
                         override fun onClick(bitmap: Bitmap, imageView: ImageView) {
                             showZoomedImage(
@@ -339,7 +341,8 @@ class CaptureItemMeasurePhotoFragment :
                                 this@CaptureItemMeasurePhotoFragment.requireActivity()
                             )
                         }
-                    })
+                    }
+                )
             }
             this@CaptureItemMeasurePhotoFragment.photosDone()
         }

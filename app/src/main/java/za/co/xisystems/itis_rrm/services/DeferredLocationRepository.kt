@@ -67,7 +67,7 @@ class DeferredLocationRepository(
                         }
 
                 if (linearId.contains("xxx" as CharSequence, ignoreCase = true)
-                        .or(linearId.isBlank()).or(bufferLocations.isNullOrEmpty())
+                    .or(linearId.isBlank()).or(bufferLocations.isNullOrEmpty())
                 ) {
                     notEvenWrongException(locationQuery)
                 } else {

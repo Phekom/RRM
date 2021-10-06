@@ -142,14 +142,14 @@ class RegisterPinActivity : AppCompatActivity(), AuthListener, DIAware {
         } catch (t: Throwable) {
             val xiErr = Error(t, "Failed to login")
             if (xiErr.isRecoverableException()) {
-                  XIErrorHandler.handleError(
+                XIErrorHandler.handleError(
                     view = findViewById(R.id.reg_container),
                     throwable = xiErr,
                     shouldShowSnackBar = true,
                     refreshAction = { this.retryGotoMain() }
                 )
             } else {
-                  XIErrorHandler.handleError(
+                XIErrorHandler.handleError(
                     view = findViewById(R.id.reg_container),
                     throwable = xiErr,
                     shouldToast = true

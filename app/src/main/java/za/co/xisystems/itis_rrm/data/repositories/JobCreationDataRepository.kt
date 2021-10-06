@@ -147,7 +147,7 @@ class JobCreationDataRepository(
     suspend fun saveNewItem(newJobItem: ItemDTOTemp?) {
         Coroutines.io {
             if (newJobItem != null && !appDb.getItemDaoTemp()
-                    .checkItemExistsItemId(newJobItem.itemId)
+                .checkItemExistsItemId(newJobItem.itemId)
             ) {
 
                 appDb.getItemDaoTemp().insertItems(newJobItem)
@@ -618,7 +618,7 @@ class JobCreationDataRepository(
     suspend fun backupEstimatePhoto(photoDTO: JobItemEstimatesPhotoDTO):
         JobItemEstimatesPhotoDTO = withContext(dispatchers.io()) {
         if (appDb.getJobItemEstimatePhotoDao()
-                .checkIfJobItemEstimatePhotoExistsByPhotoId(photoDTO.photoId)
+            .checkIfJobItemEstimatePhotoExistsByPhotoId(photoDTO.photoId)
         ) {
             appDb.getJobItemEstimatePhotoDao().updateJobItemEstimatePhoto(photoDTO)
         } else {

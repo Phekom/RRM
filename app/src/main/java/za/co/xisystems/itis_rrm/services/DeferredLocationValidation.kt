@@ -203,7 +203,8 @@ class DeferredLocationViewModel(
                 XIResult.Error(
                     LocationException(
                         message
-                    ), "One or more locations could not be verified"
+                    ),
+                    "One or more locations could not be verified"
                 )
             )
     }
@@ -322,7 +323,7 @@ class DeferredLocationViewModel(
             val jobToUpdate = jobCreationDataRepository.getUpdatedJob(job.jobId)
             val projectSection = jobCreationDataRepository.getSection(projectSectionId)
             if (!jobCreationDataRepository
-                    .checkIfJobSectionExistForJobAndProjectSection(
+                .checkIfJobSectionExistForJobAndProjectSection(
                         jobId = DataConversion.toLittleEndian(jobToUpdate.jobId),
                         projectSectionId = DataConversion.toLittleEndian(projectSection.sectionId)
                     )
@@ -451,7 +452,7 @@ data class LocationValidation(
         sectionEndKm = parcel.readValue(Double::class.java.classLoader) as? Double,
         sectionId = parcel.readString(),
 
-        )
+    )
 
     fun init(
         longitude: Double,
