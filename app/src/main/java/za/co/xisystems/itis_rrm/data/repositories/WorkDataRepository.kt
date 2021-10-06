@@ -325,7 +325,7 @@ class WorkDataRepository(
         Coroutines.io {
             estimateWorksPhotos.forEach { estimateWorksPhoto ->
                 if (!appDb.getEstimateWorkPhotoDao()
-                        .checkIfEstimateWorksPhotoExist(estimateWorksPhoto.filename)
+                    .checkIfEstimateWorksPhotoExist(estimateWorksPhoto.filename)
                 ) {
                     appDb.getEstimateWorkPhotoDao().insertEstimateWorksPhoto(estimateWorksPhoto)
                 } else {

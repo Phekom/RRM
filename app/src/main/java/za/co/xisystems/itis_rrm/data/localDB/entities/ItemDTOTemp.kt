@@ -23,7 +23,8 @@ import java.io.Serializable
 const val PROJECT_ITEM_TABLE_TEMP = "PROJECT_ITEM_TABLE_TEMP"
 
 @Entity(
-    tableName = PROJECT_ITEM_TABLE_TEMP, foreignKeys = [
+    tableName = PROJECT_ITEM_TABLE_TEMP,
+    foreignKeys = [
         ForeignKey(
             entity = ProjectDTO::class,
             parentColumns = arrayOf("projectId"),

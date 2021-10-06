@@ -89,7 +89,8 @@ import za.co.xisystems.itis_rrm.utils.DatetimeConverters
  */
 
 @Database(
-    entities = [JobDTO::class, UserDTO::class, UserRoleDTO::class,
+    entities = [
+        JobDTO::class, UserDTO::class, UserRoleDTO::class,
         ProjectItemDTO::class, ItemDTOTemp::class, JobDTOTemp::class,
         ContractDTO::class, VoItemDTO::class, ProjectDTO::class,
         ProjectSectionDTO::class, PrimaryKeyValueDTO::class, LookupOptionDTO::class,
@@ -192,4 +193,3 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun getSectionPointDao(): SectionPointDao
     abstract fun getWorkStepDao(): WorkStepDao
 }
-

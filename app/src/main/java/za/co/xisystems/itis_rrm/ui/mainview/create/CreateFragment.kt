@@ -328,7 +328,8 @@ class CreateFragment : BaseFragment(), OfflineListener, DIAware {
                                         createViewModel.setContractId(item.contractId)
                                     }
                                 }
-                            })
+                            }
+                        )
                     }
                     ui.dataLoading.hide()
                 })
@@ -374,7 +375,8 @@ class CreateFragment : BaseFragment(), OfflineListener, DIAware {
                                     createViewModel.setProjectId(item.projectId)
                                 }
                             }
-                        })
+                        }
+                    )
 
                     ui.dataLoading.hide()
                 }

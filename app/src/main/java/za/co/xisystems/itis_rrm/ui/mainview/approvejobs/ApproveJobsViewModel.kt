@@ -40,7 +40,7 @@ class ApproveJobsViewModel(
     private lateinit var updateStatus: LiveData<XIEvent<XIResult<String>>>
 
     private val workExceptionHandler = CoroutineExceptionHandler { _, throwable ->
-        val message = "Caught during workflow: ${throwable.message ?:   XIErrorHandler.UNKNOWN_ERROR}"
+        val message = "Caught during workflow: ${throwable.message ?: XIErrorHandler.UNKNOWN_ERROR}"
         Timber.e(throwable)
         val caughtException = XIResult.Error(
             throwable, message
@@ -113,17 +113,17 @@ class ApproveJobsViewModel(
         jobApprovalItem.value = approveJobItem
     }
 
-    suspend fun processWorkflowMove(
+    fun processWorkflowMove(
         userId: String,
         trackRouteId: String,
         description: String?,
         direction: Int,
         jobId: String
-    ) = viewModelScope.launch(viewModelScope.coroutineContext) {
-        withContext(ioContext) {
-            try {
-                workflowState.postValue(XIResult.Progress(true))
+    ) = viewModelScope.launch(mainContext) {
+        try {
+            workflowState.postValue(XIResult.Progress(true))
 
+            withContext(ioContext) {
                 jobApprovalDataRepository.processWorkflowMove(
                     userId,
                     jobId,
@@ -131,21 +131,19 @@ class ApproveJobsViewModel(
                     description,
                     direction
                 )
-            } catch (t: Throwable) {
-                val message = "Failed to process workflow: ${t.message ?:  XIErrorHandler.UNKNOWN_ERROR}"
-                workflowState.postValue(XIResult.Error(t, message))
-            } finally {
-                workflowState.postValue(XIResult.Progress(false))
             }
+        } catch (t: Throwable) {
+            val message = "Failed to process workflow: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
+            workflowState.postValue(XIResult.Error(t, message))
+        } finally {
+            workflowState.postValue(XIResult.Progress(false))
         }
     }
 
-    suspend fun getJobsForActivityId(activityId: Int): LiveData<List<JobDTO>> {
-        return withContext(ioContext) {
-            jobApprovalDataRepository.getJobsForActivityId(
-                activityId
-            ).distinctUntilChanged()
-        }
+    suspend fun getJobsForActivityId(activityId: Int): LiveData<List<JobDTO>> = withContext(ioContext) {
+        return@withContext jobApprovalDataRepository.getJobsForActivityId(
+            activityId
+        ).distinctUntilChanged()
     }
 
     suspend fun getDescForProjectId(projectId: String): String {
@@ -200,9 +198,13 @@ class ApproveJobsViewModel(
         }
     }
 
-    suspend fun getJobEstimationItemByEstimateId(estimateId: String) = liveData {
+    fun getJobEstimationItemByEstimateId(estimateId: String) = liveData {
         val estimate = jobApprovalDataRepository.getJobEstimationItemByEstimateId(estimateId)
         emit(estimate)
+    }
+
+    fun backupJobInProgress(job: JobDTO) = viewModelScope.launch(ioContext) {
+        jobApprovalDataRepository.insertOrUpdateJob(job)
     }
 
     /**

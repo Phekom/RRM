@@ -125,7 +125,6 @@ class WorkStateItem(
                 //     }
                 //
                 // }
-
             }
         }
         viewBinding.root.setOnClickListener {

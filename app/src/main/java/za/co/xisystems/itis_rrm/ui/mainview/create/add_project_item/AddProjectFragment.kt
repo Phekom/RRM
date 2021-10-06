@@ -236,7 +236,8 @@ class AddProjectFragment : BaseFragment(), DIAware {
                         processLocationResult(outcome)
                     }
                 }
-            })
+            }
+        )
 
         createViewModel.jobForValidation.observeOnce(
             viewLifecycleOwner, { job ->
@@ -251,7 +252,8 @@ class AddProjectFragment : BaseFragment(), DIAware {
                         }
                     }
                 }
-            })
+            }
+        )
 
         createViewModel.jobForSubmission.observeOnce(
             viewLifecycleOwner, { unsubmittedEvent ->
@@ -319,7 +321,8 @@ class AddProjectFragment : BaseFragment(), DIAware {
                         calculateTotalCost(job)
                     }
                 }
-            })
+            }
+        )
     }
 
     private fun bindProjectItems() = uiScope.launch(uiScope.coroutineContext) {
@@ -881,7 +884,12 @@ class AddProjectFragment : BaseFragment(), DIAware {
         Timber.d("onStop() has been called.")
     }
 
-    fun resubmitJob() {
+    /**
+     * In case of our job submission failing due to network errors,
+     * we delay by the number of attempts multiplied by the backoff time
+     * before retrying the Transaction. Limited to 10 attempts bytes default.
+     */
+    private fun resubmitJob() {
         IndefiniteSnackbar.hide()
         createViewModel.backupSubmissionJob.observeOnce(viewLifecycleOwner, { retryJobSubmission ->
             retryJobSubmission.getContentIfNotHandled()?.let { repeatJob ->

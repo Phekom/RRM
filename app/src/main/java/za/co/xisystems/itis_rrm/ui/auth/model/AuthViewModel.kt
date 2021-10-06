@@ -321,7 +321,6 @@ class AuthViewModel(
                 imie,
                 androidDevice
             )
-
         } catch (e: Exception) {
             listenerNotify {
                 postError(e)
@@ -346,7 +345,8 @@ class AuthViewModel(
         val loggedInUser = user.await().value
         val inputHash = SecureString(
             loggedInUser!!.userName
-                .plus(loggedInUser.device).plus(pin).toCharArray(), false
+                .plus(loggedInUser.device).plus(pin).toCharArray(),
+            false
         )
         val result = armoury.validateToken(
             inputHash, loggedInUser.pinHash!!
