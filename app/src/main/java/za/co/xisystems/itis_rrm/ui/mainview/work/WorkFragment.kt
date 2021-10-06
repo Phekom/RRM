@@ -96,7 +96,8 @@ class WorkFragment : BaseFragment(), DIAware {
                         val xiFail = XIResult.Error(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
                         crashGuard(
                             throwable = xiFail,
-                            refreshAction = { retryFetchingJobs() })
+                            refreshAction = { retryFetchingJobs() }
+                        )
                     }
                 }
             }

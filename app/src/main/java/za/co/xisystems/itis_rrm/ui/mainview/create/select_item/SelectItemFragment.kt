@@ -207,7 +207,8 @@ class SelectItemFragment : BaseFragment(), DIAware {
                             selectedSectionItem = item
                             setRecyclerItems(projectId, item.sectionItemId)
                         }
-                    })
+                    }
+                )
                 ui.sectionItemSpinner.setOnTouchListener { _, _ ->
                     animate = true
                     false

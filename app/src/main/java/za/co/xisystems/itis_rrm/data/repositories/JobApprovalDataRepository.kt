@@ -166,8 +166,8 @@ class JobApprovalDataRepository(
 
                 val errorMessage: String = workflowMoveResponse.errorMessage ?: ""
                 when {
-                    errorMessage.lowercase(Locale.ENGLISH).contains("no job found")
-                        && direction == WorkflowDirection.FAIL.value -> {
+                    errorMessage.lowercase(Locale.ENGLISH).contains("no job found") &&
+                        direction == WorkflowDirection.FAIL.value -> {
                         appDb.getJobDao().softDeleteJobForJobId(jobId)
                         postWorkflowStatus(XIResult.Success("DECLINED"))
                     }
@@ -250,7 +250,7 @@ class JobApprovalDataRepository(
 
                 jobItemEstimate.workflowEstimateWorks.forEach { jobEstimateWorks ->
                     if (!appDb.getEstimateWorkDao()
-                            .checkIfJobEstimateWorksExist(jobEstimateWorks.worksId)
+                        .checkIfJobEstimateWorksExist(jobEstimateWorks.worksId)
                     ) {
                         // Create Bare Bones
                         val estimateWorks = JobEstimateWorksDTO(
@@ -353,5 +353,9 @@ class JobApprovalDataRepository(
 
     suspend fun getJobEstimationItemByEstimateId(estimateId: String) = withContext(dispatchers.io()) {
         return@withContext appDb.getJobItemEstimateDao().getJobItemEstimateForEstimateId(estimateId)
+    }
+
+    suspend fun insertOrUpdateJob(job: JobDTO) = withContext(dispatchers.io()) {
+        return@withContext appDb.getJobDao().updateJob(job)
     }
 }

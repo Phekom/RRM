@@ -56,7 +56,9 @@ import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.hideKeyboard
 import za.co.xisystems.itis_rrm.utils.toast
 
-class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedListener,
+class MainActivity :
+    BaseActivity(),
+    NavigationView.OnNavigationItemSelectedListener,
     DIAware {
 
     override val di by closestDI()

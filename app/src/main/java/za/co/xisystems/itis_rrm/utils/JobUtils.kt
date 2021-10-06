@@ -47,15 +47,18 @@ object JobUtils {
     fun sort(photos: ArrayList<JobItemEstimatesPhotoDTO>?): ArrayList<JobItemEstimatesPhotoDTO>? {
         // startPhoto = [0] & endPhoto = [1]
         if (photos != null) {
-            Collections.sort(photos, Comparator { o1, o2 ->
-                if (o1 == null || o2 == null) return@Comparator 0 // this case should never happen
-                if (o1.isStartPhoto()) return@Comparator -1
-                if (!o2.isStartPhoto()) {
-                    0
-                } else {
-                    1
+            Collections.sort(
+                photos,
+                Comparator { o1, o2 ->
+                    if (o1 == null || o2 == null) return@Comparator 0 // this case should never happen
+                    if (o1.isStartPhoto()) return@Comparator -1
+                    if (!o2.isStartPhoto()) {
+                        0
+                    } else {
+                        1
+                    }
                 }
-            })
+            )
         }
         return photos
     }

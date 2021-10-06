@@ -113,7 +113,8 @@ class HomeFragment : BaseFragment(), DIAware {
                     val xiErr = XIResult.Error(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
                     crashGuard(
                         throwable = xiErr,
-                        refreshAction = { this@HomeFragment.retrySections() })
+                        refreshAction = { this@HomeFragment.retrySections() }
+                    )
                 } finally {
                     ui.group2Loading.visibility = View.GONE
                 }
@@ -165,7 +166,8 @@ class HomeFragment : BaseFragment(), DIAware {
             val connectErr = XIResult.Error(t, errorMessage)
             crashGuard(
                 throwable = connectErr,
-                refreshAction = { this.retryAcquireUser() })
+                refreshAction = { this.retryAcquireUser() }
+            )
         }
     }
 

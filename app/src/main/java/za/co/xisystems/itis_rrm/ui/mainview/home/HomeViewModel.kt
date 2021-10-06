@@ -88,7 +88,8 @@ class HomeViewModel(
                 )
                 val fetchFail =
                     XIResult.Error(
-                        exception, "Failed to fetch contracts:" +
+                        exception,
+                        "Failed to fetch contracts:" +
                             " ${exception.message ?: XIErrorHandler.UNKNOWN_ERROR}"
                     )
                 databaseState.postValue(fetchFail)

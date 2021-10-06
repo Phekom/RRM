@@ -235,31 +235,31 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
     private fun pullData() {
         uiScope.launch(uiScope.coroutineContext) {
 
-                val user = workViewModel.user.await()
-                user.observe(viewLifecycleOwner, { userDTO ->
-                    useR = userDTO
-                })
+            val user = workViewModel.user.await()
+            user.observe(viewLifecycleOwner, { userDTO ->
+                useR = userDTO
+            })
 
-                workViewModel.workItemJob.observe(viewLifecycleOwner, { estimateJob ->
-                    estimateJob?.let {
-                        itemEstimateJob = it
+            workViewModel.workItemJob.observe(viewLifecycleOwner, { estimateJob ->
+                estimateJob?.let {
+                    itemEstimateJob = it
+                }
+            })
+
+            workViewModel.workItem.observe(viewLifecycleOwner, { estimate ->
+                estimate?.let {
+                    itemEstimate = it
+                    if (this@CaptureWorkFragment::itemEstimateJob.isInitialized) {
+                        getWorkItems(itemEstimate, itemEstimateJob)
                     }
-                })
+                }
+            })
 
-                workViewModel.workItem.observe(viewLifecycleOwner, { estimate ->
-                    estimate?.let {
-                        itemEstimate = it
-                        if (this@CaptureWorkFragment::itemEstimateJob.isInitialized) {
-                            getWorkItems(itemEstimate, itemEstimateJob)
-                        }
-                    }
-                })
-
-                workViewModel.historicalWorks.observe(viewLifecycleOwner, {
-                    it?.let { populateHistoricalWorkEstimate(it) }
-                })
-            }
+            workViewModel.historicalWorks.observe(viewLifecycleOwner, {
+                it?.let { populateHistoricalWorkEstimate(it) }
+            })
         }
+    }
 
     private fun onRestoreInstanceState(inState: Bundle) {
         inState.run {
@@ -446,7 +446,8 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
                     workViewModel.resetWorkState()
                     crashGuard(
                         throwable = result,
-                        refreshAction = { this.retryJobSubmission() })
+                        refreshAction = { this.retryJobSubmission() }
+                    )
                 }
                 is XIResult.Status -> {
                     extensionToast(
@@ -809,7 +810,8 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
                         estimateWorksList.toWorkStateItems(),
                         workflowSteps
                     )
-                })
+                }
+            )
         }
     }
 

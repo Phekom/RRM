@@ -201,7 +201,8 @@ class ApproveJobsFragment : BaseFragment(), DIAware {
 
         ui.jobsSwipeToRefresh.setOnRefreshListener {
             uiScope.launch(uiScope.coroutineContext) {
-                protectedFetch(veiled = true, { fetchJobsFromServices() },
+                protectedFetch(
+                    veiled = true, { fetchJobsFromServices() },
                     { retryFetchRemoteJobs() }
                 )
             }

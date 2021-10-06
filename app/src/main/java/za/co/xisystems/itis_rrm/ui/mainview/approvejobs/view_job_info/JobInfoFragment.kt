@@ -13,6 +13,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
+import androidx.core.view.doOnNextLayout
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
@@ -54,10 +55,12 @@ import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.ApproveJobsViewModelFact
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.approve_job_item.ApproveJobItem
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DataConversion
+import za.co.xisystems.itis_rrm.utils.DateUtil
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection.FAIL
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection.NEXT
+import java.util.Date
 
 class JobInfoFragment : BaseFragment(), DIAware {
     override val di by closestDI()
@@ -356,6 +359,9 @@ class JobInfoFragment : BaseFragment(), DIAware {
                             progressButton.failProgress(getString(string.decline_job))
                         }
                         else -> {
+                            approveJobItem.jobDTO.remarks = ui.workflowCommentsEditText.text.trim().toString()
+                            approveJobItem.jobDTO.approvalDate = DateUtil.dateToString(Date())
+                            approveViewModel.backupJobInProgress(approveJobItem.jobDTO)
                             initJobWorkflow(approveJobItem, workflowDirection, userDTO)
                         }
                     }
@@ -419,7 +425,7 @@ class JobInfoFragment : BaseFragment(), DIAware {
                     startActivity(home)
                 }
             },
-            Constants.ONE_SECOND
+            Constants.TWO_SECONDS
         )
     }
 
@@ -441,20 +447,8 @@ class JobInfoFragment : BaseFragment(), DIAware {
         ui.viewEstimationItemsListView.run {
             setLayoutManager(LinearLayoutManager(this.context))
             setAdapter(groupAdapter)
+            doOnNextLayout { unVeil() }
         }
-
-        delayedUnveil()
-    }
-
-    private fun delayedUnveil() {
-        Handler(Looper.getMainLooper()).postDelayed(
-            {
-                if (!activity?.isFinishing!!) {
-                    ui.viewEstimationItemsListView.unVeil()
-                }
-            },
-            Constants.ONE_SECOND
-        )
     }
 
     private fun List<JobItemEstimateDTO>.toEstimatesListItem(): List<EstimatesItem> {
