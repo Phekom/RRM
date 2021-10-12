@@ -52,7 +52,6 @@ class XIArmoury private constructor(
                 it.sageInstance = sageInstance
                 it.scribeInstance = scribeInstance
                 it.initArmoury(it, appContext)
-                it.initArmoury(it, appContext)
                 instance = it
             }
         }

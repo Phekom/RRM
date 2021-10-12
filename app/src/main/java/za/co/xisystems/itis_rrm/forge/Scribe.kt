@@ -144,7 +144,7 @@ class Scribe private constructor(
     }
 
     private fun writePassphrase(passphrase: String) = with(securePrefs.edit()) {
-        putString(PASS_KEY, passphrase.trim()).apply()
+        putString(PASS_KEY, passphrase.trim()).commit()
     }
 
     fun writeSessionKey(sessionKey: String) = with(securePrefs.edit()) {

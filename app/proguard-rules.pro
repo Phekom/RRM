@@ -51,10 +51,12 @@
 
 # Keep these for GSON and Jackson
 -keepattributes Signature
--keepattributes *Annotation*
 -keepattributes EnclosingMethod
+-keepattributes InnerClasses
+-keepattributes Annotation
 -keep class sun.misc.Unsafe { *; }
 -keep class com.google.gson.** { *; }
+-keepattributes *Annotation*
 
 # SQLCipher
 -keep,includedescriptorclasses class net.sqlcipher.** { *; }
