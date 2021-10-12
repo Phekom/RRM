@@ -284,8 +284,7 @@ class WorkDataRepository(
         withContext(dispatchers.io()) {
             try {
                 if (jobEstimateWorks.trackRouteId.isEmpty()) {
-                    val wfEx = ServiceException("Error: trackRouteId is null")
-                    throw wfEx
+                    throw ServiceException("Error: trackRouteId is null")
                 } else {
                     val direction: Int = WorkflowDirection.NEXT.value
                     val trackRouteId: String = jobEstimateWorks.trackRouteId
@@ -329,24 +328,22 @@ class WorkDataRepository(
         estimateWorksPhotos: ArrayList<JobEstimateWorksPhotoDTO>,
         estimateWorksItem: JobEstimateWorksDTO
     ) {
-        Coroutines.io {
-            estimateWorksPhotos.forEach { estimateWorksPhoto ->
-                if (!appDb.getEstimateWorkPhotoDao()
+        estimateWorksPhotos.forEach { estimateWorksPhoto ->
+            if (!appDb.getEstimateWorkPhotoDao()
                     .checkIfEstimateWorksPhotoExist(estimateWorksPhoto.filename)
-                ) {
-                    appDb.getEstimateWorkPhotoDao().insertEstimateWorksPhoto(estimateWorksPhoto)
-                } else {
-                    Timber.d("${estimateWorksPhoto.filename} was already in the database")
-                }
+            ) {
+                appDb.getEstimateWorkPhotoDao().insertEstimateWorksPhoto(estimateWorksPhoto)
+            } else {
+                Timber.d("${estimateWorksPhoto.filename} was already in the database")
             }
-            val allEstimateWorksPhotos =
-                appDb.getEstimateWorkPhotoDao()
-                    .getEstimateWorksPhotoForWorksId(estimateWorksItem.worksId) as ArrayList<JobEstimateWorksPhotoDTO>
-            appDb.getEstimateWorkDao().updateJobEstimateWorkForEstimateID(
-                allEstimateWorksPhotos,
-                estimateWorksItem.estimateId
-            )
         }
+        val allEstimateWorksPhotos =
+            appDb.getEstimateWorkPhotoDao()
+                .getEstimateWorksPhotoForWorksId(estimateWorksItem.worksId) as ArrayList<JobEstimateWorksPhotoDTO>
+        appDb.getEstimateWorkDao().updateJobEstimateWorkForEstimateID(
+            allEstimateWorksPhotos,
+            estimateWorksItem.estimateId
+        )
     }
 
     suspend fun getJobItemsEstimatesDoneForJobId(

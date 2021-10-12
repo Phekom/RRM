@@ -12,7 +12,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelChildren
@@ -63,20 +65,21 @@ class HomeViewModel(
         }
     }
 
-    fun bigSyncCheck() = viewModelScope.launch(mainContext) {
+    fun bigSyncCheck() = viewModelScope.launch(ioContext) {
         offlineDataRepository.bigSyncCheck()
     }
 
-    fun fetchAllData(userId: String) = viewModelScope.launch(mainContext) {
+    @ExperimentalCoroutinesApi
+    fun fetchAllData(userId: String) = viewModelScope.launch(ioContext, CoroutineStart.ATOMIC) {
 
         try {
-            withContext(dispatchers.default()) {
-                offlineDataRepository.loadActivitySections(userId)
-                offlineDataRepository.loadLookups(userId)
-                offlineDataRepository.loadContracts(userId)
-                offlineDataRepository.loadTaskList(userId)
-                offlineDataRepository.loadWorkflows(userId)
-            }
+            offlineDataRepository.loadActivitySections(userId)
+            offlineDataRepository.loadContracts(userId)
+
+            offlineDataRepository.loadLookups(userId)
+            offlineDataRepository.loadTaskList(userId)
+            offlineDataRepository.loadWorkflows(userId)
+
             withContext(mainContext) {
                 databaseState.postValue(XIResult.Success(true))
             }

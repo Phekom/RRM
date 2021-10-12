@@ -55,8 +55,11 @@ class WorkViewModel(
     val offlineUserTaskList by lazyDeferred {
         offlineDataRepository.getUserTaskList()
     }
-    var workItem = MutableLiveData<JobItemEstimateDTO>()
-    var workItemJob = MutableLiveData<JobDTO>()
+
+    var workItem = MutableLiveData<XIEvent<JobItemEstimateDTO>>()
+    var workItemJob = MutableLiveData<XIEvent<JobDTO>>()
+    var worksEstimate = MutableLiveData<XIEvent<JobEstimateWorksDTO?>>()
+    var workSubmissionJob = MutableLiveData<JobDTO>()
     val backupWorkSubmission: MutableLiveData<JobEstimateWorksDTO> = MutableLiveData()
     val selectedJobId: MutableLiveData<String> = MutableLiveData()
 
@@ -86,17 +89,24 @@ class WorkViewModel(
         }
     }
 
+    fun setWorkSubmissionJob(jobId: String) = viewModelScope.launch(ioContext) {
+        val data = offlineDataRepository.getUpdatedJob(jobId)
+        withContext(mainContext) {
+            workSubmissionJob.value = data
+        }
+    }
+
     fun setWorkItem(estimateId: String) = viewModelScope.launch(ioContext) {
         val data = workDataRepository.getJobItemEstimateForEstimateId(estimateId)
         withContext(mainContext) {
-            workItem.value = data
+            workItem.value = XIEvent(data)
         }
     }
 
     fun setWorkItemJob(jobId: String) = viewModelScope.launch(ioContext) {
         val data = offlineDataRepository.getUpdatedJob(jobId)
         withContext(mainContext) {
-            workItemJob.value = data
+            workItemJob.value = XIEvent(data)
         }
     }
 
@@ -176,13 +186,12 @@ class WorkViewModel(
         }
     }
 
-    suspend fun createSaveWorksPhotos(
+    fun createSaveWorksPhotos(
         estimateWorksPhoto: ArrayList<JobEstimateWorksPhotoDTO>,
         itemEstiWorks: JobEstimateWorksDTO
-    ) {
-        return withContext(ioContext) {
-            workDataRepository.createEstimateWorksPhoto(estimateWorksPhoto, itemEstiWorks)
-        }
+    ) = viewModelScope.launch(ioContext, CoroutineStart.DEFAULT) {
+        workDataRepository.createEstimateWorksPhoto(estimateWorksPhoto, itemEstiWorks)
+        setWorkItem(itemEstiWorks.estimateId!!)
     }
 
     fun submitWorks(

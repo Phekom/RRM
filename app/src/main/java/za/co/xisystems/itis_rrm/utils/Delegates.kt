@@ -5,7 +5,9 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import timber.log.Timber
@@ -36,9 +38,10 @@ val defaultContext = Dispatchers.Default + Job()
  * @param block [@kotlin.ExtensionFunctionType] SuspendFunction1<CoroutineScope, T>
  * @return Lazy<Deferred<T>>
  */
+@DelicateCoroutinesApi
 fun <T> lazyDeferred(block: suspend CoroutineScope.() -> T): Lazy<Deferred<T>> {
     return lazy {
-        CoroutineScope(defaultContext).async(start = CoroutineStart.LAZY) {
+        GlobalScope.async(start = CoroutineStart.LAZY) {
             block.invoke(this)
         }
     }

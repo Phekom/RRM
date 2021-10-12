@@ -23,7 +23,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.Navigation
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
@@ -241,13 +241,13 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
             })
 
             workViewModel.workItemJob.observe(viewLifecycleOwner, { estimateJob ->
-                estimateJob?.let {
+                estimateJob?.getContentIfNotHandled()?.let {
                     itemEstimateJob = it
                 }
             })
 
             workViewModel.workItem.observe(viewLifecycleOwner, { estimate ->
-                estimate?.let {
+                estimate?.getContentIfNotHandled()?.let {
                     itemEstimate = it
                     if (this@CaptureWorkFragment::itemEstimateJob.isInitialized) {
                         getWorkItems(itemEstimate, itemEstimateJob)
@@ -525,15 +525,6 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
                 )
                 ui.moveWorkflowButton.doneProgress("Workflow complete")
                 toggleLongRunning(false)
-                refreshUI()
-            }
-        }
-    }
-
-    private fun refreshUI() {
-        activeWorks.estimateId?.let { estimateId ->
-            Coroutines.main {
-                workViewModel.setWorkItem(estimateId)
                 refreshView()
             }
         }
@@ -581,13 +572,13 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
         }
 
         // Await the updated works record
-        Coroutines.main {
-            if (!this@CaptureWorkFragment.isDetached) {
+        uiScope.launch(uiScope.coroutineContext) {
+            if (this@CaptureWorkFragment.isVisible) {
                 workViewModel.workItem.observeOnce(viewLifecycleOwner, {
                     Timber.d("$it")
                     val id = STANDARD_WORKFLOW_STEPS
                     // This part must be Deleted when the Dynamic workflow is complete.
-                    Coroutines.main {
+                    uiScope.launch(uiScope.coroutineContext) {
                         val workCodeData = workViewModel.getWorkFlowCodes(id)
                         workCodeData.observeOnce(viewLifecycleOwner, {
                             groupAdapter.notifyItemChanged(2)
@@ -764,7 +755,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
         })
     }
 
-    private suspend fun submitEstimatesOrPop(
+    private fun submitEstimatesOrPop(
         estWorkDone: Int,
         estimateJobId: String
     ) {
@@ -772,9 +763,9 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
         val estimateJobData = workViewModel.workItemJob
 
         estimateJobData.observeOnce(viewLifecycleOwner, { estimateJob ->
-            estimateJob?.let { workItemJob ->
+            estimateJob?.peekContent()?.let { workItemJob ->
                 if (estWorkDone == workItemJob.jobItemEstimates.size) {
-                    collectCompletedEstimates(estimateJob.jobId)
+                    collectCompletedEstimates(workItemJob.jobId)
                 } else {
                     popViewOnWorkSubmit()
                 }
@@ -824,8 +815,8 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
     }
 
     private fun popViewOnWorkSubmit() {
-        val directions = CaptureWorkFragmentDirections.actionCaptureWorkFragmentToNavWork(itemEstimate.jobId)
-        Navigation.findNavController(this.requireView()).navigate(directions)
+        // val directions = CaptureWorkFragmentDirections.actionCaptureWorkFragmentToNavWork(itemEstimate.jobId)
+        findNavController().navigate(R.id.nav_work)
     }
 
     private suspend fun submitAllOutStandingEstimates(
@@ -875,24 +866,19 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
             workViewModel.workflowState.removeObserver(workObserver)
             workViewModel.workflowState.observe(viewLifecycleOwner, jobObserver)
             workViewModel.workflowState.postValue(XIResult.Progress(true))
-            withContext(Dispatchers.Main) {
-                for (jobEstimate in estimates) {
+            for (jobEstimate in estimates) {
 
-                    Coroutines.main {
-                        val jobItemEstimate = workViewModel.getJobItemEstimateForEstimateId(jobEstimate.estimateId)
-                        if (jobItemEstimate.actId == ActivityIdConstants.ESTIMATE_WORK_PART_COMPLETE) {
-                            withContext(Dispatchers.Main) {
-                                moveJobItemEstimateToNextWorkflow(
-                                    WorkflowDirection.NEXT,
-                                    jobEstimate
-                                )
-                            }
-                        }
+                Coroutines.io {
+                    val jobItemEstimate = workViewModel.getJobItemEstimateForEstimateId(jobEstimate.estimateId)
+                    if (jobItemEstimate.actId == ActivityIdConstants.ESTIMATE_WORK_PART_COMPLETE) {
+                        moveJobItemEstimateToNextWorkflow(
+                            WorkflowDirection.NEXT,
+                            jobEstimate
+                        )
                     }
                 }
             }
         }
-
         jobSubmission.join()
         handleJobSubmission(XIResult.Success("JOB_COMPLETE"))
     }
@@ -900,7 +886,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
     private suspend fun moveJobItemEstimateToNextWorkflow(
         workflowDirection: WorkflowDirection,
         jobItEstimate: JobItemEstimateDTO?
-    ) {
+    ) = withContext(Dispatchers.Main) {
 
         val user = workViewModel.user.await()
         user.observe(viewLifecycleOwner, { userDTO ->
@@ -940,15 +926,13 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
             DataConversion.toLittleEndian(jobItEstimate.trackRouteId)!!
         val direction: Int = workflowDirection.value
 
-        Coroutines.main {
-            withContext(Dispatchers.IO) {
-                workViewModel.processWorkflowMove(
-                    userDTO.userId,
-                    trackRouteId,
-                    "Work complete.",
-                    direction
-                )
-            }
+        Coroutines.io {
+            workViewModel.processWorkflowMove(
+                userDTO.userId,
+                trackRouteId,
+                "Work complete.",
+                direction
+            )
         }
     }
 

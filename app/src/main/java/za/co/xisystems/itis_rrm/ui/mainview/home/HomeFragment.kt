@@ -236,12 +236,6 @@ class HomeFragment : BaseFragment(), DIAware {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         homeViewModel = ViewModelProvider(this.requireActivity(), factory).get(HomeViewModel::class.java)
-        homeViewModel.bigSyncDone.observe(viewLifecycleOwner, {
-            Timber.d("Synced: $it")
-            if (!it) {
-                promptUserToSync()
-            }
-        })
     }
 
     /**
@@ -262,36 +256,23 @@ class HomeFragment : BaseFragment(), DIAware {
     }
 
     private fun initProgressViews() {
-
         ui.pvContracts.setOnProgressChangeListener {
-            when {
-                it > 0f -> ui.pvContracts.labelText = "projects ${it.toInt()}%"
-                it == progressComplete -> {
-                    maxOutPv(ui.pvContracts, "projects synched")
-                }
-            }
-            ui.pvSections.visibility = View.GONE
-            ui.pvTasks.visibility = View.GONE
+            progressListener(it, ui.pvContracts, "projects")
         }
         ui.pvTasks.setOnProgressChangeListener {
-            when {
-                it > 0f -> ui.pvTasks.labelText = "tasks ${it.toInt()}%"
-                it == progressComplete -> {
-                    maxOutPv(ui.pvTasks, "tasks synched")
-                }
-            }
-            ui.pvContracts.visibility = View.GONE
-            ui.pvSections.visibility = View.GONE
+            progressListener(it, ui.pvTasks, "tasks")
         }
         ui.pvSections.setOnProgressChangeListener {
-            when {
-                it > 0 -> ui.pvSections.labelText = "sections ${it.toInt()}%"
-                it == progressComplete -> {
-                    maxOutPv(ui.pvSections, "goods synched")
-                }
+            progressListener(it, ui.pvSections, "sections")
+        }
+    }
+
+    private fun progressListener(it: Float, progressView: ProgressView, label: String) {
+        when {
+            it > 0f && it <= progressView.max -> progressView.labelText = "$label ${it.toInt()}%"
+            it == progressComplete -> {
+                maxOutPv(progressView, "$label synched")
             }
-            ui.pvContracts.visibility = View.GONE
-            ui.pvTasks.visibility = View.GONE
         }
     }
 

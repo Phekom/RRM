@@ -9,6 +9,7 @@ import za.co.xisystems.itis_rrm.custom.notifications.ColorToast
 import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration
 import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity
 import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
+import java.lang.ref.WeakReference
 
 fun Activity.extensionToast(
     title: String? = null,
@@ -19,13 +20,13 @@ fun Activity.extensionToast(
 ) {
 
     MotionToast.createColorToast(
-        context = this,
+        context = WeakReference(this).get()!!,
         title = title,
         message = message,
         style = style.getValue(),
         position = position.getValue(),
         duration = duration.getValue(),
-        font = ResourcesCompat.getFont(this, R.font.helvetica_regular)
+        font = ResourcesCompat.getFont(WeakReference(this).get()!!, R.font.helvetica_regular)
     )
 }
 
@@ -34,12 +35,12 @@ fun Fragment.extensionToast(
 ) {
     MotionToast.createColorToast(
         title = colorToast.title,
-        context = this.requireActivity(),
+        context = WeakReference(this.requireActivity()).get()!!,
         message = colorToast.message,
         style = colorToast.style.getValue(),
         position = colorToast.gravity.getValue(),
         duration = colorToast.duration.getValue(),
-        font = ResourcesCompat.getFont(this.requireActivity(), R.font.helvetica_regular)
+        font = ResourcesCompat.getFont(WeakReference(this.requireActivity()).get()!!, R.font.helvetica_regular)
     )
 }
 
