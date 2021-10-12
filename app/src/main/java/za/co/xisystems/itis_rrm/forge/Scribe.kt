@@ -68,12 +68,12 @@ class Scribe private constructor(
             prefsFile: String = PREFS_FILE
         ): Scribe {
             val instance = Scribe(context = context, sageInstance = sageInstance)
-            instance.securePrefs = instance.createPreferences(
+            instance.createPreferences(
                 context = context,
                 masterKey = sageInstance.masterKeyAlias,
                 prefsFile = prefsFile
             ).also { securePrefs ->
-                val passphrase = securePrefs.getString(PASS_KEY, "NOT_SET")
+                instance.securePrefs = securePrefs
             }
 
             return instance
@@ -90,7 +90,7 @@ class Scribe private constructor(
     suspend fun initPreferences(
         context: Context,
         masterKey: MasterKey,
-        prefsFile: String = "special_styles_and_colours"
+        prefsFile: String = PREFS_FILE
     ): SharedPreferences = withContext(dispatchers.io()) {
         return@withContext createPreferences(context, prefsFile, masterKey)
     }
@@ -107,7 +107,7 @@ class Scribe private constructor(
     @WorkerThread
     fun createPreferences(
         context: Context,
-        prefsFile: String = "specialstylesandcolours",
+        prefsFile: String = PREFS_FILE,
         masterKey: MasterKey
     ): SharedPreferences {
         val preferences = EncryptedSharedPreferences.create(

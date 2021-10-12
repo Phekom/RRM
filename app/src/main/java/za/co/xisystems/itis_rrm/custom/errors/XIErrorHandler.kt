@@ -51,6 +51,7 @@ object XIErrorHandler {
         )
     }
 
+    @Suppress("LongParameterList")
     fun handleError(
         fragment: Fragment? = null,
         view: View,
@@ -65,7 +66,11 @@ object XIErrorHandler {
             if (shouldToast) {
                 // If we don't have a fragment, fallback to dry toast'
                 if (fragment != null) {
-                    fragment.extensionToast(message = humanReadable(throwable), style = ToastStyle.ERROR, title = null)
+                    fragment.requireActivity().extensionToast(
+                        message = humanReadable(throwable),
+                        style = ToastStyle.ERROR,
+                        title = null
+                    )
                 } else {
                     showMessage(view, throwable.message)
                 }

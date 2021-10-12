@@ -20,7 +20,7 @@
         <androidx.coordinatorlayout.widget.CoordinatorLayout
             android:background="@drawable/login_reg_background"
             android:scaleType="fitCenter"
-            tools:context=".new_app.ui.auth.RegisterPinActivity"
+            tools:context=".ui.auth.ResetPinActivity"
             android:id="@+id/reg_container"
             android:layout_width="match_parent"
             android:layout_height="match_parent"

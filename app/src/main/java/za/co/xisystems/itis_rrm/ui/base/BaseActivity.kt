@@ -10,6 +10,7 @@ import org.kodein.di.DIAware
 import org.kodein.di.android.closestDI
 import org.kodein.di.instance
 import timber.log.Timber
+import za.co.xisystems.itis_rrm.extensions.exitApplication
 import za.co.xisystems.itis_rrm.forge.XIArmoury
 import za.co.xisystems.itis_rrm.ui.auth.LoginActivity
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModel
@@ -58,20 +59,27 @@ abstract class BaseActivity : AppCompatActivity(), DIAware {
         if (armoury.checkTimeout() &&
             !sharedViewModel.takingPhotos
         ) {
-            logoutApplication()
+            Coroutines.main {
+                val user = sharedViewModel.currentUser.await().value!!
+                when (user.authd) {
+                    true -> logoutApplication()
+                    else -> exitApplication()
+                }
+            }
         }
     }
 
     fun logoutApplication() {
         Coroutines.main {
             sharedViewModel.logOut()
+            armoury.writeFutureTimestamp()
             withContext(Dispatchers.Main.immediate) {
                 Intent(this@BaseActivity, LoginActivity::class.java).also { login ->
                     login.flags =
                         Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
                     startActivity(login)
                 }
-                finish()
+                finishAndRemoveTask()
             }
         }
     }

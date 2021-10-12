@@ -1,10 +1,10 @@
 package za.co.xisystems.itis_rrm.ui.mainview.create.select_item
 
-import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
-import com.xwray.groupie.kotlinandroidextensions.Item
-import kotlinx.android.synthetic.main.project_item.*
+import android.view.View
+import com.xwray.groupie.viewbinding.BindableItem
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
+import za.co.xisystems.itis_rrm.databinding.ProjectItemBinding
 import za.co.xisystems.itis_rrm.extensions.uomForUI
 
 /**
@@ -13,17 +13,21 @@ import za.co.xisystems.itis_rrm.extensions.uomForUI
 
 class SectionProjectItem(
     val itemDTO: ProjectItemDTO
-) : Item() {
-    override fun bind(viewHolder: GroupieViewHolder, position: Int) {
-        viewHolder.apply {
+) : BindableItem<ProjectItemBinding>() {
+    override fun bind(viewBinding: ProjectItemBinding, position: Int) {
+        viewBinding.apply {
             itemCode.text = itemDTO.itemCode
-            project_descr_textView.text = itemDTO.descr
-            unitof_M_textView.text = ""
+            projectDescrTextView.text = itemDTO.descr
+            unitofMTextView.text = ""
             itemDTO.uom?.let {
-                unitof_M_textView.text = itemView.context.uomForUI(itemDTO.uom)
+                unitofMTextView.text = root.context.uomForUI(itemDTO.uom)
             }
         }
     }
 
     override fun getLayout() = R.layout.project_item
+
+    override fun initializeViewBinding(view: View): ProjectItemBinding {
+        return ProjectItemBinding.bind(view)
+    }
 }

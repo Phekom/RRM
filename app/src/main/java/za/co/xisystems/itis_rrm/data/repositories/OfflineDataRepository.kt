@@ -1229,7 +1229,7 @@ class OfflineDataRepository(
     ) {
         workflowJobSections.forEach { jobSection ->
             if (!appDb.getJobSectionDao()
-                .checkIfJobSectionExist(jobSection.jobSectionId)
+                    .checkIfJobSectionExist(jobSection.jobSectionId)
             ) {
                 appDb.getJobSectionDao().insertJobSection(jobSection)
             } else {

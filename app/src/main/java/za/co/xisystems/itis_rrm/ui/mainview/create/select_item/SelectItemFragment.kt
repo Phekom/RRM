@@ -22,7 +22,7 @@ import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.xwray.groupie.GroupAdapter
-import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
+import com.xwray.groupie.viewbinding.GroupieViewHolder
 import kotlinx.coroutines.CoroutineStart.DEFAULT
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
@@ -39,6 +39,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.SectionItemDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentSelectItemBinding
+import za.co.xisystems.itis_rrm.databinding.ProjectItemBinding
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper
@@ -72,6 +73,7 @@ class SelectItemFragment : BaseFragment(), DIAware {
 
     private lateinit var editJob: JobDTO
     private var uiScope = UiLifecycleScope()
+    var stateRestored = false
 
     init {
 
@@ -128,7 +130,6 @@ class SelectItemFragment : BaseFragment(), DIAware {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        var stateRestored = false
         createViewModel = activity?.run {
             ViewModelProvider(this, factory).get(CreateViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
@@ -241,7 +242,7 @@ class SelectItemFragment : BaseFragment(), DIAware {
     }
 
     private fun initRecyclerView(items: List<SectionProjectItem>) {
-        val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
+        val groupAdapter = GroupAdapter<GroupieViewHolder<ProjectItemBinding>>().apply {
             addAll(items)
             notifyDataSetChanged()
         }

@@ -20,7 +20,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelChildren
@@ -37,6 +37,8 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.WfWorkStepDTO
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.WorkDataRepository
+import za.co.xisystems.itis_rrm.forge.DefaultDispatcherProvider
+import za.co.xisystems.itis_rrm.forge.DispatcherProvider
 import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
 
@@ -44,6 +46,7 @@ class WorkViewModel(
     application: Application,
     private val workDataRepository: WorkDataRepository,
     private val offlineDataRepository: OfflineDataRepository,
+    dispatchers: DispatcherProvider = DefaultDispatcherProvider()
 ) : AndroidViewModel(application) {
 
     val user by lazyDeferred {
@@ -55,16 +58,22 @@ class WorkViewModel(
     var workItem = MutableLiveData<JobItemEstimateDTO>()
     var workItemJob = MutableLiveData<JobDTO>()
     val backupWorkSubmission: MutableLiveData<JobEstimateWorksDTO> = MutableLiveData()
+    val selectedJobId: MutableLiveData<String> = MutableLiveData()
 
     private var workflowStatus: LiveData<XIEvent<XIResult<String>>> = MutableLiveData()
     var workflowState: MutableLiveData<XIResult<String>?> = MutableLiveData()
     private val superJob = SupervisorJob()
-    private var ioContext = Job(superJob) + Dispatchers.IO
-    private var mainContext = Job(superJob) + Dispatchers.Main
+    private var ioContext = Job(superJob) + dispatchers.io()
+    private var mainContext = Job(superJob) + dispatchers.main()
     val backupCompletedEstimates: MutableLiveData<List<JobItemEstimateDTO>> = MutableLiveData()
     val historicalWorks: MutableLiveData<XIResult<JobEstimateWorksDTO>> = MutableLiveData()
 
     init {
+        resetWorkState()
+        initWorkflowChannels()
+    }
+
+    private fun initWorkflowChannels() {
         viewModelScope.launch(mainContext) {
             // Set up the feed from the repository
             workflowStatus = workDataRepository.workStatus
@@ -77,14 +86,14 @@ class WorkViewModel(
         }
     }
 
-    suspend fun setWorkItem(estimateId: String) = viewModelScope.launch(ioContext) {
+    fun setWorkItem(estimateId: String) = viewModelScope.launch(ioContext) {
         val data = workDataRepository.getJobItemEstimateForEstimateId(estimateId)
         withContext(mainContext) {
             workItem.value = data
         }
     }
 
-    suspend fun setWorkItemJob(jobId: String) = viewModelScope.launch(ioContext) {
+    fun setWorkItemJob(jobId: String) = viewModelScope.launch(ioContext) {
         val data = offlineDataRepository.getUpdatedJob(jobId)
         withContext(mainContext) {
             workItemJob.value = data
@@ -99,9 +108,7 @@ class WorkViewModel(
 
     suspend fun getJobEstimationItemsForJobId(jobID: String?, actID: Int): List<JobItemEstimateDTO> = withContext(ioContext) {
 
-        val data = workDataRepository.getJobEstimationItemsForJobId(jobID, actID)
-
-        return@withContext data
+        return@withContext workDataRepository.getJobEstimationItemsForJobId(jobID, actID)
     }
 
     suspend fun getDescForProjectItemId(projectItemId: String): String {
@@ -178,13 +185,19 @@ class WorkViewModel(
         }
     }
 
-    suspend fun submitWorks(
+    fun submitWorks(
         itemEstiWorks: JobEstimateWorksDTO,
         activity: FragmentActivity,
         itemEstiJob: JobDTO
 
-    ) = withContext(ioContext) {
-        workDataRepository.submitWorks(itemEstiWorks, activity, itemEstiJob)
+    ) = viewModelScope.launch(ioContext, CoroutineStart.DEFAULT) {
+        withContext(mainContext) {
+            resetWorkState()
+            initWorkflowChannels()
+            itemEstiJob.setWorkStartDate()
+        }
+        val updateJob = workDataRepository.backupJobInProgress(itemEstiJob)
+        workDataRepository.submitWorks(itemEstiWorks, activity, updateJob)
     }
 
     suspend fun getJobItemEstimateForEstimateId(estimateId: String): JobItemEstimateDTO {
@@ -198,10 +211,8 @@ class WorkViewModel(
         trackRouteId: String,
         description: String?,
         direction: Int
-    ) {
-        viewModelScope.launch(ioContext) {
-            workDataRepository.processWorkflowMove(userId, trackRouteId, description, direction)
-        }
+    ) = viewModelScope.launch(ioContext) {
+        workDataRepository.processWorkflowMove(userId, trackRouteId, description, direction)
     }
 
     suspend fun getJobItemsEstimatesDoneForJobId(
@@ -242,8 +253,7 @@ class WorkViewModel(
     override fun onCleared() {
         super.onCleared()
         superJob.cancelChildren()
-        workflowState = MutableLiveData()
-        workflowStatus = MutableLiveData()
+        resetWorkState()
     }
 
     suspend fun getUOMForProjectItemId(projectItemId: String): String? = withContext(ioContext) {
@@ -253,5 +263,12 @@ class WorkViewModel(
     fun resetWorkState() {
         workflowStatus = MutableLiveData()
         workflowState = MutableLiveData()
+    }
+
+    fun backupJobInProgress(job: JobDTO) = viewModelScope.launch(ioContext) {
+        val updatedJob = workDataRepository.backupJobInProgress(job)
+        withContext(mainContext) {
+            workItemJob.value = XIEvent(updatedJob)
+        }
     }
 }
