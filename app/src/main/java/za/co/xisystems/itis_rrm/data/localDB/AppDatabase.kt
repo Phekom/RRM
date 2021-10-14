@@ -120,7 +120,7 @@ abstract class AppDatabase : RoomDatabase() {
         private val LOCK = Any()
         private var secretphrase: String? = null
         operator fun invoke(context: Context, armoury: XIArmoury) = instance ?: synchronized(LOCK) {
-            secretphrase = "armoury.readPassphrase()"
+            secretphrase = armoury.readPassphrase()
             Timber.e("Passphrase: $secretphrase")
             instance ?: buildDatabase(context).also {
                 instance = it
