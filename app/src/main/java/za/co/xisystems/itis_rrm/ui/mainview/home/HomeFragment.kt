@@ -55,7 +55,6 @@ import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentHomeBinding
 import za.co.xisystems.itis_rrm.extensions.isConnected
-import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.ui.extensions.crashGuard
 import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
@@ -294,7 +293,7 @@ class HomeFragment : BaseFragment(), DIAware {
 
     private fun isAppDbSynched() {
         uiScope.launch(uiScope.coroutineContext) {
-            homeViewModel.bigSyncDone.observeOnce(viewLifecycleOwner, {
+            homeViewModel.bigSyncDone.observe(viewLifecycleOwner, {
                 Timber.d("Synced: $it")
                 if (!it) {
                     promptUserToSync()

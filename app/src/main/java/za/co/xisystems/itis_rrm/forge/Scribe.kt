@@ -56,27 +56,31 @@ class Scribe private constructor(
     }
 
     companion object {
+        @Volatile
+        private var instance: Scribe? = null
+        private val Lock = Any()
         const val PASS_KEY = "za.co.xisystems.itis_rmm.forge.Scribe.Passphrase"
         const val SESSION_KEY = "za.co.xisystems.itis_rrm.forge.Scribe.SessionKey"
         const val USER_KEY = "za.co.xisystems.itis_rrm.forge.Scribe.UserKey"
         const val NOT_SET = "NoPassphraseSet"
         const val NOT_INITIALIZED: String = "NoInitialization"
         const val PREFS_FILE = "special_styles_and_colours"
-        fun getInstance(
-            context: Context,
-            sageInstance: Sage,
-            prefsFile: String = PREFS_FILE
-        ): Scribe {
-            val instance = Scribe(context = context, sageInstance = sageInstance)
-            instance.createPreferences(
-                context = context,
-                masterKey = sageInstance.masterKeyAlias,
-                prefsFile = prefsFile
-            ).also { securePrefs ->
-                instance.securePrefs = securePrefs
-            }
 
-            return instance
+        fun getInstance(
+            appContext: Context,
+            sageInstance: Sage,
+            prefsFile: String? = PREFS_FILE
+        ): Scribe {
+            return instance ?: synchronized(Lock) {
+                Scribe(context = appContext, sageInstance = sageInstance).also {
+                    it.securePrefs = it.createPreferences(
+                        context = appContext,
+                        masterKey = sageInstance.masterKeyAlias,
+                        prefsFile = prefsFile ?: PREFS_FILE
+                    )
+                    instance = it
+                }
+            }
         }
     }
 
@@ -96,12 +100,13 @@ class Scribe private constructor(
     }
 
     suspend fun latePreferences(
+        instance: Scribe,
         context: Context,
         masterKey: MasterKey,
         prefsFile: String = PREFS_FILE
     ): Scribe = withContext(dispatchers.io()) {
-        this@Scribe.securePrefs = initPreferences(context, masterKey, prefsFile)
-        return@withContext this@Scribe
+        instance.securePrefs = initPreferences(context, masterKey, prefsFile)
+        return@withContext instance
     }
 
     @WorkerThread

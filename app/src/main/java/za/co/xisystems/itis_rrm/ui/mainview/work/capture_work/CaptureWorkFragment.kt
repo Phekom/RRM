@@ -65,8 +65,6 @@ import za.co.xisystems.itis_rrm.databinding.ListSelectorBinding
 import za.co.xisystems.itis_rrm.extensions.checkLocationProviders
 import za.co.xisystems.itis_rrm.extensions.isConnected
 import za.co.xisystems.itis_rrm.extensions.observeOnce
-import za.co.xisystems.itis_rrm.forge.DefaultDispatcherProvider
-import za.co.xisystems.itis_rrm.forge.DispatcherProvider
 import za.co.xisystems.itis_rrm.services.LocationModel
 import za.co.xisystems.itis_rrm.ui.extensions.addZoomedImages
 import za.co.xisystems.itis_rrm.ui.extensions.crashGuard
@@ -90,9 +88,7 @@ import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import java.util.Date
 import java.util.HashMap
 
-class CaptureWorkFragment(
-    dispatchers: DispatcherProvider = DefaultDispatcherProvider()
-) : LocationFragment(), DIAware {
+class CaptureWorkFragment : LocationFragment(), DIAware {
 
     override val di by closestDI()
     private lateinit var workViewModel: WorkViewModel
@@ -143,6 +139,14 @@ class CaptureWorkFragment(
         }
         this.photosDone()
     }
+    var stateRestored: Boolean = false
+
+    companion object {
+        private const val REQUEST_STORAGE_PERMISSION = 1
+        private const val STANDARD_WORKFLOW_STEPS = 3
+        const val JOB_KEY = "jobId"
+        const val ESTIMATE_KEY = "estimateId"
+    }
 
     private fun showWorkIncomplete() = Coroutines.main {
         this@CaptureWorkFragment.extensionToast(
@@ -152,15 +156,6 @@ class CaptureWorkFragment(
             duration = LONG,
             position = CENTER
         )
-    }
-
-    var stateRestored: Boolean = false
-
-    companion object {
-        private const val REQUEST_STORAGE_PERMISSION = 1
-        private const val STANDARD_WORKFLOW_STEPS = 3
-        const val JOB_KEY = "jobId"
-        const val ESTIMATE_KEY = "estimateId"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -248,6 +243,9 @@ class CaptureWorkFragment(
             workViewModel.workItemJob.observe(viewLifecycleOwner, { estimateJob ->
                 estimateJob?.getContentIfNotHandled()?.let {
                     itemEstimateJob = it
+                    if (this@CaptureWorkFragment::itemEstimate.isInitialized) {
+                        getWorkItems(itemEstimate, itemEstimateJob)
+                    }
                 }
             })
 
@@ -553,7 +551,7 @@ class CaptureWorkFragment(
      */
     private suspend fun setJobWorksLittleEndianGuids(
         works: JobEstimateWorksDTO
-    ): JobEstimateWorksDTO = withContext(dispatchers.io()) {
+    ): JobEstimateWorksDTO = withContext(Dispatchers.IO) {
         works.setWorksId(DataConversion.toLittleEndian(works.worksId))
         works.setEstimateId(DataConversion.toLittleEndian(works.estimateId))
         works.setTrackRouteId(DataConversion.toLittleEndian(works.trackRouteId))
@@ -652,9 +650,9 @@ class CaptureWorkFragment(
                 currentLocation
             )
 
-            withContext(dispatchers.ui()) {
+            withContext(Dispatchers.Main.immediate) {
                 estimateWorksPhotoArrayList.add(photo)
-                withContext(dispatchers.io()) {
+                withContext(Dispatchers.IO) {
                     savePhotoMetadata(
                         estimateWorksPhotoArrayList,
                         itemEstiWorks
@@ -714,16 +712,14 @@ class CaptureWorkFragment(
     private fun getWorkItems(
         estimateItem: JobItemEstimateDTO,
         estimateJob: JobDTO
-    ) {
-        Coroutines.main {
+    ) = uiScope.launch(uiScope.coroutineContext) {
 
-            val workDone: Int = getEstimatesCompleted(estimateJob.jobId)
+        val workDone: Int = getEstimatesCompleted(estimateJob.jobId)
 
-            if (workDone == estimateJob.jobItemEstimates.size) {
-                collectCompletedEstimates(estimateJob.jobId)
-            } else {
-                loadWorkEstimate(estimateItem.estimateId, estimateJob.jobId)
-            }
+        if (workDone == estimateJob.jobItemEstimates.size) {
+            collectCompletedEstimates(estimateJob.jobId)
+        } else {
+            loadWorkEstimate(estimateItem.estimateId, estimateJob.jobId)
         }
     }
 
@@ -742,11 +738,12 @@ class CaptureWorkFragment(
                             getEstimatesCompleted(estimateJobId)
                         submitEstimatesOrPop(estWorkDone, estimateJobId)
                     }
-                } else {
-                    estimateWorksArrayList = arrayListOf(estimateWorks)
-
-                    generateWorkflowSteps(estimateWorksArrayList)
                 }
+
+                estimateWorksArrayList = arrayListOf(estimateWorks)
+
+                generateWorkflowSteps(estimateWorksArrayList)
+
 
                 activeWorks = workItem
 
@@ -890,7 +887,7 @@ class CaptureWorkFragment(
     private suspend fun moveJobItemEstimateToNextWorkflow(
         workflowDirection: WorkflowDirection,
         jobItEstimate: JobItemEstimateDTO?
-    ) = withContext(dispatchers.main()) {
+    ) = withContext(Dispatchers.Main) {
 
         val user = workViewModel.user.await()
         user.observe(viewLifecycleOwner, { userDTO ->

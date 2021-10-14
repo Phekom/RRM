@@ -113,6 +113,7 @@ class WorkFragment : BaseFragment(), DIAware {
 
     private suspend fun refreshEstimateJobsFromLocal() {
         ui.veiledWorkListView.veil()
+
         withContext(uiScope.coroutineContext) {
             val localJobs = workViewModel.getJobsForActivityId(
                 ActivityIdConstants.JOB_APPROVED,
@@ -195,7 +196,6 @@ class WorkFragment : BaseFragment(), DIAware {
         } finally {
             ui.worksSwipeToRefresh.isRefreshing = false
             toggleLongRunning(false)
-            ui.veiledWorkListView.unVeil()
         }
     }
 
@@ -267,6 +267,7 @@ class WorkFragment : BaseFragment(), DIAware {
         initVeiledRecycler()
         uiScope.launch(uiScope.coroutineContext) {
             try {
+                toggleLongRunning(true)
                 refreshEstimateJobsFromLocal()
             } catch (t: Throwable) {
                 Timber.e(t, "Failed to fetch local jobs")
@@ -275,6 +276,8 @@ class WorkFragment : BaseFragment(), DIAware {
                     throwable = xiFail,
                     refreshAction = { retryFetchingJobs() }
                 )
+            } finally {
+                toggleLongRunning(false)
             }
         }
     }
@@ -364,7 +367,6 @@ class WorkFragment : BaseFragment(), DIAware {
                     qty = qty,
                     rate = "${DecimalFormat("#0.00").format(rate)} $friendlyUOM",
                     estimateId = estimateId,
-                    workViewModel = workViewModel,
                     jobItemEstimate = item,
                     job = jobDTO
                 )

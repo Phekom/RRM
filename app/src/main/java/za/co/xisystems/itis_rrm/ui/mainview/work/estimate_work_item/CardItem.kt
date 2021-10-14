@@ -25,7 +25,6 @@ import za.co.xisystems.itis_rrm.databinding.WorkListItemBinding
 import za.co.xisystems.itis_rrm.ui.mainview.work.INSET
 import za.co.xisystems.itis_rrm.ui.mainview.work.INSET_TYPE_KEY
 import za.co.xisystems.itis_rrm.ui.mainview.work.WorkFragmentDirections
-import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModel
 import za.co.xisystems.itis_rrm.utils.Coroutines
 
 open class CardItem(
@@ -34,7 +33,6 @@ open class CardItem(
     val qty: String,
     val rate: String,
     val estimateId: String,
-    private val workViewModel: WorkViewModel,
     private val jobItemEstimate: JobItemEstimateDTO,
     private val job: JobDTO
 ) : BindableItem<WorkListItemBinding>() {
@@ -46,21 +44,16 @@ open class CardItem(
     override fun getLayout() = R.layout.work_list_item
 
     private fun sendJobToWork(
-        workViewModel: WorkViewModel,
         estimate: JobItemEstimateDTO,
         view: View?,
         job: JobDTO
-    ) {
-        Coroutines.io {
-            workViewModel.setWorkItemJob(job.jobId)
-            workViewModel.setWorkItem(estimate.estimateId)
-            withContext(Dispatchers.Main.immediate) {
-                val navDirection = WorkFragmentDirections.actionNavWorkToCaptureWorkFragment(
-                    jobId = job.jobId,
-                    estimateId = estimate.estimateId
-                )
-                Navigation.findNavController(view!!).navigate(navDirection)
-            }
+    ) = Coroutines.main {
+        withContext(Dispatchers.Main.immediate) {
+            val navDirection = WorkFragmentDirections.actionNavWorkToCaptureWorkFragment(
+                jobId = job.jobId,
+                estimateId = estimate.estimateId
+            )
+            Navigation.findNavController(view!!).navigate(navDirection)
         }
     }
 
@@ -79,7 +72,7 @@ open class CardItem(
             }
 
             startWorkBtn.setOnClickListener {
-                sendJobToWork(workViewModel, jobItemEstimate, root, job)
+                sendJobToWork(jobItemEstimate, root, job)
             }
         }
     }

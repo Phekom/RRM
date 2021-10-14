@@ -120,9 +120,9 @@ abstract class AppDatabase : RoomDatabase() {
         private val LOCK = Any()
         private var secretphrase: String? = null
         operator fun invoke(context: Context, armoury: XIArmoury) = instance ?: synchronized(LOCK) {
-            secretphrase = armoury.readPassphrase()
+            secretphrase = "armoury.readPassphrase()"
             Timber.e("Passphrase: $secretphrase")
-            instance ?: buildDatabase(context.applicationContext).also {
+            instance ?: buildDatabase(context).also {
                 instance = it
             }
         }
@@ -156,10 +156,10 @@ abstract class AppDatabase : RoomDatabase() {
             }
 
         fun closeDown() {
-            if (instance != null && instance!!.isOpen) {
-                instance!!.close()
-                instance = null
+            if (instance?.isOpen == true) {
+                instance?.close()
             }
+            instance = null
         }
     }
 

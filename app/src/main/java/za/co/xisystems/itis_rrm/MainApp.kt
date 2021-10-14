@@ -21,6 +21,7 @@ import org.kodein.di.DI
 import org.kodein.di.DIAware
 import org.kodein.di.android.x.androidXModule
 import org.kodein.di.bind
+import org.kodein.di.eagerSingleton
 import org.kodein.di.instance
 import org.kodein.di.provider
 import org.kodein.di.singleton
@@ -69,10 +70,10 @@ open class MainApp : Application(), DIAware {
     override val di = DI.lazy {
 
         import(androidXModule(this@MainApp))
-        bind { singleton { Sage.getInstance(this@MainApp) } }
-        bind { singleton { Scribe.getInstance(this@MainApp, instance()) } }
-        bind { singleton { XIArmoury.getInstance(this@MainApp, instance(), instance()) } }
-        bind { singleton { PhotoUtil.getInstance(this@MainApp) } }
+        bind { eagerSingleton { Sage.getInstance(instance()) } }
+        bind { eagerSingleton { Scribe.getInstance(instance(), instance()) } }
+        bind { eagerSingleton { XIArmoury.getInstance(instance(), instance(), instance()) } }
+        bind { singleton { PhotoUtil.getInstance(instance()) } }
         bind { singleton { NetworkConnectionInterceptor(instance()) } }
         bind { singleton { BaseConnectionApi(instance()) } }
         bind { singleton { AppDatabase(instance(), instance()) } }
@@ -167,6 +168,7 @@ open class MainApp : Application(), DIAware {
             override fun onActivityStopped(p0: Activity) {
                 // Count activity references
                 isActivityChangingConfigurations = p0.isChangingConfigurations
+
                 if (--activityReferences == 0 && !isActivityChangingConfigurations) {
                     Timber.d("App in background.")
                     when (p0 is BaseActivity && p0.takingPhotos) {
@@ -209,5 +211,11 @@ open class MainApp : Application(), DIAware {
                 }
             }
         }
+    }
+
+    override fun onTerminate() {
+        super.onTerminate()
+        AppDatabase.closeDown()
+        XIArmoury.closeArmoury()
     }
 }

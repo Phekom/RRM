@@ -15,7 +15,6 @@ import androidx.lifecycle.distinctUntilChanged
 import androidx.room.Transaction
 import kotlinx.coroutines.withContext
 import timber.log.Timber
-import za.co.xisystems.itis_rrm.custom.errors.ServiceException
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.custom.results.XIResult
@@ -73,7 +72,7 @@ class OfflineDataRepository(
 ) : SafeApiRequest() {
 
     private var entitiesFetched = false
-    private val synchedContracts = MutableLiveData<List<ContractDTO>>()
+    private val conTracts = MutableLiveData<List<ContractDTO>>()
     private val sectionItems = MutableLiveData<ArrayList<String>>()
     private val job = MutableLiveData<JobDTO>()
     private val workFlow = MutableLiveData<WorkFlowsDTO>()
@@ -95,24 +94,34 @@ class OfflineDataRepository(
     private var newProjects: Boolean = false
 
     init {
-        synchedContracts.observeForever {
-            saveContracts(it)
+        conTracts.observeForever {
+            Coroutines.default {
+                saveContracts(it)
+            }
         }
 
         sectionItems.observeForever {
-            saveSectionsItems(it)
+            Coroutines.default {
+                saveSectionsItems(it)
+            }
         }
 
         workFlow.observeForever {
-            saveWorkFlowsInfo(it)
+            Coroutines.default {
+                saveWorkFlowsInfo(it)
+            }
         }
 
         lookups.observeForever {
-            saveLookups(it)
+            Coroutines.default {
+                saveLookups(it)
+            }
         }
 
         toDoListGroups.observeForever {
-            saveUserTaskList(it)
+            Coroutines.default {
+                saveUserTaskList(it)
+            }
         }
 
         workflows.observeForever {
@@ -120,7 +129,9 @@ class OfflineDataRepository(
         }
 
         job.observeForever {
-            saveJob(it)
+            Coroutines.io {
+                saveJob(it)
+            }
         }
 
         workflowJ.observeForever {
@@ -139,13 +150,8 @@ class OfflineDataRepository(
         val TAG: String = OfflineDataRepository::class.java.simpleName
     }
 
-    suspend fun bigSyncCheck() {
-        withContext(dispatchers.io()) {
-            val result = appDb.getContractDao().countContracts() >= 1
-            withContext(dispatchers.main()) {
-                bigSyncDone.postValue(result)
-            }
-        }
+    suspend fun bigSyncCheck() = withContext(dispatchers.io()) {
+        return@withContext appDb.getContractDao().countContracts() >= 1
     }
 
     suspend fun getContracts(): LiveData<List<ContractDTO>> {
@@ -284,9 +290,10 @@ class OfflineDataRepository(
         }
     }
 
-    private fun saveSectionsItems(sections: ArrayList<String>?) = Coroutines.io {
+    private suspend fun saveSectionsItems(sections: ArrayList<String>?) {
         var sectionSize: Int = sections?.size ?: 0
         var sectionCount = 0
+
         try {
             sections?.forEach { section ->
                 //  Let's get the String
@@ -318,7 +325,7 @@ class OfflineDataRepository(
     }
 
     @Transaction
-    private fun saveContracts(contracts: List<ContractDTO>) = Coroutines.io {
+    private suspend fun saveContracts(contracts: List<ContractDTO>) {
         newContracts = false
         newProjects = false
         contractCount = 0
@@ -384,67 +391,70 @@ class OfflineDataRepository(
     }
 
     @Transaction
-    private fun saveProjects(
+    private suspend fun saveProjects(
         validProjects: List<ProjectDTO>,
         contract: ContractDTO
     ) {
-        projectMax += validProjects.size
-        validProjects.forEach { project ->
-            try {
-                if (appDb.getProjectDao().checkProjectExists(project.projectId)) {
-                    Timber.i(
-                        "Contract: ${contract.shortDescr} (${contract.contractId}) "
-                            .plus("ProjectId: ${project.descr} (${project.projectId}) -> Duplicated")
-                    )
-                    projectMax--
-                } else {
+        withContext(dispatchers.io()) {
+            projectMax += validProjects.size
+            validProjects.forEach { project ->
+                try {
+                    if (appDb.getProjectDao().checkProjectExists(project.projectId)) {
+                        Timber.i(
+                            "Contract: ${contract.shortDescr} (${contract.contractId}) "
+                                .plus("ProjectId: ${project.descr} (${project.projectId}) -> Duplicated")
+                        )
+                        projectMax--
+                    } else {
 
-                    appDb.getProjectDao().insertProject(
-                        project.projectId,
-                        project.descr,
-                        project.endDate,
-                        project.items,
-                        project.projectCode,
-                        project.projectMinus,
-                        project.projectPlus,
-                        project.projectSections,
-                        project.voItems,
-                        contract.contractId
+                        appDb.getProjectDao().insertProject(
+                            project.projectId,
+                            project.descr,
+                            project.endDate,
+                            project.items,
+                            project.projectCode,
+                            project.projectMinus,
+                            project.projectPlus,
+                            project.projectSections,
+                            project.voItems,
+                            contract.contractId
+                        )
+                        projectCount++
+                        newProjects = true
+                    }
+
+                    updateProjectItems(project.items, project)
+
+                    updateProjectSections(project.projectSections, project)
+
+                    updateVOItems(project.voItems, project)
+
+                    Timber.d("pr**: $contractCount / $contractMax contracts")
+                    Timber.d("pr**: $projectCount / $projectMax projects")
+
+                    postEvent(
+                        XIResult.ProgressUpdate(
+                            "projects",
+                            (projectCount.toFloat() * contractCount.toFloat()) /
+                                (projectMax.toFloat() * contractMax.toFloat())
+                        )
                     )
-                    projectCount++
-                    newProjects = true
+                } catch (ex: Exception) {
+                    Timber.e(
+                        ex,
+                        ("Contract: ${contract.shortDescr} (${contract.contractId}) ProjectId: ${project.descr}")
+                            .plus(" ${project.projectId}) -> ${ex.message}")
+
+                    )
                 }
-
-                updateProjectItems(project.items, project)
-
-                updateProjectSections(project.projectSections, project)
-
-                updateVOItems(project.voItems, project)
-
-                Timber.d("pr**: $contractCount / $contractMax contracts")
-                Timber.d("pr**: $projectCount / $projectMax projects")
-
-                postEvent(
-                    XIResult.ProgressUpdate(
-                        "projects",
-                        (projectCount.toFloat() * contractCount.toFloat()) /
-                            (projectMax.toFloat() * contractMax.toFloat())
-                    )
-                )
-            } catch (ex: Exception) {
-                Timber.e(
-                    ex,
-                    ("Contract: ${contract.shortDescr} (${contract.contractId}) ProjectId: ${project.descr}")
-                        .plus(" ${project.projectId}) -> ${ex.message}")
-
-                )
             }
-        }
         if (contractCount == contractMax && projectCount == projectMax) {
             postEvent(XIResult.ProgressUpdate("projects", -1.0f))
         }
+        }
     }
 
+    @Transaction
     private fun updateProjectItems(
         distinctItems: List<ProjectItemDTO>,
         project: ProjectDTO
@@ -488,6 +498,7 @@ class OfflineDataRepository(
         }
     }
 
+    @Transaction
     private fun updateProjectSections(
         projectSections: ArrayList<ProjectSectionDTO>,
         project: ProjectDTO
@@ -545,24 +556,26 @@ class OfflineDataRepository(
         }
     }
 
-    private fun saveWorkFlowsInfo(workFlows: WorkFlowsDTO) = Coroutines.io {
+    private fun saveWorkFlowsInfo(workFlows: WorkFlowsDTO) {
+        Coroutines.io {
 
-        appDb.getWorkflowsDao().insertWorkFlows(workFlows)
+            appDb.getWorkflowsDao().insertWorkFlows(workFlows)
 
-        workFlows.workflows.forEach { workFlow ->
-            if (!appDb.getWorkFlowDao().checkWorkFlowExistsWorkflowID(workFlow.workflowId)) {
-                appDb.getWorkFlowDao().insertWorkFlow(workFlow)
+            workFlows.workflows.forEach { workFlow ->
+                if (!appDb.getWorkFlowDao().checkWorkFlowExistsWorkflowID(workFlow.workflowId)) {
+                    appDb.getWorkFlowDao().insertWorkFlow(workFlow)
+                }
+
+                saveWorkflowRoutes(workFlow)
             }
 
-            saveWorkflowRoutes(workFlow)
-        }
+            workFlows.activities.forEach { activity ->
+                appDb.getActivityDao().insertActivitys(activity)
+            }
 
-        workFlows.activities.forEach { activity ->
-            appDb.getActivityDao().insertActivitys(activity)
-        }
-
-        workFlows.infoClasses.forEach { infoClass ->
-            appDb.getInfoClassDao().insertInfoClasses(infoClass)
+            workFlows.infoClasses.forEach { infoClass ->
+                appDb.getInfoClassDao().insertInfoClasses(infoClass)
+            }
         }
     }
 
@@ -585,7 +598,7 @@ class OfflineDataRepository(
     }
 
     @Transaction
-    private fun saveJob(jobDTO: JobDTO?) = Coroutines.io {
+    private suspend fun saveJob(jobDTO: JobDTO?) {
         jobDTO?.let { job ->
 
             if (!appDb.getJobDao().checkIfJobExist(job.jobId)) {
@@ -965,71 +978,77 @@ class OfflineDataRepository(
     private fun saveTaskList(toDoListGroups: ArrayList<ToDoGroupsDTO>?) {
 
         toDoListGroups?.let {
-            saveUserTaskList(it)
-        }
-    }
-
-    private fun saveUserTaskList(toDoListGroups: ArrayList<ToDoGroupsDTO>?) = Coroutines.io {
-        try {
-            tasksMax += toDoListGroups?.size ?: 0
-            toDoListGroups?.forEach { toDoListGroup ->
-                if (!appDb.getToDoGroupsDao().checkIfGroupCollectionExist(toDoListGroup.groupId)) {
-                    appDb.getToDoGroupsDao().insertToDoGroups(toDoListGroup)
-                }
-
-                val entitiesArrayList = toDoListGroup.toDoListEntities
-                tasksMax += entitiesArrayList.size
-                entitiesArrayList.forEach { toDoListEntity ->
-                    val jobId = getJobIdFromPrimaryKeyValues(toDoListEntity.primaryKeyValues)
-                    jobId?.let { id ->
-                        insertEntity(toDoListEntity, id)
-                        val newJobId = DataConversion.toLittleEndian(id)
-                        newJobId?.let { newId ->
-                            downloadRRMJob(newId)
-                        }
-                        tasksCount++
-                    }
-                }
-                tasksCount++
-                postEvent(XIResult.ProgressUpdate("tasks", tasksCount.toFloat() / tasksMax.toFloat()))
-
+            Coroutines.io {
+                saveUserTaskList(it)
             }
-            postEvent(XIResult.ProgressUpdate("tasks", -1.0f))
-        } catch (throwable: Throwable) {
-            val message = "Failed to save task list locally: ${throwable.message ?: XIErrorHandler.UNKNOWN_ERROR}"
-            Timber.e(throwable, message)
-            val dbError = XIResult.Error(throwable, message, "Contract Synch")
-            postEvent(dbError)
         }
     }
 
-    private fun insertEntity(entity: ToDoListEntityDTO, jobId: String) = Coroutines.io {
+    private suspend fun saveUserTaskList(toDoListGroups: ArrayList<ToDoGroupsDTO>?) {
+        withContext(dispatchers.io()) {
+            try {
+                tasksMax = toDoListGroups?.size ?: 0
+                tasksCount = 0
+                toDoListGroups?.forEach { toDoListGroup ->
+                    if (!appDb.getToDoGroupsDao().checkIfGroupCollectionExist(toDoListGroup.groupId)) {
+                        appDb.getToDoGroupsDao().insertToDoGroups(toDoListGroup)
+                    }
 
-        if (!appDb.getEntitiesDao()
-                .checkIfEntitiesExist(DataConversion.bigEndianToString(entity.trackRouteId!!))
-        ) {
-            appDb.getEntitiesDao().insertEntitie(
-                DataConversion.bigEndianToString(entity.trackRouteId!!),
-                if (entity.actionable) 1 else 0,
-                entity.activityId,
-                entity.currentRouteId,
-                entity.data,
-                entity.description,
-                entity.entities,
-                entity.entityName,
-                entity.location,
-                entity.primaryKeyValues,
-                entity.recordVersion!!,
-                jobId
-            )
+                    val entitiesArrayList = toDoListGroup.toDoListEntities
 
-            for (primaryKeyValue in entity.primaryKeyValues) {
-                appDb.getPrimaryKeyValueDao().insertPrimaryKeyValue(
-                    primaryKeyValue.primary_key,
-                    DataConversion.bigEndianToString(primaryKeyValue.pValue!!),
+                    entitiesArrayList.forEach { toDoListEntity ->
+                        val jobId = getJobIdFromPrimaryKeyValues(toDoListEntity.primaryKeyValues)
+                        jobId?.let { id ->
+                            insertEntity(toDoListEntity, id)
+                            val newJobId = DataConversion.toLittleEndian(id)
+                            newJobId?.let { newId ->
+                                fetchJobList(newId)
+                            }
+                        }
+                    }
+                    tasksCount++
+                    postEvent(XIResult.ProgressUpdate("tasks", tasksCount.toFloat() / tasksMax.toFloat()))
+                }
+            } catch (throwable: Throwable) {
+                val message = "Failed to save task list locally: ${throwable.message ?: XIErrorHandler.UNKNOWN_ERROR}"
+                Timber.e(throwable, message)
+                val dbError = XIResult.Error(throwable, message, "Contract Synch")
+                postEvent(dbError)
+            } finally {
+                postEvent(XIResult.ProgressUpdate("tasks", -1.0f))
+            }
+        }
+    }
+
+    private fun insertEntity(entity: ToDoListEntityDTO, jobId: String) {
+        Coroutines.io {
+
+            if (!appDb.getEntitiesDao()
+                    .checkIfEntitiesExist(DataConversion.bigEndianToString(entity.trackRouteId!!))
+            ) {
+                appDb.getEntitiesDao().insertEntitie(
                     DataConversion.bigEndianToString(entity.trackRouteId!!),
-                    entity.activityId
+                    if (entity.actionable) 1 else 0,
+                    entity.activityId,
+                    entity.currentRouteId,
+                    entity.data,
+                    entity.description,
+                    entity.entities,
+                    entity.entityName,
+                    entity.location,
+                    entity.primaryKeyValues,
+                    entity.recordVersion!!,
+                    jobId
                 )
+
+                for (primaryKeyValue in entity.primaryKeyValues) {
+                    appDb.getPrimaryKeyValueDao().insertPrimaryKeyValue(
+                        primaryKeyValue.primary_key,
+                        DataConversion.bigEndianToString(primaryKeyValue.pValue!!),
+                        DataConversion.bigEndianToString(entity.trackRouteId!!),
+                        entity.activityId
+                    )
+                }
             }
         }
     }
@@ -1043,15 +1062,16 @@ class OfflineDataRepository(
         return null
     }
 
-    private fun downloadRRMJob(jobId: String) = Coroutines.io {
+    private suspend fun fetchJobList(jobId: String) {
         val jobResponse = apiRequest { api.getJobsForApproval(jobId) }
         job.postValue(jobResponse.job)
     }
 
     suspend fun loadActivitySections(userId: String) {
         postStatus("Fetching Activity Sections")
-        val activitySectionsResponse = apiRequest { api.activitySectionsRefresh(userId) }
-        sectionItems.postValue(activitySectionsResponse.activitySections)
+        val activitySectionsResponse =
+            apiRequest { api.activitySectionsRefresh(userId) }
+        saveSectionsItems(activitySectionsResponse.activitySections)
     }
 
     suspend fun loadWorkflows(userId: String) {
@@ -1075,7 +1095,8 @@ class OfflineDataRepository(
     suspend fun loadContracts(userId: String) {
         postStatus("Updating Contracts")
         val contractsResponse = apiRequest { api.getAllContractsByUserId(userId) }
-        synchedContracts.postValue(contractsResponse.contracts)
+        // conTracts.postValue(contractsResponse.contracts)
+        saveContracts(contractsResponse.contracts)
     }
 
     suspend fun getUserTaskList(): LiveData<List<ToDoListEntityDTO>> {
@@ -1086,14 +1107,10 @@ class OfflineDataRepository(
 
     private suspend fun fetchUserTaskList(userId: String) {
         val toDoListGroupsResponse = apiRequest { api.getUserTaskList(userId) }
-        if (toDoListGroupsResponse.errorMessage.isNullOrBlank()) {
-            toDoListGroups.postValue(toDoListGroupsResponse.toDoListGroups)
-        } else {
-            throw ServiceException(toDoListGroupsResponse.errorMessage)
-        }
+        toDoListGroups.postValue(toDoListGroupsResponse.toDoListGroups)
     }
 
-    private fun postEvent(result: XIResult<Boolean>) = Coroutines.main {
+    private fun postEvent(result: XIResult<Boolean>) {
         databaseStatus.postValue(XIEvent(result))
     }
 
@@ -1102,25 +1119,27 @@ class OfflineDataRepository(
         postEvent(status)
     }
 
-    private fun saveLookups(lookups: ArrayList<LookupDTO>?) = Coroutines.io {
-        lookups?.forEach { lookup ->
-            lookup.let {
-                if (!appDb.getLookupDao().checkIfLookupExist(it.lookupName)) {
-                    appDb.getLookupDao().insertLookup(it)
-                }
+    private fun saveLookups(lookups: ArrayList<LookupDTO>?) {
+        Coroutines.io {
+            lookups?.forEach { lookup ->
+                lookup.let {
+                    if (!appDb.getLookupDao().checkIfLookupExist(it.lookupName)) {
+                        appDb.getLookupDao().insertLookup(it)
+                    }
 
-                if (!lookup.lookupOptions.isNullOrEmpty()) {
-                    lookup.lookupOptions.forEach { lookupOption ->
-                        if (!appDb.getLookupOptionDao().checkLookupOptionExists(
-                                lookupOption.valueMember,
-                                lookup.lookupName
-                            )
-                        ) {
+                    if (!lookup.lookupOptions.isNullOrEmpty()) {
+                        lookup.lookupOptions.forEach { lookupOption ->
+                            if (!appDb.getLookupOptionDao().checkLookupOptionExists(
+                                    lookupOption.valueMember,
+                                    lookup.lookupName
+                                )
+                            ) {
 
-                            appDb.getLookupOptionDao().insertLookupOption(
-                                lookupOption.valueMember, lookupOption.displayMember,
-                                lookupOption.contextMember, lookup.lookupName
-                            )
+                                appDb.getLookupOptionDao().insertLookupOption(
+                                    lookupOption.valueMember, lookupOption.displayMember,
+                                    lookupOption.contextMember, lookup.lookupName
+                                )
+                            }
                         }
                     }
                 }
@@ -1150,23 +1169,25 @@ class OfflineDataRepository(
         }
     }
 
-    private suspend fun updateWorkflowJobValuesAndInsertWhenNeeded(job: WorkflowJobDTO) = Coroutines.io {
-        appDb.getJobDao().updateJob(job.trackRouteId, job.actId, job.jiNo, job.jobId)
+    private suspend fun updateWorkflowJobValuesAndInsertWhenNeeded(job: WorkflowJobDTO) {
+        withContext(dispatchers.io()) {
+            appDb.getJobDao().updateJob(job.trackRouteId, job.actId, job.jiNo, job.jobId)
 
-        if (!job.workflowItemEstimates.isNullOrEmpty()) {
-            for (jobItemEstimate in job.workflowItemEstimates) {
-                appDb.getJobItemEstimateDao().updateExistingJobItemEstimateWorkflow(
-                    jobItemEstimate.trackRouteId,
-                    jobItemEstimate.actId,
-                    jobItemEstimate.estimateId
-                )
+            if (!job.workflowItemEstimates.isNullOrEmpty()) {
+                for (jobItemEstimate in job.workflowItemEstimates) {
+                    appDb.getJobItemEstimateDao().updateExistingJobItemEstimateWorkflow(
+                        jobItemEstimate.trackRouteId,
+                        jobItemEstimate.actId,
+                        jobItemEstimate.estimateId
+                    )
 
-                updateWorkflowEstimateWorks(jobItemEstimate)
+                    updateWorkflowEstimateWorks(jobItemEstimate)
+                }
+
+                updateWorkflowItemMeasures(job.workflowItemMeasures)
             }
-
-            updateWorkflowItemMeasures(job.workflowItemMeasures)
+            saveJobSectionsForWorkflow(job.workflowJobSections)
         }
-        saveJobSectionsForWorkflow(job.workflowJobSections)
     }
 
     private fun updateWorkflowItemMeasures(

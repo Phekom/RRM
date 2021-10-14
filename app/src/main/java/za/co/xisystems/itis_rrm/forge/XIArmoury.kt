@@ -23,7 +23,7 @@ import java.io.File
 import java.util.concurrent.atomic.AtomicLong
 
 class XIArmoury private constructor(
-    context: Context,
+    appContext: Context,
     private val dispatchers: DispatcherProvider = DefaultDispatcherProvider()
 ) : LifecycleObserver {
 
@@ -44,14 +44,15 @@ class XIArmoury private constructor(
         const val PASS_LENGTH = 64
         private val Lock = Any()
 
-        fun getInstance(appContext: Context, sageInstance: Sage, scribeInstance: Scribe): XIArmoury {
+        fun getInstance(context: Context, sageInstance: Sage, scribeInstance: Scribe): XIArmoury {
 
             return instance ?: synchronized(Lock) {
-                XIArmoury(context = appContext)
+                XIArmoury(appContext = context)
             }.also {
                 it.sageInstance = sageInstance
+                it.masterKey = sageInstance.masterKeyAlias
                 it.scribeInstance = scribeInstance
-                it.initArmoury(it, appContext)
+                it.initArmoury(it, context)
                 instance = it
             }
         }
@@ -66,12 +67,12 @@ class XIArmoury private constructor(
         }
     }
 
-    private suspend fun initPictureFolder(context: Context): File = withContext(dispatchers.io()) {
-        return@withContext setOrCreatePicFolder(context)
+    private suspend fun initPictureFolder(appContext: Context): File = withContext(dispatchers.io()) {
+        return@withContext setOrCreatePicFolder(appContext)
     }
 
-    private fun setOrCreatePicFolder(context: Context): File {
-        val tempFolder = context.applicationContext
+    private fun setOrCreatePicFolder(appContext: Context): File {
+        val tempFolder = appContext
             .getExternalFilesDir(Environment.DIRECTORY_PICTURES)!!
         if (!tempFolder.exists()) {
             tempFolder.mkdirs()
@@ -81,14 +82,13 @@ class XIArmoury private constructor(
 
     init {
         armouryScope.onCreate()
-        this.masterKey = generateMasterKey(context)
-        this.photoFolder = setOrCreatePicFolder(context)
+        this.photoFolder = setOrCreatePicFolder(appContext)
     }
 
-    private fun initArmoury(instance: XIArmoury, context: Context) =
+    private fun initArmoury(instance: XIArmoury, appContext: Context) =
         armouryScope.launch(context = armouryScope.coroutineContext, start = CoroutineStart.DEFAULT) {
-            instance.photoFolder = initPictureFolder(context)
-            val checkedPassphrase = instance.checkPassphrase(context)
+            instance.photoFolder = initPictureFolder(appContext)
+            val checkedPassphrase = instance.checkPassphrase(appContext)
             val readPassphrase = instance.readPassphrase()
             if (checkedPassphrase == readPassphrase) {
                 instance.writeFutureTimestamp()
@@ -142,7 +142,7 @@ class XIArmoury private constructor(
         when (currentPassphrase) {
             NOT_INITIALIZED -> {
                 scribeInstance?.securePrefs = scribeInstance?.createPreferences(
-                    context, masterKey = this@XIArmoury.masterKey!!,
+                    context.applicationContext, masterKey = this@XIArmoury.masterKey!!,
                     prefsFile = PREFS_FILE
                 )!!
                 currentPassphrase = generatePassphrase(PASS_LENGTH)
@@ -158,7 +158,7 @@ class XIArmoury private constructor(
     }
 
     private fun generateMasterKey(context: Context): MasterKey? {
-        return sageInstance?.generateMasterKey(context)
+        return sageInstance?.generateMasterKey(context.applicationContext)
     }
 
     fun writeFutureTimestamp(timeInMillis: Long = System.currentTimeMillis()) = Coroutines.default {
@@ -176,7 +176,7 @@ class XIArmoury private constructor(
         fileContent: ByteArray
     ): Boolean = withContext(dispatchers.io()) {
         return@withContext scribeInstance!!.writeEncryptedFile(
-            context,
+            context.applicationContext,
             masterKey!!,
             directory,
             fileName,
@@ -185,7 +185,7 @@ class XIArmoury private constructor(
     }
 
     suspend fun readEncryptedFile(context: Context, fileName: String): ByteArray {
-        return scribeInstance!!.readEncryptedFile(context, masterKey!!, photoFolder, fileName)
+        return scribeInstance!!.readEncryptedFile(context.applicationContext, masterKey!!, photoFolder, fileName)
     }
 
     fun validateToken(oldTokenString: SecureString, hash: String): Boolean {

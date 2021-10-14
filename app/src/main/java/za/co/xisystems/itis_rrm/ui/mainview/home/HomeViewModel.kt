@@ -55,8 +55,6 @@ class HomeViewModel(
     init {
         viewModelScope.launch(mainContext) {
 
-            bigSyncDone = offlineDataRepository.bigSyncDone
-
             databaseStatus = offlineDataRepository.databaseStatus
 
             databaseState = Transformations.map(databaseStatus) {
@@ -66,22 +64,27 @@ class HomeViewModel(
     }
 
     fun bigSyncCheck() = viewModelScope.launch(ioContext) {
-        offlineDataRepository.bigSyncCheck()
+        val result = offlineDataRepository.bigSyncCheck()
+        withContext(mainContext) {
+            bigSyncDone.value = result
+        }
     }
 
     @ExperimentalCoroutinesApi
-    fun fetchAllData(userId: String) = viewModelScope.launch(ioContext, CoroutineStart.ATOMIC) {
+    fun fetchAllData(userId: String) = viewModelScope.launch(mainContext, CoroutineStart.ATOMIC) {
 
         try {
-            offlineDataRepository.loadActivitySections(userId)
-            offlineDataRepository.loadContracts(userId)
+            withContext(ioContext) {
+                offlineDataRepository.loadActivitySections(userId)
+                offlineDataRepository.loadContracts(userId)
 
-            offlineDataRepository.loadLookups(userId)
-            offlineDataRepository.loadTaskList(userId)
-            offlineDataRepository.loadWorkflows(userId)
+                offlineDataRepository.loadLookups(userId)
+                offlineDataRepository.loadTaskList(userId)
+                offlineDataRepository.loadWorkflows(userId)
 
-            withContext(mainContext) {
-                databaseState.postValue(XIResult.Success(true))
+                withContext(mainContext) {
+                    databaseState.postValue(XIResult.Success(true))
+                }
             }
         } catch (exception: Exception) {
             Timber.e(exception, "Failed to synch contracts")
