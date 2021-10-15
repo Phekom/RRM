@@ -169,6 +169,9 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
         uiScope.onCreate()
         photoUtil = PhotoUtil.getInstance(this.requireContext().applicationContext)
         (activity as MainActivity).supportActionBar?.title = getString(R.string.capture_work_title)
+        workViewModel = activity?.run {
+            ViewModelProvider(this, factory).get(WorkViewModel::class.java)
+        } ?: throw Exception("Invalid Activity")
     }
 
     override fun onCreateView(
@@ -193,11 +196,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        workViewModel = activity?.run {
-            ViewModelProvider(this, factory).get(WorkViewModel::class.java)
-        } ?: throw Exception("Invalid Activity")
-
+        viewLifecycleOwner.lifecycle.addObserver(uiScope)
         stateRestored = false
 
         val args: CaptureWorkFragmentArgs by navArgs()
@@ -225,8 +224,6 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
 
     override fun onStart() {
         super.onStart()
-        uiScope.onCreate()
-        viewLifecycleOwner.lifecycle.addObserver(uiScope)
         bindUI()
         pullData()
         this.checkLocationProviders()
@@ -269,7 +266,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
             val jobId = getString(JOB_KEY, "")
             val estimateId = getString(ESTIMATE_KEY, "")
             if (jobId.isNotBlank() && estimateId.isNotBlank()) {
-                Coroutines.main {
+                uiScope.launch(uiScope.coroutineContext) {
                     workViewModel.setWorkItemJob(jobId)
                     workViewModel.setWorkItem(estimateId)
                 }
@@ -714,6 +711,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
         estimateJob: JobDTO
     ) = uiScope.launch(uiScope.coroutineContext) {
 
+        // Has work been completed on the current job?
         val workDone: Int = getEstimatesCompleted(estimateJob.jobId)
 
         if (workDone == estimateJob.jobItemEstimates.size) {
@@ -732,25 +730,23 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
         estimateWorksData.observe(viewLifecycleOwner, { estimateWorks ->
 
             estimateWorks?.let { workItem ->
+                // Is work completed on this estimate?
                 if (workItem.actId == ActivityIdConstants.EST_WORKS_COMPLETE) {
                     Coroutines.main {
                         val estWorkDone: Int =
                             getEstimatesCompleted(estimateJobId)
                         submitEstimatesOrPop(estWorkDone, estimateJobId)
                     }
-                }
-
-                estimateWorksArrayList = arrayListOf(estimateWorks)
-
-                generateWorkflowSteps(estimateWorksArrayList)
-
-
-                activeWorks = workItem
-
-                ui.imageCollectionView.clearImages()
-                estimateWorksPhotoArrayList = activeWorks.jobEstimateWorksPhotos
-                if (estimateWorksPhotoArrayList.size > 0) {
-                    loadPictures(XIResult.Success(activeWorks))
+                } else {
+                    // Work is incomplete, set updated GUI for capture
+                    activeWorks = workItem
+                    estimateWorksArrayList = arrayListOf(activeWorks)
+                    generateWorkflowSteps(estimateWorksArrayList)
+                    ui.imageCollectionView.clearImages()
+                    estimateWorksPhotoArrayList = activeWorks.jobEstimateWorksPhotos
+                    if (estimateWorksPhotoArrayList.size > 0) {
+                        loadPictures(XIResult.Success(activeWorks))
+                    }
                 }
             }
         })
@@ -759,7 +755,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
     private fun submitEstimatesOrPop(
         estWorkDone: Int,
         estimateJobId: String
-    ) = uiScope.launch(uiScope.coroutineContext, CoroutineStart.valueOf("SubmitEstimatesOrPop")) {
+    ) = uiScope.launch(uiScope.coroutineContext, CoroutineStart.DEFAULT) {
         workViewModel.setWorkItemJob(estimateJobId)
         val estimateJobData = workViewModel.workItemJob
 
@@ -768,6 +764,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
                 if (estWorkDone == workItemJob.jobItemEstimates.size) {
                     collectCompletedEstimates(workItemJob.jobId)
                 } else {
+                    // Completed work item
                     popViewOnWorkSubmit()
                 }
             }

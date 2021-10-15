@@ -86,8 +86,8 @@ class WorkFragment : BaseFragment(), DIAware {
 
             whenStarted {
                 viewLifecycleOwner.lifecycle.addObserver(uiScope)
-
             }
+
             whenResumed {
                 if (this@WorkFragment::currentJobGroup.isInitialized && !currentJobGroup.isExpanded
                 ) {
@@ -112,7 +112,6 @@ class WorkFragment : BaseFragment(), DIAware {
     }
 
     private suspend fun refreshEstimateJobsFromLocal() {
-        ui.veiledWorkListView.veil()
 
         withContext(uiScope.coroutineContext) {
             val localJobs = workViewModel.getJobsForActivityId(
@@ -120,7 +119,7 @@ class WorkFragment : BaseFragment(), DIAware {
                 ActivityIdConstants.ESTIMATE_INCOMPLETE
             )
 
-            localJobs.observeOnce(viewLifecycleOwner, { jobsList ->
+            localJobs.observe(viewLifecycleOwner, { jobsList ->
                 ui.group7Loading.visibility = View.GONE
                 if (jobsList.isNullOrEmpty()) {
                     ui.veiledWorkListView.visibility = View.GONE
@@ -131,7 +130,7 @@ class WorkFragment : BaseFragment(), DIAware {
                         ui.noData.visibility = View.GONE
                         val headerItems = jobsList.distinctBy {
                             it.jobId
-                        }.sortedByDescending { job -> job.workStartDate }
+                        }
 
                         this@WorkFragment.initRecyclerView(headerItems.toWorkListItems())
                     }
@@ -150,6 +149,7 @@ class WorkFragment : BaseFragment(), DIAware {
     }
 
     private fun initVeiledRecycler() {
+        ui.veiledWorkListView.veil()
         ui.veiledWorkListView.run {
             setVeilLayout(R.layout.item_velied_slug) {
                 Toast.makeText(
@@ -226,8 +226,8 @@ class WorkFragment : BaseFragment(), DIAware {
         val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
             clear()
             addAll(workListItems)
-            notifyItemRangeChanged(0, workListItems.size)
         }
+
         val layoutManager = LinearLayoutManager(this.requireContext())
         ui.veiledWorkListView.setLayoutManager(layoutManager)
         ui.veiledWorkListView.setAdapter(groupAdapter)
@@ -243,8 +243,6 @@ class WorkFragment : BaseFragment(), DIAware {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        workViewModel = ViewModelProvider(this.requireActivity(), factory)
-            .get(WorkViewModel::class.java)
 
         if (savedInstanceState != null && !stateRestored) {
             onRestoreInstanceState(savedInstanceState)

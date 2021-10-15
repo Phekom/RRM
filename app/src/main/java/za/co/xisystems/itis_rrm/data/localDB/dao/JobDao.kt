@@ -125,7 +125,7 @@ interface JobDao {
         " SELECT j.*, e.* FROM JOB_TABLE AS j JOIN JOB_ITEM_ESTIMATE AS e " +
             "ON e.JobId = j.jobId WHERE j.actId Like :actId " +
             "AND e.ActId Like :actId2 AND j.deleted = 0 " +
-            "ORDER BY jiNo ASC "
+            "ORDER BY DATE(j.workStartDate) DESC"
     )
     @RewriteQueriesToDropUnusedColumns
     fun getJobsForActivityIds1(actId: Int, actId2: Int): LiveData<List<JobDTO>>
