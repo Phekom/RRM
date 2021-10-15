@@ -13,7 +13,7 @@ buildscript {
     ext {
         kotlin_version = '1.5.31'
         ktlint_gradle_version = '10.2.0'
-        // dependency_evaluation_version = '0.52.0'
+        dependency_evaluation_version = '0.78.0'
         booster_version = '4.0.0'
         navigation_version = '2.3.2'
     }
@@ -26,7 +26,7 @@ buildscript {
         maven { url "https://plugins.gradle.org/m2/" }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.0.2'
+        classpath 'com.android.tools.build:gradle:7.0.3'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "com.didiglobal.booster:booster-gradle-plugin:$booster_version"
 
@@ -40,7 +40,7 @@ buildscript {
         classpath "com.deploygate:gradle:2.4.0"
         classpath "eu.davidea:grabver:2.0.2"
         classpath "org.jlleitschuh.gradle:ktlint-gradle:$ktlint_gradle_version"
-        // classpath "com.autonomousapps:dependency-analysis-gradle-plugin:0.72.0"
+        classpath "com.autonomousapps:dependency-analysis-gradle-plugin:$dependency_evaluation_version"
         classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:3.3"
         classpath "io.gitlab.arturbosch.detekt:detekt-gradle-plugin:1.18.0"
         // classpath 'com.google.gms:google-services:4.3.10'
@@ -53,9 +53,9 @@ buildscript {
 allprojects {
 
     apply plugin: "org.jlleitschuh.gradle.ktlint"
-    // apply plugin: "com.autonomousapps.dependency-analysis"
+    apply plugin: "com.autonomousapps.dependency-analysis"
     apply plugin: "org.sonarqube"
-    // apply plugin: "com.didiglobal.booster"
+    apply plugin: "com.didiglobal.booster"
     apply from: "$rootDir/detekt.gradle"
 
     repositories {
