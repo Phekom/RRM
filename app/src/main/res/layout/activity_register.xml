@@ -19,7 +19,7 @@
         <androidx.coordinatorlayout.widget.CoordinatorLayout
             android:background="@drawable/login_reg_background"
             android:scaleType="fitCenter"
-            tools:context=".new_app.ui.auth.RegisterActivity"
+            tools:context=".ui.auth.RegisterActivity"
             android:id="@+id/reg_container"
             android:layout_width="match_parent"
             android:layout_height="match_parent"

@@ -27,7 +27,7 @@ import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.constants.Constants.TWO_SECONDS
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
-import za.co.xisystems.itis_rrm.custom.results.XIResult.Error
+import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.results.isRecoverableException
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
@@ -49,7 +49,7 @@ import za.co.xisystems.traffic_count.delegates.viewBinding
 class LoginActivity : BaseActivity(), AuthListener, DIAware {
 
     override val di by closestDI()
-    private val factory: AuthViewModelFactory by instance<AuthViewModelFactory>()
+    private val factory: AuthViewModelFactory by instance()
     private lateinit var authViewModel: AuthViewModel
     private val binding by viewBinding(ActivityLoginBinding::inflate)
     private lateinit var enteredPin: String
@@ -170,7 +170,7 @@ class LoginActivity : BaseActivity(), AuthListener, DIAware {
             }
             reset()
         } catch (t: Throwable) {
-            val xiErr = Error(t, "Failed to login")
+            val xiErr = XIResult.Error(t, "Failed to login")
             if (xiErr.isRecoverableException()) {
                 XIErrorHandler.handleError(
                     view = findViewById(R.id.reg_container),

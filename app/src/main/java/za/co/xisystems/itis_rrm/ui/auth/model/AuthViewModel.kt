@@ -24,6 +24,8 @@ import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
+import za.co.xisystems.itis_rrm.forge.DefaultDispatcherProvider
+import za.co.xisystems.itis_rrm.forge.DispatcherProvider
 import za.co.xisystems.itis_rrm.forge.XIArmoury
 import za.co.xisystems.itis_rrm.ui.auth.AuthListener
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
@@ -37,10 +39,11 @@ import za.co.xisystems.itis_rrm.utils.lazyDeferred
 class AuthViewModel(
     private val repository: UserRepository,
     private val armoury: XIArmoury,
-    application: Application
+    application: Application,
+    private val dispatchers: DispatcherProvider = DefaultDispatcherProvider()
 ) : AndroidViewModel(application) {
     private val supervisorJob = SupervisorJob()
-    private val ioContext = Dispatchers.IO + Job(supervisorJob)
+    private val ioContext = dispatchers.io() + Job(supervisorJob)
 
     var username: String? = null
     var password: String? = null
@@ -63,6 +66,10 @@ class AuthViewModel(
     }
 
     fun onResetPinButtonClick(view: View) {
+        updateUserPin(view)
+    }
+
+    private fun updateUserPin(view: View) {
         viewModelScope.launch(ioContext) {
             listenerNotify {
                 view.isClickable = false
@@ -117,7 +124,7 @@ class AuthViewModel(
     }
 
     private suspend fun listenerNotify(notification: () -> Unit) {
-        withContext(Dispatchers.Main.immediate) {
+        withContext(dispatchers.ui()) {
             notification()
         }
     }

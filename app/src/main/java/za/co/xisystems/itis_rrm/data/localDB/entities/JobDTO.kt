@@ -20,7 +20,9 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import org.jetbrains.annotations.NotNull
+import za.co.xisystems.itis_rrm.utils.DateUtil
 import java.io.Serializable
+import java.util.Date
 
 /**
  * Created by Francis Mahlava on 2019/11/21.
@@ -33,6 +35,7 @@ const val JOB_TABLE = "JOB_TABLE"
     tableName = JOB_TABLE
 )
 
+@Suppress("LongParameterList")
 class JobDTO(
     @SerializedName("ActId")
     val actId: Int,
@@ -60,17 +63,14 @@ class JobDTO(
     var trackRouteId: String?,
     @SerializedName("Section")
     var section: String?,
-
     @SerializedName("Cpa")
     var cpa: Int,
     @SerializedName("DayWork")
     var dayWork: Int,
-
     @SerializedName("ContractorId")
     var contractorId: Int,
     @SerializedName("M9100")
     var m9100: Int,
-
     @SerializedName("IssueDate")
     var issueDate: String? = null,
     @SerializedName("StartDate")
@@ -87,25 +87,18 @@ class JobDTO(
     var jobSections: ArrayList<JobSectionDTO> = ArrayList(),
     @SerializedName("PerfitemGroupId")
     var perfitemGroupId: String?,
-
     @SerializedName("RecordVersion")
     val recordVersion: Int,
-
     @SerializedName("Remarks")
     var remarks: String?,
-
     @SerializedName("Route")
     var route: String?,
-
     @SerializedName("RrmJiNo")
     val rrmJiNo: String?,
-
     @SerializedName("EngineerId")
     var engineerId: Int,
-
     @SerializedName("EntireRoute")
     val entireRoute: Int,
-
     @SerializedName("IsExtraWork")
     val isExtraWork: Int,
 
@@ -137,7 +130,7 @@ class JobDTO(
     val workCompleteDate: String? = null,
 
     @SerializedName("WorkStartDate")
-    val workStartDate: String? = null,
+    var workStartDate: String? = null,
 
     @SerializedName("ESTIMATES_ACT_ID")
     var estimatesActId: Int?,
@@ -217,6 +210,17 @@ class JobDTO(
         isSynced = parcel.readString(),
         deleted = parcel.readInt()
     )
+
+    companion object CREATOR : Creator<JobDTO> {
+        const val serialVersionUID = 6L
+        override fun createFromParcel(parcel: Parcel): JobDTO {
+            return JobDTO(parcel)
+        }
+
+        override fun newArray(size: Int): Array<JobDTO?> {
+            return arrayOfNulls(size)
+        }
+    }
 
     private fun getJobEstimateIndexByItemId(itemId: String?): Int {
 
@@ -318,17 +322,6 @@ class JobDTO(
         return 0
     }
 
-    companion object CREATOR : Creator<JobDTO> {
-        const val serialVersionUID = 6L
-        override fun createFromParcel(parcel: Parcel): JobDTO {
-            return JobDTO(parcel)
-        }
-
-        override fun newArray(size: Int): Array<JobDTO?> {
-            return arrayOfNulls(size)
-        }
-    }
-
     fun isGeoCoded(): Boolean {
         var result = true
 
@@ -340,5 +333,27 @@ class JobDTO(
         }
 
         return result
+    }
+
+    fun setWorkStartDate(date: Date? = null) {
+        val startDate = dateOrNow(date)
+        if (this.workStartDate.isNullOrBlank()) {
+            this.workStartDate = DateUtil.dateToString(startDate)
+        }
+    }
+
+    private fun dateOrNow(date: Date?): Date {
+        var startDate = Date()
+        if (date != null) {
+            startDate = date
+        }
+        return startDate
+    }
+
+    fun setWorkCompleteDate(date: Date? = null) {
+        val completionDate = dateOrNow(date)
+        if (this.workCompleteDate.isNullOrBlank()) {
+            this.workStartDate = DateUtil.dateToString(completionDate)
+        }
     }
 }

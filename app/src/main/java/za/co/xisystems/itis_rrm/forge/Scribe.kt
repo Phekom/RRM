@@ -56,27 +56,31 @@ class Scribe private constructor(
     }
 
     companion object {
+        @Volatile
+        private var instance: Scribe? = null
+        private val Lock = Any()
         const val PASS_KEY = "za.co.xisystems.itis_rmm.forge.Scribe.Passphrase"
         const val SESSION_KEY = "za.co.xisystems.itis_rrm.forge.Scribe.SessionKey"
         const val USER_KEY = "za.co.xisystems.itis_rrm.forge.Scribe.UserKey"
         const val NOT_SET = "NoPassphraseSet"
         const val NOT_INITIALIZED: String = "NoInitialization"
         const val PREFS_FILE = "special_styles_and_colours"
-        fun getInstance(
-            context: Context,
-            sageInstance: Sage,
-            prefsFile: String = PREFS_FILE
-        ): Scribe {
-            val instance = Scribe(context = context, sageInstance = sageInstance)
-            instance.securePrefs = instance.createPreferences(
-                context = context,
-                masterKey = sageInstance.masterKeyAlias,
-                prefsFile = prefsFile
-            ).also { securePrefs ->
-                val passphrase = securePrefs.getString(PASS_KEY, "NOT_SET")
-            }
 
-            return instance
+        fun getInstance(
+            appContext: Context,
+            sageInstance: Sage,
+            prefsFile: String? = PREFS_FILE
+        ): Scribe {
+            return instance ?: synchronized(Lock) {
+                Scribe(context = appContext, sageInstance = sageInstance).also {
+                    it.securePrefs = it.createPreferences(
+                        context = appContext,
+                        masterKey = sageInstance.masterKeyAlias,
+                        prefsFile = prefsFile ?: PREFS_FILE
+                    )
+                    instance = it
+                }
+            }
         }
     }
 
@@ -90,24 +94,25 @@ class Scribe private constructor(
     suspend fun initPreferences(
         context: Context,
         masterKey: MasterKey,
-        prefsFile: String = "special_styles_and_colours"
+        prefsFile: String = PREFS_FILE
     ): SharedPreferences = withContext(dispatchers.io()) {
         return@withContext createPreferences(context, prefsFile, masterKey)
     }
 
     suspend fun latePreferences(
+        instance: Scribe,
         context: Context,
         masterKey: MasterKey,
         prefsFile: String = PREFS_FILE
     ): Scribe = withContext(dispatchers.io()) {
-        this@Scribe.securePrefs = initPreferences(context, masterKey, prefsFile)
-        return@withContext this@Scribe
+        instance.securePrefs = initPreferences(context, masterKey, prefsFile)
+        return@withContext instance
     }
 
     @WorkerThread
     fun createPreferences(
         context: Context,
-        prefsFile: String = "specialstylesandcolours",
+        prefsFile: String = PREFS_FILE,
         masterKey: MasterKey
     ): SharedPreferences {
         val preferences = EncryptedSharedPreferences.create(
@@ -144,7 +149,7 @@ class Scribe private constructor(
     }
 
     private fun writePassphrase(passphrase: String) = with(securePrefs.edit()) {
-        putString(PASS_KEY, passphrase.trim()).apply()
+        putString(PASS_KEY, passphrase.trim()).commit()
     }
 
     fun writeSessionKey(sessionKey: String) = with(securePrefs.edit()) {

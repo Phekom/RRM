@@ -48,6 +48,7 @@ import za.co.xisystems.itis_rrm.databinding.FragmentWorkBinding
 import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.extensions.uomForUI
 import za.co.xisystems.itis_rrm.ui.extensions.crashGuard
+import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.intents.AbstractIntent.Companion.JOB_ID
 import za.co.xisystems.itis_rrm.ui.mainview.work.estimate_work_item.CardItem
 import za.co.xisystems.itis_rrm.ui.mainview.work.estimate_work_item.ExpandableHeaderWorkItem
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
@@ -57,6 +58,7 @@ import java.text.DecimalFormat
 
 const val INSET_TYPE_KEY = "inset_type"
 const val INSET = "inset"
+const val JOB_ID = "jobId"
 
 class WorkFragment : BaseFragment(), DIAware {
 
@@ -70,43 +72,26 @@ class WorkFragment : BaseFragment(), DIAware {
     private var _ui: FragmentWorkBinding? = null
     private val ui get() = _ui!!
     private lateinit var currentJobGroup: ExpandableGroup
-    private var selectedJobId: String? = null
     private var stateRestored = false
     private val workArgs: WorkFragmentArgs by navArgs()
+    private var jobId: String? = null
 
     init {
 
         lifecycleScope.launch {
             whenCreated {
-                stateRestored = false
                 uiScope.onCreate()
-                workViewModel = activity?.run {
-                    ViewModelProvider(this, factory).get(WorkViewModel::class.java)
-                } ?: throw Exception("Invalid Activity")
+                stateRestored = false
             }
 
             whenStarted {
                 viewLifecycleOwner.lifecycle.addObserver(uiScope)
 
-                uiScope.launch(uiScope.coroutineContext) {
-                    try {
-                        refreshEstimateJobsFromLocal()
-                    } catch (t: Throwable) {
-                        Timber.e(t, "Failed to fetch local jobs")
-                        val xiFail = XIResult.Error(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
-                        crashGuard(
-                            throwable = xiFail,
-                            refreshAction = { retryFetchingJobs() }
-                        )
-                    }
-                }
             }
             whenResumed {
-                if (this@WorkFragment::currentJobGroup.isInitialized &&
-                    !currentJobGroup.isExpanded
+                if (this@WorkFragment::currentJobGroup.isInitialized && !currentJobGroup.isExpanded
                 ) {
-                    currentJobGroup.isExpanded = true
-                    scrollToTop(expandableGroups, currentJobGroup)
+                    currentJobGroup.onToggleExpanded()
                 }
             }
         }
@@ -128,6 +113,7 @@ class WorkFragment : BaseFragment(), DIAware {
 
     private suspend fun refreshEstimateJobsFromLocal() {
         ui.veiledWorkListView.veil()
+
         withContext(uiScope.coroutineContext) {
             val localJobs = workViewModel.getJobsForActivityId(
                 ActivityIdConstants.JOB_APPROVED,
@@ -145,7 +131,7 @@ class WorkFragment : BaseFragment(), DIAware {
                         ui.noData.visibility = View.GONE
                         val headerItems = jobsList.distinctBy {
                             it.jobId
-                        }
+                        }.sortedByDescending { job -> job.workStartDate }
 
                         this@WorkFragment.initRecyclerView(headerItems.toWorkListItems())
                     }
@@ -198,10 +184,8 @@ class WorkFragment : BaseFragment(), DIAware {
             toggleLongRunning(true)
             ui.veiledWorkListView.veil()
             veiled = true
-            withContext(uiScope.coroutineContext) {
-                refreshUserTaskListFromApi()
-                refreshEstimateJobsFromLocal()
-            }
+            refreshUserTaskListFromApi()
+            refreshEstimateJobsFromLocal()
         } catch (t: Throwable) {
             Timber.e(t, t.localizedMessage ?: XIErrorHandler.UNKNOWN_ERROR)
             val jobErr = XIResult.Error(t, "Failed to fetch jobs from service")
@@ -212,11 +196,10 @@ class WorkFragment : BaseFragment(), DIAware {
         } finally {
             ui.worksSwipeToRefresh.isRefreshing = false
             toggleLongRunning(false)
-            ui.veiledWorkListView.unVeil()
         }
     }
 
-    fun retryFetchingJobs() {
+    private fun retryFetchingJobs() {
         IndefiniteSnackbar.hide()
         fetchJobsFromService()
     }
@@ -253,17 +236,50 @@ class WorkFragment : BaseFragment(), DIAware {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        workViewModel = ViewModelProvider(this.requireActivity(), factory)
+            .get(WorkViewModel::class.java)
         setHasOptionsMenu(true)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        if (!stateRestored && !workArgs.jobId.isNullOrBlank()) {
-            selectedJobId = workArgs.jobId
+        workViewModel = ViewModelProvider(this.requireActivity(), factory)
+            .get(WorkViewModel::class.java)
+
+        if (savedInstanceState != null && !stateRestored) {
+            onRestoreInstanceState(savedInstanceState)
             stateRestored = true
         }
+
+        if (!stateRestored) {
+            Timber.d("No Job Selected!")
+        }
+    }
+
+    /**
+     * Called when the Fragment is visible to the user.  This is generally
+     * tied to [Activity.onStart] of the containing
+     * Activity's lifecycle.
+     */
+    override fun onStart() {
+        super.onStart()
         initSwipeToRefresh()
         initVeiledRecycler()
+        uiScope.launch(uiScope.coroutineContext) {
+            try {
+                toggleLongRunning(true)
+                refreshEstimateJobsFromLocal()
+            } catch (t: Throwable) {
+                Timber.e(t, "Failed to fetch local jobs")
+                val xiFail = XIResult.Error(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
+                crashGuard(
+                    throwable = xiFail,
+                    refreshAction = { retryFetchingJobs() }
+                )
+            } finally {
+                toggleLongRunning(false)
+            }
+        }
     }
 
     override fun onPrepareOptionsMenu(menu: Menu) {
@@ -316,7 +332,7 @@ class WorkFragment : BaseFragment(), DIAware {
 
                     createCardItem(item, jobDTO)
                 }
-                selectedJobId?.let {
+                jobId?.let { selectedJobId ->
                     if (selectedJobId == jobDTO.jobId) {
                         currentJobGroup = this
                     }
@@ -351,7 +367,6 @@ class WorkFragment : BaseFragment(), DIAware {
                     qty = qty,
                     rate = "${DecimalFormat("#0.00").format(rate)} $friendlyUOM",
                     estimateId = estimateId,
-                    workViewModel = workViewModel,
                     jobItemEstimate = item,
                     job = jobDTO
                 )
@@ -369,6 +384,19 @@ class WorkFragment : BaseFragment(), DIAware {
                 )
             }
         }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.run {
+            when (!this@WorkFragment.jobId.isNullOrBlank()) {
+                true -> putString(JOB_ID, this@WorkFragment.jobId)
+            }
+        }
+        super.onSaveInstanceState(outState)
+    }
+
+    private fun onRestoreInstanceState(inState: Bundle) {
+        jobId = inState.getString(JOB_ID, null)
     }
 
     private fun scrollToTop(expandableGroups: MutableList<ExpandableGroup>, toggledGroup: ExpandableGroup) {

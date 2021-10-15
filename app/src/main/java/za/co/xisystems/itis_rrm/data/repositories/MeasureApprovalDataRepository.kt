@@ -152,7 +152,7 @@ class MeasureApprovalDataRepository(
 
     suspend fun getSectionForProjectSectionId(sectionId: String?): String {
         return withContext(Dispatchers.IO) {
-            appDb.getProjectSectionDao().getSectionForProjectSectionId(sectionId!!)
+            appDb.getProjectSectionDao().getSectionForProjectSectionId(sectionId)
         }
     }
 
@@ -164,7 +164,7 @@ class MeasureApprovalDataRepository(
 
     suspend fun getRouteForProjectSectionId(sectionId: String?): String {
         return withContext(Dispatchers.IO) {
-            appDb.getProjectSectionDao().getRouteForProjectSectionId(sectionId!!)
+            appDb.getProjectSectionDao().getRouteForProjectSectionId(sectionId)
         }
     }
 

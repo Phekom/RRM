@@ -52,10 +52,12 @@ class PhotoUtil private constructor(private var appContext: Context) {
         private lateinit var instance: PhotoUtil
         private const val BMP_LOAD_FAILED = "Failed to load bitmap"
 
-        private fun initInstance(appContext: Context): PhotoUtil {
-            instance = PhotoUtil(appContext)
+        private fun initInstance(context: Context): PhotoUtil {
+            instance = PhotoUtil(context.applicationContext)
             Coroutines.io {
-                instance.pictureFolder = appContext.getExternalFilesDir(Environment.DIRECTORY_PICTURES)!!
+                instance.pictureFolder =
+                    context.applicationContext
+                        .getExternalFilesDir(Environment.DIRECTORY_PICTURES)!!
                 if (!instance.pictureFolder.exists()) {
                     instance.pictureFolder.mkdirs()
                 }
@@ -136,7 +138,7 @@ class PhotoUtil private constructor(private var appContext: Context) {
         var pictureName = photoName
         pictureName =
             if (!pictureName.lowercase(Locale.ROOT)
-                .contains(".jpg")
+                    .contains(".jpg")
             ) "$pictureName.jpg" else pictureName
         val fileName =
             pictureFolder.toString().plus(File.separator)

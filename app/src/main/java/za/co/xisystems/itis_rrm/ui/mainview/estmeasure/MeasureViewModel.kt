@@ -35,7 +35,6 @@ class MeasureViewModel(
     private var job: Job = SupervisorJob()
     private var viewModelContext = job + Dispatchers.Main + uncaughtExceptionHandler
     val galleryBackup: MutableLiveData<String> = MutableLiveData()
-
     val offlineUserTaskList: Deferred<LiveData<List<ToDoListEntityDTO>>> by lazyDeferred {
         offlineDataRepository.getUserTaskList()
     }
@@ -55,6 +54,10 @@ class MeasureViewModel(
     private val photoUtil = PhotoUtil.getInstance(getApplication())
 
     init {
+        initWorkflowChannels()
+    }
+
+    private fun initWorkflowChannels() {
         viewModelScope.launch(viewModelContext) {
             workflowStatus = measureCreationDataRepository.workflowStatus
             launch(mainContext) {
@@ -68,6 +71,10 @@ class MeasureViewModel(
                 } as MutableLiveData<XIResult<String>?>
             }
         }
+    }
+
+    companion object {
+        const val galleryError = "Failed to retrieve itemMeasure for Gallery"
     }
 
     private fun setGalleryMeasure(value: JobItemMeasureDTO) {
@@ -212,6 +219,11 @@ class MeasureViewModel(
         itemMeasureJob: JobDTO
     ): Job = viewModelScope.launch(ioContext) {
 
+        // Flush any previous results
+        withContext(mainContext) {
+            resetWorkState()
+        }
+
         try {
             measureCreationDataRepository.saveMeasurementItems(
                 userId,
@@ -306,12 +318,15 @@ class MeasureViewModel(
      * prevent a leak of this ViewModel.
      */
     override fun onCleared() {
+        workflowState = MutableLiveData()
         workflowStatus = MutableLiveData()
         superJob.cancelChildren()
         super.onCleared()
     }
 
-    companion object {
-        const val galleryError = "Failed to retrieve itemMeasure for Gallery"
+    private fun resetWorkState() {
+        workflowState = MutableLiveData()
+        workflowStatus = MutableLiveData()
+        initWorkflowChannels()
     }
 }

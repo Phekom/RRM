@@ -12,7 +12,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelChildren
@@ -53,8 +55,6 @@ class HomeViewModel(
     init {
         viewModelScope.launch(mainContext) {
 
-            bigSyncDone = offlineDataRepository.bigSyncDone
-
             databaseStatus = offlineDataRepository.databaseStatus
 
             databaseState = Transformations.map(databaseStatus) {
@@ -63,22 +63,28 @@ class HomeViewModel(
         }
     }
 
-    fun bigSyncCheck() = viewModelScope.launch(mainContext) {
-        offlineDataRepository.bigSyncCheck()
+    fun bigSyncCheck() = viewModelScope.launch(ioContext) {
+        val result = offlineDataRepository.bigSyncCheck()
+        withContext(mainContext) {
+            bigSyncDone.value = result
+        }
     }
 
-    fun fetchAllData(userId: String) = viewModelScope.launch(mainContext) {
+    @ExperimentalCoroutinesApi
+    fun fetchAllData(userId: String) = viewModelScope.launch(mainContext, CoroutineStart.ATOMIC) {
 
         try {
-            withContext(dispatchers.default()) {
+            withContext(ioContext) {
                 offlineDataRepository.loadActivitySections(userId)
-                offlineDataRepository.loadLookups(userId)
                 offlineDataRepository.loadContracts(userId)
+
+                offlineDataRepository.loadLookups(userId)
                 offlineDataRepository.loadTaskList(userId)
                 offlineDataRepository.loadWorkflows(userId)
-            }
-            withContext(mainContext) {
-                databaseState.postValue(XIResult.Success(true))
+
+                withContext(mainContext) {
+                    databaseState.postValue(XIResult.Success(true))
+                }
             }
         } catch (exception: Exception) {
             Timber.e(exception, "Failed to synch contracts")

@@ -55,6 +55,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasurePhotoDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentSubmitMeasureBinding
 import za.co.xisystems.itis_rrm.databinding.ItemMeasureHeaderBinding
+import za.co.xisystems.itis_rrm.extensions.isConnected
 import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.ui.extensions.crashGuard
 import za.co.xisystems.itis_rrm.ui.extensions.doneProgress
@@ -67,7 +68,6 @@ import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModelFactory
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DataConversion
-import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import java.util.ArrayList
 import java.util.HashMap
 
@@ -244,7 +244,7 @@ class SubmitMeasureFragment : BaseFragment(), DIAware {
             setMessage(R.string.are_you_sure_you_want_to_submit_measurements)
             // Yes button
             setPositiveButton(R.string.yes) { _, _ ->
-                if (ServiceUtil.isNetworkAvailable(requireContext().applicationContext)) {
+                if (requireActivity().isConnected) {
                     toggleLongRunning(true)
                     submitMeasurements(jobId)
                 } else {
@@ -527,18 +527,18 @@ class SubmitMeasureFragment : BaseFragment(), DIAware {
                                     )
                                 jobItemMeasure.observeOnce(viewLifecycleOwner, { measureList ->
                                     Coroutines.main {
-                                        for (jobItemM in measureList) {
+                                        measureList?.forEach { jobItemMeasure ->
                                             Coroutines.main {
-                                                val itemMeasureId = jobItemM.itemMeasureId
-                                                val qty = jobItemM.qty.toString()
-                                                val rate = jobItemM.lineRate.toString()
-                                                val jNo = jobItemM.jimNo.toString()
+                                                val itemMeasureId = jobItemMeasure.itemMeasureId
+                                                val qty = jobItemMeasure.qty.toString()
+                                                val rate = jobItemMeasure.lineRate.toString()
+                                                val jNo = jobItemMeasure.jimNo.toString()
                                                 add(
                                                     CardMeasureItem(
                                                         activity = activity,
                                                         itemMeasureId = itemMeasureId,
-                                                        qty = qty,
-                                                        rate = rate,
+                                                        qty = "$qty x $rate",
+                                                        rate = "${qty.toBigDecimal() * rate.toBigDecimal()}",
                                                         text = jNo,
                                                         measureViewModel = measureViewModel,
                                                         uiScope = uiScope

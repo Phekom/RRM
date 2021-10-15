@@ -301,7 +301,7 @@ class JobCreationDataRepository(
             activity = activity
         )
 
-        return@withContext getUpdatedJob(translatedJob.jobId!!)
+        return@withContext getUpdatedJob(DataConversion.toBigEndian(job.jobId)!!)
     }
 
     suspend fun getUpdatedJob(jobId: String): JobDTO {
@@ -423,7 +423,7 @@ class JobCreationDataRepository(
                         totalImages = totalImages
                     )
 
-                    Timber.d("Job $jobCounter of $totalJobs - $imageCounter of $totalImages images uploaded")
+                    Timber.d("Estimate $jobCounter of $totalJobs - $imageCounter of $totalImages images uploaded")
                     imageCounter++
                 } else {
                     val message = "${estimatePhoto.filename} could not be loaded"
