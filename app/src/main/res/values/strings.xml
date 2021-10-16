@@ -241,4 +241,5 @@
     <!-- Offline Mode -->
     <string name="complete_upload">Complete Upload</string>
     <string name="row_number_mask">No:..</string>
+    <string name="default_uom">each</string>
 </resources>

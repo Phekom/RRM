@@ -194,10 +194,6 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        workViewModel = activity?.run {
-            ViewModelProvider(this, factory).get(WorkViewModel::class.java)
-        } ?: throw Exception("Invalid Activity")
-
         stateRestored = false
 
         val args: CaptureWorkFragmentArgs by navArgs()
@@ -216,10 +212,14 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
         estimateWorksPhotoArrayList = ArrayList()
 
         ui.takePhotoButton.setOnClickListener {
+            ui.takePhotoButton.isClickable = false
             initLaunchCamera()
+            ui.takePhotoButton.isClickable = true
         }
         ui.moveWorkflowButton.setOnClickListener {
+            ui.moveWorkflowButton.isClickable = false
             validateUploadWorks()
+            ui.moveWorkflowButton.isClickable = true
         }
     }
 
@@ -384,6 +384,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
                 duration = LONG
             )
             ui.moveWorkflowButton.failProgress("Network down ...")
+            ui.moveWorkflowButton.isClickable = true
         }
     }
 
@@ -493,7 +494,9 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
                 }
                 is XIResult.Error -> {
                     this@CaptureWorkFragment.toggleLongRunning(false)
+                    ui.moveWorkflowButton.isClickable = true
                     ui.moveWorkflowButton.failProgress("Work submission failed")
+                    workViewModel.resetWorkState()
                     crashGuard(
                         throwable = result,
                         refreshAction = { this@CaptureWorkFragment.retryWorkSubmission() }
@@ -527,6 +530,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
                     duration = SHORT
                 )
                 ui.moveWorkflowButton.doneProgress("Workflow complete")
+                ui.moveWorkflowButton.isClickable = true
                 toggleLongRunning(false)
                 refreshView()
             }
@@ -555,11 +559,9 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
         works.setWorksId(DataConversion.toLittleEndian(works.worksId))
         works.setEstimateId(DataConversion.toLittleEndian(works.estimateId))
         works.setTrackRouteId(DataConversion.toLittleEndian(works.trackRouteId))
-        if (!works.jobEstimateWorksPhotos.isNullOrEmpty()) {
-            works.jobEstimateWorksPhotos.forEach { ewp ->
-                ewp.setWorksId(DataConversion.toLittleEndian(ewp.worksId))
-                ewp.setPhotoId(DataConversion.toLittleEndian(ewp.photoId))
-            }
+        works.jobEstimateWorksPhotos.forEach { ewp ->
+            ewp.setWorksId(DataConversion.toLittleEndian(ewp.worksId))
+            ewp.setPhotoId(DataConversion.toLittleEndian(ewp.photoId))
         }
         return@withContext works
     }
@@ -577,7 +579,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
         uiScope.launch(uiScope.coroutineContext) {
             if (this@CaptureWorkFragment.isVisible) {
                 workViewModel.workItem.observeOnce(viewLifecycleOwner, {
-                    Timber.d("$it")
+                    Timber.d("workItem: ${it.peekContent()}")
                     val id = STANDARD_WORKFLOW_STEPS
                     // This part must be Deleted when the Dynamic workflow is complete.
                     uiScope.launch(uiScope.coroutineContext) {
@@ -739,13 +741,11 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
                         submitEstimatesOrPop(estWorkDone, estimateJobId)
                     }
                 }
+                activeWorks = workItem
 
-                estimateWorksArrayList = arrayListOf(estimateWorks)
+                estimateWorksArrayList = arrayListOf(activeWorks)
 
                 generateWorkflowSteps(estimateWorksArrayList)
-
-
-                activeWorks = workItem
 
                 ui.imageCollectionView.clearImages()
                 estimateWorksPhotoArrayList = activeWorks.jobEstimateWorksPhotos
@@ -759,7 +759,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
     private fun submitEstimatesOrPop(
         estWorkDone: Int,
         estimateJobId: String
-    ) = uiScope.launch(uiScope.coroutineContext, CoroutineStart.valueOf("SubmitEstimatesOrPop")) {
+    ) = uiScope.launch(uiScope.coroutineContext, CoroutineStart.DEFAULT) {
         workViewModel.setWorkItemJob(estimateJobId)
         val estimateJobData = workViewModel.workItemJob
 
@@ -923,11 +923,11 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
         workflowDirection: WorkflowDirection,
         userDTO: UserDTO
     ) {
-        val trackRouteId: String =
-            DataConversion.toLittleEndian(jobItEstimate.trackRouteId)!!
-        val direction: Int = workflowDirection.value
-
         Coroutines.io {
+            val trackRouteId: String =
+                DataConversion.toLittleEndian(jobItEstimate.trackRouteId)!!
+            val direction: Int = workflowDirection.value
+
             workViewModel.processWorkflowMove(
                 userDTO.userId,
                 trackRouteId,
@@ -1005,6 +1005,11 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
+
+        workViewModel = activity?.run {
+            ViewModelProvider(this, factory).get(WorkViewModel::class.java)
+        } ?: throw Exception("Invalid Activity")
+
         (activity as MainActivity).supportActionBar?.title = getString(R.string.capture_work_title)
         val callback: OnBackPressedCallback = object : OnBackPressedCallback(true) {
 

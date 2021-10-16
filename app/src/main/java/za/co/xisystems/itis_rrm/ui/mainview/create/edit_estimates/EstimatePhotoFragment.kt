@@ -341,22 +341,6 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
         newJobItemEstimatesPhotosList = ArrayList()
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-
-        photoUtil = PhotoUtil.getInstance(this.requireContext().applicationContext)
-
-        var stateRestored = false
-        val args: EstimatePhotoFragmentArgs by navArgs()
-        if (args.jobId?.isNotBlank() == true) {
-            readNavArgs()
-            stateRestored = true
-        }
-        if (savedInstanceState != null && !stateRestored) {
-            onRestoreInstanceState(savedInstanceState)
-        }
-    }
-
     override fun onStart() {
         super.onStart()
         ui.group13Loading.visibility = View.GONE
@@ -379,16 +363,20 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
         setValueEditText(getStoredValue())
 
         ui.valueEditText.doOnTextChanged { text, _, _, _ ->
-            changesToPreserve = true
             try {
-                val quantity = text.toString().toDouble()
-                newJobItemEstimate?.qty = quantity
-                createViewModel.setEstimateQuantity(quantity)
-                setCost()
+                setEstimateQty(text)
             } catch (ex: java.lang.NumberFormatException) {
                 Timber.e(" ")
             }
         }
+    }
+
+    private fun setEstimateQty(text: CharSequence?) {
+        val quantity = text.toString().toDouble()
+        newJobItemEstimate?.qty = quantity
+        createViewModel.setEstimateQuantity(quantity)
+        changesToPreserve = true
+        setCost()
     }
 
     private fun setButtonClicks() {
@@ -467,13 +455,12 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
     }
 
     private suspend fun saveValidEstimate(view: View) = uiScope.launch(uiScope.coroutineContext) {
-
-        item!!.quantity = ui.valueEditText.text.toString().toDouble()
-        if (item!!.quantity > 0 && item!!.tenderRate > 0.0 && changesToPreserve) {
+        setEstimateQty(ui.valueEditText.text as CharSequence)
+        if (newJobItemEstimate!!.qty > 0 && newJobItemEstimate!!.lineRate > 0.0 && changesToPreserve) {
 
             val saveValidEstimate = newJobItemEstimate!!.copy(
-                qty = item!!.quantity,
-                lineRate = item!!.tenderRate
+                qty = newJobItemEstimate!!.qty,
+                lineRate = newJobItemEstimate!!.lineRate
             )
             Coroutines.io {
                 createViewModel.backupProjectItem(item!!)
@@ -594,7 +581,7 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
 
     private suspend fun extractImageUri(
         jobItemEstimatePhoto: JobItemEstimatesPhotoDTO?
-    ): Uri? = withContext(Dispatchers.IO) {
+    ): Uri? = withContext(dispatchers.io()) {
         if (jobItemEstimatePhoto != null) {
             val path: String = jobItemEstimatePhoto.photoPath
             Timber.d("x -> photo $path")
@@ -622,7 +609,7 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
                 if (estimateLocation != null) {
 
                     //  Save Image to Internal Storage
-                    withContext(Dispatchers.IO) {
+                    withContext(dispatchers.io()) {
                         filenamePath = photoUtil.saveImageToInternalStorage(
                             imageUri
                         ) as HashMap<String, String>
@@ -875,7 +862,7 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
         //  valueEditText.clearFocus()
 
         var lineAmount: Double?
-        var tenderRate = newJobItemEstimate?.lineRate ?: item?.tenderRate ?: 0.0
+        val tenderRate = newJobItemEstimate?.lineRate ?: item?.tenderRate ?: 0.0
 
         var qty = item?.quantity ?: value.toDouble()
 
@@ -1067,7 +1054,7 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
         }
     }
 
-    fun restoreEstimateViewState() {
+    private fun restoreEstimateViewState() {
 
         sectionId = newJob?.sectionId
         if (sectionId != null) {
@@ -1104,7 +1091,7 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
         }
     }
 
-    fun retryEstimateViewState() {
+    private fun retryEstimateViewState() {
         IndefiniteSnackbar.hide()
         restoreEstimateViewState()
     }
@@ -1202,9 +1189,15 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        if (savedInstanceState == null) {
+        photoUtil = PhotoUtil.getInstance(this.requireContext().applicationContext)
+
+        var stateRestored = false
+        val args: EstimatePhotoFragmentArgs by navArgs()
+        if (args.jobId?.isNotBlank() == true) {
             readNavArgs()
-        } else {
+            stateRestored = true
+        }
+        if (savedInstanceState != null && !stateRestored) {
             onRestoreInstanceState(savedInstanceState)
         }
         pullData()

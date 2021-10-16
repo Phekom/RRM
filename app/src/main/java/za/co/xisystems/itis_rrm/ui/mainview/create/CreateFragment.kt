@@ -32,8 +32,8 @@ import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
 import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.SUCCESS
-import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.WARNING
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.ItemSectionDTO
@@ -137,26 +137,24 @@ class CreateFragment : BaseFragment(), OfflineListener, DIAware {
         }
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-
-        createViewModel = activity?.run {
-            ViewModelProvider(this, factory).get(CreateViewModel::class.java)
-        } ?: throw Exception("Invalid Activity")
-
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         Coroutines.main {
             val user = createViewModel.user.await()
             user.observe(viewLifecycleOwner, { userDTO ->
                 useR = userDTO
             })
         }
+    }
 
+    override fun onStart() {
+        super.onStart()
         val myClickListener = View.OnClickListener { view ->
             when (view?.id) {
                 R.id.selectContractProjectContinueButton -> {
                     val description = ui.descriptionEditText.text!!.toString().trim { it <= ' ' }
                     if (description.isEmpty()) {
-                        extensionToast(message = "Please Enter Description", style = WARNING)
+                        extensionToast(message = "Please Enter Description", style = ToastStyle.WARNING)
                         ui.descriptionEditText.startAnimation(shake)
                     } else {
                         activity?.hideKeyboard()
@@ -421,6 +419,11 @@ class CreateFragment : BaseFragment(), OfflineListener, DIAware {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
+
+        createViewModel = activity?.run {
+            ViewModelProvider(this, factory).get(CreateViewModel::class.java)
+        } ?: throw Exception("Invalid Activity")
+
         val callback: OnBackPressedCallback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 this@CreateFragment.findNavController().popBackStack(R.id.nav_home, false)
