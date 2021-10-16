@@ -183,7 +183,9 @@ class HomeFragment : BaseFragment(), DIAware {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         uiScope.onCreate()
-        homeViewModel = ViewModelProvider(this.requireActivity(), factory).get(HomeViewModel::class.java)
+        homeViewModel = activity?.run {
+            ViewModelProvider(this, factory).get(HomeViewModel::class.java)
+        } ?: throw Exception("Invalid Activity")
         setHasOptionsMenu(true)
     }
 
@@ -230,11 +232,6 @@ class HomeFragment : BaseFragment(), DIAware {
         ui.imageView7.setOnClickListener {
             ToastUtils().toastVersion(requireContext())
         }
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        homeViewModel = ViewModelProvider(this.requireActivity(), factory).get(HomeViewModel::class.java)
     }
 
     /**
