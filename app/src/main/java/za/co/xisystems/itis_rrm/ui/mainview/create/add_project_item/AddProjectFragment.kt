@@ -138,7 +138,6 @@ class AddProjectFragment : BaseFragment(), DIAware {
             whenCreated {
                 uiScope.onCreate()
                 lifecycle.addObserver(uiScope)
-                initViewModels()
             }
             whenStarted {
                 requireActivity().hideKeyboard()
@@ -207,6 +206,8 @@ class AddProjectFragment : BaseFragment(), DIAware {
             initValidationListener()
         }
     }
+
+
 
     private fun initCurrentUserObserver() {
         createViewModel.loggedUser.observe(viewLifecycleOwner, { userId ->
@@ -367,7 +368,6 @@ class AddProjectFragment : BaseFragment(), DIAware {
         groupAdapter = GroupAdapter<GroupieViewHolder<NewJobItemBinding>>()
         jobDataController = JobDataController
 
-        initViewModels()
     }
 
     override fun onPrepareOptionsMenu(menu: Menu) {
@@ -383,6 +383,7 @@ class AddProjectFragment : BaseFragment(), DIAware {
         super.onAttach(context)
         (activity as MainActivity).supportActionBar?.title = getString(R.string.new_job)
         (activity as MainActivity).supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        initViewModels()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

@@ -111,6 +111,13 @@ class SelectItemFragment : BaseFragment(), DIAware {
     override fun onAttach(context: Context) {
         super.onAttach(context)
         (activity as MainActivity).supportActionBar?.title = getString(R.string.select_item_title)
+        createViewModel = activity?.run {
+            ViewModelProvider(this, factory).get(CreateViewModel::class.java)
+        } ?: throw Exception("Invalid Activity")
+
+        itemSections = ArrayList()
+        newJobItemEstimatesList = ArrayList()
+
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -128,15 +135,8 @@ class SelectItemFragment : BaseFragment(), DIAware {
         return ui.root
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        createViewModel = activity?.run {
-            ViewModelProvider(this, factory).get(CreateViewModel::class.java)
-        } ?: throw Exception("Invalid Activity")
-
-        itemSections = ArrayList()
-        newJobItemEstimatesList = ArrayList()
-
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         val args by navArgs<SelectItemFragmentArgs>()
 
         if (!args.jobId.isNullOrBlank()) {
