@@ -86,7 +86,6 @@ class WorkFragment : BaseFragment(), DIAware {
 
             whenStarted {
                 viewLifecycleOwner.lifecycle.addObserver(uiScope)
-
             }
             whenResumed {
                 if (this@WorkFragment::currentJobGroup.isInitialized && !currentJobGroup.isExpanded
@@ -99,6 +98,11 @@ class WorkFragment : BaseFragment(), DIAware {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
+
+        workViewModel = activity?.run {
+            ViewModelProvider(this, factory).get(WorkViewModel::class.java)
+        } ?: throw Exception("Invalid Activity")
+
         val callback: OnBackPressedCallback = object : OnBackPressedCallback(true) {
             /**
              * Callback for handling the [OnBackPressedDispatcher.onBackPressed] event.
@@ -109,6 +113,8 @@ class WorkFragment : BaseFragment(), DIAware {
         }
         requireActivity().onBackPressedDispatcher
             .addCallback(this, callback)
+
+
     }
 
     private suspend fun refreshEstimateJobsFromLocal() {
@@ -236,15 +242,11 @@ class WorkFragment : BaseFragment(), DIAware {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        workViewModel = ViewModelProvider(this.requireActivity(), factory)
-            .get(WorkViewModel::class.java)
         setHasOptionsMenu(true)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        workViewModel = ViewModelProvider(this.requireActivity(), factory)
-            .get(WorkViewModel::class.java)
 
         if (savedInstanceState != null && !stateRestored) {
             onRestoreInstanceState(savedInstanceState)

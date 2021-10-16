@@ -73,7 +73,6 @@ class WorkViewModel(
 
     init {
         resetWorkState()
-        initWorkflowChannels()
     }
 
     private fun initWorkflowChannels() {
@@ -201,8 +200,6 @@ class WorkViewModel(
 
     ) = viewModelScope.launch(ioContext, CoroutineStart.DEFAULT) {
         withContext(mainContext) {
-            resetWorkState()
-            initWorkflowChannels()
             itemEstiJob.setWorkStartDate()
         }
         val updateJob = workDataRepository.backupJobInProgress(itemEstiJob)
@@ -272,6 +269,7 @@ class WorkViewModel(
     fun resetWorkState() {
         workflowStatus = MutableLiveData()
         workflowState = MutableLiveData()
+        initWorkflowChannels()
     }
 
     fun backupJobInProgress(job: JobDTO) = viewModelScope.launch(ioContext) {
