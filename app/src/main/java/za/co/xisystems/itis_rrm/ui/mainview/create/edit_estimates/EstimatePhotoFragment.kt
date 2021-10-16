@@ -581,7 +581,7 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
 
     private suspend fun extractImageUri(
         jobItemEstimatePhoto: JobItemEstimatesPhotoDTO?
-    ): Uri? = withContext(Dispatchers.IO) {
+    ): Uri? = withContext(dispatchers.io()) {
         if (jobItemEstimatePhoto != null) {
             val path: String = jobItemEstimatePhoto.photoPath
             Timber.d("x -> photo $path")
@@ -609,7 +609,7 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
                 if (estimateLocation != null) {
 
                     //  Save Image to Internal Storage
-                    withContext(Dispatchers.IO) {
+                    withContext(dispatchers.io()) {
                         filenamePath = photoUtil.saveImageToInternalStorage(
                             imageUri
                         ) as HashMap<String, String>
@@ -862,7 +862,7 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
         //  valueEditText.clearFocus()
 
         var lineAmount: Double?
-        var tenderRate = newJobItemEstimate?.lineRate ?: item?.tenderRate ?: 0.0
+        val tenderRate = newJobItemEstimate?.lineRate ?: item?.tenderRate ?: 0.0
 
         var qty = item?.quantity ?: value.toDouble()
 
@@ -1054,7 +1054,7 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
         }
     }
 
-    fun restoreEstimateViewState() {
+    private fun restoreEstimateViewState() {
 
         sectionId = newJob?.sectionId
         if (sectionId != null) {
@@ -1091,7 +1091,7 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
         }
     }
 
-    fun retryEstimateViewState() {
+    private fun retryEstimateViewState() {
         IndefiniteSnackbar.hide()
         restoreEstimateViewState()
     }
