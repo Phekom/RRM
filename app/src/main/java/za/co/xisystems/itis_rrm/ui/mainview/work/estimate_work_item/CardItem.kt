@@ -13,30 +13,44 @@
 package za.co.xisystems.itis_rrm.ui.mainview.work.estimate_work_item
 
 import android.view.View
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.FragmentActivity
 import androidx.navigation.Navigation
+import com.mapbox.geojson.Point
+import com.mapbox.turf.TurfConstants
+import com.mapbox.turf.TurfConversion
+import com.mapbox.turf.TurfMeasurement
 import com.xwray.groupie.viewbinding.BindableItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimatesPhotoDTO
 import za.co.xisystems.itis_rrm.databinding.WorkListItemBinding
+import za.co.xisystems.itis_rrm.services.LocationModel
 import za.co.xisystems.itis_rrm.ui.mainview.work.INSET
 import za.co.xisystems.itis_rrm.ui.mainview.work.INSET_TYPE_KEY
 import za.co.xisystems.itis_rrm.ui.mainview.work.WorkFragmentDirections
+import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModel
 import za.co.xisystems.itis_rrm.utils.Coroutines
+import za.co.xisystems.itis_rrm.utils.ServiceUtil
+import java.util.*
 
 open class CardItem(
     val activity: FragmentActivity?,
-    val text: String,
+    val desc: String,
     val qty: String,
     val rate: String,
     val estimateId: String,
-    private val jobItemEstimate: JobItemEstimateDTO,
-    private val job: JobDTO
+    val workViewModel: WorkViewModel,
+    val jobItemEstimate: JobItemEstimateDTO,
+    val job: JobDTO,
+    val myLocation: LocationModel?,
 ) : BindableItem<WorkListItemBinding>() {
-
+    var selectedLocationPoint: Point? = null
+    var estimatePhotoStart: JobItemEstimatesPhotoDTO? = null
     init {
         extras[INSET_TYPE_KEY] = INSET
     }
@@ -44,16 +58,53 @@ open class CardItem(
     override fun getLayout() = R.layout.work_list_item
 
     private fun sendJobToWork(
+        workViewModel: WorkViewModel,
         estimate: JobItemEstimateDTO,
         view: View?,
         job: JobDTO
-    ) = Coroutines.main {
-        withContext(Dispatchers.Main.immediate) {
-            val navDirection = WorkFragmentDirections.actionNavWorkToCaptureWorkFragment(
-                jobId = job.jobId,
-                estimateId = estimate.estimateId
-            )
-            Navigation.findNavController(view!!).navigate(navDirection)
+    ) {
+        Coroutines.io {
+            workViewModel.setWorkItemJob(job.jobId)
+            workViewModel.setWorkItem(estimate.estimateId)
+            withContext(Dispatchers.Main.immediate) {
+                val navDirection = WorkFragmentDirections.actionNavWorkToCaptureWorkFragment(
+                    jobId = job.jobId,
+                    estimateId = estimate.estimateId )
+                Navigation.findNavController(view!!).navigate(navDirection)
+            }
+        }
+    }
+
+    private fun alertdialog(
+        activity: FragmentActivity?,
+        position: Int,
+        drive: String,
+        selectedLocationPoint: Point,
+        view: View
+    ) {
+        // val drive = activity.getString(R.string.action_not_premitted )+ "\n Please Drive $distance KM to the location First"
+        val alert = AlertDialog.Builder(activity!!)
+        alert.run {
+
+            setTitle(R.string.not_allowed)
+                .setCancelable(false)
+            setIcon(R.drawable.ic_error)
+            setMessage(drive)
+            // Yes button
+            setPositiveButton(R.string.ok) { dialog, which ->
+
+                if (ServiceUtil.isNetworkConnected(context.applicationContext)) {
+                    Coroutines.main {
+                        workViewModel.goToWorkLocation(selectedLocationPoint)
+                        Navigation.findNavController(view).navigate(R.id.action_nav_work_to_work_location)
+                    }
+                } else {
+                    ToastUtils().toastLong(activity, activity.getString(R.string.no_connection_detected))
+                }
+            }
+
+            create()
+            show()
         }
     }
 
@@ -64,16 +115,59 @@ open class CardItem(
      * @param position The adapter position
      */
     override fun bind(viewBinding: WorkListItemBinding, position: Int) {
+
         viewBinding.apply {
+
             Coroutines.main {
-                expandableChildTextView.text = text
+                estimatePhotoStart = workViewModel.getEstimateStartPhotoForId(jobItemEstimate.estimateId)
+                expandableChildTextView.text = desc
                 qtyTextView.text = qty
                 lineAmountTextView.text = rate
-            }
 
-            startWorkBtn.setOnClickListener {
-                sendJobToWork(jobItemEstimate, root, job)
+
+            val myCurrentLocation = Point.fromLngLat(
+                myLocation!!.longitude,
+                myLocation.latitude
+            )
+
+            val destination =  Point.fromLngLat(estimatePhotoStart?.photoLongitude!!, estimatePhotoStart!!.photoLatitude!!)
+
+            val straightdistanceBetweenDeviceAndTarget =
+                String.format(
+                    Locale.US, "%.1f",
+                    TurfConversion.convertLength(
+                        TurfMeasurement.distance(
+                            myCurrentLocation,
+                            destination, TurfConstants.UNIT_METERS
+                        ),
+                        TurfConstants.UNIT_METERS,
+                        TurfConstants.UNIT_KILOMETERS
+                    )
+                )
+
+
+            startWorkBtn.setOnClickListener { view ->
+                if (straightdistanceBetweenDeviceAndTarget.isNullOrEmpty()) {
+                    ToastUtils().toastLong(activity, activity?.getString(R.string.distance_misiing))
+
+                } else {
+                    val distance = straightdistanceBetweenDeviceAndTarget
+                    val drive = activity?.getString(R.string.action_not_premitted) + "\n Please Drive $distance KM to the location First"
+                    selectedLocationPoint = Point.fromLngLat(
+                        estimatePhotoStart?.photoLongitude!!, estimatePhotoStart?.photoLatitude!!
+                    )
+
+
+                    if (distance.toDouble() <= 1.0) {
+                        sendJobToWork(workViewModel, jobItemEstimate, root, job)
+                    } else {
+                        alertdialog(activity, position, drive, selectedLocationPoint!!,view)
+                    }
+                }
+
             }
+        }
+
         }
     }
 

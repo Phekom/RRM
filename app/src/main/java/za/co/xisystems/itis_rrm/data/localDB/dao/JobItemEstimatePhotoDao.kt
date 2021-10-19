@@ -48,4 +48,8 @@ interface JobItemEstimatePhotoDao {
         deletePhotoById(photoId)
         insertJobItemEstimatePhoto(estimatePhoto)
     }
+
+    @Query("SELECT * FROM JOB_ITEM_ESTIMATE_PHOTO WHERE estimateId = :estimateId")
+    fun getEstimateStartPhotoForId(estimateId: String): JobItemEstimatesPhotoDTO
+
 }

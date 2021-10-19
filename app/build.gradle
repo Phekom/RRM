@@ -160,22 +160,6 @@ android {
     }
 
     productFlavors {
-        /*stub {
-            splits.abi.enable = false
-            splits.density.enable = false
-            buildConfigField("boolean", "STUB", "true")
-            applicationId appId + ".sub"
-            // buildConfigField("boolean", "REGISTER_AUTO_FILL_TEST", "true")
-            manifestPlaceholders = [app_name: "RRM-Demo", app_icon: "@mipmap/ic_launcher_demo", HOCKEYAPP_APP_ID: "59d2e5d0f7ac4b28a08c30639089d198"]
-            buildConfigField "String", "HOCKEYAPP_APP_ID", "\"59d2e5d0f7ac4b28a08c30639089d198\""
-            buildConfigField("String", "API_HOST", qa_env)
-            // The following configuration limits the "dev" flavor to using
-            // English string resources and xxhdpi screen-density resources.
-            resConfigs "en", "xxhdpi"
-            buildConfigField("String", "USERNAME_TEST", '"stubtest"')
-            buildConfigField("String", "PASSWORD_TEST", '"1234"')
-            buildConfigField("boolean", "REGISTER_AUTO_FILL_TEST", registerAutoFillTest.toString())
-        }*/
 
         dev {
             splits.abi.enable = false
@@ -195,34 +179,6 @@ android {
             testHandleProfiling true
         }
 
-        /*xi {
-            splits.abi.enable = false
-            splits.density.enable = false
-            resConfigs "en", "xxhdpi"
-
-            applicationId appId + ".xi"
-
-            buildConfigField("boolean", "REGISTER_AUTO_FILL_TEST", registerAutoFillTest.toString())
-            manifestPlaceholders = [app_name: "RRM-Xi", app_icon: "@mipmap/ic_launcher_xi", HOCKEYAPP_APP_ID: "7b77445b888a411b83ae27491a5bd7c9"]
-            buildConfigField("boolean", "REGISTER_AUTO_FILL_TEST", "true")
-            buildConfigField("String", "API_HOST", xi_env)
-            buildConfigField "String", "HOCKEYAPP_APP_ID", "\"7b77445b888a411b83ae27491a5bd7c9\""
-        }
-
-        sdev { // Sanral Dev
-            splits.abi.enable = false
-            splits.density.enable = false
-            resConfigs "en", "xxhdpi"
-
-            applicationId appId + ".sdev"
-
-            buildConfigField("boolean", "REGISTER_AUTO_FILL_TEST", registerAutoFillTest.toString())
-            manifestPlaceholders = [app_name: "RRM-SDev", app_icon: "@mipmap/ic_launcher_sdev", HOCKEYAPP_APP_ID: "7b77445b888a411b83ae27491a5bd7c9"]
-            buildConfigField("boolean", "REGISTER_AUTO_FILL_TEST", "true")
-            buildConfigField("String", "API_HOST", sdev_env)
-            buildConfigField "String", "HOCKEYAPP_APP_ID", "\"7b77445b888a411b83ae27491a5bd7c9\""
-        }
-*/
         qa { // Sanral QA
             splits.abi.enable = false
             splits.density.enable = false
@@ -623,6 +579,14 @@ dependencies {
 
     // NetworkResponseAdapter https://haroldadmin.github.io/NetworkResponseAdapter/
     implementation 'com.github.haroldadmin:NetworkResponseAdapter:4.0.1'
+
+    //Mapbox
+    implementation "com.mapbox.navigation:ui:1.5.1"
+//    implementation "com.mapbox.navigation:core:1.5.1"
+    implementation 'com.mapbox.mapboxsdk:mapbox-sdk-services:5.9.0-alpha.1'
+    implementation 'com.mapbox.mapboxsdk:mapbox-sdk-turf:5.9.0-alpha.1'
+    implementation 'com.mapbox.mapboxsdk:mapbox-android-telemetry:7.0.0'
+
 
 }
 

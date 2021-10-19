@@ -1,7 +1,10 @@
 package za.co.xisystems.itis_rrm.base
 
+import android.Manifest
 import android.app.Activity
 import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.os.Bundle
 import android.view.Menu
@@ -9,7 +12,9 @@ import android.view.View
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.view.inputmethod.InputMethodManager
+import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.snackbar.Snackbar
 import org.kodein.di.DIAware
@@ -17,6 +22,7 @@ import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.BuildConfig
+import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.constants.Constants.DNS_PORT
 import za.co.xisystems.itis_rrm.constants.Constants.FIVE_SECONDS
@@ -30,9 +36,12 @@ import za.co.xisystems.itis_rrm.data._commons.views.IProgressView
 import za.co.xisystems.itis_rrm.forge.DefaultDispatcherProvider
 import za.co.xisystems.itis_rrm.forge.DispatcherProvider
 import za.co.xisystems.itis_rrm.forge.XIArmoury
+import za.co.xisystems.itis_rrm.services.LocationModel
 import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
+import za.co.xisystems.itis_rrm.ui.mainview.activities.LocationViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModelFactory
+import za.co.xisystems.itis_rrm.utils.GPSUtils
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.ViewLogger
 
@@ -52,8 +61,18 @@ abstract class BaseFragment(
     private val shareFactory: SharedViewModelFactory by instance()
     private val armoury: XIArmoury by instance()
     protected var coordinator: View? = null
+//=========================================================================================
+    internal open var currentLocation: LocationModel? = null
+    private lateinit var locationViewModel: LocationViewModel
+    private val locationFactory by instance<LocationViewModelFactory>()
+    private var gpsEnabled: Boolean = false
+    private var networkEnabled: Boolean = false
+//=========================================================================================
+   lateinit var ACTIVITY: MainActivity
 
     companion object {
+        const val GPS_REQUEST = 100
+        const val LOCATION_REQUEST = 101
 
         @JvmField
         var bounce: Animation? = null
@@ -119,8 +138,79 @@ abstract class BaseFragment(
         IndefiniteSnackbar.hide()
     }
 
+    override fun onStart() {
+        super.onStart()
+        invokeLocationAction()
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (resultCode == Activity.RESULT_OK && requestCode == GPS_REQUEST) {
+            gpsEnabled = true
+            invokeLocationAction()
+        }
+    }
+
+    private fun invokeLocationAction() {
+        when {
+            !gpsEnabled -> Timber.d("GPS disabled!")
+
+            isPermissionsGranted() -> startLocationUpdate()
+
+            shouldShowRequestPermissionRationale() -> Timber.d("Request Permissions")
+
+            else -> ActivityCompat.requestPermissions(
+                requireActivity(),
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION,
+                ),
+                LOCATION_REQUEST
+            )
+        }
+    }
+
+    private fun startLocationUpdate() {
+        locationViewModel.getLocationData().observe(
+            this,
+            Observer { it ->
+                currentLocation = it
+            }
+        )
+    }
+
+    private fun isPermissionsGranted() =
+        ActivityCompat.checkSelfPermission(
+            requireContext(),
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(
+                    requireContext(),
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED
+
+    private fun shouldShowRequestPermissionRationale() =
+        ActivityCompat.shouldShowRequestPermissionRationale(
+            requireActivity(),
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) && ActivityCompat.shouldShowRequestPermissionRationale(
+            requireActivity(),
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        )
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        locationViewModel = this.run {
+            ViewModelProvider(this, locationFactory).get(LocationViewModel::class.java)
+        }
+
+        GPSUtils(requireContext()).activateGPS(object : GPSUtils.OnGpsListener {
+
+            override fun gpsStatus(isGPSEnable: Boolean) {
+                gpsEnabled = isGPSEnable
+            }
+        })
         animations = Animations(requireContext().applicationContext)
     }
 
@@ -160,6 +250,7 @@ abstract class BaseFragment(
         super.onAttach(context)
         bounce = AnimationUtils.loadAnimation(context.applicationContext, R.anim.bounce)
         shake = AnimationUtils.loadAnimation(context.applicationContext, R.anim.shake)
+        ACTIVITY = context as MainActivity
     }
 
     override fun onViewCreated(

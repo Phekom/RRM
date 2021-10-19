@@ -6,6 +6,7 @@
 
 package za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates
 
+import android.Manifest
 import android.Manifest.permission
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -14,6 +15,7 @@ import android.app.Dialog
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.location.LocationManager
 import android.net.Uri
 import android.os.Bundle
@@ -24,8 +26,10 @@ import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.NonNull
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.widget.doOnTextChanged
@@ -39,6 +43,30 @@ import androidx.lifecycle.whenStarted
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.navArgs
 import com.airbnb.lottie.LottieAnimationView
+import com.mapbox.android.core.location.*
+import com.mapbox.android.core.permissions.PermissionsListener
+import com.mapbox.android.core.permissions.PermissionsManager
+import com.mapbox.geojson.Feature
+import com.mapbox.geojson.FeatureCollection
+import com.mapbox.geojson.Point
+import com.mapbox.mapboxsdk.Mapbox
+import com.mapbox.mapboxsdk.camera.CameraPosition
+import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
+import com.mapbox.mapboxsdk.geometry.LatLng
+import com.mapbox.mapboxsdk.location.LocationComponent
+import com.mapbox.mapboxsdk.location.LocationComponentActivationOptions
+import com.mapbox.mapboxsdk.location.modes.CameraMode
+import com.mapbox.mapboxsdk.maps.MapView
+import com.mapbox.mapboxsdk.maps.MapboxMap
+import com.mapbox.mapboxsdk.maps.OnMapReadyCallback
+import com.mapbox.mapboxsdk.maps.Style
+import com.mapbox.mapboxsdk.style.layers.LineLayer
+import com.mapbox.mapboxsdk.style.layers.Property
+import com.mapbox.mapboxsdk.style.layers.PropertyFactory
+import com.mapbox.mapboxsdk.style.layers.SymbolLayer
+import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
+import com.mapbox.mapboxsdk.utils.BitmapUtils
+import kotlinx.android.synthetic.main.fragment_goto.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -81,7 +109,8 @@ import kotlin.collections.set
  * Created by Francis Mahlava on 2019/12/29.
  */
 
-class EstimatePhotoFragment : LocationFragment(), DIAware {
+class EstimatePhotoFragment : LocationFragment(), LocationEngineCallback<LocationEngineResult>,
+    MapboxMap.OnCameraMoveListener, PermissionsListener,DIAware {
 
     private var sectionId: String? = null
     override val di by closestDI()
@@ -117,6 +146,12 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
     private lateinit var photoUtil: PhotoUtil
     private var changesToPreserve: Boolean = false
     private var tenderRate: Double? = null
+    private var mapView: MapView? = null
+    private var permissionManager: PermissionsManager? = null
+    private var locationComponent: LocationComponent? = null
+    private var mapboxM: MapboxMap? = null
+    private lateinit var locationEngine: LocationEngine
+
 
     /**
      * ActivityResultContract for taking a photograph
@@ -169,7 +204,90 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
 
     companion object {
         private const val REQUEST_STORAGE_PERMISSION = 505
+        private const val GEOJSON_SOURCE_ID = "GEOJSON_SOURCE_ID"
+        private const val ICON_LAYER_ID = "ICON_LAYER_ID"
+        private const val ICON_SOURCE_ID = "ICON_SOURCE_ID"
+        private const val ROUTE_LAYER_ID = "ROUTE_LAYER_ID"
+        private val RED_PIN_ICON_ID = "RED_PIN_ICON_ID"
+        private const val DEFAULT_INTERVAL_IN_MILLISECONDS = 1000L
+        private const val DEFAULT_MAX_WAIT_TIME = DEFAULT_INTERVAL_IN_MILLISECONDS * 5
     }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        mapView = _ui?.mymapbox
+        mapView?.onCreate(savedInstanceState)
+        mapView?.getMapAsync(OnMapReadyCallback { mapboxMap ->
+            mapboxM = mapboxMap
+            mapboxMap.setStyle(Style.MAPBOX_STREETS) { style -> // Set the origin location to the Alhambra landmark in Granada, Spain.
+                var origin = Point.fromLngLat(currentLocation?.longitude!!, currentLocation?.latitude!!)
+                initSource(style, origin)
+                initLayers(style)
+                enableLocationComponent(style)
+              val latLng = LatLng(currentLocation?.latitude!!, currentLocation?.longitude!!)
+               val position = CameraPosition.Builder()
+                    .target(latLng)
+                    .zoom(18.0) // disable this for not follow zoom
+                    .tilt(10.0)
+                    .build()
+                mapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(position))
+            }
+        })
+        if (savedInstanceState == null) {
+            readNavArgs()
+        } else {
+
+            onRestoreInstanceState(savedInstanceState)
+        }
+        pullData()
+    }
+
+
+    private fun initSource(@NonNull loadedMapStyle: Style, origin: Point) {
+        loadedMapStyle.addSource(GeoJsonSource(GEOJSON_SOURCE_ID))
+        val iconGeoJsonSource = GeoJsonSource(
+            ICON_SOURCE_ID, FeatureCollection.fromFeatures(
+                arrayOf(
+                    Feature.fromGeometry(Point.fromLngLat(origin.longitude(), origin.latitude())),
+                    //Feature.fromGeometry(Point.fromLngLat(destination?.longitude()!!, destination?.latitude()!!))
+                )
+            )
+        )
+        loadedMapStyle.addSource(iconGeoJsonSource)
+    }
+
+    @SuppressLint("UseCompatLoadingForDrawables")
+    private fun initLayers(@NonNull loadedMapStyle: Style) {
+        val routeLayer = LineLayer(ROUTE_LAYER_ID, GEOJSON_SOURCE_ID)
+
+// Add the LineLayer to the map. This layer will display the directions route.
+        routeLayer.setProperties(
+            PropertyFactory.lineCap(Property.LINE_CAP_ROUND),
+            PropertyFactory.lineJoin(Property.LINE_JOIN_ROUND),
+            PropertyFactory.lineWidth(5f),
+            PropertyFactory.lineColor(Color.parseColor("#009688"))
+        )
+        loadedMapStyle.addLayer(routeLayer)
+
+// Add the red marker icon image to the map
+        loadedMapStyle.addImage(
+            RED_PIN_ICON_ID, BitmapUtils.getBitmapFromDrawable(
+                resources.getDrawable(R.drawable.mapbox_marker_icon_default)
+            )!!
+        )
+
+// Add the red marker icon SymbolLayer to the map
+        loadedMapStyle.addLayer(
+            SymbolLayer(ICON_LAYER_ID, ICON_SOURCE_ID).withProperties(
+                PropertyFactory.iconImage(RED_PIN_ICON_ID),
+                PropertyFactory.iconIgnorePlacement(true),
+                PropertyFactory.iconAllowOverlap(true),
+                PropertyFactory.iconOffset(arrayOf(0f, -9f))
+            )
+        )
+    }
+
+
 
     private fun pullData() = uiScope.launch(uiScope.coroutineContext) {
 
@@ -336,6 +454,7 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
+        Mapbox.getInstance(requireActivity(), requireActivity().getString(R.string.token))
         (activity as MainActivity).supportActionBar?.title = getString(R.string.edit_estimate)
         newJobItemEstimatesList = ArrayList()
         newJobItemEstimatesPhotosList = ArrayList()
@@ -1200,13 +1319,101 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
         }
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        if (savedInstanceState == null) {
-            readNavArgs()
-        } else {
-            onRestoreInstanceState(savedInstanceState)
+    override fun onSuccess(result: LocationEngineResult?) {
+        result?.lastLocation
+            ?: return // BECAREFULL HERE, OF NAME LOCATION UPDATE DONT USE -> val resLoc = result.lastLocation ?: return
+        if (result.lastLocation != null) {
+            val lat = result.lastLocation?.latitude!!
+            val lng = result.lastLocation?.longitude!!
+            val latLng = LatLng(
+                lat,
+                lng
+            ) // locationComponent?.forceLocationUpdate(result.lastLocation)
+            val position = CameraPosition.Builder()
+                .target(latLng)
+                .zoom(18.0) // disable this for not follow zoom
+                .tilt(10.0)
+                .build()
+            mapboxM?.animateCamera(CameraUpdateFactory.newCameraPosition(position))
+//            mapbox?.apply {
+//                setMinZoomPreference(14.0)
+//                setMaxZoomPreference(16.0)
+////                this.setMinZoomPreference()
+//            }
         }
-        pullData()
     }
+
+    override fun onFailure(exception: java.lang.Exception) {
+        Timber.d("Map Encountered Problem", exception.message!!)
+    }
+
+    override fun onCameraMove() {
+        TODO("Not yet implemented")
+    }
+
+    private fun enableLocationComponent(style: Style) {
+
+        if (PermissionsManager.areLocationPermissionsGranted(requireContext())) {
+
+            val locationComponentActivationOptions = LocationComponentActivationOptions
+                .builder(requireContext(), style)
+                .build()
+
+            if (ActivityCompat.checkSelfPermission(
+                    requireContext(),
+                    permission.ACCESS_FINE_LOCATION
+                ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                    requireContext(),
+                    permission.ACCESS_COARSE_LOCATION
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                return
+            }
+            locationComponent = mapboxM?.locationComponent.apply {
+                this?.activateLocationComponent(locationComponentActivationOptions)
+                this?.isLocationComponentEnabled = true
+                this?.cameraMode = CameraMode.TRACKING
+                this?.cameraMode = CameraMode.TRACKING_COMPASS
+            }
+            initLocationEngine()
+        } else {
+            permissionManager = PermissionsManager(this)
+            permissionManager?.requestLocationPermissions(requireActivity())
+        }
+    }
+
+    private fun initLocationEngine() {
+        if (ActivityCompat.checkSelfPermission(
+                requireContext(),
+                permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                requireContext(),
+                permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            return
+        }
+
+        locationEngine = LocationEngineProvider.getBestLocationEngine(requireContext())
+
+        val request = LocationEngineRequest
+            .Builder(DEFAULT_INTERVAL_IN_MILLISECONDS)
+            .setPriority(LocationEngineRequest.PRIORITY_HIGH_ACCURACY)
+            .setMaxWaitTime(DEFAULT_MAX_WAIT_TIME)
+            .build()
+        locationEngine.requestLocationUpdates(request, this, requireContext().mainLooper)
+        locationEngine.getLastLocation(this)
+    }
+
+    override fun onExplanationNeeded(permissionsToExplain: MutableList<String>?) {
+        Toast.makeText(requireContext(), "You Need to activate your location", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onPermissionResult(granted: Boolean) {
+        if (granted) {
+            enableLocationComponent(mapboxM?.style!!)
+        }
+    }
+
+
 }

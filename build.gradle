@@ -1,4 +1,4 @@
-
+import io.gitlab.arturbosch.detekt.DetektCreateBaselineTask
 
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
@@ -16,6 +16,21 @@ buildscript {
         dependency_evaluation_version = '0.78.0'
         booster_version = '4.0.0'
         navigation_version = '2.3.2'
+//        dependenciesList = [
+//                // Mapbox
+//                mapboxMapSdk             : "com.mapbox.mapboxsdk:mapbox-android-sdk:${version.mapboxMapSdk}",
+//                mapboxTurf               : "com.mapbox.mapboxsdk:mapbox-sdk-turf:${version.mapboxJavaSdk}",
+//                mapboxServices           : "com.mapbox.mapboxsdk:mapbox-sdk-services:${version.mapboxJavaSdk}",
+//
+//                // Mapbox plugins
+//                mapboxPluginBuilding     : "com.mapbox.mapboxsdk:mapbox-android-plugin-building-${version.mapboxMapPluginPrefix}:${version.mapboxPluginBuilding}",
+//                mapboxPluginPlaces       : "com.mapbox.mapboxsdk:mapbox-android-plugin-places-${version.mapboxMapPluginPrefix}:${version.mapboxPluginPlaces}",
+//                mapboxPluginLocalization : "com.mapbox.mapboxsdk:mapbox-android-plugin-localization-${version.mapboxMapPluginPrefix}:${version.mapboxPluginLocalization}",
+//                mapboxPluginTraffic      : "com.mapbox.mapboxsdk:mapbox-android-plugin-traffic-${version.mapboxMapPluginPrefix}:${version.mapboxPluginTraffic}",
+//                mapboxPluginMarkerView   : "com.mapbox.mapboxsdk:mapbox-android-plugin-markerview-${version.mapboxMapPluginPrefix}:${version.mapboxPluginMarkerView}",
+//                mapboxPluginAnnotation   : "com.mapbox.mapboxsdk:mapbox-android-plugin-annotation-${version.mapboxMapPluginPrefix}:${version.mapboxPluginAnnotation}",
+//                mapboxPluginScalebar     : "com.mapbox.mapboxsdk:mapbox-android-plugin-scalebar-${version.mapboxMapPluginPrefix}:${version.mapboxPluginScalebar}",
+//        ]
     }
 
     repositories {
@@ -24,6 +39,7 @@ buildscript {
         maven { url "https://maven.google.com" }
         maven { url "https://repo.spring.io/milestone" }
         maven { url "https://plugins.gradle.org/m2/" }
+        maven { url 'https://mapbox.bintray.com/mapbox' }
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:7.0.3'
@@ -65,6 +81,17 @@ allprojects {
         maven { url "https://clojars.org/repo/" }
         maven { url 'https://jitpack.io' }
         maven { url 'https://dl.bintray.com/guardian/android' }
+        maven { url 'https://mapbox.bintray.com/mapbox' }
+        maven {
+            url 'https://api.mapbox.com/downloads/v2/releases/maven'
+            authentication {
+                basic(BasicAuthentication)
+            }
+            credentials {
+                username "mapbox"
+                password = project.hasProperty('SDK_REGISTRY_TOKEN') ? project.property('SDK_REGISTRY_TOKEN') : System.getenv('SDK_REGISTRY_TOKEN')
+            }
+        }
     }
 }
 
@@ -73,7 +100,7 @@ task clean(type: Delete) {
     delete rootProject.buildDir
 }
 
-task detektProjectBaseline(type: io.gitlab.arturbosch.detekt.DetektCreateBaselineTask) {
+task detektProjectBaseline(type: DetektCreateBaselineTask) {
     description = "Overrides current baseline."
     ignoreFailures.set(true)
     parallel.set(true)

@@ -118,6 +118,9 @@
             android:name="jobId"
             app:argType="string"
             app:nullable="true" />
+        <action
+            android:id="@+id/action_nav_work_to_work_location"
+            app:destination="@id/work_location" />
     </fragment>
 
     <fragment
@@ -358,6 +361,24 @@
             app:popEnterAnim="@anim/nav_default_pop_enter_anim"
             app:popExitAnim="@anim/nav_default_pop_exit_anim" />
     </fragment>
+
+    <fragment
+        android:id="@+id/work_location"
+        android:name="za.co.xisystems.itis_rrm.ui.mainview.work.goto_work_location.GoToFragment"
+        android:label="@string/goto_work_location"
+        tools:layout="@layout/fragment_goto" >
+        <action
+            android:id="@+id/action_work_location_to_work_navigation"
+            app:destination="@id/work_navigation" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/work_navigation"
+        android:name="za.co.xisystems.itis_rrm.ui.mainview.work.goto_work_location.navigation.NavigationFragment"
+        android:label="@string/navigating_to_work_location"
+        tools:layout="@layout/navigation_fragment" />
+
+
     <action
         android:id="@+id/action_global_nav_home"
         app:destination="@id/nav_home"

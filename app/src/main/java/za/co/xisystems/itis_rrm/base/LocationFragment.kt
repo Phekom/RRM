@@ -24,12 +24,12 @@ import za.co.xisystems.itis_rrm.utils.GPSUtils
  **/
 abstract class LocationFragment : BaseFragment(), DIAware {
 
-    private var currentLocation: LocationModel? = null
     override val di: DI by closestDI()
     private lateinit var locationViewModel: LocationViewModel
     private val locationFactory by instance<LocationViewModelFactory>()
     private var gpsEnabled = false
-
+//    internal var currentLocation: LocationModel? = null
+    private var networkEnabled: Boolean = false
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // fragment has no options
         return false

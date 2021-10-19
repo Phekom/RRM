@@ -361,12 +361,14 @@ class WorkFragment : BaseFragment(), DIAware {
 
                 val cardItem = CardItem(
                     activity = activity,
-                    text = desc,
+                    desc = desc,
                     qty = qty,
                     rate = "${DecimalFormat("#0.00").format(rate)} $friendlyUOM",
                     estimateId = estimateId,
+                    workViewModel = workViewModel,
                     jobItemEstimate = item,
-                    job = jobDTO
+                    job = jobDTO,
+                    myLocation = currentLocation
                 )
                 receiver.add(
                     cardItem

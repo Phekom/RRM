@@ -20,6 +20,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.viewModelScope
+import com.mapbox.api.directions.v5.models.DirectionsRoute
+import com.mapbox.geojson.Point
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
@@ -30,11 +32,7 @@ import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.results.XIResult.Status
 import za.co.xisystems.itis_rrm.custom.results.XIResult.Success
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksPhotoDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.WfWorkStepDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.WorkDataRepository
 import za.co.xisystems.itis_rrm.forge.DefaultDispatcherProvider
@@ -280,4 +278,21 @@ class WorkViewModel(
             workItemJob.value = XIEvent(updatedJob)
         }
     }
+
+
+    suspend fun getEstimateStartPhotoForId(estimateId: String): JobItemEstimatesPhotoDTO {
+        return withContext(ioContext) {
+            workDataRepository.getEstimateStartPhotoForId(estimateId)
+        }
+    }
+
+    val myWorkItem = MutableLiveData<Point>()
+    fun goToWorkLocation(selectedLocationPoint: Point) {
+        myWorkItem.postValue(selectedLocationPoint)
+    }
+
+
+
+
+
 }

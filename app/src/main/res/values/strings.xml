@@ -4,7 +4,7 @@
   * Copyright (c) 2021.  XI Systems  - All rights reserved
   -->
 
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="action_settings">Settings</string>
@@ -241,4 +241,16 @@
     <!-- Offline Mode -->
     <string name="complete_upload">Complete Upload</string>
     <string name="row_number_mask">No:..</string>
+    <string name="not_allowed">Work Process Not Permitted</string>
+    <string name="token" translatable="false" tools:ignore="Typos">pk.eyJ1IjoicHJpbmNldmFsaXVtIiwiYSI6ImNrcGczaDQzYzBvMmYycHJpdnU5azFjdjAifQ.HX-BT5rC7zop8PFjqVHzlQ</string>
+    <string name="action_not_premitted">You Can not initiate Work While you are not at the JI\'s location</string>
+    <string name="goto_work_location">Drive To Locaton</string>
+    <string name="work">Drive to Work</string>
+    <string name="user_location_permission_explanation">This app needs location permission to be able to show your location on the map</string>
+    <string name="user_location_permission_not_granted">Allow location permission</string>
+    <string name="drive_button">Drive Button</string>
+    <string name="navigating_to_work_location">Navigating To Location</string>
+    <string name="no_routes">No Routes Found</string>
+    <string name="distance_misiing">Missing Data</string>
+
 </resources>
