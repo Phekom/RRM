@@ -24,6 +24,7 @@ import org.kodein.di.DIAware
 import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
 import timber.log.Timber
+import www.sanju.motiontoast.MotionToastStyle
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R.drawable
 import za.co.xisystems.itis_rrm.R.layout
@@ -34,9 +35,6 @@ import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration.LONG
 import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity.BOTTOM
 import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity.CENTER
-import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
-import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.NO_INTERNET
-import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.SUCCESS
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
@@ -80,7 +78,7 @@ class JobInfoFragment : BaseFragment(), DIAware {
                 is XIResult.Success -> {
                     extensionToast(
                         message = "Estimate updated",
-                        style = SUCCESS,
+                        style = MotionToastStyle.SUCCESS,
                         position = BOTTOM,
                         duration = LONG
                     )
@@ -217,7 +215,7 @@ class JobInfoFragment : BaseFragment(), DIAware {
                 } else {
                     extensionToast(
                         message = getString(string.no_connection_detected),
-                        style = NO_INTERNET
+                        style = MotionToastStyle.NO_INTERNET
                     )
                 }
             }
@@ -253,7 +251,7 @@ class JobInfoFragment : BaseFragment(), DIAware {
                 } else {
                     extensionToast(
                         message = getString(string.no_connection_detected),
-                        style = NO_INTERNET
+                        style = MotionToastStyle.NO_INTERNET
                     )
                 }
             }
@@ -335,7 +333,7 @@ class JobInfoFragment : BaseFragment(), DIAware {
                         userDTO.userId.isBlank() -> {
                             extensionToast(
                                 message = "The user lacks permissions.",
-                                style = ToastStyle.ERROR,
+                                style = MotionToastStyle.ERROR,
                                 position = CENTER
                             )
                             progressButton.failProgress("Invalid User")
@@ -343,7 +341,7 @@ class JobInfoFragment : BaseFragment(), DIAware {
                         approveJobItem.jobDTO.jobId.isBlank() -> {
                             extensionToast(
                                 message = "The selected job is invalid.",
-                                style = ToastStyle.ERROR,
+                                style = MotionToastStyle.ERROR,
                                 position = CENTER
                             )
                             progressButton.failProgress("Invalid Job")
@@ -352,7 +350,7 @@ class JobInfoFragment : BaseFragment(), DIAware {
                             ui.workflowCommentsEditText.text.trim().isBlank() -> {
                             extensionToast(
                                 message = "Please provide a comment / reason for declining this job",
-                                style = ToastStyle.WARNING,
+                                style = MotionToastStyle.WARNING,
                                 position = CENTER
                             )
                             resetButtons()
@@ -405,7 +403,7 @@ class JobInfoFragment : BaseFragment(), DIAware {
                 extensionToast(
                     title = "Workflow Update",
                     message = getString(string.job_no_approved, jiNo!!),
-                    style = SUCCESS
+                    style = MotionToastStyle.SUCCESS
                 )
             }
             FAIL.value -> {
@@ -413,7 +411,7 @@ class JobInfoFragment : BaseFragment(), DIAware {
                 extensionToast(
                     title = "Workflow Update",
                     message = getString(string.job_declined),
-                    style = ToastStyle.DELETE
+                    style = MotionToastStyle.DELETE
                 )
             }
         }

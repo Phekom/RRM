@@ -11,8 +11,8 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.Navigation
 import com.xwray.groupie.viewbinding.BindableItem
+import www.sanju.motiontoast.MotionToastStyle
 import za.co.xisystems.itis_rrm.R
-import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.databinding.MeasurementsItemBinding
 import za.co.xisystems.itis_rrm.extensions.uomForUI
@@ -89,13 +89,13 @@ class MeasurementsItem(
                     editQuantity == "" || nanCheck(editQuantity) -> {
                         activity.extensionToast(
                             message = "Please Enter a valid Quantity",
-                            style = ToastStyle.WARNING
+                            style = MotionToastStyle.WARNING
                         )
                     }
                     editQuantity.length > 9 -> {
                         activity.extensionToast(
                             message = "You have exceeded the quantity allowed",
-                            style = ToastStyle.WARNING
+                            style = MotionToastStyle.WARNING
                         )
                     }
                     else -> {
@@ -106,7 +106,7 @@ class MeasurementsItem(
         } else {
             activity.extensionToast(
                 message = "No connection detected.",
-                style = ToastStyle.NO_INTERNET
+                style = MotionToastStyle.NO_INTERNET
             )
         }
     }
@@ -124,12 +124,12 @@ class MeasurementsItem(
         if (updated.isBlank()) {
             activity.extensionToast(
                 message = "Data Updated",
-                style = ToastStyle.SUCCESS
+                style = MotionToastStyle.SUCCESS
             )
         } else {
             activity.extensionToast(
                 message = "Error on update: $updated.",
-                style = ToastStyle.ERROR
+                style = MotionToastStyle.ERROR
             )
         }
         fragmentReference.get()?.toggleLongRunning(false)

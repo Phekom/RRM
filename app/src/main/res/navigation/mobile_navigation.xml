@@ -121,6 +121,7 @@
         <action
             android:id="@+id/action_nav_work_to_work_location"
             app:destination="@id/work_location" />
+
     </fragment>
 
     <fragment
@@ -367,16 +368,15 @@
         android:name="za.co.xisystems.itis_rrm.ui.mainview.work.goto_work_location.GoToFragment"
         android:label="@string/goto_work_location"
         tools:layout="@layout/fragment_goto" >
+        <argument
+            android:name="jobId"
+            app:argType="string"
+            app:nullable="true" />
         <action
-            android:id="@+id/action_work_location_to_work_navigation"
-            app:destination="@id/work_navigation" />
+            android:id="@+id/action_work_location_to_captureWorkFragment"
+            app:destination="@id/captureWorkFragment" />
     </fragment>
 
-    <fragment
-        android:id="@+id/work_navigation"
-        android:name="za.co.xisystems.itis_rrm.ui.mainview.work.goto_work_location.navigation.NavigationFragment"
-        android:label="@string/navigating_to_work_location"
-        tools:layout="@layout/navigation_fragment" />
 
 
     <action

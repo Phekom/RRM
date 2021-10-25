@@ -10,7 +10,6 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
@@ -53,21 +52,32 @@ class RegisterActivity : AppCompatActivity(), AuthListener, DIAware {
         val TAG: String = RegisterActivity::class.java.simpleName
     }
 
+    private lateinit var binding: ActivityRegisterBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        binding = ActivityRegisterBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
         if (startPermissionRequest(permissions)) {
             toast("Permissions already provided.")
         } else {
             requestPermissions(permissions, PERMISSION_REQUEST)
         }
 
-        val binding: ActivityRegisterBinding =
-            DataBindingUtil.setContentView(this, R.layout.activity_register)
         viewModel = ViewModelProvider(this, factory).get(AuthViewModel::class.java)
         viewModel.setupAuthListener(this)
-        binding.viewmodel = viewModel
 
         Coroutines.main {
+            binding.registerbutton.setOnClickListener {
+                var username  =  binding.registerusernameeditText
+                var password  =  binding.registerpasswordeditText
+                viewModel.onRegButtonClick(it, username, password )
+               // ToastUtils().toastServerAddress(this.applicationContext)
+            }
+
+
             when (this@RegisterActivity.isConnected) {
                 true -> {
                     val loggedInUser = viewModel.user.await()

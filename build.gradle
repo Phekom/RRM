@@ -16,21 +16,7 @@ buildscript {
         dependency_evaluation_version = '0.78.0'
         booster_version = '4.0.0'
         navigation_version = '2.3.2'
-//        dependenciesList = [
-//                // Mapbox
-//                mapboxMapSdk             : "com.mapbox.mapboxsdk:mapbox-android-sdk:${version.mapboxMapSdk}",
-//                mapboxTurf               : "com.mapbox.mapboxsdk:mapbox-sdk-turf:${version.mapboxJavaSdk}",
-//                mapboxServices           : "com.mapbox.mapboxsdk:mapbox-sdk-services:${version.mapboxJavaSdk}",
-//
-//                // Mapbox plugins
-//                mapboxPluginBuilding     : "com.mapbox.mapboxsdk:mapbox-android-plugin-building-${version.mapboxMapPluginPrefix}:${version.mapboxPluginBuilding}",
-//                mapboxPluginPlaces       : "com.mapbox.mapboxsdk:mapbox-android-plugin-places-${version.mapboxMapPluginPrefix}:${version.mapboxPluginPlaces}",
-//                mapboxPluginLocalization : "com.mapbox.mapboxsdk:mapbox-android-plugin-localization-${version.mapboxMapPluginPrefix}:${version.mapboxPluginLocalization}",
-//                mapboxPluginTraffic      : "com.mapbox.mapboxsdk:mapbox-android-plugin-traffic-${version.mapboxMapPluginPrefix}:${version.mapboxPluginTraffic}",
-//                mapboxPluginMarkerView   : "com.mapbox.mapboxsdk:mapbox-android-plugin-markerview-${version.mapboxMapPluginPrefix}:${version.mapboxPluginMarkerView}",
-//                mapboxPluginAnnotation   : "com.mapbox.mapboxsdk:mapbox-android-plugin-annotation-${version.mapboxMapPluginPrefix}:${version.mapboxPluginAnnotation}",
-//                mapboxPluginScalebar     : "com.mapbox.mapboxsdk:mapbox-android-plugin-scalebar-${version.mapboxMapPluginPrefix}:${version.mapboxPluginScalebar}",
-//        ]
+
     }
 
     repositories {
@@ -73,26 +59,30 @@ allprojects {
     apply plugin: "org.sonarqube"
     apply plugin: "com.didiglobal.booster"
     apply from: "$rootDir/detekt.gradle"
-
     repositories {
         google()
         mavenCentral()
-        maven { url "https://plugins.gradle.org/m2/" }
-        maven { url "https://clojars.org/repo/" }
-        maven { url 'https://jitpack.io' }
-        maven { url 'https://dl.bintray.com/guardian/android' }
-        maven { url 'https://mapbox.bintray.com/mapbox' }
-        maven {
-            url 'https://api.mapbox.com/downloads/v2/releases/maven'
-            authentication {
-                basic(BasicAuthentication)
-            }
-            credentials {
-                username "mapbox"
-                password = project.hasProperty('SDK_REGISTRY_TOKEN') ? project.property('SDK_REGISTRY_TOKEN') : System.getenv('SDK_REGISTRY_TOKEN')
+        repositories {
+            google()
+            mavenCentral()
+
+            maven { url "https://clojars.org/repo/" }
+            maven { url 'https://dl.bintray.com/guardian/android' }
+            maven { url 'https://jitpack.io' }
+            maven { url 'https://plugins.gradle.org/m2' }
+            maven {
+                url 'https://api.mapbox.com/downloads/v2/releases/maven'
+                authentication {
+                    basic(BasicAuthentication)
+                }
+                credentials {
+                    username = "mapbox"
+                    password = hasProperty('MAPBOX_DOWNLOADS_TOKEN') ? property('MAPBOX_DOWNLOADS_TOKEN') : System.getenv('MAPBOX_DOWNLOADS_TOKEN')
+                }
             }
         }
     }
+
 }
 
 

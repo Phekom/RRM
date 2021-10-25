@@ -37,21 +37,14 @@ import org.kodein.di.DIAware
 import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
 import timber.log.Timber
+import www.sanju.motiontoast.MotionToastStyle
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.LocationFragment
 import za.co.xisystems.itis_rrm.constants.Constants
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
-import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration.LONG
-import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration.SHORT
-import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity.BOTTOM
-import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity.CENTER
-import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.DELETE
-import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.ERROR
-import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.INFO
-import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.NO_INTERNET
-import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.SUCCESS
-import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.WARNING
+import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration
+import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
@@ -152,9 +145,9 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
         this@CaptureWorkFragment.extensionToast(
             title = "Work data is incomplete",
             message = "Please contact support about this job, and have them restore or remove it",
-            style = DELETE,
-            duration = LONG,
-            position = CENTER
+            style = MotionToastStyle.DELETE,
+            duration = ToastDuration.LONG,
+            position = ToastGravity.CENTER
         )
     }
 
@@ -281,7 +274,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
                 handleLoadingSuccess(result)
             }
             is XIResult.Error -> {
-                extensionToast(message = result.message, style = ERROR, position = BOTTOM, duration = LONG)
+                extensionToast(message = result.message, style = MotionToastStyle.ERROR, position = ToastGravity.BOTTOM, duration = ToastDuration.LONG)
             }
             is XIResult.Status -> {
                 ui.moveWorkflowButton.text = result.message
@@ -376,9 +369,9 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
         } else {
             extensionToast(
                 message = getString(R.string.no_connection_detected),
-                style = NO_INTERNET,
-                position = CENTER,
-                duration = LONG
+                style = MotionToastStyle.NO_INTERNET,
+                position = ToastGravity.CENTER,
+                duration = ToastDuration.LONG
             )
             ui.moveWorkflowButton.failProgress("Network down ...")
         }
@@ -387,9 +380,9 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
     private fun validationNotice(stringId: Int) {
         extensionToast(
             message = getString(stringId),
-            style = WARNING,
-            position = CENTER,
-            duration = LONG
+            style = MotionToastStyle.WARNING,
+            position = ToastGravity.CENTER,
+            duration = ToastDuration.LONG
         )
     }
 
@@ -452,9 +445,9 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
                 is XIResult.Status -> {
                     extensionToast(
                         message = result.message,
-                        style = INFO,
-                        position = BOTTOM,
-                        duration = SHORT
+                        style = MotionToastStyle.INFO,
+                        position = ToastGravity.BOTTOM,
+                        duration = ToastDuration.SHORT
                     )
                 }
                 is XIResult.Progress -> {
@@ -499,9 +492,9 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
                 is XIResult.Status -> {
                     extensionToast(
                         message = result.message,
-                        style = INFO,
-                        position = CENTER,
-                        duration = SHORT
+                        style = MotionToastStyle.INFO,
+                        position = ToastGravity.CENTER,
+                        duration = ToastDuration.SHORT
                     )
                 }
                 is XIResult.Progress -> {
@@ -519,9 +512,9 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
                 ui.imageCollectionView.clearImages()
                 this@CaptureWorkFragment.extensionToast(
                     message = "Work captured",
-                    style = SUCCESS,
-                    position = CENTER,
-                    duration = SHORT
+                    style = MotionToastStyle.SUCCESS,
+                    position = ToastGravity.CENTER,
+                    duration = ToastDuration.SHORT
                 )
                 ui.moveWorkflowButton.doneProgress("Workflow complete")
                 toggleLongRunning(false)
@@ -613,7 +606,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
                 else -> {
                     extensionToast(
                         message = getString(R.string.please_enable_location_services),
-                        style = ERROR, position = CENTER, duration = LONG
+                        style = MotionToastStyle.ERROR, position = ToastGravity.CENTER, duration = ToastDuration.LONG
                     )
                     this.checkLocationProviders()
                 }
@@ -621,9 +614,9 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
         } catch (e: Exception) {
             extensionToast(
                 message = getString(R.string.error_getting_image),
-                style = ERROR,
-                position = CENTER,
-                duration = LONG
+                style = MotionToastStyle.ERROR,
+                position = ToastGravity.CENTER,
+                duration = ToastDuration.LONG
             )
             Timber.e(e, getString(R.string.error_getting_image))
         } finally {
@@ -893,18 +886,18 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
                 userDTO.userId.isBlank() -> {
                     extensionToast(
                         message = "Error: current user lacks permissions",
-                        style = ERROR,
-                        position = CENTER,
-                        duration = LONG
+                        style = MotionToastStyle.ERROR,
+                        position = ToastGravity.CENTER,
+                        duration = ToastDuration.LONG
                     )
                     ui.moveWorkflowButton.failProgress("Workflow failed ...")
                 }
                 jobItEstimate?.jobId == null -> {
                     extensionToast(
                         message = "Error: selected job is invalid",
-                        style = ERROR,
-                        position = CENTER,
-                        duration = LONG
+                        style = MotionToastStyle.ERROR,
+                        position = ToastGravity.CENTER,
+                        duration = ToastDuration.LONG
                     )
                     ui.moveWorkflowButton.failProgress("Workflow failed ...")
                 }
@@ -940,18 +933,18 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
                 extensionToast(
                     title = "Workflow update",
                     message = getString(R.string.work_complete),
-                    style = SUCCESS,
-                    position = CENTER,
-                    duration = LONG
+                    style = MotionToastStyle.SUCCESS,
+                    position = ToastGravity.CENTER,
+                    duration = ToastDuration.LONG
                 )
             }
             WorkflowDirection.FAIL.value -> {
                 extensionToast(
                     title = "Workflow Update",
                     message = getString(R.string.work_declined),
-                    style = DELETE,
-                    position = CENTER,
-                    duration = LONG
+                    style = MotionToastStyle.DELETE,
+                    position = ToastGravity.CENTER,
+                    duration = ToastDuration.LONG
                 )
             }
         }

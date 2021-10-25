@@ -108,8 +108,7 @@ class MainActivity :
 
         super.onCreate(savedInstanceState)
         ui = ActivityMainBinding.inflate(layoutInflater)
-        val view = ui.root
-        setContentView(view)
+        setContentView(ui.root)
         setSupportActionBar(ui.toolbar)
 
         // Get a support ActionBar corresponding to this toolbar

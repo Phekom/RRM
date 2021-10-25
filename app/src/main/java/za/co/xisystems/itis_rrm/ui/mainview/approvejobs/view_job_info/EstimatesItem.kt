@@ -25,8 +25,8 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
 import com.xwray.groupie.viewbinding.BindableItem
 import timber.log.Timber
+import www.sanju.motiontoast.MotionToastStyle
 import za.co.xisystems.itis_rrm.R
-import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.databinding.EstimatesItemBinding
@@ -198,7 +198,7 @@ class EstimatesItem(
                         quantityEntry.text.toString().toDouble() < 0.0 -> {
                         activity.extensionToast(
                             message = "Please Enter a valid Quantity",
-                            style = ToastStyle.WARNING
+                            style = MotionToastStyle.WARNING
                         )
                     }
                     else -> {
@@ -214,7 +214,7 @@ class EstimatesItem(
         } else {
             activity.extensionToast(
                 message = "No connection detected.",
-                style = ToastStyle.NO_INTERNET
+                style = MotionToastStyle.NO_INTERNET
             )
         }
     }
@@ -294,7 +294,7 @@ class EstimatesItem(
                     Editable.Factory.getInstance().newEditable(default)
                 activity.extensionToast(
                     message = "You Have exceeded the allowable maximum",
-                    style = ToastStyle.WARNING
+                    style = MotionToastStyle.WARNING
                 )
                 0.0
             }

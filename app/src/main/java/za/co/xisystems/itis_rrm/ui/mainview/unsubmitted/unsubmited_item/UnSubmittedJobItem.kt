@@ -13,14 +13,13 @@ import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.viewbinding.BindableItem
 import com.xwray.groupie.viewbinding.GroupieViewHolder
 import timber.log.Timber
+import www.sanju.motiontoast.MotionToastStyle
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.R.drawable
 import za.co.xisystems.itis_rrm.R.string
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration.LONG
 import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity.BOTTOM
-import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
-import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.DELETE
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.databinding.UnsubmtdJobListItemBinding
@@ -101,7 +100,7 @@ class UnSubmittedJobItem(
             fragment.extensionToast(
                 title = "Uploading ...",
                 message = "${this.jobDTO.descr} in transit.",
-                style = ToastStyle.INFO,
+                style = MotionToastStyle.INFO,
                 position = BOTTOM,
                 duration = LONG
             )
@@ -158,7 +157,7 @@ class UnSubmittedJobItem(
             is XIResult.Success -> {
                 fragment.extensionToast(
                     message = "Job ${jobDTO.jiNo} uploaded successfully",
-                    style = ToastStyle.SUCCESS
+                    style = MotionToastStyle.SUCCESS
                 )
                 viewModel.deleteJobFromList(jobId)
                 viewModel.deleteItemList(jobId)
@@ -169,7 +168,7 @@ class UnSubmittedJobItem(
                 fragment.extensionToast(
                     title = "Upload failed.",
                     message = "${result.message} - hit upload arrow to retry.",
-                    style = ToastStyle.ERROR
+                    style = MotionToastStyle.ERROR
                 )
                 createModel.resetUploadState()
             }
@@ -202,7 +201,7 @@ class UnSubmittedJobItem(
             fragment.extensionToast(
                 title = "Deleting ...",
                 message = "${this.jobDTO.descr} removed.",
-                style = DELETE,
+                style = MotionToastStyle.DELETE,
                 position = BOTTOM,
                 duration = LONG
             )

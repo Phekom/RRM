@@ -13,7 +13,6 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.res.ResourcesCompat
-import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
@@ -22,10 +21,12 @@ import org.kodein.di.DIAware
 import org.kodein.di.android.closestDI
 import org.kodein.di.instance
 import www.sanju.motiontoast.MotionToast
+import www.sanju.motiontoast.MotionToastStyle
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.R.font
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
+import za.co.xisystems.itis_rrm.databinding.ActivityRegisterBinding
 import za.co.xisystems.itis_rrm.databinding.ActivityResetPinBinding
 import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.ui.auth.model.AuthViewModel
@@ -48,9 +49,13 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, DIAware {
         Manifest.permission.READ_EXTERNAL_STORAGE,
         Manifest.permission.ACCESS_FINE_LOCATION
     )
+    private lateinit var binding: ActivityResetPinBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        binding = ActivityResetPinBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         appContext = this
 
         if (startPermissionRequest(permissions)) {
@@ -59,10 +64,8 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, DIAware {
             requestPermissions(permissions, PERMISSION_REQUEST)
         }
 
-        val binding: ActivityResetPinBinding =
-            DataBindingUtil.setContentView(this, R.layout.activity_reset_pin)
+
         viewModel = ViewModelProvider(this, factory).get(AuthViewModel::class.java)
-        binding.viewmodel = viewModel
         viewModel.setupAuthListener(this)
 
         Coroutines.main {
@@ -91,7 +94,7 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, DIAware {
                         MotionToast.createColorToast(
                             context = this@ResetPinActivity,
                             message = "PIN updated successfully",
-                            style = MotionToast.TOAST_SUCCESS,
+                            style = MotionToastStyle.SUCCESS,
                             position = MotionToast.GRAVITY_BOTTOM,
                             duration = MotionToast.LONG_DURATION,
                             font = ResourcesCompat.getFont(this@ResetPinActivity, font.helvetica_regular)
@@ -187,7 +190,7 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, DIAware {
         MotionToast.createColorToast(
             this,
             message = message,
-            style = MotionToast.TOAST_ERROR,
+            style = MotionToastStyle.ERROR,
             position = MotionToast.GRAVITY_BOTTOM,
             duration = MotionToast.LONG_DURATION,
             font = ResourcesCompat.getFont(this, font.helvetica_regular)

@@ -2,20 +2,19 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/near"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".ui.mainview.work.goto_work_location.navigation.NavigationFragment">
+    android:layout_height="match_parent">
+<!--    tools:context=".ui.mainview.work.goto_work_location.navigation.NavigationFragment">-->
+    <!--    android:id="@+id/near"-->
 
-
-    <com.mapbox.navigation.ui.NavigationView
-        android:id="@+id/routenavigationview"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+<!--    <com.mapbox.navigation.ui.NavigationView-->
+<!--        android:id="@+id/routenavigationview"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="match_parent"-->
+<!--        app:layout_constraintBottom_toBottomOf="parent"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintTop_toTopOf="parent" />-->
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

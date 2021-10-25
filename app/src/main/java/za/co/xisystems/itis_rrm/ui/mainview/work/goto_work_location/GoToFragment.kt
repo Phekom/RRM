@@ -1,377 +1,820 @@
 package za.co.xisystems.itis_rrm.ui.mainview.work.goto_work_location
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
-import android.graphics.Color
+import android.content.pm.PackageManager
+import android.content.res.Configuration
+import android.content.res.Resources
+import android.location.Location
+import android.location.LocationManager
 import android.os.Bundle
-import android.view.*
+import android.util.Log
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
-import androidx.annotation.NonNull
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
-import com.mapbox.api.directions.v5.DirectionsCriteria
-import com.mapbox.api.directions.v5.MapboxDirections
-import com.mapbox.api.directions.v5.models.DirectionsResponse
+import com.mapbox.android.core.permissions.PermissionsListener
+import com.mapbox.android.core.permissions.PermissionsManager
+import com.mapbox.api.directions.v5.models.Bearing
 import com.mapbox.api.directions.v5.models.DirectionsRoute
-import com.mapbox.core.constants.Constants.PRECISION_6
-import com.mapbox.geojson.Feature
-import com.mapbox.geojson.FeatureCollection
-import com.mapbox.geojson.LineString
+import com.mapbox.api.directions.v5.models.RouteOptions
+import com.mapbox.bindgen.Expected
 import com.mapbox.geojson.Point
-import com.mapbox.mapboxsdk.Mapbox
-import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
-import com.mapbox.mapboxsdk.geometry.LatLng
-import com.mapbox.mapboxsdk.geometry.LatLngBounds
-import com.mapbox.mapboxsdk.maps.MapView
-import com.mapbox.mapboxsdk.maps.MapboxMap
-import com.mapbox.mapboxsdk.maps.OnMapReadyCallback
-import com.mapbox.mapboxsdk.maps.Style
-import com.mapbox.mapboxsdk.style.layers.LineLayer
-import com.mapbox.mapboxsdk.style.layers.Property
-import com.mapbox.mapboxsdk.style.layers.PropertyFactory.*
-import com.mapbox.mapboxsdk.style.layers.SymbolLayer
-import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
-import com.mapbox.mapboxsdk.utils.BitmapUtils
-import org.kodein.di.DIAware
+import com.mapbox.maps.EdgeInsets
+import com.mapbox.maps.MapboxMap
+import com.mapbox.maps.Style
+import com.mapbox.maps.plugin.LocationPuck2D
+import com.mapbox.maps.plugin.animation.camera
+import com.mapbox.maps.plugin.delegates.listeners.OnMapLoadErrorListener
+import com.mapbox.maps.plugin.delegates.listeners.eventdata.MapLoadErrorType
+import com.mapbox.maps.plugin.locationcomponent.location
+import com.mapbox.navigation.base.TimeFormat
+import com.mapbox.navigation.base.extensions.applyDefaultNavigationOptions
+import com.mapbox.navigation.base.extensions.applyLanguageAndVoiceUnitOptions
+import com.mapbox.navigation.base.options.NavigationOptions
+import com.mapbox.navigation.base.route.RouterCallback
+import com.mapbox.navigation.base.route.RouterFailure
+import com.mapbox.navigation.base.route.RouterOrigin
+import com.mapbox.navigation.base.trip.model.RouteLegProgress
+import com.mapbox.navigation.base.trip.model.RouteProgress
+import com.mapbox.navigation.core.MapboxNavigation
+import com.mapbox.navigation.core.MapboxNavigationProvider
+import com.mapbox.navigation.core.arrival.ArrivalObserver
+import com.mapbox.navigation.core.directions.session.RoutesObserver
+import com.mapbox.navigation.core.formatter.MapboxDistanceFormatter
+import com.mapbox.navigation.core.replay.MapboxReplayer
+import com.mapbox.navigation.core.replay.ReplayLocationEngine
+import com.mapbox.navigation.core.replay.route.ReplayProgressObserver
+import com.mapbox.navigation.core.replay.route.ReplayRouteMapper
+import com.mapbox.navigation.core.trip.session.LocationMatcherResult
+import com.mapbox.navigation.core.trip.session.LocationObserver
+import com.mapbox.navigation.core.trip.session.RouteProgressObserver
+import com.mapbox.navigation.core.trip.session.VoiceInstructionsObserver
+import com.mapbox.navigation.ui.base.util.MapboxNavigationConsumer
+import com.mapbox.navigation.ui.maneuver.api.MapboxManeuverApi
+import com.mapbox.navigation.ui.maps.camera.NavigationCamera
+import com.mapbox.navigation.ui.maps.camera.data.MapboxNavigationViewportDataSource
+import com.mapbox.navigation.ui.maps.camera.lifecycle.NavigationBasicGesturesHandler
+import com.mapbox.navigation.ui.maps.camera.state.NavigationCameraState
+import com.mapbox.navigation.ui.maps.camera.transition.NavigationCameraTransitionOptions
+import com.mapbox.navigation.ui.maps.location.NavigationLocationProvider
+import com.mapbox.navigation.ui.maps.route.arrow.api.MapboxRouteArrowApi
+import com.mapbox.navigation.ui.maps.route.arrow.api.MapboxRouteArrowView
+import com.mapbox.navigation.ui.maps.route.arrow.model.RouteArrowOptions
+import com.mapbox.navigation.ui.maps.route.line.api.MapboxRouteLineApi
+import com.mapbox.navigation.ui.maps.route.line.api.MapboxRouteLineView
+import com.mapbox.navigation.ui.maps.route.line.model.MapboxRouteLineOptions
+import com.mapbox.navigation.ui.maps.route.line.model.RouteLine
+import com.mapbox.navigation.ui.tripprogress.api.MapboxTripProgressApi
+import com.mapbox.navigation.ui.tripprogress.model.*
+import com.mapbox.navigation.ui.voice.api.MapboxSpeechApi
+import com.mapbox.navigation.ui.voice.api.MapboxVoiceInstructionsPlayer
+import com.mapbox.navigation.ui.voice.model.SpeechAnnouncement
+import com.mapbox.navigation.ui.voice.model.SpeechError
+import com.mapbox.navigation.ui.voice.model.SpeechValue
+import com.mapbox.navigation.ui.voice.model.SpeechVolume
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
+import za.co.xisystems.itis_rrm.base.LocationFragment
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentGotoBinding
-import za.co.xisystems.itis_rrm.ui.auth.LoginActivity
+import za.co.xisystems.itis_rrm.extensions.displayPromptForEnablingGPS
+import za.co.xisystems.itis_rrm.services.LocationModel
+import za.co.xisystems.itis_rrm.ui.mainview.work.WorkFragmentDirections
 import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModelFactory
-import za.co.xisystems.itis_rrm.ui.mainview.work.goto_work_location.navigation.NavigationFragmentViewModel
-import za.co.xisystems.itis_rrm.ui.mainview.work.goto_work_location.navigation.NavigationFragmentViewModelFactory
 import za.co.xisystems.itis_rrm.utils.Coroutines
+import java.util.*
+import kotlin.collections.ArrayList
 
 
-class GoToFragment : BaseFragment(), DIAware
-//    OnMapReadyCallback,
-//    PermissionsListener,
-//    LocationEngineCallback<LocationEngineResult>
-{
+class GoToFragment : LocationFragment(),PermissionsListener {
 
     override val di by closestDI()
-
     private val factory: GoToViewModelFactory by instance()
     private lateinit var goToViewModel: GoToViewModel
     private lateinit var workViewModel: WorkViewModel
     private val myfactory: WorkViewModelFactory by instance()
-    private lateinit var navViewModel: NavigationFragmentViewModel
-    private val navfactory: NavigationFragmentViewModelFactory by instance()
-    private var _ui: FragmentGotoBinding? = null
-    private val ui get() = _ui!!
+    private var _binding: FragmentGotoBinding? = null
+    private val binding get() = _binding!!
+    private val permissionsManager = PermissionsManager(this)
+    private var myWorkLocationPoint: Point? = null
+    private var distanceLeft  = 0.0
+        private companion object {
+        private const val BUTTON_ANIMATION_DURATION = 1500L
+    }
+    private lateinit var itemEstimate: JobItemEstimateDTO
+    private lateinit var itemEstimateJob: JobDTO
+    private lateinit var lm: LocationManager
+    private var gpsEnabled = false
+    private var networkEnabled = false
 
-    private var mapView: MapView? = null
-    private var drivingRoute: DirectionsRoute? = null
-    private val walkingRoute: DirectionsRoute? = null
-    private val cyclingRoute: DirectionsRoute? = null
-    private val lastSelectedDirectionsProfile = DirectionsCriteria.PROFILE_DRIVING
-    private var client: MapboxDirections? = null
-    private var origin: Point? = null
-    private var destination: Point? = null
-    private val route by lazy { getDirectionsRoute() }
+    private val mapboxReplayer = MapboxReplayer()
+    private val replayLocationEngine = ReplayLocationEngine(mapboxReplayer)
+    private val replayProgressObserver = ReplayProgressObserver(mapboxReplayer)
+    private lateinit var mapboxMap: MapboxMap
+    private lateinit var mapboxNavigation: MapboxNavigation
+    private lateinit var navigationCamera: NavigationCamera
+    private lateinit var viewportDataSource: MapboxNavigationViewportDataSource
+    private val pixelDensity = Resources.getSystem().displayMetrics.density
+    private val overviewPadding: EdgeInsets by lazy {
+        EdgeInsets(
+            140.0 * pixelDensity,
+            40.0 * pixelDensity,
+            120.0 * pixelDensity,
+            40.0 * pixelDensity
+        )
+    }
+    private val landscapeOverviewPadding: EdgeInsets by lazy {
+        EdgeInsets(
+            30.0 * pixelDensity,
+            380.0 * pixelDensity,
+            110.0 * pixelDensity,
+            20.0 * pixelDensity
+        )
+    }
+    private val followingPadding: EdgeInsets by lazy {
+        EdgeInsets(
+            180.0 * pixelDensity,
+            40.0 * pixelDensity,
+            150.0 * pixelDensity,
+            40.0 * pixelDensity
+        )
+    }
+    private val landscapeFollowingPadding: EdgeInsets by lazy {
+        EdgeInsets(
+            30.0 * pixelDensity,
+            380.0 * pixelDensity,
+            110.0 * pixelDensity,
+            40.0 * pixelDensity
+        )
+    }
+    private lateinit var maneuverApi: MapboxManeuverApi
+    private lateinit var tripProgressApi: MapboxTripProgressApi
+    private lateinit var routeLineApi: MapboxRouteLineApi
+    private lateinit var routeLineView: MapboxRouteLineView
+    private val routeArrowApi: MapboxRouteArrowApi = MapboxRouteArrowApi()
+    private lateinit var routeArrowView: MapboxRouteArrowView
+    private var isVoiceInstructionsMuted = false
+        set(value) {
+            field = value
+            if (value) {
+                binding.soundButton.muteAndExtend(BUTTON_ANIMATION_DURATION)
+                voiceInstructionsPlayer.volume(SpeechVolume(0f))
+            } else {
+                binding.soundButton.unmuteAndExtend(BUTTON_ANIMATION_DURATION)
+                voiceInstructionsPlayer.volume(SpeechVolume(1f))
+            }
+        }
+    private lateinit var speechApi: MapboxSpeechApi
+    private lateinit var voiceInstructionsPlayer: MapboxVoiceInstructionsPlayer
+    private val voiceInstructionsObserver = VoiceInstructionsObserver { voiceInstructions ->
+        speechApi.generate(voiceInstructions, speechCallback)
+    }
+    private val speechCallback =
+        MapboxNavigationConsumer<Expected<SpeechError, SpeechValue>> { expected ->
+            expected.fold(
+                { error ->
+                    // play the instruction via fallback text-to-speech engine
+                    voiceInstructionsPlayer.play(
+                        error.fallback,
+                        voiceInstructionsPlayerCallback
+                    )
+                },
+                { value ->
+                    // play the sound file from the external generator
+                    voiceInstructionsPlayer.play(
+                        value.announcement,
+                        voiceInstructionsPlayerCallback
+                    )
+                }
+            )
+        }
+    private val voiceInstructionsPlayerCallback =
+        MapboxNavigationConsumer<SpeechAnnouncement> { value ->
+            // remove already consumed file to free-up space
+            speechApi.clean(value)
+        }
+    private val navigationLocationProvider = NavigationLocationProvider()
 
+    private val locationObserver = object : LocationObserver {
+        var firstLocationUpdateReceived = false
 
-    override fun onAttach(context: Context) {
-        Mapbox.getInstance(requireActivity(), requireActivity().getString(R.string.token))
-        super.onAttach(context)
-        (activity as MainActivity).supportActionBar?.title = getString(R.string.goto_work_location)
+        override fun onNewRawLocation(rawLocation: Location) {
+            // not handled
+        }
+
+        override fun onNewLocationMatcherResult(locationMatcherResult: LocationMatcherResult) {
+            val enhancedLocation = locationMatcherResult.enhancedLocation
+            // update location puck's position on the map
+            navigationLocationProvider.changePosition(
+                location = enhancedLocation,
+                keyPoints = locationMatcherResult.keyPoints,
+            )
+
+            // update camera position to account for new location
+            viewportDataSource.onLocationChanged(enhancedLocation)
+            viewportDataSource.evaluate()
+
+            // if this is the first location update the activity has received,
+            // it's best to immediately move the camera to the current user location
+            if (!firstLocationUpdateReceived) {
+                firstLocationUpdateReceived = true
+                navigationCamera.requestNavigationCameraToOverview(
+                    stateTransitionOptions = NavigationCameraTransitionOptions.Builder()
+                        .maxDuration(0) // instant transition
+                        .build()
+                )
+            }
+        }
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        Mapbox.getInstance(requireActivity(), requireActivity().getString(R.string.token))
-        super.onCreate(savedInstanceState)
+
+    private val routeProgressObserver = RouteProgressObserver { routeProgress ->
+        // update the camera position to account for the progressed fragment of the route
+        viewportDataSource.onRouteProgressChanged(routeProgress)
+        viewportDataSource.evaluate()
+
+        // draw the upcoming maneuver arrow on the map
+        val style = mapboxMap.getStyle()
+        if (style != null) {
+            val maneuverArrowResult = routeArrowApi.addUpcomingManeuverArrow(routeProgress)
+            routeArrowView.renderManeuverUpdate(style, maneuverArrowResult)
+        }
+
+        // update top banner with maneuver instructions
+        val maneuvers = maneuverApi.getManeuvers(routeProgress)
+        maneuvers.fold(
+            { error ->
+                Toast.makeText(
+                    requireContext(),
+                    error.errorMessage,
+                    Toast.LENGTH_SHORT
+                ).show()
+            },
+            {
+                binding.maneuverView.visibility = View.VISIBLE
+                binding.maneuverView.renderManeuvers(maneuvers)
+            }
+        )
+        distanceLeft = tripProgressApi.getTripProgress(routeProgress).distanceRemaining
+        if (distanceLeft.equals(0.0)){
+            binding.startWorkBTN.visibility =View.VISIBLE
+        }
+        // update bottom trip progress summary
+        binding.tripProgressView.render(
+            tripProgressApi.getTripProgress(routeProgress)
+        )
+
     }
 
-    private var myWorkLocationPoint : Point? = null
+    private val routesObserver = RoutesObserver { routeUpdateResult ->
+        if (routeUpdateResult.routes.isNotEmpty()) {
+            // generate route geometries asynchronously and render them
+            val routeLines = routeUpdateResult.routes.map { RouteLine(it, null) }
+
+            routeLineApi.setRoutes(
+                routeLines
+            ) { value ->
+                mapboxMap.getStyle()?.apply {
+                    routeLineView.renderRouteDrawData(this, value)
+                }
+            }
+
+            // update the camera position to account for the new route
+            viewportDataSource.onRouteChanged(routeUpdateResult.routes.first())
+            viewportDataSource.evaluate()
+        } else {
+            // remove the route line and route arrow from the map
+            val style = mapboxMap.getStyle()
+            if (style != null) {
+                routeLineApi.clearRouteLine { value ->
+                    routeLineView.renderClearRouteLineValue(
+                        style,
+                        value
+                    )
+                }
+                routeArrowView.render(style, routeArrowApi.clearArrows())
+            }
+
+            // remove the route reference from camera position evaluations
+            viewportDataSource.clearRouteData()
+            viewportDataSource.evaluate()
+        }
+    }
+
+    private val arrivalObserver: ArrivalObserver = object : ArrivalObserver {
+        override fun onFinalDestinationArrival(routeProgress: RouteProgress) {
+            //buildingApi.queryBuildingOnFinalDestination(routeProgress, callback)
+            if (routeProgress.distanceRemaining < 70.0){
+
+            }
+        }
+
+        override fun onNextRouteLegStart(routeLegProgress: RouteLegProgress) {
+//            mapboxMap.getStyle { style ->
+//                //buildingView.removeBuildingHighlight(style)
+//            }
+        }
+
+        override fun onWaypointArrival(routeProgress: RouteProgress) {
+            //buildingApi.queryBuildingOnWaypoint(routeProgress, callback)
+//            if (routeProgress.distanceRemaining < 70.0){
+//                closeApp()
+//            }
+        }
+    }
+    private fun closeApp() {
+//        Toast.makeText(requireContext(),"${routeProgress.distanceRemaining}", Toast.LENGTH_SHORT).show()
+        startActivity(Intent(requireContext(), MainActivity::class.java))
+
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _ui = FragmentGotoBinding.inflate(inflater, container, false)
-        return ui.root
+        _binding = FragmentGotoBinding.inflate(inflater, container, false)
+        goToViewModel =
+            ViewModelProvider(this.requireActivity(), factory).get(GoToViewModel::class.java)
+        workViewModel =
+            ViewModelProvider(this.requireActivity(), myfactory).get(WorkViewModel::class.java)
+        binding.startWorkBTN.visibility =View.GONE
+
+
+        workViewModel.myWorkItem.observe(
+            viewLifecycleOwner,
+            {
+                myWorkLocationPoint = it
+
+
+                mapboxMap = binding.mymapView.getMapboxMap()
+                // initialize the location puck
+                binding.mymapView.location.apply {
+                    this.locationPuck = LocationPuck2D(
+                        bearingImage = ContextCompat.getDrawable(
+                            requireContext(),
+                            R.drawable.mapbox_navigation_puck_icon
+                        )
+                    )
+                    setLocationProvider(navigationLocationProvider)
+                    enabled = true
+                }
+
+                generateRoot(myWorkLocationPoint)
+            }
+        )
+        workViewModel.workItemJob.observe(viewLifecycleOwner, { estimateJob ->
+            estimateJob?.getContentIfNotHandled()?.let {
+                itemEstimateJob = it
+            }
+        })
+
+        workViewModel.workItem.observe(viewLifecycleOwner, { estimate ->
+            estimate?.getContentIfNotHandled()?.let {
+                itemEstimate = it
+            }
+        })
+
+        binding.startWorkBTN.setOnClickListener {
+            Coroutines.io {
+                workViewModel.setWorkItemJob(itemEstimateJob.jobId)
+                workViewModel.setWorkItem(itemEstimate.estimateId)
+                withContext(Dispatchers.Main.immediate) {
+                    val navDirection = GoToFragmentDirections.actionWorkLocationToCaptureWorkFragment(
+                        jobId = itemEstimateJob.jobId,
+                        estimateId = itemEstimate.estimateId )
+                    Navigation.findNavController(requireView()).navigate(navDirection)
+                }
+            }
+        }
+
+        return binding.root
     }
+
+    private fun getCurrentLocation(): LocationModel? {
+        return super.getLocation()
+    }
+    private fun generateRoot(structure: Point?) {
+        initStyle()
+        initNavigation(structure)
+    }
+
+    private fun initStyle() {
+        mapboxMap.loadStyleUri(
+            Style.MAPBOX_STREETS,{},
+            object : OnMapLoadErrorListener {
+                @SuppressLint("LogNotTimber")
+                override fun onMapLoadError(mapLoadErrorType: MapLoadErrorType, message: String) {
+                    Log.e(
+                        GoToFragment::class.java.simpleName,
+                        "Error loading map: " + mapLoadErrorType.name
+                    )
+                }
+            }
+        )
+
+    }
+
+
+
+
+    private fun initNavigation(structure: Point?) {
+        // initialize Mapbox Navigation
+        mapboxNavigation = if (MapboxNavigationProvider.isCreated()) {
+            MapboxNavigationProvider.retrieve()
+        } else {
+            MapboxNavigationProvider.create(
+                NavigationOptions.Builder(this.requireContext())
+                    .accessToken(getString(R.string.mapbox_access_token))
+                    // comment out the location engine setting block to disable simulation
+                    .locationEngine(replayLocationEngine)
+                    .build()
+
+            ).apply {
+                if (ActivityCompat.checkSelfPermission(
+                        requireContext(),
+                        Manifest.permission.ACCESS_FINE_LOCATION
+                    ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                        requireContext(),
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                    ) != PackageManager.PERMISSION_GRANTED
+                ) {}
+                startTripSession()
+                // register event listeners
+                registerRoutesObserver(routesObserver)
+                registerArrivalObserver(arrivalObserver)
+                registerRouteProgressObserver(routeProgressObserver)
+                registerLocationObserver(locationObserver)
+                registerVoiceInstructionsObserver(voiceInstructionsObserver)
+                registerRouteProgressObserver(replayProgressObserver)
+
+
+            }
+
+        }
+
+        if (mapboxNavigation.getRoutes().isEmpty()) {
+            if (structure != null) {
+                val destination = Point.fromLngLat(structure.longitude(),structure.latitude() )
+
+                Coroutines.main {
+                    //val originLocation = navigationLocationProvider.lastLocation
+                    val myoriginLocation: LocationModel? = this.getCurrentLocation()
+                    val originLocation = Location("rrm").apply {
+                        longitude = myoriginLocation?.longitude!!
+                        latitude = myoriginLocation.latitude
+                        bearing = 10f
+                    }
+//                    Toast.makeText(requireContext(),"${estimateLocation}", Toast.LENGTH_SHORT).show()
+//                    ToastUtils().toastShort(requireContext()," $originLocation     AND $destination")
+
+
+                findRoute(originLocation, destination)
+
+                }
+
+            }else{
+                ToastUtils().toastShort(requireContext(),"Error loading Route is not Found")
+            }
+
+        }
+
+
+        // initialize Navigation Camera
+        viewportDataSource = MapboxNavigationViewportDataSource(mapboxMap)
+        navigationCamera = NavigationCamera(
+            mapboxMap,
+            binding.mymapView.camera,
+            viewportDataSource
+        )
+        binding.mymapView.camera.addCameraAnimationsLifecycleListener(
+            NavigationBasicGesturesHandler(navigationCamera)
+        )
+
+        navigationCamera.registerNavigationCameraStateChangeObserver { navigationCameraState ->
+            // shows/hide the recenter button depending on the camera state
+            when (navigationCameraState) {
+                NavigationCameraState.TRANSITION_TO_FOLLOWING,
+                NavigationCameraState.FOLLOWING -> binding.recenter.visibility = View.INVISIBLE
+                NavigationCameraState.TRANSITION_TO_OVERVIEW,
+                NavigationCameraState.OVERVIEW,
+                NavigationCameraState.IDLE -> binding.recenter.visibility = View.VISIBLE
+            }
+        }
+        // set the padding values depending on screen orientation and visible view layout
+        if (this.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            viewportDataSource.overviewPadding = landscapeOverviewPadding
+        } else {
+            viewportDataSource.overviewPadding = overviewPadding
+        }
+        if (this.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            viewportDataSource.followingPadding = landscapeFollowingPadding
+        } else {
+            viewportDataSource.followingPadding = followingPadding
+        }
+        // make sure to use the same DistanceFormatterOptions across different features
+        val distanceFormatterOptions = mapboxNavigation.navigationOptions.distanceFormatterOptions
+
+        // initialize maneuver api that feeds the data to the top banner maneuver view
+        maneuverApi = MapboxManeuverApi(
+            MapboxDistanceFormatter(distanceFormatterOptions)
+        )
+
+        // initialize bottom progress view
+        tripProgressApi = MapboxTripProgressApi(
+            TripProgressUpdateFormatter.Builder(requireContext())
+                .distanceRemainingFormatter(
+                    DistanceRemainingFormatter(distanceFormatterOptions)
+                )
+                .timeRemainingFormatter(
+                    TimeRemainingFormatter(requireContext())
+                )
+                .percentRouteTraveledFormatter(
+                    PercentDistanceTraveledFormatter()
+                )
+                .estimatedTimeToArrivalFormatter(
+                    EstimatedTimeToArrivalFormatter(requireContext(), TimeFormat.NONE_SPECIFIED)
+                )
+                .build()
+        )
+
+        // initialize voice instructions api and the voice instruction player
+        speechApi = MapboxSpeechApi(
+            requireContext(),
+            getString(R.string.mapbox_access_token),
+            Locale.US.language
+        )
+        voiceInstructionsPlayer = MapboxVoiceInstructionsPlayer(
+            requireContext(),
+            getString(R.string.mapbox_access_token),
+            Locale.US.language
+        )
+
+        // initialize route line, the withRouteLineBelowLayerId is specified to place the route line below road labels layer on the map
+        // the value of this option will depend on the style that you are using
+        // and under which layer the route line should be placed on the map layers stack
+        val mapboxRouteLineOptions = MapboxRouteLineOptions.Builder(requireContext())
+            .withRouteLineBelowLayerId("road-label")
+            .build()
+        routeLineApi = MapboxRouteLineApi(mapboxRouteLineOptions)
+        routeLineView = MapboxRouteLineView(mapboxRouteLineOptions)
+
+        // initialize maneuver arrow view to draw arrows on the map
+        val routeArrowOptions = RouteArrowOptions.Builder(requireContext()).build()
+        routeArrowView = MapboxRouteArrowView(routeArrowOptions)
+
+
+        // initialize view interactions
+        binding.stop.setOnClickListener {
+            clearRouteAndStopNavigation()
+        }
+        binding.recenter.setOnClickListener {
+            navigationCamera.requestNavigationCameraToFollowing()
+            binding.routeOverview.showTextAndExtend(BUTTON_ANIMATION_DURATION)
+        }
+        binding.routeOverview.setOnClickListener {
+            navigationCamera.requestNavigationCameraToOverview()
+            binding.recenter.showTextAndExtend(BUTTON_ANIMATION_DURATION)
+        }
+        binding.soundButton.setOnClickListener {
+            // mute/unmute voice instructions
+            isVoiceInstructionsMuted = !isVoiceInstructionsMuted
+        }
+
+        // set initial sounds button state
+        binding.soundButton.unmute()
+
+
+    }
+
+    private fun findRoute(originLocation: Location?, destination: Point) {  //destination: Point
+        //val originLocation = navigationLocationProvider.lastLocation
+        val originPoint = originLocation?.let {
+            Point.fromLngLat(it.longitude, it.latitude)
+        } ?: return
+
+        // execute a route request
+        // it's recommended to use the
+        // applyDefaultNavigationOptions and applyLanguageAndVoiceUnitOptions
+        // that make sure the route request is optimized
+        // to allow for support of all of the Navigation SDK features
+        mapboxNavigation.requestRoutes(
+            RouteOptions.builder()
+                .applyDefaultNavigationOptions()
+                .applyLanguageAndVoiceUnitOptions(requireContext())
+                .coordinatesList(listOf(originPoint, destination))
+                // provide the bearing for the origin of the request to ensure
+                // that the returned route faces in the direction of the current user movement
+                .bearingsList(
+                    listOf(
+                        Bearing.builder()
+                            .angle(originLocation.bearing.toDouble())
+                            .degrees(45.0)
+                            .build(),
+                        null
+                    )
+                )
+                .build(),
+            object : RouterCallback {
+                override fun onRoutesReady(
+                    routes: List<DirectionsRoute>,
+                    routerOrigin: RouterOrigin
+                ) {
+                    setRouteAndStartNavigation(routes)
+                }
+
+                override fun onFailure(
+                    reasons: List<RouterFailure>,
+                    routeOptions: RouteOptions
+                ) {
+                    // no impl
+                    ToastUtils().toastShort(requireContext()," $reasons")
+                }
+
+                override fun onCanceled(routeOptions: RouteOptions, routerOrigin: RouterOrigin) {
+                    // no impl
+                }
+            }
+        )
+    }
+
+    private fun setRouteAndStartNavigation(routes: List<DirectionsRoute>) {
+        // set routes, where the first route in the list is the primary route that
+        // will be used for active guidance
+        mapboxNavigation.setRoutes(routes)
+
+        // start location simulation along the primary route
+        startSimulation(routes.first())
+
+        // show UI elements
+        binding.soundButton.visibility = View.VISIBLE
+        binding.routeOverview.visibility = View.VISIBLE
+        binding.tripProgressCard.visibility = View.VISIBLE
+
+        // move the camera to overview when new route is available
+        navigationCamera.requestNavigationCameraToOverview()
+    }
+
+    private fun clearRouteAndStopNavigation() {
+        // clear
+        mapboxNavigation.setRoutes(listOf())
+
+        // stop simulation
+        mapboxReplayer.stop()
+
+        // hide UI elements
+        binding.soundButton.visibility = View.INVISIBLE
+        binding.maneuverView.visibility = View.INVISIBLE
+        binding.routeOverview.visibility = View.INVISIBLE
+        binding.tripProgressCard.visibility = View.INVISIBLE
+    }
+
+    private fun startSimulation(route: DirectionsRoute) {
+        mapboxReplayer.run {
+            stop()
+            clearEvents()
+            val replayEvents = ReplayRouteMapper().mapDirectionsRouteGeometry(route)
+            pushEvents(replayEvents)
+            seekTo(replayEvents.first())
+            play()
+        }
+    }
+
+
+
+
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        goToViewModel = activity?.run {
-            ViewModelProvider(requireActivity(), factory).get(GoToViewModel::class.java)
-        } ?: throw Exception("Invalid Activity")
-        navViewModel = activity?.run {
-            ViewModelProvider(this, navfactory).get(NavigationFragmentViewModel::class.java)
-        } ?: throw Exception("Invalid Activity")
-        workViewModel = activity?.run {
-            ViewModelProvider(requireActivity(), myfactory).get(WorkViewModel::class.java)
-        } ?: throw Exception("Invalid Activity")
-
         requireActivity().hideKeyboard()
-        Coroutines.main {
-
-        mapView = _ui?.mapbox
-        mapView?.onCreate(savedInstanceState)
-
-
-            mapView?.getMapAsync(OnMapReadyCallback { mapboxMap ->
-                mapboxMap.setStyle(Style.MAPBOX_STREETS) { style -> // Set the origin location to the Alhambra landmark in Granada, Spain.
-                    origin = Point.fromLngLat(currentLocation?.longitude!!, currentLocation?.latitude!!)
-                    destination = myWorkLocationPoint
-                    initSource(style)
-                    initLayers(style)
-                    val routeLineSource = style.getSourceAs<GeoJsonSource>(GEOJSON_SOURCE_ID)
-//                    if (routeLineSource != null) {
-//                        when (lastSelectedDirectionsProfile) {
-//                            DirectionsCriteria.PROFILE_DRIVING -> routeLineSource.setGeoJson(
-//                                LineString.fromPolyline(
-//                                    drivingRoute?.geometry()!!,
-//                                    PRECISION_6
-//                                )
-//                            )
-//                            DirectionsCriteria.PROFILE_WALKING -> routeLineSource.setGeoJson(
-//                                LineString.fromPolyline(
-//                                    walkingRoute?.geometry()!!,
-//                                    PRECISION_6
-//                                )
-//                            )
-//                            DirectionsCriteria.PROFILE_CYCLING -> routeLineSource.setGeoJson(
-//                                LineString.fromPolyline(
-//                                    cyclingRoute?.geometry()!!,
-//                                    PRECISION_6
-//                                )
-//                            )
-//                            else -> {
-//                            }
-//                        }
-//                    }
-                    // Get the directions route from the Mapbox Directions API
-                    getRoute(style, origin!!, destination!!,mapboxMap,routeLineSource)
-                }
-            })
-
-            _ui?.startnavigating?.setOnClickListener {
-            Coroutines.main {
-                navViewModel.createNewRoute(drivingRoute)
-                Navigation.findNavController(it) .navigate(R.id.action_work_location_to_work_navigation)
-            }
-//                val options = NavigationLauncherOptions.builder()
-//                    .directionsRoute(route)
-//                    .shouldSimulateRoute(true)
-//                    .build()
-////                ToastUtils().toastShort(requireContext(), options.toString())
-//                NavigationLauncher.startNavigation(ACTIVITY, options)
-
+        if (PermissionsManager.areLocationPermissionsGranted(requireContext())) {
+            requestStoragePermission()
+        } else {
+            permissionsManager.requestLocationPermissions(requireActivity())
         }
 
-          _ui?.startnavigating?.hide()
-            workViewModel.myWorkItem.observe(
-                viewLifecycleOwner,
-                {
-                    myWorkLocationPoint = it
-
-                }
-            )
-
-
-        }
     }
-
-    private fun getDirectionsRoute(): DirectionsRoute {
-        val directionsRouteAsJson =   "{\"routeIndex\":\"0\",\"distance\":1988.6,\"duration\":433.9,\"geometry\":\"}oragA|dnmhFtO{SvC_ExCtEvLjPfSrXbCdDeCdDmI~KkLzOyGbJqCzD}B`Bc\\\\xc@wBvES^Sb@cAtByApCu@v@_An@wGx@aSdCkCZZxE`Cn^x@zLt@bLF|@XdEXlEx@dMvDbn@TrDXvElClb@`@|G^|ElAlR|@~Mf@|H`@bGfHjgAv@vMX|EtAlRxA`UnCdb@jAvQdJtvAZvETlDXjE~Cdf@nEfr@JxADp@Bf@Dd@Dv@N|BdKv~AzAnUdInoAgEh@wn@pH}C^YD\\\\`FzAjUtGnbATtD`@EvC]j@Ir_@oE\",\"weight\":774.2,\"weight_name\":\"routability\",\"legs\":[{\"distance\":1988.6,\"duration\":433.9,\"summary\":\"Fremont Street, Pine Street\",\"steps\":[{\"distance\":53.7,\"duration\":10.3,\"geometry\":\"}oragA|dnmhFtO{SvC_E\",\"name\":\"Beale Street\",\"mode\":\"driving\",\"maneuver\":{\"location\":[-122.396255,37.791503],\"bearing_before\":0.0,\"bearing_after\":135.0,\"instruction\":\"Head southeast on Beale Street\",\"type\":\"depart\",\"modifier\":\"right\"},\"voiceInstructions\":[{\"distanceAlongGeometry\":53.7,\"announcement\":\"Head southeast on Beale Street, then turn right onto Mission Street\",\"ssmlAnnouncement\":\"\\u003cspeak\\u003e\\u003camazon:effect name\\u003d\\\"drc\\\"\\u003e\\u003cprosody rate\\u003d\\\"1.08\\\"\\u003eHead southeast on Beale Street, then turn right onto Mission Street\\u003c/prosody\\u003e\\u003c/amazon:effect\\u003e\\u003c/speak\\u003e\"}],\"bannerInstructions\":[{\"distanceAlongGeometry\":53.7,\"primary\":{\"text\":\"Mission Street\",\"components\":[{\"text\":\"Mission Street\",\"type\":\"text\",\"abbr\":\"Mission St\",\"abbr_priority\":0}],\"type\":\"turn\",\"modifier\":\"right\"},\"sub\":{\"text\":\"Fremont Street\",\"components\":[{\"text\":\"Fremont Street\",\"type\":\"text\",\"abbr\":\"Fremont St\",\"abbr_priority\":0}],\"type\":\"turn\",\"modifier\":\"right\"}}],\"driving_side\":\"right\",\"weight\":34.9,\"intersections\":[{\"location\":[-122.396255,37.791503],\"bearings\":[135],\"entry\":[true],\"out\":0}]},{\"distance\":108.6,\"duration\":36.7,\"geometry\":\"ozqagA`jmmhFxCtEvLjPfSrXbCdD\",\"name\":\"Mission Street\",\"mode\":\"driving\",\"maneuver\":{\"location\":[-122.395825,37.79116],\"bearing_before\":135.0,\"bearing_after\":225.0,\"instruction\":\"Turn right onto Mission Street\",\"type\":\"turn\",\"modifier\":\"right\"},\"voiceInstructions\":[{\"distanceAlongGeometry\":44.4,\"announcement\":\"Turn right onto Fremont Street\",\"ssmlAnnouncement\":\"\\u003cspeak\\u003e\\u003camazon:effect name\\u003d\\\"drc\\\"\\u003e\\u003cprosody rate\\u003d\\\"1.08\\\"\\u003eTurn right onto Fremont Street\\u003c/prosody\\u003e\\u003c/amazon:effect\\u003e\\u003c/speak\\u003e\"}],\"bannerInstructions\":[{\"distanceAlongGeometry\":108.6,\"primary\":{\"text\":\"Fremont Street\",\"components\":[{\"text\":\"Fremont Street\",\"type\":\"text\",\"abbr\":\"Fremont St\",\"abbr_priority\":0}],\"type\":\"turn\",\"modifier\":\"right\"}}],\"driving_side\":\"right\",\"weight\":61.5,\"intersections\":[{\"location\":[-122.395825,37.79116],\"bearings\":[45,135,225,315],\"entry\":[true,true,true,false],\"in\":3,\"out\":2}]},{\"distance\":283.1,\"duration\":76.4,\"geometry\":\"qopagA|`omhFeCdDmI~KkLzOyGbJqCzD}B`Bc\\\\xc@wBvES^Sb@cAtByApCu@v@_An@wGx@aSdCkCZ\",\"name\":\"Fremont Street\",\"mode\":\"driving\",\"maneuver\":{\"location\":[-122.396703,37.790473],\"bearing_before\":223.0,\"bearing_after\":315.0,\"instruction\":\"Turn right onto Fremont Street\",\"type\":\"turn\",\"modifier\":\"right\"},\"voiceInstructions\":[{\"distanceAlongGeometry\":263.1,\"announcement\":\"In 900 feet, turn left onto Pine Street\",\"ssmlAnnouncement\":\"\\u003cspeak\\u003e\\u003camazon:effect name\\u003d\\\"drc\\\"\\u003e\\u003cprosody rate\\u003d\\\"1.08\\\"\\u003eIn 900 feet, turn left onto Pine Street\\u003c/prosody\\u003e\\u003c/amazon:effect\\u003e\\u003c/speak\\u003e\"},{\"distanceAlongGeometry\":55.6,\"announcement\":\"Turn left onto Pine Street\",\"ssmlAnnouncement\":\"\\u003cspeak\\u003e\\u003camazon:effect name\\u003d\\\"drc\\\"\\u003e\\u003cprosody rate\\u003d\\\"1.08\\\"\\u003eTurn left onto Pine Street\\u003c/prosody\\u003e\\u003c/amazon:effect\\u003e\\u003c/speak\\u003e\"}],\"bannerInstructions\":[{\"distanceAlongGeometry\":283.1,\"primary\":{\"text\":\"Pine Street\",\"components\":[{\"text\":\"Pine Street\",\"type\":\"text\",\"abbr\":\"Pine St\",\"abbr_priority\":0}],\"type\":\"turn\",\"modifier\":\"left\"}}],\"driving_side\":\"right\",\"weight\":132.8,\"intersections\":[{\"location\":[-122.396703,37.790473],\"bearings\":[45,135,225,315],\"entry\":[false,false,true,true],\"in\":0,\"out\":3},{\"location\":[-122.398298,37.791734],\"bearings\":[135,300],\"entry\":[false,true],\"in\":0,\"out\":1}]},{\"distance\":1217.6,\"duration\":218.89999999999998,\"geometry\":\"yhtagAbxrmhFZxE`Cn^x@zLt@bLF|@XdEXlEx@dMvDbn@TrDXvElClb@`@|G^|ElAlR|@~Mf@|H`@bGfHjgAv@vMX|EtAlRxA`UnCdb@jAvQdJtvAZvETlDXjE~Cdf@nEfr@JxADp@Bf@Dd@Dv@N|BdKv~AzAnUdInoA\",\"name\":\"Pine Street\",\"mode\":\"driving\",\"maneuver\":{\"location\":[-122.39861,37.792413],\"bearing_before\":350.0,\"bearing_after\":260.0,\"instruction\":\"Turn left onto Pine Street\",\"type\":\"turn\",\"modifier\":\"left\"},\"voiceInstructions\":[{\"distanceAlongGeometry\":1197.6,\"announcement\":\"Continue on Pine Street for a half mile\",\"ssmlAnnouncement\":\"\\u003cspeak\\u003e\\u003camazon:effect name\\u003d\\\"drc\\\"\\u003e\\u003cprosody rate\\u003d\\\"1.08\\\"\\u003eContinue on Pine Street for a half mile\\u003c/prosody\\u003e\\u003c/amazon:effect\\u003e\\u003c/speak\\u003e\"},{\"distanceAlongGeometry\":389.4,\"announcement\":\"In a quarter mile, turn right onto Taylor Street\",\"ssmlAnnouncement\":\"\\u003cspeak\\u003e\\u003camazon:effect name\\u003d\\\"drc\\\"\\u003e\\u003cprosody rate\\u003d\\\"1.08\\\"\\u003eIn a quarter mile, turn right onto Taylor Street\\u003c/prosody\\u003e\\u003c/amazon:effect\\u003e\\u003c/speak\\u003e\"},{\"distanceAlongGeometry\":83.4,\"announcement\":\"Turn right onto Taylor Street, then turn left onto California Street\",\"ssmlAnnouncement\":\"\\u003cspeak\\u003e\\u003camazon:effect name\\u003d\\\"drc\\\"\\u003e\\u003cprosody rate\\u003d\\\"1.08\\\"\\u003eTurn right onto Taylor Street, then turn left onto California Street\\u003c/prosody\\u003e\\u003c/amazon:effect\\u003e\\u003c/speak\\u003e\"}],\"bannerInstructions\":[{\"distanceAlongGeometry\":1217.6,\"primary\":{\"text\":\"Taylor Street\",\"components\":[{\"text\":\"Taylor Street\",\"type\":\"text\",\"abbr\":\"Taylor St\",\"abbr_priority\":0}],\"type\":\"turn\",\"modifier\":\"right\"}},{\"distanceAlongGeometry\":83.4,\"primary\":{\"text\":\"Taylor Street\",\"components\":[{\"text\":\"Taylor Street\",\"type\":\"text\",\"abbr\":\"Taylor St\",\"abbr_priority\":0}],\"type\":\"turn\",\"modifier\":\"right\"},\"sub\":{\"text\":\"California Street\",\"components\":[{\"text\":\"California Street\",\"type\":\"text\",\"abbr\":\"California St\",\"abbr_priority\":0}],\"type\":\"turn\",\"modifier\":\"left\"}}],\"driving_side\":\"right\",\"weight\":364.5,\"intersections\":[{\"location\":[-122.39861,37.792413],\"bearings\":[75,165,255,345],\"entry\":[false,false,true,true],\"in\":1,\"out\":2},{\"location\":[-122.399785,37.792261],\"bearings\":[75,165,255,345],\"entry\":[false,true,true,false],\"in\":0,\"out\":2},{\"location\":[-122.400959,37.792116],\"bearings\":[75,165,255,345],\"entry\":[false,false,true,true],\"in\":0,\"out\":2},{\"location\":[-122.402598,37.791909],\"bearings\":[75,165,255,345],\"entry\":[false,true,true,false],\"in\":0,\"out\":2},{\"location\":[-122.404233,37.791703],\"bearings\":[75,180,255,345],\"entry\":[false,false,true,true],\"in\":0,\"out\":2},{\"location\":[-122.40576,37.791505],\"bearings\":[75,165,255,345],\"entry\":[false,false,true,true],\"in\":0,\"out\":2},{\"location\":[-122.407358,37.791301],\"bearings\":[75,165,255,345],\"entry\":[false,true,true,true],\"in\":0,\"out\":2},{\"location\":[-122.408952,37.791098],\"bearings\":[75,165,255,345],\"entry\":[false,false,true,true],\"in\":0,\"out\":2},{\"location\":[-122.409044,37.791087],\"bearings\":[75,165,255,345],\"entry\":[false,true,true,false],\"in\":0,\"out\":2},{\"location\":[-122.410639,37.790884],\"bearings\":[75,165,255,345],\"entry\":[false,true,true,false],\"in\":0,\"out\":2}]},{\"distance\":107.7,\"duration\":25.8,\"geometry\":\"e|pagA|nmnhFgEh@wn@pH}C^YD\",\"name\":\"Taylor Street\",\"mode\":\"driving\",\"maneuver\":{\"location\":[-122.412287,37.790675],\"bearing_before\":260.0,\"bearing_after\":350.0,\"instruction\":\"Turn right onto Taylor Street\",\"type\":\"turn\",\"modifier\":\"right\"},\"voiceInstructions\":[{\"distanceAlongGeometry\":62.6,\"announcement\":\"Turn left onto California Street, then turn left onto Jones Street\",\"ssmlAnnouncement\":\"\\u003cspeak\\u003e\\u003camazon:effect name\\u003d\\\"drc\\\"\\u003e\\u003cprosody rate\\u003d\\\"1.08\\\"\\u003eTurn left onto California Street, then turn left onto Jones Street\\u003c/prosody\\u003e\\u003c/amazon:effect\\u003e\\u003c/speak\\u003e\"}],\"bannerInstructions\":[{\"distanceAlongGeometry\":107.7,\"primary\":{\"text\":\"California Street\",\"components\":[{\"text\":\"California Street\",\"type\":\"text\",\"abbr\":\"California St\",\"abbr_priority\":0}],\"type\":\"turn\",\"modifier\":\"left\"}},{\"distanceAlongGeometry\":62.6,\"primary\":{\"text\":\"California Street\",\"components\":[{\"text\":\"California Street\",\"type\":\"text\",\"abbr\":\"California St\",\"abbr_priority\":0}],\"type\":\"turn\",\"modifier\":\"left\"},\"sub\":{\"text\":\"Jones Street\",\"components\":[{\"text\":\"Jones Street\",\"type\":\"text\",\"abbr\":\"Jones St\",\"abbr_priority\":0}],\"type\":\"turn\",\"modifier\":\"left\"}}],\"driving_side\":\"right\",\"weight\":70.3,\"intersections\":[{\"location\":[-122.412287,37.790675],\"bearings\":[75,165,255,345],\"entry\":[false,false,true,true],\"in\":0,\"out\":3}]},{\"distance\":146.2,\"duration\":42.4,\"geometry\":\"}wragA~zmnhF\\\\`FzAjUtGnbATtD\",\"name\":\"California Street\",\"mode\":\"driving\",\"maneuver\":{\"location\":[-122.41248,37.791631],\"bearing_before\":350.0,\"bearing_after\":260.0,\"instruction\":\"Turn left onto California Street\",\"type\":\"turn\",\"modifier\":\"left\"},\"voiceInstructions\":[{\"distanceAlongGeometry\":51.7,\"announcement\":\"Turn left onto Jones Street, then you will arrive at your destination\",\"ssmlAnnouncement\":\"\\u003cspeak\\u003e\\u003camazon:effect name\\u003d\\\"drc\\\"\\u003e\\u003cprosody rate\\u003d\\\"1.08\\\"\\u003eTurn left onto Jones Street, then you will arrive at your destination\\u003c/prosody\\u003e\\u003c/amazon:effect\\u003e\\u003c/speak\\u003e\"}],\"bannerInstructions\":[{\"distanceAlongGeometry\":146.2,\"primary\":{\"text\":\"Jones Street\",\"components\":[{\"text\":\"Jones Street\",\"type\":\"text\",\"abbr\":\"Jones St\",\"abbr_priority\":0}],\"type\":\"turn\",\"modifier\":\"left\"}}],\"driving_side\":\"right\",\"weight\":86.8,\"intersections\":[{\"location\":[-122.41248,37.791631],\"bearings\":[75,165,255,345],\"entry\":[true,false,true,true],\"in\":1,\"out\":2}]},{\"distance\":71.7,\"duration\":23.4,\"geometry\":\"wjragAraqnhF`@EvC]j@Ir_@oE\",\"name\":\"Jones Street\",\"mode\":\"driving\",\"maneuver\":{\"location\":[-122.414122,37.79142],\"bearing_before\":260.0,\"bearing_after\":170.0,\"instruction\":\"Turn left onto Jones Street\",\"type\":\"turn\",\"modifier\":\"left\"},\"voiceInstructions\":[{\"distanceAlongGeometry\":15.3,\"announcement\":\"You have arrived at your destination, on the right\",\"ssmlAnnouncement\":\"\\u003cspeak\\u003e\\u003camazon:effect name\\u003d\\\"drc\\\"\\u003e\\u003cprosody rate\\u003d\\\"1.08\\\"\\u003eYou have arrived at your destination, on the right\\u003c/prosody\\u003e\\u003c/amazon:effect\\u003e\\u003c/speak\\u003e\"}],\"bannerInstructions\":[{\"distanceAlongGeometry\":71.7,\"primary\":{\"text\":\"You will arrive\",\"components\":[{\"text\":\"You will arrive\",\"type\":\"text\"}],\"type\":\"arrive\",\"modifier\":\"right\"}},{\"distanceAlongGeometry\":15.3,\"primary\":{\"text\":\"You have arrived\",\"components\":[{\"text\":\"You have arrived\",\"type\":\"text\"}],\"type\":\"arrive\",\"modifier\":\"right\"}}],\"driving_side\":\"right\",\"weight\":23.4,\"intersections\":[{\"location\":[-122.414122,37.79142],\"bearings\":[75,165,255,345],\"entry\":[false,true,true,true],\"in\":0,\"out\":1}]},{\"distance\":0.0,\"duration\":0.0,\"geometry\":\"}bqagAtypnhF\",\"name\":\"Jones Street\",\"mode\":\"driving\",\"maneuver\":{\"location\":[-122.413995,37.790783],\"bearing_before\":171.0,\"bearing_after\":0.0,\"instruction\":\"You have arrived at your destination, on the right\",\"type\":\"arrive\",\"modifier\":\"right\"},\"voiceInstructions\":[],\"bannerInstructions\":[],\"driving_side\":\"right\",\"weight\":0.0,\"intersections\":[{\"location\":[-122.413995,37.790783],\"bearings\":[351],\"entry\":[true],\"in\":0}]}],\"annotation\":{\"distance\":[41.75872891540546,11.943930596414795,12.720147968330114,34.58112560559672,50.96480933738249,10.349556668565532,10.428744124966986,26.062939337835754,33.61207745353073,22.152629772397148,11.584122498337331,8.22504067141732,73.25791925952063,11.603839142628226,1.7930152150745173,1.9339724019326627,6.4182775391464615,8.137686480966448,3.8827293592940286,4.137411880032337,15.778927074065876,36.18605026816596,7.882482295429149,9.70628239052936,44.88520535070527,19.777529614845466,18.70069668033605,2.7608352091952852,8.820943994209998,9.167951891088123,20.211271187411434,67.05841934336348,8.004641462478803,9.602196312248573,50.45852431578543,12.710488322858675,9.917381766860117,27.67756036992424,21.374879966188537,14.151341864692084,11.581827207587462,103.10585401718104,20.975906679342675,9.863007930072529,27.750876716852083,31.428390784757813,50.12927675688965,26.70541846540595,124.91524890087112,9.619673955896003,7.744241825057303,9.081282300519934,55.824774196397755,72.99751351106848,4.01125146327413,2.22260556286811,1.7719511994183288,1.7030446015893967,2.4836226090145,5.608523009263369,136.39335067018692,32.0538539535892,114.65384371553199,11.274751280297357,86.03444465258252,8.898707903215941,1.4697888668235173,10.071397847728418,31.880018736822993,96.1785674755274,8.091589695903005,1.90914496306627,8.555399787319097,2.4861312264216893,58.775343965717596],\"congestion\":[\"low\",\"low\",\"low\",\"low\",\"low\",\"low\",\"heavy\",\"moderate\",\"moderate\",\"moderate\",\"heavy\",\"low\",\"low\",\"low\",\"low\",\"low\",\"low\",\"low\",\"low\",\"low\",\"low\",\"low\",\"low\",\"low\",\"low\",\"low\",\"low\",\"low\",\"low\",\"low\",\"low\",\"low\",\"low\",\"moderate\",\"moderate\",\"moderate\",\"moderate\",\"heavy\",\"low\",\"low\",\"low\",\"low\",\"low\",\"low\",\"low\",\"low\",\"low\",\"low\",\"low\",\"low\",\"low\",\"moderate\",\"low\",\"low\",\"low\",\"low\",\"low\",\"low\",\"low\",\"low\",\"low\",\"low\",\"low\",\"low\",\"low\",\"low\",\"low\",\"low\",\"low\",\"low\",\"low\",\"low\",\"low\",\"low\",\"low\"]}}],\"routeOptions\":{\"baseUrl\":\"https://api.mapbox.com\",\"user\":\"mapbox\",\"profile\":\"driving-traffic\",\"coordinates\":[[-122.396485,37.7913239],[-122.4142621,37.7907495]],\"alternatives\":true,\"language\":\"en\",\"continue_straight\":false,\"roundabout_exits\":false,\"geometries\":\"polyline6\",\"overview\":\"full\",\"steps\":true,\"annotations\":\"congestion,distance\",\"voice_instructions\":true,\"banner_instructions\":true,\"voice_units\":\"metric\",\"access_token\":\"${getString(R.string.token)}\",\"uuid\":\"ck7dtdd2z00yx75plynvtan26\"},\"voiceLocale\":\"en\"}"
-
-        return DirectionsRoute.fromJson(directionsRouteAsJson)
-    }
-    private fun initSource(@NonNull loadedMapStyle: Style) {
-        loadedMapStyle.addSource(GeoJsonSource(GEOJSON_SOURCE_ID))
-        val iconGeoJsonSource = GeoJsonSource(
-            ICON_SOURCE_ID, FeatureCollection.fromFeatures(
-                arrayOf(
-                    Feature.fromGeometry(Point.fromLngLat(origin?.longitude()!!, origin?.latitude()!!)),
-                    Feature.fromGeometry(Point.fromLngLat(destination?.longitude()!!, destination?.latitude()!!))
-                )
-            )
-        )
-        loadedMapStyle.addSource(iconGeoJsonSource)
-    }
-
-    @SuppressLint("UseCompatLoadingForDrawables")
-    private fun initLayers(@NonNull loadedMapStyle: Style) {
-        val routeLayer = LineLayer(ROUTE_LAYER_ID, GEOJSON_SOURCE_ID)
-
-// Add the LineLayer to the map. This layer will display the directions route.
-        routeLayer.setProperties(
-            lineCap(Property.LINE_CAP_ROUND),
-            lineJoin(Property.LINE_JOIN_ROUND),
-            lineWidth(5f),
-            lineColor(Color.parseColor("#009688"))
-        )
-        loadedMapStyle.addLayer(routeLayer)
-
-// Add the red marker icon image to the map
-        loadedMapStyle.addImage(
-            RED_PIN_ICON_ID, BitmapUtils.getBitmapFromDrawable(
-                resources.getDrawable(R.drawable.mapbox_marker_icon_default)
-            )!!
-        )
-
-// Add the red marker icon SymbolLayer to the map
-        loadedMapStyle.addLayer(
-            SymbolLayer(ICON_LAYER_ID, ICON_SOURCE_ID).withProperties(
-                iconImage(RED_PIN_ICON_ID),
-                iconIgnorePlacement(true),
-                iconAllowOverlap(true),
-                iconOffset(arrayOf(0f, -9f))
-            )
-        )
-    }
-
-
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        requireActivity().menuInflater.inflate(R.menu.main, menu)
-//        val item = menu.findItem(androidx.lifecycle.R.id.action_settings)
-        val item1 = menu.findItem(R.id.action_logout)
-
-//        if (item != null) item.isVisible = true
-        if (item1 != null) item1.isVisible = true
-
-        return true
+        return false
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        permissionsManager.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    }
+    override fun onExplanationNeeded(permissionsToExplain: MutableList<String>?) {
+        ToastUtils().toastShort(requireContext(),"This app needs location and storage permissions in order to show its functionality.")
+    }
 
-        when (item.itemId) {
-            R.id.action_logout -> {
-                Intent(requireActivity(), LoginActivity::class.java).also { home ->
-                    home.flags =
-                        Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-                    startActivity(home)
-                }
-                return true
-            }
-
-            else -> return super.onOptionsItemSelected(item)
+    override fun onPermissionResult(granted: Boolean) {
+        if (granted) {
+            requestStoragePermission()
+        } else {
+            ToastUtils().toastShort(requireContext(), "You didn't grant the permissions required to use the app",)
+        }
+    }
+    private fun requestStoragePermission() {
+        val permission = Manifest.permission.WRITE_EXTERNAL_STORAGE
+        val permissionsNeeded: MutableList<String> = ArrayList()
+        if (
+            ContextCompat.checkSelfPermission(requireContext(), permission) !=
+            PackageManager.PERMISSION_GRANTED
+        ) {
+            permissionsNeeded.add(permission)
+            ActivityCompat.requestPermissions(
+                requireActivity(),
+                permissionsNeeded.toTypedArray(),
+                10
+            )
         }
     }
 
-    private fun isAlive(): Boolean {
-        return !isDead()
+    override fun onDestroyView() {
+        super.onDestroyView()
+        mapboxNavigation.run {
+            // make sure to unregister the routes observer you have registered.
+            unregisterRoutesObserver(routesObserver)
+            // make sure to unregister the arrival observer you have registered.
+            unregisterArrivalObserver(arrivalObserver)
+            // make sure to unregister the location observer you have registered.
+            unregisterLocationObserver(locationObserver)
+            // make sure to unregister the route progress observer you have registered.
+            unregisterRouteProgressObserver(replayProgressObserver)
+            unregisterRouteProgressObserver(routeProgressObserver)
+        }
+        speechApi.cancel()
+        voiceInstructionsPlayer.shutdown()
+        MapboxNavigationProvider.destroy()
+        _binding = null
     }
 
-    protected fun isDead(): Boolean {
-        return activity == null || requireActivity().isFinishing
-    }
 
-    private fun getRoute(style: Style, origin: Point, destination: Point, mapboxMap: MapboxMap, source: GeoJsonSource?) {
-        client = MapboxDirections.builder()
-            .origin(origin)
-            .destination(destination)
-            .overview(DirectionsCriteria.OVERVIEW_FULL)
-            .profile(DirectionsCriteria.PROFILE_DRIVING)
-            .accessToken(getString(R.string.token))
-            .build()
-        client?.enqueueCall(object : Callback<DirectionsResponse?> {
-            override fun onResponse(call: Call<DirectionsResponse?>, response: Response<DirectionsResponse?>) {
-
-                Timber.d("Response code: %s", response.code())
-                if (response.body() == null) {
-                    Timber.e("No routes found, make sure you set the right user and access token.")
-                    return
-                } else if (response.body()!!.routes().size < 1) {
-                    Timber.e("No routes found")
-                    return
-                }
-
-                drivingRoute = response.body()!!.routes()[0]
-                val structure = LatLng(destination.latitude(), destination.longitude())
-                val bounds = LatLngBounds.Builder()
-                    .include(LatLng(origin.latitude(), origin.longitude()))
-                    .include(LatLng(structure))
-                    .build()
-
-                mapboxMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 150))
-                if (drivingRoute != null) {
-                    _ui?.startnavigating?.show()
-                    drawNavigationPolylineRoute(response.body()!!.routes()[0], source)
-                }
-
-                ToastUtils().toastShort(requireContext(), drivingRoute?.distance().toString())
-
-            }
-
-            override fun onFailure(call: Call<DirectionsResponse?>, throwable: Throwable) {
-                Timber.e("Error: %s", throwable.message)
-                Toast.makeText(
-                    requireContext(), "Error: " + throwable.message,
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
-        })
-    }
-
-    private fun drawNavigationPolylineRoute(route: DirectionsRoute,source: GeoJsonSource?) {
-        source?.setGeoJson(LineString.fromPolyline(route.geometry()!!, PRECISION_6))
-    }
-
-    override fun onResume() {
-        super.onResume()
-        mapView?.onResume()
-    }
-
-    override fun onStart() {
-        super.onStart()
-        requireActivity()
-        mapView?.onStart()
+    override fun onDestroy() {
+        super.onDestroy()
+        MapboxNavigationProvider.destroy()
+        speechApi.cancel()
+        voiceInstructionsPlayer.shutdown()
     }
 
     override fun onStop() {
         super.onStop()
-        mapView?.onStop()
+
+        // unregister event listeners to prevent leaks or unnecessary resource consumption
+        mapboxNavigation.unregisterRoutesObserver(routesObserver)
+        mapboxNavigation.unregisterRouteProgressObserver(routeProgressObserver)
+        mapboxNavigation.unregisterLocationObserver(locationObserver)
+        mapboxNavigation.unregisterVoiceInstructionsObserver(voiceInstructionsObserver)
+        mapboxNavigation.unregisterRouteProgressObserver(replayProgressObserver)
     }
 
-    override fun onPause() {
-        super.onPause()
-        mapView?.onPause()
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        mapView?.onSaveInstanceState(outState)
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        // Cancel the Directions API request
-        if (client != null) {
-            client!!.cancelCall()
+    override fun onStart() {
+        super.onStart()
+        lm = requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        try {
+            networkEnabled = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+            gpsEnabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
+        } catch (e: Exception) {
+            Timber.e(e)
         }
-        mapView?.onDestroy()
-    }
 
-    override fun onLowMemory() {
-        super.onLowMemory()
-        mapView?.onLowMemory()
-    }
-
-
-    companion object {
-        private const val TAG = "GoToFragment"
-        private const val GEOJSON_SOURCE_ID = "GEOJSON_SOURCE_ID"
-        private const val ICON_LAYER_ID = "ICON_LAYER_ID"
-        private const val ICON_SOURCE_ID = "ICON_SOURCE_ID"
-        private const val ROUTE_LAYER_ID = "ROUTE_LAYER_ID"
-        private val RED_PIN_ICON_ID = "RED_PIN_ICON_ID"
-
+        if (!gpsEnabled) { // notify user && !network_enabled
+            displayPromptForEnablingGPS(requireActivity())
+        }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+

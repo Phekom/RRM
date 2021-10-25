@@ -51,6 +51,8 @@ import za.co.xisystems.itis_rrm.ui.extensions.crashGuard
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.intents.AbstractIntent.Companion.JOB_ID
 import za.co.xisystems.itis_rrm.ui.mainview.work.estimate_work_item.CardItem
 import za.co.xisystems.itis_rrm.ui.mainview.work.estimate_work_item.ExpandableHeaderWorkItem
+import za.co.xisystems.itis_rrm.ui.mainview.work.goto_work_location.GoToViewModel
+import za.co.xisystems.itis_rrm.ui.mainview.work.goto_work_location.GoToViewModelFactory
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
@@ -66,6 +68,8 @@ class WorkFragment : BaseFragment(), DIAware {
     private lateinit var workViewModel: WorkViewModel
     private lateinit var expandableGroups: MutableList<ExpandableGroup>
     private val factory: WorkViewModelFactory by instance()
+    private val mapfactory: GoToViewModelFactory by instance()
+    private lateinit var goToViewModel: GoToViewModel
     private var uiScope = UiLifecycleScope()
     private var groupAdapter: GroupAdapter<GroupieViewHolder>? = GroupAdapter<GroupieViewHolder>()
     private var veiled: Boolean = false
@@ -89,8 +93,7 @@ class WorkFragment : BaseFragment(), DIAware {
             }
 
             whenResumed {
-                if (this@WorkFragment::currentJobGroup.isInitialized && !currentJobGroup.isExpanded
-                ) {
+                if (this@WorkFragment::currentJobGroup.isInitialized && !currentJobGroup.isExpanded ) {
                     currentJobGroup.onToggleExpanded()
                 }
             }
@@ -131,7 +134,6 @@ class WorkFragment : BaseFragment(), DIAware {
                         val headerItems = jobsList.distinctBy {
                             it.jobId
                         }
-
                         this@WorkFragment.initRecyclerView(headerItems.toWorkListItems())
                     }
                 }
@@ -220,9 +222,7 @@ class WorkFragment : BaseFragment(), DIAware {
         }
     }
 
-    private fun initRecyclerView(
-        workListItems: List<ExpandableGroup>
-    ) {
+    private fun initRecyclerView( workListItems: List<ExpandableGroup> ) {
         val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
             clear()
             addAll(workListItems)
@@ -236,8 +236,8 @@ class WorkFragment : BaseFragment(), DIAware {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        workViewModel = ViewModelProvider(this.requireActivity(), factory)
-            .get(WorkViewModel::class.java)
+        workViewModel = ViewModelProvider(this.requireActivity(), factory).get(WorkViewModel::class.java)
+        goToViewModel = ViewModelProvider(this.requireActivity(), mapfactory).get(GoToViewModel::class.java)
         setHasOptionsMenu(true)
     }
 
@@ -327,7 +327,6 @@ class WorkFragment : BaseFragment(), DIAware {
                     ActivityIdConstants.ESTIMATE_INCOMPLETE
                 )
                 estimates.forEach { item ->
-
                     createCardItem(item, jobDTO)
                 }
                 jobId?.let { selectedJobId ->

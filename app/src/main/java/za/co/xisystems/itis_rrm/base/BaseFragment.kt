@@ -21,6 +21,7 @@ import org.kodein.di.DIAware
 import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
 import timber.log.Timber
+import www.sanju.motiontoast.MotionToastStyle
 import za.co.xisystems.itis_rrm.BuildConfig
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
@@ -29,7 +30,6 @@ import za.co.xisystems.itis_rrm.constants.Constants.FIVE_SECONDS
 import za.co.xisystems.itis_rrm.constants.Constants.SSL_PORT
 import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration.LONG
 import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity.BOTTOM
-import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.NO_INTERNET
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data._commons.Animations
 import za.co.xisystems.itis_rrm.data._commons.views.IProgressView
@@ -309,7 +309,7 @@ abstract class BaseFragment(
     protected fun noConnectionWarning() {
         extensionToast(
             message = "Please ensure that you have a valid data or wifi connection",
-            style = NO_INTERNET,
+            style = MotionToastStyle.NO_INTERNET,
             position = BOTTOM,
             duration = LONG
         )
@@ -326,7 +326,7 @@ abstract class BaseFragment(
     private fun noServicesWarning() {
         extensionToast(
             message = "RRM services are unreachable, try again later ...",
-            style = NO_INTERNET,
+            style = MotionToastStyle.NO_INTERNET,
             position = BOTTOM,
             duration = LONG
         )
@@ -335,7 +335,7 @@ abstract class BaseFragment(
     protected fun noInternetWarning() {
         extensionToast(
             message = "No internet access, try again later ...",
-            style = NO_INTERNET,
+            style = MotionToastStyle.NO_INTERNET,
             position = BOTTOM,
             duration = LONG
         )

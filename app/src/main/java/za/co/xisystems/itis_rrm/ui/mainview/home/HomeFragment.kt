@@ -38,6 +38,7 @@ import org.kodein.di.DIAware
 import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
 import timber.log.Timber
+import www.sanju.motiontoast.MotionToastStyle
 import za.co.xisystems.itis_rrm.BuildConfig
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
@@ -45,9 +46,6 @@ import za.co.xisystems.itis_rrm.constants.Constants.TWO_SECONDS
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration.LONG
 import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity.BOTTOM
-import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.ERROR
-import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.INFO
-import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.SUCCESS
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.results.getPercentageComplete
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
@@ -406,13 +404,13 @@ class HomeFragment : BaseFragment(), DIAware {
                     showProgress()
                     extensionToast(
                         message = "Sync Complete",
-                        style = SUCCESS,
+                        style = MotionToastStyle.SUCCESS,
                         position = BOTTOM,
                         duration = LONG
                     )
                 }
                 is XIResult.Status -> {
-                    extensionToast(message = result.message, style = INFO, position = BOTTOM)
+                    extensionToast(message = result.message, style = MotionToastStyle.INFO, position = BOTTOM)
                 }
                 is XIResult.Error -> {
                     synchJob.cancel(CancellationException(result.message))
@@ -421,7 +419,7 @@ class HomeFragment : BaseFragment(), DIAware {
                     extensionToast(
                         title = "Sync Failed",
                         message = result.message,
-                        style = ERROR
+                        style = MotionToastStyle.ERROR
                     )
 
                     crashGuard(

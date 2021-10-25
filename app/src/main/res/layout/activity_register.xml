@@ -1,17 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools">
+<!--<layout xmlns:android="http://schemas.android.com/apk/res/android"-->
+<!--    xmlns:app="http://schemas.android.com/apk/res-auto"-->
+<!--    xmlns:tools="http://schemas.android.com/tools">-->
 
-    <data>
+<!--    <data>-->
 
-        <variable
-            name="viewmodel"
-            type="za.co.xisystems.itis_rrm.ui.auth.model.AuthViewModel" />
+<!--        <variable-->
+<!--            name="viewmodel"-->
+<!--            type="za.co.xisystems.itis_rrm.ui.auth.model.AuthViewModel" />-->
 
-    </data>
+<!--    </data>-->
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -70,7 +73,7 @@
                         app:hintTextAppearance="@style/TextAppearance.AppCompat">
 
                         <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/register_username_editText"
+                            android:id="@+id/registerusernameeditText"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_gravity="center"
@@ -82,7 +85,7 @@
                             android:inputType="textVisiblePassword|textNoSuggestions"
                             android:padding="4dp"
                             android:singleLine="true"
-                            android:text="@={viewmodel.username}"
+
                             android:textColor="@android:color/white"
                             android:textColorHint="@android:color/white" />
 
@@ -99,7 +102,7 @@
                         app:hintTextAppearance="@style/TextAppearance.AppCompat">
 
                         <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/register_password_editText"
+                            android:id="@+id/registerpasswordeditText"
                             android:layout_width="fill_parent"
                             android:layout_height="wrap_content"
                             android:layout_gravity="center"
@@ -111,24 +114,23 @@
                             android:inputType="textPassword"
                             android:padding="4dp"
                             android:singleLine="true"
-                            android:text="@={viewmodel.password}"
+
                             android:textColor="@android:color/white"
                             android:textColorHint="@android:color/white" />
                     </com.google.android.material.textfield.TextInputLayout>
 
 
                     <Button
-                        android:id="@+id/register_button"
+                        android:id="@+id/registerbutton"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_horizontal"
                         android:layout_marginTop="4dp"
                         android:background="@drawable/round_corner_orange"
-                        android:onClick="@{viewmodel::onRegButtonClick}"
                         android:text="@string/login"
                         android:textColor="@android:color/white" />
                 </LinearLayout>
-
+                <!-- android:onClick="@{viewmodel::onRegButtonClick}"-->
                 <ImageButton
                     android:id="@+id/registration_settings_imageButton"
                     android:layout_width="40dp"
@@ -222,6 +224,6 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-</layout>
+<!--</layout>-->
 
 

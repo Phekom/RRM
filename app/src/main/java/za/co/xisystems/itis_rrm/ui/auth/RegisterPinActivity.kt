@@ -6,7 +6,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
@@ -51,8 +50,15 @@ class RegisterPinActivity : AppCompatActivity(), AuthListener, DIAware {
         Manifest.permission.ACCESS_FINE_LOCATION
     )
 
+
+    private lateinit var binding: ActivityRegisterPinBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        binding = ActivityRegisterPinBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
         appContext = this
 
         if (startPermissionRequest(permissions)) {
@@ -61,13 +67,19 @@ class RegisterPinActivity : AppCompatActivity(), AuthListener, DIAware {
             requestPermissions(permissions, PERMISSION_REQUEST)
         }
 
-        val binding: ActivityRegisterPinBinding =
-            DataBindingUtil.setContentView(this, R.layout.activity_register_pin)
         viewModel = ViewModelProvider(this, factory).get(AuthViewModel::class.java)
-        binding.viewmodel = viewModel
         viewModel.authListener = this
 
         Coroutines.main {
+            binding.registerPinbutton.setOnClickListener {
+                var enterPin = binding.enterPinEditText
+                var confirmPin = binding.confirmPinEditText
+
+
+                viewModel.onRegPinButtonClick(it, enterPin, confirmPin)
+            }
+
+
             val loggedInUser = viewModel.user.await()
             loggedInUser.observe(this, { user ->
                 // Register the user

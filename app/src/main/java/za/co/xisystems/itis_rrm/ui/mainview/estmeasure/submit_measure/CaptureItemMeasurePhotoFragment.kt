@@ -34,11 +34,11 @@ import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
 import pereira.agnaldo.previewimgcol.ImageCollectionView
 import timber.log.Timber
+import www.sanju.motiontoast.MotionToastStyle
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.LocationFragment
 import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity
-import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.INFO
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
@@ -157,7 +157,7 @@ class CaptureItemMeasurePhotoFragment :
                         if (measureViewModel.measuredJiNo != it.jimNo) {
                             this@CaptureItemMeasurePhotoFragment.extensionToast(
                                 message = "Measuring job: ${it.jimNo}",
-                                style = INFO,
+                                style = MotionToastStyle.INFO,
                                 position = ToastGravity.BOTTOM
                             )
                             measureViewModel.measuredJiNo = it.jimNo!!

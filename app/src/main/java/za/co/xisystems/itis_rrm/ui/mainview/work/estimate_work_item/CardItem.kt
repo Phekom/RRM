@@ -13,6 +13,7 @@
 package za.co.xisystems.itis_rrm.ui.mainview.work.estimate_work_item
 
 import android.view.View
+import android.widget.LinearLayout
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.FragmentActivity
 import androidx.navigation.Navigation
@@ -80,7 +81,10 @@ open class CardItem(
         position: Int,
         drive: String,
         selectedLocationPoint: Point,
-        view: View
+        view: View,
+        workViewModel: WorkViewModel,
+        estimate: JobItemEstimateDTO,
+        job: JobDTO
     ) {
         // val drive = activity.getString(R.string.action_not_premitted )+ "\n Please Drive $distance KM to the location First"
         val alert = AlertDialog.Builder(activity!!)
@@ -96,6 +100,8 @@ open class CardItem(
                 if (ServiceUtil.isNetworkConnected(context.applicationContext)) {
                     Coroutines.main {
                         workViewModel.goToWorkLocation(selectedLocationPoint)
+                        workViewModel.setWorkItemJob(job.jobId)
+                        workViewModel.setWorkItem(estimate.estimateId)
                         Navigation.findNavController(view).navigate(R.id.action_nav_work_to_work_location)
                     }
                 } else {
@@ -123,7 +129,6 @@ open class CardItem(
                 expandableChildTextView.text = desc
                 qtyTextView.text = qty
                 lineAmountTextView.text = rate
-
 
             val myCurrentLocation = Point.fromLngLat(
                 myLocation!!.longitude,
@@ -161,7 +166,7 @@ open class CardItem(
                     if (distance.toDouble() <= 1.0) {
                         sendJobToWork(workViewModel, jobItemEstimate, root, job)
                     } else {
-                        alertdialog(activity, position, drive, selectedLocationPoint!!,view)
+                        alertdialog(activity, position, drive, selectedLocationPoint!!, root, workViewModel, jobItemEstimate, job)
                     }
                 }
 

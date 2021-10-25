@@ -36,16 +36,14 @@ import org.kodein.di.DIAware
 import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
 import timber.log.Timber
+import www.sanju.motiontoast.MotionToastStyle
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration
 import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity
 import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity.BOTTOM
-import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
-import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.ERROR
-import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.NO_INTERNET
-import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.WARNING
+
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
@@ -116,7 +114,7 @@ class SubmitMeasureFragment : BaseFragment(), DIAware {
 
                     extensionToast(
                         message = "Measurements submitted for Job ${outcome.data}",
-                        style = ToastStyle.SUCCESS
+                        style = MotionToastStyle.SUCCESS
                     )
                     progressButton.doneProgress(originalCaption)
                     toggleLongRunning(false)
@@ -131,7 +129,7 @@ class SubmitMeasureFragment : BaseFragment(), DIAware {
 
                     extensionToast(
                         message = "Submission failed: ${outcome.message}",
-                        style = ERROR
+                        style = MotionToastStyle.ERROR
                     )
 
                     crashGuard(
@@ -250,7 +248,7 @@ class SubmitMeasureFragment : BaseFragment(), DIAware {
                 } else {
                     extensionToast(
                         message = getString(R.string.no_connection_detected),
-                        style = NO_INTERNET,
+                        style = MotionToastStyle.NO_INTERNET,
                         position = ToastGravity.CENTER
                     )
                     progressButton.failProgress(originalCaption)
@@ -282,13 +280,13 @@ class SubmitMeasureFragment : BaseFragment(), DIAware {
                 if (validMeasures.isNullOrEmpty()) {
                     extensionToast(
                         message = getString(R.string.please_make_sure_you_have_captured_photos),
-                        style = WARNING
+                        style = MotionToastStyle.WARNING
                     )
                     progressButton.failProgress(originalCaption)
                 } else {
                     extensionToast(
                         message = "You have Done " + validMeasures.size.toString() + " Measurements on this Estimate",
-                        style = ToastStyle.INFO
+                        style = MotionToastStyle.INFO
                     )
 
                     val itemMeasures = validMeasures as ArrayList
@@ -364,7 +362,7 @@ class SubmitMeasureFragment : BaseFragment(), DIAware {
         extensionToast(
             title = "Estimate Measurements",
             message = errorMessage,
-            style = ERROR,
+            style = MotionToastStyle.ERROR,
             position = ToastGravity.CENTER
         )
         progressButton.failProgress(originalCaption)

@@ -39,6 +39,7 @@ import org.kodein.di.DIAware
 import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
 import timber.log.Timber
+import www.sanju.motiontoast.MotionToastStyle
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
@@ -47,7 +48,6 @@ import za.co.xisystems.itis_rrm.constants.Constants.TWO_SECONDS
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration
 import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity
-import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.JobDataController
@@ -507,7 +507,7 @@ class AddProjectFragment : BaseFragment(), DIAware {
         this@AddProjectFragment.extensionToast(
             title = "No Connectivity",
             message = "Job validation and submission requires an active internet connection.",
-            style = ToastStyle.NO_INTERNET,
+            style = MotionToastStyle.NO_INTERNET,
             duration = ToastDuration.LONG,
             position = ToastGravity.BOTTOM
         )
@@ -535,7 +535,7 @@ class AddProjectFragment : BaseFragment(), DIAware {
                 if (!JobUtils.areQuantitiesValid(invalidJob)) {
                     this@AddProjectFragment.extensionToast(
                         message = "Error: incomplete estimates.\n Quantity can't be zero!",
-                        style = ToastStyle.WARNING
+                        style = MotionToastStyle.WARNING
                     )
                     ui.itemsCardView.startAnimation(shake_long)
                 } else {
@@ -569,7 +569,7 @@ class AddProjectFragment : BaseFragment(), DIAware {
         this@AddProjectFragment.extensionToast(
             title = "Location Validation",
             message = result.exception.message.toString(),
-            style = ToastStyle.ERROR
+            style = MotionToastStyle.ERROR
         )
         crashGuard(
             throwable = result,
@@ -638,27 +638,27 @@ class AddProjectFragment : BaseFragment(), DIAware {
 
             if (dueDate < startDate || dueDate < yesterday || dueDate == yesterday
             ) {
-                extensionToast(message = "Please select a valid due date", style = ToastStyle.WARNING)
+                extensionToast(message = "Please select a valid due date", style = MotionToastStyle.WARNING)
                 ui.dueDateCardView.startAnimation(shake_long)
             } else {
                 job.dueDate
                 dueResult = true
             }
         } else {
-            extensionToast(message = "Please select a Due Date", style = ToastStyle.WARNING)
+            extensionToast(message = "Please select a Due Date", style = MotionToastStyle.WARNING)
             ui.dueDateCardView.startAnimation(shake_long)
         }
         if (job.startDate != null) {
             if (startDate < yesterday || dueDate == yesterday
             ) {
-                extensionToast(message = "Please select a valid Start Date", style = ToastStyle.WARNING)
+                extensionToast(message = "Please select a valid Start Date", style = MotionToastStyle.WARNING)
                 ui.dueDateCardView.startAnimation(shake_long)
             } else {
                 job.startDate
                 startResult = true
             }
         } else {
-            extensionToast(message = "Please select Start Date", style = ToastStyle.WARNING)
+            extensionToast(message = "Please select Start Date", style = MotionToastStyle.WARNING)
             ui.startDateCardView.startAnimation(shake_long)
         }
 
@@ -730,7 +730,7 @@ class AddProjectFragment : BaseFragment(), DIAware {
                 withContext(Dispatchers.Main.immediate) {
                     this@AddProjectFragment.requireActivity().extensionToast(
                         message = getString(R.string.job_submitted),
-                        style = ToastStyle.SUCCESS
+                        style = MotionToastStyle.SUCCESS
                     )
                 }
                 popViewOnJobSubmit()
@@ -772,7 +772,7 @@ class AddProjectFragment : BaseFragment(), DIAware {
                 ui.submitButton.doneProgress("Uploaded!")
                 extensionToast(
                     message = "Job: ${job.descr} uploaded successfully",
-                    style = ToastStyle.SUCCESS
+                    style = MotionToastStyle.SUCCESS
                 )
                 createViewModel.deleteItemList(job.jobId)
                 createViewModel.deleteJobFromList(job.jobId)
@@ -783,7 +783,7 @@ class AddProjectFragment : BaseFragment(), DIAware {
                 extensionToast(
                     title = "Upload failed.",
                     message = "${result.message} - please retry again later.",
-                    style = ToastStyle.ERROR
+                    style = MotionToastStyle.ERROR
                 )
                 ui.submitButton.failProgress("Retry Upload?")
                 createViewModel.resetUploadState()
@@ -862,7 +862,7 @@ class AddProjectFragment : BaseFragment(), DIAware {
     private fun onInvalidJob() {
         toggleLongRunning(false)
         ui.submitButton.failProgress("Submit")
-        extensionToast(message = "Incomplete estimates!", style = ToastStyle.ERROR)
+        extensionToast(message = "Incomplete estimates!", style = MotionToastStyle.ERROR)
         ui.itemsCardView.startAnimation(shake_long)
     }
 

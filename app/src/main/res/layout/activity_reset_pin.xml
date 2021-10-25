@@ -1,18 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    tools:context=".ui.auth.ResetPinActivity">
+<!--<layout >-->
 
-    <data>
+<!--    <data>-->
 
-        <variable
-            name="viewmodel"
-            type="za.co.xisystems.itis_rrm.ui.auth.model.AuthViewModel" />
+<!--        <variable-->
+<!--            name="viewmodel"-->
+<!--            type="za.co.xisystems.itis_rrm.ui.auth.model.AuthViewModel" />-->
 
-    </data>
+<!--    </data>-->
 
     <androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".ui.auth.ResetPinActivity"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -59,7 +60,7 @@
                             android:inputType="numberPassword"
                             android:padding="4dp"
                             android:singleLine="true"
-                            android:text="@={viewmodel.enterOldPin}"
+
                             android:textColor="@android:color/white"
                             android:textColorHint="@android:color/white" />
                     </com.google.android.material.textfield.TextInputLayout>
@@ -86,7 +87,7 @@
                             android:inputType="numberPassword"
                             android:padding="4dp"
                             android:singleLine="true"
-                            android:text="@={viewmodel.enterNewPin}"
+
                             android:textColor="@android:color/white"
                             android:textColorHint="@android:color/white" />
                     </com.google.android.material.textfield.TextInputLayout>
@@ -114,7 +115,7 @@
                             android:inputType="numberPassword"
                             android:padding="4dp"
                             android:singleLine="true"
-                            android:text="@={viewmodel.confirmNewPin}"
+
                             android:textColor="@android:color/white"
                             android:textColorHint="@android:color/white" />
                     </com.google.android.material.textfield.TextInputLayout>
@@ -133,7 +134,7 @@
                         android:textSize="12sp" />
 
                     <Button
-                        android:id="@+id/reset_Pin_button"
+                        android:id="@+id/resetPinbutton"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_horizontal"
@@ -141,7 +142,7 @@
                         android:layout_marginTop="4dp"
                         android:layout_marginRight="52dp"
                         android:background="@drawable/round_corner_orange"
-                        android:onClick="@{viewmodel::onResetPinButtonClick}"
+
                         android:text="@string/register"
                         android:textColor="@android:color/white" />
                 </LinearLayout>
@@ -213,6 +214,6 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-</layout>
+<!--</layout>-->
 
 

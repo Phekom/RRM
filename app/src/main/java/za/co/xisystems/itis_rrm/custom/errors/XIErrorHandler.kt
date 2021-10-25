@@ -6,7 +6,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import retrofit2.HttpException
 import timber.log.Timber
-import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
+import www.sanju.motiontoast.MotionToastStyle
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
@@ -68,7 +68,7 @@ object XIErrorHandler {
                 if (fragment != null) {
                     fragment.requireActivity().extensionToast(
                         message = humanReadable(throwable),
-                        style = ToastStyle.ERROR,
+                        style = MotionToastStyle.ERROR,
                         title = null
                     )
                 } else {

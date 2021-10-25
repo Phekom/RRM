@@ -15,21 +15,15 @@ import android.app.Dialog
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Color
+import android.location.Location
 import android.location.LocationManager
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
-import android.view.KeyEvent
-import android.view.LayoutInflater
-import android.view.Menu
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.ImageView
-import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.NonNull
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.widget.doOnTextChanged
@@ -43,29 +37,16 @@ import androidx.lifecycle.whenStarted
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.navArgs
 import com.airbnb.lottie.LottieAnimationView
-import com.mapbox.android.core.location.*
-import com.mapbox.android.core.permissions.PermissionsListener
-import com.mapbox.android.core.permissions.PermissionsManager
-import com.mapbox.geojson.Feature
-import com.mapbox.geojson.FeatureCollection
 import com.mapbox.geojson.Point
-import com.mapbox.mapboxsdk.Mapbox
-import com.mapbox.mapboxsdk.camera.CameraPosition
-import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
-import com.mapbox.mapboxsdk.geometry.LatLng
-import com.mapbox.mapboxsdk.location.LocationComponent
-import com.mapbox.mapboxsdk.location.LocationComponentActivationOptions
-import com.mapbox.mapboxsdk.location.modes.CameraMode
-import com.mapbox.mapboxsdk.maps.MapView
-import com.mapbox.mapboxsdk.maps.MapboxMap
-import com.mapbox.mapboxsdk.maps.OnMapReadyCallback
-import com.mapbox.mapboxsdk.maps.Style
-import com.mapbox.mapboxsdk.style.layers.LineLayer
-import com.mapbox.mapboxsdk.style.layers.Property
-import com.mapbox.mapboxsdk.style.layers.PropertyFactory
-import com.mapbox.mapboxsdk.style.layers.SymbolLayer
-import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
-import com.mapbox.mapboxsdk.utils.BitmapUtils
+import com.mapbox.maps.*
+import com.mapbox.maps.plugin.animation.MapAnimationOptions
+import com.mapbox.maps.plugin.animation.camera
+import com.mapbox.maps.plugin.locationcomponent.location
+import com.mapbox.navigation.base.options.NavigationOptions
+import com.mapbox.navigation.core.MapboxNavigation
+import com.mapbox.navigation.core.trip.session.LocationMatcherResult
+import com.mapbox.navigation.core.trip.session.LocationObserver
+import com.mapbox.navigation.ui.maps.location.NavigationLocationProvider
 import kotlinx.android.synthetic.main.fragment_goto.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -74,6 +55,7 @@ import org.kodein.di.DIAware
 import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
 import timber.log.Timber
+import www.sanju.motiontoast.MotionToastStyle
 import za.co.xisystems.itis_rrm.BuildConfig
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
@@ -82,7 +64,6 @@ import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.notifications.ColorToast
 import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration
 import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity
-import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
@@ -109,8 +90,7 @@ import kotlin.collections.set
  * Created by Francis Mahlava on 2019/12/29.
  */
 
-class EstimatePhotoFragment : LocationFragment(), LocationEngineCallback<LocationEngineResult>,
-    MapboxMap.OnCameraMoveListener, PermissionsListener,DIAware {
+class EstimatePhotoFragment : LocationFragment() {
 
     private var sectionId: String? = null
     override val di by closestDI()
@@ -123,8 +103,7 @@ class EstimatePhotoFragment : LocationFragment(), LocationEngineCallback<Locatio
     private var isEstimateDone: Boolean = false
     private var disableGlide: Boolean = false
     private var locationWarning: Boolean = false
-    private var _ui: FragmentPhotoEstimateBinding? = null
-    private val ui get() = _ui!!
+
     private var photoType: PhotoType = PhotoType.START
     private var itemIdPhotoType: HashMap<String, String> = HashMap()
     private var filenamePath: HashMap<String, String> = HashMap()
@@ -146,11 +125,131 @@ class EstimatePhotoFragment : LocationFragment(), LocationEngineCallback<Locatio
     private lateinit var photoUtil: PhotoUtil
     private var changesToPreserve: Boolean = false
     private var tenderRate: Double? = null
-    private var mapView: MapView? = null
-    private var permissionManager: PermissionsManager? = null
-    private var locationComponent: LocationComponent? = null
-    private var mapboxM: MapboxMap? = null
-    private lateinit var locationEngine: LocationEngine
+
+
+    private val navigationLocationProvider = NavigationLocationProvider()
+
+    private val locationObserver = object : LocationObserver {
+        override fun onNewRawLocation(rawLocation: Location) {
+
+        }
+        override fun onNewLocationMatcherResult(locationMatcherResult: LocationMatcherResult) {
+            val enhancedLocation = locationMatcherResult.enhancedLocation
+            navigationLocationProvider.changePosition(
+                enhancedLocation,
+                locationMatcherResult.keyPoints,
+            )
+
+            updateCamera(enhancedLocation)
+        }
+    }
+
+    private lateinit var mapboxMap: MapboxMap
+    private lateinit var mapboxNavigation: MapboxNavigation
+
+    private var _binding: FragmentPhotoEstimateBinding? = null
+    private val binding get() = _binding!!
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        _binding = FragmentPhotoEstimateBinding.inflate(inflater, container, false)
+        mapboxMap = binding.estimatemapview.getMapboxMap()
+        binding.estimatemapview.location.apply {
+            setLocationProvider(navigationLocationProvider)
+            enabled = true
+        }
+        init()
+        return binding.root
+    }
+    private fun init() {
+        initStyle()
+        initNavigation()
+    }
+    private fun initStyle() {
+        mapboxMap.loadStyleUri(Style.MAPBOX_STREETS)
+    }
+    private fun initNavigation() {
+        mapboxNavigation = MapboxNavigation(
+            NavigationOptions.Builder(requireContext())
+                .accessToken(getString(R.string.mapbox_access_token))
+                .build()
+        ).apply {
+            if (ActivityCompat.checkSelfPermission(
+                    requireContext(),
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                    requireContext(),
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+
+            }
+            startTripSession()
+            registerLocationObserver(locationObserver)
+        }
+    }
+
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        (activity as MainActivity).supportActionBar?.title = getString(R.string.edit_estimate)
+        locationWarning = false
+
+        val callback: OnBackPressedCallback = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                navToAddProject(this@EstimatePhotoFragment.requireView())
+            }
+        }
+        requireActivity().onBackPressedDispatcher
+            .addCallback(this@EstimatePhotoFragment, callback)
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setHasOptionsMenu(true)
+
+        (activity as MainActivity).supportActionBar?.title = getString(R.string.edit_estimate)
+        newJobItemEstimatesList = ArrayList()
+        newJobItemEstimatesPhotosList = ArrayList()
+
+
+
+    }
+
+
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        if (savedInstanceState == null) {
+            readNavArgs()
+        } else {
+            onRestoreInstanceState(savedInstanceState)
+        }
+        pullData()
+
+    }
+
+    private fun updateCamera(location: Location) {
+        val mapAnimationOptions = MapAnimationOptions.Builder().duration(1500L).build()
+        _binding?.estimatemapview?.camera?.easeTo(
+            CameraOptions.Builder()
+                // Centers the camera to the lng/lat specified.
+                .center(Point.fromLngLat(location.longitude, location.latitude))
+                // specifies the zoom value. Increase or decrease to zoom in or zoom out
+                .zoom(17.0)
+                // specify frame of reference from the center.
+                .padding(EdgeInsets(100.0, 0.0, 0.0, 0.0))
+                .build(),
+            mapAnimationOptions
+        )
+    }
 
 
     /**
@@ -172,8 +271,8 @@ class EstimatePhotoFragment : LocationFragment(), LocationEngineCallback<Locatio
                     photoUtil.deleteImageFile(filenamePath.toString())
                     withContext(Dispatchers.Main.immediate) {
                         haltAnimation()
-                        ui.startImageView.visibility = View.VISIBLE
-                        ui.endImageView.visibility = View.VISIBLE
+                        binding.startImageView.visibility = View.VISIBLE
+                        binding.endImageView.visibility = View.VISIBLE
                     }
                 }
             }
@@ -212,81 +311,6 @@ class EstimatePhotoFragment : LocationFragment(), LocationEngineCallback<Locatio
         private const val DEFAULT_INTERVAL_IN_MILLISECONDS = 1000L
         private const val DEFAULT_MAX_WAIT_TIME = DEFAULT_INTERVAL_IN_MILLISECONDS * 5
     }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        mapView = _ui?.mymapbox
-        mapView?.onCreate(savedInstanceState)
-        mapView?.getMapAsync(OnMapReadyCallback { mapboxMap ->
-            mapboxM = mapboxMap
-            mapboxMap.setStyle(Style.MAPBOX_STREETS) { style -> // Set the origin location to the Alhambra landmark in Granada, Spain.
-                var origin = Point.fromLngLat(currentLocation?.longitude!!, currentLocation?.latitude!!)
-                initSource(style, origin)
-                initLayers(style)
-                enableLocationComponent(style)
-              val latLng = LatLng(currentLocation?.latitude!!, currentLocation?.longitude!!)
-               val position = CameraPosition.Builder()
-                    .target(latLng)
-                    .zoom(18.0) // disable this for not follow zoom
-                    .tilt(10.0)
-                    .build()
-                mapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(position))
-            }
-        })
-        if (savedInstanceState == null) {
-            readNavArgs()
-        } else {
-
-            onRestoreInstanceState(savedInstanceState)
-        }
-        pullData()
-    }
-
-
-    private fun initSource(@NonNull loadedMapStyle: Style, origin: Point) {
-        loadedMapStyle.addSource(GeoJsonSource(GEOJSON_SOURCE_ID))
-        val iconGeoJsonSource = GeoJsonSource(
-            ICON_SOURCE_ID, FeatureCollection.fromFeatures(
-                arrayOf(
-                    Feature.fromGeometry(Point.fromLngLat(origin.longitude(), origin.latitude())),
-                    //Feature.fromGeometry(Point.fromLngLat(destination?.longitude()!!, destination?.latitude()!!))
-                )
-            )
-        )
-        loadedMapStyle.addSource(iconGeoJsonSource)
-    }
-
-    @SuppressLint("UseCompatLoadingForDrawables")
-    private fun initLayers(@NonNull loadedMapStyle: Style) {
-        val routeLayer = LineLayer(ROUTE_LAYER_ID, GEOJSON_SOURCE_ID)
-
-// Add the LineLayer to the map. This layer will display the directions route.
-        routeLayer.setProperties(
-            PropertyFactory.lineCap(Property.LINE_CAP_ROUND),
-            PropertyFactory.lineJoin(Property.LINE_JOIN_ROUND),
-            PropertyFactory.lineWidth(5f),
-            PropertyFactory.lineColor(Color.parseColor("#009688"))
-        )
-        loadedMapStyle.addLayer(routeLayer)
-
-// Add the red marker icon image to the map
-        loadedMapStyle.addImage(
-            RED_PIN_ICON_ID, BitmapUtils.getBitmapFromDrawable(
-                resources.getDrawable(R.drawable.mapbox_marker_icon_default)
-            )!!
-        )
-
-// Add the red marker icon SymbolLayer to the map
-        loadedMapStyle.addLayer(
-            SymbolLayer(ICON_LAYER_ID, ICON_SOURCE_ID).withProperties(
-                PropertyFactory.iconImage(RED_PIN_ICON_ID),
-                PropertyFactory.iconIgnorePlacement(true),
-                PropertyFactory.iconAllowOverlap(true),
-                PropertyFactory.iconOffset(arrayOf(0f, -9f))
-            )
-        )
-    }
-
 
 
     private fun pullData() = uiScope.launch(uiScope.coroutineContext) {
@@ -384,7 +408,7 @@ class EstimatePhotoFragment : LocationFragment(), LocationEngineCallback<Locatio
     private fun onItemFound(itemDTO: ItemDTOTemp?): ItemDTOTemp? {
         if (itemDTO != null) {
             item = itemDTO
-            ui.titleTextView.text =
+            binding.titleTextView.text =
                 getString(R.string.pair, item!!.itemCode, item!!.descr)
             tenderRate = item!!.tenderRate
         } else {
@@ -414,27 +438,7 @@ class EstimatePhotoFragment : LocationFragment(), LocationEngineCallback<Locatio
         }
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        _ui = FragmentPhotoEstimateBinding.inflate(inflater, container, false)
-        return ui.root
-    }
 
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        (activity as MainActivity).supportActionBar?.title = getString(R.string.edit_estimate)
-        locationWarning = false
-        val callback: OnBackPressedCallback = object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                navToAddProject(this@EstimatePhotoFragment.requireView())
-            }
-        }
-        requireActivity().onBackPressedDispatcher
-            .addCallback(this@EstimatePhotoFragment, callback)
-    }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // no options menu
@@ -451,14 +455,7 @@ class EstimatePhotoFragment : LocationFragment(), LocationEngineCallback<Locatio
         if (item2 != null) item2.isVisible = false
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setHasOptionsMenu(true)
-        Mapbox.getInstance(requireActivity(), requireActivity().getString(R.string.token))
-        (activity as MainActivity).supportActionBar?.title = getString(R.string.edit_estimate)
-        newJobItemEstimatesList = ArrayList()
-        newJobItemEstimatesPhotosList = ArrayList()
-    }
+
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
@@ -478,7 +475,7 @@ class EstimatePhotoFragment : LocationFragment(), LocationEngineCallback<Locatio
 
     override fun onStart() {
         super.onStart()
-        ui.group13Loading.visibility = View.GONE
+        binding.group13Loading.visibility = View.GONE
         mAppExecutor = AppExecutor()
         lm = requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager
 
@@ -497,7 +494,7 @@ class EstimatePhotoFragment : LocationFragment(), LocationEngineCallback<Locatio
 
         setValueEditText(getStoredValue())
 
-        ui.valueEditText.doOnTextChanged { text, _, _, _ ->
+        binding.valueEditText.doOnTextChanged { text, _, _, _ ->
             changesToPreserve = true
             try {
                 val quantity = text.toString().toDouble()
@@ -517,15 +514,15 @@ class EstimatePhotoFragment : LocationFragment(), LocationEngineCallback<Locatio
 
                 R.id.startPhotoButton -> {
                     locationWarning = false
-                    ui.startImageView.visibility = View.GONE
-                    ui.startAnimationView.visibility = View.VISIBLE
+                    binding.startImageView.visibility = View.GONE
+                    binding.startAnimationView.visibility = View.VISIBLE
                     takePhoto(PhotoType.START)
                     this@EstimatePhotoFragment.takingPhotos()
                 }
                 R.id.endPhotoButton -> {
                     locationWarning = false
-                    ui.endImageView.visibility = View.GONE
-                    ui.endAnimationView.visibility = View.VISIBLE
+                    binding.endImageView.visibility = View.GONE
+                    binding.endAnimationView.visibility = View.VISIBLE
                     takePhoto(PhotoType.END)
                     this@EstimatePhotoFragment.takingPhotos()
                 }
@@ -542,15 +539,15 @@ class EstimatePhotoFragment : LocationFragment(), LocationEngineCallback<Locatio
             }
         }
 
-        ui.startPhotoButton.setOnClickListener(myClickListener)
-        ui.endPhotoButton.setOnClickListener(myClickListener)
-        ui.cancelButton.setOnClickListener(myClickListener)
-        ui.updateButton.setOnClickListener(myClickListener)
+        binding.startPhotoButton.setOnClickListener(myClickListener)
+        binding.endPhotoButton.setOnClickListener(myClickListener)
+        binding.cancelButton.setOnClickListener(myClickListener)
+        binding.updateButton.setOnClickListener(myClickListener)
 
         // If the user hits the enter key on the costing field,
         // hide the keypad.
 
-        ui.valueEditText.setOnEditorActionListener { _, _, event ->
+        binding.valueEditText.setOnEditorActionListener { _, _, event ->
             if (event.action == KeyEvent.ACTION_DOWN && event.keyCode == KeyEvent.KEYCODE_ENTER) {
                 requireActivity().hideKeyboard()
                 true
@@ -561,9 +558,9 @@ class EstimatePhotoFragment : LocationFragment(), LocationEngineCallback<Locatio
     }
 
     private fun validateAndUpdateEstimate(view: View) {
-        if (ui.costTextView.text.isNullOrEmpty() || newJobItemEstimate!!.size() != 2) {
+        if (binding.costTextView.text.isNullOrEmpty() || newJobItemEstimate!!.size() != 2) {
             toast("Please Make Sure you have Captured Both Images")
-            ui.labelTextView.startAnimation(animations!!.shake_long)
+            binding.labelTextView.startAnimation(animations!!.shake_long)
         } else {
             Coroutines.main {
                 createViewModel.isEstimateComplete(newJobItemEstimate!!).also { result ->
@@ -587,7 +584,7 @@ class EstimatePhotoFragment : LocationFragment(), LocationEngineCallback<Locatio
 
     private suspend fun saveValidEstimate(view: View) = uiScope.launch(uiScope.coroutineContext) {
 
-        item!!.quantity = ui.valueEditText.text.toString().toDouble()
+        item!!.quantity = binding.valueEditText.text.toString().toDouble()
         if (item!!.quantity > 0 && item!!.tenderRate > 0.0 && changesToPreserve) {
 
             val saveValidEstimate = newJobItemEstimate!!.copy(
@@ -683,12 +680,12 @@ class EstimatePhotoFragment : LocationFragment(), LocationEngineCallback<Locatio
         animate: Boolean = false
     ) = Coroutines.main {
 
-        var targetImageView = ui.startImageView
-        var targetTextView = ui.startSectionTextView
+        var targetImageView = binding.startImageView
+        var targetTextView = binding.startSectionTextView
 
         if (!photo.isPhotostart) {
-            targetImageView = ui.endImageView
-            targetTextView = ui.endSectionTextView
+            targetImageView = binding.endImageView
+            targetTextView = binding.endSectionTextView
         }
 
         val targetUri = null ?: extractImageUri(photo)
@@ -849,8 +846,8 @@ class EstimatePhotoFragment : LocationFragment(), LocationEngineCallback<Locatio
 
     private fun resetPhotos() {
         haltAnimation()
-        ui.startImageView.visibility = View.VISIBLE
-        ui.endImageView.visibility = View.VISIBLE
+        binding.startImageView.visibility = View.VISIBLE
+        binding.endImageView.visibility = View.VISIBLE
         disableGlide = false
     }
 
@@ -882,8 +879,8 @@ class EstimatePhotoFragment : LocationFragment(), LocationEngineCallback<Locatio
         this@EstimatePhotoFragment.disableGlide = false
 
         val targetAnimation: LottieAnimationView = when (photo.isPhotostart) {
-            true -> ui.startAnimationView
-            else -> ui.endAnimationView
+            true -> binding.startAnimationView
+            else -> binding.endAnimationView
         }
 
         targetAnimation.cancelAnimation()
@@ -934,13 +931,13 @@ class EstimatePhotoFragment : LocationFragment(), LocationEngineCallback<Locatio
             this.isEstimateDone = createViewModel.estimateComplete(newJobItemEstimate)
 
             if (isEstimateDone) {
-                ui.costCard.visibility = View.VISIBLE
-                ui.updateButton.visibility = View.VISIBLE
+                binding.costCard.visibility = View.VISIBLE
+                binding.updateButton.visibility = View.VISIBLE
                 setCost()
             } else {
                 extensionToast(
                     message = "Please take both photographs ...",
-                    style = ToastStyle.INFO,
+                    style = MotionToastStyle.INFO,
                     position = ToastGravity.BOTTOM
                 )
                 hideCostCard()
@@ -952,44 +949,44 @@ class EstimatePhotoFragment : LocationFragment(), LocationEngineCallback<Locatio
         when (item?.uom) {
             "M2", "M3", "M" -> {
                 val decQty = "" + qty
-                ui.valueEditText.setText(decQty)
+                binding.valueEditText.setText(decQty)
             }
             else -> {
                 val intQty: String = "" + qty.toInt()
-                ui.valueEditText.setText(intQty)
+                binding.valueEditText.setText(intQty)
             }
         }
     }
 
     private fun setCost() {
         if (newJobItemEstimate?.size() == 2) {
-            ui.valueEditText.visibility = View.VISIBLE
-            ui.costTextView.visibility = View.VISIBLE
-            ui.costTextView.startAnimation(animations!!.bounce_soft)
-            ui.labelTextView.text = "Quantity"
+            binding.valueEditText.visibility = View.VISIBLE
+            binding.costTextView.visibility = View.VISIBLE
+            binding.costTextView.startAnimation(animations!!.bounce_soft)
+            binding.labelTextView.text = "Quantity"
             calculateCost()
         } else {
-            ui.labelTextView.text = getString(R.string.warning_estimate_incomplete)
-            ui.labelTextView.startAnimation(animations!!.shake_long)
-            ui.valueEditText.visibility = View.GONE
-            ui.costTextView.visibility = View.GONE
+            binding.labelTextView.text = getString(R.string.warning_estimate_incomplete)
+            binding.labelTextView.startAnimation(animations!!.shake_long)
+            binding.valueEditText.visibility = View.GONE
+            binding.costTextView.visibility = View.GONE
         }
     }
 
     private fun haltAnimation() {
-        ui.startAnimationView.visibility = View.GONE
-        ui.endAnimationView.visibility = View.GONE
+        binding.startAnimationView.visibility = View.GONE
+        binding.endAnimationView.visibility = View.GONE
     }
 
     private fun hideCostCard() {
-        ui.costCard.visibility = View.GONE
-        ui.updateButton.visibility = View.GONE
+        binding.costCard.visibility = View.GONE
+        binding.updateButton.visibility = View.GONE
     }
 
     private fun calculateCost() {
         val item: ItemDTOTemp? = item
 
-        val value = ui.valueEditText.text.toString()
+        val value = binding.valueEditText.text.toString()
         //  Lose focus on fields
         //  valueEditText.clearFocus()
 
@@ -1021,7 +1018,7 @@ class EstimatePhotoFragment : LocationFragment(), LocationEngineCallback<Locatio
                 lineAmount = validateLengthCosting(qty = qty, tenderRate = tenderRate)
             }
             else -> {
-                ui.labelTextView.text = getString(R.string.label_quantity)
+                binding.labelTextView.text = getString(R.string.label_quantity)
                 try { //  Default Calculation
                     lineAmount = qty * tenderRate
                 } catch (e: NumberFormatException) {
@@ -1038,7 +1035,7 @@ class EstimatePhotoFragment : LocationFragment(), LocationEngineCallback<Locatio
         when (displayAmount > 0.0) {
             true -> {
                 // Display pricing information
-                ui.costTextView.text =
+                binding.costTextView.text =
                     (" * R $tenderRate =  R ${DecimalFormat("#0.00").format(displayAmount)}")
                 newJobItemEstimate?.qty = qty
                 newJobItemEstimate?.lineRate = tenderRate
@@ -1054,7 +1051,7 @@ class EstimatePhotoFragment : LocationFragment(), LocationEngineCallback<Locatio
         tenderRate: Double?
     ): Double? {
         var inLineAmount: Double? = null
-        when (ui.labelTextView.text) {
+        when (binding.labelTextView.text) {
             getString(R.string.label_length_m) ->
                 try { //  Set the Area to the QTY
                     inLineAmount = qty * tenderRate!!
@@ -1072,7 +1069,7 @@ class EstimatePhotoFragment : LocationFragment(), LocationEngineCallback<Locatio
         tenderRate: Double?
     ): Double? {
         var inlineAmount: Double?
-        ui.labelTextView.text = getString(R.string.label_amount)
+        binding.labelTextView.text = getString(R.string.label_amount)
         try {
             inlineAmount = qty * tenderRate!!
         } catch (e: NumberFormatException) {
@@ -1088,7 +1085,7 @@ class EstimatePhotoFragment : LocationFragment(), LocationEngineCallback<Locatio
         tenderRate: Double?
     ): Double? {
         var inlineAmount: Double?
-        ui.labelTextView.text = getString(R.string.label_volume_m3)
+        binding.labelTextView.text = getString(R.string.label_volume_m3)
         try {
             inlineAmount = qty * tenderRate!!
         } catch (e: NumberFormatException) {
@@ -1104,7 +1101,7 @@ class EstimatePhotoFragment : LocationFragment(), LocationEngineCallback<Locatio
         tenderRate: Double?
     ): Double? {
         var inLineAmount: Double?
-        ui.labelTextView.text = getString(R.string.label_area_m2)
+        binding.labelTextView.text = getString(R.string.label_area_m2)
         try {
             inLineAmount = qty * tenderRate!!
         } catch (e: NumberFormatException) {
@@ -1120,7 +1117,7 @@ class EstimatePhotoFragment : LocationFragment(), LocationEngineCallback<Locatio
         tenderRate: Double?
     ): Double? {
         var inLineAmount: Double?
-        ui.labelTextView.text = getString(R.string.label_quantity)
+        binding.labelTextView.text = getString(R.string.label_quantity)
         try { //  make the change in the array and update view
             inLineAmount = qty * tenderRate!!
         } catch (e: NumberFormatException) {
@@ -1178,7 +1175,7 @@ class EstimatePhotoFragment : LocationFragment(), LocationEngineCallback<Locatio
             val locationErrorToast = ColorToast(
                 title = "Location Error",
                 message = locationErrorMessage,
-                style = ToastStyle.ERROR,
+                style = MotionToastStyle.ERROR,
                 gravity = ToastGravity.CENTER,
                 duration = ToastDuration.LONG
             )
@@ -1206,8 +1203,8 @@ class EstimatePhotoFragment : LocationFragment(), LocationEngineCallback<Locatio
                     }
 
                     if (isEstimateDone) {
-                        ui.costCard.visibility = View.VISIBLE
-                        ui.updateButton.visibility = View.VISIBLE
+                        binding.costCard.visibility = View.VISIBLE
+                        binding.updateButton.visibility = View.VISIBLE
                         setValueEditText(quantity)
                         setCost()
                     }
@@ -1244,7 +1241,11 @@ class EstimatePhotoFragment : LocationFragment(), LocationEngineCallback<Locatio
         createViewModel.tempProjectItem.removeObservers(viewLifecycleOwner)
         createViewModel.currentEstimate.removeObservers(viewLifecycleOwner)
         createViewModel.loggedUser.removeObservers(viewLifecycleOwner)
-        _ui = null
+        // make sure to stop the trip session. In this case it is being called inside `onDestroy`.
+        mapboxNavigation.stopTripSession()
+        // make sure to unregister the observer you have registered.
+        mapboxNavigation.unregisterLocationObserver(locationObserver)
+        _binding = null
     }
 
     private suspend fun buildDeleteDialog(view: View) {
@@ -1265,7 +1266,7 @@ class EstimatePhotoFragment : LocationFragment(), LocationEngineCallback<Locatio
                     extensionToast(
                         title = "Deleting ...",
                         message = "${it.descr} removed.",
-                        style = ToastStyle.DELETE,
+                        style = MotionToastStyle.DELETE,
                         position = ToastGravity.BOTTOM,
                         duration = ToastDuration.LONG
                     )
@@ -1318,102 +1319,12 @@ class EstimatePhotoFragment : LocationFragment(), LocationEngineCallback<Locatio
             }
         }
     }
-
-    override fun onSuccess(result: LocationEngineResult?) {
-        result?.lastLocation
-            ?: return // BECAREFULL HERE, OF NAME LOCATION UPDATE DONT USE -> val resLoc = result.lastLocation ?: return
-        if (result.lastLocation != null) {
-            val lat = result.lastLocation?.latitude!!
-            val lng = result.lastLocation?.longitude!!
-            val latLng = LatLng(
-                lat,
-                lng
-            ) // locationComponent?.forceLocationUpdate(result.lastLocation)
-            val position = CameraPosition.Builder()
-                .target(latLng)
-                .zoom(18.0) // disable this for not follow zoom
-                .tilt(10.0)
-                .build()
-            mapboxM?.animateCamera(CameraUpdateFactory.newCameraPosition(position))
-//            mapbox?.apply {
-//                setMinZoomPreference(14.0)
-//                setMaxZoomPreference(16.0)
-////                this.setMinZoomPreference()
-//            }
-        }
+    override fun onDestroy() {
+        super.onDestroy()
+        // make sure to stop the trip session. In this case it is being called inside `onDestroy`.
+        mapboxNavigation.stopTripSession()
+        // make sure to unregister the observer you have registered.
+        mapboxNavigation.unregisterLocationObserver(locationObserver)
     }
-
-    override fun onFailure(exception: java.lang.Exception) {
-        Timber.d("Map Encountered Problem", exception.message!!)
-    }
-
-    override fun onCameraMove() {
-        TODO("Not yet implemented")
-    }
-
-    private fun enableLocationComponent(style: Style) {
-
-        if (PermissionsManager.areLocationPermissionsGranted(requireContext())) {
-
-            val locationComponentActivationOptions = LocationComponentActivationOptions
-                .builder(requireContext(), style)
-                .build()
-
-            if (ActivityCompat.checkSelfPermission(
-                    requireContext(),
-                    permission.ACCESS_FINE_LOCATION
-                ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                    requireContext(),
-                    permission.ACCESS_COARSE_LOCATION
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                return
-            }
-            locationComponent = mapboxM?.locationComponent.apply {
-                this?.activateLocationComponent(locationComponentActivationOptions)
-                this?.isLocationComponentEnabled = true
-                this?.cameraMode = CameraMode.TRACKING
-                this?.cameraMode = CameraMode.TRACKING_COMPASS
-            }
-            initLocationEngine()
-        } else {
-            permissionManager = PermissionsManager(this)
-            permissionManager?.requestLocationPermissions(requireActivity())
-        }
-    }
-
-    private fun initLocationEngine() {
-        if (ActivityCompat.checkSelfPermission(
-                requireContext(),
-                permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                requireContext(),
-                permission.ACCESS_COARSE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            return
-        }
-
-        locationEngine = LocationEngineProvider.getBestLocationEngine(requireContext())
-
-        val request = LocationEngineRequest
-            .Builder(DEFAULT_INTERVAL_IN_MILLISECONDS)
-            .setPriority(LocationEngineRequest.PRIORITY_HIGH_ACCURACY)
-            .setMaxWaitTime(DEFAULT_MAX_WAIT_TIME)
-            .build()
-        locationEngine.requestLocationUpdates(request, this, requireContext().mainLooper)
-        locationEngine.getLastLocation(this)
-    }
-
-    override fun onExplanationNeeded(permissionsToExplain: MutableList<String>?) {
-        Toast.makeText(requireContext(), "You Need to activate your location", Toast.LENGTH_SHORT).show()
-    }
-
-    override fun onPermissionResult(granted: Boolean) {
-        if (granted) {
-            enableLocationComponent(mapboxM?.style!!)
-        }
-    }
-
 
 }

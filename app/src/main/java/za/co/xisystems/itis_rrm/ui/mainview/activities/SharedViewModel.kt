@@ -10,13 +10,12 @@ import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import www.sanju.motiontoast.MotionToastStyle
 import za.co.xisystems.itis_rrm.custom.notifications.ColorToast
 import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration
 import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration.LONG
 import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity
 import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity.CENTER
-import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
-import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.ERROR
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
 
@@ -39,7 +38,7 @@ class SharedViewModel(private val userRepository: UserRepository) : ViewModel() 
     fun setColorMessage(
         title: String? = null,
         message: String,
-        style: ToastStyle = ERROR,
+        style: MotionToastStyle = MotionToastStyle.ERROR,
         position: ToastGravity = CENTER,
         duration: ToastDuration = LONG
     ) {
