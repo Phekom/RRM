@@ -58,7 +58,6 @@ import za.co.xisystems.itis_rrm.ui.mainview.home.HomeViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.work.goto_work_location.GoToViewModelFactory
-import za.co.xisystems.itis_rrm.ui.mainview.work.goto_work_location.navigation.NavigationFragmentViewModelFactory
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 
 /**
@@ -89,7 +88,6 @@ open class MainApp : Application(), DIAware {
         bind { singleton { MeasureApprovalDataRepository(instance(), instance()) } }
         bind { singleton { DeferredLocationRepository(instance(), instance()) } }
         bind { provider { GoToViewModelFactory(instance()) } }
-        bind { provider { NavigationFragmentViewModelFactory(instance()) } }
         bind { provider { AuthViewModelFactory(instance(), instance(), this@MainApp) } }
 
         bind {
