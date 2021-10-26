@@ -14,14 +14,12 @@ import android.view.animation.AnimationUtils
 import android.view.inputmethod.InputMethodManager
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.snackbar.Snackbar
 import org.kodein.di.DIAware
 import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
 import timber.log.Timber
-import www.sanju.motiontoast.MotionToastStyle
 import za.co.xisystems.itis_rrm.BuildConfig
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
@@ -30,6 +28,7 @@ import za.co.xisystems.itis_rrm.constants.Constants.FIVE_SECONDS
 import za.co.xisystems.itis_rrm.constants.Constants.SSL_PORT
 import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration.LONG
 import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity.BOTTOM
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data._commons.Animations
 import za.co.xisystems.itis_rrm.data._commons.views.IProgressView
@@ -61,14 +60,16 @@ abstract class BaseFragment(
     private val shareFactory: SharedViewModelFactory by instance()
     private val armoury: XIArmoury by instance()
     protected var coordinator: View? = null
-//=========================================================================================
+
+    // =========================================================================================
     internal open var currentLocation: LocationModel? = null
     private lateinit var locationViewModel: LocationViewModel
     private val locationFactory by instance<LocationViewModelFactory>()
     private var gpsEnabled: Boolean = false
     private var networkEnabled: Boolean = false
-//=========================================================================================
-   lateinit var ACTIVITY: MainActivity
+
+    // =========================================================================================
+    lateinit var ACTIVITY: MainActivity
 
     companion object {
         const val GPS_REQUEST = 100
@@ -173,7 +174,7 @@ abstract class BaseFragment(
     private fun startLocationUpdate() {
         locationViewModel.getLocationData().observe(
             this,
-            Observer { it ->
+            { it ->
                 currentLocation = it
             }
         )
@@ -184,10 +185,10 @@ abstract class BaseFragment(
             requireContext(),
             Manifest.permission.ACCESS_FINE_LOCATION
         ) == PackageManager.PERMISSION_GRANTED &&
-                ActivityCompat.checkSelfPermission(
-                    requireContext(),
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-                ) == PackageManager.PERMISSION_GRANTED
+            ActivityCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
 
     private fun shouldShowRequestPermissionRationale() =
         ActivityCompat.shouldShowRequestPermissionRationale(
@@ -197,7 +198,6 @@ abstract class BaseFragment(
             requireActivity(),
             Manifest.permission.ACCESS_COARSE_LOCATION
         )
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -309,7 +309,7 @@ abstract class BaseFragment(
     protected fun noConnectionWarning() {
         extensionToast(
             message = "Please ensure that you have a valid data or wifi connection",
-            style = MotionToastStyle.NO_INTERNET,
+            style = ToastStyle.NO_INTERNET,
             position = BOTTOM,
             duration = LONG
         )
@@ -326,7 +326,7 @@ abstract class BaseFragment(
     private fun noServicesWarning() {
         extensionToast(
             message = "RRM services are unreachable, try again later ...",
-            style = MotionToastStyle.NO_INTERNET,
+            style = ToastStyle.NO_INTERNET,
             position = BOTTOM,
             duration = LONG
         )
@@ -335,7 +335,7 @@ abstract class BaseFragment(
     protected fun noInternetWarning() {
         extensionToast(
             message = "No internet access, try again later ...",
-            style = MotionToastStyle.NO_INTERNET,
+            style = ToastStyle.NO_INTERNET,
             position = BOTTOM,
             duration = LONG
         )

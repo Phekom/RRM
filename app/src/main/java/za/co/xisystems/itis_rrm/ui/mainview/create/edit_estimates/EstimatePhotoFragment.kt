@@ -7,7 +7,6 @@
 package za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates
 
 import android.Manifest
-import android.Manifest.permission
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog.Builder
@@ -58,10 +57,10 @@ import kotlinx.android.synthetic.main.fragment_goto.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.kodein.di.DIAware
 import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
 import timber.log.Timber
-import www.sanju.motiontoast.MotionToastStyle
 import za.co.xisystems.itis_rrm.BuildConfig
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
@@ -70,6 +69,7 @@ import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.notifications.ColorToast
 import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration
 import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
@@ -96,7 +96,7 @@ import kotlin.collections.set
  * Created by Francis Mahlava on 2019/12/29.
  */
 
-class EstimatePhotoFragment : LocationFragment() {
+class EstimatePhotoFragment : LocationFragment(), DIAware {
 
     private var sectionId: String? = null
     override val di by closestDI()
@@ -109,7 +109,6 @@ class EstimatePhotoFragment : LocationFragment() {
     private var isEstimateDone: Boolean = false
     private var disableGlide: Boolean = false
     private var locationWarning: Boolean = false
-
     private var photoType: PhotoType = PhotoType.START
     private var itemIdPhotoType: HashMap<String, String> = HashMap()
     private var filenamePath: HashMap<String, String> = HashMap()
@@ -131,12 +130,14 @@ class EstimatePhotoFragment : LocationFragment() {
     private lateinit var photoUtil: PhotoUtil
     private var changesToPreserve: Boolean = false
     private var tenderRate: Double? = null
-
     private val navigationLocationProvider = NavigationLocationProvider()
 
     private val locationObserver = object : LocationObserver {
         override fun onNewRawLocation(rawLocation: Location) {
+            // You're going to need this when you
+            // aren't driving.
         }
+
         override fun onNewLocationMatcherResult(locationMatcherResult: LocationMatcherResult) {
             val enhancedLocation = locationMatcherResult.enhancedLocation
             navigationLocationProvider.changePosition(
@@ -150,102 +151,8 @@ class EstimatePhotoFragment : LocationFragment() {
 
     private lateinit var mapboxMap: MapboxMap
     private lateinit var mapboxNavigation: MapboxNavigation
-
     private var _binding: FragmentPhotoEstimateBinding? = null
     private val binding get() = _binding!!
-
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        _binding = FragmentPhotoEstimateBinding.inflate(inflater, container, false)
-        mapboxMap = binding.estimatemapview.getMapboxMap()
-        binding.estimatemapview.location.apply {
-            setLocationProvider(navigationLocationProvider)
-            enabled = true
-        }
-        init()
-        return binding.root
-    }
-    private fun init() {
-        initStyle()
-        initNavigation()
-    }
-    private fun initStyle() {
-        mapboxMap.loadStyleUri(Style.MAPBOX_STREETS)
-    }
-    private fun initNavigation() {
-        mapboxNavigation = MapboxNavigation(
-            NavigationOptions.Builder(requireContext())
-                .accessToken(getString(R.string.mapbox_access_token))
-                .build()
-        ).apply {
-            if (ActivityCompat.checkSelfPermission(
-                    requireContext(),
-                    Manifest.permission.ACCESS_FINE_LOCATION
-                ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                    requireContext(),
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                // TODO: Consider calling
-                //    ActivityCompat#requestPermissions
-                // here to request the missing permissions, and then overriding
-                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                //                                          int[] grantResults)
-                // to handle the case where the user grants the permission. See the documentation
-                // for ActivityCompat#requestPermissions for more details.
-            }
-            startTripSession()
-            registerLocationObserver(locationObserver)
-        }
-    }
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        (activity as MainActivity).supportActionBar?.title = getString(R.string.edit_estimate)
-        locationWarning = false
-
-        val callback: OnBackPressedCallback = object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                navToAddProject(this@EstimatePhotoFragment.requireView())
-            }
-        }
-        requireActivity().onBackPressedDispatcher
-            .addCallback(this@EstimatePhotoFragment, callback)
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setHasOptionsMenu(true)
-
-        (activity as MainActivity).supportActionBar?.title = getString(R.string.edit_estimate)
-        newJobItemEstimatesList = ArrayList()
-        newJobItemEstimatesPhotosList = ArrayList()
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        if (savedInstanceState == null) {
-            readNavArgs()
-        } else {
-            onRestoreInstanceState(savedInstanceState)
-        }
-        pullData()
-    }
-
-    private fun updateCamera(location: Location) {
-        val mapAnimationOptions = MapAnimationOptions.Builder().duration(1500L).build()
-        _binding?.estimatemapview?.camera?.easeTo(
-            CameraOptions.Builder()
-                // Centers the camera to the lng/lat specified.
-                .center(Point.fromLngLat(location.longitude, location.latitude))
-                // specifies the zoom value. Increase or decrease to zoom in or zoom out
-                .zoom(17.0)
-                // specify frame of reference from the center.
-                .padding(EdgeInsets(100.0, 0.0, 0.0, 0.0))
-                .build(),
-            mapAnimationOptions
-        )
-    }
 
     /**
      * ActivityResultContract for taking a photograph
@@ -305,6 +212,110 @@ class EstimatePhotoFragment : LocationFragment() {
         private const val RED_PIN_ICON_ID = "RED_PIN_ICON_ID"
         private const val DEFAULT_INTERVAL_IN_MILLISECONDS = 1000L
         private const val DEFAULT_MAX_WAIT_TIME = DEFAULT_INTERVAL_IN_MILLISECONDS * 5
+    }
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        _binding = FragmentPhotoEstimateBinding.inflate(inflater, container, false)
+        mapboxMap = binding.estimatemapview.getMapboxMap()
+        binding.estimatemapview.location.apply {
+            setLocationProvider(navigationLocationProvider)
+            enabled = true
+        }
+        init()
+        return binding.root
+    }
+
+    private fun init() {
+        initStyle()
+        initNavigation()
+    }
+
+    private fun initStyle() {
+        mapboxMap.loadStyleUri(Style.MAPBOX_STREETS)
+    }
+
+    private fun initNavigation() {
+        mapboxNavigation = MapboxNavigation(
+            NavigationOptions.Builder(requireContext())
+                .accessToken(getString(R.string.mapbox_access_token))
+                .build()
+        ).apply {
+            if (ActivityCompat.checkSelfPermission(
+                    requireContext(),
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                    requireContext(),
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+            }
+            startTripSession()
+            registerLocationObserver(locationObserver)
+        }
+    }
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        (activity as MainActivity).supportActionBar?.title = getString(R.string.edit_estimate)
+        locationWarning = false
+
+        val callback: OnBackPressedCallback = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                navToAddProject(this@EstimatePhotoFragment.requireView())
+            }
+        }
+        requireActivity().onBackPressedDispatcher
+            .addCallback(this@EstimatePhotoFragment, callback)
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setHasOptionsMenu(true)
+
+        (activity as MainActivity).supportActionBar?.title = getString(R.string.edit_estimate)
+        newJobItemEstimatesList = ArrayList()
+        newJobItemEstimatesPhotosList = ArrayList()
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        photoUtil = PhotoUtil.getInstance(this.requireContext().applicationContext)
+
+        var stateRestored = false
+        val args: EstimatePhotoFragmentArgs by navArgs()
+        if (args.jobId?.isNotBlank() == true) {
+            readNavArgs()
+            stateRestored = true
+        }
+        if (savedInstanceState != null && !stateRestored) {
+            onRestoreInstanceState(savedInstanceState)
+        }
+
+        pullData()
+    }
+
+    @Suppress("MagicNumber")
+    private fun updateCamera(location: Location) {
+        val mapAnimationOptions = MapAnimationOptions.Builder().duration(1500L).build()
+        _binding?.estimatemapview?.camera?.easeTo(
+            CameraOptions.Builder()
+                // Centers the camera to the lng/lat specified.
+                .center(Point.fromLngLat(location.longitude, location.latitude))
+                // specifies the zoom value. Increase or decrease to zoom in or zoom out
+                .zoom(17.0)
+                // specify frame of reference from the center.
+                .padding(EdgeInsets(100.0, 0.0, 0.0, 0.0))
+                .build(),
+            mapAnimationOptions
+        )
     }
 
     private fun pullData() = uiScope.launch(uiScope.coroutineContext) {
@@ -445,22 +456,6 @@ class EstimatePhotoFragment : LocationFragment() {
         if (item != null) item.isVisible = false
         if (item1 != null) item1.isVisible = false
         if (item2 != null) item2.isVisible = false
-    }
-
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-
-        photoUtil = PhotoUtil.getInstance(this.requireContext().applicationContext)
-
-        var stateRestored = false
-        val args: EstimatePhotoFragmentArgs by navArgs()
-        if (args.jobId?.isNotBlank() == true) {
-            readNavArgs()
-            stateRestored = true
-        }
-        if (savedInstanceState != null && !stateRestored) {
-            onRestoreInstanceState(savedInstanceState)
-        }
     }
 
     override fun onStart() {
@@ -616,14 +611,14 @@ class EstimatePhotoFragment : LocationFragment() {
     private fun initLaunchCamera() {
         if (ContextCompat.checkSelfPermission(
                 requireActivity().applicationContext,
-                permission.CAMERA
+                Manifest.permission.CAMERA
             ) != PackageManager.PERMISSION_GRANTED
         ) {
             ActivityCompat.requestPermissions(
                 requireActivity(),
                 arrayOf(
-                    permission.CAMERA,
-                    permission.READ_EXTERNAL_STORAGE
+                    Manifest.permission.CAMERA,
+                    Manifest.permission.READ_EXTERNAL_STORAGE
                 ),
                 REQUEST_STORAGE_PERMISSION
             )
@@ -700,7 +695,7 @@ class EstimatePhotoFragment : LocationFragment() {
 
     private suspend fun extractImageUri(
         jobItemEstimatePhoto: JobItemEstimatesPhotoDTO?
-    ): Uri? = withContext(Dispatchers.IO) {
+    ): Uri? = withContext(dispatchers.io()) {
         if (jobItemEstimatePhoto != null) {
             val path: String = jobItemEstimatePhoto.photoPath
             Timber.d("x -> photo $path")
@@ -728,7 +723,7 @@ class EstimatePhotoFragment : LocationFragment() {
                 if (estimateLocation != null) {
 
                     //  Save Image to Internal Storage
-                    withContext(Dispatchers.IO) {
+                    withContext(dispatchers.io()) {
                         filenamePath = photoUtil.saveImageToInternalStorage(
                             imageUri
                         ) as HashMap<String, String>
@@ -786,7 +781,6 @@ class EstimatePhotoFragment : LocationFragment() {
         }
     }
 
-    // TODO: polygon verification for offline photography
     private suspend fun processPhotoLocation(
         estimateLocation: LocationModel,
         filePath: Map<String, String>,
@@ -927,7 +921,7 @@ class EstimatePhotoFragment : LocationFragment() {
             } else {
                 extensionToast(
                     message = "Please take both photographs ...",
-                    style = MotionToastStyle.INFO,
+                    style = ToastStyle.INFO,
                     position = ToastGravity.BOTTOM
                 )
                 hideCostCard()
@@ -981,7 +975,7 @@ class EstimatePhotoFragment : LocationFragment() {
         //  valueEditText.clearFocus()
 
         var lineAmount: Double?
-        var tenderRate = newJobItemEstimate?.lineRate ?: item?.tenderRate ?: 0.0
+        val tenderRate = newJobItemEstimate?.lineRate ?: item?.tenderRate ?: 0.0
 
         var qty = item?.quantity ?: value.toDouble()
 
@@ -1165,7 +1159,7 @@ class EstimatePhotoFragment : LocationFragment() {
             val locationErrorToast = ColorToast(
                 title = "Location Error",
                 message = locationErrorMessage,
-                style = MotionToastStyle.ERROR,
+                style = ToastStyle.ERROR,
                 gravity = ToastGravity.CENTER,
                 duration = ToastDuration.LONG
             )
@@ -1257,7 +1251,7 @@ class EstimatePhotoFragment : LocationFragment() {
                     extensionToast(
                         title = "Deleting ...",
                         message = "${it.descr} removed.",
-                        style = MotionToastStyle.DELETE,
+                        style = ToastStyle.DELETE,
                         position = ToastGravity.BOTTOM,
                         duration = ToastDuration.LONG
                     )

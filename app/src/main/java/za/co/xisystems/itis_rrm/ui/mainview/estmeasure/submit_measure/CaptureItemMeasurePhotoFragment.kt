@@ -34,11 +34,11 @@ import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
 import pereira.agnaldo.previewimgcol.ImageCollectionView
 import timber.log.Timber
-import www.sanju.motiontoast.MotionToastStyle
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.LocationFragment
 import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
@@ -157,7 +157,7 @@ class CaptureItemMeasurePhotoFragment :
                         if (measureViewModel.measuredJiNo != it.jimNo) {
                             this@CaptureItemMeasurePhotoFragment.extensionToast(
                                 message = "Measuring job: ${it.jimNo}",
-                                style = MotionToastStyle.INFO,
+                                style = ToastStyle.INFO,
                                 position = ToastGravity.BOTTOM
                             )
                             measureViewModel.measuredJiNo = it.jimNo!!
@@ -251,8 +251,8 @@ class CaptureItemMeasurePhotoFragment :
             //  Save Image to Internal Storage
             filenamePath =
                 photoUtil.saveImageToInternalStorage(
-                imageUri
-            ) as HashMap<String, String>
+                    imageUri
+                ) as HashMap<String, String>
 
             Timber.d("location: ${measurementLocation.longitude}, ${measurementLocation.latitude}")
             Timber.d("accuracy: ${measurementLocation.accuracy}")
