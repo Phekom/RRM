@@ -6,9 +6,6 @@
 -keepattributes *Annotation*
 -keepattributes LineNumberTable,SourceFile
 
--keep interface android.view.** { *; }
--keep class java.beans.** { *; }
-
 -verbose
 
 -printseeds obfuscation/seeds.txt ## all the classes and dependencies we actually use
@@ -91,3 +88,8 @@
 
 -keep, allowobfuscation, allowoptimization class * extends org.kodein.type.TypeReference
 -keep, allowobfuscation, allowoptimization class * extends org.kodein.type.JVMAbstractTypeToken$Companion$WrappingTest
+
+# mapbox
+-keep interface android.view.** { *; }
+-keep class java.beans.** { *; }
+-keep class com.google.auto.value.** { *;}
