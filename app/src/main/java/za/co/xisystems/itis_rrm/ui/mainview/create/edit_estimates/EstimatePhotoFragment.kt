@@ -20,7 +20,11 @@ import android.location.LocationManager
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
-import android.view.*
+import android.view.KeyEvent
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.View
+import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
@@ -38,7 +42,10 @@ import androidx.navigation.Navigation
 import androidx.navigation.fragment.navArgs
 import com.airbnb.lottie.LottieAnimationView
 import com.mapbox.geojson.Point
-import com.mapbox.maps.*
+import com.mapbox.maps.CameraOptions
+import com.mapbox.maps.EdgeInsets
+import com.mapbox.maps.MapboxMap
+import com.mapbox.maps.Style
 import com.mapbox.maps.plugin.animation.MapAnimationOptions
 import com.mapbox.maps.plugin.animation.camera
 import com.mapbox.maps.plugin.locationcomponent.location
@@ -51,7 +58,6 @@ import kotlinx.android.synthetic.main.fragment_goto.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.kodein.di.DIAware
 import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
 import timber.log.Timber
@@ -126,12 +132,10 @@ class EstimatePhotoFragment : LocationFragment() {
     private var changesToPreserve: Boolean = false
     private var tenderRate: Double? = null
 
-
     private val navigationLocationProvider = NavigationLocationProvider()
 
     private val locationObserver = object : LocationObserver {
         override fun onNewRawLocation(rawLocation: Location) {
-
         }
         override fun onNewLocationMatcherResult(locationMatcherResult: LocationMatcherResult) {
             val enhancedLocation = locationMatcherResult.enhancedLocation
@@ -188,13 +192,11 @@ class EstimatePhotoFragment : LocationFragment() {
                 //                                          int[] grantResults)
                 // to handle the case where the user grants the permission. See the documentation
                 // for ActivityCompat#requestPermissions for more details.
-
             }
             startTripSession()
             registerLocationObserver(locationObserver)
         }
     }
-
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -217,12 +219,7 @@ class EstimatePhotoFragment : LocationFragment() {
         (activity as MainActivity).supportActionBar?.title = getString(R.string.edit_estimate)
         newJobItemEstimatesList = ArrayList()
         newJobItemEstimatesPhotosList = ArrayList()
-
-
-
     }
-
-
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -233,7 +230,6 @@ class EstimatePhotoFragment : LocationFragment() {
             onRestoreInstanceState(savedInstanceState)
         }
         pullData()
-
     }
 
     private fun updateCamera(location: Location) {
@@ -250,7 +246,6 @@ class EstimatePhotoFragment : LocationFragment() {
             mapAnimationOptions
         )
     }
-
 
     /**
      * ActivityResultContract for taking a photograph
@@ -307,11 +302,10 @@ class EstimatePhotoFragment : LocationFragment() {
         private const val ICON_LAYER_ID = "ICON_LAYER_ID"
         private const val ICON_SOURCE_ID = "ICON_SOURCE_ID"
         private const val ROUTE_LAYER_ID = "ROUTE_LAYER_ID"
-        private val RED_PIN_ICON_ID = "RED_PIN_ICON_ID"
+        private const val RED_PIN_ICON_ID = "RED_PIN_ICON_ID"
         private const val DEFAULT_INTERVAL_IN_MILLISECONDS = 1000L
         private const val DEFAULT_MAX_WAIT_TIME = DEFAULT_INTERVAL_IN_MILLISECONDS * 5
     }
-
 
     private fun pullData() = uiScope.launch(uiScope.coroutineContext) {
 
@@ -438,8 +432,6 @@ class EstimatePhotoFragment : LocationFragment() {
         }
     }
 
-
-
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // no options menu
         return false
@@ -454,8 +446,6 @@ class EstimatePhotoFragment : LocationFragment() {
         if (item1 != null) item1.isVisible = false
         if (item2 != null) item2.isVisible = false
     }
-
-
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
@@ -1183,7 +1173,7 @@ class EstimatePhotoFragment : LocationFragment() {
         }
     }
 
-    fun restoreEstimateViewState() {
+    private fun restoreEstimateViewState() {
 
         sectionId = newJob?.sectionId
         if (sectionId != null) {
@@ -1220,7 +1210,7 @@ class EstimatePhotoFragment : LocationFragment() {
         }
     }
 
-    fun retryEstimateViewState() {
+    private fun retryEstimateViewState() {
         IndefiniteSnackbar.hide()
         restoreEstimateViewState()
     }
@@ -1245,6 +1235,7 @@ class EstimatePhotoFragment : LocationFragment() {
         mapboxNavigation.stopTripSession()
         // make sure to unregister the observer you have registered.
         mapboxNavigation.unregisterLocationObserver(locationObserver)
+        mapboxNavigation.onDestroy()
         _binding = null
     }
 
@@ -1319,12 +1310,4 @@ class EstimatePhotoFragment : LocationFragment() {
             }
         }
     }
-    override fun onDestroy() {
-        super.onDestroy()
-        // make sure to stop the trip session. In this case it is being called inside `onDestroy`.
-        mapboxNavigation.stopTripSession()
-        // make sure to unregister the observer you have registered.
-        mapboxNavigation.unregisterLocationObserver(locationObserver)
-    }
-
 }

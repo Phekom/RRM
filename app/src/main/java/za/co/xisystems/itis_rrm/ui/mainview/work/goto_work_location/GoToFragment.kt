@@ -3,7 +3,6 @@ package za.co.xisystems.itis_rrm.ui.mainview.work.goto_work_location
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.content.res.Resources
@@ -73,7 +72,11 @@ import com.mapbox.navigation.ui.maps.route.line.api.MapboxRouteLineView
 import com.mapbox.navigation.ui.maps.route.line.model.MapboxRouteLineOptions
 import com.mapbox.navigation.ui.maps.route.line.model.RouteLine
 import com.mapbox.navigation.ui.tripprogress.api.MapboxTripProgressApi
-import com.mapbox.navigation.ui.tripprogress.model.*
+import com.mapbox.navigation.ui.tripprogress.model.DistanceRemainingFormatter
+import com.mapbox.navigation.ui.tripprogress.model.EstimatedTimeToArrivalFormatter
+import com.mapbox.navigation.ui.tripprogress.model.PercentDistanceTraveledFormatter
+import com.mapbox.navigation.ui.tripprogress.model.TimeRemainingFormatter
+import com.mapbox.navigation.ui.tripprogress.model.TripProgressUpdateFormatter
 import com.mapbox.navigation.ui.voice.api.MapboxSpeechApi
 import com.mapbox.navigation.ui.voice.api.MapboxVoiceInstructionsPlayer
 import com.mapbox.navigation.ui.voice.model.SpeechAnnouncement
@@ -85,9 +88,7 @@ import kotlinx.coroutines.withContext
 import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
 import timber.log.Timber
-import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
-import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.base.LocationFragment
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
@@ -95,29 +96,30 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentGotoBinding
 import za.co.xisystems.itis_rrm.extensions.displayPromptForEnablingGPS
 import za.co.xisystems.itis_rrm.services.LocationModel
-import za.co.xisystems.itis_rrm.ui.mainview.work.WorkFragmentDirections
 import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModelFactory
 import za.co.xisystems.itis_rrm.utils.Coroutines
-import java.util.*
-import kotlin.collections.ArrayList
+import java.util.Locale
 
-
-class GoToFragment : LocationFragment(),PermissionsListener {
+@Suppress("MagicNumber")
+class GoToFragment : LocationFragment(), PermissionsListener {
 
     override val di by closestDI()
     private val factory: GoToViewModelFactory by instance()
     private lateinit var goToViewModel: GoToViewModel
     private lateinit var workViewModel: WorkViewModel
-    private val myfactory: WorkViewModelFactory by instance()
+    private val workFactory: WorkViewModelFactory by instance()
     private var _binding: FragmentGotoBinding? = null
     private val binding get() = _binding!!
     private val permissionsManager = PermissionsManager(this)
     private var myWorkLocationPoint: Point? = null
-    private var distanceLeft  = 0.0
-        private companion object {
+    private var distanceLeft = 0.0
+
+    private companion object {
         private const val BUTTON_ANIMATION_DURATION = 1500L
+        private const val REQUEST_STORAGE_PERMISSION = 1010
     }
+
     private lateinit var itemEstimate: JobItemEstimateDTO
     private lateinit var itemEstimateJob: JobDTO
     private lateinit var lm: LocationManager
@@ -132,6 +134,7 @@ class GoToFragment : LocationFragment(),PermissionsListener {
     private lateinit var navigationCamera: NavigationCamera
     private lateinit var viewportDataSource: MapboxNavigationViewportDataSource
     private val pixelDensity = Resources.getSystem().displayMetrics.density
+
     private val overviewPadding: EdgeInsets by lazy {
         EdgeInsets(
             140.0 * pixelDensity,
@@ -244,7 +247,6 @@ class GoToFragment : LocationFragment(),PermissionsListener {
         }
     }
 
-
     private val routeProgressObserver = RouteProgressObserver { routeProgress ->
         // update the camera position to account for the progressed fragment of the route
         viewportDataSource.onRouteProgressChanged(routeProgress)
@@ -273,14 +275,13 @@ class GoToFragment : LocationFragment(),PermissionsListener {
             }
         )
         distanceLeft = tripProgressApi.getTripProgress(routeProgress).distanceRemaining
-        if (distanceLeft.equals(0.0)){
-            binding.startWorkBTN.visibility =View.VISIBLE
+        if (distanceLeft.equals(0.0)) {
+            binding.startWorkBTN.visibility = View.VISIBLE
         }
         // update bottom trip progress summary
         binding.tripProgressView.render(
             tripProgressApi.getTripProgress(routeProgress)
         )
-
     }
 
     private val routesObserver = RoutesObserver { routeUpdateResult ->
@@ -320,9 +321,8 @@ class GoToFragment : LocationFragment(),PermissionsListener {
 
     private val arrivalObserver: ArrivalObserver = object : ArrivalObserver {
         override fun onFinalDestinationArrival(routeProgress: RouteProgress) {
-            //buildingApi.queryBuildingOnFinalDestination(routeProgress, callback)
-            if (routeProgress.distanceRemaining < 70.0){
-
+            // buildingApi.queryBuildingOnFinalDestination(routeProgress, callback)
+            if (routeProgress.distanceRemaining < 70.0) {
             }
         }
 
@@ -333,16 +333,11 @@ class GoToFragment : LocationFragment(),PermissionsListener {
         }
 
         override fun onWaypointArrival(routeProgress: RouteProgress) {
-            //buildingApi.queryBuildingOnWaypoint(routeProgress, callback)
+            // buildingApi.queryBuildingOnWaypoint(routeProgress, callback)
 //            if (routeProgress.distanceRemaining < 70.0){
 //                closeApp()
 //            }
         }
-    }
-    private fun closeApp() {
-//        Toast.makeText(requireContext(),"${routeProgress.distanceRemaining}", Toast.LENGTH_SHORT).show()
-        startActivity(Intent(requireContext(), MainActivity::class.java))
-
     }
 
     override fun onCreateView(
@@ -354,15 +349,13 @@ class GoToFragment : LocationFragment(),PermissionsListener {
         goToViewModel =
             ViewModelProvider(this.requireActivity(), factory).get(GoToViewModel::class.java)
         workViewModel =
-            ViewModelProvider(this.requireActivity(), myfactory).get(WorkViewModel::class.java)
-        binding.startWorkBTN.visibility =View.GONE
-
+            ViewModelProvider(this.requireActivity(), workFactory).get(WorkViewModel::class.java)
+        binding.startWorkBTN.visibility = View.GONE
 
         workViewModel.myWorkItem.observe(
             viewLifecycleOwner,
             {
                 myWorkLocationPoint = it
-
 
                 mapboxMap = binding.mymapView.getMapboxMap()
                 // initialize the location puck
@@ -381,13 +374,13 @@ class GoToFragment : LocationFragment(),PermissionsListener {
             }
         )
         workViewModel.workItemJob.observe(viewLifecycleOwner, { estimateJob ->
-            estimateJob?.getContentIfNotHandled()?.let {
+            estimateJob?.let {
                 itemEstimateJob = it
             }
         })
 
         workViewModel.workItem.observe(viewLifecycleOwner, { estimate ->
-            estimate?.getContentIfNotHandled()?.let {
+            estimate?.let {
                 itemEstimate = it
             }
         })
@@ -399,7 +392,8 @@ class GoToFragment : LocationFragment(),PermissionsListener {
                 withContext(Dispatchers.Main.immediate) {
                     val navDirection = GoToFragmentDirections.actionWorkLocationToCaptureWorkFragment(
                         jobId = itemEstimateJob.jobId,
-                        estimateId = itemEstimate.estimateId )
+                        estimateId = itemEstimate.estimateId
+                    )
                     Navigation.findNavController(requireView()).navigate(navDirection)
                 }
             }
@@ -411,6 +405,7 @@ class GoToFragment : LocationFragment(),PermissionsListener {
     private fun getCurrentLocation(): LocationModel? {
         return super.getLocation()
     }
+
     private fun generateRoot(structure: Point?) {
         initStyle()
         initNavigation(structure)
@@ -418,7 +413,7 @@ class GoToFragment : LocationFragment(),PermissionsListener {
 
     private fun initStyle() {
         mapboxMap.loadStyleUri(
-            Style.MAPBOX_STREETS,{},
+            Style.MAPBOX_STREETS, {},
             object : OnMapLoadErrorListener {
                 @SuppressLint("LogNotTimber")
                 override fun onMapLoadError(mapLoadErrorType: MapLoadErrorType, message: String) {
@@ -429,12 +424,9 @@ class GoToFragment : LocationFragment(),PermissionsListener {
                 }
             }
         )
-
     }
 
-
-
-
+    @SuppressLint("MagicNumber")
     private fun initNavigation(structure: Point?) {
         // initialize Mapbox Navigation
         mapboxNavigation = if (MapboxNavigationProvider.isCreated()) {
@@ -455,7 +447,8 @@ class GoToFragment : LocationFragment(),PermissionsListener {
                         requireContext(),
                         Manifest.permission.ACCESS_COARSE_LOCATION
                     ) != PackageManager.PERMISSION_GRANTED
-                ) {}
+                ) {
+                }
                 startTripSession()
                 // register event listeners
                 registerRoutesObserver(routesObserver)
@@ -464,38 +457,30 @@ class GoToFragment : LocationFragment(),PermissionsListener {
                 registerLocationObserver(locationObserver)
                 registerVoiceInstructionsObserver(voiceInstructionsObserver)
                 registerRouteProgressObserver(replayProgressObserver)
-
-
             }
-
         }
 
         if (mapboxNavigation.getRoutes().isEmpty()) {
             if (structure != null) {
-                val destination = Point.fromLngLat(structure.longitude(),structure.latitude() )
+                val destination = Point.fromLngLat(structure.longitude(), structure.latitude())
 
                 Coroutines.main {
-                    //val originLocation = navigationLocationProvider.lastLocation
-                    val myoriginLocation: LocationModel? = this.getCurrentLocation()
+                    // val originLocation = navigationLocationProvider.lastLocation
+                    val myOriginLocation: LocationModel? = this.getCurrentLocation()
                     val originLocation = Location("rrm").apply {
-                        longitude = myoriginLocation?.longitude!!
-                        latitude = myoriginLocation.latitude
+                        longitude = myOriginLocation?.longitude!!
+                        latitude = myOriginLocation.latitude
                         bearing = 10f
                     }
 //                    Toast.makeText(requireContext(),"${estimateLocation}", Toast.LENGTH_SHORT).show()
 //                    ToastUtils().toastShort(requireContext()," $originLocation     AND $destination")
 
-
-                findRoute(originLocation, destination)
-
+                    findRoute(originLocation, destination)
                 }
-
-            }else{
-                ToastUtils().toastShort(requireContext(),"Error loading Route is not Found")
+            } else {
+                ToastUtils().toastShort(requireContext(), "Error loading Route is not Found")
             }
-
         }
-
 
         // initialize Navigation Camera
         viewportDataSource = MapboxNavigationViewportDataSource(mapboxMap)
@@ -567,7 +552,8 @@ class GoToFragment : LocationFragment(),PermissionsListener {
             Locale.US.language
         )
 
-        // initialize route line, the withRouteLineBelowLayerId is specified to place the route line below road labels layer on the map
+        // initialize route line, the withRouteLineBelowLayerId is specified
+        // to place the route line below road labels layer on the map
         // the value of this option will depend on the style that you are using
         // and under which layer the route line should be placed on the map layers stack
         val mapboxRouteLineOptions = MapboxRouteLineOptions.Builder(requireContext())
@@ -579,7 +565,6 @@ class GoToFragment : LocationFragment(),PermissionsListener {
         // initialize maneuver arrow view to draw arrows on the map
         val routeArrowOptions = RouteArrowOptions.Builder(requireContext()).build()
         routeArrowView = MapboxRouteArrowView(routeArrowOptions)
-
 
         // initialize view interactions
         binding.stop.setOnClickListener {
@@ -594,18 +579,16 @@ class GoToFragment : LocationFragment(),PermissionsListener {
             binding.recenter.showTextAndExtend(BUTTON_ANIMATION_DURATION)
         }
         binding.soundButton.setOnClickListener {
-            // mute/unmute voice instructions
+            // mute/ un-mute voice instructions
             isVoiceInstructionsMuted = !isVoiceInstructionsMuted
         }
 
         // set initial sounds button state
         binding.soundButton.unmute()
-
-
     }
 
-    private fun findRoute(originLocation: Location?, destination: Point) {  //destination: Point
-        //val originLocation = navigationLocationProvider.lastLocation
+    private fun findRoute(originLocation: Location?, destination: Point) { // destination: Point
+        // val originLocation = navigationLocationProvider.lastLocation
         val originPoint = originLocation?.let {
             Point.fromLngLat(it.longitude, it.latitude)
         } ?: return
@@ -645,7 +628,7 @@ class GoToFragment : LocationFragment(),PermissionsListener {
                     routeOptions: RouteOptions
                 ) {
                     // no impl
-                    ToastUtils().toastShort(requireContext()," $reasons")
+                    ToastUtils().toastShort(requireContext(), " $reasons")
                 }
 
                 override fun onCanceled(routeOptions: RouteOptions, routerOrigin: RouterOrigin) {
@@ -697,11 +680,6 @@ class GoToFragment : LocationFragment(),PermissionsListener {
         }
     }
 
-
-
-
-
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         requireActivity().hideKeyboard()
@@ -710,7 +688,6 @@ class GoToFragment : LocationFragment(),PermissionsListener {
         } else {
             permissionsManager.requestLocationPermissions(requireActivity())
         }
-
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -725,17 +702,22 @@ class GoToFragment : LocationFragment(),PermissionsListener {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         permissionsManager.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
+
     override fun onExplanationNeeded(permissionsToExplain: MutableList<String>?) {
-        ToastUtils().toastShort(requireContext(),"This app needs location and storage permissions in order to show its functionality.")
+        ToastUtils().toastShort(
+            requireContext(),
+            "This app needs location and storage permissions in order to perform its core functionality."
+        )
     }
 
     override fun onPermissionResult(granted: Boolean) {
         if (granted) {
             requestStoragePermission()
         } else {
-            ToastUtils().toastShort(requireContext(), "You didn't grant the permissions required to use the app",)
+            ToastUtils().toastShort(requireContext(), "You didn't grant the permissions required to use the app")
         }
     }
+
     private fun requestStoragePermission() {
         val permission = Manifest.permission.WRITE_EXTERNAL_STORAGE
         val permissionsNeeded: MutableList<String> = ArrayList()
@@ -768,15 +750,9 @@ class GoToFragment : LocationFragment(),PermissionsListener {
         speechApi.cancel()
         voiceInstructionsPlayer.shutdown()
         MapboxNavigationProvider.destroy()
+
         _binding = null
-    }
-
-
-    override fun onDestroy() {
-        super.onDestroy()
-        MapboxNavigationProvider.destroy()
-        speechApi.cancel()
-        voiceInstructionsPlayer.shutdown()
+        mapboxNavigation.onDestroy()
     }
 
     override fun onStop() {
@@ -789,7 +765,7 @@ class GoToFragment : LocationFragment(),PermissionsListener {
         mapboxNavigation.unregisterVoiceInstructionsObserver(voiceInstructionsObserver)
         mapboxNavigation.unregisterRouteProgressObserver(replayProgressObserver)
     }
-
+    @Suppress("TooGenericExceptionCaught")
     override fun onStart() {
         super.onStart()
         lm = requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager
@@ -805,16 +781,3 @@ class GoToFragment : LocationFragment(),PermissionsListener {
         }
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
