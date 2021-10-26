@@ -91,9 +91,8 @@ interface JobDao {
     @Query("SELECT * FROM JOB_TABLE WHERE isSynced = 0 AND deleted = 0")
     fun getUnSyncedJobs(): LiveData<List<JobDTO>>
 
-    @Query(
-        "SELECT * FROM JOB_TABLE WHERE " +
-            "actId = :jobApproved  AND estimatesActId LIKE :estimateComplete " +
+    @Query("SELECT * FROM JOB_TABLE WHERE actId = :jobApproved " +
+            "AND estimatesActId LIKE :estimateComplete " +
             "AND  worksActId LIKE :estWorksComplete AND " +
             "measureActId LIKE :measureComplete AND deleted = 0 ORDER BY jiNo ASC"
     )
@@ -125,7 +124,7 @@ interface JobDao {
         " SELECT j.*, e.* FROM JOB_TABLE AS j JOIN JOB_ITEM_ESTIMATE AS e " +
             "ON e.JobId = j.jobId WHERE j.actId Like :actId " +
             "AND e.ActId Like :actId2 AND j.deleted = 0 " +
-            "ORDER BY DATE(j.workStartDate) DESC"
+            "ORDER BY DATETIME(j.workStartDate) DESC, jiNO ASC"
     )
     @RewriteQueriesToDropUnusedColumns
     fun getJobsForActivityIds1(actId: Int, actId2: Int): LiveData<List<JobDTO>>

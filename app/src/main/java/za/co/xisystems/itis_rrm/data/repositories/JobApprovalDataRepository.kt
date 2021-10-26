@@ -10,10 +10,12 @@ package za.co.xisystems.itis_rrm.data.repositories
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.google.gson.JsonObject
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.custom.errors.LocalDataException
 import za.co.xisystems.itis_rrm.custom.errors.ServiceException
+import za.co.xisystems.itis_rrm.custom.errors.TransmissionException
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.custom.results.XIResult
@@ -357,5 +359,30 @@ class JobApprovalDataRepository(
 
     suspend fun insertOrUpdateJob(job: JobDTO) = withContext(dispatchers.io()) {
         return@withContext appDb.getJobDao().updateJob(job)
+    }
+
+    @Suppress("TooGenericExceptionCaught")
+    // We have a really smart error-handler
+    suspend fun updateApprovalInfo(userId: String, jobId: String, remarks: String): Boolean {
+        try {
+
+            val requestData = JsonObject()
+            requestData.addProperty("UserId", userId)
+            requestData.addProperty("JobId", jobId)
+            requestData.addProperty("Remarks", remarks)
+            Timber.d("Json Job: $requestData")
+
+            val approvalResponse = apiRequest {
+                api.updateApprovalInfo(requestData)
+            }
+            if (!approvalResponse.isSuccess) {
+                throw ServiceException(approvalResponse.errorMessage!!)
+            }
+            return true
+        } catch (e: Exception) {
+            val message = "Failed to update approval information"
+            Timber.e(e, message)
+            throw TransmissionException(message, e)
+        }
     }
 }
