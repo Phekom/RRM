@@ -374,13 +374,13 @@ class GoToFragment : LocationFragment(), PermissionsListener {
             }
         )
         workViewModel.workItemJob.observe(viewLifecycleOwner, { estimateJob ->
-            estimateJob?.getContentIfNotHandled()?.let {
+            estimateJob?.let {
                 itemEstimateJob = it
             }
         })
 
         workViewModel.workItem.observe(viewLifecycleOwner, { estimate ->
-            estimate?.getContentIfNotHandled()?.let {
+            estimate?.let {
                 itemEstimate = it
             }
         })
