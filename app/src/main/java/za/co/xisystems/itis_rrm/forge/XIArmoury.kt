@@ -44,17 +44,21 @@ class XIArmoury private constructor(
         const val PASS_LENGTH = 64
         private val Lock = Any()
 
-        fun getInstance(context: Context, sageInstance: Sage, scribeInstance: Scribe): XIArmoury {
+        fun getInstance(context: Context): XIArmoury {
 
             return instance ?: synchronized(Lock) {
                 XIArmoury(appContext = context)
             }.also {
-                it.sageInstance = sageInstance
-                it.masterKey = sageInstance.masterKeyAlias
-                it.scribeInstance = scribeInstance
+                it.sageInstance = Sage.getInstance(appContext = context)
+                it.masterKey = it.sageInstance?.masterKeyAlias
+                it.scribeInstance = Scribe.getInstance(appContext = context, sageInstance = it.sageInstance!!)
                 it.initArmoury(it, context)
                 instance = it
             }
+        }
+
+        fun checkTimeout(): Boolean {
+            return instance?.checkTimeout() == true
         }
 
         fun closeArmoury() {
@@ -197,7 +201,7 @@ class XIArmoury private constructor(
 
     fun checkTimeout(): Boolean {
         val timeInMillis = System.currentTimeMillis()
-        val timeDiff = timeInMillis - userTimestamp.get()
+        val timeDiff = timeInMillis - getTimestamp()
         Timber.d("TimeDiff: $timeDiff")
         return timeDiff >= TEN_MINUTES
     }
