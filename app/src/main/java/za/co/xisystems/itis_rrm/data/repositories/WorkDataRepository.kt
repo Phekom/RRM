@@ -22,6 +22,7 @@ import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.custom.errors.LocalDataException
 import za.co.xisystems.itis_rrm.custom.errors.NoDataException
 import za.co.xisystems.itis_rrm.custom.errors.ServiceException
+import za.co.xisystems.itis_rrm.custom.errors.TransmissionException
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.custom.results.XIResult
@@ -52,7 +53,7 @@ class WorkDataRepository(
         val TAG: String = WorkDataRepository::class.java.simpleName
     }
 
-    val workStatus: MutableLiveData<XIEvent<XIResult<String>>> = MutableLiveData()
+    var workStatus: MutableLiveData<XIEvent<XIResult<String>>> = MutableLiveData()
 
     @Synchronized
     private fun postWorkStatus(result: XIResult<String>) = Coroutines.main {
@@ -561,5 +562,60 @@ class WorkDataRepository(
         return@withContext appDb.getJobItemEstimatePhotoDao().getEstimateStartPhotoForId(estimateId)
     }
 
+    suspend fun updateWorkStateInfo(
+        jobId: String,
+        userId: Int,
+        activityId: Int,
+        remarks: String
+    ): Boolean {
+        try {
+            val requestData = JsonObject()
+            requestData.addProperty("UserId", userId)
+            requestData.addProperty("JobId", jobId)
+            requestData.addProperty("ActivityId", activityId)
+            requestData.addProperty("Remarks", remarks)
 
+            Timber.d("Json Job: $requestData")
+            val updateResponse = apiRequest {
+                api.updateWorkStateInfo(requestData)
+            }
+
+            if (!updateResponse.errorMessage.isNullOrBlank()) {
+                throw ServiceException(updateResponse.errorMessage)
+            }
+            return true
+        } catch (e: Exception) {
+            val message = "Failed to update approval information"
+            Timber.e(e, message)
+            throw TransmissionException(message, e)
+        }
+    }
+
+    suspend fun updateWorkTimes(userId: String, jobId: String, isStart: Boolean): Boolean {
+        val requestData = JsonObject()
+        requestData.addProperty("UserId", userId)
+        requestData.addProperty("JobId", jobId)
+        try {
+            val updateResponse = when (isStart) {
+                true -> {
+                    apiRequest { api.updateWorkStartInfo(requestData) }
+                }
+                else -> {
+                    apiRequest { api.updateWorkEndInfo(requestData) }
+                }
+            }
+            if (!updateResponse.errorMessage.isNullOrBlank()) {
+                throw ServiceException(updateResponse.errorMessage)
+            }
+            return true
+        } catch (ex: Exception) {
+            val message = "Failed to update work start / end times."
+            Timber.e(ex, message)
+            throw TransmissionException(message, ex)
+        }
+    }
+
+    suspend fun clearErrors() = withContext(dispatchers.main()) {
+        workStatus = MutableLiveData()
+    }
 }

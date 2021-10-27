@@ -22,6 +22,7 @@ import za.co.xisystems.itis_rrm.custom.errors.LocalDataException
 import za.co.xisystems.itis_rrm.custom.errors.NoDataException
 import za.co.xisystems.itis_rrm.custom.errors.RecoverableException
 import za.co.xisystems.itis_rrm.custom.errors.ServiceException
+import za.co.xisystems.itis_rrm.custom.errors.TransmissionException
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.custom.results.XIResult
@@ -352,7 +353,7 @@ class MeasureCreationDataRepository(
         Coroutines.io {
             for (jobItemMeasure in jobItemMeasures.iterator()) {
                 if (!appDb.getJobItemMeasureDao()
-                    .checkIfJobItemMeasureExists(jobItemMeasure.itemMeasureId)
+                        .checkIfJobItemMeasureExists(jobItemMeasure.itemMeasureId)
                 ) {
                     appDb.getJobItemMeasureDao().insertJobItemMeasure(jobItemMeasure)
                 }
@@ -386,7 +387,7 @@ class MeasureCreationDataRepository(
     ) {
         Coroutines.io {
             if (!appDb.getJobItemMeasureDao()
-                .checkIfJobItemMeasureExists(selectedJobItemMeasure.itemMeasureId)
+                    .checkIfJobItemMeasureExists(selectedJobItemMeasure.itemMeasureId)
             ) {
                 appDb.getJobItemMeasureDao().insertJobItemMeasure(selectedJobItemMeasure)
             }
@@ -461,7 +462,7 @@ class MeasureCreationDataRepository(
 
                 jobItemEstimate.workflowEstimateWorks.forEach { jobEstimateWorks ->
                     if (appDb.getEstimateWorkDao()
-                        .checkIfJobEstimateWorksExist(jobEstimateWorks.worksId)
+                            .checkIfJobEstimateWorksExist(jobEstimateWorks.worksId)
                     ) {
                         appDb.getEstimateWorkDao().updateJobEstimateWorksWorkflow(
                             jobEstimateWorks.worksId,
@@ -504,7 +505,7 @@ class MeasureCreationDataRepository(
 
             job.workflowJobSections.forEach { jobSection ->
                 if (!appDb.getJobSectionDao()
-                    .checkIfJobSectionExist(jobSection.jobSectionId)
+                        .checkIfJobSectionExist(jobSection.jobSectionId)
                 ) {
                     appDb.getJobSectionDao().insertJobSection(jobSection)
                 } else {
@@ -622,6 +623,25 @@ class MeasureCreationDataRepository(
     ): LiveData<List<JobItemMeasureDTO>> {
         return withContext(dispatchers.io()) {
             appDb.getJobItemMeasureDao().getJobItemMeasuresByJobIdAndActId(jobID!!, actId)
+        }
+    }
+
+    @Suppress("TooGenericExceptionCaught")
+    suspend fun updateMeasureCreatedInfo(userId: String, jobId: String): Boolean {
+        val requestData = JsonObject()
+        requestData.addProperty("UserId", userId)
+        requestData.addProperty("JobId", jobId)
+        try {
+            val updateResponse =
+                apiRequest { api.updateMeasureCreatedInfo(requestData) }
+            if (!updateResponse.isSuccess) {
+                throw ServiceException(updateResponse.errorMessage!!)
+            }
+            return true
+        } catch (ex: Exception) {
+            val message = "Failed to update work start / end times."
+            Timber.e(ex, message)
+            throw TransmissionException(message, ex)
         }
     }
 }
