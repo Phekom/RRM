@@ -36,6 +36,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.data.repositories.MeasureApprovalDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.ui.custom.MeasureGalleryUIState
+import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
@@ -156,6 +157,7 @@ class ApproveMeasureViewModel(
 
     suspend fun approveMeasurements(
         userId: String,
+        jobId: String,
         workflowDirection: WorkflowDirection,
         measurements: List<JobItemMeasureDTO>
     ) = viewModelScope.launch {
@@ -163,9 +165,9 @@ class ApproveMeasureViewModel(
 
         withContext(contextIO) {
             try {
+                val jobGuid = DataConversion.toLittleEndian(jobId)!!
                 measureApprovalDataRepository.processWorkflowMove(userId, measurements, workflowDirection.value)
-
-                // workflowState.postValue(XIResult.Success("WORK_COMPLETE"))
+                measureApprovalDataRepository.updateMeasureApprovalInfo(userId, jobGuid)
             } catch (t: Throwable) {
                 withContext(contextMain) {
                     workflowState.postValue(Error(t, t.message ?: UNKNOWN_ERROR))
@@ -272,13 +274,6 @@ class ApproveMeasureViewModel(
         }
     }
 
-    /**
-     * This method will be called when this ViewModel is no longer used and will be destroyed.
-     *
-     *
-     * It is useful when ViewModel observes some data and you need to clear this subscription to
-     * prevent a leak of this ViewModel.
-     */
     override fun onCleared() {
         super.onCleared()
         superJob.cancelChildren(CancellationException("clearing measureApprovalViewModel"))

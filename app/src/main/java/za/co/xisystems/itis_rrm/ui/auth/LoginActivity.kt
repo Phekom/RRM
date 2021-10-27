@@ -44,7 +44,7 @@ import za.co.xisystems.itis_rrm.utils.hideKeyboard
 import za.co.xisystems.itis_rrm.utils.show
 import za.co.xisystems.itis_rrm.utils.snackbar
 import za.co.xisystems.itis_rrm.utils.toast
-import za.co.xisystems.traffic_count.delegates.viewBinding
+import za.co.xisystems.itis_rrm.delegates.viewBinding
 
 class LoginActivity : BaseActivity(), AuthListener, DIAware {
 

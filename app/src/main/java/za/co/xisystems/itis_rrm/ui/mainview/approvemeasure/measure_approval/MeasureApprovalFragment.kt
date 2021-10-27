@@ -78,7 +78,7 @@ class MeasureApprovalFragment : BaseFragment(), DIAware {
     private var workObserver = Observer<XIResult<String>?> { handleMeasureProcessing(it) }
     private var flowDirection: Int = 0
     private var measuresProcessed: Int = 0
-
+    private var selectedJobId: String? = null
     private var uiScope = UiLifecycleScope()
     private var _ui: FragmentMeasureApprovalBinding? = null
     private val ui get() = _ui!!
@@ -185,7 +185,10 @@ class MeasureApprovalFragment : BaseFragment(), DIAware {
 
             ui.viewMeasuredItems.veil()
             approveViewModel.jobIdForApproval.observe(viewLifecycleOwner, { jobId ->
-                getMeasureItems(jobId)
+                jobId?.let{
+                    selectedJobId = it
+                    getMeasureItems(it)
+                }
             })
 
             ui.approveMeasureButton.setOnClickListener {
@@ -259,6 +262,7 @@ class MeasureApprovalFragment : BaseFragment(), DIAware {
                         withContext(uiScope.coroutineContext) {
                             approveViewModel.approveMeasurements(
                                 userDTO.userId,
+                                selectedJobId!!,
                                 workflowDirection,
                                 measurementsToApprove
                             )
