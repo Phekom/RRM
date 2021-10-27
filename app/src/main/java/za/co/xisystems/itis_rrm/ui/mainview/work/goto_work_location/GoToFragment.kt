@@ -21,6 +21,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
 import com.mapbox.android.core.permissions.PermissionsListener
 import com.mapbox.android.core.permissions.PermissionsManager
+import com.mapbox.api.directions.v5.DirectionsCriteria
 import com.mapbox.api.directions.v5.models.Bearing
 import com.mapbox.api.directions.v5.models.DirectionsRoute
 import com.mapbox.api.directions.v5.models.RouteOptions
@@ -90,12 +91,16 @@ import org.kodein.di.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.LocationFragment
+import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration
+import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentGotoBinding
 import za.co.xisystems.itis_rrm.extensions.displayPromptForEnablingGPS
 import za.co.xisystems.itis_rrm.services.LocationModel
+import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModelFactory
 import za.co.xisystems.itis_rrm.utils.Coroutines
@@ -448,15 +453,22 @@ class GoToFragment : LocationFragment(), PermissionsListener {
                         Manifest.permission.ACCESS_COARSE_LOCATION
                     ) != PackageManager.PERMISSION_GRANTED
                 ) {
+                    this@GoToFragment.extensionToast(
+                        message = "Please enable location services in order to proceed",
+                        style = ToastStyle.WARNING,
+                        position = ToastGravity.CENTER,
+                        duration = ToastDuration.LONG
+                    )
+                } else {
+                    startTripSession()
+                    // register event listeners
+                    registerRoutesObserver(routesObserver)
+                    registerArrivalObserver(arrivalObserver)
+                    registerRouteProgressObserver(routeProgressObserver)
+                    registerLocationObserver(locationObserver)
+                    registerVoiceInstructionsObserver(voiceInstructionsObserver)
+                    registerRouteProgressObserver(replayProgressObserver)
                 }
-                startTripSession()
-                // register event listeners
-                registerRoutesObserver(routesObserver)
-                registerArrivalObserver(arrivalObserver)
-                registerRouteProgressObserver(routeProgressObserver)
-                registerLocationObserver(locationObserver)
-                registerVoiceInstructionsObserver(voiceInstructionsObserver)
-                registerRouteProgressObserver(replayProgressObserver)
             }
         }
 
@@ -544,12 +556,12 @@ class GoToFragment : LocationFragment(), PermissionsListener {
         speechApi = MapboxSpeechApi(
             requireContext(),
             getString(R.string.mapbox_access_token),
-            Locale.US.language
+            Locale.ENGLISH.language
         )
         voiceInstructionsPlayer = MapboxVoiceInstructionsPlayer(
             requireContext(),
             getString(R.string.mapbox_access_token),
-            Locale.US.language
+            Locale.ENGLISH.language
         )
 
         // initialize route line, the withRouteLineBelowLayerId is specified
@@ -601,6 +613,7 @@ class GoToFragment : LocationFragment(), PermissionsListener {
         mapboxNavigation.requestRoutes(
             RouteOptions.builder()
                 .applyDefaultNavigationOptions()
+                .voiceUnits(DirectionsCriteria.METRIC)
                 .applyLanguageAndVoiceUnitOptions(requireContext())
                 .coordinatesList(listOf(originPoint, destination))
                 // provide the bearing for the origin of the request to ensure
