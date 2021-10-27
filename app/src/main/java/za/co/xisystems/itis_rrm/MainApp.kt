@@ -37,10 +37,12 @@ import za.co.xisystems.itis_rrm.data.repositories.MeasureCreationDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
 import za.co.xisystems.itis_rrm.data.repositories.WorkDataRepository
+import za.co.xisystems.itis_rrm.extensions.exitApplication
 import za.co.xisystems.itis_rrm.forge.XIArmoury
 import za.co.xisystems.itis_rrm.logging.LameCrashLibrary
 import za.co.xisystems.itis_rrm.services.DeferredLocationRepository
 import za.co.xisystems.itis_rrm.services.DeferredLocationViewModelFactory
+import za.co.xisystems.itis_rrm.ui.auth.LoginActivity
 import za.co.xisystems.itis_rrm.ui.auth.model.AuthViewModelFactory
 import za.co.xisystems.itis_rrm.ui.base.BaseActivity
 import za.co.xisystems.itis_rrm.ui.mainview.activities.LocationViewModelFactory
@@ -69,7 +71,7 @@ open class MainApp : Application(), DIAware {
     override val di = DI.lazy {
 
         import(androidXModule(this@MainApp))
-        bind { eagerSingleton { XIArmoury.getInstance(this@MainApp.applicationContext) } }
+        bind { eagerSingleton { XIArmoury.getInstance(instance()) } }
         bind { singleton { PhotoUtil.getInstance(instance()) } }
         bind { singleton { NetworkConnectionInterceptor(instance()) } }
         bind { singleton { BaseConnectionApi(instance()) } }
@@ -170,7 +172,13 @@ open class MainApp : Application(), DIAware {
                 if (--activityReferences == 0 && !isActivityChangingConfigurations) {
                     Timber.d("App in background.")
                     when (p0 is BaseActivity && XIArmoury.checkTimeout() && !p0.takingPhotos) {
-                        true -> p0.logoutApplication()
+                        true -> {
+                            if (p0 is LoginActivity) {
+                                p0.exitApplication()
+                            } else {
+                                p0.logoutApplication()
+                            }
+                        }
                         else -> Timber.i("Long running external process")
                     }
                 }

@@ -53,7 +53,7 @@
         <TextView
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="Qty"
+            android:text="@string/qty_rate"
             android:textColor="@color/itis_gray"
             android:id="@+id/qty_description_textView"
             android:layout_weight="1"
@@ -80,7 +80,7 @@
         <TextView
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="@string/line_rate"
+            android:text="@string/line_amount"
             android:id="@+id/line_amount_description_textView"
             android:layout_weight="1"
             android:textColor="@color/itis_gray"

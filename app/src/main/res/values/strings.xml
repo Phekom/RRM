@@ -241,6 +241,8 @@
     <!-- Offline Mode -->
     <string name="complete_upload">Complete Upload</string>
     <string name="row_number_mask">No:..</string>
+    <string name="default_uom">each</string>
+    <string name="qty_rate">Qty / Rate</string>
     <string name="not_allowed">Work Process Not Permitted</string>
     <string name="mapbox_access_token" translatable="false" tools:ignore="Typos">pk.eyJ1IjoicHJpbmNldmFsaXVtIiwiYSI6ImNrcGczaDQzYzBvMmYycHJpdnU5azFjdjAifQ.HX-BT5rC7zop8PFjqVHzlQ</string>
     <string name="action_not_premitted">You Can not initiate Work While you are not at the JI\'s location</string>

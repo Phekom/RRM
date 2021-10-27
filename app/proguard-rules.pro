@@ -34,7 +34,7 @@
 -dontwarn retrofit.**
 -keep class retrofit.** { *; }
 -keepclasseswithmembers class * {
-    @retrofit.http.* <methods>;
+    @retrofit.http.** <methods>;
 }
 
 -keep class sun.misc.Unsafe { *; }
@@ -54,9 +54,10 @@
 -keepattributes EnclosingMethod
 -keepattributes InnerClasses
 -keepattributes Annotation
+-keepattributes *Annotation*
+
 -keep class sun.misc.Unsafe { *; }
 -keep class com.google.gson.** { *; }
--keepattributes *Annotation*
 
 # SQLCipher
 -keep,includedescriptorclasses class net.sqlcipher.** { *; }

@@ -90,10 +90,10 @@ android {
 
     defaultConfig {
         applicationId appId
-        minSdk 23
-        targetSdk 31
-        versionCode 1
+        minSdkVersion 23
+        targetSdkVersion 31
         versionName "$versionLabel"
+        versionCode 1
         vectorDrawables.useSupportLibrary = false
         multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
