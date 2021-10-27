@@ -141,6 +141,15 @@ class JobDTO(
     @SerializedName("WORKS_ACT_ID")
     var worksActId: Int,
 
+    @SerializedName("MeasurementsCreatedDate")
+    var measurementsCreatedDate: String? = null,
+
+    @SerializedName("MeasurementsCompletedDate")
+    var measurementsCompletedDate: String? = null,
+
+    @SerializedName("MeasurementsApprovedDate")
+    var measurmentsApprovedDate: String? = null,
+
     val sortString: String?,
 
     @SerializedName("ActivityId")
@@ -205,6 +214,9 @@ class JobDTO(
         estimatesActId = parcel.readValue(Int::class.java.classLoader) as? Int,
         measureActId = parcel.readValue(Int::class.java.classLoader) as? Int,
         worksActId = parcel.readInt(),
+        measurementsCreatedDate = parcel.readString(),
+        measurementsCompletedDate = parcel.readString(),
+        measurmentsApprovedDate = parcel.readString(),
         sortString = parcel.readString(),
         activityId = parcel.readInt(),
         isSynced = parcel.readString(),
@@ -267,6 +279,54 @@ class JobDTO(
         return estimateCopy
     }
 
+    fun isGeoCoded(): Boolean {
+        var result = true
+
+        for (estimate in this.jobItemEstimates) {
+            if (!estimate.arePhotosGeoCoded()) {
+                result = false
+                break
+            }
+        }
+
+        return result
+    }
+
+    fun setWorkStartDate(date: Date? = null) {
+        val startDate = dateOrNow(date)
+        if (this.workStartDate.isNullOrBlank()) {
+            this.workStartDate = DateUtil.dateToString(startDate)
+        }
+    }
+
+    private fun dateOrNow(date: Date?): Date {
+        var timeStamp = Date()
+        if (date != null) {
+            timeStamp = date
+        }
+        return timeStamp
+    }
+
+    fun setWorkCompleteDate(date: Date? = null) {
+        val completionDate = dateOrNow(date)
+        if (this.workCompleteDate.isNullOrBlank()) {
+            this.workStartDate = DateUtil.dateToString(completionDate)
+        }
+    }
+
+    fun setMeasurementsCreatedDate(date: Date? = null) {
+        val completionDate = dateOrNow(date)
+        if (this.workCompleteDate.isNullOrBlank()) {
+            this.measurementsCompletedDate = DateUtil.dateToString(completionDate)
+        }
+    }
+
+    fun setMeasurementsCompletedDate(date: Date? = null) {
+        if (this.measurementsCompletedDate.isNullOrBlank()) {
+            this.measurementsCompletedDate = DateUtil.dateToString(dateOrNow(date))
+        }
+    }
+
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeInt(actId)
         parcel.writeString(jobId)
@@ -309,6 +369,9 @@ class JobDTO(
         parcel.writeValue(estimatesActId)
         parcel.writeValue(measureActId)
         parcel.writeInt(worksActId)
+        parcel.writeString(measurementsCreatedDate)
+        parcel.writeString(measurementsCompletedDate)
+        parcel.writeString(measurmentsApprovedDate)
         parcel.writeString(sortString)
         parcel.writeInt(activityId)
         parcel.writeString(isSynced)
@@ -320,40 +383,5 @@ class JobDTO(
 
     override fun describeContents(): Int {
         return 0
-    }
-
-    fun isGeoCoded(): Boolean {
-        var result = true
-
-        for (estimate in this.jobItemEstimates) {
-            if (!estimate.arePhotosGeoCoded()) {
-                result = false
-                break
-            }
-        }
-
-        return result
-    }
-
-    fun setWorkStartDate(date: Date? = null) {
-        val startDate = dateOrNow(date)
-        if (this.workStartDate.isNullOrBlank()) {
-            this.workStartDate = DateUtil.dateToString(startDate)
-        }
-    }
-
-    private fun dateOrNow(date: Date?): Date {
-        var startDate = Date()
-        if (date != null) {
-            startDate = date
-        }
-        return startDate
-    }
-
-    fun setWorkCompleteDate(date: Date? = null) {
-        val completionDate = dateOrNow(date)
-        if (this.workCompleteDate.isNullOrBlank()) {
-            this.workStartDate = DateUtil.dateToString(completionDate)
-        }
     }
 }
