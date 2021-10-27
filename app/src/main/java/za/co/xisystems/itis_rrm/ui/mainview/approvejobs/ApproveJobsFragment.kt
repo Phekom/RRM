@@ -25,15 +25,14 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenStarted
 import androidx.navigation.Navigation
-import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.GroupieViewHolder
 import kotlinx.coroutines.launch
-import org.kodein.di.DIAware
 import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
 import timber.log.Timber
+import za.co.xisystems.itis_rrm.MobileNavigationDirections
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorAction
@@ -54,11 +53,11 @@ import java.lang.ref.WeakReference
  * Created by Francis Mahlava on 03,October,2019
  */
 
-class ApproveJobsFragment : BaseFragment(), DIAware {
+class ApproveJobsFragment : BaseFragment() {
 
     override val di by closestDI()
     private lateinit var approveViewModel: ApproveJobsViewModel
-    private val factory: ApproveJobsViewModelFactory by instance<ApproveJobsViewModelFactory>()
+    private val factory: ApproveJobsViewModelFactory by instance()
     lateinit var dialog: Dialog
     private var uiScope = UiLifecycleScope()
     private var _ui: FragmentApprovejobBinding? = null
@@ -97,6 +96,13 @@ class ApproveJobsFragment : BaseFragment(), DIAware {
         }
     }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        approveViewModel = ViewModelProvider(this.requireActivity(), factory)
+            .get(ApproveJobsViewModel::class.java)
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -115,19 +121,14 @@ class ApproveJobsFragment : BaseFragment(), DIAware {
         super.onViewCreated(view, savedInstanceState)
 
         initVeiledRecyclerView()
+    }
 
+    override fun onResume() {
+        super.onResume()
         Coroutines.main {
             swipeToRefreshInit()
             fetchJobsFromServices()
         }
-    }
-
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-
-        approveViewModel = activity?.run {
-            ViewModelProvider(this, factory).get(ApproveJobsViewModel::class.java)
-        } ?: throw Exception("Invalid Activity")
     }
 
     private fun initVeiledRecyclerView() {
@@ -271,8 +272,10 @@ class ApproveJobsFragment : BaseFragment(), DIAware {
             approveViewModel.setJobForApproval(job)
         }
 
-        Navigation.findNavController(view)
-            .navigate(R.id.action_nav_approveJbs_to_jobInfoFragment)
+        val direction =
+            ApproveJobsFragmentDirections.actionNavApproveJbsToJobInfoFragment(job.jobDTO.jobId)
+
+        Navigation.findNavController(view).navigate(direction)
     }
 
     private fun List<JobDTO>.toApproveListItems(): List<ApproveJobItem> {
@@ -293,7 +296,9 @@ class ApproveJobsFragment : BaseFragment(), DIAware {
         super.onAttach(context)
         val callback: OnBackPressedCallback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                this@ApproveJobsFragment.findNavController().popBackStack(R.id.nav_home, false)
+                val direction = MobileNavigationDirections.actionGlobalNavHome()
+                Navigation.findNavController(this@ApproveJobsFragment.requireView())
+                    .navigate(direction)
             }
         }
         requireActivity().onBackPressedDispatcher

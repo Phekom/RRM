@@ -26,6 +26,7 @@ import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.forge.DefaultDispatcherProvider
 import za.co.xisystems.itis_rrm.forge.DispatcherProvider
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.approve_job_item.ApproveJobItem
+import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
 
 /**
@@ -134,18 +135,17 @@ class ApproveJobsViewModel(
                     description,
                     direction
                 )
-
-                // Update Approval Info Sign-off
+                if (direction == WorkflowDirection.NEXT.value) {
                 jobApprovalDataRepository.updateApprovalInfo(
-                    userId,
-                    jobId,
-                    description ?: "N/A"
+                        userId = userId,
+                        jobId = jobId,
+                        remarks = description ?: "Job approved."
                 )
-
+                }
             }
         } catch (t: Throwable) {
             val message = "Failed to process workflow: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
-            workflowState.postValue(XIResult.Error(t, message))
+            workflowState.postValue(XIResult.Error(t.cause ?: t, message))
         } finally {
             workflowState.postValue(XIResult.Progress(false))
         }
