@@ -14,7 +14,6 @@ import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import com.password4j.SecureString
 import kotlinx.coroutines.asExecutor
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -48,9 +47,6 @@ class Scribe private constructor(
         armouryScope.launch {
             initPreferences(context = context, masterKey = sageInstance.masterKeyAlias).also { cryptoPrefs ->
                 this@Scribe.securePrefs = cryptoPrefs
-            }
-            while (!this@Scribe::securePrefs.isInitialized) {
-                delay(100)
             }
         }
     }

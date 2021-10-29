@@ -364,7 +364,9 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
 
             activeWorks.estimateId = estimateItem?.estimateId
 
-            sendWorkToService(activeWorks)
+            val comments = ui.commentsEditText.text.toString().trim()
+
+            sendWorkToService(activeWorks, comments)
         } else {
             extensionToast(
                 message = getString(R.string.no_connection_detected),
@@ -406,7 +408,8 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
     }
 
     private fun sendWorkToService(
-        estimateWorksItem: JobEstimateWorksDTO
+        estimateWorksItem: JobEstimateWorksDTO,
+        comments: String
     ) = Coroutines.main {
         this.toggleLongRunning(true)
         workViewModel.workflowState.removeObserver(jobObserver)
@@ -416,7 +419,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
         if (newItemEstimateWorks.jobEstimateWorksPhotos.isNullOrEmpty()) {
             validationNotice(R.string.please_ensure_estimation_items_contain_photos)
         } else {
-            workViewModel.submitWorks(newItemEstimateWorks, requireActivity(), itemEstimateJob)
+            workViewModel.submitWorks(newItemEstimateWorks, comments, requireActivity(), itemEstimateJob)
         }
     }
 
@@ -537,7 +540,8 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
         backupWorkSubmission.observeOnce(viewLifecycleOwner, {
             it?.let {
                 activeWorks = it
-                sendWorkToService(activeWorks)
+                val comments = ui.commentsEditText.text.toString().trim()
+                sendWorkToService(activeWorks, comments)
             }
         })
     }
@@ -935,6 +939,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
         Coroutines.io {
             workViewModel.processWorkflowMove(
                 userDTO.userId,
+                jobItEstimate.jobId!!,
                 trackRouteId,
                 "Work complete.",
                 direction

@@ -26,6 +26,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.results.XIResult.Status
@@ -67,7 +68,8 @@ class WorkViewModel(
     private var mainContext = Job(superJob) + dispatchers.main()
     val backupCompletedEstimates: MutableLiveData<List<JobItemEstimateDTO>> = MutableLiveData()
     val historicalWorks: MutableLiveData<XIResult<JobEstimateWorksDTO>> = MutableLiveData()
-
+    private val allWork: LiveData<List<JobDTO>>?
+    private val searchResults: MutableLiveData<List<JobDTO>>
     init {
         viewModelScope.launch(mainContext) {
             // Set up the feed from the repository
@@ -79,6 +81,21 @@ class WorkViewModel(
                 it.getContentIfNotHandled()
             } as MutableLiveData<XIResult<String>?>
         }
+
+        allWork = workDataRepository.allWork
+        searchResults = workDataRepository.searchResults
+    }
+
+    fun searchJobs(criteria: String) {
+        workDataRepository.jobSearch(criteria)
+    }
+
+    fun getSearchResults(): MutableLiveData<List<JobDTO>> {
+        return searchResults
+    }
+
+    fun getAllWork(): LiveData<List<JobDTO>>? {
+        return allWork
     }
 
     suspend fun setWorkItem(estimateId: String) = viewModelScope.launch(ioContext) {
@@ -185,13 +202,50 @@ class WorkViewModel(
         }
     }
 
-    suspend fun submitWorks(
+    @Suppress("TooGenericExceptionCaught")
+    fun submitWorks(
         itemEstiWorks: JobEstimateWorksDTO,
+        comments: String,
         activity: FragmentActivity,
         itemEstiJob: JobDTO
 
-    ) = withContext(ioContext) {
-        workDataRepository.submitWorks(itemEstiWorks, activity, itemEstiJob)
+    ) = viewModelScope.launch(ioContext) {
+        try {
+            val systemJobId = DataConversion.toLittleEndian(itemEstiJob.jobId)!!
+            val currentUser = user.await().value
+            // If the job has no work start - now is the time!
+            if (itemEstiJob.workStartDate.isNullOrBlank()) {
+                itemEstiJob.setWorkStartDate()
+                backupJobInProgress(itemEstiJob)
+                // Let the backend know
+                workDataRepository.updateWorkTimes(
+                    currentUser!!.userId,
+                    systemJobId,
+                    true
+                )
+            }
+
+            // Here's the update for the work stage
+            workDataRepository.updateWorkStateInfo(
+                jobId = systemJobId,
+                userId = currentUser!!.userId.toInt(),
+                activityId = itemEstiWorks.actId,
+                remarks = comments
+            )
+
+            // Upload the work
+            workDataRepository.submitWorks(itemEstiWorks, activity, itemEstiJob)
+
+        } catch (t: Throwable) {
+            val message = "Work upload failed - "
+            val workFailReason = XIResult.Error(
+                t.cause ?: t,
+                "$message: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
+            )
+            viewModelScope.launch(mainContext) {
+                workflowState.postValue(workFailReason)
+            }
+        }
     }
 
     suspend fun getJobItemEstimateForEstimateId(estimateId: String): JobItemEstimateDTO {
@@ -200,13 +254,40 @@ class WorkViewModel(
         }
     }
 
+    @Suppress("TooGenericExceptionCaught")
     fun processWorkflowMove(
         userId: String,
+        jobId: String,
         trackRouteId: String,
         description: String?,
         direction: Int
     ) = viewModelScope.launch(ioContext) {
-        workDataRepository.processWorkflowMove(userId, trackRouteId, description, direction)
+
+        try {
+            val updatedJob = offlineDataRepository.getUpdatedJob(jobId)
+            val systemJobId = DataConversion.toLittleEndian(updatedJob.jobId)!!
+
+            // If the job has no work end - now is the time!
+            if (updatedJob.workCompleteDate.isNullOrBlank()) {
+                updatedJob.setWorkCompleteDate()
+                backupJobInProgress(updatedJob)
+                // Let the backend know
+                workDataRepository.updateWorkTimes(
+                    userId,
+                    systemJobId,
+                    false
+                )
+            }
+
+            workDataRepository.processWorkflowMove(userId, trackRouteId, description, direction)
+        } catch (t: Throwable) {
+            val message = "Job submission failed -"
+            val workFailReason = XIResult.Error(t.cause ?: t,
+                "$message: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}")
+            viewModelScope.launch(mainContext) {
+                workflowState.postValue(workFailReason)
+            }
+        }
     }
 
     suspend fun getJobItemsEstimatesDoneForJobId(

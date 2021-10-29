@@ -42,7 +42,7 @@ import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModel
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import java.util.Locale
 
-open class CardItem(
+open class CardItem (
     val activity: FragmentActivity?,
     val desc: String,
     val qty: String,
@@ -100,7 +100,7 @@ open class CardItem(
             setIcon(R.drawable.ic_error)
             setMessage(drive)
             // Yes button
-            setPositiveButton(R.string.ok) { dialog, which ->
+            setPositiveButton(R.string.ok) { _, _ ->
 
                 if (this.context.isConnected) {
                     Coroutines.main {
@@ -114,7 +114,7 @@ open class CardItem(
                 }
             }
             // Cancel Button
-            setNegativeButton(context.getString(R.string.cancel)) { dialog, which ->
+            setNegativeButton(context.getString(R.string.cancel)) { dialog, _ ->
                 // Just close the dialog
                 dialog.dismiss()
             }
@@ -181,7 +181,7 @@ open class CardItem(
             estimatePhotoStart?.photoLatitude!!
         )
 
-        val straightdistanceBetweenDeviceAndTarget =
+        val straightDistanceBetweenDeviceAndTarget =
             String.format(
                 Locale.US, "%.1f",
                 TurfConversion.convertLength(
@@ -195,11 +195,13 @@ open class CardItem(
             )
 
         startWorkBtn.setOnClickListener { view ->
-            if (straightdistanceBetweenDeviceAndTarget.isEmpty()) {
+            if (straightDistanceBetweenDeviceAndTarget.isEmpty()) {
                 ToastUtils().toastLong(activity, activity?.getString(R.string.distance_misiing))
             } else {
-                val distance = straightdistanceBetweenDeviceAndTarget
-                val drive = activity?.getString(R.string.action_not_premitted) + "\n Please Drive $distance KM to the location First"
+                val distance = straightDistanceBetweenDeviceAndTarget
+                val drive =
+                    activity?.getString(R.string.action_not_premitted)
+                        .plus("""Please Drive $distance KM to the location First""")
                 selectedLocationPoint = Point.fromLngLat(
                     estimatePhotoStart?.photoLongitude!!, estimatePhotoStart?.photoLatitude!!
                 )

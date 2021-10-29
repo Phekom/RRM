@@ -16,6 +16,10 @@ import com.google.gson.Gson
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
@@ -27,7 +31,16 @@ import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
-import za.co.xisystems.itis_rrm.data.localDB.entities.*
+import za.co.xisystems.itis_rrm.data.localDB.dao.JobDao
+import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksPhotoDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimatesPhotoDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.WfWorkStepDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.WorkflowJobDTO
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
 import za.co.xisystems.itis_rrm.forge.DefaultDispatcherProvider
@@ -49,14 +62,34 @@ class WorkDataRepository(
     private val dispatchers: DispatcherProvider = DefaultDispatcherProvider()
 ) : SafeApiRequest() {
 
+    val searchResults = MutableLiveData<List<JobDTO>>()
+    private var jobDao: JobDao?
+    private val coroutineScope = CoroutineScope(dispatchers.main())
+    var workStatus: MutableLiveData<XIEvent<XIResult<String>>> = MutableLiveData()
+    val allWork: LiveData<List<JobDTO>>?
+
+    init {
+        jobDao = appDb.getJobDao()
+        allWork = jobDao?.getAllWork()
+    }
+
     companion object {
         val TAG: String = WorkDataRepository::class.java.simpleName
     }
 
-    var workStatus: MutableLiveData<XIEvent<XIResult<String>>> = MutableLiveData()
+    fun jobSearch(criteria: String) {
+        coroutineScope.launch(dispatchers.main()) {
+            searchResults.value = jobSearchAsync(criteria).await()
+        }
+    }
+
+    private suspend fun jobSearchAsync(criteria: String): Deferred<List<JobDTO>?> =
+        coroutineScope.async(dispatchers.io()) {
+        return@async jobDao?.searchJobs(criteria.toRoomSearchString())
+    }
 
     @Synchronized
-    private fun postWorkStatus(result: XIResult<String>) = Coroutines.main {
+    private fun postWorkStatus(result: XIResult<String>) = Coroutines.io {
         workStatus.postValue(XIEvent(result))
     }
 
@@ -557,7 +590,6 @@ class WorkDataRepository(
         return@withContext appDb.getJobDao().getJobForJobId(job.jobId)
     }
 
-
     suspend fun getEstimateStartPhotoForId(estimateId: String): JobItemEstimatesPhotoDTO = withContext(dispatchers.io()) {
         return@withContext appDb.getJobItemEstimatePhotoDao().getEstimateStartPhotoForId(estimateId)
     }
@@ -618,4 +650,8 @@ class WorkDataRepository(
     suspend fun clearErrors() = withContext(dispatchers.main()) {
         workStatus = MutableLiveData()
     }
+}
+
+private fun String.toRoomSearchString(): String {
+    return "%$this%"
 }

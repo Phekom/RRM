@@ -613,8 +613,8 @@ class GoToFragment : LocationFragment(), PermissionsListener {
         mapboxNavigation.requestRoutes(
             RouteOptions.builder()
                 .applyDefaultNavigationOptions()
-                .voiceUnits(DirectionsCriteria.METRIC)
                 .applyLanguageAndVoiceUnitOptions(requireContext())
+                .voiceUnits(DirectionsCriteria.METRIC)
                 .coordinatesList(listOf(originPoint, destination))
                 // provide the bearing for the origin of the request to ensure
                 // that the returned route faces in the direction of the current user movement

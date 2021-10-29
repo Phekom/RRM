@@ -161,14 +161,14 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
         ActivityResultContracts.TakePicture()
     ) { isSaved ->
         if (isSaved) {
-            Coroutines.io {
+            uiScope.launch(dispatchers.io()) {
                 imageUri?.let { realUri ->
                     processAndSetImage(realUri)
                 }
             }
         } else {
             imageUri?.let { failedUri ->
-                Coroutines.io {
+                uiScope.launch(dispatchers.io()) {
                     val filenamePath = File(failedUri.path!!)
                     photoUtil.deleteImageFile(filenamePath.toString())
                     withContext(Dispatchers.Main.immediate) {
@@ -710,47 +710,45 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
     }
 
     @SuppressLint("RestrictedApi")
-    private fun processAndSetImage(
+    private suspend fun processAndSetImage(
         imageUri: Uri
         // item: ItemDTOTemp?,
         // newJobDTO: JobDTO?,
         // estimate: JobItemEstimateDTO?
-    ) {
-        Coroutines.main {
-            try { //  Location of picture
-                val estimateLocation: LocationModel? = this.getCurrentLocation()
-                Timber.d("x -> $estimateLocation")
-                if (estimateLocation != null) {
+    ) = withContext(uiScope.coroutineContext) {
+        try { //  Location of picture
+            val estimateLocation: LocationModel? = this@EstimatePhotoFragment.getCurrentLocation()
+            Timber.d("x -> $estimateLocation")
+            if (estimateLocation != null) {
 
-                    //  Save Image to Internal Storage
-                    withContext(dispatchers.io()) {
-                        filenamePath = photoUtil.saveImageToInternalStorage(
-                            imageUri
-                        ) as HashMap<String, String>
-                    }
-
-                    processPhotoEstimate(
-                        estimateLocation = estimateLocation,
-                        filePath = filenamePath,
-                        itemidPhototype = itemIdPhotoType
-                    )
-                } else {
-                    resetPhotos()
-                    displayPromptForEnablingGPS(this@EstimatePhotoFragment.requireActivity())
+                //  Save Image to Internal Storage
+                withContext(dispatchers.io()) {
+                    filenamePath = photoUtil.saveImageToInternalStorage(
+                        imageUri
+                    ) as HashMap<String, String>
                 }
-            } catch (e: Exception) {
-                toast(R.string.error_getting_image)
-                Timber.e(e)
-                throw e
+
+                processPhotoEstimate(
+                    estimateLocation = estimateLocation,
+                    filePath = filenamePath,
+                    itemidPhototype = itemIdPhotoType
+                )
+            } else {
+                resetPhotos()
+                displayPromptForEnablingGPS(this@EstimatePhotoFragment.requireActivity())
             }
+        } catch (e: Exception) {
+            toast(R.string.error_getting_image)
+            Timber.e(e)
+            throw e
         }
     }
 
-    private fun processPhotoEstimate(
+    suspend fun processPhotoEstimate(
         estimateLocation: LocationModel,
         filePath: Map<String, String>,
         itemidPhototype: Map<String, String>
-    ) = uiScope.launch(uiScope.coroutineContext) {
+    ) = withContext(uiScope.coroutineContext) {
 
         val itemId = item?.itemId ?: itemidPhototype["itemId"]
 
@@ -781,7 +779,7 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
         }
     }
 
-    private suspend fun processPhotoLocation(
+    private fun processPhotoLocation(
         estimateLocation: LocationModel,
         filePath: Map<String, String>,
         itemidPhototype: Map<String, String>
@@ -835,11 +833,11 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
         disableGlide = false
     }
 
-    private suspend fun placeProvisionalPhoto(
+    private fun placeProvisionalPhoto(
         filePath: Map<String, String>,
         currentLocation: LocationModel,
         itemidPhototype: Map<String, String>
-    ) = Coroutines.main {
+    ) = uiScope.launch(uiScope.coroutineContext) {
         val photo = createViewModel.createItemEstimatePhoto(
             itemEst = newJobItemEstimate!!,
             filePath = filePath,
@@ -911,20 +909,23 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
     } catch (e: Exception) {
         Timber.e(e)
     } finally {
-        Coroutines.main {
-            this.isEstimateDone = createViewModel.estimateComplete(newJobItemEstimate)
+        uiScope.launch(dispatchers.io()) {
+            this@EstimatePhotoFragment.isEstimateDone =
+                createViewModel.estimateComplete(newJobItemEstimate)
 
-            if (isEstimateDone) {
-                binding.costCard.visibility = View.VISIBLE
-                binding.updateButton.visibility = View.VISIBLE
-                setCost()
-            } else {
-                extensionToast(
-                    message = "Please take both photographs ...",
-                    style = ToastStyle.INFO,
-                    position = ToastGravity.BOTTOM
-                )
-                hideCostCard()
+            withContext(dispatchers.ui()) {
+                if (isEstimateDone) {
+                    binding.costCard.visibility = View.VISIBLE
+                    binding.updateButton.visibility = View.VISIBLE
+                    setCost()
+                } else {
+                    extensionToast(
+                        message = "Please take both photographs ...",
+                        style = ToastStyle.INFO,
+                        position = ToastGravity.BOTTOM
+                    )
+                    hideCostCard()
+                }
             }
         }
     }

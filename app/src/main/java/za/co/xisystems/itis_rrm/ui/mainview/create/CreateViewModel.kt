@@ -50,7 +50,6 @@ import za.co.xisystems.itis_rrm.utils.JobUtils
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
-import za.co.xisystems.itis_rrm.utils.uncaughtExceptionHandler
 import java.util.Date
 import kotlin.coroutines.CoroutineContext
 
@@ -66,11 +65,10 @@ class CreateViewModel(
 ) : AndroidViewModel(application) {
 
     var jobDesc: String? = null
-
     private val superJob = SupervisorJob()
-    var currentJob: MutableLiveData<XIEvent<JobDTO>> = MutableLiveData()
-    private var ioContext: CoroutineContext = Job(superJob) + dispatchers.io() + uncaughtExceptionHandler
-    private var mainContext: CoroutineContext = Job(superJob) + Dispatchers.Main + uncaughtExceptionHandler
+    var jobToEdit: MutableLiveData<JobDTO> = MutableLiveData()
+    private var ioContext: CoroutineContext = Job(superJob) + dispatchers.io()
+    private var mainContext: CoroutineContext = Job(superJob) + Dispatchers.Main
     val estimateQty = MutableLiveData<Double>()
     val estimateLineRate = MutableLiveData<Double>()
     val sectionId: MutableLiveData<String> = MutableLiveData()
@@ -90,16 +88,14 @@ class CreateViewModel(
     val photoUtil = PhotoUtil.getInstance(getApplication())
     var currentEstimate: MutableLiveData<XIEvent<JobItemEstimateDTO>> = MutableLiveData()
     val currentImageUri: MutableLiveData<XIEvent<Uri>> = MutableLiveData()
-
+    val totalJobCost: MutableLiveData<String> = MutableLiveData()
     val backupSubmissionJob: MutableLiveData<XIEvent<JobDTO>> = MutableLiveData()
-
-    fun setCurrentJob(inJobItemToEdit: JobDTO) {
-        currentJob.value = XIEvent(inJobItemToEdit)
-    }
-
     val currentUser by lazyDeferred {
         userRepository.getUser().distinctUntilChanged()
     }
+    var jobForSubmission: MutableLiveData<XIEvent<JobDTO>> = MutableLiveData()
+    var jobForValidation: MutableLiveData<XIEvent<JobDTO>> = MutableLiveData()
+    var jobForReUpload: MutableLiveData<XIEvent<JobDTO>> = MutableLiveData()
 
     fun setEstimateQuantity(inQty: Double) {
         estimateQty.value = inQty
@@ -345,7 +341,9 @@ class CreateViewModel(
     fun setJobToEdit(jobId: String) = viewModelScope.launch(ioContext) {
         val fetchedJob = jobCreationDataRepository.getUpdatedJob(jobId)
         withContext(mainContext) {
-            currentJob.postValue(XIEvent(fetchedJob))
+            jobToEdit.postValue(fetchedJob)
+            totalJobCost.value = JobUtils.formatTotalCost(fetchedJob)
+
         }
     }
 
@@ -543,15 +541,11 @@ class CreateViewModel(
         return@withContext jobCreationDataRepository.backupProjectItem(item)
     }
 
-    var jobForSubmission: MutableLiveData<XIEvent<JobDTO>> = MutableLiveData()
-
     fun setJobForSubmission(inJobId: String) = viewModelScope.launch(mainContext) {
         jobCreationDataRepository.getUpdatedJob(inJobId).also {
             jobForSubmission.value = XIEvent(it)
         }
     }
-
-    var jobForValidation: MutableLiveData<XIEvent<JobDTO>> = MutableLiveData()
 
     fun setJobToValidate(geoCodedJobId: String) = viewModelScope.launch(mainContext) {
         jobCreationDataRepository.getUpdatedJob(geoCodedJobId).also {
@@ -589,8 +583,6 @@ class CreateViewModel(
             }
             jobCreationDataRepository.eraseExistingPhoto(photoId)
         }
-
-    var jobForReUpload: MutableLiveData<XIEvent<JobDTO>> = MutableLiveData()
 
     fun setJobForReUpload(jobId: String) = viewModelScope.launch(ioContext) {
         val job = jobCreationDataRepository.getUpdatedJob(jobId)

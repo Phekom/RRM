@@ -18,6 +18,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.os.HandlerCompat
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenCreated
 import androidx.lifecycle.whenResumed
@@ -205,6 +206,7 @@ class AddProjectFragment : BaseFragment(), DIAware {
             initCurrentUserObserver()
             initCurrentJobListener()
             initValidationListener()
+            bindCosting()
         }
     }
 
@@ -268,9 +270,9 @@ class AddProjectFragment : BaseFragment(), DIAware {
     }
 
     private fun initCurrentJobListener() {
-        createViewModel.currentJob.observe(
-            viewLifecycleOwner, { jobEvent ->
-                jobEvent.getContentIfNotHandled()?.let { jobToEdit ->
+        createViewModel.jobToEdit.distinctUntilChanged().observe(
+            viewLifecycleOwner, { jobRecord ->
+                jobRecord?.let { jobToEdit ->
                     job = jobToEdit
                     jobId = job.jobId
                     jobBound = true
@@ -318,7 +320,6 @@ class AddProjectFragment : BaseFragment(), DIAware {
                             ui.addItemButton.visibility = View.INVISIBLE
                             ui.submitButton.text = getString(R.string.complete_upload)
                         }
-                        calculateTotalCost(job)
                     }
                 }
             }
@@ -336,6 +337,14 @@ class AddProjectFragment : BaseFragment(), DIAware {
                 else -> {
                     populateProjectItemView(itemList)
                 }
+            }
+        })
+    }
+
+    private fun bindCosting() = uiScope.launch(dispatchers.ui()) {
+        createViewModel.totalJobCost.distinctUntilChanged().observe(viewLifecycleOwner, { costingRecord ->
+            costingRecord?.let {
+                ui.totalCostTextView.text = it
             }
         })
     }
@@ -839,13 +848,6 @@ class AddProjectFragment : BaseFragment(), DIAware {
         resetContractAndProjectSelection(view)
     }
 
-    @Synchronized
-    private fun calculateTotalCost(costingJob: JobDTO) {
-        Coroutines.ui {
-            ui.totalCostTextView.text = JobUtils.formatTotalCost(costingJob)
-        }
-    }
-
     override fun onSaveInstanceState(outState: Bundle) {
         if (this::job.isInitialized) {
             outState.putString(JOB_KEY, job.jobId)
@@ -868,7 +870,7 @@ class AddProjectFragment : BaseFragment(), DIAware {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        createViewModel.currentJob.removeObservers(viewLifecycleOwner)
+        createViewModel.jobToEdit.removeObservers(viewLifecycleOwner)
         createViewModel.tempProjectItem.removeObservers(viewLifecycleOwner)
         deferredLocationViewModel.geoCodingResult.removeObservers(viewLifecycleOwner)
         createViewModel.jobForValidation.removeObservers(viewLifecycleOwner)

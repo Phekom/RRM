@@ -93,7 +93,7 @@ class WorkFragment : BaseFragment(), DIAware {
             }
 
             whenResumed {
-                if (this@WorkFragment::currentJobGroup.isInitialized && !currentJobGroup.isExpanded ) {
+                if (this@WorkFragment::currentJobGroup.isInitialized && !currentJobGroup.isExpanded) {
                     currentJobGroup.onToggleExpanded()
                 }
             }
@@ -117,12 +117,9 @@ class WorkFragment : BaseFragment(), DIAware {
     private suspend fun refreshEstimateJobsFromLocal() {
 
         withContext(uiScope.coroutineContext) {
-            val localJobs = workViewModel.getJobsForActivityId(
-                ActivityIdConstants.JOB_APPROVED,
-                ActivityIdConstants.ESTIMATE_INCOMPLETE
-            )
+            val localJobs = workViewModel.getAllWork()
 
-            localJobs.observe(viewLifecycleOwner, { jobsList ->
+            localJobs?.observe(viewLifecycleOwner, { jobsList ->
                 ui.group7Loading.visibility = View.GONE
                 if (jobsList.isNullOrEmpty()) {
                     ui.veiledWorkListView.visibility = View.GONE
@@ -222,7 +219,7 @@ class WorkFragment : BaseFragment(), DIAware {
         }
     }
 
-    private fun initRecyclerView( workListItems: List<ExpandableGroup> ) {
+    private fun initRecyclerView(workListItems: List<ExpandableGroup>) {
         val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
             clear()
             addAll(workListItems)

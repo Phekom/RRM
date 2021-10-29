@@ -24,6 +24,7 @@ import androidx.room.Update
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobSectionDTO
+import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import java.util.ArrayList
 
 /**
@@ -91,10 +92,11 @@ interface JobDao {
     @Query("SELECT * FROM JOB_TABLE WHERE isSynced = 0 AND deleted = 0")
     fun getUnSyncedJobs(): LiveData<List<JobDTO>>
 
-    @Query("SELECT * FROM JOB_TABLE WHERE actId = :jobApproved " +
-            "AND estimatesActId LIKE :estimateComplete " +
-            "AND  worksActId LIKE :estWorksComplete AND " +
-            "measureActId LIKE :measureComplete AND deleted = 0 ORDER BY jiNo ASC"
+    @Query(
+        "SELECT * FROM JOB_TABLE WHERE actId = :jobApproved " +
+            "AND estimatesActId = :estimateComplete " +
+            "AND  worksActId = :estWorksComplete AND " +
+            "measureActId = :measureComplete AND deleted = 0 ORDER BY jiNo ASC"
     )
     fun getJobsMeasureForActivityIds(
         estimateComplete: Int,
@@ -115,16 +117,17 @@ interface JobDao {
     @Query(
         " SELECT j.*, e.* FROM JOB_TABLE AS j JOIN " +
             "JOB_ITEM_ESTIMATE AS e ON e.JobId = j.jobId " +
-            "WHERE j.actId Like :actId and e.ActId Like :actId2 " +
-            "AND j.deleted = 0 ORDER BY jiNo ASC "
+            "WHERE j.actId = :jobActId and e.ActId = :estimateActId " +
+            "ORDER BY DATE(j.approvalDate) DESC, jiNO ASC"
+
     )
-    fun getJobsForActivityIds(actId: Int, actId2: Int): List<JobDTO>
+    fun getJobsByJobAndEstimateActivityIds(jobActId: Int, estimateActId: Int): LiveData<List<JobDTO>>?
 
     @Query(
         " SELECT j.*, e.* FROM JOB_TABLE AS j JOIN JOB_ITEM_ESTIMATE AS e " +
-            "ON e.JobId = j.jobId WHERE j.actId Like :actId " +
-            "AND e.ActId Like :actId2 AND j.deleted = 0 " +
-            "ORDER BY DATETIME(j.workStartDate) DESC, jiNO ASC"
+            "ON e.JobId = j.jobId WHERE j.actId = :actId " +
+            "AND e.ActId = :actId2 AND j.deleted = 0 " +
+            "AND j.deleted = 0 ORDER BY jiNo ASC "
     )
     @RewriteQueriesToDropUnusedColumns
     fun getJobsForActivityIds1(actId: Int, actId2: Int): LiveData<List<JobDTO>>
@@ -144,6 +147,21 @@ interface JobDao {
         newJobItemEstimatesList: ArrayList<JobItemEstimateDTO>,
         jobItemSectionArrayList: ArrayList<JobSectionDTO>
     )
+
+    @RewriteQueriesToDropUnusedColumns
+    @Query(
+        " SELECT j.*, e.* FROM JOB_TABLE AS j JOIN JOB_ITEM_ESTIMATE AS e " +
+            "ON e.JobId = j.jobId WHERE j.actId = :jobActId " +
+            "AND e.ActId = :estimateActId AND j.deleted = 0 AND (j.jiNo LIKE :criteria " +
+            "OR j.descr LIKE :criteria)" +
+            "ORDER BY DATETIME(j.workStartDate) DESC, jiNO ASC"
+    )
+
+    suspend fun findWork(
+        criteria: String,
+        jobActId: Int = ActivityIdConstants.JOB_APPROVED,
+        estimateActId: Int = ActivityIdConstants.ESTIMATE_INCOMPLETE
+    ): List<JobDTO>?
 
     @Query("SELECT * FROM JOB_TABLE WHERE jobId = :jobId AND deleted = 0")
     fun getJobForJobId(jobId: String): JobDTO
@@ -165,4 +183,12 @@ interface JobDao {
 
     @Query("UPDATE JOB_TABLE SET deleted = 0 WHERE jobId = :jobId AND deleted = 1")
     fun unDeleteJobForJobId(jobId: String)
+
+    fun getAllWork(): LiveData<List<JobDTO>>? =
+        getJobsByJobAndEstimateActivityIds(
+            jobActId = ActivityIdConstants.JOB_APPROVED,
+            estimateActId = ActivityIdConstants.ESTIMATE_INCOMPLETE
+        )
+
+    suspend fun searchJobs(criteria: String) = findWork(criteria)
 }
