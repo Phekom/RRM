@@ -71,12 +71,11 @@ class RegisterActivity : AppCompatActivity(), AuthListener, DIAware {
 
         Coroutines.main {
             binding.registerbutton.setOnClickListener {
-                var username  =  binding.registerusernameeditText
-                var password  =  binding.registerpasswordeditText
-                viewModel.onRegButtonClick(it, username, password )
-               // ToastUtils().toastServerAddress(this.applicationContext)
+                val username = binding.registerusernameeditText
+                val password = binding.registerpasswordeditText
+                viewModel.onRegButtonClick(it, username, password)
+                // ToastUtils().toastServerAddress(this.applicationContext)
             }
-
 
             when (this@RegisterActivity.isConnected) {
                 true -> {

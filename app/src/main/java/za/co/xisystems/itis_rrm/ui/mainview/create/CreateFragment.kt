@@ -24,6 +24,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenStarted
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
+import java.util.ArrayList
+import java.util.Date
 import kotlinx.coroutines.launch
 import org.kodein.di.DIAware
 import org.kodein.di.android.x.closestDI
@@ -57,8 +59,6 @@ import za.co.xisystems.itis_rrm.utils.DateUtil
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import za.co.xisystems.itis_rrm.utils.hide
 import za.co.xisystems.itis_rrm.utils.show
-import java.util.ArrayList
-import java.util.Date
 
 /**
  * Created by Francis Mahlava on 2019/10/18.

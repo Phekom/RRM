@@ -71,11 +71,11 @@ open class MainApp : Application(), DIAware {
     override val di = DI.lazy {
 
         import(androidXModule(this@MainApp))
-        bind { eagerSingleton { XIArmoury.getInstance(instance()) } }
-        bind { singleton { PhotoUtil.getInstance(instance()) } }
+        bind { eagerSingleton { XIArmoury.getInstance(this@MainApp.applicationContext) } }
+        bind { singleton { AppDatabase(this@MainApp.applicationContext, instance()) } }
+        bind { singleton { PhotoUtil.getInstance(this@MainApp.applicationContext) } }
         bind { singleton { NetworkConnectionInterceptor(instance()) } }
         bind { singleton { BaseConnectionApi(instance()) } }
-        bind { singleton { AppDatabase(instance(), instance()) } }
         bind { singleton { PreferenceProvider(instance()) } }
         bind { singleton { UserRepository(instance(), instance()) } }
         bind { singleton { OfflineDataRepository(api = instance(), appDb = instance(), photoUtil = instance()) } }

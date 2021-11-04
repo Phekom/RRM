@@ -16,6 +16,8 @@ import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.liveData
 import androidx.lifecycle.viewModelScope
 import androidx.room.Transaction
+import java.util.Date
+import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
@@ -50,8 +52,6 @@ import za.co.xisystems.itis_rrm.utils.JobUtils
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
-import java.util.Date
-import kotlin.coroutines.CoroutineContext
 
 /**
  * Created by Francis Mahlava on 2019/10/18.
@@ -85,7 +85,7 @@ class CreateViewModel(
     var projectItemTemp: MutableLiveData<ItemDTOTemp> = MutableLiveData()
     val jobId: MutableLiveData<String?> = MutableLiveData()
     var tempProjectItem: MutableLiveData<XIEvent<ItemDTOTemp>> = MutableLiveData()
-    val photoUtil = PhotoUtil.getInstance(getApplication())
+    private lateinit var photoUtil: PhotoUtil
     var currentEstimate: MutableLiveData<XIEvent<JobItemEstimateDTO>> = MutableLiveData()
     val currentImageUri: MutableLiveData<XIEvent<Uri>> = MutableLiveData()
     val totalJobCost: MutableLiveData<String> = MutableLiveData()
@@ -97,6 +97,11 @@ class CreateViewModel(
     var jobForValidation: MutableLiveData<XIEvent<JobDTO>> = MutableLiveData()
     var jobForReUpload: MutableLiveData<XIEvent<JobDTO>> = MutableLiveData()
 
+    init {
+        if (!this::photoUtil.isInitialized) {
+            photoUtil = PhotoUtil.getInstance(application.applicationContext)
+        }
+    }
     fun setEstimateQuantity(inQty: Double) {
         estimateQty.value = inQty
     }
@@ -267,7 +272,7 @@ class CreateViewModel(
             // Final workflow move and local persistence
             val nextWorkflowJob = jobCreationDataRepository.moveJobToNextWorkflow(updatedJob, activity)
             // Persist workflow results
-            jobCreationDataRepository.saveWorkflowJob(nextWorkflowJob!!)
+            jobCreationDataRepository.saveWorkflowJob(nextWorkflowJob)
             // Delete tempProjectItems
             jobCreationDataRepository.deleteItemList(updatedJob.jobId)
             return@withContext XIResult.Success(true)
@@ -285,7 +290,7 @@ class CreateViewModel(
         try {
             val nextWorkflowJob = jobCreationDataRepository.moveJobToNextWorkflow(job, activity)
             // Persist workflow results
-            jobCreationDataRepository.saveWorkflowJob(nextWorkflowJob!!)
+            jobCreationDataRepository.saveWorkflowJob(nextWorkflowJob)
             // Delete tempProjectItems
             jobCreationDataRepository.deleteItemList(job.jobId)
             return@withContext XIResult.Success(true)
@@ -343,7 +348,6 @@ class CreateViewModel(
         withContext(mainContext) {
             jobToEdit.postValue(fetchedJob)
             totalJobCost.value = JobUtils.formatTotalCost(fetchedJob)
-
         }
     }
 

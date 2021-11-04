@@ -33,6 +33,7 @@ import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.databinding.ActivityLoginBinding
+import za.co.xisystems.itis_rrm.delegates.viewBinding
 import za.co.xisystems.itis_rrm.extensions.exitApplication
 import za.co.xisystems.itis_rrm.ui.auth.model.AuthViewModel
 import za.co.xisystems.itis_rrm.ui.auth.model.AuthViewModelFactory
@@ -44,7 +45,6 @@ import za.co.xisystems.itis_rrm.utils.hideKeyboard
 import za.co.xisystems.itis_rrm.utils.show
 import za.co.xisystems.itis_rrm.utils.snackbar
 import za.co.xisystems.itis_rrm.utils.toast
-import za.co.xisystems.itis_rrm.delegates.viewBinding
 
 class LoginActivity : BaseActivity(), AuthListener, DIAware {
 
@@ -166,6 +166,7 @@ class LoginActivity : BaseActivity(), AuthListener, DIAware {
             Intent(this, MainActivity::class.java).also { mainAct ->
                 mainAct.flags =
                     Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+
                 startActivity(mainAct)
             }
             reset()

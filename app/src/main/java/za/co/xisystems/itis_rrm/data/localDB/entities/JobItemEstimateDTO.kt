@@ -13,9 +13,9 @@ import androidx.core.util.Pair
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
-import za.co.xisystems.itis_rrm.utils.JobUtils
 import java.io.Serializable
 import java.util.ArrayList
+import za.co.xisystems.itis_rrm.utils.JobUtils
 
 /**
  * Created by Francis Mahlava on 2019/11/21.
@@ -38,7 +38,7 @@ data class JobItemEstimateDTO(
     @SerializedName("MobileEstimateWorks")
     var jobEstimateWorks: ArrayList<JobEstimateWorksDTO> = ArrayList(),
     @SerializedName("MobileJobItemEstimatesPhotos")
-    var jobItemEstimatePhotos: ArrayList<JobItemEstimatesPhotoDTO> = ArrayList(2),
+    var jobItemEstimatePhotos: ArrayList<JobItemEstimatesPhotoDTO> = ArrayList(),
     @SerializedName("MobileJobItemMeasures")
     var jobItemMeasure: ArrayList<JobItemMeasureDTO> = ArrayList(),
     @SerializedName("ProjectItemId")

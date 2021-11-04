@@ -46,7 +46,7 @@ class AuthViewModel(
     private val supervisorJob = SupervisorJob()
     private val ioContext = dispatchers.io() + Job(supervisorJob)
 
-//    var username: String? = null
+    //    var username: String? = null
 //    var password: String? = null
 //    var enterPin: String? = null
 //    var confirmPin: String? = null
@@ -54,7 +54,7 @@ class AuthViewModel(
     var enterNewPin: String? = null
     var confirmNewPin: String? = null
     var authListener: AuthListener? = null
-    private val photoUtil: PhotoUtil = PhotoUtil.getInstance(this.getApplication())
+    private val photoUtil: PhotoUtil = PhotoUtil.getInstance(application.applicationContext)
 
     val user by lazyDeferred {
         repository.getUser().distinctUntilChanged()
@@ -70,56 +70,54 @@ class AuthViewModel(
         updateUserPin(view)
     }
 
-    private fun updateUserPin(view: View) {
-        viewModelScope.launch(ioContext) {
-            listenerNotify {
-                view.isClickable = false
-            }
-            try {
-                when {
-                    enterOldPin.isNullOrEmpty() -> {
-                        listenerNotify {
-                            authListener?.onFailure("Please enter current PIN")
-                        }
+    private fun updateUserPin(view: View) = viewModelScope.launch(ioContext) {
+        listenerNotify {
+            view.isClickable = false
+        }
+        try {
+            when {
+                enterOldPin.isNullOrEmpty() -> {
+                    listenerNotify {
+                        authListener?.onFailure("Please enter current PIN")
                     }
-                    enterNewPin.isNullOrEmpty() -> {
-                        listenerNotify {
-                            authListener?.onFailure("Please enter new PIN")
-                        }
+                }
+                enterNewPin.isNullOrEmpty() -> {
+                    listenerNotify {
+                        authListener?.onFailure("Please enter new PIN")
                     }
-                    confirmNewPin.isNullOrEmpty() -> {
-                        listenerNotify {
-                            authListener?.onFailure("Please confirm new PIN")
-                        }
+                }
+                confirmNewPin.isNullOrEmpty() -> {
+                    listenerNotify {
+                        authListener?.onFailure("Please confirm new PIN")
                     }
-                    enterOldPin == enterNewPin -> {
-                        listenerNotify {
-                            authListener?.onFailure("New PIN cannot be the same as original Pin")
-                        }
+                }
+                enterOldPin == enterNewPin -> {
+                    listenerNotify {
+                        authListener?.onFailure("New PIN cannot be the same as original Pin")
                     }
-                    enterNewPin != confirmNewPin -> {
-                        listenerNotify {
-                            authListener?.onFailure("New PINs do not match")
-                        }
+                }
+                enterNewPin != confirmNewPin -> {
+                    listenerNotify {
+                        authListener?.onFailure("New PINs do not match")
                     }
-                    confirmNewPin!!.length != PIN_SIZE -> {
-                        listenerNotify {
-                            authListener?.onFailure("PIN should be 4 (four) digits long")
-                        }
+                }
+                confirmNewPin!!.length != PIN_SIZE -> {
+                    listenerNotify {
+                        authListener?.onFailure("PIN should be 4 (four) digits long")
                     }
+                }
 
-                    else -> {
-                        validateAndUpdatePin()
-                    }
+                else -> {
+                    validateAndUpdatePin()
                 }
-            } catch (t: Throwable) {
-                listenerNotify {
-                    postError(t)
-                }
-            } finally {
-                listenerNotify {
-                    view.isClickable = true
-                }
+            }
+        } catch (t: Throwable) {
+            listenerNotify {
+                postError(t)
+            }
+        } finally {
+            listenerNotify {
+                view.isClickable = true
             }
         }
     }
@@ -278,37 +276,35 @@ class AuthViewModel(
         }
     }
 
-    fun onRegButtonClick(view: View, username: TextInputEditText, password: TextInputEditText) {
-        viewModelScope.launch(ioContext) {
-            try {
-                listenerNotify {
-                    authListener?.onStarted()
-                    view.isClickable = false
-                }
-                when {
-                    username.text.isNullOrEmpty() -> {
-                        listenerNotify {
-                            authListener?.onWarn("UserName is required")
-                        }
+    fun onRegButtonClick(view: View, username: TextInputEditText, password: TextInputEditText) = viewModelScope.launch(ioContext) {
+        try {
+            listenerNotify {
+                authListener?.onStarted()
+                view.isClickable = false
+            }
+            when {
+                username.text.isNullOrEmpty() -> {
+                    listenerNotify {
+                        authListener?.onWarn("UserName is required")
                     }
+                }
 
-                    password.text.isNullOrEmpty() -> {
-                        listenerNotify {
-                            authListener?.onWarn("Password is required")
-                        }
-                    }
-                    else -> {
-                        registerNewUser(username.text.toString(), password.text.toString())
+                password.text.isNullOrEmpty() -> {
+                    listenerNotify {
+                        authListener?.onWarn("Password is required")
                     }
                 }
-            } catch (t: Throwable) {
-                listenerNotify {
-                    postError(t)
+                else -> {
+                    registerNewUser(username.text.toString(), password.text.toString())
                 }
-            } finally {
-                listenerNotify {
-                    view.isClickable = true
-                }
+            }
+        } catch (t: Throwable) {
+            listenerNotify {
+                postError(t)
+            }
+        } finally {
+            listenerNotify {
+                view.isClickable = true
             }
         }
     }

@@ -30,6 +30,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasurePhotoDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
 import za.co.xisystems.itis_rrm.extensions.observeOnce
+import za.co.xisystems.itis_rrm.extensions.uomForUI
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.estimate_measure_item.MeasureHeaderItem
 import za.co.xisystems.itis_rrm.utils.Coroutines
@@ -119,8 +120,9 @@ class ExpandableHeaderMeasureItem(
                 if (selected != null) {
                     var message: String = fragment.requireActivity().getString(R.string.enter_quantity_measured)
                     quantityInputEditText.textAlignment = View.TEXT_ALIGNMENT_CENTER
-                    if (!selected.uom.equals(fragment.requireActivity().getString(R.string.none))) {
-                        quantityInputEditText.hint = selected.uom
+                    if (!selected.uom.isNullOrBlank() && !selected.uom.equals(fragment.requireActivity().getString(R.string.none))) {
+                        quantityInputEditText.hint = fragment.requireActivity().uomForUI(selected.uom)
+
                         message += fragment.requireActivity().getString(R.string.badge, selected.uom)
                     }
                     Coroutines.main {

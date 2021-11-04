@@ -4,13 +4,13 @@ import android.content.Context
 import android.view.View
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import java.lang.ref.WeakReference
 import retrofit2.HttpException
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
-import java.lang.ref.WeakReference
 
 /**
  * Created by Shaun McDonald on 2020/04/14.

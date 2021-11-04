@@ -53,6 +53,9 @@ import com.mapbox.navigation.core.MapboxNavigation
 import com.mapbox.navigation.core.trip.session.LocationMatcherResult
 import com.mapbox.navigation.core.trip.session.LocationObserver
 import com.mapbox.navigation.ui.maps.location.NavigationLocationProvider
+import java.io.File
+import java.text.DecimalFormat
+import kotlin.collections.set
 import kotlinx.android.synthetic.main.fragment_goto.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -88,9 +91,6 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.GlideApp
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
-import java.io.File
-import java.text.DecimalFormat
-import kotlin.collections.set
 
 /**
  * Created by Francis Mahlava on 2019/12/29.
@@ -244,9 +244,9 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
                     requireContext(),
                     Manifest.permission.ACCESS_FINE_LOCATION
                 ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                    requireContext(),
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-                ) != PackageManager.PERMISSION_GRANTED
+                        requireContext(),
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                    ) != PackageManager.PERMISSION_GRANTED
             ) {
                 // TODO: Consider calling
                 //    ActivityCompat#requestPermissions

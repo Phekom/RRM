@@ -1,6 +1,7 @@
 package za.co.xisystems.itis_rrm.data.network
 
 import com.google.gson.Gson
+import java.io.IOException
 import kotlinx.coroutines.withContext
 import retrofit2.HttpException
 import retrofit2.Response
@@ -11,7 +12,6 @@ import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.data.network.responses.ErrorResponse
 import za.co.xisystems.itis_rrm.forge.DefaultDispatcherProvider
 import za.co.xisystems.itis_rrm.forge.DispatcherProvider
-import java.io.IOException
 
 /**
  * Created by Francis Mahlava on 2019/10/18.

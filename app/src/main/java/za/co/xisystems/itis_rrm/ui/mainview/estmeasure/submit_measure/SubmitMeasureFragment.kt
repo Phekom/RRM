@@ -43,7 +43,6 @@ import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration
 import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity
 import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity.BOTTOM
 import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
-
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO

@@ -16,7 +16,6 @@ import androidx.room.TypeConverters
 import dev.matrix.roomigrant.GenerateRoomMigrations
 import net.sqlcipher.database.SQLiteDatabase
 import net.sqlcipher.database.SupportFactory
-import timber.log.Timber
 import za.co.xisystems.itis_rrm.BuildConfig
 import za.co.xisystems.itis_rrm.data.localDB.dao.ActivityDao
 import za.co.xisystems.itis_rrm.data.localDB.dao.ContractDao
@@ -104,7 +103,7 @@ import za.co.xisystems.itis_rrm.utils.DatetimeConverters
     ],
     views = [ContractSelectorView::class],
     exportSchema = true,
-    version = 24
+    version = 25
 )
 
 @TypeConverters(Converters::class, DatetimeConverters::class)
@@ -121,7 +120,6 @@ abstract class AppDatabase : RoomDatabase() {
         private var secretphrase: String? = null
         operator fun invoke(context: Context, armoury: XIArmoury) = instance ?: synchronized(LOCK) {
             secretphrase = armoury.readPassphrase()
-            Timber.e("Passphrase: $secretphrase")
             instance ?: buildDatabase(context).also {
                 instance = it
             }

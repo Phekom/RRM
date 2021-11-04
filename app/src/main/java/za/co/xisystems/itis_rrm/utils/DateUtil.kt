@@ -6,7 +6,6 @@
 
 package za.co.xisystems.itis_rrm.utils
 
-import timber.log.Timber
 import java.text.DateFormat
 import java.text.ParseException
 import java.text.SimpleDateFormat
@@ -15,6 +14,7 @@ import java.time.ZoneId
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import timber.log.Timber
 
 /**
  * Created by Mauritz Mollentze on 2014/12/19.

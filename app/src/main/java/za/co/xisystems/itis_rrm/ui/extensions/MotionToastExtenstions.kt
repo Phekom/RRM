@@ -3,13 +3,13 @@ package za.co.xisystems.itis_rrm.ui.extensions
 import android.app.Activity
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
+import java.lang.ref.WeakReference
 import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.custom.notifications.ColorToast
 import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration
 import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity
 import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
-import java.lang.ref.WeakReference
 
 fun Activity.extensionToast(
     title: String? = null,

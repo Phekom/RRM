@@ -353,7 +353,7 @@ class MeasureCreationDataRepository(
         Coroutines.io {
             for (jobItemMeasure in jobItemMeasures.iterator()) {
                 if (!appDb.getJobItemMeasureDao()
-                        .checkIfJobItemMeasureExists(jobItemMeasure.itemMeasureId)
+                    .checkIfJobItemMeasureExists(jobItemMeasure.itemMeasureId)
                 ) {
                     appDb.getJobItemMeasureDao().insertJobItemMeasure(jobItemMeasure)
                 }
@@ -387,7 +387,7 @@ class MeasureCreationDataRepository(
     ) {
         Coroutines.io {
             if (!appDb.getJobItemMeasureDao()
-                    .checkIfJobItemMeasureExists(selectedJobItemMeasure.itemMeasureId)
+                .checkIfJobItemMeasureExists(selectedJobItemMeasure.itemMeasureId)
             ) {
                 appDb.getJobItemMeasureDao().insertJobItemMeasure(selectedJobItemMeasure)
             }
@@ -462,7 +462,7 @@ class MeasureCreationDataRepository(
 
                 jobItemEstimate.workflowEstimateWorks.forEach { jobEstimateWorks ->
                     if (appDb.getEstimateWorkDao()
-                            .checkIfJobEstimateWorksExist(jobEstimateWorks.worksId)
+                        .checkIfJobEstimateWorksExist(jobEstimateWorks.worksId)
                     ) {
                         appDb.getEstimateWorkDao().updateJobEstimateWorksWorkflow(
                             jobEstimateWorks.worksId,
@@ -505,7 +505,7 @@ class MeasureCreationDataRepository(
 
             job.workflowJobSections.forEach { jobSection ->
                 if (!appDb.getJobSectionDao()
-                        .checkIfJobSectionExist(jobSection.jobSectionId)
+                    .checkIfJobSectionExist(jobSection.jobSectionId)
                 ) {
                     appDb.getJobSectionDao().insertJobSection(jobSection)
                 } else {

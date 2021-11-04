@@ -85,8 +85,8 @@ class WorkDataRepository(
 
     private suspend fun jobSearchAsync(criteria: String): Deferred<List<JobDTO>?> =
         coroutineScope.async(dispatchers.io()) {
-        return@async jobDao?.searchJobs(criteria.toRoomSearchString())
-    }
+            return@async jobDao?.searchJobs(criteria.toRoomSearchString())
+        }
 
     @Synchronized
     private fun postWorkStatus(result: XIResult<String>) = Coroutines.io {
@@ -357,7 +357,7 @@ class WorkDataRepository(
     ) {
         estimateWorksPhotos.forEach { estimateWorksPhoto ->
             if (!appDb.getEstimateWorkPhotoDao()
-                    .checkIfEstimateWorksPhotoExist(estimateWorksPhoto.filename)
+                .checkIfEstimateWorksPhotoExist(estimateWorksPhoto.filename)
             ) {
                 appDb.getEstimateWorkPhotoDao().insertEstimateWorksPhoto(estimateWorksPhoto)
             } else {
@@ -458,7 +458,7 @@ class WorkDataRepository(
                 }
             }
             if (!inWorkflow) {
-                postWorkStatus(XIResult.Success(job.jiNo!!))
+                postWorkStatus(XIResult.Success("Job ${job.jiNo!!} completed"))
             }
         } catch (t: Throwable) {
             val message = "Unable to update workflow job: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"

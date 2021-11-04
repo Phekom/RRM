@@ -21,11 +21,11 @@ import androidx.room.Query
 import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.RoomWarnings
 import androidx.room.Update
+import java.util.ArrayList
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobSectionDTO
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
-import java.util.ArrayList
 
 /**
  * Created by Francis Mahlava on 2019/11/21.
@@ -127,7 +127,7 @@ interface JobDao {
         " SELECT j.*, e.* FROM JOB_TABLE AS j JOIN JOB_ITEM_ESTIMATE AS e " +
             "ON e.JobId = j.jobId WHERE j.actId = :actId " +
             "AND e.ActId = :actId2 AND j.deleted = 0 " +
-            "AND j.deleted = 0 ORDER BY jiNo ASC "
+            "ORDER BY jiNo ASC "
     )
     @RewriteQueriesToDropUnusedColumns
     fun getJobsForActivityIds1(actId: Int, actId2: Int): LiveData<List<JobDTO>>

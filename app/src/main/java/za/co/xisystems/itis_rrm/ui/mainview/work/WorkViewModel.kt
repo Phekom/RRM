@@ -235,7 +235,6 @@ class WorkViewModel(
 
             // Upload the work
             workDataRepository.submitWorks(itemEstiWorks, activity, itemEstiJob)
-
         } catch (t: Throwable) {
             val message = "Work upload failed - "
             val workFailReason = XIResult.Error(
@@ -282,8 +281,10 @@ class WorkViewModel(
             workDataRepository.processWorkflowMove(userId, trackRouteId, description, direction)
         } catch (t: Throwable) {
             val message = "Job submission failed -"
-            val workFailReason = XIResult.Error(t.cause ?: t,
-                "$message: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}")
+            val workFailReason = XIResult.Error(
+                t.cause ?: t,
+                "$message: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
+            )
             viewModelScope.launch(mainContext) {
                 workflowState.postValue(workFailReason)
             }

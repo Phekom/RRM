@@ -28,11 +28,12 @@ import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.viewbinding.GroupieViewHolder
+import java.util.Date
+import java.util.HashMap
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.kodein.di.DIAware
 import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
 import timber.log.Timber
@@ -77,10 +78,8 @@ import za.co.xisystems.itis_rrm.utils.DateUtil
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
-import java.util.Date
-import java.util.HashMap
 
-class CaptureWorkFragment : LocationFragment(), DIAware {
+class CaptureWorkFragment : LocationFragment() {
 
     override val di by closestDI()
     private lateinit var workViewModel: WorkViewModel

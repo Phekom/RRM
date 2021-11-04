@@ -34,6 +34,7 @@ import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.viewbinding.GroupieViewHolder
+import java.lang.ref.WeakReference
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.kodein.di.DIAware
@@ -66,7 +67,6 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection.NEXT
-import java.lang.ref.WeakReference
 
 class MeasureApprovalFragment : BaseFragment(), DIAware {
     override val di by closestDI()
@@ -185,7 +185,7 @@ class MeasureApprovalFragment : BaseFragment(), DIAware {
 
             ui.viewMeasuredItems.veil()
             approveViewModel.jobIdForApproval.observe(viewLifecycleOwner, { jobId ->
-                jobId?.let{
+                jobId?.let {
                     selectedJobId = it
                     getMeasureItems(it)
                 }

@@ -1,15 +1,15 @@
 package za.co.xisystems.itis_rrm.custom.results
 
-import za.co.xisystems.itis_rrm.custom.errors.NoConnectivityException
-import za.co.xisystems.itis_rrm.custom.errors.NoInternetException
-import za.co.xisystems.itis_rrm.custom.errors.RecoverableException
-import za.co.xisystems.itis_rrm.custom.errors.ServiceHostUnreachableException
-import za.co.xisystems.itis_rrm.data.network.responses.ErrorResponse
 import java.io.IOException
 import java.net.SocketException
 import java.net.SocketTimeoutException
 import javax.net.ssl.SSLHandshakeException
 import javax.net.ssl.SSLProtocolException
+import za.co.xisystems.itis_rrm.custom.errors.NoConnectivityException
+import za.co.xisystems.itis_rrm.custom.errors.NoInternetException
+import za.co.xisystems.itis_rrm.custom.errors.RecoverableException
+import za.co.xisystems.itis_rrm.custom.errors.ServiceHostUnreachableException
+import za.co.xisystems.itis_rrm.data.network.responses.ErrorResponse
 
 // Created by Shaun McDonald on 2020/05/23.
 // Copyright (c) 2020 XI Systems. All rights reserved.

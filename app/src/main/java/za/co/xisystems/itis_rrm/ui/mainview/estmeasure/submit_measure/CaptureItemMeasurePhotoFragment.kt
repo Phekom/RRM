@@ -26,6 +26,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
+import java.util.Date
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -60,7 +61,6 @@ import za.co.xisystems.itis_rrm.utils.DateUtil
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
-import java.util.Date
 
 //
 class CaptureItemMeasurePhotoFragment :
@@ -251,8 +251,8 @@ class CaptureItemMeasurePhotoFragment :
             //  Save Image to Internal Storage
             filenamePath =
                 photoUtil.saveImageToInternalStorage(
-                    imageUri
-                ) as HashMap<String, String>
+                imageUri
+            ) as HashMap<String, String>
 
             Timber.d("location: ${measurementLocation.longitude}, ${measurementLocation.latitude}")
             Timber.d("accuracy: ${measurementLocation.accuracy}")

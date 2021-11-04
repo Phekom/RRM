@@ -136,11 +136,11 @@ class ApproveJobsViewModel(
                     direction
                 )
                 if (direction == WorkflowDirection.NEXT.value) {
-                jobApprovalDataRepository.updateApprovalInfo(
+                    jobApprovalDataRepository.updateApprovalInfo(
                         userId = userId,
                         jobId = jobId,
                         remarks = description ?: "Job approved."
-                )
+                    )
                 }
             }
         } catch (t: Throwable) {

@@ -64,15 +64,13 @@ class Scribe private constructor(
 
         fun getInstance(
             appContext: Context,
-            sageInstance: Sage,
-            prefsFile: String? = PREFS_FILE
+            sageInstance: Sage
         ): Scribe {
             return instance ?: synchronized(Lock) {
                 Scribe(context = appContext, sageInstance = sageInstance).also {
                     it.securePrefs = it.createPreferences(
                         context = appContext,
-                        masterKey = sageInstance.masterKeyAlias,
-                        prefsFile = prefsFile ?: PREFS_FILE
+                        masterKey = sageInstance.masterKeyAlias
                     )
                     instance = it
                 }
@@ -112,7 +110,7 @@ class Scribe private constructor(
         masterKey: MasterKey
     ): SharedPreferences {
         val preferences = EncryptedSharedPreferences.create(
-            context.applicationContext,
+            context,
             prefsFile,
             masterKey,
             EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,

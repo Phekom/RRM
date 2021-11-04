@@ -42,7 +42,7 @@ import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModel
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import java.util.Locale
 
-open class CardItem (
+open class CardItem(
     val activity: FragmentActivity?,
     val desc: String,
     val qty: String,
@@ -200,7 +200,7 @@ open class CardItem (
             } else {
                 val distance = straightDistanceBetweenDeviceAndTarget
                 val drive =
-                    activity?.getString(R.string.action_not_premitted)
+                    activity?.getString(R.string.action_not_permitted)
                         .plus("""Please Drive $distance KM to the location First""")
                 selectedLocationPoint = Point.fromLngLat(
                     estimatePhotoStart?.photoLongitude!!, estimatePhotoStart?.photoLatitude!!
@@ -212,7 +212,8 @@ open class CardItem (
                     alertdialog(
                         activity = activity,
                         position = position,
-                        drive = drive, selectedLocationPoint =
+                        drive = drive,
+                        selectedLocationPoint =
                         selectedLocationPoint!!,
                         view = root,
                         workViewModel = workViewModel,

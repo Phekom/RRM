@@ -19,6 +19,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.viewModelScope
+import java.util.concurrent.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
@@ -41,7 +42,6 @@ import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
-import java.util.concurrent.CancellationException
 
 /**
  * Created by Francis Mahlava on 03,October,2019
@@ -80,7 +80,7 @@ class ApproveMeasureViewModel(
         viewModelScope.launch(contextMain) {
 
             if (!this@ApproveMeasureViewModel::photoUtil.isInitialized) {
-                photoUtil = PhotoUtil.getInstance(getApplication())
+                photoUtil = PhotoUtil.getInstance(application.applicationContext)
             }
             workflowStatus = measureApprovalDataRepository.workflowStatus
 

@@ -13,6 +13,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.distinctUntilChanged
 import androidx.room.Transaction
+import java.io.File
+import java.util.regex.Pattern
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
@@ -56,8 +58,6 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
-import java.io.File
-import java.util.regex.Pattern
 
 private val jobDataController: JobDataController? = null
 
@@ -448,9 +448,9 @@ class OfflineDataRepository(
                     )
                 }
             }
-        if (contractCount == contractMax && projectCount == projectMax) {
-            postEvent(XIResult.ProgressUpdate("projects", -1.0f))
-        }
+            if (contractCount == contractMax && projectCount == projectMax) {
+                postEvent(XIResult.ProgressUpdate("projects", -1.0f))
+            }
         }
     }
 
@@ -461,7 +461,7 @@ class OfflineDataRepository(
     ) {
         distinctItems.forEach { item ->
             if (!appDb.getProjectItemDao()
-                    .checkItemExistsItemId(item.itemId)
+                .checkItemExistsItemId(item.itemId)
             ) {
                 try {
                     val pattern = Pattern.compile("(.*?)\\.")
@@ -505,7 +505,7 @@ class OfflineDataRepository(
     ) {
         projectSections.forEach { section ->
             if (!appDb.getProjectSectionDao()
-                    .checkSectionExists(section.sectionId)
+                .checkSectionExists(section.sectionId)
             ) {
                 try {
                     appDb.getProjectSectionDao().insertSection(
@@ -582,7 +582,7 @@ class OfflineDataRepository(
     private fun saveWorkflowRoutes(workFlow: WorkFlowDTO) {
         for (workFlowRoute in workFlow.workFlowRoute) {
             if (!appDb.getWorkFlowRouteDao()
-                    .checkWorkFlowRouteExists(workFlowRoute.routeId)
+                .checkWorkFlowRouteExists(workFlowRoute.routeId)
             ) {
                 appDb.getWorkFlowRouteDao().insertWorkFlowRoute(
                     workFlowRoute.routeId,
@@ -630,7 +630,7 @@ class OfflineDataRepository(
     ) {
         job.jobItemMeasures.forEach { jobItemMeasure ->
             if (!appDb.getJobItemMeasureDao()
-                    .checkIfJobItemMeasureExists(jobItemMeasure.itemMeasureId)
+                .checkIfJobItemMeasureExists(jobItemMeasure.itemMeasureId)
             ) {
                 DataConversion.toBigEndian(
                     jobItemMeasure.itemMeasureId
@@ -659,7 +659,7 @@ class OfflineDataRepository(
                 jobItemMeasure.setQty(jobItemMeasure.qty)
                 jobItemMeasure.setDeleted(0)
                 if (!appDb.getJobItemMeasureDao()
-                        .checkIfJobItemMeasureExists(jobItemMeasure.itemMeasureId)
+                    .checkIfJobItemMeasureExists(jobItemMeasure.itemMeasureId)
                 ) {
                     appDb.getJobItemMeasureDao().insertJobItemMeasure(jobItemMeasure)
                 }
@@ -697,7 +697,7 @@ class OfflineDataRepository(
     ) {
         job.jobItemEstimates.forEach { jobItemEstimate ->
             if (!appDb.getJobItemEstimateDao()
-                    .checkIfJobItemEstimateExist(jobItemEstimate.estimateId)
+                .checkIfJobItemEstimateExist(jobItemEstimate.estimateId)
             ) {
                 jobItemEstimate.setEstimateId(DataConversion.toBigEndian(jobItemEstimate.estimateId))
                 jobItemEstimate.setJobId(DataConversion.toBigEndian(jobItemEstimate.jobId))
@@ -737,7 +737,7 @@ class OfflineDataRepository(
     ) {
         jobItemEstimate.jobItemEstimatePhotos.forEach { jobItemEstimatePhoto ->
             if (!appDb.getJobItemEstimatePhotoDao()
-                    .checkIfJobItemEstimatePhotoExistsByPhotoId(
+                .checkIfJobItemEstimatePhotoExistsByPhotoId(
                         jobItemEstimatePhoto.photoId
                     )
             ) {
@@ -810,7 +810,7 @@ class OfflineDataRepository(
     private suspend fun saveJobItemEstimateWorksPhotos(jobEstimateWorks: JobEstimateWorksDTO) {
         for (estimateWorksPhoto in jobEstimateWorks.jobEstimateWorksPhotos) {
             if (!appDb.getEstimateWorkPhotoDao()
-                    .checkIfEstimateWorksPhotoExist(
+                .checkIfEstimateWorksPhotoExist(
                         estimateWorksPhoto.filename
                     )
             ) estimateWorksPhoto.setWorksId(
@@ -904,7 +904,7 @@ class OfflineDataRepository(
     ) {
         jobItemMeasure.jobItemMeasurePhotos.forEach { jobItemMeasurePhoto ->
             if (!appDb.getJobItemMeasurePhotoDao()
-                    .checkIfJobItemMeasurePhotoExists(
+                .checkIfJobItemMeasurePhotoExists(
                         jobItemMeasurePhoto.filename!!
                     )
             ) {
@@ -1024,7 +1024,7 @@ class OfflineDataRepository(
         Coroutines.io {
 
             if (!appDb.getEntitiesDao()
-                    .checkIfEntitiesExist(DataConversion.bigEndianToString(entity.trackRouteId!!))
+                .checkIfEntitiesExist(DataConversion.bigEndianToString(entity.trackRouteId!!))
             ) {
                 appDb.getEntitiesDao().insertEntitie(
                     DataConversion.bigEndianToString(entity.trackRouteId!!),
@@ -1225,7 +1225,7 @@ class OfflineDataRepository(
     ) {
         workflowJobSections.forEach { jobSection ->
             if (!appDb.getJobSectionDao()
-                    .checkIfJobSectionExist(jobSection.jobSectionId)
+                .checkIfJobSectionExist(jobSection.jobSectionId)
             ) {
                 appDb.getJobSectionDao().insertJobSection(jobSection)
             } else {
