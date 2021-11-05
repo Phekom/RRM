@@ -315,7 +315,12 @@ class SubmitMeasureFragment : BaseFragment(), DIAware {
         mSures: ArrayList<JobItemMeasureDTO>
     ) {
         Coroutines.main {
+            val estimateIds = itemMeasureJob.jobItemEstimates.map { it -> it.estimateId  }
+            val measureEstimateIds = mSures.map { it -> it.estimateId }.distinct()
+            val missingEstimateIds = estimateIds.asSequence().minus(measureEstimateIds).map { it }.toList()
+
             val user = measureViewModel.user.await()
+
             user.observe(viewLifecycleOwner, { userDTO ->
                 when {
                     userDTO.userId.isBlank() -> {
@@ -323,6 +328,9 @@ class SubmitMeasureFragment : BaseFragment(), DIAware {
                     }
                     itemMeasureJob.jobId.isBlank() -> {
                         showSubmissionError("Selected job is invalid")
+                    }
+                    missingEstimateIds.isNotEmpty() -> {
+                        showSubmissionError("Please include measurements for all estimates")
                     }
                     else -> {
                         prepareMeasurementWorkflow(itemMeasureJob, userDTO, mSures)
@@ -365,6 +373,7 @@ class SubmitMeasureFragment : BaseFragment(), DIAware {
             style = ToastStyle.ERROR,
             position = ToastGravity.CENTER
         )
+        toggleLongRunning(false)
         progressButton.failProgress(originalCaption)
     }
 
@@ -467,6 +476,7 @@ class SubmitMeasureFragment : BaseFragment(), DIAware {
             measurements.observe(viewLifecycleOwner, { estimateList ->
                 initRecyclerView(estimateList.toMeasureItems())
             })
+
         }
     }
 
@@ -477,7 +487,7 @@ class SubmitMeasureFragment : BaseFragment(), DIAware {
         }
 
         ui.measureListView.apply {
-            layoutManager = LinearLayoutManager(this.context)
+            layoutManager = LinearLayoutManager(this@SubmitMeasureFragment.requireContext())
             adapter = groupAdapter
         }
     }

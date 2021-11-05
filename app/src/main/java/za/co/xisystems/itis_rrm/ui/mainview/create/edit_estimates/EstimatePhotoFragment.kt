@@ -53,9 +53,6 @@ import com.mapbox.navigation.core.MapboxNavigation
 import com.mapbox.navigation.core.trip.session.LocationMatcherResult
 import com.mapbox.navigation.core.trip.session.LocationObserver
 import com.mapbox.navigation.ui.maps.location.NavigationLocationProvider
-import java.io.File
-import java.text.DecimalFormat
-import kotlin.collections.set
 import kotlinx.android.synthetic.main.fragment_goto.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -91,6 +88,9 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.GlideApp
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
+import java.io.File
+import java.text.DecimalFormat
+import kotlin.collections.set
 
 /**
  * Created by Francis Mahlava on 2019/12/29.
@@ -188,9 +188,6 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
 
             whenCreated {
                 uiScope.onCreate()
-                createViewModel = activity?.run {
-                    ViewModelProvider(this, factory).get(CreateViewModel::class.java)
-                } ?: throw Exception("Invalid Activity")
             }
 
             whenStarted {
@@ -282,6 +279,9 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
         (activity as MainActivity).supportActionBar?.title = getString(R.string.edit_estimate)
         newJobItemEstimatesList = ArrayList()
         newJobItemEstimatesPhotosList = ArrayList()
+        createViewModel = ViewModelProvider(this.requireActivity(), factory)
+            .get(CreateViewModel::class.java)
+
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -480,16 +480,20 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
         setValueEditText(getStoredValue())
 
         binding.valueEditText.doOnTextChanged { text, _, _, _ ->
-            changesToPreserve = true
             try {
-                val quantity = text.toString().toDouble()
-                newJobItemEstimate?.qty = quantity
-                createViewModel.setEstimateQuantity(quantity)
-                setCost()
+                setEstimateQty(text)
             } catch (ex: java.lang.NumberFormatException) {
                 Timber.e(" ")
             }
         }
+    }
+
+    private fun setEstimateQty(text: CharSequence?) {
+                val quantity = text.toString().toDouble()
+                newJobItemEstimate?.qty = quantity
+                createViewModel.setEstimateQuantity(quantity)
+        changesToPreserve = true
+                setCost()
     }
 
     private fun setButtonClicks() {
@@ -568,13 +572,12 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
     }
 
     private suspend fun saveValidEstimate(view: View) = uiScope.launch(uiScope.coroutineContext) {
-
-        item!!.quantity = binding.valueEditText.text.toString().toDouble()
-        if (item!!.quantity > 0 && item!!.tenderRate > 0.0 && changesToPreserve) {
+        setEstimateQty(binding.valueEditText.text as CharSequence)
+        if (newJobItemEstimate!!.qty > 0 && newJobItemEstimate!!.lineRate > 0.0 && changesToPreserve) {
 
             val saveValidEstimate = newJobItemEstimate!!.copy(
-                qty = item!!.quantity,
-                lineRate = item!!.tenderRate
+                qty = newJobItemEstimate!!.qty,
+                lineRate = newJobItemEstimate!!.lineRate
             )
             Coroutines.io {
                 createViewModel.backupProjectItem(item!!)
@@ -744,11 +747,11 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
         }
     }
 
-    suspend fun processPhotoEstimate(
+    private fun processPhotoEstimate(
         estimateLocation: LocationModel,
         filePath: Map<String, String>,
         itemidPhototype: Map<String, String>
-    ) = withContext(uiScope.coroutineContext) {
+    ) = uiScope.launch(uiScope.coroutineContext) {
 
         val itemId = item?.itemId ?: itemidPhototype["itemId"]
 
@@ -779,7 +782,8 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
         }
     }
 
-    private fun processPhotoLocation(
+    // TODO: polygon verification for offline photography
+    private suspend fun processPhotoLocation(
         estimateLocation: LocationModel,
         filePath: Map<String, String>,
         itemidPhototype: Map<String, String>
@@ -913,7 +917,6 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
             this@EstimatePhotoFragment.isEstimateDone =
                 createViewModel.estimateComplete(newJobItemEstimate)
 
-            withContext(dispatchers.ui()) {
                 if (isEstimateDone) {
                     binding.costCard.visibility = View.VISIBLE
                     binding.updateButton.visibility = View.VISIBLE
@@ -928,7 +931,6 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
                 }
             }
         }
-    }
 
     private fun setValueEditText(qty: Double) {
         when (item?.uom) {

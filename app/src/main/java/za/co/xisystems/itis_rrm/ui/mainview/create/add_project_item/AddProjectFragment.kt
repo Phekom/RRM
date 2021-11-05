@@ -31,8 +31,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.Section
 import com.xwray.groupie.viewbinding.GroupieViewHolder
-import java.util.Calendar
-import java.util.Date
 import kotlinx.android.synthetic.main.content_main.*
 import kotlinx.android.synthetic.main.fragment_add_project_items.*
 import kotlinx.coroutines.Dispatchers
@@ -79,6 +77,8 @@ import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DateUtil
 import za.co.xisystems.itis_rrm.utils.JobUtils
+import java.util.Calendar
+import java.util.Date
 
 /**
  * Created by Francis Mahlava on 2019/12/29.
@@ -161,17 +161,14 @@ class AddProjectFragment : BaseFragment(), DIAware {
 
     @Suppress("TooGenericExceptionThrown", "ThrowsCount")
     private fun initViewModels() {
-        createViewModel = activity?.run {
-            ViewModelProvider(this, createFactory).get(CreateViewModel::class.java)
-        } ?: throw Exception(INVALID_ACTIVITY)
+        createViewModel = ViewModelProvider(this.requireActivity(), createFactory)
+            .get(CreateViewModel::class.java)
 
-        unsubmittedViewModel = activity?.run {
-            ViewModelProvider(this, unsubFactory).get(UnSubmittedViewModel::class.java)
-        } ?: throw Exception(INVALID_ACTIVITY)
+        unsubmittedViewModel = ViewModelProvider(this.requireActivity(), unsubFactory)
+            .get(UnSubmittedViewModel::class.java)
 
-        deferredLocationViewModel = activity?.run {
-            ViewModelProvider(this, deferredLocationFactory).get(DeferredLocationViewModel::class.java)
-        } ?: throw Exception(INVALID_ACTIVITY)
+        deferredLocationViewModel = ViewModelProvider(this.requireActivity(), deferredLocationFactory)
+            .get(DeferredLocationViewModel::class.java)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -342,7 +339,7 @@ class AddProjectFragment : BaseFragment(), DIAware {
     }
 
     private fun bindCosting() = uiScope.launch(dispatchers.ui()) {
-        createViewModel.totalJobCost.distinctUntilChanged().observe(viewLifecycleOwner, { costingRecord ->
+        createViewModel.totalJobCost.observe(viewLifecycleOwner, { costingRecord ->
             costingRecord?.let {
                 ui.totalCostTextView.text = it
             }
