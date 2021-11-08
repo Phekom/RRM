@@ -200,10 +200,10 @@ class AddProjectFragment : BaseFragment(), DIAware {
     fun uiUpdate() {
         jobBound = false
         uiScope.launch(uiScope.coroutineContext) {
+            bindCosting()
             initCurrentUserObserver()
             initCurrentJobListener()
             initValidationListener()
-            bindCosting()
         }
     }
 
@@ -419,7 +419,6 @@ class AddProjectFragment : BaseFragment(), DIAware {
 
         jobId?.let { restoredId ->
             createViewModel.setJobToEdit(restoredId)
-            uiUpdate()
             stateRestored = true
         }
     }

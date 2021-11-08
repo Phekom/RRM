@@ -29,6 +29,7 @@ private const val QUALITY = 100
 
 object FileOperations {
 
+    @SuppressLint("Range")
     suspend fun queryImagesOnDevice(context: Context, selection: String? = null): List<Media> {
         val images = mutableListOf<Media>()
 
@@ -63,7 +64,11 @@ object FileOperations {
 
                 while (cursor.moveToNext()) {
                     val id = cursor.getLong(cursor.getColumnIndex(MediaStore.Images.Media._ID))
-                    val path = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.RELATIVE_PATH))
+                    val path = if(hasSdkHigherThan(Build.VERSION_CODES.Q)) {
+                        cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.RELATIVE_PATH))
+                    } else {
+                        "0"
+                    }
                     val name = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DISPLAY_NAME))
                     val size = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.SIZE))
                     val mimeType = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.MIME_TYPE))
@@ -101,7 +106,6 @@ object FileOperations {
         withContext(Dispatchers.IO) {
             var projection = arrayOf(
                 MediaStore.Video.Media._ID,
-                MediaStore.Video.Media.RELATIVE_PATH,
                 MediaStore.Video.Media.DISPLAY_NAME,
                 MediaStore.Video.Media.SIZE,
                 MediaStore.Video.Media.MIME_TYPE,
@@ -109,6 +113,10 @@ object FileOperations {
                 MediaStore.Video.Media.HEIGHT,
                 MediaStore.Video.Media.DATE_MODIFIED
             )
+
+            if(hasSdkHigherThan(Build.VERSION_CODES.P)){
+                projection += arrayOf(MediaStore.Images.Media.RELATIVE_PATH)
+            }
 
             if (hasSdkHigherThan(Build.VERSION_CODES.Q)) {
                 projection += arrayOf(MediaStore.Images.Media.IS_FAVORITE)
@@ -158,6 +166,7 @@ object FileOperations {
         return videos
     }
 
+    @SuppressLint("Range")
     @RequiresApi(Build.VERSION_CODES.R)
     suspend fun queryTrashedMediaOnDevice(context: Context, contentUri: Uri): List<Media> {
         val media = mutableListOf<Media>()

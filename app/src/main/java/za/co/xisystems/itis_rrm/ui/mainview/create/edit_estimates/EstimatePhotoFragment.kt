@@ -96,7 +96,7 @@ import kotlin.collections.set
  * Created by Francis Mahlava on 2019/12/29.
  */
 
-class EstimatePhotoFragment : LocationFragment(), DIAware {
+class EstimatePhotoFragment: LocationFragment(), DIAware {
 
     private var sectionId: String? = null
     override val di by closestDI()
@@ -127,12 +127,12 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
     private var endImageUri: Uri? = null
     private var imageUri: Uri? = null
     private val uiScope = UiLifecycleScope()
-    private lateinit var photoUtil: PhotoUtil
+    private val photoUtil: PhotoUtil by instance()
     private var changesToPreserve: Boolean = false
     private var tenderRate: Double? = null
     private val navigationLocationProvider = NavigationLocationProvider()
 
-    private val locationObserver = object : LocationObserver {
+    private val locationObserver = object: LocationObserver {
         override fun onNewRawLocation(rawLocation: Location) {
             // You're going to need this when you
             // aren't driving.
@@ -188,6 +188,9 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
 
             whenCreated {
                 uiScope.onCreate()
+                createViewModel = activity?.run {
+                    ViewModelProvider(this, factory).get(CreateViewModel::class.java)
+                } ?: throw Exception("Invalid Activity")
             }
 
             whenStarted {
@@ -241,9 +244,9 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
                     requireContext(),
                     Manifest.permission.ACCESS_FINE_LOCATION
                 ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                        requireContext(),
-                        Manifest.permission.ACCESS_COARSE_LOCATION
-                    ) != PackageManager.PERMISSION_GRANTED
+                    requireContext(),
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                ) != PackageManager.PERMISSION_GRANTED
             ) {
                 // TODO: Consider calling
                 //    ActivityCompat#requestPermissions
@@ -263,7 +266,7 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
         (activity as MainActivity).supportActionBar?.title = getString(R.string.edit_estimate)
         locationWarning = false
 
-        val callback: OnBackPressedCallback = object : OnBackPressedCallback(true) {
+        val callback: OnBackPressedCallback = object: OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 navToAddProject(this@EstimatePhotoFragment.requireView())
             }
@@ -279,15 +282,10 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
         (activity as MainActivity).supportActionBar?.title = getString(R.string.edit_estimate)
         newJobItemEstimatesList = ArrayList()
         newJobItemEstimatesPhotosList = ArrayList()
-        createViewModel = ViewModelProvider(this.requireActivity(), factory)
-            .get(CreateViewModel::class.java)
-
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        photoUtil = PhotoUtil.getInstance(this.requireContext().applicationContext)
 
         var stateRestored = false
         val args: EstimatePhotoFragmentArgs by navArgs()
@@ -489,11 +487,15 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
     }
 
     private fun setEstimateQty(text: CharSequence?) {
-                val quantity = text.toString().toDouble()
-                newJobItemEstimate?.qty = quantity
-                createViewModel.setEstimateQuantity(quantity)
-        changesToPreserve = true
-                setCost()
+        try {
+            val quantity = text.toString().toDouble()
+            newJobItemEstimate?.qty = quantity
+            createViewModel.setEstimateQuantity(quantity)
+            changesToPreserve = true
+            setCost()
+        } catch (ex: java.lang.NumberFormatException) {
+            Timber.e(" ")
+        }
     }
 
     private fun setButtonClicks() {
@@ -747,11 +749,11 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
         }
     }
 
-    private fun processPhotoEstimate(
+    private suspend fun processPhotoEstimate(
         estimateLocation: LocationModel,
         filePath: Map<String, String>,
         itemidPhototype: Map<String, String>
-    ) = uiScope.launch(uiScope.coroutineContext) {
+    ) = withContext(uiScope.coroutineContext) {
 
         val itemId = item?.itemId ?: itemidPhototype["itemId"]
 
@@ -782,8 +784,7 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
         }
     }
 
-    // TODO: polygon verification for offline photography
-    private suspend fun processPhotoLocation(
+    private fun processPhotoLocation(
         estimateLocation: LocationModel,
         filePath: Map<String, String>,
         itemidPhototype: Map<String, String>
@@ -917,6 +918,7 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
             this@EstimatePhotoFragment.isEstimateDone =
                 createViewModel.estimateComplete(newJobItemEstimate)
 
+            withContext(dispatchers.ui()) {
                 if (isEstimateDone) {
                     binding.costCard.visibility = View.VISIBLE
                     binding.updateButton.visibility = View.VISIBLE
@@ -931,6 +933,7 @@ class EstimatePhotoFragment : LocationFragment(), DIAware {
                 }
             }
         }
+    }
 
     private fun setValueEditText(qty: Double) {
         when (item?.uom) {

@@ -19,7 +19,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.viewModelScope
-import java.util.concurrent.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
@@ -42,6 +41,7 @@ import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
+import java.util.concurrent.CancellationException
 
 /**
  * Created by Francis Mahlava on 03,October,2019
@@ -49,7 +49,8 @@ import za.co.xisystems.itis_rrm.utils.lazyDeferred
 class ApproveMeasureViewModel(
     application: Application,
     private val measureApprovalDataRepository: MeasureApprovalDataRepository,
-    private val offlineDataRepository: OfflineDataRepository
+    private val offlineDataRepository: OfflineDataRepository,
+    private val photoUtil: PhotoUtil
 ) : AndroidViewModel(application) {
 
     val offlineUserTaskList by lazyDeferred {
@@ -74,14 +75,10 @@ class ApproveMeasureViewModel(
 
     private val contextMain = Job(superJob) + Dispatchers.Main
     private val contextIO = Job(superJob) + Dispatchers.IO
-    private lateinit var photoUtil: PhotoUtil
 
     init {
         viewModelScope.launch(contextMain) {
 
-            if (!this@ApproveMeasureViewModel::photoUtil.isInitialized) {
-                photoUtil = PhotoUtil.getInstance(application.applicationContext)
-            }
             workflowStatus = measureApprovalDataRepository.workflowStatus
 
             workflowState = Transformations.map(workflowStatus) {

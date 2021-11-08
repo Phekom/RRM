@@ -28,8 +28,6 @@ import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.viewbinding.GroupieViewHolder
-import java.util.Date
-import java.util.HashMap
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -78,12 +76,15 @@ import za.co.xisystems.itis_rrm.utils.DateUtil
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
+import java.util.Date
+import java.util.HashMap
 
 class CaptureWorkFragment : LocationFragment() {
 
     override val di by closestDI()
     private lateinit var workViewModel: WorkViewModel
     private val factory: WorkViewModelFactory by instance()
+    private val photoUtil: PhotoUtil by instance()
     private var imageUri: Uri? = null
     private lateinit var workFlowMenuTitles: ArrayList<String>
     private lateinit var groupAdapter: GroupAdapter<GroupieViewHolder<ListSelectorBinding>>
@@ -106,7 +107,6 @@ class CaptureWorkFragment : LocationFragment() {
     private var estimateCount = 0
     private var errorState = false
     private var selectedJobId: String = ""
-    private lateinit var photoUtil: PhotoUtil
     private var uiScope = UiLifecycleScope()
 
     /**
@@ -158,7 +158,6 @@ class CaptureWorkFragment : LocationFragment() {
         jobWorkStep = ArrayList()
         groupAdapter = GroupAdapter<GroupieViewHolder<ListSelectorBinding>>()
         uiScope.onCreate()
-        photoUtil = PhotoUtil.getInstance(this.requireContext().applicationContext)
         (activity as MainActivity).supportActionBar?.title = getString(R.string.capture_work_title)
         workViewModel = activity?.run {
             ViewModelProvider(this, factory).get(WorkViewModel::class.java)

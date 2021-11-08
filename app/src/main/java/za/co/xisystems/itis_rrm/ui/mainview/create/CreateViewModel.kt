@@ -16,8 +16,6 @@ import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.liveData
 import androidx.lifecycle.viewModelScope
 import androidx.room.Transaction
-import java.util.Date
-import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
@@ -52,6 +50,8 @@ import za.co.xisystems.itis_rrm.utils.JobUtils
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
+import java.util.Date
+import kotlin.coroutines.CoroutineContext
 
 /**
  * Created by Francis Mahlava on 2019/10/18.
@@ -61,6 +61,7 @@ class CreateViewModel(
     private val jobCreationDataRepository: JobCreationDataRepository,
     private val userRepository: UserRepository,
     application: Application,
+    private val photoUtil: PhotoUtil,
     private val dispatchers: DispatcherProvider = DefaultDispatcherProvider()
 ) : AndroidViewModel(application) {
 
@@ -85,11 +86,11 @@ class CreateViewModel(
     var projectItemTemp: MutableLiveData<ItemDTOTemp> = MutableLiveData()
     val jobId: MutableLiveData<String?> = MutableLiveData()
     var tempProjectItem: MutableLiveData<XIEvent<ItemDTOTemp>> = MutableLiveData()
-    private lateinit var photoUtil: PhotoUtil
     var currentEstimate: MutableLiveData<XIEvent<JobItemEstimateDTO>> = MutableLiveData()
     val currentImageUri: MutableLiveData<XIEvent<Uri>> = MutableLiveData()
     val totalJobCost: MutableLiveData<String> = MutableLiveData()
     val backupSubmissionJob: MutableLiveData<XIEvent<JobDTO>> = MutableLiveData()
+
     val currentUser by lazyDeferred {
         userRepository.getUser().distinctUntilChanged()
     }
@@ -97,11 +98,7 @@ class CreateViewModel(
     var jobForValidation: MutableLiveData<XIEvent<JobDTO>> = MutableLiveData()
     var jobForReUpload: MutableLiveData<XIEvent<JobDTO>> = MutableLiveData()
 
-    init {
-        if (!this::photoUtil.isInitialized) {
-            photoUtil = PhotoUtil.getInstance(application.applicationContext)
-        }
-    }
+
     fun setEstimateQuantity(inQty: Double) {
         estimateQty.value = inQty
     }

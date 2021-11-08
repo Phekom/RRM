@@ -68,7 +68,7 @@ class MeasureViewModel(
     private val superJob = SupervisorJob()
     private val mainContext = (Job(superJob) + Dispatchers.Main + uncaughtExceptionHandler)
     private val ioContext = (Job(superJob) + Dispatchers.IO + uncaughtExceptionHandler)
-    private val photoUtil = PhotoUtil.getInstance(application.applicationContext)
+    private val photoUtil = PhotoUtil.getInstance(getApplication())
 
     init {
         initWorkflowChannels()

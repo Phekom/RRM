@@ -40,6 +40,7 @@ import za.co.xisystems.itis_rrm.utils.lazyDeferred
 class AuthViewModel(
     private val repository: UserRepository,
     private val armoury: XIArmoury,
+    private val photoUtil: PhotoUtil,
     application: Application,
     private val dispatchers: DispatcherProvider = DefaultDispatcherProvider()
 ) : AndroidViewModel(application) {
@@ -54,7 +55,6 @@ class AuthViewModel(
     var enterNewPin: String? = null
     var confirmNewPin: String? = null
     var authListener: AuthListener? = null
-    private val photoUtil: PhotoUtil = PhotoUtil.getInstance(application.applicationContext)
 
     val user by lazyDeferred {
         repository.getUser().distinctUntilChanged()

@@ -26,7 +26,6 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
-import java.util.Date
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -61,6 +60,7 @@ import za.co.xisystems.itis_rrm.utils.DateUtil
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
+import java.util.Date
 
 //
 class CaptureItemMeasurePhotoFragment :
@@ -70,6 +70,7 @@ class CaptureItemMeasurePhotoFragment :
     override val di by closestDI()
     private lateinit var measureViewModel: MeasureViewModel
     private val factory: MeasureViewModelFactory by instance()
+    private val photoUtil: PhotoUtil by instance()
     private val galleryObserver = Observer<XIResult<MeasureGalleryUIState>> { handleResponse(it) }
     private lateinit var jobItemMeasurePhotoArrayList: ArrayList<JobItemMeasurePhotoDTO>
     private lateinit var selectedJobItemMeasure: JobItemMeasureDTO
@@ -79,7 +80,6 @@ class CaptureItemMeasurePhotoFragment :
     private var uiScope = UiLifecycleScope()
     private var _ui: FragmentCaptureItemMeasurePhotoBinding? = null
     private val ui get() = _ui!!
-    private lateinit var photoUtil: PhotoUtil
 
     /**
      * ActivityResultContract for taking a photograph
@@ -123,7 +123,6 @@ class CaptureItemMeasurePhotoFragment :
         super.onCreate(savedInstanceState)
         uiScope.onCreate()
         lifecycle.addObserver(uiScope)
-        photoUtil = PhotoUtil.getInstance(this.requireContext().applicationContext)
     }
 
     override fun onCreateView(

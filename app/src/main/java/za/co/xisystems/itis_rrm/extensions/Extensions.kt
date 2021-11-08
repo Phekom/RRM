@@ -87,6 +87,7 @@ fun Activity.exitApplication() {
             ) // hide (remove, in this case) task from recents
 
         ContextCompat.startActivity(this, relaunch, null)
+        finishAndRemoveTask()
     }
 }
 

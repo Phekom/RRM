@@ -71,9 +71,9 @@ open class MainApp : Application(), DIAware {
     override val di = DI.lazy {
 
         import(androidXModule(this@MainApp))
-        bind { eagerSingleton { XIArmoury.getInstance(this@MainApp.applicationContext) } }
-        bind { singleton { AppDatabase(this@MainApp.applicationContext, instance()) } }
-        bind { singleton { PhotoUtil.getInstance(this@MainApp.applicationContext) } }
+        bind { eagerSingleton { XIArmoury.getInstance(instance()) } }
+        bind { singleton { AppDatabase(instance(), instance()) } }
+        bind { eagerSingleton { PhotoUtil.getInstance(instance()) } }
         bind { singleton { NetworkConnectionInterceptor(instance()) } }
         bind { singleton { BaseConnectionApi(instance()) } }
         bind { singleton { PreferenceProvider(instance()) } }
@@ -86,7 +86,7 @@ open class MainApp : Application(), DIAware {
         bind { singleton { MeasureApprovalDataRepository(instance(), instance()) } }
         bind { singleton { DeferredLocationRepository(instance(), instance()) } }
         bind { provider { GoToViewModelFactory(instance()) } }
-        bind { provider { AuthViewModelFactory(instance(), instance(), this@MainApp) } }
+        bind { provider { AuthViewModelFactory(instance(), instance(), instance(), this@MainApp) } }
 
         bind {
             provider {
@@ -103,7 +103,8 @@ open class MainApp : Application(), DIAware {
                 CreateViewModelFactory(
                     jobCreationDataRepository = instance(),
                     userRepository = instance(),
-                    application = this@MainApp
+                    application = this@MainApp,
+                    photoUtil = instance()
                 )
             }
         }
@@ -113,7 +114,8 @@ open class MainApp : Application(), DIAware {
                 ApproveMeasureViewModelFactory(
                     this@MainApp,
                     instance(),
-                    instance()
+                    instance(),
+                    instance(),
                 )
             }
         }
