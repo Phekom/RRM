@@ -200,8 +200,8 @@ open class CardItem(
             } else {
                 val distance = straightDistanceBetweenDeviceAndTarget
                 val drive =
-                    activity?.getString(R.string.action_not_permitted)
-                        .plus("""Please Drive $distance KM to the location First""")
+                    activity?.getString(R.string.action_not_permitted).plus(System.lineSeparator())
+                        .plus("Please drive $distance KM to the location first.")
                 selectedLocationPoint = Point.fromLngLat(
                     estimatePhotoStart?.photoLongitude!!, estimatePhotoStart?.photoLatitude!!
                 )
