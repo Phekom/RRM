@@ -34,19 +34,20 @@ import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.viewbinding.GroupieViewHolder
+import java.lang.ref.WeakReference
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.kodein.di.DIAware
 import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
 import timber.log.Timber
-import www.sanju.motiontoast.MotionToastStyle
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.constants.Constants
 import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration
 import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
@@ -66,7 +67,6 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection.NEXT
-import java.lang.ref.WeakReference
 
 class MeasureApprovalFragment : BaseFragment(), DIAware {
     override val di by closestDI()
@@ -78,7 +78,7 @@ class MeasureApprovalFragment : BaseFragment(), DIAware {
     private var workObserver = Observer<XIResult<String>?> { handleMeasureProcessing(it) }
     private var flowDirection: Int = 0
     private var measuresProcessed: Int = 0
-
+    private var selectedJobId: String? = null
     private var uiScope = UiLifecycleScope()
     private var _ui: FragmentMeasureApprovalBinding? = null
     private val ui get() = _ui!!
@@ -107,7 +107,7 @@ class MeasureApprovalFragment : BaseFragment(), DIAware {
                 is XIResult.Status -> {
                     extensionToast(
                         message = result.message,
-                        style = MotionToastStyle.INFO,
+                        style = ToastStyle.INFO,
                         position = ToastGravity.BOTTOM,
                         duration = ToastDuration.SHORT
                     )
@@ -185,7 +185,10 @@ class MeasureApprovalFragment : BaseFragment(), DIAware {
 
             ui.viewMeasuredItems.veil()
             approveViewModel.jobIdForApproval.observe(viewLifecycleOwner, { jobId ->
-                getMeasureItems(jobId)
+                jobId?.let {
+                    selectedJobId = it
+                    getMeasureItems(it)
+                }
             })
 
             ui.approveMeasureButton.setOnClickListener {
@@ -234,7 +237,7 @@ class MeasureApprovalFragment : BaseFragment(), DIAware {
         } else {
             extensionToast(
                 message = getString(R.string.no_connection_detected),
-                style = MotionToastStyle.NO_INTERNET
+                style = ToastStyle.NO_INTERNET
             )
             progressButton.failProgress("No internet")
         }
@@ -259,6 +262,7 @@ class MeasureApprovalFragment : BaseFragment(), DIAware {
                         withContext(uiScope.coroutineContext) {
                             approveViewModel.approveMeasurements(
                                 userDTO.userId,
+                                selectedJobId!!,
                                 workflowDirection,
                                 measurementsToApprove
                             )
@@ -273,7 +277,7 @@ class MeasureApprovalFragment : BaseFragment(), DIAware {
     private fun showSubmissionError(errMessage: String, progFailCaption: String) {
         extensionToast(
             message = errMessage,
-            style = MotionToastStyle.ERROR,
+            style = ToastStyle.ERROR,
             position = ToastGravity.CENTER
         )
         progressButton.failProgress(progFailCaption)
@@ -284,14 +288,14 @@ class MeasureApprovalFragment : BaseFragment(), DIAware {
             NEXT.value -> {
                 extensionToast(
                     message = getString(R.string.measurement_approved),
-                    style = MotionToastStyle.SUCCESS,
+                    style = ToastStyle.SUCCESS,
                     duration = ToastDuration.SHORT
                 )
             }
             WorkflowDirection.FAIL.value -> {
                 extensionToast(
                     message = getString(R.string.measurement_declined),
-                    style = MotionToastStyle.INFO,
+                    style = ToastStyle.INFO,
                     duration = ToastDuration.SHORT
                 )
             }

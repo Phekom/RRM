@@ -15,7 +15,7 @@ import za.co.xisystems.itis_rrm.utils.ServiceUtil
 class NetworkConnectionInterceptor(
     context: Context
 ) : Interceptor {
-    private val testConnection = "dns.google.com"
+    private val testConnection = "8.8.8.8"
     private val serviceHost = ServiceUriUtil.getInstance()?.webServiceHost
     private val applicationContext = context.applicationContext
     override fun intercept(chain: Interceptor.Chain): Response {

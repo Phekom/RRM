@@ -7,6 +7,7 @@
 package za.co.xisystems.itis_rrm.data.network
 
 import com.google.gson.JsonObject
+import java.util.concurrent.TimeUnit
 import okhttp3.OkHttpClient
 import okhttp3.Protocol
 import okhttp3.logging.HttpLoggingInterceptor
@@ -34,7 +35,7 @@ import za.co.xisystems.itis_rrm.data.network.responses.UploadImageResponse
 import za.co.xisystems.itis_rrm.data.network.responses.UploadWorksItemResponse
 import za.co.xisystems.itis_rrm.data.network.responses.WorkflowMoveResponse
 import za.co.xisystems.itis_rrm.data.network.responses.WorkflowResponse
-import java.util.concurrent.TimeUnit
+import za.co.xisystems.itis_rrm.data.network.responses.WorkflowUpdateResponse
 
 /**
  * Created by Francis Mahlava on 2019/10/23.
@@ -154,6 +155,36 @@ interface BaseConnectionApi {
         @Field("Longitude") longitude: Double,
         @Field("UserId") userId: String
     ): Response<RouteSectionPointResponse>
+
+    @POST("UpdateApprovalInfo")
+    suspend fun updateApprovalInfo(
+        @Body updateApprovalRequest: JsonObject
+    ): Response<WorkflowUpdateResponse>
+
+    @POST("UpdateWorkStartInfo")
+    suspend fun updateWorkStartInfo(
+        @Body updateWorkStartRequest: JsonObject
+    ): Response<WorkflowUpdateResponse>
+
+    @POST("UpdateWorkEndInfo")
+    suspend fun updateWorkEndInfo(
+        @Body updateWorkEndRequest: JsonObject
+    ): Response<WorkflowUpdateResponse>
+
+    @POST("UpdateWorkStateInfo")
+    suspend fun updateWorkStateInfo(
+        @Body updateWorkStateRequest: JsonObject
+    ): Response<WorkflowUpdateResponse>
+
+    @POST("UpdateMeasureCreatedInfo")
+    suspend fun updateMeasureCreatedInfo(
+        @Body updateMeasureCreatedRequest: JsonObject
+    ): Response<WorkflowUpdateResponse>
+
+    @POST("UpdateMeasureApprovalInfo")
+    suspend fun updateMeasureApprovalInfo(
+        @Body updateMeasureApprovalRequest: JsonObject
+    ): Response<WorkflowUpdateResponse>
 
     @POST("SaveRrmJob")
     suspend fun sendJobsForApproval(

@@ -7,11 +7,11 @@
 package za.co.xisystems.itis_rrm.forge
 
 import com.password4j.SecureString
+import java.nio.CharBuffer
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import za.co.xisystems.itis_rrm.utils.Utils
-import java.nio.CharBuffer
 
 class StringTest {
     @Before

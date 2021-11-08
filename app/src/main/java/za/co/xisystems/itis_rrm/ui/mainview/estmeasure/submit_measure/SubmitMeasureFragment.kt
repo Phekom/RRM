@@ -36,14 +36,13 @@ import org.kodein.di.DIAware
 import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
 import timber.log.Timber
-import www.sanju.motiontoast.MotionToastStyle
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration
 import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity
 import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity.BOTTOM
-
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
@@ -88,6 +87,7 @@ class SubmitMeasureFragment : BaseFragment(), DIAware {
     private var measureJob: Job? = null
     private var _ui: FragmentSubmitMeasureBinding? = null
     private val ui get() = _ui!!
+
     init {
         lifecycleScope.launch {
             whenStarted {
@@ -114,7 +114,7 @@ class SubmitMeasureFragment : BaseFragment(), DIAware {
 
                     extensionToast(
                         message = "Measurements submitted for Job ${outcome.data}",
-                        style = MotionToastStyle.SUCCESS
+                        style = ToastStyle.SUCCESS
                     )
                     progressButton.doneProgress(originalCaption)
                     toggleLongRunning(false)
@@ -129,7 +129,7 @@ class SubmitMeasureFragment : BaseFragment(), DIAware {
 
                     extensionToast(
                         message = "Submission failed: ${outcome.message}",
-                        style = MotionToastStyle.ERROR
+                        style = ToastStyle.ERROR
                     )
 
                     crashGuard(
@@ -248,7 +248,7 @@ class SubmitMeasureFragment : BaseFragment(), DIAware {
                 } else {
                     extensionToast(
                         message = getString(R.string.no_connection_detected),
-                        style = MotionToastStyle.NO_INTERNET,
+                        style = ToastStyle.NO_INTERNET,
                         position = ToastGravity.CENTER
                     )
                     progressButton.failProgress(originalCaption)
@@ -280,13 +280,13 @@ class SubmitMeasureFragment : BaseFragment(), DIAware {
                 if (validMeasures.isNullOrEmpty()) {
                     extensionToast(
                         message = getString(R.string.please_make_sure_you_have_captured_photos),
-                        style = MotionToastStyle.WARNING
+                        style = ToastStyle.WARNING
                     )
                     progressButton.failProgress(originalCaption)
                 } else {
                     extensionToast(
                         message = "You have Done " + validMeasures.size.toString() + " Measurements on this Estimate",
-                        style = MotionToastStyle.INFO
+                        style = ToastStyle.INFO
                     )
 
                     val itemMeasures = validMeasures as ArrayList
@@ -315,7 +315,12 @@ class SubmitMeasureFragment : BaseFragment(), DIAware {
         mSures: ArrayList<JobItemMeasureDTO>
     ) {
         Coroutines.main {
+            val estimateIds = itemMeasureJob.jobItemEstimates.map { it -> it.estimateId  }
+            val measureEstimateIds = mSures.map { it -> it.estimateId }.distinct()
+            val missingEstimateIds = estimateIds.asSequence().minus(measureEstimateIds).map { it }.toList()
+
             val user = measureViewModel.user.await()
+
             user.observe(viewLifecycleOwner, { userDTO ->
                 when {
                     userDTO.userId.isBlank() -> {
@@ -323,6 +328,9 @@ class SubmitMeasureFragment : BaseFragment(), DIAware {
                     }
                     itemMeasureJob.jobId.isBlank() -> {
                         showSubmissionError("Selected job is invalid")
+                    }
+                    missingEstimateIds.isNotEmpty() -> {
+                        showSubmissionError("Please include measurements for all estimates")
                     }
                     else -> {
                         prepareMeasurementWorkflow(itemMeasureJob, userDTO, mSures)
@@ -362,9 +370,10 @@ class SubmitMeasureFragment : BaseFragment(), DIAware {
         extensionToast(
             title = "Estimate Measurements",
             message = errorMessage,
-            style = MotionToastStyle.ERROR,
+            style = ToastStyle.ERROR,
             position = ToastGravity.CENTER
         )
+        toggleLongRunning(false)
         progressButton.failProgress(originalCaption)
     }
 
@@ -467,6 +476,7 @@ class SubmitMeasureFragment : BaseFragment(), DIAware {
             measurements.observe(viewLifecycleOwner, { estimateList ->
                 initRecyclerView(estimateList.toMeasureItems())
             })
+
         }
     }
 
@@ -477,7 +487,7 @@ class SubmitMeasureFragment : BaseFragment(), DIAware {
         }
 
         ui.measureListView.apply {
-            layoutManager = LinearLayoutManager(this.context)
+            layoutManager = LinearLayoutManager(this@SubmitMeasureFragment.requireContext())
             adapter = groupAdapter
         }
     }

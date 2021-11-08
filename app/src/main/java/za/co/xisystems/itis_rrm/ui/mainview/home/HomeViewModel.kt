@@ -13,8 +13,6 @@ import androidx.lifecycle.Transformations
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineStart
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelChildren
@@ -33,14 +31,14 @@ import za.co.xisystems.itis_rrm.utils.lazyDeferred
 class HomeViewModel(
     private val repository: UserRepository,
     private val offlineDataRepository: OfflineDataRepository,
-    private val dispatchers: DispatcherProvider = DefaultDispatcherProvider(),
+    dispatchers: DispatcherProvider = DefaultDispatcherProvider(),
     application: Application
-) : AndroidViewModel(application) {
+): AndroidViewModel(application) {
 
     private val superJob = SupervisorJob()
     private var databaseStatus: MutableLiveData<XIEvent<XIResult<Boolean>>> = MutableLiveData()
-    private var ioContext = Dispatchers.IO + Job(superJob)
-    private var mainContext = Dispatchers.Main + Job(superJob)
+    private var ioContext = dispatchers.io() + Job(superJob)
+    private var mainContext = dispatchers.main() + Job(superJob)
     var healthState: MutableLiveData<XIEvent<XIResult<Boolean>>> = MutableLiveData()
     var databaseState: MutableLiveData<XIResult<Boolean>?> = MutableLiveData()
 
@@ -70,21 +68,18 @@ class HomeViewModel(
         }
     }
 
-    @ExperimentalCoroutinesApi
-    fun fetchAllData(userId: String) = viewModelScope.launch(mainContext, CoroutineStart.ATOMIC) {
+    fun fetchAllData(userId: String) = viewModelScope.launch(ioContext, CoroutineStart.DEFAULT) {
 
         try {
-            withContext(ioContext) {
-                offlineDataRepository.loadActivitySections(userId)
-                offlineDataRepository.loadContracts(userId)
+            offlineDataRepository.loadActivitySections(userId)
+            offlineDataRepository.loadContracts(userId)
 
-                offlineDataRepository.loadLookups(userId)
-                offlineDataRepository.loadTaskList(userId)
-                offlineDataRepository.loadWorkflows(userId)
+            offlineDataRepository.loadLookups(userId)
+            offlineDataRepository.loadTaskList(userId)
+            offlineDataRepository.loadWorkflows(userId)
 
-                withContext(mainContext) {
-                    databaseState.postValue(XIResult.Success(true))
-                }
+            withContext(mainContext) {
+                databaseState.postValue(XIResult.Success(true))
             }
         } catch (exception: Exception) {
             Timber.e(exception, "Failed to synch contracts")

@@ -6,6 +6,9 @@
 -keepattributes *Annotation*
 -keepattributes LineNumberTable,SourceFile
 
+-keep interface android.view.** { *; }
+-keep class java.beans.** { *; }
+
 -verbose
 
 -printseeds obfuscation/seeds.txt ## all the classes and dependencies we actually use
@@ -31,7 +34,7 @@
 -dontwarn retrofit.**
 -keep class retrofit.** { *; }
 -keepclasseswithmembers class * {
-    @retrofit.http.* <methods>;
+    @retrofit.http.** <methods>;
 }
 
 -keep class sun.misc.Unsafe { *; }
@@ -51,9 +54,10 @@
 -keepattributes EnclosingMethod
 -keepattributes InnerClasses
 -keepattributes Annotation
+-keepattributes *Annotation*
+
 -keep class sun.misc.Unsafe { *; }
 -keep class com.google.gson.** { *; }
--keepattributes *Annotation*
 
 # SQLCipher
 -keep,includedescriptorclasses class net.sqlcipher.** { *; }
@@ -88,6 +92,21 @@
 
 -keep, allowobfuscation, allowoptimization class * extends org.kodein.type.TypeReference
 -keep, allowobfuscation, allowoptimization class * extends org.kodein.type.JVMAbstractTypeToken$Companion$WrappingTest
+
+# --- AutoValue ---
+# AutoValue annotations are retained but dependency is compileOnly.
+-dontwarn com.google.auto.value.**
+
+# Proguard configuration for Jackson 2.x (fasterxml package instead of codehaus package)
+-keep class com.fasterxml.jackson.databind.ObjectMapper {
+    public <methods>;
+    protected <methods>;
+}
+-keep class com.fasterxml.jackson.databind.ObjectWriter {
+    public ** writeValueAsString(**);
+}
+-keepnames class com.fasterxml.jackson.** { *; }
+-dontwarn com.fasterxml.jackson.databind.**
 
 # mapbox
 -keep interface android.view.** { *; }

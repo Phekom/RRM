@@ -11,6 +11,8 @@ import android.os.Environment
 import androidx.lifecycle.LifecycleObserver
 import androidx.security.crypto.MasterKey
 import com.password4j.SecureString
+import java.io.File
+import java.util.concurrent.atomic.AtomicLong
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -19,8 +21,6 @@ import za.co.xisystems.itis_rrm.constants.Constants.TEN_MINUTES
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.forge.Scribe.Companion.NOT_INITIALIZED
 import za.co.xisystems.itis_rrm.utils.Coroutines
-import java.io.File
-import java.util.concurrent.atomic.AtomicLong
 
 class XIArmoury private constructor(
     appContext: Context,
@@ -44,17 +44,24 @@ class XIArmoury private constructor(
         const val PASS_LENGTH = 64
         private val Lock = Any()
 
-        fun getInstance(context: Context, sageInstance: Sage, scribeInstance: Scribe): XIArmoury {
+        fun getInstance(appContext: Context): XIArmoury {
 
             return instance ?: synchronized(Lock) {
-                XIArmoury(appContext = context)
+                XIArmoury(appContext = appContext)
             }.also {
-                it.sageInstance = sageInstance
-                it.masterKey = sageInstance.masterKeyAlias
-                it.scribeInstance = scribeInstance
-                it.initArmoury(it, context)
+                it.sageInstance = Sage.getInstance(appContext = appContext)
+                it.masterKey = it.sageInstance?.masterKeyAlias
+                it.scribeInstance = Scribe.getInstance(
+                    appContext = appContext,
+                    sageInstance = it.sageInstance!!
+                )
+                it.initArmoury(it, appContext)
                 instance = it
             }
+        }
+
+        fun checkTimeout(): Boolean {
+            return instance?.checkTimeout() == true
         }
 
         fun closeArmoury() {
@@ -197,7 +204,7 @@ class XIArmoury private constructor(
 
     fun checkTimeout(): Boolean {
         val timeInMillis = System.currentTimeMillis()
-        val timeDiff = timeInMillis - userTimestamp.get()
+        val timeDiff = timeInMillis - getTimestamp()
         Timber.d("TimeDiff: $timeDiff")
         return timeDiff >= TEN_MINUTES
     }

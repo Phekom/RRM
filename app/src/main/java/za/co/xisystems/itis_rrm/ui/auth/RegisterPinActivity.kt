@@ -50,7 +50,6 @@ class RegisterPinActivity : AppCompatActivity(), AuthListener, DIAware {
         Manifest.permission.ACCESS_FINE_LOCATION
     )
 
-
     private lateinit var binding: ActivityRegisterPinBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -72,13 +71,11 @@ class RegisterPinActivity : AppCompatActivity(), AuthListener, DIAware {
 
         Coroutines.main {
             binding.registerPinbutton.setOnClickListener {
-                var enterPin = binding.enterPinEditText
-                var confirmPin = binding.confirmPinEditText
-
+                val enterPin = binding.enterPinEditText
+                val confirmPin = binding.confirmPinEditText
 
                 viewModel.onRegPinButtonClick(it, enterPin, confirmPin)
             }
-
 
             val loggedInUser = viewModel.user.await()
             loggedInUser.observe(this, { user ->

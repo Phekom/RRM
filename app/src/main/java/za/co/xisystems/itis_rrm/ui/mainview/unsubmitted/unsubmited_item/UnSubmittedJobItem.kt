@@ -13,13 +13,11 @@ import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.viewbinding.BindableItem
 import com.xwray.groupie.viewbinding.GroupieViewHolder
 import timber.log.Timber
-import www.sanju.motiontoast.MotionToastStyle
 import za.co.xisystems.itis_rrm.R
-import za.co.xisystems.itis_rrm.R.drawable
-import za.co.xisystems.itis_rrm.R.string
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration.LONG
 import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity.BOTTOM
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.databinding.UnsubmtdJobListItemBinding
@@ -90,17 +88,17 @@ class UnSubmittedJobItem(
                 view.context // , android.R.style
                 // .Theme_DeviceDefault_Dialog
             )
-        itemDeleteBuilder.setTitle(string.confirm)
-        itemDeleteBuilder.setIcon(drawable.ic_baseline_file_upload_24)
+        itemDeleteBuilder.setTitle(R.string.confirm)
+        itemDeleteBuilder.setIcon(R.drawable.ic_baseline_file_upload_24)
         itemDeleteBuilder.setMessage("Upload this unsubmitted job?")
         // Yes button
         itemDeleteBuilder.setPositiveButton(
-            string.yes
+            R.string.yes
         ) { _, _ ->
             fragment.extensionToast(
                 title = "Uploading ...",
                 message = "${this.jobDTO.descr} in transit.",
-                style = MotionToastStyle.INFO,
+                style = ToastStyle.INFO,
                 position = BOTTOM,
                 duration = LONG
             )
@@ -123,7 +121,7 @@ class UnSubmittedJobItem(
         }
         // No button
         itemDeleteBuilder.setNegativeButton(
-            string.no
+            R.string.no
         ) { dialog, _ ->
             // Do nothing but close dialog
             dialog.dismiss()
@@ -157,7 +155,7 @@ class UnSubmittedJobItem(
             is XIResult.Success -> {
                 fragment.extensionToast(
                     message = "Job ${jobDTO.jiNo} uploaded successfully",
-                    style = MotionToastStyle.SUCCESS
+                    style = ToastStyle.SUCCESS
                 )
                 viewModel.deleteJobFromList(jobId)
                 viewModel.deleteItemList(jobId)
@@ -168,7 +166,7 @@ class UnSubmittedJobItem(
                 fragment.extensionToast(
                     title = "Upload failed.",
                     message = "${result.message} - hit upload arrow to retry.",
-                    style = MotionToastStyle.ERROR
+                    style = ToastStyle.ERROR
                 )
                 createModel.resetUploadState()
             }
@@ -191,17 +189,17 @@ class UnSubmittedJobItem(
                 view.context // , android.R.style
                 // .Theme_DeviceDefault_Dialog
             )
-        itemDeleteBuilder.setTitle(string.confirm)
-        itemDeleteBuilder.setIcon(drawable.ic_warning)
+        itemDeleteBuilder.setTitle(R.string.confirm)
+        itemDeleteBuilder.setIcon(R.drawable.ic_warning)
         itemDeleteBuilder.setMessage("Delete this unsubmitted job?")
         // Yes button
         itemDeleteBuilder.setPositiveButton(
-            string.yes
+            R.string.yes
         ) { _, _ ->
             fragment.extensionToast(
                 title = "Deleting ...",
                 message = "${this.jobDTO.descr} removed.",
-                style = MotionToastStyle.DELETE,
+                style = ToastStyle.DELETE,
                 position = BOTTOM,
                 duration = LONG
             )
@@ -218,7 +216,7 @@ class UnSubmittedJobItem(
         }
         // No button
         itemDeleteBuilder.setNegativeButton(
-            string.no
+            R.string.no
         ) { dialog, _ ->
             // Do nothing but close dialog
             dialog.dismiss()

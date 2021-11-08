@@ -14,13 +14,13 @@ import com.password4j.types.Argon2.D
 import com.password4j.types.Argon2.I
 import com.password4j.types.Argon2.ID
 import com.password4j.types.BCrypt.A
-import org.junit.Assert
-import org.junit.Test
 import java.util.ArrayList
 import java.util.Arrays
 import java.util.concurrent.Callable
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.Executors
+import org.junit.Assert
+import org.junit.Test
 
 class Argon2Test {
     internal class TestCase(

@@ -16,17 +16,31 @@ import com.google.gson.Gson
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.custom.errors.LocalDataException
 import za.co.xisystems.itis_rrm.custom.errors.NoDataException
 import za.co.xisystems.itis_rrm.custom.errors.ServiceException
+import za.co.xisystems.itis_rrm.custom.errors.TransmissionException
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
-import za.co.xisystems.itis_rrm.data.localDB.entities.*
+import za.co.xisystems.itis_rrm.data.localDB.dao.JobDao
+import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksPhotoDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimatesPhotoDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.WfWorkStepDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.WorkflowJobDTO
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
 import za.co.xisystems.itis_rrm.forge.DefaultDispatcherProvider
@@ -48,14 +62,34 @@ class WorkDataRepository(
     private val dispatchers: DispatcherProvider = DefaultDispatcherProvider()
 ) : SafeApiRequest() {
 
+    val searchResults = MutableLiveData<List<JobDTO>>()
+    private var jobDao: JobDao?
+    private val coroutineScope = CoroutineScope(dispatchers.main())
+    var workStatus: MutableLiveData<XIEvent<XIResult<String>>> = MutableLiveData()
+    val allWork: LiveData<List<JobDTO>>?
+
+    init {
+        jobDao = appDb.getJobDao()
+        allWork = jobDao?.getAllWork()
+    }
+
     companion object {
         val TAG: String = WorkDataRepository::class.java.simpleName
     }
 
-    val workStatus: MutableLiveData<XIEvent<XIResult<String>>> = MutableLiveData()
+    fun jobSearch(criteria: String) {
+        coroutineScope.launch(dispatchers.main()) {
+            searchResults.value = jobSearchAsync(criteria).await()
+        }
+    }
+
+    private suspend fun jobSearchAsync(criteria: String): Deferred<List<JobDTO>?> =
+        coroutineScope.async(dispatchers.io()) {
+            return@async jobDao?.searchJobs(criteria.toRoomSearchString())
+        }
 
     @Synchronized
-    private fun postWorkStatus(result: XIResult<String>) = Coroutines.main {
+    private fun postWorkStatus(result: XIResult<String>) = Coroutines.io {
         workStatus.postValue(XIEvent(result))
     }
 
@@ -323,7 +357,7 @@ class WorkDataRepository(
     ) {
         estimateWorksPhotos.forEach { estimateWorksPhoto ->
             if (!appDb.getEstimateWorkPhotoDao()
-                    .checkIfEstimateWorksPhotoExist(estimateWorksPhoto.filename)
+                .checkIfEstimateWorksPhotoExist(estimateWorksPhoto.filename)
             ) {
                 appDb.getEstimateWorkPhotoDao().insertEstimateWorksPhoto(estimateWorksPhoto)
             } else {
@@ -424,7 +458,7 @@ class WorkDataRepository(
                 }
             }
             if (!inWorkflow) {
-                postWorkStatus(XIResult.Success(job.jiNo!!))
+                postWorkStatus(XIResult.Success("Job ${job.jiNo!!} completed"))
             }
         } catch (t: Throwable) {
             val message = "Unable to update workflow job: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
@@ -556,10 +590,68 @@ class WorkDataRepository(
         return@withContext appDb.getJobDao().getJobForJobId(job.jobId)
     }
 
-
     suspend fun getEstimateStartPhotoForId(estimateId: String): JobItemEstimatesPhotoDTO = withContext(dispatchers.io()) {
         return@withContext appDb.getJobItemEstimatePhotoDao().getEstimateStartPhotoForId(estimateId)
     }
 
+    suspend fun updateWorkStateInfo(
+        jobId: String,
+        userId: Int,
+        activityId: Int,
+        remarks: String
+    ): Boolean {
+        try {
+            val requestData = JsonObject()
+            requestData.addProperty("UserId", userId)
+            requestData.addProperty("JobId", jobId)
+            requestData.addProperty("ActivityId", activityId)
+            requestData.addProperty("Remarks", remarks)
 
+            Timber.d("Json Job: $requestData")
+            val updateResponse = apiRequest {
+                api.updateWorkStateInfo(requestData)
+            }
+
+            if (!updateResponse.errorMessage.isNullOrBlank()) {
+                throw ServiceException(updateResponse.errorMessage)
+            }
+            return true
+        } catch (e: Exception) {
+            val message = "Failed to update approval information"
+            Timber.e(e, message)
+            throw TransmissionException(message, e)
+        }
+    }
+
+    suspend fun updateWorkTimes(userId: String, jobId: String, isStart: Boolean): Boolean {
+        val requestData = JsonObject()
+        requestData.addProperty("UserId", userId)
+        requestData.addProperty("JobId", jobId)
+        try {
+            val updateResponse = when (isStart) {
+                true -> {
+                    apiRequest { api.updateWorkStartInfo(requestData) }
+                }
+                else -> {
+                    apiRequest { api.updateWorkEndInfo(requestData) }
+                }
+            }
+            if (!updateResponse.errorMessage.isNullOrBlank()) {
+                throw ServiceException(updateResponse.errorMessage)
+            }
+            return true
+        } catch (ex: Exception) {
+            val message = "Failed to update work start / end times."
+            Timber.e(ex, message)
+            throw TransmissionException(message, ex)
+        }
+    }
+
+    suspend fun clearErrors() = withContext(dispatchers.main()) {
+        workStatus = MutableLiveData()
+    }
+}
+
+private fun String.toRoomSearchString(): String {
+    return "%$this%"
 }

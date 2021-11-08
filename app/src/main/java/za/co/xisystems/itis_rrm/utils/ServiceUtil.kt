@@ -9,11 +9,11 @@ package za.co.xisystems.itis_rrm.utils
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
-import timber.log.Timber
-import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.Socket
+import timber.log.Timber
+import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 
 object ServiceUtil {
     fun isNetworkAvailable(context: Context): Boolean {

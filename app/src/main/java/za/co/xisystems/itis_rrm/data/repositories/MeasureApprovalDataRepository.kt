@@ -8,11 +8,13 @@ package za.co.xisystems.itis_rrm.data.repositories
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.google.gson.JsonObject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.custom.errors.LocalDataException
 import za.co.xisystems.itis_rrm.custom.errors.ServiceException
+import za.co.xisystems.itis_rrm.custom.errors.TransmissionException
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.custom.results.XIResult
@@ -341,6 +343,29 @@ class MeasureApprovalDataRepository(
     suspend fun getLineRateForMeasureItemId(itemMeasureId: String): LiveData<Double> {
         return withContext(Dispatchers.IO) {
             appDb.getJobItemMeasureDao().getLineRateForMeasureItemId(itemMeasureId)
+        }
+    }
+    @Suppress("TooGenericExceptionCaught")
+    // We have a really smart error-handler
+    suspend fun updateMeasureApprovalInfo(userId: String, jobId: String): Boolean {
+        try {
+
+            val requestData = JsonObject()
+            requestData.addProperty("UserId", userId)
+            requestData.addProperty("JobId", jobId)
+            Timber.d("Json Job: $requestData")
+
+            val approvalResponse = apiRequest {
+                api.updateMeasureApprovalInfo(requestData)
+            }
+            if (!approvalResponse.isSuccess) {
+                throw ServiceException(approvalResponse.errorMessage!!)
+            }
+            return true
+        } catch (e: Exception) {
+            val message = "Failed to update approval information"
+            Timber.e(e, message)
+            throw TransmissionException(message, e)
         }
     }
 }

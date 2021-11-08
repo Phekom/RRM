@@ -32,11 +32,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.kodein.di.DIAware
 import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
 import timber.log.Timber
-import www.sanju.motiontoast.MotionToastStyle
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.LocationFragment
@@ -44,6 +42,7 @@ import za.co.xisystems.itis_rrm.constants.Constants
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration
 import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
@@ -80,11 +79,12 @@ import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import java.util.Date
 import java.util.HashMap
 
-class CaptureWorkFragment : LocationFragment(), DIAware {
+class CaptureWorkFragment : LocationFragment() {
 
     override val di by closestDI()
     private lateinit var workViewModel: WorkViewModel
     private val factory: WorkViewModelFactory by instance()
+    private val photoUtil: PhotoUtil by instance()
     private var imageUri: Uri? = null
     private lateinit var workFlowMenuTitles: ArrayList<String>
     private lateinit var groupAdapter: GroupAdapter<GroupieViewHolder<ListSelectorBinding>>
@@ -106,8 +106,6 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
     private var estimateSize = 0
     private var estimateCount = 0
     private var errorState = false
-    private var selectedJobId: String = ""
-    private lateinit var photoUtil: PhotoUtil
     private var uiScope = UiLifecycleScope()
 
     /**
@@ -144,7 +142,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
         this@CaptureWorkFragment.extensionToast(
             title = "Work data is incomplete",
             message = "Please contact support about this job, and have them restore or remove it",
-            style = MotionToastStyle.DELETE,
+            style = ToastStyle.DELETE,
             duration = ToastDuration.LONG,
             position = ToastGravity.CENTER
         )
@@ -159,7 +157,6 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
         jobWorkStep = ArrayList()
         groupAdapter = GroupAdapter<GroupieViewHolder<ListSelectorBinding>>()
         uiScope.onCreate()
-        photoUtil = PhotoUtil.getInstance(this.requireContext().applicationContext)
         (activity as MainActivity).supportActionBar?.title = getString(R.string.capture_work_title)
         workViewModel = activity?.run {
             ViewModelProvider(this, factory).get(WorkViewModel::class.java)
@@ -272,7 +269,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
             is XIResult.Error -> {
                 extensionToast(
                     message = result.message,
-                    style = MotionToastStyle.ERROR,
+                    style = ToastStyle.ERROR,
                     position = ToastGravity.BOTTOM,
                     duration = ToastDuration.LONG
                 )
@@ -364,11 +361,13 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
 
             activeWorks.estimateId = estimateItem?.estimateId
 
-            sendWorkToService(activeWorks)
+            val comments = ui.commentsEditText.text.toString().trim()
+
+            sendWorkToService(activeWorks, comments)
         } else {
             extensionToast(
                 message = getString(R.string.no_connection_detected),
-                style = MotionToastStyle.NO_INTERNET,
+                style = ToastStyle.NO_INTERNET,
                 position = ToastGravity.CENTER,
                 duration = ToastDuration.LONG
             )
@@ -379,7 +378,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
     private fun validationNotice(stringId: Int) {
         extensionToast(
             message = getString(stringId),
-            style = MotionToastStyle.WARNING,
+            style = ToastStyle.WARNING,
             position = ToastGravity.CENTER,
             duration = ToastDuration.LONG
         )
@@ -406,7 +405,8 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
     }
 
     private fun sendWorkToService(
-        estimateWorksItem: JobEstimateWorksDTO
+        estimateWorksItem: JobEstimateWorksDTO,
+        comments: String
     ) = Coroutines.main {
         this.toggleLongRunning(true)
         workViewModel.workflowState.removeObserver(jobObserver)
@@ -416,7 +416,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
         if (newItemEstimateWorks.jobEstimateWorksPhotos.isNullOrEmpty()) {
             validationNotice(R.string.please_ensure_estimation_items_contain_photos)
         } else {
-            workViewModel.submitWorks(newItemEstimateWorks, requireActivity(), itemEstimateJob)
+            workViewModel.submitWorks(newItemEstimateWorks, comments, requireActivity(), itemEstimateJob)
         }
     }
 
@@ -444,7 +444,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
                 is XIResult.Status -> {
                     extensionToast(
                         message = result.message,
-                        style = MotionToastStyle.INFO,
+                        style = ToastStyle.INFO,
                         position = ToastGravity.BOTTOM,
                         duration = ToastDuration.SHORT
                     )
@@ -491,7 +491,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
                 is XIResult.Status -> {
                     extensionToast(
                         message = result.message,
-                        style = MotionToastStyle.INFO,
+                        style = ToastStyle.INFO,
                         position = ToastGravity.CENTER,
                         duration = ToastDuration.SHORT
                     )
@@ -511,7 +511,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
                 ui.imageCollectionView.clearImages()
                 this@CaptureWorkFragment.extensionToast(
                     message = "Work captured",
-                    style = MotionToastStyle.SUCCESS,
+                    style = ToastStyle.SUCCESS,
                     position = ToastGravity.CENTER,
                     duration = ToastDuration.SHORT
                 )
@@ -537,7 +537,8 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
         backupWorkSubmission.observeOnce(viewLifecycleOwner, {
             it?.let {
                 activeWorks = it
-                sendWorkToService(activeWorks)
+                val comments = ui.commentsEditText.text.toString().trim()
+                sendWorkToService(activeWorks, comments)
             }
         })
     }
@@ -614,7 +615,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
                 else -> {
                     extensionToast(
                         message = getString(R.string.please_enable_location_services),
-                        style = MotionToastStyle.ERROR, position = ToastGravity.CENTER, duration = ToastDuration.LONG
+                        style = ToastStyle.ERROR, position = ToastGravity.CENTER, duration = ToastDuration.LONG
                     )
                     this.checkLocationProviders()
                 }
@@ -622,7 +623,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
         } catch (e: Exception) {
             extensionToast(
                 message = getString(R.string.error_getting_image),
-                style = MotionToastStyle.ERROR,
+                style = ToastStyle.ERROR,
                 position = ToastGravity.CENTER,
                 duration = ToastDuration.LONG
             )
@@ -901,7 +902,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
                 userDTO.userId.isBlank() -> {
                     extensionToast(
                         message = "Error: current user lacks permissions",
-                        style = MotionToastStyle.ERROR,
+                        style = ToastStyle.ERROR,
                         position = ToastGravity.CENTER,
                         duration = ToastDuration.LONG
                     )
@@ -910,7 +911,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
                 jobItEstimate?.jobId == null -> {
                     extensionToast(
                         message = "Error: selected job is invalid",
-                        style = MotionToastStyle.ERROR,
+                        style = ToastStyle.ERROR,
                         position = ToastGravity.CENTER,
                         duration = ToastDuration.LONG
                     )
@@ -935,6 +936,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
         Coroutines.io {
             workViewModel.processWorkflowMove(
                 userDTO.userId,
+                jobItEstimate.jobId!!,
                 trackRouteId,
                 "Work complete.",
                 direction
@@ -948,7 +950,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
                 extensionToast(
                     title = "Workflow update",
                     message = getString(R.string.work_complete),
-                    style = MotionToastStyle.SUCCESS,
+                    style = ToastStyle.SUCCESS,
                     position = ToastGravity.CENTER,
                     duration = ToastDuration.LONG
                 )
@@ -957,7 +959,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
                 extensionToast(
                     title = "Workflow Update",
                     message = getString(R.string.work_declined),
-                    style = MotionToastStyle.DELETE,
+                    style = ToastStyle.DELETE,
                     position = ToastGravity.CENTER,
                     duration = ToastDuration.LONG
                 )

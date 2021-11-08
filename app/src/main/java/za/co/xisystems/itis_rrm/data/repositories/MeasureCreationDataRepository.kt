@@ -22,6 +22,7 @@ import za.co.xisystems.itis_rrm.custom.errors.LocalDataException
 import za.co.xisystems.itis_rrm.custom.errors.NoDataException
 import za.co.xisystems.itis_rrm.custom.errors.RecoverableException
 import za.co.xisystems.itis_rrm.custom.errors.ServiceException
+import za.co.xisystems.itis_rrm.custom.errors.TransmissionException
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.custom.results.XIResult
@@ -622,6 +623,25 @@ class MeasureCreationDataRepository(
     ): LiveData<List<JobItemMeasureDTO>> {
         return withContext(dispatchers.io()) {
             appDb.getJobItemMeasureDao().getJobItemMeasuresByJobIdAndActId(jobID!!, actId)
+        }
+    }
+
+    @Suppress("TooGenericExceptionCaught")
+    suspend fun updateMeasureCreatedInfo(userId: String, jobId: String): Boolean {
+        val requestData = JsonObject()
+        requestData.addProperty("UserId", userId)
+        requestData.addProperty("JobId", jobId)
+        try {
+            val updateResponse =
+                apiRequest { api.updateMeasureCreatedInfo(requestData) }
+            if (!updateResponse.isSuccess) {
+                throw ServiceException(updateResponse.errorMessage!!)
+            }
+            return true
+        } catch (ex: Exception) {
+            val message = "Failed to update work start / end times."
+            Timber.e(ex, message)
+            throw TransmissionException(message, ex)
         }
     }
 }

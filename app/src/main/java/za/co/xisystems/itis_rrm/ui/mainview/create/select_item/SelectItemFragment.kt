@@ -130,9 +130,8 @@ class SelectItemFragment : BaseFragment(), DIAware {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        createViewModel = activity?.run {
-            ViewModelProvider(this, factory).get(CreateViewModel::class.java)
-        } ?: throw Exception("Invalid Activity")
+        createViewModel = ViewModelProvider(this.requireActivity(), factory)
+            .get(CreateViewModel::class.java)
 
         itemSections = ArrayList()
         newJobItemEstimatesList = ArrayList()

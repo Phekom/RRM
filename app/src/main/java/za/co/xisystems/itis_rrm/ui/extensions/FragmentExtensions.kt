@@ -3,11 +3,11 @@ package za.co.xisystems.itis_rrm.ui.extensions
 import android.os.Handler
 import android.os.Looper
 import androidx.fragment.app.Fragment
-import www.sanju.motiontoast.MotionToastStyle
 import za.co.xisystems.itis_rrm.constants.Constants
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration
 import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.results.isRecoverableException
 
@@ -22,7 +22,7 @@ fun Fragment.crashGuard(
             this.extensionToast(
                 title = throwable.topic ?: "Network Action Failed",
                 message = throwable.exception.message ?: XIErrorHandler.UNKNOWN_ERROR,
-                style = MotionToastStyle.NO_INTERNET,
+                style = ToastStyle.NO_INTERNET,
                 position = ToastGravity.BOTTOM,
                 duration = ToastDuration.LONG
             )
@@ -44,7 +44,7 @@ fun Fragment.crashGuard(
             this.extensionToast(
                 title = throwable.topic,
                 message = XIErrorHandler.humanReadable(throwable),
-                style = MotionToastStyle.ERROR,
+                style = ToastStyle.ERROR,
                 position = ToastGravity.BOTTOM,
                 duration = ToastDuration.LONG
             )

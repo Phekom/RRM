@@ -7,8 +7,6 @@
 package za.co.xisystems.itis_rrm.utils
 
 import com.password4j.SecureString
-import okhttp3.internal.and
-import timber.log.Timber
 import java.nio.ByteBuffer
 import java.nio.CharBuffer
 import java.nio.charset.Charset
@@ -16,6 +14,8 @@ import java.nio.charset.CodingErrorAction
 import java.nio.charset.StandardCharsets
 import java.util.Arrays
 import kotlin.math.round
+import okhttp3.internal.and
+import timber.log.Timber
 
 @Suppress("MagicNumber")
 object Utils {

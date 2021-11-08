@@ -34,11 +34,11 @@ import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
 import pereira.agnaldo.previewimgcol.ImageCollectionView
 import timber.log.Timber
-import www.sanju.motiontoast.MotionToastStyle
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.LocationFragment
 import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
@@ -70,6 +70,7 @@ class CaptureItemMeasurePhotoFragment :
     override val di by closestDI()
     private lateinit var measureViewModel: MeasureViewModel
     private val factory: MeasureViewModelFactory by instance()
+    private val photoUtil: PhotoUtil by instance()
     private val galleryObserver = Observer<XIResult<MeasureGalleryUIState>> { handleResponse(it) }
     private lateinit var jobItemMeasurePhotoArrayList: ArrayList<JobItemMeasurePhotoDTO>
     private lateinit var selectedJobItemMeasure: JobItemMeasureDTO
@@ -79,7 +80,6 @@ class CaptureItemMeasurePhotoFragment :
     private var uiScope = UiLifecycleScope()
     private var _ui: FragmentCaptureItemMeasurePhotoBinding? = null
     private val ui get() = _ui!!
-    private lateinit var photoUtil: PhotoUtil
 
     /**
      * ActivityResultContract for taking a photograph
@@ -123,7 +123,6 @@ class CaptureItemMeasurePhotoFragment :
         super.onCreate(savedInstanceState)
         uiScope.onCreate()
         lifecycle.addObserver(uiScope)
-        photoUtil = PhotoUtil.getInstance(this.requireContext().applicationContext)
     }
 
     override fun onCreateView(
@@ -157,7 +156,7 @@ class CaptureItemMeasurePhotoFragment :
                         if (measureViewModel.measuredJiNo != it.jimNo) {
                             this@CaptureItemMeasurePhotoFragment.extensionToast(
                                 message = "Measuring job: ${it.jimNo}",
-                                style = MotionToastStyle.INFO,
+                                style = ToastStyle.INFO,
                                 position = ToastGravity.BOTTOM
                             )
                             measureViewModel.measuredJiNo = it.jimNo!!

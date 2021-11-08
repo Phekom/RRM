@@ -19,17 +19,15 @@ import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import com.xwray.groupie.ExpandableGroup
 import com.xwray.groupie.ExpandableItem
-import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
-import kotlinx.android.synthetic.main.item_header.appListID
-import kotlinx.android.synthetic.main.item_header.icon
-import kotlinx.android.synthetic.main.item_measure_header.headerLin
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasurePhotoDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
+import za.co.xisystems.itis_rrm.databinding.ItemMeasureHeaderBinding
 import za.co.xisystems.itis_rrm.extensions.observeOnce
+import za.co.xisystems.itis_rrm.extensions.uomForUI
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.estimate_measure_item.MeasureHeaderItem
 import za.co.xisystems.itis_rrm.utils.Coroutines
@@ -57,10 +55,12 @@ class ExpandableHeaderMeasureItem(
 
     var onExpandListener: ((ExpandableGroup) -> Unit)? = null
     private lateinit var expandableGroup: ExpandableGroup
-    override fun bind(viewHolder: GroupieViewHolder, position: Int) {
-        super.bind(viewHolder, position)
 
-        viewHolder.apply {
+
+    override fun bind(viewBinding: ItemMeasureHeaderBinding, position: Int) {
+        super.bind(viewBinding, position)
+
+        viewBinding.apply {
             appListID.text = getItemId(position + 1).toString()
             icon.apply {
                 visibility = View.VISIBLE
@@ -68,7 +68,7 @@ class ExpandableHeaderMeasureItem(
                 setOnClickListener {
                     expandableGroup.onToggleExpanded()
                     onExpandListener?.invoke(expandableGroup)
-                    bindIcon(viewHolder)
+                    bindIcon(viewBinding)
                 }
             }
             headerLin.apply {
@@ -80,7 +80,7 @@ class ExpandableHeaderMeasureItem(
             }
         }
 
-        viewHolder.itemView.setOnClickListener {
+        viewBinding.root.rootView.setOnClickListener {
             clickListener?.invoke(this)
         }
     }
@@ -119,9 +119,11 @@ class ExpandableHeaderMeasureItem(
                 if (selected != null) {
                     var message: String = fragment.requireActivity().getString(R.string.enter_quantity_measured)
                     quantityInputEditText.textAlignment = View.TEXT_ALIGNMENT_CENTER
-                    if (!selected.uom.equals(fragment.requireActivity().getString(R.string.none))) {
-                        quantityInputEditText.hint = selected.uom
-                        message += fragment.requireActivity().getString(R.string.badge, selected.uom)
+                    if (!selected.uom.isNullOrBlank() && selected.uom != fragment.requireActivity().getString(R.string.none)) {
+                        val friendlyUOM = fragment.requireActivity().uomForUI(selected.uom)
+                        quantityInputEditText.hint = friendlyUOM
+
+                        message += fragment.requireActivity().getString(R.string.badge, friendlyUOM)
                     }
                     Coroutines.main {
                         val desc = measureViewModel.getDescForProjectItemId(projectItemIdz!!)
@@ -248,8 +250,8 @@ class ExpandableHeaderMeasureItem(
         }
     }
 
-    private fun bindIcon(viewHolder: GroupieViewHolder) {
-        viewHolder.icon.apply {
+    private fun bindIcon(viewBinding: ItemMeasureHeaderBinding){
+        viewBinding.icon.apply {
             visibility = View.VISIBLE
             setImageResource(
                 if (expandableGroup.isExpanded) {

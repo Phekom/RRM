@@ -14,7 +14,6 @@ import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import com.password4j.SecureString
 import kotlinx.coroutines.asExecutor
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -36,21 +35,15 @@ class Scribe private constructor(
 
     lateinit var securePrefs: SharedPreferences
     private var armouryScope = ArmouryScope()
-    private lateinit var masterKey: MasterKey
-    var mOperational: Boolean = this::securePrefs.isInitialized
+    private var mOperational: Boolean = this::securePrefs.isInitialized
 
     val operational get() = mOperational
-
-    private val QUARTER_SECOND = 250
 
     init {
         armouryScope.onCreate()
         armouryScope.launch {
             initPreferences(context = context, masterKey = sageInstance.masterKeyAlias).also { cryptoPrefs ->
                 this@Scribe.securePrefs = cryptoPrefs
-            }
-            while (!this@Scribe::securePrefs.isInitialized) {
-                delay(100)
             }
         }
     }
@@ -68,15 +61,13 @@ class Scribe private constructor(
 
         fun getInstance(
             appContext: Context,
-            sageInstance: Sage,
-            prefsFile: String? = PREFS_FILE
+            sageInstance: Sage
         ): Scribe {
             return instance ?: synchronized(Lock) {
                 Scribe(context = appContext, sageInstance = sageInstance).also {
                     it.securePrefs = it.createPreferences(
                         context = appContext,
-                        masterKey = sageInstance.masterKeyAlias,
-                        prefsFile = prefsFile ?: PREFS_FILE
+                        masterKey = sageInstance.masterKeyAlias
                     )
                     instance = it
                 }
@@ -116,7 +107,7 @@ class Scribe private constructor(
         masterKey: MasterKey
     ): SharedPreferences {
         val preferences = EncryptedSharedPreferences.create(
-            context.applicationContext,
+            context,
             prefsFile,
             masterKey,
             EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,

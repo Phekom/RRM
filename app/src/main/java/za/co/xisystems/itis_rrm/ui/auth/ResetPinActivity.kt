@@ -16,22 +16,23 @@ import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
-import kotlinx.android.synthetic.main.activity_register.*
 import org.kodein.di.DIAware
 import org.kodein.di.android.closestDI
 import org.kodein.di.instance
 import www.sanju.motiontoast.MotionToast
 import www.sanju.motiontoast.MotionToastStyle
-import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.R.font
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
-import za.co.xisystems.itis_rrm.databinding.ActivityRegisterBinding
 import za.co.xisystems.itis_rrm.databinding.ActivityResetPinBinding
 import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.ui.auth.model.AuthViewModel
 import za.co.xisystems.itis_rrm.ui.auth.model.AuthViewModelFactory
-import za.co.xisystems.itis_rrm.utils.*
+import za.co.xisystems.itis_rrm.utils.Coroutines
+import za.co.xisystems.itis_rrm.utils.hide
+import za.co.xisystems.itis_rrm.utils.hideKeyboard
+import za.co.xisystems.itis_rrm.utils.show
+import za.co.xisystems.itis_rrm.utils.toast
 
 class ResetPinActivity : AppCompatActivity(), AuthListener, DIAware {
     companion object {
@@ -64,7 +65,6 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, DIAware {
             requestPermissions(permissions, PERMISSION_REQUEST)
         }
 
-
         viewModel = ViewModelProvider(this, factory).get(AuthViewModel::class.java)
         viewModel.setupAuthListener(this)
 
@@ -74,11 +74,11 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, DIAware {
                 // Register the user
                 if (user != null) {
                     scanForPinUpdate()
-                    serverTextView.setOnClickListener {
+                    binding.serverTextView.setOnClickListener {
                         ToastUtils().toastServerAddress(appContext)
                     }
 
-                    buildFlavorTextView.setOnClickListener {
+                    binding.buildFlavorTextView.setOnClickListener {
                         ToastUtils().toastVersion(appContext)
                     }
                 }
@@ -170,12 +170,12 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, DIAware {
     }
 
     override fun onStarted() {
-        loading.show()
+        binding.loading.show()
         hideKeyboard()
     }
 
     override fun onSuccess(userDTO: UserDTO) {
-        loading.hide()
+        binding.loading.hide()
         hideKeyboard()
         toast("You are logged in as ${userDTO.userName}")
     }
@@ -185,7 +185,7 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, DIAware {
     }
 
     override fun onFailure(message: String) {
-        loading.hide()
+        binding.loading.hide()
         hideKeyboard()
         MotionToast.createColorToast(
             this,

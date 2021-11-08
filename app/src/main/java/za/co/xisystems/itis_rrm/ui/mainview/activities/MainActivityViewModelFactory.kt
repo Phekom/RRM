@@ -15,7 +15,7 @@ class MainActivityViewModelFactory(
 //    private val Db : AppDatabase,
 //    val context: Context
 ) : ViewModelProvider.NewInstanceFactory() {
-    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+    override fun <T: ViewModel> create(modelClass: Class<T>): T {
         return MainActivityViewModel(offlineDataRepository) as T
 //        return MeasureViewModel(repository,,Db ,context) as T
     }

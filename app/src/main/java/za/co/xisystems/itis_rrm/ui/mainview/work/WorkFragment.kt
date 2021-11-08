@@ -24,13 +24,11 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenCreated
 import androidx.lifecycle.whenResumed
 import androidx.lifecycle.whenStarted
-import androidx.navigation.fragment.findNavController
-import androidx.navigation.fragment.navArgs
+import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.ExpandableGroup
 import com.xwray.groupie.GroupAdapter
-import com.xwray.groupie.GroupieViewHolder
-import kotlinx.android.synthetic.main.fragment_work.*
+import com.xwray.groupie.viewbinding.GroupieViewHolder
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.kodein.di.DIAware
@@ -45,10 +43,10 @@ import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentWorkBinding
+import za.co.xisystems.itis_rrm.databinding.ItemExpandableHeaderBinding
 import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.extensions.uomForUI
 import za.co.xisystems.itis_rrm.ui.extensions.crashGuard
-import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.intents.AbstractIntent.Companion.JOB_ID
 import za.co.xisystems.itis_rrm.ui.mainview.work.estimate_work_item.CardItem
 import za.co.xisystems.itis_rrm.ui.mainview.work.estimate_work_item.ExpandableHeaderWorkItem
 import za.co.xisystems.itis_rrm.ui.mainview.work.goto_work_location.GoToViewModel
@@ -71,13 +69,13 @@ class WorkFragment : BaseFragment(), DIAware {
     private val mapfactory: GoToViewModelFactory by instance()
     private lateinit var goToViewModel: GoToViewModel
     private var uiScope = UiLifecycleScope()
-    private var groupAdapter: GroupAdapter<GroupieViewHolder>? = GroupAdapter<GroupieViewHolder>()
+    private var groupAdapter: GroupAdapter<GroupieViewHolder<ItemExpandableHeaderBinding>>? =
+        GroupAdapter<GroupieViewHolder<ItemExpandableHeaderBinding>>()
     private var veiled: Boolean = false
     private var _ui: FragmentWorkBinding? = null
     private val ui get() = _ui!!
     private lateinit var currentJobGroup: ExpandableGroup
     private var stateRestored = false
-    private val workArgs: WorkFragmentArgs by navArgs()
     private var jobId: String? = null
 
     init {
@@ -93,7 +91,7 @@ class WorkFragment : BaseFragment(), DIAware {
             }
 
             whenResumed {
-                if (this@WorkFragment::currentJobGroup.isInitialized && !currentJobGroup.isExpanded ) {
+                if (this@WorkFragment::currentJobGroup.isInitialized && !currentJobGroup.isExpanded) {
                     currentJobGroup.onToggleExpanded()
                 }
             }
@@ -107,7 +105,7 @@ class WorkFragment : BaseFragment(), DIAware {
              * Callback for handling the [OnBackPressedDispatcher.onBackPressed] event.
              */
             override fun handleOnBackPressed() {
-                this@WorkFragment.findNavController().popBackStack(R.id.nav_home, false)
+                Navigation.findNavController(this@WorkFragment.requireView()).navigate(R.id.action_global_nav_home)
             }
         }
         requireActivity().onBackPressedDispatcher
@@ -117,12 +115,9 @@ class WorkFragment : BaseFragment(), DIAware {
     private suspend fun refreshEstimateJobsFromLocal() {
 
         withContext(uiScope.coroutineContext) {
-            val localJobs = workViewModel.getJobsForActivityId(
-                ActivityIdConstants.JOB_APPROVED,
-                ActivityIdConstants.ESTIMATE_INCOMPLETE
-            )
+            val localJobs = workViewModel.getAllWork()
 
-            localJobs.observe(viewLifecycleOwner, { jobsList ->
+            localJobs?.observe(viewLifecycleOwner, { jobsList ->
                 ui.group7Loading.visibility = View.GONE
                 if (jobsList.isNullOrEmpty()) {
                     ui.veiledWorkListView.visibility = View.GONE
@@ -185,7 +180,6 @@ class WorkFragment : BaseFragment(), DIAware {
         try {
             toggleLongRunning(true)
             ui.veiledWorkListView.veil()
-            veiled = true
             refreshUserTaskListFromApi()
             refreshEstimateJobsFromLocal()
         } catch (t: Throwable) {
@@ -222,8 +216,8 @@ class WorkFragment : BaseFragment(), DIAware {
         }
     }
 
-    private fun initRecyclerView( workListItems: List<ExpandableGroup> ) {
-        val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
+    private fun initRecyclerView(workListItems: List<ExpandableGroup>) {
+        val groupAdapter = GroupAdapter<GroupieViewHolder<ItemExpandableHeaderBinding>>().apply {
             clear()
             addAll(workListItems)
         }
@@ -283,7 +277,7 @@ class WorkFragment : BaseFragment(), DIAware {
     override fun onPrepareOptionsMenu(menu: Menu) {
         val item = menu.findItem(R.id.action_settings)
         val item1 = menu.findItem(R.id.action_logout)
-
+        val item2 = menu.findItem(R.id.action_search)
         if (item != null) item.isVisible = false
         if (item1 != null) item1.isVisible = false
     }
@@ -361,8 +355,8 @@ class WorkFragment : BaseFragment(), DIAware {
                 val cardItem = CardItem(
                     activity = activity,
                     desc = desc,
-                    qty = qty,
-                    rate = "${DecimalFormat("#0.00").format(rate)} $friendlyUOM",
+                    qty = "$qty @ ${DecimalFormat("#0.00").format(rate)} $friendlyUOM",
+                    rate = DecimalFormat("#0.00").format(rate * qty.toDouble()),
                     estimateId = estimateId,
                     workViewModel = workViewModel,
                     jobItemEstimate = item,
