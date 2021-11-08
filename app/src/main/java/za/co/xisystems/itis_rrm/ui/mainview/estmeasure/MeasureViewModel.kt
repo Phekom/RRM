@@ -249,6 +249,12 @@ class MeasureViewModel(
                 activity,
                 itemMeasureJob
             )
+
+            measureCreationDataRepository.updateMeasureCreatedInfo(
+                userId,
+                jobId
+            )
+
         } catch (e: Exception) {
             workflowState.postValue(XIResult.Error(e, e.message!!))
         }
