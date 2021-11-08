@@ -106,7 +106,6 @@ class CaptureWorkFragment : LocationFragment() {
     private var estimateSize = 0
     private var estimateCount = 0
     private var errorState = false
-    private var selectedJobId: String = ""
     private var uiScope = UiLifecycleScope()
 
     /**

@@ -35,12 +35,9 @@ class Scribe private constructor(
 
     lateinit var securePrefs: SharedPreferences
     private var armouryScope = ArmouryScope()
-    private lateinit var masterKey: MasterKey
-    var mOperational: Boolean = this::securePrefs.isInitialized
+    private var mOperational: Boolean = this::securePrefs.isInitialized
 
     val operational get() = mOperational
-
-    private val QUARTER_SECOND = 250
 
     init {
         armouryScope.onCreate()

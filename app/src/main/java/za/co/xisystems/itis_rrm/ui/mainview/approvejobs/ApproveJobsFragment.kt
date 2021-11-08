@@ -28,7 +28,7 @@ import androidx.lifecycle.whenStarted
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
-import com.xwray.groupie.GroupieViewHolder
+import com.xwray.groupie.viewbinding.GroupieViewHolder
 import kotlinx.coroutines.launch
 import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
@@ -42,6 +42,7 @@ import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentApprovejobBinding
+import za.co.xisystems.itis_rrm.databinding.ItemHeaderBinding
 import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.ui.extensions.crashGuard
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.approve_job_item.ApproveJobItem
@@ -63,7 +64,7 @@ class ApproveJobsFragment : BaseFragment() {
     private var uiScope = UiLifecycleScope()
     private var _ui: FragmentApprovejobBinding? = null
     private val ui get() = _ui!!
-    private var groupAdapter = GroupAdapter<GroupieViewHolder>()
+    private var groupAdapter = GroupAdapter<GroupieViewHolder<ItemHeaderBinding>>()
     private var queryObserver = Observer<XIResult<String>?> { handleQueryErrors(it) }
 
     companion object {
@@ -244,7 +245,7 @@ class ApproveJobsFragment : BaseFragment() {
     private fun initRecyclerView(
         approveJobListItems: List<ApproveJobItem>
     ) {
-        groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
+        groupAdapter = GroupAdapter<GroupieViewHolder<ItemHeaderBinding>>().apply {
             addAll(approveJobListItems)
             notifyItemRangeChanged(0, approveJobListItems.size)
         }
