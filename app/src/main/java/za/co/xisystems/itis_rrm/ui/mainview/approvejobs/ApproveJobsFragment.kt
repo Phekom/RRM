@@ -22,13 +22,13 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.doOnNextLayout
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenStarted
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.GroupieViewHolder
-import java.lang.ref.WeakReference
 import kotlinx.coroutines.launch
 import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
@@ -48,6 +48,7 @@ import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.approve_job_item.Approve
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
+import java.lang.ref.WeakReference
 
 /**
  * Created by Francis Mahlava on 03,October,2019
@@ -173,7 +174,7 @@ class ApproveJobsFragment : BaseFragment() {
     private suspend fun fetchLocalJobs() {
 
         val jobs = approveViewModel.getJobsForActivityId(ActivityIdConstants.JOB_APPROVE)
-        jobs.observe(viewLifecycleOwner, { jobList ->
+        jobs.observeOnce(viewLifecycleOwner, { jobList ->
 
             if (jobList.isNullOrEmpty()) {
                 ui.approveJobVeiledRecycler.unVeil()
@@ -213,7 +214,7 @@ class ApproveJobsFragment : BaseFragment() {
     private suspend fun fetchJobsFromServices() {
         try {
             val freshJobs = approveViewModel.offlineUserTaskList.await()
-            freshJobs.observeOnce(viewLifecycleOwner, {
+            freshJobs.distinctUntilChanged().observeOnce(viewLifecycleOwner, {
                 ui.jobsSwipeToRefresh.isRefreshing = false
                 protectedFetch(veiled = true, { fetchLocalJobs() }, { retryFetchRemoteJobs() })
             })

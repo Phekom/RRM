@@ -16,11 +16,11 @@ import androidx.activity.OnBackPressedCallback
 import androidx.core.view.doOnNextLayout
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.distinctUntilChanged
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.viewbinding.GroupieViewHolder
-import java.util.Date
 import org.kodein.di.DIAware
 import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
@@ -43,6 +43,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.databinding.EstimatesItemBinding
 import za.co.xisystems.itis_rrm.databinding.FragmentJobInfoBinding
 import za.co.xisystems.itis_rrm.extensions.isConnected
+import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.ui.extensions.ShimmerUtils
 import za.co.xisystems.itis_rrm.ui.extensions.crashGuard
 import za.co.xisystems.itis_rrm.ui.extensions.doneProgress
@@ -60,6 +61,7 @@ import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection.FAIL
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection.NEXT
+import java.util.Date
 
 class JobInfoFragment : BaseFragment(), DIAware {
     override val di by closestDI()
@@ -169,9 +171,10 @@ class JobInfoFragment : BaseFragment(), DIAware {
         super.onCreate(savedInstanceState)
         (activity as MainActivity).supportActionBar?.title = getString(R.string.jobinfo_item_title)
 
-        approveViewModel = activity?.run {
-            ViewModelProvider(this, factory).get(ApproveJobsViewModel::class.java)
-        } ?: throw Exception("Invalid Activity")
+        approveViewModel =
+            ViewModelProvider(this.requireActivity(), factory)
+                .get(ApproveJobsViewModel::class.java)
+
     }
 
     override fun onCreateView(
@@ -270,7 +273,7 @@ class JobInfoFragment : BaseFragment(), DIAware {
     }
 
     private fun initApprovalHeader() {
-        approveViewModel.jobApprovalItem.observe(viewLifecycleOwner, { job ->
+        approveViewModel.jobApprovalItem.distinctUntilChanged().observe(viewLifecycleOwner, { job ->
             Coroutines.main {
                 getEstimateItems(job.jobDTO.jobId)
                 val description = approveViewModel.getDescForProjectId(job.jobDTO.projectId!!)
@@ -325,7 +328,7 @@ class JobInfoFragment : BaseFragment(), DIAware {
             progressButton.startProgress()
             val user = approveViewModel.user.await()
             user.observe(viewLifecycleOwner, { userDTO ->
-                approveViewModel.jobApprovalItem.observe(viewLifecycleOwner, { approveJobItem ->
+                approveViewModel.jobApprovalItem.distinctUntilChanged().observe(viewLifecycleOwner, { approveJobItem ->
 
                     when {
                         approveJobItem == null -> {
@@ -433,7 +436,7 @@ class JobInfoFragment : BaseFragment(), DIAware {
     private fun getEstimateItems(jobID: String?) {
         Coroutines.main {
             val estimates = approveViewModel.getJobEstimationItemsForJobId(jobID)
-            estimates.observe(viewLifecycleOwner, { estimateList ->
+            estimates.observeOnce(viewLifecycleOwner, { estimateList ->
                 initRecyclerView(estimateList.toEstimatesListItem())
             })
         }
