@@ -21,6 +21,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenStarted
 import androidx.navigation.Navigation
@@ -96,8 +97,8 @@ class SubmitMeasureFragment : BaseFragment(), DIAware {
 
                 uiScope.launch(uiScope.coroutineContext) {
 
-                    val estimateData = measureViewModel.estimateMeasureItem
-                    estimateData.observe(viewLifecycleOwner, { estimateMeasureItem ->
+                    val estimateData = measureViewModel.estimateMeasureItem.distinctUntilChanged()
+                    estimateData.observeOnce(viewLifecycleOwner, { estimateMeasureItem ->
                         jobItemEstimate = estimateMeasureItem.jobItemEstimateDTO
                         getWorkItems(jobItemEstimate.jobId)
                     })
@@ -472,8 +473,9 @@ class SubmitMeasureFragment : BaseFragment(), DIAware {
 
     private fun getWorkItems(jobID: String?) {
         Coroutines.main {
-            val measurements = measureViewModel.getJobItemsToMeasureForJobId(jobID)
-            measurements.observe(viewLifecycleOwner, { estimateList ->
+            val measurements =
+                measureViewModel.getJobItemsToMeasureForJobId(jobID).distinctUntilChanged()
+            measurements.observeOnce(viewLifecycleOwner, { estimateList ->
                 initRecyclerView(estimateList.toMeasureItems())
             })
 

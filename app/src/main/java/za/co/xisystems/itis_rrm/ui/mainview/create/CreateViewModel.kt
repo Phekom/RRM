@@ -343,8 +343,8 @@ class CreateViewModel(
     fun setJobToEdit(jobId: String) = viewModelScope.launch(ioContext) {
         val fetchedJob = jobCreationDataRepository.getUpdatedJob(jobId)
         withContext(mainContext) {
-            jobToEdit.postValue(fetchedJob)
             totalJobCost.value = JobUtils.formatTotalCost(fetchedJob)
+            jobToEdit.postValue(fetchedJob)
         }
     }
 

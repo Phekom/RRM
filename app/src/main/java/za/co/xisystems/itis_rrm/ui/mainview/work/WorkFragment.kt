@@ -71,7 +71,6 @@ class WorkFragment : BaseFragment(), DIAware {
     private var uiScope = UiLifecycleScope()
     private var groupAdapter: GroupAdapter<GroupieViewHolder<ItemExpandableHeaderBinding>>? =
         GroupAdapter<GroupieViewHolder<ItemExpandableHeaderBinding>>()
-    private var veiled: Boolean = false
     private var _ui: FragmentWorkBinding? = null
     private val ui get() = _ui!!
     private lateinit var currentJobGroup: ExpandableGroup
@@ -117,7 +116,7 @@ class WorkFragment : BaseFragment(), DIAware {
         withContext(uiScope.coroutineContext) {
             val localJobs = workViewModel.getAllWork()
 
-            localJobs?.observe(viewLifecycleOwner, { jobsList ->
+            localJobs?.observeOnce(viewLifecycleOwner, { jobsList ->
                 ui.group7Loading.visibility = View.GONE
                 if (jobsList.isNullOrEmpty()) {
                     ui.veiledWorkListView.visibility = View.GONE

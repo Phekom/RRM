@@ -86,7 +86,7 @@ class HomeFragment : BaseFragment() {
 
     companion object {
         val TAG: String = HomeFragment::class.java.simpleName
-        private const val progressComplete = -100.0f
+        private const val progressComplete = -200.0f
     }
 
     init {
@@ -180,7 +180,8 @@ class HomeFragment : BaseFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         uiScope.onCreate()
-        homeViewModel = ViewModelProvider(this.requireActivity(), factory).get(HomeViewModel::class.java)
+        homeViewModel =
+            ViewModelProvider(this.requireActivity(), factory)[HomeViewModel::class.java]
         setHasOptionsMenu(true)
     }
 
@@ -227,11 +228,6 @@ class HomeFragment : BaseFragment() {
         ui.imageView7.setOnClickListener {
             ToastUtils().toastVersion(requireContext())
         }
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        homeViewModel = ViewModelProvider(this.requireActivity(), factory).get(HomeViewModel::class.java)
     }
 
     /**

@@ -18,8 +18,8 @@ import androidx.activity.OnBackPressedCallback
 import androidx.core.content.ContextCompat
 import androidx.core.view.doOnNextLayout
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.distinctUntilChanged
 import androidx.navigation.Navigation
-import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.viewbinding.GroupieViewHolder
@@ -66,7 +66,8 @@ class MeasureFragment : BaseFragment(), DIAware {
              * Callback for handling the [OnBackPressedDispatcher.onBackPressed] event.
              */
             override fun handleOnBackPressed() {
-                this@MeasureFragment.findNavController().popBackStack(R.id.nav_home, false)
+                Navigation.findNavController(this@MeasureFragment.requireView())
+                    .navigate(R.id.action_global_nav_home)
             }
         }
         requireActivity().onBackPressedDispatcher
@@ -98,7 +99,7 @@ class MeasureFragment : BaseFragment(), DIAware {
         super.onActivityCreated(savedInstanceState)
 
         measureViewModel = activity?.run {
-            ViewModelProvider(this, factory).get(MeasureViewModel::class.java)
+            ViewModelProvider(this, factory)[MeasureViewModel::class.java]
         } ?: throw Exception("Invalid Activity")
 
         Coroutines.main {
@@ -155,7 +156,7 @@ class MeasureFragment : BaseFragment(), DIAware {
             try {
                 withContext(Dispatchers.Main) {
                     val jobs = measureViewModel.offlineUserTaskList.await()
-                    jobs.observeOnce(viewLifecycleOwner, { works ->
+                    jobs.distinctUntilChanged().observeOnce(viewLifecycleOwner, { works ->
                         if (works.isNullOrEmpty()) {
                             ui.noData.visibility = View.VISIBLE
                             ui.estimationsToBeMeasuredListView.visibility = View.GONE
@@ -195,7 +196,7 @@ class MeasureFragment : BaseFragment(), DIAware {
                 ActivityIdConstants.MEASURE_PART_COMPLETE
             )
 
-            jobEstimateData.observeOnce(viewLifecycleOwner, { jos ->
+            jobEstimateData.distinctUntilChanged().observeOnce(viewLifecycleOwner, { jos ->
                 if (jos.isNullOrEmpty()) {
                     ui.noData.visibility = View.VISIBLE
                     ui.estimationsToBeMeasuredListView.visibility = View.GONE

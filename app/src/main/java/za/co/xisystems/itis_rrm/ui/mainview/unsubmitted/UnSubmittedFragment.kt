@@ -8,7 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
 import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.fragment.findNavController
+import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.viewbinding.GroupieViewHolder
@@ -24,6 +24,7 @@ import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentUnsubmittedjobsBinding
 import za.co.xisystems.itis_rrm.databinding.UnsubmtdJobListItemBinding
+import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.ui.extensions.crashGuard
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModelFactory
@@ -50,7 +51,8 @@ class UnSubmittedFragment : BaseFragment(), DIAware {
         super.onAttach(context)
         val callback: OnBackPressedCallback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                this@UnSubmittedFragment.findNavController().popBackStack(R.id.nav_home, false)
+                Navigation.findNavController(this@UnSubmittedFragment.requireView())
+                    .navigate(R.id.action_global_nav_home)
             }
         }
         requireActivity().onBackPressedDispatcher
@@ -72,9 +74,9 @@ class UnSubmittedFragment : BaseFragment(), DIAware {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        unSubmittedViewModel = activity?.run {
-            ViewModelProvider(this, factory).get(UnSubmittedViewModel::class.java)
-        } ?: throw Exception("Invalid Activity")
+        unSubmittedViewModel =
+            ViewModelProvider(this.requireActivity(), factory).get(UnSubmittedViewModel::class.java)
+
 
         createViewModel = activity?.run {
             ViewModelProvider(this, createFactory).get(CreateViewModel::class.java)
@@ -103,7 +105,7 @@ class UnSubmittedFragment : BaseFragment(), DIAware {
                         ActivityIdConstants.JOB_PENDING_UPLOAD
                     )
 
-                measurements.observe(viewLifecycleOwner, { jobList ->
+                measurements.observeOnce(viewLifecycleOwner, { jobList ->
                     if (jobList.isNullOrEmpty()) {
                         groupAdapter.clear()
                         ui.noData.visibility = View.VISIBLE

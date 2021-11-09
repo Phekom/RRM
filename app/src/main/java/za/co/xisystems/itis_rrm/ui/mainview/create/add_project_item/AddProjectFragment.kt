@@ -156,19 +156,15 @@ class AddProjectFragment : BaseFragment(), DIAware {
     companion object {
         private const val JOB_KEY = "jobId"
         private const val PROJECT_KEY = "projectId"
-        private const val INVALID_ACTIVITY = "Invalid Activity"
     }
 
     @Suppress("TooGenericExceptionThrown", "ThrowsCount")
     private fun initViewModels() {
-        createViewModel = ViewModelProvider(this.requireActivity(), createFactory)
-            .get(CreateViewModel::class.java)
+        createViewModel = ViewModelProvider(this.requireActivity(), createFactory)[CreateViewModel::class.java]
 
-        unsubmittedViewModel = ViewModelProvider(this.requireActivity(), unsubFactory)
-            .get(UnSubmittedViewModel::class.java)
+        unsubmittedViewModel = ViewModelProvider(this.requireActivity(), unsubFactory)[UnSubmittedViewModel::class.java]
 
-        deferredLocationViewModel = ViewModelProvider(this.requireActivity(), deferredLocationFactory)
-            .get(DeferredLocationViewModel::class.java)
+        deferredLocationViewModel = ViewModelProvider(this.requireActivity(), deferredLocationFactory)[DeferredLocationViewModel::class.java]
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -200,12 +196,14 @@ class AddProjectFragment : BaseFragment(), DIAware {
     fun uiUpdate() {
         jobBound = false
         uiScope.launch(uiScope.coroutineContext) {
-            bindCosting()
             initCurrentUserObserver()
             initCurrentJobListener()
+            bindCosting()
             initValidationListener()
         }
     }
+
+
 
     private fun initCurrentUserObserver() {
         createViewModel.loggedUser.observe(viewLifecycleOwner, { userId ->
@@ -338,7 +336,7 @@ class AddProjectFragment : BaseFragment(), DIAware {
         })
     }
 
-    private fun bindCosting() = uiScope.launch(dispatchers.ui()) {
+    private fun bindCosting() = uiScope.launch(dispatchers.io()) {
         createViewModel.totalJobCost.observe(viewLifecycleOwner, { costingRecord ->
             costingRecord?.let {
                 ui.totalCostTextView.text = it
@@ -373,7 +371,6 @@ class AddProjectFragment : BaseFragment(), DIAware {
         groupAdapter = GroupAdapter<GroupieViewHolder<NewJobItemBinding>>()
         jobDataController = JobDataController
 
-        initViewModels()
     }
 
     override fun onPrepareOptionsMenu(menu: Menu) {
@@ -421,6 +418,8 @@ class AddProjectFragment : BaseFragment(), DIAware {
             createViewModel.setJobToEdit(restoredId)
             stateRestored = true
         }
+
+        uiUpdate()
     }
 
     private fun initRecyclerView(projectListItems: List<ProjectItem>) {

@@ -21,6 +21,7 @@ import androidx.activity.OnBackPressedCallback
 import androidx.core.content.ContextCompat
 import androidx.core.view.doOnNextLayout
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.distinctUntilChanged
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
@@ -37,6 +38,7 @@ import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentApprovemeasureBinding
 import za.co.xisystems.itis_rrm.databinding.ItemHeaderBinding
+import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.ui.extensions.crashGuard
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.approveMeasure_Item.ApproveMeasureItem
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
@@ -113,7 +115,7 @@ class ApproveMeasureFragment : BaseFragment(), DIAware {
                 val measurementsSubscription =
                     approveViewModel.getJobApproveMeasureForActivityId(ActivityIdConstants.MEASURE_COMPLETE)
 
-                measurementsSubscription.observe(viewLifecycleOwner, { measurementData ->
+                measurementsSubscription.distinctUntilChanged().observeOnce(viewLifecycleOwner, { measurementData ->
 
                     if (measurementData.isNullOrEmpty()) {
                         binding.noData.visibility = View.VISIBLE
@@ -162,7 +164,7 @@ class ApproveMeasureFragment : BaseFragment(), DIAware {
         Coroutines.main {
             try {
                 val freshJobs = approveViewModel.offlineUserTaskList.await()
-                freshJobs.observe(viewLifecycleOwner, {
+                freshJobs.distinctUntilChanged().observeOnce(viewLifecycleOwner, {
                     if (it.isNullOrEmpty()) {
 
                         binding.noData.visibility = View.VISIBLE
