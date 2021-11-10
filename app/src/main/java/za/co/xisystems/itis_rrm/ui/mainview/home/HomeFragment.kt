@@ -86,7 +86,7 @@ class HomeFragment : BaseFragment() {
 
     companion object {
         val TAG: String = HomeFragment::class.java.simpleName
-        private const val progressComplete = -200.0f
+        private const val progressComplete = -100.0f
     }
 
     init {

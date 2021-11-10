@@ -196,9 +196,9 @@ class AddProjectFragment : BaseFragment(), DIAware {
     fun uiUpdate() {
         jobBound = false
         uiScope.launch(uiScope.coroutineContext) {
+            bindCosting()
             initCurrentUserObserver()
             initCurrentJobListener()
-            bindCosting()
             initValidationListener()
         }
     }
@@ -336,7 +336,7 @@ class AddProjectFragment : BaseFragment(), DIAware {
         })
     }
 
-    private fun bindCosting() = uiScope.launch(dispatchers.io()) {
+    private fun bindCosting() = uiScope.launch(dispatchers.ui()) {
         createViewModel.totalJobCost.observe(viewLifecycleOwner, { costingRecord ->
             costingRecord?.let {
                 ui.totalCostTextView.text = it
@@ -370,7 +370,7 @@ class AddProjectFragment : BaseFragment(), DIAware {
         setHasOptionsMenu(true)
         groupAdapter = GroupAdapter<GroupieViewHolder<NewJobItemBinding>>()
         jobDataController = JobDataController
-
+        initViewModels()
     }
 
     override fun onPrepareOptionsMenu(menu: Menu) {
@@ -418,8 +418,6 @@ class AddProjectFragment : BaseFragment(), DIAware {
             createViewModel.setJobToEdit(restoredId)
             stateRestored = true
         }
-
-        uiUpdate()
     }
 
     private fun initRecyclerView(projectListItems: List<ProjectItem>) {
