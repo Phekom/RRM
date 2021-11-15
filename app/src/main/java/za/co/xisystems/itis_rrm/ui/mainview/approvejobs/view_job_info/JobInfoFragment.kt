@@ -43,7 +43,6 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.databinding.EstimatesItemBinding
 import za.co.xisystems.itis_rrm.databinding.FragmentJobInfoBinding
 import za.co.xisystems.itis_rrm.extensions.isConnected
-import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.ui.extensions.ShimmerUtils
 import za.co.xisystems.itis_rrm.ui.extensions.crashGuard
 import za.co.xisystems.itis_rrm.ui.extensions.doneProgress
@@ -436,7 +435,7 @@ class JobInfoFragment : BaseFragment(), DIAware {
     private fun getEstimateItems(jobID: String?) {
         Coroutines.main {
             val estimates = approveViewModel.getJobEstimationItemsForJobId(jobID)
-            estimates.observeOnce(viewLifecycleOwner, { estimateList ->
+            estimates.observe(viewLifecycleOwner, { estimateList ->
                 initRecyclerView(estimateList.toEstimatesListItem())
             })
         }

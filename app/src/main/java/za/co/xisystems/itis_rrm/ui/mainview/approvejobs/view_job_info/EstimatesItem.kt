@@ -141,6 +141,8 @@ class EstimatesItem(
 
             quantityEntry.text = Editable.Factory.getInstance().newEditable("$newQuantity")
 
+            quantityEntry.setSelectAllOnFocus(true)
+            quantityEntry.requestFocus()
             quantityEntry.doOnTextChanged { text, _, _, _ ->
                 updated = true
                 val input = text.toString()

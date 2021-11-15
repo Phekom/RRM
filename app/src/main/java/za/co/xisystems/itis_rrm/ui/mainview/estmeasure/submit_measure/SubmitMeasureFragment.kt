@@ -8,7 +8,6 @@ package za.co.xisystems.itis_rrm.ui.mainview.estmeasure.submit_measure
 
 import android.app.AlertDialog
 import android.content.Context
-import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -38,6 +37,7 @@ import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.MainActivity
+import za.co.xisystems.itis_rrm.MobileNavigationDirections
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration
@@ -181,6 +181,10 @@ class SubmitMeasureFragment : BaseFragment(), DIAware {
 
         jobItemMeasuresForJobItemEstimates =
             HashMap()
+
+        measureViewModel =
+            ViewModelProvider(this@SubmitMeasureFragment.requireActivity(), factory)[MeasureViewModel::class.java]
+
     }
 
     override fun onCreateView(
@@ -195,14 +199,10 @@ class SubmitMeasureFragment : BaseFragment(), DIAware {
         return ui.root
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         Coroutines.main {
 
-            measureViewModel = activity?.run {
-                ViewModelProvider(this, factory).get(MeasureViewModel::class.java)
-            } ?: throw Exception("Invalid Activity")
 
             ui.submitMeasurementsButton.setOnClickListener {
                 progressButton = ui.submitMeasurementsButton
@@ -316,8 +316,8 @@ class SubmitMeasureFragment : BaseFragment(), DIAware {
         mSures: ArrayList<JobItemMeasureDTO>
     ) {
         Coroutines.main {
-            val estimateIds = itemMeasureJob.jobItemEstimates.map { it -> it.estimateId  }
-            val measureEstimateIds = mSures.map { it -> it.estimateId }.distinct()
+            val estimateIds = itemMeasureJob.jobItemEstimates.map { it.estimateId  }
+            val measureEstimateIds = mSures.map { it.estimateId }.distinct()
             val missingEstimateIds = estimateIds.asSequence().minus(measureEstimateIds).map { it }.toList()
 
             val user = measureViewModel.user.await()
@@ -431,9 +431,9 @@ class SubmitMeasureFragment : BaseFragment(), DIAware {
 
     private fun popViewOnJobSubmit() {
         // Delete data from database after successful upload
-        Intent(context?.applicationContext, MainActivity::class.java).also { home ->
-            startActivity(home)
-        }
+        val direction = MobileNavigationDirections.actionGlobalNavHome()
+        Navigation.findNavController(this@SubmitMeasureFragment.requireView())
+            .navigate(direction)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

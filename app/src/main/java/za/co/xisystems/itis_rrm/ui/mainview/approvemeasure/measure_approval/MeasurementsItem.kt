@@ -11,8 +11,6 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.Navigation
 import com.xwray.groupie.viewbinding.BindableItem
-import java.io.File
-import java.lang.ref.WeakReference
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
@@ -24,6 +22,8 @@ import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureViewMod
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.GlideApp
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
+import java.io.File
+import java.lang.ref.WeakReference
 
 /**
  * Created by Francis Mahlava on 2020/01/02.
@@ -59,7 +59,8 @@ class MeasurementsItem(
         alert.setMessage(R.string.are_you_sure_you_want_to_correct)
 
         editQuantity.text = Editable.Factory.getInstance().newEditable(jobItemMeasureDTO.qty.toString())
-
+        editQuantity.setSelectAllOnFocus(true)
+        editQuantity.requestFocus()
         // Yes button
         alert.setPositiveButton(
             R.string.save

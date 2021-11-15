@@ -54,6 +54,7 @@ import za.co.xisystems.itis_rrm.databinding.FragmentHomeBinding
 import za.co.xisystems.itis_rrm.extensions.isConnected
 import za.co.xisystems.itis_rrm.ui.extensions.crashGuard
 import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
+import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.Constants.FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import kotlin.coroutines.cancellation.CancellationException
@@ -86,7 +87,6 @@ class HomeFragment : BaseFragment() {
 
     companion object {
         val TAG: String = HomeFragment::class.java.simpleName
-        private const val progressComplete = -100.0f
     }
 
     init {
@@ -261,20 +261,24 @@ class HomeFragment : BaseFragment() {
 
     private fun progressListener(it: Float, progressView: ProgressView, label: String) {
         when {
-            it > 0f && it <= progressView.max -> progressView.labelText = "$label ${it.toInt()}%"
-            it == progressComplete -> {
-                maxOutPv(progressView, "$label synched")
+            it > 0f && it <= progressView.max -> {
+                progressView.labelText = "$label ${it.toInt()}%"
+                Handler(Looper.getMainLooper()).postDelayed({
+                    maxOutPv(progressView, "$label synched")
+                }, FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS * 2)
             }
         }
     }
 
-    private fun maxOutPv(progressView: ProgressView, completionMessage: String) {
-        if (progressView.progress >= 0) {
-            progressView.progress = progressView.max
-            progressView.labelText = completionMessage
-            Handler(Looper.getMainLooper()).postDelayed({
-                progressView.visibility = View.GONE
-            }, TWO_SECONDS)
+    private fun maxOutPv(progressView: ProgressView, completionMessage: String): Job {
+        return uiScope.launch(uiScope.coroutineContext) {
+            if (progressView.progress >= 0) {
+                progressView.progress = progressView.max
+                progressView.labelText = completionMessage
+                Handler(Looper.getMainLooper()).postDelayed({
+                    progressView.visibility = View.GONE
+                }, TWO_SECONDS)
+            }
         }
     }
 
