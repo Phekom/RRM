@@ -39,6 +39,7 @@ import za.co.xisystems.itis_rrm.data.localDB.dao.ProjectSectionDao
 import za.co.xisystems.itis_rrm.data.localDB.dao.SectionItemDao
 import za.co.xisystems.itis_rrm.data.localDB.dao.SectionPointDao
 import za.co.xisystems.itis_rrm.data.localDB.dao.ToDoGroupsDao
+import za.co.xisystems.itis_rrm.data.localDB.dao.UnallocatedPhotoDao
 import za.co.xisystems.itis_rrm.data.localDB.dao.UserDao
 import za.co.xisystems.itis_rrm.data.localDB.dao.UserRoleDao
 import za.co.xisystems.itis_rrm.data.localDB.dao.VoItemDao
@@ -71,6 +72,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.SectionItemDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.SectionPointDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.ToDoGroupsDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.ToDoListEntityDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.UnallocatedPhotoDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserRoleDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.VoItemDTO
@@ -99,11 +101,11 @@ import za.co.xisystems.itis_rrm.utils.DatetimeConverters
         JobItemEstimatesPhotoDTO::class, JobItemMeasurePhotoDTO::class, JobItemEstimateDTO::class,
         JobItemMeasureDTO::class, ToDoListEntityDTO::class, ChildLookupDTO::class,
         JobEstimateWorksDTO::class, JobEstimateWorksPhotoDTO::class, SectionItemDTO::class,
-        WorkFlowsDTO::class, WfWorkStepDTO::class
+        WorkFlowsDTO::class, WfWorkStepDTO::class, UnallocatedPhotoDTO::class
     ],
     views = [ContractSelectorView::class],
     exportSchema = true,
-    version = 25
+    version = 26
 )
 
 @TypeConverters(Converters::class, DatetimeConverters::class)
@@ -190,4 +192,5 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun getItemDaoTemp(): ItemDaoTemp
     abstract fun getSectionPointDao(): SectionPointDao
     abstract fun getWorkStepDao(): WorkStepDao
+    abstract fun getUnallocatedPhotoDao(): UnallocatedPhotoDao
 }
