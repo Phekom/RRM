@@ -339,7 +339,7 @@ dependencies {
     implementation "androidx.vectordrawable:vectordrawable-animated:$vectorVersion"
 
     // Layouts
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.1'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.2'
     implementation "androidx.coordinatorlayout:coordinatorlayout:1.1.0"
 
     // Navigation

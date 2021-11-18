@@ -32,6 +32,7 @@ import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data._commons.Animations
 import za.co.xisystems.itis_rrm.data._commons.views.IProgressView
+import za.co.xisystems.itis_rrm.extensions.isConnected
 import za.co.xisystems.itis_rrm.forge.DefaultDispatcherProvider
 import za.co.xisystems.itis_rrm.forge.DispatcherProvider
 import za.co.xisystems.itis_rrm.forge.XIArmoury
@@ -303,7 +304,7 @@ abstract class BaseFragment(
     }
 
     private fun isOnline(): Boolean {
-        return ServiceUtil.isNetworkAvailable(this.requireContext().applicationContext)
+        return this.requireActivity().isConnected
     }
 
     protected fun noConnectionWarning() {

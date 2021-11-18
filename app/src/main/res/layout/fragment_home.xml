@@ -171,8 +171,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:visibility="invisible"
-                tools:visibility="visible">
+                android:visibility="gone"
+                tools:visibility="gone">
 
                 <com.skydoves.progressview.ProgressView
                     android:id="@+id/pv_sections"
@@ -250,7 +250,6 @@
             </LinearLayout>
 
         </TableLayout>
-
 
         <TextView
             android:id="@+id/serverTextView"

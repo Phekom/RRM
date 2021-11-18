@@ -16,7 +16,6 @@ buildscript {
         dependency_evaluation_version = '0.78.0'
         booster_version = '4.0.0'
         navigation_version = '2.3.5'
-
     }
 
     repositories {
@@ -29,7 +28,7 @@ buildscript {
     dependencies {
         classpath 'com.android.tools.build:gradle:7.0.3'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath "com.didiglobal.booster:booster-gradle-plugin:$booster_version"
+        // classpath "com.didiglobal.booster:booster-gradle-plugin:$booster_version"
 
         // classpath 'com.novoda:gradle-static-analysis-plugin:1.2'
         // NOTE: Do not place your application dependencies here; they belong
@@ -55,7 +54,7 @@ allprojects {
     apply plugin: "org.jlleitschuh.gradle.ktlint"
     apply plugin: "com.autonomousapps.dependency-analysis"
     apply plugin: "org.sonarqube"
-    apply plugin: "com.didiglobal.booster"
+    // apply plugin: "com.didiglobal.booster"
     apply from: "$rootDir/detekt.gradle"
 
     repositories {
