@@ -13,7 +13,6 @@ import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
-import za.co.xisystems.itis_rrm.utils.Coroutines
 
 /**
  * Created by Francis Mahlava on 03,October,2019
@@ -24,6 +23,12 @@ class CorrectionsFragment : BaseFragment(), DIAware {
     override val di by closestDI()
     private lateinit var correctionsViewModel: CorrectionsViewModel
     private val factory: CorrectionsViewModelFactory by instance()
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        correctionsViewModel =
+            ViewModelProvider(this.requireActivity(), factory).get(CorrectionsViewModel::class.java)
+    }
 
     override fun onDestroyView() {
         super.onDestroyView()
@@ -44,14 +49,5 @@ class CorrectionsFragment : BaseFragment(), DIAware {
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // no options menu
         return false
-    }
-
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        correctionsViewModel = activity?.run {
-            ViewModelProvider(this, factory).get(CorrectionsViewModel::class.java)
-        } ?: throw Exception("Invalid Activity")
-        Coroutines.main {
-        }
     }
 }

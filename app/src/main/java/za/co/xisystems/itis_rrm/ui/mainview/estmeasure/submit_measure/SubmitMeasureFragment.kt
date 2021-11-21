@@ -8,7 +8,6 @@ package za.co.xisystems.itis_rrm.ui.mainview.estmeasure.submit_measure
 
 import android.app.AlertDialog
 import android.content.Context
-import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -21,6 +20,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenStarted
 import androidx.navigation.Navigation
@@ -28,15 +28,14 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.ExpandableGroup
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.viewbinding.GroupieViewHolder
-import kotlinx.android.synthetic.main.fragment_photo_estimate.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import org.kodein.di.DIAware
 import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.MainActivity
+import za.co.xisystems.itis_rrm.MobileNavigationDirections
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration
@@ -68,7 +67,7 @@ import za.co.xisystems.itis_rrm.utils.DataConversion
 import java.util.ArrayList
 import java.util.HashMap
 
-class SubmitMeasureFragment : BaseFragment(), DIAware {
+class SubmitMeasureFragment: BaseFragment() {
     override val di by closestDI()
     private lateinit var measureViewModel: MeasureViewModel
     private val factory: MeasureViewModelFactory by instance()
@@ -96,8 +95,8 @@ class SubmitMeasureFragment : BaseFragment(), DIAware {
 
                 uiScope.launch(uiScope.coroutineContext) {
 
-                    val estimateData = measureViewModel.estimateMeasureItem
-                    estimateData.observe(viewLifecycleOwner, { estimateMeasureItem ->
+                    val estimateData = measureViewModel.estimateMeasureItem.distinctUntilChanged()
+                    estimateData.observeOnce(viewLifecycleOwner, { estimateMeasureItem ->
                         jobItemEstimate = estimateMeasureItem.jobItemEstimateDTO
                         getWorkItems(jobItemEstimate.jobId)
                     })
@@ -180,6 +179,9 @@ class SubmitMeasureFragment : BaseFragment(), DIAware {
 
         jobItemMeasuresForJobItemEstimates =
             HashMap()
+
+        measureViewModel =
+            ViewModelProvider(this@SubmitMeasureFragment.requireActivity(), factory)[MeasureViewModel::class.java]
     }
 
     override fun onCreateView(
@@ -194,14 +196,9 @@ class SubmitMeasureFragment : BaseFragment(), DIAware {
         return ui.root
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         Coroutines.main {
-
-            measureViewModel = activity?.run {
-                ViewModelProvider(this, factory).get(MeasureViewModel::class.java)
-            } ?: throw Exception("Invalid Activity")
 
             ui.submitMeasurementsButton.setOnClickListener {
                 progressButton = ui.submitMeasurementsButton
@@ -315,8 +312,8 @@ class SubmitMeasureFragment : BaseFragment(), DIAware {
         mSures: ArrayList<JobItemMeasureDTO>
     ) {
         Coroutines.main {
-            val estimateIds = itemMeasureJob.jobItemEstimates.map { it -> it.estimateId  }
-            val measureEstimateIds = mSures.map { it -> it.estimateId }.distinct()
+            val estimateIds = itemMeasureJob.jobItemEstimates.map { it.estimateId }
+            val measureEstimateIds = mSures.map { it.estimateId }.distinct()
             val missingEstimateIds = estimateIds.asSequence().minus(measureEstimateIds).map { it }.toList()
 
             val user = measureViewModel.user.await()
@@ -430,9 +427,9 @@ class SubmitMeasureFragment : BaseFragment(), DIAware {
 
     private fun popViewOnJobSubmit() {
         // Delete data from database after successful upload
-        Intent(context?.applicationContext, MainActivity::class.java).also { home ->
-            startActivity(home)
-        }
+        val direction = MobileNavigationDirections.actionGlobalNavHome()
+        Navigation.findNavController(this@SubmitMeasureFragment.requireView())
+            .navigate(direction)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -451,7 +448,7 @@ class SubmitMeasureFragment : BaseFragment(), DIAware {
         (activity as MainActivity).supportActionBar?.title =
             getString(R.string.submit_measure_title)
 
-        val callback: OnBackPressedCallback = object : OnBackPressedCallback(true) {
+        val callback: OnBackPressedCallback = object: OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 Navigation.findNavController(this@SubmitMeasureFragment.requireView())
                     .navigate(R.id.nav_estMeasure)
@@ -472,11 +469,11 @@ class SubmitMeasureFragment : BaseFragment(), DIAware {
 
     private fun getWorkItems(jobID: String?) {
         Coroutines.main {
-            val measurements = measureViewModel.getJobItemsToMeasureForJobId(jobID)
-            measurements.observe(viewLifecycleOwner, { estimateList ->
+            val measurements =
+                measureViewModel.getJobItemsToMeasureForJobId(jobID).distinctUntilChanged()
+            measurements.observeOnce(viewLifecycleOwner, { estimateList ->
                 initRecyclerView(estimateList.toMeasureItems())
             })
-
         }
     }
 

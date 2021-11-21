@@ -26,17 +26,13 @@ import timber.log.Timber
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.custom.results.XIResult
-import za.co.xisystems.itis_rrm.data.localDB.entities.ContractDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimatesPhotoDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobSectionDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectSectionDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.SectionItemDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.SectionPointDTO
 import za.co.xisystems.itis_rrm.data.repositories.JobCreationDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
 import za.co.xisystems.itis_rrm.domain.ContractSelector
@@ -63,7 +59,7 @@ class CreateViewModel(
     application: Application,
     private val photoUtil: PhotoUtil,
     private val dispatchers: DispatcherProvider = DefaultDispatcherProvider()
-) : AndroidViewModel(application) {
+): AndroidViewModel(application) {
 
     var jobDesc: String? = null
     private val superJob = SupervisorJob()
@@ -83,7 +79,6 @@ class CreateViewModel(
     val projectId = MutableLiveData<String>()
     val projectCode = MutableLiveData<String>()
     var itemJob: MutableLiveData<XIEvent<JobDTO>> = MutableLiveData()
-    var projectItemTemp: MutableLiveData<ItemDTOTemp> = MutableLiveData()
     val jobId: MutableLiveData<String?> = MutableLiveData()
     var tempProjectItem: MutableLiveData<XIEvent<ItemDTOTemp>> = MutableLiveData()
     var currentEstimate: MutableLiveData<XIEvent<JobItemEstimateDTO>> = MutableLiveData()
@@ -97,7 +92,6 @@ class CreateViewModel(
     var jobForSubmission: MutableLiveData<XIEvent<JobDTO>> = MutableLiveData()
     var jobForValidation: MutableLiveData<XIEvent<JobDTO>> = MutableLiveData()
     var jobForReUpload: MutableLiveData<XIEvent<JobDTO>> = MutableLiveData()
-
 
     fun setEstimateQuantity(inQty: Double) {
         estimateQty.value = inQty
@@ -143,19 +137,6 @@ class CreateViewModel(
         jobCreationDataRepository.saveNewJob(newJob)
     }
 
-    suspend fun getContracts(): LiveData<List<ContractDTO>> {
-        return withContext(dispatchers.io()) {
-            jobCreationDataRepository.getSectionItems()
-            jobCreationDataRepository.getContracts()
-        }
-    }
-
-    suspend fun getSomeProjects(contractId: String): LiveData<List<ProjectDTO>> {
-        return withContext(dispatchers.io()) {
-            jobCreationDataRepository.getContractProjects(contractId)
-        }
-    }
-
     suspend fun getAllItemsForSectionItemByProjectId(
         sectionItemId: String,
         projectId: String
@@ -179,48 +160,6 @@ class CreateViewModel(
 
     fun deleteJobFromList(jobId: String) {
         jobCreationDataRepository.deleteJobfromList(jobId)
-    }
-
-    suspend fun updateNewJob(
-        newJobId: String,
-        startKM: Double,
-        endKM: Double,
-        sectionId: String,
-        newJobItemEstimatesList: ArrayList<JobItemEstimateDTO>,
-        jobItemSectionArrayList: ArrayList<JobSectionDTO>
-    ) {
-        withContext(ioContext) {
-            jobCreationDataRepository.updateNewJob(
-                newJobId,
-                startKM,
-                endKM,
-                sectionId,
-                newJobItemEstimatesList,
-                jobItemSectionArrayList
-            )
-        }
-    }
-
-    suspend fun getPointSectionData(projectId: String): SectionPointDTO {
-        return withContext(ioContext) {
-            jobCreationDataRepository.getPointSectionData(projectId)
-        }
-    }
-
-    suspend fun getSectionByRouteSectionProject(
-        sectionId: String,
-        linearId: String?,
-        projectId: String?,
-        pointLocation: Double
-    ): String? {
-        return withContext(ioContext) {
-            jobCreationDataRepository.getSectionByRouteSectionProject(
-                sectionId,
-                linearId,
-                projectId,
-                pointLocation
-            )
-        }
     }
 
     suspend fun getSection(sectionId: String): LiveData<ProjectSectionDTO> {
@@ -343,8 +282,8 @@ class CreateViewModel(
     fun setJobToEdit(jobId: String) = viewModelScope.launch(ioContext) {
         val fetchedJob = jobCreationDataRepository.getUpdatedJob(jobId)
         withContext(mainContext) {
-            jobToEdit.postValue(fetchedJob)
             totalJobCost.value = JobUtils.formatTotalCost(fetchedJob)
+            jobToEdit.value = fetchedJob
         }
     }
 

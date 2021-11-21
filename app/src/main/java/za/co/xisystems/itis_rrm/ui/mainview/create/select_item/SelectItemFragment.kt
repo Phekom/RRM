@@ -118,6 +118,12 @@ class SelectItemFragment : BaseFragment(), DIAware {
         return false // To change body of created functions use File | Settings | File Templates.
     }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        createViewModel = ViewModelProvider(this.requireActivity(), factory)
+            .get(CreateViewModel::class.java)
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -128,11 +134,8 @@ class SelectItemFragment : BaseFragment(), DIAware {
         return ui.root
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        createViewModel = ViewModelProvider(this.requireActivity(), factory)
-            .get(CreateViewModel::class.java)
-
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         itemSections = ArrayList()
         newJobItemEstimatesList = ArrayList()
 

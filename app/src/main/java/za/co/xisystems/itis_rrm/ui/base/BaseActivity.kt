@@ -91,7 +91,7 @@ abstract class BaseActivity : AppCompatActivity(), DIAware {
 
     override fun onUserInteraction() {
         Timber.d("User interaction!!")
+
         super.onUserInteraction()
-        armoury.writeFutureTimestamp()
     }
 }

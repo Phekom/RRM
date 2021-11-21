@@ -14,8 +14,8 @@ class UnSubmittedViewModelFactory(
     private val offlineDataRepository: OfflineDataRepository
 //    private val Db : AppDatabase,
 //    val context: Context
-) : ViewModelProvider.NewInstanceFactory() {
-    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+): ViewModelProvider.NewInstanceFactory() {
+    override fun <T: ViewModel> create(modelClass: Class<T>): T {
         return UnSubmittedViewModel(
             offlineDataRepository
         ) as T

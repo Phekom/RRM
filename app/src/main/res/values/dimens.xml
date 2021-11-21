@@ -34,4 +34,5 @@
     <dimen name="progressMargin">10dp</dimen>
     <dimen name="smallRadius">7.5dp</dimen>
     <dimen name="stroke3">2.5dp</dimen>
+    <dimen name="text_margin">16dp</dimen>
 </resources>

@@ -25,7 +25,7 @@ import za.co.xisystems.itis_rrm.R.font
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.databinding.ActivityResetPinBinding
-import za.co.xisystems.itis_rrm.extensions.observeOnce
+import za.co.xisystems.itis_rrm.delegates.viewBinding
 import za.co.xisystems.itis_rrm.ui.auth.model.AuthViewModel
 import za.co.xisystems.itis_rrm.ui.auth.model.AuthViewModelFactory
 import za.co.xisystems.itis_rrm.utils.Coroutines
@@ -50,13 +50,11 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, DIAware {
         Manifest.permission.READ_EXTERNAL_STORAGE,
         Manifest.permission.ACCESS_FINE_LOCATION
     )
-    private lateinit var binding: ActivityResetPinBinding
+    private val binding: ActivityResetPinBinding by viewBinding(ActivityResetPinBinding::inflate)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        binding = ActivityResetPinBinding.inflate(layoutInflater)
-        setContentView(binding.root)
         appContext = this
 
         if (startPermissionRequest(permissions)) {
@@ -73,7 +71,14 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, DIAware {
             loggedInUser.observe(this, { user ->
                 // Register the user
                 if (user != null) {
-                    scanForPinUpdate()
+                    binding.resetPinbutton.setOnClickListener { view ->
+                        viewModel.onResetPinButtonClick(
+                            view = view,
+                            oldPin = binding.enterPinEditText.text?.toString(),
+                            newPin = binding.enterNewPinEditText.text?.toString(),
+                            confirmNewPin = binding.confirmPinEditText.text?.toString()
+                        )
+                    }
                     binding.serverTextView.setOnClickListener {
                         ToastUtils().toastServerAddress(appContext)
                     }
@@ -81,13 +86,14 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, DIAware {
                     binding.buildFlavorTextView.setOnClickListener {
                         ToastUtils().toastVersion(appContext)
                     }
+                    scanForPinUpdate()
                 }
             })
         }
     }
 
     private fun scanForPinUpdate() {
-        viewModel.validPin.observeOnce(this) {
+        viewModel.validPin.observe(this) {
             it?.let {
                 when (it) {
                     true -> {

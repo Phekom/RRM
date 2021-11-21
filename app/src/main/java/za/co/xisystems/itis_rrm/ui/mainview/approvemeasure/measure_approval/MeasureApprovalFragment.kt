@@ -16,7 +16,6 @@ package za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.measure_approval
 
 import android.app.Dialog
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -34,14 +33,13 @@ import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.viewbinding.GroupieViewHolder
-import java.lang.ref.WeakReference
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.kodein.di.DIAware
 import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.MainActivity
+import za.co.xisystems.itis_rrm.MobileNavigationDirections
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.constants.Constants
@@ -67,8 +65,9 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection.NEXT
+import java.lang.ref.WeakReference
 
-class MeasureApprovalFragment : BaseFragment(), DIAware {
+class MeasureApprovalFragment : BaseFragment() {
     override val di by closestDI()
     private lateinit var approveViewModel: ApproveMeasureViewModel
     private val factory: ApproveMeasureViewModelFactory by instance()
@@ -158,6 +157,13 @@ class MeasureApprovalFragment : BaseFragment(), DIAware {
             .addCallback(this, callback)
     }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        approveViewModel =
+            ViewModelProvider(this.requireActivity(), factory).get(ApproveMeasureViewModel::class.java)
+
+    }
+
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // no options menu
         return false
@@ -173,12 +179,8 @@ class MeasureApprovalFragment : BaseFragment(), DIAware {
         return ui.root
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        approveViewModel = activity?.run {
-            ViewModelProvider(this, factory).get(ApproveMeasureViewModel::class.java)
-        } ?: throw Exception("Invalid Activity")
-
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         Coroutines.main {
 
             initVeiledRecycler()
@@ -301,9 +303,9 @@ class MeasureApprovalFragment : BaseFragment(), DIAware {
             }
         }
         Handler(Looper.getMainLooper()).postDelayed({
-            Intent(context?.applicationContext, MainActivity::class.java).also { home ->
-                startActivity(home)
-            }
+            val directions = MobileNavigationDirections.actionGlobalNavHome()
+            Navigation.findNavController(this@MeasureApprovalFragment.requireView())
+                .navigate(directions)
         }, Constants.TWO_SECONDS)
     }
 

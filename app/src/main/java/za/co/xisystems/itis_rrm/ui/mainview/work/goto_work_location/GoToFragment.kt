@@ -84,7 +84,6 @@ import com.mapbox.navigation.ui.voice.model.SpeechAnnouncement
 import com.mapbox.navigation.ui.voice.model.SpeechError
 import com.mapbox.navigation.ui.voice.model.SpeechValue
 import com.mapbox.navigation.ui.voice.model.SpeechVolume
-import java.util.Locale
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.kodein.di.android.x.closestDI
@@ -105,6 +104,7 @@ import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModelFactory
 import za.co.xisystems.itis_rrm.utils.Coroutines
+import java.util.Locale
 
 @Suppress("MagicNumber")
 class GoToFragment : LocationFragment(), PermissionsListener {
@@ -757,7 +757,6 @@ class GoToFragment : LocationFragment(), PermissionsListener {
             // make sure to unregister the location observer you have registered.
             unregisterLocationObserver(locationObserver)
             // make sure to unregister the route progress observer you have registered.
-            unregisterRouteProgressObserver(replayProgressObserver)
             unregisterRouteProgressObserver(routeProgressObserver)
         }
         speechApi.cancel()
@@ -772,11 +771,14 @@ class GoToFragment : LocationFragment(), PermissionsListener {
         super.onStop()
 
         // unregister event listeners to prevent leaks or unnecessary resource consumption
-        mapboxNavigation.unregisterRoutesObserver(routesObserver)
-        mapboxNavigation.unregisterRouteProgressObserver(routeProgressObserver)
-        mapboxNavigation.unregisterLocationObserver(locationObserver)
-        mapboxNavigation.unregisterVoiceInstructionsObserver(voiceInstructionsObserver)
-        mapboxNavigation.unregisterRouteProgressObserver(replayProgressObserver)
+        mapboxNavigation.run {
+            unregisterRoutesObserver(routesObserver)
+            unregisterRouteProgressObserver(routeProgressObserver)
+            unregisterLocationObserver(locationObserver)
+            unregisterVoiceInstructionsObserver(voiceInstructionsObserver)
+            unregisterRouteProgressObserver(replayProgressObserver)
+        }
+
     }
     @Suppress("TooGenericExceptionCaught")
     override fun onStart() {
@@ -792,5 +794,6 @@ class GoToFragment : LocationFragment(), PermissionsListener {
         if (!gpsEnabled) { // notify user && !network_enabled
             displayPromptForEnablingGPS(requireActivity())
         }
+
     }
 }

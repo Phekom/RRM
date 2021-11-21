@@ -8,7 +8,6 @@ package za.co.xisystems.itis_rrm.ui.mainview.create.add_project_item
 
 import android.app.DatePickerDialog
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -31,8 +30,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.Section
 import com.xwray.groupie.viewbinding.GroupieViewHolder
-import kotlinx.android.synthetic.main.content_main.*
-import kotlinx.android.synthetic.main.fragment_add_project_items.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -41,6 +38,7 @@ import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.MainActivity
+import za.co.xisystems.itis_rrm.MobileNavigationDirections
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.constants.Constants.ONE_SECOND
@@ -84,7 +82,7 @@ import java.util.Date
  * Created by Francis Mahlava on 2019/12/29.
  */
 
-class AddProjectFragment : BaseFragment(), DIAware {
+class AddProjectFragment: BaseFragment(), DIAware {
 
     override val di by closestDI()
     private lateinit var createViewModel: CreateViewModel
@@ -115,7 +113,7 @@ class AddProjectFragment : BaseFragment(), DIAware {
     private var jobId: String? = null
 
     private val touchCallback: SwipeTouchCallback by lazy {
-        object : SwipeTouchCallback() {
+        object: SwipeTouchCallback() {
             override fun onMove(
                 recyclerView: RecyclerView,
                 viewHolder: RecyclerView.ViewHolder,
@@ -156,19 +154,15 @@ class AddProjectFragment : BaseFragment(), DIAware {
     companion object {
         private const val JOB_KEY = "jobId"
         private const val PROJECT_KEY = "projectId"
-        private const val INVALID_ACTIVITY = "Invalid Activity"
     }
 
     @Suppress("TooGenericExceptionThrown", "ThrowsCount")
     private fun initViewModels() {
-        createViewModel = ViewModelProvider(this.requireActivity(), createFactory)
-            .get(CreateViewModel::class.java)
+        createViewModel = ViewModelProvider(this.requireActivity(), createFactory)[CreateViewModel::class.java]
 
-        unsubmittedViewModel = ViewModelProvider(this.requireActivity(), unsubFactory)
-            .get(UnSubmittedViewModel::class.java)
+        unsubmittedViewModel = ViewModelProvider(this.requireActivity(), unsubFactory)[UnSubmittedViewModel::class.java]
 
-        deferredLocationViewModel = ViewModelProvider(this.requireActivity(), deferredLocationFactory)
-            .get(DeferredLocationViewModel::class.java)
+        deferredLocationViewModel = ViewModelProvider(this.requireActivity(), deferredLocationFactory)[DeferredLocationViewModel::class.java]
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -230,96 +224,96 @@ class AddProjectFragment : BaseFragment(), DIAware {
     private suspend fun initValidationListener() = withContext(dispatchers.main()) {
         deferredLocationViewModel.geoCodingResult.observeOnce(
             viewLifecycleOwner, { result ->
-                result.getContentIfNotHandled()?.let { outcome ->
-                    uiScope.launch(uiScope.coroutineContext) {
-                        processLocationResult(outcome)
-                    }
+            result.getContentIfNotHandled()?.let { outcome ->
+                uiScope.launch(uiScope.coroutineContext) {
+                    processLocationResult(outcome)
                 }
             }
+        }
         )
 
         createViewModel.jobForValidation.observeOnce(
             viewLifecycleOwner, { job ->
-                job.getContentIfNotHandled()?.let { realJob ->
-                    if (!realJob.sectionId.isNullOrBlank() && JobUtils.isGeoCoded(realJob)) {
-                        uiScope.launch(uiScope.coroutineContext) {
-                            validateEstimates(realJob)
-                        }
-                    } else {
-                        uiScope.launch(uiScope.coroutineContext) {
-                            geoLocationFailed()
-                        }
+            job.getContentIfNotHandled()?.let { realJob ->
+                if (!realJob.sectionId.isNullOrBlank() && JobUtils.isGeoCoded(realJob)) {
+                    uiScope.launch(uiScope.coroutineContext) {
+                        validateEstimates(realJob)
+                    }
+                } else {
+                    uiScope.launch(uiScope.coroutineContext) {
+                        geoLocationFailed()
                     }
                 }
             }
+        }
         )
 
         createViewModel.jobForSubmission.observeOnce(
             viewLifecycleOwner, { unsubmittedEvent ->
-                unsubmittedEvent.getContentIfNotHandled()?.let { submissionJob ->
-                    uiScope.launch(uiScope.coroutineContext) {
-                        createViewModel.backupSubmissionJob.value = XIEvent(submissionJob)
-                        submitJob(submissionJob)
-                    }
+            unsubmittedEvent.getContentIfNotHandled()?.let { submissionJob ->
+                uiScope.launch(uiScope.coroutineContext) {
+                    createViewModel.backupSubmissionJob.value = XIEvent(submissionJob)
+                    submitJob(submissionJob)
                 }
             }
+        }
         )
     }
 
     private fun initCurrentJobListener() {
         createViewModel.jobToEdit.distinctUntilChanged().observe(
             viewLifecycleOwner, { jobRecord ->
-                jobRecord?.let { jobToEdit ->
-                    job = jobToEdit
-                    jobId = job.jobId
-                    jobBound = true
-                    Coroutines.main {
-                        if (createViewModel.jobDesc != job.descr) {
-                            toast("Editing ${job.descr}")
-                            createViewModel.jobDesc = job.descr
+            jobRecord?.let { jobToEdit ->
+                job = jobToEdit
+                jobId = job.jobId
+                jobBound = true
+                Coroutines.main {
+                    if (createViewModel.jobDesc != job.descr) {
+                        toast("Editing ${job.descr}")
+                        createViewModel.jobDesc = job.descr
+                    }
+                    projectID = job.projectId
+                    val contractNo =
+                        createViewModel.getContractNoForId(job.contractVoId)
+                    val projectCode =
+                        createViewModel.getProjectCodeForId(job.projectId)
+                    ui.selectedContractTextView.text = contractNo
+                    ui.selectedProjectTextView.text = projectCode
+
+                    ui.infoTextView.visibility = View.GONE
+                    ui.lastLin.visibility = View.VISIBLE
+                    ui.totalCostTextView.visibility = View.VISIBLE
+
+                    // Set job description init actionBar
+                    (activity as MainActivity).supportActionBar?.title = createViewModel.jobDesc
+
+                    // Set Job Start & Completion Dates
+
+                    job.dueDate?.let {
+                        ui.dueDateTextView.text = DateUtil.toStringReadable(DateUtil.stringToDate(it))
+                        dueDate = DateUtil.stringToDate(it)!!
+                    }
+
+                    job.startDate?.let {
+                        ui.startDateTextView.text = DateUtil.toStringReadable(DateUtil.stringToDate(it))
+                        startDate = DateUtil.stringToDate(it)!!
+                    }
+
+                    createViewModel.tempProjectItem.observe(viewLifecycleOwner, {
+                        it.getContentIfNotHandled()?.let {
+                            ui.infoTextView.visibility = View.GONE
+                            ui.lastLin.visibility = View.VISIBLE
+                            ui.totalCostTextView.visibility = View.VISIBLE
                         }
-                        projectID = job.projectId
-                        val contractNo =
-                            createViewModel.getContractNoForId(job.contractVoId)
-                        val projectCode =
-                            createViewModel.getProjectCodeForId(job.projectId)
-                        ui.selectedContractTextView.text = contractNo
-                        ui.selectedProjectTextView.text = projectCode
-
-                        ui.infoTextView.visibility = View.GONE
-                        ui.lastLin.visibility = View.VISIBLE
-                        ui.totalCostTextView.visibility = View.VISIBLE
-
-                        // Set job description init actionBar
-                        (activity as MainActivity).supportActionBar?.title = createViewModel.jobDesc
-
-                        // Set Job Start & Completion Dates
-
-                        job.dueDate?.let {
-                            ui.dueDateTextView.text = DateUtil.toStringReadable(DateUtil.stringToDate(it))
-                            dueDate = DateUtil.stringToDate(it)!!
-                        }
-
-                        job.startDate?.let {
-                            ui.startDateTextView.text = DateUtil.toStringReadable(DateUtil.stringToDate(it))
-                            startDate = DateUtil.stringToDate(it)!!
-                        }
-
-                        createViewModel.tempProjectItem.observe(viewLifecycleOwner, {
-                            it.getContentIfNotHandled()?.let {
-                                ui.infoTextView.visibility = View.GONE
-                                ui.lastLin.visibility = View.VISIBLE
-                                ui.totalCostTextView.visibility = View.VISIBLE
-                            }
-                        })
-                        bindProjectItems()
-                        if (job.actId == 1) {
-                            ui.addItemButton.visibility = View.INVISIBLE
-                            ui.submitButton.text = getString(R.string.complete_upload)
-                        }
+                    })
+                    bindProjectItems()
+                    if (job.actId == 1) {
+                        ui.addItemButton.visibility = View.INVISIBLE
+                        ui.submitButton.text = getString(R.string.complete_upload)
                     }
                 }
             }
+        }
         )
     }
 
@@ -372,7 +366,6 @@ class AddProjectFragment : BaseFragment(), DIAware {
         setHasOptionsMenu(true)
         groupAdapter = GroupAdapter<GroupieViewHolder<NewJobItemBinding>>()
         jobDataController = JobDataController
-
         initViewModels()
     }
 
@@ -805,9 +798,9 @@ class AddProjectFragment : BaseFragment(), DIAware {
         // createViewModel.setJobToEdit("null")
         // Conduct user back to home fragment
         HandlerCompat.postDelayed(Handler(Looper.getMainLooper()), {
-            Intent(context?.applicationContext, MainActivity::class.java).also { home ->
-                startActivity(home)
-            }
+            val direction = MobileNavigationDirections.actionGlobalNavHome()
+            Navigation.findNavController(this@AddProjectFragment.requireView())
+                .navigate(direction)
         }, null, TWO_SECONDS)
     }
 

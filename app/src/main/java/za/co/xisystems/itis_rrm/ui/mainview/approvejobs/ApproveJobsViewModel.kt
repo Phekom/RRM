@@ -165,7 +165,7 @@ class ApproveJobsViewModel(
 
     suspend fun getJobEstimationItemsForJobId(jobID: String?): LiveData<List<JobItemEstimateDTO>> {
         return withContext(dispatchers.io()) {
-            jobApprovalDataRepository.getJobEstimationItemsForJobId(jobID)
+            jobApprovalDataRepository.getJobEstimationItemsForJobId(jobID).distinctUntilChanged()
         }
     }
 

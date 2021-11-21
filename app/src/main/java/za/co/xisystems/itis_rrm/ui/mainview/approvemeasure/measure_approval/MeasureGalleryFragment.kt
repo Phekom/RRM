@@ -51,6 +51,8 @@ class MeasureGalleryFragment : BaseFragment(), DIAware {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         (activity as MainActivity).supportActionBar?.title = getString(R.string.measurement_gallery)
+        approveViewModel =
+            ViewModelProvider(this.requireActivity(), factory).get(ApproveMeasureViewModel::class.java)
     }
 
     override fun onCreateView(
@@ -63,22 +65,17 @@ class MeasureGalleryFragment : BaseFragment(), DIAware {
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // Noy all fragments have options
+        // Not all fragments have options
         return false
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-
-        approveViewModel = activity?.run {
-            ViewModelProvider(this, factory).get(ApproveMeasureViewModel::class.java)
-        } ?: throw Exception("Invalid Activity")
-
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         uiScope.launch(uiScope.coroutineContext) {
             approveViewModel.measureGalleryUIState.observe(viewLifecycleOwner, galleryObserver)
         }
 
-        ui.doneImageButton.setOnClickListener { view ->
+        ui.doneImageButton.setOnClickListener {
             val directions = MeasureGalleryFragmentDirections
                 .actionMeasureGalleryFragmentToMeasureApprovalFragment(galleryJobId)
             Navigation.findNavController(view)

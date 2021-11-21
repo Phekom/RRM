@@ -20,20 +20,22 @@ import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
 import androidx.annotation.RequiresApi
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.forge.DefaultDispatcherProvider
+import za.co.xisystems.itis_rrm.forge.DispatcherProvider
 import java.io.File
 
 private const val QUALITY = 100
 
 object FileOperations {
+    private val dispatchers: DispatcherProvider = DefaultDispatcherProvider()
 
     @SuppressLint("Range")
     suspend fun queryImagesOnDevice(context: Context, selection: String? = null): List<Media> {
         val images = mutableListOf<Media>()
 
-        withContext(Dispatchers.IO) {
+        withContext(dispatchers.io()) {
             var projection = arrayOf(
                 MediaStore.Images.Media._ID,
                 MediaStore.Images.Media.DISPLAY_NAME,
@@ -64,7 +66,8 @@ object FileOperations {
 
                 while (cursor.moveToNext()) {
                     val id = cursor.getLong(cursor.getColumnIndex(MediaStore.Images.Media._ID))
-                    val path = if(hasSdkHigherThan(Build.VERSION_CODES.Q)) {
+
+                    val path = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                         cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.RELATIVE_PATH))
                     } else {
                         "0"
@@ -77,7 +80,7 @@ object FileOperations {
                     val date = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATE_MODIFIED))
 
                     val favorite =
-                        if (hasSdkHigherThan(Build.VERSION_CODES.Q)) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                             cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.IS_FAVORITE))
                         } else {
                             "0"
@@ -100,10 +103,11 @@ object FileOperations {
         return images
     }
 
+    @SuppressLint("Range")
     suspend fun queryVideosOnDevice(context: Context, selection: String? = null): List<Media> {
         val videos = mutableListOf<Media>()
 
-        withContext(Dispatchers.IO) {
+        withContext(dispatchers.io()) {
             var projection = arrayOf(
                 MediaStore.Video.Media._ID,
                 MediaStore.Video.Media.DISPLAY_NAME,
@@ -114,11 +118,15 @@ object FileOperations {
                 MediaStore.Video.Media.DATE_MODIFIED
             )
 
-            if(hasSdkHigherThan(Build.VERSION_CODES.P)){
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 projection += arrayOf(MediaStore.Images.Media.RELATIVE_PATH)
             }
 
-            if (hasSdkHigherThan(Build.VERSION_CODES.Q)) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                projection += arrayOf(MediaStore.Images.Media.RELATIVE_PATH)
+            }
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 projection += arrayOf(MediaStore.Images.Media.IS_FAVORITE)
             }
 
@@ -134,7 +142,6 @@ object FileOperations {
 
                 while (cursor.moveToNext()) {
                     val id = cursor.getLong(cursor.getColumnIndex(MediaStore.Video.Media._ID))
-                    val path = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.RELATIVE_PATH))
                     val name = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.DISPLAY_NAME))
                     val size = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.SIZE))
                     val mimeType = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.MIME_TYPE))
@@ -143,11 +150,17 @@ object FileOperations {
                     val date = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.DATE_MODIFIED))
 
                     val favorite =
-                        if (hasSdkHigherThan(Build.VERSION_CODES.Q)) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                             cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.IS_FAVORITE))
                         } else {
                             "0"
                         }
+
+                    val path = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.RELATIVE_PATH))
+                    } else {
+                        ""
+                    }
 
                     val uri = ContentUris.withAppendedId(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, id)
 
@@ -171,7 +184,7 @@ object FileOperations {
     suspend fun queryTrashedMediaOnDevice(context: Context, contentUri: Uri): List<Media> {
         val media = mutableListOf<Media>()
 
-        withContext(Dispatchers.IO) {
+        withContext(dispatchers.io()) {
             val projection = arrayOf(
                 MediaStore.MediaColumns._ID,
                 MediaStore.MediaColumns.RELATIVE_PATH,
@@ -229,7 +242,7 @@ object FileOperations {
     suspend fun queryFavoriteMedia(context: Context): List<Media> {
         val favorite = mutableListOf<Media>()
 
-        withContext(Dispatchers.IO) {
+        withContext(dispatchers.io()) {
             val selection = "${MediaStore.MediaColumns.IS_FAVORITE} = 1"
             favorite.addAll(queryImagesOnDevice(context, selection))
             favorite.addAll(queryVideosOnDevice(context, selection))
@@ -242,7 +255,7 @@ object FileOperations {
     suspend fun queryTrashedMedia(context: Context): List<Media> {
         val trashed = mutableListOf<Media>()
 
-        withContext(Dispatchers.IO) {
+        withContext(dispatchers.io()) {
             trashed.addAll(queryTrashedMediaOnDevice(context, MediaStore.Images.Media.EXTERNAL_CONTENT_URI))
             trashed.addAll(queryTrashedMediaOnDevice(context, MediaStore.Video.Media.EXTERNAL_CONTENT_URI))
         }
@@ -251,7 +264,7 @@ object FileOperations {
     }
 
     suspend fun saveImage(context: Context, uri: Uri, bitmap: Bitmap, format: CompressFormat) {
-        withContext(Dispatchers.IO) {
+        withContext(dispatchers.io()) {
             context.contentResolver.openOutputStream(uri, "w").use {
                 bitmap.compress(format, QUALITY, it)
             }
@@ -259,7 +272,7 @@ object FileOperations {
     }
 
     suspend fun saveImage(context: Context, bitmap: Bitmap, format: CompressFormat) {
-        withContext(Dispatchers.IO) {
+        withContext(dispatchers.io()) {
             val collection = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
             } else {
@@ -302,7 +315,7 @@ object FileOperations {
     ): IntentSender? {
 
         var result: IntentSender? = null
-        withContext(Dispatchers.IO) {
+        withContext(dispatchers.io()) {
             try {
                 saveImage(context, uri, bitmap, format)
             } catch (securityException: SecurityException) {
@@ -324,7 +337,7 @@ object FileOperations {
     @SuppressLint("NewApi") // method only call from API 29 onwards
     suspend fun deleteMedia(context: Context, media: Media): IntentSender? {
         var result: IntentSender? = null
-        withContext(Dispatchers.IO) {
+        withContext(dispatchers.io()) {
             try {
                 context.contentResolver.delete(
                     media.uri, "${MediaStore.Images.Media._ID} = ?",

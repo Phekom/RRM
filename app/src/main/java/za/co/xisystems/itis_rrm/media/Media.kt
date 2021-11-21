@@ -8,7 +8,7 @@ package za.co.xisystems.itis_rrm.media
 
 import android.net.Uri
 import android.os.Parcelable
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class Media(

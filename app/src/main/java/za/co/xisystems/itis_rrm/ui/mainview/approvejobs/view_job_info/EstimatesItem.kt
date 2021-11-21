@@ -50,7 +50,7 @@ class EstimatesItem(
     private val activity: FragmentActivity?,
     private val viewLifecycleOwner: LifecycleOwner,
     private val updateObserver: Observer<XIResult<String>?>
-) : BindableItem<EstimatesItemBinding>() {
+): BindableItem<EstimatesItemBinding>() {
 
     override fun initializeViewBinding(view: View): EstimatesItemBinding {
         return EstimatesItemBinding.bind(view)
@@ -141,6 +141,8 @@ class EstimatesItem(
 
             quantityEntry.text = Editable.Factory.getInstance().newEditable("$newQuantity")
 
+            quantityEntry.setSelectAllOnFocus(true)
+            quantityEntry.requestFocus()
             quantityEntry.doOnTextChanged { text, _, _, _ ->
                 updated = true
                 val input = text.toString()
