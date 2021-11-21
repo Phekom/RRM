@@ -10,7 +10,7 @@ class DeferredLocationViewModelFactory(
     private val deferredLocationRepository: DeferredLocationRepository,
     private val jobCreationDataRepository: JobCreationDataRepository,
     val application: Application
-) : ViewModelProvider.AndroidViewModelFactory(application) {
+): ViewModelProvider.AndroidViewModelFactory(application) {
     override fun <T: ViewModel> create(modelClass: Class<T>): T {
         return DeferredLocationViewModel(
             deferredLocationRepository,

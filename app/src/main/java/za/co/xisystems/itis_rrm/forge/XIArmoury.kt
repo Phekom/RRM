@@ -11,28 +11,31 @@ import android.os.Environment
 import androidx.lifecycle.LifecycleObserver
 import androidx.security.crypto.MasterKey
 import com.password4j.SecureString
-import java.io.File
-import java.util.concurrent.atomic.AtomicLong
 import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import za.co.xisystems.itis_rrm.constants.Constants.FIVE_MINUTES
 import za.co.xisystems.itis_rrm.constants.Constants.TEN_MINUTES
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.forge.Scribe.Companion.NOT_INITIALIZED
 import za.co.xisystems.itis_rrm.utils.Coroutines
+import java.io.File
+import java.util.concurrent.atomic.AtomicLong
 
 class XIArmoury private constructor(
     appContext: Context,
     private val dispatchers: DispatcherProvider = DefaultDispatcherProvider()
-) : LifecycleObserver {
+): LifecycleObserver {
 
     private var wizardInstance: Wizard = Wizard()
     private var scribeInstance: Scribe? = null
     private var sageInstance: Sage? = null
     private var masterKey: MasterKey? = null
     private val userTimestamp: AtomicLong = AtomicLong()
-    private var photoFolder: File
+    private lateinit var photoFolder: File
     private lateinit var userSessionKey: SecureString
     private var armouryScope: ArmouryScope = ArmouryScope()
 
@@ -44,18 +47,18 @@ class XIArmoury private constructor(
         const val PASS_LENGTH = 64
         private val Lock = Any()
 
-        fun getInstance(appContext: Context): XIArmoury {
+        fun getInstance(context: Context): XIArmoury {
 
             return instance ?: synchronized(Lock) {
-                XIArmoury(appContext = appContext)
+                XIArmoury(appContext = context)
             }.also {
-                it.sageInstance = Sage.getInstance(appContext = appContext)
+                it.sageInstance = Sage.getInstance(appContext = context)
                 it.masterKey = it.sageInstance?.masterKeyAlias
                 it.scribeInstance = Scribe.getInstance(
-                    appContext = appContext,
+                    appContext = context,
                     sageInstance = it.sageInstance!!
                 )
-                it.initArmoury(it, appContext)
+                it.initArmoury(it, context)
                 instance = it
             }
         }
@@ -74,27 +77,27 @@ class XIArmoury private constructor(
         }
     }
 
-    private suspend fun initPictureFolder(appContext: Context): File = withContext(dispatchers.io()) {
-        return@withContext setOrCreatePicFolder(appContext)
+    private fun initPictureFolderAsync(appContext: Context): Deferred<File> = armouryScope.async(dispatchers.io()) {
+        return@async setOrCreatePicFolder(appContext)
     }
 
-    private fun setOrCreatePicFolder(appContext: Context): File {
+    private suspend fun setOrCreatePicFolder(appContext: Context): File = withContext(dispatchers.io()) {
         val tempFolder = appContext
             .getExternalFilesDir(Environment.DIRECTORY_PICTURES)!!
         if (!tempFolder.exists()) {
             tempFolder.mkdirs()
         }
-        return tempFolder
+        return@withContext tempFolder
     }
 
     init {
         armouryScope.onCreate()
-        this.photoFolder = setOrCreatePicFolder(appContext)
+        // this.photoFolder = setOrCreatePicFolder(appContext)
     }
 
     private fun initArmoury(instance: XIArmoury, appContext: Context) =
-        armouryScope.launch(context = armouryScope.coroutineContext, start = CoroutineStart.DEFAULT) {
-            instance.photoFolder = initPictureFolder(appContext)
+        armouryScope.launch(context = dispatchers.io(), start = CoroutineStart.DEFAULT) {
+            instance.photoFolder = initPictureFolderAsync(appContext).await()
             val checkedPassphrase = instance.checkPassphrase(appContext)
             val readPassphrase = instance.readPassphrase()
             if (checkedPassphrase == readPassphrase) {
@@ -128,27 +131,11 @@ class XIArmoury private constructor(
         return@withContext wizardInstance.validateFutureToken(passphrase, hash)
     }
 
-    private suspend fun initPreferences(
-        context: Context,
-        masterKey: MasterKey,
-        prefsFile: String
-    ): Boolean =
-        withContext(dispatchers.default()) {
-            scribeInstance?.initPreferences(context, masterKey, prefsFile)
-            return@withContext scribeInstance?.operational ?: false
-        }
-
-    private fun writePassphrase(passphrase: String) {
-        Coroutines.io {
-            this.scribeInstance?.writeFuturePassphrase(passphrase)
-        }
-    }
-
-    suspend fun checkPassphrase(context: Context): String = withContext(dispatchers.io()) {
+    private suspend fun checkPassphrase(context: Context): String = withContext(dispatchers.io()) {
         var currentPassphrase = this@XIArmoury.scribeInstance?.getFuturePassphrase() ?: NOT_INITIALIZED
         when (currentPassphrase) {
             NOT_INITIALIZED -> {
-                scribeInstance?.securePrefs = scribeInstance?.createPreferences(
+                scribeInstance?.mSecurePrefs = scribeInstance?.createPreferences(
                     context.applicationContext, masterKey = this@XIArmoury.masterKey!!,
                     prefsFile = PREFS_FILE
                 )!!
@@ -172,7 +159,7 @@ class XIArmoury private constructor(
         userTimestamp.set(timeInMillis)
     }
 
-    fun getTimestamp(): Long {
+    private fun getTimestamp(): Long {
         return userTimestamp.get()
     }
 
@@ -202,6 +189,11 @@ class XIArmoury private constructor(
         return result
     }
 
+    fun timeStampDue(timeInMillis: Long = System.currentTimeMillis()): Boolean {
+        val timeDiff = timeInMillis - getTimestamp()
+        return timeDiff >= FIVE_MINUTES
+    }
+
     fun checkTimeout(): Boolean {
         val timeInMillis = System.currentTimeMillis()
         val timeDiff = timeInMillis - getTimestamp()
@@ -209,13 +201,13 @@ class XIArmoury private constructor(
         return timeDiff >= TEN_MINUTES
     }
 
-    suspend fun createUserSession(userObject: SecureString) = armouryScope.launch {
+    private suspend fun createUserSession(userObject: SecureString) = armouryScope.launch {
         val sessionKey = wizardInstance.generateFutureToken(userObject)
         scribeInstance!!.writeUserObject(userObject.substring(0 until userObject.length - 1))
         scribeInstance!!.writeSessionKey(sessionKey)
     }
 
-    fun deAuthorize() {
+    private fun deAuthorize() {
         scribeInstance!!.eraseSessionKey()
     }
 
@@ -223,11 +215,12 @@ class XIArmoury private constructor(
         return scribeInstance!!.readSessionKey().isNotEmpty()
     }
 
-    suspend fun isAuthorized(userObject: SecureString? = null): Boolean = withContext(armouryScope.coroutineContext) {
-        val sessionKey = scribeInstance!!.readSessionKey()
-        val secId = scribeInstance!!.readUserObject()
-        return@withContext sessionKey.isNotEmpty() && wizardInstance.validateToken(userObject ?: secId, sessionKey)
-    }
+    private suspend fun isAuthorized(userObject: SecureString? = null): Boolean =
+        withContext(armouryScope.coroutineContext) {
+            val sessionKey = scribeInstance!!.readSessionKey()
+            val secId = scribeInstance!!.readUserObject()
+            return@withContext sessionKey.isNotEmpty() && wizardInstance.validateToken(userObject ?: secId, sessionKey)
+        }
 
     private fun writeUserObject(userObject: String) = armouryScope.launch {
         scribeInstance!!.writeUserObject(userObject)

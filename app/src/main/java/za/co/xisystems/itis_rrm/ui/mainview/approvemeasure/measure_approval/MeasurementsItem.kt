@@ -33,7 +33,7 @@ class MeasurementsItem(
     private val approveViewModel: ApproveMeasureViewModel,
     private val fragmentReference: WeakReference<MeasureApprovalFragment>,
     private val viewLifecycleOwner: LifecycleOwner
-) : BindableItem<MeasurementsItemBinding>() {
+): BindableItem<MeasurementsItemBinding>() {
 
     val activity = fragmentReference.get()?.requireActivity()
     private fun sendItemType(

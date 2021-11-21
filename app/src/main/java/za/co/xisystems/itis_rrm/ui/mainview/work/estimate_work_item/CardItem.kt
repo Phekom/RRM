@@ -52,7 +52,7 @@ open class CardItem(
     val jobItemEstimate: JobItemEstimateDTO,
     val job: JobDTO,
     val myLocation: LocationModel?,
-) : BindableItem<WorkListItemBinding>() {
+): BindableItem<WorkListItemBinding>() {
     var selectedLocationPoint: Point? = null
     var estimatePhotoStart: JobItemEstimatesPhotoDTO? = null
 
@@ -83,7 +83,6 @@ open class CardItem(
 
     private fun alertdialog(
         activity: FragmentActivity?,
-        position: Int,
         drive: String,
         selectedLocationPoint: Point,
         view: View,
@@ -91,7 +90,6 @@ open class CardItem(
         estimate: JobItemEstimateDTO,
         job: JobDTO
     ) {
-        // val drive = activity.getString(R.string.action_not_premitted )+ "\n Please Drive $distance KM to the location First"
         val alert = AlertDialog.Builder(activity!!)
         alert.run {
 
@@ -161,15 +159,14 @@ open class CardItem(
                         )
                     }
 
-                    else -> navigateOrWork(myLocation, position)
+                    else -> navigateOrWork(myLocation)
                 }
             }
         }
     }
 
     private fun WorkListItemBinding.navigateOrWork(
-        myLocation: LocationModel,
-        position: Int
+        myLocation: LocationModel
     ) {
         val myCurrentLocation = Point.fromLngLat(
             myLocation.longitude,
@@ -194,7 +191,7 @@ open class CardItem(
                 )
             )
 
-        startWorkBtn.setOnClickListener { view ->
+        startWorkBtn.setOnClickListener { _ ->
             if (straightDistanceBetweenDeviceAndTarget.isEmpty()) {
                 ToastUtils().toastLong(activity, activity?.getString(R.string.distance_misiing))
             } else {
@@ -211,7 +208,6 @@ open class CardItem(
                 } else {
                     alertdialog(
                         activity = activity,
-                        position = position,
                         drive = drive,
                         selectedLocationPoint =
                         selectedLocationPoint!!,

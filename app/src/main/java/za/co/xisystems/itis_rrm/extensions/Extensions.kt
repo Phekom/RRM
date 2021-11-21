@@ -22,6 +22,7 @@ import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.forge.XIArmoury
 import za.co.xisystems.itis_rrm.ui.auth.Exiter
+import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
 
 /**
@@ -39,7 +40,7 @@ import za.co.xisystems.itis_rrm.utils.ServiceUtil
 fun <T> LiveData<T>.observeOnce(lifecycleOwner: LifecycleOwner, observer: Observer<T>) {
     observe(
         lifecycleOwner,
-        object : Observer<T> {
+        object: Observer<T> {
             override fun onChanged(t: T?) {
                 observer.onChanged(t)
                 removeObserver(this)
@@ -53,8 +54,8 @@ fun AppCompatActivity.applyToolbarMargin(toolbar: Toolbar) {
         toolbar.layoutParams
             as CollapsingToolbarLayout.LayoutParams
         ).apply {
-        topMargin = getStatusBarSize()
-    }
+            topMargin = getStatusBarSize()
+        }
 }
 
 private fun AppCompatActivity.getStatusBarSize(): Int {
@@ -77,6 +78,7 @@ fun Location?.toText(): String {
 
 fun Activity.exitApplication() {
     this.run {
+        PhotoUtil.shutdown()
         AppDatabase.closeDown()
         XIArmoury.closeArmoury()
         val relaunch = Intent(this, Exiter::class.java)
@@ -84,7 +86,7 @@ fun Activity.exitApplication() {
                 FLAG_ACTIVITY_NEW_TASK // CLEAR_TASK requires this
                     or FLAG_ACTIVITY_CLEAR_TASK // finish everything else in the task
                     or Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS
-            ) // hide (remove, in this case) task from recents
+            ) // hide (remove, in this case) task from recent activities
 
         ContextCompat.startActivity(this, relaunch, null)
         finishAndRemoveTask()
@@ -131,10 +133,10 @@ fun Context.uomForUI(uom: String): String {
 
 val Context.isConnected: Boolean get() = ServiceUtil.isNetworkConnected(this.applicationContext)
 
+@Suppress("TooGenericExceptionCaught")
 fun Fragment.checkLocationProviders() {
     val lm = this.requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager
     try {
-        val networkEnabled = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
         val gpsEnabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
         if (!gpsEnabled) { // notify user && !network_enabled
             displayPromptForEnablingGPS(this.requireActivity())

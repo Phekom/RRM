@@ -13,9 +13,10 @@ import androidx.core.util.Pair
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
+import za.co.xisystems.itis_rrm.utils.JobItemEstimateSize
+import za.co.xisystems.itis_rrm.utils.JobUtils
 import java.io.Serializable
 import java.util.ArrayList
-import za.co.xisystems.itis_rrm.utils.JobUtils
 
 /**
  * Created by Francis Mahlava on 2019/11/21.
@@ -35,6 +36,8 @@ data class JobItemEstimateDTO(
     var jobId: String?,
     @SerializedName("LineRate")
     var lineRate: Double,
+    @SerializedName("MobileEstimateSize")
+    var jobItemEstimateSize: String? = JobItemEstimateSize.POINT.getValue(),
     @SerializedName("MobileEstimateWorks")
     var jobEstimateWorks: ArrayList<JobEstimateWorksDTO> = ArrayList(),
     @SerializedName("MobileJobItemEstimatesPhotos")
@@ -65,13 +68,14 @@ data class JobItemEstimateDTO(
     @SerializedName("SelectedItemUOM")
     val selectedItemUom: String?,
     var geoCoded: Boolean = false
-) : Parcelable, Serializable {
+): Parcelable, Serializable {
 
-    constructor(parcel: Parcel) : this(
+    constructor(parcel: Parcel): this(
         actId = parcel.readInt(),
         estimateId = parcel.readString()!!,
         jobId = parcel.readString(),
         lineRate = parcel.readDouble(),
+        jobItemEstimateSize = parcel.readString(),
         jobEstimateWorks = arrayListOf<JobEstimateWorksDTO>().apply {
             parcel.readList(this.toList(), JobEstimateWorksDTO::class.java.classLoader)
         },
@@ -137,6 +141,7 @@ data class JobItemEstimateDTO(
         parcel.writeString(estimateId)
         parcel.writeString(jobId)
         parcel.writeDouble(lineRate)
+        parcel.writeString(jobItemEstimateSize)
         parcel.writeString(projectItemId)
         parcel.writeString(projectVoId)
         parcel.writeDouble(qty)
@@ -170,7 +175,7 @@ data class JobItemEstimateDTO(
         return result
     }
 
-    companion object CREATOR : Creator<JobItemEstimateDTO> {
+    companion object CREATOR: Creator<JobItemEstimateDTO> {
         const val serialVersionUID: Long = 10L
         override fun createFromParcel(parcel: Parcel): JobItemEstimateDTO {
             return JobItemEstimateDTO(parcel)

@@ -59,7 +59,7 @@ class CreateViewModel(
     application: Application,
     private val photoUtil: PhotoUtil,
     private val dispatchers: DispatcherProvider = DefaultDispatcherProvider()
-) : AndroidViewModel(application) {
+): AndroidViewModel(application) {
 
     var jobDesc: String? = null
     private val superJob = SupervisorJob()
@@ -92,7 +92,6 @@ class CreateViewModel(
     var jobForSubmission: MutableLiveData<XIEvent<JobDTO>> = MutableLiveData()
     var jobForValidation: MutableLiveData<XIEvent<JobDTO>> = MutableLiveData()
     var jobForReUpload: MutableLiveData<XIEvent<JobDTO>> = MutableLiveData()
-
 
     fun setEstimateQuantity(inQty: Double) {
         estimateQty.value = inQty

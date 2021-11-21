@@ -62,7 +62,7 @@ import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection.FAIL
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection.NEXT
 import java.util.Date
 
-class JobInfoFragment : BaseFragment(), DIAware {
+class JobInfoFragment: BaseFragment(), DIAware {
     override val di by closestDI()
     private lateinit var approveViewModel: ApproveJobsViewModel
     private val factory: ApproveJobsViewModelFactory by instance()
@@ -149,7 +149,7 @@ class JobInfoFragment : BaseFragment(), DIAware {
     override fun onAttach(context: Context) {
         super.onAttach(context)
         (activity as MainActivity).supportActionBar?.title = getString(R.string.jobinfo_item_title)
-        val callback: OnBackPressedCallback = object : OnBackPressedCallback(true) {
+        val callback: OnBackPressedCallback = object: OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 val directions =
                     JobInfoFragmentDirections.actionJobInfoFragmentToNavApproveJbs()
@@ -173,7 +173,6 @@ class JobInfoFragment : BaseFragment(), DIAware {
         approveViewModel =
             ViewModelProvider(this.requireActivity(), factory)
                 .get(ApproveJobsViewModel::class.java)
-
     }
 
     override fun onCreateView(

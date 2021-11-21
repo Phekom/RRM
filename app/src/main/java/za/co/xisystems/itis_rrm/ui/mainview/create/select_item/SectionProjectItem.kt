@@ -14,7 +14,7 @@ import za.co.xisystems.itis_rrm.utils.JobUtils
 
 class SectionProjectItem(
     val itemDTO: ProjectItemDTO
-) : BindableItem<ProjectItemBinding>() {
+): BindableItem<ProjectItemBinding>() {
 
     override fun initializeViewBinding(view: View): ProjectItemBinding {
         return ProjectItemBinding.bind(view)

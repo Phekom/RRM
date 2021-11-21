@@ -11,7 +11,7 @@ import za.co.xisystems.itis_rrm.base.LocationViewModel
  **/
 
 @Suppress("UNCHECKED_CAST")
-class LocationViewModelFactory(private val application: Application) :
+class LocationViewModelFactory(private val application: Application):
     ViewModelProvider.NewInstanceFactory() {
     override fun <T: ViewModel> create(modelClass: Class<T>): T {
         return LocationViewModel(application) as T

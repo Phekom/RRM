@@ -17,7 +17,7 @@ class CreateViewModelFactory(
     private val userRepository: UserRepository,
     private val photoUtil: PhotoUtil,
     var application: Application
-) : ViewModelProvider.AndroidViewModelFactory(application) {
+): ViewModelProvider.AndroidViewModelFactory(application) {
     override fun <T: ViewModel> create(modelClass: Class<T>): T {
         return CreateViewModel(
             jobCreationDataRepository,

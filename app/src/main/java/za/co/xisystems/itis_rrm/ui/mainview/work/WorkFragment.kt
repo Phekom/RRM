@@ -17,6 +17,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
+import androidx.appcompat.widget.SearchView
 import androidx.core.content.ContextCompat
 import androidx.core.view.doOnNextLayout
 import androidx.lifecycle.ViewModelProvider
@@ -31,12 +32,11 @@ import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.viewbinding.GroupieViewHolder
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.kodein.di.DIAware
 import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
-import za.co.xisystems.itis_rrm.base.BaseFragment
+import za.co.xisystems.itis_rrm.base.LocationFragment
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
@@ -60,13 +60,13 @@ const val INSET_TYPE_KEY = "inset_type"
 const val INSET = "inset"
 const val JOB_ID = "jobId"
 
-class WorkFragment : BaseFragment(), DIAware {
+class WorkFragment: LocationFragment() {
 
     override val di by closestDI()
     private lateinit var workViewModel: WorkViewModel
     private lateinit var expandableGroups: MutableList<ExpandableGroup>
     private val factory: WorkViewModelFactory by instance()
-    private val mapfactory: GoToViewModelFactory by instance()
+    private val mapFactory: GoToViewModelFactory by instance()
     private lateinit var goToViewModel: GoToViewModel
     private var uiScope = UiLifecycleScope()
     private var groupAdapter: GroupAdapter<GroupieViewHolder<ItemExpandableHeaderBinding>>? =
@@ -99,40 +99,36 @@ class WorkFragment : BaseFragment(), DIAware {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        val callback: OnBackPressedCallback = object : OnBackPressedCallback(true) {
+        val callback: OnBackPressedCallback = object: OnBackPressedCallback(true) {
             /**
              * Callback for handling the [OnBackPressedDispatcher.onBackPressed] event.
              */
             override fun handleOnBackPressed() {
-                Navigation.findNavController(this@WorkFragment.requireView()).navigate(R.id.action_global_nav_home)
+                Navigation.findNavController(ui.veiledWorkListView).navigate(R.id.action_global_nav_home)
             }
         }
         requireActivity().onBackPressedDispatcher
             .addCallback(this, callback)
     }
 
-    private suspend fun refreshEstimateJobsFromLocal() {
-
-        withContext(uiScope.coroutineContext) {
-            val localJobs = workViewModel.getAllWork()
-
-            localJobs?.observeOnce(viewLifecycleOwner, { jobsList ->
-                ui.group7Loading.visibility = View.GONE
-                if (jobsList.isNullOrEmpty()) {
-                    ui.veiledWorkListView.visibility = View.GONE
-                    ui.noData.visibility = View.VISIBLE
-                } else {
-                    Coroutines.main {
-                        ui.veiledWorkListView.visibility = View.VISIBLE
-                        ui.noData.visibility = View.GONE
-                        val headerItems = jobsList.distinctBy {
-                            it.jobId
-                        }
-                        this@WorkFragment.initRecyclerView(headerItems.toWorkListItems())
-                    }
+    private fun refreshEstimateJobsFromLocal() = uiScope.launch(dispatchers.ui()) {
+        val localJobs = workViewModel.getAllWork()
+        localJobs?.observe(viewLifecycleOwner, { jobsList ->
+            ui.group7Loading.visibility = View.GONE
+            if (jobsList.isNullOrEmpty()) {
+                ui.veiledWorkListView.visibility = View.GONE
+                ui.noData.visibility = View.VISIBLE
+            } else {
+                ui.veiledWorkListView.visibility = View.VISIBLE
+                ui.noData.visibility = View.GONE
+                val headerItems = jobsList.distinctBy {
+                    it.jobId
                 }
-            })
-        }
+                Coroutines.ui {
+                    this@WorkFragment.initRecyclerView(headerItems.toWorkListItems())
+                }
+            }
+        })
     }
 
     override fun onCreateView(
@@ -230,8 +226,29 @@ class WorkFragment : BaseFragment(), DIAware {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         workViewModel = ViewModelProvider(this.requireActivity(), factory).get(WorkViewModel::class.java)
-        goToViewModel = ViewModelProvider(this.requireActivity(), mapfactory).get(GoToViewModel::class.java)
+        goToViewModel = ViewModelProvider(this.requireActivity(), mapFactory).get(GoToViewModel::class.java)
         setHasOptionsMenu(true)
+    }
+
+    private fun searchLocalJobs(query: String) = uiScope.launch(uiScope.coroutineContext) {
+        initVeiledRecycler()
+        val searchQuery = workViewModel.getSearchResults()
+        searchQuery.observe(viewLifecycleOwner, { searchResults ->
+            if (searchResults.isNullOrEmpty()) {
+                ui.veiledWorkListView.visibility = View.GONE
+                ui.noData.visibility = View.VISIBLE
+            } else {
+                Coroutines.main {
+                    ui.veiledWorkListView.visibility = View.VISIBLE
+                    ui.noData.visibility = View.GONE
+                    val headerItems = searchResults.distinctBy {
+                        it.jobId
+                    }
+                    this@WorkFragment.initRecyclerView(headerItems.toWorkListItems())
+                }
+            }
+        })
+        workViewModel.searchJobs(query)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -256,6 +273,10 @@ class WorkFragment : BaseFragment(), DIAware {
         super.onStart()
         initSwipeToRefresh()
         initVeiledRecycler()
+    }
+
+    override fun onResume() {
+        super.onResume()
         uiScope.launch(uiScope.coroutineContext) {
             try {
                 toggleLongRunning(true)
@@ -279,6 +300,37 @@ class WorkFragment : BaseFragment(), DIAware {
         val item2 = menu.findItem(R.id.action_search)
         if (item != null) item.isVisible = false
         if (item1 != null) item1.isVisible = false
+        if (item2 != null) {
+            item2.isVisible = true
+            val searchView = item2.actionView as SearchView
+            searchView.queryHint = getString(R.string.jino_or_desc_search_hint)
+            searchView.setOnQueryTextListener(object: SearchView.OnQueryTextListener {
+                // Search is triggered when the user clicks on the search button
+                override fun onQueryTextSubmit(query: String?): Boolean {
+                    when (query.isNullOrBlank()) {
+                        true -> refreshEstimateJobsFromLocal()
+                        else -> searchLocalJobs(query)
+                    }
+                    return false
+                }
+
+                override fun onQueryTextChange(newText: String?): Boolean {
+                    when (newText.isNullOrBlank()) {
+                        true -> {
+                            refreshEstimateJobsFromLocal()
+                        }
+                        else -> {
+                            // No-op
+                        }
+                    }
+                    return false
+                }
+            })
+            searchView.setOnCloseListener {
+                refreshEstimateJobsFromLocal()
+                false
+            }
+        }
     }
 
     override fun onDestroyView() {

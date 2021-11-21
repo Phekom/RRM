@@ -14,7 +14,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:requestLegacyExternalStorage="true"
-        tools:replace="android:name, android:allowBackup"
+        tools:replace="android:name"
         tools:ignore="GoogleAppIndexingWarning"
         android:allowBackup="false">
 

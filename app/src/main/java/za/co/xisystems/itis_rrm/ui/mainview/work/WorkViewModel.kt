@@ -49,7 +49,7 @@ class WorkViewModel(
     private val workDataRepository: WorkDataRepository,
     private val offlineDataRepository: OfflineDataRepository,
     dispatchers: DispatcherProvider = DefaultDispatcherProvider()
-) : AndroidViewModel(application) {
+): AndroidViewModel(application) {
 
     val user by lazyDeferred {
         workDataRepository.getUser()
@@ -70,6 +70,7 @@ class WorkViewModel(
     val historicalWorks: MutableLiveData<XIResult<JobEstimateWorksDTO>> = MutableLiveData()
     private val allWork: LiveData<List<JobDTO>>?
     private val searchResults: MutableLiveData<List<JobDTO>>
+
     init {
         viewModelScope.launch(mainContext) {
             // Set up the feed from the repository
@@ -219,9 +220,9 @@ class WorkViewModel(
                 backupJobInProgress(itemEstiJob)
                 // Let the backend know
                 workDataRepository.updateWorkTimes(
-                    currentUser!!.userId,
-                    systemJobId,
-                    true
+                    userId = currentUser!!.userId,
+                    jobId = systemJobId,
+                    isStart = true
                 )
             }
 

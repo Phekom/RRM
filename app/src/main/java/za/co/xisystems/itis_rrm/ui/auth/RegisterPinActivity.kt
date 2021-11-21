@@ -9,7 +9,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
-import kotlinx.android.synthetic.main.activity_register.*
 import org.kodein.di.DIAware
 import org.kodein.di.android.closestDI
 import org.kodein.di.instance
@@ -33,7 +32,7 @@ import za.co.xisystems.itis_rrm.utils.toast
 
 private const val PERMISSION_REQUEST = 10
 
-class RegisterPinActivity : AppCompatActivity(), AuthListener, DIAware {
+class RegisterPinActivity: AppCompatActivity(), AuthListener, DIAware {
     companion object {
         val TAG: String = RegisterPinActivity::class.java.simpleName
         const val GOOGLE_PLAY_SERVICES_RESOLUTION_REQUEST = 1
@@ -88,11 +87,11 @@ class RegisterPinActivity : AppCompatActivity(), AuthListener, DIAware {
                     }
                 }
             })
-            serverTextView.setOnClickListener {
+            binding.serverTextView.setOnClickListener {
                 ToastUtils().toastServerAddress(appContext)
             }
 
-            buildFlavorTextView.setOnClickListener {
+            binding.buildFlavorTextView.setOnClickListener {
                 ToastUtils().toastVersion(appContext)
             }
         }
@@ -173,12 +172,12 @@ class RegisterPinActivity : AppCompatActivity(), AuthListener, DIAware {
     }
 
     override fun onStarted() {
-        loading.show()
+        binding.loading.show()
         hideKeyboard()
     }
 
     override fun onSuccess(userDTO: UserDTO) {
-        loading.hide()
+        binding.loading.hide()
         toast("You are Logged in as ${userDTO.userName}")
         gotoMainActivity()
     }
@@ -188,9 +187,9 @@ class RegisterPinActivity : AppCompatActivity(), AuthListener, DIAware {
     }
 
     override fun onFailure(message: String) {
-        loading.hide()
+        binding.loading.hide()
         hideKeyboard()
-        reg_container.snackbar(message)
+        binding.regContainer.snackbar(message)
     }
 
     override fun onSignOut(userDTO: UserDTO) {

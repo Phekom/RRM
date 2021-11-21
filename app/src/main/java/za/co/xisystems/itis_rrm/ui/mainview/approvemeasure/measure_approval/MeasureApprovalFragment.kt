@@ -35,7 +35,6 @@ import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.viewbinding.GroupieViewHolder
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.kodein.di.DIAware
 import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
 import timber.log.Timber
@@ -68,7 +67,7 @@ import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection.NEXT
 import java.lang.ref.WeakReference
 
-class MeasureApprovalFragment : BaseFragment(), DIAware {
+class MeasureApprovalFragment: BaseFragment() {
     override val di by closestDI()
     private lateinit var approveViewModel: ApproveMeasureViewModel
     private val factory: ApproveMeasureViewModelFactory by instance()
@@ -145,7 +144,7 @@ class MeasureApprovalFragment : BaseFragment(), DIAware {
         (activity as MainActivity).supportActionBar?.title =
             getString(R.string.measure_approval_title)
 
-        val callback: OnBackPressedCallback = object : OnBackPressedCallback(true) {
+        val callback: OnBackPressedCallback = object: OnBackPressedCallback(true) {
             /**
              * Callback for handling the [OnBackPressedDispatcher.onBackPressed] event.
              */
@@ -156,6 +155,12 @@ class MeasureApprovalFragment : BaseFragment(), DIAware {
         }
         requireActivity().onBackPressedDispatcher
             .addCallback(this, callback)
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        approveViewModel =
+            ViewModelProvider(this.requireActivity(), factory).get(ApproveMeasureViewModel::class.java)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -173,12 +178,8 @@ class MeasureApprovalFragment : BaseFragment(), DIAware {
         return ui.root
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        approveViewModel = activity?.run {
-            ViewModelProvider(this, factory).get(ApproveMeasureViewModel::class.java)
-        } ?: throw Exception("Invalid Activity")
-
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         Coroutines.main {
 
             initVeiledRecycler()

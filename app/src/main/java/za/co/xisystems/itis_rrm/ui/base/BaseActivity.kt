@@ -17,7 +17,7 @@ import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModelFactory
 import za.co.xisystems.itis_rrm.utils.Coroutines
 
-abstract class BaseActivity : AppCompatActivity(), DIAware {
+abstract class BaseActivity: AppCompatActivity(), DIAware {
     override val di by closestDI()
     private lateinit var sharedViewModel: SharedViewModel
     private val shareFactory: SharedViewModelFactory by instance()
@@ -91,7 +91,7 @@ abstract class BaseActivity : AppCompatActivity(), DIAware {
 
     override fun onUserInteraction() {
         Timber.d("User interaction!!")
+
         super.onUserInteraction()
-        armoury.writeFutureTimestamp()
     }
 }

@@ -24,8 +24,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenStarted
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
-import java.util.ArrayList
-import java.util.Date
 import kotlinx.coroutines.launch
 import org.kodein.di.DIAware
 import org.kodein.di.android.x.closestDI
@@ -59,13 +57,15 @@ import za.co.xisystems.itis_rrm.utils.DateUtil
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import za.co.xisystems.itis_rrm.utils.hide
 import za.co.xisystems.itis_rrm.utils.show
+import java.util.ArrayList
+import java.util.Date
 
 /**
  * Created by Francis Mahlava on 2019/10/18.
  * Updated by Shaun McDonald on 2020/04/22
  */
 
-class CreateFragment : BaseFragment(), OfflineListener, DIAware {
+class CreateFragment: BaseFragment(), OfflineListener, DIAware {
 
     override val di by closestDI()
     private lateinit var createViewModel: CreateViewModel
@@ -101,6 +101,8 @@ class CreateFragment : BaseFragment(), OfflineListener, DIAware {
         newJobItemEstimatesList = ArrayList()
         newJobItemEstimatesPhotosList = ArrayList()
         newJobItemEstimatesWorksList = ArrayList()
+        createViewModel =
+            ViewModelProvider(this.requireActivity(), factory).get(CreateViewModel::class.java)
 
         setHasOptionsMenu(true)
     }
@@ -136,13 +138,8 @@ class CreateFragment : BaseFragment(), OfflineListener, DIAware {
         }
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-
-        createViewModel = activity?.run {
-            ViewModelProvider(this, factory).get(CreateViewModel::class.java)
-        } ?: throw Exception("Invalid Activity")
-
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         Coroutines.main {
             val user = createViewModel.user.await()
             user.observe(viewLifecycleOwner, { userDTO ->
@@ -150,9 +147,9 @@ class CreateFragment : BaseFragment(), OfflineListener, DIAware {
             })
         }
 
-        val myClickListener = View.OnClickListener { view ->
-            when (view?.id) {
-                R.id.selectContractProjectContinueButton -> {
+        val myClickListener = View.OnClickListener { clickedView ->
+            when (clickedView) {
+                ui.selectContractProjectContinueButton -> {
                     val description = ui.descriptionEditText.text!!.toString().trim { it <= ' ' }
                     if (description.isEmpty()) {
                         extensionToast(message = "Please Enter Description", style = ToastStyle.WARNING)
@@ -162,7 +159,7 @@ class CreateFragment : BaseFragment(), OfflineListener, DIAware {
                         createNewJob()
                         descri = description
                         createViewModel.setDescription(descri!!)
-                        setContractAndProjectSelection(view)
+                        setContractAndProjectSelection(clickedView)
                     }
                 }
             }
@@ -319,7 +316,7 @@ class CreateFragment : BaseFragment(), OfflineListener, DIAware {
                             ui.contractSpinner,
                             contractList,
                             contractIndices,
-                            object : SpinnerHelper.SelectionListener<ContractSelector> {
+                            object: SpinnerHelper.SelectionListener<ContractSelector> {
                                 override fun onItemSelected(position: Int, item: ContractSelector) {
                                     selectedContract = item
                                     setProjects(item.contractId)
@@ -367,7 +364,7 @@ class CreateFragment : BaseFragment(), OfflineListener, DIAware {
                         ui.projectSpinner,
                         projectList,
                         projectNmbr, // null)
-                        object : SpinnerHelper.SelectionListener<ProjectSelector> {
+                        object: SpinnerHelper.SelectionListener<ProjectSelector> {
                             override fun onItemSelected(position: Int, item: ProjectSelector) {
                                 selectedProject = item
                                 Coroutines.main {
@@ -420,7 +417,7 @@ class CreateFragment : BaseFragment(), OfflineListener, DIAware {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        val callback: OnBackPressedCallback = object : OnBackPressedCallback(true) {
+        val callback: OnBackPressedCallback = object: OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 this@CreateFragment.findNavController().popBackStack(R.id.nav_home, false)
             }

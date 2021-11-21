@@ -24,7 +24,7 @@ import kotlin.coroutines.CoroutineContext
  * @property job Job?
  * @property coroutineContext CoroutineContext
  */
-class UiLifecycleScope : CoroutineScope, LifecycleObserver {
+class UiLifecycleScope: CoroutineScope, LifecycleObserver {
     private val handler = CoroutineExceptionHandler { _, throwable ->
         if (BuildConfig.DEBUG) {
             Timber.d("uiScope throwing: ${throwable.message}")

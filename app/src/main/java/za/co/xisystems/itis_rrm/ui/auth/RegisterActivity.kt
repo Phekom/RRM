@@ -13,7 +13,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
-import kotlinx.android.synthetic.main.activity_register.*
 import org.kodein.di.DIAware
 import org.kodein.di.android.closestDI
 import org.kodein.di.instance
@@ -35,7 +34,7 @@ import za.co.xisystems.itis_rrm.utils.toast
 
 private const val PERMISSION_REQUEST = 10
 
-class RegisterActivity : AppCompatActivity(), AuthListener, DIAware {
+class RegisterActivity: AppCompatActivity(), AuthListener, DIAware {
 
     override val di by closestDI()
     private val factory: AuthViewModelFactory by instance()
@@ -104,11 +103,11 @@ class RegisterActivity : AppCompatActivity(), AuthListener, DIAware {
                 }
             }
 
-            serverTextView.setOnClickListener {
+            binding.serverTextView.setOnClickListener {
                 ToastUtils().toastServerAddress(this.applicationContext)
             }
 
-            buildFlavorTextView.setOnClickListener {
+            binding.buildFlavorTextView.setOnClickListener {
                 ToastUtils().toastVersion(this.applicationContext)
             }
         }
@@ -207,19 +206,19 @@ class RegisterActivity : AppCompatActivity(), AuthListener, DIAware {
     }
 
     override fun onStarted() {
-        loading.show()
+        binding.loading.show()
         hideKeyboard()
     }
 
     override fun onSuccess(userDTO: UserDTO) {
-        loading.hide()
+        binding.loading.hide()
         toast("You are registered as ${userDTO.userName}")
     }
 
     override fun onFailure(message: String) {
-        loading.hide()
+        binding.loading.hide()
         hideKeyboard()
-        reg_container.snackbar(message)
+        binding.regContainer.snackbar(message)
     }
 
     override fun onSignOut(userDTO: UserDTO) {

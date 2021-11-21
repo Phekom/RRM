@@ -53,7 +53,7 @@ import java.util.concurrent.CancellationException
  * Created by Francis Mahlava on 2019/12/29.
  */
 
-class SelectItemFragment : BaseFragment(), DIAware {
+class SelectItemFragment: BaseFragment(), DIAware {
     override val di by closestDI()
     private lateinit var createViewModel: CreateViewModel
     private val factory: CreateViewModelFactory by instance()
@@ -118,6 +118,12 @@ class SelectItemFragment : BaseFragment(), DIAware {
         return false // To change body of created functions use File | Settings | File Templates.
     }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        createViewModel = ViewModelProvider(this.requireActivity(), factory)
+            .get(CreateViewModel::class.java)
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -128,11 +134,8 @@ class SelectItemFragment : BaseFragment(), DIAware {
         return ui.root
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        createViewModel = ViewModelProvider(this.requireActivity(), factory)
-            .get(CreateViewModel::class.java)
-
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         itemSections = ArrayList()
         newJobItemEstimatesList = ArrayList()
 
@@ -197,7 +200,7 @@ class SelectItemFragment : BaseFragment(), DIAware {
                     ui.sectionItemSpinner,
                     sectionData,
                     sectionSelections,
-                    object : SpinnerHelper.SelectionListener<SectionItemDTO> {
+                    object: SpinnerHelper.SelectionListener<SectionItemDTO> {
 
                         override fun onItemSelected(position: Int, item: SectionItemDTO) {
                             if (animate) {

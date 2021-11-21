@@ -24,7 +24,6 @@ import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentUnsubmittedjobsBinding
 import za.co.xisystems.itis_rrm.databinding.UnsubmtdJobListItemBinding
-import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.ui.extensions.crashGuard
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModelFactory
@@ -32,7 +31,7 @@ import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.unsubmited_item.UnSubmit
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
 
-class UnSubmittedFragment : BaseFragment(), DIAware {
+class UnSubmittedFragment: BaseFragment(), DIAware {
 
     override val di by closestDI()
     private lateinit var createViewModel: CreateViewModel
@@ -49,7 +48,7 @@ class UnSubmittedFragment : BaseFragment(), DIAware {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        val callback: OnBackPressedCallback = object : OnBackPressedCallback(true) {
+        val callback: OnBackPressedCallback = object: OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 Navigation.findNavController(this@UnSubmittedFragment.requireView())
                     .navigate(R.id.action_global_nav_home)
@@ -78,9 +77,8 @@ class UnSubmittedFragment : BaseFragment(), DIAware {
             ViewModelProvider(this.requireActivity(), factory).get(UnSubmittedViewModel::class.java)
 
 
-        createViewModel = activity?.run {
-            ViewModelProvider(this, createFactory).get(CreateViewModel::class.java)
-        } ?: throw Exception("Invalid Activity")
+        createViewModel =
+            ViewModelProvider(this.requireActivity(), createFactory).get(CreateViewModel::class.java)
     }
 
     /**
@@ -105,7 +103,7 @@ class UnSubmittedFragment : BaseFragment(), DIAware {
                         ActivityIdConstants.JOB_PENDING_UPLOAD
                     )
 
-                measurements.observeOnce(viewLifecycleOwner, { jobList ->
+                measurements.observe(viewLifecycleOwner, { jobList ->
                     if (jobList.isNullOrEmpty()) {
                         groupAdapter.clear()
                         ui.noData.visibility = View.VISIBLE

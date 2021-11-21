@@ -1,8 +1,8 @@
 {
   "formatVersion": 1,
   "database": {
-    "version": 26,
-    "identityHash": "dd9d003cf3ff5b321c3f3bfdaf687802",
+    "version": 27,
+    "identityHash": "f50b8d1c306964b788ff0b31ff23bc31",
     "entities": [
       {
         "tableName": "JOB_TABLE",
@@ -2733,6 +2733,98 @@
         },
         "indices": [],
         "foreignKeys": []
+      },
+      {
+        "tableName": "UNALLOCATED_PHOTOS",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `descr` TEXT NOT NULL, `filename` TEXT NOT NULL, `photoDate` TEXT NOT NULL, `photoId` TEXT NOT NULL, `photoLatitude` REAL NOT NULL, `photoLongitude` REAL NOT NULL, `kmMarker` REAL, `photoPath` TEXT NOT NULL, `recordSynchStateId` INTEGER NOT NULL, `recordVersion` INTEGER NOT NULL, `routeMarker` TEXT, `allocated` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "descr",
+            "columnName": "descr",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "filename",
+            "columnName": "filename",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "photoDate",
+            "columnName": "photoDate",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "photoId",
+            "columnName": "photoId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "photoLatitude",
+            "columnName": "photoLatitude",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "photoLongitude",
+            "columnName": "photoLongitude",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "kmMarker",
+            "columnName": "kmMarker",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "photoPath",
+            "columnName": "photoPath",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "recordSynchStateId",
+            "columnName": "recordSynchStateId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "recordVersion",
+            "columnName": "recordVersion",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "routeMarker",
+            "columnName": "routeMarker",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "allocated",
+            "columnName": "allocated",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "id"
+          ],
+          "autoGenerate": true
+        },
+        "indices": [],
+        "foreignKeys": []
       }
     ],
     "views": [
@@ -2743,7 +2835,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'dd9d003cf3ff5b321c3f3bfdaf687802')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'f50b8d1c306964b788ff0b31ff23bc31')"
     ]
   }
 }

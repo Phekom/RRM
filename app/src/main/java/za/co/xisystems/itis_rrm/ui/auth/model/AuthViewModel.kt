@@ -43,7 +43,7 @@ class AuthViewModel(
     private val photoUtil: PhotoUtil,
     application: Application,
     private val dispatchers: DispatcherProvider = DefaultDispatcherProvider()
-) : AndroidViewModel(application) {
+): AndroidViewModel(application) {
     private val supervisorJob = SupervisorJob()
     private val ioContext = dispatchers.io() + Job(supervisorJob)
 
@@ -66,11 +66,16 @@ class AuthViewModel(
         const val PIN_SIZE = 4
     }
 
-    fun onResetPinButtonClick(view: View) {
-        updateUserPin(view)
+    fun onResetPinButtonClick(view: View, oldPin: String?, newPin: String?, confirmNewPin: String?) {
+        updateUserPin(view, oldPin, newPin, confirmNewPin)
     }
 
-    private fun updateUserPin(view: View) = viewModelScope.launch(ioContext) {
+    private fun updateUserPin(
+        view: View,
+        enterOldPin: String?,
+        enterNewPin: String?,
+        confirmNewPin: String?
+    ) = viewModelScope.launch(ioContext) {
         listenerNotify {
             view.isClickable = false
         }
@@ -101,7 +106,7 @@ class AuthViewModel(
                         authListener?.onFailure("New PINs do not match")
                     }
                 }
-                confirmNewPin!!.length != PIN_SIZE -> {
+                confirmNewPin.length != PIN_SIZE -> {
                     listenerNotify {
                         authListener?.onFailure("PIN should be 4 (four) digits long")
                     }

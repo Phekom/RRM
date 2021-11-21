@@ -28,11 +28,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.ExpandableGroup
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.viewbinding.GroupieViewHolder
-import kotlinx.android.synthetic.main.fragment_photo_estimate.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import org.kodein.di.DIAware
 import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
 import timber.log.Timber
@@ -69,7 +67,7 @@ import za.co.xisystems.itis_rrm.utils.DataConversion
 import java.util.ArrayList
 import java.util.HashMap
 
-class SubmitMeasureFragment : BaseFragment(), DIAware {
+class SubmitMeasureFragment: BaseFragment() {
     override val di by closestDI()
     private lateinit var measureViewModel: MeasureViewModel
     private val factory: MeasureViewModelFactory by instance()
@@ -184,7 +182,6 @@ class SubmitMeasureFragment : BaseFragment(), DIAware {
 
         measureViewModel =
             ViewModelProvider(this@SubmitMeasureFragment.requireActivity(), factory)[MeasureViewModel::class.java]
-
     }
 
     override fun onCreateView(
@@ -202,7 +199,6 @@ class SubmitMeasureFragment : BaseFragment(), DIAware {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         Coroutines.main {
-
 
             ui.submitMeasurementsButton.setOnClickListener {
                 progressButton = ui.submitMeasurementsButton
@@ -316,7 +312,7 @@ class SubmitMeasureFragment : BaseFragment(), DIAware {
         mSures: ArrayList<JobItemMeasureDTO>
     ) {
         Coroutines.main {
-            val estimateIds = itemMeasureJob.jobItemEstimates.map { it.estimateId  }
+            val estimateIds = itemMeasureJob.jobItemEstimates.map { it.estimateId }
             val measureEstimateIds = mSures.map { it.estimateId }.distinct()
             val missingEstimateIds = estimateIds.asSequence().minus(measureEstimateIds).map { it }.toList()
 
@@ -452,7 +448,7 @@ class SubmitMeasureFragment : BaseFragment(), DIAware {
         (activity as MainActivity).supportActionBar?.title =
             getString(R.string.submit_measure_title)
 
-        val callback: OnBackPressedCallback = object : OnBackPressedCallback(true) {
+        val callback: OnBackPressedCallback = object: OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 Navigation.findNavController(this@SubmitMeasureFragment.requireView())
                     .navigate(R.id.nav_estMeasure)
@@ -478,7 +474,6 @@ class SubmitMeasureFragment : BaseFragment(), DIAware {
             measurements.observeOnce(viewLifecycleOwner, { estimateList ->
                 initRecyclerView(estimateList.toMeasureItems())
             })
-
         }
     }
 

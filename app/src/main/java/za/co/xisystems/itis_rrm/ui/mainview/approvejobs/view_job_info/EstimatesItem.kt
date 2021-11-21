@@ -50,7 +50,7 @@ class EstimatesItem(
     private val activity: FragmentActivity?,
     private val viewLifecycleOwner: LifecycleOwner,
     private val updateObserver: Observer<XIResult<String>?>
-) : BindableItem<EstimatesItemBinding>() {
+): BindableItem<EstimatesItemBinding>() {
 
     override fun initializeViewBinding(view: View): EstimatesItemBinding {
         return EstimatesItemBinding.bind(view)

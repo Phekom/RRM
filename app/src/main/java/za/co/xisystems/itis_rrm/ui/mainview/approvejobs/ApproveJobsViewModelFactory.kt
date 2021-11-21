@@ -15,9 +15,9 @@ class ApproveJobsViewModelFactory(
     application: Application,
     private val jobApprovalDataRepository: JobApprovalDataRepository,
     private val offlineDataRepository: OfflineDataRepository
-) : ViewModelProvider.AndroidViewModelFactory(application) {
+): ViewModelProvider.AndroidViewModelFactory(application) {
     private var mApplication: Application = application
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+    override fun <T: ViewModel> create(modelClass: Class<T>): T {
         return ApproveJobsViewModel(
             mApplication,
             jobApprovalDataRepository,
