@@ -11,7 +11,6 @@ import androidx.lifecycle.viewModelScope
 import com.github.ajalt.timberkt.Timber
 import com.google.android.material.textfield.TextInputEditText
 import com.password4j.SecureString
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelChildren
@@ -43,17 +42,10 @@ class AuthViewModel(
     private val photoUtil: PhotoUtil,
     application: Application,
     private val dispatchers: DispatcherProvider = DefaultDispatcherProvider()
-): AndroidViewModel(application) {
+) : AndroidViewModel(application) {
     private val supervisorJob = SupervisorJob()
     private val ioContext = dispatchers.io() + Job(supervisorJob)
 
-    //    var username: String? = null
-//    var password: String? = null
-//    var enterPin: String? = null
-//    var confirmPin: String? = null
-    var enterOldPin: String? = null
-    var enterNewPin: String? = null
-    var confirmNewPin: String? = null
     var authListener: AuthListener? = null
 
     val user by lazyDeferred {
@@ -113,7 +105,7 @@ class AuthViewModel(
                 }
 
                 else -> {
-                    validateAndUpdatePin()
+                    validateAndUpdatePin(enterOldPin, confirmNewPin)
                 }
             }
         } catch (t: Throwable) {
@@ -133,18 +125,18 @@ class AuthViewModel(
         }
     }
 
-    private suspend fun validateAndUpdatePin() {
+    private suspend fun validateAndUpdatePin(enterOldPin: String, confirmNewPin: String) {
 
         val currentUser = user.await().value
 
         if (currentUser != null) {
             withContext(ioContext) {
                 try {
-                    val oldTokenGood = validateUserPin(currentUser, enterOldPin!!)
+                    val oldTokenGood = validateUserPin(currentUser, enterOldPin)
                     Timber.d(message = { "^*^ Old Token Valid: $oldTokenGood ^*^" })
 
                     if (oldTokenGood) {
-                        registerUserPin1(currentUser, confirmNewPin!!)
+                        registerUserPin1(currentUser, confirmNewPin)
                         repository.authenticatePin()
                         listenerNotify {
                             validPin.value = true
@@ -281,7 +273,11 @@ class AuthViewModel(
         }
     }
 
-    fun onRegButtonClick(view: View, username: TextInputEditText, password: TextInputEditText) = viewModelScope.launch(ioContext) {
+    fun onRegButtonClick(
+        view: View,
+        username: TextInputEditText,
+        password: TextInputEditText
+    ) = viewModelScope.launch(ioContext) {
         try {
             listenerNotify {
                 authListener?.onStarted()
@@ -330,20 +326,20 @@ class AuthViewModel(
                 imie,
                 androidDevice
             )
-        } catch (e: Exception) {
+        } catch (t: Throwable) {
             listenerNotify {
-                postError(e)
+                postError(t)
             }
         }
     }
 
     private fun postError(t: Throwable) {
-        val xiError = XIResult.Error(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
+        val xiError = XIResult.Error(t.cause ?: t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
         val readableMessage = XIErrorHandler.humanReadable(xiError)
         authListener?.onFailure(readableMessage)
     }
 
-    suspend fun expirePin() {
+    fun expirePin() = viewModelScope.launch(ioContext) {
         repository.expirePin()
     }
 
@@ -370,7 +366,7 @@ class AuthViewModel(
             }
             listenerNotify { authListener?.onSuccess(loggedInUser) }
         }
-        withContext(Dispatchers.Main) {
+        withContext(dispatchers.main()) {
             validPin.value = result
         }
     }

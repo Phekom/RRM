@@ -758,13 +758,13 @@ class GoToFragment: LocationFragment(), PermissionsListener {
             unregisterLocationObserver(locationObserver)
             // make sure to unregister the route progress observer you have registered.
             unregisterRouteProgressObserver(routeProgressObserver)
+            unregisterRouteProgressObserver(replayProgressObserver)
         }
         speechApi.cancel()
         voiceInstructionsPlayer.shutdown()
         MapboxNavigationProvider.destroy()
-
-        _binding = null
         mapboxNavigation.onDestroy()
+        _binding = null
     }
 
     override fun onStop() {
