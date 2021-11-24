@@ -7,6 +7,22 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/button_size"
+        android:drawableStart="@drawable/ic_baseline_add_a_photo_48"
+        android:id="@+id/unallocatedPhotoAdd"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginBottom="@dimen/dimen_160dp"
+        android:contentDescription="@string/add_a_photo"
+        android:backgroundTint="@color/colorAccent"
+        android:text="@string/capture_photos"
+        app:tint="@color/white"
+        android:drawableTint="@color/white"
+        android:drawablePadding="@dimen/small" />
+
     <RelativeLayout
         android:id="@+id/welcome_screen"
         android:layout_width="fill_parent"
@@ -83,7 +99,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="0dp"
                 android:layout_marginBottom="10dp"
-                android:background="#fff"
                 android:orientation="vertical"
                 android:layout_weight="1">
 
@@ -91,11 +106,13 @@
                     android:id="@+id/iv_connection"
                     android:layout_width="32dp"
                     android:layout_height="32dp"
-                    android:layout_margin="10dp"
-                    android:background="#F5F5F5"
                     android:gravity="start"
                     android:src="@drawable/ic_baseline_signal_cellular_waiting"
-                    android:contentDescription="@string/cellular_data_indicator" />
+                    android:contentDescription="@string/cellular_data_indicator"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginEnd="10dp"
+                    android:layout_marginBottom="10dp" />
 
                 <TextView
                     android:id="@+id/dataEnabled"
@@ -112,7 +129,6 @@
             <RelativeLayout
                 android:layout_width="wrap_content"
                 android:layout_height="0dp"
-                android:background="#fff"
                 android:orientation="vertical"
                 android:layout_weight="1"
                 android:layout_marginBottom="@dimen/dimen_10dp">
@@ -147,11 +163,13 @@
                     android:id="@+id/iv_location"
                     android:layout_width="32dp"
                     android:layout_height="32dp"
-                    android:background="#F5F5F5"
                     android:contentDescription="@string/location_service_indicator"
                     android:gravity="start"
                     android:src="@drawable/ic_baseline_location_off_24"
-                    android:layout_margin="10dp" />
+                    android:layout_marginTop="10dp"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginEnd="10dp"
+                    android:layout_marginBottom="10dp" />
 
                 <TextView
                     android:id="@+id/locationEnabled"
@@ -256,11 +274,14 @@
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
             android:layout_alignParentBottom="true"
-            android:layout_margin="@dimen/small"
             android:alpha="0.5"
             android:padding="@dimen/medium"
             android:text="@string/server"
-            android:textColor="@android:color/black" />
+            android:textColor="#757575"
+            android:layout_marginTop="@dimen/small"
+            android:layout_marginStart="@dimen/small"
+            android:layout_marginEnd="@dimen/small"
+            android:layout_marginBottom="@dimen/small" />
 
         <ImageView
             android:id="@+id/imageView7"

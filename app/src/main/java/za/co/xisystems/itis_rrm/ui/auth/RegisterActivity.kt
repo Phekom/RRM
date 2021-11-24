@@ -34,7 +34,7 @@ import za.co.xisystems.itis_rrm.utils.toast
 
 private const val PERMISSION_REQUEST = 10
 
-class RegisterActivity: AppCompatActivity(), AuthListener, DIAware {
+class RegisterActivity : AppCompatActivity(), AuthListener, DIAware {
 
     override val di by closestDI()
     private val factory: AuthViewModelFactory by instance()

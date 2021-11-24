@@ -49,7 +49,7 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
  */
 
 @Suppress("KDocUnresolvedReference")
-class ApproveMeasureFragment: BaseFragment(), DIAware {
+class ApproveMeasureFragment : BaseFragment(), DIAware {
 
     override val di by closestDI()
     private lateinit var approveViewModel: ApproveMeasureViewModel
@@ -237,7 +237,7 @@ class ApproveMeasureFragment: BaseFragment(), DIAware {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        val callback: OnBackPressedCallback = object: OnBackPressedCallback(true) {
+        val callback: OnBackPressedCallback = object : OnBackPressedCallback(true) {
             /**
              * Callback for handling the [OnBackPressedDispatcher.onBackPressed] event.
              */

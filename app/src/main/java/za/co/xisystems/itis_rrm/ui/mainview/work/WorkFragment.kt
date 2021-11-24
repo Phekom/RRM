@@ -30,6 +30,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.ExpandableGroup
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.viewbinding.GroupieViewHolder
+import java.text.DecimalFormat
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.kodein.di.android.x.closestDI
@@ -54,13 +55,12 @@ import za.co.xisystems.itis_rrm.ui.mainview.work.goto_work_location.GoToViewMode
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
-import java.text.DecimalFormat
 
 const val INSET_TYPE_KEY = "inset_type"
 const val INSET = "inset"
 const val JOB_ID = "jobId"
 
-class WorkFragment: LocationFragment() {
+class WorkFragment : LocationFragment() {
 
     override val di by closestDI()
     private lateinit var workViewModel: WorkViewModel
@@ -99,7 +99,7 @@ class WorkFragment: LocationFragment() {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        val callback: OnBackPressedCallback = object: OnBackPressedCallback(true) {
+        val callback: OnBackPressedCallback = object : OnBackPressedCallback(true) {
             /**
              * Callback for handling the [OnBackPressedDispatcher.onBackPressed] event.
              */
@@ -304,7 +304,7 @@ class WorkFragment: LocationFragment() {
             item2.isVisible = true
             val searchView = item2.actionView as SearchView
             searchView.queryHint = getString(R.string.jino_or_desc_search_hint)
-            searchView.setOnQueryTextListener(object: SearchView.OnQueryTextListener {
+            searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
                 // Search is triggered when the user clicks on the search button
                 override fun onQueryTextSubmit(query: String?): Boolean {
                     when (query.isNullOrBlank()) {

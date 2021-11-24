@@ -153,7 +153,7 @@ class PhotoUtil private constructor(
         var pictureName = photoName
         pictureName =
             if (!pictureName.lowercase(Locale.ROOT)
-                    .contains(".jpg")
+                .contains(".jpg")
             ) "$pictureName.jpg" else pictureName
         val fileName =
             pictureFolder.toString().plus(File.separator)

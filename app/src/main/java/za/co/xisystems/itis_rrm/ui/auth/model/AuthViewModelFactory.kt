@@ -23,8 +23,8 @@ class AuthViewModelFactory(
     private val xiArmoury: XIArmoury,
     private val photoUtil: PhotoUtil,
     private val application: Application
-): ViewModelProvider.AndroidViewModelFactory(application) {
-    override fun <T: ViewModel> create(modelClass: Class<T>): T {
+) : ViewModelProvider.AndroidViewModelFactory(application) {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
         return AuthViewModel(repository, xiArmoury, photoUtil, application) as T
     }
 }

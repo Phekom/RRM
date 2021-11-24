@@ -63,13 +63,12 @@ class WorkDataRepository(
 ) : SafeApiRequest() {
 
     val searchResults = MutableLiveData<List<JobDTO>>()
-    private var jobDao: JobDao?
+    private var jobDao: JobDao? = appDb.getJobDao()
     private val coroutineScope = CoroutineScope(dispatchers.main())
     var workStatus: MutableLiveData<XIEvent<XIResult<String>>> = MutableLiveData()
     val allWork: LiveData<List<JobDTO>>?
 
     init {
-        jobDao = appDb.getJobDao()
         allWork = jobDao?.getAllWork()
     }
 
@@ -652,6 +651,6 @@ class WorkDataRepository(
     }
 }
 
-private fun String.toRoomSearchString(): String {
+fun String.toRoomSearchString(): String {
     return "%$this%"
 }

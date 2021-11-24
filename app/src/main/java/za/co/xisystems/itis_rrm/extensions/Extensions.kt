@@ -40,7 +40,7 @@ import za.co.xisystems.itis_rrm.utils.ServiceUtil
 fun <T> LiveData<T>.observeOnce(lifecycleOwner: LifecycleOwner, observer: Observer<T>) {
     observe(
         lifecycleOwner,
-        object: Observer<T> {
+        object : Observer<T> {
             override fun onChanged(t: T?) {
                 observer.onChanged(t)
                 removeObserver(this)
@@ -54,8 +54,8 @@ fun AppCompatActivity.applyToolbarMargin(toolbar: Toolbar) {
         toolbar.layoutParams
             as CollapsingToolbarLayout.LayoutParams
         ).apply {
-            topMargin = getStatusBarSize()
-        }
+        topMargin = getStatusBarSize()
+    }
 }
 
 private fun AppCompatActivity.getStatusBarSize(): Int {

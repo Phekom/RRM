@@ -17,9 +17,9 @@ class ApproveMeasureViewModelFactory(
     private val measureApprovalDataRepository: MeasureApprovalDataRepository,
     private val offlineDataRepository: OfflineDataRepository,
     private val photoUtil: PhotoUtil
-): ViewModelProvider.AndroidViewModelFactory(application) {
+) : ViewModelProvider.AndroidViewModelFactory(application) {
     private var mApplication = application
-    override fun <T: ViewModel> create(modelClass: Class<T>): T {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
         return ApproveMeasureViewModel(
             mApplication,
             measureApprovalDataRepository,

@@ -16,7 +16,7 @@ import za.co.xisystems.itis_rrm.ui.auth.RegisterActivity
 import za.co.xisystems.itis_rrm.ui.auth.ResetPinActivity
 import za.co.xisystems.itis_rrm.utils.Coroutines
 
-class SettingsActivity: AppCompatActivity(), DIAware {
+class SettingsActivity : AppCompatActivity(), DIAware {
 
     override val di by closestDI()
     private lateinit var settingsViewModel: SettingsViewModel

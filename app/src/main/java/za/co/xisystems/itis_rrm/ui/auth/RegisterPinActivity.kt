@@ -32,7 +32,7 @@ import za.co.xisystems.itis_rrm.utils.toast
 
 private const val PERMISSION_REQUEST = 10
 
-class RegisterPinActivity: AppCompatActivity(), AuthListener, DIAware {
+class RegisterPinActivity : AppCompatActivity(), AuthListener, DIAware {
     companion object {
         val TAG: String = RegisterPinActivity::class.java.simpleName
         const val GOOGLE_PLAY_SERVICES_RESOLUTION_REQUEST = 1

@@ -14,15 +14,15 @@ import androidx.security.crypto.EncryptedFile
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import com.password4j.SecureString
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.IOException
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.asExecutor
 import kotlinx.coroutines.async
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
-import java.io.ByteArrayOutputStream
-import java.io.File
-import java.io.IOException
 
 /**
  * Create, read and write Encrypted shared preferences.

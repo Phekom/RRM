@@ -24,6 +24,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
 import com.xwray.groupie.viewbinding.BindableItem
+import java.io.File
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
@@ -39,7 +40,6 @@ import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.Utils.nanCheck
 import za.co.xisystems.itis_rrm.utils.Utils.round
 import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
-import java.io.File
 
 /**
  * Created by Francis Mahlava on 2020/01/02.
@@ -50,7 +50,7 @@ class EstimatesItem(
     private val activity: FragmentActivity?,
     private val viewLifecycleOwner: LifecycleOwner,
     private val updateObserver: Observer<XIResult<String>?>
-): BindableItem<EstimatesItemBinding>() {
+) : BindableItem<EstimatesItemBinding>() {
 
     override fun initializeViewBinding(view: View): EstimatesItemBinding {
         return EstimatesItemBinding.bind(view)

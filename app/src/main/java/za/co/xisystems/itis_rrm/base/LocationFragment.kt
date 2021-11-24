@@ -21,7 +21,7 @@ import za.co.xisystems.itis_rrm.utils.GPSUtils
  * Created by Shaun McDonald on 2020/06/06.
  * Copyright (c) 2020 XI Systems. All rights reserved.
  **/
-abstract class LocationFragment: BaseFragment() {
+abstract class LocationFragment : BaseFragment() {
 
     override val di: DI by closestDI()
     private lateinit var locationViewModel: LocationViewModel
@@ -41,7 +41,7 @@ abstract class LocationFragment: BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        GPSUtils(this.requireContext()).activateGPS(object: GPSUtils.OnGpsListener {
+        GPSUtils(this.requireContext()).activateGPS(object : GPSUtils.OnGpsListener {
 
             override fun gpsStatus(isGPSEnable: Boolean) {
                 this@LocationFragment.gpsEnabled = isGPSEnable
@@ -95,9 +95,9 @@ abstract class LocationFragment: BaseFragment() {
             Manifest.permission.ACCESS_FINE_LOCATION
         ) == PackageManager.PERMISSION_GRANTED &&
             ActivityCompat.checkSelfPermission(
-                this.requireContext(),
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED
+            this.requireContext(),
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
 
     private fun shouldShowRequestPermissionRationale() =
         ActivityCompat.shouldShowRequestPermissionRationale(

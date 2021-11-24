@@ -54,4 +54,3 @@ class ApproveJobItem(
         return ItemHeaderBinding.bind(view)
     }
 }
-

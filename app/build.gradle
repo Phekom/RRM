@@ -523,7 +523,7 @@ dependencies {
     implementation 'com.github.razir.progressbutton:progressbutton:2.1.0'
 
     // Lottie Animations
-    def lottieVersion = '4.2.0'
+    def lottieVersion = '4.2.1'
     implementation "com.airbnb.android:lottie:$lottieVersion"
 
     // Motion Toast

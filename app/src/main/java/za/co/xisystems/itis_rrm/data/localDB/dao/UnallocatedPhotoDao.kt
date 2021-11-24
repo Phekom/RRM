@@ -1,6 +1,8 @@
 package za.co.xisystems.itis_rrm.data.localDB.dao
 
+import androidx.lifecycle.LiveData
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -35,10 +37,24 @@ interface UnallocatedPhotoDao {
         insertUnallocatedPhoto(newPhoto)
     }
 
-    @Query("SELECT * FROM UNALLOCATED_PHOTOS WHERE DATETIME(photoDate) >= DATETIME('now','-1 day')")
-    suspend fun filterUnallocatedPhotosByTime(): List<UnallocatedPhotoDTO>
+    @Query(
+        "SELECT * FROM UNALLOCATED_PHOTOS WHERE (routeMarker LIKE :criteria OR descr LIKE :criteria) " +
+            "AND datetime(photoDate) >= datetime('now','-1 day')"
+    )
+    fun searchUnallocatedPhotos(criteria: String): List<UnallocatedPhotoDTO>?
 
-    @Query("SELECT * FROM UNALLOCATED_PHOTOS WHERE routeMarker LIKE :routeMarker " +
-        "AND datetime(photoDate) >= datetime('now','-1 day')")
-    suspend fun filterUnallocatedPhotosByRouteMarker(routeMarker: String): List<UnallocatedPhotoDTO>
+    @Query(
+        "SELECT * FROM UNALLOCATED_PHOTOS WHERE DATETIME(photoDate) >= " +
+            "DATETIME('now','-1 day') ORDER BY DATE(photoDate)"
+    )
+    fun getAllPhotos(): LiveData<List<UnallocatedPhotoDTO>>?
+
+    @Delete
+    fun deletePhoto(unallocatedPhoto: UnallocatedPhotoDTO)
+
+    @Query(
+        "DELETE FROM UNALLOCATED_PHOTOS WHERE DATE(photoDate) < " +
+            "DATE('now','-1 day')"
+    )
+    fun deleteExpiredPhotos()
 }

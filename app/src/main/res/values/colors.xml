@@ -53,7 +53,7 @@
     <color name="primaryDarkColor">#a51707</color>
     <color name="secondaryLightColor">#4db8a9</color>
     <color name="primaryTextColor">#000000</color>
-    <color name="secondaryTextColor">#000000</color>
+    <color name="secondaryTextColor">#2F4F4F</color>
 
 
 </resources>

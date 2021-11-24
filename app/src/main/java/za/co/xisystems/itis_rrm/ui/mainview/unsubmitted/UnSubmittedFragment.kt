@@ -31,7 +31,7 @@ import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.unsubmited_item.UnSubmit
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
 
-class UnSubmittedFragment: BaseFragment(), DIAware {
+class UnSubmittedFragment : BaseFragment(), DIAware {
 
     override val di by closestDI()
     private lateinit var createViewModel: CreateViewModel
@@ -48,7 +48,7 @@ class UnSubmittedFragment: BaseFragment(), DIAware {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        val callback: OnBackPressedCallback = object: OnBackPressedCallback(true) {
+        val callback: OnBackPressedCallback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 Navigation.findNavController(this@UnSubmittedFragment.requireView())
                     .navigate(R.id.action_global_nav_home)
@@ -75,7 +75,6 @@ class UnSubmittedFragment: BaseFragment(), DIAware {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         unSubmittedViewModel =
             ViewModelProvider(this.requireActivity(), factory).get(UnSubmittedViewModel::class.java)
-
 
         createViewModel =
             ViewModelProvider(this.requireActivity(), createFactory).get(CreateViewModel::class.java)

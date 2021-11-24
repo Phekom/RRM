@@ -18,7 +18,7 @@ import za.co.xisystems.itis_rrm.base.BaseFragment
  * Created by Francis Mahlava on 03,October,2019
  */
 
-class CorrectionsFragment: BaseFragment(), DIAware {
+class CorrectionsFragment : BaseFragment(), DIAware {
     //
     override val di by closestDI()
     private lateinit var correctionsViewModel: CorrectionsViewModel

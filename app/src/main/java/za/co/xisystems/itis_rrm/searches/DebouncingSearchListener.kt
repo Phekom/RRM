@@ -15,11 +15,12 @@ import kotlinx.coroutines.launch
  * This saves application resources, and allows users to search for shorter
  * sequences of characters when the need arises.
  */
+@Suppress("MagicNumber")
 class DebouncingSearchListener(
     lifecycle: Lifecycle,
     private val onDebouncingQueryTextChange: (String?) -> Unit
 ) : SearchView.OnQueryTextListener {
-    var debouncePeriod: Long = 500
+    var debouncePeriod: Long = 500 // one half-second
 
     private val coroutineScope = lifecycle.coroutineScope
 
@@ -40,4 +41,3 @@ class DebouncingSearchListener(
         return false
     }
 }
-

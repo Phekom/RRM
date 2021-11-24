@@ -111,7 +111,7 @@ import za.co.xisystems.itis_rrm.utils.DatetimeConverters
 @TypeConverters(Converters::class, DatetimeConverters::class)
 @GenerateRoomMigrations
 
-abstract class AppDatabase: RoomDatabase() {
+abstract class AppDatabase : RoomDatabase() {
 
     companion object {
         private const val MAX_DB_VERSIONS = 999_999_999

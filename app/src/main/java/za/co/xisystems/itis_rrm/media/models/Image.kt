@@ -18,4 +18,4 @@ data class Image(
     val width: String?,
     val height: String?,
     val date: String
-): Parcelable
+) : Parcelable

@@ -49,7 +49,7 @@ class WorkViewModel(
     private val workDataRepository: WorkDataRepository,
     private val offlineDataRepository: OfflineDataRepository,
     dispatchers: DispatcherProvider = DefaultDispatcherProvider()
-): AndroidViewModel(application) {
+) : AndroidViewModel(application) {
 
     val user by lazyDeferred {
         workDataRepository.getUser()

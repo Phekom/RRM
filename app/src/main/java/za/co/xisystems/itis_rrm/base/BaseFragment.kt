@@ -49,7 +49,7 @@ import za.co.xisystems.itis_rrm.utils.ViewLogger
 
 abstract class BaseFragment(
     protected val dispatchers: DispatcherProvider = DefaultDispatcherProvider()
-): Fragment(), IProgressView, DIAware {
+) : Fragment(), IProgressView, DIAware {
 
     private lateinit var sharedViewModel: SharedViewModel
     override val di by closestDI()

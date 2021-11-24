@@ -45,7 +45,7 @@ class MeasureApprovalDataRepository(
         val TAG: String = MeasureApprovalDataRepository::class.java.simpleName
     }
 
-    val workflowStatus: MutableLiveData<XIEvent<XIResult<String>>> = MutableLiveData()
+    var workflowStatus: MutableLiveData<XIEvent<XIResult<String>>> = MutableLiveData()
 
     suspend fun getUser(): LiveData<UserDTO> {
         return withContext(Dispatchers.IO) {
@@ -367,5 +367,9 @@ class MeasureApprovalDataRepository(
             Timber.e(e, message)
             throw TransmissionException(message, e)
         }
+    }
+
+    fun resetWorkState() {
+        workflowStatus = MutableLiveData()
     }
 }

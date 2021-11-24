@@ -1,10 +1,4 @@
 /**
- * Updated by Shaun McDonald on 2021/06/14
- * Last modified on 14/06/2021, 03:49
- * Copyright (c) 2021.  XI Systems  - All rights reserved
- **/
-
-/**
  * Created by Shaun McDonald on 2021/06/14
  * Last modified on 14/06/2021, 03:47
  * Copyright (c) 2021.  XI Systems  - All rights reserved
@@ -29,4 +23,4 @@ data class Media(
     val date: String,
     val favorite: Boolean = false,
     val trashed: Boolean = false
-): Parcelable
+) : Parcelable

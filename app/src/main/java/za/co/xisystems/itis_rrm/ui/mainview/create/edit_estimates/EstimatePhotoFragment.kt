@@ -56,7 +56,6 @@ import com.mapbox.navigation.ui.maps.location.NavigationLocationProvider
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.kodein.di.DIAware
 import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
 import timber.log.Timber
@@ -95,7 +94,7 @@ import kotlin.collections.set
  * Created by Francis Mahlava on 2019/12/29.
  */
 
-class EstimatePhotoFragment: LocationFragment(), DIAware {
+class EstimatePhotoFragment : LocationFragment() {
 
     private var sectionId: String? = null
     override val di by closestDI()
@@ -131,7 +130,7 @@ class EstimatePhotoFragment: LocationFragment(), DIAware {
     private var tenderRate: Double? = null
     private val navigationLocationProvider = NavigationLocationProvider()
 
-    private val locationObserver = object: LocationObserver {
+    private val locationObserver = object : LocationObserver {
         override fun onNewRawLocation(rawLocation: Location) {
             // You're going to need this when you
             // aren't driving.
@@ -243,9 +242,9 @@ class EstimatePhotoFragment: LocationFragment(), DIAware {
                     requireContext(),
                     Manifest.permission.ACCESS_FINE_LOCATION
                 ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                    requireContext(),
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-                ) != PackageManager.PERMISSION_GRANTED
+                        requireContext(),
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                    ) != PackageManager.PERMISSION_GRANTED
             ) {
                 // TODO: Consider calling
                 //    ActivityCompat#requestPermissions
@@ -265,7 +264,7 @@ class EstimatePhotoFragment: LocationFragment(), DIAware {
         (activity as MainActivity).supportActionBar?.title = getString(R.string.edit_estimate)
         locationWarning = false
 
-        val callback: OnBackPressedCallback = object: OnBackPressedCallback(true) {
+        val callback: OnBackPressedCallback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 navToAddProject(this@EstimatePhotoFragment.requireView())
             }
@@ -503,18 +502,40 @@ class EstimatePhotoFragment: LocationFragment(), DIAware {
             when (view?.id) {
 
                 R.id.startPhotoButton -> {
+                    binding.startPhotoButton.visibility = View.GONE
+                    binding.originStart.visibility = View.VISIBLE
+                }
+                R.id.endPhotoButton -> {
+                    binding.endPhotoButton.visibility = View.GONE
+                    binding.originEnd.visibility = View.VISIBLE
+                }
+                R.id.liveSnapStart -> {
                     locationWarning = false
                     binding.startImageView.visibility = View.GONE
                     binding.startAnimationView.visibility = View.VISIBLE
                     takePhoto(PhotoType.START)
                     this@EstimatePhotoFragment.takingPhotos()
                 }
-                R.id.endPhotoButton -> {
+                R.id.liveSnapEnd -> {
                     locationWarning = false
                     binding.endImageView.visibility = View.GONE
                     binding.endAnimationView.visibility = View.VISIBLE
                     takePhoto(PhotoType.END)
                     this@EstimatePhotoFragment.takingPhotos()
+                }
+
+                R.id.galleryPasteStart -> {
+                    locationWarning = false
+                    binding.startImageView.visibility = View.GONE
+                    binding.startAnimationView.visibility = View.VISIBLE
+                    pastePhoto(PhotoType.START)
+                }
+
+                R.id.galleryPasteEnd -> {
+                    locationWarning = false
+                    binding.endImageView.visibility = View.GONE
+                    binding.endAnimationView.visibility = View.VISIBLE
+                    pastePhoto(PhotoType.END)
                 }
 
                 R.id.cancelButton -> {
@@ -533,6 +554,10 @@ class EstimatePhotoFragment: LocationFragment(), DIAware {
         binding.endPhotoButton.setOnClickListener(myClickListener)
         binding.cancelButton.setOnClickListener(myClickListener)
         binding.updateButton.setOnClickListener(myClickListener)
+        binding.galleryPasteStart.setOnClickListener(myClickListener)
+        binding.galleryPasteEnd.setOnClickListener(myClickListener)
+        binding.liveSnapStart.setOnClickListener(myClickListener)
+        binding.liveSnapEnd.setOnClickListener(myClickListener)
 
         // If the user hits the enter key on the costing field,
         // hide the keypad.
@@ -1308,5 +1333,12 @@ class EstimatePhotoFragment: LocationFragment(), DIAware {
                 changesToPreserve = false
             }
         }
+    }
+
+    private fun pastePhoto(photoType: PhotoType) {
+        // open capture gallery
+        // user selects photo
+        // photo transformed to estimate item photo of selected type
+        // return and reload image for result
     }
 }

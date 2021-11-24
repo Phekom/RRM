@@ -45,18 +45,6 @@
         tools:visibility="visible">
 
         <ImageButton
-            android:id="@+id/confirm_image"
-            android:layout_width="0dp"
-            android:layout_height="@dimen/button_size"
-            android:layout_weight="1"
-            app:srcCompat="@drawable/ic_baseline_check_48"
-            android:contentDescription="@string/select_image"
-            android:background="@android:color/transparent"
-            app:tint="@color/colorAccent"
-            android:backgroundTint="@color/secondaryTextColor"
-            android:backgroundTintMode="multiply" />
-
-        <ImageButton
             android:id="@+id/cancel_image"
             android:layout_width="0dp"
             android:layout_height="@dimen/button_size"
@@ -68,6 +56,18 @@
             android:backgroundTint="@color/secondaryTextColor"
             android:backgroundTintMode="multiply" />
 
+
+        <ImageButton
+            android:id="@+id/confirm_image"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/button_size"
+            android:layout_weight="1"
+            app:srcCompat="@drawable/ic_baseline_check_48"
+            android:contentDescription="@string/select_image"
+            android:background="@android:color/transparent"
+            app:tint="@color/colorAccent"
+            android:backgroundTint="@color/secondaryTextColor"
+            android:backgroundTintMode="multiply" />
 
         <ImageButton
             android:id="@+id/retake_image"

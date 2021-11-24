@@ -21,6 +21,7 @@ import com.mapbox.turf.TurfConstants
 import com.mapbox.turf.TurfConversion
 import com.mapbox.turf.TurfMeasurement
 import com.xwray.groupie.viewbinding.BindableItem
+import java.util.Locale
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.R
@@ -40,7 +41,6 @@ import za.co.xisystems.itis_rrm.ui.mainview.work.INSET_TYPE_KEY
 import za.co.xisystems.itis_rrm.ui.mainview.work.WorkFragmentDirections
 import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModel
 import za.co.xisystems.itis_rrm.utils.Coroutines
-import java.util.Locale
 
 open class CardItem(
     val activity: FragmentActivity?,
@@ -52,7 +52,7 @@ open class CardItem(
     val jobItemEstimate: JobItemEstimateDTO,
     val job: JobDTO,
     val myLocation: LocationModel?,
-): BindableItem<WorkListItemBinding>() {
+) : BindableItem<WorkListItemBinding>() {
     var selectedLocationPoint: Point? = null
     var estimatePhotoStart: JobItemEstimatesPhotoDTO? = null
 

@@ -33,7 +33,7 @@ import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureViewMod
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureViewModelFactory
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 
-class MeasureGalleryFragment: BaseFragment(), DIAware {
+class MeasureGalleryFragment : BaseFragment(), DIAware {
     override val di by closestDI()
     private lateinit var approveViewModel: ApproveMeasureViewModel
     private val factory: ApproveMeasureViewModelFactory by instance()

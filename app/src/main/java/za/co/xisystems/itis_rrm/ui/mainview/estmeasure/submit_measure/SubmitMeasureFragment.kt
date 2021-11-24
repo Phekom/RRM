@@ -28,6 +28,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.ExpandableGroup
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.viewbinding.GroupieViewHolder
+import java.util.ArrayList
+import java.util.HashMap
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -64,10 +66,8 @@ import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModelFactory
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DataConversion
-import java.util.ArrayList
-import java.util.HashMap
 
-class SubmitMeasureFragment: BaseFragment() {
+class SubmitMeasureFragment : BaseFragment() {
     override val di by closestDI()
     private lateinit var measureViewModel: MeasureViewModel
     private val factory: MeasureViewModelFactory by instance()
@@ -448,7 +448,7 @@ class SubmitMeasureFragment: BaseFragment() {
         (activity as MainActivity).supportActionBar?.title =
             getString(R.string.submit_measure_title)
 
-        val callback: OnBackPressedCallback = object: OnBackPressedCallback(true) {
+        val callback: OnBackPressedCallback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 Navigation.findNavController(this@SubmitMeasureFragment.requireView())
                     .navigate(R.id.nav_estMeasure)

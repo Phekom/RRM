@@ -22,7 +22,7 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
 class EstimateMeasureItem(
     val jobItemEstimateDTO: JobItemEstimateDTO,
     private val measureViewModel: MeasureViewModel
-): BindableItem<ItemHeaderBinding>() {
+) : BindableItem<ItemHeaderBinding>() {
 
     var sectionId: String? = null
 

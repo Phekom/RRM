@@ -19,6 +19,8 @@ import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import com.xwray.groupie.ExpandableGroup
 import com.xwray.groupie.ExpandableItem
+import java.util.ArrayList
+import java.util.Date
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
@@ -33,8 +35,6 @@ import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.estimate_measure_item.Mea
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DateUtil
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
-import java.util.ArrayList
-import java.util.Date
 
 class ExpandableHeaderMeasureItem(
     private var fragment: Fragment,
@@ -55,7 +55,6 @@ class ExpandableHeaderMeasureItem(
 
     var onExpandListener: ((ExpandableGroup) -> Unit)? = null
     private lateinit var expandableGroup: ExpandableGroup
-
 
     override fun bind(viewBinding: ItemMeasureHeaderBinding, position: Int) {
         super.bind(viewBinding, position)
@@ -250,7 +249,7 @@ class ExpandableHeaderMeasureItem(
         }
     }
 
-    private fun bindIcon(viewBinding: ItemMeasureHeaderBinding){
+    private fun bindIcon(viewBinding: ItemMeasureHeaderBinding) {
         viewBinding.icon.apply {
             visibility = View.VISIBLE
             setImageResource(

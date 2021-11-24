@@ -23,4 +23,4 @@ data class Media(
     val date: String,
     val favorite: Boolean = false,
     val trashed: Boolean = false
-): Parcelable
+) : Parcelable

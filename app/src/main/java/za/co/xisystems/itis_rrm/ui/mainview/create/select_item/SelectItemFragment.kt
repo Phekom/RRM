@@ -23,6 +23,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.viewbinding.GroupieViewHolder
+import java.util.ArrayList
+import java.util.concurrent.CancellationException
 import kotlinx.coroutines.CoroutineStart.DEFAULT
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
@@ -46,14 +48,12 @@ import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper.setSpinner
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.Coroutines
-import java.util.ArrayList
-import java.util.concurrent.CancellationException
 
 /**
  * Created by Francis Mahlava on 2019/12/29.
  */
 
-class SelectItemFragment: BaseFragment(), DIAware {
+class SelectItemFragment : BaseFragment(), DIAware {
     override val di by closestDI()
     private lateinit var createViewModel: CreateViewModel
     private val factory: CreateViewModelFactory by instance()
@@ -200,7 +200,7 @@ class SelectItemFragment: BaseFragment(), DIAware {
                     ui.sectionItemSpinner,
                     sectionData,
                     sectionSelections,
-                    object: SpinnerHelper.SelectionListener<SectionItemDTO> {
+                    object : SpinnerHelper.SelectionListener<SectionItemDTO> {
 
                         override fun onItemSelected(position: Int, item: SectionItemDTO) {
                             if (animate) {

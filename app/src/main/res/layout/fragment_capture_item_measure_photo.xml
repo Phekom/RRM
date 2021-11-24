@@ -18,7 +18,7 @@
             android:id="@+id/estimate_image_collection_view"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_margin="@dimen/dimen_5dp"
+            android:layout_margin="@dimen/dimen_8dp"
             app:backgroundColor="#00000000"
             app:baseRowHeight="100dp"
             app:imageMargin="2dp"

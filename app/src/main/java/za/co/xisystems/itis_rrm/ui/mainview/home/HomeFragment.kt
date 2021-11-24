@@ -30,6 +30,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenStarted
+import androidx.navigation.Navigation
 import com.skydoves.progressview.ProgressView
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -59,7 +60,7 @@ import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import kotlin.coroutines.cancellation.CancellationException
 
-class HomeFragment : BaseFragment() {
+class HomeFragment: BaseFragment() {
 
     override val di by closestDI()
     private lateinit var homeViewModel: HomeViewModel
@@ -227,6 +228,12 @@ class HomeFragment : BaseFragment() {
 
         ui.imageView7.setOnClickListener {
             ToastUtils().toastVersion(requireContext())
+        }
+
+        ui.unallocatedPhotoAdd.setOnClickListener {
+            val directions = HomeFragmentDirections.actionNavHomeToNavUnallocated()
+            Navigation.findNavController(this@HomeFragment.requireView())
+                .navigate(directions)
         }
     }
 
@@ -478,7 +485,7 @@ class HomeFragment : BaseFragment() {
     private fun bigSync() = uiScope.launch(uiScope.coroutineContext) {
         if (networkEnabled) {
             try {
-
+                ui.unallocatedPhotoAdd.visibility = View.GONE
                 toast("Data Loading")
                 resetProgressViews()
                 showProgress(true)
@@ -495,6 +502,7 @@ class HomeFragment : BaseFragment() {
                 )
             } finally {
                 homeViewModel.resetSyncStatus()
+                ui.unallocatedPhotoAdd.visibility = View.VISIBLE
             }
         } else {
             noInternetWarning()

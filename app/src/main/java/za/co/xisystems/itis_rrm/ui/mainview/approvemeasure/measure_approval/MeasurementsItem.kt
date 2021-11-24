@@ -11,6 +11,8 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.Navigation
 import com.xwray.groupie.viewbinding.BindableItem
+import java.io.File
+import java.lang.ref.WeakReference
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
@@ -22,8 +24,6 @@ import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureViewMod
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.GlideApp
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
-import java.io.File
-import java.lang.ref.WeakReference
 
 /**
  * Created by Francis Mahlava on 2020/01/02.
@@ -33,7 +33,7 @@ class MeasurementsItem(
     private val approveViewModel: ApproveMeasureViewModel,
     private val fragmentReference: WeakReference<MeasureApprovalFragment>,
     private val viewLifecycleOwner: LifecycleOwner
-): BindableItem<MeasurementsItemBinding>() {
+) : BindableItem<MeasurementsItemBinding>() {
 
     val activity = fragmentReference.get()?.requireActivity()
     private fun sendItemType(

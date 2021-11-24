@@ -59,7 +59,7 @@ class CreateViewModel(
     application: Application,
     private val photoUtil: PhotoUtil,
     private val dispatchers: DispatcherProvider = DefaultDispatcherProvider()
-): AndroidViewModel(application) {
+) : AndroidViewModel(application) {
 
     var jobDesc: String? = null
     private val superJob = SupervisorJob()

@@ -13,10 +13,10 @@ import androidx.core.util.Pair
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
-import za.co.xisystems.itis_rrm.utils.JobItemEstimateSize
-import za.co.xisystems.itis_rrm.utils.JobUtils
 import java.io.Serializable
 import java.util.ArrayList
+import za.co.xisystems.itis_rrm.utils.JobItemEstimateSize
+import za.co.xisystems.itis_rrm.utils.JobUtils
 
 /**
  * Created by Francis Mahlava on 2019/11/21.
@@ -68,9 +68,9 @@ data class JobItemEstimateDTO(
     @SerializedName("SelectedItemUOM")
     val selectedItemUom: String?,
     var geoCoded: Boolean = false
-): Parcelable, Serializable {
+) : Parcelable, Serializable {
 
-    constructor(parcel: Parcel): this(
+    constructor(parcel: Parcel) : this(
         actId = parcel.readInt(),
         estimateId = parcel.readString()!!,
         jobId = parcel.readString(),
@@ -175,7 +175,7 @@ data class JobItemEstimateDTO(
         return result
     }
 
-    companion object CREATOR: Creator<JobItemEstimateDTO> {
+    companion object CREATOR : Creator<JobItemEstimateDTO> {
         const val serialVersionUID: Long = 10L
         override fun createFromParcel(parcel: Parcel): JobItemEstimateDTO {
             return JobItemEstimateDTO(parcel)

@@ -11,8 +11,8 @@ import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 @Suppress("UNCHECKED_CAST")
 class SettingsViewModelFactory(
     private val offlineDataRepository: OfflineDataRepository
-): ViewModelProvider.NewInstanceFactory() {
-    override fun <T: ViewModel> create(modelClass: Class<T>): T {
+) : ViewModelProvider.NewInstanceFactory() {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
         return SettingsViewModel(offlineDataRepository) as T
     }
 }

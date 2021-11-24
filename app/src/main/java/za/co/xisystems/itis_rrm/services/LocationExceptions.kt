@@ -7,7 +7,7 @@ import za.co.xisystems.itis_rrm.utils.Utils.round
 
 @SuppressWarnings("MagicNumber")
 class OutsideSanralReserveException
-(latitude: Double, longitude: Double, message: String? = null, context: Context? = null): Throwable(message) {
+(latitude: Double, longitude: Double, message: String? = null, context: Context? = null) : Throwable(message) {
     init {
         if (message.isNullOrBlank() && context == null) {
             throw IllegalArgumentException("Please specify either a message or a context.")
@@ -29,8 +29,8 @@ class OutsideCurrentProjectException(
     latitude: Double,
     longitude: Double,
     context: Context
-): Throwable(message) {
+) : Throwable(message) {
     init {
-
+        // To be implemented for next release
     }
 }

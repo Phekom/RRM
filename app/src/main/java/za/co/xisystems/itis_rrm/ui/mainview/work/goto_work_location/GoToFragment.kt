@@ -107,7 +107,7 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
 import java.util.Locale
 
 @Suppress("MagicNumber")
-class GoToFragment: LocationFragment(), PermissionsListener {
+class GoToFragment : LocationFragment(), PermissionsListener {
 
     override val di by closestDI()
     private val factory: GoToViewModelFactory by instance()
@@ -220,7 +220,7 @@ class GoToFragment: LocationFragment(), PermissionsListener {
         }
     private val navigationLocationProvider = NavigationLocationProvider()
 
-    private val locationObserver = object: LocationObserver {
+    private val locationObserver = object : LocationObserver {
         var firstLocationUpdateReceived = false
 
         override fun onNewRawLocation(rawLocation: Location) {
@@ -324,7 +324,7 @@ class GoToFragment: LocationFragment(), PermissionsListener {
         }
     }
 
-    private val arrivalObserver: ArrivalObserver = object: ArrivalObserver {
+    private val arrivalObserver: ArrivalObserver = object : ArrivalObserver {
         override fun onFinalDestinationArrival(routeProgress: RouteProgress) {
             // buildingApi.queryBuildingOnFinalDestination(routeProgress, callback)
             if (routeProgress.distanceRemaining < 70.0) {
@@ -419,7 +419,7 @@ class GoToFragment: LocationFragment(), PermissionsListener {
     private fun initStyle() {
         mapboxMap.loadStyleUri(
             Style.MAPBOX_STREETS, {},
-            object: OnMapLoadErrorListener {
+            object : OnMapLoadErrorListener {
                 @SuppressLint("LogNotTimber")
                 override fun onMapLoadError(mapLoadErrorType: MapLoadErrorType, message: String) {
                     Log.e(
@@ -449,9 +449,9 @@ class GoToFragment: LocationFragment(), PermissionsListener {
                         requireContext(),
                         Manifest.permission.ACCESS_FINE_LOCATION
                     ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                        requireContext(),
-                        Manifest.permission.ACCESS_COARSE_LOCATION
-                    ) != PackageManager.PERMISSION_GRANTED
+                            requireContext(),
+                            Manifest.permission.ACCESS_COARSE_LOCATION
+                        ) != PackageManager.PERMISSION_GRANTED
                 ) {
                     this@GoToFragment.extensionToast(
                         message = "Please enable location services in order to proceed",
@@ -628,7 +628,7 @@ class GoToFragment: LocationFragment(), PermissionsListener {
                     )
                 )
                 .build(),
-            object: RouterCallback {
+            object : RouterCallback {
                 override fun onRoutesReady(
                     routes: List<DirectionsRoute>,
                     routerOrigin: RouterOrigin
