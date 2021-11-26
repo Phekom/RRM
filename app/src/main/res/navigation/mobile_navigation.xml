@@ -414,8 +414,8 @@
 
     <fragment
         android:id="@+id/nav_capture"
-        android:name="za.co.xisystems.itis_rrm.ui.mainview.capture.CaptureFragment"
-        tools:layout="@layout/fragment_capture"
+        android:name="za.co.xisystems.itis_rrm.ui.mainview.capture.CaptureGalleryFragment"
+        tools:layout="@layout/fragment_capture_gallery"
 
         />
 

@@ -28,7 +28,7 @@ import java.util.concurrent.atomic.AtomicLong
 class XIArmoury private constructor(
     appContext: Context,
     private val dispatchers: DispatcherProvider = DefaultDispatcherProvider()
-): LifecycleObserver {
+) : LifecycleObserver {
 
     private var wizardInstance: Wizard = Wizard()
     private var scribeInstance: Scribe? = null
@@ -50,12 +50,12 @@ class XIArmoury private constructor(
         fun getInstance(context: Context): XIArmoury {
 
             return instance ?: synchronized(Lock) {
-                XIArmoury(appContext = context)
+                XIArmoury(appContext = context.applicationContext)
             }.also {
-                it.sageInstance = Sage.getInstance(appContext = context)
+                it.sageInstance = Sage.getInstance(context.applicationContext)
                 it.masterKey = it.sageInstance?.masterKeyAlias
                 it.scribeInstance = Scribe.getInstance(
-                    appContext = context,
+                    appContext = context.applicationContext,
                     sageInstance = it.sageInstance!!
                 )
                 it.initArmoury(it, context)

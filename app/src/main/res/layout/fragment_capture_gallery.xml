@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.mainview.capture.CaptureFragment"
+    tools:context=".ui.mainview.capture.CaptureGalleryFragment"
     android:id="@+id/gallery_layout"
     tools:visibility="visible"
     android:visibility="visible">
@@ -42,7 +42,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         tools:visibility="visible"
-        android:visibility="gone">
+        android:visibility="visible">
 
         <Button
             android:id="@+id/done_image_button"
