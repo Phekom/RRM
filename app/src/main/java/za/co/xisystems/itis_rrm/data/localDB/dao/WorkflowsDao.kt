@@ -15,7 +15,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.WorkFlowsDTO
 interface WorkflowsDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertWorkFlows(workFlows: WorkFlowsDTO)
+    fun insertWorkFlows(workFlows: WorkFlowsDTO)
 
     @Query("SELECT * FROM WORKFLOWs_TABLE ")
     fun getWorkflows(): LiveData<List<WorkFlowsDTO>>

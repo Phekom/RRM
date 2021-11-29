@@ -20,11 +20,11 @@ const val WORKFLOWs_TABLE = "WORKFLOWs_TABLE"
 data class WorkFlowsDTO(
     @PrimaryKey
     @SerializedName("Activities")
-    val activities: ArrayList<ActivityDTO> = ArrayList(),
+    val activities: ArrayList<ActivityDTO>,
     @SerializedName("InfoClasses")
-    val infoClasses: ArrayList<InfoClassDTO> = ArrayList(),
+    val infoClasses: ArrayList<InfoClassDTO>?,
     @SerializedName("Workflows")
-    val workflows: ArrayList<WorkFlowDTO> = ArrayList()
+    val workflows: ArrayList<WorkFlowDTO>?
 ) : Serializable, Parcelable {
     constructor(parcel: Parcel) : this(
         activities = arrayListOf<ActivityDTO>().apply {
@@ -39,9 +39,9 @@ data class WorkFlowsDTO(
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeList(activities.toList())
-        parcel.writeList(infoClasses.toList())
-        parcel.writeList(workflows.toList())
+        parcel.writeList(activities?.toList())
+        parcel.writeList(infoClasses?.toList())
+        parcel.writeList(workflows?.toList())
     }
 
     override fun describeContents(): Int {

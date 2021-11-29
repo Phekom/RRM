@@ -29,6 +29,38 @@
                 android:textSize="@dimen/text_medium"
                 tools:ignore="HardcodedText" />
 
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/dimen_40dp"
+                android:gravity="center_horizontal"
+                android:id="@+id/spinnerrel"
+                android:orientation="horizontal"
+                android:layout_margin="@dimen/xsmall"
+                android:background="@drawable/buttonshape"
+                android:layout_gravity="center_vertical|bottom">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="left"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginTop="@dimen/dimen_10dp"
+                    android:text="@string/select_job_type"
+                    tools:ignore="RelativeOverlap,RtlHardcoded" />
+
+                <Spinner
+                    android:id="@+id/jobType"
+                    android:layout_width="160dp"
+                    android:layout_height="fill_parent"
+                    android:layout_alignParentEnd="true"
+                    android:layout_marginEnd="10dp"
+                    android:paddingStart="20dp"
+                    tools:ignore="RtlSymmetry" />
+
+            </RelativeLayout>
+
+
+
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -56,38 +88,6 @@
                             android:text="@string/start"
                             android:visibility="visible" />
 
-                        <LinearLayout
-                            android:id="@+id/origin_start"
-                            android:layout_height="wrap_content"
-                            android:layout_width="match_parent"
-                            android:orientation="horizontal"
-                            tools:visibility="visible"
-                            android:visibility="gone">
-
-                            <ImageButton
-                                android:layout_width="0dp"
-                                android:layout_height="@dimen/button_size"
-                                app:srcCompat="@drawable/ic_baseline_add_a_photo_48"
-                                android:id="@+id/liveSnapStart"
-                                android:contentDescription="@string/take_a_new_live_photo"
-                                android:layout_weight="1"
-                                android:backgroundTint="@color/colorPrimary"
-                                android:visibility="visible"
-                                app:tint="@color/white"
-                                tools:visibility="visible" />
-
-                            <ImageButton
-                                android:layout_width="0dp"
-                                android:layout_height="@dimen/button_size"
-                                app:srcCompat="@drawable/ic_baseline_add_photo_alternate_48"
-                                android:id="@+id/galleryPasteStart"
-                                android:contentDescription="@string/choose_an_rrm_gallery_photo"
-                                android:layout_weight="1"
-                                android:backgroundTint="@color/colorPrimary"
-                                android:visibility="visible"
-                                app:tint="@color/white"
-                                tools:visibility="visible" />
-                        </LinearLayout>
 
                         <TextView
                             android:id="@+id/startSectionTextView"
@@ -122,6 +122,8 @@
                         android:layout_height="wrap_content"
                         android:layout_margin="@dimen/xsmall"
                         android:layout_weight="1"
+                        android:visibility="gone"
+                        android:id="@+id/secondImage"
                         android:orientation="vertical">
 
                         <Button
@@ -130,41 +132,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="@dimen/button_size"
                             android:drawableStart="@drawable/ic_baseline_photo_camera_24px"
-                            android:text="@string/end" />
-
-                        <LinearLayout
-                            android:id="@+id/origin_end"
-                            android:layout_height="wrap_content"
-                            android:layout_width="match_parent"
-                            android:orientation="horizontal"
-                            tools:visibility="visible"
-                            android:visibility="gone">
-
-                            <ImageButton
-                                android:layout_width="0dp"
-                                android:layout_height="@dimen/button_size"
-                                app:srcCompat="@drawable/ic_baseline_add_a_photo_48"
-                                android:id="@+id/liveSnapEnd"
-                                android:contentDescription="@string/take_a_new_live_photo"
-                                android:layout_weight="1"
-                                android:backgroundTint="@color/colorPrimary"
-                                android:visibility="visible"
-                                app:tint="@color/white"
-                                tools:visibility="visible" />
-
-                            <ImageButton
-                                android:layout_width="0dp"
-                                android:layout_height="@dimen/button_size"
-                                app:srcCompat="@drawable/ic_baseline_add_photo_alternate_48"
-                                android:id="@+id/galleryPasteEnd"
-                                android:contentDescription="@string/choose_an_rrm_gallery_photo"
-                                android:layout_weight="1"
-                                android:backgroundTint="@color/colorPrimary"
-                                android:visibility="visible"
-                                app:tint="@color/white"
-                                tools:visibility="visible" />
-                        </LinearLayout>
-
+                            android:text="@string/end_photo" />
 
                         <TextView
                             android:id="@+id/endSectionTextView"
@@ -290,7 +258,7 @@
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/image_size"
+                android:layout_height="@dimen/dimen_150dp"
                 android:orientation="vertical"
                 android:gravity="center"
                 android:background="@drawable/buttonshape"

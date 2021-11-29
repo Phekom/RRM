@@ -16,7 +16,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
 interface ProjectItemDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertItems(item: ProjectItemDTO)
+    fun insertItems(item: ProjectItemDTO)
 
     @Query(
         "SELECT EXiSTS (SELECT * FROM PROJECT_ITEM_TABLE " +

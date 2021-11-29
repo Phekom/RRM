@@ -46,6 +46,18 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
+        <provider
+            android:name=".ui.mainview.create.edit_estimates.capture_utils.ImagePickerFileProvider"
+            android:authorities="${applicationId}.imagepicker.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+
+        </provider>
+
         <activity
             android:name=".ui.mainview.activities.SettingsActivity"
             android:theme="@style/AppTheme.NoActionBar">
@@ -65,6 +77,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".ui.mainview.create.edit_estimates.capture_utils.ImagePickerActivity"
+            android:screenOrientation="unspecified"
+            android:theme="@style/Theme.Transparent.ImagePicker" />
+
+
+
         <activity
             android:name=".ui.auth.Exiter"
             android:excludeFromRecents="true"

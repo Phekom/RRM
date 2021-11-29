@@ -377,6 +377,15 @@ class OfflineDataRepository(
             "Work Completed",
             "Removal of Traffic Accommodation"
         )
+        val jobTypes = arrayOf(
+            "Point",
+            "Line"
+        )
+        jobTypes.forEach { structType ->
+            if (!appDb.getJobTypeDao().checkifExists(structType)) {
+                appDb.getJobTypeDao().insertType(structType)
+            }
+        }
         for (step_code in workState.iterator()) {
             if (!appDb.getWorkStepDao().checkWorkFlowStepExistsWorkCode(step_code)) {
                 appDb.getWorkStepDao().insertStepsCode(step_code, actId)
@@ -561,7 +570,7 @@ class OfflineDataRepository(
 
             appDb.getWorkflowsDao().insertWorkFlows(workFlows)
 
-            workFlows.workflows.forEach { workFlow ->
+            workFlows.workflows?.forEach { workFlow ->
                 if (!appDb.getWorkFlowDao().checkWorkFlowExistsWorkflowID(workFlow.workflowId)) {
                     appDb.getWorkFlowDao().insertWorkFlow(workFlow)
                 }
@@ -573,7 +582,7 @@ class OfflineDataRepository(
                 appDb.getActivityDao().insertActivitys(activity)
             }
 
-            workFlows.infoClasses.forEach { infoClass ->
+            workFlows.infoClasses?.forEach { infoClass ->
                 appDb.getInfoClassDao().insertInfoClasses(infoClass)
             }
         }

@@ -16,12 +16,12 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 interface UserDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(user: UserDTO): Long
+    fun insert(user: UserDTO): Long
 
     @Query("SELECT EXISTS (SELECT * FROM USER_TABLE WHERE userId = :userId)")
     fun checkUserExists(userId: String): Boolean
     @Query("UPDATE USER_TABLE SET pinHash = :pinHash,  phoneNumber = :phoneNumber, imei=:imei, device=:device ")
-    suspend fun updateUser(pinHash: String?, phoneNumber: String?, imei: String?, device: String?)
+    fun updateUser(pinHash: String?, phoneNumber: String?, imei: String?, device: String?)
 
     @Query("SELECT * FROM USER_TABLE LIMIT 1")
     fun getUser(): LiveData<UserDTO>
@@ -33,7 +33,7 @@ interface UserDao {
     fun getUserName(): String
 
     @Delete
-    suspend fun removeUser(userDTO: UserDTO)
+    fun removeUser(userDTO: UserDTO)
 
     @Query("DELETE FROM USER_TABLE")
     fun deleteUser()
@@ -58,8 +58,8 @@ interface UserDao {
     fun toggleAuthd(userId: String, yayNay: Boolean)
 
     @Query("UPDATE USER_TABLE SET authd = 1")
-    suspend fun pinAuthenticated()
+    fun pinAuthenticated()
 
     @Query("UPDATE USER_TABLE SET authd = 0")
-    suspend fun pinExpired()
+    fun pinExpired()
 }

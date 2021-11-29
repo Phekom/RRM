@@ -19,7 +19,7 @@ interface SectionItemDao {
     fun checkIfSectionItemsExist(itemCode: String?): Boolean
 
     @Query("INSERT INTO SECTION_ITEM_TABLE (sectionItemId, itemCode, description)VALUES(:sectionItemId, :itemCode,:description)")
-    suspend fun insertSectionItem(description: String, itemCode: String, sectionItemId: String): Long
+    fun insertSectionItem(description: String, itemCode: String, sectionItemId: String): Long
 
 //    @Query("SELECT sectionItemId FROM SECTION_ITEM_TABLE WHERE itemCode + :itemId ")
 

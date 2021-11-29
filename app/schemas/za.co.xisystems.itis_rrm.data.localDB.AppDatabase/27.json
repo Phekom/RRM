@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 27,
-    "identityHash": "f50b8d1c306964b788ff0b31ff23bc31",
+    "identityHash": "ade623c726882fa1cd49c8f9ad3f7643",
     "entities": [
       {
         "tableName": "JOB_TABLE",
@@ -1175,6 +1175,32 @@
             ]
           }
         ]
+      },
+      {
+        "tableName": "JobType_TABLE",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`typeId` INTEGER NOT NULL, `description` TEXT NOT NULL, PRIMARY KEY(`typeId`))",
+        "fields": [
+          {
+            "fieldPath": "typeId",
+            "columnName": "typeId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "description",
+            "columnName": "description",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "typeId"
+          ],
+          "autoGenerate": false
+        },
+        "indices": [],
+        "foreignKeys": []
       },
       {
         "tableName": "PROJECT_SECTION_TABLE",
@@ -2666,7 +2692,7 @@
       },
       {
         "tableName": "WORKFLOWs_TABLE",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`activities` TEXT NOT NULL, `infoClasses` TEXT NOT NULL, `workflows` TEXT NOT NULL, PRIMARY KEY(`activities`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`activities` TEXT NOT NULL, `infoClasses` TEXT, `workflows` TEXT, PRIMARY KEY(`activities`))",
         "fields": [
           {
             "fieldPath": "activities",
@@ -2678,13 +2704,13 @@
             "fieldPath": "infoClasses",
             "columnName": "infoClasses",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "workflows",
             "columnName": "workflows",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           }
         ],
         "primaryKey": {
@@ -2835,7 +2861,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'f50b8d1c306964b788ff0b31ff23bc31')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'ade623c726882fa1cd49c8f9ad3f7643')"
     ]
   }
 }

@@ -14,13 +14,13 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobSectionDTO
 interface JobSectionDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertJobSection(jobSection: JobSectionDTO)
+    fun insertJobSection(jobSection: JobSectionDTO)
 
     @Query("SELECT * FROM JOB_SECTION_TABLE WHERE jobSectionId = :jobSectionId")
     fun checkIfJobSectionExist(jobSectionId: String): Boolean
 
     @Query("SELECT EXISTS(SELECT * FROM JOB_SECTION_TABLE WHERE jobId = :jobId AND projectSectionId = :projectSectionId)")
-    suspend fun checkIfJobSectionExistForJob(jobId: String?, projectSectionId: String?): Boolean
+    fun checkIfJobSectionExistForJob(jobId: String?, projectSectionId: String?): Boolean
 
     @Query("SELECT * FROM JOB_SECTION_TABLE WHERE jobId = :jobId")
     fun getJobSectionFromJobId(jobId: String): JobSectionDTO?

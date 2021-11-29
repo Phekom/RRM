@@ -16,7 +16,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
 interface ItemDaoTemp {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertItems(item: ItemDTOTemp): Long
+    fun insertItems(item: ItemDTOTemp): Long
 
     @Query("SELECT * FROM PROJECT_ITEM_TABLE_TEMP WHERE itemId = :itemId")
     fun checkItemExistsItemId(itemId: String): Boolean
@@ -25,7 +25,7 @@ interface ItemDaoTemp {
     fun getAllProjecItems(projectId: String, jobId: String): LiveData<List<ItemDTOTemp>>
 
     @Query("SELECT * FROM PROJECT_ITEM_TABLE_TEMP WHERE itemId = :itemId")
-    suspend fun getProjectItemById(itemId: String): ItemDTOTemp
+    fun getProjectItemById(itemId: String): ItemDTOTemp
 
     @Query("DELETE FROM PROJECT_ITEM_TABLE_TEMP")
     fun deleteAll()

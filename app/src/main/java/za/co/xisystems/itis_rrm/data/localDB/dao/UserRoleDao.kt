@@ -14,10 +14,10 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.UserRoleDTO
 @Dao
 interface UserRoleDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun saveAllRoles(userRole: List<UserRoleDTO>)
+    fun saveAllRoles(userRole: List<UserRoleDTO>)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun saveRole(userRole: UserRoleDTO)
+    fun saveRole(userRole: UserRoleDTO)
 
     @Query("DELETE FROM USER_ROLE_TABLE")
     fun deleteAllUserRoles()

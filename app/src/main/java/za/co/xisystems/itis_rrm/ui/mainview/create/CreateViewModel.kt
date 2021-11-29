@@ -26,13 +26,7 @@ import timber.log.Timber
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.custom.results.XIResult
-import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimatesPhotoDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectSectionDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.SectionItemDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.data.repositories.JobCreationDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
 import za.co.xisystems.itis_rrm.domain.ContractSelector
@@ -393,6 +387,12 @@ class CreateViewModel(
         val data = jobCreationDataRepository.backupEstimate(estimate)
         withContext(mainContext) {
             currentEstimate.value = XIEvent(data)
+        }
+    }
+
+    suspend fun getJobType(): LiveData<List<JobTypeEntityDTO>> {
+        return withContext(Dispatchers.IO) {
+            jobCreationDataRepository.getStructureTypes()
         }
     }
 

@@ -16,7 +16,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.ToDoListEntityDTO
 interface EntitiesDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertEntities(intities: ToDoListEntityDTO): Long
+    fun insertEntities(intities: ToDoListEntityDTO): Long
 
     @Query(
         "INSERT INTO TODO_ENTITY_TABLE (trackRouteIdString, actionable, activityId, currentRouteId, data, description, entities, entityName, location, primaryKeyValues, recordVersion, jobId) " +

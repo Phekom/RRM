@@ -231,6 +231,7 @@ class HomeFragment: BaseFragment() {
         }
 
         ui.unallocatedPhotoAdd.setOnClickListener {
+//            ToastUtils().toastVersion(requireContext())
             val directions = HomeFragmentDirections.actionNavHomeToNavUnallocated()
             Navigation.findNavController(this@HomeFragment.requireView())
                 .navigate(directions)

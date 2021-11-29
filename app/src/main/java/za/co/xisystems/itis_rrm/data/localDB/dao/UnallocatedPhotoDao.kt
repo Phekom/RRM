@@ -14,10 +14,10 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.UnallocatedPhotoDTO
 interface UnallocatedPhotoDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertUnallocatedPhoto(photo: UnallocatedPhotoDTO)
+    fun insertUnallocatedPhoto(photo: UnallocatedPhotoDTO)
 
     @Update
-    suspend fun updateUnallocatedPhoto(photo: UnallocatedPhotoDTO)
+    fun updateUnallocatedPhoto(photo: UnallocatedPhotoDTO)
 
     @Query("SELECT EXISTS (SELECT * FROM UNALLOCATED_PHOTOS WHERE photoId = :photoId)")
     fun checkIfUnallocatedPhotoExistsByPhotoId(photoId: String): Boolean
@@ -29,10 +29,10 @@ interface UnallocatedPhotoDao {
     fun deleteAll()
 
     @Query("DELETE FROM UNALLOCATED_PHOTOS WHERE photoId = :photoId")
-    suspend fun deletePhotoById(photoId: String)
+    fun deletePhotoById(photoId: String)
 
     @Transaction
-    suspend fun retakeUnallocatedPhoto(photoId: String, newPhoto: UnallocatedPhotoDTO) {
+    fun retakeUnallocatedPhoto(photoId: String, newPhoto: UnallocatedPhotoDTO) {
         deletePhotoById(photoId)
         insertUnallocatedPhoto(newPhoto)
     }

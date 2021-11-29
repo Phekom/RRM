@@ -16,10 +16,12 @@
     <dimen name="button_size">60dp</dimen>
     <dimen name="image_xmedium">80dp</dimen>
     <dimen name="image_xlarge">156dp</dimen>
+    <dimen name="dimen_150dp">150dp</dimen>
 
     <dimen name="padding_small">8dp</dimen>
     <dimen name="padding_standard">16dp</dimen>
-
+    <dimen name="dimen_32sp">32sp</dimen>
+    <dimen name="dimen_40dp">40dp</dimen>
 
     <dimen name="dimen_50dp">50dp</dimen>
     <dimen name="dimen_30dp">30dp</dimen>
