@@ -29,35 +29,64 @@
                 android:textSize="@dimen/text_medium"
                 tools:ignore="HardcodedText" />
 
-            <RelativeLayout
+            <LinearLayout
+                android:id="@+id/spinnerrel"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/dimen_40dp"
-                android:gravity="center_horizontal"
-                android:id="@+id/spinnerrel"
                 android:orientation="horizontal"
                 android:layout_margin="@dimen/xsmall"
-                android:background="@drawable/buttonshape"
-                android:layout_gravity="center_vertical|bottom">
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
 
                 <TextView
+                    android:id="@+id/label1"
+                    android:layout_width="@dimen/dimen_200dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginStart="@dimen/dimen_10dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginEnd="5dp"
+                    android:ellipsize="marquee"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
+                    android:gravity="center|left"
+                    android:marqueeRepeatLimit="marquee_forever"
+                    android:scrollHorizontally="true"
+                    android:singleLine="true"
+                    android:text="@string/select_job_type"
+                    android:textAllCaps="false"
+                    android:textSize="14sp"
+                    tools:ignore="RtlHardcoded" />
+
+                <RadioGroup
+                    android:id="@+id/jobTypeRadioGroup"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="left"
-                    android:layout_marginStart="10dp"
-                    android:layout_marginTop="@dimen/dimen_10dp"
-                    android:text="@string/select_job_type"
-                    tools:ignore="RelativeOverlap,RtlHardcoded" />
+                    android:orientation="horizontal"
+                    android:layout_marginStart="@dimen/dimen_10dp"
+                    android:layout_marginTop="@dimen/dimen_5dp">
 
-                <Spinner
-                    android:id="@+id/jobType"
-                    android:layout_width="160dp"
-                    android:layout_height="fill_parent"
-                    android:layout_alignParentEnd="true"
-                    android:layout_marginEnd="10dp"
-                    android:paddingStart="20dp"
-                    tools:ignore="RtlSymmetry" />
+                    <RadioButton
+                        android:id="@+id/point"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/point" />
 
-            </RelativeLayout>
+                    <RadioButton
+                        android:id="@+id/line"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="@dimen/dimen_5dp"
+                        android:checked="false"
+                        android:text="@string/line" />
+
+                </RadioGroup>
+
+
+            </LinearLayout>
+
+
 
 
 
@@ -122,7 +151,6 @@
                         android:layout_height="wrap_content"
                         android:layout_margin="@dimen/xsmall"
                         android:layout_weight="1"
-                        android:visibility="gone"
                         android:id="@+id/secondImage"
                         android:orientation="vertical">
 

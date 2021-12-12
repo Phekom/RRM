@@ -250,6 +250,11 @@ class JobCreationDataRepository(
                     appDb.getJobItemEstimateDao()
                         .deleteJobItemEstimateByEstimateId(it)
                 } ?: 0
+//            val estimatesPhotosDeleted =
+                estimateId?.let {
+                    appDb.getJobItemEstimatePhotoDao()
+                        .deleteJobItemEstimatePhotosByEstimateId(it)
+                } ?: 0
             itemsDeleted + estimatesDeleted
         }
     }

@@ -36,8 +36,8 @@ data class JobItemEstimateDTO(
     var jobId: String?,
     @SerializedName("LineRate")
     var lineRate: Double,
-    @SerializedName("MobileEstimateSize")
-    var jobItemEstimateSize: String? = JobItemEstimateSize.POINT.getValue(),
+    @SerializedName("JobEstimateSize")//JobEstimateSize
+    var jobItemEstimateSize: String? ,
     @SerializedName("MobileEstimateWorks")
     var jobEstimateWorks: ArrayList<JobEstimateWorksDTO> = ArrayList(),
     @SerializedName("MobileJobItemEstimatesPhotos")

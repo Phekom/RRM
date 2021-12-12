@@ -21,22 +21,30 @@ object IntentUtils {
      * @return Intent Gallery Intent
      */
     @JvmStatic
-    fun getGalleryIntent(context: Context, mimeTypes: Array<String>): Intent {
-        val intent = getGalleryDocumentIntent(mimeTypes)
+    fun getGalleryIntent(context: Context, mimeTypes: Array<String>, pictureFolderUri: File): Intent {
+
+
+////        if (pictureFolder.exists()){
+//            val allFiles: Array<File> = pictureFolder.listFiles {
+//                    dir, name -> name.endsWith(".jpg") || name.endsWith(".jpeg") || name.endsWith(".png") }
+////        }
+        val intent = getGalleryDocumentIntent(mimeTypes, pictureFolderUri)
         if (intent.resolveActivity(context.packageManager) != null) {
             return intent
         }
-        return getLegacyGalleryPickIntent(mimeTypes)
+        return getLegacyGalleryPickIntent(mimeTypes,pictureFolderUri)
     }
+
+
 
     /**
      * Ref: https://developer.android.com/reference/android/content/Intent#FLAG_GRANT_PERSISTABLE_URI_PERMISSION
      *
      * @return Intent Gallery Document Intent
      */
-    private fun getGalleryDocumentIntent(mimeTypes: Array<String>): Intent {
+    private fun getGalleryDocumentIntent(mimeTypes: Array<String>, pictureFolderUri: File): Intent {
         // Show Document Intent
-        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).applyImageTypes(mimeTypes)
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).applyImageTypes(mimeTypes, pictureFolderUri)
         intent.addCategory(Intent.CATEGORY_OPENABLE)
         intent.addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
@@ -47,12 +55,13 @@ object IntentUtils {
     /**
      * @return Intent Gallery Pick Intent
      */
-    private fun getLegacyGalleryPickIntent(mimeTypes: Array<String>): Intent {
+    private fun getLegacyGalleryPickIntent(mimeTypes: Array<String>, pictureFolderUri: File): Intent {
         // Show Gallery Intent, Will open google photos
-        return Intent(Intent.ACTION_PICK).applyImageTypes(mimeTypes)
+        return Intent( Intent.ACTION_PICK)
+            .applyImageTypes(mimeTypes,pictureFolderUri)
     }
 
-    private fun Intent.applyImageTypes(mimeTypes: Array<String>): Intent {
+    private fun Intent.applyImageTypes(mimeTypes: Array<String>, pictureFolderUri: File): Intent {
         // Apply filter to show image only in intent
         type = "image/*"
         if (mimeTypes.isNotEmpty()) {
@@ -65,17 +74,16 @@ object IntentUtils {
      * @return Intent Camera Intent
      */
     @JvmStatic
-    fun getCameraIntent(context: Context, file: File): Intent? {
+    fun getCameraIntent(context: Context, imageUri : Uri?): Intent? {
+//        fun getCameraIntent(context: Context, file: File): Intent? {
         val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            // authority = com.github.dhaval2404.imagepicker.provider
-            val authority =
-                context.packageName + context.getString(R.string.image_picker_provider_authority_suffix)
-            val photoURI = FileProvider.getUriForFile(context, authority, file)
-            intent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
+//            val authority = context.packageName + context.getString(R.string.image_picker_provider_authority_suffix)
+//            val photoURI = FileProvider.getUriForFile(context, authority, file)
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri)
         } else {
-            intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(file))
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri)//Uri.fromFile(file))
         }
 
         return intent

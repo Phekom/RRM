@@ -361,5 +361,7 @@
     <string name="capture_photo">Capture Photo</string>
     <string name="capture_start">Start Photo</string>
     <string name="end_photo">End Photo</string>
+    <string name="line">Line</string>
+    <string name="point">Point</string>
 
 </resources>

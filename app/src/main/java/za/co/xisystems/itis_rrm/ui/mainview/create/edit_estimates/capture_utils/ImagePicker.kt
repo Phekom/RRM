@@ -1,13 +1,20 @@
 package za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates.capture_utils
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.os.Environment
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
+import za.co.xisystems.itis_rrm.forge.DefaultDispatcherProvider
+import za.co.xisystems.itis_rrm.forge.DispatcherProvider
 import za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates.capture_utils.util.DialogHelper
 import za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates.capture_utils.constant.ImageProvider
 import za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates.capture_utils.listener.DismissListener
 import za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates.capture_utils.listener.ResultListener
+import za.co.xisystems.itis_rrm.utils.Coroutines
+import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import java.io.File
 
 /**
@@ -225,6 +232,20 @@ open class ImagePicker {
         fun saveDir(file: File): Builder {
             this.saveDir = file.absolutePath
             return this
+        }
+
+        private fun initInstance(
+            context: Context,
+            dispatchers: DispatcherProvider = DefaultDispatcherProvider()
+        ): PhotoUtil {
+            PhotoUtil.mInstance = PhotoUtil(context, dispatchers)
+            Coroutines.io {
+                PhotoUtil.instance.pictureFolder =
+                    context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)!!
+                if (!PhotoUtil.instance.pictureFolder.exists()) {
+                    PhotoUtil.instance.pictureFolder.mkdirs()
+                }
+            }.also { return PhotoUtil.instance }
         }
 
         /**
