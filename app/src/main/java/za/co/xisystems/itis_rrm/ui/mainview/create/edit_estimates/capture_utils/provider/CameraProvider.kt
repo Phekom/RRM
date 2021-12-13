@@ -10,9 +10,10 @@ import androidx.core.app.ActivityCompat.requestPermissions
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates.capture_utils.ImagePicker
 import za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates.capture_utils.ImagePickerActivity
-import za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates.capture_utils.util.FileUtil
 import za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates.capture_utils.util.IntentUtils
 import za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates.capture_utils.util.PermissionUtil
+import za.co.xisystems.itis_rrm.utils.Coroutines
+
 import java.io.File
 
 /**
@@ -42,6 +43,7 @@ class CameraProvider(activity: ImagePickerActivity) : BaseProvider(activity) {
      * Temp Camera File
      */
     private var mCameraFile: File? = null
+    private var imageUri: Uri? = null
 
     /**
      * Camera image will be stored in below file directory
@@ -115,16 +117,20 @@ class CameraProvider(activity: ImagePickerActivity) : BaseProvider(activity) {
      */
     private fun startCameraIntent() {
         // Create and get empty file to store capture image content
-        val file = FileUtil.getImageFile(fileDir = mFileDir)
-        mCameraFile = file
+        Coroutines.main {
+            imageUri = activity.photoUtil.getUri()
+//            val file = FileUtil.getImageFile(fileDir = mFileDir)
+//            mCameraFile = file
+            // Check if file exists && file.exists()
+            if (imageUri != null ) {
+                val cameraIntent = IntentUtils.getCameraIntent(this, imageUri)
+                activity.startActivityForResult(cameraIntent, CAMERA_INTENT_REQ_CODE)
+            } else {
+                setError(R.string.error_failed_to_create_camera_image_file)
+            }
 
-        // Check if file exists
-        if (file != null && file.exists()) {
-            val cameraIntent = IntentUtils.getCameraIntent(this, file)
-            activity.startActivityForResult(cameraIntent, CAMERA_INTENT_REQ_CODE)
-        } else {
-            setError(R.string.error_failed_to_create_camera_image_file)
         }
+
     }
 
     /**
@@ -199,7 +205,12 @@ class CameraProvider(activity: ImagePickerActivity) : BaseProvider(activity) {
      * This method will be called when final result fot this provider is enabled.
      */
     private fun handleResult() {
-        activity.setImage(Uri.fromFile(mCameraFile))
+        activity.setImage(imageUri!!)
+
+//        Coroutines.main {
+//            imageUri = activity.photoUtil.getUri()
+////        activity.setImage(Uri.fromFile(mCameraFile))
+//        }
     }
 
     /**

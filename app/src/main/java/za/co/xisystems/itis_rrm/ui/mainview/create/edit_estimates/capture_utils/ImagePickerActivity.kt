@@ -5,21 +5,28 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
+import android.util.Log
+import android.view.View
+import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
+import org.kodein.di.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.ui.base.BaseActivity
 import za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates.capture_utils.constant.ImageProvider
 import za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates.capture_utils.provider.CameraProvider
 import za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates.capture_utils.provider.CompressionProvider
 import za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates.capture_utils.provider.CropProvider
 import za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates.capture_utils.provider.GalleryProvider
 import za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates.capture_utils.util.FileUriUtils
+import za.co.xisystems.itis_rrm.utils.PhotoUtil
 
 /**
  * Created by Francis Mahlava on 2021/11/23.
  */
 
-class ImagePickerActivity : AppCompatActivity() {
+class ImagePickerActivity : BaseActivity() {
 
     companion object {
         private const val TAG = "image_picker"
@@ -36,10 +43,32 @@ class ImagePickerActivity : AppCompatActivity() {
     private var mCameraProvider: CameraProvider? = null
     private lateinit var mCropProvider: CropProvider
     private lateinit var mCompressionProvider: CompressionProvider
+    val photoUtil: PhotoUtil by instance()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         loadBundle(savedInstanceState)
+    }
+
+    override fun startLongRunningTask() {
+        Timber.i("starting task...")
+        // Make UI untouchable for duration of task
+        window.setFlags(
+            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+        )
+        window.setFlags(
+            WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
+            WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+        )
+    }
+
+    override fun endLongRunningTask() {
+        Timber.i("stopping task...")
+        // Re-enable UI touches
+        window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+        window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     }
 
     /**
@@ -63,9 +92,11 @@ class ImagePickerActivity : AppCompatActivity() {
         mCompressionProvider = CompressionProvider(this)
 
         // Retrieve Image Provider
+        val provider: ImageProvider? =
+            intent?.getSerializableExtra(ImagePicker.EXTRA_IMAGE_PROVIDER) as ImageProvider?
 
         // Create Gallery/Camera Provider
-        when (intent?.getSerializableExtra(ImagePicker.EXTRA_IMAGE_PROVIDER) as ImageProvider?) {
+        when (provider) {
             ImageProvider.GALLERY -> {
                 mGalleryProvider = GalleryProvider(this)
                 // Pick Gallery Image
@@ -120,11 +151,13 @@ class ImagePickerActivity : AppCompatActivity() {
      * @param uri Capture/Gallery image Uri
      */
     fun setImage(uri: Uri) {
-        when {
-            mCropProvider.isCropEnabled() -> mCropProvider.startIntent(uri)
-            mCompressionProvider.isCompressionRequired(uri) -> mCompressionProvider.compress(uri)
-            else -> setResult(uri)
-        }
+//        when {
+//            mCropProvider.isCropEnabled() -> mCropProvider.startIntent(uri)
+//            mCompressionProvider.isCompressionRequired(uri) -> mCompressionProvider.compress(uri)
+//            else ->
+
+                setResult(uri)
+//        }
     }
 
     /**
@@ -172,9 +205,11 @@ class ImagePickerActivity : AppCompatActivity() {
     private fun setResult(uri: Uri) {
         val intent = Intent()
         intent.data = uri
-        intent.putExtra(ImagePicker.EXTRA_FILE_PATH, FileUriUtils.getRealPath(this, uri))
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, uri)
+       // putExtra(ImagePicker.EXTRA_FILE_PATH, FileUriUtils.getRealPath(this, uri))
         setResult(Activity.RESULT_OK, intent)
         finish()
+
     }
 
     /**

@@ -46,7 +46,7 @@ import java.util.Locale
 import java.util.UUID
 import kotlin.math.roundToLong
 
-class PhotoUtil private constructor(
+class PhotoUtil(
     private var appContext: Context,
     private val dispatchers: DispatcherProvider = DefaultDispatcherProvider()
 ) {
@@ -55,7 +55,7 @@ class PhotoUtil private constructor(
     lateinit var galleryFolder: File
 
     companion object {
-        private var mInstance: PhotoUtil? = null
+        var mInstance: PhotoUtil? = null
         val instance get() = mInstance!!
         private const val BMP_LOAD_FAILED = "Failed to load bitmap"
 
@@ -314,60 +314,6 @@ class PhotoUtil private constructor(
                 direct.mkdirs()
             }
             val path = direct.toString() + File.separator + imageFileName
-            options.inJustDecodeBounds = true
-            var bmp = BitmapFactory.decodeFile(path, options)
-            var actualHeight = options.outHeight
-            var actualWidth = options.outWidth
-            //      max Height and width values of the compressed image is taken as 816x612
-            val pair = resizeBitmapToMax(actualWidth, actualHeight)
-            actualHeight = pair.first
-            actualWidth = pair.second
-            //      setting inSampleSize value allows to load a scaled down version of the original image
-            options.inSampleSize =
-                calculateInSampleSize(options, actualWidth, actualHeight)
-            //      inJustDecodeBounds set to false to load the actual bitmap
-            options.inJustDecodeBounds = false
-            //      this options allow android to claim the bitmap memory if it runs low on memory
-
-            // these aren't much use for decodeFile operations
-            // options.inPurgeable = true
-            // options.inInputShareable = true
-
-            options.inTempStorage = ByteArray(16 * 1024)
-            try { //          load the bitmap from its path
-                bmp = BitmapFactory.decodeFile(path, options)
-
-                scaledBitmap =
-                    Bitmap.createBitmap(actualWidth, actualHeight, Bitmap.Config.ARGB_8888)
-            } catch (exception: OutOfMemoryError) {
-                Timber.e(exception, "Failed to create bitmap")
-            }
-
-            val ratioX = actualWidth / options.outWidth.toFloat()
-            val ratioY = actualHeight / options.outHeight.toFloat()
-            val middleX = actualWidth / 2.0f
-            val middleY = actualHeight / 2.0f
-            val scaleMatrix = Matrix()
-            scaleMatrix.setScale(ratioX, ratioY, middleX, middleY)
-            val canvas = Canvas(scaledBitmap)
-            canvas.setMatrix(scaleMatrix)
-            canvas.drawBitmap(
-                bmp,
-                middleX - bmp.width / 2,
-                middleY - bmp.height / 2,
-                Paint(Paint.FILTER_BITMAP_FLAG)
-            )
-            //      check the rotation of the image and display it properly
-            scaledBitmap = applyExifRotation(path, scaledBitmap)
-            val out: FileOutputStream?
-            try {
-                out = FileOutputStream(path)
-                // write the compressed bitmap at the destination specified by filename.
-                scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
-                out.close()
-            } catch (e: FileNotFoundException) {
-                e.printStackTrace()
-            }
 
             LocalBroadcastManager.getInstance(appContext).sendBroadcast(
                 Intent(
@@ -534,7 +480,7 @@ class PhotoUtil private constructor(
         }
     }
 
-    private suspend fun getUriFromPath(filePath: String): Uri? = withContext(dispatchers.io()) {
+    suspend fun getUriFromPath(filePath: String): Uri? = withContext(dispatchers.io()) {
         return@withContext try {
             val file = File(filePath)
             val uri = Uri.fromFile(file)
