@@ -363,5 +363,6 @@
     <string name="end_photo">End Photo</string>
     <string name="line">Line</string>
     <string name="point">Point</string>
+    <string name="qauntity">Quantity</string>
 
 </resources>
