@@ -14,6 +14,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
@@ -25,8 +26,10 @@ import za.co.xisystems.itis_rrm.databinding.FragmentCaptureGalleryBinding
 import za.co.xisystems.itis_rrm.services.LocationModel
 import za.co.xisystems.itis_rrm.ui.extensions.addZoomedImages
 import za.co.xisystems.itis_rrm.ui.extensions.scaleForSize
+import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
+import java.io.File
 import java.util.HashMap
 
 class CaptureGalleryFragment : LocationFragment() {
@@ -45,6 +48,7 @@ class CaptureGalleryFragment : LocationFragment() {
     private val captureFactory: CaptureViewModelFactory by instance()
     private var imageUri: Uri? = null
     private var filenamePath = HashMap<String, String>()
+    private var uiScope = UiLifecycleScope()
     /**
      * ActivityResultContract for taking a photograph
      */
@@ -56,8 +60,11 @@ class CaptureGalleryFragment : LocationFragment() {
                 processAndSetImage(realUri)
             }
         } else {
-            Coroutines.io {
-                photoUtil.deleteImageFile(filenamePath["path"])
+            imageUri?.let { failedUri ->
+                uiScope.launch(dispatchers.io()) {
+                    val filenamePath = File(failedUri.path!!)
+                    photoUtil.deleteImageFile(filenamePath.toString())
+                }
             }
         }
         this.photosDone()

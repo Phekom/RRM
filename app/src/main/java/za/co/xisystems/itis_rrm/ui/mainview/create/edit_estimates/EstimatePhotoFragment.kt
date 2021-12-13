@@ -19,14 +19,12 @@ import android.location.LocationManager
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
-import android.util.Log
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
@@ -42,8 +40,6 @@ import androidx.lifecycle.whenStarted
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.navArgs
 import com.airbnb.lottie.LottieAnimationView
-import com.github.dhaval2404.imagepicker.constant.ImageProvider
-import com.github.dhaval2404.imagepicker.listener.DismissListener
 import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraOptions
 import com.mapbox.maps.EdgeInsets
@@ -75,7 +71,11 @@ import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
-import za.co.xisystems.itis_rrm.data.localDB.entities.*
+import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimatesPhotoDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobTypeEntityDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentPhotoEstimateBinding
 import za.co.xisystems.itis_rrm.services.LocationModel
 import za.co.xisystems.itis_rrm.ui.extensions.crashGuard
@@ -237,7 +237,7 @@ class EstimatePhotoFragment : LocationFragment() {
         Coroutines.main {
 
             val modules = createViewModel.getJobType()
-            modules.observe( viewLifecycleOwner ) { modulesTpye ->
+            modules.observe(viewLifecycleOwner) { modulesTpye ->
                 val contractNmbr = arrayOfNulls<String>(modulesTpye.size)
                 for (contract in modulesTpye.indices) {
                     contractNmbr[contract] = modulesTpye[contract].description
@@ -251,16 +251,15 @@ class EstimatePhotoFragment : LocationFragment() {
                     object : SpinnerHelper.SelectionListener<JobTypeEntityDTO> {
                         override fun onItemSelected(position: Int, item: JobTypeEntityDTO) {
                             Coroutines.main {
-                               // selectedjobType = item.description
+                                // selectedjobType = item.description
 
-                                    if (item.description.contains("Point")) {
-                                        _binding?.secondImage?.visibility = View.GONE
-                                        _binding?.startPhotoButton?.text = getString(R.string.capture_photo)
-
-                                    } else {
-                                        _binding?.secondImage?.visibility = View.VISIBLE
-                                        _binding?.startPhotoButton?.text = getString(R.string.capture_start)
-                                    }
+                                if (item.description.contains("Point")) {
+                                    _binding?.secondImage?.visibility = View.GONE
+                                    _binding?.startPhotoButton?.text = getString(R.string.capture_photo)
+                                } else {
+                                    _binding?.secondImage?.visibility = View.VISIBLE
+                                    _binding?.startPhotoButton?.text = getString(R.string.capture_start)
+                                }
                             }
                         }
                     }
@@ -542,9 +541,6 @@ class EstimatePhotoFragment : LocationFragment() {
         }
     }
 
-
-
-
     @SuppressLint("TimberArgCount")
     private fun setButtonClicks() {
 
@@ -553,6 +549,7 @@ class EstimatePhotoFragment : LocationFragment() {
 
                 R.id.startPhotoButton -> {
                     ImagePicker.with(this)
+                        .saveDir(photoUtil.pictureFolder)
 //                        .cropSquare()
                         .setImageProviderInterceptor { imageProvider -> // Intercept ImageProvider
                             Timber.d("ImagePicker", "Selected ImageProvider: + ${ imageProvider.name} ")
@@ -564,7 +561,7 @@ class EstimatePhotoFragment : LocationFragment() {
                         .maxResultSize(200, 200)
                         .start(IMAGE_REQ_CODE)
 
-                   // binding.startPhotoButton.visibility = View.GONE
+                    // binding.startPhotoButton.visibility = View.GONE
                     // binding.originStart.visibility = View.VISIBLE
                 }
                 R.id.endPhotoButton -> {
@@ -580,11 +577,9 @@ class EstimatePhotoFragment : LocationFragment() {
                         .maxResultSize(200, 200)
                         .start(IMAGE_REQ_CODE)
 
-
-                   // binding.endPhotoButton.visibility = View.GONE
-                  //  binding.originEnd.visibility = View.VISIBLE
+                    // binding.endPhotoButton.visibility = View.GONE
+                    //  binding.originEnd.visibility = View.VISIBLE
                 }
-
 
                 R.id.cancelButton -> {
                     Coroutines.main {
@@ -602,7 +597,6 @@ class EstimatePhotoFragment : LocationFragment() {
         binding.endPhotoButton.setOnClickListener(myClickListener)
         binding.cancelButton.setOnClickListener(myClickListener)
         binding.updateButton.setOnClickListener(myClickListener)
-
 
         // If the user hits the enter key on the costing field,
         // hide the keypad.
@@ -629,32 +623,11 @@ class EstimatePhotoFragment : LocationFragment() {
                 }
             }
         } else if (resultCode == com.github.dhaval2404.imagepicker.ImagePicker.RESULT_ERROR) {
-            ToastUtils().toastShort(requireContext(),ImagePicker.getError(data))
+            ToastUtils().toastShort(requireContext(), ImagePicker.getError(data))
         } else {
-            ToastUtils().toastShort(requireContext(),"Task Cancelled")
+            ToastUtils().toastShort(requireContext(), "Task Cancelled")
         }
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     private fun validateAndUpdateEstimate(view: View) {
         if (binding.costTextView.text.isNullOrEmpty() || newJobItemEstimate!!.size() != 2) {
@@ -770,7 +743,6 @@ class EstimatePhotoFragment : LocationFragment() {
         }
     }
 
-    @Synchronized
     private suspend fun restoreEstimatePhoto(
         // jobItemEstimate: JobItemEstimateDTO,
         photo: JobItemEstimatesPhotoDTO,

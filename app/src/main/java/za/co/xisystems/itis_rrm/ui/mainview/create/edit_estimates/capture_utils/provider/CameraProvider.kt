@@ -13,7 +13,6 @@ import za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates.capture_utils.
 import za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates.capture_utils.util.FileUtil
 import za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates.capture_utils.util.IntentUtils
 import za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates.capture_utils.util.PermissionUtil
-
 import java.io.File
 
 /**

@@ -11,9 +11,7 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import java.util.UUID
 
 /**
  * Created by Francis Mahlava on 2021/11/23.
@@ -54,18 +52,11 @@ object FileUtil {
         }
     }
 
-    private fun getFileName() = "IMG_${getTimestamp()}"
+    private fun getFileName() = "IMG_${getGUIDFileName()}"
     // private fun getFileName() = "IMAGE_PICKER"
 
-    /**
-     * Get Current Time in yyyyMMdd HHmmssSSS format
-     *
-     * 2019/01/30 10:30:20 000
-     * E.g. 20190130_103020000
-     */
-    private fun getTimestamp(): String {
-        val timeFormat = "yyyyMMdd_HHmmssSSS"
-        return SimpleDateFormat(timeFormat, Locale.getDefault()).format(Date())
+    private fun getGUIDFileName(): String {
+        return UUID.randomUUID().toString()
     }
 
     /**

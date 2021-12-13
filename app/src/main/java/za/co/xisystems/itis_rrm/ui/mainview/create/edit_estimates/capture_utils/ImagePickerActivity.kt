@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
@@ -64,11 +63,9 @@ class ImagePickerActivity : AppCompatActivity() {
         mCompressionProvider = CompressionProvider(this)
 
         // Retrieve Image Provider
-        val provider: ImageProvider? =
-            intent?.getSerializableExtra(ImagePicker.EXTRA_IMAGE_PROVIDER) as ImageProvider?
 
         // Create Gallery/Camera Provider
-        when (provider) {
+        when (intent?.getSerializableExtra(ImagePicker.EXTRA_IMAGE_PROVIDER) as ImageProvider?) {
             ImageProvider.GALLERY -> {
                 mGalleryProvider = GalleryProvider(this)
                 // Pick Gallery Image

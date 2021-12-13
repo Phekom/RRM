@@ -3,17 +3,17 @@ package za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates.capture_utils
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.os.Environment
 import androidx.fragment.app.Fragment
-import za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates.capture_utils.util.DialogHelper
 import za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates.capture_utils.constant.ImageProvider
 import za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates.capture_utils.listener.DismissListener
 import za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates.capture_utils.listener.ResultListener
+import za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates.capture_utils.util.DialogHelper
 import java.io.File
 
 /**
  * Created by Francis Mahlava on 2021/11/23.
  */
-
 
 open class ImagePicker {
 
@@ -62,12 +62,7 @@ open class ImagePicker {
          */
         @JvmStatic
         fun getError(data: Intent?): String {
-            val error = data?.getStringExtra(EXTRA_ERROR)
-            if (error != null) {
-                return error
-            } else {
-                return "Unknown Error!"
-            }
+            return data?.getStringExtra(EXTRA_ERROR) ?: "Unknown Error!"
         }
     }
 
@@ -113,7 +108,10 @@ open class ImagePicker {
          *
          * If null, Image will be stored in "{fileDir}/Images"
          */
-        private var saveDir: String? = null
+        private var saveDir: String? =
+            activity.applicationContext.getExternalFilesDir(
+                Environment.DIRECTORY_PICTURES
+            ).toString()
 
         /**
          * Call this while picking image for fragment.

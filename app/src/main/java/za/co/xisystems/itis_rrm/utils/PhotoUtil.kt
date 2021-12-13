@@ -7,6 +7,7 @@
 package za.co.xisystems.itis_rrm.utils
 
 import android.content.Context
+import android.content.Intent
 import android.content.res.AssetFileDescriptor
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -15,9 +16,9 @@ import android.graphics.Matrix
 import android.graphics.Paint
 import android.net.Uri
 import android.os.Build
-import android.os.Environment
 import androidx.core.content.FileProvider
 import androidx.exifinterface.media.ExifInterface
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import kotlinx.coroutines.withContext
 import org.apache.sanselan.ImageReadException
 import org.apache.sanselan.ImageWriteException
@@ -51,6 +52,7 @@ class PhotoUtil private constructor(
 ) {
 
     lateinit var pictureFolder: File
+    lateinit var galleryFolder: File
 
     companion object {
         private var mInstance: PhotoUtil? = null
@@ -65,9 +67,13 @@ class PhotoUtil private constructor(
             mInstance = PhotoUtil(context, dispatchers)
             Coroutines.io {
                 instance.pictureFolder =
-                    context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)!!
+                    context.getExternalFilesDir("pictures")!!
                 if (!instance.pictureFolder.exists()) {
                     instance.pictureFolder.mkdirs()
+                }
+                instance.galleryFolder = context.getExternalFilesDir("gallery")!!
+                if (!instance.galleryFolder.exists()) {
+                    instance.galleryFolder.mkdirs()
                 }
             }.also { return instance }
         }
@@ -362,6 +368,12 @@ class PhotoUtil private constructor(
             } catch (e: FileNotFoundException) {
                 e.printStackTrace()
             }
+
+            LocalBroadcastManager.getInstance(appContext).sendBroadcast(
+                Intent(
+                    Intent.ACTION_MEDIA_MOUNTED, Uri.parse("file://$pictureFolder")
+                )
+            )
 
             val map: HashMap<String, String> =
                 HashMap()
