@@ -24,7 +24,6 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
 import com.xwray.groupie.viewbinding.BindableItem
-import java.io.File
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
@@ -40,6 +39,7 @@ import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.Utils.nanCheck
 import za.co.xisystems.itis_rrm.utils.Utils.round
 import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
+import java.io.File
 
 /**
  * Created by Francis Mahlava on 2020/01/02.
@@ -194,10 +194,12 @@ class EstimatesItem(
     ) {
         if (ServiceUtil.isNetworkAvailable(activity.applicationContext)) {
             Coroutines.main {
+                val doubleQauntity =
+                    quantityEntry.text.toString().toDoubleOrNull() ?: 0.0
                 when {
-                    quantityEntry.text.toString() == "" ||
-                        nanCheck(quantityEntry.text.toString()) ||
-                        quantityEntry.text.toString().toDouble() < 0.0 -> {
+                    doubleQauntity <= 0 ||
+                        doubleQauntity.isNaN() ||
+                        doubleQauntity.toString().length > 9 -> {
                         activity.extensionToast(
                             message = "Please Enter a valid Quantity",
                             style = ToastStyle.WARNING

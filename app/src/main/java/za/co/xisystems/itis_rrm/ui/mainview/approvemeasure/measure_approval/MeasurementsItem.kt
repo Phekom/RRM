@@ -11,8 +11,6 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.Navigation
 import com.xwray.groupie.viewbinding.BindableItem
-import java.io.File
-import java.lang.ref.WeakReference
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
@@ -24,6 +22,8 @@ import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureViewMod
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.GlideApp
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
+import java.io.File
+import java.lang.ref.WeakReference
 
 /**
  * Created by Francis Mahlava on 2020/01/02.
@@ -33,7 +33,7 @@ class MeasurementsItem(
     private val approveViewModel: ApproveMeasureViewModel,
     private val fragmentReference: WeakReference<MeasureApprovalFragment>,
     private val viewLifecycleOwner: LifecycleOwner
-) : BindableItem<MeasurementsItemBinding>() {
+): BindableItem<MeasurementsItemBinding>() {
 
     val activity = fragmentReference.get()?.requireActivity()
     private fun sendItemType(
@@ -84,10 +84,12 @@ class MeasurementsItem(
         editQuantity: String,
         itemMeasureId: String
     ) {
+
         if (ServiceUtil.isNetworkAvailable(activity.applicationContext)) {
             Coroutines.main {
+                val dblQuantity = editQuantity.toDoubleOrNull() ?: 0.0
                 when {
-                    editQuantity == "" || nanCheck(editQuantity) -> {
+                    dblQuantity <= 0.0 || dblQuantity.isNaN() -> {
                         activity.extensionToast(
                             message = "Please Enter a valid Quantity",
                             style = ToastStyle.WARNING
@@ -134,15 +136,6 @@ class MeasurementsItem(
             )
         }
         fragmentReference.get()?.toggleLongRunning(false)
-    }
-
-    private fun nanCheck(toString: String): Boolean {
-        return try {
-            val dbl = toString.toDouble()
-            dbl.isNaN()
-        } catch (e: Exception) {
-            true
-        }
     }
 
     override fun getLayout() = R.layout.measurements_item

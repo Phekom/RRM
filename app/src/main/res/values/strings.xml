@@ -230,7 +230,7 @@
     <string name="user_blocked">The account $1%s is locked out. Please call or email ITIS Support for enquiries.</string>
 
     <!-- Location Validation -->
-    <string name="not_nra_territory">Captured coordinates (lat $1%s, lng $2%s) are outside of the SANRAL reserve.</string>
+    <string name="not_nra_territory">Captured coordinates $1%s are outside of the SANRAL reserve.</string>
     <string name="invalid_route_section">The section you are working in ($1%s) is not part of the selected project.</string>
     <string name="invalid_km_marker">The closest active section to this location ($1%s) is $2%d km away,\n at the $3%d km marker position.</string>
     <string name="for_review_purposes_only">For Review Purposes Only</string>

@@ -13,15 +13,13 @@ import android.view.View
 import android.view.View.OnFocusChangeListener
 import android.view.WindowManager
 import android.widget.EditText
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import com.xwray.groupie.ExpandableGroup
 import com.xwray.groupie.ExpandableItem
-import java.util.ArrayList
-import java.util.Date
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
@@ -30,11 +28,14 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
 import za.co.xisystems.itis_rrm.databinding.ItemMeasureHeaderBinding
 import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.extensions.uomForUI
+import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.estimate_measure_item.MeasureHeaderItem
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DateUtil
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
+import java.util.ArrayList
+import java.util.Date
 
 class ExpandableHeaderMeasureItem(
     private var fragment: Fragment,
@@ -118,7 +119,8 @@ class ExpandableHeaderMeasureItem(
                 if (selected != null) {
                     var message: String = fragment.requireActivity().getString(R.string.enter_quantity_measured)
                     quantityInputEditText.textAlignment = View.TEXT_ALIGNMENT_CENTER
-                    if (!selected.uom.isNullOrBlank() && selected.uom != fragment.requireActivity().getString(R.string.none)) {
+                    if (!selected.uom.isNullOrBlank() &&
+                        selected.uom != fragment.requireActivity().getString(R.string.none)) {
                         val friendlyUOM = fragment.requireActivity().uomForUI(selected.uom)
                         quantityInputEditText.hint = friendlyUOM
 
@@ -128,7 +130,8 @@ class ExpandableHeaderMeasureItem(
                         val desc = measureViewModel.getDescForProjectItemId(projectItemIdz!!)
 
                         val enterQuantityDialog: AlertDialog =
-                            AlertDialog.Builder(fragment.requireActivity()) // android.R.style.Theme_DeviceDefault_Dialog
+                            AlertDialog.Builder(fragment.requireActivity())
+                                // android.R.style.Theme_DeviceDefault_Dialog
                                 .setTitle(
                                     "Estimate - " + desc + System.lineSeparator() + "Quantity : " + measureItem.qty.toString()
                                         .dropLast(
@@ -139,16 +142,33 @@ class ExpandableHeaderMeasureItem(
                                 .setCancelable(false)
                                 .setIcon(R.drawable.ic_border_)
                                 .setView(quantityInputEditText)
-                                .setPositiveButton(
-                                    R.string.ok
-                                ) { _, _ ->
-                                    updateMeasureQuantity(
-                                        quantityInputEditText,
-                                        selected,
-                                        jobForJobItemEstimate,
-                                        measureItem,
-                                        jobItemMeasurePhotoDTO
-                                    )
+                                .setPositiveButton(R.string.ok) { _, _ ->
+
+                                    val measureQuantity =
+                                        quantityInputEditText.text.toString().toDoubleOrNull() ?: 0.0
+                                    when {
+                                        measureQuantity <= 0.0 || measureQuantity.isNaN() -> {
+                                            fragment.extensionToast(
+                                                message = "Please Enter a valid Quantity",
+                                                style = ToastStyle.WARNING
+                                            )
+                                        }
+                                        quantityInputEditText.text.toString().length > 9 -> {
+                                            fragment.extensionToast(
+                                                message = "You have exceeded the quantity allowed",
+                                                style = ToastStyle.WARNING
+                                            )
+                                        }
+                                        else -> {
+                                            updateMeasureQuantity(
+                                                measureQuantity,
+                                                selected,
+                                                jobForJobItemEstimate,
+                                                measureItem,
+                                                jobItemMeasurePhotoDTO
+                                            )
+                                        }
+                                    }
                                 }
                                 .setNegativeButton(
                                     R.string.cancel
@@ -167,35 +187,32 @@ class ExpandableHeaderMeasureItem(
     }
 
     private fun updateMeasureQuantity(
-        quantityInputEditText: EditText,
+        measureQuantity: Double,
         selected: ProjectItemDTO?,
         jobForJobItemEstimate: JobDTO,
         measureItem: JobItemEstimateDTO,
         jobItemMeasurePhotoDTO: ArrayList<JobItemMeasurePhotoDTO>
     ) {
-        if (quantityInputEditText.text.toString() == "") {
-            Toast.makeText(
-                fragment.requireActivity().applicationContext,
-                fragment.requireActivity().getString(R.string.place_quantity),
-                Toast.LENGTH_LONG
-            ).show()
-        } else {
-            if (quantityInputEditText.text.toString()
-                .isNotEmpty()
-            ) {
-                Coroutines.main {
-                    val jobItemMeasure = setJobItemMeasure(
-                        selected,
-                        quantityInputEditText.text.toString()
-                            .toDouble(),
-                        jobForJobItemEstimate,
-                        measureItem,
-                        jobItemMeasurePhotoDTO
-                    )
-                    jobItemMeasureArrayList.add(jobItemMeasure)
-                    captureItemMeasureImages(jobItemMeasure)
-                }
-            }
+        createJobMeasureItem(selected, measureQuantity, jobForJobItemEstimate, measureItem, jobItemMeasurePhotoDTO)
+    }
+
+    private fun createJobMeasureItem(
+        selected: ProjectItemDTO?,
+        measureQuantity: Double,
+        jobForJobItemEstimate: JobDTO,
+        measureItem: JobItemEstimateDTO,
+        jobItemMeasurePhotoDTO: ArrayList<JobItemMeasurePhotoDTO>
+    ) {
+        Coroutines.main {
+            val jobItemMeasure = this@ExpandableHeaderMeasureItem.setJobItemMeasure(
+                selected,
+                measureQuantity,
+                jobForJobItemEstimate,
+                measureItem,
+                jobItemMeasurePhotoDTO
+            )
+            jobItemMeasureArrayList.add(jobItemMeasure)
+            captureItemMeasureImages(jobItemMeasure)
         }
     }
 
@@ -266,8 +283,8 @@ class ExpandableHeaderMeasureItem(
     override fun setExpandableGroup(onToggleListener: ExpandableGroup) {
         this.expandableGroup = onToggleListener
     }
-}
 
-private fun getItemId(position: Int): Long {
-    return position.toLong()
+    private fun getItemId(position: Int): Long {
+        return position.toLong()
+    }
 }
