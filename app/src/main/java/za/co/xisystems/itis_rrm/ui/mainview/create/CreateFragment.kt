@@ -24,13 +24,12 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenStarted
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
-import java.util.ArrayList
-import java.util.Date
 import kotlinx.coroutines.launch
 import org.kodein.di.DIAware
 import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
 import timber.log.Timber
+import za.co.xisystems.itis_rrm.MobileNavigationDirections
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
@@ -59,6 +58,8 @@ import za.co.xisystems.itis_rrm.utils.DateUtil
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import za.co.xisystems.itis_rrm.utils.hide
 import za.co.xisystems.itis_rrm.utils.show
+import java.util.ArrayList
+import java.util.Date
 
 /**
  * Created by Francis Mahlava on 2019/10/18.
@@ -83,9 +84,7 @@ class CreateFragment : BaseFragment(), OfflineListener, DIAware {
 
     internal var selectedProject: ProjectSelector? = null
 
-    internal var selectedProjectItem: ProjectItemDTO? = null
-
-    var newJob: JobDTO? = null
+    private var newJob: JobDTO? = null
     private lateinit var newJobItemEstimatesPhotosList: ArrayList<JobItemEstimatesPhotoDTO>
     private lateinit var newJobItemEstimatesWorksList: ArrayList<JobEstimateWorksDTO>
     private lateinit var newJobItemEstimatesList: ArrayList<JobItemEstimateDTO>
@@ -102,7 +101,7 @@ class CreateFragment : BaseFragment(), OfflineListener, DIAware {
         newJobItemEstimatesPhotosList = ArrayList()
         newJobItemEstimatesWorksList = ArrayList()
         createViewModel =
-            ViewModelProvider(this.requireActivity(), factory).get(CreateViewModel::class.java)
+            ViewModelProvider(this.requireActivity(), factory)[CreateViewModel::class.java]
 
         setHasOptionsMenu(true)
     }
@@ -341,7 +340,7 @@ class CreateFragment : BaseFragment(), OfflineListener, DIAware {
         }
     }
 
-    fun retryContracts() {
+    private fun retryContracts() {
         IndefiniteSnackbar.hide()
         setContract()
     }
@@ -419,7 +418,7 @@ class CreateFragment : BaseFragment(), OfflineListener, DIAware {
         super.onAttach(context)
         val callback: OnBackPressedCallback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                this@CreateFragment.findNavController().popBackStack(R.id.nav_home, false)
+                this@CreateFragment.findNavController().navigate(MobileNavigationDirections.actionGlobalNavHome())
             }
         }
         requireActivity().onBackPressedDispatcher

@@ -21,7 +21,6 @@ import org.kodein.di.instance
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.MobileNavigationDirections
 import za.co.xisystems.itis_rrm.base.LocationFragment
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimatesPhotoDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.UnallocatedPhotoDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentCaptureGalleryBinding
 import za.co.xisystems.itis_rrm.services.LocationModel
@@ -45,12 +44,12 @@ class CaptureGalleryFragment : LocationFragment() {
     private var _ui: FragmentCaptureGalleryBinding? = null
     private val ui get() = _ui!!
     private val photoUtil: PhotoUtil by instance()
-//    private val galleryItems = ArrayList<UnallocatedPhotoDTO>()
-    private val galleryItems = ArrayList<JobItemEstimatesPhotoDTO>()
+    private val galleryItems = ArrayList<UnallocatedPhotoDTO>()
     private val captureFactory: CaptureViewModelFactory by instance()
     private var imageUri: Uri? = null
     private var filenamePath = HashMap<String, String>()
     private var uiScope = UiLifecycleScope()
+
     /**
      * ActivityResultContract for taking a photograph
      */
@@ -133,7 +132,7 @@ class CaptureGalleryFragment : LocationFragment() {
         pictureQuery?.observe(viewLifecycleOwner, { unallocatedPics ->
             if (!unallocatedPics.isNullOrEmpty()) {
                 galleryItems.clear()
-                galleryItems.addAll(unallocatedPics as ArrayList<JobItemEstimatesPhotoDTO>)
+                galleryItems.addAll(unallocatedPics as ArrayList<UnallocatedPhotoDTO>)
                 loadPictures(galleryItems)
             } else {
                 if (galleryItems.size < 1) {
@@ -153,7 +152,7 @@ class CaptureGalleryFragment : LocationFragment() {
         }
     }
 
-    private fun loadPictures(galleryItems: ArrayList<JobItemEstimatesPhotoDTO>) = Coroutines.main {
+    private fun loadPictures(galleryItems: ArrayList<UnallocatedPhotoDTO>) = Coroutines.main {
         val filenames = galleryItems.map { photo -> photo.photoPath }
         val photoPairs = photoUtil.prepareGalleryPairs(filenames)
         if (photoPairs.isNotEmpty()) {
@@ -180,16 +179,21 @@ class CaptureGalleryFragment : LocationFragment() {
                 imageUri
             ) as HashMap<String, String>
 
-            val photo = captureViewModel.createUnallocatedPhoto(
+            captureViewModel.createUnallocatedPhoto(
                 filenamePath = filenamePath,
                 currentLocation = currentLocation,
                 pointLocation = -1.0
             )
-            captureViewModel.saveUnallocatedPhoto(photo)
-            withContext(Dispatchers.Main.immediate) {
-                galleryItems.add(photo)
-                loadPictures(galleryItems)
-            }
+            val lastPhoto = captureViewModel.lastPhoto
+            lastPhoto.observe(viewLifecycleOwner, { photoEvent ->
+                val newPhoto = photoEvent.getContentIfNotHandled()
+                if (newPhoto != null) {
+                    Coroutines.ui {
+                        galleryItems.add(newPhoto)
+                        loadPictures(galleryItems)
+                    }
+                }
+            })
         }
     }
 }

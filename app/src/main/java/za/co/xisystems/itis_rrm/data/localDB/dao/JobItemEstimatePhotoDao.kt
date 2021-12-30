@@ -44,7 +44,7 @@ interface JobItemEstimatePhotoDao {
     fun deletePhotoById(photoId: String)
 
     @Query("DELETE FROM JOB_ITEM_ESTIMATE_PHOTO WHERE estimateId = :estimateId")
-    fun deleteJobItemEstimatePhotosByEstimateId(estimateId: String)
+    fun deleteJobItemEstimatePhotosByEstimateId(estimateId: String): Int
 
     @Transaction
     fun replaceEstimatePhoto(photoId: String, estimatePhoto: JobItemEstimatesPhotoDTO) {

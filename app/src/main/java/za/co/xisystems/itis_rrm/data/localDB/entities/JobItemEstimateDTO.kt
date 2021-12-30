@@ -13,6 +13,7 @@ import androidx.core.util.Pair
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
+import za.co.xisystems.itis_rrm.utils.JobItemEstimateSize
 import za.co.xisystems.itis_rrm.utils.JobUtils
 import java.io.Serializable
 import java.util.ArrayList
@@ -164,7 +165,8 @@ data class JobItemEstimateDTO(
 
     fun arePhotosGeoCoded(): Boolean {
         var result = true
-        if (jobItemEstimatePhotos.size < 2) return false
+        if (jobItemEstimateSize == JobItemEstimateSize.POINT.getValue() && jobItemEstimatePhotos.size < 1) return false
+        if (jobItemEstimateSize == JobItemEstimateSize.LINE.getValue() && jobItemEstimatePhotos.size < 2) return false
         for (photo in jobItemEstimatePhotos) {
             if (!photo.geoCoded) {
                 result = false

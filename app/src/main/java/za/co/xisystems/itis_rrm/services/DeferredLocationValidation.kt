@@ -6,7 +6,6 @@ import android.os.Parcelable
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
@@ -27,6 +26,8 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobSectionDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectSectionDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.SectionPointDTO
 import za.co.xisystems.itis_rrm.data.repositories.JobCreationDataRepository
+import za.co.xisystems.itis_rrm.forge.DefaultDispatcherProvider
+import za.co.xisystems.itis_rrm.forge.DispatcherProvider
 import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import za.co.xisystems.itis_rrm.utils.Utils.round
@@ -34,12 +35,13 @@ import za.co.xisystems.itis_rrm.utils.Utils.round
 class DeferredLocationViewModel(
     private val deferredLocationRepository: DeferredLocationRepository,
     private val jobCreationDataRepository: JobCreationDataRepository,
-    application: Application
+    application: Application,
+    private val dispatchers: DispatcherProvider = DefaultDispatcherProvider()
 ) : AndroidViewModel(application) {
 
     private val superJob = SupervisorJob()
-    private val ioContext = Job(superJob) + Dispatchers.IO
-    private val mainContext = Job(superJob) + Dispatchers.Main
+    private val ioContext = Job(superJob) + dispatchers.io()
+    private val mainContext = Job(superJob) + dispatchers.main()
 
     var geoCodingResult: MutableLiveData<XIEvent<XIResult<String>>> = MutableLiveData()
     private var errorState: Boolean = false
@@ -57,7 +59,6 @@ class DeferredLocationViewModel(
     }
 
     fun checkLocations(jobId: String) = viewModelScope.launch(ioContext) {
-        // geoCodingResult = MutableLiveData()
 
         val locationJob = jobCreationDataRepository.getUpdatedJob(jobId)
         // updated estimates from local db
@@ -284,7 +285,7 @@ class DeferredLocationViewModel(
                 }
                 treatedPhoto = treatedPhoto.copy(geoCoded = true)
                 treatedPhoto = jobCreationDataRepository.backupEstimatePhoto(treatedPhoto)
-                withContext(Dispatchers.Main) {
+                withContext(mainContext) {
                     Timber.d("^*^ Good: ${theResult.data}")
                 }
             }
@@ -294,7 +295,7 @@ class DeferredLocationViewModel(
                     treatedPhoto = jobCreationDataRepository.backupEstimatePhoto(treatedPhoto)
                 }
 
-                withContext(Dispatchers.Main) {
+                withContext(dispatchers.main()) {
                     Timber.d("^*^ Error: ${theResult.message}")
                 }
             }

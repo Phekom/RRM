@@ -9,13 +9,13 @@ import za.co.xisystems.itis_rrm.data.repositories.UserRepository
 @Suppress("UNCHECKED_CAST")
 class CaptureViewModelFactory(
     private val userRepository: UserRepository,
-    private val unallocatedRepository: CapturedPictureRepository,
+    private val capturedPicsRepository: CapturedPictureRepository,
     var application: Application
 ) : ViewModelProvider.AndroidViewModelFactory(application) {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         return CaptureViewModel(
             userRepository = userRepository,
-            unallocatedRepository = unallocatedRepository,
+            capturedPicsRepository = capturedPicsRepository,
             application = application
         ) as T
     }

@@ -49,7 +49,6 @@ class LocationLiveData(context: Context) : LiveData<LocationModel>() {
 
     private val locationCallback = object : LocationCallback() {
         override fun onLocationResult(p0: LocationResult) {
-            p0
             for (location in p0.locations) {
                 setLocationData(location)
             }

@@ -41,6 +41,7 @@ import timber.log.Timber
 import za.co.xisystems.itis_rrm.BuildConfig
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
+import za.co.xisystems.itis_rrm.constants.Constants.THIRTY_SECONDS
 import za.co.xisystems.itis_rrm.constants.Constants.TWO_SECONDS
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration.LONG
@@ -55,12 +56,11 @@ import za.co.xisystems.itis_rrm.databinding.FragmentHomeBinding
 import za.co.xisystems.itis_rrm.extensions.isConnected
 import za.co.xisystems.itis_rrm.ui.extensions.crashGuard
 import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
-import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.Constants.FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import kotlin.coroutines.cancellation.CancellationException
 
-class HomeFragment: BaseFragment() {
+class HomeFragment : BaseFragment() {
 
     override val di by closestDI()
     private lateinit var homeViewModel: HomeViewModel
@@ -85,6 +85,8 @@ class HomeFragment: BaseFragment() {
             handleBigSync(it)
         }
     }
+
+    private val pvComplete = HashMap<String, Runnable>()
 
     companion object {
         val TAG: String = HomeFragment::class.java.simpleName
@@ -268,12 +270,18 @@ class HomeFragment: BaseFragment() {
     }
 
     private fun progressListener(it: Float, progressView: ProgressView, label: String) {
+        pvComplete[label] = Runnable { maxOutPv(progressView, "$label synched") }
+        val handler = Handler(Looper.getMainLooper())
+        handler.postDelayed(
+            {
+                pvComplete[label]?.run()
+            },
+            THIRTY_SECONDS
+        )
         when {
             it > 0f && it <= progressView.max -> {
                 progressView.labelText = "$label ${it.toInt()}%"
-                Handler(Looper.getMainLooper()).postDelayed({
-                    maxOutPv(progressView, "$label synched")
-                }, FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS * 2)
+                handler.removeCallbacks(pvComplete[label]!!)
             }
         }
     }
@@ -503,7 +511,8 @@ class HomeFragment: BaseFragment() {
                 )
             } finally {
                 homeViewModel.resetSyncStatus()
-                ui.unallocatedPhotoAdd.visibility = View.VISIBLE
+                // Gallery is deferred until the new year
+                ui.unallocatedPhotoAdd.visibility = View.GONE
             }
         } else {
             noInternetWarning()

@@ -7,17 +7,15 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.os.Environment
 import android.provider.MediaStore
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates.capture_utils.ImagePicker
 import za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates.capture_utils.ImagePickerActivity
 import za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates.capture_utils.util.IntentUtils
-import za.co.xisystems.itis_rrm.utils.Coroutines
-import java.io.File
 import za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates.newpac.Image
 import za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates.newpac.ImageAdapter
-
+import za.co.xisystems.itis_rrm.utils.Coroutines
+import java.io.File
 
 /**
  * Created by Francis Mahlava on 2021/11/23.
@@ -33,7 +31,6 @@ class GalleryProvider(activity: ImagePickerActivity) :
     private val mimeTypes: Array<String>
     private var adapter: ImageAdapter? = null
     private var images = java.util.ArrayList<Image>()
-
 
     init {
         val bundle = activity.intent.extras ?: Bundle()
@@ -58,20 +55,17 @@ class GalleryProvider(activity: ImagePickerActivity) :
 
 //            OpenGalleryFromFolder(activity.getExternalFilesDir(Environment.DIRECTORY_PICTURES)!!)
 
-
-
             val uri = activity.photoUtil.getUriFromPath(activity.photoUtil.pictureFolder.toString())
            // getFilesFromDir(activity.photoUtil.pictureFolder)
 //            getFilesFromDir(activity.photoUtil.pictureFolder)
-            val galleryIntent = IntentUtils.getGalleryIntent(activity, mimeTypes,activity.photoUtil.pictureFolder )
+            val galleryIntent = IntentUtils.getGalleryIntent(activity, mimeTypes, activity.photoUtil.pictureFolder)
             activity.startActivityForResult(galleryIntent, GALLERY_INTENT_REQ_CODE)
         }
     }
 
-
     fun OpenGalleryFromFolder(externalFilesDir: File): Boolean {
         val filePath = "content://za.co.xisystems.itismaintenance.qa.provider/root/Android/data/za.co.xisystems.itismaintenance.qa/files/Pictures/"
-            //activity.photoUtil.pictureFolder.toString()
+            // activity.photoUtil.pictureFolder.toString()
            // Environment.getExternalStorageDirectory().path + "/Pictures/" //+ folderName + "/"context: Context, folderName: String
         return OpenGalleryFromPathToFolder(activity, filePath)
     }
@@ -119,7 +113,6 @@ class GalleryProvider(activity: ImagePickerActivity) :
         }
     }
 
-
     fun getFilesFromDir(aStartingDir: File): List<File>? {
         val result: MutableList<File> = ArrayList()
         val filesAndDirs = aStartingDir.listFiles()
@@ -128,10 +121,10 @@ class GalleryProvider(activity: ImagePickerActivity) :
         var file: File? = null
         while (filesIter.hasNext()) {
             file = filesIter.next() as File?
-            result.add(file!!) //always add, even if directory
+            result.add(file!!) // always add, even if directory
             if (!file.isFile) {
-                //must be a directory
-                //recursive call!
+                // must be a directory
+                // recursive call!
 //                val deeperList: List<*> = getFileListing(file)
 //                result.addAll(deeperList)
             }

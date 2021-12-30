@@ -30,7 +30,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.ExpandableGroup
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.viewbinding.GroupieViewHolder
-import java.text.DecimalFormat
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.kodein.di.android.x.closestDI
@@ -55,6 +54,7 @@ import za.co.xisystems.itis_rrm.ui.mainview.work.goto_work_location.GoToViewMode
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
+import java.text.DecimalFormat
 
 const val INSET_TYPE_KEY = "inset_type"
 const val INSET = "inset"
@@ -225,8 +225,8 @@ class WorkFragment : LocationFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        workViewModel = ViewModelProvider(this.requireActivity(), factory).get(WorkViewModel::class.java)
-        goToViewModel = ViewModelProvider(this.requireActivity(), mapFactory).get(GoToViewModel::class.java)
+        workViewModel = ViewModelProvider(this.requireActivity(), factory)[WorkViewModel::class.java]
+        goToViewModel = ViewModelProvider(this.requireActivity(), mapFactory)[GoToViewModel::class.java]
         setHasOptionsMenu(true)
     }
 
@@ -432,8 +432,8 @@ class WorkFragment : LocationFragment() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         outState.run {
-            when (!this@WorkFragment.jobId.isNullOrBlank()) {
-                true -> putString(JOB_ID, this@WorkFragment.jobId)
+            if (!this@WorkFragment.jobId.isNullOrBlank()) {
+                putString(JOB_ID, this@WorkFragment.jobId)
             }
         }
         super.onSaveInstanceState(outState)

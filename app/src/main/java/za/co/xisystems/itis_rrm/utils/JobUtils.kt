@@ -6,13 +6,13 @@
 
 package za.co.xisystems.itis_rrm.utils
 
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimatesPhotoDTO
 import java.text.DecimalFormat
 import java.util.ArrayList
 import java.util.Collections
 import java.util.Comparator
 import java.util.Locale
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimatesPhotoDTO
 
 object JobUtils {
     fun formatCost(value: Double): String {
@@ -25,8 +25,12 @@ object JobUtils {
     }
 
     fun formatTotalCost(job: JobDTO?): String {
+        // Point and line components add to Total
+        // S McDonald - 22/12/2021
         val estimateCost = job?.jobItemEstimates?.filter { estimate ->
-            estimate.size() == 2 && estimate.qty > 0.0 && estimate.lineRate > 0.0
+            (estimate.jobItemEstimateSize == "Point" && estimate.size() >= 1) or
+                (estimate.jobItemEstimateSize == "Line" && estimate.size() >= 2) and
+                (estimate.qty > 0.0 && estimate.lineRate > 0.0)
         }?.map { it.qty * it.lineRate }?.fold(0.0, { total, item -> total + item }) ?: 0.0
 
         return formatTotalCost(estimateCost)

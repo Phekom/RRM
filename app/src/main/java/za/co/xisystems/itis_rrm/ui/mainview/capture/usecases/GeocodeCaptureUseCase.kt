@@ -5,7 +5,7 @@ import za.co.xisystems.itis_rrm.data.repositories.CapturedPictureRepository
 import za.co.xisystems.itis_rrm.data.repositories.JobCreationDataRepository
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.models.PhotoType
 
-class GeocodeCaptureUseCase (
+class GeocodeCaptureUseCase(
     private val capturedPictureRepository: CapturedPictureRepository,
     private val jobCreationDataRepository: JobCreationDataRepository
 ) {
@@ -15,6 +15,6 @@ class GeocodeCaptureUseCase (
         // update routeMarker and StartKm
         // save to repo
 
-        return XIResult.Error(NotImplementedError("Finish this please!"),"Seriously, finish this!")
+        return XIResult.Error(NotImplementedError("Finish this please!"), "Seriously, finish this!")
     }
 }
