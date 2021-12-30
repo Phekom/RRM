@@ -32,7 +32,7 @@
             <LinearLayout
                 android:id="@+id/spinnerrel"
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/dimen_40dp"
+                android:layout_height="@dimen/dimen_48dp"
                 android:orientation="horizontal"
                 android:layout_margin="@dimen/xsmall"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -41,12 +41,12 @@
 
                 <TextView
                     android:id="@+id/label1"
-                    android:layout_width="@dimen/dimen_200dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
                     android:layout_marginStart="@dimen/dimen_10dp"
                     android:layout_marginTop="5dp"
-                    android:layout_marginEnd="5dp"
+                    android:layout_marginEnd="10dp"
                     android:ellipsize="marquee"
                     android:focusable="true"
                     android:focusableInTouchMode="true"
@@ -61,17 +61,22 @@
 
                 <RadioGroup
                     android:id="@+id/jobTypeRadioGroup"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="0dp"
+                    android:layout_height="@dimen/dimen_48dp"
                     android:orientation="horizontal"
                     android:layout_marginStart="@dimen/dimen_10dp"
-                    android:layout_marginTop="@dimen/dimen_5dp">
+                    android:layout_marginTop="@dimen/dimen_5dp"
+                    android:layout_gravity="fill_horizontal"
+                    android:layout_weight="1"
+                    android:gravity="end"
+                    android:layout_marginEnd="@dimen/dimen_10dp">
 
                     <RadioButton
                         android:id="@+id/point"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/point" />
+                        android:text="@string/point"
+                        android:layout_marginEnd="@dimen/dimen_10dp" />
 
                     <RadioButton
                         android:id="@+id/line"
