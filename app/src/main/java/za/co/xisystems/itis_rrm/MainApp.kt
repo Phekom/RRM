@@ -52,7 +52,6 @@ import za.co.xisystems.itis_rrm.ui.mainview.activities.SettingsViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.ApproveJobsViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureViewModelFactory
-import za.co.xisystems.itis_rrm.ui.mainview.capture.CaptureViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.corrections.CorrectionsViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModelFactory
@@ -60,6 +59,7 @@ import za.co.xisystems.itis_rrm.ui.mainview.home.HomeViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.work.goto_work_location.GoToViewModelFactory
+import za.co.xisystems.itis_rrm.ui.snapcapture.gallery.CarouselViewModelFactory
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 
 /**
@@ -142,7 +142,7 @@ open class MainApp : Application(), DIAware {
         bind { provider { MainActivityViewModelFactory(instance()) } }
         bind { provider { LocationViewModelFactory(this@MainApp) } }
         bind { provider { SharedViewModelFactory(instance()) } }
-        bind { provider { CaptureViewModelFactory(instance(), instance(), this@MainApp) } }
+        bind { provider { CarouselViewModelFactory(instance(), instance(), this@MainApp) } }
     }
 
     override fun onCreate() {

@@ -35,7 +35,7 @@
                 android:paddingStart="5dp"
                 android:textAppearance="?android:attr/textAppearanceMedium"
                 android:textSize="15sp"
-                tools:ignore="HardcodedText" />
+                tools:ignore="HardcodedText,RtlSymmetry" />
 
 
         </LinearLayout>

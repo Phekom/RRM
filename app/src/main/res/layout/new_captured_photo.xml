@@ -74,7 +74,7 @@
             android:layout_width="0dp"
             android:layout_height="@dimen/button_size"
             android:layout_weight="1"
-            app:srcCompat="@drawable/ic_baseline_add_a_photo_48"
+            app:srcCompat="@drawable/ic_baseline_add_a_photo_24"
             android:contentDescription="@string/retake_image"
             android:background="@android:color/transparent"
             app:tint="@color/colorAccent"

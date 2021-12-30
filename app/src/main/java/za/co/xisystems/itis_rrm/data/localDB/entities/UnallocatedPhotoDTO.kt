@@ -38,7 +38,10 @@ data class UnallocatedPhotoDTO(
     @SerializedName("RouteMarker")
     var routeMarker: String?,
     @SerializedName("Allocated")
-    var allocated: Boolean
+    var allocated: Boolean,
+    var pxHeight: Int,
+    var pxWidth: Int,
+
 ) : Serializable, Parcelable {
     constructor(parcel: Parcel) : this(
         id = parcel.readLong(),
@@ -53,8 +56,12 @@ data class UnallocatedPhotoDTO(
         recordSynchStateId = parcel.readInt(),
         recordVersion = parcel.readInt(),
         routeMarker = parcel.readString(),
-        allocated = parcel.readByte() != 0.toByte()
+        allocated = parcel.readByte() != 0.toByte(),
+        pxHeight = parcel.readInt(),
+        pxWidth = parcel.readInt()
     )
+
+    val aspectRatio: Float get() = pxHeight.toFloat() * pxWidth.toFloat()
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeLong(id)
@@ -70,6 +77,8 @@ data class UnallocatedPhotoDTO(
         parcel.writeInt(recordVersion)
         parcel.writeString(routeMarker)
         parcel.writeByte(if (allocated) 1 else 0)
+        parcel.writeInt(pxHeight)
+        parcel.writeInt(pxWidth)
     }
 
     override fun describeContents(): Int {

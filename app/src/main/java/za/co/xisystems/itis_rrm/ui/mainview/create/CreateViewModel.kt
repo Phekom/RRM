@@ -26,7 +26,14 @@ import timber.log.Timber
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.custom.results.XIResult
-import za.co.xisystems.itis_rrm.data.localDB.entities.*
+import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimatesPhotoDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobTypeEntityDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectSectionDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.SectionItemDTO
 import za.co.xisystems.itis_rrm.data.repositories.JobCreationDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
 import za.co.xisystems.itis_rrm.domain.ContractSelector
@@ -36,6 +43,7 @@ import za.co.xisystems.itis_rrm.forge.DispatcherProvider
 import za.co.xisystems.itis_rrm.services.LocationModel
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.models.PhotoType
 import za.co.xisystems.itis_rrm.utils.DateUtil
+import za.co.xisystems.itis_rrm.utils.JobItemEstimateSize
 import za.co.xisystems.itis_rrm.utils.JobUtils
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
@@ -84,6 +92,7 @@ class CreateViewModel(
     val currentUser by lazyDeferred {
         userRepository.getUser().distinctUntilChanged()
     }
+
     var jobForSubmission: MutableLiveData<XIEvent<JobDTO>> = MutableLiveData()
     var jobForValidation: MutableLiveData<XIEvent<JobDTO>> = MutableLiveData()
     var jobForReUpload: MutableLiveData<XIEvent<JobDTO>> = MutableLiveData()
@@ -92,11 +101,9 @@ class CreateViewModel(
         estimateQty.value = inQty
     }
 
-
     fun setEstimateJbType(jbType: String?) {
         estimateJbType.value = jbType!!
     }
-
 
     fun setSectionId(inSectionId: String) {
         sectionId.value = inSectionId
@@ -187,7 +194,7 @@ class CreateViewModel(
             }
             else -> {
                 job.jobItemEstimates.forEach { estimate ->
-                    if (!isEstimateComplete(estimate, "")) {
+                    if (!isEstimateComplete(estimate)) {
                         isValid = false
                     }
                 }
@@ -246,7 +253,6 @@ class CreateViewModel(
         val recordsAffected = jobCreationDataRepository.deleteItemFromList(itemId, estimateId)
         Timber.d("deleteItemFromList: $recordsAffected deleted.")
     }
-
 
     suspend fun getContractNoForId(contractVoId: String?): String {
         return withContext(dispatchers.io()) {
@@ -307,65 +313,51 @@ class CreateViewModel(
         }
     }
 
-    suspend fun isEstimateComplete(estimate: JobItemEstimateDTO, selectedjobType: String?): Boolean = withContext(dispatchers.io()) {
-        return@withContext if (selectedjobType.equals("Point")){
+    private suspend fun isEstimateComplete(estimate: JobItemEstimateDTO): Boolean = withContext(dispatchers.io()) {
+        return@withContext if (
+            estimate.jobItemEstimateSize.equals(JobItemEstimateSize.POINT.getValue())
+        ) {
             if (estimate.size() < 1) {
                 false
-            } else{
+            } else {
                 val photoStart = estimate.jobItemEstimatePhotos[0]
                 photoUtil.photoExist(photoStart.filename)
             }
-        }else {
+        } else {
             if (estimate.size() < 2) {
                 false
-            } else{
+            } else {
                 val photoStart = estimate.jobItemEstimatePhotos[0]
                 val photoEnd = estimate.jobItemEstimatePhotos[1]
                 photoUtil.photoExist(photoStart.filename) && photoUtil.photoExist(photoEnd.filename)
             }
         }
-
-
-
-
-
-
-
-
-
-        // {
-//            val photoStart = estimate.jobItemEstimatePhotos[0]
-//            val photoEnd = estimate.jobItemEstimatePhotos[1]
-//            photoUtil.photoExist(photoStart.filename) && photoUtil.photoExist(photoEnd.filename)
-//        }
-
     }
 
-    suspend fun estimateComplete(newJobItemEstimate: JobItemEstimateDTO?, selectedjobType: String?): Boolean {
-        return newJobItemEstimate?.let { isEstimateComplete(it, selectedjobType) } ?: false
+    suspend fun estimateComplete(newJobItemEstimate: JobItemEstimateDTO?): Boolean {
+        return newJobItemEstimate?.let { isEstimateComplete(it) } ?: false
     }
 
-    suspend fun setCurrentProjectItem(itemId: String?) = viewModelScope.launch(ioContext) {
+    fun setCurrentProjectItem(itemId: String?) = viewModelScope.launch(ioContext) {
         val projectItem = jobCreationDataRepository.getProjectItemById(itemId)
         withContext(mainContext) {
             setTempProjectItem(projectItem)
         }
     }
 
-    suspend fun setEstimateToEdit(estimateId: String) = viewModelScope.launch(ioContext) {
+    fun setEstimateToEdit(estimateId: String) = viewModelScope.launch(ioContext) {
         val estimateItem = jobCreationDataRepository.getEstimateById(estimateId)
         withContext(mainContext) {
             currentEstimate.value = XIEvent(estimateItem)
         }
     }
 
-    suspend fun setEstimateJobType(estimateId: String) = viewModelScope.launch(ioContext) {
+    fun setEstimateJobType(estimateId: String) = viewModelScope.launch(ioContext) {
         val estimateItem = jobCreationDataRepository.getEstimateById(estimateId)
         withContext(mainContext) {
             currentEstimate.value = XIEvent(estimateItem)
         }
     }
-
 
     /**
      * Creates a new estimate photograph,
@@ -431,7 +423,7 @@ class CreateViewModel(
     }
 
     suspend fun getJobType(): LiveData<List<JobTypeEntityDTO>> {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             jobCreationDataRepository.getStructureTypes()
         }
     }

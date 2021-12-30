@@ -159,7 +159,7 @@ class CaptureWorkFragment : LocationFragment() {
         uiScope.onCreate()
         (activity as MainActivity).supportActionBar?.title = getString(R.string.capture_work_title)
         workViewModel = activity?.run {
-            ViewModelProvider(this, factory).get(WorkViewModel::class.java)
+            ViewModelProvider(this, factory)[WorkViewModel::class.java]
         } ?: throw Exception("Invalid Activity")
     }
 
@@ -478,7 +478,7 @@ class CaptureWorkFragment : LocationFragment() {
         outcome?.let { result ->
             when (result) {
                 is XIResult.Success -> {
-                    handleWorkSuccess(result)
+                    handleWorkSuccess()
                 }
                 is XIResult.Error -> {
                     this@CaptureWorkFragment.toggleLongRunning(false)
@@ -505,21 +505,18 @@ class CaptureWorkFragment : LocationFragment() {
         }
     }
 
-    private fun handleWorkSuccess(result: XIResult.Success<String>) {
-        when (result.data != "JOB_COMPLETE") {
-            true -> {
-                ui.imageCollectionView.clearImages()
-                this@CaptureWorkFragment.extensionToast(
-                    message = "Work captured",
-                    style = ToastStyle.SUCCESS,
-                    position = ToastGravity.CENTER,
-                    duration = ToastDuration.SHORT
-                )
-                ui.moveWorkflowButton.doneProgress("Workflow complete")
-                toggleLongRunning(false)
-                refreshUI()
-            }
-        }
+    private fun handleWorkSuccess() {
+
+        ui.imageCollectionView.clearImages()
+        this@CaptureWorkFragment.extensionToast(
+            message = "Work captured",
+            style = ToastStyle.SUCCESS,
+            position = ToastGravity.CENTER,
+            duration = ToastDuration.SHORT
+        )
+        ui.moveWorkflowButton.doneProgress("Workflow complete")
+        toggleLongRunning(false)
+        refreshUI()
     }
 
     private fun refreshUI() {
@@ -836,9 +833,9 @@ class CaptureWorkFragment : LocationFragment() {
             dialogBuilder.setPositiveButton(
                 R.string.yes
             ) { _, _ ->
-                uiScope.launch(uiScope.coroutineContext) {
+                uiScope.launch {
                     pushCompletedEstimates(estimates)
-                }
+            }
             }
 
             dialogBuilder.show()

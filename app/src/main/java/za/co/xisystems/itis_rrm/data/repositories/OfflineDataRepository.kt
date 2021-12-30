@@ -13,8 +13,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.distinctUntilChanged
 import androidx.room.Transaction
-import java.io.File
-import java.util.regex.Pattern
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
@@ -58,6 +56,8 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
+import java.io.File
+import java.util.regex.Pattern
 
 private val jobDataController: JobDataController? = null
 
@@ -290,7 +290,7 @@ class OfflineDataRepository(
         }
     }
 
-    private suspend fun saveSectionsItems(sections: ArrayList<String>?) {
+    private fun saveSectionsItems(sections: ArrayList<String>?) {
         var sectionSize: Int = sections?.size ?: 0
         var sectionCount = 0
 
@@ -686,7 +686,7 @@ class OfflineDataRepository(
         }
     }
 
-    private suspend fun saveJobSections(job: JobDTO) {
+    private fun saveJobSections(job: JobDTO) {
         job.jobSections.forEach { jobSection ->
 
             if (!appDb.getJobSectionDao().checkIfJobSectionExist(jobSection.jobSectionId)) {
@@ -816,7 +816,7 @@ class OfflineDataRepository(
         }
     }
 
-    private suspend fun saveJobItemEstimateWorksPhotos(jobEstimateWorks: JobEstimateWorksDTO) {
+    private fun saveJobItemEstimateWorksPhotos(jobEstimateWorks: JobEstimateWorksDTO) {
         for (estimateWorksPhoto in jobEstimateWorks.jobEstimateWorksPhotos) {
             if (!appDb.getEstimateWorkPhotoDao()
                 .checkIfEstimateWorksPhotoExist(
@@ -1229,7 +1229,7 @@ class OfflineDataRepository(
         }
     }
 
-    private suspend fun saveJobSectionsForWorkflow(
+    private fun saveJobSectionsForWorkflow(
         workflowJobSections: java.util.ArrayList<JobSectionDTO>
     ) {
         workflowJobSections.forEach { jobSection ->

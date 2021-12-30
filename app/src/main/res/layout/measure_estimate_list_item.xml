@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginStart="@dimen/small"
@@ -18,14 +19,15 @@
         <TextView
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="Job No:"
+            android:text="@string/job_no"
             android:id="@+id/jobNumber"
             android:textSize="17sp"
             android:paddingTop="5dp"
             android:paddingBottom="5dp"
-            android:paddingLeft="?android:attr/expandableListPreferredChildPaddingLeft"
+            android:paddingStart="?android:attr/expandableListPreferredChildPaddingLeft"
             android:textColor="@color/itis_gray"
-            android:layout_weight="1" />
+            android:layout_weight="1"
+            tools:ignore="RtlSymmetry" />
 
         <TextView
 
@@ -54,27 +56,29 @@
             android:textSize="17sp"
             android:paddingTop="5dp"
             android:paddingBottom="5dp"
-            android:paddingLeft="?android:attr/expandableListPreferredChildPaddingLeft"
+            android:paddingStart="?android:attr/expandableListPreferredChildPaddingLeft"
             android:textColor="@color/itis_gray"
-            android:layout_weight="1" />
+            android:layout_weight="1"
+            tools:ignore="RtlSymmetry" />
 
         <ImageView
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:id="@+id/measurements_photo_image"
-            android:layout_marginRight="10dp"
+            android:layout_marginEnd="10dp"
             android:focusable="false"
             android:focusableInTouchMode="false"
             android:src="@drawable/ic_photo"
             android:background="@android:color/transparent"
-            android:layout_gravity="center_vertical" />
+            android:layout_gravity="center_vertical"
+            android:contentDescription="@string/measurement_photograph" />
 
     </LinearLayout>
 
     <View
         android:layout_width="match_parent"
-        android:layout_marginLeft="35dp"
-        android:layout_marginRight="55dp"
+        android:layout_marginStart="35dp"
+        android:layout_marginEnd="55dp"
         android:layout_height="1dp"
         android:background="@color/itis_divider" />
 
@@ -82,7 +86,8 @@
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:orientation="horizontal"
-        android:paddingLeft="?android:attr/expandableListPreferredChildPaddingLeft">
+        android:paddingStart="?android:attr/expandableListPreferredChildPaddingLeft"
+        tools:ignore="RtlSymmetry">
 
         <TextView
             android:id="@+id/measure_estimation_qty_description_textView"
@@ -107,7 +112,8 @@
         android:orientation="horizontal"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:paddingLeft="?android:attr/expandableListPreferredChildPaddingLeft">
+        android:paddingStart="?android:attr/expandableListPreferredChildPaddingLeft"
+        tools:ignore="RtlSymmetry">
 
         <TextView
             android:layout_width="fill_parent"

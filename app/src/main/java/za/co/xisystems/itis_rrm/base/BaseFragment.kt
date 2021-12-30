@@ -1,8 +1,10 @@
 package za.co.xisystems.itis_rrm.base
 
+import android.Manifest
 import android.app.Activity
 import android.content.Context
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import android.view.Menu
 import android.view.View
@@ -17,7 +19,6 @@ import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.BuildConfig
-import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.constants.Constants.DNS_PORT
 import za.co.xisystems.itis_rrm.constants.Constants.FIVE_SECONDS
@@ -64,8 +65,14 @@ abstract class BaseFragment(
     private var gpsEnabled: Boolean = false
     private var networkEnabled: Boolean = false
 
-    // =========================================================================================
-    lateinit var ACTIVITY: MainActivity
+    val navPermissions: List<String> = listOf(
+        Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION
+    )
+
+    val photoPermissions: MutableList<String> = mutableListOf(
+        Manifest.permission.CAMERA,
+        Manifest.permission.READ_EXTERNAL_STORAGE
+    )
 
     companion object {
         const val GPS_REQUEST = 100
@@ -138,6 +145,9 @@ abstract class BaseFragment(
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         animations = Animations(requireContext().applicationContext)
+        if (Build.VERSION.SDK_INT >= 29) {
+            photoPermissions.add(Manifest.permission.ACCESS_MEDIA_LOCATION)
+        }
     }
 
     private fun initAnimations() {
@@ -176,7 +186,6 @@ abstract class BaseFragment(
         super.onAttach(context)
         bounce = AnimationUtils.loadAnimation(context.applicationContext, R.anim.bounce)
         shake = AnimationUtils.loadAnimation(context.applicationContext, R.anim.shake)
-        ACTIVITY = context as MainActivity
     }
 
     override fun onViewCreated(
@@ -185,7 +194,7 @@ abstract class BaseFragment(
     ) {
         super.onViewCreated(view, savedInstanceState)
         coordinator = view.findViewById(R.id.coordinator)
-        sharedViewModel = ViewModelProvider(this.requireActivity(), shareFactory).get(SharedViewModel::class.java)
+        sharedViewModel = ViewModelProvider(this.requireActivity(), shareFactory)[SharedViewModel::class.java]
         initAnimations()
     }
 

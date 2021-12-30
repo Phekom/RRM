@@ -29,7 +29,6 @@ import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.viewbinding.GroupieViewHolder
-import java.lang.ref.WeakReference
 import kotlinx.coroutines.launch
 import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
@@ -50,6 +49,7 @@ import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.approve_job_item.Approve
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
+import java.lang.ref.WeakReference
 
 /**
  * Created by Francis Mahlava on 03,October,2019
@@ -101,8 +101,7 @@ class ApproveJobsFragment : BaseFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        approveViewModel = ViewModelProvider(this.requireActivity(), factory)
-            .get(ApproveJobsViewModel::class.java)
+        approveViewModel = ViewModelProvider(this.requireActivity(), factory)[ApproveJobsViewModel::class.java]
     }
 
     override fun onCreateView(

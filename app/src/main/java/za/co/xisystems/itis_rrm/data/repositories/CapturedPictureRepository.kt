@@ -31,11 +31,10 @@ class CapturedPictureRepository(
         }
     }
 
-    private suspend fun insertUnallocatedPhotoAsync(unallocatedPhoto: UnallocatedPhotoDTO) {
+    private fun insertUnallocatedPhotoAsync(unallocatedPhoto: UnallocatedPhotoDTO) {
         appDb.getUnallocatedPhotoDao().insertUnallocatedPhoto(unallocatedPhoto)
     }
 
-    // retakeUnallocatedPhoto
     fun retakeUnallocatedPhoto(retakenUnallocatedPhoto: UnallocatedPhotoDTO) {
         coroutineScope.launch(dispatchers.io()) {
             updateUnallocatedPhotoAsync(retakenUnallocatedPhoto)
@@ -52,7 +51,7 @@ class CapturedPictureRepository(
         appDb.getUnallocatedPhotoDao().deletePhoto(unallocatedPhoto)
     }
 
-    private suspend fun updateUnallocatedPhotoAsync(retakenUnallocatedPhoto: UnallocatedPhotoDTO) {
+    private fun updateUnallocatedPhotoAsync(retakenUnallocatedPhoto: UnallocatedPhotoDTO) {
         appDb.getUnallocatedPhotoDao().updateUnallocatedPhoto(retakenUnallocatedPhoto)
     }
 
@@ -64,33 +63,35 @@ class CapturedPictureRepository(
     }
 
     @Transaction
-    suspend fun backupEstimatePhoto(photoDTO: JobItemEstimatesPhotoDTO):
-            JobItemEstimatesPhotoDTO = withContext(dispatchers.io()) {
-        if (appDb.getJobItemEstimatePhotoDao()
-                .checkIfJobItemEstimatePhotoExistsByPhotoId(photoDTO.photoId)
-        ) {
-            appDb.getJobItemEstimatePhotoDao().updateJobItemEstimatePhoto(photoDTO)
-        } else {
-            appDb.getJobItemEstimatePhotoDao().insertJobItemEstimatePhoto(photoDTO)
-        }
-        return@withContext appDb.getJobItemEstimatePhotoDao().getJobItemEstimatePhoto(photoDTO.photoId)
+    suspend fun backupEstimatePhoto(photoDTO: JobItemEstimatesPhotoDTO) {
     }
 
-    private fun searchUnallocatedPhotoAsync(criteria: String): Deferred<List<UnallocatedPhotoDTO>?> =
-        coroutineScope.async(dispatchers.io()) {
-            return@async appDb.getUnallocatedPhotoDao().searchUnallocatedPhotos(criteria)
-        }
+    private fun searchUnallocatedPhotoAsync(criteria: String): Deferred<List<UnallocatedPhotoDTO>?> = coroutineScope.async(dispatchers.io()) {
+        return@async appDb.getUnallocatedPhotoDao().searchUnallocatedPhotos(criteria)
+    }
 
     // deleteExpiredPhotos
-    fun deleteExpiredPhotos() {
-        coroutineScope.launch(dispatchers.io()) {
-            deleteExpiredPhotosAsync()
-        }
+    fun deleteExpiredPhotos() = coroutineScope.launch(dispatchers.io()) {
+        deleteExpiredPhotosAsync()
     }
 
-    private fun deleteExpiredPhotosAsync() {
+    private fun deleteExpiredPhotosAsync() = coroutineScope.launch(dispatchers.io()) {
         appDb.getUnallocatedPhotoDao().deleteExpiredPhotos()
     }
 
-    // deleteAllUnallocatedPhotos
+    fun deleteUnallocatedPhotoById(photoId: String) {
+        coroutineScope.launch(dispatchers.io()) {
+            appDb.getUnallocatedPhotoDao().deletePhotoById(photoId)
+        }
+    }
+
+    fun saveUnallocatedPhoto(photo: UnallocatedPhotoDTO) = coroutineScope.async(dispatchers.io()) {
+        if (appDb.getUnallocatedPhotoDao().checkIfUnallocatedPhotoExistsByPhotoId(photo.photoId)) {
+                appDb.getUnallocatedPhotoDao().updateUnallocatedPhoto(photo)
+        } else {
+            appDb.getUnallocatedPhotoDao().insertUnallocatedPhoto(photo)
+        }
+    }
+
+// deleteAllUnallocatedPhotos
 }

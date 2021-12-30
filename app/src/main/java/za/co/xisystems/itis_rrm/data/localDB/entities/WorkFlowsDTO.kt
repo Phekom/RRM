@@ -39,7 +39,7 @@ data class WorkFlowsDTO(
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeList(activities?.toList())
+        parcel.writeList(activities.toList())
         parcel.writeList(infoClasses?.toList())
         parcel.writeList(workflows?.toList())
     }

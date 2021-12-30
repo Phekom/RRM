@@ -17,8 +17,71 @@ import dev.matrix.roomigrant.GenerateRoomMigrations
 import net.sqlcipher.database.SQLiteDatabase
 import net.sqlcipher.database.SupportFactory
 import za.co.xisystems.itis_rrm.BuildConfig
-import za.co.xisystems.itis_rrm.data.localDB.dao.*
-import za.co.xisystems.itis_rrm.data.localDB.entities.*
+import za.co.xisystems.itis_rrm.data.localDB.dao.ActivityDao
+import za.co.xisystems.itis_rrm.data.localDB.dao.ContractDao
+import za.co.xisystems.itis_rrm.data.localDB.dao.EntitiesDao
+import za.co.xisystems.itis_rrm.data.localDB.dao.EstimateWorkDao
+import za.co.xisystems.itis_rrm.data.localDB.dao.EstimateWorkPhotoDao
+import za.co.xisystems.itis_rrm.data.localDB.dao.InfoClassDao
+import za.co.xisystems.itis_rrm.data.localDB.dao.ItemDaoTemp
+import za.co.xisystems.itis_rrm.data.localDB.dao.JobDao
+import za.co.xisystems.itis_rrm.data.localDB.dao.JobItemEstimateDao
+import za.co.xisystems.itis_rrm.data.localDB.dao.JobItemEstimatePhotoDao
+import za.co.xisystems.itis_rrm.data.localDB.dao.JobItemMeasureDao
+import za.co.xisystems.itis_rrm.data.localDB.dao.JobItemMeasurePhotoDao
+import za.co.xisystems.itis_rrm.data.localDB.dao.JobSectionDao
+import za.co.xisystems.itis_rrm.data.localDB.dao.JobTypeDao
+import za.co.xisystems.itis_rrm.data.localDB.dao.LookupDao
+import za.co.xisystems.itis_rrm.data.localDB.dao.LookupOptionDao
+import za.co.xisystems.itis_rrm.data.localDB.dao.PrimaryKeyValueDao
+import za.co.xisystems.itis_rrm.data.localDB.dao.ProjectDao
+import za.co.xisystems.itis_rrm.data.localDB.dao.ProjectItemDao
+import za.co.xisystems.itis_rrm.data.localDB.dao.ProjectSectionDao
+import za.co.xisystems.itis_rrm.data.localDB.dao.SectionItemDao
+import za.co.xisystems.itis_rrm.data.localDB.dao.SectionPointDao
+import za.co.xisystems.itis_rrm.data.localDB.dao.ToDoGroupsDao
+import za.co.xisystems.itis_rrm.data.localDB.dao.UnallocatedPhotoDao
+import za.co.xisystems.itis_rrm.data.localDB.dao.UserDao
+import za.co.xisystems.itis_rrm.data.localDB.dao.UserRoleDao
+import za.co.xisystems.itis_rrm.data.localDB.dao.VoItemDao
+import za.co.xisystems.itis_rrm.data.localDB.dao.WorkFlowDao
+import za.co.xisystems.itis_rrm.data.localDB.dao.WorkFlowRouteDao
+import za.co.xisystems.itis_rrm.data.localDB.dao.WorkStepDao
+import za.co.xisystems.itis_rrm.data.localDB.dao.WorkflowsDao
+import za.co.xisystems.itis_rrm.data.localDB.entities.ActivityDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ChildLookupDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ContractDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.InfoClassDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
+import za.co.xisystems.itis_rrm.data.localDB.entities.ItemSectionDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTOTemp
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksPhotoDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimatesPhotoDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasurePhotoDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobSectionDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobTypeEntityDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.LookupDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.LookupOptionDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.PrimaryKeyValueDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectSectionDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.SectionItemDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.SectionPointDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ToDoGroupsDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ToDoListEntityDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.UnallocatedPhotoDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.UserRoleDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.VoItemDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.WfWorkStepDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.WorkFlowDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.WorkFlowRouteDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.WorkFlowsDTO
 import za.co.xisystems.itis_rrm.data.localDB.views.ContractSelectorView
 import za.co.xisystems.itis_rrm.forge.XIArmoury
 import za.co.xisystems.itis_rrm.utils.Converters
@@ -44,7 +107,7 @@ import za.co.xisystems.itis_rrm.utils.DatetimeConverters
     ],
     views = [ContractSelectorView::class],
     exportSchema = true,
-    version = 27
+    version = 28
 )
 
 @TypeConverters(Converters::class, DatetimeConverters::class)
@@ -56,9 +119,11 @@ abstract class AppDatabase : RoomDatabase() {
         private const val MAX_DB_VERSIONS = 999_999_999
 
         @Volatile
-        private var instance: AppDatabase? = null
+        internal var instance: AppDatabase? = null
         private val LOCK = Any()
         private var secretphrase: String? = null
+
+        @JvmStatic
         operator fun invoke(context: Context, armoury: XIArmoury) = instance ?: synchronized(LOCK) {
             secretphrase = armoury.readPassphrase()
             instance ?: buildDatabase(context).also {
@@ -66,6 +131,7 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        @JvmStatic
         private fun buildDatabase(context: Context) =
             when (BuildConfig.DEBUG) {
                 true -> {
@@ -94,6 +160,7 @@ abstract class AppDatabase : RoomDatabase() {
                 }
             }
 
+        @JvmStatic
         fun closeDown() {
             if (instance?.isOpen == true) {
                 instance?.close()

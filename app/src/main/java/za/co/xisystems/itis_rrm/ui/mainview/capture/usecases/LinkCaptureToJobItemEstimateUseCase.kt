@@ -14,6 +14,6 @@ class LinkCaptureToJobItemEstimateUseCase(
         // create new or replace existing estimate photo
         // save to repo
 
-        return XIResult.Error(NotImplementedError("Finish this please!"),"Seriously, finish this!")
+        return XIResult.Error(NotImplementedError("Finish this please!"), "Seriously, finish this!")
     }
 }

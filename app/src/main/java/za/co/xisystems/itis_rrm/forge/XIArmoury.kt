@@ -52,12 +52,6 @@ class XIArmoury private constructor(
             return instance ?: synchronized(Lock) {
                 XIArmoury(appContext = context.applicationContext)
             }.also {
-                it.sageInstance = Sage.getInstance(context.applicationContext)
-                it.masterKey = it.sageInstance?.masterKeyAlias
-                it.scribeInstance = Scribe.getInstance(
-                    appContext = context.applicationContext,
-                    sageInstance = it.sageInstance!!
-                )
                 it.initArmoury(it, context)
                 instance = it
             }
@@ -92,7 +86,12 @@ class XIArmoury private constructor(
 
     init {
         armouryScope.onCreate()
-        // this.photoFolder = setOrCreatePicFolder(appContext)
+        this.sageInstance = Sage.getInstance(appContext)
+        this.masterKey = this.sageInstance?.masterKeyAlias
+        this.scribeInstance = Scribe.getInstance(
+            appContext = appContext,
+            sageInstance = this.sageInstance!!
+        )
     }
 
     private fun initArmoury(instance: XIArmoury, appContext: Context) =

@@ -36,7 +36,7 @@ abstract class LocationFragment : BaseFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         locationViewModel =
-            ViewModelProvider(this.requireActivity(), locationFactory).get(LocationViewModel::class.java)
+            ViewModelProvider(this.requireActivity(), locationFactory)[LocationViewModel::class.java]
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

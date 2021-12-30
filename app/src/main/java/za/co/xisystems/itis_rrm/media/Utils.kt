@@ -14,11 +14,11 @@ import android.graphics.Bitmap
 import android.os.Build
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
+import za.co.xisystems.itis_rrm.R
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import kotlin.math.roundToInt
-import za.co.xisystems.itis_rrm.R
 
 const val EXTRA_IMAGE = "extra.image"
 const val MIME_TYPE_IMAGE_REGEX = "image/[-\\w.]+\$"

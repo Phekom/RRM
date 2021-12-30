@@ -75,7 +75,7 @@ open class ProjectItem(
         viewBinding: NewJobItemBinding
     ) {
         if (jobItemEstimate != null) {
-            createViewModel.estimateComplete(jobItemEstimate, "").also { complete ->
+            createViewModel.estimateComplete(jobItemEstimate).also { complete ->
                 if (complete) {
                     val lineRate: Double = jobItemEstimate.lineRate
                     val tenderRate: Double = itemDesc.tenderRate
