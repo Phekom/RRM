@@ -541,7 +541,7 @@ class EstimatePhotoFragment : LocationFragment() {
 
     private fun setEstimateQty(text: CharSequence?) {
         try {
-            val quantity = text.toString().toDouble()
+            val quantity = text.toString().toDoubleOrNull() ?: 0.0
             newJobItemEstimate?.qty = quantity
         } catch (ex: java.lang.NumberFormatException) {
             Timber.e(" ")
@@ -1197,7 +1197,7 @@ class EstimatePhotoFragment : LocationFragment() {
 
         val displayAmount = lineAmount ?: tenderRate * qty
 
-        when (displayAmount > 0.0) {
+        when (displayAmount >= 0.0) {
             true -> {
                 // Display pricing information
                 binding.costTextView.text =
