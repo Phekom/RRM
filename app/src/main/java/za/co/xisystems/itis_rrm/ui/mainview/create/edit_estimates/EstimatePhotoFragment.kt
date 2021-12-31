@@ -222,7 +222,6 @@ class EstimatePhotoFragment : LocationFragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentPhotoEstimateBinding.inflate(inflater, container, false)
 
-
         return binding.root
     }
 
@@ -1158,13 +1157,7 @@ class EstimatePhotoFragment : LocationFragment() {
         var lineAmount: Double?
         val tenderRate = newJobItemEstimate?.lineRate ?: item?.tenderRate ?: 0.0
 
-        var qty = item?.quantity ?: value.toDouble()
-
-        try {
-            qty = value.toDouble()
-        } catch (e: NumberFormatException) {
-            Timber.d(e)
-        }
+        var qty = item?.quantity ?: value.toDoubleOrNull() ?: 0.0
 
         when (item?.uom) {
             "NO", "QTY", null -> {
