@@ -540,8 +540,8 @@ class EstimatePhotoFragment : LocationFragment() {
 
     private fun setEstimateQty(text: CharSequence?) {
         try {
-            val quantity = text.toString().toDoubleOrNull() ?: 0.0
-            newJobItemEstimate?.qty = quantity
+            val quantity = text.toString().toIntOrNull() ?: 0.0
+            newJobItemEstimate?.qty = quantity.toDouble()
         } catch (ex: java.lang.NumberFormatException) {
             Timber.e(" ")
             quantity = 0.0
@@ -1155,9 +1155,9 @@ class EstimatePhotoFragment : LocationFragment() {
         //  valueEditText.clearFocus()
 
         var lineAmount: Double?
-        val tenderRate = newJobItemEstimate?.lineRate ?: item?.tenderRate ?: 0.0
+        val tenderRate = item?.tenderRate ?: newJobItemEstimate?.lineRate
 
-        var qty = item?.quantity ?: value.toDoubleOrNull() ?: 0.0
+        val qty = value.toDoubleOrNull() ?: 0.0
 
         when (item?.uom) {
             "NO", "QTY", null -> {
@@ -1178,7 +1178,7 @@ class EstimatePhotoFragment : LocationFragment() {
             else -> {
                 binding.labelTextView.text = getString(R.string.label_quantity)
                 try { //  Default Calculation
-                    lineAmount = qty * tenderRate
+                    lineAmount = qty * tenderRate!!
                 } catch (e: NumberFormatException) {
                     lineAmount = null
                     requireActivity().hideKeyboard()
@@ -1188,7 +1188,7 @@ class EstimatePhotoFragment : LocationFragment() {
             }
         }
 
-        val displayAmount = lineAmount ?: tenderRate * qty
+        val displayAmount = lineAmount ?: tenderRate!! * qty
 
         when (displayAmount >= 0.0) {
             true -> {
@@ -1196,7 +1196,7 @@ class EstimatePhotoFragment : LocationFragment() {
                 binding.costTextView.text =
                     (" * R $tenderRate =  R ${DecimalFormat("#0.00").format(displayAmount)}")
                 newJobItemEstimate?.qty = qty
-                newJobItemEstimate?.lineRate = tenderRate
+                newJobItemEstimate?.lineRate = tenderRate!!
                 createViewModel.setEstimateQuantity(qty)
                 createViewModel.setEstimateLineRate(tenderRate)
                 changesToPreserve = true
