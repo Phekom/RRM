@@ -82,9 +82,9 @@ class WorkDataRepository(
         }
     }
 
-    private fun jobSearchAsync(criteria: String): Deferred<List<JobDTO>?> =
+    private fun jobSearchAsync(criteria: String): Deferred<List<JobDTO>> =
         coroutineScope.async(dispatchers.io()) {
-            return@async jobDao?.searchJobs(criteria.toRoomSearchString())
+            return@async jobDao?.searchJobs(criteria.toRoomSearchString()) ?: listOf()
         }
 
     @Synchronized

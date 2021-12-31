@@ -18,6 +18,8 @@ import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import com.xwray.groupie.ExpandableGroup
 import com.xwray.groupie.ExpandableItem
+import java.util.ArrayList
+import java.util.Date
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
@@ -34,8 +36,6 @@ import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.estimate_measure_item.Mea
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DateUtil
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
-import java.util.ArrayList
-import java.util.Date
 
 class ExpandableHeaderMeasureItem(
     private var fragment: Fragment,
@@ -87,8 +87,8 @@ class ExpandableHeaderMeasureItem(
 
     private fun measureJobItemEstimate() {
         Coroutines.main {
-            val jobForJobItemEstimate = measureViewModel.getJobFromJobId(measureItem.jobId)
-            jobForJobItemEstimate.observeOnce(fragment.requireActivity(), { job ->
+            val jobForMeasures = measureViewModel.getJobFromJobId(measureItem.jobId)
+            jobForMeasures.observeOnce(fragment.viewLifecycleOwner, { job ->
                 if (measureItem.jobId != null && job.jobId == measureItem.jobId!!) {
                     showAddMeasurementQuantityDialog(
                         measureItem,
@@ -120,7 +120,8 @@ class ExpandableHeaderMeasureItem(
                     var message: String = fragment.requireActivity().getString(R.string.enter_quantity_measured)
                     quantityInputEditText.textAlignment = View.TEXT_ALIGNMENT_CENTER
                     if (!selected.uom.isNullOrBlank() &&
-                        selected.uom != fragment.requireActivity().getString(R.string.none)) {
+                        selected.uom != fragment.requireActivity().getString(R.string.none)
+                    ) {
                         val friendlyUOM = fragment.requireActivity().uomForUI(selected.uom)
                         quantityInputEditText.hint = friendlyUOM
 
@@ -133,7 +134,7 @@ class ExpandableHeaderMeasureItem(
                             AlertDialog.Builder(fragment.requireActivity())
                                 // android.R.style.Theme_DeviceDefault_Dialog
                                 .setTitle(
-                                    "Estimate - " + desc + System.lineSeparator() + "Quantity : " + measureItem.qty.toString()
+                                    "Estimate - $desc${System.lineSeparator()}Quantity : " + measureItem.qty.toString()
                                         .dropLast(
                                             2
                                         )
