@@ -10,11 +10,11 @@ import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.whenCreated
 import androidx.lifecycle.whenResumed
 import androidx.lifecycle.whenStarted
 import androidx.navigation.Navigation
@@ -46,7 +46,6 @@ import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper.setSpinner
-import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.Coroutines
 
 /**
@@ -72,17 +71,12 @@ class SelectItemFragment : BaseFragment(), DIAware {
     private var useR: Int? = null
 
     private lateinit var editJob: JobDTO
-    private var uiScope = UiLifecycleScope()
     var stateRestored = false
 
     init {
 
         lifecycleScope.launch {
-            whenCreated {
-                uiScope.onCreate()
-            }
             whenStarted {
-                viewLifecycleOwner.lifecycle.addObserver(uiScope)
                 initUI()
             }
             whenResumed {
@@ -120,8 +114,7 @@ class SelectItemFragment : BaseFragment(), DIAware {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        createViewModel = ViewModelProvider(this.requireActivity(), factory)
-            .get(CreateViewModel::class.java)
+        createViewModel = ViewModelProvider(this.requireActivity(), factory)[CreateViewModel::class.java]
     }
 
     override fun onCreateView(
@@ -212,7 +205,15 @@ class SelectItemFragment : BaseFragment(), DIAware {
                         }
                     }
                 )
-                ui.sectionItemSpinner.setOnTouchListener { _, _ ->
+                ui.sectionItemSpinner.setOnTouchListener { view, motionEvent ->
+                    when (motionEvent.action) {
+                        MotionEvent.ACTION_UP -> {
+                            view.performClick()
+                        }
+                        else -> {
+                            // MotionEvent.ACTION_DOWN happened
+                        }
+                    }
                     animate = true
                     false
                 }
@@ -246,7 +247,7 @@ class SelectItemFragment : BaseFragment(), DIAware {
     private fun initRecyclerView(items: List<SectionProjectItem>) {
         val groupAdapter = GroupAdapter<GroupieViewHolder<ProjectItemBinding>>().apply {
             addAll(items)
-            notifyDataSetChanged()
+            notifyItemRangeChanged(0, items.size)
         }
 
         ui.itemRecyclerView.apply {
@@ -317,7 +318,6 @@ class SelectItemFragment : BaseFragment(), DIAware {
         super.onDestroyView()
         // Prevents RecyclerView Memory leak
         ui.itemRecyclerView.adapter = null
-        uiScope.destroy()
         viewLifecycleOwner.lifecycleScope.cancel(CancellationException("onDestroyView"))
         _ui = null
     }

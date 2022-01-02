@@ -23,12 +23,11 @@ import androidx.core.view.doOnNextLayout
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.distinctUntilChanged
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.whenStarted
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.viewbinding.GroupieViewHolder
+import java.lang.ref.WeakReference
 import kotlinx.coroutines.launch
 import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
@@ -46,10 +45,8 @@ import za.co.xisystems.itis_rrm.databinding.ItemHeaderBinding
 import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.ui.extensions.crashGuard
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.approve_job_item.ApproveJobItem
-import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
-import java.lang.ref.WeakReference
 
 /**
  * Created by Francis Mahlava on 03,October,2019
@@ -61,7 +58,6 @@ class ApproveJobsFragment : BaseFragment() {
     private lateinit var approveViewModel: ApproveJobsViewModel
     private val factory: ApproveJobsViewModelFactory by instance()
     lateinit var dialog: Dialog
-    private var uiScope = UiLifecycleScope()
     private var _ui: FragmentApprovejobBinding? = null
     private val ui get() = _ui!!
     private var groupAdapter = GroupAdapter<GroupieViewHolder<ItemHeaderBinding>>()
@@ -69,15 +65,6 @@ class ApproveJobsFragment : BaseFragment() {
 
     companion object {
         val TAG: String = ApproveJobsFragment::class.java.simpleName
-    }
-
-    init {
-        lifecycleScope.launch {
-            whenStarted {
-                uiScope.onCreate()
-                viewLifecycleOwner.lifecycle.addObserver(uiScope)
-            }
-        }
     }
 
     private fun handleQueryErrors(outcome: XIResult<String>?) {
@@ -289,7 +276,6 @@ class ApproveJobsFragment : BaseFragment() {
         super.onDestroyView()
         approveViewModel.workflowState.removeObservers(viewLifecycleOwner)
         ui.approveJobVeiledRecycler.setAdapter(null)
-        uiScope.destroy()
         _ui = null
     }
 

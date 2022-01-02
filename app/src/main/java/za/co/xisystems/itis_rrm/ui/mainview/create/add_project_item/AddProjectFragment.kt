@@ -30,6 +30,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.Section
 import com.xwray.groupie.viewbinding.GroupieViewHolder
+import java.util.Calendar
+import java.util.Date
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -69,13 +71,10 @@ import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SwipeTouchCallback
 import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedViewModelFactory
-import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DateUtil
 import za.co.xisystems.itis_rrm.utils.JobUtils
-import java.util.Calendar
-import java.util.Date
 
 /**
  * Created by Francis Mahlava on 2019/12/29.
@@ -103,7 +102,6 @@ class AddProjectFragment : BaseFragment() {
     private lateinit var dueDate: Date
     private var _ui: FragmentAddProjectItemsBinding? = null
     private val ui get() = _ui!!
-    private var uiScope = UiLifecycleScope()
     private lateinit var job: JobDTO
     private var items: List<ItemDTOTemp> = ArrayList()
     private var stateRestored: Boolean = false
@@ -134,8 +132,6 @@ class AddProjectFragment : BaseFragment() {
     init {
         lifecycleScope.launch {
             whenCreated {
-                uiScope.onCreate()
-                lifecycle.addObserver(uiScope)
                 initViewModels()
             }
             whenStarted {
@@ -227,7 +223,7 @@ class AddProjectFragment : BaseFragment() {
         deferredLocationViewModel.geoCodingResult.observeOnce(
             viewLifecycleOwner, { result ->
                 result.getContentIfNotHandled()?.let { outcome ->
-                    uiScope.launch(uiScope.coroutineContext) {
+                    uiScope.launch {
                         processLocationResult(outcome)
                     }
                 }
@@ -242,7 +238,7 @@ class AddProjectFragment : BaseFragment() {
                             validateEstimates(realJob)
                         }
                     } else {
-                        uiScope.launch(uiScope.coroutineContext) {
+                        uiScope.launch {
                             geoLocationFailed()
                         }
                     }
@@ -253,7 +249,7 @@ class AddProjectFragment : BaseFragment() {
         createViewModel.jobForSubmission.observeOnce(
             viewLifecycleOwner, { unsubmittedEvent ->
                 unsubmittedEvent.getContentIfNotHandled()?.let { submissionJob ->
-                    uiScope.launch(uiScope.coroutineContext) {
+                    uiScope.launch {
                         createViewModel.backupSubmissionJob.value = XIEvent(submissionJob)
                         submitJob(submissionJob)
                     }
@@ -865,7 +861,6 @@ class AddProjectFragment : BaseFragment() {
         createViewModel.jobForValidation.removeObservers(viewLifecycleOwner)
         createViewModel.jobForSubmission.removeObservers(viewLifecycleOwner)
         createViewModel.jobForReUpload.removeObservers(viewLifecycleOwner)
-        uiScope.destroy()
         ui.projectRecyclerView.adapter = null
         _ui = null
     }

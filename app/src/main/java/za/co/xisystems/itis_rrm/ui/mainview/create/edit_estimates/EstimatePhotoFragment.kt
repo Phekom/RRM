@@ -37,7 +37,6 @@ import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenCreated
 import androidx.lifecycle.whenResumed
-import androidx.lifecycle.whenStarted
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.navArgs
 import com.airbnb.lottie.LottieAnimationView
@@ -54,6 +53,9 @@ import com.mapbox.navigation.core.MapboxNavigation
 import com.mapbox.navigation.core.trip.session.LocationMatcherResult
 import com.mapbox.navigation.core.trip.session.LocationObserver
 import com.mapbox.navigation.ui.maps.location.NavigationLocationProvider
+import java.io.File
+import java.text.DecimalFormat
+import kotlin.collections.set
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -82,15 +84,11 @@ import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.models.PhotoType
-import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.GlideApp
 import za.co.xisystems.itis_rrm.utils.JobItemEstimateSize
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
-import java.io.File
-import java.text.DecimalFormat
-import kotlin.collections.set
 
 /**
  * Created by Francis Mahlava on 2019/12/29.
@@ -128,7 +126,6 @@ class EstimatePhotoFragment : LocationFragment() {
     private var startImageUri: Uri? = null
     private var endImageUri: Uri? = null
     private var imageUri: Uri? = null
-    private val uiScope = UiLifecycleScope()
     private val photoUtil: PhotoUtil by instance()
     private var changesToPreserve: Boolean = false
     private var tenderRate: Double? = null
@@ -189,16 +186,11 @@ class EstimatePhotoFragment : LocationFragment() {
         lifecycleScope.launch {
 
             whenCreated {
-                uiScope.onCreate()
                 createViewModel =
                     ViewModelProvider(
                         this@EstimatePhotoFragment.requireActivity(),
                         factory
                     )[CreateViewModel::class.java]
-            }
-
-            whenStarted {
-                viewLifecycleOwner.lifecycle.addObserver(uiScope)
             }
 
             whenResumed {
@@ -287,13 +279,12 @@ class EstimatePhotoFragment : LocationFragment() {
                         Manifest.permission.ACCESS_COARSE_LOCATION
                     ) != PackageManager.PERMISSION_GRANTED
             ) {
-                // TODO: Consider calling
-                //    ActivityCompat#requestPermissions
-                // here to request the missing permissions, and then overriding
-                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                //                                          int[] grantResults)
-                // to handle the case where the user grants the permission. See the documentation
-                // for ActivityCompat#requestPermissions for more details.
+                this@EstimatePhotoFragment.extensionToast(
+                    message = "Please enable location services in order to proceed",
+                    style = ToastStyle.WARNING,
+                    position = ToastGravity.CENTER,
+                    duration = ToastDuration.LONG
+                )
             }
             startTripSession()
             registerLocationObserver(locationObserver)
@@ -687,44 +678,33 @@ class EstimatePhotoFragment : LocationFragment() {
     private fun validateAndUpdateEstimate(view: View) {
 
         if (selectedJobType == JobItemEstimateSize.POINT.getValue()) {
-            newJobItemEstimate?.jobItemEstimateSize = JobItemEstimateSize.POINT.getValue()
-
-            if (binding.costTextView.text.isNullOrEmpty() || newJobItemEstimate!!.size() < 1) {
-                extensionToast(
-                    message = "Please capture or add at least one photo ...",
-                    style = ToastStyle.INFO,
-                    position = ToastGravity.BOTTOM
-                )
-                binding.labelTextView.startAnimation(animations!!.shake_long)
-            } else {
-                Coroutines.main {
-                    createViewModel.estimateComplete(newJobItemEstimate!!).also { result ->
-                        if (result) {
-                            calculateCost()
-                            this@EstimatePhotoFragment.toggleLongRunning(true)
-                            saveValidEstimate(view)
-                        }
-                    }
-                }
-            }
+            validateEstimateBySize(view, JobItemEstimateSize.POINT.getValue(), 1)
         } else if (selectedJobType == JobItemEstimateSize.LINE.getValue()) {
-            newJobItemEstimate?.jobItemEstimateSize = JobItemEstimateSize.LINE.getValue()
-            if (binding.costTextView.text.isNullOrEmpty() || newJobItemEstimate!!.size() < 2) {
-                extensionToast(
-                    message = "Please capture or add the start and end photographs ...",
-                    style = ToastStyle.INFO,
-                    position = ToastGravity.BOTTOM
-                )
-                binding.labelTextView.startAnimation(animations!!.shake_long)
-            } else {
-                Coroutines.main {
-                    createViewModel.estimateComplete(newJobItemEstimate!!).also { result ->
-                        if (result) {
-                            calculateCost()
-                            this@EstimatePhotoFragment.toggleLongRunning(true)
-                            saveValidEstimate(view)
-                        }
-                    }
+            validateEstimateBySize(view, JobItemEstimateSize.LINE.getValue(), 2)
+        }
+    }
+
+    private fun validateEstimateBySize(view: View, jobSize: String, minimumPhotoCount: Int) {
+        newJobItemEstimate?.jobItemEstimateSize = jobSize
+        if (binding.costTextView.text.isNullOrEmpty() || newJobItemEstimate!!.size() < minimumPhotoCount) {
+            extensionToast(
+                message = "Please capture at least $minimumPhotoCount photograph(s)...",
+                style = ToastStyle.INFO,
+                position = ToastGravity.BOTTOM
+            )
+            binding.labelTextView.startAnimation(animations!!.shake_long)
+        } else {
+            saveCheckedEstimate(view)
+        }
+    }
+
+    private fun saveCheckedEstimate(view: View) {
+        Coroutines.main {
+            createViewModel.estimateComplete(newJobItemEstimate!!).also { result ->
+                if (result) {
+                    calculateCost()
+                    this@EstimatePhotoFragment.toggleLongRunning(true)
+                    saveValidEstimate(view)
                 }
             }
         }
@@ -1400,7 +1380,6 @@ class EstimatePhotoFragment : LocationFragment() {
      */
     override fun onDestroyView() {
         super.onDestroyView()
-        uiScope.destroy()
         createViewModel.itemJob.removeObservers(viewLifecycleOwner)
         createViewModel.tempProjectItem.removeObservers(viewLifecycleOwner)
         createViewModel.currentEstimate.removeObservers(viewLifecycleOwner)

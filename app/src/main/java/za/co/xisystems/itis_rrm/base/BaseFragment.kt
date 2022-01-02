@@ -13,7 +13,10 @@ import android.view.animation.AnimationUtils
 import android.view.inputmethod.InputMethodManager
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.whenStarted
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.launch
 import org.kodein.di.DIAware
 import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
@@ -38,6 +41,7 @@ import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.mainview.activities.LocationViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModelFactory
+import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.ViewLogger
 
@@ -64,7 +68,16 @@ abstract class BaseFragment(
     private val locationFactory by instance<LocationViewModelFactory>()
     private var gpsEnabled: Boolean = false
     private var networkEnabled: Boolean = false
+    protected var uiScope = UiLifecycleScope()
 
+    init {
+        lifecycleScope.launch {
+            whenStarted {
+                uiScope.onCreate(viewLifecycleOwner)
+                viewLifecycleOwner.lifecycle.addObserver(uiScope)
+            }
+        }
+    }
     val navPermissions: List<String> = listOf(
         Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION
     )
@@ -303,4 +316,9 @@ abstract class BaseFragment(
     }
 
     abstract fun onCreateOptionsMenu(menu: Menu): Boolean
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        uiScope.onDestroy(viewLifecycleOwner)
+    }
 }

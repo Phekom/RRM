@@ -28,8 +28,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.ExpandableGroup
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.viewbinding.GroupieViewHolder
-import java.util.ArrayList
-import java.util.HashMap
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -63,9 +61,10 @@ import za.co.xisystems.itis_rrm.ui.extensions.initProgress
 import za.co.xisystems.itis_rrm.ui.extensions.startProgress
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModelFactory
-import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DataConversion
+import java.util.ArrayList
+import java.util.HashMap
 
 class SubmitMeasureFragment : BaseFragment() {
     override val di by closestDI()
@@ -79,7 +78,6 @@ class SubmitMeasureFragment : BaseFragment() {
     private lateinit var jobItemMeasureList: ArrayList<JobItemMeasureDTO>
     private lateinit var jobItemEstimate: JobItemEstimateDTO
     private lateinit var expandableGroups: MutableList<ExpandableGroup>
-    private var uiScope = UiLifecycleScope()
     private lateinit var progressButton: Button
     private lateinit var originalCaption: String
     private var measurementObserver = Observer<XIResult<String>?> { handleMeasureSubmission(it) }
@@ -90,8 +88,6 @@ class SubmitMeasureFragment : BaseFragment() {
     init {
         lifecycleScope.launch {
             whenStarted {
-                uiScope.onCreate()
-                lifecycle.addObserver(uiScope)
 
                 uiScope.launch(uiScope.coroutineContext) {
 
@@ -168,7 +164,6 @@ class SubmitMeasureFragment : BaseFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
-        lifecycle.addObserver(uiScope)
         setHasOptionsMenu(true)
         (activity as MainActivity).supportActionBar?.title =
             getString(R.string.submit_measure_title)
@@ -491,7 +486,6 @@ class SubmitMeasureFragment : BaseFragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        uiScope.destroy()
         // measureViewModel.workflowState.removeObservers(viewLifecycleOwner)
         ui.measureListView.adapter = null
         _ui = null

@@ -15,7 +15,6 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
 import kotlinx.coroutines.launch
-import org.kodein.di.DIAware
 import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
 import za.co.xisystems.itis_rrm.MainActivity
@@ -23,23 +22,19 @@ import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.results.XIResult
-import za.co.xisystems.itis_rrm.custom.results.XIResult.Error
-import za.co.xisystems.itis_rrm.custom.results.XIResult.Success
 import za.co.xisystems.itis_rrm.databinding.FragmentMeasureGalleryBinding
 import za.co.xisystems.itis_rrm.ui.custom.MeasureGalleryUIState
 import za.co.xisystems.itis_rrm.ui.extensions.addZoomedImages
 import za.co.xisystems.itis_rrm.ui.extensions.scaleForSize
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureViewModelFactory
-import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 
-class MeasureGalleryFragment : BaseFragment(), DIAware {
+class MeasureGalleryFragment : BaseFragment() {
     override val di by closestDI()
     private lateinit var approveViewModel: ApproveMeasureViewModel
     private val factory: ApproveMeasureViewModelFactory by instance()
     private val galleryObserver =
         Observer<XIResult<MeasureGalleryUIState>> { handleResponse(it) }
-    private var uiScope = UiLifecycleScope()
     private var galleryJobId: String? = null
     private var _ui: FragmentMeasureGalleryBinding? = null
     private val ui get() = _ui!!
@@ -52,7 +47,7 @@ class MeasureGalleryFragment : BaseFragment(), DIAware {
         super.onCreate(savedInstanceState)
         (activity as MainActivity).supportActionBar?.title = getString(R.string.measurement_gallery)
         approveViewModel =
-            ViewModelProvider(this.requireActivity(), factory).get(ApproveMeasureViewModel::class.java)
+            ViewModelProvider(this.requireActivity(), factory)[ApproveMeasureViewModel::class.java]
     }
 
     override fun onCreateView(
@@ -85,7 +80,7 @@ class MeasureGalleryFragment : BaseFragment(), DIAware {
 
     private fun handleResponse(response: XIResult<MeasureGalleryUIState>) {
         when (response) {
-            is Success -> {
+            is XIResult.Success -> {
                 val uiState = response.data
                 ui.measurementDescription.text = uiState.description
                 val costing = "Approved Qty: ${uiState.qty}"
@@ -97,7 +92,7 @@ class MeasureGalleryFragment : BaseFragment(), DIAware {
                 }
                 galleryJobId = uiState.jobItemMeasureDTO?.jobId!!
             }
-            is Error ->
+            is XIResult.Error ->
                 XIErrorHandler.handleError(
                     fragment = this@MeasureGalleryFragment,
                     view = this@MeasureGalleryFragment.requireView(),
@@ -106,6 +101,10 @@ class MeasureGalleryFragment : BaseFragment(), DIAware {
                     shouldShowSnackBar = true,
                     refreshAction = { retryGallery() }
                 )
+            is XIResult.Progress -> TODO()
+            is XIResult.ProgressUpdate -> TODO()
+            is XIResult.RestException -> TODO()
+            is XIResult.Status -> TODO()
         }
     }
 
@@ -116,7 +115,6 @@ class MeasureGalleryFragment : BaseFragment(), DIAware {
     override fun onDestroyView() {
         super.onDestroyView()
         ui.estimateImageGalleryView.clearImages()
-        uiScope.destroy()
         _ui = null
     }
 }

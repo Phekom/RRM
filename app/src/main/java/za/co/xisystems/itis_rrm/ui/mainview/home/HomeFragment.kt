@@ -28,8 +28,6 @@ import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.whenStarted
 import androidx.navigation.Navigation
 import com.skydoves.progressview.ProgressView
 import kotlinx.coroutines.Job
@@ -56,7 +54,6 @@ import za.co.xisystems.itis_rrm.databinding.FragmentHomeBinding
 import za.co.xisystems.itis_rrm.extensions.isConnected
 import za.co.xisystems.itis_rrm.ui.extensions.crashGuard
 import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
-import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import kotlin.coroutines.cancellation.CancellationException
 
@@ -68,7 +65,6 @@ class HomeFragment : BaseFragment() {
     private var gpsEnabled: Boolean = false
     private var networkEnabled: Boolean = false
     private var userDTO: UserDTO? = null
-    private var uiScope = UiLifecycleScope()
     private lateinit var synchJob: Job
     private val colorConnected: Int
         get() = Color.parseColor("#55A359")
@@ -90,14 +86,6 @@ class HomeFragment : BaseFragment() {
 
     companion object {
         val TAG: String = HomeFragment::class.java.simpleName
-    }
-
-    init {
-        lifecycleScope.launch {
-            whenStarted {
-                lifecycle.addObserver(uiScope)
-            }
-        }
     }
 
     private fun homeDiagnostic() {
@@ -126,7 +114,7 @@ class HomeFragment : BaseFragment() {
 
     private fun retrySections() {
         IndefiniteSnackbar.hide()
-        uiScope.launch(uiScope.coroutineContext) {
+        uiScope.launch {
             acquireUser()
             getOfflineSectionItems()
         }
@@ -182,7 +170,6 @@ class HomeFragment : BaseFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        uiScope.onCreate()
         homeViewModel =
             ViewModelProvider(this.requireActivity(), factory)[HomeViewModel::class.java]
         setHasOptionsMenu(true)
@@ -233,7 +220,6 @@ class HomeFragment : BaseFragment() {
         }
 
         ui.unallocatedPhotoAdd.setOnClickListener {
-//            ToastUtils().toastVersion(requireContext())
             val directions = HomeFragmentDirections.actionNavHomeToNavUnallocated()
             Navigation.findNavController(this@HomeFragment.requireView())
                 .navigate(directions)
@@ -253,7 +239,6 @@ class HomeFragment : BaseFragment() {
         super.onDestroyView()
         // prevent viewBinding from leaking
         _ui = null
-        uiScope.destroy()
         homeViewModel.databaseState.removeObservers(viewLifecycleOwner)
     }
 

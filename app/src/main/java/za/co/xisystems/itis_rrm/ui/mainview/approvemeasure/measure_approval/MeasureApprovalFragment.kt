@@ -60,7 +60,6 @@ import za.co.xisystems.itis_rrm.ui.extensions.initProgress
 import za.co.xisystems.itis_rrm.ui.extensions.startProgress
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureViewModelFactory
-import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
@@ -78,7 +77,6 @@ class MeasureApprovalFragment : BaseFragment() {
     private var flowDirection: Int = 0
     private var measuresProcessed: Int = 0
     private var selectedJobId: String? = null
-    private var uiScope = UiLifecycleScope()
     private var _ui: FragmentMeasureApprovalBinding? = null
     private val ui get() = _ui!!
     private var groupAdapter = GroupAdapter<GroupieViewHolder<MeasurementsItemBinding>>()
@@ -160,7 +158,7 @@ class MeasureApprovalFragment : BaseFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         approveViewModel =
-            ViewModelProvider(this.requireActivity(), factory).get(ApproveMeasureViewModel::class.java)
+            ViewModelProvider(this.requireActivity(), factory)[ApproveMeasureViewModel::class.java]
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -340,7 +338,6 @@ class MeasureApprovalFragment : BaseFragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         // clear out all the leakers
-        uiScope.destroy()
         approveViewModel.workflowState.removeObservers(viewLifecycleOwner)
         ui.viewMeasuredItems.setAdapter(null)
         _ui = null
