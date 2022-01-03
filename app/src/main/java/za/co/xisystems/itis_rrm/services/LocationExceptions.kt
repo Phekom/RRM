@@ -14,8 +14,7 @@ class OutsideSanralReserveException
         }
         if (message.isNullOrBlank()) {
             val newMessage = context!!.resources.getString(
-                R.string.not_nra_territory,
-                latitude.round(6).toString(), longitude.round(6).toString()
+                R.string.not_nra_territory, "( lat: ${latitude.round(6)}, lng: ${longitude.round(6)} )"
             )
             throw LocationException(newMessage)
         } else {

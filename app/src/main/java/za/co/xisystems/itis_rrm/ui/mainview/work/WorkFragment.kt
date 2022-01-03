@@ -24,7 +24,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenCreated
 import androidx.lifecycle.whenResumed
-import androidx.lifecycle.whenStarted
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.ExpandableGroup
@@ -51,7 +50,6 @@ import za.co.xisystems.itis_rrm.ui.mainview.work.estimate_work_item.CardItem
 import za.co.xisystems.itis_rrm.ui.mainview.work.estimate_work_item.ExpandableHeaderWorkItem
 import za.co.xisystems.itis_rrm.ui.mainview.work.goto_work_location.GoToViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.work.goto_work_location.GoToViewModelFactory
-import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import java.text.DecimalFormat
@@ -68,7 +66,6 @@ class WorkFragment : LocationFragment() {
     private val factory: WorkViewModelFactory by instance()
     private val mapFactory: GoToViewModelFactory by instance()
     private lateinit var goToViewModel: GoToViewModel
-    private var uiScope = UiLifecycleScope()
     private var groupAdapter: GroupAdapter<GroupieViewHolder<ItemExpandableHeaderBinding>>? =
         GroupAdapter<GroupieViewHolder<ItemExpandableHeaderBinding>>()
     private var _ui: FragmentWorkBinding? = null
@@ -81,12 +78,7 @@ class WorkFragment : LocationFragment() {
 
         lifecycleScope.launch {
             whenCreated {
-                uiScope.onCreate()
                 stateRestored = false
-            }
-
-            whenStarted {
-                viewLifecycleOwner.lifecycle.addObserver(uiScope)
             }
 
             whenResumed {
@@ -104,7 +96,8 @@ class WorkFragment : LocationFragment() {
              * Callback for handling the [OnBackPressedDispatcher.onBackPressed] event.
              */
             override fun handleOnBackPressed() {
-                Navigation.findNavController(ui.veiledWorkListView).navigate(R.id.action_global_nav_home)
+                val directions = WorkFragmentDirections.actionGlobalNavHome()
+                Navigation.findNavController(this@WorkFragment.requireView()).navigate(directions)
             }
         }
         requireActivity().onBackPressedDispatcher
@@ -334,7 +327,6 @@ class WorkFragment : LocationFragment() {
     }
 
     override fun onDestroyView() {
-        uiScope.destroy()
         ui.veiledWorkListView.getRecyclerView().adapter = null
         groupAdapter = null
         _ui = null

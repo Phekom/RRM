@@ -352,11 +352,9 @@
             android:id="@+id/action_captureWorkFragment_to_nav_work"
             app:destination="@id/nav_work"
             app:enterAnim="@anim/animate_slide_in_left"
-            app:exitAnim="@anim/animate_slide_out_right"
-            app:popUpTo="@id/nav_work"
+            app:exitAnim="@anim/animate_slide_left_exit"
             app:popEnterAnim="@anim/animate_fade_enter"
-            app:popExitAnim="@anim/animate_fade_exit"
-            app:popUpToInclusive="true" />
+            app:popExitAnim="@anim/animate_fade_exit" />
     </fragment>
     <fragment
         android:id="@+id/captureItemMeasurePhotoFragment"
