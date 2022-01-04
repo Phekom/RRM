@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -767,9 +766,10 @@ class CaptureWorkFragment : LocationFragment() {
         Navigation.findNavController(this.requireView()).navigate(directions)
     }
 
-    private suspend fun submitAllOutStandingEstimates(
+    @Synchronized
+    private fun submitAllOutStandingEstimates(
         estimates: List<JobItemEstimateDTO>?
-    ) = withContext(dispatchers.main()) {
+    ) {
         // get Data from db Search for all estimates 8 and work 21 = result is int > 0  then button yes else fetch
 
         if (!estimates.isNullOrEmpty()) {
